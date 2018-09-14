@@ -1,0 +1,77 @@
+<template lang="pug">
+  aside.page_toolbar
+    .toggle-wrap
+      button.btn.btn--toolbar(type="button")
+        i.icon.icon-hide-top
+
+    ul.toolbar_list
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-select
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-arrow-left
+
+    ul.toolbar_list
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-step-prev
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-step-next
+    ul.toolbar_list
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-on-off
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-pause
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-next
+    ul.toolbar_list
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-repeat
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-box
+    .settings-wrap
+      button.btn.btn--settings(type="button") View settings
+
+</template>
+
+<script>
+  export default {
+    name: 'TheToolbar'
+  }
+</script>
+
+<style lang="scss" scoped>
+  @import "../scss/base";
+  .page_toolbar {
+    grid-area: toolbar;
+    background-color: #4D556A;
+    display: flex;
+    align-items: center;
+    padding: 5px 5px 5px 0;
+    .icon {
+      color: #00C8D1;
+    }
+  }
+  .toggle-wrap {
+    width: $w-layersbar;
+    text-align: center;
+  }
+  .toolbar_list {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    border-left: 1px solid #333343;
+  }
+  .settings-wrap {
+    margin-left: auto;
+  }
+</style>

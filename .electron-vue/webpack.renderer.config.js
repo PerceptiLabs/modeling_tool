@@ -35,12 +35,12 @@ let rendererConfig = {
         test: /\.(js|vue)$/,
         enforce: 'pre',
         exclude: /node_modules/,
-        use: {
-          loader: 'eslint-loader',
-          options: {
-            formatter: require('eslint-friendly-formatter')
-          }
-        }
+        // use: {
+        //   loader: 'eslint-loader',
+        //   options: {
+        //     formatter: require('eslint-friendly-formatter')
+        //   }
+        // }
       },
       {
         test: /\.scss$/,
@@ -63,6 +63,10 @@ let rendererConfig = {
         use: 'vue-html-loader'
       },
       {
+        test: /\.pug$/,
+        loader: 'pug-plain-loader'
+      },
+      {
         test: /\.js$/,
         use: 'babel-loader',
         exclude: /node_modules/
@@ -79,8 +83,7 @@ let rendererConfig = {
             extractCSS: process.env.NODE_ENV === 'production',
             loaders: {
               sass: 'vue-style-loader!css-loader!sass-loader?indentedSyntax=1',
-              scss: 'vue-style-loader!css-loader!sass-loader',
-              less: 'vue-style-loader!css-loader!less-loader'
+              scss: 'vue-style-loader!css-loader!sass-loader'
             }
           }
         }

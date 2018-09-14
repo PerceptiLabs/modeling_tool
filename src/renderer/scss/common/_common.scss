@@ -1,0 +1,13 @@
+// adaptive images
+img {
+  max-width: 100%;
+  height: auto;
+  vertical-align: middle;
+}
+
+* {
+  &:active,
+  &:focus {
+    outline: none;
+  }
+}

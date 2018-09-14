@@ -1,0 +1,247 @@
+
+
+form,
+fieldset {
+  margin: 0;
+  padding: 0;
+  border-style: none;
+}
+
+input[type='text'],
+input[type='tel'],
+input[type='email'],
+input[type='search'],
+input[type='password'],
+input[type='url'],
+input[type='date'],
+input[type='number'],
+textarea {
+  @include multi-transition (border-color);
+  -webkit-appearance: none;
+  -webkit-border-radius: 0;
+  border-radius: 0;
+  box-sizing: border-box;
+  display: block;
+  width: 100%;
+  min-width: 30px;
+  height: $input-height;
+  padding: .45rem;
+  border: $default-border;
+  box-shadow: none;
+  text-overflow: ellipsis;
+  font-size: inherit;
+  background-color: #fff;
+  //color: $placeholder;
+
+  @include placeholder {
+    color: $col-placeholder;
+  }
+
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+  &:-webkit-outer-spin-button,
+  &:-webkit-inner-spin-button {
+    -webkit-appearance: none;
+  }
+}
+
+select {
+  border: $default-border;
+  border-radius: 0;
+  width: 100%;
+  color: $col-txt;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="32" height="24" viewBox="0 0 32 24"><polygon points="0,0 32,0 16,24" style="fill: rgb%28127, 127, 127%29"></polygon></svg>');
+  background-size: 9px 6px;
+  background-position: right center;
+  background-origin: content-box;
+  background-repeat: no-repeat;
+  height: $input-height;
+  padding: .45rem;
+}
+
+textarea {
+  color: $col-txt;
+  resize: vertical;
+  vertical-align: top;
+  min-height: $input-height*2;
+}
+
+input,
+select,
+textarea {
+  &:focus {
+    outline: none;
+    border-color: $col-focus;
+  }
+}
+
+input[type="text"],
+input[type="email"],
+input[type="search"],
+input[type="password"],
+input[type="number"],
+input[type='url'],
+select,
+textarea {
+  @include multi-transition(border-color);
+  &.error, &.ng-invalid.ng-touched {
+    border-color: $col-error !important;
+  }
+  &:disabled,
+  &[readonly] {
+    background-color: $bg-article;
+    cursor: default;
+  }
+}
+
+.ng-submitted {
+  input[type="text"],
+  input[type="email"],
+  input[type="search"],
+  input[type="password"],
+  input[type="number"],
+  input[type='url'],
+  select,
+  textarea {
+    &.ng-invalid {
+      border-color: $col-error !important;
+    }
+  }
+}
+
+button,
+input[type='button'],
+input[type='reset'],
+input[type='file'],
+input[type='submit'] {
+  @include multi-transition (color, background-color, border-color);
+  -webkit-appearance: none;
+  cursor: pointer;
+  border: none;
+}
+
+
+
+//.custom-checkbox {
+//  text-align: left;
+//  label {
+//    padding: 0;
+//    display: inline-flex;
+//    align-items: center;
+//  }
+//  input[type=checkbox] {
+//    opacity: 0;
+//    width: 1px;
+//    height: 1px;
+//    position: absolute;
+//    left: -9999px;
+//    &:checked + .checkbox-fake {
+//      border-color: $col-primary;
+//      background-color: $col-primary;
+//      &:after {
+//        opacity: 1;
+//      }
+//    }
+//    &:focus + .checkbox-fake {
+//      outline: 1px dotted $col-primary;
+//      box-shadow: 0 0 1px 1px $white;
+//    }
+//  }
+//  .checkbox-fake {
+//    width: 1em;
+//    height: 1em;
+//    flex: 0 0 1em;
+//    border: $default-border;
+//    cursor: pointer;
+//    position: relative;
+//    &:after {
+//      content: "\f00c";
+//      font-family: "FontAwesome";
+//      position: absolute;
+//      top: 50%;
+//      left: 50%;
+//      transform: translate(-50%, -50%);
+//      opacity: 0;
+//      font-size: .75em;
+//      color: $white;
+//      line-height: 1;
+//    }
+//  }
+//  .checkbox-text {
+//    margin-left: .75em;
+//    font-size: inherit;
+//    color: inherit;
+//  }
+//}
+//
+//.input-holder {
+//  display: block;
+//  width: 100%;
+//  margin-bottom: $input-holder-margin;
+//}
+//
+//.input-label {
+//  display: inline-block;
+//  margin-bottom: 3px;
+//  font-weight: normal;
+//  &.error {
+//    outline: 2px solid $col-error;
+//  }
+//}
+//
+//.input_link {
+//  @include media('>=medium') {
+//    position: absolute;
+//    padding: 5px;
+//    right: 10px;
+//    top: 50%;
+//    transform: translateY(-50%);
+//    text-decoration: none;
+//  }
+//}
+//
+//.form-row {
+//  @include media('>=medium') {
+//    display: flex;
+//    margin: 0 -5px;
+//    .input-holder {
+//      padding: 0 5px;
+//    }
+//    .form-row .input-holder {
+//      margin-bottom: 0;
+//    }
+//  }
+//}
+//
+//.form_error-message {
+//  width: 100%;
+//  background-color: $col-error;
+//  color: $white;
+//  font-size: .875em;
+//  padding: 10px 5px;
+//  text-align: center;
+//  font-weight: normal;
+//  margin-top: .5em;
+//}
+//
+//.form_notate {
+//  text-align: right;
+//  &.notate--left {
+//    text-align: left;
+//  }
+//  .fa {
+//    color: $col-primary;
+//  }
+//  strong {
+//    color: $col-page_title;
+//    font-weight: normal;
+//  }
+//}
+//
+//.limit-counter {
+//  text-align: right;
+//}

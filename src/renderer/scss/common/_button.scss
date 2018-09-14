@@ -1,0 +1,151 @@
+.btn {
+  @include multi-transition (color, background-color);
+  text-decoration: none;
+  border-radius: $bdrs;
+}
+.btn--primary {
+  color: $col-txt2;
+  background: linear-gradient(#73FEBB, #61E6EE);
+  height: 30px;
+  width: 90px;
+  padding: 5px;
+  font-size: 1.2rem;
+  text-align: center;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  &.disable {
+    background: linear-gradient(#489671 , #337A7F );
+  }
+}
+.btn--link {
+  background-color: transparent;
+  padding: 0;
+}
+.btn--icon {
+  background-color: transparent;
+  padding: 3px;
+  &:hover {
+    //text-shadow: hoff voff blur #000;
+  }
+}
+.btn--toolbar {
+  height: 26px;
+  width: 26px;
+  border-radius: 2px;
+  line-height: 26px;
+  text-align: center;
+  background-color: transparent;
+  &:hover {
+    text-shadow: $icon-shad;
+  }
+  &:active {
+    background-color: #3C3C4C;
+    box-shadow: $icon-shad;
+  }
+}
+.btn--settings {
+  background: linear-gradient(#7397FE , #6185EE);
+  color: $white;
+  font-size: 1.2em;
+  padding: .5em 1em;
+  display: flex;
+  align-items: center;
+  &:after {
+    content: '';
+    display: block;
+    height: 1.4em;
+    width: 1.4em;
+    border-radius: 50%;
+    background-color: currentColor;
+    margin-left: .5em;
+  }
+  &.disable {
+    background: linear-gradient(#515972 , #5D698D );
+    color: #727EA6;
+  }
+}
+.btn--layersbar {
+  height: 70px;
+  width: 70px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: $white;
+  &:after {
+    content: "\e922";
+    font-family: 'icomoon' !important;
+    position: absolute;
+    line-height: 1;
+    right: 1px;
+    bottom: 1px;
+    font-size: 11px;
+  }
+  .icon {
+    text-shadow: $icon-shad;
+    font-size: 2.75em;
+  }
+}
+//
+//.btn--social-login {
+//  @include multi-transition (color, background-color, border-color);
+//  height: $input-height;
+//  border: $default-border;
+//  color: inherit;
+//  text-transform: capitalize;
+//  padding: 4px 0;
+//  margin: 0 0 $input-holder-margin;
+//  display: inline-block;
+//  vertical-align: middle;
+//  width: 100%;
+//  min-width: 180px;
+//  background: transparent;
+//  .fa {
+//    display: inline-block;
+//    vertical-align: middle;
+//    position: relative;
+//    height: 100%;
+//    width: 38px;
+//    border-right: 1px solid rgba(#000, .25);
+//    &:before {
+//      position: absolute;
+//      left: 50%;
+//      top: 50%;
+//      transform: translate(-50%, -50%);
+//    }
+//  }
+//  span {
+//    display: inline-block;
+//    vertical-align: middle;
+//    text-align: center;
+//    white-space: nowrap;
+//    width: calc(100% - 38px);
+//    padding: 0 8px;
+//  }
+//  &:hover {
+//    background: $col-primary;
+//    color: $white;
+//    border-color: $col-primary;
+//  }
+//  &.facebook-bg {
+//    color: $white;
+//  }
+  //.reg-social-inner & {
+  //  width: calc(50% - 5px);
+  //  margin-left: 2.5px;
+  //  margin-right: 2.5px;
+  //  //color: $white;
+  //  //color: $txt-registry;
+  //  color: $orange;
+  //  background-color: #fff;
+  //  border-color: currentColor;
+  //  .fa {
+  //    border-color: currentColor;
+  //  }
+  //  &:hover {
+  //    background: $orange;
+  //    color: $white;
+  //    border-color: $orange;;
+  //  }
+  //}
+//}

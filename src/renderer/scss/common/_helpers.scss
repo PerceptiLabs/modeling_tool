@@ -1,0 +1,224 @@
+/* ---------------------------------------------------------
+  1. Hide/show block
+      When user is login
+      Breakpoints
+  2. Text decoration
+  3. Width
+   ---------------------------------------------------------*/
+
+
+/* ---------------------------------------------------------
+   1. Hide/show block
+   ---------------------------------------------------------*/
+
+
+/*----- Breakpoints -----*/
+  // EXAMPLE
+  //
+  //.medium-hide {
+  //  @include media('>=medium') {
+  //    display: none;
+  //  }
+  //}
+  //
+  //.medium-show {
+  //  @include media('<medium') {
+  //    display: none;
+  //  }
+  //}
+
+@each $name, $size in $breakpoint {
+  .#{$name}-hide {
+    @include media('>=#{$name}') {
+      display: none !important;
+    }
+  }
+
+  .#{$name}-show {
+    @include media('<#{$name}') {
+      display: none !important;
+    }
+  }
+}
+
+
+/*----- Breakpoints foundation Visibility-----*/
+// Basic hiding classes
+.hide {
+  display: none !important;
+}
+
+.invisible {
+  opacity: 0;
+  position: absolute;
+  left: -9999px;
+}
+
+// Responsive visibility classes
+@each $name, $size in $breakpoint {
+  @if $name != small {
+    .hide-for-#{$name} {
+      @include media('>=#{$name}') {
+        display: none !important;
+      }
+    }
+
+    .show-for-#{$name} {
+      @include media('<#{$name}') {
+        display: none !important;
+      }
+    }
+  }
+}
+
+$prevBreakPoint: 'xxlarge';
+@each $name, $size in $breakpoint {
+  @if $name != xxlarge {
+    .hide-for-#{$name}-only {
+      @include media('>=#{$name}', '<#{$prevBreakPoint}') {
+        display: none !important;
+      }
+    }
+
+    .show-for-#{$name}-only {
+      @include media('<#{$name}', '>=#{$prevBreakPoint}') {
+        display: none !important;
+      }
+    }
+    $prevBreakPoint: $name;
+  }
+}
+
+// Only display the element when it's focused
+.show-on-focus {
+  &:active,
+  &:focus {
+    position: static !important;
+    height: auto;
+    width: auto;
+    overflow: visible;
+    clip: auto;
+  }
+}
+
+// Landscape and portrait visibility
+.show-for-landscape,
+.hide-for-portrait {
+  display: block !important;
+
+  @include media('landscape') {
+    display: block !important;
+  }
+
+  @include media('portrait') {
+    display: none !important;
+  }
+}
+
+.hide-for-landscape,
+.show-for-portrait {
+  display: none !important;
+
+  @include media('landscape') {
+    display: none !important;
+  }
+
+  @include media('portrait') {
+    display: block !important;
+  }
+}
+
+
+/* ---------------------------------------------------------
+   2. Text decoration
+   ---------------------------------------------------------*/
+
+//.disable{
+//  color: $disable-txt !important;
+//  cursor: default;
+//}
+
+.text-error {
+  color: $col-error;
+}
+
+.text-primary {
+  color: $col-primary;
+}
+
+.text-success {
+  color: $col-success;
+}
+
+.text-capitalize {
+  text-transform: capitalize;
+}
+
+.bg-primary {
+  background-color: $col-primary;
+}
+
+.ellipsis {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+/* ---------------------------------------------------------
+   3. Background decoration
+   ---------------------------------------------------------*/
+$soc-list: (
+  'facebook': #3b5998,
+  'twitter': #55acee,
+  'linkedin': #007bb5,
+  'google-plus': #dd4b39,
+  'pinterest': #cb2027
+);
+
+@each $name, $color in $soc-list {
+  .#{$name}-bg {
+    background-color: $color;
+    border-color: $color;
+    &:hover {
+      background-color: darken($color, 10%);
+      border-color: darken($color, 10%);
+    }
+  }
+}
+
+.bg-primary {
+  &:hover {
+    background-color: $col-primary-hover;
+  }
+}
+
+/* ---------------------------------------------------------
+   4. Width
+   ---------------------------------------------------------*/
+$Width: 100, 50, 25;
+
+// loop!
+@each $w-grid in $Width {
+  .w-#{$w-grid} {
+    width: $w-grid+'%';
+  }
+}
+
+.w-33 {
+  width: 33.33%;
+}
+
+
+// clearfix
+.clearfix {
+  &:after {
+    content: '';
+    display: block;
+    clear: both;
+  }
+}
+
+.d-flex {
+  display: flex;
+}
+

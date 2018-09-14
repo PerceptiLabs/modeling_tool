@@ -1,0 +1,128 @@
+$sidebar-indent: 10px;
+
+
+html {
+  box-sizing: border-box;
+  font-size: $global-font-size;
+}
+*, *:before, *:after {
+  box-sizing: inherit;
+}
+
+* {max-height: 1000000px;}
+
+body {
+  font-family: $base-font-sans-serif;
+  font-weight: normal;
+  line-height: $line-height-base;
+  color: $base-text-color;
+  background: $base-background-color;
+  min-width: $base-min-width;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  /*Fix for IE11*/
+  display: flex;
+  flex-direction: column;
+  /*End Fix for IE11*/
+}
+
+//.content-indent {
+//  padding-left: 15px;
+//  padding-right: 15px;
+//  @include media('>=medium') {
+//    padding-left: 30px;
+//    padding-right: 30px;
+//  }
+//}
+//
+//.content-wrap {
+//  margin-left: auto;
+//  margin-right: auto;
+//  @include media('>=medium') {
+//    max-width: 1170px;
+//  }
+//  &.content-indent {
+//    @include media('>=medium') {
+//      max-width: 1230px;
+//    }
+//  }
+//  &:empty {
+//    display: none;
+//  }
+//}
+
+
+/* ---------------------------------------------------------
+   1. Global layout
+   ---------------------------------------------------------*/
+//.page {
+//  display: flex;
+//  flex-direction: column;
+//  min-height: 100vh;
+//}
+//.page_header {
+//  flex: 0 0 auto;
+//  width: 100%;
+//}
+//
+//.page_main {
+//  flex: 1 1 auto;
+//  height: 100%; // Fix for IE
+//  @include media('>=large') {
+//    padding-top: $vert-indent;
+//    padding-bottom: $vert-indent;
+//  }
+//}
+//
+//.page_content-wrap {
+//  @include media('>=xlarge') {
+//    display: flex;
+//    align-items: flex-start;
+//  }
+//}
+//
+//.page_content {
+//  flex: 1 1 100%;
+//  padding: $vert-indent 15px;
+//  @include media('>=xlarge') {
+//    border: 1px solid $col-border;
+//    padding: 33px ($vert-indent * 2);
+//  }
+//}
+//
+//.page_sidebar {
+//  @include media('>=xlarge') {
+//    border: 1px solid $col-border;
+//    margin-left: $sidebar-indent;
+//    flex: 0 0 240px;
+//  }
+//  &--left {
+//    @include media('>=xlarge') {
+//      order: -1;
+//      margin-left: 0;
+//      margin-right: $sidebar-indent;
+//    }
+//  }
+//}
+//
+//.page_title {
+//  margin-bottom: 23px;
+//  color: $col-page_title;
+//  .h2 {
+//    text-transform: capitalize;
+//    font-weight: normal;
+//    margin-bottom: 0;
+//    &:not(:last-child) { margin-bottom: .75rem; }
+//  }
+//  .h5 {
+//    font-weight: 300;
+//    font-size: 1rem;
+//    line-height: 1.2;
+//    margin-bottom: 0;
+//  }
+//}
+//
+//.page_footer {
+//  flex: 0 0 auto;
+//  width: 100%;
+//}

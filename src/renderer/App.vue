@@ -10,6 +10,6 @@
   }
 </script>
 
-<style>
-  /* CSS */
+<style lang="sass">
+  @import 'scss/common'
 </style>
