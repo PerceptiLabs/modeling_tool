@@ -1,52 +1,60 @@
 <template lang="pug">
-  aside.page_layersbar
-    ul.layersbar-list
-      li
-        button.btn.btn--layersbar
-          i.icon.icon-data-toggle
-      li
-        button.btn.btn--layersbar
-          i.icon.icon-data
-      li
-        button.btn.btn--layersbar
-          i.icon.icon-data
-      li
-        button.btn.btn--layersbar
-          i.icon.icon-settings
-      li
-        button.btn.btn--layersbar
-          i.icon.icon-network
-      li
-        button.btn.btn--layersbar
-          i.icon.icon-mind
-      li
-        button.btn.btn--layersbar
-          i.icon.icon-calc
-      li
-        button.btn.btn--layersbar
-          i.icon.icon-add
+  transition(name="scroll-left")
+    aside.page_layersbar(v-show="hideLayers")
+      ul.layersbar-list
+        li
+          button.btn.btn--layersbar
+            i.icon.icon-data-toggle
+        li
+          button.btn.btn--layersbar
+            i.icon.icon-data
+        li
+          button.btn.btn--layersbar
+            i.icon.icon-data
+        li
+          button.btn.btn--layersbar
+            i.icon.icon-settings
+        li
+          button.btn.btn--layersbar
+            i.icon.icon-network
+        li
+          button.btn.btn--layersbar
+            i.icon.icon-mind
+        li
+          button.btn.btn--layersbar
+            i.icon.icon-calc
+        li
+          button.btn.btn--layersbar
+            i.icon.icon-add
 
 </template>
 
 <script>
 export default {
-  name: 'TheLayersbar'
+  name: 'TheLayersbar',
+  computed: {
+    hideLayers () {
+      return this.$store.state.globalView.hideLayers
+    }
+  }
 }
 </script>
 
 <style lang="scss" scoped>
+  @import "../scss/base";
   .page_layersbar {
     grid-area: layersbar;
-    padding: 5px;
+    overflow: hidden;
+    max-width: $w-layersbar;
   }
   .layersbar-list {
     padding: 0;
     margin: 0;
     list-style: none;
+    transform: translateY(0);
+    transition: transform $animation-speed $animation-speed;
     > li {
-      + li {
-        margin-top: 10px;
-      }
+      padding: 5px;
       &:nth-child(1n) button {
         background: linear-gradient(#D3DFFE, #A1A9BF  );
       }
@@ -70,4 +78,28 @@ export default {
       }
     }
   }
+
+  //Animations
+  .scroll-left-enter {
+    max-width: 0;
+    .layersbar-list {
+      transform: translateY(-120%);
+    }
+  }
+  .scroll-left-enter-active {
+    transition: max-width $animation-speed 0s;
+  }
+  .scroll-left-leave-active {
+    transition: max-width $animation-speed $animation-speed;
+    .layersbar-list {
+      transition: transform $animation-speed;
+    }
+  }
+  .scroll-left-leave-to {
+    max-width: 0;
+    .layersbar-list {
+      transform: translateY(-120%);
+    }
+  }
+
 </style>

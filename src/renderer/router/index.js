@@ -1,6 +1,6 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import PageApp from '@/pages/app/app.vue'
+import PageQuantum from '@/pages/app/quantum.vue'
 //  import PageLogin from '@/pages/login/login.vue'
 
 Vue.use(Router)
@@ -8,8 +8,8 @@ Vue.use(Router)
 export default new Router({
   mode: 'history',
   routes: [
-    { path: '/', name: 'landing-page', component: require('@/components/LandingPage').default },
-    { path: '/app', name: 'app', component: PageApp },
+    { path: '/quantum', name: 'landing-page', component: require('@/components/LandingPage').default },
+    { path: '/', name: 'quantum', component: PageQuantum },
     //  { path: '/login', name: 'login', component: PageLogin },
     { path: '*', redirect: '/'
     }

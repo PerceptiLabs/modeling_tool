@@ -2,7 +2,7 @@
   <div id="wrapper">
     <img id="logo" src="~@/assets/logo.png" alt="electron-vue">
     <main>
-      <router-link to="/app"><h1>APP</h1></router-link>
+      <router-link to="/quantum"><h1>APP</h1></router-link>
       <div class="left-side">
         <span class="title">
           Welcome to your new project!

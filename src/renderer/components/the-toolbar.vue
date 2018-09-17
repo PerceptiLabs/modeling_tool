@@ -1,7 +1,7 @@
 <template lang="pug">
   aside.page_toolbar
-    .toggle-wrap
-      button.btn.btn--toolbar(type="button")
+    .toggle-wrap(:class="{'hide-layers': !hideLayers}")
+      button.btn.btn--toolbar(type="button" @click="toggleLayers()")
         i.icon.icon-hide-top
 
     ul.toolbar_list
@@ -43,7 +43,17 @@
 
 <script>
   export default {
-    name: 'TheToolbar'
+    name: 'TheToolbar',
+    computed: {
+      hideLayers () {
+        return this.$store.state.globalView.hideLayers
+      }
+    },
+    methods: {
+      toggleLayers () {
+        this.$store.commit('globalView/SET_hideLayers', !this.hideLayers)
+      }
+    }
   }
 </script>
 
@@ -62,6 +72,15 @@
   .toggle-wrap {
     width: $w-layersbar;
     text-align: center;
+    .btn--toolbar {
+      @include multi-transition(transform);
+      transform: rotate(0);
+    }
+    &.hide-layers {
+      .btn--toolbar {
+        transform: rotateX(-180deg);
+      }
+    }
   }
   .toolbar_list {
     padding: 0;
