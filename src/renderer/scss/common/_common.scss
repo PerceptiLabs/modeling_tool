@@ -11,3 +11,7 @@ img {
     outline: none;
   }
 }
+
+::selection {
+  background-color: transparent;
+}

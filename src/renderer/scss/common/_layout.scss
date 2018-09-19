@@ -20,10 +20,9 @@ body {
   min-width: $base-min-width;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  /*Fix for IE11*/
   display: flex;
   flex-direction: column;
-  /*End Fix for IE11*/
+  overflow: hidden;
 }
 
 //.content-indent {

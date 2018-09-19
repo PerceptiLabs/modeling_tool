@@ -138,24 +138,20 @@ $prevBreakPoint: 'xxlarge';
 //  cursor: default;
 //}
 
-.text-error {
-  color: $col-error;
-}
-
-.text-primary {
-  color: $col-primary;
-}
-
-.text-success {
-  color: $col-success;
-}
+//.text-error {
+//  color: $col-error;
+//}
+//
+//.text-primary {
+//  color: $col-primary;
+//}
+//
+//.text-success {
+//  color: $col-success;
+//}
 
 .text-capitalize {
   text-transform: capitalize;
-}
-
-.bg-primary {
-  background-color: $col-primary;
 }
 
 .ellipsis {
@@ -183,12 +179,6 @@ $soc-list: (
       background-color: darken($color, 10%);
       border-color: darken($color, 10%);
     }
-  }
-}
-
-.bg-primary {
-  &:hover {
-    background-color: $col-primary-hover;
   }
 }
 

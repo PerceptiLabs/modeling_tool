@@ -1,6 +1,6 @@
 <template lang="pug">
   .workspace
-    .workspace_content
+    .workspace_content(v-bar)
       .content(:style="'transform: scale(' + styleScale + ')'")
         p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
         p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
@@ -29,9 +29,11 @@
     .workspace_meta
       .workspace_scale
         button.btn.btn--icon(type="button" @click="decScale()") -
+
         .scale-input
-          input(type="text" v-model="scale")
+          input(type="text" v-model.number="scale")
           span %
+
         button.btn.btn--icon(type="button" @click="incScale()") +
 
         base-checkbox Map
@@ -55,10 +57,16 @@ export default {
   },
   methods: {
     decScale () {
-      this.scale = this.scale - 10
+      if (this.scale < 10) {
+        this.scale = 5
+      }
+      else this.scale = this.scale - 10
     },
     incScale () {
-      this.scale = this.scale + 10
+      if (this.scale > 90) {
+        this.scale = 100
+      }
+      else this.scale = this.scale + 10
     }
   }
 }
@@ -72,13 +80,13 @@ export default {
     flex: 1 1 100%;
   }
   .workspace_content {
-    background-color: #23252A;
+    background-color: $bg-workspace;
     flex: 1 1 100%;
-    overflow: hidden;
+    overflow: scroll;
   }
   .workspace_meta {
     flex: 0 0 auto;
-    background-color: #3C3C4C;
+    background-color: $bg-workspace-2;
     display: flex;
     justify-content: space-between;
   }

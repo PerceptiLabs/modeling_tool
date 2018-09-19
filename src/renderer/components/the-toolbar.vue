@@ -61,7 +61,7 @@
   @import "../scss/base";
   .page_toolbar {
     grid-area: toolbar;
-    background-color: #4D556A;
+    background-color: $bg-toolbar;
     display: flex;
     align-items: center;
     padding: 5px 5px 5px 0;
@@ -88,7 +88,7 @@
     list-style: none;
     display: flex;
     align-items: center;
-    border-left: 1px solid #333343;
+    border-left: 1px solid $toolbar-border;
   }
   .settings-wrap {
     margin-left: auto;

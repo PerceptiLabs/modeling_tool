@@ -2,7 +2,7 @@ $folder: 'icomoon';
 
 @font-face {
   font-family: 'icomoon';
-  src:  url('#{$font-path}/#{$folder}/icomoon.woff?9n2h4p') format('woff');
+  src:  url('#{$font-path}/#{$folder}/icomoon.woff?bq2jck') format('woff');
   font-weight: normal;
   font-style: normal;
 }
@@ -186,4 +186,7 @@ $folder: 'icomoon';
 }
 .icon-user:before {
   content: "\e936";
+}
+.icon-check-mark:before {
+  content: "\e937";
 }

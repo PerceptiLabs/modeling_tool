@@ -22,6 +22,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  @import "../../scss/base";
   .custom-checkbox {
     padding: 0;
     display: inline-flex;
@@ -52,19 +53,18 @@ export default {
       width: 1em;
       height: 1em;
       flex: 0 0 1em;
-      background-color: #23252A;
+      background-color: $bg-workspace;
       cursor: pointer;
       position: relative;
       &:after {
-        content: "\e931";
+        content: "\e937";
         font-family: "icomoon";
         position: absolute;
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
         opacity: 0;
-        font-size: .75em;
-        //color: $white;
+        font-size: .5em;
         line-height: 1;
       }
       + .checkbox-text {

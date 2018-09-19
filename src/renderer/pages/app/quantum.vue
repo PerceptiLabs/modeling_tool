@@ -40,12 +40,13 @@
             "layersbar workspace sidebar";
     grid-template-rows: auto 1fr;
     grid-template-columns: auto 1fr auto;
-    min-height: 100vh;
+    height: 100vh;
     margin: 0;
   }
   .page_workspace {
     grid-area: workspace;
     display: flex;
     flex-direction: column;
+    overflow: hidden;
   }
 </style>

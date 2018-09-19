@@ -40,7 +40,7 @@ export default {
     list-style: none;
   }
   .workspace_tab {
-    background-color: #23252A;
+    background-color: $bg-workspace;
     border-radius: 10px 10px 0 0;
     min-width: 167px;
   }
@@ -57,7 +57,7 @@ export default {
       display: flex;
       align-items: center;
       justify-content: center;
-      background-color: #4D556A;
+      background-color: $bg-toolbar;
       border-radius: 0;
     }
     .icon {
