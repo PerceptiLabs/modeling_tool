@@ -2,30 +2,10 @@
   .workspace
     .workspace_content(v-bar)
       .content(:style="'transform: scale(' + styleScale + ')'")
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
-        p Lorem ipsum dolor sit amet, consectetur adipisicing elit. Aut eos, id libero nesciunt quaerat quas quidem. Aspernatur fugiat illo impedit, iure maxime nostrum nulla placeat quae recusandae repellendus saepe suscipit?
+        div
+          component(v-for="(c, i) in components" :key="i" :is="c")
+
+
     .workspace_meta
       .workspace_scale
         button.btn.btn--icon(type="button" @click="decScale()") -
@@ -43,10 +23,20 @@
 </template>
 
 <script>
+import VueDrag from 'vue-drag-resize'
+import IoInput from '@/components/network-elements/io-input.vue'
+import IoInputs from '@/components/network-elements/layer-io.vue'
+
 export default {
   name: 'WorkspaceContent',
+  components: {
+    VueDrag,
+    IoInput,
+    IoInputs
+  },
   data () {
     return {
+      components: [IoInput, IoInputs, IoInput, IoInputs],
       scale: 100
     }
   },
@@ -67,6 +57,12 @@ export default {
         this.scale = 100
       }
       else this.scale = this.scale + 10
+    },
+    resize(newRect) {
+      console.log(newRect)
+    },
+    onActivated(e) {
+      console.log(e)
     }
   }
 }

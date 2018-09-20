@@ -1,5 +1,5 @@
 <template lang="pug">
-  div.page
+  div.page(ref="layersbar")
     main.page_workspace
       workspace-tabset
       workspace-content
@@ -25,11 +25,76 @@
       TheSidebar,
       WorkspaceContent,
       WorkspaceTabset
-    }
+    },
+    mounted() {
+      var dragged;
+      //console.log(this.$refs.layersbar)
+      this.$refs.layersbar.addEventListener("dragstart", function( event ) {
+        // store a ref. on the dragged elem
+        console.log(event)
+        dragged = event.target;
+        //make it half transparent
+        event.target.style.opacity = .5;
+      }, false);
+
+      this.$refs.layersbar.addEventListener("dragend", function( event ) {
+        // reset the transparency
+        console.log('dragend')
+        console.log(event)
+        event.target.style.opacity = "";
+      }, false);
+
+      /* events fired on the drop targets */
+      this.$refs.layersbar.addEventListener("dragover", function( event ) {
+        // prevent default to allow drop
+        console.log('dragover')
+        event.preventDefault();
+      }, false);
+
+      this.$refs.layersbar.addEventListener("dragenter", function( event ) {
+        // highlight potential drop target when the draggable element enters it
+        console.log('dragenter')
+        //if ( event.target.className == "vb-content" ) {
+        event.target.style.background = "purple";
+        //}
+
+      }, false);
+
+      this.$refs.layersbar.addEventListener("dragleave", function( event ) {
+        // reset background of potential drop target when the draggable element leaves it
+        console.log('dragend')
+        //if ( event.target.className == "vb-content" ) {
+        event.target.style.background = "";
+        //}
+
+      }, false);
+
+      this.$refs.layersbar.addEventListener("drop", function( event ) {
+        // prevent default action (open as link for some elements)
+        console.log('drop')
+        console.log(event)
+        event.preventDefault();
+        // move dragged elem to the selected drop target
+        //if ( event.target.className == "vb-content" ) {
+        event.target.style.background = "";
+        var styles = `position: absolute; top: ${(event.offsetY - 35)}px; left: ${(event.offsetX - 35)}px;`
+        const copy = dragged.cloneNode(true);
+        copy.style.cssText = styles;
+        event.target.appendChild(copy);
+        //}
+
+      }, false);
+
+
+
+
+
+
+    },
   }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
   @import "../../scss/base";
   //@import "app";
   .page {

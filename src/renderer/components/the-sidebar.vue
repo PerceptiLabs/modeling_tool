@@ -56,7 +56,7 @@ export default {
   @import "../scss/base";
   .page_sidebar {
     grid-area: sidebar;
-    max-width: 300px;
+    max-width: $w-sidebar;
     overflow: hidden;
     display: flex;
     flex-direction: column;

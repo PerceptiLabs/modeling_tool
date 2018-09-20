@@ -1,37 +1,42 @@
 <template lang="pug">
   transition(name="scroll-left")
-    aside.page_layersbar(v-show="hideLayers")
+    aside.page_layersbar(v-show="hideLayers" )
       ul.layersbar-list
         li
-          button.btn.btn--layersbar
-            i.icon.icon-data-toggle
+          layer-io(draggable="true")
         li
-          button.btn.btn--layersbar
+          button.btn.btn--layersbar(draggable="true")
             i.icon.icon-data
         li
-          button.btn.btn--layersbar
+          button.btn.btn--layersbar(draggable="true")
             i.icon.icon-data
         li
-          button.btn.btn--layersbar
+          button.btn.btn--layersbar(draggable="true")
             i.icon.icon-settings
         li
-          button.btn.btn--layersbar
+          button.btn.btn--layersbar(draggable="true")
             i.icon.icon-network
         li
-          button.btn.btn--layersbar
+          button.btn.btn--layersbar(draggable="true")
             i.icon.icon-mind
         li
-          button.btn.btn--layersbar
+          button.btn.btn--layersbar(draggable="true")
             i.icon.icon-calc
         li
-          button.btn.btn--layersbar
+          button.btn.btn--layersbar(draggable="true")
             i.icon.icon-add
 
 </template>
 
 <script>
+  import LayerIo from '@/components/network-elements/layer-io.vue'
+
 export default {
   name: 'TheLayersbar',
+  components: {
+    LayerIo
+  },
+
   computed: {
     hideLayers () {
       return this.$store.state.globalView.hideLayers
@@ -40,11 +45,10 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
   @import "../scss/base";
   .page_layersbar {
     grid-area: layersbar;
-    overflow: hidden;
     max-width: $w-layersbar;
   }
   .layersbar-list {
@@ -53,10 +57,11 @@ export default {
     list-style: none;
     transform: translateY(0);
     transition: transform $animation-speed $animation-speed;
+    padding-bottom: 30px;
     > li {
       padding: 5px;
       &:nth-child(1n) button {
-        background: linear-gradient(#D3DFFE, #A1A9BF  );
+
       }
       &:nth-child(2n) button {
         background: linear-gradient(#4C63A6, #384E8E   );

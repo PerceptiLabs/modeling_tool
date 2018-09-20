@@ -1,0 +1,29 @@
+$indent: 2.5px;
+
+.layer {
+  position: relative;
+
+}
+.layer_parent {
+  position: relative;
+  z-index: 1;
+}
+.layer_child-list {
+  @include multi-transition (transform, opacity, visibility);
+  position: absolute;
+  top: -$indent;
+  left: -$indent;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  opacity: 0;
+  visibility: hidden;
+  &.open {
+    transform: translateX(100%);
+    opacity: 1;
+    visibility: visible;
+  }
+  > li {
+    padding: $indent;
+  }
+}

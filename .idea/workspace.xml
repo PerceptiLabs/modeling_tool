@@ -2,37 +2,26 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="08fcf0ab-12c9-4f1c-81ac-68adb437183c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/blocks/Code.pug" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/blocks/Import.pug" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/blocks/Project.pug" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/blocks/Save.pug" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-comments.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/scss/plagins/_vuebar.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.eslintignore" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/plagins/_sl-vue-tree.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.eslintrc.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/io-input.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-data.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-io.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-learn-classic.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-learn-deep.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-math.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-process.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-train.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/icomoon/icomoon.woff" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/assets/fonts/icomoon/icomoon.woff" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/base/checkbox.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/base/checkbox.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-comments.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-comments.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/workspace-tabset.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/workspace/workspace-tabset.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/main.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/pages/app/quantum.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/app/quantum.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/scss/_common.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/_common.scss" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_button.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_button.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_common.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_common.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_forms.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_forms.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_helpers.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_helpers.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_layout.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_layout.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_typography.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_typography.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -47,13 +36,14 @@
     <session id="-913825304">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="5" />
+          <entry key="project.closed" value="6" />
           <entry key="project.open.time.0" value="2" />
           <entry key="project.open.time.11" value="1" />
           <entry key="project.open.time.55" value="1" />
           <entry key="project.open.time.6" value="1" />
           <entry key="project.open.time.8" value="4" />
-          <entry key="project.opened" value="9" />
+          <entry key="project.open.time.9" value="1" />
+          <entry key="project.opened" value="10" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
@@ -61,32 +51,32 @@
           <entry key="css" value="3" />
           <entry key="ejs" value="3" />
           <entry key="gitignore" value="1" />
-          <entry key="html" value="1" />
-          <entry key="js" value="54" />
+          <entry key="html" value="3" />
+          <entry key="js" value="56" />
           <entry key="json" value="3" />
           <entry key="md" value="2" />
           <entry key="png" value="1" />
           <entry key="pug" value="6" />
-          <entry key="scss" value="71" />
+          <entry key="scss" value="77" />
           <entry key="svg" value="13" />
           <entry key="ts" value="1" />
-          <entry key="vue" value="50" />
+          <entry key="vue" value="65" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
           <entry key="CSS" value="3" />
           <entry key="EJS" value="3" />
-          <entry key="HTML" value="1" />
+          <entry key="HTML" value="3" />
           <entry key="Image" value="1" />
           <entry key="JSON" value="3" />
           <entry key="Jade" value="6" />
-          <entry key="JavaScript" value="54" />
+          <entry key="JavaScript" value="56" />
           <entry key="PLAIN_TEXT" value="3" />
-          <entry key="SCSS" value="71" />
+          <entry key="SCSS" value="77" />
           <entry key="SVG" value="13" />
           <entry key="TypeScript" value="1" />
-          <entry key="Vue.js" value="50" />
+          <entry key="Vue.js" value="65" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts">
@@ -101,9 +91,9 @@
           <entry key="gitignore" value="3" />
           <entry key="js" value="348" />
           <entry key="pug" value="45" />
-          <entry key="scss" value="1515" />
+          <entry key="scss" value="1666" />
           <entry key="svg" value="6" />
-          <entry key="vue" value="6052" />
+          <entry key="vue" value="7185" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
@@ -112,62 +102,67 @@
           <entry key="Jade" value="45" />
           <entry key="JavaScript" value="348" />
           <entry key="PLAIN_TEXT" value="3" />
-          <entry key="SCSS" value="1515" />
+          <entry key="SCSS" value="1666" />
           <entry key="SVG" value="6" />
-          <entry key="Vue.js" value="6052" />
+          <entry key="Vue.js" value="7185" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="396">
-              <caret line="38" column="25" selection-start-line="38" selection-start-column="8" selection-end-line="38" selection-end-column="25" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/the-sidebar.vue">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="817">
-              <caret line="68" column="18" selection-start-line="68" selection-start-column="18" selection-end-line="68" selection-end-column="18" />
+            <state relative-caret-position="790">
+              <caret line="38" column="19" selection-start-line="38" selection-start-column="19" selection-end-line="38" selection-end-column="19" />
               <folding>
-                <element signature="e#721#774#0" expanded="true" />
+                <element signature="e#537#574#0" expanded="true" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/scss/base/_variables.scss">
+        <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="901">
-              <caret line="65" selection-start-line="65" selection-end-line="65" selection-end-column="10" />
+            <state relative-caret-position="594">
+              <caret line="27" column="3" selection-start-line="27" selection-start-column="3" selection-end-line="27" selection-end-column="3" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/the-layersbar.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="663">
-              <caret line="185" column="5" lean-forward="true" selection-start-line="179" selection-start-column="4" selection-end-line="185" selection-end-column="5" />
-              <folding>
-                <element signature="e#792#824#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="110">
+              <caret line="5" column="36" selection-start-line="5" selection-start-column="36" selection-end-line="5" selection-end-column="36" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-comments.vue">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/io-input.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="220">
-              <caret line="30" column="40" lean-forward="true" selection-start-line="30" selection-start-column="40" selection-end-line="30" selection-end-column="40" />
+            <state relative-caret-position="440">
+              <caret line="20" column="27" lean-forward="true" selection-start-line="20" selection-start-column="27" selection-end-line="20" selection-end-column="27" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/_quantum.scss">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/quantum.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="553">
+              <caret line="79" column="83" selection-start-line="79" selection-start-column="83" selection-end-line="79" selection-end-column="83" />
+              <folding>
+                <element signature="e#180#233#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -179,17 +174,13 @@
       <list>
         <option value="JavaScript File" />
         <option value="Pug File" />
-        <option value="Vue Single File Component" />
         <option value="SCSS File" />
+        <option value="Vue Single File Component" />
       </list>
     </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>'</find>
-      <find>url('</find>
-      <find>ellipse at top left,</find>
-      <find>span</find>
       <find>rectangle</find>
       <find>build</find>
       <find>.env.BUILD_TARGET</find>
@@ -215,6 +206,11 @@
       <find>.sl-vue-tree-node-item</find>
       <find>sl-vue-tree-node</find>
       <find>4D556A</find>
+      <find>this.$refs.layersbar</find>
+      <find>dragging</find>
+      <find>bodyMove</find>
+      <find>stickDrag</find>
+      <find>stickDown</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -223,16 +219,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/renderer/pages/app/app.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/pages/app/app.js" />
-        <option value="$PROJECT_DIR$/src/renderer/pages/login/login.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/the/the-toolbar.vue" />
-        <option value="$PROJECT_DIR$/.electron-vue/webpack.main.config.js" />
-        <option value="$PROJECT_DIR$/src/renderer/scss/base.scss" />
-        <option value="$PROJECT_DIR$/.electron-vue/webpack.web.config.js" />
-        <option value="$PROJECT_DIR$/.electron-vue/webpack.renderer.config.js" />
-        <option value="$PROJECT_DIR$/src/renderer/scss/fonts/_robotocondensed.scss" />
-        <option value="$PROJECT_DIR$/.electron-vue/dev-client.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/LandingPage/SystemInformation.vue" />
         <option value="$PROJECT_DIR$/../input/svg/shevron.svg" />
         <option value="$PROJECT_DIR$/../input/svg/empty.svg" />
@@ -245,17 +231,13 @@
         <option value="$PROJECT_DIR$/src/renderer/store/modules/global.js" />
         <option value="$PROJECT_DIR$/src/renderer/store/index.js" />
         <option value="$PROJECT_DIR$/src/renderer/router/index.js" />
-        <option value="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/the-workspace.vue" />
         <option value="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" />
         <option value="$PROJECT_DIR$/src/renderer/scss/common/_layout.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/pages/app/quantum.vue" />
         <option value="$PROJECT_DIR$/src/renderer/main.js" />
         <option value="$PROJECT_DIR$/src/renderer/scss/plagins/_vuebar.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/workspace/workspace-tabset.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/Project.pug" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/Code.pug" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/Import.pug" />
@@ -264,16 +246,30 @@
         <option value="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/blocks/Project.pug" />
         <option value="$PROJECT_DIR$/src/renderer/components/base/checkbox.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/scss/_common.scss" />
         <option value="$PROJECT_DIR$/src/renderer/scss/common/_helpers.scss" />
         <option value="$PROJECT_DIR$/src/renderer/scss/common/_typography.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" />
         <option value="$PROJECT_DIR$/src/renderer/scss/common/_forms.scss" />
         <option value="$PROJECT_DIR$/src/index.ejs" />
         <option value="$PROJECT_DIR$/src/renderer/scss/plagins/_sl-vue-tree.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" />
         <option value="$PROJECT_DIR$/src/renderer/scss/common/_common.scss" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-comments.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" />
+        <option value="D:/email/2018-09-10/email-en/dist/index.html" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-data.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-process.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-learn.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-train.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-math.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-classic-learn.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/scss/_common.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-io.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/io-input.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/pages/app/quantum.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue" />
       </list>
     </option>
   </component>
@@ -294,10 +290,9 @@
     </packageJsonPaths>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1056" />
+    <option name="x" value="758" />
+    <option name="width" value="1171" />
+    <option name="height" value="1041" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -344,24 +339,7 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="renderer" type="462c0819:PsiDirectoryNode" />
               <item name="components" type="462c0819:PsiDirectoryNode" />
-              <item name="base" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="components" type="462c0819:PsiDirectoryNode" />
-              <item name="sidebar" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="components" type="462c0819:PsiDirectoryNode" />
-              <item name="sidebar" type="462c0819:PsiDirectoryNode" />
-              <item name="blocks" type="462c0819:PsiDirectoryNode" />
+              <item name="network-elements" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
@@ -400,6 +378,14 @@
               <item name="renderer" type="462c0819:PsiDirectoryNode" />
               <item name="scss" type="462c0819:PsiDirectoryNode" />
               <item name="common" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
+              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="renderer" type="462c0819:PsiDirectoryNode" />
+              <item name="scss" type="462c0819:PsiDirectoryNode" />
+              <item name="components" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
@@ -449,23 +435,23 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
-    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
+    <property name="settings.editor.selected.configurable" value="fileTemplates" />
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2018.1.1\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\Quantum\quantumnet\src\renderer\assets\fonts\icomoon" />
-      <recent name="D:\Quantum\quantumnet\src\renderer\components\sidebar" />
-      <recent name="D:\Quantum\quantumnet\src\renderer\components\workspace" />
-      <recent name="D:\Quantum\quantumnet\src\renderer\store\modules" />
-      <recent name="D:\Quantum\quantumnet\src\renderer\scss\fonts" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Quantum\quantumnet\src\renderer\components\sidebar\blocks" />
       <recent name="D:\Quantum\quantumnet\src\renderer\components\workspace" />
       <recent name="D:\Quantum\quantumnet\src\renderer\assets\fonts\icomoon" />
       <recent name="D:\Quantum\quantumnet\src\renderer\assets\fonts\roboto" />
       <recent name="D:\Quantum\quantumnet\src\renderer\assets\fonts" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Quantum\quantumnet\src\renderer\assets\fonts\icomoon" />
+      <recent name="D:\Quantum\quantumnet\src\renderer\components\sidebar" />
+      <recent name="D:\Quantum\quantumnet\src\renderer\components\workspace" />
+      <recent name="D:\Quantum\quantumnet\src\renderer\store\modules" />
+      <recent name="D:\Quantum\quantumnet\src\renderer\scss\fonts" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -498,12 +484,13 @@
       <workItem from="1537260799047" duration="430000" />
       <workItem from="1537286545978" duration="1739000" />
       <workItem from="1537339959118" duration="9137000" />
-      <workItem from="1537353203550" duration="20640000" />
+      <workItem from="1537353203550" duration="20985000" />
+      <workItem from="1537424604124" duration="20939000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="89787000" />
+    <option name="totallyTimeSpent" value="111071000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -564,97 +551,12 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/.electron-vue/dev-client.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="880">
-          <caret line="40" lean-forward="true" selection-start-line="40" selection-end-line="40" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.electron-vue/build.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="44">
-          <caret line="2" column="7" selection-start-line="2" selection-end-line="2" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.electron-vue/dev-runner.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="286">
-          <caret line="13" selection-start-line="13" selection-end-line="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/README.md">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="14" column="13" selection-start-line="14" selection-start-column="8" selection-end-line="14" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/index.dev.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="19" column="6" selection-start-line="19" selection-start-column="6" selection-end-line="19" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="528">
-          <caret line="24" column="15" selection-start-line="24" selection-start-column="15" selection-end-line="24" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/Counter.js" />
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/global.js" />
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/LandingPage.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-132">
-          <caret line="4" column="31" selection-start-line="4" selection-start-column="31" selection-end-line="4" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/LandingPage/SystemInformation.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="690">
-          <caret line="48" lean-forward="true" selection-start-line="48" selection-end-line="48" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="9" column="9" lean-forward="true" selection-start-line="9" selection-start-column="9" selection-end-line="9" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/index.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/router/index.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="10" column="21" selection-start-line="10" selection-start-column="21" selection-end-line="10" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/scss/base/_mixins.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="492">
-          <caret line="49" column="23" lean-forward="true" selection-start-line="49" selection-start-column="7" selection-end-line="49" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/globalView.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="220">
           <caret line="10" column="4" selection-start-line="10" selection-start-column="4" selection-end-line="10" selection-end-column="4" />
         </state>
       </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/_quantum.scss">
-      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/scss/plagins/_vuebar.scss">
       <provider selected="true" editor-type-id="text-editor">
@@ -715,13 +617,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-layersbar.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1430">
-          <caret line="65" column="7" selection-start-line="65" selection-start-column="7" selection-end-line="65" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/quantum.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -750,9 +645,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="198">
           <caret line="9" selection-start-line="9" selection-end-line="9" />
-          <folding>
-            <element signature="e#0#21#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -760,20 +652,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="421">
           <caret line="59" column="35" selection-start-line="59" selection-start-column="35" selection-end-line="59" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/quantum.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="308">
-          <caret line="14" column="59" lean-forward="true" selection-start-line="14" selection-start-column="59" selection-end-line="14" selection-end-column="59" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/scss/_common.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="12" column="23" selection-start-line="12" selection-start-column="23" selection-end-line="12" selection-end-column="23" />
         </state>
       </provider>
     </entry>
@@ -819,13 +697,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/scss/base/_variables.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="901">
-          <caret line="65" selection-start-line="65" selection-end-line="65" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/scss/plagins/_sl-vue-tree.scss">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-44">
@@ -837,27 +708,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1914">
           <caret line="87" column="22" selection-start-line="87" selection-start-column="22" selection-end-line="87" selection-end-column="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/scss/common/_button.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="22">
-          <caret line="1" column="54" lean-forward="true" selection-start-line="1" selection-start-column="2" selection-end-line="1" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
-          <caret line="38" column="25" selection-start-line="38" selection-start-column="8" selection-end-line="38" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/scss/common/_common.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="15" column="32" selection-start-line="15" selection-start-column="32" selection-end-line="15" selection-end-column="32" />
         </state>
       </provider>
     </entry>
@@ -875,30 +725,168 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-sidebar.vue">
+    <entry file="file://D:/email/2018-09-10/email-en/dist/index.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="817">
-          <caret line="68" column="18" selection-start-line="68" selection-start-column="18" selection-end-line="68" selection-end-column="18" />
-          <folding>
-            <element signature="e#721#774#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="663">
-          <caret line="185" column="5" lean-forward="true" selection-start-line="179" selection-start-column="4" selection-end-line="185" selection-end-column="5" />
-          <folding>
-            <element signature="e#792#824#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="462">
+          <caret line="311" column="57" selection-start-line="311" selection-start-column="57" selection-end-line="311" selection-end-column="57" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-comments.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="30" column="40" lean-forward="true" selection-start-line="30" selection-start-column="40" selection-end-line="30" selection-end-column="40" />
+        <state relative-caret-position="1826">
+          <caret line="83" column="20" selection-start-line="83" selection-start-column="20" selection-end-line="83" selection-end-column="20" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/base/_variables.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="751">
+          <caret line="83" selection-start-line="83" selection-end-line="83" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/layer-data.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/layer-process.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/layer-learn-deep.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/layer-train.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/layer-math.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/layer-learn-classic.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" selection-start-line="2" selection-end-line="2" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/_common.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="352">
+          <caret line="16" column="28" selection-start-line="16" selection-start-column="28" selection-end-line="16" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="491">
+          <caret line="155" column="28" selection-start-line="155" selection-start-column="28" selection-end-line="155" selection-end-column="28" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/common/_common.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="15" column="32" selection-start-line="15" selection-start-column="32" selection-end-line="15" selection-end-column="32" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/common/_button.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="22">
+          <caret line="1" column="54" lean-forward="true" selection-start-line="1" selection-start-column="2" selection-end-line="1" selection-end-column="54" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-sidebar.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="349">
+          <caret line="26" column="69" lean-forward="true" selection-start-line="26" selection-start-column="69" selection-end-line="26" selection-end-column="69" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/layer-io.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="594">
+          <caret line="27" column="34" lean-forward="true" selection-start-line="27" selection-start-column="22" selection-end-line="27" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/io-input.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="440">
+          <caret line="20" column="27" lean-forward="true" selection-start-line="20" selection-start-column="27" selection-end-line="20" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/vue-drag-resize/src/components/vue-drag-resize.html">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/vue-drag-resize/src/components/vue-drag-resize.vue">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/vue-drag-resize/src/components/vue-drag-resize.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-834">
+          <caret line="335" column="17" selection-start-line="335" selection-start-column="8" selection-end-line="335" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/vue-drag-resize/dist/index.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="594">
+          <caret line="27" column="3" selection-start-line="27" selection-start-column="3" selection-end-line="27" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-layersbar.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="110">
+          <caret line="5" column="36" selection-start-line="5" selection-start-column="36" selection-end-line="5" selection-end-column="36" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/quantum.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="553">
+          <caret line="79" column="83" selection-start-line="79" selection-start-column="83" selection-end-line="79" selection-end-column="83" />
+          <folding>
+            <element signature="e#180#233#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/_quantum.scss">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="790">
+          <caret line="38" column="19" selection-start-line="38" selection-start-column="19" selection-end-line="38" selection-end-column="19" />
+          <folding>
+            <element signature="e#537#574#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

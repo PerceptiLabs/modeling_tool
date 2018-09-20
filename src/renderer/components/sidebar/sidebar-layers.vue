@@ -75,17 +75,14 @@
 </template>
 
 <script>
-import VJstree from 'vue-jstree'
 import SlVueTree  from 'sl-vue-tree'
 
 export default {
   name: 'SidebarLayers',
   components: {
-    //VJstree,
     SlVueTree
   },
   mounted() {
-    // expose instance to the global namespace
     window.slVueTree = this.$refs.slVueTree;
   },
   data() {
@@ -157,7 +154,6 @@ export default {
 
 <style lang="scss">
   @import "../../scss/base";
-  @import "../../scss/plagins/sl-vue-tree";
   .sidebar_layers {
     display: flex;
     flex-direction: column;
