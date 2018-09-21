@@ -11,7 +11,10 @@
         v-for="(layer, i) in child"
         :key="i"
       )
-        button.btn.btn--layersbar(type="button")
+        button.btn.btn--layersbar.js-layersbar-draggable(type="button" draggable="true"
+          :data-component="layer.nameComponent"
+          :data-layer="layer.nameLayer"
+          )
           i.icon(:class="layer.iconClass")
 
 </template>
@@ -24,11 +27,13 @@ export default {
       openChild: false,
       child: [
         {
-          name: 'Input',
+          nameLayer: 'Input',
+          nameComponent: 'io-input',
           iconClass: 'icon-data-in'
         },
         {
-          name: 'Output',
+          nameLayer: 'Output',
+          nameComponent: 'io-output',
           iconClass: 'icon-data-out'
         }
       ]

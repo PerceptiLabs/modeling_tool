@@ -1,0 +1,14 @@
+
+ul.workspace_tab-list
+  li.workspace_tab(
+  v-for="(tab, i) in workspace"
+  :key="i"
+  :class="{'active': currentNetwork == i}"
+  )
+    button.btn.btn--icon.tab_close(type="button"
+    @click="setTabNetwork(i)") x
+    span.tab_name {{ tab.networkName }}
+
+.toggle-sidebar(:class="{'hide-sidebar': !hideSidebar}")
+  button.btn.btn--icon(type="button" @click="toggleSidebar()")
+    i.icon.icon-hide-right

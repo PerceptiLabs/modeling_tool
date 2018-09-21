@@ -2,26 +2,22 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="08fcf0ab-12c9-4f1c-81ac-68adb437183c" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/io-input.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-data.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-io.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-learn-classic.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-learn-deep.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-math.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-process.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-train.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.css" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.js" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/the-workspace/_workspace-tabset.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/the-workspace/the-workspace.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/the-workspace/workspace-tabset.pug" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/scss/plagins/_vue-drag.scss" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-comments.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-comments.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-io.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/layer-io.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/workspace-tabset.vue" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/pages/app/quantum.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/app/quantum.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/scss/_common.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/_common.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" afterDir="false" />
     </list>
     <ignored path="$PROJECT_DIR$/.tmp/" />
     <ignored path="$PROJECT_DIR$/temp/" />
@@ -36,47 +32,49 @@
     <session id="-913825304">
       <usages-collector id="statistics.lifecycle.project">
         <counts>
-          <entry key="project.closed" value="6" />
+          <entry key="project.closed" value="7" />
           <entry key="project.open.time.0" value="2" />
           <entry key="project.open.time.11" value="1" />
+          <entry key="project.open.time.14" value="1" />
           <entry key="project.open.time.55" value="1" />
           <entry key="project.open.time.6" value="1" />
+          <entry key="project.open.time.7" value="1" />
           <entry key="project.open.time.8" value="4" />
           <entry key="project.open.time.9" value="1" />
-          <entry key="project.opened" value="10" />
+          <entry key="project.opened" value="12" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.extensions.open">
         <counts>
-          <entry key="css" value="3" />
+          <entry key="css" value="4" />
           <entry key="ejs" value="3" />
           <entry key="gitignore" value="1" />
-          <entry key="html" value="3" />
-          <entry key="js" value="56" />
+          <entry key="html" value="4" />
+          <entry key="js" value="61" />
           <entry key="json" value="3" />
           <entry key="md" value="2" />
           <entry key="png" value="1" />
-          <entry key="pug" value="6" />
-          <entry key="scss" value="77" />
+          <entry key="pug" value="8" />
+          <entry key="scss" value="80" />
           <entry key="svg" value="13" />
           <entry key="ts" value="1" />
-          <entry key="vue" value="65" />
+          <entry key="vue" value="74" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.open">
         <counts>
-          <entry key="CSS" value="3" />
+          <entry key="CSS" value="4" />
           <entry key="EJS" value="3" />
-          <entry key="HTML" value="3" />
+          <entry key="HTML" value="4" />
           <entry key="Image" value="1" />
           <entry key="JSON" value="3" />
-          <entry key="Jade" value="6" />
-          <entry key="JavaScript" value="56" />
+          <entry key="Jade" value="8" />
+          <entry key="JavaScript" value="61" />
           <entry key="PLAIN_TEXT" value="3" />
-          <entry key="SCSS" value="77" />
+          <entry key="SCSS" value="80" />
           <entry key="SVG" value="13" />
           <entry key="TypeScript" value="1" />
-          <entry key="Vue.js" value="65" />
+          <entry key="Vue.js" value="74" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.js.language.service.starts">
@@ -89,80 +87,59 @@
         <counts>
           <entry key="ejs" value="18" />
           <entry key="gitignore" value="3" />
-          <entry key="js" value="348" />
-          <entry key="pug" value="45" />
-          <entry key="scss" value="1666" />
+          <entry key="html" value="1" />
+          <entry key="js" value="915" />
+          <entry key="pug" value="47" />
+          <entry key="scss" value="1681" />
           <entry key="svg" value="6" />
-          <entry key="vue" value="7185" />
+          <entry key="vue" value="8590" />
         </counts>
       </usages-collector>
       <usages-collector id="statistics.file.types.edit">
         <counts>
           <entry key="EJS" value="18" />
-          <entry key="Jade" value="45" />
-          <entry key="JavaScript" value="348" />
+          <entry key="HTML" value="1" />
+          <entry key="Jade" value="47" />
+          <entry key="JavaScript" value="915" />
           <entry key="PLAIN_TEXT" value="3" />
-          <entry key="SCSS" value="1666" />
+          <entry key="SCSS" value="1681" />
           <entry key="SVG" value="6" />
-          <entry key="Vue.js" value="7185" />
+          <entry key="Vue.js" value="8590" />
         </counts>
       </usages-collector>
     </session>
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/the-workspace/the-workspace.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="506">
+              <caret line="23" column="44" selection-start-line="23" selection-start-column="31" selection-end-line="23" selection-end-column="44" />
+              <folding>
+                <element signature="e#1273#1337#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="790">
-              <caret line="38" column="19" selection-start-line="38" selection-start-column="19" selection-end-line="38" selection-end-column="19" />
+            <state relative-caret-position="-14972">
+              <caret line="68" column="13" lean-forward="true" selection-start-line="55" selection-start-column="11" selection-end-line="68" selection-end-column="13" />
               <folding>
-                <element signature="e#537#574#0" expanded="true" />
+                <element signature="e#5592#6172#0" />
               </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="594">
-              <caret line="27" column="3" selection-start-line="27" selection-start-column="3" selection-end-line="27" selection-end-column="3" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/the-layersbar.vue">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="110">
-              <caret line="5" column="36" selection-start-line="5" selection-start-column="36" selection-end-line="5" selection-end-column="36" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/io-input.vue">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="440">
-              <caret line="20" column="27" lean-forward="true" selection-start-line="20" selection-start-column="27" selection-end-line="20" selection-end-column="27" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/_quantum.scss">
-          <provider selected="true" editor-type-id="text-editor" />
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/quantum.vue">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="553">
-              <caret line="79" column="83" selection-start-line="79" selection-start-column="83" selection-end-line="79" selection-end-column="83" />
-              <folding>
-                <element signature="e#180#233#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="286">
+              <caret line="13" column="14" lean-forward="true" selection-start-line="6" selection-start-column="8" selection-end-line="13" selection-end-column="14" />
             </state>
           </provider>
         </entry>
@@ -173,21 +150,14 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="JavaScript File" />
+        <option value="Vue Single File Component" />
         <option value="Pug File" />
         <option value="SCSS File" />
-        <option value="Vue Single File Component" />
       </list>
     </option>
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>rectangle</find>
-      <find>build</find>
-      <find>.env.BUILD_TARGET</find>
-      <find>process</find>
-      <find>DECREMENT_MAIN_COUNTER</find>
-      <find>v-</find>
-      <find>scroll-left</find>
       <find>fade-enter</find>
       <find>fade</find>
       <find>0px</find>
@@ -211,6 +181,13 @@
       <find>bodyMove</find>
       <find>stickDrag</find>
       <find>stickDown</find>
+      <find>hideLayers</find>
+      <find>workspace_content-field</find>
+      <find>event.target.draggable.includes</find>
+      <find>preventActiveBehavior</find>
+      <find>this.isActive</find>
+      <find>active</find>
+      <find>isActive</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -219,16 +196,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/renderer/components/LandingPage/SystemInformation.vue" />
-        <option value="$PROJECT_DIR$/../input/svg/shevron.svg" />
-        <option value="$PROJECT_DIR$/../input/svg/empty.svg" />
-        <option value="$PROJECT_DIR$/src/renderer/scss/common/_button.scss" />
-        <option value="$PROJECT_DIR$/src/main/index.dev.js" />
-        <option value="$PROJECT_DIR$/src/main/index.js" />
-        <option value="$PROJECT_DIR$/src/renderer/App.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/pages/app/app.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/LandingPage.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/store/modules/global.js" />
         <option value="$PROJECT_DIR$/src/renderer/store/index.js" />
         <option value="$PROJECT_DIR$/src/renderer/router/index.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/the-workspace.vue" />
@@ -236,7 +203,6 @@
         <option value="$PROJECT_DIR$/src/renderer/scss/common/_layout.scss" />
         <option value="$PROJECT_DIR$/src/renderer/main.js" />
         <option value="$PROJECT_DIR$/src/renderer/scss/plagins/_vuebar.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/components/workspace/workspace-tabset.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/Project.pug" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/Code.pug" />
@@ -262,14 +228,25 @@
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-train.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-math.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-classic-learn.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/scss/_common.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-io.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/io-input.vue" />
         <option value="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/pages/app/quantum.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/scss/plagins/_vue-drag.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/scss/_common.scss" />
         <option value="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/store/modules/workspace.js" />
+        <option value="$PROJECT_DIR$/src/renderer/components/workspace/workspace-tabset.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/workspace/workspace-tabset.pug" />
         <option value="$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/the-workspace/_workspace-tabset.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/components/the-workspace/workspace-tabset.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/pages/app/quantum.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/layer-io.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/the-workspace/the-workspace.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.html" />
+        <option value="$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.js" />
       </list>
     </option>
   </component>
@@ -290,9 +267,10 @@
     </packageJsonPaths>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="758" />
-    <option name="width" value="1171" />
-    <option name="height" value="1041" />
+    <option name="x" value="-53" />
+    <option name="y" value="-8" />
+    <option name="width" value="1936" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
@@ -302,6 +280,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -339,6 +318,23 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="renderer" type="462c0819:PsiDirectoryNode" />
               <item name="components" type="462c0819:PsiDirectoryNode" />
+              <item name="base" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
+              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="renderer" type="462c0819:PsiDirectoryNode" />
+              <item name="components" type="462c0819:PsiDirectoryNode" />
+              <item name="base" type="462c0819:PsiDirectoryNode" />
+              <item name="drag" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
+              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="renderer" type="462c0819:PsiDirectoryNode" />
+              <item name="components" type="462c0819:PsiDirectoryNode" />
               <item name="network-elements" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
@@ -347,7 +343,15 @@
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="renderer" type="462c0819:PsiDirectoryNode" />
               <item name="components" type="462c0819:PsiDirectoryNode" />
-              <item name="workspace" type="462c0819:PsiDirectoryNode" />
+              <item name="sidebar" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
+              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
+              <item name="src" type="462c0819:PsiDirectoryNode" />
+              <item name="renderer" type="462c0819:PsiDirectoryNode" />
+              <item name="components" type="462c0819:PsiDirectoryNode" />
+              <item name="the-workspace" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
@@ -363,37 +367,6 @@
               <item name="renderer" type="462c0819:PsiDirectoryNode" />
               <item name="pages" type="462c0819:PsiDirectoryNode" />
               <item name="app" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="scss" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="scss" type="462c0819:PsiDirectoryNode" />
-              <item name="common" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="scss" type="462c0819:PsiDirectoryNode" />
-              <item name="components" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="scss" type="462c0819:PsiDirectoryNode" />
-              <item name="plagins" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
@@ -419,7 +392,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -439,19 +411,19 @@
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2018.1.1\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\Quantum\quantumnet\src\renderer\components\base" />
+      <recent name="D:\Quantum\quantumnet\src\renderer\store\modules" />
+      <recent name="D:\Quantum\quantumnet\src\renderer\assets\fonts\icomoon" />
+      <recent name="D:\Quantum\quantumnet\src\renderer\components\sidebar" />
+      <recent name="D:\Quantum\quantumnet\src\renderer\components\workspace" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="D:\Quantum\quantumnet\src\renderer\components\sidebar\blocks" />
       <recent name="D:\Quantum\quantumnet\src\renderer\components\workspace" />
       <recent name="D:\Quantum\quantumnet\src\renderer\assets\fonts\icomoon" />
       <recent name="D:\Quantum\quantumnet\src\renderer\assets\fonts\roboto" />
       <recent name="D:\Quantum\quantumnet\src\renderer\assets\fonts" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="D:\Quantum\quantumnet\src\renderer\assets\fonts\icomoon" />
-      <recent name="D:\Quantum\quantumnet\src\renderer\components\sidebar" />
-      <recent name="D:\Quantum\quantumnet\src\renderer\components\workspace" />
-      <recent name="D:\Quantum\quantumnet\src\renderer\store\modules" />
-      <recent name="D:\Quantum\quantumnet\src\renderer\scss\fonts" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -485,12 +457,14 @@
       <workItem from="1537286545978" duration="1739000" />
       <workItem from="1537339959118" duration="9137000" />
       <workItem from="1537353203550" duration="20985000" />
-      <workItem from="1537424604124" duration="20939000" />
+      <workItem from="1537424604124" duration="21201000" />
+      <workItem from="1537519037262" duration="11786000" />
+      <workItem from="1537534417685" duration="14316000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="111071000" />
+    <option name="totallyTimeSpent" value="137435000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -508,7 +482,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="8" weight="0.4178771" />
+      <window_info anchor="bottom" id="Version Control" order="8" weight="0.5184358" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" weight="0.32960895" />
       <window_info anchor="bottom" id="Terminal" order="10" weight="0.8111732" />
       <window_info anchor="bottom" id="TypeScript" order="11" />
@@ -520,6 +494,16 @@
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
   </component>
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
@@ -551,65 +535,6 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/globalView.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="10" column="4" selection-start-line="10" selection-start-column="4" selection-end-line="10" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/scss/plagins/_vuebar.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="9" column="44" lean-forward="true" selection-start-line="9" selection-start-column="44" selection-end-line="9" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/scss/common/_popups.scss">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="jar://$APPLICATION_HOME_DIR$/plugins/sass/lib/sass.jar!/org/jetbrains/plugins/sass/stdlib/sass_functions.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="321">
-          <caret line="213" column="10" selection-start-line="213" selection-start-column="10" selection-end-line="213" selection-end-column="10" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/blocks/Code.pug">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="7" selection-start-column="7" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/blocks/Save.pug">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="7" selection-start-column="7" selection-end-column="7" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/blocks/Import.pug">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <caret column="6" selection-start-column="6" selection-end-column="6" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/.gitignore">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="12" lean-forward="true" selection-start-line="12" selection-end-line="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="751">
-          <caret line="191" column="1" selection-start-line="191" selection-start-column="1" selection-end-line="191" selection-end-column="1" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/../input/icomoon/style.css">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="663">
@@ -645,13 +570,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="198">
           <caret line="9" selection-start-line="9" selection-end-line="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/workspace-tabset.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="421">
-          <caret line="59" column="35" selection-start-line="59" selection-start-column="35" selection-end-line="59" selection-end-column="35" />
         </state>
       </provider>
     </entry>
@@ -788,20 +706,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/scss/_common.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="352">
-          <caret line="16" column="28" selection-start-line="16" selection-start-column="28" selection-end-line="16" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="491">
-          <caret line="155" column="28" selection-start-line="155" selection-start-column="28" selection-end-line="155" selection-end-column="28" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/scss/common/_common.scss">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="330">
@@ -823,24 +727,7 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/layer-io.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="594">
-          <caret line="27" column="34" lean-forward="true" selection-start-line="27" selection-start-column="22" selection-end-line="27" selection-end-column="34" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/io-input.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="440">
-          <caret line="20" column="27" lean-forward="true" selection-start-line="20" selection-start-column="27" selection-end-line="20" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/vue-drag-resize/src/components/vue-drag-resize.html">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/node_modules/vue-drag-resize/src/components/vue-drag-resize.vue">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/node_modules/vue-drag-resize/src/components/vue-drag-resize.js">
@@ -853,6 +740,44 @@
     <entry file="file://$PROJECT_DIR$/node_modules/vue-drag-resize/dist/index.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/_quantum.scss">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-352">
+          <caret line="104" column="27" lean-forward="true" selection-start-line="104" selection-start-column="27" selection-end-line="104" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/_common.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="17" column="25" selection-start-line="17" selection-start-column="25" selection-end-line="17" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-layersbar.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="110">
+          <caret line="5" column="18" selection-start-line="5" selection-start-column="18" selection-end-line="5" selection-end-column="18" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/globalView.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="220">
+          <caret line="10" column="4" lean-forward="true" selection-start-line="10" selection-start-column="4" selection-end-line="10" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-workspace/workspace-tabset.pug">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="286">
+          <caret line="13" column="26" selection-start-line="1" selection-end-line="13" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="594">
@@ -860,32 +785,90 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-layersbar.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-workspace/workspace-tabset.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="110">
-          <caret line="5" column="36" selection-start-line="5" selection-start-column="36" selection-end-line="5" selection-end-column="36" />
+        <state relative-caret-position="418">
+          <caret line="19" selection-start-line="19" selection-end-line="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/plagins/_vue-drag.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" column="25" selection-start-line="2" selection-start-column="25" selection-end-line="2" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-workspace/_workspace-tabset.scss">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1430">
+          <caret line="65" column="64" selection-start-line="65" selection-start-column="64" selection-end-line="65" selection-end-column="64" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/layer-io.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1210">
+          <caret line="55" column="3" selection-start-line="55" selection-start-column="3" selection-end-line="55" selection-end-column="3" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/quantum.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="553">
-          <caret line="79" column="83" selection-start-line="79" selection-start-column="83" selection-end-line="79" selection-end-column="83" />
+        <state relative-caret-position="550">
+          <caret line="71" column="16" selection-start-line="71" selection-start-column="16" selection-end-line="71" selection-end-column="16" />
           <folding>
-            <element signature="e#180#233#0" expanded="true" />
+            <element signature="e#140#193#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/_quantum.scss">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.html">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/workspace.vue">
+    <entry file="file://$PROJECT_DIR$/node_modules/vue-drag-resize/src/components/vue-drag-resize.vue">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/io-input.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="790">
-          <caret line="38" column="19" selection-start-line="38" selection-start-column="19" selection-end-line="38" selection-end-column="19" />
+        <state relative-caret-position="440">
+          <caret line="20" column="27" selection-start-line="20" selection-start-column="27" selection-end-line="20" selection-end-column="27" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="3" column="1" lean-forward="true" selection-start-line="3" selection-start-column="1" selection-end-line="3" selection-end-column="1" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="286">
+          <caret line="13" column="14" lean-forward="true" selection-start-line="6" selection-start-column="8" selection-end-line="13" selection-end-column="14" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-workspace/the-workspace.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="506">
+          <caret line="23" column="44" selection-start-line="23" selection-start-column="31" selection-end-line="23" selection-end-column="44" />
           <folding>
-            <element signature="e#537#574#0" expanded="true" />
+            <element signature="e#1273#1337#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/base/drag/vue-drag-resize.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-14972">
+          <caret line="68" column="13" lean-forward="true" selection-start-line="55" selection-start-column="11" selection-end-line="68" selection-end-column="13" />
+          <folding>
+            <element signature="e#5592#6172#0" />
           </folding>
         </state>
       </provider>

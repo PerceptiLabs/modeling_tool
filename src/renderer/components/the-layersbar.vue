@@ -3,7 +3,7 @@
     aside.page_layersbar(v-show="hideLayers" )
       ul.layersbar-list
         li
-          layer-io(draggable="true")
+          layer-io
         li
           button.btn.btn--layersbar(draggable="true")
             i.icon.icon-data

@@ -23,6 +23,7 @@
               //i.fa.fa-file(v-if='node.isLeaf')
               i.icon.icon-folder(v-if='!node.isLeaf')
             | {{ node.title }}
+
           template(
             slot="toggle"
             slot-scope="{ node }"
@@ -32,12 +33,14 @@
               :class="{'open': !node.isExpanded}"
               )
               i.icon.icon-shevron
+
           template(
             slot='sidebar'
             slot-scope='{ node }'
             )
             button.sl_visible-icon.btn.btn--icon( type="button"
-              :class="{'invisible-icon': node.data && node.data.visible === false}"
+              @click='event => toggleLocking(event, node)'
+              :class="{'invisible-icon': node.data && node.data.lock === false}"
               )
               i.icon.icon-lock
             button.sl_visible-icon.btn.btn--icon( type="button"
@@ -88,25 +91,58 @@ export default {
   data() {
     return {
       nodes: [
-        {title: 'Item1', isLeaf: true},
-        {title: 'Item2', isLeaf: true, data: { visible: false }},
-        {title: 'Folder1'},
         {
-          title: 'Folder2', isExpanded: true, children: [
-            {title: 'Item3', isLeaf: true},
-            {title: 'Item4', isLeaf: true},
+          title: 'Folder2',
+          isExpanded: true,
+          isDragging: false,
+          data: {
+            visible: false,
+            lock: false
+          },
+          children: [
             {
-              title: 'Folder3', children: [
-                {title: 'Item5', isLeaf: true}
+              title: 'Item3',
+              isLeaf: true,
+              data: {
+                visible: false,
+                lock: false
+              },
+              component: {
+                id: 133,
+                name: 'io-input',
+                top: 30,
+                left: 100
+              }
+            },
+            {
+              title: 'Item4',
+              isLeaf: true
+            },
+            {
+              title: 'Folder3',
+              children: [
+                {
+                  title: 'Item5',
+                  isLeaf: true
+                }
               ]
             }
           ]
         },
-        {title: 'Folder5', isExpanded: false},
-        {title: 'Item6', isLeaf: true},
-        {title: 'Item7', isLeaf: true, data: { visible: false }},
         {
-          title: 'Folder6', children: [
+          title: 'Item6',
+          isLeaf: true
+        },
+        {
+          title: 'Item7',
+          isLeaf: true,
+          data: {
+            visible: false
+          }
+        },
+        {
+          title: 'Folder6',
+          children: [
             {
               title: 'Folder7', children: [
                 {title: 'Item8', isLeaf: true},
@@ -124,16 +160,21 @@ export default {
       event.stopPropagation();
       const visible = !node.data || node.data.visible !== false;
       slVueTree.updateNode(node.path, {data: { visible: !visible}});
-      this.lastEvent = `Node ${node.title} is ${ visible ? 'visible' : 'invisible'} now`;
+    },
+    toggleLocking: function (event, node) {
+      const slVueTree = this.$refs.slVueTree;
+      event.stopPropagation();
+      const lock = !node.data || node.data.lock !== false;
+      slVueTree.updateNode(node.path, {data: { lock: !lock}});
     },
     nodeSelected(nodes, event) {
-      this.lastEvent = `Select nodes: ${nodes.map(node => node.title).join(', ')}`;
+      //this.lastEvent = `Select nodes: ${nodes.map(node => node.title).join(', ')}`;
     },
     nodeToggled(node, event) {
-      this.lastEvent = `Node ${node.title} is ${ node.isExpanded ? 'expanded' : 'collapsed'}`;
+      //this.lastEvent = `Node ${node.title} is ${ node.isExpanded ? 'expanded' : 'collapsed'}`;
     },
     nodeDropped(nodes, position, event) {
-      this.lastEvent = `Nodes: ${nodes.map(node => node.title).join(', ')} are dropped ${position.placement} ${position.node.title}`;
+      //this.lastEvent = `Nodes: ${nodes.map(node => node.title).join(', ')} are dropped ${position.placement} ${position.node.title}`;
     },
     showContextMenu(node, event) {
       event.preventDefault();
