@@ -8,7 +8,6 @@ Vue.use(Router)
 export default new Router({
   mode: 'history',
   routes: [
-    { path: '/quantum', name: 'landing-page', component: require('@/components/LandingPage').default },
     { path: '/', name: 'quantum', component: PageQuantum },
     //  { path: '/login', name: 'login', component: PageLogin },
     { path: '*', redirect: '/'

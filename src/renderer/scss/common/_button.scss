@@ -72,15 +72,6 @@
   align-items: center;
   justify-content: center;
   color: $white;
-  &:after {
-    content: "\e922";
-    font-family: 'icomoon' !important;
-    position: absolute;
-    line-height: 1;
-    right: 1px;
-    bottom: 1px;
-    font-size: 11px;
-  }
   .icon {
     text-shadow: $icon-shad;
     font-size: 2.75em;

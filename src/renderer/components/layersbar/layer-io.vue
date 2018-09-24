@@ -48,10 +48,10 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .layer_parent {
-    background: linear-gradient(#8394C5 , #66708B);
-  }
-  .layer_child-list .btn {
-    background: linear-gradient(#D3DFFE, #A1A9BF);
-  }
+  /*.layer_parent {*/
+    /*background: ;*/
+  /*}*/
+  /*.layer_child-list .btn {*/
+    /*background: linear-gradient(#D3DFFE, #A1A9BF);*/
+  /*}*/
 </style>

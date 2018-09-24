@@ -1,29 +1,82 @@
-$indent: 2.5px;
+$indent: 5px;
 
 .layer {
   position: relative;
-
+  padding: $indent;
 }
 .layer_parent {
   position: relative;
   z-index: 1;
+  &:after {
+    content: "\e922";
+    font-family: 'icomoon' !important;
+    position: absolute;
+    line-height: 1;
+    right: 1px;
+    bottom: 1px;
+    font-size: 11px;
+  }
 }
 .layer_child-list {
   @include multi-transition (transform, opacity, visibility);
   position: absolute;
-  top: -$indent;
+  top: 0;
   left: -$indent;
-  padding: 0;
+  padding: $indent;
   margin: 0;
   list-style: none;
   opacity: 0;
   visibility: hidden;
-  &.open {
+  .active & {
     transform: translateX(100%);
     opacity: 1;
     visibility: visible;
   }
-  > li {
-    padding: $indent;
+  > li + li {
+    padding-top: $indent;
+  }
+}
+
+$layers-sidebar: (
+        'io': linear-gradient(#D3DFFE, #A1A9BF),
+        'data': linear-gradient(#7397FE, #6185EE ),
+        'process': linear-gradient(#FECF73, #EEB661),
+        'learn-deep': linear-gradient(#FE7373, #EE6161),
+        'train': linear-gradient(#73FEBB, #61E6EE),
+        'math': linear-gradient(#7389FE, #6167EE),
+        'learn-class': linear-gradient(#E273FE, #B061EE),
+        'add': #4A5367
+);
+
+@each $name, $color in $layers-sidebar {
+  .net-element-#{$name} {
+    @include multi-transition(opacity);
+    background: $color;
+  }
+}
+
+$layers-sidebar-active: (
+        'io': linear-gradient(#8394C5, #66708B),
+        'data': linear-gradient(#4C63A6, #384E8E),
+        'process': linear-gradient(#C29F5B, #A98246),
+        'learn-deep': linear-gradient(#CA5A5A, #9D3C3C),
+        'train': linear-gradient(#58C28F, #44A1A7),
+        'math': linear-gradient(#5866B1, #474BB4),
+        'learn-class': linear-gradient(#AF58C5, #76449D),
+        'add': #4A5367
+);
+
+@each $name, $color in $layers-sidebar-active {
+  .net-element-#{$name} {
+    &:hover,
+    .active > & {
+      background: $color;
+    }
+  }
+}
+
+.net-element-add {
+  &:after {
+    display: none;
   }
 }

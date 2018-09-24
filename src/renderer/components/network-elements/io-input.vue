@@ -21,6 +21,9 @@ export default {
       settingsIsOpen: false
     }
   },
+  props: {
+    data: Object
+  },
   methods: {
     openPopup() {
         this.popupIsOpen = true
@@ -33,8 +36,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .net-element {
-  }
+  /*.net-element {*/
+  /*}*/
   .net-element_popup,
   .net-element_settings {
     position: absolute;

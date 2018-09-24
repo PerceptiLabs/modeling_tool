@@ -12,7 +12,7 @@
   import TheToolbar from '@/components/the-toolbar.vue'
   import TheLayersbar from '@/components/the-layersbar.vue'
   import TheSidebar from '@/components/the-sidebar.vue'
-  import TheWorkspace from '@/components/the-workspace/the-workspace.vue'
+  import TheWorkspace from '@/components/workspace/the-workspace.vue'
 
   export default {
     name: 'pageQuantum',
