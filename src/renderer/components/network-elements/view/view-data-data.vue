@@ -1,15 +1,15 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-io(:draggable="draggable"
-  data-component="IoInput"
-  data-layer="Input"
+  .btn.btn--layersbar.net-element-data(:draggable="draggable"
+  data-component="DataData"
+  data-layer="Data"
   )
-    i.icon.icon-data-in
+    i.icon.icon-data
 
 </template>
 
 <script>
 export default {
-  name: 'ViewIoOutput',
+  name: 'ViewDataData',
   props: {
     draggable: {
       type: Boolean,

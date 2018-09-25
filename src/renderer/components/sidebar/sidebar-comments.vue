@@ -88,6 +88,7 @@ export default {
   .sidebar_comments {
     display: flex;
     flex-direction: column;
+    flex: 1;
 
   }
   .comments_head {

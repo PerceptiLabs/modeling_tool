@@ -1,0 +1,31 @@
+//ul.context-menu
+//  li
+//    button.context-menu_btn(type="button")
+//      span.context-menu_btn-text Some text
+//      span I
+
+.context-menu {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+  border-radius: $bdrs;
+  background-color: $bg-toolbar;
+  box-shadow: $box-shad;
+}
+.context-menu_btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: transparent;
+  padding: .5em 1em;
+  &:hover {
+    background: linear-gradient(#7397FE, #6185EE);
+    box-shadow: $box-shad;
+  }
+}
+.context-menu_btn-text {
+  margin-right: 50px;
+  white-space: nowrap;
+}

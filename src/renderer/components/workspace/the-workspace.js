@@ -1,13 +1,14 @@
-//import VueDrag from 'vue-drag-resize'
 import IoInput from '@/components/network-elements/io-input.vue'
-//import BaseNetElement from '@/components/network-elements/base-net-element/base-net-element.vue'
-import DragR from '@/components/base/drag/vue-drag-resize.vue'
+import IoOutput from '@/components/network-elements/io-output.vue'
+//import DataData from '@/components/network-elements/io-output.vue'
+//import IoOutput from '@/components/network-elements/io-output.vue'
 
 export default {
   name: 'WorkspaceContent',
   components: {
-    DragR,
+    //DragR,
     IoInput,
+    IoOutput
     //BaseNetElement
   },
   data () {

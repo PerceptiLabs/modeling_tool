@@ -1,50 +1,34 @@
 <template lang="pug">
-  .net-element
-    button.btn.btn--layersbar.layer_parent(type="button"
-      @dblclick="openPopup"
-      @contextmenu="openSettings"
-    )
-      i.icon.icon-data-in
+  base-net-el(
+    layerClass="net-element-io"
+    iconClass="icon-data-in"
+    :dataEl="data"
+  )
+    view-el
+    template(slot="context")
+      context-menu
 
-    .net-element_popup(v-if="popupIsOpen")
-      h1 popup info
-    .net-element_settings(v-if="settingsIsOpen")
-      h1 popup settings
 </template>
 
 <script>
+import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
+import ContextMenu  from '@/components/network-elements/net-context-menu/net-context-menu.vue';
+import ViewEl       from '@/components/network-elements/view/view-io-input.vue';
+import netElement   from '@/core/mixins/net-element.js';
+
 export default {
   name: 'IoInput',
-  data() {
-    return {
-      popupIsOpen: false,
-      settingsIsOpen: false
-    }
+  components: {
+    BaseNetEl,
+    ContextMenu,
+    ViewEl
   },
-  props: {
-    data: Object
-  },
+  mixins: [netElement],
   methods: {
-    openPopup() {
-        this.popupIsOpen = true
-    },
-    openSettings() {
-      this.settingsIsOpen = true
+    focusel() {
+      console.log('focus')
     }
   }
 }
 </script>
 
-<style lang="scss" scoped>
-  /*.net-element {*/
-  /*}*/
-  .net-element_popup,
-  .net-element_settings {
-    position: absolute;
-    left: 100%;
-    top: 0;
-  }
-  .net-element_settings {
-
-  }
-</style>

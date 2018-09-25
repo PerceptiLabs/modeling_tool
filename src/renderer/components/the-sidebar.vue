@@ -88,9 +88,10 @@ export default {
     flex: 1 1 100%;
     display: flex;
     flex-direction: column;
+    width: $w-sidebar;;
     > * {
       width: 100%;
-      flex: 1 1 auto;
+      //flex: 1 1 auto;
     }
   }
   //Animations

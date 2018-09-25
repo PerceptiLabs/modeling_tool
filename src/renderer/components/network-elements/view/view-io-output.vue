@@ -1,5 +1,5 @@
 <template lang="pug">
-  button.btn.btn--layersbar.net-element-io(type="button" :draggable="draggable"
+  .btn.btn--layersbar.net-element-io(:draggable="draggable"
   data-component="IoOutput"
   data-layer="Output"
   )

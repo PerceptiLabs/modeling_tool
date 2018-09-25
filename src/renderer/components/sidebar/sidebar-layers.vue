@@ -198,6 +198,7 @@ export default {
   .sidebar_layers {
     display: flex;
     flex-direction: column;
+    flex: 0 0 50vh;
 
   }
   .sidebar-content {

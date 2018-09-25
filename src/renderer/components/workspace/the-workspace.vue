@@ -11,22 +11,11 @@
             v-if="currentNetwork == i"
             :style="'transform: scale(' + styleScale + ')'"
             )
-            //base-net-element(
-              v-for="(c, i) in net.network"
-              :key="i"
-              :id="c.layerId"
-              :isResizable="false"
-              :isDraggable="c.meta.isDraggable"
-              :x="c.meta.left"
-              :y="c.meta.top"
-              @dragstop="resize($event, i)"
-              @clicked="onActivated")
-              component(:is="c.componentName" :data='c')
-
-            //component(
-              v-for="(c, i) in network"
-              //:key="i"
-              //:is="c.componentName"
+            component(
+              v-for="(el, index) in net.network"
+              :key="index"
+              :is="el.componentName"
+              :data="{el, index}"
               )
 
       .workspace_meta
