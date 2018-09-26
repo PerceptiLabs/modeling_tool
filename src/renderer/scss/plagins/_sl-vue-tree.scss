@@ -18,7 +18,7 @@
 .sl-vue-tree-root > .sl-vue-tree-nodes-list {
   //overflow: hidden;
   position: relative;
-  padding-bottom: 4px;
+  //padding-bottom: 4px;
 }
 
 .sl-vue-tree-selected > .sl-vue-tree-node-item {
@@ -31,10 +31,10 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-
-  padding-left: 2em;
-  padding-right: 20px;
-  line-height: 28px;
+  height: $h-sidebar-layers-item;
+  padding-left: calc(#{$h-sidebar-layers-indent} + 2em);
+  padding-right: $h-sidebar-layers-indent;
+  //line-height: 28px;
   border: 1px solid transparent;
   border-bottom: 1px solid $bg-toolbar;
   &:hover,
@@ -44,18 +44,24 @@
   &.sl-vue-tree-cursor-inside {
     border: 1px solid;
   }
+  .icon {
+    display: block;
+  }
+}
+
+.sl-vue-tree-title {
+  display: flex;
+  align-items: center;
 }
 
 .sl-vue-tree-gap {
-  width: 25px;
+  width: 1rem;
   min-height: 1px;
 
 }
 
 .sl-vue-tree-toggle {
-  display: inline-block;
-  text-align: left;
-  width: 20px;
+  font-size: 1.2em;
 }
 
 .sl-vue-tree-sidebar {
@@ -71,12 +77,11 @@
 
 .sl-vue-tree-drag-info {
   position: absolute;
-  background-color: rgba(0,0,0,0.5);
+  background-color: rgba(0, 0, 0, 0.5);
   opacity: 0.5;
   margin-left: 20px;
   padding: 5px 10px;
 }
-
 
 .sl-vue-tree.sl-vue-tree-root {
   flex-grow: 1;
@@ -86,29 +91,44 @@
 }
 
 .item-icon {
-  display: inline-block;
-  text-align: left;
-  width: 20px;
+  font-size: 1.4286em;
+  margin-left: .6em;
+  margin-right: .4em;
 }
 
 .sl_folder-icon {
   .icon {
     //@include multi-transition (transform);
-    display: inline-block;
+    //display: inline-block;
   }
-  &.open .icon{
+  &.open .icon {
     transform: rotate(-90deg);
   }
 }
+
 .sl_visible-icon {
-  //.icon {
-  //  @include multi-transition (opacity);
-  //}
+  padding: 0 .9rem;
+
   &.invisible-icon {
-    opacity: .2;
+    color: $disable-txt;
   }
 }
+
+.sl_visible-icon--lock {
+  font-size: 1.2857em;
+}
+.sl_visible-icon--visiblity {
+  font-size: 1.7143em;
+}
+
 .sl_icon-sidebar-left {
+  padding: .5em;
   position: absolute;
-  left: 0;
+  left: $h-sidebar-layers-indent;
+  top: 50%;
+  transform: translate(-.5em, -50%);
+  font-size: 1.2em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }

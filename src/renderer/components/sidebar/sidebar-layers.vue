@@ -1,8 +1,8 @@
 <template lang="pug">
   section.sidebar_layers
     .layers_title.sidebar-content.d-flex
-      i.icon.icon-burger
-      h4 Layers
+      i.icon.icon-burger.middle-text
+      h3 Layers
     //
     .layers_body(v-bar)
       div
@@ -20,7 +20,6 @@
             slot-scope="{ node }"
             )
             span.item-icon
-              //i.fa.fa-file(v-if='node.isLeaf')
               i.icon.icon-folder(v-if='!node.isLeaf')
             | {{ node.title }}
 
@@ -38,12 +37,12 @@
             slot='sidebar'
             slot-scope='{ node }'
             )
-            button.sl_visible-icon.btn.btn--icon( type="button"
+            button.btn.btn--icon.sl_visible-icon.sl_visible-icon--lock( type="button"
               @click='event => toggleLocking(event, node)'
               :class="{'invisible-icon': node.data && node.data.lock === false}"
               )
               i.icon.icon-lock
-            button.sl_visible-icon.btn.btn--icon( type="button"
+            button.btn.btn--icon.sl_visible-icon.sl_visible-icon--visiblity( type="button"
               @click='event => toggleVisibility(event, node)'
               :class="{'invisible-icon': node.data && node.data.visible === false}"
               )
@@ -195,22 +194,23 @@ export default {
 
 <style lang="scss">
   @import "../../scss/base";
+
   .sidebar_layers {
     display: flex;
     flex-direction: column;
-    flex: 0 0 50vh;
-
+    //flex: 0 0 59vh;
+    height: 59vh;
   }
   .sidebar-content {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: $h-sidebar-layers-indent;
+    padding-right: $h-sidebar-layers-indent;
   }
   .layers_title {
     flex: 0 0 auto;
     align-items: center;
-    height: 33px;
+    height: $h-sidebar-layers-item;
     border-bottom: 1px solid $bg-toolbar;
-    h4 {
+    h3 {
       margin: 0 0 0 .5em;
     }
   }
@@ -224,19 +224,31 @@ export default {
     }
   }
   .layers_meta {
-    padding-top: .5em;
-    padding-bottom: .5em;
+    padding-top: .6429em;
+    padding-bottom: 2em;
     flex: 0 0 auto;
     border-top: 1px solid $bg-toolbar;
     border-bottom: 1px solid $bg-toolbar;
   }
   .layers_actions {
     text-align: right;
+    padding-bottom: 1rem;
+    .btn {
+      font-size: 1.2857em;
+      + .btn {
+        margin-left: 1.7857rem;
+      }
+    }
   }
   .layers_search {
     align-items: center;
+    .icon-filter {
+      font-size: 1.5714rem;
+      padding: .25rem;
+      margin-right: 1rem;
+    }
     .input-wrap_icon {
-      margin-left: .5em;
+      //margin-left: .5em;
     }
     input {
       box-shadow: $icon-shad;

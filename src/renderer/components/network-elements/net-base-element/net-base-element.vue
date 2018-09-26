@@ -28,10 +28,11 @@ import baseNetFunctional  from '@/core/mixins/base-net-functional.js';
 export default {
   name: 'NetBaseElement',
   mixins: [baseNetDrag, baseNetFunctional],
+  inject: ['dataEl'],
   props: {
     layerClass: {type: String, default: ''},
     iconClass: {type: String, default: ''},
-    dataEl: {type: Object}
+    //dataEl: {type: Object}
   },
   data() {
       return {

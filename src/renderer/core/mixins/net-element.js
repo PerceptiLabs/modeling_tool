@@ -1,7 +1,10 @@
 const netElement = {
-  props: {
-    data: Object
-  },
+  // props: {
+  //   dataElement: Object
+  // },
+  // provide: {
+  //   dataEl: this.dataElement
+  // },
 }
 
 export default netElement

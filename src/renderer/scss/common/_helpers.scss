@@ -133,10 +133,13 @@ $prevBreakPoint: 'xxlarge';
    2. Text decoration
    ---------------------------------------------------------*/
 
-//.disable{
-//  color: $disable-txt !important;
-//  cursor: default;
-//}
+.text-default {
+  color: $col-txt;
+}
+
+.text-disable {
+  color: $disable-txt;
+}
 
 //.text-error {
 //  color: $col-error;

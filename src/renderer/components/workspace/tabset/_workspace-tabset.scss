@@ -1,27 +1,31 @@
 
 .workspace_tab-list {
-  padding: 0 0 0 1em;
+  padding: 0 0 0 2em;
   margin: 0;
   list-style: none;
 }
 .workspace_tab {
   background-color: $bg-workspace;
-  border-radius: 10px 10px 0 0;
-  min-width: 167px;
+  border-radius: 1rem 1rem 0 0;
+  min-width: 16.7143em;
+  padding: .65em .7857em;
+  //margin-top: 6px;
+  display: flex;
+  align-items: center;
 }
 .tab_close {
-
+  margin-right: 1.25rem;
+  font-size: .5em;
+  color: $bg-scroll;
 }
 .tab_name {
 
 }
 .toggle-sidebar {
-  .btn {
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+  .btn--toolbar {
+    height: 1.9091em;
+    width: 1.9091em;
+    font-size: 1.5714rem;
     background-color: $bg-toolbar;
     border-radius: 0;
   }
@@ -29,7 +33,7 @@
     @include multi-transition(transform)
   }
   &.hide-sidebar {
-    .btn .icon{
+    .btn--toolbar .icon{
       transform: rotateY(180deg);
     }
   }

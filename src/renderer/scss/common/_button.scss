@@ -2,14 +2,16 @@
   @include multi-transition (color, background-color);
   text-decoration: none;
   border-radius: $bdrs;
+  padding: 0;
 }
 .btn--primary {
   color: $col-txt2;
-  background: linear-gradient(#73FEBB, #61E6EE);
-  height: 30px;
-  width: 90px;
-  padding: 5px;
+  background: $bg-grad-cyan;
+  height: 3rem;
+  min-width: 9rem;
+  padding: .5em;
   font-size: 1.2rem;
+  font-weight: bold;
   text-align: center;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -29,17 +31,19 @@
   }
 }
 .btn--toolbar {
-  height: 26px;
-  width: 26px;
-  border-radius: 2px;
-  line-height: 26px;
+  height: 1.6363em;
+  width: 1.6363em;
+  border-radius: 3px;
+  line-height: 1.6363em;
   text-align: center;
   background-color: transparent;
+  font-size: 1.375rem;
+  color: $col-primary;
   &:hover {
     text-shadow: $icon-shad;
+    background-color: $bg-workspace-2;
   }
   &:active {
-    background-color: $bg-workspace-2;
     box-shadow: $icon-shad;
   }
 }
@@ -47,17 +51,18 @@
   background: linear-gradient(#7397FE , #6185EE);
   color: $white;
   font-size: 1.2em;
-  padding: .5em 1em;
+  padding: .65em .8em;
   display: flex;
   align-items: center;
   &:after {
     content: '';
     display: block;
-    height: 1.4em;
-    width: 1.4em;
+    height: 1.15em;
+    width: 1.15em;
+    min-width: 1.15em;
     border-radius: 50%;
     background-color: currentColor;
-    margin-left: .5em;
+    margin-left: .9em;
   }
   &.disable {
     background: linear-gradient(#515972 , #5D698D );
@@ -65,8 +70,8 @@
   }
 }
 .btn--layersbar {
-  height: 70px;
-  width: 70px;
+  height: $size-layers-btn;
+  width: $size-layers-btn;
   position: relative;
   display: flex;
   align-items: center;
@@ -74,7 +79,8 @@
   color: $white;
   .icon {
     text-shadow: $icon-shad;
-    font-size: 2.75em;
+    //font-size: 38px;
+    font-size: 3.8rem;
   }
 }
 //

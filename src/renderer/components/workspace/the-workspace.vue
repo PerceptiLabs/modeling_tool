@@ -15,20 +15,11 @@
               v-for="(el, index) in net.network"
               :key="index"
               :is="el.componentName"
-              :data="{el, index}"
+              :elementData="{el, index}"
               )
 
       .workspace_meta
-        .workspace_scale
-          button.btn.btn--icon(type="button" @click="decScale()") -
-
-          .scale-input
-            input(type="text" v-model.number="scale")
-            span %
-
-          button.btn.btn--icon(type="button" @click="incScale()") +
-
-          base-checkbox Map
+        include ./meta/workspace-meta.pug
 
 
 
@@ -39,47 +30,32 @@
 <style lang="scss" scoped>
   @import "../../scss/base";
   @import "./tabset/workspace-tabset";
+  @import "./meta/workspace-meta";
   .workspace {
     display: flex;
     flex-direction: column;
     flex: 1 1 100%;
   }
   .workspace_tabset {
-    padding-top: 2px;
+    padding-top: 1px;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
+    //height: $h-sidebar-layers-item;
   }
   .workspace_content {
     background-color: $bg-workspace;
     flex: 1 1 100%;
     overflow: scroll;
   }
+  .network-field {
+    height: 100%;
+  }
   .workspace_meta {
     flex: 0 0 auto;
     background-color: $bg-workspace-2;
     display: flex;
     justify-content: space-between;
-  }
-  .workspace_scale {
-    display: flex;
-    align-items: center;
-  }
-  .scale-input {
-    position: relative;
-    input {
-      padding-right: 1em;
-      width: 50px;
-    }
-    span {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      right: .5em;
-
-    }
-  }
-  .network-field {
-    height: 100%;
+    padding: .5rem;
   }
 </style>

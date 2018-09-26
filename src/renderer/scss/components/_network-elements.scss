@@ -1,9 +1,9 @@
 $layers-sidebar: (
         'io': linear-gradient(#D3DFFE, #A1A9BF),
-        'data': linear-gradient(#7397FE, #6185EE ),
+        'data': $bg-grad-blue,
         'process': linear-gradient(#FECF73, #EEB661),
         'learn-deep': linear-gradient(#FE7373, #EE6161),
-        'train': linear-gradient(#73FEBB, #61E6EE),
+        'train': $bg-grad-cyan,
         'math': linear-gradient(#7389FE, #6167EE),
         'learn-class': linear-gradient(#E273FE, #B061EE),
         'add': #4A5367
@@ -55,5 +55,5 @@ $layers-sidebar-active: (
   left: 0;
   right: 0;
   bottom: 0;
-  outline: 1px dashed $placeholder;
+  outline: 1px dashed $col-placeholder;
 }

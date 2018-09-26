@@ -50,9 +50,9 @@ export default {
       color: inherit;
     }
     .checkbox-fake {
-      width: 1em;
-      height: 1em;
-      flex: 0 0 1em;
+      width: 1.4em;
+      height: 1.4em;
+      flex: 0 0 1.4em;
       background-color: $bg-workspace;
       cursor: pointer;
       position: relative;
@@ -64,7 +64,7 @@ export default {
         left: 50%;
         transform: translate(-50%, -50%);
         opacity: 0;
-        font-size: .5em;
+        font-size: .9em;
         line-height: 1;
       }
       + .checkbox-text {

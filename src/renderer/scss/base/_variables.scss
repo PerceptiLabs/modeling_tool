@@ -26,12 +26,10 @@ $media-expressions: (
 $white: #fff;
 $black: #000;
 
-//$col-page_title: #333;
+$col-primary: #22DDE5;
 $col-txt: #E1E1E1;
 $col-txt2: #383F50;
 $disable-txt: #8B8B9C;
-
-$placeholder: #8B8B9C;
 
 $bg-window: #383F50;
 $bg-workspace: #23252A; //checkbox
@@ -55,7 +53,8 @@ $color-7:  #727EA6;
 $color-8:  #5D698D;
 $color-9:  #515972;
 
-
+$bg-grad-cyan: linear-gradient(#73FEBB, #61E6EE);
+$bg-grad-blue: linear-gradient(#7397FE, #6185EE);
 //$color-11: #5D698D;
 //$color-12: #5D698D;
 //$color-13: #5D698D;
@@ -69,19 +68,26 @@ $font-path: './assets/fonts';
 
 /*----- Form var -----*/
 $col-border: #d9d9d9;
-$col-focus: #7f7f7f;
-$col-error: #f8857c;
+//$col-focus: #7f7f7f;
+$col-error: #FF5454;
 $col-success: #bad76d;
-$col-placeholder: #c6c6c6;
+$col-placeholder: #8B8B9C;
 $default-border: 2px solid $col-border;
-$input-height: 2.5rem;
+$input-height: 2.8571rem;
 $input-holder-margin: .75rem;
 
 /*----- Global layout -----*/
 $vert-indent: 20px;
-$bdrs: 5px;
-$w-layersbar: 80px;
-$w-sidebar: 420px;
+$bdrs: .5rem;
+$w-layersbar: 8rem; //80px
+//$w-layersbar: 80px; //80px
+$size-layers-btn: 7rem; //80px
+//$size-layers-btn: 70px; //80px
+
+$h-sidebar-layers-item: 3.357rem; //33px
+$h-sidebar-layers-indent: 1rem; //14px
+$w-sidebar: 30rem; //420px
+$h-toolbar: 4rem; //56px
 
 /*----- Font -----*/
 $base-font-sans-serif: 'roboto', 'Helvetica',  'Arial', sans-serif;
@@ -89,7 +95,7 @@ $base-font-sans-serif: 'roboto', 'Helvetica',  'Arial', sans-serif;
 /*----- Body -----*/
 $base-text-color: $col-txt;
 $base-background-color: $white;
-$global-font-size: 14px;
+$global-font-size: 10px;
 $line-height-base: 1.2;
 $base-font-family: $base-font-sans-serif ;
 $vertical-rhythm: ($line-height-base * 1em);

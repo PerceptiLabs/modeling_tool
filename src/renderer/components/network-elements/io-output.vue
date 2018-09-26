@@ -14,7 +14,7 @@
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
   import ContextMenu  from '@/components/network-elements/net-context-menu/net-context-menu.vue';
   import ViewEl       from '@/components/network-elements/view/view-io-output.vue';
-  import netElement   from '@/core/mixins/net-element.js';
+  //import netElement   from '@/core/mixins/net-element.js';
 
   export default {
     name: 'IoInput',
@@ -23,6 +23,6 @@
       ContextMenu,
       ViewEl
     },
-    mixins: [netElement]
+    //mixins: [netElement]
   }
 </script>

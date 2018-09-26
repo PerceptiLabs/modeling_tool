@@ -12,6 +12,7 @@
   border-radius: $bdrs;
   background-color: $bg-toolbar;
   box-shadow: $box-shad;
+  overflow: hidden;
 }
 .context-menu_btn {
   width: 100%;
@@ -21,11 +22,11 @@
   background-color: transparent;
   padding: .5em 1em;
   &:hover {
-    background: linear-gradient(#7397FE, #6185EE);
+    background: $bg-grad-blue;
     box-shadow: $box-shad;
   }
 }
 .context-menu_btn-text {
-  margin-right: 50px;
+  margin-right: 3.5rem;
   white-space: nowrap;
 }

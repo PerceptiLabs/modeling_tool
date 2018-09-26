@@ -64,10 +64,8 @@
     background-color: $bg-toolbar;
     display: flex;
     align-items: center;
-    padding: 5px 5px 5px 0;
-    .icon {
-      color: #00C8D1;
-    }
+    padding: 5px .5rem 5px 0;
+    height: $h-toolbar;
   }
   .toggle-wrap {
     width: $w-layersbar;
@@ -83,12 +81,15 @@
     }
   }
   .toolbar_list {
-    padding: 0;
+    padding: 0 .7143rem;
     margin: 0;
     list-style: none;
     display: flex;
     align-items: center;
     border-left: 1px solid $toolbar-border;
+    li + li {
+      margin-left: .3571rem;
+    }
   }
   .settings-wrap {
     margin-left: auto;

@@ -14,6 +14,7 @@
         //include ./sidebar/blocks/Project.pug
         sidebar-layers
         sidebar-comments
+        sidebar-share
       .sidebar_tab(v-show="tabSelected === 1")
         include ./sidebar/blocks/Save.pug
       .sidebar_tab(v-show="tabSelected === 2")
@@ -26,12 +27,14 @@
 <script>
   import SidebarLayers from '@/components/sidebar/sidebar-layers.vue'
   import SidebarComments from '@/components/sidebar/sidebar-comments.vue'
+  import SidebarShare from '@/components/sidebar/sidebar-share.vue'
 
 export default {
   name: 'TheSidebar',
   components: {
     SidebarLayers,
-    SidebarComments
+    SidebarComments,
+    SidebarShare
   },
   data() {
     return {
@@ -74,10 +77,10 @@ export default {
     }
     .btn {
       border-radius: 0;
-      height: 50px;
+      height: $h-toolbar;
       width: 100%;
       background-color: $bg-toolbar;
-      color: #8B8B9C;
+      color: $disable-txt;
       &.active {
         background-color: transparent;
         color: inherit;
