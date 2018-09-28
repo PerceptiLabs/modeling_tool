@@ -300,6 +300,7 @@ const baseNetDrag = {
       this.rawLeft = stickStartPos.left - delta.x;
       this.rawRight = stickStartPos.right + delta.x;
       this.$emit('dragging', this.rect);
+      this.$store.commit('mod_workspace/CHANGE_elementPosition', this.rect);
     },
 
     bodyUp() {
@@ -318,7 +319,7 @@ const baseNetDrag = {
         minBottom: null,
         maxBottom: null
       };
-      this.$store.commit('mod_workspace/CHANGE_elementPosition', this.rect);
+      //this.$store.commit('mod_workspace/CHANGE_elementPosition', this.rect);
     },
 
     stickDown: function (stick, ev) {

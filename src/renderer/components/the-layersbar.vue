@@ -7,6 +7,7 @@
           :key="i"
         )
           button.btn.btn--layersbar.layer_parent(type="button"
+            v-tooltip="layer.tooltip"
             @click="toggleElList(i)"
             :class="[layer.layerClass, {'active': layer.showEl}]"
           )
@@ -423,7 +424,7 @@ export default {
   computed: {
     hideLayers () {
       return this.$store.state.globalView.hideLayers
-    }
+    },
   },
   methods: {
     toggleElList(index) {
@@ -439,7 +440,7 @@ export default {
       this.layersbarList.forEach((item)=> {
         item.showEl = false
       })
-    }
+    },
   }
 }
 </script>

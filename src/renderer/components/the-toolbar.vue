@@ -64,8 +64,9 @@
     background-color: $bg-toolbar;
     display: flex;
     align-items: center;
-    padding: 5px .5rem 5px 0;
+    padding: 5px .5em 5px 0;
     height: $h-toolbar;
+    //font-size: 11px;
   }
   .toggle-wrap {
     width: $w-layersbar;

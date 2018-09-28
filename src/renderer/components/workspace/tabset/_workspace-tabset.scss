@@ -3,15 +3,19 @@
   padding: 0 0 0 2em;
   margin: 0;
   list-style: none;
+  display: flex;
 }
 .workspace_tab {
-  background-color: $bg-workspace;
+  background-color: #2A303D;
   border-radius: 1rem 1rem 0 0;
   min-width: 16.7143em;
   padding: .65em .7857em;
-  //margin-top: 6px;
+  margin-right: 1em;
   display: flex;
   align-items: center;
+  &.active {
+    background-color: $bg-workspace;
+  }
 }
 .tab_close {
   margin-right: 1.25rem;
@@ -23,8 +27,8 @@
 }
 .toggle-sidebar {
   .btn--toolbar {
-    height: 1.9091em;
-    width: 1.9091em;
+    height: 1.9em;
+    width: 1.9em;
     font-size: 1.5714rem;
     background-color: $bg-toolbar;
     border-radius: 0;
@@ -34,7 +38,7 @@
   }
   &.hide-sidebar {
     .btn--toolbar .icon{
-      transform: rotateY(180deg);
+      transform: rotate(180deg);
     }
   }
 }

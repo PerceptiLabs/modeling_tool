@@ -37,7 +37,8 @@
   line-height: 1.6363em;
   text-align: center;
   background-color: transparent;
-  font-size: 1.375rem;
+  //font-size: 1.375em;
+  font-size: 1.375em;
   color: $col-primary;
   &:hover {
     text-shadow: $icon-shad;
@@ -79,7 +80,7 @@
   color: $white;
   .icon {
     text-shadow: $icon-shad;
-    //font-size: 38px;
+    //font-size: 3rem;
     font-size: 3.8rem;
   }
 }

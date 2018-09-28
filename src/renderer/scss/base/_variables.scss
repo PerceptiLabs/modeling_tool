@@ -79,15 +79,15 @@ $input-holder-margin: .75rem;
 /*----- Global layout -----*/
 $vert-indent: 20px;
 $bdrs: .5rem;
+//$w-layersbar: 5.7143rem; //80px
+//$size-layers-btn: 5rem; //70px
 $w-layersbar: 8rem; //80px
-//$w-layersbar: 80px; //80px
-$size-layers-btn: 7rem; //80px
-//$size-layers-btn: 70px; //80px
+$size-layers-btn: 7rem; //70px
 
 $h-sidebar-layers-item: 3.357rem; //33px
 $h-sidebar-layers-indent: 1rem; //14px
 $w-sidebar: 30rem; //420px
-$h-toolbar: 4rem; //56px
+$h-toolbar: 4em; //56px
 
 /*----- Font -----*/
 $base-font-sans-serif: 'roboto', 'Helvetica',  'Arial', sans-serif;

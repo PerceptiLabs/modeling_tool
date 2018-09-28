@@ -1,20 +1,19 @@
-import IoInput from '@/components/network-elements/io-input.vue'
-import IoOutput from '@/components/network-elements/io-output.vue'
-//import DataData from '@/components/network-elements/io-output.vue'
-//import IoOutput from '@/components/network-elements/io-output.vue'
+
+import NetworkField from '@/components/network-field/network-field.vue'
+
 
 export default {
   name: 'WorkspaceContent',
   components: {
-    //DragR,
-    IoInput,
-    IoOutput
-    //BaseNetElement
+    NetworkField,
   },
   data () {
     return {
       scale: 100
     }
+  },
+  mounted() {
+
   },
   computed: {
     styleScale() {
@@ -47,7 +46,9 @@ export default {
     //   }
     //   this.network.push(layer);
     // },
-
+    setTabNetwork(index) {
+      this.$store.commit('mod_workspace/SET_currentNetwork', index)
+    },
     toggleSidebar () {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
     },
@@ -71,6 +72,6 @@ export default {
     },
     onActivated(e) {
       //console.log(e)
-    }
+    },
   }
 }

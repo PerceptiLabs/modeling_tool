@@ -110,9 +110,10 @@ export default {
     background-color: $col-error;
     color: #fff;
     border-radius: 1em;
-    padding: .75em .6em;
+    padding: .75em .5em;
     font-weight: 300;
-    top: -1rem;
+    top: -.9rem;
+    font-size: .9rem;
   }
   .comments_body {
     flex: 1 1 100%;
@@ -154,7 +155,6 @@ export default {
     margin-bottom: .5rem;
   }
   .comment-meta_time {
-    font-size: .6428rem;
     display: flex;
     align-items: center;
     .icon {

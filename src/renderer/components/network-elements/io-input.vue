@@ -1,5 +1,5 @@
 <template lang="pug">
-  base-net-el
+  base-net-el(:dataEl="elementData")
     view-el
     template(slot="context")
       context-menu
@@ -19,15 +19,8 @@ export default {
     ContextMenu,
     ViewEl
   },
-  //mixins: [netElement],
   props: {
     elementData: Object
-  },
-  mounted() {
-    console.log(this.elementData)
-  },
-  provide: {
-    dataEl: this.elementData
   },
 }
 </script>

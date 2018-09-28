@@ -1,7 +1,5 @@
 <template lang="pug">
   base-net-el(
-  layerClass="net-element-io"
-  iconClass="icon-data-out"
   :dataEl="data"
   )
     view-el
@@ -23,6 +21,5 @@
       ContextMenu,
       ViewEl
     },
-    //mixins: [netElement]
   }
 </script>

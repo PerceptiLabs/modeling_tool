@@ -4,9 +4,10 @@ ul.workspace_tab-list
   v-for="(tab, i) in workspace"
   :key="i"
   :class="{'active': currentNetwork == i}"
+  @click="setTabNetwork(i)"
   )
     button.btn.btn--icon.tab_close(type="button"
-      @click="setTabNetwork(i)"
+
     )
       i.icon.icon-close
     span.tab_name {{ tab.networkName }}

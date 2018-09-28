@@ -8,15 +8,57 @@ const state = {
         {
           layerId: 1,
           layerName: 'Layer Name',
-          layerChild: [2,3,5],
+          layerNext: [2, 4],
           componentName: 'IoInput',
           meta: {
             isVisible: true,
             isDraggable: true,
             top: 50,
-            left: 50
+            left: 60
+          }
+        },
+        {
+          layerId: 2,
+          layerName: 'Layer Name',
+          layerNext: [],
+          componentName: 'IoInput',
+          meta: {
+            isVisible: true,
+            isDraggable: true,
+            top: 70,
+            left: 650
+          }
+        },
+        {
+          layerId: 4,
+          layerName: 'Layer Name',
+          layerNext: [],
+          componentName: 'IoInput',
+          meta: {
+            isVisible: true,
+            isDraggable: true,
+            top: 600,
+            left: 300
           }
         }
+      ]
+    },
+    {
+      networkName: 'Network_2',
+      network: [
+        {
+          layerId: 3,
+          layerName: 'Layer Name',
+          layerNext: [2],
+          componentName: 'IoInput',
+          meta: {
+            isVisible: true,
+            isDraggable: true,
+            top: 80,
+            left: 80
+          }
+        },
+
       ]
     }
   ],
@@ -46,7 +88,7 @@ const mutations = {
     var newLayer = {
       layerId: event.timeStamp,
       layerName: event.target.dataset.layer,
-      layerChild: null,
+      layerNext: null,
       componentName: event.target.dataset.component,
       meta: {
         isVisible: true,
