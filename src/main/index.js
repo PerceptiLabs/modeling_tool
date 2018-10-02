@@ -30,7 +30,7 @@ function createWindow () {
     plugins: true,
     //webSecurity: true,
   })
-
+  mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL)
 
   mainWindow.on('closed', () => {

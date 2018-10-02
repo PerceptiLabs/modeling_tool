@@ -27,6 +27,9 @@
     "files": [
       "dist/electron/**/*"
     ],
+    "extraFiles": [
+      "engine"
+    ],
     "dmg": {
       "contents": [
         {
@@ -54,6 +57,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "python-shell": "^1.0.4",
     "vue": "^2.5.16",
     "vue-annotator": "^0.13.2",
     "vue-directive-tooltip": "^1.5.0",
@@ -74,7 +78,7 @@
     "babili-webpack-plugin": "^0.1.2",
     "cfonts": "^2.1.2",
     "chalk": "^2.4.1",
-    "copy-webpack-plugin": "^4.5.1",
+    "copy-webpack-plugin": "^4.5.2",
     "cross-env": "^5.1.6",
     "css-loader": "^0.28.11",
     "del": "^3.0.0",

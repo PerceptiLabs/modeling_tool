@@ -6,6 +6,8 @@ const path = require('path')
 const { dependencies } = require('../package.json')
 const webpack = require('webpack')
 
+const CopyWebpackPlugin = require('copy-webpack-plugin')
+
 const BabiliWebpackPlugin = require('babili-webpack-plugin')
 
 let mainConfig = {
@@ -49,7 +51,10 @@ let mainConfig = {
     path: path.join(__dirname, '../dist/electron')
   },
   plugins: [
-    new webpack.NoEmitOnErrorsPlugin()
+    new webpack.NoEmitOnErrorsPlugin(),
+    new CopyWebpackPlugin([
+      {from:'engine',to:'engine'}
+    ]),
   ],
   resolve: {
     extensions: ['.js', '.json', '.node']

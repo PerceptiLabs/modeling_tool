@@ -7,7 +7,7 @@
         div
           network-field(
             v-for="(net, i) in workspace"
-            :key="i"
+            :key="net.i"
             :netIndex="i"
             v-show="currentNetwork == i"
             :style="'transform: scale(' + styleScale + ')'"

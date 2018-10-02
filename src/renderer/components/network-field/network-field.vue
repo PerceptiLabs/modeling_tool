@@ -3,14 +3,14 @@
     svg.svg-arrow(
       v-if="arrowsList.length"
       v-for="(arrow, i) in arrowsList"
-      :key="i"
+      :key="arrow.i"
       )
       line(class="svg-arrow_line" :x1="arrow.l1.x" :y1="arrow.l1.y" :x2="arrow.l2.x" :y2="arrow.l2.y")
       polygon(class="svg-arrow_triangle" :points="arrow.t1.x+','+arrow.t1.y+' '+arrow.t2.x+','+arrow.t2.y+' '+arrow.t3.x+','+arrow.t3.y")
 
     component(
       v-for="(el, index) in workspace.network"
-      :key="index"
+      :key="el.index"
       :is="el.componentName"
       :elementData="{el, index}"
     )
@@ -54,12 +54,12 @@ export default {
             let indexNextCh = findIndexId(arrNet, itemCh);
             let newArrow = {
               l1: {
-                y: itemEl.meta.top + 35,
-                x: itemEl.meta.left + 35
+                y: itemEl.meta.top,
+                x: itemEl.meta.left
               },
               l2: {
-                y: arrNet[indexNextCh].meta.top + 35,
-                x: arrNet[indexNextCh].meta.left + 35
+                y: arrNet[indexNextCh].meta.top,
+                x: arrNet[indexNextCh].meta.left
               }
             }
             connectList.push(this.calcArrow(newArrow.l1, newArrow.l2))
@@ -71,7 +71,7 @@ export default {
         return arr.findIndex(function(item) {return item.layerId == ID});
       }
 
-      console.log(connectList)
+      //console.log(connectList)
 
       return connectList
     }
@@ -80,22 +80,25 @@ export default {
     calcArrow(dot1, dot2) {
       let triangleSize = 8;
       let radians = Math.atan2((dot2.y - dot1.y), (dot2.x - dot1.x))
-      let l1 = {x: dot1.x, y: dot1.y};
-      let l2 = {x: dot2.x, y: dot2.y};
-      let lengthArrow = Math.round(Math.abs(Math.sqrt(Math.pow((l2.x-l1.x), 2) + Math.pow((l2.y - l1.y), 2))));
-      console.log(lengthArrow)
+      let l1 = {x: dot1.x, y: dot1.y + 35};
+      let l2 = {x: dot2.x, y: dot2.y + 35};
+      //let lengthArrow = Math.round(Math.abs(Math.sqrt(Math.pow((l2.x-l1.x), 2) + Math.pow((l2.y - l1.y), 2))));
+      //console.log(lengthArrow)
 
       let t1start = {x: l2.x - triangleSize, y: l2.y - triangleSize/2};
       let t2start = {x: l2.x - triangleSize, y: l2.y + triangleSize/2};
       let t3start = {x: l2.x, y: l2.y};
-      let t1x = turnСoordinate(t1start, l2, radians);
-      let t2x = turnСoordinate(t2start, l2, radians);
-      let t3x = turnСoordinate(t3start, l2, radians);
 
-      let t1 = correctTriangle(t1x);
-      let t2 = correctTriangle(t2x);
-      let t3 = correctTriangle(t3x);
-      //l2 = correctLine(l2, radians);
+      let t1 = turnСoordinate(t1start, l2, radians);
+      let t2 = turnСoordinate(t2start, l2, radians);
+      let t3 = turnСoordinate(t3start, l2, radians);
+
+      // let t1 = correctTriangle(t1x, radians);
+      // let t2 = correctTriangle(t2x, radians);
+      // let t3 = correctTriangle(t3x, radians);
+
+      //l1 = correctLine(l1, radians);
+      l2 = correctLine(l2, radians);
 
       function turnСoordinate(dot, dotZero, rad) {
         let relX = dot.x - dotZero.x;
@@ -108,20 +111,20 @@ export default {
         };
         return newDot
       }
-      // function correctLine(finishDot, rad) {
-      //   return {
-      //     x: roundNum(finishDot.x - Math.cos(rad) * triangleSize/2),
-      //     y: roundNum(finishDot.y - Math.sin(rad) * triangleSize/2),
-      //   }
-      // }
-      function correctTriangle(rt, rad) {
+      function correctLine(finishDot, rad) {
         return {
-          x: roundNum(rt.x - Math.cos(rad) * lengthArrow/2),
-          y: roundNum(rt.y - Math.sin(rad) * lengthArrow/2),
+          x: roundNum(finishDot.x - Math.cos(rad) * triangleSize/2),
+          y: roundNum(finishDot.y - Math.sin(rad) * triangleSize/2),
         }
       }
+      // function correctTriangle(rt, rad) {
+      //   return {
+      //     x: roundNum(rt.x - Math.cos(rad) * triangleSize/3),
+      //     y: roundNum(rt.y - Math.sin(rad) * triangleSize/3),
+      //   }
+      // }
       function roundNum (num) {
-        let accur = 10;
+        let accur = 100;
         return Math.round(num * accur) / accur;
       }
 

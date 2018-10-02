@@ -21,7 +21,8 @@
           i.icon.icon-step-next
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button")
+        button.btn.btn--toolbar(type="button"
+          @click="PY")
           i.icon.icon-on-off
       li
         button.btn.btn--toolbar(type="button")
@@ -36,6 +37,12 @@
       li
         button.btn.btn--toolbar(type="button")
           i.icon.icon-box
+    input.text-error.big-text(v-model="x")
+    span.big-text +
+    input.text-error.big-text(v-model="y")
+    span.big-text =
+    span.big-text {{ resultSym }}
+    button.btn.btn--settings(type="button" @click="calcPY") Calc
     .settings-wrap
       button.btn.btn--settings(type="button") View settings
 
@@ -44,14 +51,32 @@
 <script>
   export default {
     name: 'TheToolbar',
+    data() {
+      return {
+        x: null,
+        y: null,
+      }
+    },
     computed: {
       hideLayers () {
         return this.$store.state.globalView.hideLayers
+      },
+      resultSym() {
+        return this.$store.state.mod_pythonAPI.symPY
       }
     },
     methods: {
       toggleLayers () {
         this.$store.commit('globalView/SET_hideLayers', !this.hideLayers)
+      },
+      PY() {
+        this.$store.dispatch('mod_pythonAPI/PY_console');
+      },
+      calcPY() {
+        let x = +this.x;
+        let y = +this.y;
+        //this.$store.dispatch('mod_pythonAPI/PY_text', {x, y});
+        this.$store.dispatch('mod_pythonAPI/PY_summ', {x, y});
       }
     }
   }
