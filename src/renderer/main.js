@@ -1,3 +1,8 @@
+const configApp = {
+  version: 'core_cloud', //'python'
+  developMode: true
+}
+
 import Vue from 'vue'
 import axios from 'axios'
 import Vuebar from 'vuebar'
@@ -15,8 +20,16 @@ Vue.use(Tooltip, {
 })
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
+if(process.env.RUN_TARGET === 'core_local') {
+  configApp.version = 'core_local'
+}
+
 Vue.http = Vue.prototype.$http = axios
-Vue.config.productionTip = true
+
+Vue.config.productionTip = configApp.developMode;
+Vue.config.performance = configApp.developMode;
+Vue.config.versionApp = configApp.version;
+//performance
 
 Vue.component('base-checkbox', BaseCheckbox)
 
@@ -28,4 +41,4 @@ new Vue({
   template: '<App/>'
 }).$mount('#app')
 
-//TODO delete vue-drag-resize, vue-directive-tooltip
+//TODO delete vue-drag-resize, vue-directive-tooltip, python-shell

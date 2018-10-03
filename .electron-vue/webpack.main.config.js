@@ -10,6 +10,17 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const BabiliWebpackPlugin = require('babili-webpack-plugin')
 
+let usePlagin;
+if(process.env.BUILD_TARGET === 'core_local') {
+  usePlagin = [
+    new webpack.NoEmitOnErrorsPlugin(),
+    new CopyWebpackPlugin([
+      {from:'core_local',to:'core_local'}
+    ]),
+  ]
+}
+else usePlagin = [new webpack.NoEmitOnErrorsPlugin()]
+
 let mainConfig = {
   entry: {
     main: path.join(__dirname, '../src/main/index.js')
@@ -50,12 +61,7 @@ let mainConfig = {
     libraryTarget: 'commonjs2',
     path: path.join(__dirname, '../dist/electron')
   },
-  plugins: [
-    new webpack.NoEmitOnErrorsPlugin(),
-    new CopyWebpackPlugin([
-      {from:'engine',to:'engine'}
-    ]),
-  ],
+  plugins: usePlagin,
   resolve: {
     extensions: ['.js', '.json', '.node']
   },

@@ -49,6 +49,7 @@
 </template>
 
 <script>
+  //import '../core/other.js'
   export default {
     name: 'TheToolbar',
     data() {
@@ -76,7 +77,7 @@
         let x = +this.x;
         let y = +this.y;
         //this.$store.dispatch('mod_pythonAPI/PY_text', {x, y});
-        this.$store.dispatch('mod_pythonAPI/PY_summ', {x, y});
+        this.$store.dispatch('mod_pythonAPI/PY_func', {x, y});
       }
     }
   }
