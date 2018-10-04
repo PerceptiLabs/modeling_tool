@@ -6,14 +6,23 @@
     //
     .layers_body(v-bar)
       div
-        sl-vue-tree(
+        sidebar-layers-item(
+          v-for="(item, i) in workspace.network"
+          :key="item.i"
+          :itemData="item"
+          :itemIndex="[i]")
+
+
+
+        //sl-vue-tree(
           v-model='nodes'
           ref='slVueTree'
-          :allow-multiselect='true'
-          @select='nodeSelected'
-          @drop='nodeDropped'
-          @toggle='nodeToggled'
-          @nodecontextmenu='showContextMenu')
+          //:allow-multiselect='false'
+          //:draggable="false"
+          //@select='nodeSelected'
+          //@drop='nodeDropped'
+          //@toggle='nodeToggled'
+          )
 
           template(
             slot="title"
@@ -29,7 +38,7 @@
             )
             span.sl_folder-icon(
               v-if='!node.isLeaf'
-              :class="{'open': !node.isExpanded}"
+              //:class="{'open': !node.isExpanded}"
               )
               i.icon.icon-shevron
 
@@ -39,12 +48,12 @@
             )
             button.btn.btn--icon.sl_visible-icon.sl_visible-icon--lock( type="button"
               @click='event => toggleLocking(event, node)'
-              :class="{'invisible-icon': node.data && node.data.lock === false}"
+              //:class="{'invisible-icon': node.data && node.data.lock === false}"
               )
               i.icon.icon-lock
             button.btn.btn--icon.sl_visible-icon.sl_visible-icon--visiblity( type="button"
               @click='event => toggleVisibility(event, node)'
-              :class="{'invisible-icon': node.data && node.data.visible === false}"
+              /:class="{'invisible-icon': node.data && node.data.visible === false}"
               )
               i.icon.icon-eye
             button.btn.btn--icon.sl_icon-sidebar-left(type="button")
@@ -78,80 +87,87 @@
 
 <script>
 import SlVueTree  from 'sl-vue-tree'
+import SidebarLayersItem from '@/components/sidebar/sidebar-layers--item.vue'
 
 export default {
   name: 'SidebarLayers',
   components: {
-    SlVueTree
+    SlVueTree,
+    SidebarLayersItem
   },
   mounted() {
     window.slVueTree = this.$refs.slVueTree;
   },
   data() {
     return {
-      nodes: [
-        {
-          title: 'Folder2',
-          isExpanded: true,
-          isDragging: false,
-          data: {
-            visible: false,
-            lock: false
-          },
-          children: [
-            {
-              title: 'Item3',
-              isLeaf: true,
-              data: {
-                visible: false,
-                lock: false
-              },
-              component: {
-                id: 133,
-                name: 'io-input',
-                top: 30,
-                left: 100
-              }
-            },
-            {
-              title: 'Item4',
-              isLeaf: true
-            },
-            {
-              title: 'Folder3',
-              children: [
-                {
-                  title: 'Item5',
-                  isLeaf: true
-                }
-              ]
-            }
-          ]
-        },
-        {
-          title: 'Item6',
-          isLeaf: true
-        },
-        {
-          title: 'Item7',
-          isLeaf: true,
-          data: {
-            visible: false
-          }
-        },
-        {
-          title: 'Folder6',
-          children: [
-            {
-              title: 'Folder7', children: [
-                {title: 'Item8', isLeaf: true},
-                {title: 'Item9', isLeaf: true}
-              ]
-            }
-          ]
-        }
-      ]
+      // nodes: [
+      //   {
+      //     title: 'Folder2',
+      //     isExpanded: true,
+      //     isDragging: false,
+      //     //isDraggable: false,
+      //     //isSelectable: false,
+      //     data: {
+      //       visible: false,
+      //       lock: false
+      //     },
+      //     children: [
+      //       {
+      //         title: 'Item3',
+      //         isLeaf: true,
+      //         //isDraggable: false,
+      //         //isSelectable: false,
+      //         data: {
+      //           visible: false,
+      //           lock: false
+      //         },
+      //       },
+      //       {
+      //         title: 'Item4',
+      //         isLeaf: true,
+      //         //isDraggable: false,
+      //         //isSelectable: false,
+      //       },
+      //       {
+      //         title: 'Folder3',
+      //         //isDraggable: false,
+      //         //isSelectable: false,
+      //         children: [
+      //           {
+      //             title: 'Item5',
+      //             isLeaf: true
+      //           }
+      //         ]
+      //       }
+      //     ]
+      //   },
+      //   {
+      //     title: 'Item6',
+      //     isLeaf: true,
+      //     //isDraggable: false,
+      //     //isSelectable: false,
+      //
+      //   },
+      //   {
+      //     title: 'Item7',
+      //     isLeaf: true,
+      //     //isDraggable: false,
+      //     //isSelectable: false,
+      //
+      //     data: {
+      //       visible: false
+      //     }
+      //   },
+      // ]
     }
+  },
+  computed: {
+    workspace() {
+      return this.$store.state.mod_workspace.workspaceContent[this.currentNetwork]
+    },
+    currentNetwork() {
+      return this.$store.state.mod_workspace.currentNetwork
+    },
   },
   methods: {
     toggleVisibility: function (event, node) {
@@ -175,13 +191,13 @@ export default {
     nodeDropped(nodes, position, event) {
       //this.lastEvent = `Nodes: ${nodes.map(node => node.title).join(', ')} are dropped ${position.placement} ${position.node.title}`;
     },
-    showContextMenu(node, event) {
-      event.preventDefault();
-      this.contextMenuIsVisible = true;
-      const $contextMenu = this.$refs.contextmenu;
-      $contextMenu.style.left = event.clientX + 'px';
-      $contextMenu.style.top = event.clientY + 'px';
-    },
+    // showContextMenu(node, event) {
+    //   event.preventDefault();
+    //   this.contextMenuIsVisible = true;
+    //   const $contextMenu = this.$refs.contextmenu;
+    //   $contextMenu.style.left = event.clientX + 'px';
+    //   $contextMenu.style.top = event.clientY + 'px';
+    // },
     removeNode() {
       this.contextMenuIsVisible = false;
       const $slVueTree = this.$refs.slVueTree;

@@ -41,4 +41,5 @@ new Vue({
   template: '<App/>'
 }).$mount('#app')
 
+//console.log(process);
 //TODO delete vue-drag-resize, vue-directive-tooltip, python-shell

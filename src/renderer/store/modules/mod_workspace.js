@@ -7,36 +7,97 @@ const state = {
       network: [
         {
           layerId: 1,
-          layerName: 'Layer Name',
+          layerName: 'Layer Name1',
           layerNext: [2, 4],
           componentName: 'IoInput',
           meta: {
-            isVisible: true,
-            isDraggable: true,
+            isInvisible: true,
+            isLock: false,
+            isSelected: false,
             top: 50,
             left: 60
-          }
+          },
+          child: [
+            {
+              layerId: 12,
+              layerName: 'Layer Name11',
+              layerNext: [2, 4],
+              componentName: 'IoInput',
+              meta: {
+                isInvisible: true,
+                isLock: false,
+                isSelected: false,
+                top: 50,
+                left: 60
+              },
+              child: [
+                {
+                  layerId: 112,
+                  layerName: 'Layer Name111',
+                  layerNext: [],
+                  componentName: 'IoInput',
+                  meta: {
+                    isInvisible: true,
+                    isLock: false,
+                    isSelected: false,
+                    top: 50,
+                    left: 60
+                  },
+                  child: [
+                    {
+                      layerId: 112,
+                      layerName: 'Layer Name 1111',
+                      layerNext: [],
+                      componentName: 'IoInput',
+                      meta: {
+                        isInvisible: true,
+                        isLock: false,
+                        isSelected: false,
+                        top: 50,
+                        left: 60
+                      },
+                    },
+                  ]
+                },
+              ]
+            },
+            {
+              layerId: 12,
+              layerName: 'Layer Name12',
+              layerNext: [2, 4],
+              componentName: 'IoInput',
+              meta: {
+                isInvisible: true,
+                isLock: false,
+                isSelected: false,
+                top: 50,
+                left: 60
+              },
+            }
+          ]
         },
         {
           layerId: 2,
-          layerName: 'Layer Name',
+          layerName: 'Layer Name2',
           layerNext: [],
           componentName: 'IoInput',
           meta: {
-            isVisible: true,
-            isDraggable: true,
+            isInvisible: true,
+            isLock: false,
+            isSelected: false,
             top: 70,
             left: 650
           }
         },
         {
           layerId: 4,
-          layerName: 'Layer Name',
+          layerName: 'Layer Name3',
           layerNext: [],
           componentName: 'IoInput',
           meta: {
-            isVisible: true,
-            isDraggable: true,
+            isInvisible: true,
+            isLock: false,
+            isSelected: false,
             top: 600,
             left: 300
           }
@@ -52,8 +113,8 @@ const state = {
           layerNext: [2],
           componentName: 'IoInput',
           meta: {
-            isVisible: true,
-            isDraggable: true,
+            isInvisible: true,
+            isLock: false,
             top: 80,
             left: 80
           }
@@ -91,8 +152,9 @@ const mutations = {
       layerNext: null,
       componentName: event.target.dataset.component,
       meta: {
-        isVisible: true,
-        isDraggable: true,
+        isInvisible: false,
+        isLock: false,
+        isSelected: false,
         top: event.target.clientHeight/2,
         left: event.target.clientWidth/2
       }

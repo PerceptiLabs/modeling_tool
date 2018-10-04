@@ -2,6 +2,17 @@
 
 import { app, BrowserWindow } from 'electron'
 
+// run server core
+if(process.env.RUN_TARGET === 'core_local') {
+  var exec = require('child_process').execFile;
+
+  var runServer = function () {
+    exec('core_local/buzzer.exe', function (err, data) { });
+
+  };
+  runServer();
+}
+
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -50,7 +61,9 @@ app.on('activate', () => {
   if (mainWindow === null) {
     createWindow()
   }
-})
+});
+
+
 
 /**
  * Auto Updater

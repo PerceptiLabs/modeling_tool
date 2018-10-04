@@ -30,7 +30,7 @@
       "dist/electron/**/*"
     ],
     "extraFiles": [
-      "${cross-env.BUILD_TARGET}"
+      "core_local"
     ],
     "dmg": {
       "contents": [
