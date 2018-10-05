@@ -1,55 +1,62 @@
 <template lang="pug">
   aside.page_toolbar
-    .toggle-wrap(:class="{'hide-layers': !hideLayers}")
-      button.btn.btn--toolbar(type="button" @click="toggleLayers()")
-        i.icon.icon-hide-top
+    div
+      .toggle-wrap(:class="{'hide-layers': !hideLayers}")
+        button.btn.btn--toolbar(type="button" @click="toggleLayers()")
+          i.icon.icon-hide-top
 
-    ul.toolbar_list
-      li
-        button.btn.btn--toolbar(type="button")
-          i.icon.icon-select
-      li
-        button.btn.btn--toolbar(type="button")
-          i.icon.icon-arrow-left
+      ul.toolbar_list
+        li
+          button.btn.btn--toolbar(type="button")
+            i.icon.icon-select
+        li
+          button.btn.btn--toolbar(type="button")
+            i.icon.icon-arrow-left
 
-    ul.toolbar_list
-      li
-        button.btn.btn--toolbar(type="button")
-          i.icon.icon-step-prev
-      li
-        button.btn.btn--toolbar(type="button")
-          i.icon.icon-step-next
-    ul.toolbar_list
-      li
-        button.btn.btn--toolbar(type="button"
-          @click="PY")
-          i.icon.icon-on-off
-      li
-        button.btn.btn--toolbar(type="button")
-          i.icon.icon-pause
-      li
-        button.btn.btn--toolbar(type="button")
-          i.icon.icon-next
-    ul.toolbar_list
-      li
-        button.btn.btn--toolbar(type="button")
-          i.icon.icon-repeat
-      li
-        button.btn.btn--toolbar(type="button")
-          i.icon.icon-box
-    input.text-error.big-text(v-model="x")
-    span.big-text +
-    input.text-error.big-text(v-model="y")
-    span.big-text =
-    span.big-text {{ resultSym }}
-    button.btn.btn--settings(type="button" @click="calcPY") Calc
-    .settings-wrap
-      button.btn.btn--settings(type="button") View settings
+      ul.toolbar_list
+        li
+          button.btn.btn--toolbar(type="button")
+            i.icon.icon-step-prev
+        li
+          button.btn.btn--toolbar(type="button")
+            i.icon.icon-step-next
+      ul.toolbar_list
+        li
+          button.btn.btn--toolbar(type="button")
+            i.icon.icon-on-off
+        li
+          button.btn.btn--toolbar(type="button")
+            i.icon.icon-pause
+        li
+          button.btn.btn--toolbar(type="button")
+            i.icon.icon-next
+      ul.toolbar_list
+        li
+          button.btn.btn--toolbar(type="button")
+            i.icon.icon-repeat
+        li
+          button.btn.btn--toolbar(type="button")
+            i.icon.icon-box
+
+      .settings-wrap
+        button.btn.btn--settings(type="button") View settings
+
+    .test-api
+      span.big-text Dev Mode:
+        span.text-error  {{ devMode }}
+      span.big-text Version:
+        span.text-error  {{ versionApi }}
+      input.text-error.big-text(v-model="x")
+      span.big-text +
+      input.text-error.big-text(v-model="y")
+      button.btn.btn--settings(type="button" @click="calcPY") Calc
+      span.big-text =
+      span.big-text {{ resultSym }}
 
 </template>
 
 <script>
-  //import '../core/other.js'
+  import configApp from '@/core/globalSettings.js'
   export default {
     name: 'TheToolbar',
     data() {
@@ -63,7 +70,13 @@
         return this.$store.state.globalView.hideLayers
       },
       resultSym() {
-        return this.$store.state.mod_pythonAPI.symPY
+        return this.$store.state.mod_api.symPY
+      },
+      versionApi() {
+        return configApp.version
+      },
+      devMode() {
+        return configApp.developMode
       }
     },
     methods: {
@@ -77,7 +90,7 @@
         let x = +this.x;
         let y = +this.y;
         //this.$store.dispatch('mod_pythonAPI/PY_text', {x, y});
-        this.$store.dispatch('mod_pythonAPI/PY_func', {x, y});
+        this.$store.dispatch('mod_api/PY_func', {x, y});
       }
     }
   }
@@ -88,11 +101,14 @@
   .page_toolbar {
     grid-area: toolbar;
     background-color: $bg-toolbar;
-    display: flex;
-    align-items: center;
+
     padding: 5px .5em 5px 0;
-    height: $h-toolbar;
+    //height: $h-toolbar;
     //font-size: 11px;
+    > div {
+      display: flex;
+      align-items: center;
+    }
   }
   .toggle-wrap {
     width: $w-layersbar;
@@ -120,5 +136,19 @@
   }
   .settings-wrap {
     margin-left: auto;
+  }
+  .test-api {
+    display: flex;
+    align-items: center;
+    font-weight: bold;
+    > * {
+      margin: 0 .5em;
+    }
+    input {
+      width: 5em;
+    }
+    span span {
+      font-weight: normal;
+    }
   }
 </style>

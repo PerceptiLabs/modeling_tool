@@ -1,6 +1,7 @@
 'use strict'
 
 process.env.NODE_ENV = 'production'
+console.log(process.env.BUILD_TARGET);
 
 const { say } = require('cfonts')
 const chalk = require('chalk')

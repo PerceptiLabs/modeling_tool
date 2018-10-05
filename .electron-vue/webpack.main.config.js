@@ -83,12 +83,24 @@ if (process.env.NODE_ENV !== 'production') {
  * Adjust mainConfig for production settings
  */
 if (process.env.NODE_ENV === 'production') {
-  mainConfig.plugins.push(
-    new BabiliWebpackPlugin(),
-    new webpack.DefinePlugin({
-      'process.env.NODE_ENV': '"production"'
-    })
-  )
+  if(process.env.BUILD_TARGET === 'core_local') {
+    mainConfig.plugins.push(
+      new BabiliWebpackPlugin(),
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': '"production"',
+        'process.env.BUILD_TARGET': '"core_local"'
+      })
+    )
+  }
+  else {
+    mainConfig.plugins.push(
+      new BabiliWebpackPlugin(),
+      new webpack.DefinePlugin({
+        'process.env.NODE_ENV': '"production"',
+        'process.env.BUILD_TARGET': '"core_cloud"'
+      })
+    )
+  }
 }
 
 module.exports = mainConfig

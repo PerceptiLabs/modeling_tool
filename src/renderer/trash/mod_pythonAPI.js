@@ -1,6 +1,6 @@
 import {PythonShell} from 'python-shell';
 import Vue from 'vue'
-//let pyshell = new PythonShell('../../../test.py', {mode: 'json'});
+
 
 PythonShell.defaultOptions = {
   scriptPath: 'core_local'

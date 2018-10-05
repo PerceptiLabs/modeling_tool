@@ -1,37 +1,30 @@
-const configApp = {
-  version: 'core_cloud', //'python'
-  developMode: true
-}
-
 import Vue from 'vue'
 import axios from 'axios'
 import Vuebar from 'vuebar'
 import Tooltip from 'vue-directive-tooltip';
 
-import BaseCheckbox from '@/components/base/checkbox.vue'
-
 import App from './App'
 import router from './router'
 import store from './store'
 
-Vue.use(Vuebar)
+import configApp from '@/core/globalSettings.js'
+import BaseCheckbox from '@/components/base/checkbox.vue'
+
+Vue.use(Vuebar);
 Vue.use(Tooltip, {
   placement: 'right',
-})
+});
 
-if (!process.env.IS_WEB) Vue.use(require('vue-electron'))
-if(process.env.RUN_TARGET === 'core_local') {
-  configApp.version = 'core_local'
-}
+if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
-Vue.http = Vue.prototype.$http = axios
+Vue.http = Vue.prototype.$http = axios;
 
 Vue.config.productionTip = configApp.developMode;
 Vue.config.performance = configApp.developMode;
-Vue.config.versionApp = configApp.version;
-//performance
 
-Vue.component('base-checkbox', BaseCheckbox)
+Vue.component('base-checkbox', BaseCheckbox);
+
+console.log(configApp);
 
 /* eslint-disable no-new */
 new Vue({
@@ -39,7 +32,6 @@ new Vue({
   router,
   store,
   template: '<App/>'
-}).$mount('#app')
+}).$mount('#app');
 
-//console.log(process);
-//TODO delete vue-drag-resize, vue-directive-tooltip, python-shell
+//TODO delete vue-directive-tooltip,

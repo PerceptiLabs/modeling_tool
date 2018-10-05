@@ -10,6 +10,7 @@
 
     component(
       v-for="(el, index) in workspace.network"
+      v-show="!el.meta.isInvisible"
       :key="el.index"
       :is="el.componentName"
       :elementData="{el, index}"

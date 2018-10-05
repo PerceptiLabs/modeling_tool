@@ -11,7 +11,7 @@ const state = {
           layerNext: [2, 4],
           componentName: 'IoInput',
           meta: {
-            isInvisible: true,
+            isInvisible: false,
             isLock: false,
             isSelected: false,
             top: 50,

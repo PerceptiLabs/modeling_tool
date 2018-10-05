@@ -18,11 +18,13 @@
         span {{ itemData.layerName }}
       .layer-item_right-sidebar
         button.btn.btn--icon.sl_visible-icon.sl_visible-icon--lock( type="button"
-          :class="{'invisible-icon': itemData.meta.isInvisible}"
+          :class="{'invisible-icon': itemData.meta.isLock}"
+          @click="toggleLock()"
         )
           i.icon.icon-lock
         button.btn.btn--icon.sl_visible-icon.sl_visible-icon--visiblity( type="button"
-          :class="{'invisible-icon': itemData.meta.isLock}"
+          :class="{'invisible-icon': itemData.meta.isInvisible}"
+          @click="toggleVisible()"
         )
           i.icon.icon-eye
     .layer-item_child-list(
@@ -68,7 +70,7 @@ export default {
   },
   computed: {
     itemIndexPath() {
-      console.log(this.itemIndex);
+      //console.log(this.itemIndex);
       if(Array.isArray(this.itemIndex)) {
         return [].concat.apply([], this.itemIndex.map(i => i instanceof Array ? i : [i]))
       }
@@ -79,10 +81,16 @@ export default {
   },
   methods: {
     setSelect(index) {
-      console.log(index);
+      //console.log(index);
     },
     toggleOpen() {
       this.isOpen = !this.isOpen
+    },
+    toggleLock() {
+
+    },
+    toggleVisible() {
+
     },
     toggleVisibility: function (event, node) {
       const slVueTree = this.$refs.slVueTree;

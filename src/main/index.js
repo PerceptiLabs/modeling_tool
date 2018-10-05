@@ -2,17 +2,6 @@
 
 import { app, BrowserWindow } from 'electron'
 
-// run server core
-if(process.env.RUN_TARGET === 'core_local') {
-  var exec = require('child_process').execFile;
-
-  var runServer = function () {
-    exec('core_local/buzzer.exe', function (err, data) { });
-
-  };
-  runServer();
-}
-
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -21,10 +10,10 @@ if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
 
-let mainWindow
+let mainWindow;
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://localhost:9080`
-  : `file://${__dirname}/index.html`
+  : `file://${__dirname}/index.html`;
 
 function createWindow () {
   /**
@@ -40,22 +29,23 @@ function createWindow () {
 
     plugins: true,
     //webSecurity: true,
-  })
+  });
   mainWindow.webContents.openDevTools();
-  mainWindow.loadURL(winURL)
+  mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
     mainWindow = null
   })
 }
 
-app.on('ready', createWindow)
+app.on('ready', createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
+    ///socketClient.end();
     app.quit()
   }
-})
+});
 
 app.on('activate', () => {
   if (mainWindow === null) {
