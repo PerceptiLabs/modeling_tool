@@ -24,7 +24,7 @@ Vue.config.performance = configApp.developMode;
 
 Vue.component('base-checkbox', BaseCheckbox);
 
-console.log(configApp);
+//console.log(configApp);
 
 /* eslint-disable no-new */
 new Vue({

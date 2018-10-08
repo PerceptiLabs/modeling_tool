@@ -1,11 +1,20 @@
 const baseNetFunctional = {
+  props: {
+    dataEl: {
+      type: Object,
+      default: function () {
+        return {}
+      }
+    },
+  },
   data() {
     return {
       contextIsOpen: false,
-      settingsIsOpen: false
+      settingsIsOpen: false,
     }
   },
   mounted() {
+    document.documentElement.addEventListener('mousedown', this.deselect);
     // this.$refs.el.addEventListener("focus", (event)=> {
     //   console.log('focus')
     //   document.addEventListener('keydown', (event) => {
@@ -17,6 +26,28 @@ const baseNetFunctional = {
     //   const keyName = event.key;
     //   alert('keydown event\n\n' + 'key: ' + keyName);
     // });
+  },
+  beforeDestroy() {
+    document.documentElement.removeEventListener('mousedown', this.deselect);
+  },
+  computed: {
+    active() {
+      return this.dataEl.el.meta.isSelected
+    }
+  },
+  watch: {
+    // active(isActive) {
+    //   if (isActive) {
+    //     //this.$emit('activated');
+    //   } else {
+    //     //this.$emit('deactivated');
+    //     this.hideAllWindow();
+    //   }
+    // },
+
+    // isActive(val) {
+    //   this.active = val;
+    // },
   },
   methods: {
     openSettings() {
@@ -35,13 +66,20 @@ const baseNetFunctional = {
       this.deselect();
     },
     clickEl() {
-      console.log('clickEl')
+      //console.log('clickEl')
     },
     setFocusBtn() {
-      this.$refs.btn.focus()
-      this.active = true;
-    }
+      this.$refs.btn.focus();
+      this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });
+    },
+    deselect() {
+      // if (this.preventActiveBehavior) {
+      //   return
+      // }
+      this.hideAllWindow();
+      this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
+    },
   }
-}
+};
 
 export default baseNetFunctional

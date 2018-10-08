@@ -6,9 +6,7 @@ const baseNetDrag = {
     parentScaleY: {
       type: Number, default: 1,
     },
-    isActive: {
-      type: Boolean, default: false
-    },
+
     // preventActiveBehavior: {
     //   type: Boolean, default: false
     // },
@@ -114,7 +112,7 @@ const baseNetDrag = {
 
   data() {
     return {
-      active: this.isActive,
+
       rawWidth: this.w,
       rawHeight: this.h,
       rawLeft: this.x,
@@ -165,8 +163,6 @@ const baseNetDrag = {
     document.documentElement.addEventListener('mouseup', this.up);
     document.documentElement.addEventListener('mouseleave', this.up);
 
-    document.documentElement.addEventListener('mousedown', this.deselect);
-
     document.documentElement.addEventListener('touchmove', this.move, true);
     document.documentElement.addEventListener('touchend touchcancel', this.up, true);
     document.documentElement.addEventListener('touchstart', this.up, true);
@@ -191,20 +187,13 @@ const baseNetDrag = {
     document.documentElement.removeEventListener('mouseup', this.up);
     document.documentElement.removeEventListener('mouseleave', this.up);
 
-    document.documentElement.removeEventListener('mousedown', this.deselect);
-
     document.documentElement.removeEventListener('touchmove', this.move, true);
     document.documentElement.removeEventListener('touchend touchcancel', this.up, true);
     document.documentElement.removeEventListener('touchstart', this.up, true);
   },
 
   methods: {
-    deselect() {
-      // if (this.preventActiveBehavior) {
-      //   return
-      // }
-      this.active = false
-    },
+
 
     move(ev) {
       if (!this.stickDrag && !this.bodyDrag) {
@@ -235,7 +224,7 @@ const baseNetDrag = {
 
       // if (!this.preventActiveBehavior) {
       // }
-      this.setFocusBtn()
+      this.setFocusBtn();
       //this.active = true;
 
       // if (ev.button && ev.button !== 0) {
@@ -244,9 +233,9 @@ const baseNetDrag = {
       //
       // this.$emit('clicked', ev);
       //
-      // if (!this.isDraggable || !this.active) {
-      //   return
-      // }
+      if (this.isLock || !this.active) {
+        return
+      }
 
       if (this.dragHandle && target.getAttribute('data-drag-handle') !== this._uid.toString()) {
         return
@@ -306,7 +295,8 @@ const baseNetDrag = {
     bodyUp() {
       this.bodyDrag = false;
       this.$emit('dragging', this.rect);
-      this.$emit('dragstop', this.rect);
+      //this.$emit('dragstop', this.rect);
+      this.$store.commit('mod_workspace/CHANGE_elementPosition', this.rect);
 
       this.stickStartPos = {mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0};
       this.limits = {
@@ -319,7 +309,7 @@ const baseNetDrag = {
         minBottom: null,
         maxBottom: null
       };
-      //this.$store.commit('mod_workspace/CHANGE_elementPosition', this.rect);
+
     },
 
     stickDown: function (stick, ev) {
@@ -522,9 +512,12 @@ const baseNetDrag = {
   },
 
   computed: {
-    isDraggable() {
-      return this.dataEl.el ? this.dataEl.el.meta.isDraggable : true
+    isLock() {
+      return this.dataEl.el.meta.isLock
     },
+    // isDraggable() {
+    //   return this.dataEl.el ? this.dataEl.el.meta.isDraggable : true
+    // },
     x() {
       if(this.dataEl.el) {
         this.left = this.dataEl.el.meta.left;
@@ -694,18 +687,7 @@ const baseNetDrag = {
       this.aspectRatioCorrection();
     },
 
-    active(isActive) {
-      if (isActive) {
-        this.$emit('activated');
-      } else {
-        this.$emit('deactivated');
-        this.hideAllWindow();
-      }
-    },
 
-    isActive(val) {
-      this.active = val;
-    },
 
     z(val) {
       if (val >= 0 || val === 'auto') {

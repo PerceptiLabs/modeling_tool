@@ -30,8 +30,7 @@ $layers-sidebar-active: (
 @each $name, $color in $layers-sidebar-active {
   .net-element-#{$name} {
     &:hover,
-    &.active,
-    .active & {
+    &.active {
       background: $color;
     }
   }
@@ -47,13 +46,18 @@ $layers-sidebar-active: (
 .net-element {
   position: absolute;
   box-sizing: border-box;
+  background-color: $bg-workspace;
 }
-.net-element.active:before{
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  outline: 1px dashed $col-placeholder;
+//.net-element.active:before{
+//  content: '';
+//  position: absolute;
+//  top: 0;
+//  left: 0;
+//  right: 0;
+//  bottom: 0;
+//  outline: 1px dashed $col-placeholder;
+//}
+.element--hidden .net-element_btn,
+.arrow--hidden {
+  opacity: .1;
 }

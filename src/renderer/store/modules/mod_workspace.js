@@ -1,4 +1,12 @@
-const namespaced = true
+function findNode(path, state) {
+  const network = path.slice();
+  const networkId = network.shift();
+  const initValue = state.workspaceContent[state.currentNetwork].network[networkId];
+  return network.reduce((acc, id) => acc.child[id], initValue);
+
+}
+
+const namespaced = true;
 
 const state = {
   workspaceContent: [
@@ -14,14 +22,29 @@ const state = {
             isInvisible: false,
             isLock: false,
             isSelected: false,
+            isDragged: false,
             top: 50,
             left: 60
           },
+        },
+        {
+          layerId: 2,
+          layerName: 'Layer Name2',
+          layerNext: [],
+          componentName: 'IoInput',
+          meta: {
+            isInvisible: true,
+            isLock: false,
+            isSelected: false,
+            isDragged: false,
+            top: 70,
+            left: 650
+          },
           child: [
             {
-              layerId: 12,
-              layerName: 'Layer Name11',
-              layerNext: [2, 4],
+              layerId: 21,
+              layerName: 'Layer Name21',
+              layerNext: [],
               componentName: 'IoInput',
               meta: {
                 isInvisible: true,
@@ -32,8 +55,21 @@ const state = {
               },
               child: [
                 {
-                  layerId: 112,
-                  layerName: 'Layer Name111',
+                  layerId: 211,
+                  layerName: 'Layer Name211',
+                  layerNext: [],
+                  componentName: 'IoInput',
+                  meta: {
+                    isInvisible: true,
+                    isLock: false,
+                    isSelected: false,
+                    top: 50,
+                    left: 60
+                  }
+                },
+                {
+                  layerId: 212,
+                  layerName: 'Layer Name212',
                   layerNext: [],
                   componentName: 'IoInput',
                   meta: {
@@ -45,8 +81,21 @@ const state = {
                   },
                   child: [
                     {
-                      layerId: 112,
-                      layerName: 'Layer Name 1111',
+                      layerId: 2121,
+                      layerName: 'Layer Name 2121',
+                      layerNext: [],
+                      componentName: 'IoInput',
+                      meta: {
+                        isInvisible: true,
+                        isLock: false,
+                        isSelected: false,
+                        top: 50,
+                        left: 60
+                      },
+                    },
+                    {
+                      layerId: 2122,
+                      layerName: 'Layer Name 2122',
                       layerNext: [],
                       componentName: 'IoInput',
                       meta: {
@@ -77,22 +126,9 @@ const state = {
           ]
         },
         {
-          layerId: 2,
-          layerName: 'Layer Name2',
-          layerNext: [],
-          componentName: 'IoInput',
-          meta: {
-            isInvisible: true,
-            isLock: false,
-            isSelected: false,
-            top: 70,
-            left: 650
-          }
-        },
-        {
           layerId: 4,
           layerName: 'Layer Name3',
-          layerNext: [],
+          layerNext: [2],
           componentName: 'IoInput',
           meta: {
             isInvisible: true,
@@ -108,27 +144,44 @@ const state = {
       networkName: 'Network_2',
       network: [
         {
-          layerId: 3,
-          layerName: 'Layer Name',
-          layerNext: [2],
+          layerId: 1,
+          layerName: 'Layer Name1',
+          layerNext: [],
           componentName: 'IoInput',
           meta: {
-            isInvisible: true,
+            isInvisible: false,
             isLock: false,
+            isSelected: false,
+            isDragged: false,
             top: 80,
             left: 80
-          }
+          },
         },
-
       ]
     }
   ],
   currentNetwork: 0,
   dragElement: {},
-
-}
+};
 
 const mutations = {
+  SET_metaSelect(state, value) {
+    let node = findNode(value.path, state);
+    node.meta.isSelected = value.setValue
+  },
+  SET_metaDragged(state, value) {
+    let node = findNode(value.path, state);
+    node.meta.isDragged = value.setValue
+  },
+  SET_metaLock(state, value) {
+    let node = findNode(value, state);
+    node.meta.isLock = !node.meta.isLock
+  },
+  SET_metaVisible(state, value) {
+    let node = findNode(value, state);
+    node.meta.isInvisible = !node.meta.isInvisible
+  },
+
   SET_dragElement(state, value) {
     state.dragElement = value
   },

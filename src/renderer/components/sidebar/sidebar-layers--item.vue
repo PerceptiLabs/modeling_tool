@@ -18,13 +18,13 @@
         span {{ itemData.layerName }}
       .layer-item_right-sidebar
         button.btn.btn--icon.sl_visible-icon.sl_visible-icon--lock( type="button"
-          :class="{'invisible-icon': itemData.meta.isLock}"
-          @click="toggleLock()"
+          :class="{'invisible-icon': !itemData.meta.isLock}"
+          @click="toggleLock(itemIndex)"
         )
           i.icon.icon-lock
         button.btn.btn--icon.sl_visible-icon.sl_visible-icon--visiblity( type="button"
           :class="{'invisible-icon': itemData.meta.isInvisible}"
-          @click="toggleVisible()"
+          @click="toggleVisible(itemIndex)"
         )
           i.icon.icon-eye
     .layer-item_child-list(
@@ -35,7 +35,7 @@
         v-for="(item, i) in itemData.child"
         :key="item.i"
         :itemData="item"
-        :itemIndex="[itemIndexPath, i]"
+        :itemIndex="currentNode(i)"
         )
 
 
@@ -57,7 +57,7 @@ export default {
       }
     },
     itemIndex: {
-      type: [Number, Array]
+      type: Array
     },
   },
   mounted() {
@@ -69,28 +69,34 @@ export default {
     }
   },
   computed: {
-    itemIndexPath() {
-      //console.log(this.itemIndex);
-      if(Array.isArray(this.itemIndex)) {
-        return [].concat.apply([], this.itemIndex.map(i => i instanceof Array ? i : [i]))
-      }
-      else {
-        return this.itemIndex
-      }
-    }
+    // itemIndexPath() {
+    //   //console.log(this.itemIndex);
+    //   if(Array.isArray(this.itemIndex)) {
+    //     return [].concat.apply([], this.itemIndex.map(i => i instanceof Array ? i : [i]))
+    //   }
+    //   else {
+    //     return this.itemIndex
+    //   }
+    // },
+
   },
   methods: {
-    setSelect(index) {
-      //console.log(index);
+    currentNode(item) {
+      let childNode = this.itemIndex.slice();
+      childNode.push(item);
+      return childNode
     },
     toggleOpen() {
       this.isOpen = !this.isOpen
     },
-    toggleLock() {
-
+    setSelect(path) {
+      this.$store.commit('mod_workspace/SET_metaSelect', { path, setValue: true });
     },
-    toggleVisible() {
-
+    toggleLock(path) {
+      this.$store.commit('mod_workspace/SET_metaLock', path);
+    },
+    toggleVisible(path) {
+      this.$store.commit('mod_workspace/SET_metaVisible', path);
     },
     toggleVisibility: function (event, node) {
       const slVueTree = this.$refs.slVueTree;

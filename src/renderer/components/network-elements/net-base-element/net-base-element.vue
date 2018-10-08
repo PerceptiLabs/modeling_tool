@@ -1,7 +1,7 @@
 <template lang="pug">
   .net-element(
     :style="style"
-    :class="active || isActive ? 'active' : 'inactive'"
+    :class="active ? 'active' : 'inactive'"
     @mousedown.stop.prevent="bodyDown($event)"
     @touchstart.stop.prevent="bodyDown($event)"
     @dblclick="openSettings"
@@ -14,7 +14,7 @@
       )
       slot
 
-    .net-element_window(v-if="settingsIsOpen")
+    .net-element_window(v-if="settingsIsOpen ")
       slot(name="settings")
 
     .net-element_window.net-element_context-menu(v-if="contextIsOpen")
@@ -30,8 +30,8 @@ export default {
   mixins: [baseNetDrag, baseNetFunctional],
   props: {
     layerClass: {type: String, default: ''},
-    iconClass: {type: String, default: ''},
-    dataEl: {type: Object}
+    iconClass:  {type: String, default: ''},
+
   },
   data() {
       return {
@@ -57,5 +57,8 @@ export default {
     padding: 0;
     margin: 0;
     background-color: transparent;
+    .active & .btn{
+      box-shadow: 0 0 20px #fff;
+    }
   }
 </style>
