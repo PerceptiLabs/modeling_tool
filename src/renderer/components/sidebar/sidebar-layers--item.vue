@@ -2,9 +2,8 @@
   .layer-item-wrap
     .layer-item(
       :class="{'selected': itemData.meta.isSelected}"
-      @click="setSelect(itemIndex)"
       )
-      .layer-item_left-sidebar
+      .layer-item_left-sidebar(@click="setSelect(itemIndex)")
         button.btn.btn--icon(type="button")
           i.icon.icon-empty
       .layer-item_folder-section(:class="{'open': isOpen}")
@@ -15,14 +14,17 @@
           i.icon.icon-shevron
           i.icon.icon-folder
       .layer-item_title
-        span {{ itemData.layerName }}
+        text-editable(
+          :textTitle="itemData.layerName"
+          @changeTitle="editElName"
+          )
       .layer-item_right-sidebar
-        button.btn.btn--icon.sl_visible-icon.sl_visible-icon--lock( type="button"
+        button.btn.btn--icon.visible-icon.visible-icon--lock( type="button"
           :class="{'invisible-icon': !itemData.meta.isLock}"
           @click="toggleLock(itemIndex)"
         )
           i.icon.icon-lock
-        button.btn.btn--icon.sl_visible-icon.sl_visible-icon--visiblity( type="button"
+        button.btn.btn--icon.visible-icon.visible-icon--visiblity( type="button"
           :class="{'invisible-icon': itemData.meta.isInvisible}"
           @click="toggleVisible(itemIndex)"
         )
@@ -42,12 +44,14 @@
 </template>
 
 <script>
-  import SidebarLayersItem from '@/components/sidebar/sidebar-layers--item.vue'
+  import SidebarLayersItem  from '@/components/sidebar/sidebar-layers--item.vue'
+  import TextEditable       from '@/components/base/text-editable.vue'
 
 export default {
   name: 'SidebarLayersItem',
   components: {
-    SidebarLayersItem
+    SidebarLayersItem,
+    TextEditable
   },
   props: {
     itemData: {
@@ -69,15 +73,6 @@ export default {
     }
   },
   computed: {
-    // itemIndexPath() {
-    //   //console.log(this.itemIndex);
-    //   if(Array.isArray(this.itemIndex)) {
-    //     return [].concat.apply([], this.itemIndex.map(i => i instanceof Array ? i : [i]))
-    //   }
-    //   else {
-    //     return this.itemIndex
-    //   }
-    // },
 
   },
   methods: {
@@ -98,39 +93,8 @@ export default {
     toggleVisible(path) {
       this.$store.commit('mod_workspace/SET_metaVisible', path);
     },
-    toggleVisibility: function (event, node) {
-      const slVueTree = this.$refs.slVueTree;
-      event.stopPropagation();
-      const visible = !node.data || node.data.visible !== false;
-      slVueTree.updateNode(node.path, {data: { visible: !visible}});
-    },
-    toggleLocking: function (event, node) {
-      const slVueTree = this.$refs.slVueTree;
-      event.stopPropagation();
-      const lock = !node.data || node.data.lock !== false;
-      slVueTree.updateNode(node.path, {data: { lock: !lock}});
-    },
-    nodeSelected(nodes, event) {
-      //this.lastEvent = `Select nodes: ${nodes.map(node => node.title).join(', ')}`;
-    },
-    nodeToggled(node, event) {
-      //this.lastEvent = `Node ${node.title} is ${ node.isExpanded ? 'expanded' : 'collapsed'}`;
-    },
-    nodeDropped(nodes, position, event) {
-      //this.lastEvent = `Nodes: ${nodes.map(node => node.title).join(', ')} are dropped ${position.placement} ${position.node.title}`;
-    },
-    // showContextMenu(node, event) {
-    //   event.preventDefault();
-    //   this.contextMenuIsVisible = true;
-    //   const $contextMenu = this.$refs.contextmenu;
-    //   $contextMenu.style.left = event.clientX + 'px';
-    //   $contextMenu.style.top = event.clientY + 'px';
-    // },
-    removeNode() {
-      this.contextMenuIsVisible = false;
-      const $slVueTree = this.$refs.slVueTree;
-      const paths = $slVueTree.getSelected().map(node => node.path);
-      $slVueTree.remove(paths);
+    editElName(newName) {
+      this.$store.commit('mod_workspace/SET_layerName', { path: this.itemIndex, setValue: newName });
     }
   }
 }
@@ -192,6 +156,9 @@ export default {
   }
   .layer-item_title {
     padding-left: .5em;
+    //flex: 1;
+    //height: 100%;
+    //line-height: $h-sidebar-layers-item;
   }
   .layer-item_right-sidebar {
     display: flex;

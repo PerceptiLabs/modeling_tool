@@ -30,7 +30,7 @@ const state = {
         {
           layerId: 2,
           layerName: 'Layer Name2',
-          layerNext: [],
+          layerNext: [4],
           componentName: 'IoInput',
           meta: {
             isInvisible: true,
@@ -180,6 +180,10 @@ const mutations = {
   SET_metaVisible(state, value) {
     let node = findNode(value, state);
     node.meta.isInvisible = !node.meta.isInvisible
+  },
+  SET_layerName(state, value) {
+    let node = findNode(value.path, state);
+    node.layerName = value.setValue
   },
 
   SET_dragElement(state, value) {

@@ -22,9 +22,10 @@ Vue.http = Vue.prototype.$http = axios;
 Vue.config.productionTip = configApp.developMode;
 Vue.config.performance = configApp.developMode;
 
+import './core/directives'
+//import './core/filters'
 Vue.component('base-checkbox', BaseCheckbox);
 
-//console.log(configApp);
 
 /* eslint-disable no-new */
 new Vue({
@@ -34,4 +35,4 @@ new Vue({
   template: '<App/>'
 }).$mount('#app');
 
-//TODO delete vue-directive-tooltip,
+//TODO delete vue-directive-tooltip, sl-vue-tree

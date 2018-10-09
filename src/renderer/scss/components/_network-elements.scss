@@ -47,6 +47,11 @@ $layers-sidebar-active: (
   position: absolute;
   box-sizing: border-box;
   background-color: $bg-workspace;
+  //filter: blur(0px);
+  transition: top .1s, left .1s;
+  &:hover {
+   will-change: top, left;
+  }
 }
 //.net-element.active:before{
 //  content: '';

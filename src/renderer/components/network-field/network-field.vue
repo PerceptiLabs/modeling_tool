@@ -6,11 +6,11 @@
           stop(stop-color='black')
           stop(offset='100%' stop-color='magenta')
         marker#svg-arrow_triangle(
-          refX="22" refY="3.25"
-          markerWidth="8"
-          markerHeight="8"
+          refX="22" refY="4.25"
+          markerWidth="9"
+          markerHeight="9"
           orient="auto")
-          polyline(points="0,0 0,6 6,3")
+          polyline(points="0,0 0,8 7,4")
       template(
         v-for="(arrow, i) in arrowsList"
       )
@@ -192,6 +192,7 @@ export default {
   @import "../../scss/base";
   $color-arrow: #22DDE5;
   .svg-arrow {
+    pointer-events: none;
     position: absolute;
     top: 0;
     left: 0;
