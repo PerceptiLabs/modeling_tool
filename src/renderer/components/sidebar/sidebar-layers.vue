@@ -10,7 +10,7 @@
           .layer-item
             .layer-item_title
               span {{ workspace.networkName }}
-              
+
         sidebar-layers-item(
           v-for="(item, i) in workspace.network"
           :key="item.i"
@@ -23,7 +23,8 @@
         button.btn.btn--icon(type="button")
           i.icon.icon-folder
         button.btn.btn--icon(type="button"
-          @click="deleteElement")
+          @click="deleteElement"
+          )
           i.icon.icon-delete
 
       .layers_search.d-flex
@@ -62,10 +63,10 @@ export default {
   methods: {
     deleteElement() {
       let currentSelect =  this.workspace.network.findIndex(function(item) {
-        console.log(item);
+        //console.log(item);
         return item.meta.isSelected === true;
       });
-      console.log(currentSelect);
+      //console.log(currentSelect);
     }
   }
 }

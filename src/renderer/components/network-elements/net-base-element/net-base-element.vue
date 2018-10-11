@@ -1,11 +1,10 @@
 <template lang="pug">
   .net-element(
+    ref="rootElement"
     :style="style"
     :class="active ? 'active' : 'inactive'"
-    @mousedown.stop.prevent="bodyDown($event)"
-    @touchstart.stop.prevent="bodyDown($event)"
-    @dblclick="openSettings"
-    @contextmenu="openContext"
+    @dblclick.stop.prevent="openSettings"
+    @contextmenu.stop.prevent="openContext"
     )
     //@mousedown="bodyDown($event)"
     button.net-element_btn(type="button"

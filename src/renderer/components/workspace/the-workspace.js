@@ -1,4 +1,4 @@
-
+import TextEditable from '@/components/base/text-editable.vue'
 import NetworkField from '@/components/network-field/network-field.vue'
 
 
@@ -6,6 +6,7 @@ export default {
   name: 'WorkspaceContent',
   components: {
     NetworkField,
+    TextEditable
   },
   data () {
     return {
@@ -73,5 +74,8 @@ export default {
     onActivated(e) {
       //console.log(e)
     },
+    editNetName(newName) {
+      this.$store.commit('mod_workspace/SET_networkName', newName);
+    }
   }
 }

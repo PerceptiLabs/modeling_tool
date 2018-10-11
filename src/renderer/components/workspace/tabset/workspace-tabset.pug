@@ -10,7 +10,10 @@ ul.workspace_tab-list
 
     )
       i.icon.icon-close
-    span.tab_name {{ tab.networkName }}
+    text-editable.tab_name(
+      :textTitle="tab.networkName"
+      @changeTitle="editNetName"
+      )
 
 .toggle-sidebar(:class="{'hide-sidebar': !hideSidebar}")
   button.btn.btn--toolbar(type="button" @click="toggleSidebar()")

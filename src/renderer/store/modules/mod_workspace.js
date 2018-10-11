@@ -1,4 +1,4 @@
-function findNode(path, state) {
+function createPathNode(path, state) {
   const network = path.slice();
   const networkId = network.shift();
   const initValue = state.workspaceContent[state.currentNetwork].network[networkId];
@@ -16,7 +16,7 @@ const state = {
         {
           layerId: 1,
           layerName: 'Layer Name1',
-          layerNext: [2, 4],
+          layerNext: [2],
           componentName: 'IoInput',
           meta: {
             isInvisible: false,
@@ -30,13 +30,12 @@ const state = {
         {
           layerId: 2,
           layerName: 'Layer Name2',
-          layerNext: [4],
+          layerNext: [],
           componentName: 'IoInput',
           meta: {
-            isInvisible: true,
+            isInvisible: false,
             isLock: false,
             isSelected: false,
-            isDragged: false,
             top: 70,
             left: 650
           },
@@ -125,19 +124,32 @@ const state = {
             }
           ]
         },
-        {
-          layerId: 4,
-          layerName: 'Layer Name3',
-          layerNext: [2],
-          componentName: 'IoInput',
-          meta: {
-            isInvisible: true,
-            isLock: false,
-            isSelected: false,
-            top: 600,
-            left: 300
-          }
-        }
+        // {
+        //   layerId: 4,
+        //   layerName: 'Layer Name3',
+        //   layerNext: [2],
+        //   componentName: 'IoInput',
+        //   meta: {
+        //     isInvisible: false,
+        //     isLock: false,
+        //     isSelected: false,
+        //     top: 600,
+        //     left: 300
+        //   }
+        // },
+        // {
+        //   layerId: 5,
+        //   layerName: 'Layer Name5',
+        //   layerNext: [2],
+        //   componentName: 'IoInput',
+        //   meta: {
+        //     isInvisible: false,
+        //     isLock: false,
+        //     isSelected: false,
+        //     top: 600,
+        //     left: 300
+        //   }
+        // }
       ]
     },
     {
@@ -166,24 +178,28 @@ const state = {
 
 const mutations = {
   SET_metaSelect(state, value) {
-    let node = findNode(value.path, state);
-    node.meta.isSelected = value.setValue
+    // let node = createPathNode(value.path, state);
+    // node.meta.isSelected = value.setValue
+
   },
   SET_metaDragged(state, value) {
-    let node = findNode(value.path, state);
+    let node = createPathNode(value.path, state);
     node.meta.isDragged = value.setValue
   },
   SET_metaLock(state, value) {
-    let node = findNode(value, state);
+    let node = createPathNode(value, state);
     node.meta.isLock = !node.meta.isLock
   },
   SET_metaVisible(state, value) {
-    let node = findNode(value, state);
+    let node = createPathNode(value, state);
     node.meta.isInvisible = !node.meta.isInvisible
   },
   SET_layerName(state, value) {
-    let node = findNode(value.path, state);
+    let node = createPathNode(value.path, state);
     node.layerName = value.setValue
+  },
+  SET_networkName(state, value) {
+    state.workspaceContent[state.currentNetwork].networkName = value
   },
 
   SET_dragElement(state, value) {
@@ -206,7 +222,7 @@ const mutations = {
     var newLayer = {
       layerId: event.timeStamp,
       layerName: event.target.dataset.layer,
-      layerNext: null,
+      layerNext: [],
       componentName: event.target.dataset.component,
       meta: {
         isInvisible: false,

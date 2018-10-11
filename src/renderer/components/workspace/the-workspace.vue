@@ -6,10 +6,10 @@
       .workspace_content(v-bar)
         div
           network-field(
+            v-if="currentNetwork == i"
             v-for="(net, i) in workspace"
             :key="net.i"
             :netIndex="i"
-            v-show="currentNetwork == i"
             :style="'transform: scale(' + styleScale + ')'"
             )
       .workspace_meta

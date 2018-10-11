@@ -30,7 +30,9 @@ textarea {
   text-overflow: ellipsis;
   font-size: inherit;
   background-color: $bg-input;
-
+  &::selection {
+    background-color: $color-5;
+  }
   @include placeholder {
     color: $col-placeholder;
   }

@@ -1,9 +1,11 @@
 <template lang="pug">
   .layer-item-wrap
+    //@click="setSelect(itemIndex)"
     .layer-item(
+
       :class="{'selected': itemData.meta.isSelected}"
       )
-      .layer-item_left-sidebar(@click="setSelect(itemIndex)")
+      .layer-item_left-sidebar()
         button.btn.btn--icon(type="button")
           i.icon.icon-empty
       .layer-item_folder-section(:class="{'open': isOpen}")
