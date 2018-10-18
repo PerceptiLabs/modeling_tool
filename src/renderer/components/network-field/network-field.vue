@@ -17,7 +17,7 @@
         line.svg-arrow_line(
           marker-end="url(#svg-arrow_triangle)"
           :class="{'arrow--hidden': arrow.l1.meta.isInvisible || arrow.l2.meta.isInvisible}"
-          :stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '14' : '14 7 3 7'))"
+          :stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7' : '14 7 3 7'))"
           :x1="arrow.positionArrow.x1"
           :y1="arrow.positionArrow.y1"
           :x2="arrow.positionArrow.x2"
@@ -75,14 +75,10 @@ export default {
       findPerspectiveSide();
       calcCorrectPosition();
 
-      //console.log(listID);
-
-
-
       function findAllID() {
         net.forEach((itemEl, indexEl, arrNet)=> {
          let itemID = itemEl.layerId;
-         itemEl.calcAnchor = { top: [], right: [], bottom: [], left: [], /*tn: 1, rn: 1, bn: 1, ln: 1*/ };
+         itemEl.calcAnchor = { top: [], right: [], bottom: [], left: []};
          listID[itemID] = itemEl;
         });
       }
@@ -122,9 +118,6 @@ export default {
               findSideMinLength(newArrow.l1, newArrow.l2, newArrow);
               connectList.push(newArrow);
             }
-            // itemEl.connectionOut.forEach((itemCh, indexCh, arrCh)=> {
-            //
-            // });
           }
         });
       }
@@ -298,7 +291,6 @@ export default {
         })
       }
       function calcValuePosition(side, lengthSide, indexSide) {
-        console.log(side, lengthSide, indexSide);
         switch(side) {
           case 'top':
             return {

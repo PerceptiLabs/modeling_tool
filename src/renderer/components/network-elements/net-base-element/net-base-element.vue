@@ -24,13 +24,13 @@
 <script>
 import baseNetDrag        from '@/core/mixins/base-net-drag.js';
 import baseNetFunctional  from '@/core/mixins/base-net-functional.js';
+import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
 export default {
   name: 'NetBaseElement',
-  mixins: [baseNetDrag, baseNetFunctional],
+  mixins: [baseNetDrag, baseNetFunctional, baseNetPaintArrows],
   props: {
     layerClass: {type: String, default: ''},
     iconClass:  {type: String, default: ''},
-
   },
   data() {
       return {

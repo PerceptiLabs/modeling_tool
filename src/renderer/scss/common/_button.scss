@@ -40,7 +40,8 @@
   //font-size: 1.375em;
   font-size: 1.375em;
   color: $col-primary;
-  &:hover {
+  &:hover,
+  &.active {
     text-shadow: $icon-shad;
     background-color: $bg-workspace-2;
   }

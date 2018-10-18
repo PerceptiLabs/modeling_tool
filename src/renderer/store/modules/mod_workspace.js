@@ -9,6 +9,7 @@ function createPathNode(path, state) {
 const namespaced = true;
 
 const state = {
+  //TODO delete isInvisible
   workspaceContent: [
     {
       networkName: 'Network_1',
@@ -16,14 +17,11 @@ const state = {
         {
           layerId: 1,
           layerName: 'Layer Name1',
-          connectionIn: [],
           connectionOut: [{
             id: 2,
-            side: '',
             type: 'dash1'
           }, {
             id: 4,
-            side: '',
             type: 'dash2'
           }],
           componentName: 'IoInput',
@@ -40,10 +38,6 @@ const state = {
           layerId: 2,
           layerName: 'Layer Name2',
           connectionOut: [],
-          connectionIn: [{
-            id: 1,
-            side: '',
-          }],
           componentName: 'IoInput',
           meta: {
             isInvisible: false,
@@ -141,10 +135,6 @@ const state = {
           layerId: 4,
           layerName: 'Layer Name3',
           connectionOut: [],
-          connectionIn: [{
-            id: 1,
-            side: '',
-          }],
           componentName: 'IoInput',
           meta: {
             isInvisible: false,
@@ -159,10 +149,8 @@ const state = {
           layerName: 'Layer Name5',
           connectionOut: [{
             id: 1,
-            side: '',
             type: 'solid'
           }],
-          connectionIn: [],
           componentName: 'IoInput',
           meta: {
             isInvisible: false,
@@ -180,13 +168,12 @@ const state = {
         {
           layerId: 1,
           layerName: 'Layer Name1',
-          layerNext: [],
+          connectionOut: [],
           componentName: 'IoInput',
           meta: {
             isInvisible: false,
             isLock: false,
             isSelected: false,
-            isDragged: false,
             top: 80,
             left: 80
           },
@@ -196,6 +183,7 @@ const state = {
   ],
   currentNetwork: 0,
   dragElement: {},
+  arrowType: ''
 };
 
 const mutations = {
@@ -203,10 +191,6 @@ const mutations = {
     // let node = createPathNode(value.path, state);
     // node.meta.isSelected = value.setValue
 
-  },
-  SET_metaDragged(state, value) {
-    let node = createPathNode(value.path, state);
-    node.meta.isDragged = value.setValue
   },
   SET_metaLock(state, value) {
     let node = createPathNode(value, state);
@@ -223,7 +207,6 @@ const mutations = {
   SET_networkName(state, value) {
     state.workspaceContent[state.currentNetwork].networkName = value
   },
-
   SET_dragElement(state, value) {
     state.dragElement = value
   },
@@ -233,21 +216,25 @@ const mutations = {
   SET_workspaceContent (state, value) {
     state.workspaceContent = value
   },
+  SET_arrowType (state, value) {
+    value.store.commit('globalView/SET_appMode', 'addArrow');
+    state.arrowType = value.type
+  },
   ADD_workspace (state) {
     let newNetwork = {
       networkName: 'Network',
       network: []
-    }
+    };
     state.workspaceContent.push(newNetwork);
   },
   ADD_dragElement(state, event) {
     var newLayer = {
       layerId: event.timeStamp,
       layerName: event.target.dataset.layer,
-      layerNext: [],
+      connectionOut: [],
       componentName: event.target.dataset.component,
       meta: {
-        isInvisible: false,
+        //isInvisible: false,
         isLock: false,
         isSelected: false,
         top: event.target.clientHeight/2,

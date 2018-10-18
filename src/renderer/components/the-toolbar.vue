@@ -7,10 +7,16 @@
 
       ul.toolbar_list
         li
-          button.btn.btn--toolbar(type="button")
+          button.btn.btn--toolbar(type="button"
+            :class="{'active': appMode == 'edit'}"
+            @click="setAppMode('edit')"
+          )
             i.icon.icon-select
         li
-          button.btn.btn--toolbar(type="button")
+          button.btn.btn--toolbar(type="button"
+            :class="{'active': appMode == 'addArrow'}"
+            @click="setArrowType('solid')"
+          )
             i.icon.icon-arrow-left
 
       ul.toolbar_list
@@ -77,6 +83,9 @@
       },
       devMode() {
         return configApp.developMode
+      },
+      appMode() {
+        return this.$store.state.globalView.appMode
       }
     },
     methods: {
@@ -91,6 +100,12 @@
         let y = +this.y;
         //this.$store.dispatch('mod_pythonAPI/PY_text', {x, y});
         this.$store.dispatch('mod_api/PY_func', {x, y});
+      },
+      setArrowType(type) {
+        this.$store.commit('mod_workspace/SET_arrowType', {type, store: this.$store})
+      },
+      setAppMode(type) {
+        this.$store.commit('globalView/SET_appMode', type)
       }
     }
   }

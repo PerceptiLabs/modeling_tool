@@ -2,7 +2,8 @@ const namespaced = true
 
 const state = {
   hideLayers: true,
-  hideSidebar: true
+  hideSidebar: true,
+  appMode: 'edit'
 }
 
 const mutations = {
@@ -11,7 +12,10 @@ const mutations = {
   },
   SET_hideSidebar (state, value) {
     state.hideSidebar = value
-  }
+  },
+  SET_appMode (state, value) {
+    state.appMode = value
+  },
 }
 
 const actions = {

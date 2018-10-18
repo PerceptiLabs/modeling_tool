@@ -20,16 +20,6 @@ const baseNetDrag = {
     this.stickStartPos = {mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0};
   },
 
-  mounted() {
-    this.$refs.rootElement.addEventListener('mousedown', this.bodyDown);
-    this.$refs.rootElement.addEventListener('touchstart', this.bodyDown);
-  },
-
-  beforeDestroy() {
-    this.$refs.rootElement.removeEventListener('mousedown', this.bodyDown);
-    this.$refs.rootElement.removeEventListener('touchstart', this.bodyDown);
-  },
-
   methods: {
     move(ev) {
       if (!this.bodyDrag) {
