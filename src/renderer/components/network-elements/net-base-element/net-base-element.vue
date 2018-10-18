@@ -12,7 +12,6 @@
       @blur="blurElement"
       )
       slot
-      p {{ dataEl.el.layerId }}
 
     .net-element_window(v-if="settingsIsOpen ")
       slot(name="settings")

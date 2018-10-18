@@ -17,6 +17,7 @@
         line.svg-arrow_line(
           marker-end="url(#svg-arrow_triangle)"
           :class="{'arrow--hidden': arrow.l1.meta.isInvisible || arrow.l2.meta.isInvisible}"
+          :stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '14' : '14 7 3 7'))"
           :x1="arrow.positionArrow.x1"
           :y1="arrow.positionArrow.y1"
           :x2="arrow.positionArrow.x2"
@@ -74,53 +75,60 @@ export default {
       findPerspectiveSide();
       calcCorrectPosition();
 
-      console.log(connectList);
+      //console.log(listID);
 
 
 
       function findAllID() {
         net.forEach((itemEl, indexEl, arrNet)=> {
          let itemID = itemEl.layerId;
-         itemEl.calcAnchor = { top: 0, right: 0, bottom: 0, left: 0, /*tn: 1, rn: 1, bn: 1, ln: 1*/ };
+         itemEl.calcAnchor = { top: [], right: [], bottom: [], left: [], /*tn: 1, rn: 1, bn: 1, ln: 1*/ };
          listID[itemID] = itemEl;
         });
       }
       function findPerspectiveSide() {
         net.forEach((itemEl, indexEl, arrNet)=> {
-          if(itemEl.layerNext.length > 0) {
-            itemEl.layerNext.forEach((itemCh, indexCh, arrCh)=> {
+          if(itemEl.connectionOut.length > 0) {
+            for (var numEl in itemEl.connectionOut) {
+              let outEl = itemEl.connectionOut[numEl];
               let newArrow = {
                 l1: itemEl,
-                l2: listID[itemCh],
+                l2: listID[outEl.id],
+                type: outEl.type,
                 correctPosition: {
-                  x1: 0,
-                  y1: 0,
-                  x2: 0,
-                  y2: 0
+                  start: {
+                    x: 0,
+                    y: 0,
+                  },
+                  stop: {
+                    x: 0,
+                    y: 0,
+                  },
                 }
               };
               Object.defineProperty(newArrow, 'positionArrow', {
                 get() {
                   return {
-                    x1: this.l1.meta.left + this.correctPosition.x1,
-                    y1: this.l1.meta.top + this.correctPosition.y1,
-                    x2: this.l2.meta.left + this.correctPosition.x2,
-                    y2: this.l2.meta.top + this.correctPosition.y2,
+                    x1: this.l1.meta.left + this.correctPosition.start.x,
+                    y1: this.l1.meta.top + this.correctPosition.start.y,
+                    x2: this.l2.meta.left + this.correctPosition.stop.x,
+                    y2: this.l2.meta.top + this.correctPosition.stop.y,
                   }
                 },
                 enumerable: true,
                 configurable: false
               });
 
-              findSideMinLength(newArrow.l1, newArrow.l2);
-              //console.log(newArrow, "<NEW ARROW");
-
+              findSideMinLength(newArrow.l1, newArrow.l2, newArrow);
               connectList.push(newArrow);
-            });
+            }
+            // itemEl.connectionOut.forEach((itemCh, indexCh, arrCh)=> {
+            //
+            // });
           }
         });
       }
-      function findSideMinLength(l1, l2) {
+      function findSideMinLength(l1, l2, currentEl) {
         let position = '';
 
         (l1.meta.top <= l2.meta.top) ? position = position + 'b' : position = position + 't';
@@ -166,8 +174,10 @@ export default {
             let TRleft = leftDot(l2);
             let TRsides = calcMinLength(TRtop, TRright, TRbottom, TRleft);
 
-            ++l1.calcAnchor[TRsides.start.side];
-            ++l2.calcAnchor[TRsides.end.side];
+            currentEl.sideStart = TRsides.start.side;
+            currentEl.sideEnd = TRsides.end.side;
+            l1.calcAnchor[TRsides.start.side].push(l2);
+            l2.calcAnchor[TRsides.end.side].push(l1);
             break;
 
           case 'tl':
@@ -177,8 +187,10 @@ export default {
             let TLright = rightDot(l2);
             let TLsides = calcMinLength(TLtop, TLleft, TLbottom, TLright);
 
-            ++l1.calcAnchor[TLsides.start.side];
-            ++l2.calcAnchor[TLsides.end.side];
+            currentEl.sideStart = TLsides.start.side;
+            currentEl.sideEnd = TLsides.end.side;
+            l1.calcAnchor[TLsides.start.side].push(l2);
+            l2.calcAnchor[TLsides.end.side].push(l1);
             break;
 
           case 'br':
@@ -188,8 +200,10 @@ export default {
             let BRleft = leftDot(l2);
             let BRsides = calcMinLength(BRbottom, BRright, BRtop, BRleft);
 
-            ++l1.calcAnchor[BRsides.start.side];
-            ++l2.calcAnchor[BRsides.end.side];
+            currentEl.sideStart = BRsides.start.side;
+            currentEl.sideEnd = BRsides.end.side;
+            l1.calcAnchor[BRsides.start.side].push(l2);
+            l2.calcAnchor[BRsides.end.side].push(l1);
             break;
 
           case 'bl':
@@ -199,8 +213,10 @@ export default {
             let BLright = rightDot(l2);
             let BLsides = calcMinLength(BLbottom, BLleft, BLtop, BLright);
 
-            ++l1.calcAnchor[BLsides.start.side];
-            ++l2.calcAnchor[BLsides.end.side];
+            currentEl.sideStart = BLsides.start.side;
+            currentEl.sideEnd = BLsides.end.side;
+            l1.calcAnchor[BLsides.start.side].push(l2);
+            l2.calcAnchor[BLsides.end.side].push(l1);
             break
         }
       }
@@ -227,54 +243,89 @@ export default {
             end: d4,
           }
         ];
-        //const minLen =
         return arrows.sort( (a, b) => a.length - b.length )[0];
       }
       function lengthLine(l1, l2) {
         return Math.round(Math.abs(Math.sqrt(Math.pow((l2.x-l1.x), 2) + Math.pow((l2.y - l1.y), 2))));
       }
       function calcCorrectPosition() {
-        connectList.forEach((itemArr, indexArr, listArr)=> {
-          console.log(itemArr);
-          calcDot(itemArr, itemArr.positionArrow);
-        })
-        function calcDot(el, out) {
-          if(el.l1.calcAnchor.top > 0) {
-            out.x1 = size / 2;
-            out.y1 = 0
-          }
-          else if(el.l1.calcAnchor.right > 0) {
-            out.x1 = size;
-            out.y1 = size/2;
-          }
-          else if(el.l1.calcAnchor.bottom > 0) {
-            out.x1 = size / 2;
-            out.y1 = size
-          }
-          else if(el.l1.calcAnchor.left > 0) {
-            out.x1 = 0;
-            out.y1 = size / 2;
-          }
+        connectList.forEach((itemEl, itemIndex, itemArr)=> {
+          let currentLeftStart = itemEl.l2.meta.left;
+          let currentTopStart = itemEl.l2.meta.top;
+          let currentLeftEnd = itemEl.l1.meta.left;
+          let currentTopEnd = itemEl.l1.meta.top;
+          let indexSidePositionStart = '';
+          let indexSidePositionEnd = '';
+          let sideStartLength = itemEl.l1.calcAnchor[itemEl.sideStart].length;
+          let sideEndLength = itemEl.l2.calcAnchor[itemEl.sideEnd].length;
 
-          if(el.l2.calcAnchor.top > 0) {
-            out.x2 = size / 2;
-            out.y2 = 0
+          //calc start
+          if(itemEl.sideStart === 'left' || itemEl.sideStart === 'right') {
+            let sortVertSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
+              return a.meta.top - b.meta.top;
+            });
+            indexSidePositionStart = sortVertSideStart.findIndex((element, index, array)=> {
+              return element.meta.top == currentTopStart;
+            });
           }
-          else if(el.l2.calcAnchor.right > 0) {
-            out.x2 = size;
-            out.y2 = size/2;
+          else {
+            let sortGorSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
+              return a.meta.left - b.meta.left;
+            });
+            indexSidePositionStart = sortGorSideStart.findIndex((element, index, array)=> {
+              return element.meta.left == currentLeftStart;
+            });
           }
-          else if(el.l2.calcAnchor.bottom > 0) {
-            out.x2 = size / 2;
-            out.y2 = size
+          itemEl.correctPosition.start = calcValuePosition(itemEl.sideStart, sideStartLength, indexSidePositionStart);
+          //calc END
+          if(itemEl.sideEnd === 'left' || itemEl.sideEnd === 'right') {
+            let sortVertSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
+              return a.meta.top - b.meta.top;
+            });
+            indexSidePositionEnd = sortVertSideEnd.findIndex((element, index, array)=> {
+              return element.meta.top == currentTopEnd;
+            });
           }
-          else if(el.l2.calcAnchor.left > 0) {
-            out.x2 = 0;
-            out.y2 = size / 2;
+          else {
+            let sortGorSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
+              return a.meta.left - b.meta.left;
+            });
+            indexSidePositionEnd = sortGorSideEnd.findIndex((element, index, array)=> {
+              return element.meta.left == currentLeftEnd;
+            });
           }
+          itemEl.correctPosition.stop = calcValuePosition(itemEl.sideEnd, sideEndLength, indexSidePositionEnd);
+        })
+      }
+      function calcValuePosition(side, lengthSide, indexSide) {
+        console.log(side, lengthSide, indexSide);
+        switch(side) {
+          case 'top':
+            return {
+              x: (size / (lengthSide + 1)) * (indexSide + 1),
+              y: 0
+            };
+            break;
+          case 'right':
+            return {
+              x: size,
+              y: (size / (lengthSide + 1)) * (indexSide + 1),
+            };
+            break;
+          case 'bottom':
+            return {
+              x: (size / (lengthSide + 1)) * (indexSide + 1),
+              y: size
+            };
+            break;
+          case 'left':
+            return {
+              x: 0,
+              y: (size / (lengthSide + 1)) * (indexSide + 1),
+            };
+            break;
         }
       }
-
 
       this.arrowsList = connectList;
     }

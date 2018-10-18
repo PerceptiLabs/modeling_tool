@@ -16,27 +16,40 @@ const state = {
         {
           layerId: 1,
           layerName: 'Layer Name1',
-          layerNext: [2],
+          connectionIn: [],
+          connectionOut: [{
+            id: 2,
+            side: '',
+            type: 'dash1'
+          }, {
+            id: 4,
+            side: '',
+            type: 'dash2'
+          }],
           componentName: 'IoInput',
           meta: {
             isInvisible: false,
             isLock: false,
             isSelected: false,
             isDragged: false,
-            top: 50,
-            left: 60
+            top: 300,
+            left: 200
           },
         },
         {
           layerId: 2,
           layerName: 'Layer Name2',
-          layerNext: [],
+          connectionOut: [],
+          connectionIn: [{
+            id: 1,
+            side: '',
+          }],
           componentName: 'IoInput',
           meta: {
             isInvisible: false,
             isLock: false,
             isSelected: false,
-            top: 70,
+            top: 200,
             left: 650
           },
           child: [
@@ -124,32 +137,41 @@ const state = {
             }
           ]
         },
-        // {
-        //   layerId: 4,
-        //   layerName: 'Layer Name3',
-        //   layerNext: [2],
-        //   componentName: 'IoInput',
-        //   meta: {
-        //     isInvisible: false,
-        //     isLock: false,
-        //     isSelected: false,
-        //     top: 600,
-        //     left: 300
-        //   }
-        // },
-        // {
-        //   layerId: 5,
-        //   layerName: 'Layer Name5',
-        //   layerNext: [2],
-        //   componentName: 'IoInput',
-        //   meta: {
-        //     isInvisible: false,
-        //     isLock: false,
-        //     isSelected: false,
-        //     top: 600,
-        //     left: 300
-        //   }
-        // }
+        {
+          layerId: 4,
+          layerName: 'Layer Name3',
+          connectionOut: [],
+          connectionIn: [{
+            id: 1,
+            side: '',
+          }],
+          componentName: 'IoInput',
+          meta: {
+            isInvisible: false,
+            isLock: false,
+            isSelected: false,
+            top: 400,
+            left: 650
+          }
+        },
+        {
+          layerId: 5,
+          layerName: 'Layer Name5',
+          connectionOut: [{
+            id: 1,
+            side: '',
+            type: 'solid'
+          }],
+          connectionIn: [],
+          componentName: 'IoInput',
+          meta: {
+            isInvisible: false,
+            isLock: false,
+            isSelected: false,
+            top: 300,
+            left: 650
+          }
+        }
       ]
     },
     {
