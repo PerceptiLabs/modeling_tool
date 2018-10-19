@@ -12,12 +12,20 @@
             @click="setAppMode('edit')"
           )
             i.icon.icon-select
-        li
+        li.toolbar_list-arrow-wrap
           button.btn.btn--toolbar(type="button"
             :class="{'active': appMode == 'addArrow'}"
-            @click="setArrowType('solid')"
+            @click="setArrowType(arrowList[0].arrowType)"
           )
-            i.icon.icon-arrow-left
+            i.icon(:class="arrowList[0].iconClass")
+          ul.toolbar_list-arrow
+            li(
+              v-for="(arrow, index) in arrowList"
+              :key="index")
+              button.btn.btn--toolbar(type="button"
+              @click="setArrowType(arrow.arrowType, index)"
+              )
+                i.icon(:class="arrow.iconClass")
 
       ul.toolbar_list
         li
@@ -28,10 +36,16 @@
             i.icon.icon-step-next
       ul.toolbar_list
         li
-          button.btn.btn--toolbar(type="button")
+          button.btn.btn--toolbar(type="button"
+            :class="{'active': appMode == 'learn'}"
+            @click="setAppMode('learn')"
+          )
             i.icon.icon-on-off
         li
-          button.btn.btn--toolbar(type="button")
+          button.btn.btn--toolbar(type="button"
+            :class="{'active': appMode == 'learn-pause'}"
+            @click="setAppMode('learn-pause')"
+          )
             i.icon.icon-pause
         li
           button.btn.btn--toolbar(type="button")
@@ -69,6 +83,18 @@
       return {
         x: null,
         y: null,
+        arrowList: [
+          {
+            iconClass: 'icon-layer-arrow1',
+            arrowType: 'solid'
+          }, {
+            iconClass: 'icon-layer-arrow2',
+            arrowType: 'dash2'
+          }, {
+            iconClass: 'icon-layer-arrow3',
+            arrowType: 'dash1'
+          }
+        ]
       }
     },
     computed: {
@@ -101,8 +127,11 @@
         //this.$store.dispatch('mod_pythonAPI/PY_text', {x, y});
         this.$store.dispatch('mod_api/PY_func', {x, y});
       },
-      setArrowType(type) {
-        this.$store.commit('mod_workspace/SET_arrowType', {type, store: this.$store})
+      setArrowType(type, index) {
+        this.setAppMode('addArrow');
+        this.$store.commit('mod_workspace/SET_arrowType', {type, store: this.$store});
+        let selectArray = this.arrowList.splice(index, 1);
+        this.arrowList.unshift(selectArray[0]);
       },
       setAppMode(type) {
         this.$store.commit('globalView/SET_appMode', type)
@@ -145,8 +174,43 @@
     display: flex;
     align-items: center;
     border-left: 1px solid $toolbar-border;
-    li + li {
+    > li + li {
       margin-left: .3571rem;
+    }
+  }
+  .toolbar_list-arrow-wrap {
+    position: relative;
+    > .btn {
+      //background-color: $bg-toolbar;
+      position: relative;
+    }
+    &:hover {
+      > .btn {
+        //background-color: $bg-workspace-2;
+      }
+      .toolbar_list-arrow {
+        max-height: 7.5rem;
+        opacity: 1;
+      }
+    }
+  }
+  .toolbar_list-arrow {
+    @include multi-transition(max-height, opacity);
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    max-height: 0;
+    overflow: hidden;
+    li + li {
+      margin-top: 2px;
+    }
+    .btn {
+      z-index: 1;
+      background-color: $bg-workspace-2;
     }
   }
   .settings-wrap {

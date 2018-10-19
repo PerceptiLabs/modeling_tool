@@ -2,7 +2,7 @@ $folder: 'icomoon';
 
 @font-face {
   font-family: 'icomoon';
-  src:  url('#{$font-path}/#{$folder}/icomoon.woff?bq2jck') format('woff');
+  src:  url('#{$font-path}/#{$folder}/icomoon.woff?qk9vcq') format('woff');
   font-weight: normal;
   font-style: normal;
 }
@@ -189,4 +189,58 @@ $folder: 'icomoon';
 }
 .icon-check-mark:before {
   content: "\e937";
+}
+.icon-layer-arrow1:before {
+  content: "\e938";
+}
+.icon-layer-arrow2:before {
+  content: "\e939";
+}
+.icon-layer-arrow3:before {
+  content: "\e93a";
+}
+.icon-layer-net:before {
+  content: "\e93b";
+}
+.icon-layer-net-set:before {
+  content: "\e93c";
+}
+.icon-learning-dynamic:before {
+  content: "\e93d";
+}
+.icon-learning-genetic:before {
+  content: "\e93e";
+}
+.icon-learning-reinforcement:before {
+  content: "\e93f";
+}
+.icon-learning-reinforcement1:before {
+  content: "\e949";
+}
+.icon-training:before {
+  content: "\e940";
+}
+.icon-calc-softmax:before {
+  content: "\e941";
+}
+.icon-l-calc-argmax:before {
+  content: "\e942";
+}
+.icon-player-next:before {
+  content: "\e943";
+}
+.icon-player-pause:before {
+  content: "\e944";
+}
+.icon-player-prev:before {
+  content: "\e945";
+}
+.icon-player-play:before {
+  content: "\e946";
+}
+.icon-students-cap:before {
+  content: "\e947";
+}
+.icon-l-learn-normData:before {
+  content: "\e948";
 }

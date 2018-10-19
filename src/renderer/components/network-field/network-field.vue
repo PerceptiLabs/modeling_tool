@@ -17,7 +17,7 @@
         line.svg-arrow_line(
           marker-end="url(#svg-arrow_triangle)"
           :class="{'arrow--hidden': arrow.l1.meta.isInvisible || arrow.l2.meta.isInvisible}"
-          :stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7' : '14 7 3 7'))"
+          :stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
           :x1="arrow.positionArrow.x1"
           :y1="arrow.positionArrow.y1"
           :x2="arrow.positionArrow.x2"

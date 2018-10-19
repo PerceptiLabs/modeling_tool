@@ -33,11 +33,11 @@
 .btn--toolbar {
   height: 1.6363em;
   width: 1.6363em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   border-radius: 3px;
-  line-height: 1.6363em;
-  text-align: center;
   background-color: transparent;
-  //font-size: 1.375em;
   font-size: 1.375em;
   color: $col-primary;
   &:hover,

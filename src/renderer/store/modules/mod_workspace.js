@@ -227,7 +227,6 @@ const mutations = {
     state.startArrowID = value
   },
   SET_arrowType (state, value) {
-    value.store.commit('globalView/SET_appMode', 'addArrow');
     state.arrowType = value.type
   },
   ADD_workspace (state) {
@@ -267,7 +266,12 @@ const mutations = {
       return
     }
     let pathNet = state.workspaceContent[state.currentNetwork];
-    let indexStart = pathNet.network.findIndex((element, index, array)=> { return element.layerId == startID;})
+    let indexStart = pathNet.network.findIndex((element, index, array)=> { return element.layerId == startID;});
+    let findArrowType = pathNet.network[indexStart].connectionOut.findIndex((element, index, array)=> { return element.type == state.arrowType;});
+    if(findArrowType !== -1) {
+      alert('This type of connection already exists!');
+      return
+    }
     pathNet.network[indexStart].connectionOut.push({
       id: stopID,
       type: state.arrowType
