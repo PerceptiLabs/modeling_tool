@@ -183,13 +183,20 @@ const state = {
   ],
   currentNetwork: 0,
   dragElement: {},
-  arrowType: ''
+  arrowType: 'solid',
+  startArrowID: null
 };
 
 const mutations = {
   SET_metaSelect(state, value) {
-    // let node = createPathNode(value.path, state);
-    // node.meta.isSelected = value.setValue
+    //console.log(value);
+    //let node = createPathNode(value.path, state);
+    //node.meta.isSelected = value.setValue
+    let pathNet = state.workspaceContent[state.currentNetwork];
+    pathNet.network.forEach((el)=>{
+      el.meta.isSelected = false;
+    });
+    pathNet.network[value.path].meta.isSelected = value.setValue;
 
   },
   SET_metaLock(state, value) {
@@ -215,6 +222,9 @@ const mutations = {
   },
   SET_workspaceContent (state, value) {
     state.workspaceContent = value
+  },
+  SET_startArrowID (state, value) {
+    state.startArrowID = value
   },
   SET_arrowType (state, value) {
     value.store.commit('globalView/SET_appMode', 'addArrow');
@@ -250,6 +260,19 @@ const mutations = {
     state.dragElement.meta.top = event.offsetY - top;
     state.dragElement.meta.left = event.offsetX - left;
     state.workspaceContent[net].network.push(state.dragElement);
+  },
+  ADD_arrow(state, stopID) {
+    let startID = state.startArrowID;
+    if(stopID == startID) {
+      return
+    }
+    let pathNet = state.workspaceContent[state.currentNetwork];
+    let indexStart = pathNet.network.findIndex((element, index, array)=> { return element.layerId == startID;})
+    pathNet.network[indexStart].connectionOut.push({
+      id: stopID,
+      type: state.arrowType
+    });
+    state.startArrowID = null;
   },
   CHANGE_networkValue(state, path, value) {
 

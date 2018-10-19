@@ -9,7 +9,6 @@
     //@mousedown="bodyDown($event)"
     button.net-element_btn(type="button"
       ref="btn"
-      @blur="blurElement"
       )
       slot
 

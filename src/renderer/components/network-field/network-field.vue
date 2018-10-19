@@ -55,6 +55,9 @@ export default {
     workspace() {
       return this.$store.state.mod_workspace.workspaceContent[this.netIndex]
     },
+    startId() {
+      return this.$store.state.mod_workspace.startArrowID
+    },
     // currentNetwork() {
     //   return this.$store.state.mod_workspace.currentNetwork
     // },
@@ -63,6 +66,11 @@ export default {
   watch: {
     workspace() {
       this.createArrowList()
+    },
+    startId(newId) {
+      if(newId == null) {
+        this.createArrowList()
+      }
     }
   },
   methods: {

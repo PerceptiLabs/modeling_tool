@@ -31,14 +31,32 @@ const baseNetFunctional = {
     }
   },
   watch: {
+    appMode(newVal) {
+      if(newVal == 'addArrow') {
+        this.$parent.$parent.$el.addEventListener('mousemove', this.arrowMovePaint);
+        this.$refs.rootElement.addEventListener('mouseup', this.arrowEndPaint);
 
+        this.$parent.$parent.$el.addEventListener('touchmove', this.arrowMovePaint, true);
+        this.$refs.rootElement.addEventListener('touchend touchcancel', this.arrowEndPaint, true);
+        this.$refs.rootElement.addEventListener('touchstart', this.arrowEndPaint, true);
+      }
+      else {
+        this.$parent.$parent.$el.removeEventListener('mousemove', this.arrowMovePaint);
+        this.$refs.rootElement.removeEventListener('mouseup', this.arrowEndPaint);
+
+        this.$parent.$parent.$el.removeEventListener('touchmove', this.arrowMovePaint, true);
+        this.$refs.rootElement.removeEventListener('touchend touchcancel', this.arrowEndPaint, true);
+        this.$refs.rootElement.removeEventListener('touchstart', this.arrowEndPaint, true);
+      }
+    }
   },
   methods: {
     switchEvent(ev) {
-      if(this.appMode == 'edit') {
+      ev.stopPropagation();
+      if(this.appMode == 'edit' && !this.isLock) {
         this.bodyDown(ev)
       }
-      else if (this.appMode == 'addArrow') {
+      else if (this.appMode == 'addArrow' && !this.isLock) {
         this.arrowStartPaint(ev)
       }
     },
@@ -54,16 +72,16 @@ const baseNetFunctional = {
       this.settingsIsOpen = false;
       this.contextIsOpen = false;
     },
-    blurElement() {
-      this.deselect();
-    },
+    // blurElement() {
+    //   this.deselect();
+    // },
     setFocusBtn() {
       this.$refs.btn.focus();
       this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });
     },
     deselect() {
       this.hideAllWindow();
-      this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
+      //this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
     },
   }
 };

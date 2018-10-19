@@ -38,14 +38,14 @@ const baseNetDrag = {
     },
 
     bodyDown(ev) {
-      event.stopPropagation();
+      //event.stopPropagation();
 
-      document.documentElement.addEventListener('mousedown', this.deselect);//base-net-functional.js
+      //document.documentElement.addEventListener('mousedown', this.deselect);//base-net-functional.js
       this.setFocusBtn();//base-net-functional.js
 
-      if (this.isLock) {
-        return
-      }
+      // if (this.isLock) {
+      //   return
+      // }
 
       this.$parent.$parent.$el.addEventListener('mousemove', this.move);
       this.$parent.$parent.$el.addEventListener('mouseup', this.up);

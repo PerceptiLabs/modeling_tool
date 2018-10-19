@@ -1,18 +1,19 @@
 <template lang="pug">
   .layer-item-wrap
-    //@click="setSelect(itemIndex)"
+    //
     .layer-item(
-
       :class="{'selected': itemData.meta.isSelected}"
+      @click="setSelect(itemIndex)"
       )
       .layer-item_left-sidebar()
         button.btn.btn--icon(type="button")
           i.icon.icon-empty
       .layer-item_folder-section(:class="{'open': isOpen}")
-        button.btn.btn--icon(type="button"
+        i(v-if="itemData.child").icon.icon-folder
+        //button.btn.btn--icon(type="button"
           v-if="itemData.child"
           @click="toggleOpen()"
-        )
+          )
           i.icon.icon-shevron
           i.icon.icon-folder
       .layer-item_title
