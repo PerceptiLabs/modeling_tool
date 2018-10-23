@@ -3,7 +3,7 @@
   data-component="ProcessReshape"
   data-layer="Reshape"
   )
-    i.icon.icon-data
+    i.icon.icon-full-screen
 
 </template>
 

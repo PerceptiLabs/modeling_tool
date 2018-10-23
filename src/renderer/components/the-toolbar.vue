@@ -61,7 +61,7 @@
       .settings-wrap
         button.btn.btn--settings(type="button") View settings
 
-    .test-api
+    //.test-api
       span.big-text Dev Mode:
         span.text-error  {{ devMode }}
       span.big-text Version:
@@ -160,6 +160,7 @@
     .btn--toolbar {
       @include multi-transition(transform);
       transform: rotate(0);
+      margin: auto;
     }
     &.hide-layers {
       .btn--toolbar {

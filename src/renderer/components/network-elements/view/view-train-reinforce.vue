@@ -3,7 +3,7 @@
   data-component="TrainReinforce"
   data-layer="Reinforcement Learning"
   )
-    i.icon.icon-
+    i.icon.icon-learning-reinforcement
 
 </template>
 

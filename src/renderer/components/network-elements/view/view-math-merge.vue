@@ -1,15 +1,15 @@
 <template lang="pug">
   button.btn.btn--layersbar.net-element-math(type="button" :draggable="draggable"
-  data-component="MathArgmax"
-  data-layer="Argmax"
+  data-component="MathMerge"
+  data-layer="Merge"
   )
-    i.icon.icon-l-calc-argmax
+    i.icon.icon-road-concat
 
 </template>
 
 <script>
 export default {
-  name: 'ViewMathArgmax',
+  name: 'ViewMathMerge',
   props: {
     draggable: {
       type: Boolean,

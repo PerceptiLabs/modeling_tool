@@ -1,15 +1,15 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-train(:draggable="draggable"
-    data-component="TrainNormal"
-    data-layer="Normal"
+    data-component="TrainDynamic"
+    data-layer="Dynamic Routing"
   )
-    i.icon.icon-training
+    i.icon.icon-learning-dynamic
 
 </template>
 
 <script>
 export default {
-  name: 'ViewTrainNormal',
+  name: 'ViewTrainDynamic',
   props: {
     draggable: {
       type: Boolean,

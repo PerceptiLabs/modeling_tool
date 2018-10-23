@@ -2,7 +2,20 @@ const findIndexId = function (arr, ID) {
   return arr.findIndex(function(item) {return item.layerId == ID});
 };
 
-export {findIndexId}
+const clickOutside = function (event) {
+  if (event.target.closest('.btn') !== this.currentNode) {
+    document.removeEventListener('click', this.clickOutside);
+    this.clickOutsideAction();
+  }
+};
+
+export {findIndexId, clickOutside}
+
+
+
+
+
+
 //------------триугольники
 //polygon(class="svg-arrow_triangle" :points="arrow.t1.x+','+arrow.t1.y+' '+arrow.t2.x+','+arrow.t2.y+' '+arrow.t3.x+','+arrow.t3.y")
 // arrowsList() {

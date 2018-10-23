@@ -1,6 +1,6 @@
 <template lang="pug">
   .net-element(
-    ref="rootElement"
+    ref="rootBaseElement"
     :style="style"
     :class="active ? 'active' : 'inactive'"
     @dblclick.stop.prevent="openSettings"
@@ -9,6 +9,7 @@
     //@mousedown="bodyDown($event)"
     button.net-element_btn(type="button"
       ref="btn"
+      @blur="blurElement"
       )
       slot
 

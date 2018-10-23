@@ -1,6 +1,6 @@
 <template lang="pug">
   base-net-el(
-  :dataEl="data"
+    :dataEl="elementData"
   )
     view-el
     template(slot="context")
@@ -11,15 +11,18 @@
 <script>
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
   import ContextMenu  from '@/components/network-elements/net-context-menu/net-context-menu.vue';
-  import ViewEl       from '@/components/network-elements/view/view-io-output.vue';
+  import ViewEl       from '@/components/network-elements/view/view-data-data.vue';
   //import netElement   from '@/core/mixins/net-element.js';
 
   export default {
-    name: 'IoInput',
+    name: 'DataData',
     components: {
       BaseNetEl,
       ContextMenu,
       ViewEl
+    },
+    props: {
+      elementData: Object
     },
   }
 </script>

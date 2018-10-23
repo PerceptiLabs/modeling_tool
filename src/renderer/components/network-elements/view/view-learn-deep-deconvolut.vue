@@ -3,7 +3,7 @@
   data-component="LearnDeepDeconvolut"
   data-layer="Deconvolution"
   )
-    i.icon.icon-data
+    i.icon.icon-round-in
 
 </template>
 

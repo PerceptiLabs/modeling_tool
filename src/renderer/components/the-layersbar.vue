@@ -7,8 +7,7 @@
           :key="i"
         )
           button.btn.btn--layersbar.layer_parent(type="button"
-            v-tooltip="layer.tooltip"
-            @click="toggleElList(i)"
+            @click.stop="toggleElList(i, $event)"
             :class="[layer.layerClass, {'active': layer.showEl}]"
           )
             i.icon(:class="layer.iconClass")
@@ -35,207 +34,52 @@
 </template>
 
 <script>
-  import IoInput          from '@/components/network-elements/view/view-io-input.vue'
-  import IoOutput         from '@/components/network-elements/view/view-io-output.vue'
-  import DataData         from '@/components/network-elements/view/view-data-data.vue'
-  import DataEnvironment  from '@/components/network-elements/view/view-data-environment.vue'
-  import LearnDeepConnect  from '@/components/network-elements/view/view-learn-deep-connect.vue'
-  import LearnDeepConvolut  from '@/components/network-elements/view/view-learn-deep-convolut.vue'
-  import LearnDeepDeconvolut  from '@/components/network-elements/view/view-learn-deep-deconvolut.vue'
-  import LearnDeepRecurrent  from '@/components/network-elements/view/view-learn-deep-recurrent.vue'
-  import ProcessCrop  from '@/components/network-elements/view/view-process-crop.vue'
-  import ProcessEmbed  from '@/components/network-elements/view/view-process-embed.vue'
-  import ProcessGrayscale  from '@/components/network-elements/view/view-process-grayscale.vue'
-  import ProcessHot  from '@/components/network-elements/view/view-process-hot.vue'
-  import ProcessReshape  from '@/components/network-elements/view/view-process-reshape.vue'
-  import TrainNormal  from '@/components/network-elements/view/view-train-normal.vue'
-  import TrainReinforce  from '@/components/network-elements/view/view-train-reinforce.vue'
+  import {clickOutside} from '@/core/helpers.js'
 
-  // let layersbarData = [
-  //   {
-  //     tooltip: 'I/O',
-  //     layerClass: 'net-element-io',
-  //     iconClass: 'icon-data-toggle',
-  //     showEl: false,
-  //     networkElements: [
-  //       {
-  //         comp: true,
-  //         nameLayer: 'Input',
-  //         nameComponent: 'IoInput',
-  //         iconClass: 'icon-data-in'
-  //       },
-  //       {
-  //         nameLayer: 'Output',
-  //         nameComponent: 'io-output',
-  //         iconClass: 'icon-data-out'
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     tooltip: 'Data',
-  //     layerClass: 'net-element-data',
-  //     iconClass: 'icon-data',
-  //     showEl: false,
-  //     networkElements: [
-  //       {
-  //         nameLayer: 'Data',
-  //         nameComponent: 'data-data',
-  //         iconClass: 'icon-data'
-  //       },
-  //       {
-  //         nameLayer: 'Environment',
-  //         nameComponent: 'data-environment',
-  //         iconClass: 'icon-map'
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     tooltip: 'Processing',
-  //     layerClass: 'net-element-process',
-  //     iconClass: 'icon-settings',
-  //     showEl: false,
-  //     networkElements: [
-  //       {
-  //         nameLayer: 'Reshape',
-  //         nameComponent: 'process-reshape',
-  //         iconClass: 'icon-full-screen'
-  //       },
-  //       {
-  //         nameLayer: 'Word Embedding',
-  //         nameComponent: 'process-embed',
-  //         iconClass: 'icon-put-in-button'
-  //       },
-  //       {
-  //         nameLayer: 'Grayscale',
-  //         nameComponent: 'process-grayscale',
-  //         iconClass: 'icon-sieve'
-  //       },
-  //       {
-  //         nameLayer: 'One Hot',
-  //         nameComponent: 'process-hot',
-  //         iconClass: 'icon-'
-  //       },
-  //       {
-  //         nameLayer: 'Crop',
-  //         nameComponent: 'process-crop',
-  //         iconClass: 'icon-crop-symbol'
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     tooltip: 'Deep Learning',
-  //     layerClass: 'net-element-learn-deep',
-  //     iconClass: 'icon-network',
-  //     showEl: false,
-  //     networkElements: [
-  //       {
-  //         nameLayer: 'Fully Connected',
-  //         nameComponent: 'learn-deep-connect',
-  //         iconClass: 'icon-round'
-  //       },
-  //       {
-  //         nameLayer: 'Convolution',
-  //         nameComponent: 'learn-deep-convolut',
-  //         iconClass: 'icon-round-out'
-  //       },
-  //       {
-  //         nameLayer: 'Deconvolution',
-  //         nameComponent: 'learn-deep-deconvolut',
-  //         iconClass: 'icon-round-in'
-  //       },
-  //       {
-  //         nameLayer: 'Recurrent',
-  //         nameComponent: 'learn-deep-recurrent',
-  //         iconClass: 'icon-round-left'
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     tooltip: 'Training',
-  //     layerClass: 'net-element-train',
-  //     iconClass: 'icon-',
-  //     showEl: false,
-  //     networkElements: [
-  //       {
-  //         nameLayer: 'Normal',
-  //         nameComponent: 'train-normal',
-  //         iconClass: 'icon-'
-  //       },
-  //       {
-  //         nameLayer: 'Reinforcement Learning',
-  //         nameComponent: 'train-reinforce',
-  //         iconClass: 'icon-'
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     tooltip: 'Mathematics',
-  //     layerClass: 'net-element-math',
-  //     iconClass: 'icon-calc',
-  //     showEl: false,
-  //     networkElements: [
-  //       {
-  //         nameLayer: 'Split',
-  //         nameComponent: 'math-split',
-  //         iconClass: 'icon-road-split'
-  //       },
-  //       {
-  //         nameLayer: 'Argmax',
-  //         nameComponent: 'math-argmax',
-  //         iconClass: 'icon-'
-  //       },
-  //       {
-  //         nameLayer: 'Merge',
-  //         nameComponent: 'math-merge',
-  //         iconClass: 'icon-road-concat'
-  //       },
-  //       {
-  //         nameLayer: 'Softmax',
-  //         nameComponent: 'math-softmax',
-  //         iconClass: 'icon-'
-  //       }
-  //     ]
-  //   },
-  //   {
-  //     tooltip: 'Classic Machine Learning',
-  //     layerClass: 'net-element-learn-class',
-  //     iconClass: 'icon-mind',
-  //     showEl: false,
-  //     networkElements: [
-  //       {
-  //         nameLayer: 'K-Means Clustering',
-  //         nameComponent: 'learn-class-k-means',
-  //         iconClass: 'icon-round-sieve'
-  //       },
-  //       {
-  //         nameLayer: 'DBSCAN',
-  //         nameComponent: 'learn-class-dbscan',
-  //         iconClass: 'icon-round-three'
-  //       },
-  //       {
-  //         nameLayer: 'K Nearest Neighbor',
-  //         nameComponent: 'learn-class-k-nearest',
-  //         iconClass: 'icon-round-figur'
-  //       },
-  //       {
-  //         nameLayer: 'Random Forest',
-  //         nameComponent: 'learn-class-random-f',
-  //         iconClass: 'icon-trees'
-  //       },
-  //       {
-  //         nameLayer: 'Support Vector Machine',
-  //         nameComponent: 'learn-class-vector',
-  //         iconClass: 'icon-round-figur2'
-  //       }
-  //     ]
-  //   },
-  // ];
+  import IoInput              from '@/components/network-elements/view/view-io-input.vue'
+  import IoOutputBackprop     from '@/components/network-elements/view/view-io-output-backpropagation.vue'
+  import IoOutputGenetic      from '@/components/network-elements/view/view-io-output-genetic-algorithm.vue'
+  import IoOutputRouting      from '@/components/network-elements/view/view-io-output-routing-algorithm.vue'
+
+  import DataData             from '@/components/network-elements/view/view-data-data.vue'
+  import DataEnvironment      from '@/components/network-elements/view/view-data-environment.vue'
+
+  import LearnDeepConnect     from '@/components/network-elements/view/view-learn-deep-connect.vue'
+  import LearnDeepConvolut    from '@/components/network-elements/view/view-learn-deep-convolut.vue'
+  import LearnDeepDeconvolut  from '@/components/network-elements/view/view-learn-deep-deconvolut.vue'
+  import LearnDeepRecurrent   from '@/components/network-elements/view/view-learn-deep-recurrent.vue'
+
+  import ProcessCrop          from '@/components/network-elements/view/view-process-crop.vue'
+  import ProcessEmbed         from '@/components/network-elements/view/view-process-embed.vue'
+  import ProcessGrayscale     from '@/components/network-elements/view/view-process-grayscale.vue'
+  import ProcessHot           from '@/components/network-elements/view/view-process-hot.vue'
+  import ProcessReshape       from '@/components/network-elements/view/view-process-reshape.vue'
+
+  import TrainNormal          from '@/components/network-elements/view/view-train-normal.vue'
+  import TrainNormalData      from '@/components/network-elements/view/view-train-normal-data.vue'
+  import TrainGenetic         from '@/components/network-elements/view/view-train-genetic.vue'
+  import TrainDynamic         from '@/components/network-elements/view/view-train-dynamic.vue'
+  import TrainReinforce       from '@/components/network-elements/view/view-train-reinforce.vue'
+
+  import MathArgmax           from '@/components/network-elements/view/view-math-argmax.vue'
+  import MathMerge            from '@/components/network-elements/view/view-math-merge.vue'
+  import MathSoftmax          from '@/components/network-elements/view/view-math-softmax.vue'
+  import MathSplit            from '@/components/network-elements/view/view-math-split.vue'
+
+  import LearnClassDbscans    from '@/components/network-elements/view/view-learn-class-dbscans.vue'
+  import LearnClassKMeans     from '@/components/network-elements/view/view-learn-class-k-means.vue'
+  import LearnClassKNearest   from '@/components/network-elements/view/view-learn-class-k-nearest.vue'
+  import LearnClassRandomForest  from '@/components/network-elements/view/view-learn-class-random-forest.vue'
+  import LearnClassVectorMachine from '@/components/network-elements/view/view-learn-class-vector-machine.vue'
+
 
 export default {
   name: 'TheLayersbar',
   components: {
     IoInput,
-    IoOutput,
+    IoOutputBackprop,
+    IoOutputGenetic,
+    IoOutputRouting,
     DataData,
     DataEnvironment,
     LearnDeepConnect,
@@ -248,7 +92,19 @@ export default {
     ProcessHot,
     ProcessReshape,
     TrainNormal,
+    TrainNormalData,
+    TrainGenetic,
+    TrainDynamic,
     TrainReinforce,
+    MathArgmax,
+    MathMerge,
+    MathSoftmax,
+    MathSplit,
+    LearnClassDbscans,
+    LearnClassKMeans,
+    LearnClassKNearest,
+    LearnClassRandomForest,
+    LearnClassVectorMachine
   },
   data() {
     return {
@@ -258,7 +114,7 @@ export default {
           layerClass: 'net-element-io',
           iconClass: 'icon-data-toggle',
           showEl: false,
-          networkElements: ['IoInput', 'IoOutput']
+          networkElements: ['IoInput', 'IoOutputBackprop', 'IoOutputGenetic', 'IoOutputRouting']
         },
         {
           tooltip: 'Data',
@@ -266,17 +122,6 @@ export default {
           iconClass: 'icon-data',
           showEl: false,
           networkElements: ['DataData', 'DataEnvironment']
-            // {
-            //   nameLayer: 'Data',
-            //   nameComponent: 'data-data',
-            //   iconClass: 'icon-data'
-            // },
-            // {
-            //   nameLayer: 'Environment',
-            //   nameComponent: 'data-environment',
-            //   iconClass: 'icon-map'
-            // }
-          //]
         },
         {
           tooltip: 'Processing',
@@ -284,32 +129,6 @@ export default {
           iconClass: 'icon-settings',
           showEl: false,
           networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot', 'process-crop']
-            // {
-            //   nameLayer: 'Reshape',
-            //   nameComponent: 'process-reshape',
-            //   iconClass: 'icon-full-screen'
-            // },
-            // {
-            //   nameLayer: 'Word Embedding',
-            //   nameComponent: 'process-embed',
-            //   iconClass: 'icon-put-in-button'
-            // },
-            // {
-            //   nameLayer: 'Grayscale',
-            //   nameComponent: 'process-grayscale',
-            //   iconClass: 'icon-sieve'
-            // },
-            // {
-            //   nameLayer: 'One Hot',
-            //   nameComponent: 'process-hot',
-            //   iconClass: 'icon-'
-            // },
-            // {
-            //   nameLayer: 'Crop',
-            //   nameComponent: 'process-crop',
-            //   iconClass: 'icon-crop-symbol'
-            // }
-          //]
         },
         {
           tooltip: 'Deep Learning',
@@ -317,108 +136,31 @@ export default {
           iconClass: 'icon-network',
           showEl: false,
           networkElements: [ 'LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent',
-            // {
-            //   nameLayer: 'Fully Connected',
-            //   nameComponent: 'learn-deep-connect',
-            //   iconClass: 'icon-round'
-            // },
-            // {
-            //   nameLayer: 'Convolution',
-            //   nameComponent: 'learn-deep-convolut',
-            //   iconClass: 'icon-round-out'
-            // },
-            // {
-            //   nameLayer: 'Deconvolution',
-            //   nameComponent: 'learn-deep-deconvolut',
-            //   iconClass: 'icon-round-in'
-            // },
-            // {
-            //   nameLayer: 'Recurrent',
-            //   nameComponent: 'learn-deep-recurrent',
-            //   iconClass: 'icon-round-left'
-            // }
           ]
         },
         {
           tooltip: 'Training',
           layerClass: 'net-element-train',
-          iconClass: 'icon-',
+          iconClass: 'icon-training',
           showEl: false,
-          networkElements: ['TrainNormal', 'TrainReinforce'
-            // {
-            //   nameLayer: 'Normal',
-            //   nameComponent: 'train-normal',
-            //   iconClass: 'icon-'
-            // },
-            // {
-            //   nameLayer: 'Reinforcement Learning',
-            //   nameComponent: 'train-reinforce',
-            //   iconClass: 'icon-'
-            // }
-          ]
+          networkElements: ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
         },
         {
           tooltip: 'Mathematics',
           layerClass: 'net-element-math',
           iconClass: 'icon-calc',
           showEl: false,
-          networkElements: [
-            // {
-            //   nameLayer: 'Split',
-            //   nameComponent: 'math-split',
-            //   iconClass: 'icon-road-split'
-            // },
-            // {
-            //   nameLayer: 'Argmax',
-            //   nameComponent: 'math-argmax',
-            //   iconClass: 'icon-'
-            // },
-            // {
-            //   nameLayer: 'Merge',
-            //   nameComponent: 'math-merge',
-            //   iconClass: 'icon-road-concat'
-            // },
-            // {
-            //   nameLayer: 'Softmax',
-            //   nameComponent: 'math-softmax',
-            //   iconClass: 'icon-'
-            // }
-          ]
+          networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax']
         },
         {
           tooltip: 'Classic Machine Learning',
           layerClass: 'net-element-learn-class',
           iconClass: 'icon-mind',
           showEl: false,
-          networkElements: [
-            // {
-            //   nameLayer: 'K-Means Clustering',
-            //   nameComponent: 'learn-class-k-means',
-            //   iconClass: 'icon-round-sieve'
-            // },
-            // {
-            //   nameLayer: 'DBSCAN',
-            //   nameComponent: 'learn-class-dbscan',
-            //   iconClass: 'icon-round-three'
-            // },
-            // {
-            //   nameLayer: 'K Nearest Neighbor',
-            //   nameComponent: 'learn-class-k-nearest',
-            //   iconClass: 'icon-round-figur'
-            // },
-            // {
-            //   nameLayer: 'Random Forest',
-            //   nameComponent: 'learn-class-random-f',
-            //   iconClass: 'icon-trees'
-            // },
-            // {
-            //   nameLayer: 'Support Vector Machine',
-            //   nameComponent: 'learn-class-vector',
-            //   iconClass: 'icon-round-figur2'
-            // }
-          ]
+          networkElements: ['LearnClassDbscans', 'LearnClassKMeans', 'LearnClassKNearest', 'LearnClassRandomForest', 'LearnClassVectorMachine']
         }
-      ]
+      ],
+      currentNode: null
     }
   },
   computed: {
@@ -427,16 +169,20 @@ export default {
     },
   },
   methods: {
-    toggleElList(index) {
+    clickOutside,
+    toggleElList(index, ev) {
+      this.currentNode = ev.target.closest('.btn');
+      document.addEventListener('click', this.clickOutside);
+
       if (this.layersbarList[index].showEl) {
         this.layersbarList[index].showEl = false
       }
       else {
-        this.closeElList();
+        this.clickOutsideAction();
         this.layersbarList[index].showEl = true;
       }
     },
-    closeElList() {
+    clickOutsideAction() {
       this.layersbarList.forEach((item)=> {
         item.showEl = false
       })
@@ -487,6 +233,12 @@ export default {
     list-style: none;
     opacity: 0;
     visibility: hidden;
+    @media (max-height: 1000px) {
+      .layer:nth-child(n+5) & {
+        bottom: 0;
+        top: auto;
+      }
+    }
     .active + & {
       transform: translateX(100%);
       opacity: 1;

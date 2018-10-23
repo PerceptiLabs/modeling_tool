@@ -14,13 +14,13 @@ const baseNetFunctional = {
     }
   },
   mounted() {
-    this.$refs.rootElement.addEventListener('mousedown', this.switchEvent);
-    this.$refs.rootElement.addEventListener('touchstart', this.switchEvent);
+    this.$refs.rootBaseElement.addEventListener('mousedown', this.switchEvent);
+    this.$refs.rootBaseElement.addEventListener('touchstart', this.switchEvent);
   },
 
   beforeDestroy() {
-    this.$refs.rootElement.removeEventListener('mousedown', this.switchEvent);
-    this.$refs.rootElement.removeEventListener('touchstart', this.switchEvent);
+    this.$refs.rootBaseElement.removeEventListener('mousedown', this.switchEvent);
+    this.$refs.rootBaseElement.removeEventListener('touchstart', this.switchEvent);
   },
   computed: {
     active() {
@@ -34,19 +34,19 @@ const baseNetFunctional = {
     appMode(newVal) {
       if(newVal == 'addArrow') {
         this.$parent.$parent.$el.addEventListener('mousemove', this.arrowMovePaint);
-        this.$refs.rootElement.addEventListener('mouseup', this.arrowEndPaint);
+        this.$refs.rootBaseElement.addEventListener('mouseup', this.arrowEndPaint);
 
         this.$parent.$parent.$el.addEventListener('touchmove', this.arrowMovePaint, true);
-        this.$refs.rootElement.addEventListener('touchend touchcancel', this.arrowEndPaint, true);
-        this.$refs.rootElement.addEventListener('touchstart', this.arrowEndPaint, true);
+        this.$refs.rootBaseElement.addEventListener('touchend touchcancel', this.arrowEndPaint, true);
+        this.$refs.rootBaseElement.addEventListener('touchstart', this.arrowEndPaint, true);
       }
       else {
         this.$parent.$parent.$el.removeEventListener('mousemove', this.arrowMovePaint);
-        this.$refs.rootElement.removeEventListener('mouseup', this.arrowEndPaint);
+        this.$refs.rootBaseElement.removeEventListener('mouseup', this.arrowEndPaint);
 
         this.$parent.$parent.$el.removeEventListener('touchmove', this.arrowMovePaint, true);
-        this.$refs.rootElement.removeEventListener('touchend touchcancel', this.arrowEndPaint, true);
-        this.$refs.rootElement.removeEventListener('touchstart', this.arrowEndPaint, true);
+        this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.arrowEndPaint, true);
+        this.$refs.rootBaseElement.removeEventListener('touchstart', this.arrowEndPaint, true);
       }
     }
   },
@@ -72,16 +72,16 @@ const baseNetFunctional = {
       this.settingsIsOpen = false;
       this.contextIsOpen = false;
     },
-    // blurElement() {
-    //   this.deselect();
-    // },
+    blurElement() {
+      this.deselect();
+    },
     setFocusBtn() {
       this.$refs.btn.focus();
       this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });
     },
     deselect() {
       this.hideAllWindow();
-      //this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
+      this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
     },
   }
 };

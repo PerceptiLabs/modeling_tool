@@ -1,7 +1,7 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-data(:draggable="draggable"
-  data-component="DataEnvironment"
-  data-layer="Environment"
+    data-component="DataEnvironment"
+    data-layer="Environment"
   )
     i.icon.icon-map
 

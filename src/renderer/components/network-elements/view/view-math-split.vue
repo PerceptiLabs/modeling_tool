@@ -1,15 +1,15 @@
 <template lang="pug">
   button.btn.btn--layersbar.net-element-math(type="button" :draggable="draggable"
-  data-component="DataData"
-  data-layer="Data"
+  data-component="MathSplit"
+  data-layer="Split"
   )
-    i.icon.icon-data
+    i.icon.icon-road-split
 
 </template>
 
 <script>
 export default {
-  name: 'ViewDataData',
+  name: 'ViewMathSplit',
   props: {
     draggable: {
       type: Boolean,
