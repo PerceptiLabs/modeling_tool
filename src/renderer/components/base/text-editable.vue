@@ -29,6 +29,11 @@ export default {
       default: ''
     }
   },
+  watch: {
+    textTitle(newText) {
+      this.inputText = newText;
+    }
+  },
   methods: {
     openEditMode() {
       this.editMode = true;

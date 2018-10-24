@@ -1,0 +1,28 @@
+.popup {
+  border-radius: $bdrs;
+  overflow: hidden;
+  background-color: #4D556A;
+  opacity: .9;
+}
+.popup_header {
+  height: 3.5rem;
+  color: $col-txt;
+  background: $bg-grad-blue;
+  box-shadow: $icon-shad;
+
+  &.disable {
+    color: $disable-txt;
+    background-color: $col-txt2;
+    box-shadow: none;
+  }
+}
+.popup_tab-set {
+  display: flex;
+  .popup_header {
+    flex: 1 1 100%;
+  }
+}
+
+.popup_body {
+
+}

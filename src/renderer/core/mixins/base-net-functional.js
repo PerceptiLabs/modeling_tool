@@ -54,6 +54,7 @@ const baseNetFunctional = {
     switchEvent(ev) {
       ev.stopPropagation();
       if(this.appMode == 'edit' && !this.isLock) {
+        this.setFocusBtn(ev);
         this.bodyDown(ev)
       }
       else if (this.appMode == 'addArrow' && !this.isLock) {
@@ -61,6 +62,7 @@ const baseNetFunctional = {
       }
     },
     openSettings() {
+      console.log('openSettings');
       this.hideAllWindow();
       this.settingsIsOpen = true;
     },
@@ -73,11 +75,14 @@ const baseNetFunctional = {
       this.contextIsOpen = false;
     },
     blurElement() {
-      this.deselect();
+      //this.deselect();
     },
-    setFocusBtn() {
+    setFocusBtn(ev) {
       this.$refs.btn.focus();
-      this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });
+      if(ev.ctrlKey) {
+        this.$store.commit('mod_workspace/SET_metaMultiSelect', { path: [this.dataEl.index], setValue: true });
+      }
+      else this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });
     },
     deselect() {
       this.hideAllWindow();

@@ -6,7 +6,8 @@ $layers-sidebar: (
         'train': $bg-grad-cyan,
         'math': linear-gradient(#7389FE, #6167EE),
         'learn-class': linear-gradient(#E273FE, #B061EE),
-        'add': #4A5367
+        'add': #4A5367,
+        'layercontainer': linear-gradient(#E8F551, #9AF142),
 );
 
 @each $name, $color in $layers-sidebar {
@@ -24,7 +25,8 @@ $layers-sidebar-active: (
         'train': linear-gradient(#58C28F, #44A1A7),
         'math': linear-gradient(#5866B1, #474BB4),
         'learn-class': linear-gradient(#AF58C5, #76449D),
-        'add': #4A5367
+        'add': #4A5367,
+        'layercontainer': linear-gradient(#A0A839, #6AA32D),
 );
 
 @each $name, $color in $layers-sidebar-active {
@@ -66,4 +68,8 @@ $layers-sidebar-active: (
 .element--hidden .net-element_btn,
 .arrow--hidden {
   opacity: .1;
+}
+/*SETTINGS*/
+.net-el-set {
+
 }

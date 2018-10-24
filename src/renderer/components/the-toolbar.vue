@@ -37,8 +37,8 @@
       ul.toolbar_list
         li
           button.btn.btn--toolbar(type="button"
-            :class="{'active': appMode == 'learn'}"
-            @click="setAppMode('learn')"
+            :class="statusStartBtn"
+            @click="setAppMode('learning')"
           )
             i.icon.icon-on-off
         li
@@ -48,7 +48,9 @@
           )
             i.icon.icon-pause
         li
-          button.btn.btn--toolbar(type="button")
+          button.btn.btn--toolbar(type="button"
+            @click="setAppMode('edit')"
+          )
             i.icon.icon-next
       ul.toolbar_list
         li
@@ -98,6 +100,12 @@
       }
     },
     computed: {
+      statusStartBtn() {
+        return {
+          'text-error': this.appMode == 'learning' || this.appMode == 'learn-pause',
+          'text-danger': this.appMode == 'learn-done',
+        }
+      },
       hideLayers () {
         return this.$store.state.globalView.hideLayers
       },

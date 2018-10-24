@@ -47,6 +47,9 @@ export default {
     //   }
     //   this.network.push(layer);
     // },
+    deleteTabNetwork(index) {
+      this.$store.commit('mod_workspace/DELETE_workspaceTab', index)
+    },
     setTabNetwork(index) {
       this.$store.commit('mod_workspace/SET_currentNetwork', index)
     },

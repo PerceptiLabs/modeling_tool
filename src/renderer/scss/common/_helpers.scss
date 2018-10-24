@@ -144,14 +144,15 @@ $prevBreakPoint: 'xxlarge';
 .text-error {
   color: $col-error;
 }
-//
-//.text-primary {
-//  color: $col-primary;
-//}
-//
-//.text-success {
-//  color: $col-success;
-//}
+.text-warning {
+  color: $col-warning;
+}
+.text-primary {
+  color: $col-primary;
+}
+.text-success {
+  color: $col-success;
+}
 
 .text-capitalize {
   text-transform: capitalize;

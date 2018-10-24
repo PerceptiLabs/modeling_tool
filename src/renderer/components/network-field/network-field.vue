@@ -34,44 +34,44 @@
 </template>
 
 <script>
-  // import IoInput from '@/components/network-elements/io-input.vue'
-  // import IoOutputBackpropagation from '@/components/network-elements/io-output-backpropagation.vue'
+  
+  import IoInput              from '@/components/network-elements/elements/io-input.vue'
+  import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation.vue'
+  import IoOutputGenetic      from '@/components/network-elements/elements/io-output-genetic-algorithm.vue'
+  import IoOutputRouting      from '@/components/network-elements/elements/io-output-routing-algorithm.vue'
 
-  import IoInput              from '@/components/network-elements/io-input.vue'
-  import IoOutputBackprop     from '@/components/network-elements/io-output-backpropagation.vue'
-  import IoOutputGenetic      from '@/components/network-elements/io-output-genetic-algorithm.vue'
-  import IoOutputRouting      from '@/components/network-elements/io-output-routing-algorithm.vue'
+  import DataData             from '@/components/network-elements/elements/data-data.vue'
+  import DataEnvironment      from '@/components/network-elements/elements/data-environment.vue'
 
-  import DataData             from '@/components/network-elements/data-data.vue'
-  import DataEnvironment      from '@/components/network-elements/data-environment.vue'
+  import LearnDeepConnect     from '@/components/network-elements/elements/learn-deep-connect.vue'
+  import LearnDeepConvolut    from '@/components/network-elements/elements/learn-deep-convolut.vue'
+  import LearnDeepDeconvolut  from '@/components/network-elements/elements/learn-deep-deconvolut.vue'
+  import LearnDeepRecurrent   from '@/components/network-elements/elements/learn-deep-recurrent.vue'
 
-  import LearnDeepConnect     from '@/components/network-elements/learn-deep-connect.vue'
-  import LearnDeepConvolut    from '@/components/network-elements/learn-deep-convolut.vue'
-  import LearnDeepDeconvolut  from '@/components/network-elements/learn-deep-deconvolut.vue'
-  import LearnDeepRecurrent   from '@/components/network-elements/learn-deep-recurrent.vue'
+  import ProcessCrop          from '@/components/network-elements/elements/process-crop.vue'
+  import ProcessEmbed         from '@/components/network-elements/elements/process-embed.vue'
+  import ProcessGrayscale     from '@/components/network-elements/elements/process-grayscale.vue'
+  import ProcessHot           from '@/components/network-elements/elements/process-hot.vue'
+  import ProcessReshape       from '@/components/network-elements/elements/process-reshape.vue'
 
-  import ProcessCrop          from '@/components/network-elements/process-crop.vue'
-  import ProcessEmbed         from '@/components/network-elements/process-embed.vue'
-  import ProcessGrayscale     from '@/components/network-elements/process-grayscale.vue'
-  import ProcessHot           from '@/components/network-elements/process-hot.vue'
-  import ProcessReshape       from '@/components/network-elements/process-reshape.vue'
+  import TrainNormal          from '@/components/network-elements/elements/train-normal.vue'
+  import TrainNormalData      from '@/components/network-elements/elements/train-normal-data.vue'
+  import TrainGenetic         from '@/components/network-elements/elements/train-genetic.vue'
+  import TrainDynamic         from '@/components/network-elements/elements/train-dynamic.vue'
+  import TrainReinforce       from '@/components/network-elements/elements/train-reinforce.vue'
 
-  import TrainNormal          from '@/components/network-elements/train-normal.vue'
-  import TrainNormalData      from '@/components/network-elements/train-normal-data.vue'
-  import TrainGenetic         from '@/components/network-elements/train-genetic.vue'
-  import TrainDynamic         from '@/components/network-elements/train-dynamic.vue'
-  import TrainReinforce       from '@/components/network-elements/train-reinforce.vue'
+  import MathArgmax           from '@/components/network-elements/elements/math-argmax.vue'
+  import MathMerge            from '@/components/network-elements/elements/math-merge.vue'
+  import MathSoftmax          from '@/components/network-elements/elements/math-softmax.vue'
+  import MathSplit            from '@/components/network-elements/elements/math-split.vue'
 
-  import MathArgmax           from '@/components/network-elements/math-argmax.vue'
-  import MathMerge            from '@/components/network-elements/math-merge.vue'
-  import MathSoftmax          from '@/components/network-elements/math-softmax.vue'
-  import MathSplit            from '@/components/network-elements/math-split.vue'
-  //
-  import LearnClassDbscans    from '@/components/network-elements/learn-class-dbscans.vue'
-  import LearnClassKMeans     from '@/components/network-elements/learn-class-k-means.vue'
-  import LearnClassKNearest   from '@/components/network-elements/learn-class-k-nearest.vue'
-  import LearnClassRandomForest  from '@/components/network-elements/learn-class-random-forest.vue'
-  import LearnClassVectorMachine from '@/components/network-elements/learn-class-vector-machine.vue'
+  import LearnClassDbscans    from '@/components/network-elements/elements/learn-class-dbscans.vue'
+  import LearnClassKMeans     from '@/components/network-elements/elements/learn-class-k-means.vue'
+  import LearnClassKNearest   from '@/components/network-elements/elements/learn-class-k-nearest.vue'
+  import LearnClassRandomForest  from '@/components/network-elements/elements/learn-class-random-forest.vue'
+  import LearnClassVectorMachine from '@/components/network-elements/elements/learn-class-vector-machine.vue'
+
+  import LayerContainer       from '@/components/network-elements/elements/layer-container.vue'
 
 export default {
   name: 'NetworkField',
@@ -104,7 +104,8 @@ export default {
     LearnClassKMeans,
     LearnClassKNearest,
     LearnClassRandomForest,
-    LearnClassVectorMachine
+    LearnClassVectorMachine,
+    LayerContainer
   },
   props: ['netIndex'],
   data() {
@@ -117,14 +118,14 @@ export default {
   },
   computed: {
     workspace() {
-      return this.$store.state.mod_workspace.workspaceContent[this.netIndex]
+      return this.$store.state.mod_workspace.workspaceContent[this.currentNetwork]
     },
     startId() {
       return this.$store.state.mod_workspace.startArrowID
     },
-    // currentNetwork() {
-    //   return this.$store.state.mod_workspace.currentNetwork
-    // },
+    currentNetwork() {
+      return this.$store.state.mod_workspace.currentNetwork
+    },
 
   },
   watch: {
@@ -186,7 +187,6 @@ export default {
                 enumerable: true,
                 configurable: false
               });
-
               findSideMinLength(newArrow.l1, newArrow.l2, newArrow);
               connectList.push(newArrow);
             }
@@ -195,7 +195,6 @@ export default {
       }
       function findSideMinLength(l1, l2, currentEl) {
         let position = '';
-
         (l1.meta.top <= l2.meta.top) ? position = position + 'b' : position = position + 't';
         (l1.meta.left <= l2.meta.left) ? position = position + 'r' : position = position + 'l';
 

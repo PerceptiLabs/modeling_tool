@@ -3,7 +3,7 @@
     ref="rootBaseElement"
     :style="style"
     :class="active ? 'active' : 'inactive'"
-    @dblclick.stop.prevent="openSettings"
+    @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings"
     @contextmenu.stop.prevent="openContext"
     )
     //@mousedown="bodyDown($event)"
@@ -29,8 +29,9 @@ export default {
   name: 'NetBaseElement',
   mixins: [baseNetDrag, baseNetFunctional, baseNetPaintArrows],
   props: {
-    layerClass: {type: String, default: ''},
-    iconClass:  {type: String, default: ''},
+    layerContainer: {type: Boolean, default: false},
+    // layerClass: {type: String, default: ''},
+    // iconClass:  {type: String, default: ''},
   },
   data() {
       return {

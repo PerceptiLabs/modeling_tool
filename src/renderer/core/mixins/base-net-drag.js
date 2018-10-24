@@ -41,7 +41,7 @@ const baseNetDrag = {
       //event.stopPropagation();
 
       //document.documentElement.addEventListener('mousedown', this.deselect);//base-net-functional.js
-      this.setFocusBtn();//base-net-functional.js
+      //base-net-functional.js
 
       // if (this.isLock) {
       //   return

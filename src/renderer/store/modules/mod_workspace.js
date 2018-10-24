@@ -16,7 +16,7 @@ const state = {
       network: [
         {
           layerId: 1,
-          layerName: 'Layer Name1',
+          layerName: 'Layer Name 1',
           connectionOut: [{
             id: 2,
             type: 'dash1'
@@ -24,21 +24,20 @@ const state = {
             id: 4,
             type: 'dash2'
           }],
-          componentName: 'IoInput',
+          componentName: 'DataData',
           meta: {
             isInvisible: false,
             isLock: false,
             isSelected: false,
-            isDragged: false,
             top: 300,
             left: 200
           },
         },
         {
           layerId: 2,
-          layerName: 'Layer Name2',
+          layerName: 'Layer Name 2',
           connectionOut: [],
-          componentName: 'IoInput',
+          componentName: 'LayerContainer',
           meta: {
             isInvisible: false,
             isLock: false,
@@ -49,11 +48,11 @@ const state = {
           child: [
             {
               layerId: 21,
-              layerName: 'Layer Name21',
-              layerNext: [],
-              componentName: 'IoInput',
+              layerName: 'Layer Name 21',
+              connectionOut: [],
+              componentName: 'LayerContainer',
               meta: {
-                isInvisible: true,
+                isInvisible: false,
                 isLock: false,
                 isSelected: false,
                 top: 50,
@@ -62,11 +61,11 @@ const state = {
               child: [
                 {
                   layerId: 211,
-                  layerName: 'Layer Name211',
-                  layerNext: [],
+                  layerName: 'Layer Name 211',
+                  connectionOut: [],
                   componentName: 'IoInput',
                   meta: {
-                    isInvisible: true,
+                    isInvisible: false,
                     isLock: false,
                     isSelected: false,
                     top: 50,
@@ -75,24 +74,24 @@ const state = {
                 },
                 {
                   layerId: 212,
-                  layerName: 'Layer Name212',
-                  layerNext: [],
-                  componentName: 'IoInput',
+                  layerName: 'Layer Name 212',
+                  connectionOut: [],
+                  componentName: 'LayerContainer',
                   meta: {
-                    isInvisible: true,
+                    isInvisible: false,
                     isLock: false,
                     isSelected: false,
                     top: 50,
-                    left: 60
+                    left: 160
                   },
                   child: [
                     {
                       layerId: 2121,
                       layerName: 'Layer Name 2121',
-                      layerNext: [],
+                      connectionOut: [],
                       componentName: 'IoInput',
                       meta: {
-                        isInvisible: true,
+                        isInvisible: false,
                         isLock: false,
                         isSelected: false,
                         top: 50,
@@ -102,13 +101,13 @@ const state = {
                     {
                       layerId: 2122,
                       layerName: 'Layer Name 2122',
-                      layerNext: [],
+                      connectionOut: [],
                       componentName: 'IoInput',
                       meta: {
-                        isInvisible: true,
+                        isInvisible: false,
                         isLock: false,
                         isSelected: false,
-                        top: 50,
+                        top: 250,
                         left: 60
                       },
                     },
@@ -117,15 +116,18 @@ const state = {
               ]
             },
             {
-              layerId: 12,
-              layerName: 'Layer Name12',
-              layerNext: [2, 4],
+              layerId: 22,
+              layerName: 'Layer Name 22',
+              connectionOut: [{
+                id: 21,
+                type: 'dash1'
+              }],
               componentName: 'IoInput',
               meta: {
-                isInvisible: true,
+                isInvisible: false,
                 isLock: false,
                 isSelected: false,
-                top: 50,
+                top: 150,
                 left: 60
               },
             }
@@ -133,9 +135,9 @@ const state = {
         },
         {
           layerId: 4,
-          layerName: 'Layer Name3',
+          layerName: 'Layer Name 3',
           connectionOut: [],
-          componentName: 'IoInput',
+          componentName: 'LearnClassVectorMachine',
           meta: {
             isInvisible: false,
             isLock: false,
@@ -146,12 +148,12 @@ const state = {
         },
         {
           layerId: 5,
-          layerName: 'Layer Name5',
+          layerName: 'Layer Name 5',
           connectionOut: [{
             id: 1,
             type: 'solid'
           }],
-          componentName: 'IoInput',
+          componentName: 'TrainGenetic',
           meta: {
             isInvisible: false,
             isLock: false,
@@ -197,7 +199,10 @@ const mutations = {
       el.meta.isSelected = false;
     });
     pathNet.network[value.path].meta.isSelected = value.setValue;
-
+  },
+  SET_metaMultiSelect(state, value) {
+    let pathNet = state.workspaceContent[state.currentNetwork];
+    pathNet.network[value.path].meta.isSelected = value.setValue;
   },
   SET_metaLock(state, value) {
     let node = createPathNode(value, state);
@@ -277,6 +282,21 @@ const mutations = {
       type: state.arrowType
     });
     state.startArrowID = null;
+  },
+  SHOW_layerContainer(state, index) {
+    let box = state.workspaceContent[state.currentNetwork].network[index];
+    let newTab = {
+      networkName: box.layerName,
+      network: box.child
+    };
+    state.workspaceContent.push(newTab);
+    state.currentNetwork = state.workspaceContent.length - 1;
+  },
+  DELETE_workspaceTab(state, index) {
+    if(state.currentNetwork >= index) {
+      state.currentNetwork = state.currentNetwork - 1
+    }
+    state.workspaceContent.splice(index, 1);
   },
   CHANGE_networkValue(state, path, value) {
 
