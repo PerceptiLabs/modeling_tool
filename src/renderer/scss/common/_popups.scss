@@ -49,20 +49,24 @@
   }
 }
 .popup_body {
-  padding: $pad-top $pad-left;
+  display: flex;
+  &.indent {
+    padding: $popup-indent-top $popup-indent-left;
+  }
 }
 .popup_foot {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
+  padding: 0 $popup-indent-left $popup-indent-top;
   > * + * {
     margin-left: 2rem;
   }
 }
-.popup_line {
-  margin-left: -$pad-left;
-  margin-right: -$pad-left;
-  height: 1px;
-  background-color: $bg-input;
-}
+//.popup_line {
+//  margin-left: -$popup-indent-left;
+//  margin-right: -$popup-indent-left;
+//  height: 1px;
+//  background-color: $bg-input;
+//}

@@ -79,6 +79,7 @@ $input-holder-margin: .75rem;
 
 /*----- Global layout -----*/
 $vert-indent: 20px;
+$form-indent: 1rem;
 $bdrs: .5rem;
 //$w-layersbar: 5.7143rem; //80px
 //$size-layers-btn: 5rem; //70px
@@ -106,5 +107,5 @@ $base-min-width: 320px;
 $animation-speed: .3s; // for mixin
 
 /*----- Popup -----*/
-$pad-top: 2rem;
-$pad-left: 1rem;
+$popup-indent-top: 2rem;
+$popup-indent-left: 1rem;

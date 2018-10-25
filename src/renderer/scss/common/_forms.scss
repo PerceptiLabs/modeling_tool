@@ -104,16 +104,26 @@ input[type='submit'] {
   font-size: 1.4rem;
 }
 
+.form_holder {
+  display: block;
+  width: 100%;
+  margin-bottom: $form-indent;
+  .form_label {
+    display: block;
+    margin-bottom: $form-indent/2;
+  }
+}
+
 .form_row {
   display: flex;
   align-items: center;
   + .form_row {
-    margin-top: 1rem;
+    margin-top: $form-indent;
   }
   .form_input {
     flex-grow: 1;
     + .btn {
-      margin-left: 1rem;
+      margin-left: $form-indent;
     }
   }
   //.form_label + .form_input {
@@ -124,7 +134,7 @@ input[type='submit'] {
 .form_table {
   display: table;
   width: 100%;
-  border-spacing: 0px 1rem;
+  border-spacing: 0px $form-indent;
   .form_row {
     display: table-row;
   }
@@ -133,12 +143,8 @@ input[type='submit'] {
     display: table-cell;
   }
 }
-//
-//.input-holder {
-//  display: block;
-//  width: 100%;
-//  margin-bottom: $input-holder-margin;
-//}
+
+
 //
 //.input-label {
 //  display: inline-block;

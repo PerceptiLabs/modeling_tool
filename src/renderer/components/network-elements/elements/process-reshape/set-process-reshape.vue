@@ -12,32 +12,30 @@
       .popup_body(
         :class="{'active': tabSelected == 0}"
       )
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              input.form_input(type="text" placeholder="c:")
-              button.btn.btn--primary(type="button") Load
+        settings-reshape
 
       .popup_body(
           :class="{'active': tabSelected == 1}"
         )
-        settings-cloud
+        settings-code
 
 </template>
 
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
-  import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
+  import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
+  import SettingsReshape from "@/components/network-elements/elements-settings/setting-reshape";
 
   export default {
     name: 'SetDataData',
     mixins: [mixinSet],
     components: {
-      SettingsCloud
+      SettingsReshape,
+      SettingsCode
     },
     data() {
       return {
-        tabs: ['Computer', 'Cloud']
+        tabs: ['Settings', 'Code']
       }
     }
   }

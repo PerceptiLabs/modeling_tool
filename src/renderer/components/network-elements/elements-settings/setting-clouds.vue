@@ -1,18 +1,18 @@
 <template lang="pug">
-  .clouds-component
-    ul.clouds-component_head
-      li(
-        v-for="(cloud, i) in cloudsList"
-        :key="i"
-        )
-        button.btn.cloud_btn(
-          type="button"
-          :class="{'active': selectedCloud == i}"
-          @click="setCloud(i)"
+  .settings-layer
+    .settings-layer_section
+      ul.clouds-component_head
+        li(
+          v-for="(cloud, i) in cloudsList"
+          :key="i"
           )
-          i.icon(:class="cloud")
-    .clouds-component_body(v-if="selectedCloud == 0")
-      .popup_line
+          button.btn.cloud_btn(
+            type="button"
+            :class="{'active': selectedCloud == i}"
+            @click="setCloud(i)"
+            )
+            i.icon(:class="cloud")
+    .clouds-component_body.settings-layer_section(v-if="selectedCloud == 0")
       ul.cloud_account-list
         li
           base-radio(groupName="cloud")
@@ -28,12 +28,10 @@
           button.btn.btn--link.cloud_account-add-btn(type="button")
             i.icon.icon-cloud
             span  Add account
-      .popup_line
       .form_row
         input.form_input(type="text" placeholder="Link")
         button.btn.btn--primary(type="button") Load
-    .clouds-component_body(v-if="selectedCloud == 1")
-      .popup_line
+    .clouds-component_body.settings-layer_section(v-if="selectedCloud == 1")
       .form_table
         .form_row
           label.form_label Username
@@ -68,7 +66,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../../scss/base";
+  @import "../../../scss/base";
   //.clouds-component
   .clouds-component_head {
     display: flex;
