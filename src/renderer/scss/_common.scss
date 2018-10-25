@@ -10,6 +10,7 @@
 @import 'common/typography';
 @import 'common/forms';
 @import 'common/button';
+@import 'common/popups';
 @import 'common/helpers';
 @import 'common/common';
 
@@ -18,6 +19,6 @@
 @import 'plagins/tooltip';
 
 @import 'components/network-elements';
-@import 'components/context-menu';
+@import 'components/action-list';
 
 @import 'directives/editable-field';

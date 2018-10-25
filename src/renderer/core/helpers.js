@@ -3,7 +3,8 @@ const findIndexId = function (arr, ID) {
 };
 
 const clickOutside = function (event) {
-  if (event.target.closest('.btn') !== this.currentNode) {
+  console.log('clickOutside');
+  if (event.target.closest('.clickout') !== this.currentNode) {
     document.removeEventListener('click', this.clickOutside);
     this.clickOutsideAction();
   }

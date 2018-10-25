@@ -6,7 +6,7 @@
           v-for="(layer, i) in layersbarList"
           :key="i"
         )
-          button.btn.btn--layersbar.layer_parent(type="button"
+          button.btn.btn--layersbar.layer_parent.clickout(type="button"
             @click.stop="toggleElList(i, $event)"
             :class="[layer.layerClass, {'active': layer.showEl}]"
           )
@@ -19,14 +19,6 @@
               :key="i"
             )
               component(:is="element" :draggable='true')
-
-              //div(v-else)
-                button.btn.btn--layersbar(type="button" draggable="true"
-                //:class="layer.layerClass"
-                //:data-component="element.nameComponent"
-                //:data-layer="element.nameLayer"
-                )
-                  i.icon(:class="element.iconClass")
         li.layer
           button.btn.btn--layersbar.net-element-add(type="button")
             i.icon.icon-add
@@ -34,47 +26,48 @@
 </template>
 
 <script>
-  import {clickOutside} from '@/core/helpers.js'
+  import clickOutside from '@/core/mixins/click-outside.js'
 
-  import IoInput              from '@/components/network-elements/view/view-io-input.vue'
-  import IoOutputBackprop     from '@/components/network-elements/view/view-io-output-backpropagation.vue'
-  import IoOutputGenetic      from '@/components/network-elements/view/view-io-output-genetic-algorithm.vue'
-  import IoOutputRouting      from '@/components/network-elements/view/view-io-output-routing-algorithm.vue'
+  import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
+  import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/view-io-output-backpropagation.vue'
+  import IoOutputGenetic      from '@/components/network-elements/elements/io-output-genetic-algorithm/view-io-output-genetic-algorithm.vue'
+  import IoOutputRouting      from '@/components/network-elements/elements/io-output-routing-algorithm/view-io-output-routing-algorithm.vue'
 
-  import DataData             from '@/components/network-elements/view/view-data-data.vue'
-  import DataEnvironment      from '@/components/network-elements/view/view-data-environment.vue'
+  import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
+  import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
 
-  import LearnDeepConnect     from '@/components/network-elements/view/view-learn-deep-connect.vue'
-  import LearnDeepConvolut    from '@/components/network-elements/view/view-learn-deep-convolut.vue'
-  import LearnDeepDeconvolut  from '@/components/network-elements/view/view-learn-deep-deconvolut.vue'
-  import LearnDeepRecurrent   from '@/components/network-elements/view/view-learn-deep-recurrent.vue'
+  import LearnDeepConnect     from '@/components/network-elements/elements/learn-deep-connect/view-learn-deep-connect.vue'
+  import LearnDeepConvolut    from '@/components/network-elements/elements/learn-deep-convolut/view-learn-deep-convolut.vue'
+  import LearnDeepDeconvolut  from '@/components/network-elements/elements/learn-deep-deconvolut/view-learn-deep-deconvolut.vue'
+  import LearnDeepRecurrent   from '@/components/network-elements/elements/learn-deep-recurrent/view-learn-deep-recurrent.vue'
 
-  import ProcessCrop          from '@/components/network-elements/view/view-process-crop.vue'
-  import ProcessEmbed         from '@/components/network-elements/view/view-process-embed.vue'
-  import ProcessGrayscale     from '@/components/network-elements/view/view-process-grayscale.vue'
-  import ProcessHot           from '@/components/network-elements/view/view-process-hot.vue'
-  import ProcessReshape       from '@/components/network-elements/view/view-process-reshape.vue'
+  import ProcessCrop          from '@/components/network-elements/elements/process-crop/view-process-crop.vue'
+  import ProcessEmbed         from '@/components/network-elements/elements/process-embed/view-process-embed.vue'
+  import ProcessGrayscale     from '@/components/network-elements/elements/process-grayscale/view-process-grayscale.vue'
+  import ProcessHot           from '@/components/network-elements/elements/process-hot/view-process-hot.vue'
+  import ProcessReshape       from '@/components/network-elements/elements/process-reshape/view-process-reshape.vue'
 
-  import TrainNormal          from '@/components/network-elements/view/view-train-normal.vue'
-  import TrainNormalData      from '@/components/network-elements/view/view-train-normal-data.vue'
-  import TrainGenetic         from '@/components/network-elements/view/view-train-genetic.vue'
-  import TrainDynamic         from '@/components/network-elements/view/view-train-dynamic.vue'
-  import TrainReinforce       from '@/components/network-elements/view/view-train-reinforce.vue'
+  import TrainNormal          from '@/components/network-elements/elements/train-normal/view-train-normal.vue'
+  import TrainNormalData      from '@/components/network-elements/elements/train-normal-data/view-train-normal-data.vue'
+  import TrainGenetic         from '@/components/network-elements/elements/train-genetic/view-train-genetic.vue'
+  import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/view-train-dynamic.vue'
+  import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/view-train-reinforce.vue'
 
-  import MathArgmax           from '@/components/network-elements/view/view-math-argmax.vue'
-  import MathMerge            from '@/components/network-elements/view/view-math-merge.vue'
-  import MathSoftmax          from '@/components/network-elements/view/view-math-softmax.vue'
-  import MathSplit            from '@/components/network-elements/view/view-math-split.vue'
+  import MathArgmax           from '@/components/network-elements/elements/math-argmax/view-math-argmax.vue'
+  import MathMerge            from '@/components/network-elements/elements/math-merge/view-math-merge.vue'
+  import MathSoftmax          from '@/components/network-elements/elements/math-softmax/view-math-softmax.vue'
+  import MathSplit            from '@/components/network-elements/elements/math-split/view-math-split.vue'
 
-  import LearnClassDbscans    from '@/components/network-elements/view/view-learn-class-dbscans.vue'
-  import LearnClassKMeans     from '@/components/network-elements/view/view-learn-class-k-means.vue'
-  import LearnClassKNearest   from '@/components/network-elements/view/view-learn-class-k-nearest.vue'
-  import LearnClassRandomForest  from '@/components/network-elements/view/view-learn-class-random-forest.vue'
-  import LearnClassVectorMachine from '@/components/network-elements/view/view-learn-class-vector-machine.vue'
+  import LearnClassDbscans    from '@/components/network-elements/elements/learn-class-dbscans/view-learn-class-dbscans.vue'
+  import LearnClassKMeans     from '@/components/network-elements/elements/learn-class-k-means/view-learn-class-k-means.vue'
+  import LearnClassKNearest   from '@/components/network-elements/elements/learn-class-k-nearest/view-learn-class-k-nearest.vue'
+  import LearnClassRandomForest  from '@/components/network-elements/elements/learn-class-random-forest/view-learn-class-random-forest.vue'
+  import LearnClassVectorMachine from '@/components/network-elements/elements/learn-class-vector-machine/view-learn-class-vector-machine.vue'
 
 
 export default {
   name: 'TheLayersbar',
+  mixins: [clickOutside],
   components: {
     IoInput,
     IoOutputBackprop,
@@ -160,7 +153,6 @@ export default {
           networkElements: ['LearnClassDbscans', 'LearnClassKMeans', 'LearnClassKNearest', 'LearnClassRandomForest', 'LearnClassVectorMachine']
         }
       ],
-      currentNode: null
     }
   },
   computed: {
@@ -169,9 +161,8 @@ export default {
     },
   },
   methods: {
-    clickOutside,
     toggleElList(index, ev) {
-      this.currentNode = ev.target.closest('.btn');
+      this.ClickElementTracking = ev.target.closest('.clickout');
       document.addEventListener('click', this.clickOutside);
 
       if (this.layersbarList[index].showEl) {
@@ -223,7 +214,7 @@ export default {
       font-size: 11px;
     }
   }
-  .layer_child-list {
+  ul.layer_child-list {
     @include multi-transition (transform, opacity, visibility);
     position: absolute;
     top: 0;

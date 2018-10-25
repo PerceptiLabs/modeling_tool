@@ -54,7 +54,7 @@ const baseNetFunctional = {
     switchEvent(ev) {
       ev.stopPropagation();
       if(this.appMode == 'edit' && !this.isLock) {
-        this.setFocusBtn(ev);
+        this.setFocusEl(ev);
         this.bodyDown(ev)
       }
       else if (this.appMode == 'addArrow' && !this.isLock) {
@@ -62,7 +62,6 @@ const baseNetFunctional = {
       }
     },
     openSettings() {
-      console.log('openSettings');
       this.hideAllWindow();
       this.settingsIsOpen = true;
     },
@@ -70,24 +69,25 @@ const baseNetFunctional = {
       this.hideAllWindow();
       this.contextIsOpen = true;
     },
-    hideAllWindow() {
-      this.settingsIsOpen = false;
-      this.contextIsOpen = false;
-    },
-    blurElement() {
-      //this.deselect();
-    },
-    setFocusBtn(ev) {
-      this.$refs.btn.focus();
+    setFocusEl(ev) {
       if(ev.ctrlKey) {
         this.$store.commit('mod_workspace/SET_metaMultiSelect', { path: [this.dataEl.index], setValue: true });
       }
-      else this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });
+      else {
+        this.ClickElementTracking = ev.target.closest('.clickout');
+        document.addEventListener('click', this.clickOutside);
+        this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });
+      }
+    },
+    hideAllWindow() {
+      this.settingsIsOpen = false;
+      this.contextIsOpen = false;
     },
     deselect() {
       this.hideAllWindow();
       this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
     },
+
   }
 };
 

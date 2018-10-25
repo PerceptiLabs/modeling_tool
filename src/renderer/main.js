@@ -1,19 +1,18 @@
 import Vue from 'vue'
 import axios from 'axios'
 import Vuebar from 'vuebar'
-import Tooltip from 'vue-directive-tooltip';
 
 import App from './App'
 import router from './router'
 import store from './store'
 
 import configApp from '@/core/globalSettings.js'
-import BaseCheckbox from '@/components/base/checkbox.vue'
+
+import BaseCheckbox     from '@/components/base/checkbox.vue'
+import BaseRadiobutton  from '@/components/base/radiobutton.vue'
+import BaseSelect       from '@/components/base/select.vue'
 
 Vue.use(Vuebar);
-Vue.use(Tooltip, {
-  placement: 'right',
-});
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
@@ -25,6 +24,8 @@ Vue.config.performance = configApp.developMode;
 import './core/directives'
 //import './core/filters'
 Vue.component('base-checkbox', BaseCheckbox);
+Vue.component('base-radio', BaseRadiobutton);
+Vue.component('base-select', BaseSelect);
 
 
 /* eslint-disable no-new */

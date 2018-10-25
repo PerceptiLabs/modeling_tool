@@ -61,7 +61,6 @@
     "axios": "^0.18.0",
     "vue": "^2.5.16",
     "vue-annotator": "^0.13.2",
-    "vue-directive-tooltip": "^1.5.0",
     "vue-electron": "^1.0.6",
     "vue-router": "^3.0.1",
     "vuebar": "0.0.20",

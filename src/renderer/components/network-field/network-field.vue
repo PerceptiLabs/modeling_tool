@@ -34,44 +34,44 @@
 </template>
 
 <script>
-  
-  import IoInput              from '@/components/network-elements/elements/io-input.vue'
-  import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation.vue'
-  import IoOutputGenetic      from '@/components/network-elements/elements/io-output-genetic-algorithm.vue'
-  import IoOutputRouting      from '@/components/network-elements/elements/io-output-routing-algorithm.vue'
 
-  import DataData             from '@/components/network-elements/elements/data-data.vue'
-  import DataEnvironment      from '@/components/network-elements/elements/data-environment.vue'
+  import IoInput              from '@/components/network-elements/elements/io-input/io-input.vue'
+  import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/io-output-backpropagation.vue'
+  import IoOutputGenetic      from '@/components/network-elements/elements/io-output-genetic-algorithm/io-output-genetic-algorithm.vue'
+  import IoOutputRouting      from '@/components/network-elements/elements/io-output-routing-algorithm/io-output-routing-algorithm.vue'
 
-  import LearnDeepConnect     from '@/components/network-elements/elements/learn-deep-connect.vue'
-  import LearnDeepConvolut    from '@/components/network-elements/elements/learn-deep-convolut.vue'
-  import LearnDeepDeconvolut  from '@/components/network-elements/elements/learn-deep-deconvolut.vue'
-  import LearnDeepRecurrent   from '@/components/network-elements/elements/learn-deep-recurrent.vue'
+  import DataData             from '@/components/network-elements/elements/data-data/data-data.vue'
+  import DataEnvironment      from '@/components/network-elements/elements/data-environment/data-environment.vue'
 
-  import ProcessCrop          from '@/components/network-elements/elements/process-crop.vue'
-  import ProcessEmbed         from '@/components/network-elements/elements/process-embed.vue'
-  import ProcessGrayscale     from '@/components/network-elements/elements/process-grayscale.vue'
-  import ProcessHot           from '@/components/network-elements/elements/process-hot.vue'
-  import ProcessReshape       from '@/components/network-elements/elements/process-reshape.vue'
+  import LearnDeepConnect     from '@/components/network-elements/elements/learn-deep-connect/learn-deep-connect.vue'
+  import LearnDeepConvolut    from '@/components/network-elements/elements/learn-deep-convolut/learn-deep-convolut.vue'
+  import LearnDeepDeconvolut  from '@/components/network-elements/elements/learn-deep-deconvolut/learn-deep-deconvolut.vue'
+  import LearnDeepRecurrent   from '@/components/network-elements/elements/learn-deep-recurrent/learn-deep-recurrent.vue'
 
-  import TrainNormal          from '@/components/network-elements/elements/train-normal.vue'
-  import TrainNormalData      from '@/components/network-elements/elements/train-normal-data.vue'
-  import TrainGenetic         from '@/components/network-elements/elements/train-genetic.vue'
-  import TrainDynamic         from '@/components/network-elements/elements/train-dynamic.vue'
-  import TrainReinforce       from '@/components/network-elements/elements/train-reinforce.vue'
+  import ProcessCrop          from '@/components/network-elements/elements/process-crop/process-crop.vue'
+  import ProcessEmbed         from '@/components/network-elements/elements/process-embed/process-embed.vue'
+  import ProcessGrayscale     from '@/components/network-elements/elements/process-grayscale/process-grayscale.vue'
+  import ProcessHot           from '@/components/network-elements/elements/process-hot/process-hot.vue'
+  import ProcessReshape       from '@/components/network-elements/elements/process-reshape/process-reshape.vue'
 
-  import MathArgmax           from '@/components/network-elements/elements/math-argmax.vue'
-  import MathMerge            from '@/components/network-elements/elements/math-merge.vue'
-  import MathSoftmax          from '@/components/network-elements/elements/math-softmax.vue'
-  import MathSplit            from '@/components/network-elements/elements/math-split.vue'
+  import TrainNormal          from '@/components/network-elements/elements/train-normal/train-normal.vue'
+  import TrainNormalData      from '@/components/network-elements/elements/train-normal-data/train-normal-data.vue'
+  import TrainGenetic         from '@/components/network-elements/elements/train-genetic/train-genetic.vue'
+  import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/train-dynamic.vue'
+  import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/train-reinforce.vue'
 
-  import LearnClassDbscans    from '@/components/network-elements/elements/learn-class-dbscans.vue'
-  import LearnClassKMeans     from '@/components/network-elements/elements/learn-class-k-means.vue'
-  import LearnClassKNearest   from '@/components/network-elements/elements/learn-class-k-nearest.vue'
-  import LearnClassRandomForest  from '@/components/network-elements/elements/learn-class-random-forest.vue'
-  import LearnClassVectorMachine from '@/components/network-elements/elements/learn-class-vector-machine.vue'
+  import MathArgmax           from '@/components/network-elements/elements/math-argmax/math-argmax.vue'
+  import MathMerge            from '@/components/network-elements/elements/math-merge/math-merge.vue'
+  import MathSoftmax          from '@/components/network-elements/elements/math-softmax/math-softmax.vue'
+  import MathSplit            from '@/components/network-elements/elements/math-split/math-split.vue'
 
-  import LayerContainer       from '@/components/network-elements/elements/layer-container.vue'
+  import LearnClassDbscans    from '@/components/network-elements/elements/learn-class-dbscans/learn-class-dbscans.vue'
+  import LearnClassKMeans     from '@/components/network-elements/elements/learn-class-k-means/learn-class-k-means.vue'
+  import LearnClassKNearest   from '@/components/network-elements/elements/learn-class-k-nearest/learn-class-k-nearest.vue'
+  import LearnClassRandomForest  from '@/components/network-elements/elements/learn-class-random-forest/learn-class-random-forest.vue'
+  import LearnClassVectorMachine from '@/components/network-elements/elements/learn-class-vector-machine/learn-class-vector-machine.vue'
+
+  import LayerContainer       from '@/components/network-elements/elements/layer-container/layer-container.vue'
 
 export default {
   name: 'NetworkField',

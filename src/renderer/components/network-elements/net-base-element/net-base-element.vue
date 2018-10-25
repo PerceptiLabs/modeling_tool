@@ -1,16 +1,13 @@
 <template lang="pug">
-  .net-element(
+  .net-element.clickout(
     ref="rootBaseElement"
     :style="style"
     :class="active ? 'active' : 'inactive'"
-    @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings"
+    @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings()"
     @contextmenu.stop.prevent="openContext"
     )
     //@mousedown="bodyDown($event)"
-    button.net-element_btn(type="button"
-      ref="btn"
-      @blur="blurElement"
-      )
+    .net-element_btn
       slot
 
     .net-element_window(v-if="settingsIsOpen ")
@@ -25,13 +22,13 @@
 import baseNetDrag        from '@/core/mixins/base-net-drag.js';
 import baseNetFunctional  from '@/core/mixins/base-net-functional.js';
 import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
+import clickOutside       from '@/core/mixins/click-outside.js'
+
 export default {
   name: 'NetBaseElement',
-  mixins: [baseNetDrag, baseNetFunctional, baseNetPaintArrows],
+  mixins: [baseNetDrag, baseNetFunctional, baseNetPaintArrows, clickOutside],
   props: {
     layerContainer: {type: Boolean, default: false},
-    // layerClass: {type: String, default: ''},
-    // iconClass:  {type: String, default: ''},
   },
   data() {
       return {
@@ -39,7 +36,9 @@ export default {
       }
   },
   methods: {
-
+    clickOutsideAction() {
+      this.deselect()
+    }
   }
 }
 </script>

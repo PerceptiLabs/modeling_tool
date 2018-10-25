@@ -1,28 +1,68 @@
 .popup {
   border-radius: $bdrs;
-  overflow: hidden;
   background-color: #4D556A;
-  opacity: .9;
+  //opacity: .9;
 }
 .popup_header {
   height: 3.5rem;
   color: $col-txt;
   background: $bg-grad-blue;
   box-shadow: $icon-shad;
-
   &.disable {
     color: $disable-txt;
-    background-color: $col-txt2;
+    background: $col-txt2;
     box-shadow: none;
+  }
+  > * {
+    margin: 0;
   }
 }
 .popup_tab-set {
+  padding: 0;
+  margin: 0;
+  list-style: none;
   display: flex;
+  border-radius: $bdrs $bdrs 0 0;
+  overflow: hidden;
   .popup_header {
     flex: 1 1 100%;
   }
 }
-
+.popup_tab-body {
+  display: flex;
+  .popup_body {
+    //@include multi-transition(transform);
+    flex: 0 0 100%;
+    margin-right: -100%;
+    //transform: translateX(-100%) rotateY(90deg);
+    transform: rotateY(90deg);
+    transform-origin: left;
+    + .popup_body {
+      //transform: translateX(100%) rotateY(-90deg);
+      transform: rotateY(-90deg);
+      transform-origin: right;
+    }
+    &.active {
+      //transform: translateX(0) rotateY(0deg);
+      transform: rotateY(0deg);
+    }
+  }
+}
 .popup_body {
-
+  padding: $pad-top $pad-left;
+}
+.popup_foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  > * + * {
+    margin-left: 2rem;
+  }
+}
+.popup_line {
+  margin-left: -$pad-left;
+  margin-right: -$pad-left;
+  height: 1px;
+  background-color: $bg-input;
 }

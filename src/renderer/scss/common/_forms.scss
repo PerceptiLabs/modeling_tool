@@ -6,6 +6,7 @@ fieldset {
 }
 
 input,
+.input,
 input[type='text'],
 input[type='tel'],
 input[type='email'],
@@ -75,7 +76,7 @@ input[type='button'],
 input[type='reset'],
 input[type='file'],
 input[type='submit'] {
-  @include multi-transition (color, background-color, border-color);
+  //@include multi-transition (color, background-color, border-color);
   -webkit-appearance: none;
   cursor: pointer;
   border: none;
@@ -99,6 +100,39 @@ input[type='submit'] {
   }
 }
 
+.form_label {
+  font-size: 1.4rem;
+}
+
+.form_row {
+  display: flex;
+  align-items: center;
+  + .form_row {
+    margin-top: 1rem;
+  }
+  .form_input {
+    flex-grow: 1;
+    + .btn {
+      margin-left: 1rem;
+    }
+  }
+  //.form_label + .form_input {
+  //  //margin-left: 2rem;
+  //}
+}
+
+.form_table {
+  display: table;
+  width: 100%;
+  border-spacing: 0px 1rem;
+  .form_row {
+    display: table-row;
+  }
+  .form_label,
+  .form_input {
+    display: table-cell;
+  }
+}
 //
 //.input-holder {
 //  display: block;

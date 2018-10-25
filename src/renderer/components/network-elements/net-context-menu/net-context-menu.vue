@@ -1,42 +1,42 @@
 <template lang="pug">
-  ul.context-menu
+  ul.action-list
     li
-      button.context-menu_btn(type="button")
-        span.context-menu_btn-text Copy properties
+      button.action-list_btn(type="button")
+        span.action-list_btn-text Copy properties
         span I
     li
-      button.context-menu_btn(type="button")
-        span Paste properties
+      button.action-list_btn(type="button")
+        span.action-list_btn-text Paste properties
         span O
     li
-      button.context-menu_btn(type="button")
-        span Transform
+      button.action-list_btn(type="button")
+        span.action-list_btn-text Transform
         span Y
     li
-      button.context-menu_btn(type="button")
-        span F_1
+      button.action-list_btn(type="button")
+        span.action-list_btn-text F_1
         span F
     li
-      button.context-menu_btn(type="button")
-        span F_2
+      button.action-list_btn(type="button")
+        span.action-list_btn-text F_2
         span J
     li
-      button.context-menu_btn(type="button")
-        span F_3
+      button.action-list_btn(type="button")
+        span.action-list_btn-text F_3
         span L
 </template>
 
 <script>
 export default {
-    name: 'NetContextMenu',
-    data() {
-        return {
-
-        }
-    },
-    methods: {
+  name: 'NetContextMenu',
+  data() {
+    return {
 
     }
+  },
+  methods: {
+
+  }
 }
 </script>
 
