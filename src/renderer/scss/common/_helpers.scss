@@ -154,7 +154,9 @@ $prevBreakPoint: 'xxlarge';
 .text-capitalize {
   text-transform: capitalize;
 }
-
+.text-center {
+  text-align: center;
+}
 .ellipsis {
   white-space: nowrap;
   text-overflow: ellipsis;

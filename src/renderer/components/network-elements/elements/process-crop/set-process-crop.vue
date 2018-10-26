@@ -12,7 +12,22 @@
       .popup_body(
         :class="{'active': tabSelected == 0}"
       )
-        settings-reshape
+        .settings-layer
+          .settings-layer_section
+            .form_row
+              .form_label.w-33 Data Input:
+              .form_input.w-66
+                input
+          .settings-layer_section.text-center
+            img(src="https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Hopetoun_falls.jpg/220px-Hopetoun_falls.jpg")
+          .settings-layer_section
+            .form_row
+              .form_label.w-33 Reshape data:
+              .form_input.w-66
+                input
+          .settings-layer_foot
+            button.btn.btn--primary(type="button") Apply
+
 
       .popup_body(
           :class="{'active': tabSelected == 1}"
@@ -24,13 +39,11 @@
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
-  import SettingsReshape from "@/components/network-elements/elements-settings/setting-reshape";
 
   export default {
-    name: 'SetProcessReshape',
+    name: 'SetProcessCrop',
     mixins: [mixinSet],
     components: {
-      SettingsReshape,
       SettingsCode
     },
     data() {

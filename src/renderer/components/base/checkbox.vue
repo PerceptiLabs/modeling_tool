@@ -2,8 +2,12 @@
   label.custom-checkbox
     .checkbox-text(v-if="labelPosition==='left'")
       slot
-    input(type="checkbox")
-    .checkbox-fake
+    input(type="checkbox"
+      :value="valueInput"
+      v-model="checked"
+      @change="onChange()"
+    )
+    .checkbox-fake(:class="{'checkbox-fake--icon': iconTheme}")
     .checkbox-text(v-if="labelPosition==='right'")
       slot
 
@@ -12,10 +16,35 @@
 <script>
 export default {
   name: 'BaseCheckbox',
+  mounted() {
+    console.log(this.value);
+  },
   props: {
+    value: {type: [Boolean, Array]},
+    valueInput: {String},
     labelPosition: {
       type: String,
       default: 'right'
+    },
+    iconTheme: {
+      type: Boolean,
+      default: false
+    },
+  },
+  data() {
+    return {
+      checkedProxy: false
+    }
+  },
+  computed: {
+    checked: {
+      get() { return this.value },
+      set (val) { this.checkedProxy = val }
+    }
+  },
+  methods: {
+    onChange() {
+      this.$emit('input', this.checkedProxy)
     }
   }
 }
@@ -35,8 +64,13 @@ export default {
       position: absolute;
       left: -9999px;
       &:checked + .checkbox-fake {
-        &:after {
-          opacity: 1;
+        background: $bg-grad-blue;
+        box-shadow: $icon-shad;
+        &.checkbox-fake--icon {
+          background: $bg-workspace;
+          &:after {
+            opacity: 1;
+          }
         }
       }
       //&:focus + .checkbox-fake {
@@ -53,19 +87,22 @@ export default {
       width: 1.4em;
       height: 1.4em;
       flex: 0 0 1.4em;
-      background-color: $bg-workspace;
+      background-color: $bg-input;
       cursor: pointer;
       position: relative;
-      &:after {
-        content: "\e937";
-        font-family: "icomoon";
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        opacity: 0;
-        font-size: .9em;
-        line-height: 1;
+      &.checkbox-fake--icon {
+        background-color: $bg-workspace;
+        &:after {
+          content: "\e937";
+          font-family: "icomoon";
+          position: absolute;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          opacity: 0;
+          font-size: .9em;
+          line-height: 1;
+        }
       }
       + .checkbox-text {
         margin-left: .75em;

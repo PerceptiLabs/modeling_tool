@@ -1,6 +1,6 @@
 <template lang="pug">
   label.custom-radio
-    input(type="radio" name="groupName")
+    input(type="radio" :name="groupName")
     .radio-fake
     .radio-text
       slot
@@ -22,7 +22,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .custom-radio {
-    padding: 0;
+    padding: .5em 1em .5em 0;
     display: inline-flex;
     align-items: center;
 
