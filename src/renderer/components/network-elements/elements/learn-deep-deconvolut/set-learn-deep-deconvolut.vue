@@ -15,7 +15,7 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              .form_label Neurons:
+              .form_label Deconvolutional dimensions:
               .form_input
                 base-radio(groupName="group" valueInput="None" v-model="settings.neurons")
                   span None
@@ -25,11 +25,6 @@
                   span ReLu
                 base-radio(groupName="group" valueInput="tanh" v-model="settings.neurons")
                   span tanh
-          .settings-layer_section
-            .form_row
-              .form_label Patch size:
-              .form_input
-                input(type="text")
           .settings-layer_section
             .form_row
               .form_label Stride:
@@ -42,7 +37,7 @@
                 input(type="text")
           .settings-layer_section
             .form_row
-              .form_label Zero-padding for convulution:
+              .form_label Zero-padding:
               .form_input
                 base-radio(groupName="group3")
                   span Yes
@@ -62,57 +57,14 @@
                   span tanh
           .settings-layer_section
             .form_row
-              .form_label Dropout:
-              .form_input
-                base-radio(groupName="group5")
-                  span None
-                base-radio(groupName="group5")
-                  span Sigmoid
-          .settings-layer_section
-            .form_row
               .form_label Batch Normalization:
               .form_input
                 base-radio(groupName="group6")
                   span Yes
                 base-radio(groupName="group6")
                   span No
-          .settings-layer_section
-            .form_row
-              .form_label Pooling:
-              .form_input
-                base-checkbox(valueInput="Pooling" v-model="settings.pooling")
-                //input(type="checkbox" :value="settings.pooling" @change="changeCheckbox($event)")
-          template(v-if="settings.pooling")
-            .settings-layer_section
-              .form_row
-                .form_label Pooling type:
-                .form_input
-                  base-radio(groupName="group7")
-                    span Max pooling
-                  base-radio(groupName="group7")
-                    span Mean pooling
-            .settings-layer_section
-              .form_row
-                .form_label Pooling area:
-                .form_input
-                  input(type="text")
-            .settings-layer_section
-              .form_row
-                .form_label Pooling stride:
-                .form_input
-                  input(type="text")
-            .settings-layer_section
-              .form_row
-                .form_label Zero-padding for pooling:
-                .form_input
-                  base-radio(groupName="group6")
-                    span Yes
-                  base-radio(groupName="group6")
-                    span No
-
           .settings-layer_foot
             button.btn.btn--primary(type="button") Apply
-
 
       .popup_body(
           :class="{'active': tabSelected == 1}"
@@ -126,7 +78,7 @@ import mixinSet       from '@/core/mixins/net-element-settings.js';
 import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
 
 export default {
-  name: 'SetProcessConvolut',
+  name: 'SetProcessDeconvolut',
   mixins: [mixinSet],
   components: {
     SettingsCode
@@ -135,7 +87,6 @@ export default {
     return {
       tabs: ['Settings', 'Code'],
       settings: {
-        pooling: false,
         neurons: 'None'
       }
     }

@@ -12,13 +12,12 @@
   + .settings-layer_section {
     border-top: 1px solid rgba($bg-input, .5);
   }
-  .form_row {
-
-  }
-  .form_label {
-    //align-self: flex-start;
-    flex: 0 0 40%;
-    max-width: 40%;
+  > .form_row {
+    .form_label {
+      //align-self: flex-start;
+      flex: 0 0 40%;
+      max-width: 40%;
+    }
   }
   .form_input {
     padding-left: 1rem;

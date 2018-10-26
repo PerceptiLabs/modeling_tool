@@ -62,7 +62,9 @@
     "vue": "^2.5.16",
     "vue-annotator": "^0.13.2",
     "vue-electron": "^1.0.6",
+    "vue-range": "^1.1.0",
     "vue-router": "^3.0.1",
+    "vue-slider-component": "^2.8.0",
     "vuebar": "0.0.20",
     "vuex": "^3.0.1"
   },
@@ -90,6 +92,7 @@
     "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
     "mini-css-extract-plugin": "0.4.0",
+    "mint-range": "0.0.4",
     "multispinner": "^0.2.1",
     "node-loader": "^0.6.0",
     "node-sass": "^4.9.2",

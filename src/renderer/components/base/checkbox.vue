@@ -16,9 +16,6 @@
 <script>
 export default {
   name: 'BaseCheckbox',
-  mounted() {
-    console.log(this.value);
-  },
   props: {
     value: {type: [Boolean, Array]},
     valueInput: {String},

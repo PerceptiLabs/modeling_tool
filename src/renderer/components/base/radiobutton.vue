@@ -1,6 +1,11 @@
 <template lang="pug">
   label.custom-radio
-    input(type="radio" :name="groupName")
+    input(type="radio"
+      :name="groupName"
+      :value="valueInput"
+      v-model="checked"
+      @change="onChange()"
+      )
     .radio-fake
     .radio-text
       slot
@@ -14,6 +19,24 @@ export default {
     groupName: {
       type: String,
       default: ''
+    },
+    value: {type: [Boolean, String]},
+    valueInput: {String},
+  },
+  data() {
+    return {
+      checkedProxy: false
+    }
+  },
+  computed: {
+    checked: {
+      get() { return this.value },
+      set (val) { this.checkedProxy = val }
+    }
+  },
+  methods: {
+    onChange() {
+      this.$emit('input', this.checkedProxy)
     }
   }
 }
@@ -34,7 +57,7 @@ export default {
       left: -9999px;
       &:checked {
         + .radio-fake {
-          background: linear-gradient(#7397FE, #6185EE);
+          background: $bg-grad-blue;
           box-shadow: $icon-shad;
         }
         ~ .radio-text {
