@@ -2,7 +2,7 @@ $folder: 'icomoon';
 
 @font-face {
   font-family: 'icomoon';
-  src:  url('#{$font-path}/#{$folder}/icomoon.woff?qk9vcq') format('woff');
+  src:  url('#{$font-path}/#{$folder}/icomoon.woff?ozd91b') format('woff');
   font-weight: normal;
   font-style: normal;
 }
@@ -22,6 +22,228 @@ $folder: 'icomoon';
   -moz-osx-font-smoothing: grayscale;
 }
 
+//.icon-empty:before {
+//  content: "\e910";
+//}
+//.icon-shevron:before {
+//  content: "\e931";
+//}
+//.icon-add:before {
+//  content: "\e900";
+//}
+//.icon-arrow-left:before {
+//  content: "\e901";
+//}
+//.icon-box:before {
+//  content: "\e902";
+//}
+//.icon-burger:before {
+//  content: "\e903";
+//}
+//.icon-calc:before {
+//  content: "\e904";
+//}
+//.icon-close:before {
+//  content: "\e905";
+//}
+//.icon-cloud:before {
+//  content: "\e906";
+//}
+//.icon-cloud-add:before {
+//  content: "\e907";
+//}
+//.icon-comments:before {
+//  content: "\e908";
+//}
+//.icon-crop-symbol:before {
+//  content: "\e909";
+//}
+//.icon-data:before {
+//  content: "\e90a";
+//}
+//.icon-data-in:before {
+//  content: "\e90b";
+//}
+//.icon-data-out:before {
+//  content: "\e90c";
+//}
+//.icon-data-toggle:before {
+//  content: "\e90d";
+//}
+//.icon-delete:before {
+//  content: "\e90e";
+//}
+//.icon-dropbox-logo:before {
+//  content: "\e90f";
+//}
+//.icon-eye:before {
+//  content: "\e911";
+//}
+//.icon-filter:before {
+//  content: "\e912";
+//}
+//.icon-folder:before {
+//  content: "\e913";
+//}
+//.icon-full-screen:before {
+//  content: "\e914";
+//}
+//.icon-g-drive:before {
+//  content: "\e915";
+//}
+//.icon-hide-right:before {
+//  content: "\e916";
+//}
+//.icon-hide-top:before {
+//  content: "\e917";
+//}
+//.icon-lock:before {
+//  content: "\e918";
+//}
+//.icon-map:before {
+//  content: "\e919";
+//}
+//.icon-menu:before {
+//  content: "\e91a";
+//}
+//.icon-mind:before {
+//  content: "\e91b";
+//}
+//.icon-network:before {
+//  content: "\e91c";
+//}
+//.icon-next:before {
+//  content: "\e91d";
+//}
+//.icon-onedrive:before {
+//  content: "\e91e";
+//}
+//.icon-on-off:before {
+//  content: "\e91f";
+//}
+//.icon-pause:before {
+//  content: "\e920";
+//}
+//.icon-put-in-button:before {
+//  content: "\e921";
+//}
+//.icon-rectangle:before {
+//  content: "\e922";
+//}
+//.icon-repeat:before {
+//  content: "\e923";
+//}
+//.icon-road-concat:before {
+//  content: "\e924";
+//}
+//.icon-road-split:before {
+//  content: "\e925";
+//}
+//.icon-round:before {
+//  content: "\e926";
+//}
+//.icon-round-figur:before {
+//  content: "\e927";
+//}
+//.icon-round-figur2:before {
+//  content: "\e928";
+//}
+//.icon-round-in:before {
+//  content: "\e929";
+//}
+//.icon-round-left:before {
+//  content: "\e92a";
+//}
+//.icon-round-out:before {
+//  content: "\e92b";
+//}
+//.icon-round-sieve:before {
+//  content: "\e92c";
+//}
+//.icon-round-three:before {
+//  content: "\e92d";
+//}
+//.icon-search:before {
+//  content: "\e92e";
+//}
+//.icon-select:before {
+//  content: "\e92f";
+//}
+//.icon-settings:before {
+//  content: "\e930";
+//}
+//.icon-sieve:before {
+//  content: "\e932";
+//}
+//.icon-step-next:before {
+//  content: "\e933";
+//}
+//.icon-step-prev:before {
+//  content: "\e934";
+//}
+//.icon-trees:before {
+//  content: "\e935";
+//}
+//.icon-user:before {
+//  content: "\e936";
+//}
+//.icon-check-mark:before {
+//  content: "\e937";
+//}
+//.icon-layer-arrow1:before {
+//  content: "\e938";
+//}
+//.icon-layer-arrow2:before {
+//  content: "\e939";
+//}
+//.icon-layer-arrow3:before {
+//  content: "\e93a";
+//}
+//.icon-layer-net:before {
+//  content: "\e93b";
+//}
+//.icon-layer-net-set:before {
+//  content: "\e93c";
+//}
+//.icon-learning-dynamic:before {
+//  content: "\e93d";
+//}
+//.icon-learning-genetic:before {
+//  content: "\e93e";
+//}
+//.icon-learning-reinforcement:before {
+//  content: "\e93f";
+//}
+//.icon-learning-reinforcement1:before {
+//  content: "\e949";
+//}
+//.icon-training:before {
+//  content: "\e940";
+//}
+//.icon-calc-softmax:before {
+//  content: "\e941";
+//}
+//.icon-l-calc-argmax:before {
+//  content: "\e942";
+//}
+//.icon-player-next:before {
+//  content: "\e943";
+//}
+//.icon-player-pause:before {
+//  content: "\e944";
+//}
+//.icon-player-prev:before {
+//  content: "\e945";
+//}
+//.icon-player-play:before {
+//  content: "\e946";
+//}
+//.icon-students-cap:before {
+//  content: "\e947";
+//}
+//.icon-l-learn-normData:before {
+//  content: "\e948";
+//}
 .icon-empty:before {
   content: "\e910";
 }
@@ -243,4 +465,13 @@ $folder: 'icomoon';
 }
 .icon-l-learn-normData:before {
   content: "\e948";
+}
+.icon-zoom-plus:before {
+  content: "\e94a";
+}
+.icon-minus:before {
+  content: "\e94b";
+}
+.icon-Computer:before {
+  content: "\e94c";
 }

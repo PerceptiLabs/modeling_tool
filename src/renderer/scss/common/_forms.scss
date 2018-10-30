@@ -31,6 +31,9 @@ textarea {
   text-overflow: ellipsis;
   font-size: inherit;
   background-color: $bg-input;
+  &:focus {
+    background: $bg-grad-blue;
+  }
   &::selection {
     background-color: $color-5;
   }

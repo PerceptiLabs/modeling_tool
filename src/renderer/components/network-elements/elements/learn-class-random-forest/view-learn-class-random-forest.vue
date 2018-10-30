@@ -3,7 +3,7 @@
   data-component="LearnClassRandomForest"
   data-layer="Random Forest"
   )
-    i.icon.icon-
+    i.icon.icon-trees
 
 </template>
 

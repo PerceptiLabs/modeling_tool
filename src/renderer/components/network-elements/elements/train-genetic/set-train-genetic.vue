@@ -15,30 +15,30 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              .form_label Data Into the Layer:
-              .form_input
-                triple-input(
-                :value1="50"
-                :value2="60"
-                :value3="10")
-          .settings-layer_section
-            .form_row
-              .form_label Reshape data:
+              .form_label Population:
               .form_input
                 input(type="text")
           .settings-layer_section
             .form_row
-              .form_label Transpose maps:
+              .form_label Generations:
               .form_input
                 input(type="text")
           .settings-layer_section
             .form_row
-              .form_label Data out from the Layer:
+              .form_label Retain:
               .form_input
-                triple-input(
-                :value1="50"
-                :value2="60"
-                :value3="10")
+                input(type="text")
+          .settings-layer_section
+            .form_row
+              .form_label Random select:
+              .form_input
+                input(type="text")
+          .settings-layer_section
+            .form_row
+              .form_label Mutate chance:
+              .form_input
+                input(type="text")
+
           .settings-layer_foot
             button.btn.btn--primary(type="button") Apply
 
@@ -50,21 +50,27 @@
 </template>
 
 <script>
-  import mixinSet       from '@/core/mixins/net-element-settings.js';
-  import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
-  import TripleInput    from "@/components/base/triple-input";
+import mixinSet       from '@/core/mixins/net-element-settings.js';
+import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
 
-  export default {
-    name: 'SetProcessReshape',
-    mixins: [mixinSet],
-    components: {
-      TripleInput,
-      SettingsCode
-    },
-    data() {
-      return {
-        tabs: ['Settings', 'Code']
+export default {
+  name: 'SetTrainGenetic',
+  mixins: [mixinSet],
+  components: {
+    SettingsCode,
+  },
+  data() {
+    return {
+      settings: {
+        pooling: false,
+        neurons: 'None',
+        opt: 'None',
+        items: ['Data_1', 'Data_2', 'Data_3', 'Data_4', 'Data_5',]
       }
     }
+  },
+  methods: {
+
   }
+}
 </script>

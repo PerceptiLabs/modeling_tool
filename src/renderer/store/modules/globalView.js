@@ -3,7 +3,8 @@ const namespaced = true
 const state = {
   hideLayers: true,
   hideSidebar: true,
-  appMode: 'edit'
+  appMode: 'edit',
+  userMode: 'advanced' //simple
 }
 
 const mutations = {

@@ -50,6 +50,7 @@
 }
 .popup_body {
   display: flex;
+  flex-direction: column;
   &.indent {
     padding: $popup-indent-top $popup-indent-left;
   }

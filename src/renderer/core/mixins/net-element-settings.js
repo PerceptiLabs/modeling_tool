@@ -2,7 +2,12 @@ const netElementSettings = {
   data() {
     return {
       tabSelected: 0,
-      tabs: []
+      tabs: ['Settings', 'Code'],
+    }
+  },
+  computed: {
+    userMode() {
+      return this.$store.state.globalView.userMode
     }
   },
   methods: {

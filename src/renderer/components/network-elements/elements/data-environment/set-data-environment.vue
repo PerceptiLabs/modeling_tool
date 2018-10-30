@@ -12,14 +12,18 @@
       .popup_body(
       :class="{'active': tabSelected == 0}"
       )
-        base-select(:selectOptions="items")
+        .settings-layer
+          .settings-layer_section
+            base-select(:selectOptions="items")
 
       .popup_body(
         :class="{'active': tabSelected == 1}"
       )
-        .form_row
-          input.form_input(type="text" placeholder="c:")
-          button.btn.btn--primary(type="button") Load
+        .settings-layer
+          .settings-layer_section
+            .form_row
+              input.form_input(type="text" placeholder="c:")
+              button.btn.btn--primary(type="button") Load
 
 </template>
 

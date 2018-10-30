@@ -17,18 +17,22 @@
             .form_row
               .form_label Neurons:
               .form_input
-                base-radio(groupName="group" valueInput="Concantenate" v-model="settings.neurons")
-                  span Concantenate
-                .form_row(v-if="settings.neurons == 'Concantenate' ")
-                  span Merge dimensions
-                  .form_input
-                    input(type="number")
-                base-radio(groupName="group" valueInput="Substractions" v-model="settings.neurons")
-                  span Substractions
-                base-radio(groupName="group" valueInput="Addition" v-model="settings.neurons")
-                  span Addition
-                base-radio(groupName="group" valueInput="Multiplication" v-model="settings.neurons")
-                  span Multiplication
+                div
+                  base-radio(groupName="group" valueInput="Concantenate" v-model="settings.neurons")
+                    span Concantenate
+                  .form_row(v-if="settings.neurons == 'Concantenate' ")
+                    span Merge dimensions
+                    .form_input
+                      input(type="number")
+                div
+                  base-radio(groupName="group" valueInput="Substractions" v-model="settings.neurons")
+                    span Substractions
+                div
+                  base-radio(groupName="group" valueInput="Addition" v-model="settings.neurons")
+                    span Addition
+                div
+                  base-radio(groupName="group" valueInput="Multiplication" v-model="settings.neurons")
+                    span Multiplication
           .settings-layer_section
 
           .settings-layer_foot

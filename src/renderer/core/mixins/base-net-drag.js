@@ -43,9 +43,9 @@ const baseNetDrag = {
       //document.documentElement.addEventListener('mousedown', this.deselect);//base-net-functional.js
       //base-net-functional.js
 
-      // if (this.isLock) {
-      //   return
-      // }
+      if (this.contextIsOpen || this.settingsIsOpen) {
+        return
+      }
 
       this.$parent.$parent.$el.addEventListener('mousemove', this.move);
       this.$parent.$parent.$el.addEventListener('mouseup', this.up);

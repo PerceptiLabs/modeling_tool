@@ -83,6 +83,9 @@ const baseNetFunctional = {
       this.settingsIsOpen = false;
       this.contextIsOpen = false;
     },
+    removeListeners() {
+
+    },
     deselect() {
       this.hideAllWindow();
       this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });

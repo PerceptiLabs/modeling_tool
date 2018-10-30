@@ -61,6 +61,7 @@
     "axios": "^0.18.0",
     "vue": "^2.5.16",
     "vue-annotator": "^0.13.2",
+    "vue-cropper": "^0.4.4",
     "vue-electron": "^1.0.6",
     "vue-range": "^1.1.0",
     "vue-router": "^3.0.1",

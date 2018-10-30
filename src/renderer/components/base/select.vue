@@ -69,6 +69,7 @@ export default {
   }
   .custom-select_option-list {
     position: absolute;
+    z-index: 1;
     top: 0;
     left: 0;
   }
