@@ -1,12 +1,14 @@
-import TextEditable from '@/components/base/text-editable.vue'
-import NetworkField from '@/components/network-field/network-field.vue'
+import TextEditable     from '@/components/base/text-editable.vue'
+import NetworkField     from '@/components/network-field/network-field.vue'
+import GeneralSettings  from "./the-workspace-general-settings";
 
 
 export default {
   name: 'WorkspaceContent',
   components: {
     NetworkField,
-    TextEditable
+    TextEditable,
+    GeneralSettings
   },
   data () {
     return {
@@ -28,6 +30,9 @@ export default {
     },
     hideSidebar () {
       return this.$store.state.globalView.hideSidebar
+    },
+    showGlobalSet () {
+      return this.$store.state.globalView.showNetGlobalSet
     },
   },
   methods: {

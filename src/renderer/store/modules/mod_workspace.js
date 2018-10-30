@@ -13,6 +13,17 @@ const state = {
   workspaceContent: [
     {
       networkName: 'Network_1',
+      networkSettings: {
+        isEmpty: true,
+        dataSigmoid: null,
+        dataValidation: null,
+        dataTest: null,
+        batchSize: null,
+        shuffleData: null,
+        epochs: null,
+        dropoutRate: null,
+        saveModel: null,
+      },
       network: [
         {
           layerId: 1,
@@ -166,6 +177,17 @@ const state = {
     },
     {
       networkName: 'Network_2',
+      networkSettings: {
+        isEmpty: true,
+        dataSigmoid: null,
+        dataValidation: null,
+        dataTest: null,
+        batchSize: null,
+        shuffleData: null,
+        epochs: null,
+        dropoutRate: null,
+        saveModel: null,
+      },
       network: [
         {
           layerId: 1,
@@ -188,6 +210,13 @@ const state = {
   arrowType: 'solid',
   startArrowID: null
 };
+
+const getters = {
+  currentNetworkSettings: (state) => {
+    return state.workspaceContent[state.currentNetwork].networkSettings;
+  }
+}
+
 
 const mutations = {
   SET_metaSelect(state, value) {
@@ -219,6 +248,9 @@ const mutations = {
   SET_networkName(state, value) {
     state.workspaceContent[state.currentNetwork].networkName = value
   },
+  SET_networkSettings(state, value) {
+    state.workspaceContent[state.currentNetwork].networkSettings = value
+  },
   SET_dragElement(state, value) {
     state.dragElement = value
   },
@@ -237,6 +269,9 @@ const mutations = {
   ADD_workspace (state) {
     let newNetwork = {
       networkName: 'Network',
+      networkSettings: {
+        isEmpty: true,
+      },
       network: []
     };
     state.workspaceContent.push(newNetwork);
@@ -316,6 +351,7 @@ const actions = {
 
 export default {
   namespaced,
+  getters,
   state,
   mutations,
   actions

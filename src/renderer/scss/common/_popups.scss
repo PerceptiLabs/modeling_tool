@@ -3,11 +3,16 @@
   background-color: #4D556A;
   //opacity: .9;
 }
+
 .popup_header {
   height: 3.5rem;
   color: $col-txt;
   background: $bg-grad-blue;
   box-shadow: $icon-shad;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
   &.disable {
     color: $disable-txt;
     background: $col-txt2;
@@ -71,3 +76,28 @@
 //  height: 1px;
 //  background-color: $bg-input;
 //}
+/*--- GLOBAL ---*/
+.popup-global {
+  position: fixed;
+  z-index: 10;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  .popup {
+    width: 290px;
+    position: relative;
+    z-index: 1;
+  }
+}
+.popup-global_overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  top: 0;
+  background-color: rgba(#000, .75);
+}

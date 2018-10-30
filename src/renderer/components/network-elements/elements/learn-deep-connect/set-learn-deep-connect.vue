@@ -15,13 +15,13 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              .form_label.w-33 Neurons:
-              .form_input.w-66
-                input
+              .form_label Neurons:
+              .form_input
+                input(type="text")
           .settings-layer_section
             .form_row
-              .form_label.w-33 Cost function:
-              .form_input.w-66
+              .form_label Cost function:
+              .form_input
                 base-radio(groupName="group1")
                   span None
                 base-radio(groupName="group1")
@@ -32,16 +32,16 @@
                   span tanh
           .settings-layer_section
             .form_row
-              .form_label.w-33 Cost function:
-              .form_input.w-66
+              .form_label Cost function:
+              .form_input
                 base-radio(groupName="group2")
                   span Yes
                 base-radio(groupName="group2")
                   span No
           .settings-layer_section
             .form_row
-              .form_label.w-33 Batch Normalization:
-              .form_input.w-66
+              .form_label Batch Normalization:
+              .form_input
                 base-radio(groupName="group3")
                   span Yes
                 base-radio(groupName="group3")

@@ -1,11 +1,15 @@
-const namespaced = true
+const namespaced = true;
 
 const state = {
   hideLayers: true,
   hideSidebar: true,
   appMode: 'edit',
-  userMode: 'advanced' //simple
-}
+  userMode: 'advanced', //simple
+  globalPopup: {
+    showNetSettings: false,
+    showCoreSideSettings: false
+  }
+};
 
 const mutations = {
   SET_hideLayers (state, value) {
@@ -17,14 +21,17 @@ const mutations = {
   SET_appMode (state, value) {
     state.appMode = value
   },
-}
+  SET_showNetGlobalSet (state, value) {
+    state.showNetGlobalSet = value
+  },
+};
 
 const actions = {
-  // someAsyncTask ({ commit }) {
-  //   // do something async
-  //   commit('INCREMENT_MAIN_COUNTER')
-  // }
-}
+  closeGlobalPopup ({ commit }) {
+    // do something async
+    commit('INCREMENT_MAIN_COUNTER')
+  }
+};
 
 export default {
   namespaced,

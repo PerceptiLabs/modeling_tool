@@ -38,18 +38,18 @@
         li
           button.btn.btn--toolbar(type="button"
             :class="statusStartBtn"
-            @click="setAppMode('learning')"
+            @click="trainStart()"
           )
             i.icon.icon-on-off
         li
           button.btn.btn--toolbar(type="button"
             :class="{'active': appMode == 'learn-pause'}"
-            @click="setAppMode('learn-pause')"
+            @click="trainPause()"
           )
             i.icon.icon-pause
         li
           button.btn.btn--toolbar(type="button"
-            @click="setAppMode('edit')"
+            @click="trainStop()"
           )
             i.icon.icon-next
       ul.toolbar_list
@@ -102,8 +102,8 @@
     computed: {
       statusStartBtn() {
         return {
-          'text-error': this.appMode == 'learning' || this.appMode == 'learn-pause',
-          'text-danger': this.appMode == 'learn-done',
+          'text-error': this.appMode == 'training' || this.appMode == 'training-pause',
+          'text-warning': this.appMode == 'training-done',
         }
       },
       hideLayers () {
@@ -120,9 +120,26 @@
       },
       appMode() {
         return this.$store.state.globalView.appMode
+      },
+      networkSettings() {
+        return this.$store.getters['mod_workspace/currentNetworkSettings']
       }
     },
     methods: {
+      trainStart() {
+        if(this.networkSettings.isEmpty) {
+          this.$store.commit('globalView/SET_showNetGlobalSet', true);
+        }
+        else {
+          this.setAppMode('training');
+        }
+      },
+      trainPause() {
+        this.setAppMode('training-pause')
+      },
+      trainStop() {
+        this.setAppMode('training-done')
+      },
       toggleLayers () {
         this.$store.commit('globalView/SET_hideLayers', !this.hideLayers)
       },
@@ -143,7 +160,7 @@
       },
       setAppMode(type) {
         this.$store.commit('globalView/SET_appMode', type)
-      }
+      },
     }
   }
 </script>

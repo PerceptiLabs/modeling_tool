@@ -21,7 +21,7 @@ textarea {
   -webkit-border-radius: 0;
   border-radius: 0;
   box-sizing: border-box;
-  display: block;
+  //display: block;
   width: 100%;
   min-width: 3rem;
   height: $input-height;
@@ -129,6 +129,11 @@ input[type='submit'] {
 .form_row {
   display: flex;
   align-items: center;
+  .form_row {
+    .form_label {
+      font-size: 1rem;
+    }
+  }
   + .form_row {
     margin-top: $form-indent;
   }

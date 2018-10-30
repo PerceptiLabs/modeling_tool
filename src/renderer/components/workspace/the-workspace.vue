@@ -12,6 +12,7 @@
             :netIndex="i"
             :style="'transform: scale(' + styleScale + ')'"
             )
+        general-settings(v-if="showGlobalSet")
       .workspace_meta
         include ./meta/workspace-meta.pug
 
