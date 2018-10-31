@@ -66,6 +66,7 @@ export default {
   data() {
     return {
       settings: {
+        isEmpty: false,
         dataSigmoid: null,
         dataValidation: null,
         dataTest: null,
@@ -82,11 +83,17 @@ export default {
   },
   methods: {
     setGlobalSet() {
+      for (var set in this.settings) {
+        if (this.settings[set] === null) {
+          return
+        }
+      }
       this.$store.commit('mod_workspace/SET_networkSettings', this.settings);
       this.closeGlobalSet();
+      this.$store.commit('globalView/SET_showCoreSideSettings', true);
     },
     closeGlobalSet() {
-      this.$store.commit('globalView/SET_showNetGlobalSet', false);
+      this.$store.commit('globalView/HIDE_allGlobalPopups');
     }
   }
 }

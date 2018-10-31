@@ -21,9 +21,17 @@ const mutations = {
   SET_appMode (state, value) {
     state.appMode = value
   },
-  SET_showNetGlobalSet (state, value) {
-    state.showNetGlobalSet = value
+  SET_showGlobalSet (state, value) {
+    state.globalPopup.showNetSettings = value
   },
+  SET_showCoreSideSettings (state, value) {
+    state.globalPopup.showCoreSideSettings = value
+  },
+  HIDE_allGlobalPopups (state) {
+    for (var popup in state.globalPopup) {
+      state.globalPopup[popup] = false
+    }
+  }
 };
 
 const actions = {

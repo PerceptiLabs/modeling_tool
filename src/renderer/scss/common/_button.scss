@@ -51,21 +51,28 @@
   }
 }
 .btn--settings {
-  background: linear-gradient(#7397FE , #6185EE);
+  background: $bg-window;
   color: $white;
   font-size: 1.2em;
   padding: .65em .8em;
   display: flex;
   align-items: center;
-  &:after {
-    content: '';
-    display: block;
-    height: 1.15em;
-    width: 1.15em;
-    min-width: 1.15em;
-    border-radius: 50%;
-    background-color: currentColor;
-    margin-left: .9em;
+  justify-content: center;
+  min-width: 11.6rem;
+  //&:after {
+  //  content: '';
+  //  display: block;
+  //  height: 1.15em;
+  //  width: 1.15em;
+  //  min-width: 1.15em;
+  //  border-radius: 50%;
+  //  background-color: currentColor;
+  //  margin-left: .9em;
+  //}
+  &:hover,
+  &.active {
+    background: $bg-grad-blue;
+    box-shadow: $icon-shad;
   }
   &.disable {
     background: linear-gradient(#515972 , #5D698D );

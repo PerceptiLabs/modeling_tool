@@ -15,14 +15,6 @@ const state = {
       networkName: 'Network_1',
       networkSettings: {
         isEmpty: true,
-        dataSigmoid: null,
-        dataValidation: null,
-        dataTest: null,
-        batchSize: null,
-        shuffleData: null,
-        epochs: null,
-        dropoutRate: null,
-        saveModel: null,
       },
       network: [
         {
@@ -179,14 +171,6 @@ const state = {
       networkName: 'Network_2',
       networkSettings: {
         isEmpty: true,
-        dataSigmoid: null,
-        dataValidation: null,
-        dataTest: null,
-        batchSize: null,
-        shuffleData: null,
-        epochs: null,
-        dropoutRate: null,
-        saveModel: null,
       },
       network: [
         {

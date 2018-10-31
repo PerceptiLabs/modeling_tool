@@ -13,6 +13,7 @@
             :style="'transform: scale(' + styleScale + ')'"
             )
         general-settings(v-if="showGlobalSet")
+        select-core-side(v-if="showCoreSide")
       .workspace_meta
         include ./meta/workspace-meta.pug
 

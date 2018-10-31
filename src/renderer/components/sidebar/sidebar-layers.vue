@@ -78,8 +78,8 @@ export default {
   .sidebar_layers {
     display: flex;
     flex-direction: column;
-    //flex: 0 0 59vh;
-    height: 59vh;
+    flex-grow: 1;
+    max-height: 50vh;
   }
   .sidebar-content {
     padding-left: $h-sidebar-layers-indent;

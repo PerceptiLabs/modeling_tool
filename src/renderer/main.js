@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 import Vuebar from 'vuebar'
+import ECharts from 'vue-echarts/components/ECharts'
 
 import App from './App'
 import router from './router'
@@ -29,6 +30,7 @@ Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);
 Vue.component('base-select', BaseSelect);
 Vue.component('base-range', BaseRange);
+Vue.component('v-chart', ECharts);
 
 
 
@@ -40,4 +42,4 @@ new Vue({
   template: '<App/>'
 }).$mount('#app');
 
-//TODO delete sl-vue-tree, vue-range, mint-range, vue-slider-component
+//TODO delete vuebar - заменить

@@ -1,6 +1,7 @@
 import TextEditable     from '@/components/base/text-editable.vue'
 import NetworkField     from '@/components/network-field/network-field.vue'
-import GeneralSettings  from "./the-workspace-general-settings";
+import GeneralSettings  from "@/components/global-popups/workspace-general-settings.vue";
+import SelectCoreSide   from "@/components/global-popups/workspace-core-side";
 
 
 export default {
@@ -8,7 +9,8 @@ export default {
   components: {
     NetworkField,
     TextEditable,
-    GeneralSettings
+    GeneralSettings,
+    SelectCoreSide
   },
   data () {
     return {
@@ -28,11 +30,14 @@ export default {
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
     },
-    hideSidebar () {
+    hideSidebar() {
       return this.$store.state.globalView.hideSidebar
     },
-    showGlobalSet () {
-      return this.$store.state.globalView.showNetGlobalSet
+    showGlobalSet() {
+      return this.$store.state.globalView.globalPopup.showNetSettings
+    },
+    showCoreSide() {
+      return this.$store.state.globalView.globalPopup.showCoreSideSettings
     },
   },
   methods: {

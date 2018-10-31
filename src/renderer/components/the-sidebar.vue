@@ -13,7 +13,8 @@
       .sidebar_tab(v-show="tabSelected === 0")
         //include ./sidebar/blocks/Project.pug
         sidebar-layers
-        sidebar-comments
+        sidebar-comments(v-if="false")
+        sidebar-training(v-if="true")
         sidebar-share
       .sidebar_tab(v-show="tabSelected === 1")
         include ./sidebar/blocks/Save.pug
@@ -25,13 +26,15 @@
 </template>
 
 <script>
-  import SidebarLayers from '@/components/sidebar/sidebar-layers.vue'
-  import SidebarComments from '@/components/sidebar/sidebar-comments.vue'
-  import SidebarShare from '@/components/sidebar/sidebar-share.vue'
+  import SidebarLayers    from '@/components/sidebar/sidebar-layers.vue'
+  import SidebarComments  from '@/components/sidebar/sidebar-comments.vue'
+  import SidebarShare     from '@/components/sidebar/sidebar-share.vue'
+  import SidebarTraining  from "@/components/sidebar/sidebar-training";
 
 export default {
   name: 'TheSidebar',
   components: {
+    SidebarTraining,
     SidebarLayers,
     SidebarComments,
     SidebarShare

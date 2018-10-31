@@ -8,12 +8,16 @@
       ul.toolbar_list
         li
           button.btn.btn--toolbar(type="button"
+            :disabled="appMode == 'training'"
             :class="{'active': appMode == 'edit'}"
             @click="setAppMode('edit')"
           )
             i.icon.icon-select
-        li.toolbar_list-arrow-wrap
+        li.toolbar_list-arrow-wrap(
+          :class="{'disable-hover': appMode == 'training'}"
+        )
           button.btn.btn--toolbar(type="button"
+            :disabled="appMode == 'training'"
             :class="{'active': appMode == 'addArrow'}"
             @click="setArrowType(arrowList[0].arrowType)"
           )
@@ -37,6 +41,7 @@
       ul.toolbar_list
         li
           button.btn.btn--toolbar(type="button"
+            :disabled="appMode == 'training'"
             :class="statusStartBtn"
             @click="trainStart()"
           )
@@ -102,8 +107,9 @@
     computed: {
       statusStartBtn() {
         return {
-          'text-error': this.appMode == 'training' || this.appMode == 'training-pause',
-          'text-warning': this.appMode == 'training-done',
+          'text-error': this.appMode == 'training',
+          'text-warning': this.appMode == 'training-pause',
+          'text-success': this.appMode == 'training-done',
         }
       },
       hideLayers () {
@@ -128,7 +134,7 @@
     methods: {
       trainStart() {
         if(this.networkSettings.isEmpty) {
-          this.$store.commit('globalView/SET_showNetGlobalSet', true);
+          this.$store.commit('globalView/SET_showGlobalSet', true);
         }
         else {
           this.setAppMode('training');
@@ -217,6 +223,12 @@
       .toolbar_list-arrow {
         max-height: 7.5rem;
         opacity: 1;
+      }
+    }
+    &.disable-hover:hover {
+      .toolbar_list-arrow {
+        max-height: 0;
+        opacity: 0;
       }
     }
   }
