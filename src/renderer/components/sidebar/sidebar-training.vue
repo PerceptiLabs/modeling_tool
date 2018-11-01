@@ -1,77 +1,124 @@
 <template lang="pug">
   section.sidebar-content
-    //.chart-box
+    .chart-box
       span.chart_title.big-text Progressbar
       .chart_main.graf
+        sidebar-progress(:percent="progress")
     .chart-box
       span.chart_title.big-text RAM
       .chart_main.graf
         v-chart(
+          :auto-resize="true"
+          theme="quantum"
           :options="optionRAM"
-          :init-options="initOptions"
           )
-    //.chart-box
+    .chart-box
       span.chart_title.big-text CPU
       .chart_main.graf
-    //.chart-box
+        v-chart(
+        :auto-resize="true"
+        theme="quantum"
+        :options="optionCPU"
+        )
+    .chart-box
       span.chart_title.big-text GPU
       .chart_main.graf
+        v-chart(
+        :auto-resize="true"
+        theme="quantum"
+        :options="optionGPU"
+        )
 
 </template>
 
 <script>
-  import 'echarts/lib/chart/line'
-  import 'echarts/lib/component/polar'
+import 'echarts/lib/chart/line'
+import SidebarProgress from "./sidebar-progress";
+
 export default {
   name: "SidebarTraining",
+  components: {SidebarProgress},
+  mounted() {
+    this.setRAM();
+    this.setCPU();
+    this.setGPU();
+    this.init();
+  },
   data() {
     return {
-      initOptions: {
-        renderer: 'svg',
-      },
+      progress: 0,
       optionRAM: {
-        grid: {
-          top: '10',
-          bottom: '25',
-          right: '10',
-          left: '35',
-        },
-        textStyle: {
-          color: '#e1e1e1',
-        },
-        singleAxis: {axisLine: {lineStyle: {color: '#F00'}}},
-        parallel: {parallelAxisDefault: {axisLine: {lineStyle: {color: '#F00'}}}},
-        parallelAxis: {
-          areaSelectStyle: {
-            color: '#F0f',
-            opacity: 1
-          }
-        },
-
-
-
-
         xAxis: {
-          type: 'category',
-          data: [1, 2, 3, 4, 5, 6, 7],
-          axisLine: {lineStyle: {color: '#3C3C4C'}},
-          nameTextStyle: {fontSize: 10}
-      },
-        yAxis: {
-          type: 'value',
-          axisLine: {lineStyle: {color: '#3C3C4C'}},
-          nameTextStyle: {fontSize: 10}
+          data: [],
         },
-        series: [{
-          data: [82, 93, 90, 93, 12, 13, 13],
-          type: 'line',
-          smooth: true
-        }]
+        yAxis: {},
+        series: [
+          {
+            type: 'line',
+            data: [],
+            symbolSize: 0,
+          }
+        ]
+      },
+      optionCPU: {
+        xAxis: {
+          data: [],
+        },
+        yAxis: {},
+        series: [
+          {
+            type: 'line',
+            data: [],
+            symbolSize: 0,
+          }
+        ]
+      },
+      optionGPU: {
+        xAxis: {
+          data: [],
+        },
+        yAxis: {},
+        series: [
+          {
+            type: 'line',
+            data: [],
+            symbolSize: 0,
+          }
+        ]
       }
     }
   },
   methods: {
-
+    setRAM() {
+      setInterval(()=> {
+        let x = this.optionRAM.xAxis.data.length;
+        this.optionRAM.xAxis.data.push(x);
+        this.optionRAM.series[0].data.push(this.random());
+        this.progress = x*5;
+      }, 500)
+    },
+    setCPU() {
+      setInterval(()=> {
+        let x = this.optionCPU.xAxis.data.length;
+        this.optionCPU.xAxis.data.push(x);
+        this.optionCPU.series[0].data.push(this.random());
+      }, 500)
+    },
+    setGPU() {
+      setInterval(()=> {
+        let x = this.optionGPU.xAxis.data.length;
+        this.optionGPU.xAxis.data.push(x);
+        this.optionGPU.series[0].data.push(this.random());
+      }, 500)
+    },
+    random() {
+      return Math.round(Math.random()*100)
+    },
+    init() {
+      setTimeout(()=> {
+        this.$store.commit('globalView/SET_appMode', 'training-done')
+      }, 10000)
+    }
   }
 }
 </script>
@@ -80,10 +127,11 @@ export default {
   @import "../../scss/base";
   .sidebar-content {
     padding-top: 1rem;
+    flex: 1;
   }
   .graf {
-    //height: 87px;
-    height: 400px;
+    height: 9rem;
+    position: relative;
     background-color: $bg-workspace;
   }
 </style>

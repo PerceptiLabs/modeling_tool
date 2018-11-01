@@ -53,8 +53,8 @@ $color-7:  #727EA6;
 $color-8:  #5D698D;
 $color-9:  #515972;
 
-$bg-grad-cyan: linear-gradient(#73FEBB, #61E6EE);
-$bg-grad-blue: linear-gradient(#7397FE, #6185EE);
+$bg-grad-cyan: linear-gradient($color-1, $color-2);
+$bg-grad-blue: linear-gradient($color-5, $color-6);
 //$color-11: #5D698D;
 //$color-12: #5D698D;
 //$color-13: #5D698D;
@@ -88,7 +88,7 @@ $size-layers-btn: 7.2rem; //72px
 
 $h-sidebar-layers-item: 3.357rem; //33px
 $h-sidebar-layers-indent: 1rem; //14px
-$w-sidebar: 130rem; //420px
+$w-sidebar: 30rem; //420px
 $h-toolbar: 4em; //56px
 
 /*----- Font -----*/

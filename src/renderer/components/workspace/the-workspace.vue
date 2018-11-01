@@ -3,15 +3,23 @@
     .workspace_tabset
       include ./tabset/workspace-tabset.pug
     .workspace
-      .workspace_content(v-bar)
-        div
-          network-field(
-            v-if="currentNetwork == i"
-            v-for="(net, i) in workspace"
-            :key="net.i"
-            :netIndex="i"
-            :style="'transform: scale(' + styleScale + ')'"
-            )
+      .workspace_content
+        .network(
+          v-if="currentNetwork === i"
+          v-for="(net, i) in workspace"
+          :key="net.i"
+          :class="{'open-statistic': appMode !== 'edit'}"
+        )
+          .network_info-section.network-statistics(v-if="appMode !== 'edit'")
+            p statistics
+          .network_info-section.network-statistics(v-if="appMode !== 'edit'")
+            p statistics
+          .network_info-section
+            network-field(
+              :netIndex="i"
+              )
+          .network_info-section.network-viewbox(v-if="appMode !== 'edit'")
+            p network viewbox
         general-settings(v-if="showGlobalSet")
         select-core-side(v-if="showCoreSide")
       .workspace_meta
@@ -23,7 +31,7 @@
 
 <script src="./the-workspace.js"></script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   @import "../../scss/base";
   @import "./tabset/workspace-tabset";
   @import "./meta/workspace-meta";
@@ -41,12 +49,22 @@
   }
   .workspace_content {
     background-color: $bg-workspace;
+    display: flex;
     flex: 1 1 100%;
-    overflow: scroll;
   }
-  .network-field {
-    height: 100%;
-    position: relative;
+  .network {
+    display: flex;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    &.open-statistic {
+      .network_info-section {
+        border: 1px solid #fff;
+      }
+    }
+  }
+  .network_info-section {
+    display: flex;
+    flex: 1 1 50%;
   }
   /*canvas {*/
     /*position: absolute;*/

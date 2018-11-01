@@ -399,6 +399,15 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   $color-arrow: #22DDE5;
+  .network-field {
+    overflow: hidden;
+    display: flex;
+    flex: 1 1 100%;
+    position: relative;
+    .open-statistic & {
+      transform: scale(.5);
+    }
+  }
   .svg-arrow {
     pointer-events: none;
     position: absolute;

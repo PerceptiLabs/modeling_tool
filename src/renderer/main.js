@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 import Vuebar from 'vuebar'
-import ECharts from 'vue-echarts/components/ECharts'
+//import ECharts from 'vue-echarts/components/ECharts'
 
 import App from './App'
 import router from './router'
@@ -24,13 +24,12 @@ Vue.config.productionTip = configApp.developMode;
 Vue.config.performance = configApp.developMode;
 
 //import './core/directives'
-//import './core/filters'
+import '@/core/plugins/eCharts.js'
 
 Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);
 Vue.component('base-select', BaseSelect);
 Vue.component('base-range', BaseRange);
-Vue.component('v-chart', ECharts);
 
 
 

@@ -39,6 +39,9 @@ export default {
     showCoreSide() {
       return this.$store.state.globalView.globalPopup.showCoreSideSettings
     },
+    appMode() {
+      return this.$store.state.globalView.appMode
+    },
   },
   methods: {
     // addLayer(e) {
