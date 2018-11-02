@@ -14,6 +14,11 @@ ul.workspace_tab-list
       :textTitle="tab.networkName"
       @changeTitle="editNetName"
       )
+    button.btn.tab_statistics(type="button"
+      v-if="showStatistics")
+      span Statistics
+      i.icon.icon-map
+
 
 .toggle-sidebar(:class="{'hide-sidebar': !hideSidebar}")
   button.btn.btn--toolbar(type="button" @click="toggleSidebar()")

@@ -5,8 +5,10 @@ const state = {
   hideSidebar: true,
   appMode: 'edit',
   userMode: 'advanced', //simple
+  showStatistics: false,
   globalPopup: {
     showNetSettings: false,
+    showNetResult: false,
     showCoreSideSettings: false
   }
 };
@@ -18,8 +20,17 @@ const mutations = {
   SET_hideSidebar (state, value) {
     state.hideSidebar = value
   },
+  SET_showStatistics (state, value) {
+    state.showStatistics = value
+  },
   SET_appMode (state, value) {
-    state.appMode = value
+    state.appMode = value;
+    if(value === 'training') {
+      state.showStatistics = true
+    }
+    if(value === 'training-done') {
+      state.globalPopup.showNetResult = true
+    }
   },
   SET_showGlobalSet (state, value) {
     state.globalPopup.showNetSettings = value

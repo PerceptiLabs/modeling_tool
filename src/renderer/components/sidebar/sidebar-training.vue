@@ -7,37 +7,25 @@
     .chart-box
       span.chart_title.big-text RAM
       .chart_main.graf
-        v-chart(
-          :auto-resize="true"
-          theme="quantum"
-          :options="optionRAM"
-          )
+        chart-line(:chartData="optionRAM")
     .chart-box
       span.chart_title.big-text CPU
       .chart_main.graf
-        v-chart(
-        :auto-resize="true"
-        theme="quantum"
-        :options="optionCPU"
-        )
+        chart-line(:chartData="optionCPU")
     .chart-box
       span.chart_title.big-text GPU
       .chart_main.graf
-        v-chart(
-        :auto-resize="true"
-        theme="quantum"
-        :options="optionGPU"
-        )
+        chart-line(:chartData="optionGPU")
 
 </template>
 
 <script>
-import 'echarts/lib/chart/line'
 import SidebarProgress from "./sidebar-progress";
+import ChartLine from "../charts/chart-line";
 
 export default {
   name: "SidebarTraining",
-  components: {SidebarProgress},
+  components: {ChartLine, SidebarProgress},
   mounted() {
     this.setRAM();
     this.setCPU();

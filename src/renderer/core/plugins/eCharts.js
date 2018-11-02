@@ -2,16 +2,24 @@
 
 import Vue from 'vue'
 import ECharts from 'vue-echarts/components/ECharts'
+import 'echarts/lib/chart/heatmap'
+import 'echarts/lib/chart/bar'
+import 'echarts/lib/chart/line'
 
+import 'echarts/lib/component/tooltip'
+import 'echarts/lib/component/title'
+import 'echarts/lib/component/legend'
+import 'echarts/lib/component/visualMap'
+import 'echarts/lib/component/dataset'
 ECharts.registerTheme('quantum', {
   grid: {
-    top: '10',
-    bottom: '25',
-    right: '10',
+    top: '20',
+    bottom: '30',
+    right: '30',
     left: '35',
   },
   singleAxis: {
-    boundaryGap: false
+    boundaryGap: true
   },
   "color": [
     "#6b8ff7",
@@ -66,15 +74,18 @@ ECharts.registerTheme('quantum', {
       "symbol": "emptyCircle",
       "smooth": true
   },
-    "bar": {
+  "bar": {
+    //xAxisIndex: 30,
+    barWidth: '8px',
+    barGap: '100%',
     "itemStyle": {
       "normal": {
         "barBorderWidth": 0,
-          "barBorderColor": "#e1e1e1"
+        "barBorderColor": "#e1e1e1"
       },
       "emphasis": {
         "barBorderWidth": 0,
-          "barBorderColor": "#e1e1e1"
+        "barBorderColor": "#e1e1e1"
       }
     }
   },

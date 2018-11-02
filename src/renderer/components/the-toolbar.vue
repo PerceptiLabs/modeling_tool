@@ -66,7 +66,11 @@
             i.icon.icon-box
 
       .settings-wrap
-        button.btn.btn--settings(type="button") View settings
+        button.btn.btn--settings(type="button"
+          @click="openStatistics"
+          )
+          span View settings
+          i.icon.icon-ellipse
 
     //.test-api
       span.big-text Dev Mode:
@@ -167,6 +171,9 @@
       setAppMode(type) {
         this.$store.commit('globalView/SET_appMode', type)
       },
+      openStatistics() {
+        this.$store.commit('globalView/SET_showStatistics', true)
+      }
     }
   }
 </script>

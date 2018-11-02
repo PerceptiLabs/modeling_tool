@@ -59,16 +59,6 @@
   align-items: center;
   justify-content: center;
   min-width: 11.6rem;
-  //&:after {
-  //  content: '';
-  //  display: block;
-  //  height: 1.15em;
-  //  width: 1.15em;
-  //  min-width: 1.15em;
-  //  border-radius: 50%;
-  //  background-color: currentColor;
-  //  margin-left: .9em;
-  //}
   &:hover,
   &.active {
     background: $bg-grad-blue;
@@ -79,6 +69,9 @@
     color: #727EA6;
   }
 }
+
+
+
 .btn--layersbar {
   height: $size-layers-btn;
   width: $size-layers-btn;

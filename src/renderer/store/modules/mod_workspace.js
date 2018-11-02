@@ -16,6 +16,7 @@ const state = {
       networkSettings: {
         isEmpty: true,
       },
+      networkStatistics: null,
       network: [
         {
           layerId: 1,
@@ -172,6 +173,7 @@ const state = {
       networkSettings: {
         isEmpty: true,
       },
+      networkStatistics: null,
       network: [
         {
           layerId: 1,

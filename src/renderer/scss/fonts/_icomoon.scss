@@ -2,7 +2,7 @@ $folder: 'icomoon';
 
 @font-face {
   font-family: 'icomoon';
-  src:  url('#{$font-path}/#{$folder}/icomoon.woff?ozd91b') format('woff');
+  src:  url('#{$font-path}/#{$folder}/icomoon.woff?zddcqb') format('woff');
   font-weight: normal;
   font-style: normal;
 }
@@ -244,6 +244,15 @@ $folder: 'icomoon';
 //.icon-l-learn-normData:before {
 //  content: "\e948";
 //}
+//.icon-zoom-plus:before {
+//  content: "\e94a";
+//}
+//.icon-minus:before {
+//  content: "\e94b";
+//}
+//.icon-Computer:before {
+//  content: "\e94c";
+//}
 .icon-empty:before {
   content: "\e910";
 }
@@ -308,7 +317,7 @@ $folder: 'icomoon';
   content: "\e913";
 }
 .icon-full-screen:before {
-  content: "\e914";
+  content: "\e94d";
 }
 .icon-g-drive:before {
   content: "\e915";
@@ -474,4 +483,16 @@ $folder: 'icomoon';
 }
 .icon-Computer:before {
   content: "\e94c";
+}
+.icon-full-screen-graph:before {
+  content: "\e914";
+}
+.icon-share:before {
+  content: "\e94e";
+}
+.icon-ellipse:before {
+  content: "\e94f";
+}
+.icon-acces:before {
+  content: "\e951";
 }
