@@ -144,7 +144,11 @@ let rendererConfig = {
         : false
     }),
     new webpack.HotModuleReplacementPlugin(),
-    new webpack.NoEmitOnErrorsPlugin()
+    new webpack.NoEmitOnErrorsPlugin(),
+    new webpack.DefinePlugin({
+      'typeof __DEV__': JSON.stringify('boolean'),
+      '__DEV__': false
+    })
   ],
   output: {
     filename: '[name].js',

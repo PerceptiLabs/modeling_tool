@@ -5,7 +5,7 @@ const state = {
   hideSidebar: true,
   appMode: 'edit',
   userMode: 'advanced', //simple
-  showStatistics: false,
+  showStatistics: true,
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,

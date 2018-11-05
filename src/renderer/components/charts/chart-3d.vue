@@ -7,8 +7,6 @@
 </template>
 
 <script>
-  import 'echarts/lib/chart/scatter'
-  import 'echarts-gl'
 export default {
   name: "Chart3D",
   props: ['chartData'],

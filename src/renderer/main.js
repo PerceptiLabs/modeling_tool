@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import axios from 'axios'
 import Vuebar from 'vuebar'
-//import ECharts from 'vue-echarts/components/ECharts'
 
 import App from './App'
 import router from './router'

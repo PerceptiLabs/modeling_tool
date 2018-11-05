@@ -51,6 +51,7 @@ export default {
           data:['Sales', 'Buy']
         },
         xAxis: {
+          boundaryGap: true,
           data: ["shirt","cardign","chiffon shirt","pants","heels","socks"]
         },
         yAxis: {},
@@ -68,6 +69,17 @@ export default {
         ]
       },
       option3d: data3d,
+      // option3d: {
+      //   tooltip: {},
+      //   grid3D: {},
+      //   xAxis3D: {},
+      //   yAxis3D: {},
+      //   zAxis3D: {},
+      //   series: [{
+      //     type: 'scatter3D',
+      //     data: [[-1, -1, -1], [0, 0, 0], [1, 1, 1]],
+      //   }]
+      // },
       optionHeat: {
         tooltip: {},
         grid: {
@@ -385,35 +397,17 @@ export default {
           ]
         },
         visualMap: {
-          //type: 'piecewise',
           min: 0,
           max: 1,
           top: '10px',
-          bottom: '20px',
-          itemWidth: 10,
           itemHeight: 300,
-          calculable: true,
           realtime: false,
           left: 'right',
-          inRange: {
-            color: ['#313695', '#4575b4', '#74add1', '#abd9e9', '#e0f3f8', '#ffffbf', '#fee090', '#fdae61', '#f46d43', '#d73027', '#a50026']
-          },
-          textStyle: {
-            color: '#e1e1e1'
-          }
         },
         series: [{
           name: 'Gaussian',
           type: 'heatmap',
           data: heat,
-          itemStyle: {
-            emphasis: {
-              borderColor: '#333',
-              borderWidth: 1
-            }
-          },
-          progressive: 1000,
-          animation: false
         }]
       }
     }
@@ -422,6 +416,7 @@ export default {
 
   },
   computed: {
+
     styleScale() {
       return this.scale / 100
     },

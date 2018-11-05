@@ -73,7 +73,8 @@
                   button.btn.btn--link(type="button")
                     i.icon.icon-full-screen-graph
               .info-section_main
-                //chart-3d(:chartData="option3d")
+                chart-3d(:chartData="option3d")
+
         general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
