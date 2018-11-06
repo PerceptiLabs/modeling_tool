@@ -1,5 +1,5 @@
 .btn {
-  @include multi-transition (color, background-color);
+  //@include multi-transition (color, background-color);
   text-decoration: none;
   border-radius: $bdrs;
   padding: 0;
@@ -50,27 +50,25 @@
     box-shadow: $icon-shad;
   }
 }
-.btn--settings {
-  background: $bg-window;
-  color: $white;
-  font-size: 1.2em;
-  padding: .65em .8em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-width: 11.6rem;
-  &:hover,
-  &.active {
-    background: $bg-grad-blue;
-    box-shadow: $icon-shad;
-  }
-  &.disable {
-    background: linear-gradient(#515972 , #5D698D );
-    color: #727EA6;
-  }
-}
-
-
+//.btn--settings {
+//  background: $bg-window;
+//  color: $white;
+//  font-size: 1.2em;
+//  padding: .65em .8em;
+//  display: flex;
+//  align-items: center;
+//  justify-content: center;
+//  min-width: 11rem;
+//  &:hover,
+//  &.active {
+//    background: $bg-grad-blue;
+//    box-shadow: $icon-shad;
+//  }
+//  &.disable {
+//    background: linear-gradient(#515972 , #5D698D );
+//    color: #727EA6;
+//  }
+//}
 
 .btn--layersbar {
   height: $size-layers-btn;
@@ -86,6 +84,39 @@
     font-size: 3.8rem;
   }
 }
+
+.btn--tabs {
+  background: $bg-grad-disable;
+  color: $disable-txt;
+  font-size: 1.2em;
+  padding: .65em .5em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 11rem;
+  &:hover,
+  &.active {
+    background: $bg-grad-blue;
+    box-shadow: $icon-shad;
+    color: $white;
+  }
+}
+
+.btn--tabs-reverse {
+  @extend .btn--tabs;
+  background: $bg-grad-blue;
+  color: $white;
+  box-shadow: $icon-shad;
+  &:hover,
+  &.active {
+    background: $bg-grad-disable;
+    color: $disable-txt;
+    box-shadow: none;
+  }
+}
+
+
+
 //
 //.btn--social-login {
 //  @include multi-transition (color, background-color, border-color);

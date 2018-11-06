@@ -11,69 +11,27 @@
           :class="{'open-statistic': showStatistics}"
         )
           section.network_info-section(v-if="showStatistics")
-            .info-section
-              .info-section_head
-                .info-section_title
-                  h3 Statistics
-                .info-section_meta
-                  button.btn.btn--link(type="button")
-                    i.icon.icon-full-screen-graph
-              .info-section_main
-                chart-heatmap(:chartData="optionHeat")
-                //ul.info-section_tab-set
-                  li
-                    button.btn(type="button")
-                //.info-section_tab-set(v-if="true")
-                  //chart-3d(:chartData="option3d")
-
-                //.info-section_tab-set(v-if="true")
-                //.info-section_tab-set(v-if="true")
-                //.info-section_tab-set(v-if="true")
-                //.info-section_tab-set(v-if="true")
-                //.info-section_tab-set(v-if="true")
-
-
+            .info-section_head
+              h3 Statistics
+            .info-section_main
+              statistics-out-normal
           section.network_info-section(v-if="showStatistics")
-            .info-section
-              .info-section_head
-                .info-section_title
-                  h3 Prediction vs Ground truth
-                .info-section_meta
-                  button.btn.btn--link(type="button")
-                    i.icon.icon-full-screen-graph
-              .info-section_main
-                chart-bar(:chartData="optionBar")
-            .info-section
-              .info-section_head
-                .info-section_title
-                  h3 Batch Average Ground Truth vs Prediction
-                .info-section_meta
-                  button.btn.btn--link(type="button")
-                    i.icon.icon-full-screen-graph
-              .info-section_main
-                chart-line(:chartData="optionLine")
+            .info-section_head
+              h3 ViewBox
+            .info-section_main
+              view-box-learn-deep-connect
           section.network_info-section
-            .info-section
-              .info-section_head(v-if="showStatistics")
-                .info-section_title
-                  h3 Map
-                .info-section_meta
-                  button.btn.btn--link(type="button")
-                    i.icon.icon-full-screen-graph
-              .info-section_main
-                network-field(
-                  :netIndex="i"
-                  )
-          section.network_info-section(v-if="showStatistics")
-            .info-section
-              .info-section_head
-                .info-section_title
-                  h3 ViewBox
-                .info-section_meta
-                  button.btn.btn--link(type="button")
-                    i.icon.icon-full-screen-graph
-              .info-section_main
-                chart-3d(:chartData="option3d")
+            .info-section_head(v-if="showStatistics")
+              h3 Map
+            .info-section_main
+              network-field(
+              :netIndex="i"
+              )
+            //chart-bar(:chartData="optionBar")
+              chart-line(:chartData="optionLine")
+              chart-3d(:chartData="option3d")
+
+
 
         general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
@@ -111,12 +69,19 @@
   }
   .network {
     display: flex;
+    //flex-direction: row-reverse;
     flex: 1 1 100%;
     flex-wrap: wrap;
     &.open-statistic {
       .network_info-section {
-        flex: 0 0 50%;
+        flex: 1 1 50%;
         height: 50%;
+        &:first-child {
+          flex: 0 0 100%;
+        }
+        &:nth-child(2n) {
+          order: 1;
+        }
       }
     }
   }
@@ -124,9 +89,6 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    &:nth-child(2n) {
-      border-left: 2px solid $bg-toolbar;;
-    }
   }
   /*canvas {*/
     /*position: absolute;*/

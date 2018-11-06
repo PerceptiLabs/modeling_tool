@@ -405,7 +405,7 @@ export default {
     flex: 1 1 100%;
     position: relative;
     .open-statistic & {
-      transform: scale(.5);
+      //transform: scale(.5);
     }
   }
   .svg-arrow {

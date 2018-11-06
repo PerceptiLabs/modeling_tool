@@ -3,6 +3,9 @@ import NetworkField     from '@/components/network-field/network-field.vue'
 import GeneralSettings  from "@/components/global-popups/workspace-general-settings.vue";
 import GeneralResult    from "@/components/global-popups/workspace-result";
 import SelectCoreSide   from "@/components/global-popups/workspace-core-side";
+import StatisticsOutNormal from "@/components/statistics/out-normal";
+import ViewBoxLearnDeepConnect from "../network-elements/elements/learn-deep-connect/viewBox-learn-deep-connect";
+
 import ChartLine        from "@/components/charts/chart-line";
 import ChartBar         from "@/components/charts/chart-bar";
 import Chart3d          from "@/components/charts/chart-3d";
@@ -20,6 +23,8 @@ export default {
     GeneralSettings,
     GeneralResult,
     SelectCoreSide,
+    StatisticsOutNormal,
+    ViewBoxLearnDeepConnect,
     ChartLine,
     ChartBar,
     'chart-3d': Chart3d,
