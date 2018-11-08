@@ -2,6 +2,7 @@
   .btn.btn--layersbar.net-element-train(:draggable="draggable"
     data-component="TrainDynamic"
     data-layer="Dynamic Routing"
+  data-type="Training"
   )
     i.icon.icon-learning-dynamic
 

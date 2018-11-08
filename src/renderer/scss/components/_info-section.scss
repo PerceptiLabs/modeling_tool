@@ -1,0 +1,28 @@
+.info-section {
+  width: 100%;
+  flex: 1 1 50%;
+  display: flex;
+  flex-direction: column;
+}
+.info-section_head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: $bg-toolbar;
+  padding: .7rem 1rem;
+  flex: 0 0 auto;
+}
+.info-section_title {
+  h3 {
+    margin: 0;
+  }
+}
+.info-section_meta {}
+.info-section_main {
+  flex: 1 1 100%;
+  display: flex;
+}
+.info-section_tab-set {
+  flex: 1 1 100%;
+  display: flex;
+}

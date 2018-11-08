@@ -5,11 +5,12 @@ const state = {
   hideSidebar: true,
   appMode: 'edit',
   userMode: 'advanced', //simple
-  showStatistics: 'stat', // 'test'
+  showStatistics: 'close', // 'test', 'close'
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,
-    showCoreSideSettings: false
+    showCoreSideSettings: false,
+    showInfoPopup: false
   }
 };
 
@@ -38,6 +39,9 @@ const mutations = {
   SET_showCoreSideSettings (state, value) {
     state.globalPopup.showCoreSideSettings = value
   },
+  SET_infoPopup(state, value) {
+  state.globalPopup.showInfoPopup = value
+},
   HIDE_allGlobalPopups (state) {
     for (var popup in state.globalPopup) {
       state.globalPopup[popup] = false

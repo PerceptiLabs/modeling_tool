@@ -10,7 +10,10 @@ const clickOutside = function (event) {
   }
 };
 
-export {findIndexId, clickOutside}
+const trainingElements = ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
+const deepLearnElements = ['LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent'];
+
+export {findIndexId, clickOutside, trainingElements, deepLearnElements}
 
 
 

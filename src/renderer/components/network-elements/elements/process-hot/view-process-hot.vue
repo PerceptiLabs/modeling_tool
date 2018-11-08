@@ -2,6 +2,7 @@
   .btn.btn--layersbar.net-element-process(:draggable="draggable"
   data-component="ProcessHot"
   data-layer="One Hot"
+  data-type="Other"
   )
     i.icon.icon-
 

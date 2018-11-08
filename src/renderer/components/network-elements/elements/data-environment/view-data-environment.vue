@@ -2,6 +2,7 @@
   .btn.btn--layersbar.net-element-data(:draggable="draggable"
     data-component="DataEnvironment"
     data-layer="Environment"
+    data-type="Data"
   )
     i.icon.icon-map
 

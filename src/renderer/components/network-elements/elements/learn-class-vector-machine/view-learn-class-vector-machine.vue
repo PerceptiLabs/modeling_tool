@@ -2,6 +2,7 @@
   .btn.btn--layersbar.net-element-learn-class(:draggable="draggable"
     data-component="LearnClassVectorMachine"
     data-layer="Support Vector Machine"
+  data-type="Training"
   )
     i.icon.icon-round-figur2
 

@@ -2,6 +2,7 @@
   button.btn.btn--layersbar.net-element-math(type="button" :draggable="draggable"
   data-component="MathSoftmax"
   data-layer="Softmax"
+  data-type="Other"
   )
     i.icon.icon-calc-softmax
 

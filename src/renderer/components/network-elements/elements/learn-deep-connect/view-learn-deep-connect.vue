@@ -2,6 +2,7 @@
   .btn.btn--layersbar.net-element-learn-deep(:draggable="draggable"
   data-component="LearnDeepConnect"
   data-layer="Fully Connected"
+  data-type="Other"
   )
     i.icon.icon-round
 

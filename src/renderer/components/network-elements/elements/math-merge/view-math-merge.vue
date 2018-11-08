@@ -2,6 +2,7 @@
   button.btn.btn--layersbar.net-element-math(type="button" :draggable="draggable"
   data-component="MathMerge"
   data-layer="Merge"
+  data-type="Other"
   )
     i.icon.icon-road-concat
 

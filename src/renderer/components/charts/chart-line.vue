@@ -47,6 +47,7 @@ export default {
 <style lang="scss" scoped>
   .full-view {
     position: absolute;
+    z-index: 1;
     left: 0;
     right: 0;
     top: 0;

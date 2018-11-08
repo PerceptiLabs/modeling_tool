@@ -1,7 +1,8 @@
-import TheToolbar from '@/components/the-toolbar.vue'
+import TheToolbar   from '@/components/the-toolbar.vue'
 import TheLayersbar from '@/components/the-layersbar.vue'
-import TheSidebar from '@/components/the-sidebar.vue'
+import TheSidebar   from '@/components/the-sidebar.vue'
 import TheWorkspace from '@/components/workspace/the-workspace.vue'
+import TheInfoPopup from "@/components/global-popups/the-info-popup";
 
 export default {
   name: 'pageQuantum',
@@ -9,7 +10,8 @@ export default {
     TheToolbar,
     TheLayersbar,
     TheSidebar,
-    TheWorkspace
+    TheWorkspace,
+    TheInfoPopup
   },
   mounted() {
     let dragged;
@@ -60,5 +62,10 @@ export default {
         this.$store.commit('mod_workspace/ADD_elToWorkspace', event)
       }
     }, false);
+  },
+  computed: {
+    infoText() {
+      return this.$store.state.globalView.globalPopup.showInfoPopup
+    },
   },
 }

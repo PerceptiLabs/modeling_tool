@@ -4,7 +4,10 @@
     the-toolbar
     the-layersbar
     the-sidebar
-
+    the-info-popup(
+      v-if="infoText"
+      :infoText="infoText"
+    )
 
 </template>
 

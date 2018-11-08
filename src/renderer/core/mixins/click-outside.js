@@ -12,14 +12,14 @@ const clickOutside = {
   },
   methods: {
     clickOutside(event) {
-      if (event.target.closest('.clickout') !== this.ClickElementTracking) {
+      if (event.target.closest('.js-clickout') !== this.ClickElementTracking) {
         document.removeEventListener('click', this.clickOutside);
         this.ClickElementTracking = null;
         this.clickOutsideAction();
       }
     },
     clickOutsideAction() {
-      console.log('clickOutsideAction');
+      console.log('need add method clickOutsideAction');
     },
   }
 };

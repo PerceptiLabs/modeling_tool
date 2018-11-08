@@ -6,7 +6,7 @@
           v-for="(layer, i) in layersbarList"
           :key="i"
         )
-          button.btn.btn--layersbar.layer_parent.clickout(type="button"
+          button.btn.btn--layersbar.layer_parent.js-clickout(type="button"
             @click.stop="toggleElList(i, $event)"
             :class="[layer.layerClass, {'active': layer.showEl}]"
           )
@@ -27,6 +27,7 @@
 
 <script>
   import clickOutside from '@/core/mixins/click-outside.js'
+  import {trainingElements, deepLearnElements}  from '@/core/helpers.js'
 
   import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
   import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/view-io-output-backpropagation.vue'
@@ -102,13 +103,13 @@ export default {
   data() {
     return {
       layersbarList: [
-        {
-          tooltip: 'I/O',
-          layerClass: 'net-element-io',
-          iconClass: 'icon-data-toggle',
-          showEl: false,
-          networkElements: ['IoInput', 'IoOutputBackprop', 'IoOutputGenetic', 'IoOutputRouting']
-        },
+        // {
+        //   tooltip: 'I/O',
+        //   layerClass: 'net-element-io',
+        //   iconClass: 'icon-data-toggle',
+        //   showEl: false,
+        //   networkElements: ['IoInput', 'IoOutputBackprop', 'IoOutputGenetic', 'IoOutputRouting']
+        // },
         {
           tooltip: 'Data',
           layerClass: 'net-element-data',
@@ -128,15 +129,8 @@ export default {
           layerClass: 'net-element-learn-deep',
           iconClass: 'icon-network',
           showEl: false,
-          networkElements: [ 'LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent',
-          ]
-        },
-        {
-          tooltip: 'Training',
-          layerClass: 'net-element-train',
-          iconClass: 'icon-training',
-          showEl: false,
-          networkElements: ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
+          //networkElements: ['LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent']
+          networkElements: deepLearnElements
         },
         {
           tooltip: 'Mathematics',
@@ -144,6 +138,14 @@ export default {
           iconClass: 'icon-calc',
           showEl: false,
           networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax']
+        },
+        {
+          tooltip: 'Training',
+          layerClass: 'net-element-train',
+          iconClass: 'icon-training',
+          showEl: false,
+          //networkElements: ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
+          networkElements: trainingElements
         },
         {
           tooltip: 'Classic Machine Learning',
@@ -162,7 +164,7 @@ export default {
   },
   methods: {
     toggleElList(index, ev) {
-      this.ClickElementTracking = ev.target.closest('.clickout');
+      this.ClickElementTracking = ev.target.closest('.js-clickout');
       document.addEventListener('click', this.clickOutside);
 
       if (this.layersbarList[index].showEl) {

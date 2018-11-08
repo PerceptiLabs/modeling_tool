@@ -26,6 +26,7 @@
   display: flex;
   flex-direction: column;
   position: relative;
+  overflow: hidden;
   > * {
     width: 100%;
     flex: 1 1 50%;
@@ -34,4 +35,12 @@
 .statistics-box_row {
   display: flex;
   width: 100%;
+}
+.statistics-box_col {
+  flex: 1 1 100%;
+  display: flex;
+  flex-wrap: wrap;
+  + .statistics-box_col {
+    border-left: 2px solid $bg-window;
+  }
 }

@@ -2,6 +2,7 @@
   .btn.btn--layersbar.net-element-learn-class(:draggable="draggable"
   data-component="LearnClassRandomForest"
   data-layer="Random Forest"
+  data-type="Training"
   )
     i.icon.icon-trees
 

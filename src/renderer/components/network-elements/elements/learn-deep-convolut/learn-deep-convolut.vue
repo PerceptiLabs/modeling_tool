@@ -17,7 +17,7 @@
   import SettingsEl   from './set-learn-deep-convolut';
 
   export default {
-    name: 'ViewLearnDeepConvolut',
+    name: 'LearnDeepConvolut',
     components: {
       BaseNetEl,
       ContextMenu,

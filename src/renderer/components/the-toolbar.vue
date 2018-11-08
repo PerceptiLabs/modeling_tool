@@ -87,95 +87,131 @@
 </template>
 
 <script>
-  import configApp from '@/core/globalSettings.js'
-  export default {
-    name: 'TheToolbar',
-    data() {
+import configApp    from '@/core/globalSettings.js'
+import {trainingElements, deepLearnElements}  from '@/core/helpers.js'
+
+
+export default {
+  name: 'TheToolbar',
+  data() {
+    return {
+      x: null,
+      y: null,
+      arrowList: [
+        {
+          iconClass: 'icon-layer-arrow1',
+          arrowType: 'solid'
+        }, {
+          iconClass: 'icon-layer-arrow2',
+          arrowType: 'dash2'
+        }, {
+          iconClass: 'icon-layer-arrow3',
+          arrowType: 'dash1'
+        }
+      ]
+    }
+  },
+  computed: {
+    statusStartBtn() {
       return {
-        x: null,
-        y: null,
-        arrowList: [
-          {
-            iconClass: 'icon-layer-arrow1',
-            arrowType: 'solid'
-          }, {
-            iconClass: 'icon-layer-arrow2',
-            arrowType: 'dash2'
-          }, {
-            iconClass: 'icon-layer-arrow3',
-            arrowType: 'dash1'
-          }
-        ]
+        'text-error': this.appMode == 'training',
+        'text-warning': this.appMode == 'training-pause',
+        'text-success': this.appMode == 'training-done',
       }
     },
-    computed: {
-      statusStartBtn() {
-        return {
-          'text-error': this.appMode == 'training',
-          'text-warning': this.appMode == 'training-pause',
-          'text-success': this.appMode == 'training-done',
-        }
-      },
-      hideLayers () {
-        return this.$store.state.globalView.hideLayers
-      },
-      resultSym() {
-        return this.$store.state.mod_api.symPY
-      },
-      versionApi() {
-        return configApp.version
-      },
-      devMode() {
-        return configApp.developMode
-      },
-      appMode() {
-        return this.$store.state.globalView.appMode
-      },
-      networkSettings() {
-        return this.$store.getters['mod_workspace/currentNetworkSettings']
+    hideLayers () {
+      return this.$store.state.globalView.hideLayers
+    },
+    resultSym() {
+      return this.$store.state.mod_api.symPY
+    },
+    versionApi() {
+      return configApp.version
+    },
+    devMode() {
+      return configApp.developMode
+    },
+    appMode() {
+      return this.$store.state.globalView.appMode
+    },
+    networkSettings() {
+      return this.$store.getters['mod_workspace/currentNetworkSettings']
+    },
+    currentNet() {
+      return this.$store.getters['mod_workspace/currentNetwork']
+    }
+  },
+  methods: {
+    trainStart() {
+      let valid = this.validateNetwork();
+      if (!valid) {
+        return
+      }
+      if(this.networkSettings.isEmpty) {
+        this.$store.commit('globalView/SET_showGlobalSet', true);
+      }
+      else {
+        this.setAppMode('training');
       }
     },
-    methods: {
-      trainStart() {
-        if(this.networkSettings.isEmpty) {
-          this.$store.commit('globalView/SET_showGlobalSet', true);
-        }
-        else {
-          this.setAppMode('training');
-        }
-      },
-      trainPause() {
-        this.setAppMode('training-pause')
-      },
-      trainStop() {
-        this.setAppMode('training-done')
-      },
-      toggleLayers () {
-        this.$store.commit('globalView/SET_hideLayers', !this.hideLayers)
-      },
-      PY() {
-        this.$store.dispatch('mod_pythonAPI/PY_console');
-      },
-      calcPY() {
-        let x = +this.x;
-        let y = +this.y;
-        //this.$store.dispatch('mod_pythonAPI/PY_text', {x, y});
-        this.$store.dispatch('mod_api/PY_func', {x, y});
-      },
-      setArrowType(type, index) {
-        this.setAppMode('addArrow');
-        this.$store.commit('mod_workspace/SET_arrowType', {type, store: this.$store});
-        let selectArray = this.arrowList.splice(index, 1);
-        this.arrowList.unshift(selectArray[0]);
-      },
-      setAppMode(type) {
-        this.$store.commit('globalView/SET_appMode', type)
-      },
-      openStatistics() {
-        this.$store.commit('globalView/SET_showStatistics', true)
+    trainPause() {
+      this.setAppMode('training-pause')
+    },
+    trainStop() {
+      this.setAppMode('training-done')
+    },
+    validateNetwork() {
+      let net = this.currentNet;
+      let typeData = net.find((element)=> element.layerType === 'Data');
+      if(typeData == undefined) {
+        this.$store.commit('globalView/SET_infoPopup', 'Date element missing');
+        return false
       }
+
+      let typeTraining = net.find((element)=> element.layerType === 'Training');
+      if(typeTraining == undefined) {
+        this.$store.commit('globalView/SET_infoPopup', 'Classic Machine Learning or Training element missing');
+        return false
+      }
+
+      let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
+      let deepLearnIncluded = true;
+      if (trainingIncluded) {
+        deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
+      }
+      if(deepLearnIncluded === undefined) {
+        this.$store.commit('globalView/SET_infoPopup', 'If you use the Training elements, you must use the Deep Learn elements');
+        return false
+      }
+
+      return true;
+    },
+    toggleLayers () {
+      this.$store.commit('globalView/SET_hideLayers', !this.hideLayers)
+    },
+    PY() {
+      this.$store.dispatch('mod_pythonAPI/PY_console');
+    },
+    calcPY() {
+      let x = +this.x;
+      let y = +this.y;
+      //this.$store.dispatch('mod_pythonAPI/PY_text', {x, y});
+      this.$store.dispatch('mod_api/PY_func', {x, y});
+    },
+    setArrowType(type, index) {
+      this.setAppMode('addArrow');
+      this.$store.commit('mod_workspace/SET_arrowType', {type, store: this.$store});
+      let selectArray = this.arrowList.splice(index, 1);
+      this.arrowList.unshift(selectArray[0]);
+    },
+    setAppMode(type) {
+      this.$store.commit('globalView/SET_appMode', type)
+    },
+    openStatistics() {
+      this.$store.commit('globalView/SET_showStatistics', true)
     }
   }
+}
 </script>
 
 <style lang="scss" scoped>

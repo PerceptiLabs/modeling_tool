@@ -20,15 +20,19 @@ const state = {
       network: [
         {
           layerId: 1,
-          layerName: 'Layer Name 1',
-          connectionOut: [{
-            id: 2,
-            type: 'dash1'
-          }, {
+          layerName: 'Learn Deep Connect',
+          layerType: 'Other',
+          componentName: 'LearnDeepConnect',
+          connectionOut: [
+            // {
+            // id: 2,
+            // type: 'dash1'
+            // },
+            {
             id: 4,
             type: 'dash2'
           }],
-          componentName: 'DataData',
+
           meta: {
             isInvisible: false,
             isLock: false,
@@ -36,110 +40,233 @@ const state = {
             top: 300,
             left: 200
           },
+          trainingData: {
+            optionLine1: {
+              tooltip: {},
+              xAxis: {
+                data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
+              },
+              yAxis: {},
+              series: [
+                {
+                  type: 'line',
+                  data: [0.1, 0.5, 0.6, .99, .75],
+                },
+                {
+                  type: 'line',
+                  data: [0.51, 0.15, 0.96, .199, .175],
+                }
+              ]
+            },
+            optionLine2: {
+              tooltip: {},
+              xAxis: {
+                data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
+              },
+              yAxis: {},
+              series: [
+                {
+                  type: 'bar',
+                  data: [0.1, 0.5, 0.6, .99, .75],
+                },
+                {
+                  type: 'bar',
+                  data: [0.51, 0.15, 0.96, .199, .175],
+                }
+              ]
+            },
+            optionLine3: {
+              tooltip: {},
+              xAxis: {
+                data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
+              },
+              yAxis: {},
+              series: [
+                {
+                  type: 'bar',
+                  data: [0.1, 0.5, 0.6, .99, .75],
+                },
+                {
+                  type: 'line',
+                  data: [0.51, 0.15, 0.96, .199, .175],
+                }
+              ]
+            },
+            optionLine4: {
+              tooltip: {},
+              xAxis: {
+                data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
+              },
+              yAxis: {},
+              series: [
+                {
+                  type: 'line',
+                  data: [0.1, 0.5, 0.6, .99, .75],
+                },
+                {
+                  type: 'line',
+                  data: [0.51, 0.15, 0.96, .199, .175],
+                }
+              ]
+            },
+            optionLine5: {
+              tooltip: {},
+              xAxis: {
+                data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
+              },
+              yAxis: {},
+              series: [
+                {
+                  type: 'line',
+                  data: [0.1, 0.5, 0.6, .99, .75],
+                },
+                {
+                  type: 'line',
+                  data: [0.51, 0.15, 0.96, .199, .175],
+                }
+              ]
+            },
+            optionLine6: {
+              tooltip: {},
+              xAxis: {
+                data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
+              },
+              yAxis: {},
+              series: [
+                {
+                  type: 'line',
+                  data: [0.1, 0.5, 0.6, .99, .75],
+                },
+                {
+                  type: 'line',
+                  data: [0.51, 0.15, 0.96, .199, .175],
+                }
+              ]
+            },
+          }
         },
+        // {
+        //   layerId: 2,
+        //   layerName: 'Layer Name 2',
+        //   connectionOut: [],
+        //   componentName: 'LayerContainer',
+        //   meta: {
+        //     isInvisible: false,
+        //     isLock: false,
+        //     isSelected: false,
+        //     top: 200,
+        //     left: 650
+        //   },
+        //   child: [
+        //     {
+        //       layerId: 21,
+        //       layerName: 'Layer Name 21',
+        //       connectionOut: [],
+        //       componentName: 'LayerContainer',
+        //       meta: {
+        //         isInvisible: false,
+        //         isLock: false,
+        //         isSelected: false,
+        //         top: 50,
+        //         left: 60
+        //       },
+        //       child: [
+        //         {
+        //           layerId: 211,
+        //           layerName: 'Layer Name 211',
+        //           connectionOut: [],
+        //           componentName: 'IoInput',
+        //           meta: {
+        //             isInvisible: false,
+        //             isLock: false,
+        //             isSelected: false,
+        //             top: 50,
+        //             left: 60
+        //           }
+        //         },
+        //         {
+        //           layerId: 212,
+        //           layerName: 'Layer Name 212',
+        //           connectionOut: [],
+        //           componentName: 'LayerContainer',
+        //           meta: {
+        //             isInvisible: false,
+        //             isLock: false,
+        //             isSelected: false,
+        //             top: 50,
+        //             left: 160
+        //           },
+        //           child: [
+        //             {
+        //               layerId: 2121,
+        //               layerName: 'Layer Name 2121',
+        //               connectionOut: [],
+        //               componentName: 'IoInput',
+        //               meta: {
+        //                 isInvisible: false,
+        //                 isLock: false,
+        //                 isSelected: false,
+        //                 top: 50,
+        //                 left: 60
+        //               },
+        //             },
+        //             {
+        //               layerId: 2122,
+        //               layerName: 'Layer Name 2122',
+        //               connectionOut: [],
+        //               componentName: 'IoInput',
+        //               meta: {
+        //                 isInvisible: false,
+        //                 isLock: false,
+        //                 isSelected: false,
+        //                 top: 250,
+        //                 left: 60
+        //               },
+        //             },
+        //           ]
+        //         },
+        //       ]
+        //     },
+        //     {
+        //       layerId: 22,
+        //       layerName: 'Layer Name 22',
+        //       connectionOut: [{
+        //         id: 21,
+        //         type: 'dash1'
+        //       }],
+        //       componentName: 'IoInput',
+        //       meta: {
+        //         isInvisible: false,
+        //         isLock: false,
+        //         isSelected: false,
+        //         top: 150,
+        //         left: 60
+        //       },
+        //     }
+        //   ]
+        // },
         {
           layerId: 2,
-          layerName: 'Layer Name 2',
-          connectionOut: [],
-          componentName: 'LayerContainer',
+          layerName: 'learn deep convolut',
+          layerType: 'Other',
+          connectionOut: [{
+            id: 5,
+            type: 'solid'
+          }],
+          componentName: 'LearnDeepConvolut',
           meta: {
             isInvisible: false,
             isLock: false,
             isSelected: false,
-            top: 200,
+            top: 100,
             left: 650
           },
-          child: [
-            {
-              layerId: 21,
-              layerName: 'Layer Name 21',
-              connectionOut: [],
-              componentName: 'LayerContainer',
-              meta: {
-                isInvisible: false,
-                isLock: false,
-                isSelected: false,
-                top: 50,
-                left: 60
-              },
-              child: [
-                {
-                  layerId: 211,
-                  layerName: 'Layer Name 211',
-                  connectionOut: [],
-                  componentName: 'IoInput',
-                  meta: {
-                    isInvisible: false,
-                    isLock: false,
-                    isSelected: false,
-                    top: 50,
-                    left: 60
-                  }
-                },
-                {
-                  layerId: 212,
-                  layerName: 'Layer Name 212',
-                  connectionOut: [],
-                  componentName: 'LayerContainer',
-                  meta: {
-                    isInvisible: false,
-                    isLock: false,
-                    isSelected: false,
-                    top: 50,
-                    left: 160
-                  },
-                  child: [
-                    {
-                      layerId: 2121,
-                      layerName: 'Layer Name 2121',
-                      connectionOut: [],
-                      componentName: 'IoInput',
-                      meta: {
-                        isInvisible: false,
-                        isLock: false,
-                        isSelected: false,
-                        top: 50,
-                        left: 60
-                      },
-                    },
-                    {
-                      layerId: 2122,
-                      layerName: 'Layer Name 2122',
-                      connectionOut: [],
-                      componentName: 'IoInput',
-                      meta: {
-                        isInvisible: false,
-                        isLock: false,
-                        isSelected: false,
-                        top: 250,
-                        left: 60
-                      },
-                    },
-                  ]
-                },
-              ]
-            },
-            {
-              layerId: 22,
-              layerName: 'Layer Name 22',
-              connectionOut: [{
-                id: 21,
-                type: 'dash1'
-              }],
-              componentName: 'IoInput',
-              meta: {
-                isInvisible: false,
-                isLock: false,
-                isSelected: false,
-                top: 150,
-                left: 60
-              },
-            }
-          ]
+          trainingData: {}
         },
         {
           layerId: 4,
           layerName: 'Layer Name 3',
+          layerType: 'Training',
           connectionOut: [],
           componentName: 'LearnClassVectorMachine',
           meta: {
@@ -148,48 +275,51 @@ const state = {
             isSelected: false,
             top: 400,
             left: 650
-          }
+          },
+          trainingData: {}
         },
         {
           layerId: 5,
           layerName: 'Layer Name 5',
+          layerType: 'Training',
           connectionOut: [{
             id: 1,
             type: 'solid'
           }],
-          componentName: 'TrainGenetic',
+          componentName: 'TrainNormal',
           meta: {
             isInvisible: false,
             isLock: false,
             isSelected: false,
             top: 300,
             left: 650
-          }
+          },
+          trainingData: {}
         }
       ]
     },
-    {
-      networkName: 'Network_2',
-      networkSettings: {
-        isEmpty: true,
-      },
-      networkStatistics: null,
-      network: [
-        {
-          layerId: 1,
-          layerName: 'Layer Name1',
-          connectionOut: [],
-          componentName: 'IoInput',
-          meta: {
-            isInvisible: false,
-            isLock: false,
-            isSelected: false,
-            top: 80,
-            left: 80
-          },
-        },
-      ]
-    }
+    // {
+    //   networkName: 'Network_2',
+    //   networkSettings: {
+    //     isEmpty: true,
+    //   },
+    //   networkStatistics: null,
+    //   network: [
+    //     {
+    //       layerId: 1,
+    //       layerName: 'Layer Name1',
+    //       connectionOut: [],
+    //       componentName: 'IoInput',
+    //       meta: {
+    //         isInvisible: false,
+    //         isLock: false,
+    //         isSelected: false,
+    //         top: 80,
+    //         left: 80
+    //       },
+    //     },
+    //   ]
+    // }
   ],
   currentNetwork: 0,
   dragElement: {},
@@ -198,11 +328,19 @@ const state = {
 };
 
 const getters = {
+  currentNetwork: (state) => {
+    return state.workspaceContent[state.currentNetwork].network;
+  },
   currentNetworkSettings: (state) => {
     return state.workspaceContent[state.currentNetwork].networkSettings;
+  },
+  currentSelectedElement: (state, getters) => {
+    let selectedElements = getters.currentNetwork.filter(function(el) {
+      return el.meta.isSelected;
+    });
+    return selectedElements;
   }
-}
-
+};
 
 const mutations = {
   SET_metaSelect(state, value) {
@@ -258,6 +396,7 @@ const mutations = {
       networkSettings: {
         isEmpty: true,
       },
+      emptyTrainingData: true,
       network: []
     };
     state.workspaceContent.push(newNetwork);
@@ -266,15 +405,17 @@ const mutations = {
     var newLayer = {
       layerId: event.timeStamp,
       layerName: event.target.dataset.layer,
-      connectionOut: [],
+      layerType: event.target.dataset.type,
       componentName: event.target.dataset.component,
+      connectionOut: [],
       meta: {
         //isInvisible: false,
         isLock: false,
         isSelected: false,
         top: event.target.clientHeight/2,
         left: event.target.clientWidth/2
-      }
+      },
+      trainingData: null
     };
     state.dragElement = newLayer;
   },
@@ -328,12 +469,12 @@ const mutations = {
     state.workspaceContent[net].network[el].meta.top = value.top;
     state.workspaceContent[net].network[el].meta.left = value.left;
   },
-}
+};
 
 const actions = {
 
 
-}
+};
 
 export default {
   namespaced,

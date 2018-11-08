@@ -8,30 +8,24 @@
           v-if="currentNetwork === i"
           v-for="(net, i) in workspace"
           :key="net.i"
-          :class="{'open-statistic': showStatistics}"
+          :class="{'open-statistic': showStatistics !== 'close'}"
         )
-          section.network_info-section(v-if="showStatistics")
-            .info-section_head
-              h3 Statistics
-            .info-section_main
-              statistics-out-normal
-          section.network_info-section(v-if="showStatistics")
-            .info-section_head
-              h3 ViewBox
-            .info-section_main
-              view-box-learn-deep-connect
+
+          the-statistics(
+            v-if="showStatistics === 'open'"
+            :elData="selectedEl"
+            )
+          the-view-box(
+            v-if="showStatistics === 'open'"
+            :elData="selectedEl"
+            )
           section.network_info-section
-            .info-section_head(v-if="showStatistics")
+            .info-section_head(v-if="showStatistics === 'open'")
               h3 Map
             .info-section_main
               network-field(
               :netIndex="i"
               )
-            //chart-bar(:chartData="optionBar")
-              chart-line(:chartData="optionLine")
-              chart-3d(:chartData="option3d")
-
-
 
         general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
@@ -72,10 +66,12 @@
     //flex-direction: row-reverse;
     flex: 1 1 100%;
     flex-wrap: wrap;
+    width: 100%;
     &.open-statistic {
       .network_info-section {
         flex: 1 1 50%;
         height: 50%;
+        overflow: hidden;
         &:first-child {
           flex: 0 0 100%;
         }
@@ -107,32 +103,5 @@
     justify-content: space-between;
     padding: .5rem;
   }
-  .info-section {
-    width: 100%;
-    flex: 1 1 50%;
-    display: flex;
-    flex-direction: column;
-  }
-  .info-section_head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: $bg-toolbar;
-    padding: .7rem 1rem;
-    flex: 0 0 auto;
-  }
-  .info-section_title {
-    h3 {
-      margin: 0;
-    }
-  }
-  .info-section_meta {}
-  .info-section_main {
-    flex: 1 1 100%;
-    display: flex;
-  }
-  .info-section_tab-set {
-    flex: 1 1 100%;
-    display: flex;
-  }
+
 </style>

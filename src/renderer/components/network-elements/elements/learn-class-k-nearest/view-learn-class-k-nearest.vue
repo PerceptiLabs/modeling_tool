@@ -2,6 +2,7 @@
   .btn.btn--layersbar.net-element-learn-class(:draggable="draggable"
   data-component="LearnClassKNearest"
   data-layer="K Nearest Neighbor"
+  data-type="Training"
   )
     i.icon.icon-round-figur
 

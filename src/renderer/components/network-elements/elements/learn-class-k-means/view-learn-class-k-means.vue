@@ -1,7 +1,8 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-learn-class(:draggable="draggable"
-  data-component="LearnClassKMeans"
-  data-layer="K-Means Clustering"
+    data-component="LearnClassKMeans"
+    data-layer="K-Means Clustering"
+  data-type="Training"
   )
     i.icon.icon-round-sieve
 

@@ -2,6 +2,7 @@
   .btn.btn--layersbar.net-element-train(:draggable="draggable"
     data-component="TrainNormalData"
     data-layer="Normal + Data"
+  data-type="Training"
   )
     i.icon.icon-l-learn-normData
 
