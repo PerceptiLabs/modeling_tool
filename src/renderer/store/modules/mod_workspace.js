@@ -16,20 +16,21 @@ const state = {
       networkSettings: {
         isEmpty: true,
       },
-      networkStatistics: null,
+      networkStatistics: false,
+      canTestStatistics: false,
       network: [
         {
           layerId: 1,
-          layerName: 'Learn Deep Connect',
-          layerType: 'Other',
-          componentName: 'LearnDeepConnect',
+          layerName: 'Data',
+          layerType: 'Data',
+          componentName: 'DataData',
           connectionOut: [
             // {
             // id: 2,
             // type: 'dash1'
             // },
             {
-            id: 4,
+            id: 2,
             type: 'dash2'
           }],
 
@@ -37,8 +38,8 @@ const state = {
             isInvisible: false,
             isLock: false,
             isSelected: false,
-            top: 300,
-            left: 200
+            top: 100,
+            left: 100
           },
           trainingData: {
             optionLine1: {
@@ -250,7 +251,7 @@ const state = {
           layerName: 'learn deep convolut',
           layerType: 'Other',
           connectionOut: [{
-            id: 5,
+            id: 3,
             type: 'solid'
           }],
           componentName: 'LearnDeepConvolut',
@@ -259,28 +260,33 @@ const state = {
             isLock: false,
             isSelected: false,
             top: 100,
-            left: 650
+            left: 400
           },
           trainingData: {}
         },
         {
-          layerId: 4,
-          layerName: 'Layer Name 3',
+          layerId: 3,
+          layerName: 'Learn Class Vector Machine',
           layerType: 'Training',
-          connectionOut: [],
+          connectionOut: [
+            {
+              id: 4,
+              type: 'solid'
+            }
+          ],
           componentName: 'LearnClassVectorMachine',
           meta: {
             isInvisible: false,
             isLock: false,
             isSelected: false,
-            top: 400,
-            left: 650
+            top: 300,
+            left: 400
           },
           trainingData: {}
         },
         {
-          layerId: 5,
-          layerName: 'Layer Name 5',
+          layerId: 4,
+          layerName: 'Train Normal',
           layerType: 'Training',
           connectionOut: [{
             id: 1,
@@ -292,7 +298,7 @@ const state = {
             isLock: false,
             isSelected: false,
             top: 300,
-            left: 650
+            left: 100
           },
           trainingData: {}
         }
@@ -328,14 +334,17 @@ const state = {
 };
 
 const getters = {
-  currentNetwork: (state) => {
-    return state.workspaceContent[state.currentNetwork].network;
+  currentNetwork(state)  {
+    return state.workspaceContent[state.currentNetwork];
   },
-  currentNetworkSettings: (state) => {
-    return state.workspaceContent[state.currentNetwork].networkSettings;
+  currentNetworkNet: (state, getters) => {
+    return getters.currentNetwork.network;
+  },
+  currentNetworkSettings: (state, getters) => {
+    return getters.currentNetwork.networkSettings;
   },
   currentSelectedElement: (state, getters) => {
-    let selectedElements = getters.currentNetwork.filter(function(el) {
+    let selectedElements = getters.currentNetworkNet.filter(function(el) {
       return el.meta.isSelected;
     });
     return selectedElements;
@@ -390,6 +399,13 @@ const mutations = {
   SET_arrowType (state, value) {
     state.arrowType = value.type
   },
+  SET_networkStatistics(state, {value, get}) {
+    get.currentNetwork.networkStatistics = value
+  },
+  SET_canTestStatistics(state, {value, get}) {
+    get.currentNetwork.canTestStatistics = value;
+  },
+
   ADD_workspace (state) {
     let newNetwork = {
       networkName: 'Network',
@@ -472,8 +488,12 @@ const mutations = {
 };
 
 const actions = {
-
-
+  a_SET_networkStatistics({commit, getters}, value) {
+    commit('SET_networkStatistics', {value, get: getters})
+  },
+  a_SET_canTestStatistics({commit, getters}, value) {
+    commit('SET_canTestStatistics', {value, get: getters})
+  }
 };
 
 export default {

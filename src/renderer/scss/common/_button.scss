@@ -4,6 +4,10 @@
   border-radius: $bdrs;
   padding: 0;
   background-color: transparent;
+  span + .icon,
+  .icon + span {
+    margin-left: 1rem;
+  }
 }
 .btn--primary {
   color: $col-txt2;
@@ -102,21 +106,24 @@
   }
 }
 
-.btn--tabs-reverse {
+.btn--dark-blue {
   @extend .btn--tabs;
+  background: $bg-window;
+}
+
+.btn--dark-blue-rev {
+  @extend .btn--dark-blue;
   background: $bg-grad-blue;
   color: $white;
-  box-shadow: $icon-shad;
   &:hover,
   &.active {
-    background: $bg-grad-disable;
+    background: $bg-window;
     color: $disable-txt;
+  }
+  &.active {
     box-shadow: none;
   }
 }
-
-
-
 //
 //.btn--social-login {
 //  @include multi-transition (color, background-color, border-color);

@@ -1,6 +1,6 @@
 <template lang="pug">
   .sidebar-progress
-    .sidebar-progress_loader
+    .sidebar-progress_loader.animation-loader
     span.sidebar-progress_data.middle-text {{ percentData }}
 </template>
 
@@ -35,13 +35,13 @@ export default {
     padding: .5em;
   }
   .sidebar-progress_loader {
+    display: block;
     margin: 0 auto;
     width: 8em;
     height: 8em;
     border-radius: 50%;
     background: $color-6;
     background: linear-gradient(to bottom, $color-6 25%, $bg-window 80%);
-    animation: loader 1s infinite linear;
     transform: translate(0);
     overflow: hidden;
     &:before {
@@ -68,15 +68,6 @@ export default {
 
       margin: auto;
 
-    }
-  }
-
-  @keyframes loader {
-    0% {
-      transform: rotate(0deg);
-    }
-    100% {
-      transform: rotate(360deg);
     }
   }
   .sidebar-progress_data {

@@ -8,19 +8,19 @@
           v-if="currentNetwork === i"
           v-for="(net, i) in workspace"
           :key="net.i"
-          :class="{'open-statistic': showStatistics !== 'close'}"
+          :class="{'open-statistic': statisticsIsOpen}"
         )
 
           the-statistics(
-            v-if="showStatistics === 'open'"
-            :elData="selectedEl"
+            v-if="statisticsIsOpen"
+            :elData="statisticsElSelected"
             )
           the-view-box(
-            v-if="showStatistics === 'open'"
-            :elData="selectedEl"
+            v-if="statisticsIsOpen"
+            :elData="statisticsElSelected"
             )
           section.network_info-section
-            .info-section_head(v-if="showStatistics === 'open'")
+            .info-section_head(v-if="statisticsIsOpen")
               h3 Map
             .info-section_main
               network-field(

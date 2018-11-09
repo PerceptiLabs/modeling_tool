@@ -28,13 +28,11 @@
 }
 .tab_statistics {
   height: 100%;
-  display: flex;
-  align-items: center;
   padding: .25em .8em;
-  background: $bg-grad-blue;
   border-radius: 1rem 1rem 0 0;
+  font-size: 1rem;
+  min-width: auto;
   .icon {
-    margin-left: .75em;
     font-size: 1.2em;
   }
 }

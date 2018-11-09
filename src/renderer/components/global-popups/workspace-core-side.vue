@@ -17,8 +17,8 @@
           .settings-layer_section.text-center
             p.big-text Start training
           .settings-layer_foot
-            button.btn.btn--settings(type="button" @click="closePopup()") Cancel
-            button.btn.btn--settings(type="button" @click="startTraining()") Start
+            button.btn.btn--dark-blue(type="button" @click="closePopup()") Cancel
+            button.btn.btn--dark-blue(type="button" @click="startTraining()") Start
         .popup_body(
           :class="{'active': tabSelected == 1}"
         )
@@ -45,8 +45,8 @@ export default {
   },
   methods: {
     startTraining() {
-      this.$store.commit('globalView/SET_appMode', 'training');
-      this.closePopup();
+      this.$store.dispatch('globalView/NET_trainingStart');
+
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

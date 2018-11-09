@@ -1,21 +1,27 @@
 <template lang="pug">
   section.sidebar-content
-    .chart-box
-      span.chart_title.big-text Progressbar
-      .chart_main.graf
+    .pc-chart_box
+      span.pc-chart_title.big-text Progressbar
+      .pc-chart_main
         sidebar-progress(:percent="progress")
-    .chart-box
-      span.chart_title.big-text RAM
-      .chart_main.graf
-        chart-line(:chartData="optionRAM")
-    .chart-box
-      span.chart_title.big-text CPU
-      .chart_main.graf
-        chart-line(:chartData="optionCPU")
-    .chart-box
-      span.chart_title.big-text GPU
-      .chart_main.graf
-        chart-line(:chartData="optionGPU")
+    .pc-chart_box
+      span.pc-chart_title.big-text RAM
+      .pc-chart_main
+        chart-line(
+          :headerOff="true"
+          :chartData="optionRAM")
+    .pc-chart_box
+      span.pc-chart_title.big-text CPU
+      .pc-chart_main
+        chart-line(
+        :headerOff="true"
+        :chartData="optionCPU")
+    .pc-chart_box
+      span.pc-chart_title.big-text GPU
+      .pc-chart_main
+        chart-line(
+        :headerOff="true"
+        :chartData="optionGPU")
 
 </template>
 
@@ -104,7 +110,7 @@ export default {
     },
     init() {
       setTimeout(()=> {
-        this.$store.commit('globalView/SET_appMode', 'training-done')
+        this.$store.dispatch('globalView/NET_trainingDone')
       }, 10000)
     }
   }
@@ -115,11 +121,26 @@ export default {
   @import "../../scss/base";
   .sidebar-content {
     padding-top: 1rem;
-    flex: 1;
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
   }
-  .graf {
+
+  .pc-chart_box {
+    width: 100%;
+    flex: 0 0 100%;
+  }
+
+  .pc-chart_title {
+    display: block;
+    margin: 1rem 0 .5rem;
+  }
+  .pc-chart_main {
+    display: flex;
+    justify-content: center;
     height: 9rem;
     position: relative;
     background-color: $bg-workspace;
   }
+
 </style>

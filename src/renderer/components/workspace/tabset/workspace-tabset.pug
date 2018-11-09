@@ -14,10 +14,12 @@ ul.workspace_tab-list
       :textTitle="tab.networkName"
       @changeTitle="editNetName"
       )
-    button.btn.tab_statistics(type="button"
-      v-if="showStatistics")
+    button.btn.btn--tabs.tab_statistics(type="button"
+      v-if="tab.networkStatistics"
+      @click.stop="openStatistics"
+      :class="{'active': statisticsIsOpen}")
       span Statistics
-      i.icon.icon-map
+      i.icon.icon-circle-o
 
 
 .toggle-sidebar(:class="{'hide-sidebar': !hideSidebar}")

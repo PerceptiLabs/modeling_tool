@@ -44,8 +44,8 @@ export default {
     showGlobalResult() {
       return this.$store.state.globalView.globalPopup.showNetResult
     },
-    showStatistics() {
-      return this.$store.state.globalView.showStatistics
+    hasStatistics() {
+      return this.$store.getters['mod_workspace/currentNetwork'].networkStatistics;
     },
     showCoreSide() {
       return this.$store.state.globalView.globalPopup.showCoreSideSettings
@@ -55,6 +55,19 @@ export default {
     },
     selectedEl() {
       return this.$store.getters['mod_workspace/currentSelectedElement']
+    },
+    statisticsIsOpen() {
+      return this.$store.state.globalView.statisticsIsOpen
+    },
+    statisticsElSelected() {
+      return this.$store.state.mod_statistics.selectedElArr
+    }
+  },
+  watch: {
+    hasStatistics(newVal) {
+      if(newVal) {
+        this.openStatistics()
+      }
     }
   },
   methods: {
@@ -79,7 +92,7 @@ export default {
     },
     setTabNetwork(index) {
       this.$store.commit('mod_workspace/SET_currentNetwork', index);
-      this.$store.commit('globalView/SET_showStatistics', 'close')
+      this.$store.commit('globalView/SET_statisticsIsOpen', false)
     },
     toggleSidebar () {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
@@ -108,5 +121,8 @@ export default {
     editNetName(newName) {
       this.$store.commit('mod_workspace/SET_networkName', newName);
     },
+    openStatistics() {
+      this.$store.commit('globalView/SET_statisticsIsOpen', true)
+    }
   }
 }

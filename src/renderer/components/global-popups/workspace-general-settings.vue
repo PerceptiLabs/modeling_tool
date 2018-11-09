@@ -67,14 +67,14 @@ export default {
     return {
       settings: {
         isEmpty: false,
-        dataSigmoid: null,
-        dataValidation: null,
-        dataTest: null,
-        batchSize: null,
-        shuffleData: null,
-        epochs: null,
-        dropoutRate: null,
-        saveModel: null,
+        dataSigmoid: 1,
+        dataValidation: 1,
+        dataTest: 1,
+        batchSize: 1,
+        shuffleData: true,
+        epochs: 1,
+        dropoutRate: 1,
+        saveModel: 1,
       }
     }
   },

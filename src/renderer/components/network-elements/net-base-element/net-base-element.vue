@@ -56,9 +56,9 @@ export default {
     appMode() {
       return this.$store.state.globalView.appMode
     },
-    showStatistics() {
-      return this.$store.state.globalView.showStatistics
-    },
+    statisticsIsOpen() {
+      return this.$store.state.globalView.statisticsIsOpen
+    }
   },
   watch: {
     appMode(newVal) {
@@ -104,7 +104,7 @@ export default {
         this.$store.commit('mod_workspace/SET_metaMultiSelect', { path: [this.dataEl.index], setValue: true });
       }
       else {
-        console.log('setFocusEl');
+        //console.log('setFocusEl');
         this.ClickElementTracking = ev.target.closest('.js-clickout');
         document.addEventListener('click', this.clickOutside);
         this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });
@@ -115,12 +115,12 @@ export default {
       this.contextIsOpen = false;
     },
     clickOutsideAction() {
-      if (this.showStatistics === 'close') {
+      if (!this.statisticsIsOpen) {
         this.deselect()
       }
     },
     deselect() {
-      console.log('deselect');
+      //console.log('deselect');
       this.hideAllWindow();
       this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
     },

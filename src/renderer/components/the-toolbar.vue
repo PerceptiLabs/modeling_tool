@@ -1,76 +1,83 @@
 <template lang="pug">
   aside.page_toolbar
-    div
-      .toggle-wrap(:class="{'hide-layers': !hideLayers}")
-        button.btn.btn--toolbar(type="button" @click="toggleLayers()")
-          i.icon.icon-hide-top
+    .toggle-wrap(:class="{'hide-layers': !hideLayers}")
+      button.btn.btn--toolbar(type="button" @click="toggleLayers()")
+        i.icon.icon-hide-top
 
-      ul.toolbar_list
-        li
-          button.btn.btn--toolbar(type="button"
-            :disabled="appMode == 'training'"
-            :class="{'active': appMode == 'edit'}"
-            @click="setAppMode('edit')"
-          )
-            i.icon.icon-select
-        li.toolbar_list-arrow-wrap(
-          :class="{'disable-hover': appMode == 'training'}"
+    ul.toolbar_list
+      li
+        button.btn.btn--toolbar(type="button"
+          :disabled="appMode == 'training'"
+          :class="{'active': appMode == 'edit'}"
+          @click="setAppMode('edit')"
         )
-          button.btn.btn--toolbar(type="button"
-            :disabled="appMode == 'training'"
-            :class="{'active': appMode == 'addArrow'}"
-            @click="setArrowType(arrowList[0].arrowType)"
-          )
-            i.icon(:class="arrowList[0].iconClass")
-          ul.toolbar_list-arrow
-            li(
-              v-for="(arrow, index) in arrowList"
-              :key="index")
-              button.btn.btn--toolbar(type="button"
-              @click="setArrowType(arrow.arrowType, index)"
-              )
-                i.icon(:class="arrow.iconClass")
+          i.icon.icon-select
+      li.toolbar_list-arrow-wrap(
+        :class="{'disable-hover': appMode == 'training'}"
+      )
+        button.btn.btn--toolbar(type="button"
+          :disabled="appMode == 'training'"
+          :class="{'active': appMode == 'addArrow'}"
+          @click="setArrowType(arrowList[0].arrowType)"
+        )
+          i.icon(:class="arrowList[0].iconClass")
+        ul.toolbar_list-arrow
+          li(
+            v-for="(arrow, index) in arrowList"
+            :key="index")
+            button.btn.btn--toolbar(type="button"
+            @click="setArrowType(arrow.arrowType, index)"
+            )
+              i.icon(:class="arrow.iconClass")
 
-      ul.toolbar_list
-        li
-          button.btn.btn--toolbar(type="button")
-            i.icon.icon-step-prev
-        li
-          button.btn.btn--toolbar(type="button")
-            i.icon.icon-step-next
-      ul.toolbar_list
-        li
-          button.btn.btn--toolbar(type="button"
-            :disabled="appMode == 'training'"
-            :class="statusStartBtn"
-            @click="trainStart()"
-          )
-            i.icon.icon-on-off
-        li
-          button.btn.btn--toolbar(type="button"
-            :class="{'active': appMode == 'learn-pause'}"
-            @click="trainPause()"
-          )
-            i.icon.icon-pause
-        li
-          button.btn.btn--toolbar(type="button"
-            @click="trainStop()"
-          )
-            i.icon.icon-next
-      ul.toolbar_list
-        li
-          button.btn.btn--toolbar(type="button")
-            i.icon.icon-repeat
-        li
-          button.btn.btn--toolbar(type="button")
-            i.icon.icon-box
+    ul.toolbar_list
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-step-prev
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-step-next
+    ul.toolbar_list
+      li
+        button.btn.btn--toolbar(type="button"
+          :disabled="appMode == 'training'"
+          :class="statusStartBtn"
+          @click="trainStart()"
+        )
+          i.icon.icon-on-off
+      li
+        button.btn.btn--toolbar(type="button"
+          :class="{'active': appMode == 'learn-pause'}"
+          @click="trainPause()"
+        )
+          i.icon.icon-pause
+      li
+        button.btn.btn--toolbar(type="button"
+          @click="trainStop()"
+        )
+          i.icon.icon-next
+    ul.toolbar_list
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-repeat
+      li
+        button.btn.btn--toolbar(type="button")
+          i.icon.icon-box
 
-      .settings-wrap
-        button.btn.btn--settings(type="button"
-          @click="openStatistics"
-          )
-          span View settings
-          i.icon.icon-ellipse
+    .toolbar_settings
+      span.text-primary.middle-text(v-html="statusTestText")
+      button.btn.btn--primary(type="button"
+        v-if="currentGlobalNet.canTestStatistics"
+        @click="testStart"
+      )
+        span Run test
+        i.icon.icon-circle-o
+      span.text-primary.middle-text(v-html="statusTrainingText")
+      button.btn.btn--dark-blue-rev(type="button"
+        @click="openStatistics"
+        )
+        span Layer Mode
+        i.icon.icon-ellipse
 
     //.test-api
       span.big-text Dev Mode:
@@ -114,9 +121,32 @@ export default {
   computed: {
     statusStartBtn() {
       return {
-        'text-error': this.appMode == 'training',
+        'text-error':   this.appMode == 'training',
         'text-warning': this.appMode == 'training-pause',
         'text-success': this.appMode == 'training-done',
+      }
+    },
+    statusTrainingText() {
+      switch (this.appMode) {
+        case 'training':
+          return '<i class="icon icon-repeat animation-loader"></i> Training';
+          break;
+        case 'training-pause':
+          return 'Training pause';
+          break;
+        case 'training-done':
+          return 'Training completed';
+          break;
+      }
+    },
+    statusTestText() {
+      switch (this.appMode) {
+        case 'testing':
+          return '<i class="icon icon-repeat animation-loader"></i> Test running';
+          break;
+        case 'testing-done':
+          return '<i class="icon icon-notification"></i> Test completed';
+          break;
       }
     },
     hideLayers () {
@@ -138,6 +168,9 @@ export default {
       return this.$store.getters['mod_workspace/currentNetworkSettings']
     },
     currentNet() {
+      return this.$store.getters['mod_workspace/currentNetworkNet']
+    },
+    currentGlobalNet() {
       return this.$store.getters['mod_workspace/currentNetwork']
     }
   },
@@ -163,13 +196,13 @@ export default {
     validateNetwork() {
       let net = this.currentNet;
       let typeData = net.find((element)=> element.layerType === 'Data');
-      if(typeData == undefined) {
+      if(typeData === undefined) {
         this.$store.commit('globalView/SET_infoPopup', 'Date element missing');
         return false
       }
 
       let typeTraining = net.find((element)=> element.layerType === 'Training');
-      if(typeTraining == undefined) {
+      if(typeTraining === undefined) {
         this.$store.commit('globalView/SET_infoPopup', 'Classic Machine Learning or Training element missing');
         return false
       }
@@ -209,6 +242,9 @@ export default {
     },
     openStatistics() {
       this.$store.commit('globalView/SET_showStatistics', true)
+    },
+    testStart() {
+      this.setAppMode('testing');
     }
   }
 }
@@ -219,14 +255,11 @@ export default {
   .page_toolbar {
     grid-area: toolbar;
     background-color: $bg-toolbar;
-
     padding: 5px .5em 5px 0;
     //height: $h-toolbar;
     //font-size: 11px;
-    > div {
-      display: flex;
-      align-items: center;
-    }
+    display: flex;
+    align-items: center;
   }
   .toggle-wrap {
     width: $w-layersbar;
@@ -294,21 +327,27 @@ export default {
       background-color: $bg-workspace-2;
     }
   }
-  .settings-wrap {
-    margin-left: auto;
-  }
-  .test-api {
+  .toolbar_settings {
     display: flex;
     align-items: center;
-    font-weight: bold;
-    > * {
-      margin: 0 .5em;
-    }
-    input {
-      width: 5em;
-    }
-    span span {
-      font-weight: normal;
+    margin-left: auto;
+    > * + * {
+      margin-left: 1rem;
     }
   }
+
+  /*.test-api {*/
+    /*display: flex;*/
+    /*align-items: center;*/
+    /*font-weight: bold;*/
+    /*> * {*/
+      /*margin: 0 .5em;*/
+    /*}*/
+    /*input {*/
+      /*width: 5em;*/
+    /*}*/
+    /*span span {*/
+      /*font-weight: normal;*/
+    /*}*/
+  /*}*/
 </style>

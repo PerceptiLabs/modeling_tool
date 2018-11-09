@@ -12,11 +12,13 @@
 <script>
 import LearnDeepConnect from '@/components/network-elements/elements/learn-deep-connect/viewBox-learn-deep-connect.vue'
 import LearnDeepConvolut from '@/components/network-elements/elements/learn-deep-convolut/viewBox-learn-deep-convolut.vue'
+import DataData from '@/components/network-elements/elements/data-data/viewBox-data-data.vue'
 export default {
   name: "TheViewBox",
   components: {
     LearnDeepConnect,
-    LearnDeepConvolut
+    LearnDeepConvolut,
+    DataData
   },
   props: {
     elData: {
@@ -40,7 +42,7 @@ export default {
   computed: {
     viewBoxData() {
       return this.elData.find((element, index, array)=>{
-        if(element.viewBox) {
+        if(element.layerType !== 'Training') {
           return element
         }
         else return false

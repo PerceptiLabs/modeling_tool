@@ -3,9 +3,9 @@ const namespaced = true;
 const state = {
   hideLayers: true,
   hideSidebar: true,
-  appMode: 'edit',
+  appMode: 'edit',  //'training', 'training-pause', 'training-done', 'addArrow'
   userMode: 'advanced', //simple
-  showStatistics: 'close', // 'test', 'close'
+  statisticsIsOpen: false,
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,
@@ -21,17 +21,14 @@ const mutations = {
   SET_hideSidebar (state, value) {
     state.hideSidebar = value
   },
-  SET_showStatistics (state, value) {
-    state.showStatistics = value
+  SET_statisticsIsOpen (state, value) {
+    state.statisticsIsOpen = value
   },
   SET_appMode (state, value) {
     state.appMode = value;
-    if(value === 'training') {
-      state.showStatistics = true
-    }
-    if(value === 'training-done') {
-      state.globalPopup.showNetResult = true
-    }
+  },
+  SET_showNetResult (state, value) {
+    state.globalPopup.showNetResult = value
   },
   SET_showGlobalSet (state, value) {
     state.globalPopup.showNetSettings = value
@@ -46,14 +43,21 @@ const mutations = {
     for (var popup in state.globalPopup) {
       state.globalPopup[popup] = false
     }
-  }
+  },
 };
 
 const actions = {
-  closeGlobalPopup ({ commit }) {
-    // do something async
-    commit('INCREMENT_MAIN_COUNTER')
-  }
+  NET_trainingStart({dispatch, commit}) {
+    commit('SET_appMode', 'training');
+    commit('HIDE_allGlobalPopups');
+    dispatch('mod_workspace/a_SET_networkStatistics', true, {root: true});
+    dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
+  },
+  NET_trainingDone({state, commit, dispatch}) {
+    commit('SET_appMode', 'training-done');
+    commit('SET_showNetResult', true);
+    dispatch('mod_workspace/a_SET_canTestStatistics', true, {root: true});
+  },
 };
 
 export default {

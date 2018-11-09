@@ -1,6 +1,6 @@
 <template lang="pug">
   .base-chart(:class="{'full-view': fullView}")
-    .base-chart_head
+    .base-chart_head(v-if="!headerOff")
       .chart-head_title
         h5 {{ chartLabel }}
       .chart-head_meta
@@ -20,6 +20,10 @@
 export default {
   name: "ChartLine",
   props: {
+    headerOff: {
+      type: Boolean,
+      default: false
+    },
     chartLabel: {
       type: String,
       default: ''
