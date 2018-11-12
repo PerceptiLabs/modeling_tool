@@ -64,11 +64,11 @@ export default {
     }
   },
   watch: {
-    hasStatistics(newVal) {
-      if(newVal) {
-        this.openStatistics()
-      }
-    }
+    // hasStatistics(newVal) {
+    //   if(newVal) {
+    //     this.openStatistics()
+    //   }
+    // }
   },
   methods: {
     // addLayer(e) {

@@ -50,6 +50,7 @@ const actions = {
   NET_trainingStart({dispatch, commit}) {
     commit('SET_appMode', 'training');
     commit('HIDE_allGlobalPopups');
+    commit('SET_statisticsIsOpen', true);
     dispatch('mod_workspace/a_SET_networkStatistics', true, {root: true});
     dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
   },

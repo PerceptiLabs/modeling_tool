@@ -1,14 +1,18 @@
 <template lang="pug">
-  .base-chart(:class="{'full-view': fullView}")
+  .base-chart(
+    ref="baseChart"
+    :class="{'full-view': fullView}")
     .base-chart_head(v-if="!headerOff")
       .chart-head_title
-        h5 {{ chartLabel }}
+        h5.ellipsis {{ chartLabel }}
       .chart-head_meta
         button.btn.btn--link(type="button"
+          :class="{'text-primary': fullView}"
           @click="toggleFullView")
           i.icon.icon-full-screen-graph
     .base-chart_main
       v-chart(
+        ref="chart"
         :auto-resize="true"
         theme="quantum"
         :options="chartData"
@@ -37,8 +41,32 @@ export default {
   },
   data() {
     return {
-      fullView: false
+      fullView: false,
+      h: '',
+      w: ''
     }
+  },
+  watch: {
+    // fullView(newVal, oldVal) {
+    //   if(newVal) {
+    //     console.log(this.$refs.chart);
+    //     this.h = this.$refs.chart.$el.scrollHeight;
+    //     this.w = this.$refs.chart.$el.scrollWidth;
+    //     this.$refs.chart.resize(
+    //       {
+    //         width: 'auto',
+    //         height: 'auto',
+    //       }
+    //     );
+    //   }
+    //   if (oldVal) {
+    //     this.$refs.chart.resize({
+    //       width: this.w,
+    //       height: this.h,
+    //     });
+    //     //console.log(this.$refs.chart);
+    //   }
+    // }
   },
   methods: {
     toggleFullView() {
@@ -49,12 +77,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .full-view {
-    position: absolute;
-    z-index: 1;
-    left: 0;
-    right: 0;
-    top: 0;
-    bottom: 0;
-  }
+
 </style>

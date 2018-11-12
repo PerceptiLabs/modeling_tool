@@ -10,28 +10,26 @@
         @click="setTab(tab)"
         :class="{'active': currentTab === tab}"
         ) {{ tab }}
-    .statistics-box_main(v-show="currentTab === 'Weights & Output'")
+    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Weights & Output'")
       chart-line(
       chartLabel="Accuracy during one epoch"
       :chartData="optionLine1"
       )
-    .statistics-box_main(v-show="currentTab === 'Bias'")
+    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Bias'")
       chart-line(
       chartLabel="Accuracy over all epochs"
       :chartData="optionLine3"
       )
-    .statistics-box_main(v-show="currentTab === 'Gradients'")
+    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Gradients'")
       .statistics-box_row
-        .statistics-box_col
-          chart-line(
-          chartLabel="Accuracy during one epoch"
-          :chartData="optionLine4"
-          )
-        .statistics-box_col
-          chart-line(
-          chartLabel="Accuracy over all epochs"
-          :chartData="optionLine5"
-          )
+        chart-line(
+        chartLabel="Accuracy during one epoch"
+        :chartData="optionLine4"
+        )
+        chart-line(
+        chartLabel="Accuracy over all epochs"
+        :chartData="optionLine5"
+        )
       chart-line(
         chartLabel="Accuracy over all epochs"
         :chartData="optionLine6"

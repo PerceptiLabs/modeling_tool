@@ -11,7 +11,7 @@
   import ChartLine from "@/components/charts/chart-line";
   import dataLine  from "@/components/charts/line.js";
   export default {
-    name: "ViewBoxDataData",
+    name: "ViewBoxMathArgmax",
     components: {ChartLine},
     data() {
       return {

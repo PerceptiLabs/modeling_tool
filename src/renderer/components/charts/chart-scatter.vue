@@ -18,7 +18,7 @@
 <script>
 
 export default {
-  name: "ChartBar",
+  name: "ChartScatter",
   props: {
     chartLabel: {
       type: String,

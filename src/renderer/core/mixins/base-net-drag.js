@@ -145,7 +145,7 @@ const baseNetDrag = {
     y() {
       return
     },
-  }
+  },
 };
 
 export default baseNetDrag

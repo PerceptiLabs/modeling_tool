@@ -1,8 +1,8 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-learn-class(:draggable="draggable"
-  data-component="LearnClassDbscans"
-  data-layer="DBSCAN"
-  data-type="Training"
+    data-component="LearnClassDbscans"
+    data-layer="DBSCAN"
+    data-type="Training"
   )
     i.icon.icon-round-three
 

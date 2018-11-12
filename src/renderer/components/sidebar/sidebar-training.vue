@@ -7,19 +7,19 @@
     .pc-chart_box
       span.pc-chart_title.big-text RAM
       .pc-chart_main
-        chart-line(
+        chart-line.pc-chart_chart(
           :headerOff="true"
           :chartData="optionRAM")
     .pc-chart_box
       span.pc-chart_title.big-text CPU
       .pc-chart_main
-        chart-line(
+        chart-line.pc-chart_chart(
         :headerOff="true"
         :chartData="optionCPU")
     .pc-chart_box
       span.pc-chart_title.big-text GPU
       .pc-chart_main
-        chart-line(
+        chart-line.pc-chart_chart(
         :headerOff="true"
         :chartData="optionGPU")
 
@@ -88,7 +88,7 @@ export default {
         let x = this.optionRAM.xAxis.data.length;
         this.optionRAM.xAxis.data.push(x);
         this.optionRAM.series[0].data.push(this.random());
-        this.progress = x*5;
+        this.progress = (x + 1)*10;
       }, 500)
     },
     setCPU() {
@@ -111,7 +111,7 @@ export default {
     init() {
       setTimeout(()=> {
         this.$store.dispatch('globalView/NET_trainingDone')
-      }, 10000)
+      }, 5000)
     }
   }
 }
@@ -142,5 +142,7 @@ export default {
     position: relative;
     background-color: $bg-workspace;
   }
-
+  .pc-chart_chart {
+    flex: 1;
+  }
 </style>

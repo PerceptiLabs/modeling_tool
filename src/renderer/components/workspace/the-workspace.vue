@@ -13,11 +13,11 @@
 
           the-statistics(
             v-if="statisticsIsOpen"
-            :elData="statisticsElSelected"
+            :elData="statisticsElSelected.statistics"
             )
           the-view-box(
             v-if="statisticsIsOpen"
-            :elData="statisticsElSelected"
+            :elData="statisticsElSelected.viewBox"
             )
           section.network_info-section
             .info-section_head(v-if="statisticsIsOpen")

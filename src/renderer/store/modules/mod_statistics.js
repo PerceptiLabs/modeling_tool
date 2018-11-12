@@ -1,49 +1,63 @@
 const namespaced = true;
 
 const state = {
-  statisticsIsOpen: false,
-  selectedElArr: [],
+  selectedElArr: {
+    statistics: null,
+    viewBox: null
+  },
 };
 
 const mutations = {
-  SET_statisticsIsOpen (state, value) {
-    state.statisticsIsOpen = value
-  },
   SET_selectedElArr (state, value) {
-    value.forEach(function(item, i, arr) {
-      item.meta.isSelected = true;
-    });
+    // value.statistics.meta.isSelected = true;
+    // value.viewBox.meta.isSelected = true;
+    // console.log(value.viewBox);
+    for (var el in value) {
+      //console.log(value[el]);
+      value[el].meta.isSelected = true;
+    }
+    // console.log(value);
     state.selectedElArr = value
+  },
+  CHANGE_selectElArr(state, dataEl) {
+    let elArr = state.selectedElArr;
+    if (dataEl.el.layerType === "Training") {
+      elArr.statistics.meta.isSelected = false;
+      elArr.statistics = dataEl.el;
+      elArr.statistics.meta.isSelected = true;
+    }
+    else {
+      elArr.viewBox.meta.isSelected = false;
+      elArr.viewBox = dataEl.el;
+      elArr.viewBox.meta.isSelected = true;
+    }
   },
 };
 
 const actions = {
   STAT_defaultSelect({dispatch, commit, rootGetters}) {
-    let elArr = [];
-    let count = {
-      train: 0,
-      notTrain: 0
+    let elArr = {
+      statistics: null,
+      viewBox: null
     };
     let net = rootGetters['mod_workspace/currentNetworkNet'];
     net.forEach(function(item, i, arr) {
-      if(count.train > 0 && count.notTrain > 0) {
+      if(elArr.statistics !== null && elArr.viewBox !== null) {
         return
       }
-      if(count.train === 0 && item.layerType === "Training") {
-        elArr.push(item);
-        count.train++
+      if(elArr.statistics === null && item.layerType === "Training") {
+        elArr.statistics = item;
       }
-      if(count.notTrain === 0 && item.layerType !== "Training") {
-        elArr.push(item);
-        count.notTrain++
+      if(elArr.viewBox === null && item.layerType !== "Training") {
+        elArr.viewBox = item;
       }
     });
-    commit('SET_selectedElArr', elArr)
-  },
-  NET_trainingDone({state, commit, dispatch}) {
-    commit('SET_appMode', 'training-done');
-    commit('SET_showNetResult', true);
-    dispatch('mod_workspace/a_SET_canTestStatistics', true, {root: true});
+    /*выполнить после statisticsIsOpen net-base-element.vue*/
+    setTimeout(()=> {
+      ///console.log('costul');
+      commit('SET_selectedElArr', elArr)
+    }, 500);
+
   },
 };
 

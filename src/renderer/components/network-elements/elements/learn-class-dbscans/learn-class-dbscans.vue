@@ -17,7 +17,7 @@
   import SettingsEl   from './set-learn-class-dbscans';
 
   export default {
-    name: 'LearnClassDbscan',
+    name: 'LearnClassDbscans',
     components: {
       BaseNetEl,
       ContextMenu,

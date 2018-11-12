@@ -57,7 +57,7 @@ import mixinSet       from '@/core/mixins/net-element-settings.js';
 import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
 
 export default {
-  name: 'SetLearnClassDbscan',
+  name: 'SetLearnClassDbscans',
   mixins: [mixinSet],
   components: {
     SettingsCode,

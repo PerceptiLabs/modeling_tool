@@ -10,16 +10,12 @@
         @click="setTab(tab)"
         :class="{'active': currentTab === tab}"
         ) {{ tab }}
-    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Output'")
+    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Weights & Output'")
       chart-line(
       chartLabel="Accuracy during one epoch"
       :chartData="optionLine1"
       )
-    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Weights & Bias'")
-      chart-line(
-      chartLabel="Accuracy during one epoch"
-      :chartData="optionLine2"
-      )
+    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Bias'")
       chart-line(
       chartLabel="Accuracy over all epochs"
       :chartData="optionLine3"
@@ -34,30 +30,28 @@
         chartLabel="Accuracy over all epochs"
         :chartData="optionLine5"
         )
-      .statistics-box_row
-        chart-line(
+      chart-line(
         chartLabel="Accuracy over all epochs"
         :chartData="optionLine6"
-        )
+      )
 </template>
 
 <script>
   import ChartLine from "@/components/charts/chart-line";
-  import dataLine  from "@/components/charts/line.js";
+  import dataLine     from "@/components/charts/line.js";
   export default {
-    name: "ViewBoxLearnDeepConnect",
+    name: "ViewBoxLearnDeepRecurrent",
     components: {ChartLine},
     data() {
       return {
-        currentTab: 'Output',
-        tabset: ['Output', 'Weights & Bias', 'Gradients'],
+        currentTab: 'Gradients',
+        tabset: ['Weights & Output', 'Bias', 'Gradients'],
         optionLine1: dataLine,
         optionLine2: dataLine,
         optionLine3: dataLine,
         optionLine4: dataLine,
         optionLine5: dataLine,
         optionLine6: dataLine,
-
       }
     },
     methods: {

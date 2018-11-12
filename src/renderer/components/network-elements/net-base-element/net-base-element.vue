@@ -48,6 +48,15 @@ export default {
   beforeDestroy() {
     this.$refs.rootBaseElement.removeEventListener('mousedown', this.switchEvent);
     this.$refs.rootBaseElement.removeEventListener('touchstart', this.switchEvent);
+    /*appMode*/
+    this.$parent.$parent.$el.removeEventListener('mousemove', this.arrowMovePaint);
+    this.$refs.rootBaseElement.removeEventListener('mouseup', this.arrowEndPaint);
+
+    this.$parent.$parent.$el.removeEventListener('touchmove', this.arrowMovePaint, true);
+    this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.arrowEndPaint, true);
+    this.$refs.rootBaseElement.removeEventListener('touchstart', this.arrowEndPaint, true);
+    /*clickOutsideAction*/
+    document.removeEventListener('click', this.clickOutside);
   },
   computed: {
     active() {
@@ -78,16 +87,27 @@ export default {
         this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.arrowEndPaint, true);
         this.$refs.rootBaseElement.removeEventListener('touchstart', this.arrowEndPaint, true);
       }
+    },
+    statisticsIsOpen(newVal) {
+      if(newVal) {
+        this.deselect()
+      }
     }
   },
   methods: {
     switchEvent(ev) {
       ev.stopPropagation();
-      if(this.appMode == 'edit' && !this.isLock) {
+      if (this.statisticsIsOpen) {
+        this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
+      }
+      else if (this.isLock) {
+        return
+      }
+      else if(this.appMode == 'edit') {
         this.setFocusEl(ev);
         this.bodyDown(ev)
       }
-      else if (this.appMode == 'addArrow' && !this.isLock) {
+      else if (this.appMode == 'addArrow') {
         this.arrowStartPaint(ev)
       }
     },
@@ -104,7 +124,6 @@ export default {
         this.$store.commit('mod_workspace/SET_metaMultiSelect', { path: [this.dataEl.index], setValue: true });
       }
       else {
-        //console.log('setFocusEl');
         this.ClickElementTracking = ev.target.closest('.js-clickout');
         document.addEventListener('click', this.clickOutside);
         this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });

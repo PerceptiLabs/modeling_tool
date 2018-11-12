@@ -184,7 +184,7 @@ export default {
         this.$store.commit('globalView/SET_showGlobalSet', true);
       }
       else {
-        this.setAppMode('training');
+        this.$store.commit('globalView/SET_showCoreSideSettings', true);
       }
     },
     trainPause() {
