@@ -1,59 +1,64 @@
 .btn {
+  padding: 0;
   //@include multi-transition (color, background-color);
   text-decoration: none;
   border-radius: $bdrs;
-  padding: 0;
   background-color: transparent;
   span + .icon,
   .icon + span {
     margin-left: 1rem;
   }
 }
+
 .btn--primary {
-  color: $col-txt2;
-  background: $bg-grad-cyan;
-  height: 3rem;
-  min-width: 9rem;
-  padding: .5em;
   font-size: 1.2rem;
   font-weight: bold;
-  text-align: center;
+  color: $col-txt2;
   overflow: hidden;
+  min-width: 9rem;
+  height: 3rem;
+  padding: .5em;
+  text-align: center;
   text-overflow: ellipsis;
+  background: $bg-grad-cyan;
   &.disable {
-    background: linear-gradient(#489671 , #337A7F );
+    background: linear-gradient(#489671, #337a7f);
   }
 }
+
 .btn--link {
-  background-color: transparent;
   padding: 0;
-}
-.btn--icon {
   background-color: transparent;
+}
+
+.btn--icon {
   padding: 3px;
+  background-color: transparent;
   &:hover {
     //text-shadow: hoff voff blur #000;
   }
 }
+
 .btn--toolbar {
-  height: 1.6363em;
-  width: 1.6363em;
+  font-size: 1.375em;
+  color: $col-primary;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 1.6363em;
+  height: 1.6363em;
   border-radius: 3px;
   background-color: transparent;
-  font-size: 1.375em;
-  color: $col-primary;
   &:hover,
   &.active {
-    text-shadow: $icon-shad;
     background-color: $bg-workspace-2;
+    text-shadow: $icon-shad;
   }
   &:active {
     box-shadow: $icon-shad;
   }
 }
+
 //.btn--settings {
 //  background: $bg-window;
 //  color: $white;
@@ -75,34 +80,34 @@
 //}
 
 .btn--layersbar {
-  height: $size-layers-btn;
-  width: $size-layers-btn;
+  color: $white;
   position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: $white;
+  width: $size-layers-btn;
+  height: $size-layers-btn;
   .icon {
-    text-shadow: $icon-shad;
     //font-size: 3rem;
     font-size: 3.8rem;
+    text-shadow: $icon-shad;
   }
 }
 
 .btn--tabs {
-  background: $bg-grad-disable;
-  color: $disable-txt;
   font-size: 1.2em;
-  padding: .65em .5em;
+  color: $disable-txt;
   display: flex;
   align-items: center;
   justify-content: center;
   min-width: 11rem;
+  padding: .65em .5em;
+  background: $bg-grad-disable;
   &:hover,
   &.active {
+    color: $white;
     background: $bg-grad-blue;
     box-shadow: $icon-shad;
-    color: $white;
   }
 }
 
@@ -113,17 +118,19 @@
 
 .btn--dark-blue-rev {
   @extend .btn--dark-blue;
-  background: $bg-grad-blue;
+
   color: $white;
+  background: $bg-grad-blue;
   &:hover,
   &.active {
-    background: $bg-window;
     color: $disable-txt;
+    background: $bg-window;
   }
   &.active {
     box-shadow: none;
   }
 }
+
 //
 //.btn--social-login {
 //  @include multi-transition (color, background-color, border-color);
@@ -168,22 +175,22 @@
 //  &.facebook-bg {
 //    color: $white;
 //  }
-  //.reg-social-inner & {
-  //  width: calc(50% - 5px);
-  //  margin-left: 2.5px;
-  //  margin-right: 2.5px;
-  //  //color: $white;
-  //  //color: $txt-registry;
-  //  color: $orange;
-  //  background-color: #fff;
-  //  border-color: currentColor;
-  //  .fa {
-  //    border-color: currentColor;
-  //  }
-  //  &:hover {
-  //    background: $orange;
-  //    color: $white;
-  //    border-color: $orange;;
-  //  }
-  //}
+//.reg-social-inner & {
+//  width: calc(50% - 5px);
+//  margin-left: 2.5px;
+//  margin-right: 2.5px;
+//  //color: $white;
+//  //color: $txt-registry;
+//  color: $orange;
+//  background-color: #fff;
+//  border-color: currentColor;
+//  .fa {
+//    border-color: currentColor;
+//  }
+//  &:hover {
+//    background: $orange;
+//    color: $white;
+//    border-color: $orange;;
+//  }
+//}
 //}

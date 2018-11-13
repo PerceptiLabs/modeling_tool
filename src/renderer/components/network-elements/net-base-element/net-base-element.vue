@@ -1,10 +1,11 @@
 <template lang="pug">
-  .net-element.js-clickout(
+  .net-element.js-clickout(tabindex="0"
     ref="rootBaseElement"
     :style="style"
     :class="active ? 'active' : 'inactive'"
     @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings()"
     @contextmenu.stop.prevent="openContext"
+    @keyup.shift.delete="deleteEl()"
     )
     .net-element_btn
       slot
@@ -143,7 +144,9 @@ export default {
       this.hideAllWindow();
       this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
     },
-
+    deleteEl() {
+      this.$store.dispatch('mod_workspace/DELETE_netElement')
+    }
   }
 }
 </script>

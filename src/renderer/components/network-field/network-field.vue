@@ -118,25 +118,19 @@ export default {
   },
   computed: {
     workspace() {
-      return this.$store.state.mod_workspace.workspaceContent[this.currentNetwork]
-    },
-    startId() {
-      return this.$store.state.mod_workspace.startArrowID
+      return this.$store.getters['mod_workspace/currentNetwork']
     },
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
     },
-
+    eventCalcArrow() {
+      return this.$store.state.mod_events.calcArray
+    }
   },
   watch: {
-    workspace() {
+    eventCalcArrow() {
       this.createArrowList()
     },
-    startId(newId) {
-      if(newId == null) {
-        this.createArrowList()
-      }
-    }
   },
   methods: {
     createArrowList() {

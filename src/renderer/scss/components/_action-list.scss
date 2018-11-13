@@ -5,19 +5,19 @@
 //      span I
 
 ul.action-list {
+  overflow: hidden;
   width: 100%;
   border-radius: $bdrs;
   background-color: $bg-toolbar;
   box-shadow: $box-shad;
-  overflow: hidden;
 }
 .action-list_btn {
-  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background-color: transparent;
+  width: 100%;
   padding: .5em 1em;
+  background-color: transparent;
   &:hover {
     background: $bg-grad-blue;
     box-shadow: $box-shad;

@@ -1,134 +1,131 @@
 .sl-vue-tree {
-  position: relative;
-  cursor: grab;
-  user-select: none;
-  &.sl-vue-tree-root {
-    //border: 1px solid rgb(9, 22, 29);
-    //background-color: rgb(9, 22, 29);
-    //color: rgba(255, 255, 255, 0.5);
-    //border-radius: 3px;
-  }
+	position: relative;
+	cursor: grab;
+	user-select: none;
+	&.sl-vue-tree-root {
+		//border: 1px solid rgb(9, 22, 29);
+		//background-color: rgb(9, 22, 29);
+		//color: rgba(255, 255, 255, 0.5);
+		//border-radius: 3px;
+	}
 }
 
 .sl-vue-tree-node {
-  //border-bottom: 1px solid #000;
-  //padding: 0 10px 0 1em;
+	//border-bottom: 1px solid #000;
+	//padding: 0 10px 0 1em;
 }
 
 .sl-vue-tree-root > .sl-vue-tree-nodes-list {
-  //overflow: hidden;
-  position: relative;
-  //padding-bottom: 4px;
+	//overflow: hidden;
+	position: relative;
+	//padding-bottom: 4px;
 }
 
 .sl-vue-tree-selected > .sl-vue-tree-node-item {
-  background-color: #697187;
-  //color: white;
+	background-color: #697187;
+	//color: white;
 }
 
 .sl-vue-tree-node-item {
-  position: relative;
-  display: flex;
-  flex-direction: row;
-  align-items: center;
-  height: $h-sidebar-layers-item;
-  padding-left: calc(#{$h-sidebar-layers-indent} + 2em);
-  padding-right: $h-sidebar-layers-indent;
-  //line-height: 28px;
-  border: 1px solid transparent;
-  border-bottom: 1px solid $bg-toolbar;
-  &:hover,
-  &.sl-vue-tree-cursor-hover {
-    color: white;
-  }
-  &.sl-vue-tree-cursor-inside {
-    border: 1px solid;
-  }
-  .icon {
-    display: block;
-  }
+	position: relative;
+	display: flex;
+	align-items: center;
+	flex-direction: row;
+	height: $h-sidebar-layers-item;
+	padding-right: $h-sidebar-layers-indent;
+	padding-left: calc(#{$h-sidebar-layers-indent} + 2em);//line-height: 28px;  border: 1px solid transparent;
+	border-bottom: 1px solid $bg-toolbar;
+	&:hover,
+	&.sl-vue-tree-cursor-hover {
+		color: white;
+	}
+	&.sl-vue-tree-cursor-inside {
+		border: 1px solid;
+	}
+	.icon {
+		display: block;
+	}
 }
 
 .sl-vue-tree-title {
-  display: flex;
-  align-items: center;
+	display: flex;
+	align-items: center;
 }
 
 .sl-vue-tree-gap {
-  width: 1rem;
-  min-height: 1px;
-
+	width: 1rem;
+	min-height: 1px;
 }
 
 .sl-vue-tree-toggle {
-  font-size: 1.2em;
+	font-size: 1.2em;
 }
 
 .sl-vue-tree-sidebar {
-  margin-left: auto;
+	margin-left: auto;
 }
 
 .sl-vue-tree-cursor {
-  position: absolute;
-  border: 1px solid;
-  height: 1px;
-  width: 100%;
+	position: absolute;
+	width: 100%;
+	height: 1px;
+	border: 1px solid;
 }
 
 .sl-vue-tree-drag-info {
-  position: absolute;
-  background-color: rgba(0, 0, 0, 0.5);
-  opacity: 0.5;
-  margin-left: 20px;
-  padding: 5px 10px;
+	position: absolute;
+	opacity: .5;
+	margin-left: 20px;
+	padding: 5px 10px;
+	background-color: rgba(0, 0, 0, .5);
 }
 
 .sl-vue-tree.sl-vue-tree-root {
-  flex-grow: 1;
-  //overflow-x: hidden;
-  //overflow-y: auto;
-  //height: 300px;
+	flex-grow: 1;
+	//overflow-x: hidden;
+	//overflow-y: auto;
+	//height: 300px;
 }
 
 .item-icon {
-  font-size: 1.4286em;
-  margin-left: .6em;
-  margin-right: .4em;
+	font-size: 1.4286em;
+	margin-right: .4em;
+	margin-left: .6em;
 }
 
 .sl_folder-icon {
-  .icon {
-    //@include multi-transition (transform);
-    //display: inline-block;
-  }
-  &.open .icon {
-    transform: rotate(-90deg);
-  }
+	.icon {
+		//@include multi-transition (transform);
+		//display: inline-block;
+	}
+	&.open .icon {
+		transform: rotate(-90deg);
+	}
 }
 
 .sl_visible-icon {
-  padding: 0 .9rem;
+	padding: 0 .9rem;
 
-  &.invisible-icon {
-    color: $disable-txt;
-  }
+	&.invisible-icon {
+		color: $disable-txt;
+	}
 }
 
 .sl_visible-icon--lock {
-  font-size: 1.2857em;
+	font-size: 1.2857em;
 }
 .sl_visible-icon--visiblity {
-  font-size: 1.7143em;
+	font-size: 1.7143em;
 }
 
 .sl_icon-sidebar-left {
-  padding: .5em;
-  position: absolute;
-  left: $h-sidebar-layers-indent;
-  top: 50%;
-  transform: translate(-.5em, -50%);
-  font-size: 1.2em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+	font-size: 1.2em;
+	position: absolute;
+	top: 50%;
+	left: $h-sidebar-layers-indent;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: .5em;
+	transform: translate(-.5em, -50%);
 }

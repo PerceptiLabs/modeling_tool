@@ -1,30 +1,31 @@
 .vb {
-  > .vb-dragger {
+   > .vb-dragger {
     z-index: 5;
-    width: 6px;
     right: 3px;
-    > .vb-dragger-styler {
-      backface-visibility: hidden;
-      transform: rotate3d(0,0,0,0);
-      transition: background-color 100ms ease-out;
-      background-color: rgba($bg-scroll,.3);
-      border-radius: 20px;
-      height: 100%;
+    width: 6px;
+     > .vb-dragger-styler {
       display: block;
+      height: 100%;
+      transition: background-color 100ms ease-out;
+      transform: rotate3d(0,0,0,0);
+      border-radius: 20px;
+      background-color: rgba($bg-scroll,.3);
+
+      backface-visibility: hidden;
     }
     &:hover > .vb-dragger-styler {
-      background-color: $bg-scroll;
-      margin: 0;
       height: 100%;
+      margin: 0;
+      background-color: $bg-scroll;
     }
   }
   &.vb-scrolling-phantom > .vb-dragger > .vb-dragger-styler {
-    background-color: rgba($bg-scroll,.5);
+    background-color: rgba($bg-scroll, .5);
   }
   &.vb-dragging > .vb-dragger > .vb-dragger-styler {
-    background-color: $bg-scroll;
-    margin: 0;
     height: 100%;
+    margin: 0;
+    background-color: $bg-scroll;
   }
   &.vb-dragging-phantom > .vb-dragger > .vb-dragger-styler {
     background-color: $bg-scroll;

@@ -1,31 +1,30 @@
 .popup {
   border-radius: $bdrs;
-  background-color: #4D556A;
-  //opacity: .9;
+  background-color: $bg-toolbar;
 }
 
 .popup_header {
-  height: 3.5rem;
+  font-size: 1.4rem;
   color: $col-txt;
-  background: $bg-grad-blue;
-  box-shadow: $icon-shad;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.4rem;
+  height: 3.5rem;
+  background: $bg-grad-blue;
+  box-shadow: $icon-shad;
   &.disable {
     color: $disable-txt;
     background: $col-txt2;
     box-shadow: none;
   }
-  > * {
+   > * {
     margin: 0;
   }
 }
 .popup_tab-set {
   display: flex;
-  border-radius: $bdrs $bdrs 0 0;
   overflow: hidden;
+  border-radius: $bdrs $bdrs 0 0;
   .popup_header {
     flex: 1 1 100%;
   }
@@ -33,19 +32,15 @@
 .popup_tab-body {
   display: flex;
   .popup_body {
-    //@include multi-transition(transform);
     flex: 0 0 100%;
     margin-right: -100%;
-    //transform: translateX(-100%) rotateY(90deg);
     transform: rotateY(90deg);
     transform-origin: left;
-    + .popup_body {
-      //transform: translateX(100%) rotateY(-90deg);
+     + .popup_body {
       transform: rotateY(-90deg);
       transform-origin: right;
     }
     &.active {
-      //transform: translateX(0) rotateY(0deg);
       transform: rotateY(0deg);
     }
   }
@@ -63,7 +58,7 @@
   justify-content: center;
   width: 100%;
   padding: 0 $popup-indent-left $popup-indent-top;
-  > * + * {
+   > * + * {
     margin-left: 2rem;
   }
 }
@@ -77,25 +72,25 @@
 .popup-global {
   position: fixed;
   z-index: 10;
-  left: 0;
+  top: 0;
   right: 0;
   bottom: 0;
-  top: 0;
+  left: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   .popup {
-    width: 290px;
-    box-shadow: $box-shad;
     position: relative;
     z-index: 1;
+    width: 290px;
+    box-shadow: $box-shad;
   }
 }
 .popup-global_overlay {
   position: absolute;
-  left: 0;
+  top: 0;
   right: 0;
   bottom: 0;
-  top: 0;
+  left: 0;
   //background-color: rgba(#000, .75);
 }

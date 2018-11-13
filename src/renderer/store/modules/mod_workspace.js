@@ -30,9 +30,10 @@ const state = {
             // type: 'dash1'
             // },
             {
-            id: 2,
-            type: 'dash2'
-          }],
+              id: 2,
+              type: 'dash2'
+            }
+          ],
 
           meta: {
             isInvisible: false,
@@ -343,11 +344,25 @@ const getters = {
   currentNetworkSettings: (state, getters) => {
     return getters.currentNetwork.networkSettings;
   },
-  currentSelectedElement: (state, getters) => {
-    let selectedElements = getters.currentNetworkNet.filter(function(el) {
-      return el.meta.isSelected;
+  // currentSelectedElement: (state, getters) => {
+  //   let selectedElements = getters.currentNetworkNet.filter(function(el) {
+  //     return el.meta.isSelected;
+  //   });
+  //   console.log(selectedElements);
+  //   return selectedElements;
+  // },
+  currentSelectedEl: (state, getters) => {
+    let selectedIndex = [];
+    getters.currentNetworkNet.forEach(function(el, index, arr) {
+      if(el.meta.isSelected) {
+        selectedIndex.push({
+          index,
+          el
+        });
+
+      }
     });
-    return selectedElements;
+    return selectedIndex;
   }
 };
 
@@ -377,6 +392,9 @@ const mutations = {
   SET_layerName(state, value) {
     let node = createPathNode(value.path, state);
     node.layerName = value.setValue
+  },
+  SET_networkNet(state, value) {
+    state.workspaceContent[state.currentNetwork].network = value
   },
   SET_networkName(state, value) {
     state.workspaceContent[state.currentNetwork].networkName = value
@@ -443,12 +461,12 @@ const mutations = {
     state.dragElement.meta.left = event.offsetX - left;
     state.workspaceContent[net].network.push(state.dragElement);
   },
-  ADD_arrow(state, stopID) {
+  ADD_arrow(state, val) {
     let startID = state.startArrowID;
-    if(stopID == startID) {
+    if(val.stopID == startID) {
       return
     }
-    let pathNet = state.workspaceContent[state.currentNetwork];
+    let pathNet = val.getters.currentNetwork;
     let indexStart = pathNet.network.findIndex((element, index, array)=> { return element.layerId == startID;});
     let findArrowType = pathNet.network[indexStart].connectionOut.findIndex((element, index, array)=> { return element.type == state.arrowType;});
     if(findArrowType !== -1) {
@@ -456,10 +474,11 @@ const mutations = {
       return
     }
     pathNet.network[indexStart].connectionOut.push({
-      id: stopID,
+      id: val.stopID,
       type: state.arrowType
     });
     state.startArrowID = null;
+    val.dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
   SHOW_layerContainer(state, index) {
     let box = state.workspaceContent[state.currentNetwork].network[index];
@@ -485,6 +504,16 @@ const mutations = {
     state.workspaceContent[net].network[el].meta.top = value.top;
     state.workspaceContent[net].network[el].meta.left = value.left;
   },
+  DELETE_elConnection(state, value) {
+    value.newNet.forEach((el)=>{
+      let connectArr = el.connectionOut.filter((connect)=>{
+        return !value.arrSelectId.includes(connect.id)
+      });
+      el.connectionOut = connectArr
+    });
+    state.workspaceContent[state.currentNetwork].network = value.newNet;
+    value.dispatch('mod_events/EVENT_calcArray', null, {root: true})
+  }
 };
 
 const actions = {
@@ -493,6 +522,20 @@ const actions = {
   },
   a_SET_canTestStatistics({commit, getters}, value) {
     commit('SET_canTestStatistics', {value, get: getters})
+  },
+  DELETE_netElement({commit, getters, dispatch}) {
+    let net = getters.currentNetworkNet;
+    let arrSelect = getters.currentSelectedEl;
+    let arrSelectId = arrSelect.map((el)=>{
+      return el.el.layerId
+    });
+    let newNet = net.filter((el)=>{
+      return !arrSelectId.includes(el.layerId)
+    });
+    commit('DELETE_elConnection', {newNet, arrSelectId, net, dispatch})
+  },
+  a_ADD_arrow({commit, getters, dispatch}, stopID) {
+    commit('ADD_arrow', {getters, dispatch, stopID})
   }
 };
 

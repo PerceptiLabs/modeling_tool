@@ -1,32 +1,33 @@
 $layers-sidebar: (
-        'io': linear-gradient(#D3DFFE, #A1A9BF),
-        'data': $bg-grad-blue,
-        'process': linear-gradient(#FECF73, #EEB661),
-        'learn-deep': linear-gradient(#FE7373, #EE6161),
-        'train': $bg-grad-cyan,
-        'math': linear-gradient(#7389FE, #6167EE),
-        'learn-class': linear-gradient(#E273FE, #B061EE),
-        'add': #4A5367,
-        'layercontainer': linear-gradient(#E8F551, #9AF142),
+  'io': linear-gradient(#d3dffe, #a1a9bf),
+  'data': $bg-grad-blue,
+  'process': linear-gradient(#fecf73, #eeb661),
+  'learn-deep': linear-gradient(#fe7373, #ee6161),
+  'train': $bg-grad-cyan,
+  'math': linear-gradient(#7389fe, #6167ee),
+  'learn-class': linear-gradient(#e273fe, #b061ee),
+  'add': #4a5367,
+  'layercontainer': linear-gradient(#e8f551, #9af142),
 );
 
 @each $name, $color in $layers-sidebar {
   .net-element-#{$name} {
     @include multi-transition(opacity);
+
     background: $color;
   }
 }
 
 $layers-sidebar-active: (
-        'io': linear-gradient(#8394C5, #66708B),
-        'data': linear-gradient(#4C63A6, #384E8E),
-        'process': linear-gradient(#C29F5B, #A98246),
-        'learn-deep': linear-gradient(#CA5A5A, #9D3C3C),
-        'train': linear-gradient(#58C28F, #44A1A7),
-        'math': linear-gradient(#5866B1, #474BB4),
-        'learn-class': linear-gradient(#AF58C5, #76449D),
-        'add': #4A5367,
-        'layercontainer': linear-gradient(#A0A839, #6AA32D),
+  'io': linear-gradient(#8394c5, #66708b),
+  'data': linear-gradient(#4c63a6, #384e8e),
+  'process': linear-gradient(#c29f5b, #a98246),
+  'learn-deep': linear-gradient(#ca5a5a, #9d3c3c),
+  'train': linear-gradient(#58c28f, #44a1a7),
+  'math': linear-gradient(#5866b1, #474bb4),
+  'learn-class': linear-gradient(#af58c5, #76449d),
+  'add': #4a5367,
+  'layercontainer': linear-gradient(#a0a839, #6aa32d),
 );
 
 @each $name, $color in $layers-sidebar-active {
@@ -39,7 +40,7 @@ $layers-sidebar-active: (
 }
 
 .net-element-add {
-  color: #5C6680;
+  color: #5c6680;
   &:after {
     display: none;
   }
@@ -48,12 +49,12 @@ $layers-sidebar-active: (
 .net-element {
   position: absolute;
   box-sizing: border-box;
-  background-color: $bg-workspace;
   border-radius: .5rem;
+  background-color: $bg-workspace;
   //filter: blur(0px);
   //transition: top .1s, left .1s;
   &:hover {
-   will-change: top, left;
+    will-change: top, left;
   }
 }
 //.net-element.active:before{

@@ -16,31 +16,31 @@ input[type='url'],
 input[type='date'],
 input[type='number'],
 textarea {
-  //@include multi-transition (border-color);
-  -webkit-appearance: none;
-  -webkit-border-radius: 0;
-  border-radius: 0;
-  box-sizing: border-box;
-  //display: block;
+  font-size: inherit;
+  box-sizing: border-box;//display: block;
   width: 100%;
   min-width: 3rem;
   height: $input-height;
   padding: .45rem 1rem;
-  border: none;
-  box-shadow: none;
   text-overflow: ellipsis;
-  font-size: inherit;
+  border: none;
+  -webkit-border-radius: 0;
+          border-radius: 0;
   background-color: $bg-input;
+  box-shadow: none;
+
+  @include placeholder {
+    color: $col-placeholder;
+  }
+  //@include multi-transition (border-color);
+
+  -webkit-appearance: none;
   &:focus {
     background: $bg-grad-blue;
   }
   &::selection {
     background-color: $color-5;
   }
-  @include placeholder {
-    color: $col-placeholder;
-  }
-
 }
 
 input[type='number'] {
@@ -53,26 +53,27 @@ input::-webkit-inner-spin-button {
 }
 
 select {
-  border: $default-border;
-  border-radius: 0;
-  width: 100%;
   color: $col-txt;
-  -webkit-appearance: none;
-  -moz-appearance: none;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="32" height="24" viewBox="0 0 32 24"><polygon points="0,0 32,0 16,24" style="fill: rgb%28127, 127, 127%29"></polygon></svg>');
-  background-size: 9px 6px;
-  background-position: right center;
-  background-origin: content-box;
-  background-repeat: no-repeat;
+  width: 100%;
   height: $input-height;
   padding: .45rem;
+  border: $default-border;
+  border-radius: 0;
+  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="32" height="24" viewBox="0 0 32 24"><polygon points="0,0 32,0 16,24" style="fill: rgb%28127, 127, 127%29"></polygon></svg>');
+  background-repeat: no-repeat;
+  background-position: right center;
+  background-origin: content-box;
+  background-size: 9px 6px;
+
+  -webkit-appearance: none;
+     -moz-appearance: none;
 }
 
 textarea {
   color: $col-txt;
+  min-height: $input-height*2;
   resize: vertical;
   vertical-align: top;
-  min-height: $input-height*2;
 }
 
 input,
@@ -88,19 +89,20 @@ input[type='button'],
 input[type='reset'],
 input[type='file'],
 input[type='submit'] {
-  //@include multi-transition (color, background-color, border-color);
-  -webkit-appearance: none;
   cursor: pointer;
   border: none;
+  //@include multi-transition (color, background-color, border-color);
+
+  -webkit-appearance: none;
 }
 
 
 .input-wrap_icon {
-  width: 100%;
   position: relative;
+  width: 100%;
   input {
-    padding-right: 2.5em;
     width: 100%;
+    padding-right: 2.5em;
   }
   .icon,
   span {
@@ -134,12 +136,12 @@ input[type='submit'] {
       font-size: 1rem;
     }
   }
-  + .form_row {
+   + .form_row {
     margin-top: $form-indent;
   }
   .form_input {
     flex-grow: 1;
-    + .btn {
+     + .btn {
       margin-left: $form-indent;
     }
   }
@@ -151,7 +153,7 @@ input[type='submit'] {
 .form_table {
   display: table;
   width: 100%;
-  border-spacing: 0px $form-indent;
+  border-spacing: 0 $form-indent;
   .form_row {
     display: table-row;
   }

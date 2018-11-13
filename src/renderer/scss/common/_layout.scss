@@ -1,28 +1,37 @@
 $sidebar-indent: 10px;
 
-
 html {
-  box-sizing: border-box;
   font-size: $global-font-size;
+
+  box-sizing: border-box;
 }
-*, *:before, *:after {
+
+*,
+*:before,
+*:after {
   box-sizing: inherit;
 }
 
-* {max-height: 1000000px;}
+* {
+  max-height: 1000000px;
+}
 
 body {
   font-family: $base-font-sans-serif;
   font-weight: normal;
   line-height: $line-height-base;
+
+  display: flex;
+  overflow: hidden;
+  flex-direction: column;
+
+  min-width: $base-min-width;
+
   color: $base-text-color;
   background: $base-background-color;
-  min-width: $base-min-width;
+
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
 }
 
 //.content-indent {
@@ -49,7 +58,6 @@ body {
 //    display: none;
 //  }
 //}
-
 
 /* ---------------------------------------------------------
    1. Global layout

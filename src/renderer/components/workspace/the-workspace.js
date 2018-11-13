@@ -53,15 +53,16 @@ export default {
     appMode() {
       return this.$store.state.globalView.appMode
     },
-    selectedEl() {
-      return this.$store.getters['mod_workspace/currentSelectedElement']
-    },
+    // currentSelectedIndex() {
+    //   return this.$store.getters['mod_workspace/currentSelectedIndex']
+    // },
     statisticsIsOpen() {
       return this.$store.state.globalView.statisticsIsOpen
     },
     statisticsElSelected() {
       return this.$store.state.mod_statistics.selectedElArr
     }
+
   },
   watch: {
     // hasStatistics(newVal) {

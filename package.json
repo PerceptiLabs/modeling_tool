@@ -6,19 +6,15 @@
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
-    "build": "cross-env BUILD_TARGET=core_cloud node .electron-vue/build.js && electron-builder",
+    "build": "cross-env BUILD_TARGET=core_local node .electron-vue/build.js && electron-builder",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
-    "build:core_local": "cross-env BUILD_TARGET=core_local node .electron-vue/build.js && electron-builder",
     "dev": "node .electron-vue/dev-runner.js",
     "dev:core_local": "cross-env BUILD_TARGET=core_local node .electron-vue/dev-runner.js",
-    "lint": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter src",
-    "lint:fix": "eslint --ext .js,.vue -f ./node_modules/eslint-friendly-formatter --fix src",
     "pack": "npm run pack:main && npm run pack:renderer",
     "pack:main": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.main.config.js",
-    "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
-    "postinstall": "npm run lint:fix"
+    "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js"
   },
   "build": {
     "productName": "quantumnet",

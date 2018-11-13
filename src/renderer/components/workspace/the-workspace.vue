@@ -10,7 +10,6 @@
           :key="net.i"
           :class="{'open-statistic': statisticsIsOpen}"
         )
-
           the-statistics(
             v-if="statisticsIsOpen"
             :elData="statisticsElSelected.statistics"
