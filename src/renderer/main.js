@@ -31,7 +31,6 @@ Vue.component('base-select', BaseSelect);
 Vue.component('base-range', BaseRange);
 
 
-
 /* eslint-disable no-new */
 new Vue({
   components: { App },

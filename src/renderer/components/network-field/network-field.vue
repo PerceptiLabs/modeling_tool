@@ -1,5 +1,6 @@
 <template lang="pug">
   .network-field(:id="'network' + netIndex")
+    //p {{workspaceJSON}}
     svg.svg-arrow(v-if="arrowsList.length")
       defs
         lineargradient(id="grad")
@@ -117,6 +118,9 @@ export default {
     this.createArrowList()
   },
   computed: {
+    workspaceJSON() {
+      return JSON.stringify(this.workspace)
+    },
     workspace() {
       return this.$store.getters['mod_workspace/currentNetwork']
     },

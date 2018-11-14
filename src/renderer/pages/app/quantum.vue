@@ -8,6 +8,7 @@
       v-if="infoText"
       :infoText="infoText"
     )
+    button(type="button" @click="openFileDialog('.js', false)") faffsdgsdg
 
 </template>
 

@@ -1,3 +1,8 @@
+import fs from 'fs';
+import {remote} from 'electron'
+
+
+
 import TheToolbar   from '@/components/the-toolbar.vue'
 import TheLayersbar from '@/components/the-layersbar.vue'
 import TheSidebar   from '@/components/the-sidebar.vue'
@@ -67,5 +72,45 @@ export default {
     infoText() {
       return this.$store.state.globalView.globalPopup.showInfoPopup
     },
+    eventLoadFile() {
+      return this.$store.state.mod_events.openFile
+    }
   },
+
+  watch: {
+    eventLoadFile() {
+      //this.openFileDialog(".js", false);
+      this.openDialog()
+    }
+  },
+  methods: {
+    openDialog() {
+      //console.log(dialog);
+      let dialog = remote.dialog;
+      dialog.showOpenDialog()
+    },
+    openFileDialog (accept, multi) {
+
+      var inputElement = document.createElement("input");
+      inputElement.type = "file";
+      inputElement.accept = accept; // Note Edge does not support this attribute
+      if (multi) {
+        inputElement.multiple = multi;
+      }
+      console.log(inputElement);
+      inputElement.addEventListener("change", this.fileDialogChanged);
+
+      inputElement.dispatchEvent(new MouseEvent("click"));
+    },
+    fileDialogChanged (event) {
+      console.log(event);
+      // fs.readFile(__filename, function(err, data){
+      //   if(err){
+      //     console.error(err);
+      //   }else{
+      //     console.log(data);
+      //   }
+      // });
+    },
+  }
 }

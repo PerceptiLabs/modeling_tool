@@ -5,8 +5,15 @@
 </template>
 
 <script>
+  import {ipcRenderer} from 'electron'
+
   export default {
-    name: 'quantumnet'
+    name: 'quantumnet',
+    mounted() {
+      ipcRenderer.on('openUntrain', (event) => {
+        this.$store.dispatch('mod_events/EVENT_openFile')
+      })
+    },
   }
 </script>
 

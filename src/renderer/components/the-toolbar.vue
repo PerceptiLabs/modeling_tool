@@ -78,7 +78,8 @@
         )
         span Layer Mode
         i.icon.icon-ellipse
-
+    .test-api
+      button(type="button" @click="sendMain()").btn send
     //.test-api
       span.big-text Dev Mode:
         span.text-error  {{ devMode }}
@@ -97,7 +98,7 @@
 import configApp    from '@/core/globalSettings.js'
 import {trainingElements, deepLearnElements}  from '@/core/helpers.js'
 
-
+//const {ipcRenderer} = require('electron')
 export default {
   name: 'TheToolbar',
   data() {
@@ -117,6 +118,11 @@ export default {
         }
       ]
     }
+  },
+  mounted() {
+    // ipcRenderer.on('asynchronous-reply', (event, arg) => {
+    //   console.log(arg);
+    // })
   },
   computed: {
     statusStartBtn() {
@@ -175,6 +181,9 @@ export default {
     }
   },
   methods: {
+    sendMain() {
+      ipcRenderer.send('asynchronous-message', 'ping')
+    },
     trainStart() {
       let valid = this.validateNetwork();
       if (!valid) {
@@ -245,7 +254,10 @@ export default {
     },
     testStart() {
       this.setAppMode('testing');
-    }
+    },
+
+    /*test load*/
+
   }
 }
 </script>

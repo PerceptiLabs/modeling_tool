@@ -16,4 +16,5 @@ const localExport = {
   actions: actionsLocal
 };
 
-export default configApp.version === 'core_cloud' ?  cloudExport : localExport;
+//export default configApp.version === 'core_cloud' ?  cloudExport : localExport;
+export default configApp.version === 'core_cloud' ?  localExport : localExport;
