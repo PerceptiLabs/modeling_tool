@@ -17,7 +17,9 @@ input[type='date'],
 input[type='number'],
 textarea {
   font-size: inherit;
-  box-sizing: border-box;//display: block;
+  box-sizing: border-box;
+
+//display: block;
   width: 100%;
   min-width: 3rem;
   height: $input-height;
@@ -37,6 +39,10 @@ textarea {
   -webkit-appearance: none;
   &:focus {
     background: $bg-grad-blue;
+    @include placeholder {
+      color: #fff;
+      opacity: .5;
+    }
   }
   &::selection {
     background-color: $color-5;

@@ -190,18 +190,17 @@ $soc-list: (
    ---------------------------------------------------------*/
 $Width: 100, 50, 25;
 
-// loop!
 @each $w-grid in $Width {
   .w-#{$w-grid} {
-    width: $w-grid+'%';
+    width: $w-grid + %;
   }
 }
 
 .w-33 {
-  width: 33.33%;
+  width: calc(100% / 3)
 }
 .w-66 {
-  width: 66.67%;
+  width: calc((100% * 2)/3 );
 }
 
 
