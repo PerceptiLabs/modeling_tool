@@ -4,10 +4,10 @@
       .form_holder
         label.form_label Cost function:
         textarea
-      .form_holder
+      .form_holder(v-if="trainingMode")
         label.form_label Optimizer:
         textarea
-      .form_holder
+      .form_holder(v-if="trainingMode")
         label.form_label Learning Rate:
         textarea
     .settings-layer_foot
@@ -19,6 +19,12 @@
 <script>
 export default {
   name: "SettingsCode",
+  props: {
+    trainingMode: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return {
 

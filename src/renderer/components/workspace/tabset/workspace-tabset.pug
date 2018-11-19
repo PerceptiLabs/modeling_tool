@@ -3,10 +3,11 @@ ul.workspace_tab-list
   li.workspace_tab(
   v-for="(tab, i) in workspace"
   :key="i"
-  :class="{'active': currentNetwork == i}"
+  :class="{'active': indexCurrentNetwork == i}"
   @click="setTabNetwork(i)"
   )
     button.btn.btn--icon.tab_close(type="button"
+      v-if="i !== 0"
       @click.stop="deleteTabNetwork(i)"
     )
       i.icon.icon-close

@@ -1,3 +1,5 @@
+import {remote} from "electron";
+
 const findIndexId = function (arr, ID) {
   return arr.findIndex(function(item) {return item.layerId == ID});
 };
@@ -10,10 +12,20 @@ const clickOutside = function (event) {
   }
 };
 
-const trainingElements = ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
+const trainingElements =  ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
 const deepLearnElements = ['LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent'];
 
-export {findIndexId, clickOutside, trainingElements, deepLearnElements}
+const openLoadDialog = function (callback, options) {
+  let dialog = remote.dialog;
+  dialog.showOpenDialog(options, (files)=>{
+    if(files !== undefined) {
+      callback(files)
+    }
+  })
+};
+
+
+export {findIndexId, clickOutside, trainingElements, deepLearnElements, openLoadDialog}
 
 
 

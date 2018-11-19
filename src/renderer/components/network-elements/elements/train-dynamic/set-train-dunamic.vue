@@ -25,7 +25,9 @@
       .popup_body(
           :class="{'active': tabSelected == 1}"
         )
-        settings-code
+        settings-code(
+          :trainingMode="true"
+        )
 
 </template>
 

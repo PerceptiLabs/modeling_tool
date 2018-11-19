@@ -5,7 +5,7 @@
     .workspace
       .workspace_content
         .network(
-          v-if="currentNetwork === i"
+          v-if="indexCurrentNetwork === i"
           v-for="(net, i) in workspace"
           :key="net.i"
           :class="{'open-statistic': statisticsIsOpen}"

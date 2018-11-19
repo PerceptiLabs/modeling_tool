@@ -2,15 +2,19 @@ const namespaced = true;
 
 const state = {
   calcArray: 0,
-  openFile: 0,
+  openNetwork: 0,
+  saveNetwork: 0
 };
 
 const mutations = {
   set_calcArray(state) {
     state.calcArray++
   },
-  set_openFile(state) {
-    state.openFile++
+  set_openNetwork(state) {
+    state.openNetwork++
+  },
+  set_saveNetwork(state) {
+    state.saveNetwork++
   },
 };
 
@@ -18,16 +22,11 @@ const actions = {
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },
-  EVENT_openFile({commit}) {
-    commit('set_openFile');
-
-    // fs.writeFile('D:\\textfile.txt', "Превед", function(err) {
-    //   if(err) {
-    //     return console.log(err);
-    //   }
-    //
-    //   console.log("Файл сохранён.");
-    // });
+  EVENT_openNetwork({commit}) {
+    commit('set_openNetwork');
+  },
+  EVENT_saveNetwork({commit}) {
+    commit('set_saveNetwork');
   }
 };
 

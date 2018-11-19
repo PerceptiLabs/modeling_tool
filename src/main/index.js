@@ -7,11 +7,11 @@ const mainMenu = [
   {
     label: 'File',
     submenu: [
-      {label: 'New',                  click() {  }},
+      {label: 'New',                  click() {mainWindow.webContents.send('newNetwork')}},
       {label: 'Open trained model',   click() {  }},
       {label: 'Save trained model',   click() {  }},
-      {label: 'Open untrained model', click() {mainWindow.webContents.send('openUntrain')}},
-      {label: 'Save untrained model', click() {  }},
+      {label: 'Open untrained model', click() {mainWindow.webContents.send('openNetwork')}},
+      {label: 'Save untrained model', click() {mainWindow.webContents.send('saveNetwork')}},
       {type: 'separator'},
       {role: 'quit'}
     ]

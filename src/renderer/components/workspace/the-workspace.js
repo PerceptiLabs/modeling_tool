@@ -32,7 +32,7 @@ export default {
     workspace() {
       return this.$store.state.mod_workspace.workspaceContent
     },
-    currentNetwork() {
+    indexCurrentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
     },
     hideSidebar() {

@@ -1,5 +1,5 @@
 import fs from 'fs';
-import {remote} from 'electron'
+import {openLoadDialog} from '@/core/helpers.js'
 
 
 
@@ -72,45 +72,83 @@ export default {
     infoText() {
       return this.$store.state.globalView.globalPopup.showInfoPopup
     },
-    eventLoadFile() {
-      return this.$store.state.mod_events.openFile
-    }
+    eventLoadNetwork() {
+      return this.$store.state.mod_events.openNetwork
+    },
+    eventSaveNetwork() {
+      return this.$store.state.mod_events.saveNetwork
+    },
+    currentNetwork() {
+      return this.$store.getters['mod_workspace/currentNetwork']
+    },
   },
 
   watch: {
-    eventLoadFile() {
-      //this.openFileDialog(".js", false);
-      this.openDialog()
+    eventLoadNetwork() {
+      let opt = {
+        title:"Load Network",
+        filters: [
+          {name: 'Text', extensions: ['json']},
+        ]
+      };
+      this.openLoadDialog(this.dialogLoadFile, opt)
+    },
+    eventSaveNetwork() {
+      this.dialogSaveNetwork()
     }
   },
   methods: {
-    openDialog() {
-      //console.log(dialog);
-      let dialog = remote.dialog;
-      dialog.showOpenDialog()
+    openLoadDialog,
+    dialogLoadFile(pathArr) {
+      fs.readFile(pathArr[0],
+        (err, data)=> {
+        if(data) {
+          let net = JSON.parse(data.toString());
+          this.$store.commit('mod_workspace/ADD_loadNetwork', net)
+        }
+        else {
+          console.error(err);
+        }
+      });
     },
-    openFileDialog (accept, multi) {
+    dialogSaveNetwork() {
+      const dialog = remote.dialog;
+      const network = this.currentNetwork;
+      const jsonNet = cloneNet(network);
 
-      var inputElement = document.createElement("input");
-      inputElement.type = "file";
-      inputElement.accept = accept; // Note Edge does not support this attribute
-      if (multi) {
-        inputElement.multiple = multi;
+      dialog.showSaveDialog((fileName) => {
+        if (fileName === undefined){
+          console.log("You didn't save the file");
+          return;
+        }
+        fs.writeFile(fileName, jsonNet, (err) => {
+          if(err){
+            alert("An error ocurred creating the file "+ err.message)
+          }
+
+          alert("The file has been succesfully saved");
+        });
+      });
+      function cloneNet(net) {
+        var outNet = {};
+        for (var key in net) {
+          if(key === 'network') {
+            outNet[key] = JSON.parse(cloneEl(net[key]))
+          }
+          else {
+            outNet[key] = net[key];
+          }
+        }
+        return JSON.stringify(outNet, null, ' ');
       }
-      console.log(inputElement);
-      inputElement.addEventListener("change", this.fileDialogChanged);
-
-      inputElement.dispatchEvent(new MouseEvent("click"));
-    },
-    fileDialogChanged (event) {
-      console.log(event);
-      // fs.readFile(__filename, function(err, data){
-      //   if(err){
-      //     console.error(err);
-      //   }else{
-      //     console.log(data);
-      //   }
-      // });
+      function cloneEl(el) {
+        return JSON.stringify(el, (key, val)=> {
+          if (key === 'calcAnchor') {
+            return undefined;
+          }
+          return val;
+        }, ' ');
+      }
     },
   }
 }
