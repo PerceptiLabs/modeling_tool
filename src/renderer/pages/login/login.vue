@@ -15,7 +15,7 @@
 
           ) Remember me
         .form_holder
-          button.btn.btn--dark-blue-rev(type="button") log in
+          router-link.btn.btn--dark-blue-rev(type="button" :to="{name: 'app'}") log in
         .form_holder
           router-link(:to="{name: 'register'}").btn.btn--link Register new account
 </template>

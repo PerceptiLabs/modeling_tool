@@ -14,7 +14,7 @@ export default new Router({
     { path: '/',          name: 'login',    component: PageLogin },
     { path: '/register',  name: 'register', component: PageRegister },
     { path: '/policy-page',    name: 'policy',   component: PagePolicy },
-    { path: '/app',       name: 'quantum',  component: PageQuantum },
+    { path: '/app',       name: 'app',  component: PageQuantum },
     { path: '*', redirect: '/'
     }
   ]

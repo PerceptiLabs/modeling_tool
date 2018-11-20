@@ -78,19 +78,20 @@
         )
         span Layer Mode
         i.icon.icon-ellipse
-    .test-api
-      button(type="button" @click="sendMain()").btn send
     //.test-api
-      span.big-text Dev Mode:
-        span.text-error  {{ devMode }}
-      span.big-text Version:
-        span.text-error  {{ versionApi }}
-      input.text-error.big-text(v-model="x")
-      span.big-text +
-      input.text-error.big-text(v-model="y")
-      button.btn.btn--settings(type="button" @click="calcPY") Calc
-      span.big-text =
-      span.big-text {{ resultSym }}
+      button(type="button" @click="TEST_sendMain()").btn send
+    .test-api
+      div
+        span.big-text Dev Mode:
+          span.text-error  {{ devMode }}
+        span.big-text Version:
+          span.text-error  {{ versionApi }}
+      div
+        button.btn.btn--primary(type="button" @click="TEST_startServer") start server
+        button.btn.btn--primary(type="button" @click="TEST_stopServer") stop server
+        button.btn.btn--primary(type="button" @click="TEST_checkStatus") check status
+        button.btn.btn--primary(type="button" @click="TEST_startTraining") start training
+        button.btn.btn--primary(type="button" @click="TEST_apiFunc") test
 
 </template>
 
@@ -158,9 +159,9 @@ export default {
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
-    resultSym() {
-      return this.$store.state.mod_api.symPY
-    },
+    // resultSym() {
+    //   return this.$store.state.mod_api.symPY
+    // },
     versionApi() {
       return configApp.version
     },
@@ -181,9 +182,7 @@ export default {
     }
   },
   methods: {
-    sendMain() {
-      ipcRenderer.send('asynchronous-message', 'ping')
-    },
+
     trainStart() {
       let valid = this.validateNetwork();
       if (!valid) {
@@ -231,15 +230,10 @@ export default {
     toggleLayers () {
       this.$store.commit('globalView/SET_hideLayers', !this.hideLayers)
     },
-    PY() {
-      this.$store.dispatch('mod_pythonAPI/PY_console');
-    },
-    calcPY() {
-      let x = +this.x;
-      let y = +this.y;
-      //this.$store.dispatch('mod_pythonAPI/PY_text', {x, y});
-      this.$store.dispatch('mod_api/PY_func', {x, y});
-    },
+    // PY() {
+    //   v
+    // },
+
     setArrowType(type, index) {
       this.setAppMode('addArrow');
       this.$store.commit('mod_workspace/SET_arrowType', {type, store: this.$store});
@@ -255,9 +249,24 @@ export default {
     testStart() {
       this.setAppMode('testing');
     },
-
-    /*test load*/
-
+    TEST_sendMain() {
+      ipcRenderer.send('asynchronous-message', 'ping')
+    },
+    TEST_startServer() {
+      this.$store.dispatch('mod_api/API_startServer');
+    },
+    TEST_stopServer() {
+      this.$store.dispatch('mod_api/API_stopServer');
+    },
+    TEST_checkStatus() {
+      this.$store.dispatch('mod_api/API_checkStatus');
+    },
+    TEST_startTraining() {
+      this.$store.dispatch('mod_api/API_startTraining');
+    },
+    TEST_apiFunc() {
+      this.$store.dispatch('mod_api/API_func');
+    },
   }
 }
 </script>
