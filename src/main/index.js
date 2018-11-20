@@ -1,6 +1,8 @@
 'use strict';
 
 import { app, BrowserWindow, Menu, ipcMain } from 'electron'
+import ua from 'universal-analytics'
+var visitor = ua('UA-129392553-1');
 
 let mainWindow;
 const mainMenu = [
@@ -82,7 +84,7 @@ function createWindow () {
   ipcMain.on('asynchronous-message', (event, arg) => {
     event.sender.send('asynchronous-reply', event)
   })
-
+  visitor.pageview("/").send();
   mainWindow.on('closed', () => {
     mainWindow = null
   })
