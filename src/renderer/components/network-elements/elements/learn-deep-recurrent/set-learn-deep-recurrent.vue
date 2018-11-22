@@ -6,6 +6,7 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
+      :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -15,28 +16,35 @@
         .settings-layer
           .settings-layer_section
             .form_row
+              .form_label Neurons:
+              .form_input
+                input(type="number" v-model="settings.Neurons")
+          .settings-layer_section
+            .form_row
               .form_label Recurrent alternative:
               .form_input
                 div
-                  base-radio(groupName="group" valueInput="None" v-model="settings.neurons")
+                  base-radio(groupName="group" valueInput="LSTM" v-model="settings.Version")
                     span LSTM
                 div
-                  base-radio(groupName="group" valueInput="Sigmoid" v-model="settings.neurons")
+                  base-radio(groupName="group" valueInput="GRU" v-model="settings.Version")
                     span GRU
                 div
-                  base-radio(groupName="group" valueInput="ReLu" v-model="settings.neurons")
+                  base-radio(groupName="group" valueInput="RNN" v-model="settings.Version")
                     span RNN
-                div
+                //div
                   button.btn.btn--primary(type="button") Custom
 
           .settings-layer_section
             .form_row
               .form_label Time steps:
               .form_input
-                input(type="number")
+                input(type="number" v-model="settings.Time_steps")
 
           .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
+            button.btn.btn--primary(type="button"
+            @click="applySettings"
+            ) Apply
 
       .popup_body(
           :class="{'active': tabSelected == 1}"
@@ -59,7 +67,9 @@ export default {
     return {
       tabs: ['Settings', 'Code'],
       settings: {
-        neurons: 'None'
+        Neurons: "10",
+        Version: "LSTM", //#LSTM, GRU, RNN
+        Time_steps: "1",
       }
     }
   },

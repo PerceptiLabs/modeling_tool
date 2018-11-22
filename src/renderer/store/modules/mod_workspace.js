@@ -432,7 +432,10 @@ const mutations = {
   SET_canTestStatistics(state, {value, get}) {
     get.currentNetwork.canTestStatistics = value;
   },
-
+  SET_elementSettings(state, {settings, getters}) {
+    let indexEl = getters.currentSelectedEl[0].index;
+    getters.currentNetworkNet[indexEl].layerSettings = settings;
+  },
   // ADD_workspace (state) {
   //   let newNetwork = {
   //     networkName: 'Network',
@@ -465,12 +468,14 @@ const mutations = {
     state.currentNetwork = lastIndex;
   },
   ADD_dragElement(state, event) {
-    var newLayer = {
-      layerId: event.timeStamp,
+    let newLayer = {
+      layerId: generateID(event.timeStamp),
       layerName: event.target.dataset.layer,
       layerType: event.target.dataset.type,
+      layerSettings: {},
       componentName: event.target.dataset.component,
       connectionOut: [],
+      connectionIn: [],
       meta: {
         //isInvisible: false,
         isLock: false,
@@ -481,6 +486,15 @@ const mutations = {
       trainingData: null
     };
     state.dragElement = newLayer;
+
+    function generateID(input) {
+      let out;
+      let stringID = input.toString();
+      let dotIndex = stringID.indexOf('.');
+      dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
+      out = +out;
+      return out
+    }
   },
   ADD_elToWorkspace(state, event) {
     let top = state.dragElement.meta.top;
@@ -492,7 +506,8 @@ const mutations = {
   },
   ADD_arrow(state, val) {
     let startID = state.startArrowID;
-    if(val.stopID == startID) {
+    let stopID = val.stopID;
+    if(stopID == startID) {
       return
     }
     let pathNet = val.getters.currentNetwork;
@@ -502,10 +517,17 @@ const mutations = {
       alert('This type of connection already exists!');
       return
     }
-    pathNet.network[indexStart].connectionOut.push({
-      id: val.stopID,
-      type: state.arrowType
-    });
+    // pathNet.network[indexStart].connectionOut.push({
+    //   id: val.stopID,
+    //   type: state.arrowType
+    // });
+
+    //TODO start only one type connection
+    pathNet.network[indexStart].connectionOut.push(stopID.toString());
+
+    let indexStop = pathNet.network.findIndex((element, index, array)=> { return element.layerId == stopID;});
+    pathNet.network[indexStop].connectionIn.push(startID.toString());
+    //stop only one type connection
     state.startArrowID = null;
     val.dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
@@ -546,6 +568,9 @@ const mutations = {
 };
 
 const actions = {
+  a_SET_elementSettings({commit, getters}, settings) {
+    commit('SET_elementSettings', {settings, getters})
+  },
   a_SET_networkStatistics({commit, getters}, value) {
     commit('SET_networkStatistics', {value, get: getters})
   },

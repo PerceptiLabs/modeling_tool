@@ -8,6 +8,7 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
+        :disabled="tabSelected != i"
         )
           h3(v-html="tab")
       .popup_tab-body
@@ -46,7 +47,7 @@ export default {
   methods: {
     startTraining() {
       this.$store.dispatch('globalView/NET_trainingStart');
-
+      this.$store.dispatch('mod_api/API_startTraining');
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

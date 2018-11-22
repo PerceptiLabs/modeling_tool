@@ -6,6 +6,7 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
+      :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -15,28 +16,33 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              .form_label Neurons:
+              .form_label Operation:
               .form_input
                 div
-                  base-radio(groupName="group" valueInput="Concantenate" v-model="settings.neurons")
-                    span Concantenate
-                  .form_row(v-if="settings.neurons == 'Concantenate' ")
-                    span Merge dimensions
+                  base-radio(groupName="group" valueInput="Concat" v-model="settings.neurons")
+                    span Concatenate
+                  .form_row(v-if="settings.neurons == 'Concat' ")
+                    span Merge dimension
                     .form_input
                       input(type="number")
                 div
-                  base-radio(groupName="group" valueInput="Substractions" v-model="settings.neurons")
-                    span Substractions
+                  base-radio(groupName="group" valueInput="Sub" v-model="settings.Type")
+                    span Subtraction
                 div
-                  base-radio(groupName="group" valueInput="Addition" v-model="settings.neurons")
+                  base-radio(groupName="group" valueInput="Add" v-model="settings.Type")
                     span Addition
                 div
-                  base-radio(groupName="group" valueInput="Multiplication" v-model="settings.neurons")
+                  base-radio(groupName="group" valueInput="Multi" v-model="settings.Type")
                     span Multiplication
+                div
+                  base-radio(groupName="group" valueInput="Div" v-model="settings.Type")
+                    span Division
           .settings-layer_section
 
           .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
+            button.btn.btn--primary(type="button"
+            @click="applySettings"
+            ) Apply
 
 
       .popup_body(
@@ -60,9 +66,8 @@ export default {
     return {
       tabs: ['Settings', 'Code'],
       settings: {
-        pooling: false,
-        neurons: 'None',
-        val: 50
+        //TODO Concat -> input
+        Type:"Add", //#Add, Sub, Multi, Div, Concat, Division
       }
     }
   },

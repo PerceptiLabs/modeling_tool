@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import axios from 'axios'
 import Vuebar from 'vuebar'
+import Tooltip from 'vue-directive-tooltip';
 
 import App from './App'
 import router from './router'
@@ -14,6 +15,10 @@ import BaseSelect       from '@/components/base/select.vue'
 import BaseRange        from '@/components/base/range.vue'
 
 Vue.use(Vuebar);
+Vue.use(Tooltip, {
+  delay: 0,
+  placement: 'right',
+});
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
@@ -39,4 +44,4 @@ new Vue({
   template: '<App/>'
 }).$mount('#app');
 
-//TODO delete vuebar - заменить
+//TODO delete vuebar - заменить v-tooltip - delete

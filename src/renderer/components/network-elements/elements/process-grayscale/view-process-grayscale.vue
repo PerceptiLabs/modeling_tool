@@ -3,6 +3,7 @@
   data-component="ProcessGrayscale"
   data-layer="Grayscale"
   data-type="Other"
+  v-tooltip="'Grayscale'"
   )
     i.icon.icon-sieve
 

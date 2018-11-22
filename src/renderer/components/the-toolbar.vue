@@ -87,11 +87,10 @@
         span.big-text Version:
           span.text-error  {{ versionApi }}
       div
-        button.btn.btn--primary(type="button" @click="TEST_startServer") start server
-        button.btn.btn--primary(type="button" @click="TEST_stopServer") stop server
         button.btn.btn--primary(type="button" @click="TEST_checkStatus") check status
-        button.btn.btn--primary(type="button" @click="TEST_startTraining") start training
-        button.btn.btn--primary(type="button" @click="TEST_apiFunc") test
+        button.btn.btn--primary(type="button" @click="TEST_stop") stop
+        button.btn.btn--primary(type="button" @click="TEST_close") close
+        button.btn.btn--primary(type="button" @click="TEST_getStatistics") getStatistics
 
 </template>
 
@@ -110,13 +109,15 @@ export default {
         {
           iconClass: 'icon-layer-arrow1',
           arrowType: 'solid'
-        }, {
-          iconClass: 'icon-layer-arrow2',
-          arrowType: 'dash2'
-        }, {
-          iconClass: 'icon-layer-arrow3',
-          arrowType: 'dash1'
-        }
+        },
+        // {
+        //   iconClass: 'icon-layer-arrow2',
+        //   arrowType: 'dash2'
+        // },
+        // {
+        //   iconClass: 'icon-layer-arrow3',
+        //   arrowType: 'dash1'
+        // }
       ]
     }
   },
@@ -182,12 +183,11 @@ export default {
     }
   },
   methods: {
-
     trainStart() {
-      let valid = this.validateNetwork();
-      if (!valid) {
-        return
-      }
+      // let valid = this.validateNetwork();
+      // if (!valid) {
+      //   return
+      // }
       if(this.networkSettings.isEmpty) {
         this.$store.commit('globalView/SET_showGlobalSet', true);
       }
@@ -196,9 +196,11 @@ export default {
       }
     },
     trainPause() {
+      this.$store.dispatch('mod_api/API_pauseTraining');
       this.setAppMode('training-pause')
     },
     trainStop() {
+      this.$store.dispatch('mod_api/API_skipValidTraining');
       this.setAppMode('training-done')
     },
     validateNetwork() {
@@ -252,20 +254,17 @@ export default {
     TEST_sendMain() {
       ipcRenderer.send('asynchronous-message', 'ping')
     },
-    TEST_startServer() {
-      this.$store.dispatch('mod_api/API_startServer');
-    },
-    TEST_stopServer() {
-      this.$store.dispatch('mod_api/API_stopServer');
-    },
     TEST_checkStatus() {
-      this.$store.dispatch('mod_api/API_checkStatus');
+      this.$store.dispatch('mod_api/API_getStatus');
     },
-    TEST_startTraining() {
-      this.$store.dispatch('mod_api/API_startTraining');
+    TEST_stop() {
+      this.$store.dispatch('mod_api/API_stopTraining');
     },
-    TEST_apiFunc() {
-      this.$store.dispatch('mod_api/API_func');
+    TEST_close() {
+      this.$store.dispatch('mod_api/API_CLOSE_core');
+    },
+    TEST_getStatistics() {
+      this.$store.dispatch('mod_api/API_getStatistics');
     },
   }
 }

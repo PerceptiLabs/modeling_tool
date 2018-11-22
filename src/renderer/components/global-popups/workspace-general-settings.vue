@@ -11,48 +11,48 @@
             .form_label Data partition:
             .form_input
               label.form_row
-                .form_label Sigmoid
+                .form_label Training
                 .form_input
-                  input(type="number" v-model="settings.dataSigmoid")
+                  input(type="number" v-model="settings.Data_partition.Training")
                   span &nbsp; %
               label.form_row
                 .form_label Validation
                 .form_input
-                  input(type="number" v-model="settings.dataValidation")
+                  input(type="number" v-model="settings.Data_partition.Validation")
                   span &nbsp; %
               label.form_row
                 .form_label Test
                 .form_input
-                  input(type="number" v-model="settings.dataTest")
+                  input(type="number" v-model="settings.Data_partition.Test")
                   span &nbsp; %
         .settings-layer_section
           label.form_row
             .form_label Batch size:
             .form_input
-              input(type="number" v-model="settings.batchSize")
+              input(type="number" v-model="settings.Batch_size")
         .settings-layer_section
           .form_row
             .form_label Shuffle data:
             .form_input
-              base-radio(groupName="group2" :valueInput="true" v-model="settings.shuffleData")
+              base-radio(groupName="group2" :valueInput="true" v-model="settings.Shuffle_data")
                 span Yes
-              base-radio(groupName="group2" :valueInput="false" v-model="settings.shuffleData")
+              base-radio(groupName="group2" :valueInput="false" v-model="settings.Shuffle_data")
                 span No
         .settings-layer_section
           label.form_row
             .form_label Epochs:
             .form_input
-              input(type="number" v-model="settings.epochs")
+              input(type="number" v-model="settings.Epochs")
         .settings-layer_section
           .form_row
             .form_label Dropout rate:
             .form_input
-              input(type="number" v-model="settings.dropoutRate")
+              input(type="number" v-model="settings.Dropout_rate")
         .settings-layer_section
           label.form_row
             .form_label Save model every:
             .form_input
-              input(type="number" v-model="settings.saveModel")
+              input(type="number" v-model="settings.Save_model_every")
               span &nbsp; epoch
       .popup_foot
         button.btn.btn--primary(type="button"
@@ -67,14 +67,16 @@ export default {
     return {
       settings: {
         isEmpty: false,
-        dataSigmoid: 1,
-        dataValidation: 1,
-        dataTest: 1,
-        batchSize: 1,
-        shuffleData: true,
-        epochs: 1,
-        dropoutRate: 1,
-        saveModel: 1,
+        Epochs: "1",
+        Batch_size: "32",
+        Data_partition: {
+          Training: "70",
+          Validation: "20",
+          Test: "10"
+        },
+        Dropout_rate: "0.5",
+        Shuffle_data: true,
+        Save_model_every: "1"
       }
     }
   },

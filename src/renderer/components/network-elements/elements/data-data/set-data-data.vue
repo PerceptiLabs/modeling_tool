@@ -6,6 +6,7 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
+        :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -15,9 +16,9 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              input.form_input(type="text" v-model="loadPath" disabled)
+              input.form_input(type="text" v-model="settings.accessProperties.Path" disabled)
               button.btn.btn--primary(type="button"
-              @click="loadFile"
+                @click="loadFile"
               ) Load
 
       .popup_body(
@@ -40,7 +41,13 @@
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
-        loadPath: 'No uploaded file'
+        settings: {
+          Type: "Data",
+          accessProperties: {
+            Type: "Data",
+            Path: 'No uploaded file',
+          }
+        }
       }
     },
     methods: {
@@ -58,17 +65,9 @@
         this.openLoadDialog(this.saveLoadFile, opt)
       },
       saveLoadFile(pathArr) {
-        this.loadPath = pathArr[0]
-        // fs.readFile(pathArr[0],
-        //   (err, data)=> {
-        //     if(data) {
-        //       let net = JSON.parse(data.toString());
-        //       this.$store.commit('mod_workspace/ADD_loadNetwork', net)
-        //     }
-        //     else {
-        //       console.error(err);
-        //     }
-        //   });
+        this.settings.accessProperties.Path = pathArr[0];
+        this.applySettings();
+        //this.$store.dispatch('mod_workspace/a_SET_elementSettings', this.settings)
       },
     }
   }

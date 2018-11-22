@@ -3,18 +3,23 @@ $arrow-size: 1rem;
 $margin-tooltip: .25rem;
 
 .vue-tooltip {
-	z-index: 100;//box-sizing: border-box;//color: #fff;
+	z-index: 100;//box-sizing: border-box;
+
+//color: #fff;
 	min-width: 3rem;
 	max-width: 30rem;
 	padding: .8rem .6rem;
 	border-radius: $bdrs;
 	background-color: $popper-background-color;
 	box-shadow: $icon-shad;
+	will-change: auto !important;
 	&.vue-tooltip-hidden,
 	&.active {
 		transform: translateX(-100000px) !important;
 	}
-
+	&.vue-tooltip-visible {
+		transition: transform 0.1s 2s;
+	}
 	.vue-tooltip-content {
 		text-align: center;
 	}

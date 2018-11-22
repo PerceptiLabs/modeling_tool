@@ -3,6 +3,7 @@
   data-component="ProcessEmbed"
   data-layer="Word Embedding"
   data-type="Other"
+  v-tooltip="'Word Embedding'"
   )
     i.icon.icon-put-in-button
 

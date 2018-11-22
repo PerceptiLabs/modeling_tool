@@ -3,6 +3,7 @@
   data-component="ProcessReshape"
   data-layer="Reshape"
   data-type="Other"
+  v-tooltip="'Reshape'"
   )
     i.icon.icon-full-screen
 

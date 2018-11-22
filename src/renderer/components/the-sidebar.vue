@@ -8,13 +8,14 @@
           button.btn(type="button"
             :class="{'active': i === tabSelected}"
             @click="selectTab(i)"
+          :disabled="tabSelected != i"
           ) {{tab}}
 
       .sidebar_tab(v-show="tabSelected === 0")
         //include ./sidebar/blocks/Project.pug
         sidebar-layers
         sidebar-training(v-if="appMode === 'training'")
-        sidebar-comments(v-else)
+        //sidebar-comments(v-else)
 
         sidebar-share
       .sidebar_tab(v-show="tabSelected === 1")

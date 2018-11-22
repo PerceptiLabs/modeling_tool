@@ -3,6 +3,7 @@
   data-component="MathMerge"
   data-layer="Merge"
   data-type="Other"
+  v-tooltip="'Merge'"
   )
     i.icon.icon-road-concat
 

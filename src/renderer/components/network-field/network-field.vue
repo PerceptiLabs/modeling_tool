@@ -15,10 +15,11 @@
       template(
         v-for="(arrow, i) in arrowsList"
       )
+        //:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
         line.svg-arrow_line(
           marker-end="url(#svg-arrow_triangle)"
           :class="{'arrow--hidden': arrow.l1.meta.isInvisible || arrow.l2.meta.isInvisible}"
-          :stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
+          stroke-dasharray="none"
           :x1="arrow.positionArrow.x1"
           :y1="arrow.positionArrow.y1"
           :x2="arrow.positionArrow.x2"
@@ -160,8 +161,10 @@ export default {
               let outEl = itemEl.connectionOut[numEl];
               let newArrow = {
                 l1: itemEl,
-                l2: listID[outEl.id],
-                type: outEl.type,
+                //l2: listID[outEl.id],
+                //type: outEl.type,
+                l2: listID[outEl],
+                type: 'solid',
                 correctPosition: {
                   start: {
                     x: 0,

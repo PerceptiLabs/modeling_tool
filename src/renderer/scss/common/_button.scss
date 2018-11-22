@@ -92,6 +92,9 @@
     font-size: 3.8rem;
     text-shadow: $icon-shad;
   }
+  &[disabled] {
+    opacity: .5;
+  }
 }
 
 .btn--tabs {

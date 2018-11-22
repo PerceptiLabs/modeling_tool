@@ -3,6 +3,7 @@
   data-component="LearnDeepConvolut"
   data-layer="Convolution"
   data-type="Other"
+  v-tooltip="'Convolution'"
   )
     i.icon.icon-round-out
 

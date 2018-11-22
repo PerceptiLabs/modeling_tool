@@ -3,6 +3,7 @@
   data-component="LearnDeepDeconvolut"
   data-layer="Deconvolution"
   data-type="Other"
+  v-tooltip="'Deconvolution'"
   )
     i.icon.icon-round-in
 

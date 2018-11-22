@@ -5,14 +5,15 @@ const findIndexId = function (arr, ID) {
 };
 
 const clickOutside = function (event) {
-  console.log('clickOutside');
+  //console.log('clickOutside');
   if (event.target.closest('.clickout') !== this.currentNode) {
     document.removeEventListener('click', this.clickOutside);
     this.clickOutsideAction();
   }
 };
 
-const trainingElements =  ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
+//const trainingElements =  ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
+const trainingElements =  ['TrainNormal'];
 const deepLearnElements = ['LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent'];
 
 const openLoadDialog = function (callback, options) {

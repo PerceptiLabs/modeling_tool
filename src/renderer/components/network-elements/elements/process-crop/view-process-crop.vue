@@ -3,6 +3,7 @@
   data-component="ProcessCrop"
   data-layer="Crop"
   data-type="Other"
+  v-tooltip="'Crop'"
   )
     i.icon.icon-crop-symbol
 

@@ -1,76 +1,32 @@
-// import configApp from '@/core/globalSettings.js'
-//
-// import { namespacedCloud, stateCloud, mutationsCloud, actionsCloud } from '@/store/api/mod_cloudAPI.js'
-// import { namespacedLocal, stateLocal, mutationsLocal, actionsLocal } from '@/store/api/mod_localAPI.js'
-//
-// const cloudExport = {
-//   namespaced: namespacedCloud,
-//   state: stateCloud,
-//   mutations: mutationsCloud,
-//   actions: actionsCloud
-// };
-// const localExport = {
-//   namespaced: namespacedLocal,
-//   state: stateLocal,
-//   mutations: mutationsLocal,
-//   actions: actionsLocal
-// };
-//
-// //export default configApp.version === 'core_cloud' ?  cloudExport : localExport;
-// export default configApp.version === 'core_cloud' ?  localExport : localExport;
-
-
-
-const net = require('net');
+import requestApi  from "@/core/api.js";
 // run server core
 var exec = require('child_process').execFile;
 
 var runServer = function () {
-  // exec('core_local/ServerForJS.exe', function (err, data) {
-  //   console.log('exe server');
-  //   console.log('err exe', err);
-  //   console.log('data exe', data);
-  // });
-  // exec('core_local/app-server.exe', function (err, data) {
-  //   console.log('err exe', err);
-  //   console.log('data exe', data);
-  // });
+  exec('core_local/app-server.exe', function (err, data) {
+    console.log('err exe', err);
+    console.log('data exe', data);
+  });
 };
 //runServer();
 //var clientSocket = new net.Socket();
-var header = {
-  "byteorder": 'little',
-  "content-type": 'text/json',
-  "content-encoding": 'utf-8',
-  "content-length": 0,
-}
-
-
-var checkData = {
-  type: "text/json",
-  encoding: "utf-8",
-  content: {
-    reciever: "Network1",
-    action: "getStatus",
-    value: ""
-  }
-};
 
 var sendData =  {
     reciever: "Network1",
     action: "Start",
     value: {
       "Hyperparameters" : {
-        "Epochs":"10",
+        "Epochs":"1",
         "Batch_size":"32",
-        "Data_partition": { //# Needs to add up to 1
-          "Training":"0.7", //# Between 0 and 1
-          "Validation":"0.2", //# Between 0 and 1
-          "Test":"0.1" //# Between 0 and 1
+        "Data_partition": {
+          "Training":"0.7",
+          "Validation":"0.2",
+          "Test":"0.1"
         },
         "Dropout_rate":"0.5",
-        "Shuffle_data": true, //#True,  false
-        "Save_model_every":"0"
+        "Shuffle_data": true,
+        "Save_model_every":"10",
+        isEmpty: true,
       },
       "Layers" : {
         "1": {
@@ -83,111 +39,40 @@ var sendData =  {
             }
           },
           "backward_connections":[],
-          "forward_connections":["2"]
+          "forward_connections":["2","3"]
         },
         "2": {
-          "Name":"Reshape_1",
-          "Type":"Reshape",
-          "Properties": {
-            "Shape":"[28,28,1]",
-            "Permutation":"[0,1,2]",
-          },
-          "backward_connections":["1"],
-          "forward_connections":["3"]
-        },
-        "3": {
-          "Name":"Grayscale_1",
-          "Type":"Grayscale",
-          "Properties": {
-          },
-          "backward_connections":["2"],
-          "forward_connections":["4"]
-        },
-        "4": {
-          "Name":"Crop_1",
-          "Type":"Crop",
-          "Properties": {
-            "Offset_height":"y1", //# The new upper left corner
-            "Offset_width":"x1", //# The new upper left corner
-            "Target_height":"y2", //# The new lower right corner minus the new upper left corner
-            "Target_width":"x2", //# The new lower right corner minus the new upper left corner
-          },
-          "backward_connections":["3"],
-          "forward_connections":["5"]
-        },
-        "5": {
-          "Name":"Conv_1",
-          "Type":"Conv",
-          "Properties": {
-            "Conv_dim":"2D", //#Automatic, 1D, 2D, 3D
-            "Patch_size":"3",
-            "Stride":"2",
-            "Padding":"'SAME'", //#'SAME', 'VALID'
-            "Feature_maps":"8",
-            "Activation_function":"Sigmoid", //#Sigmoid, ReLU, Tanh, None
-            "Dropout":  false, //#True,  false
-            "PoolBool": false, //#True,  false
-          },
-          "backward_connections":["4"],
-          "forward_connections":["6"]
-        },
-        "6": {
-          "Name":"Deconv_1",
-          "Type":"Deconv",
-          "Properties": {
-            "Deconv_dim":"2D", //#Automatic, 1D, 2D, 3D
-            "Stride":"2",
-            "Padding":"'SAME'", //#'SAME', 'VALID'
-            "Feature_maps":"8",
-            "Activation_function":"Sigmoid", //#Sigmoid, ReLU, Tanh, None
-            "Dropout": false, //#True,  false
-          },
-          "backward_connections":["5"],
-          "forward_connections":["7"]
-        },
-        "7": {
           "Name":"FC_1",
           "Type":"FC",
           "Properties": {
             "Neurons":"10",
-            "Activation_function":"Sigmoid", //#Sigmoid, ReLU, Tanh, None
-            "Dropout": false, //#True,  false
+            "Activation_function":"Sigmoid",
+            "Dropout": false,
           },
-          "backward_connections":["6"],
-          "forward_connections":["8","9"]
+          "backward_connections":["1"],
+          "forward_connections":["4"]
         },
-        "8": {
+        "3": {
           "Name":"FC_2",
           "Type":"FC",
           "Properties": {
             "Neurons":"10",
-            "Activation_function":"Sigmoid", //#Sigmoid, ReLU, Tanh, None
-            "Dropout": false, //#True,  false
+            "Activation_function":"Sigmoid",
+            "Dropout": false,
           },
-          "backward_connections":["7"],
-          "forward_connections":["9"]
+          "backward_connections":["1"],
+          "forward_connections":["4"]
         },
-        "9": {
+        "4": {
           "Name":"Merge_1",
           "Type":"Merge",
           "Properties": {
-            "Type":"Add", //#Add, Sub, Multi, Div
+            "Type":"Add",
           },
-          "backward_connections":["7","8"],
-          "forward_connections":["10"]
+          "backward_connections":["2","3"],
+          "forward_connections":["7"]
         },
-        "10": {
-          "Name":"Recurrent_1",
-          "Type":"Recurrent",
-          "Properties": {
-            "Neurons":"10",
-            "Version":"LSTM", //#LSTM, GRU, RNN
-            "Time_steps":"5",
-          },
-          "backward_connections":["9"],
-          "forward_connections":["13"]
-        },
-        "11": {
+        "5": {
           "Name":"Data_2",
           "Type":"Data",
           "Properties": {
@@ -197,179 +82,300 @@ var sendData =  {
             }
           },
           "backward_connections":[],
-          "forward_connections":["12"]
+          "forward_connections":["6"]
         },
-        "12": {
+        "6": {
           "Name":"OneHot_1",
           "Type":"OneHot",
           "Properties":{
             'N_class':'10',
           },
-          "backward_connections":["11"],
-          "forward_connections":["13"]
+          "backward_connections":["5"],
+          "forward_connections":["7"]
         },
-        "13": {
+        "7": {
           "Name":"Train_1",
           "Type":"Train",
           "Properties": {
             'N_class':'10',
-            "Loss":"Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
+            "Loss":"Cross_entropy",
             "Learning_rate":"0.01",
-            "Optimizer":"SGD", //#SGD, Momentum, ADAM, RMSprop
+            "Training_iters":"20000",
+            "Optimizer":"SGD",
           },
           "update_frequency":"1",
-          "backward_connections":["10","12"],
+          "backward_connections":["4","6"],
           "forward_connections":[]
         }
       }
     }
 };
 
+let data2 = {
+  reciever: "Network1",
+  action: "Start",
+  value: {
+    "Hyperparameters": {
+      "Epochs": "10",
+      "Batch_size": "32",
+      "Data_partition": {
+        "Training": "0.7",
+        "Validation": "0.2",
+        "Test": "0.1"
+      },
+      "Dropout_rate": "0.5",
+      "Shuffle_data": true,
+      "Save_model_every": "10"
+    },
+    "Layers": {
+      "1": {
+        "Name": "Data_1",
+        "Type": "Data",
+        "Properties": {
+          "Type": "Data",
+          "accessProperties": {
+            "Type": "Data"
+          }
+        },
+        "backward_connections": [],
+        "forward_connections": ["2"]
+      },
+      "2": {
+        "Name": "FC_1",
+        "Type": "FC",
+        "Properties": {
+          "Neurons": "10",
+          "Activation_function": "Sigmoid",
+          "Dropout": false,
+        },
+        "backward_connections": ["1"],
+        "forward_connections": ["3"]
+      },
+      "3": {
+        "Name": "Data_2",
+        "Type": "Data",
+        "Properties": {
+          "Type": "Data",
+          "accessProperties": {
+            "Type": "Labels"
+          }
+        },
+        "backward_connections": [],
+        "forward_connections": ["4"]
+      },
+      "4": {
+        "Name": "OneHot_1",
+        "Type": "OneHot",
+        "Properties": {
+          'N_class': '10',
+        },
+        "backward_connections": ["3"],
+        "forward_connections": ["5"]
+      },
+      "5": {
+        "Name": "Train_1",
+        "Type": "Train",
+        "Properties": {
+          'N_class': '10',
+          "Loss": "Cross_entropy",
+          "Learning_rate": "0.01",
+          "Training_iters": "20000",
+          "Optimizer": "SGD",
+        },
+        "update_frequency": "1",
+        "backward_connections": ["2", "4"],
+        "forward_connections": []
+      },
+    }
+  }
+}
+
 const namespaced = true;
 
 const state = {
-  //symPY: 'Local API'
+  dataAnswer: null,
+  serverStatus: null,
 };
 
 const mutations = {
-  SET_symPY(state, value) {
-    state.symPY = value
+  SET_dataAnswer(state, value) {
+    state.dataAnswer = value
+  },
+  SET_serverStatus(state, value) {
+    state.serverStatus = value
   }
 };
 
+
+// Actions(value):
+
+// Start(Json Network)
+// Stop(None)
+// Pause(None)
+// SkipToValidation(None)
+// Save(path)
+// getStatistics({“layerId”:string,”variable”:string,”innervariable”:string})    (Send “”, empty string, if not use field)
+// getStatus(None)
+
+
 const actions = {
-  API_startServer() {
-    clientSocket.connect(5000, '127.0.0.1', function() {
-      console.log('connected to server!');
-      //clientSocket.write('<?xml version="1.0" encoding="utf-16"?><JsServerRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><CommandName>Add</CommandName><ParamA>10</ParamA><ParamB>2</ParamB></JsServerRequest>');
-
-    });
+  API_getStatus({dispatch, rootGetters}) {
+    var theData = {
+      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
+      action: "getStatus",
+      value: ""
+    };
+    // var timerId = setTimeout(()=> {
+    //   dispatch('API_PUSH_core', theData)
+    //   }, 1000);
+    // clearTimeout(timerId);
+    let answer = requestApi(theData)
   },
-  API_stopServer() {
-    clientSocket.end();
+  API_startTraining({dispatch, rootGetters}) {
+    const net = rootGetters['mod_workspace/currentNetwork'];
+    let message = {
+      Hyperparameters: net.networkSettings,
+      Layers: {}
+    };
+    net.network.forEach((el)=> {
+      let elType = '';
+
+      switch (el.componentName) {
+        case 'DataData':
+          elType = 'Data';
+          break;
+        case 'TrainNormal':
+          elType = 'Train';
+          break;
+        case 'ProcessHot':
+          elType = 'OneHot';
+          break;
+        case 'LearnDeepConnect':
+          elType = 'FC';
+          break;
+
+      }
+
+      message.Layers[el.layerId] = {
+        Name: el.layerName,
+        Type: elType,
+        Properties: el.layerSettings,
+        backward_connections: el.connectionIn,
+        forward_connections: el.connectionOut
+      };
+    });
+    const theData = {
+      reciever: net.networkName,
+      action: "Start",
+      value: message
+    };
+    //console.log(theData);
+    dispatch('API_PUSH_core', theData)
   },
-  API_checkStatus() {
-    let c = JSON.stringify(checkData);
-    clientSocket.write(c, 'utf8');
-
-    clientSocket.on('end', () => {
-      console.log('disconnected from server');
-    });
-
-    clientSocket.on('data', (data) => {
-      console.log(data);
-      clientSocket.end();
-    });
+  API_pauseTraining({dispatch, rootGetters}) {
+    var theData = {
+      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
+      action: "Pause",
+      value: ""
+    };
+    dispatch('API_PUSH_core', theData)
   },
-  API_startTraining() {
-    let d = JSON.stringify(sendData);
-    clientSocket.write('2+2');
-
-    clientSocket.on('end', () => {
-      console.log('disconnected from server');
-    });
-
-    clientSocket.on('data', (data) => {
-      console.log(data);
-      clientSocket.end();
-    });
+  API_stopTraining({dispatch, rootGetters}) {
+    var theData = {
+      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
+      action: "Stop",
+      value: ""
+    };
+    dispatch('API_PUSH_core', theData)
   },
-  API_func() {
+  API_skipValidTraining({dispatch, rootGetters}) {
+    var theData = {
+      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
+      action: "SkipToValidation",
+      value: ""
+    };
+    dispatch('API_PUSH_core', theData)
+  },
+  API_getStatistics({dispatch, rootGetters}) {
+    // var theData = {
+    //   reciever: "Network1",
+    //   action: "getStatistics",
+    //   value: {
+    //     layerId: '2',
+    //     variable: 'W',
+    //     innervariable: ''
+    //   }
+    // };
+    var theData = {
+      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
+      action: "getLayerStatistics",
+      value: {
+        layerId:"1",
+        layerType:"Data",//FC
+        view:"" //Output, Weights&Bias
+      }
+    };
+    dispatch('API_PUSH_core', theData)
+  },
+  API_CLOSE_core({dispatch, rootGetters}) {
+    var theData = {
+      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
+      action: "Close",
+      value: ""
+    };
+    dispatch('API_PUSH_core', theData)
+  },
+  API_PUSH_core({commit}, data) {
+    const header = {
+      "byteorder": 'little',
+      "content-type": 'text/json',
+      "content-encoding": 'utf-8',
+      "content-length": 0,
+    };
+
     let socketClient = net.connect({host:'127.0.0.1', port:5000}, () => {
-      console.log('connected to server!');
-      //socketClient.write('<?xml version="1.0" encoding="utf-16"?><JsServerRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><CommandName>Add</CommandName><ParamA>10</ParamA><ParamB>2</ParamB></JsServerRequest>');
-      let dataJSON = JSON.stringify(sendData);
-      let dataBit = (new TextEncoder('utf-8').encode(dataJSON));
-      let dataBitLength = (new TextEncoder('utf-8').encode(dataJSON)).length;
 
+      let dataJSON = JSON.stringify(data);
+      let dataByte = (new TextEncoder('utf-8').encode(dataJSON));
+      let dataByteLength = dataByte.length;
 
-      let headerJSON = JSON.stringify(header).length;
-      let headerBit = (new TextEncoder('utf-8').encode(headerJSON));
-      //console.log(headerBit);
-      header["content-length"] = dataBitLength;
-      let headerJ = JSON.stringify(header);
-      let headerJBit = (new TextEncoder('utf-8').encode(headerJ));
-      let headerJBitLen = (new TextEncoder('utf-8').encode(headerJ)).length;
+      header["content-length"] = dataByteLength;
 
-      let massText = '01' + headerJ + dataJSON;
+      let headerJSON = JSON.stringify(header);
+      let headerByte = (new TextEncoder('utf-8').encode(headerJSON));
+      let headerByteLength = headerByte.length;
 
-      let firstBit;
-      let secondBit;
+      let firstByte = 0;
+      let secondByte = headerByteLength;
 
-      if(headerJBitLen > 256) {
-        firstBit = Math.floor(headerJBitLen/256);
-        secondBit = headerJBitLen % 256;
+      if(headerByteLength > 256) {
+        firstByte = Math.floor(headerByteLength / 256);
+        secondByte = headerByteLength % 256;
       }
-      else {
-        firstBit = 0;
-        secondBit = headerJBitLen;
-      }
-
-      console.log(headerJBitLen);
-      let arrText = [
-        firstBit, secondBit,
-        ...headerJBit,
-        ...dataBit
+      //console.log(dataJSON);
+      const message = [
+        firstByte, secondByte,
+        ...headerByte,
+        ...dataByte
       ];
-      //console.log(arrText);
 
-      const buf6 = Buffer.from(arrText);
-      //console.log(buf6);
-
-
-
-
+      const buf6 = Buffer.from(message);
       socketClient.write(buf6);
-
-
-
-      //let headBit = (new TextEncoder('utf-8').encode(head));
-
-
-
-      // console.log(dataBit);
-      // socketClient.write(head);
-      //socketClient.write(c);
-      //socketClient.write('c');
     });
 
-    socketClient.on('end', () => {
-      console.log('disconnected from server');
-    });
+    socketClient.on('end', ()=>{});
 
     socketClient.on('data', (data) => {
-      //console.log(data);
-      console.log('answer server', data.toString());
-      //socketClient.end();
+      let dataString = data.toString();
+      let clearData = dataString.slice(dataString.indexOf('}{"result": ') + 12, dataString.length-1);
+      socketClient.end();
+      return clearData
     });
     socketClient.on('error', (err) => {
-      console.log('answer error server', err);
-      //console.log('toString', data.toString());
+      console.log('answer error server', err.toString());
       socketClient.end();
     });
   }
-  // API_func() {
-  //   clientSocket.connect(5000, '127.0.0.1', function() {
-  //     console.log('connected to server!');
-  //     //clientSocket.write('<?xml version="1.0" encoding="utf-16"?><JsServerRequest xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema"><CommandName>Add</CommandName><ParamA>10</ParamA><ParamB>2</ParamB></JsServerRequest>');
-  //     clientSocket.write('202');
-  //   });
-  //
-  //   clientSocket.on('end', () => {
-  //     console.log('disconnected from server');
-  //   });
-  //
-  //   clientSocket.on('data', (data) => {
-  //     //console.log(data);
-  //     console.log('toString', data.toString());
-  //     //socketClient.end();
-  //   });
-  //   clientSocket.on('error', (err) => {
-  //     console.log(err);
-  //     //console.log('toString', data.toString());
-  //     clientSocket.end();
-  //   });
-  // }
 };
 
 export default {

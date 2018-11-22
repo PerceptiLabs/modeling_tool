@@ -6,6 +6,7 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
+      :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -13,32 +14,32 @@
         :class="{'active': tabSelected == 0}"
       )
         .settings-layer
-          .settings-layer_section
+          //.settings-layer_section
             .form_row
-              .form_label Data Into the Layer:
+              .form_label Input dimensions:
               .form_input
                 triple-input(
-                :value1="50"
-                :value2="60"
-                :value3="10")
+                /:value1="50"
+                /:value2="60"
+                /:value3="10")
           .settings-layer_section
             .form_row
-              .form_label Reshape data:
+              .form_label Reshape:
               .form_input
                 input(type="text")
           .settings-layer_section
             .form_row
-              .form_label Transpose maps:
+              .form_label Transpose:
               .form_input
                 input(type="text")
-          .settings-layer_section
+          //-.settings-layer_section
             .form_row
-              .form_label Data out from the Layer:
+              .form_label Output dimensions:
               .form_input
                 triple-input(
-                :value1="50"
-                :value2="60"
-                :value3="10")
+                /:value1="50"
+                /:value2="60"
+                /:value3="10")
           .settings-layer_foot
             button.btn.btn--primary(type="button") Apply
 
@@ -63,7 +64,11 @@
     },
     data() {
       return {
-        tabs: ['Settings', 'Code']
+        //TODO ARRAY!
+        setting: {
+          Shape:"[28,28,1]",
+          Permutation:"[0,1,2]",
+        }
       }
     }
   }

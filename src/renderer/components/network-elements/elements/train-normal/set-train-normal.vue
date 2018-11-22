@@ -6,6 +6,7 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
+      :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -13,7 +14,7 @@
         :class="{'active': tabSelected == 0}"
       )
         .settings-layer
-          .settings-layer_section
+          //.settings-layer_section
             .form_row
               .form_label Labels:
               .form_input
@@ -22,42 +23,47 @@
             .form_row
               .form_label Cost function:
               .form_input
-                base-radio(groupName="group" valueInput="None" v-model="settings.neurons")
+                base-radio(groupName="group" valueInput="Cross_entropy" v-model="settings.Loss")
                   span Cross-Entropy
-                base-radio(groupName="group" valueInput="Sigmoid" v-model="settings.neurons")
+                base-radio(groupName="group" valueInput="Quadratic" v-model="settings.Loss")
                   span Quadratic
-                base-radio(groupName="group" valueInput="ReLu" v-model="settings.neurons")
-                  span Weigted Cross - Entropy
-                base-radio(groupName="group" valueInput="tanh" v-model="settings.neurons")
+                base-radio(groupName="group" valueInput="W_cross_entropy" v-model="settings.Loss")
+                  span Weighted Cross-Entropy
+                base-radio(groupName="group" valueInput="Dice" v-model="settings.Loss")
                   span DICE
           .settings-layer_section
             .form_row
               .form_label Optimizer:
               .form_input
-                base-radio(groupName="group1" valueInput="None" v-model="settings.opt")
-                  span AAAA
-                base-radio(groupName="group1" valueInput="Sigmoid" v-model="settings.opt")
+                base-radio(groupName="group1" valueInput="ADAM" v-model="settings.Optimizer")
+                  span ADAM
+                base-radio(groupName="group1" valueInput="SGD" v-model="settings.Optimizer")
                   span SGD
-                base-radio(groupName="group1" valueInput="ReLu" v-model="settings.opt")
+                base-radio(groupName="group1" valueInput="Momentum" v-model="settings.Optimizer")
                   span Momentum
-                base-radio(groupName="group1" valueInput="tanh" v-model="settings.opt")
+                base-radio(groupName="group1" valueInput="RMSprop" v-model="settings.Optimizer")
                   span RMSprop
           .settings-layer_section
             .form_row
               .form_label Learning rate:
               .form_input
-                input(type="text")
-          .settings-layer_section
+                input(type="text" v-model="settings.Learning_rate")
+          //.settings-layer_section
             .form_row
               .form_label Regularization:
               .form_input
                 input(type="text")
-          .settings-layer_section
+          //.settings-layer_section
+            .form_row
+              .form_label N_class:
+              .form_input
+                input(type="text" v-model="settings.N_class")
+          //.settings-layer_section
             .form_row
               .form_label Pooling:
               .form_input
                 base-checkbox(valueInput="Pooling" v-model="settings.pooling")
-          .settings-layer_section
+          //.settings-layer_section
             .form_row
               .form_label Learning rate:
               .form_input
@@ -65,7 +71,9 @@
 
 
           .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
+            button.btn.btn--primary(type="button"
+            @click="applySettings"
+            ) Apply
 
 
       .popup_body(
@@ -90,10 +98,10 @@ export default {
   data() {
     return {
       settings: {
-        pooling: false,
-        neurons: 'None',
-        opt: 'None',
-        items: ['Data_1', 'Data_2', 'Data_3', 'Data_4', 'Data_5',]
+        N_class: '10',
+        Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
+        Learning_rate: "0.01",
+        Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop
       }
     }
   },

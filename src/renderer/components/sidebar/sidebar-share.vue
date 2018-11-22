@@ -29,6 +29,7 @@ export default {
     justify-content: space-between;
     padding-top: .5rem;
     padding-bottom: .5rem;
+    margin-top: auto;
   }
   .sidebar-share_icon {
     .icon {

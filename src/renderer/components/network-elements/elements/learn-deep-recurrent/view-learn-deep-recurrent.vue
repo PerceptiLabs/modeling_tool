@@ -3,6 +3,7 @@
   data-component="LearnDeepRecurrent"
   data-layer="Recurrent"
   data-type="Other"
+  v-tooltip="'Recurrent'"
   )
     i.icon.icon-round-left
 

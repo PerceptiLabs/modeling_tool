@@ -3,8 +3,9 @@
   data-component="ProcessHot"
   data-layer="One Hot"
   data-type="Other"
+  v-tooltip="'One Hot'"
   )
-    i.icon.icon-
+    i.icon.icon-one-hot
 
 </template>
 

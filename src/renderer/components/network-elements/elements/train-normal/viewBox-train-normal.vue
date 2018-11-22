@@ -9,6 +9,7 @@
         type="button"
         @click="setTab(tab)"
         :class="{'active': currentTab === tab}"
+        :disabled="i > 2"
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row
@@ -85,6 +86,7 @@
       return {
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
+        //tabset: ['Prediction', 'Accuracy', 'Loss'],
         optionLine1: dataLine,
         option3d: data3d,
         optionHeat: dataHeat,

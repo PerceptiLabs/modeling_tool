@@ -4,6 +4,7 @@ const data = {
   yAxis: {},
   series: [{
     //symbolSize: 20,
+    type: 'scatter',
     data: [
       [10.0, 8.04],
       [8.0, 6.95],
@@ -17,7 +18,6 @@ const data = {
       [7.0, 4.82],
       [5.0, 5.68]
     ],
-    type: 'scatter'
   }]
 }
 

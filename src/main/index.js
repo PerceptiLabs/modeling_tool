@@ -10,7 +10,7 @@ const mainMenu = [
     label: 'File',
     submenu: [
       {label: 'New',                  click() {mainWindow.webContents.send('newNetwork')}},
-      {label: 'Open trained model',   click() {  }},
+      {label: 'Open trained model',   click() {mainWindow.webContents.send('closeApp', 'whoooooooh!');  }},
       {label: 'Save trained model',   click() {  }},
       {label: 'Open untrained model', click() {mainWindow.webContents.send('openNetwork')}},
       {label: 'Save untrained model', click() {mainWindow.webContents.send('saveNetwork')}},
@@ -81,20 +81,42 @@ function createWindow () {
   Menu.setApplicationMenu(menuCustom);
 
 
-  ipcMain.on('asynchronous-message', (event, arg) => {
-    event.sender.send('asynchronous-reply', event)
+  ipcMain.on('acceptClose', (event, arg) => {
+    if (process.platform !== 'darwin') {
+      app.quit()
+    }
   })
+
   visitor.pageview("/").send();
+
   mainWindow.on('closed', () => {
+    // mainWindow.webContents.send('closeApp');
+    // ipcMain.on('acceptClose', (event, arg) => {
+    //   mainWindow = null
+    // })
     mainWindow = null
   })
 }
 
 app.on('ready', createWindow);
 
+app.on('before-quit', (event) => {
+  //event.preventDefault();
+  mainWindow.webContents.send('closeApp', 'before-quit');
+});
+// app.on('will-quit', (event) => {
+//   //event.preventDefault();
+//   mainWindow.webContents.send('closeApp', 'will-quit');
+// });
+// app.on('quit', (event) => {
+//   //event.preventDefault();
+//   mainWindow.webContents.send('closeApp', 'quit');
+// });
+
+
 app.on('window-all-closed', () => {
+  mainWindow.webContents.send('closeApp', 'window-all-closed');
   if (process.platform !== 'darwin') {
-    ///socketClient.end();
     app.quit()
   }
 });

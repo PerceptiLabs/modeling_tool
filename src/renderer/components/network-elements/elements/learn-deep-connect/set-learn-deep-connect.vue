@@ -6,6 +6,7 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
+        :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -17,20 +18,28 @@
             .form_row
               .form_label Neurons:
               .form_input
-                input(type="text")
+                input(type="text" v-model="settings.Neurons")
           .settings-layer_section
             .form_row
-              .form_label Cost function:
+              .form_label Activation function:
               .form_input
-                base-radio(groupName="group1")
+                base-radio(groupName="group1" valueInput="None"  v-model="settings.Activation_function")
                   span None
-                base-radio(groupName="group1")
+                base-radio(groupName="group1" valueInput="Sigmoid"  v-model="settings.Activation_function")
                   span Sigmoid
-                base-radio(groupName="group1")
-                  span ReLu
-                base-radio(groupName="group1")
-                  span tanh
+                base-radio(groupName="group1" valueInput="ReLU"  v-model="settings.Activation_function")
+                  span ReLU
+                base-radio(groupName="group1" valueInput="Tanh"  v-model="settings.Activation_function")
+                  span Tanh
           .settings-layer_section
+            .form_row
+              .form_label Dropout:
+              .form_input
+                base-radio(groupName="group2" :valueInput="true" v-model="settings.Dropout")
+                  span Yes
+                base-radio(groupName="group2" :valueInput="false" v-model="settings.Dropout")
+                  span No
+          //-.settings-layer_section
             .form_row
               .form_label Cost function:
               .form_input
@@ -38,7 +47,7 @@
                   span Yes
                 base-radio(groupName="group2")
                   span No
-          .settings-layer_section
+          //-.settings-layer_section
             .form_row
               .form_label Batch Normalization:
               .form_input
@@ -47,7 +56,9 @@
                 base-radio(groupName="group3")
                   span No
           .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
+            button.btn.btn--primary(type="button"
+              @click="applySettings"
+            ) Apply
 
 
       .popup_body(
@@ -69,7 +80,12 @@
     },
     data() {
       return {
-        tabs: ['Settings', 'Code']
+        tabs: ['Settings', 'Code'],
+        settings: {
+          Neurons :"10",
+          Activation_function: "Sigmoid",
+          Dropout: false,
+        }
       }
     }
   }

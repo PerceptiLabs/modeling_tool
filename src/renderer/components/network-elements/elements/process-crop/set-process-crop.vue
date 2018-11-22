@@ -6,6 +6,7 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
+        :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -13,14 +14,14 @@
         :class="{'active': tabSelected == 0}"
       )
         .settings-layer
-          .settings-layer_section
+          //.settings-layer_section
             .form_row
               .form_label Data Input:
               .form_input
                 triple-input(
-                  :value1="50"
-                  :value2="60"
-                  :value3="10"
+                  /:value1="50"
+                  /:value2="60"
+                  /:value3="10"
                 )
           .settings-layer_section.text-center.crop-box
             vue-cropper(
@@ -36,7 +37,7 @@
               :fixedBox="false"
               :original="false"
               )
-          .settings-layer_section
+          //.settings-layer_section
             .form_row
               .form_label Reshape data:
               .form_input

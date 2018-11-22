@@ -16,24 +16,17 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              .form_label Dimension:
+              .form_label Number of classes:
               .form_input
-                triple-input(
-                  :value1="50"
-                  :value2="60"
-                  :value3="10"
-                  @setValue1="showVal"
-                  @setValue2="showVal"
-                  @setValue3="showVal"
+                input(type="text" v-model="settings.N_class")
 
-                )
-          .settings-layer_section
           .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
-
+            button.btn.btn--primary(type="button"
+            @click="applySettings"
+            ) Apply
 
       .popup_body(
-        :class="{'active': tabSelected == 1}"
+          :class="{'active': tabSelected == 1}"
         )
         settings-code
 
@@ -42,29 +35,23 @@
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
 import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
-import TripleInput    from "@/components/base/triple-input";
 
 export default {
-  name: 'SetMathArgmax',
+  name: 'SetProcessHot',
   mixins: [mixinSet],
   components: {
-    TripleInput,
-    SettingsCode,
+    SettingsCode
   },
   data() {
     return {
       tabs: ['Settings', 'Code'],
       settings: {
-        pooling: false,
-        neurons: 'None',
-        val: 50
+        N_class: '10',
       }
     }
   },
   methods: {
-    showVal(v) {
-      console.log(v);
-    }
+
   }
 }
 </script>
