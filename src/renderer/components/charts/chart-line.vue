@@ -15,7 +15,7 @@
         ref="chart"
         :auto-resize="true"
         theme="quantum"
-        :options="chartData"
+        :options="chartModel"
       )
 </template>
 
@@ -44,6 +44,22 @@ export default {
       fullView: false,
       h: '',
       w: ''
+    }
+  },
+  computed: {
+    chartModel() {
+      console.log(this.chartData);
+      let model = {
+        tooltip: {},
+        xAxis: {
+          // data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
+        },
+        yAxis: {},
+        series: []
+      };
+      model.series.push(this.chartData);
+      console.log(model);
+      return model
     }
   },
   watch: {

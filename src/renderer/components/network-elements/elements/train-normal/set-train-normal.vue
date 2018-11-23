@@ -102,6 +102,7 @@ export default {
         Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
         Learning_rate: "0.01",
         Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop
+        Training_iters: "20000"
       }
     }
   },

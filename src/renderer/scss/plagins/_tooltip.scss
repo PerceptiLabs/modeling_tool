@@ -18,7 +18,7 @@ $margin-tooltip: .25rem;
 		transform: translateX(-100000px) !important;
 	}
 	&.vue-tooltip-visible {
-		transition: transform 0.1s 2s;
+		transition: transform 0.1s 1s;
 	}
 	.vue-tooltip-content {
 		text-align: center;

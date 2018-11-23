@@ -16,7 +16,7 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              input.form_input(type="text" v-model="settings.accessProperties.Path" disabled)
+              input.form_input(type="text" v-model="loadPath")
               button.btn.btn--primary(type="button"
                 @click="loadFile"
               ) Load
@@ -41,13 +41,20 @@
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
+        loadPath: 'No uploaded file',
         settings: {
           Type: "Data",
           accessProperties: {
             Type: "Data",
-            Path: 'No uploaded file',
+            Path: 'D:\\\\Quantum\\mnist\\',
           }
         }
+      }
+    },
+    watch: {
+      loadPath(newPath) {
+        this.settings.accessProperties.Path = newPath;
+        //this.applySettings();
       }
     },
     methods: {
@@ -56,17 +63,18 @@
         let opt = {
           title:"Load file in Data element",
           filters: [
-            {name: 'Images', extensions: ['png', 'gif']},
-            {name: 'Python', extensions: ['pickle', 'numpy']},
-            {name: 'Text', extensions: ['txt', 'json', 'csv']},
-            {name: 'Any', extensions: ['png', 'gif', 'pickle', 'numpy', 'txt', 'json', 'csv']}
+            // {name: 'Images', extensions: ['png', 'gif']},
+            // {name: 'Python', extensions: ['pickle', 'numpy']},
+            // {name: 'Text', extensions: ['txt', 'json', 'csv']},
+            // {name: 'Any', extensions: ['png', 'gif', 'pickle', 'numpy', 'txt', 'json', 'csv']},
+            {name: 'Folder', extensions: ['gz']}
           ]
         };
         this.openLoadDialog(this.saveLoadFile, opt)
       },
       saveLoadFile(pathArr) {
-        this.settings.accessProperties.Path = pathArr[0];
-        this.applySettings();
+        this.loadPath = pathArr[0];
+        //this.applySettings();
         //this.$store.dispatch('mod_workspace/a_SET_elementSettings', this.settings)
       },
     }

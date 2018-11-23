@@ -1,5 +1,6 @@
 <template lang="pug">
   .statistics-box
+    button.btn.btn--link(type="button" @click="getWeightsStatistics") get stat
     ul.statistics-box_tabset
       li.statistics-box_tab(
       v-for="(tab, i) in tabset"
@@ -44,6 +45,7 @@
 <script>
   import ChartLine from "@/components/charts/chart-line";
   import dataLine  from "@/components/charts/line.js";
+  import requestApi   from "@/core/api.js";
   export default {
     name: "ViewBoxLearnDeepConnect",
     components: {ChartLine},
@@ -63,6 +65,56 @@
     methods: {
       setTab(name) {
         this.currentTab = name
+      },
+      getOutStatistics() {
+        var theData = {
+          reciever: 'Network',
+          action: "getLayerStatistics",
+          value: {
+            //layerId: this.elementID.toString(),
+            layerId:"2",
+            layerType:"FC",//FC
+            view:"Output" //Output, Weights&Bias
+          }
+        };
+        //console.log(this.elementID.toString());
+        const client = new requestApi();
+        client.sendMessage(theData)
+          .then((data)=> {
+            let jsn = JSON.parse(data);
+            console.log(jsn);
+            this.optionLine1 = jsn
+          })
+          .catch((err) =>{ console.error(err); })
+        setInterval(()=>{
+
+        }, 2000)
+      },
+      getWeightsStatistics() {
+        var theData = {
+          reciever: 'Network',
+          action: "getLayerStatistics",
+          value: {
+            //layerId: this.elementID.toString(),
+            layerId:"2",
+            layerType:"FC",//FC
+            view:"Weights&Bias" //Output, Weights&Bias
+          }
+        };
+        //console.log(this.elementID.toString());
+        const client = new requestApi();
+        client.sendMessage(theData)
+          .then((data)=> {
+            let jsn = JSON.parse(data);
+            console.log(jsn);
+            console.log(this);
+            this.optionLine2 = jsn.Weights;
+            this.optionLine3 = jsn.Bias;
+          })
+          .catch((err) =>{ console.error(err); })
+        setInterval(()=>{
+
+        }, 2000)
       }
     }
   }

@@ -25,9 +25,9 @@
           :chartData="optionLine1"
           )
         .statistics-box_col
-          chart-heatmap(
-          :chartData="optionHeat"
-          )
+          //chart-heatmap(
+            /:chartData="optionHeat"
+            )
         .statistics-box_col
           chart-d3(
           :chartData="option3d"

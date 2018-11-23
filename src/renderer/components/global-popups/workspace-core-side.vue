@@ -29,12 +29,13 @@
 </template>
 
 <script>
-import mixinSet       from '@/core/mixins/net-element-settings.js';
+//import mixinSet       from '@/core/mixins/net-element-settings.js';
 export default {
   name: "SelectCoreSide",
-  mixins: [mixinSet],
+  //mixins: [mixinSet],
   data() {
     return {
+      tabSelected: 0,
       tabs: ['Computer', 'Cloud'],
       settings: {
 
@@ -45,6 +46,9 @@ export default {
 
   },
   methods: {
+    setTab(i) {
+      this.tabSelected = i;
+    },
     startTraining() {
       this.$store.dispatch('globalView/NET_trainingStart');
       this.$store.dispatch('mod_api/API_startTraining');

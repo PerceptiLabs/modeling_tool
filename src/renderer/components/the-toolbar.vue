@@ -89,7 +89,7 @@
       div
         button.btn.btn--primary(type="button" @click="TEST_checkStatus") check status
         button.btn.btn--primary(type="button" @click="TEST_stop") stop
-        button.btn.btn--primary(type="button" @click="TEST_close") close
+        button.btn.btn--primary(type="button" @click="TEST_close") close CoreProcess
         button.btn.btn--primary(type="button" @click="TEST_getStatistics") getStatistics
 
 </template>

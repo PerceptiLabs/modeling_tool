@@ -1,5 +1,5 @@
 <template lang="pug">
-  .page_login
+  main.page_login
     .login_logo
       img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
     .login_main
@@ -15,8 +15,8 @@
         .form_holder
           base-checkbox(
 
-          )  
-            span Agree 
+          )
+            span Agree
             router-link(:to="{name: 'policy'}").btn.btn--link  terms and policy
         .form_holder
           button.btn.btn--dark-blue-rev(type="button") log in

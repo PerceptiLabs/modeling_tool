@@ -5,6 +5,9 @@ const netElementSettings = {
       tabs: ['Settings', 'Code'],
     }
   },
+  mounted() {
+    this.applySettings()
+  },
   computed: {
     userMode() {
       return this.$store.state.globalView.userMode

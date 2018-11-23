@@ -1,4 +1,5 @@
 import fs from 'fs';
+import {remote} from 'electron'
 import {openLoadDialog} from '@/core/helpers.js'
 
 

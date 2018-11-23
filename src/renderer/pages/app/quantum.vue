@@ -18,7 +18,7 @@
     background-color: $bg-window;
     display: grid;
     grid-template-areas:
-      "toolbar    toolbar   sidebar"
+      "toolbar   toolbar    sidebar"
       "layersbar  workspace sidebar";
     grid-template-rows: auto 1fr;
     grid-template-columns: auto 1fr auto;

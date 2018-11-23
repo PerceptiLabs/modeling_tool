@@ -1,5 +1,5 @@
 <template lang="pug">
-  .page_login
+  main.page_login
     .login_logo
       img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
     .login_main
