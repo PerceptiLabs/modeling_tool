@@ -1,4 +1,5 @@
 import Vue from 'vue'
+//- Global plugins
 import axios from 'axios'
 import Vuebar from 'vuebar'
 import Tooltip from 'vue-directive-tooltip';
@@ -9,16 +10,23 @@ import store from './store'
 
 import configApp from '@/core/globalSettings.js'
 
+//- Global components
 import BaseCheckbox     from '@/components/base/checkbox.vue'
 import BaseRadiobutton  from '@/components/base/radiobutton.vue'
 import BaseSelect       from '@/components/base/select.vue'
 import BaseRange        from '@/components/base/range.vue'
+
+//- Global directives
+import {mask} from 'vue-the-mask'
+import VeeValidate from 'vee-validate';
 
 Vue.use(Vuebar);
 Vue.use(Tooltip, {
   delay: 0,
   placement: 'right',
 });
+Vue.use(VeeValidate);
+
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
@@ -28,8 +36,9 @@ Vue.config.productionTip = configApp.developMode;
 Vue.config.performance = configApp.developMode;
 
 //import './core/directives'
-import '@/core/plugins/eCharts.js'
+Vue.directive('mask', mask);
 
+import '@/core/plugins/eCharts.js'
 Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);
 Vue.component('base-select', BaseSelect);

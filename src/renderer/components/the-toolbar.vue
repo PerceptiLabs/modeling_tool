@@ -91,6 +91,7 @@
         button.btn.btn--primary(type="button" @click="TEST_checkStatus") check status
         button.btn.btn--primary(type="button" @click="TEST_stop") stop
         button.btn.btn--primary(type="button" @click="TEST_close") close CoreProcess
+        router-link.btn.btn--primary(:to="{name: 'login'}") go to Login
 
 
 </template>

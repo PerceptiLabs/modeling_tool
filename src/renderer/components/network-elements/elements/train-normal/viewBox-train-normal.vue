@@ -121,7 +121,7 @@
               view:'Predicition' //Output, Weights&Bias
             }
           };
-          //console.log(this.elementID.toString());
+          console.log(theData);
           const client = new requestApi();
           client.sendMessage(theData)
             .then((data)=> {
@@ -148,7 +148,7 @@
               view:'Accuracy' //Output, Weights&Bias
             }
           };
-          //console.log(this.elementID.toString());
+          console.log(theData);
           const client = new requestApi();
           client.sendMessage(theData)
             .then((data)=> {
