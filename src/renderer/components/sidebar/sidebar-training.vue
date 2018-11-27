@@ -4,39 +4,39 @@
       span.pc-chart_title.big-text Progressbar
       .pc-chart_main
         sidebar-progress(:percent="progress")
-    .pc-chart_box
+    //.pc-chart_box
       span.pc-chart_title.big-text RAM
       .pc-chart_main
         chart-line.pc-chart_chart(
-          :headerOff="true"
-          :chartData="optionRAM")
-    .pc-chart_box
+          //:headerOff="true"
+          /:chartData="optionRAM")
+    //.pc-chart_box
       span.pc-chart_title.big-text CPU
       .pc-chart_main
         chart-line.pc-chart_chart(
-        :headerOff="true"
-        :chartData="optionCPU")
-    .pc-chart_box
+        /:headerOff="true"
+        /:chartData="optionCPU")
+    //.pc-chart_box
       span.pc-chart_title.big-text GPU
       .pc-chart_main
         chart-line.pc-chart_chart(
-        :headerOff="true"
-        :chartData="optionGPU")
+        /:headerOff="true"
+        /:chartData="optionGPU")
 
 </template>
 
 <script>
 import SidebarProgress from "./sidebar-progress";
-import ChartLine from "../charts/chart-line";
+import ChartLine from "../charts/chart-lineBar";
 
 export default {
   name: "SidebarTraining",
   components: {ChartLine, SidebarProgress},
   mounted() {
-    this.setRAM();
-    this.setCPU();
-    this.setGPU();
-    this.init();
+    // this.setRAM();
+    // this.setCPU();
+    // this.setGPU();
+    //this.init();
   },
   data() {
     return {
@@ -108,11 +108,11 @@ export default {
     random() {
       return Math.round(Math.random()*100)
     },
-    init() {
-      setTimeout(()=> {
-        this.$store.dispatch('globalView/NET_trainingDone')
-      }, 5000)
-    }
+    // init() {
+    //   setTimeout(()=> {
+    //     this.$store.dispatch('globalView/NET_trainingDone')
+    //   }, 5000)
+    // }
   }
 }
 </script>

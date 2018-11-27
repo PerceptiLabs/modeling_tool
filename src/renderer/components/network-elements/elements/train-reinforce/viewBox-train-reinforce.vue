@@ -47,8 +47,7 @@
 </template>
 
 <script>
-  import ChartLine    from "@/components/charts/chart-line";
-  import ChartBar     from "@/components/charts/chart-bar.vue";
+  import ChartLine    from "@/components/charts/chart-lineBar";
   import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
   import ChartD3      from "@/components/charts/chart-3d.vue";
   import data3d       from "@/components/charts/3d.js";
@@ -58,7 +57,7 @@
 
   export default {
     name: "ViewBoxTrainReinforce",
-    components: {ChartLine, ChartBar, ChartHeatmap, ChartD3},
+    components: {ChartLine, ChartHeatmap, ChartD3},
     data() {
       return {
         currentTab: 'Prediction',

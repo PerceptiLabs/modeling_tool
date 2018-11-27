@@ -20,322 +20,6 @@ const state = {
       canTestStatistics: false,
       network: [],
     }
-    //{
-    //   networkName: 'Network_1',
-    //   networkSettings: {
-    //     isEmpty: true,
-    //   },
-    //   networkStatistics: false,
-    //   canTestStatistics: false,
-    //   network: [
-    //     {
-    //       layerId: 1,
-    //       layerName: 'Data',
-    //       layerType: 'Data',
-    //       componentName: 'DataData',
-    //       connectionOut: [
-    //         // {
-    //         // id: 2,
-    //         // type: 'dash1'
-    //         // },
-    //         {
-    //           id: 2,
-    //           type: 'dash2'
-    //         }
-    //       ],
-    //
-    //       meta: {
-    //         isInvisible: false,
-    //         isLock: false,
-    //         isSelected: false,
-    //         top: 100,
-    //         left: 100
-    //       },
-    //       trainingData: {
-    //         optionLine1: {
-    //           tooltip: {},
-    //           xAxis: {
-    //             data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
-    //           },
-    //           yAxis: {},
-    //           series: [
-    //             {
-    //               type: 'line',
-    //               data: [0.1, 0.5, 0.6, .99, .75],
-    //             },
-    //             {
-    //               type: 'line',
-    //               data: [0.51, 0.15, 0.96, .199, .175],
-    //             }
-    //           ]
-    //         },
-    //         optionLine2: {
-    //           tooltip: {},
-    //           xAxis: {
-    //             data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
-    //           },
-    //           yAxis: {},
-    //           series: [
-    //             {
-    //               type: 'bar',
-    //               data: [0.1, 0.5, 0.6, .99, .75],
-    //             },
-    //             {
-    //               type: 'bar',
-    //               data: [0.51, 0.15, 0.96, .199, .175],
-    //             }
-    //           ]
-    //         },
-    //         optionLine3: {
-    //           tooltip: {},
-    //           xAxis: {
-    //             data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
-    //           },
-    //           yAxis: {},
-    //           series: [
-    //             {
-    //               type: 'bar',
-    //               data: [0.1, 0.5, 0.6, .99, .75],
-    //             },
-    //             {
-    //               type: 'line',
-    //               data: [0.51, 0.15, 0.96, .199, .175],
-    //             }
-    //           ]
-    //         },
-    //         optionLine4: {
-    //           tooltip: {},
-    //           xAxis: {
-    //             data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
-    //           },
-    //           yAxis: {},
-    //           series: [
-    //             {
-    //               type: 'line',
-    //               data: [0.1, 0.5, 0.6, .99, .75],
-    //             },
-    //             {
-    //               type: 'line',
-    //               data: [0.51, 0.15, 0.96, .199, .175],
-    //             }
-    //           ]
-    //         },
-    //         optionLine5: {
-    //           tooltip: {},
-    //           xAxis: {
-    //             data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
-    //           },
-    //           yAxis: {},
-    //           series: [
-    //             {
-    //               type: 'line',
-    //               data: [0.1, 0.5, 0.6, .99, .75],
-    //             },
-    //             {
-    //               type: 'line',
-    //               data: [0.51, 0.15, 0.96, .199, .175],
-    //             }
-    //           ]
-    //         },
-    //         optionLine6: {
-    //           tooltip: {},
-    //           xAxis: {
-    //             data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
-    //           },
-    //           yAxis: {},
-    //           series: [
-    //             {
-    //               type: 'line',
-    //               data: [0.1, 0.5, 0.6, .99, .75],
-    //             },
-    //             {
-    //               type: 'line',
-    //               data: [0.51, 0.15, 0.96, .199, .175],
-    //             }
-    //           ]
-    //         },
-    //       }
-    //     },
-    //     // {
-    //     //   layerId: 2,
-    //     //   layerName: 'Layer Name 2',
-    //     //   connectionOut: [],
-    //     //   componentName: 'LayerContainer',
-    //     //   meta: {
-    //     //     isInvisible: false,
-    //     //     isLock: false,
-    //     //     isSelected: false,
-    //     //     top: 200,
-    //     //     left: 650
-    //     //   },
-    //     //   child: [
-    //     //     {
-    //     //       layerId: 21,
-    //     //       layerName: 'Layer Name 21',
-    //     //       connectionOut: [],
-    //     //       componentName: 'LayerContainer',
-    //     //       meta: {
-    //     //         isInvisible: false,
-    //     //         isLock: false,
-    //     //         isSelected: false,
-    //     //         top: 50,
-    //     //         left: 60
-    //     //       },
-    //     //       child: [
-    //     //         {
-    //     //           layerId: 211,
-    //     //           layerName: 'Layer Name 211',
-    //     //           connectionOut: [],
-    //     //           componentName: 'IoInput',
-    //     //           meta: {
-    //     //             isInvisible: false,
-    //     //             isLock: false,
-    //     //             isSelected: false,
-    //     //             top: 50,
-    //     //             left: 60
-    //     //           }
-    //     //         },
-    //     //         {
-    //     //           layerId: 212,
-    //     //           layerName: 'Layer Name 212',
-    //     //           connectionOut: [],
-    //     //           componentName: 'LayerContainer',
-    //     //           meta: {
-    //     //             isInvisible: false,
-    //     //             isLock: false,
-    //     //             isSelected: false,
-    //     //             top: 50,
-    //     //             left: 160
-    //     //           },
-    //     //           child: [
-    //     //             {
-    //     //               layerId: 2121,
-    //     //               layerName: 'Layer Name 2121',
-    //     //               connectionOut: [],
-    //     //               componentName: 'IoInput',
-    //     //               meta: {
-    //     //                 isInvisible: false,
-    //     //                 isLock: false,
-    //     //                 isSelected: false,
-    //     //                 top: 50,
-    //     //                 left: 60
-    //     //               },
-    //     //             },
-    //     //             {
-    //     //               layerId: 2122,
-    //     //               layerName: 'Layer Name 2122',
-    //     //               connectionOut: [],
-    //     //               componentName: 'IoInput',
-    //     //               meta: {
-    //     //                 isInvisible: false,
-    //     //                 isLock: false,
-    //     //                 isSelected: false,
-    //     //                 top: 250,
-    //     //                 left: 60
-    //     //               },
-    //     //             },
-    //     //           ]
-    //     //         },
-    //     //       ]
-    //     //     },
-    //     //     {
-    //     //       layerId: 22,
-    //     //       layerName: 'Layer Name 22',
-    //     //       connectionOut: [{
-    //     //         id: 21,
-    //     //         type: 'dash1'
-    //     //       }],
-    //     //       componentName: 'IoInput',
-    //     //       meta: {
-    //     //         isInvisible: false,
-    //     //         isLock: false,
-    //     //         isSelected: false,
-    //     //         top: 150,
-    //     //         left: 60
-    //     //       },
-    //     //     }
-    //     //   ]
-    //     // },
-    //     {
-    //       layerId: 2,
-    //       layerName: 'learn deep convolut',
-    //       layerType: 'Other',
-    //       connectionOut: [{
-    //         id: 3,
-    //         type: 'solid'
-    //       }],
-    //       componentName: 'LearnDeepConvolut',
-    //       meta: {
-    //         isInvisible: false,
-    //         isLock: false,
-    //         isSelected: false,
-    //         top: 100,
-    //         left: 400
-    //       },
-    //       trainingData: {}
-    //     },
-    //     {
-    //       layerId: 3,
-    //       layerName: 'Learn Class Vector Machine',
-    //       layerType: 'Training',
-    //       connectionOut: [
-    //         {
-    //           id: 4,
-    //           type: 'solid'
-    //         }
-    //       ],
-    //       componentName: 'LearnClassVectorMachine',
-    //       meta: {
-    //         isInvisible: false,
-    //         isLock: false,
-    //         isSelected: false,
-    //         top: 300,
-    //         left: 400
-    //       },
-    //       trainingData: {}
-    //     },
-    //     {
-    //       layerId: 4,
-    //       layerName: 'Train Normal',
-    //       layerType: 'Training',
-    //       connectionOut: [{
-    //         id: 1,
-    //         type: 'solid'
-    //       }],
-    //       componentName: 'TrainNormal',
-    //       meta: {
-    //         isInvisible: false,
-    //         isLock: false,
-    //         isSelected: false,
-    //         top: 300,
-    //         left: 100
-    //       },
-    //       trainingData: {}
-    //     }
-    //   ]
-    // },
-    // {
-    //   networkName: 'Network_2',
-    //   networkSettings: {
-    //     isEmpty: true,
-    //   },
-    //   networkStatistics: null,
-    //   network: [
-    //     {
-    //       layerId: 1,
-    //       layerName: 'Layer Name1',
-    //       connectionOut: [],
-    //       componentName: 'IoInput',
-    //       meta: {
-    //         isInvisible: false,
-    //         isLock: false,
-    //         isSelected: false,
-    //         top: 80,
-    //         left: 80
-    //       },
-    //     },
-    //   ]
-    // }
   ],
   currentNetwork: 0,
   dragElement: {},
@@ -372,7 +56,42 @@ const getters = {
       }
     });
     return selectedIndex;
-  }
+  },
+  API_dataCloseServer(getters) {
+    return {
+      reciever: getters['currentNetwork'].networkName,
+      action: 'Close',
+      value: ''
+    };
+  },
+  API_dataPauseTraining(getters) {
+    return {
+      reciever: getters['currentNetwork'].networkName,
+      action: 'Pause',
+      value: ''
+    };
+  },
+  API_dataStopTraining(getters) {
+    return {
+      reciever: getters['currentNetwork'].networkName,
+      action: 'Stop',
+      value: ''
+    };
+  },
+  API_dataSkipValidTraining(getters) {
+    return {
+      reciever: getters['currentNetwork'].networkName,
+      action: 'SkipToValidation',
+      value: ''
+    }
+  },
+  API_dataGetStatus(getters) {
+    return {
+      reciever: getters['currentNetwork'].networkName,
+      action: "getStatus",
+      value: ""
+    };
+  },
 };
 
 const mutations = {

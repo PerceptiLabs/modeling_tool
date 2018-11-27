@@ -22,8 +22,7 @@
 </template>
 
 <script>
-  import ChartLine    from "@/components/charts/chart-line";
-  import ChartBar     from "@/components/charts/chart-bar";
+  import ChartLine    from "@/components/charts/chart-lineBar";
   import ChartScatter from "@/components/charts/chart-scatter";
 
   import dataLine  from "@/components/charts/line.js";
@@ -31,7 +30,7 @@
   import dataS  from "@/components/charts/scatter.js";
   export default {
     name: "ViewBoxLearnClassDbscans",
-    components: {ChartLine, ChartBar, ChartScatter},
+    components: {ChartLine, ChartScatter},
     data() {
       return {
         optionS: dataS,

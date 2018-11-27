@@ -33,9 +33,9 @@ export default {
       default: ''
     },
     chartData: {
-      type: Object,
+      type: Array,
       default: function() {
-        return {}
+        return null
       }
     },
   },
@@ -48,17 +48,21 @@ export default {
   },
   computed: {
     chartModel() {
-      console.log(this.chartData);
       let model = {
         tooltip: {},
-        xAxis: {
-          // data: ['Geek', 'Potato', 'Cool', 'Cat', 'Dog'],
-        },
         yAxis: {},
+        xAxis: {},
         series: []
       };
-      model.series.push(this.chartData);
-      console.log(model);
+      if(this.chartData !== null) {
+        model.series = this.chartData;
+        let yLength = model.series[0].data.length;
+        model.xAxis.data = [];
+        for (var i = 0; i < yLength; i++) {
+          model.xAxis.data.push(i);
+        }
+      }
+      //console.log(model);
       return model
     }
   },
@@ -88,6 +92,10 @@ export default {
     toggleFullView() {
       this.fullView = !this.fullView
     }
+  },
+  beforeDestroy() {
+    //console.log('Destroy chart');
+    this.$refs.chart.destroy();
   }
 }
 </script>

@@ -8,7 +8,7 @@
 </template>
 
 <script>
-  import ChartLine from "@/components/charts/chart-line";
+  import ChartLine from "@/components/charts/chart-lineBar";
   import dataLine  from "@/components/charts/line.js";
   export default {
     name: "ViewBoxMathSplit",

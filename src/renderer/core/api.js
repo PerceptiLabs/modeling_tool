@@ -108,7 +108,7 @@ class Client {
         firstByte = Math.floor(headerByteLength / 256);
         secondByte = headerByteLength % 256;
       }
-      console.log(dataJSON);
+      //console.log(dataJSON);
       const messageByte = [
         firstByte, secondByte,
         ...headerByte,

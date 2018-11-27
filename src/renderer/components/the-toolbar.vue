@@ -87,10 +87,11 @@
         span.big-text Version:
           span.text-error  {{ versionApi }}
       div
+        p Core status: {{ coreStatus }}
         button.btn.btn--primary(type="button" @click="TEST_checkStatus") check status
         button.btn.btn--primary(type="button" @click="TEST_stop") stop
         button.btn.btn--primary(type="button" @click="TEST_close") close CoreProcess
-        button.btn.btn--primary(type="button" @click="TEST_getStatistics") getStatistics
+
 
 </template>
 
@@ -180,6 +181,9 @@ export default {
     },
     currentGlobalNet() {
       return this.$store.getters['mod_workspace/currentNetwork']
+    },
+    coreStatus() {
+      return this.$store.state.mod_api.serverStatus;
     }
   },
   methods: {

@@ -1,132 +1,34 @@
 import requestApi  from "@/core/api.js";
-const net = require('net');
-// run server core
-var exec = require('child_process').execFile;
 
-var runServer = function () {
-  exec('core_local/app-server.exe', function (err, data) {
+const net = require('net');
+const exec = require('child_process').execFile;
+
+function runServer() {
+  exec('core_local/app-server.exe', (err, data)=> {
     console.log('err exe', err);
     console.log('data exe', data);
   });
-};
-//runServer();
+}
+runServer();
+
 //var clientSocket = new net.Socket();
 
-var sendData =  {
-    reciever: "Network1",
-    action: "Start",
-    value: {
-      "Hyperparameters" : {
-        "Epochs":"1",
-        "Batch_size":"32",
-        "Data_partition": {
-          "Training":"0.7",
-          "Validation":"0.2",
-          "Test":"0.1"
-        },
-        "Dropout_rate":"0.5",
-        "Shuffle_data": true,
-        "Save_model_every":"10",
-        isEmpty: true,
-      },
-      "Layers" : {
-        "1": {
-          "Name":"Data_1",
-          "Type":"Data",
-          "Properties": {
-            "Type":"Data",
-            "accessProperties":{
-              "Type":"Data"
-            }
-          },
-          "backward_connections":[],
-          "forward_connections":["2","3"]
-        },
-        "2": {
-          "Name":"FC_1",
-          "Type":"FC",
-          "Properties": {
-            "Neurons":"10",
-            "Activation_function":"Sigmoid",
-            "Dropout": false,
-          },
-          "backward_connections":["1"],
-          "forward_connections":["4"]
-        },
-        "3": {
-          "Name":"FC_2",
-          "Type":"FC",
-          "Properties": {
-            "Neurons":"10",
-            "Activation_function":"Sigmoid",
-            "Dropout": false,
-          },
-          "backward_connections":["1"],
-          "forward_connections":["4"]
-        },
-        "4": {
-          "Name":"Merge_1",
-          "Type":"Merge",
-          "Properties": {
-            "Type":"Add",
-          },
-          "backward_connections":["2","3"],
-          "forward_connections":["7"]
-        },
-        "5": {
-          "Name":"Data_2",
-          "Type":"Data",
-          "Properties": {
-            "Type":"Data",
-            "accessProperties":{
-              "Type":"Labels"
-            }
-          },
-          "backward_connections":[],
-          "forward_connections":["6"]
-        },
-        "6": {
-          "Name":"OneHot_1",
-          "Type":"OneHot",
-          "Properties":{
-            'N_class':'10',
-          },
-          "backward_connections":["5"],
-          "forward_connections":["7"]
-        },
-        "7": {
-          "Name":"Train_1",
-          "Type":"Train",
-          "Properties": {
-            'N_class':'10',
-            "Loss":"Cross_entropy",
-            "Learning_rate":"0.01",
-            "Training_iters":"20000",
-            "Optimizer":"SGD",
-          },
-          "update_frequency":"1",
-          "backward_connections":["4","6"],
-          "forward_connections":[]
-        }
-      }
-    }
-};
 
 let data2 = {
   reciever: "Network",
   action: "Start",
   value: {
     "Hyperparameters": {
-      "Epochs": "10",
+      "Epochs": "20",
       "Batch_size": "32",
       "Data_partition": {
         "Training": "70",
         "Validation": "20",
-        "Test": "10"
+        "Test": "20"
       },
       "Dropout_rate": "0.5",
       "Shuffle_data": true,
-      "Save_model_every": "10"
+      "Save_model_every": "20"
     },
     "Layers": {
       "1": {
@@ -193,69 +95,13 @@ let data2 = {
   }
 }
 
-let data3 = {
-  reciever: "Network",
-  action: "Start",
-  value: {
-    "Hyperparameters": {
-      "isEmpty": false,
-      "Epochs": "1",
-      "Batch_size": "32",
-      "Data_partition": {"Training": "70", "Validation": "20", "Test": "10"},
-      "Dropout_rate": "0.5",
-      "Shuffle_data": true,
-      "Save_model_every": "1"
-    }, "Layers": {
-      "66050185": {
-        "Name": "OneHot_1",
-        "Type": "OneHot",
-        "Properties": {"N_class": "10"},
-        "backward_connections": ["6149184500000001"],
-        "forward_connections": ["7069227500000001"]
-      },
-      "68600085": {
-        "Name": "FullyConnected",
-        "Type": "FC",
-        "Properties": {"Neurons": "10", "Activation_function": "Sigmoid", "Dropout": false},
-        "backward_connections": ["62953770000000000"],
-        "forward_connections": ["7069227500000001"]
-      },
-      "6149184500000001": {
-        "Name": "Data_1",
-        "Type": "Data",
-        "Properties": {"Type": "Data", "accessProperties": {"Type": "Data", "Path": "D:\\\\Quantum\\mnist\\"}},
-        "backward_connections": [],
-        "forward_connections": ["66050185"]
-      },
-      "62953770000000000": {
-        "Name": "Data_1",
-        "Type": "Data",
-        "Properties": {"Type": "Data", "accessProperties": {"Type": "Data", "Path": "D:\\\\Quantum\\mnist\\"}},
-        "backward_connections": [],
-        "forward_connections": ["68600085"]
-      },
-      "7069227500000001": {
-        "Name": "Normal",
-        "Type": "Train",
-        "Properties": {
-          "N_class": "10",
-          "Loss": "Cross_entropy",
-          "Learning_rate": "0.01",
-          "Optimizer": "SGD",
-          "Training_iters": "20000"
-        },
-        "backward_connections": ["66050185", "68600085"],
-        "forward_connections": []
-      }
-    }
-  }
-}
 
 const namespaced = true;
 
 const state = {
   dataAnswer: null,
   serverStatus: null,
+  idTimer: null
 };
 
 const mutations = {
@@ -264,10 +110,19 @@ const mutations = {
   },
   SET_serverStatus(state, value) {
     state.serverStatus = value
+  },
+  SET_idTimer(state, value) {
+    state.serverStatus = value
+  },
+  RESET_idTimer(state, value) {
+    clearInterval(state.idTimer);
+    state.idTimer = value
   }
 };
 
+const getters = {
 
+};
 // Actions(value):
 
 // Start(Json Network)
@@ -275,18 +130,36 @@ const mutations = {
 // Pause(None)
 // SkipToValidation(None)
 // Save(path)
+// Close(None)
 // getStatistics({“layerId”:string,”variable”:string,”innervariable”:string})    (Send “”, empty string, if not use field)
+// getLayerStatistics({“layerId”:string,”variable”:string,”innervariable”:string})    (Send “”, empty string, if not use field)
 // getStatus(None)
 
 
 const actions = {
-  API_getStatus({dispatch, rootGetters}) {
-    var theData = {
-      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
-      action: "getStatus",
-      value: ""
-    };
-    dispatch('API_PUSH_core', theData)
+  API_runServer({state, commit, dispatch}) {
+    let timer;
+    setTimeout(()=>{
+      timer = setInterval(()=>{
+        dispatch('API_getStatus')
+      }, 3000)
+    }, 10000);
+    commit('SET_idTimer', timer)
+  },
+  API_getStatus({commit, dispatch, rootGetters}) {
+    const dataGetStatus = rootGetters['mod_workspace/API_dataGetStatus'];
+    const client = new requestApi();
+
+    client.sendMessage(dataGetStatus)
+      .then((data)=> {
+        let jsnData = JSON.parse(data);
+        //console.log('status', jsnData);
+        commit('SET_serverStatus', jsnData)
+      })
+      .catch((err) =>{
+        console.error(err);
+        commit('RESET_idTimer')
+      });
   },
   API_startTraining({dispatch, rootGetters}) {
     const net = rootGetters['mod_workspace/currentNetwork'];
@@ -330,21 +203,24 @@ const actions = {
     //dispatch('API_PUSH_core', theData)
     dispatch('API_PUSH_core', data2)
   },
-  API_pauseTraining({dispatch, rootGetters}) {
+  API_pauseTraining({commit, dispatch, rootGetters}) {
     var theData = {
       reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
       action: "Pause",
       value: ""
     };
     dispatch('API_PUSH_core', theData)
+    commit('RESET_idTimer')
   },
-  API_stopTraining({dispatch, rootGetters}) {
+  API_stopTraining({commit, state, dispatch, rootGetters}) {
     var theData = {
       reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
       action: "Stop",
       value: ""
     };
-    dispatch('API_PUSH_core', theData)
+
+    dispatch('API_PUSH_core', theData);
+    commit('RESET_idTimer')
   },
   API_skipValidTraining({dispatch, rootGetters}) {
     var theData = {
@@ -380,13 +256,10 @@ const actions = {
     };
     dispatch('API_PUSH_core', theData)
   },
-  API_CLOSE_core({dispatch, rootGetters}) {
-    var theData = {
-      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
-      action: "Close",
-      value: ""
-    };
-    dispatch('API_PUSH_core', theData)
+  API_CLOSE_core({commit, dispatch, rootGetters}) {
+    const theData = rootGetters['mod_workspace/API_dataCloseServer'];
+    dispatch('API_PUSH_core', theData);
+    commit('RESET_idTimer')
   },
   API_PUSH_core({commit}, data) {
     const header = {
@@ -444,6 +317,7 @@ const actions = {
 export default {
   namespaced,
   state,
+  getters,
   mutations,
   actions
 }
