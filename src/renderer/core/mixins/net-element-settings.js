@@ -21,6 +21,7 @@ const netElementSettings = {
       this.tabSelected = i;
     },
     applySettings() {
+      //console.log(this.settings);
       this.$store.dispatch('mod_workspace/a_SET_elementSettings', this.settings)
     }
   }

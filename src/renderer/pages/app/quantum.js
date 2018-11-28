@@ -80,7 +80,7 @@ export default {
       return this.$store.state.mod_events.saveNetwork
     },
     currentNetwork() {
-      return this.$store.getters['mod_workspace/currentNetwork']
+      return this.$store.getters['mod_workspace/GET_currentNetwork']
     },
   },
 

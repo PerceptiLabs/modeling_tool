@@ -10,8 +10,9 @@
           input(type="email" placeholder="Email"
             v-model="userEmail"
             name="Email"
+            v-validate="'required|email'"
             )
-          //v-validate="'required|email'"
+          //
           p.text-error(v-show="errors.has('Email')") {{ errors.first('Email') }}
         .form_holder
           input(type="password" placeholder="Password"
@@ -25,7 +26,6 @@
 
           ) Remember me
         .form_holder
-          //router-link.btn.btn--dark-blue-rev(type="button" :to="{name: 'app'}") log in
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm") log in
         .form_holder
           router-link.btn.btn--link(:to="{name: 'register'}") Register new account
@@ -37,8 +37,10 @@ export default {
   name: 'PageLogin',
   data() {
     return {
-      userEmail: 'string',
-      userPass: 'string'
+      userEmail: 'test@test.com',
+      userPass: '123123'
+      // userEmail: '',
+      // userPass: ''
     }
   },
   computed: {
@@ -52,7 +54,7 @@ export default {
     //   return this.$store.state.mod_events.saveNetwork
     // },
     // currentNetwork() {
-    //   return this.$store.getters['mod_workspace/currentNetwork']
+    //   return this.$store.getters['mod_workspace/GET_currentNetwork']
     // },
   },
   methods: {
@@ -69,12 +71,13 @@ export default {
     },
     loginUser() {
       let queryParams = {
-        "Email": "string",
-        "Password": "string"
+        "Email": this.userEmail,
+        "Password": this.userPass
       };
       this.requestCloudApi('post', 'Customer/Login', queryParams, (result, response) => {
         if (result === 'success') {
-          console.log(response);
+          //console.log(response);
+          this.$store.commit('globalView/SET_userToken', response.headers.authorization);
           this.$router.replace('/app');
         }
       })

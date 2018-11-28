@@ -28,14 +28,14 @@ const state = {
 };
 
 const getters = {
-  currentNetwork(state)  {
+  GET_currentNetwork(state)  {
     return state.workspaceContent[state.currentNetwork];
   },
-  currentNetworkNet: (state, getters) => {
-    return getters.currentNetwork.network;
+  GET_currentNetworkNet: (state, getters) => {
+    return getters.GET_currentNetwork.network;
   },
-  currentNetworkSettings: (state, getters) => {
-    return getters.currentNetwork.networkSettings;
+  GET_currentNetworkSettings: (state, getters) => {
+    return getters.GET_currentNetwork.networkSettings;
   },
   // currentSelectedElement: (state, getters) => {
   //   let selectedElements = getters.currentNetworkNet.filter(function(el) {
@@ -44,9 +44,9 @@ const getters = {
   //   console.log(selectedElements);
   //   return selectedElements;
   // },
-  currentSelectedEl: (state, getters) => {
+  GET_currentSelectedEl: (state, getters) => {
     let selectedIndex = [];
-    getters.currentNetworkNet.forEach(function(el, index, arr) {
+    getters.GET_currentNetworkNet.forEach(function(el, index, arr) {
       if(el.meta.isSelected) {
         selectedIndex.push({
           index,
@@ -57,39 +57,39 @@ const getters = {
     });
     return selectedIndex;
   },
-  API_dataCloseServer(getters) {
+  GET_API_dataCloseServer(state, getters) {
     return {
-      reciever: getters['currentNetwork'].networkName,
+      reciever: getters.GET_currentNetwork.networkName,
       action: 'Close',
       value: ''
     };
   },
-  API_dataPauseTraining(getters) {
+  GET_API_dataPauseTraining(state, getters) {
     return {
-      reciever: getters['currentNetwork'].networkName,
+      reciever: getters.GET_currentNetwork.networkName,
       action: 'Pause',
       value: ''
     };
   },
-  API_dataStopTraining(getters) {
+  GET_API_dataStopTraining(state, getters) {
     return {
-      reciever: getters['currentNetwork'].networkName,
+      reciever: getters.GET_currentNetwork.networkName,
       action: 'Stop',
       value: ''
     };
   },
-  API_dataSkipValidTraining(getters) {
+  GET_API_dataSkipValidTraining(state, getters) {
     return {
-      reciever: getters['currentNetwork'].networkName,
+      reciever: getters.GET_currentNetwork.networkName,
       action: 'SkipToValidation',
       value: ''
     }
   },
-  API_dataGetStatus(getters) {
+  GET_API_dataGetStatus(state, getters) {
     return {
-      reciever: getters['currentNetwork'].networkName,
-      action: "getStatus",
-      value: ""
+      reciever: getters.GET_currentNetwork.networkName,
+      action: 'getStatus', //getIter
+      value: ''
     };
   },
 };
@@ -146,14 +146,14 @@ const mutations = {
     state.arrowType = value.type
   },
   SET_networkStatistics(state, {value, get}) {
-    get.currentNetwork.networkStatistics = value
+    get.GET_currentNetwork.networkStatistics = value
   },
   SET_canTestStatistics(state, {value, get}) {
-    get.currentNetwork.canTestStatistics = value;
+    get.GET_currentNetwork.canTestStatistics = value;
   },
   SET_elementSettings(state, {settings, getters}) {
-    let indexEl = getters.currentSelectedEl[0].index;
-    getters.currentNetworkNet[indexEl].layerSettings = settings;
+    let indexEl = getters.GET_currentSelectedEl[0].index;
+    getters.GET_currentNetworkNet[indexEl].layerSettings = settings; //TODO NEED CHECK
   },
   // ADD_workspace (state) {
   //   let newNetwork = {
@@ -229,7 +229,7 @@ const mutations = {
     if(stopID == startID) {
       return
     }
-    let pathNet = val.getters.currentNetwork;
+    let pathNet = val.getters.GET_currentNetwork;
     let indexStart = pathNet.network.findIndex((element, index, array)=> { return element.layerId == startID;});
     let findArrowType = pathNet.network[indexStart].connectionOut.findIndex((element, index, array)=> { return element.type == state.arrowType;});
     if(findArrowType !== -1) {
@@ -297,8 +297,8 @@ const actions = {
     commit('SET_canTestStatistics', {value, get: getters})
   },
   DELETE_netElement({commit, getters, dispatch}) {
-    let net = getters.currentNetworkNet;
-    let arrSelect = getters.currentSelectedEl;
+    let net = getters.GET_currentNetworkNet;
+    let arrSelect = getters.GET_currentSelectedEl;
     let arrSelectId = arrSelect.map((el)=>{
       return el.el.layerId
     });

@@ -1,27 +1,28 @@
 const baseURL = 'https://quantumnet.azurewebsites.net/api/';
 
-const requestCloudApi = function (method, path, params, callback) {
+const requestCloudApi = function (method, path, dataRequest, callback) {
   //this.$store.dispatch('addCounterRequest');
   //let token = getCookie('benary');
-  let queryParams = {};
-  if(method === "get") {
-    queryParams.params =
-      {
-        ...params,
-        //'store': this.$i18n.locale,
-      };
-
-  }
-  else {
-    queryParams.data = params;
-    //queryParams.params = {'store': this.$i18n.locale}
-  }
+  //let queryParams = {};
+  // if(method === "get") {
+  //   queryParams.params =
+  //     {
+  //       ...params,
+  //       //'store': this.$i18n.locale,
+  //     };
+  //
+  // }
+  // else {
+  //   queryParams.data = params;
+  //   //queryParams.params = {'store': this.$i18n.locale}
+  // }
 
   this.$http({
     method: method,
     url: baseURL + path,
-    //headers: {'Authorization': 'Bearer ' + token},
-    ...queryParams
+    //headers: {'X-Requested-With': 'XMLHttpRequest'},
+    data: dataRequest
+    //...queryParams // data: {request body}, params: {query params}
   })
     .then((response)=>{
       //this.$store.dispatch('remCounterRequest');

@@ -20,7 +20,18 @@
               button.btn.btn--primary(type="button"
                 @click="loadFile"
               ) Load
-
+          .settings-layer_section
+            .form_row
+              .form_label Data type:
+              .form_input
+                base-radio(groupName="group" valueInput="Data" v-model="settings.accessProperties.Type")
+                  span Data
+                base-radio(groupName="group" valueInput="Labels" v-model="settings.accessProperties.Type")
+                  span Labels
+          .settings-layer_foot
+            button.btn.btn--primary(type="button"
+            @click="applySettings"
+            ) Apply
       .popup_body(
           :class="{'active': tabSelected == 1}"
         )

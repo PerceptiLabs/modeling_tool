@@ -6,6 +6,7 @@ const state = {
   appMode: 'edit',  //'training', 'training-pause', 'training-done', 'addArrow'
   userMode: 'advanced', //simple
   statisticsIsOpen: false,
+  userToken: '',
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,
@@ -37,8 +38,11 @@ const mutations = {
     state.globalPopup.showCoreSideSettings = value
   },
   SET_infoPopup(state, value) {
-  state.globalPopup.showInfoPopup = value
-},
+    state.globalPopup.showInfoPopup = value
+  },
+  SET_userToken (state, value) {
+    state.userToken = value
+  },
   HIDE_allGlobalPopups (state) {
     for (var popup in state.globalPopup) {
       state.globalPopup[popup] = false

@@ -82,6 +82,7 @@ class Client {
   }
 
   sendMessage(message) {
+    console.log(message);
     var client = this;
     const header = {
       "byteorder": 'little',
@@ -108,7 +109,6 @@ class Client {
         firstByte = Math.floor(headerByteLength / 256);
         secondByte = headerByteLength % 256;
       }
-      //console.log(dataJSON);
       const messageByte = [
         firstByte, secondByte,
         ...headerByte,
@@ -121,6 +121,8 @@ class Client {
 
       client.socket.on('data', (data) => {
         let dataString = data.toString();
+        console.log(data);
+        //console.log(dataString);
         let clearData = dataString.slice(dataString.indexOf('}{"result": ') + 12, dataString.length-1);
         resolve(clearData);
         if (data.toString().endsWith('exit')) {

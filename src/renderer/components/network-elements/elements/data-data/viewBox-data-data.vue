@@ -24,11 +24,11 @@
     },
     computed: {
       elementID() {
-        let viewBoxEl = this.$store.getters['mod_workspace/currentSelectedEl'].find((element)=>element.el.layerType !== 'Training');
+        let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType !== 'Training');
         return viewBoxEl.el.layerId
       },
       currentNetworkName() {
-        return this.$store.getters['mod_workspace/currentNetwork'].networkName
+        return this.$store.getters['mod_workspace/GET_currentNetwork'].networkName
       }
     },
     methods: {

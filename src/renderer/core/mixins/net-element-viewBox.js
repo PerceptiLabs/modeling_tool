@@ -6,7 +6,7 @@ const viewBoxMixin = {
     }
   },
   mounted() {
-    console.log('mounted');
+    //console.log('mounted');
     this.getStatistics()
   },
   beforeDestroy() {

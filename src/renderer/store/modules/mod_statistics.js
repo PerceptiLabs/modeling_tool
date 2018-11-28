@@ -40,7 +40,7 @@ const actions = {
       statistics: null,
       viewBox: null
     };
-    let net = rootGetters['mod_workspace/currentNetworkNet'];
+    let net = rootGetters['mod_workspace/GET_currentNetworkNet'];
     net.forEach(function(item, i, arr) {
       if(elArr.statistics !== null && elArr.viewBox !== null) {
         return

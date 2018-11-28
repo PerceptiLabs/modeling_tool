@@ -9,7 +9,7 @@ function runServer() {
     console.log('data exe', data);
   });
 }
-runServer();
+//runServer();
 
 //var clientSocket = new net.Socket();
 
@@ -139,15 +139,15 @@ const getters = {
 const actions = {
   API_runServer({state, commit, dispatch}) {
     let timer;
-    setTimeout(()=>{
-      timer = setInterval(()=>{
-        dispatch('API_getStatus')
-      }, 3000)
-    }, 10000);
+    // setTimeout(()=>{
+    //   timer = setInterval(()=>{
+    //     dispatch('API_getStatus')
+    //   }, 3000)
+    // }, 10000);
     commit('SET_idTimer', timer)
   },
   API_getStatus({commit, dispatch, rootGetters}) {
-    const dataGetStatus = rootGetters['mod_workspace/API_dataGetStatus'];
+    const dataGetStatus = rootGetters['mod_workspace/GET_API_dataGetStatus'];
     const client = new requestApi();
 
     client.sendMessage(dataGetStatus)
@@ -162,7 +162,7 @@ const actions = {
       });
   },
   API_startTraining({dispatch, rootGetters}) {
-    const net = rootGetters['mod_workspace/currentNetwork'];
+    const net = rootGetters['mod_workspace/GET_currentNetwork'];
     let message = {
       Hyperparameters: net.networkSettings,
       Layers: {}
@@ -199,13 +199,13 @@ const actions = {
       action: "Start",
       value: message
     };
-    //console.log(theData);
+    console.log(theData);
     //dispatch('API_PUSH_core', theData)
     dispatch('API_PUSH_core', data2)
   },
   API_pauseTraining({commit, dispatch, rootGetters}) {
     var theData = {
-      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
       action: "Pause",
       value: ""
     };
@@ -214,7 +214,7 @@ const actions = {
   },
   API_stopTraining({commit, state, dispatch, rootGetters}) {
     var theData = {
-      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
       action: "Stop",
       value: ""
     };
@@ -224,7 +224,7 @@ const actions = {
   },
   API_skipValidTraining({dispatch, rootGetters}) {
     var theData = {
-      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
       action: "SkipToValidation",
       value: ""
     };
@@ -241,7 +241,7 @@ const actions = {
     //   }
     // };
     var theData = {
-      reciever: rootGetters['mod_workspace/currentNetwork'].networkName,
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
       action: "getLayerStatistics",//getStatistics
       value: {
         layerId:"2",
@@ -257,7 +257,7 @@ const actions = {
     dispatch('API_PUSH_core', theData)
   },
   API_CLOSE_core({commit, dispatch, rootGetters}) {
-    const theData = rootGetters['mod_workspace/API_dataCloseServer'];
+    const theData = rootGetters['mod_workspace/GET_API_dataCloseServer'];
     dispatch('API_PUSH_core', theData);
     commit('RESET_idTimer')
   },

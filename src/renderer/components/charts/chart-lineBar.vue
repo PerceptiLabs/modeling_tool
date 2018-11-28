@@ -51,7 +51,9 @@ export default {
       let model = {
         tooltip: {},
         yAxis: {},
-        xAxis: {},
+        xAxis: {
+          //boundaryGap: true,
+        },
         series: []
       };
       if(this.chartData !== null) {

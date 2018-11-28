@@ -123,7 +123,7 @@ export default {
       return JSON.stringify(this.workspace)
     },
     workspace() {
-      return this.$store.getters['mod_workspace/currentNetwork']
+      return this.$store.getters['mod_workspace/GET_currentNetwork']
     },
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork

@@ -15,31 +15,25 @@
       .statistics-box_row
         .statistics-box_col
           chart-line(
-          :chartData="optionLine1"
-          )
-          chart-line(
-          chartLabel="Accuracy over all epochs"
-          :chartData="optionLine1"
-          )
-          chart-line(
-          :chartData="optionLine1"
-          )
-        .statistics-box_col
-          //chart-heatmap(
-            /:chartData="optionHeat"
+            :chartData="prediction.Input"
             )
+      .statistics-box_row
         .statistics-box_col
-          chart-d3(
-          :chartData="option3d"
+          chart-line(
+          :chartData="prediction.PvG"
           )
-    //.statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
+        .statistics-box_col
+          chart-line(
+          :chartData="prediction.AveragePvG"
+          )
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
       chart-line(
-      chartLabel="Accuracy during one epoch"
-      /:chartData="optionLine1"
+        chartLabel="Accuracy during one epoch"
+        :chartData="accuracy.Current"
       )
       chart-line(
-      chartLabel="Accuracy over all epochs"
-      /:chartData="optionLine1"
+        chartLabel="Accuracy over all epochs"
+        :chartData="accuracy.Total"
       )
     //.statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-line(
@@ -90,10 +84,15 @@
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
         //tabset: ['Prediction', 'Accuracy', 'Loss'],
-        optionLine1: null,
-        option3d: data3d,
-        optionHeat: dataHeat,
-        optionBar: dataBar,
+        prediction: {
+          Input: null,
+          PvG: null,
+          AveragePvG: null
+        },
+        accuracy: {
+          Current: null,
+          Total: null
+        }
       }
     },
     methods: {
@@ -118,16 +117,16 @@
               //layerId: this.elementID.toString(),
               layerId:'5',
               layerType:'Train',//FC
-              view:'Predicition' //Output, Weights&Bias
+              view:'Prediction' //Output, Weights&Bias
             }
           };
-          console.log(theData);
+          //console.log(theData);
           const client = new requestApi();
           client.sendMessage(theData)
             .then((data)=> {
               let jsnData = JSON.parse(data);
               console.log(jsnData);
-              //this.optionLine1 = jsnData.Output
+              this.prediction = jsnData
             })
             .catch((err) =>{
               console.error(err);
@@ -148,13 +147,16 @@
               view:'Accuracy' //Output, Weights&Bias
             }
           };
-          console.log(theData);
+          //console.log(theData);
           const client = new requestApi();
           client.sendMessage(theData)
             .then((data)=> {
-              let jsnData = JSON.parse(data);
-              console.log(jsnData);
-              //this.optionLine1 = jsnData.Output
+              //console.log(data);
+              //let jsnData = JSON.parse(data);
+
+              //console.log(jsnData);
+              console.log(data);
+              this.accuracy = data
             })
             .catch((err) =>{
               console.error(err);

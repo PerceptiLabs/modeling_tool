@@ -56,7 +56,8 @@ if (process.env.NODE_ENV !== 'development') {
 
 
 const winURL = process.env.NODE_ENV === 'development'
-  ? `http://localhost:9080`
+  //? `http://localhost:9080`
+  ? `http://127.0.0.1:9080`
   : `file://${__dirname}/index.html`;
 
 function createWindow () {
@@ -70,11 +71,14 @@ function createWindow () {
     minWidth: 1024,
     backgroundColor: '#383F50',
     useContentSize: true,
-
-    plugins: true,
-    //webSecurity: true,
+    webPreferences: {
+      //contextIsolation: true,
+      //nodeIntegration: false,
+      webSecurity: false,
+      //plugins: true,
+    }
   });
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   const menuCustom = Menu.buildFromTemplate(mainMenu);

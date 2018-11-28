@@ -45,7 +45,7 @@ export default {
       return this.$store.state.globalView.globalPopup.showNetResult
     },
     hasStatistics() {
-      return this.$store.getters['mod_workspace/currentNetwork'].networkStatistics;
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkStatistics;
     },
     showCoreSide() {
       return this.$store.state.globalView.globalPopup.showCoreSideSettings
@@ -54,7 +54,7 @@ export default {
       return this.$store.state.globalView.appMode
     },
     // currentSelectedIndex() {
-    //   return this.$store.getters['mod_workspace/currentSelectedIndex']
+    //   return this.$store.getters['mod_workspace/GET_currentSelectedIndex']
     // },
     statisticsIsOpen() {
       return this.$store.state.globalView.statisticsIsOpen
