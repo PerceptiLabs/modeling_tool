@@ -1,18 +1,18 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col
-      chart-line(
-      chartLabel="Accuracy during one epoch"
-      :chartData="optionLine1"
-      )
+      //chart-base(
+        chartLabel="Accuracy during one epoch"
+        /:chartData="optionLine1"
+        )
 </template>
 
 <script>
-  import ChartLine from "@/components/charts/chart-lineBar";
-  import dataLine  from "@/components/charts/line.js";
+  // import ChartLine from "@/components/charts/chart-base";
+  // import dataLine  from "@/components/charts/line.js";
   export default {
     name: "ViewBoxProcessGrayscale",
-    components: {ChartLine},
+    //components: {ChartLine},
     data() {
       return {
         optionLine1: dataLine,

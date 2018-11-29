@@ -16,7 +16,7 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              input.form_input(type="text" v-model="loadPath")
+              input.form_input(type="text" v-model="settings.accessProperties.Path")
               button.btn.btn--primary(type="button"
                 @click="loadFile"
               ) Load
@@ -52,25 +52,26 @@
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
-        loadPath: 'No uploaded file',
+        //loadPath: 'No uploaded file',
         settings: {
-          Type: "Data",
+          Type: 'Data',
           accessProperties: {
-            Type: "Data",
-            Path: 'D:\\\\Quantum\\mnist\\',
+            Type: 'Data',
+            Path: 'No uploaded file',
           }
         }
       }
     },
     watch: {
-      loadPath(newPath) {
-        this.settings.accessProperties.Path = newPath;
-        //this.applySettings();
-      }
+      // loadPath(newPath) {
+      //   this.settings.accessProperties.Path = newPath;
+      //   //this.applySettings();
+      // }
     },
     methods: {
       openLoadDialog,
       loadFile() {
+        console.log('loadFile');
         let opt = {
           title:"Load file in Data element",
           filters: [
@@ -84,7 +85,8 @@
         this.openLoadDialog(this.saveLoadFile, opt)
       },
       saveLoadFile(pathArr) {
-        this.loadPath = pathArr[0];
+        console.log('saveLoadFile');
+        this.settings.accessProperties.Path = pathArr[0];
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/a_SET_elementSettings', this.settings)
       },

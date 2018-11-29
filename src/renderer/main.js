@@ -1,8 +1,11 @@
+'use strict';
+
 import Vue from 'vue'
 //- Global plugins
 import axios from 'axios'
 import Vuebar from 'vuebar'
 import Tooltip from 'vue-directive-tooltip';
+
 
 import App from './App'
 import router from './router'

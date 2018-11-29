@@ -92,15 +92,15 @@ export default {
           {name: 'Text', extensions: ['json']},
         ]
       };
-      this.openLoadDialog(this.dialogLoadFile, opt)
+      this.openLoadDialog(this.loadNetwork, opt)
     },
     eventSaveNetwork() {
-      this.dialogSaveNetwork()
+      this.saveNetwork()
     }
   },
   methods: {
     openLoadDialog,
-    dialogLoadFile(pathArr) {
+    loadNetwork(pathArr) {
       fs.readFile(pathArr[0],
         (err, data)=> {
         if(data) {
@@ -112,7 +112,7 @@ export default {
         }
       });
     },
-    dialogSaveNetwork() {
+    saveNetwork() {
       const dialog = remote.dialog;
       const network = this.currentNetwork;
       const jsonNet = cloneNet(network);

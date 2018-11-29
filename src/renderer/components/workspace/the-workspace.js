@@ -65,29 +65,9 @@ export default {
 
   },
   watch: {
-    // hasStatistics(newVal) {
-    //   if(newVal) {
-    //     this.openStatistics()
-    //   }
-    // }
+
   },
   methods: {
-    // addLayer(e) {
-    //   console.log('addLayer')
-    //   let layer = {
-    //     layerId: e.timeStamp,
-    //     layerName: e.target.dataset.layer,
-    //     layerChild: null,
-    //     componentName: e.target.dataset.component,
-    //     meta: {
-    //       isVisible: true,
-    //       isDraggable: true,
-    //       top: e.offsetY - e.target.clientHeight/2,
-    //       left: e.offsetX - e.target.clientWidth/2
-    //     }
-    //   }
-    //   this.network.push(layer);
-    // },
     deleteTabNetwork(index) {
       this.$store.commit('mod_workspace/DELETE_workspaceTab', index)
     },

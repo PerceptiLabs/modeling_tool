@@ -9,57 +9,58 @@
         type="button"
         @click="setTab(tab)"
         :class="{'active': currentTab === tab}"
+        :disabled="i > 1"
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output'")
-      chart-line(
+      chart-base(
         chartLabel="Accuracy during one epoch"
-        :chartData="optionLine1"
+        :chartData="chartOutput"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias'")
-      chart-line(
+      chart-base(
         chartLabel="Accuracy during one epoch"
-        :chartData="optionLine2"
+        :chartData="chartWnB.Weights"
       )
-      chart-line(
+      chart-base(
         chartLabel="Accuracy over all epochs"
-        :chartData="optionLine3"
+        :chartData="chartWnB.Bias"
       )
     //.statistics-box_main.statistics-box_col(v-show="currentTab === 'Gradients'")
       .statistics-box_row
-        chart-line(
+        chart-base(
         chartLabel="Accuracy during one epoch"
         /:chartData="optionLine4"
         )
-        chart-line(
+        chart-base(
         chartLabel="Accuracy over all epochs"
         /:chartData="optionLine5"
         )
       .statistics-box_row
-        chart-line(
+        chart-base(
         chartLabel="Accuracy over all epochs"
         /:chartData="optionLine6"
         )
 </template>
 
 <script>
-  import ChartLine  from "@/components/charts/chart-lineBar.vue";
-  import requestApi from "@/core/api.js";
+  import ChartBase  from "@/components/charts/chart-base.vue";
+
+  import requestApi   from "@/core/api.js";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
 
   export default {
     name: "ViewBoxLearnDeepConnect",
-    components: {ChartLine},
+    components: {ChartBase},
     mixins: [viewBoxMixin],
     data() {
       return {
         currentTab: 'Output',
         tabset: ['Output', 'Weights & Bias', 'Gradients'],
-        optionLine1: null,
-        optionLine2: null,
-        optionLine3: null,
-        // optionLine4: dataLine,
-        // optionLine5: dataLine,
-        // optionLine6: dataLine,
+        chartOutput: null,
+        chartWnB: {
+          Weights: null,
+          Bias: null
+        }
       }
     },
     methods: {
@@ -76,55 +77,31 @@
       },
       getStatistics() {
         this.idTimer = setInterval(()=>{
-          //console.log('getOutStatistics');
-          let theData = {
-            reciever: 'Network',
-            action: 'getLayerStatistics',
-            value: {
-              //layerId: this.elementID.toString(),
-              layerId:'2',
-              layerType:'FC',//FC
-              view:'Output' //Output, Weights&Bias
-            }
-          };
-          //console.log(this.elementID.toString());
+          let theData = this.returnDataRequest(this.boxElementID, 'FC', 'Output');
           const client = new requestApi();
           client.sendMessage(theData)
             .then((data)=> {
-              let jsnData = JSON.parse(data);
-              this.optionLine1 = jsnData.Output
+              this.chartOutput = data.Output
             })
             .catch((err) =>{
               console.error(err);
               clearInterval(this.idTimer);
             });
-        }, 1000)
+        }, this.timeInterval)
       },
       getWeightsStatistics() {
         this.idTimer = setInterval(()=>{
-          //console.log('getWeightsStatistics');
           const client = new requestApi();
-          const theData = {
-            reciever: 'Network',
-            action: "getLayerStatistics",
-            value: {
-              //layerId: this.elementID.toString(),
-              layerId:"2",
-              layerType:"FC",//FC
-              view:"Weights&Bias" //Output, Weights&Bias
-            }
-          };
+          let theData = this.returnDataRequest(this.boxElementID, 'FC', 'Weights&Bias');
           client.sendMessage(theData)
             .then((data)=> {
-              let jsnData = JSON.parse(data);
-              this.optionLine2 = jsnData.Weights;
-              this.optionLine3 = jsnData.Bias;
+              this.chartWnB = data;
             })
             .catch((err) =>{
               console.error(err);
               clearInterval(this.idTimer);
             });
-        }, 1000)
+        }, this.timeInterval)
       }
     }
   }

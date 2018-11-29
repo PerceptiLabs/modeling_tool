@@ -13,41 +13,41 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row
         .statistics-box_col
-          chart-bar(
+          chart-base(
           :chartData="optionBar"
           )
         .statistics-box_col
-          chart-line(
+          chart-base(
           chartLabel="Reward during one epoch"
           :chartData="optionLine1"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Reward'")
-      chart-line(
+      chart-base(
       chartLabel="Reward during one epoch"
       :chartData="optionLine1"
       )
-      chart-line(
+      chart-base(
       chartLabel="Reward over all"
       :chartData="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
-      chart-line(
+      chart-base(
       chartLabel="Loss during one epoch"
       :chartData="optionLine1"
       )
-      chart-line(
+      chart-base(
       chartLabel="Loss over all"
       :chartData="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Steps'")
-      chart-line(
+      chart-base(
       chartLabel="Steps per epoch"
       :chartData="optionLine1"
       )
 </template>
 
 <script>
-  import ChartLine    from "@/components/charts/chart-lineBar";
+  import ChartBase    from "@/components/charts/chart-base.vue";
   import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
   import ChartD3      from "@/components/charts/chart-3d.vue";
   import data3d       from "@/components/charts/3d.js";
@@ -57,7 +57,7 @@
 
   export default {
     name: "ViewBoxTrainReinforce",
-    components: {ChartLine, ChartHeatmap, ChartD3},
+    components: {ChartBase, ChartHeatmap, ChartD3},
     data() {
       return {
         currentTab: 'Prediction',

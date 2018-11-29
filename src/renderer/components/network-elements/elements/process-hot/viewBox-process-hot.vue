@@ -1,45 +1,45 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col
-      chart-line(
+      chart-base(
         chartLabel="Accuracy during one epoch"
-        :chartData="optionLine"
+        :chartData="Output"
         )
 </template>
 
 <script>
-  import ChartLine    from "@/components/charts/chart-lineBar.vue";
+  import ChartBase    from "@/components/charts/chart-base.vue";
   import requestApi   from "@/core/api.js";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
 
   export default {
     name: "ViewBoxProcessHot",
-    components: {ChartLine},
+    components: {ChartBase},
     mixins: [viewBoxMixin],
+    mounted() {
+
+    },
     data() {
       return {
-        optionLine: null,
+        Output: null
       }
+    },
+    computed: {
+      // chartOutData() {
+      //   console.log('chartOutData');
+      //   if (this.$options.Output !== undefined) {
+      //     return this.$options.Output
+      //   } else return null
+      // }
     },
     methods: {
       getStatistics() {
         this.idTimer = setInterval(()=>{
-          //console.log('ProcessHot Statistics');
-          let theData = {
-            reciever: 'Network',
-            action: 'getLayerStatistics',
-            value: {
-              //layerId: this.elementID.toString(),
-              layerId:'4',
-              layerType:'OneHot',
-              view:''
-            }
-          };
+          let theData = this.returnDataRequest(this.boxElementID, 'OneHot', '');
           const client = new requestApi();
           client.sendMessage(theData)
             .then((data)=> {
-              let jsnData = JSON.parse(data);
-              this.optionLine = jsnData.Output
+              this.Output = data.Output;
             })
             .catch((err) =>{
               console.error(err);

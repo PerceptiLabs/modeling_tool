@@ -1,59 +1,54 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col
-      //chart-line(
+      chart-base(
         chartLabel="Accuracy during one epoch"
-        /:chartData="optionLine1"
+        :chartData="Data"
         )
 </template>
 
 <script>
-  import ChartLine    from "@/components/charts/chart-lineBar";
+  import ChartBase    from "@/components/charts/chart-base";
   import dataLine     from "@/components/charts/line.js";
   import requestApi   from "@/core/api.js";
+  import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxDataData",
-    components: {ChartLine},
+    components: {ChartBase},
+    mixins: [viewBoxMixin],
     mounted() {
       //this.getStatistics()
     },
     data() {
       return {
-        optionLine1: dataLine,
+        Data: null
       }
     },
     computed: {
-      elementID() {
-        let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType !== 'Training');
-        return viewBoxEl.el.layerId
-      },
-      currentNetworkName() {
-        return this.$store.getters['mod_workspace/GET_currentNetwork'].networkName
-      }
+      // dataLine() {
+      //   if(this.$option.line) {
+      //     return this.$option.line
+      //   }
+      //   else return {
+      //     Input: null,
+      //   }
+      // },
     },
     methods: {
       getStatistics() {
-        var theData = {
-          reciever: this.currentNetworkName,
-          action: "getLayerStatistics",
-          value: {
-            layerId: this.elementID.toString(),
-            //layerId: "1",
-            layerType: "Data",//FC
-            view:"" //Output, Weights&Bias
-            // layerId: "2",
-            // layerType: "FC",//
-            // view:"Output" //, Weights&Bias
-          }
-        };
-        setInterval(()=>{
-          console.log(this.elementID.toString());
+        this.idTimer = setInterval(()=>{
+          let theData = this.returnDataRequest(this.boxElementID, 'Data', '');
           const client = new requestApi();
           client.sendMessage(theData)
-            .then((data)=> { console.log('promis', data.toString())})
-            .catch((err) =>{ console.error(err); })
-        }, 2000)
-      }
+            .then((data)=> {
+              this.Data = data.Data
+            })
+            .catch((err) =>{
+              console.error(err);
+              clearInterval(this.idTimer);
+            });
+        }, this.timeInterval)
+      },
     }
   }
 </script>

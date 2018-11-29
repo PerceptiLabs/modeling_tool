@@ -174,9 +174,9 @@ export default {
     appMode() {
       return this.$store.state.globalView.appMode
     },
-    networkSettings() {
-      return this.$store.getters['mod_workspace/GET_currentNetworkSettings']
-    },
+    // networkSettings() {
+    //   return this.$store.getters['mod_workspace/GET_currentNetworkSettings']
+    // },
     currentNet() {
       return this.$store.getters['mod_workspace/GET_currentNetworkNet']
     },
@@ -189,16 +189,19 @@ export default {
   },
   methods: {
     trainStart() {
-      // let valid = this.validateNetwork();
-      // if (!valid) {
-      //   return
+      let valid = this.validateNetwork();
+      if (!valid) {
+        return
+      }
+      this.$store.commit('globalView/SET_showGlobalSet', true);
+
+      //if show GlobalSet once
+      // if(this.networkSettings.isEmpty) {
+      //   this.$store.commit('globalView/SET_showGlobalSet', true);
       // }
-      if(this.networkSettings.isEmpty) {
-        this.$store.commit('globalView/SET_showGlobalSet', true);
-      }
-      else {
-        this.$store.commit('globalView/SET_showCoreSideSettings', true);
-      }
+      // else {
+      //   this.$store.commit('globalView/SET_showCoreSideSettings', true);
+      // }
     },
     trainPause() {
       this.$store.dispatch('mod_api/API_pauseTraining');

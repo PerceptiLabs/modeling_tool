@@ -35,6 +35,11 @@ export default {
       }
     },
   },
+  provide () {
+    return {
+      hideAllWindow: this.hideAllWindow
+    }
+  },
   data() {
     return {
       contextIsOpen: false,

@@ -1,18 +1,18 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col
-      chart-line(
+      chart-base(
       chartLabel="Accuracy during one epoch"
       :chartData="optionLine1"
       )
 </template>
 
 <script>
-  import ChartLine from "@/components/charts/chart-lineBar";
+  import ChartBase from "@/components/charts/chart-base";
   import dataLine  from "@/components/charts/line.js";
   export default {
     name: "ViewBoxMathSplit",
-    components: {ChartLine},
+    components: {ChartBase},
     data() {
       return {
         optionLine1: dataLine,

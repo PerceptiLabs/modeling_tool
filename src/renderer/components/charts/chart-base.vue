@@ -22,7 +22,7 @@
 <script>
 
 export default {
-  name: "ChartLine",
+  name: "ChartBase",
   props: {
     headerOff: {
       type: Boolean,
@@ -64,7 +64,6 @@ export default {
           model.xAxis.data.push(i);
         }
       }
-      //console.log(model);
       return model
     }
   },

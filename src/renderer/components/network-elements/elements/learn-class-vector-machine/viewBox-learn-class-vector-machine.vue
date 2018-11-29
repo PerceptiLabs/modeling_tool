@@ -2,35 +2,34 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       .statistics-box_row
-        chart-line(
+        chart-base(
         chartLabel="Accuracy during one epoch"
         :chartData="optionS"
         )
-        chart-line(
+        chart-base(
         chartLabel="Accuracy during one epoch"
         :chartData="optionBar3"
         )
       .statistics-box_row
-        chart-line(
+        chart-base(
         chartLabel="Accuracy during one epoch"
         :chartData="optionLine2"
         )
-        chart-line(
+        chart-base(
         chartLabel="Accuracy during one epoch"
         :chartData="optionBar4"
         )
 </template>
 
 <script>
-  import ChartLine    from "@/components/charts/chart-lineBar";
-  import ChartScatter from "@/components/charts/chart-scatter";
+  import ChartBase    from "@/components/charts/chart-base.vue";
 
   import dataLine  from "@/components/charts/line.js";
   import dataBar  from "@/components/charts/bar.js";
   import dataS  from "@/components/charts/scatter.js";
   export default {
     name: "ViewBoxLearnClassDbscans",
-    components: {ChartLine, ChartScatter},
+    components: {ChartBase},
     data() {
       return {
         optionS: dataS,

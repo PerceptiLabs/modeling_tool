@@ -1,4 +1,5 @@
 const netElementSettings = {
+  inject: ['hideAllWindow'],
   data() {
     return {
       tabSelected: 0,
@@ -6,15 +7,17 @@ const netElementSettings = {
     }
   },
   mounted() {
-    this.applySettings()
+    if(this.layerSettings !== null) {
+      this.settings = JSON.parse(JSON.stringify(this.layerSettings));
+    }
   },
   computed: {
     userMode() {
       return this.$store.state.globalView.userMode
     },
-    // indexCurrentEl() {
-    //   return this.$store.getters['globalView.getters/currentSelectedEl'].index
-    // }
+    layerSettings() {
+      return this.$store.getters['mod_workspace/GET_currentSelectedEl'][0].el.layerSettings;
+    }
   },
   methods: {
     setTab(i) {
@@ -22,6 +25,7 @@ const netElementSettings = {
     },
     applySettings() {
       //console.log(this.settings);
+      this.hideAllWindow();
       this.$store.dispatch('mod_workspace/a_SET_elementSettings', this.settings)
     }
   }

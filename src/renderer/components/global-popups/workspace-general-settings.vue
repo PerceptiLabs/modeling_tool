@@ -66,7 +66,6 @@ export default {
   data() {
     return {
       settings: {
-        isEmpty: false,
         Epochs: "1",
         Batch_size: "32",
         Data_partition: {
@@ -80,16 +79,18 @@ export default {
       }
     }
   },
+  mounted() {
+    if(this.networkSettings !== null) {
+      this.settings = JSON.parse(JSON.stringify(this.networkSettings));
+    }
+  },
   computed: {
-
+    networkSettings() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkSettings']
+    },
   },
   methods: {
     setGlobalSet() {
-      for (var set in this.settings) {
-        if (this.settings[set] === null) {
-          return
-        }
-      }
       this.$store.commit('mod_workspace/SET_networkSettings', this.settings);
       this.closeGlobalSet();
       this.$store.commit('globalView/SET_showCoreSideSettings', true);

@@ -7,7 +7,7 @@ ul.workspace_tab-list
   @click="setTabNetwork(i)"
   )
     button.btn.btn--icon.tab_close(type="button"
-      v-if="i !== 0"
+      :disabled="workspace.length <= 1"
       @click.stop="deleteTabNetwork(i)"
     )
       i.icon.icon-close

@@ -13,9 +13,7 @@ const state = {
   workspaceContent: [
     {
       networkName: 'Network',
-      networkSettings: {
-        isEmpty: true,
-      },
+      networkSettings: null,
       networkStatistics: false,
       canTestStatistics: false,
       network: [],
@@ -168,12 +166,11 @@ const mutations = {
   // },
   ADD_loadNetwork (state, net) {
     let newNetwork = {};
-    console.log(net);
     if(net === undefined) {
       newNetwork = {
-        networkName: 'Network',
+        networkName: 'New_Network',
         networkSettings: {
-          isEmpty: true,
+          //isEmpty: true,
         },
         emptyTrainingData: true,
         network: []
@@ -191,7 +188,7 @@ const mutations = {
       layerId: generateID(event.timeStamp),
       layerName: event.target.dataset.layer,
       layerType: event.target.dataset.type,
-      layerSettings: {},
+      layerSettings: null,
       componentName: event.target.dataset.component,
       connectionOut: [],
       connectionIn: [],

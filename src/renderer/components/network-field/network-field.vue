@@ -401,7 +401,7 @@ export default {
   @import "../../scss/base";
   $color-arrow: #22DDE5;
   .network-field {
-    overflow: hidden;
+    overflow: auto;
     display: flex;
     flex: 1 1 100%;
     position: relative;

@@ -11,37 +11,37 @@
         :class="{'active': currentTab === tab}"
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-show="currentTab === 'Weights & Output'")
-      chart-line(
+      chart-base(
       chartLabel="Accuracy during one epoch"
       :chartData="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-show="currentTab === 'Bias'")
-      chart-line(
+      chart-base(
       chartLabel="Accuracy over all epochs"
       :chartData="optionLine3"
       )
     .statistics-box_main.statistics-box_col(v-show="currentTab === 'Gradients'")
       .statistics-box_row
-        chart-line(
+        chart-base(
         chartLabel="Accuracy during one epoch"
         :chartData="optionLine4"
         )
-        chart-line(
+        chart-base(
         chartLabel="Accuracy over all epochs"
         :chartData="optionLine5"
         )
-      chart-line(
+      chart-base(
         chartLabel="Accuracy over all epochs"
         :chartData="optionLine6"
       )
 </template>
 
 <script>
-  import ChartLine from "@/components/charts/chart-lineBar";
+  import ChartBase from "@/components/charts/chart-base.vue";
   import dataLine     from "@/components/charts/line.js";
   export default {
     name: "ViewBoxLearnDeepRecurrent",
-    components: {ChartLine},
+    components: {ChartBase},
     data() {
       return {
         currentTab: 'Gradients',

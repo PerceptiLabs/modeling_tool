@@ -7,19 +7,19 @@
     //.pc-chart_box
       span.pc-chart_title.big-text RAM
       .pc-chart_main
-        chart-line.pc-chart_chart(
+        chart-base.pc-chart_chart(
           //:headerOff="true"
           /:chartData="optionRAM")
     //.pc-chart_box
       span.pc-chart_title.big-text CPU
       .pc-chart_main
-        chart-line.pc-chart_chart(
+        chart-base.pc-chart_chart(
         /:headerOff="true"
         /:chartData="optionCPU")
     //.pc-chart_box
       span.pc-chart_title.big-text GPU
       .pc-chart_main
-        chart-line.pc-chart_chart(
+        chart-base.pc-chart_chart(
         /:headerOff="true"
         /:chartData="optionGPU")
 
@@ -27,11 +27,11 @@
 
 <script>
 import SidebarProgress from "./sidebar-progress";
-import ChartLine from "../charts/chart-lineBar";
+import ChartBase from "../charts/chart-base";
 
 export default {
   name: "SidebarTraining",
-  components: {ChartLine, SidebarProgress},
+  components: {ChartBase, SidebarProgress},
   mounted() {
     // this.setRAM();
     // this.setCPU();

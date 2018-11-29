@@ -18,7 +18,6 @@
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   export default {
     name: "TheInfoPopup",
-    mixins: [mixinSet],
     props: {
       infoText: {
         type: [Boolean, String],

@@ -7,9 +7,9 @@
 <script>
 export default {
   name: "SidebarProgress",
-  props: {
-    percent: [Number]
-  },
+  // props: {
+  //   percent: [Number]
+  // },
   data() {
     return {
 
@@ -17,10 +17,19 @@ export default {
   },
   computed: {
     percentData() {
-      let result;
-      this.percent ?  result = this.percent + '%' : result = '';
+      let max = this.$store.getters['mod_workspace/GET_currentNetworkSettings'].Epochs;
+      let current;
+      if(this.$store.state.mod_api.serverStatus === undefined) {
+        current = 0;
+      }
+      else current = this.$store.state.mod_api.serverStatus.Epoch;
+      let result = (current/max) * 100 + '%';
+      // let result;
+      // this.percent ?  result = this.percent + '%' : result = '';
+      // this.$store.
       return result
-    }
+    },
+
   },
   methods: {
 

@@ -13,14 +13,14 @@
     .statistics-box_main(v-if="currentTab === 'Prediction'")
       .statistics-box_row
         .statistics-box_col
-          chart-bar(
+          chart-base(
           :chartData="optionLine1"
           )
-          chart-bar(
+          chart-base(
           chartLabel="Accuracy over all epochs"
           :chartData="optionLine1"
           )
-          chart-bar(
+          chart-base(
           :chartData="optionLine1"
           )
         .statistics-box_col
@@ -32,44 +32,44 @@
           :chartData="option3d"
           )
     .statistics-box_main(v-if="currentTab === 'Accuracy'")
-      chart-line(
+      chart-base(
       chartLabel="Accuracy during one epoch"
       :chartData="optionLine1"
       )
-      chart-line(
+      chart-base(
       chartLabel="Accuracy over all epochs"
       :chartData="optionLine1"
       )
     .statistics-box_main(v-if="currentTab === 'Loss'")
-      chart-line(
+      chart-base(
       chartLabel="Loss during one epoch"
       :chartData="optionLine1"
       )
-      chart-line(
+      chart-base(
       chartLabel="Loss over all epochs"
       :chartData="optionLine1"
       )
     .statistics-box_main(v-if="currentTab === 'F1'")
-      chart-line(
+      chart-base(
       chartLabel="F1 during one epoch"
       :chartData="optionLine1"
       )
-      chart-line(
+      chart-base(
       chartLabel="F1 over all epochs"
       :chartData="optionLine1"
       )
     .statistics-box_main(v-if="currentTab === 'Precision & Recall'")
-      chart-line(
+      chart-base(
       :chartData="optionLine1"
       )
     .statistics-box_main(v-if="currentTab === 'ROC'")
-      chart-line(
+      chart-base(
       :chartData="optionLine1"
       )
 </template>
 
 <script>
-import ChartLine    from "@/components/charts/chart-lineBar";
+import ChartBase    from "@/components/charts/chart-base";
 import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
 import ChartD3      from "@/components/charts/chart-3d.vue";
 import data3d       from "@/components/charts/3d.js";
@@ -79,7 +79,7 @@ import dataLine     from "@/components/charts/line.js";
 
 export default {
   name: "ViewBoxLearnClassVectorMachine",
-  components: {ChartLine, ChartHeatmap, ChartD3},
+  components: {ChartBase, ChartHeatmap, ChartD3},
   data() {
     return {
       currentTab: 'Prediction',
