@@ -3,7 +3,7 @@
     .statistics-box_main.statistics-box_col
       chart-base(
         chartLabel="Accuracy during one epoch"
-        :chartData="Output"
+        :chartData="chartData.Output"
         )
 </template>
 
@@ -21,7 +21,7 @@
     },
     data() {
       return {
-        Output: null
+        //Output: null
       }
     },
     computed: {
@@ -34,18 +34,19 @@
     },
     methods: {
       getStatistics() {
-        this.idTimer = setInterval(()=>{
-          let theData = this.returnDataRequest(this.boxElementID, 'OneHot', '');
-          const client = new requestApi();
-          client.sendMessage(theData)
-            .then((data)=> {
-              this.Output = data.Output;
-            })
-            .catch((err) =>{
-              console.error(err);
-              clearInterval(this.idTimer);
-            });
-        }, this.timeInterval)
+        this.chartRequest(this.boxElementID, 'OneHot', '');
+        // this.idTimer = setInterval(()=>{
+        //   let theData = this.returnDataRequest(this.boxElementID, 'OneHot', '');
+        //   const client = new requestApi();
+        //   client.sendMessage(theData)
+        //     .then((data)=> {
+        //       this.Output = data.Output;
+        //     })
+        //     .catch((err) =>{
+        //       console.error(err);
+        //       clearInterval(this.idTimer);
+        //     });
+        // }, this.timeInterval)
       },
     }
   }

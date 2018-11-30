@@ -1,34 +1,24 @@
 import requestApi  from "@/core/api.js";
 
 const net = require('net');
-const exec = require('child_process').execFile;
-
-function runServer() {
-  exec('core_local/app-server.exe', (err, data)=> {
-    console.log('err exe', err);
-    console.log('data exe', data);
-  });
-}
-//runServer();
-
-//var clientSocket = new net.Socket();
+const exec = require('child_process').spawn;
 
 const namespaced = true;
 
 const state = {
-  //dataAnswer: null,
-  serverStatus: null,
-  idTimer: null
+  serverStatus: {
+    Status: 'Offline' //Created, Training, Validation, Paused
+  },
+};
+
+const getters = {
+  GET_serverStatus(state) {
+    return state.serverStatus.Status;
+  }
 };
 
 const mutations = {
-  // SET_dataAnswer(state, value) {
-  //   state.dataAnswer = value
-  // },
   SET_serverStatus(state, value) {
-    state.serverStatus = value
-  },
-  SET_idTimer(state, value) {
     state.serverStatus = value
   },
   RESET_idTimer(state, value) {
@@ -37,9 +27,6 @@ const mutations = {
   }
 };
 
-const getters = {
-
-};
 // Actions(value):
 
 // Start(Json Network)
@@ -54,15 +41,33 @@ const getters = {
 
 
 const actions = {
-  API_runServer({state, commit, dispatch}) {
-    let timer;
-    // setTimeout(()=>{
-    //   timer = setInterval(()=>{
-    //     dispatch('API_getStatus')
-    //   }, 3000)
-    // }, 10000);
-    commit('SET_idTimer', timer)
+  API_runServer({state, commit, dispatch, getters}) {
+    dispatch('API_getStatus');
+    setTimeout(()=>{
+      if(getters.GET_serverStatus === 'Offline') {
+        let openServer = exec('core_local/app-server.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+        openServer.on('close', (code) => {
+          console.error(code);
+          commit('SET_serverStatus', {Status: 'Offline'});
+        });
+        // openServer.stdout.on('data', (data) => {
+        //   console.log(`stdout: ${data}`);
+        // });
+        // openServer.stderr.on('data', (data) => {
+        //   console.log(`stderr: ${data}`);
+        // });
+      }
+    }, 1000);
+    let timer = setInterval(()=>{
+      let status = getters.GET_serverStatus;
+      if(status === 'Offline') {
+        //console.log('API_runServer');
+        dispatch('API_getStatus')
+      }
+      else clearInterval(timer);
+    }, 5000);
   },
+
   API_getStatus({commit, dispatch, rootGetters}) {
     const dataGetStatus = rootGetters['mod_workspace/GET_API_dataGetStatus'];
     const client = new requestApi();
@@ -71,11 +76,13 @@ const actions = {
         commit('SET_serverStatus', data)
       })
       .catch((err) =>{
-        console.error(err);
-        commit('RESET_idTimer')
+        if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
+          console.error(err);
+        }
+        commit('SET_serverStatus', {Status: 'Offline'})
       });
   },
-  API_startTraining({dispatch, rootGetters}) {
+  API_startTraining({dispatch, getters, rootGetters}) {
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
     let message = {
       Hyperparameters: net.networkSettings,
@@ -113,16 +120,30 @@ const actions = {
       value: message
     };
 
-    dispatch('API_PUSH_core', theData)
-    //const client = new requestApi();
-    // client.sendMessage(dataGetStatus)
-    //   .then((data)=> {
-    //     commit('SET_serverStatus', data)
-    //   })
-    //   .catch((err) =>{
-    //     console.error(err);
-    //     commit('RESET_idTimer')
-    //   });
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {
+
+      })
+      .catch((err) =>{
+        if(err.toString() === "Error: connect ECONNREFUSED 127.0.0.1:5000") {
+          commit('SET_serverStatus', {Status: 'Offline'})
+        }
+        else console.error(err);
+      });
+    watchStatus();
+    function watchStatus() {
+      let timer = setInterval(()=>{
+        let status = getters.GET_serverStatus;
+        if(status !== 'Offline' || status !== 'Finished') {
+          console.log('API_startTraining');
+          dispatch('API_getStatus')
+        }
+        if(status == 'Offline' || status == 'Finished') {
+          clearInterval(timer);
+        }
+      }, 1000);
+    }
   },
   API_pauseTraining({commit, dispatch, rootGetters}) {
     var theData = {
@@ -151,32 +172,32 @@ const actions = {
     };
     dispatch('API_PUSH_core', theData)
   },
-  API_getStatistics({dispatch, rootGetters}) {
-    // var theData = {
-    //   reciever: "Network1",
-    //   action: "getStatistics",
-    //   value: {
-    //     layerId: '2',
-    //     variable: 'W',
-    //     innervariable: ''
-    //   }
-    // };
-    var theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
-      action: "getLayerStatistics",//getStatistics
-      value: {
-        layerId:"2",
-        layerType:"FC",//FC //Data ///Train //OneHot
-        view:"Output" //Output, Weights&Bias // Predicition  Accuracy
-      }
-      // value: {
-      //   layerId: '4',
-      //   variable:"Y",
-      //   innervariable:"" //last arrey
-      // }
-    };
-    dispatch('API_PUSH_core', theData)
-  },
+  // API_getStatistics({dispatch, rootGetters}) {
+  //   // var theData = {
+  //   //   reciever: "Network1",
+  //   //   action: "getStatistics",
+  //   //   value: {
+  //   //     layerId: '2',
+  //   //     variable: 'W',
+  //   //     innervariable: ''
+  //   //   }
+  //   // };
+  //   var theData = {
+  //     reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
+  //     action: "getLayerStatistics",//getStatistics
+  //     value: {
+  //       layerId:"2",
+  //       layerType:"FC",//FC //Data ///Train //OneHot
+  //       view:"Output" //Output, Weights&Bias // Predicition  Accuracy
+  //     }
+  //     // value: {
+  //     //   layerId: '4',
+  //     //   variable:"Y",
+  //     //   innervariable:"" //last arrey
+  //     // }
+  //   };
+  //   dispatch('API_PUSH_core', theData)
+  // },
   API_CLOSE_core({commit, dispatch, rootGetters}) {
     const theData = rootGetters['mod_workspace/GET_API_dataCloseServer'];
     dispatch('API_PUSH_core', theData);

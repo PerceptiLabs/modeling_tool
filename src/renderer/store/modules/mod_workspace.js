@@ -29,10 +29,10 @@ const getters = {
   GET_currentNetwork(state)  {
     return state.workspaceContent[state.currentNetwork];
   },
-  GET_currentNetworkNet: (state, getters) => {
+  GET_currentNetworkNet(state, getters) {
     return getters.GET_currentNetwork.network;
   },
-  GET_currentNetworkSettings: (state, getters) => {
+  GET_currentNetworkSettings(state, getters) {
     return getters.GET_currentNetwork.networkSettings;
   },
   // currentSelectedElement: (state, getters) => {

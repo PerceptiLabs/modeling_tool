@@ -57,6 +57,10 @@
   &:active {
     box-shadow: $icon-shad;
   }
+  &:disabled {
+    opacity: .25;
+    cursor: default;
+  }
 }
 
 //.btn--settings {

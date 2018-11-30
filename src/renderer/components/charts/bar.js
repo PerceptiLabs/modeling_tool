@@ -1,25 +1,28 @@
 const dataBar = {
   tooltip: {},
   legend: {
-    data:['Sales', 'Buy']
+    data: ['Sales', 'Buy']
   },
   xAxis: {
     boundaryGap: true,
-      data: ["shirt","cardign","chiffon shirt","pants","heels","socks"]
+    data: ["0", "1", "2"]
   },
-  yAxis: {},
+  yAxis: {
+    data: ["0", "1"]
+  },
   series: [
     {
       name: 'Sales',
       type: 'bar',
-      data: [5, 20, 36, 10, 10, 20]
+      data: [5, 20, 36]
     },
     {
       name: 'Buy',
       type: 'bar',
-      data: [15, 2, 6, 30, 20, 20]
+      data: [0, 0, 0, 36, 20, 20, 20]
     }
   ]
 }
 
 export default dataBar
+

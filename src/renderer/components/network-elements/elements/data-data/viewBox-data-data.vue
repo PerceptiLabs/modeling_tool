@@ -3,7 +3,7 @@
     .statistics-box_main.statistics-box_col
       chart-base(
         chartLabel="Accuracy during one epoch"
-        :chartData="Data"
+        :chartData="chartData.Data"
         )
 </template>
 
@@ -16,38 +16,16 @@
     name: "ViewBoxDataData",
     components: {ChartBase},
     mixins: [viewBoxMixin],
-    mounted() {
-      //this.getStatistics()
-    },
     data() {
       return {
-        Data: null
       }
     },
     computed: {
-      // dataLine() {
-      //   if(this.$option.line) {
-      //     return this.$option.line
-      //   }
-      //   else return {
-      //     Input: null,
-      //   }
-      // },
+
     },
     methods: {
       getStatistics() {
-        this.idTimer = setInterval(()=>{
-          let theData = this.returnDataRequest(this.boxElementID, 'Data', '');
-          const client = new requestApi();
-          client.sendMessage(theData)
-            .then((data)=> {
-              this.Data = data.Data
-            })
-            .catch((err) =>{
-              console.error(err);
-              clearInterval(this.idTimer);
-            });
-        }, this.timeInterval)
+        this.chartRequest(this.boxElementID, 'Data', '')
       },
     }
   }

@@ -19,6 +19,9 @@ export default {
     TheWorkspace,
     TheInfoPopup
   },
+  created() {
+    this.$store.dispatch('mod_api/API_runServer');
+  },
   mounted() {
     let dragged;
     let outClassName = 'network-field';

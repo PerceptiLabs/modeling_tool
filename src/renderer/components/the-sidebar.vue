@@ -14,9 +14,8 @@
       .sidebar_tab(v-show="tabSelected === 0")
         //include ./sidebar/blocks/Project.pug
         sidebar-layers
-        sidebar-training(v-if="appMode === 'training'")
+        sidebar-training(v-if="showTraining")
         //sidebar-comments(v-else)
-
         sidebar-share
       .sidebar_tab(v-show="tabSelected === 1")
         include ./sidebar/blocks/Save.pug
@@ -51,9 +50,15 @@ export default {
     hideSidebar() {
       return this.$store.state.globalView.hideSidebar
     },
-    appMode() {
-      return this.$store.state.globalView.appMode
+    coreStatus() {
+      return this.$store.getters['mod_api/GET_serverStatus']
     },
+    showTraining() {
+      if(this.coreStatus === 'Training' || this.coreStatus === 'Validation' || this.coreStatus === 'Paused') {
+        return true
+      }
+      else return false
+    }
   },
   methods: {
     selectTab(i) {

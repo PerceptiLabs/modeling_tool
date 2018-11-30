@@ -1,15 +1,12 @@
 <template lang="pug">
   .sidebar-progress
-    .sidebar-progress_loader.animation-loader
+    .sidebar-progress_loader.animation-loader(:class="styleLoader")
     span.sidebar-progress_data.middle-text {{ percentData }}
 </template>
 
 <script>
 export default {
   name: "SidebarProgress",
-  // props: {
-  //   percent: [Number]
-  // },
   data() {
     return {
 
@@ -24,12 +21,17 @@ export default {
       }
       else current = this.$store.state.mod_api.serverStatus.Epoch;
       let result = (current/max) * 100 + '%';
-      // let result;
-      // this.percent ?  result = this.percent + '%' : result = '';
-      // this.$store.
       return result
     },
-
+    serverStatus() {
+      return this.$store.getters['mod_api/GET_serverStatus']
+    },
+    styleLoader() {
+      return {
+        'animation--paused': this.serverStatus === 'Paused',
+        'validation-style': this.serverStatus === 'Validation'
+      }
+    }
   },
   methods: {
 
@@ -49,10 +51,13 @@ export default {
     width: 8em;
     height: 8em;
     border-radius: 50%;
-    background: $color-6;
+    //background: $color-6;
     background: linear-gradient(to bottom, $color-6 25%, $bg-window 80%);
     transform: translate(0);
     overflow: hidden;
+    &.validation-style {
+      background: linear-gradient(to bottom, $col-warning 25%, $bg-window 80%);
+    }
     &:before {
       content: '';
       position: absolute;
@@ -61,7 +66,6 @@ export default {
       bottom: 0;
       width: 50%;
       background: $bg-window;
-
     }
     &:after {
       content: '';

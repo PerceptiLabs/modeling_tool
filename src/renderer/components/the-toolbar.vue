@@ -40,7 +40,7 @@
     ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
-          :disabled="appMode == 'training'"
+          :disabled="coreStatus === 'Training' || coreStatus === 'Offline'"
           :class="statusStartBtn"
           @click="trainStart()"
         )
@@ -48,11 +48,13 @@
       li
         button.btn.btn--toolbar(type="button"
           :class="{'active': appMode == 'learn-pause'}"
+          :disabled="!(coreStatus === 'Training' && coreStatus === 'Paused')"
           @click="trainPause()"
         )
           i.icon.icon-pause
       li
         button.btn.btn--toolbar(type="button"
+          :disabled="coreStatus !== 'Training'"
           @click="trainStop()"
         )
           i.icon.icon-next
@@ -204,6 +206,7 @@ export default {
       // }
     },
     trainPause() {
+      console.log('trainPause');
       this.$store.dispatch('mod_api/API_pauseTraining');
       this.setAppMode('training-pause')
     },
