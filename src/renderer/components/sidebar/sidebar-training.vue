@@ -4,29 +4,29 @@
       span.pc-chart_title.big-text Progressbar
       .pc-chart_main
         sidebar-progress
-    .pc-chart_box
+    //.pc-chart_box
       span.pc-chart_title.big-text RAM
       .pc-chart_main
         v-chart.pc-chart_chart(
-          :auto-resize="true"
+          /:auto-resize="true"
           theme="quantum"
-          :options="optionRAM"
+          /:options="optionRAM"
         )
-    .pc-chart_box
+    //.pc-chart_box
       span.pc-chart_title.big-text CPU
       .pc-chart_main
         v-chart.pc-chart_chart(
-          :auto-resize="true"
+          /:auto-resize="true"
           theme="quantum"
-          :options="optionCPU"
+          /:options="optionCPU"
         )
-    .pc-chart_box
+    //.pc-chart_box
       span.pc-chart_title.big-text GPU
       .pc-chart_main
         v-chart.pc-chart_chart(
-          :auto-resize="true"
+          /:auto-resize="true"
           theme="quantum"
-          :options="optionGPU"
+          /:options="optionGPU"
         )
 
 </template>
@@ -39,9 +39,9 @@ export default {
   name: "SidebarTraining",
   components: {SidebarProgress},
   mounted() {
-    this.setRAM();
-    this.setCPU();
-    this.setGPU();
+    // this.setRAM();
+    // this.setCPU();
+    // this.setGPU();
   },
   beforeDestroy() {
     this.deleteTime();
@@ -130,21 +130,21 @@ export default {
         this.optionRAM.xAxis.data.push(x);
         this.optionRAM.series[0].data.push(this.random());
         this.progress = (x + 1)*10;
-      }, 1000)
+      }, 2000)
     },
     setCPU() {
       this.timer.timeCPU = setInterval(()=> {
         let x = this.optionCPU.xAxis.data.length;
         this.optionCPU.xAxis.data.push(x);
         this.optionCPU.series[0].data.push(this.random());
-      }, 1000)
+      }, 2000)
     },
     setGPU() {
       this.timer.timeGPU = setInterval(()=> {
         let x = this.optionGPU.xAxis.data.length;
         this.optionGPU.xAxis.data.push(x);
         this.optionGPU.series[0].data.push(this.random());
-      }, 1000)
+      }, 2000)
     },
     random() {
       return Math.round(Math.random()*100)

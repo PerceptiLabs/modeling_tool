@@ -14,8 +14,14 @@ const state = {
     {
       networkName: 'Network',
       networkSettings: null,
-      networkStatistics: false,
-      canTestStatistics: false,
+      networkMeta: {
+        openStatistics: false,
+        canTestStatistics: false,
+        netMode: 'edit',
+        coreStatus: {
+          Status: 'Offline' //Created, Training, Validation, Paused, Finished
+        }
+      },
       network: [],
     }
   ],
@@ -173,6 +179,14 @@ const mutations = {
           //isEmpty: true,
         },
         emptyTrainingData: true,
+        networkMeta: {
+          openStatistics: false,
+          canTestStatistics: false,
+          netMode: 'edit',
+          coreStatus: {
+            Status: 'Offline' //Created, Training, Validation, Paused, Finished
+          }
+        },
         network: []
       }
     }
@@ -219,6 +233,7 @@ const mutations = {
     state.dragElement.meta.top = event.offsetY - top;
     state.dragElement.meta.left = event.offsetX - left;
     state.workspaceContent[net].network.push(state.dragElement);
+    state.dragElement = {};
   },
   ADD_arrow(state, val) {
     let startID = state.startArrowID;

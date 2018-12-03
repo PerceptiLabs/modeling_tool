@@ -20,7 +20,7 @@ export default {
         current = 0;
       }
       else current = this.$store.state.mod_api.serverStatus.Epoch;
-      let result = (current/max) * 100 + '%';
+      let result = Math.round(current / max * 100) + '%';
       return result
     },
     serverStatus() {

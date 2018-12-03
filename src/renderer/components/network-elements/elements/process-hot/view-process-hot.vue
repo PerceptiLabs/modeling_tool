@@ -1,7 +1,7 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-process(:draggable="draggable"
   data-component="ProcessHot"
-  data-layer="One Hot"
+  data-layer="OneHot_1"
   data-type="Other"
   v-tooltip="'One Hot'"
   )

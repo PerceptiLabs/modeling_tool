@@ -119,11 +119,15 @@ export default {
     },
     openSettings() {
       this.hideAllWindow();
-      this.settingsIsOpen = true;
+      if(this.appMode === 'edit') {
+        this.settingsIsOpen = true;
+      }
     },
     openContext() {
       this.hideAllWindow();
-      this.contextIsOpen = true;
+      if(this.appMode === 'edit') {
+        this.contextIsOpen = true;
+      }
     },
     setFocusEl(ev) {
       if(ev.ctrlKey) {

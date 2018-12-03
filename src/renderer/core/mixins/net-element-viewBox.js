@@ -5,15 +5,16 @@ const viewBoxMixin = {
     return {
       chartData: {},
       idTimer: null,
-      timeInterval: 1000,
+      timeInterval: 2000,
       saveParams: {}
     }
   },
   mounted() {
-    this.getStatistics()
+    this.getStatistics();
   },
   beforeDestroy() {
     clearInterval(this.idTimer);
+    this.chartData = {};
   },
   computed: {
     statElementID() {
@@ -36,9 +37,19 @@ const viewBoxMixin = {
       if(oldStatus === 'Paused') {
         this.returnDataRequest(this.saveParams.layerId, this.saveParams.layerType, this.saveParams.view);
       }
+    },
+    boxElementID() {
+      this.resetViewBox();
+    },
+    statElementID() {
+      this.resetViewBox();
     }
   },
   methods: {
+    resetViewBox() {
+      clearInterval(this.idTimer);
+      this.getStatistics();
+    },
     returnDataRequest(layerId, layerType, view) {
       return {
         reciever: this.currentNetworkName,
@@ -67,15 +78,20 @@ const viewBoxMixin = {
         }
       };
       //TODO need stop when pause
-      let idTimer = setInterval(()=>{
+      this.idTimer = setInterval(()=>{
         if(this.serverStatus === 'Finished') {
-          clearInterval(idTimer);
+          clearInterval(this.idTimer);
         }
         if(this.serverStatus === 'Training') {
           const client = new requestApi();
           client.sendMessage(theData)
             .then((data)=> {
-              this.chartData = data
+              //console.log(data);
+              if(view.length) {
+                //this.chartData[view] = data
+                this.$set(this.chartData, view, data)
+              }
+              else this.chartData = data
             })
             .catch((err) =>{
               console.error(err);

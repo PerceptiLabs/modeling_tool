@@ -2,7 +2,7 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-        chartLabel="Accuracy during one epoch"
+        chartLabel="Output"
         :chartData="chartData.Output"
         )
 </template>

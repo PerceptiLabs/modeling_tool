@@ -26,11 +26,11 @@ export default {
     let dragged;
     let outClassName = 'network-field';
     this.$refs.layersbar.addEventListener("dragstart", ( event )=> {
-      if ( event.target.draggable) {
+      if ( event.target.draggable && this.appMode === 'edit') {
         // console.log(event)
         // console.log('dragstart')
         dragged = event.target;
-        this.$store.commit('mod_workspace/ADD_dragElement', event)
+        this.$store.commit('mod_workspace/ADD_dragElement', event);
         //make it half transparent
         event.target.style.opacity = .75;
       }
@@ -51,7 +51,7 @@ export default {
     }, false);
 
     this.$refs.layersbar.addEventListener("dragenter", function( event ) {
-      if ( event.target.className.includes(outClassName) ) {
+      if ( event.target.className.includes(outClassName) && this.appMode === 'edit') {
         //event.target.style.cursor = "auto";
         //console.log('dragenter')
       }
@@ -59,7 +59,7 @@ export default {
     }, false);
 
     this.$refs.layersbar.addEventListener("dragleave", function( event ) {
-      if ( event.target.className.includes(outClassName)) {
+      if ( event.target.className.includes(outClassName) && this.appMode === 'edit') {
         //console.log('dragleave')
         //event.target.style.cursor = "not-allowed";
       }
@@ -67,7 +67,7 @@ export default {
 
     this.$refs.layersbar.addEventListener("drop", ( event )=> {
       event.preventDefault();
-      if ( event.target.className.includes(outClassName) ) {
+      if ( event.target.className.includes(outClassName) && this.appMode === 'edit') {
         this.$store.commit('mod_workspace/ADD_elToWorkspace', event)
       }
     }, false);
@@ -84,6 +84,9 @@ export default {
     },
     currentNetwork() {
       return this.$store.getters['mod_workspace/GET_currentNetwork']
+    },
+    appMode() {
+      return this.$store.state.globalView.appMode
     },
   },
 

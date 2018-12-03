@@ -3,7 +3,7 @@ const namespaced = true;
 const state = {
   hideLayers: true,
   hideSidebar: true,
-  appMode: 'edit',  //'training', 'training-pause', 'training-done', 'addArrow'
+  appMode: 'edit',  //'addArrow', showStatistic
   userMode: 'advanced', //simple
   statisticsIsOpen: false,
   userToken: '',
@@ -52,7 +52,7 @@ const mutations = {
 
 const actions = {
   NET_trainingStart({dispatch, commit}) {
-    //commit('SET_appMode', 'training');
+    //commit('SET_appMode', 'showSta');
     commit('HIDE_allGlobalPopups');
     commit('SET_statisticsIsOpen', true);
     dispatch('mod_workspace/a_SET_networkStatistics', true, {root: true});

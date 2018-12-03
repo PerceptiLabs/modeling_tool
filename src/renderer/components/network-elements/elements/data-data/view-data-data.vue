@@ -1,7 +1,7 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-data(:draggable="draggable"
     data-component="DataData"
-    data-layer="Data"
+    data-layer="Data_1"
     data-type="Data"
     v-tooltip="'Data'"
   )

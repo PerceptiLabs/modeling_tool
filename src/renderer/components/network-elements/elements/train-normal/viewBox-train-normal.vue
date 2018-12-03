@@ -11,29 +11,32 @@
         :class="{'active': currentTab === tab}"
         :disabled="i > 1"
         ) {{ tab }}
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction' && chartData.Prediction")
       .statistics-box_row
         .statistics-box_col
           chart-base(
-            :chartData="prediction.Input"
+            chartLabel="Input"
+            :chartData="chartData.Prediction.Input"
             )
       .statistics-box_row
         .statistics-box_col
           chart-base(
-          :chartData="prediction.PvG"
+          chartLabel="Prediction vs Ground truth"
+          :chartData="chartData.Prediction.PvG"
           )
         .statistics-box_col
           chart-base(
-          :chartData="prediction.AveragePvG"
+          chartLabel="Batch Average Prediction vs Ground truth"
+          :chartData="chartData.Prediction.AveragePvG"
           )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy' && chartData.Accuracy")
       chart-base(
         chartLabel="Accuracy during one epoch"
-        :chartData="accuracy.Current"
+        :chartData="chartData.Accuracy.Current"
       )
       chart-base(
         chartLabel="Accuracy over all epochs"
-        :chartData="accuracy.Total"
+        :chartData="chartData.Accuracy.Total"
       )
     //.statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-base(
@@ -83,16 +86,6 @@
       return {
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
-        //tabset: ['Prediction', 'Accuracy', 'Loss'],
-        prediction: {
-          Input: null,
-          PvG: null,
-          AveragePvG: null
-        },
-        accuracy: {
-          Current: null,
-          Total: null
-        }
       }
     },
     methods: {
@@ -108,34 +101,10 @@
 
       },
       getStatistics() {
-        this.idTimer = setInterval(()=>{
-          let theData = this.returnDataRequest(this.statElementID, 'Train', 'Prediction');
-          const client = new requestApi();
-          client.sendMessage(theData)
-            .then((data)=> {
-              //console.log(data);
-              this.prediction = data
-            })
-            .catch((err) =>{
-              console.error(err);
-              clearInterval(this.idTimer);
-            });
-        }, this.timeInterval)
+        this.chartRequest(this.statElementID, 'Train', 'Prediction')
       },
       getAccStatistics() {
-        this.idTimer = setInterval(()=>{
-          let theData = this.returnDataRequest(this.statElementID, 'Train', 'Accuracy');
-          const client = new requestApi();
-          client.sendMessage(theData)
-            .then((data)=> {
-              //console.log(data);
-              this.accuracy = data
-            })
-            .catch((err) =>{
-              console.error(err);
-              clearInterval(this.idTimer);
-            });
-        }, this.timeInterval)
+        this.chartRequest(this.statElementID, 'Train', 'Accuracy')
       }
     }
   }

@@ -11,19 +11,19 @@
         :class="{'active': currentTab === tab}"
         :disabled="i > 1"
         ) {{ tab }}
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output' && chartData.Output")
       chart-base(
-        chartLabel="Accuracy during one epoch"
-        :chartData="chartOutput"
+        chartLabel="Value"
+        :chartData="chartData.Output.Output"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias' && chartData['Weights&Bias']")
       chart-base(
-        chartLabel="Accuracy during one epoch"
-        :chartData="chartWnB.Weights"
+        chartLabel="Weights"
+        :chartData="chartData['Weights&Bias'].Weights"
       )
       chart-base(
-        chartLabel="Accuracy over all epochs"
-        :chartData="chartWnB.Bias"
+        chartLabel="Bias"
+        :chartData="chartData['Weights&Bias'].Bias"
       )
     //.statistics-box_main.statistics-box_col(v-show="currentTab === 'Gradients'")
       .statistics-box_row
@@ -56,11 +56,6 @@
       return {
         currentTab: 'Output',
         tabset: ['Output', 'Weights & Bias', 'Gradients'],
-        chartOutput: null,
-        chartWnB: {
-          Weights: null,
-          Bias: null
-        }
       }
     },
     methods: {
@@ -76,32 +71,10 @@
 
       },
       getStatistics() {
-        this.idTimer = setInterval(()=>{
-          let theData = this.returnDataRequest(this.boxElementID, 'FC', 'Output');
-          const client = new requestApi();
-          client.sendMessage(theData)
-            .then((data)=> {
-              this.chartOutput = data.Output
-            })
-            .catch((err) =>{
-              console.error(err);
-              clearInterval(this.idTimer);
-            });
-        }, this.timeInterval)
+        this.chartRequest(this.boxElementID, 'FC', 'Output')
       },
       getWeightsStatistics() {
-        this.idTimer = setInterval(()=>{
-          const client = new requestApi();
-          let theData = this.returnDataRequest(this.boxElementID, 'FC', 'Weights&Bias');
-          client.sendMessage(theData)
-            .then((data)=> {
-              this.chartWnB = data;
-            })
-            .catch((err) =>{
-              console.error(err);
-              clearInterval(this.idTimer);
-            });
-        }, this.timeInterval)
+        this.chartRequest(this.boxElementID, 'FC', 'Weights&Bias')
       }
     }
   }

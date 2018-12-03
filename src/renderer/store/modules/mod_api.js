@@ -7,7 +7,7 @@ const namespaced = true;
 
 const state = {
   serverStatus: {
-    Status: 'Offline' //Created, Training, Validation, Paused
+    Status: 'Offline' //Created, Training, Validation, Paused, Finished
   },
 };
 
@@ -136,7 +136,7 @@ const actions = {
       let timer = setInterval(()=>{
         let status = getters.GET_serverStatus;
         if(status !== 'Offline' || status !== 'Finished') {
-          console.log('API_startTraining');
+          //console.log('API_startTraining');
           dispatch('API_getStatus')
         }
         if(status == 'Offline' || status == 'Finished') {

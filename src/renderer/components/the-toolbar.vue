@@ -7,7 +7,7 @@
     ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
-          :disabled="appMode == 'training'"
+          :disabled="coreStatus == 'Training'"
           :class="{'active': appMode == 'edit'}"
           @click="setAppMode('edit')"
         )
@@ -16,7 +16,7 @@
         :class="{'disable-hover': appMode == 'training'}"
       )
         button.btn.btn--toolbar(type="button"
-          :disabled="appMode == 'training'"
+          :disabled="coreStatus == 'Training'"
           :class="{'active': appMode == 'addArrow'}"
           @click="setArrowType(arrowList[0].arrowType)"
         )
@@ -40,7 +40,7 @@
     ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
-          :disabled="coreStatus === 'Training' || coreStatus === 'Offline'"
+          :disabled="coreStatus !== 'Created'"
           :class="statusStartBtn"
           @click="trainStart()"
         )
@@ -48,14 +48,14 @@
       li
         button.btn.btn--toolbar(type="button"
           :class="{'active': appMode == 'learn-pause'}"
-          :disabled="!(coreStatus === 'Training' && coreStatus === 'Paused')"
+          :disabled="!(coreStatus === 'Training' || coreStatus === 'Paused')"
           @click="trainPause()"
         )
           i.icon.icon-pause
       li
         button.btn.btn--toolbar(type="button"
-          :disabled="coreStatus !== 'Training'"
-          @click="trainStop()"
+          :disabled="coreStatus !== 'Validation'"
+          @click="skipValid()"
         )
           i.icon.icon-next
     ul.toolbar_list
@@ -67,11 +67,11 @@
           i.icon.icon-box
 
     .toolbar_settings
-      span.text-primary.middle-text(v-html="statusTestText")
-      button.btn.btn--primary(type="button"
+      //span.text-primary.middle-text(v-html="statusTestText")
+      //button.btn.btn--primary(type="button"
         v-if="currentGlobalNet.canTestStatistics"
         @click="testStart"
-      )
+        )
         span Run test
         i.icon.icon-circle-o
       span.text-primary.middle-text(v-html="statusTrainingText")
@@ -80,10 +80,9 @@
         )
         span Layer Mode
         i.icon.icon-ellipse
-    //.test-api
-      button(type="button" @click="TEST_sendMain()").btn send
+
     .test-api
-      div
+      //div
         span.big-text Dev Mode:
           span.text-error  {{ devMode }}
         span.big-text Version:
@@ -133,30 +132,32 @@ export default {
   computed: {
     statusStartBtn() {
       return {
-        'text-error':   this.appMode == 'training',
-        'text-warning': this.appMode == 'training-pause',
-        'text-success': this.appMode == 'training-done',
+        'text-error':   this.coreStatus == 'Training' || this.coreStatus == 'Validation',
+        'text-warning': this.coreStatus == 'Paused',
+        'text-success': this.coreStatus == 'Finished',
       }
     },
     statusTrainingText() {
-      switch (this.appMode) {
-        case 'training':
+      switch (this.coreStatus) {
+        case 'Training':
+        case 'Validation':
           return '<i class="icon icon-repeat animation-loader"></i> Training';
           break;
-        case 'training-pause':
+        case 'Paused':
           return 'Training pause';
           break;
-        case 'training-done':
+        case 'Finished':
           return 'Training completed';
           break;
       }
     },
     statusTestText() {
-      switch (this.appMode) {
-        case 'testing':
+      switch (this.coreStatus) {
+        case 'Training':
+        case 'Validation':
           return '<i class="icon icon-repeat animation-loader"></i> Test running';
           break;
-        case 'testing-done':
+        case 'Paused':
           return '<i class="icon icon-notification"></i> Test completed';
           break;
       }
@@ -186,7 +187,7 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetwork']
     },
     coreStatus() {
-      return this.$store.state.mod_api.serverStatus;
+      return this.$store.state.mod_api.serverStatus.Status;
     }
   },
   methods: {
@@ -206,13 +207,10 @@ export default {
       // }
     },
     trainPause() {
-      console.log('trainPause');
       this.$store.dispatch('mod_api/API_pauseTraining');
-      this.setAppMode('training-pause')
     },
-    trainStop() {
+    skipValid() {
       this.$store.dispatch('mod_api/API_skipValidTraining');
-      this.setAppMode('training-done')
     },
     validateNetwork() {
       let net = this.currentNet;
@@ -260,7 +258,7 @@ export default {
       this.$store.commit('globalView/SET_showStatistics', true)
     },
     testStart() {
-      this.setAppMode('testing');
+      //this.setAppMode('testing');
     },
     TEST_sendMain() {
       ipcRenderer.send('asynchronous-message', 'ping')
