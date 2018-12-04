@@ -12,8 +12,8 @@ const clickOutside = function (event) {
   }
 };
 
-//const trainingElements =  ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
-const trainingElements =  ['TrainNormal'];
+const trainingElements =  ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
+//const trainingElements =  ['TrainNormal'];
 const deepLearnElements = ['LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent'];
 
 const openLoadDialog = function (callback, options) {

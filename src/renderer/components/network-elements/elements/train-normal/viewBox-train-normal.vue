@@ -9,7 +9,7 @@
         type="button"
         @click="setTab(tab)"
         :class="{'active': currentTab === tab}"
-        :disabled="i > 1"
+        :disabled="i > 2"
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction' && chartData.Prediction")
       .statistics-box_row
@@ -38,15 +38,15 @@
         chartLabel="Accuracy over all epochs"
         :chartData="chartData.Accuracy.Total"
       )
-    //.statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss' && chartData.Loss")
       chart-base(
-      chartLabel="Loss during one epoch"
-      /:chartData="optionLine1"
+        chartLabel="Loss during one epoch"
+        :chartData="chartData.Loss.Current"
       )
       chart-base(
-      chartLabel="Loss over all epochs"
-      /:chartData="optionLine1"
-      )
+        chartLabel="Loss over all epochs"
+        :chartData="chartData.Loss.Total"
+        )
     //.statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
       chart-base(
       chartLabel="F1 during one epoch"
@@ -98,13 +98,18 @@
         else if (name === 'Accuracy') {
           this.getAccStatistics()
         }
-
+        else if (name === 'Loss') {
+          this.getLossStatistics()
+        }
       },
       getStatistics() {
         this.chartRequest(this.statElementID, 'Train', 'Prediction')
       },
       getAccStatistics() {
         this.chartRequest(this.statElementID, 'Train', 'Accuracy')
+      },
+      getLossStatistics() {
+        this.chartRequest(this.statElementID, 'Train', 'Loss')
       }
     }
   }

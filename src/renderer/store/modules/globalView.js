@@ -61,6 +61,7 @@ const actions = {
   NET_trainingDone({state, commit, dispatch}) {
     commit('SET_appMode', 'training-done');
     commit('SET_showNetResult', true);
+    //dispatch('mod_api/API_stopTraining', null, {root: true});
     dispatch('mod_workspace/a_SET_canTestStatistics', true, {root: true});
   },
 };

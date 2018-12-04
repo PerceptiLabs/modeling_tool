@@ -78,7 +78,7 @@ function createWindow () {
       //plugins: true,
     }
   });
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   const menuCustom = Menu.buildFromTemplate(mainMenu);

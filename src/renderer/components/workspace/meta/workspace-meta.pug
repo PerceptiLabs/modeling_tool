@@ -10,3 +10,8 @@
     i.icon.icon-zoom-plus
 
   base-checkbox(:iconTheme="true") Map
+.workspace_meta-action
+  button.btn.btn--color.btn--color__purpur(type="button"
+  v-if="statisticsIsOpen && coreStatus == 'Finished'"
+  @click="saveModel"
+  ) Extract Data

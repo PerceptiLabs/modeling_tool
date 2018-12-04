@@ -4,29 +4,29 @@
       span.pc-chart_title.big-text Progressbar
       .pc-chart_main
         sidebar-progress
-    //.pc-chart_box
+    .pc-chart_box
       span.pc-chart_title.big-text RAM
       .pc-chart_main
         v-chart.pc-chart_chart(
-          /:auto-resize="true"
+          :auto-resize="true"
           theme="quantum"
-          /:options="optionRAM"
+          :options="optionRAM"
         )
-    //.pc-chart_box
+    .pc-chart_box
       span.pc-chart_title.big-text CPU
       .pc-chart_main
         v-chart.pc-chart_chart(
-          /:auto-resize="true"
+          :auto-resize="true"
           theme="quantum"
-          /:options="optionCPU"
+          :options="optionCPU"
         )
-    //.pc-chart_box
+    .pc-chart_box
       span.pc-chart_title.big-text GPU
       .pc-chart_main
         v-chart.pc-chart_chart(
-          /:auto-resize="true"
+          :auto-resize="true"
           theme="quantum"
-          /:options="optionGPU"
+          :options="optionGPU"
         )
 
 </template>

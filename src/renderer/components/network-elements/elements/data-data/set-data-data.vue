@@ -74,13 +74,14 @@
         console.log('loadFile');
         let opt = {
           title:"Load file in Data element",
-          filters: [
-            // {name: 'Images', extensions: ['png', 'gif']},
-            // {name: 'Python', extensions: ['pickle', 'numpy']},
-            // {name: 'Text', extensions: ['txt', 'json', 'csv']},
-            // {name: 'Any', extensions: ['png', 'gif', 'pickle', 'numpy', 'txt', 'json', 'csv']},
-            {name: 'Folder', extensions: ['gz']}
-          ]
+          properties: ['openDirectory']
+          // filters: [
+          //   // {name: 'Images', extensions: ['png', 'gif']},
+          //   // {name: 'Python', extensions: ['pickle', 'numpy']},
+          //   // {name: 'Text', extensions: ['txt', 'json', 'csv']},
+          //   // {name: 'Any', extensions: ['png', 'gif', 'pickle', 'numpy', 'txt', 'json', 'csv']},
+          //   {name: 'Folder', extensions: ['gz']}
+          // ]
         };
         this.openLoadDialog(this.saveLoadFile, opt)
       },

@@ -135,13 +135,14 @@ const actions = {
     function watchStatus() {
       let timer = setInterval(()=>{
         let status = getters.GET_serverStatus;
-        if(status !== 'Offline' || status !== 'Finished') {
-          //console.log('API_startTraining');
-          dispatch('API_getStatus')
-        }
-        if(status == 'Offline' || status == 'Finished') {
-          clearInterval(timer);
-        }
+        // if(status !== 'Offline' || status !== 'Finished') {
+        //   //console.log('API_startTraining');
+        //   dispatch('API_getStatus')
+        // }
+        // if(status == 'Offline' || status == 'Finished') {
+        //   clearInterval(timer);
+        // }
+        dispatch('API_getStatus')
       }, 1000);
     }
   },

@@ -31,7 +31,7 @@ export default {
   methods: {
     runTest() {
       this.closePopup();
-      this.$store.commit('globalView/SET_appMode', 'training');
+      //this.$store.commit('globalView/SET_appMode', 'training');
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

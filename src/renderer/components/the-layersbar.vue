@@ -20,7 +20,7 @@
               :key="i"
             )
               component(:is="element" :draggable='true')
-        //-li.layer
+        li.layer
           button.btn.btn--layersbar.net-element-add(type="button")
             i.icon.icon-add
 
@@ -116,16 +116,16 @@ export default {
           layerClass: 'net-element-data',
           iconClass: 'icon-data',
           showEl: false,
-          //networkElements: ['DataData', 'DataEnvironment']
-          networkElements: ['DataData']
+          networkElements: ['DataData', 'DataEnvironment']
+          //networkElements: ['DataData']
         },
         {
           tooltip: 'Processing',
           layerClass: 'net-element-process',
           iconClass: 'icon-settings',
           showEl: false,
-          //networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot', 'process-crop']
-          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot']
+          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot', 'process-crop']
+          //networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot']
         },
         {
           tooltip: 'Deep Learning',
@@ -140,8 +140,8 @@ export default {
           layerClass: 'net-element-math',
           iconClass: 'icon-calc',
           showEl: false,
-          //networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax']
-          networkElements: ['MathArgmax', 'MathMerge', 'MathSoftmax']
+          networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax']
+          //networkElements: ['MathArgmax', 'MathMerge', 'MathSoftmax']
         },
         {
           tooltip: 'Training',
@@ -151,13 +151,13 @@ export default {
           //networkElements: ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
           networkElements: trainingElements
         },
-        // {
-        //   tooltip: 'Classic Machine Learning',
-        //   layerClass: 'net-element-learn-class',
-        //   iconClass: 'icon-mind',
-        //   showEl: false,
-        //   networkElements: ['LearnClassDbscans', 'LearnClassKMeans', 'LearnClassKNearest', 'LearnClassRandomForest', 'LearnClassVectorMachine']
-        // }
+        {
+          tooltip: 'Classic Machine Learning',
+          layerClass: 'net-element-learn-class',
+          iconClass: 'icon-mind',
+          showEl: false,
+          networkElements: ['LearnClassDbscans', 'LearnClassKMeans', 'LearnClassKNearest', 'LearnClassRandomForest', 'LearnClassVectorMachine']
+        }
       ],
     }
   },

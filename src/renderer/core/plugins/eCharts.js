@@ -9,7 +9,7 @@ ECharts.registerTheme('quantum', {
     top: '20',
     bottom: '30',
     right: '30',
-    left: '35',
+    left: '50',
   },
   "color": [
     "#6b8ff7",

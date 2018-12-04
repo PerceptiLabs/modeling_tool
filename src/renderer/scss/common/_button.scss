@@ -138,6 +138,18 @@
   }
 }
 
+.btn--color {
+  font-size: 1.2em;
+  color: $white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 11rem;
+  &__purpur {
+    height: 24px;
+    background: linear-gradient(180deg, #E273FE 0%, #B061EE 100%);
+  }
+}
 //
 //.btn--social-login {
 //  @include multi-transition (color, background-color, border-color);

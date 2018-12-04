@@ -61,7 +61,13 @@ export default {
     },
     statisticsElSelected() {
       return this.$store.state.mod_statistics.selectedElArr
-    }
+    },
+    coreStatus() {
+      return this.$store.state.mod_api.serverStatus.Status;
+    },
+    currentNet() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkNet']
+    },
 
   },
   watch: {
@@ -103,7 +109,13 @@ export default {
       this.$store.commit('mod_workspace/SET_networkName', newName);
     },
     openStatistics() {
-      this.$store.commit('globalView/SET_statisticsIsOpen', true)
+      this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
+      this.$store.commit('globalView/SET_statisticsIsOpen', true);
+      // setTimeout(()=>{
+      // }, 2000)
+    },
+    saveModel() {
+      this.$store.commit('mod_events/set_saveNetwork');
     }
   }
 }

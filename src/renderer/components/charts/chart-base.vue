@@ -49,7 +49,7 @@ export default {
   computed: {
     chartModel() {
       let model = {
-        tooltip: {},
+        //tooltip: {},
         yAxis: {},
         xAxis: {
           //boundaryGap: true,

@@ -40,15 +40,22 @@
     ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
-          :disabled="coreStatus !== 'Created'"
+          v-if="!(coreStatus === 'Training' || coreStatus === 'Validation')"
+          :disabled="coreStatus === 'Offline'"
           :class="statusStartBtn"
           @click="trainStart()"
+        )
+          i.icon.icon-on-off
+        button.btn.btn--toolbar(type="button"
+        v-else
+        :class="statusStartBtn"
+        @click="trainStop()"
         )
           i.icon.icon-on-off
       li
         button.btn.btn--toolbar(type="button"
           :class="{'active': appMode == 'learn-pause'}"
-          :disabled="!(coreStatus === 'Training' || coreStatus === 'Paused')"
+          :disabled="!(coreStatus === 'Training' || coreStatus === 'Paused' || coreStatus === 'Validation')"
           @click="trainPause()"
         )
           i.icon.icon-pause
@@ -68,9 +75,8 @@
 
     .toolbar_settings
       //span.text-primary.middle-text(v-html="statusTestText")
-      //button.btn.btn--primary(type="button"
-        v-if="currentGlobalNet.canTestStatistics"
-        @click="testStart"
+      button.btn.btn--primary(type="button"
+        v-if="coreStatus == 'Finished'"
         )
         span Run test
         i.icon.icon-circle-o
@@ -81,7 +87,7 @@
         span Layer Mode
         i.icon.icon-ellipse
 
-    .test-api
+    //-.test-api
       //div
         span.big-text Dev Mode:
           span.text-error  {{ devMode }}
@@ -190,6 +196,13 @@ export default {
       return this.$store.state.mod_api.serverStatus.Status;
     }
   },
+  watch: {
+    coreStatus(newStatus, oldStatus) {
+      if(newStatus === 'Finished' && oldStatus === 'Validation') {
+        this.$store.dispatch('globalView/NET_trainingDone')
+      }
+    }
+  },
   methods: {
     trainStart() {
       let valid = this.validateNetwork();
@@ -205,6 +218,9 @@ export default {
       // else {
       //   this.$store.commit('globalView/SET_showCoreSideSettings', true);
       // }
+    },
+    trainStop() {
+      this.$store.dispatch('mod_api/API_stopTraining');
     },
     trainPause() {
       this.$store.dispatch('mod_api/API_pauseTraining');

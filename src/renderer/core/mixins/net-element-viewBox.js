@@ -19,11 +19,11 @@ const viewBoxMixin = {
   computed: {
     statElementID() {
       let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType === 'Training');
-      return viewBoxEl.el.layerId.toString()
+      return viewBoxEl === undefined ? undefined : viewBoxEl.el.layerId.toString()
     },
     boxElementID() {
       let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType !== 'Training');
-      return viewBoxEl.el.layerId.toString()
+      return viewBoxEl === undefined ? undefined : viewBoxEl.el.layerId.toString()
     },
     currentNetworkName() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkName
@@ -62,6 +62,12 @@ const viewBoxMixin = {
       };
     },
     chartRequest(layerId, layerType, view) {
+      // if(layerId === undefined) {
+      //   setTimeout(()=>{
+      //     this.chartRequest(layerId, layerType, view);
+      //   }, 500);
+      //   return
+      // }
       //TODO it is not work
       this.saveParams = {
           layerId,
@@ -79,10 +85,10 @@ const viewBoxMixin = {
       };
       //TODO need stop when pause
       this.idTimer = setInterval(()=>{
-        if(this.serverStatus === 'Finished') {
-          clearInterval(this.idTimer);
-        }
-        if(this.serverStatus === 'Training') {
+        // if(this.serverStatus === 'Finished') {
+        //   clearInterval(this.idTimer);
+        // }
+        //if(this.serverStatus === 'Training') {
           const client = new requestApi();
           client.sendMessage(theData)
             .then((data)=> {
@@ -97,7 +103,7 @@ const viewBoxMixin = {
               console.error(err);
               clearInterval(this.idTimer);
             });
-        }
+        //}
       }, this.timeInterval)
     }
   }

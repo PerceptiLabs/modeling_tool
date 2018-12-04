@@ -9,7 +9,6 @@
         type="button"
         @click="setTab(tab)"
         :class="{'active': currentTab === tab}"
-        :disabled="i > 1"
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output' && chartData.Output")
       chart-base(
@@ -25,20 +24,20 @@
         chartLabel="Bias"
         :chartData="chartData['Weights&Bias'].Bias"
       )
-    //.statistics-box_main.statistics-box_col(v-show="currentTab === 'Gradients'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients' && chartData.Gradients")
       .statistics-box_row
         chart-base(
-        chartLabel="Accuracy during one epoch"
-        /:chartData="optionLine4"
+        chartLabel="Min"
+        :chartData="chartData.Gradients.Min"
         )
         chart-base(
-        chartLabel="Accuracy over all epochs"
-        /:chartData="optionLine5"
+        chartLabel="Max"
+        :chartData="chartData.Gradients.Max"
         )
       .statistics-box_row
         chart-base(
-        chartLabel="Accuracy over all epochs"
-        /:chartData="optionLine6"
+        chartLabel="Average"
+        :chartData="chartData.Gradients.Average"
         )
 </template>
 
@@ -68,6 +67,9 @@
         else if (name === 'Weights & Bias') {
           this.getWeightsStatistics()
         }
+        else if (name === 'Gradients') {
+          this.getGradientsStatistics()
+        }
 
       },
       getStatistics() {
@@ -75,6 +77,9 @@
       },
       getWeightsStatistics() {
         this.chartRequest(this.boxElementID, 'FC', 'Weights&Bias')
+      },
+      getGradientsStatistics() {
+        this.chartRequest(this.boxElementID, 'FC', 'Gradients')
       }
     }
   }
