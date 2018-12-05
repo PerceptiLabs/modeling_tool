@@ -89,6 +89,9 @@ const viewBoxMixin = {
         //   clearInterval(this.idTimer);
         // }
         //if(this.serverStatus === 'Training') {
+        if(layerId === undefined) {
+          return
+        }
           const client = new requestApi();
           client.sendMessage(theData)
             .then((data)=> {

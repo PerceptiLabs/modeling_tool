@@ -10,11 +10,11 @@
 </template>
 
 <script>
-  import LearnClassDbscans        from '@/components/network-elements/elements/learn-class-dbscans/viewBox-learn-class-dbscans.vue'
-  import LearnClassKMeans         from '@/components/network-elements/elements/learn-class-k-means/viewBox-learn-class-k-means.vue'
-  import LearnClassKNearest       from '@/components/network-elements/elements/learn-class-k-nearest/viewBox-learn-class-k-nearest.vue'
-  import LearnClassRandomForest   from '@/components/network-elements/elements/learn-class-random-forest/viewBox-learn-class-random-forest.vue'
-  import LearnClassVectorMachine  from '@/components/network-elements/elements/learn-class-vector-machine/viewBox-learn-class-vector-machine.vue'
+  import ClassicMLDbscans     from '@/components/network-elements/elements/classic-ml-dbscans/viewBox-classic-ml-dbscans.vue'
+  import ClassicMLKMeans      from '@/components/network-elements/elements/classic-ml-k-means/viewBox-classic-ml-k-means.vue'
+  import ClassicMLKNN         from '@/components/network-elements/elements/classic-ml-k-nearest/viewBox-classic-ml-k-nearest.vue'
+  import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/viewBox-classic-ml-random-forest.vue'
+  import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/viewBox-classic-ml-vector-machine.vue'
 
   import TrainDynamic     from '@/components/network-elements/elements/train-dynamic/viewBox-train-dynamic.vue'
   import TrainGenetic     from '@/components/network-elements/elements/train-genetic/viewBox-train-genetic.vue'
@@ -26,8 +26,8 @@
 export default {
   name: "TheStatistics",
   components: {
-    LearnClassDbscans, LearnClassKMeans, LearnClassKNearest, LearnClassRandomForest, LearnClassVectorMachine,
-    TrainDynamic, TrainGenetic, TrainNormal, TrainNormalData, TrainReinforce
+    TrainNormal, TrainNormalData, TrainGenetic, TrainDynamic, TrainReinforce,
+    ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
   },
   props: {
     elData: {

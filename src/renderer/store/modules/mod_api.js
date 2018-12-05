@@ -45,11 +45,12 @@ const actions = {
     dispatch('API_getStatus');
     setTimeout(()=>{
       if(getters.GET_serverStatus === 'Offline') {
-        let openServer = exec('core_local/app-server.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-        openServer.on('close', (code) => {
-          console.error(code);
-          commit('SET_serverStatus', {Status: 'Offline'});
-        });
+        //let openServer = exec('core_local/app-server.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+        // openServer.on('close', (code) => {
+        //   console.error(code);
+        //   commit('SET_serverStatus', {Status: 'Offline'});
+        // });
+
         // openServer.stdout.on('data', (data) => {
         //   console.log(`stdout: ${data}`);
         // });
@@ -91,24 +92,24 @@ const actions = {
     net.network.forEach((el)=> {
       let elType = '';
 
-      switch (el.componentName) {
-        case 'DataData':
-          elType = 'Data';
-          break;
-        case 'TrainNormal':
-          elType = 'Train';
-          break;
-        case 'ProcessHot':
-          elType = 'OneHot';
-          break;
-        case 'LearnDeepConnect':
-          elType = 'FC';
-          break;
-      }
+      // switch (el.componentName) {
+      //   case 'DataData':
+      //     elType = 'Data';
+      //     break;
+      //   case 'TrainNormal':
+      //     elType = 'Train';
+      //     break;
+      //   case 'ProcessHot':
+      //     elType = 'OneHot';
+      //     break;
+      //   case 'LearnDeepConnect':
+      //     elType = 'FC';
+      //     break;
+      // }
 
       message.Layers[el.layerId] = {
         Name: el.layerName,
-        Type: elType,
+        Type: el.componentName,
         Properties: el.layerSettings,
         backward_connections: el.connectionIn,
         forward_connections: el.connectionOut
@@ -119,7 +120,7 @@ const actions = {
       action: "Start",
       value: message
     };
-
+    console.log(theData);
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {

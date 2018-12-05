@@ -103,13 +103,13 @@
         }
       },
       getStatistics() {
-        this.chartRequest(this.statElementID, 'Train', 'Prediction')
+        this.chartRequest(this.statElementID, 'TrainNormal', 'Prediction')
       },
       getAccStatistics() {
-        this.chartRequest(this.statElementID, 'Train', 'Accuracy')
+        this.chartRequest(this.statElementID, 'TrainNormal', 'Accuracy')
       },
       getLossStatistics() {
-        this.chartRequest(this.statElementID, 'Train', 'Loss')
+        this.chartRequest(this.statElementID, 'TrainNormal', 'Loss')
       }
     }
   }

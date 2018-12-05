@@ -305,7 +305,7 @@ ECharts.registerTheme('quantum', {
         "width": "3"
       }
     },
-    "symbolSize": "10",
+    "symbolSize": "0",
       "symbol": "emptyCircle",
       "smooth": true
   },

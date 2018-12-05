@@ -14,7 +14,7 @@ const clickOutside = function (event) {
 
 const trainingElements =  ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
 //const trainingElements =  ['TrainNormal'];
-const deepLearnElements = ['LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent'];
+const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningDeconv', 'DeepLearningRecurrent'];
 
 const openLoadDialog = function (callback, options) {
   let dialog = remote.dialog;

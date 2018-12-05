@@ -1,0 +1,22 @@
+<template lang="pug">
+  .btn.btn--layersbar.net-element-learn-deep(:draggable="draggable"
+  data-component="DeepLearningConv"
+  data-layer="Convolution"
+  data-type="Other"
+  v-tooltip="'Convolution'"
+  )
+    i.icon.icon-round-out
+
+</template>
+
+<script>
+export default {
+  name: 'ViewDeepLearningConv',
+  props: {
+    draggable: {
+      type: Boolean,
+      default: false
+    }
+  }
+}
+</script>

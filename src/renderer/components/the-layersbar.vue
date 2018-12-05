@@ -38,15 +38,15 @@
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
 
-  import LearnDeepConnect     from '@/components/network-elements/elements/learn-deep-connect/view-learn-deep-connect.vue'
-  import LearnDeepConvolut    from '@/components/network-elements/elements/learn-deep-convolut/view-learn-deep-convolut.vue'
-  import LearnDeepDeconvolut  from '@/components/network-elements/elements/learn-deep-deconvolut/view-learn-deep-deconvolut.vue'
-  import LearnDeepRecurrent   from '@/components/network-elements/elements/learn-deep-recurrent/view-learn-deep-recurrent.vue'
+  import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
+  import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
+  import DeepLearningDeconv   from '@/components/network-elements/elements/deep-learning-deconv/view-deep-learning-deconv.vue'
+  import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/view-deep-learning-recurrent.vue'
 
   import ProcessCrop          from '@/components/network-elements/elements/process-crop/view-process-crop.vue'
   import ProcessEmbed         from '@/components/network-elements/elements/process-embed/view-process-embed.vue'
   import ProcessGrayscale     from '@/components/network-elements/elements/process-grayscale/view-process-grayscale.vue'
-  import ProcessHot           from '@/components/network-elements/elements/process-hot/view-process-hot.vue'
+  import ProcessOneHot        from '@/components/network-elements/elements/process-one-hot/view-process-one-hot.vue'
   import ProcessReshape       from '@/components/network-elements/elements/process-reshape/view-process-reshape.vue'
 
   import TrainNormal          from '@/components/network-elements/elements/train-normal/view-train-normal.vue'
@@ -60,46 +60,24 @@
   import MathSoftmax          from '@/components/network-elements/elements/math-softmax/view-math-softmax.vue'
   import MathSplit            from '@/components/network-elements/elements/math-split/view-math-split.vue'
 
-  import LearnClassDbscans    from '@/components/network-elements/elements/learn-class-dbscans/view-learn-class-dbscans.vue'
-  import LearnClassKMeans     from '@/components/network-elements/elements/learn-class-k-means/view-learn-class-k-means.vue'
-  import LearnClassKNearest   from '@/components/network-elements/elements/learn-class-k-nearest/view-learn-class-k-nearest.vue'
-  import LearnClassRandomForest  from '@/components/network-elements/elements/learn-class-random-forest/view-learn-class-random-forest.vue'
-  import LearnClassVectorMachine from '@/components/network-elements/elements/learn-class-vector-machine/view-learn-class-vector-machine.vue'
+  import ClassicMLDbscans     from '@/components/network-elements/elements/classic-ml-dbscans/view-classic-ml-dbscans.vue'
+  import ClassicMLKMeans      from '@/components/network-elements/elements/classic-ml-k-means/view-classic-ml-k-means.vue'
+  import ClassicMLKNN         from '@/components/network-elements/elements/classic-ml-k-nearest/view-classic-ml-k-nearest.vue'
+  import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/view-classic-ml-random-forest.vue'
+  import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/view-classic-ml-vector-machine.vue'
 
 
 export default {
   name: 'TheLayersbar',
   mixins: [clickOutside],
   components: {
-    IoInput,
-    IoOutputBackprop,
-    IoOutputGenetic,
-    IoOutputRouting,
-    DataData,
-    DataEnvironment,
-    LearnDeepConnect,
-    LearnDeepConvolut,
-    LearnDeepDeconvolut,
-    LearnDeepRecurrent,
-    ProcessCrop,
-    ProcessEmbed,
-    ProcessGrayscale,
-    ProcessHot,
-    ProcessReshape,
-    TrainNormal,
-    TrainNormalData,
-    TrainGenetic,
-    TrainDynamic,
-    TrainReinforce,
-    MathArgmax,
-    MathMerge,
-    MathSoftmax,
-    MathSplit,
-    LearnClassDbscans,
-    LearnClassKMeans,
-    LearnClassKNearest,
-    LearnClassRandomForest,
-    LearnClassVectorMachine
+    IoInput, IoOutputBackprop, IoOutputGenetic, IoOutputRouting,
+    DataData, DataEnvironment,
+    DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
+    ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
+    TrainNormal, TrainNormalData, TrainGenetic, TrainDynamic, TrainReinforce,
+    MathArgmax, MathMerge, MathSoftmax, MathSplit,
+    ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
   },
   data() {
     return {
@@ -124,7 +102,7 @@ export default {
           layerClass: 'net-element-process',
           iconClass: 'icon-settings',
           showEl: false,
-          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot', 'process-crop']
+          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-crop']
           //networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot']
         },
         {
@@ -156,7 +134,7 @@ export default {
           layerClass: 'net-element-learn-class',
           iconClass: 'icon-mind',
           showEl: false,
-          networkElements: ['LearnClassDbscans', 'LearnClassKMeans', 'LearnClassKNearest', 'LearnClassRandomForest', 'LearnClassVectorMachine']
+          networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM']
         }
       ],
     }

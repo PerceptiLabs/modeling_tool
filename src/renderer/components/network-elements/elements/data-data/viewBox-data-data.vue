@@ -25,7 +25,7 @@
     },
     methods: {
       getStatistics() {
-        this.chartRequest(this.boxElementID, 'Data', '')
+        this.chartRequest(this.boxElementID, 'DataData', '')
       },
     }
   }
