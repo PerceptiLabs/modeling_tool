@@ -95,7 +95,7 @@ const viewBoxMixin = {
           const client = new requestApi();
           client.sendMessage(theData)
             .then((data)=> {
-              //console.log(data);
+              console.log(data);
               if(view.length) {
                 //this.chartData[view] = data
                 this.$set(this.chartData, view, data)

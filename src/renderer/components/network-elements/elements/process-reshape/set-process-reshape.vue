@@ -10,38 +10,30 @@
       )
         h3(v-html="tab")
     .popup_tab-body
-      .popup_body(
-        :class="{'active': tabSelected == 0}"
-      )
+      .popup_body(:class="{'active': tabSelected == 0}")
         .settings-layer
-          //.settings-layer_section
+          .settings-layer_section
             .form_row
               .form_label Input dimensions:
               .form_input
-                triple-input(
-                /:value1="50"
-                /:value2="60"
-                /:value3="10")
-          .settings-layer_section
+                triple-input(v-model="settings.Shape")
+          //.settings-layer_section
             .form_row
               .form_label Reshape:
               .form_input
                 input(type="text")
-          .settings-layer_section
+          //.settings-layer_section
             .form_row
               .form_label Transpose:
               .form_input
                 input(type="text")
-          //-.settings-layer_section
+          .settings-layer_section
             .form_row
               .form_label Output dimensions:
               .form_input
-                triple-input(
-                /:value1="50"
-                /:value2="60"
-                /:value3="10")
+                triple-input(v-model="settings.Permutation")
           .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
+            button.btn.btn--primary(type="button" @click="applySettings") Apply
 
       .popup_body(
           :class="{'active': tabSelected == 1}"
@@ -64,10 +56,10 @@
     },
     data() {
       return {
-        //TODO ARRAY!
-        setting: {
-          Shape:"[28,28,1]",
-          Permutation:"[0,1,2]",
+        tabs: ['Settings', 'Code'],
+        settings: {
+          Shape: [28,28,1],
+          Permutation: [0,1,2],
         }
       }
     }

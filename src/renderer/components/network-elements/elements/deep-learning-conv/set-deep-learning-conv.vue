@@ -10,9 +10,7 @@
       )
         h3(v-html="tab")
     .popup_tab-body
-      .popup_body(
-        :class="{'active': tabSelected == 0}"
-      )
+      .popup_body(:class="{'active': tabSelected == 0}")
         .settings-layer
           .settings-layer_section
             .form_row
@@ -92,43 +90,38 @@
               .form_input
                 base-checkbox(valueInput="Pooling" v-model="settings.pooling")
                 //input(type="checkbox" :value="settings.pooling" @change="changeCheckbox($event)")
-          //-template(v-if="settings.pooling")
+          template(v-if="settings.PoolBool")
             .settings-layer_section
               .form_row
                 .form_label Pooling type:
                 .form_input
-                  base-radio(groupName="group7")
+                  base-radio(groupName="Pooling" valueInput="Max"  v-model="settings.Pooling")
                     span Max pooling
-                  base-radio(groupName="group7")
+                  base-radio(groupName="Pooling" valueInput="Mean"  v-model="settings.Pooling")
                     span Mean pooling
             .settings-layer_section
               .form_row
                 .form_label Pooling area:
                 .form_input
-                  input(type="text")
+                  input(type="text" v-model="settings.Pool_area")
             .settings-layer_section
               .form_row
                 .form_label Pooling stride:
                 .form_input
-                  input(type="text")
+                  input(type="text" v-model="settings.Pool_stride")
             .settings-layer_section
               .form_row
                 .form_label Zero-padding for pooling:
                 .form_input
-                  base-radio(groupName="group6")
-                    span Yes
-                  base-radio(groupName="group6")
-                    span No
+                  base-radio(groupName="Pool_padding" valueInput="SAME" v-model="settings.Pool_padding")
+                    span SAME
+                  base-radio(groupName="Pool_padding" valueInput="VALID" v-model="settings.Pool_padding")
+                    span VALID
 
           .settings-layer_foot
-            button.btn.btn--primary(type="button"
-              @click="applySettings"
-            ) Apply
+            button.btn.btn--primary(type="button" @click="applySettings") Apply
 
-
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
-        )
+      .popup_body(:class="{'active': tabSelected == 1}")
         settings-code
 
 </template>
@@ -147,14 +140,18 @@ export default {
     return {
       tabs: ['Settings', 'Code'],
       settings: {
-        Conv_dim: "2D", //#Automatic, 1D, 2D, 3D
+        Conv_dim: "2D", //Automatic, 1D, 2D, 3D
         Patch_size: "3",
         Stride: "2",
-        Padding: "SAME", //#'SAME', 'VALID'
+        Padding: "SAME", //'SAME', 'VALID'
         Feature_maps: "8",
-        Activation_function: "Sigmoid", //#Sigmoid, ReLU, Tanh, None
-        Dropout: false, //#True, False
-        PoolBool: false, //#True, False
+        Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
+        Dropout: false, //True, False
+        PoolBool: false, //True, False
+        Pooling: "Max", //Max, Mean
+        Pool_area: "2",
+        Pool_padding: "SAME", //'SAME', 'VALID'
+        Pool_stride: "2",
       }
     }
   },

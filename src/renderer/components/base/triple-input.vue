@@ -1,50 +1,61 @@
 <template lang="pug">
   .triple-input
     input.triple-input_input(type="number"
-      @input="onChange1($event.target.value)"
-      :value="value1"
-      )
-    template(v-if="value2 !== false")
-      span.triple-input_seporate X
-      input.triple-input_input(type="number"
-        @input="onChange2($event.target.value)"
-        :value="value2"
-        )
-      template(v-if="value3 !== false")
-        span.triple-input_seporate X
-        input.triple-input_input(type="number"
-          @input="onChange3($event.target.value)"
-          :value="value3"
-          )
+      v-model.number="value1"
+    )
+    span.triple-input_seporate X
+    input.triple-input_input(type="number"
+      v-model.number="value2"
+    )
+    span.triple-input_seporate X
+    input.triple-input_input(type="number"
+      v-model.number="value3"
+    )
 </template>
 
 <script>
 export default {
   name: "TripleInput",
+  model: {
+    prop: 'inputData',
+    event: 'input'
+  },
+
   props: {
-    value1: {type: [String, Number, Boolean], default: false},
-    value2: {type: [String, Number, Boolean], default: false},
-    value3: {type: [String, Number, Boolean], default: false}
+    inputData: Array
   },
-  methods: {
-    onChange1(val) {
-      this.$emit('setValue1', val)
+  computed: {
+    value1: {
+      get() {
+        if(this.inputData) {
+          return this.inputData[0]
+        }
+      },
+      set(newValue) {
+        this.$emit('input', [newValue, this.value2, this.value3])
+      }
     },
-    onChange2(val) {
-      this.$emit('setValue2', val)
+    value2: {
+      get() {
+        if(this.inputData) {
+          return this.inputData[1]
+        }
+      },
+      set(newValue) {
+        this.$emit('input', [this.value1, newValue, this.value3])
+      }
     },
-    onChange3(val) {
-      this.$emit('setValue3', val)
-    }
+    value3: {
+      get() {
+        if(this.inputData) {
+          return this.inputData[2]
+        }
+      },
+      set(newValue) {
+        this.$emit('input', [this.value1, this.value2, newValue])
+      }
+    },
   },
-  watch: {
-    // resultVal: {
-    //   handler: function (val, oldVal) {
-    //     this.$emit('setValue', val)
-    //   },
-    //   deep:true,
-    // }
-  }
 }
 </script>
 

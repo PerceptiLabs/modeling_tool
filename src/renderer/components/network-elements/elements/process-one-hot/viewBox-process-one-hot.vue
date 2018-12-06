@@ -34,7 +34,7 @@
     },
     methods: {
       getStatistics() {
-        this.chartRequest(this.boxElementID, 'OneHot', '');
+        this.chartRequest(this.boxElementID, 'ProcessOneHot', '');
         // this.idTimer = setInterval(()=>{
         //   let theData = this.returnDataRequest(this.boxElementID, 'OneHot', '');
         //   const client = new requestApi();

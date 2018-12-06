@@ -69,7 +69,7 @@ export default {
       settings: {
         Neurons: "10",
         Version: "LSTM", //#LSTM, GRU, RNN
-        Time_steps: "1",
+        Time_steps: "2",
       }
     }
   },

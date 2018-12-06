@@ -4,22 +4,18 @@
       button.popup_header(
         v-for="(tab, i) in tabs"
         :key="tab.i"
-        @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
         :disabled="tabSelected != i"
+        @click="setTab(i)"
       )
         h3(v-html="tab")
     .popup_tab-body
-      .popup_body(
-        :class="{'active': tabSelected == 0}"
-      )
+      .popup_body(:class="{'active': tabSelected == 0}")
         .settings-layer
           .settings-layer_section
             .form_row
               input.form_input(type="text" v-model="settings.accessProperties.Path")
-              button.btn.btn--primary(type="button"
-                @click="loadFile"
-              ) Load
+              button.btn.btn--primary(type="button" @click="loadFile") Load
           .settings-layer_section
             .form_row
               .form_label Data type:
@@ -29,12 +25,8 @@
                 base-radio(groupName="group" valueInput="Labels" v-model="settings.accessProperties.Type")
                   span Labels
           .settings-layer_foot
-            button.btn.btn--primary(type="button"
-            @click="applySettings"
-            ) Apply
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
-        )
+            button.btn.btn--primary(type="button" @click="applySettings") Apply
+      .popup_body(:class="{'active': tabSelected == 1}")
         settings-cloud
 
 </template>

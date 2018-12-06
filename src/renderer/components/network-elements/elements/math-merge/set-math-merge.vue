@@ -19,12 +19,12 @@
               .form_label Operation:
               .form_input
                 div
-                  base-radio(groupName="group" valueInput="Concat" v-model="settings.neurons")
+                  base-radio(groupName="group" valueInput="Concat" v-model="settings.Type")
                     span Concatenate
-                  .form_row(v-if="settings.neurons == 'Concat' ")
+                  .form_row(v-if="settings.Type == 'Concat' ")
                     span Merge dimension
                     .form_input
-                      input(type="number")
+                      input(type="number" v-model="settings.Merge_dim")
                 div
                   base-radio(groupName="group" valueInput="Sub" v-model="settings.Type")
                     span Subtraction
@@ -66,8 +66,8 @@ export default {
     return {
       tabs: ['Settings', 'Code'],
       settings: {
-        //TODO Concat -> input
-        Type:"Add", //#Add, Sub, Multi, Div, Concat, Division
+        Type:"Add", //#Add, Sub, Multi, Div, Concat
+        Merge_dim: ''
       }
     }
   },

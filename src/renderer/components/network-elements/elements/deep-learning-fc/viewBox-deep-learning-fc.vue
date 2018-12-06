@@ -73,13 +73,13 @@
 
       },
       getStatistics() {
-        this.chartRequest(this.boxElementID, 'FC', 'Output')
+        this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Output')
       },
       getWeightsStatistics() {
-        this.chartRequest(this.boxElementID, 'FC', 'Weights&Bias')
+        this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Weights&Bias')
       },
       getGradientsStatistics() {
-        this.chartRequest(this.boxElementID, 'FC', 'Gradients')
+        this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Gradients')
       }
     }
   }
