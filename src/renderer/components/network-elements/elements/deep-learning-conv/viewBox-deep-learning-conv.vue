@@ -10,53 +10,75 @@
         @click="setTab(tab)"
         :class="{'active': currentTab === tab}"
         ) {{ tab }}
-    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Weights & Output'")
-      chart-base(
-        chartLabel="Accuracy during one epoch"
-        :chartData="optionLine1"
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output' && chartData['Weights&Output']")
+      chart-heatmap(
+        chartLabel="Weights"
+        :chartData="chartData['Weights&Output'].Weights"
         )
-    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Bias'")
-      chart-base(
-        chartLabel="Accuracy over all epochs"
-        :chartData="optionLine3"
+      //chart-base(
+        chartLabel="Bias"
+        /:chartData="chartData['Output&Bias'].Output"
         )
-    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Gradients'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bias' && chartData.Bias")
       .statistics-box_row
         chart-base(
-          chartLabel="Accuracy during one epoch"
-          :chartData="optionLine4"
-          )
+        chartLabel="Bias"
+        :chartData="chartData.Bias.Bias"
+        )
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients' && chartData.Gradients")
+      .statistics-box_row
         chart-base(
-          chartLabel="Accuracy over all epochs"
-          :chartData="optionLine5"
-          )
+        chartLabel="Min"
+        :chartData="chartData.Gradients.Min"
+        )
         chart-base(
-          chartLabel="Accuracy over all epochs"
-          :chartData="optionLine6"
-          )
+        chartLabel="Max"
+        :chartData="chartData.Gradients.Max"
+        )
+      .statistics-box_row
+        chart-base(
+        chartLabel="Average"
+        :chartData="chartData.Gradients.Average"
+        )
 </template>
 
 <script>
-  import ChartBase from "@/components/charts/chart-base.vue";
-  import dataLine     from "@/components/charts/line.js";
+  import ChartBase    from "@/components/charts/chart-base";
+  import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
+  import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxDeepLearningConv",
-    components: {ChartBase},
+    components: {ChartBase, ChartHeatmap},
+    mixins: [viewBoxMixin],
     data() {
       return {
-        currentTab: 'Gradients',
+        currentTab: 'Weights & Output',
         tabset: ['Weights & Output', 'Bias', 'Gradients'],
-        optionLine1: dataLine,
-        optionLine2: dataLine,
-        optionLine3: dataLine,
-        optionLine4: dataLine,
-        optionLine5: dataLine,
-        optionLine6: dataLine,
       }
     },
     methods: {
       setTab(name) {
-        this.currentTab = name
+        clearInterval(this.idTimer);
+        this.currentTab = name;
+        if(name === 'Weights & Output') {
+          this.getStatistics()
+        }
+        else if (name === 'Bias') {
+          this.getWeightsStatistics()
+        }
+        else if (name === 'Gradients') {
+          this.getGradientsStatistics()
+        }
+
+      },
+      getStatistics() {//not Weights
+        this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Weights&Output')
+      },
+      getWeightsStatistics() {
+        this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Bias')
+      },
+      getGradientsStatistics() {
+        this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Gradients')
       }
     }
   }

@@ -10,53 +10,73 @@
         @click="setTab(tab)"
         :class="{'active': currentTab === tab}"
         ) {{ tab }}
-    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Weights & Output'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output' && chartData.Output")
       chart-base(
-      chartLabel="Accuracy during one epoch"
-      :chartData="optionLine1"
+      chartLabel="Value"
+      :chartData="chartData.Output.Output"
       )
-    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Bias'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias' && chartData['Weights&Bias']")
       chart-base(
-      chartLabel="Accuracy over all epochs"
-      :chartData="optionLine3"
+      chartLabel="Weights"
+      :chartData="chartData['Weights&Bias'].Weights"
       )
-    .statistics-box_main.statistics-box_col(v-show="currentTab === 'Gradients'")
+      chart-base(
+      chartLabel="Bias"
+      :chartData="chartData['Weights&Bias'].Bias"
+      )
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients' && chartData.Gradients")
       .statistics-box_row
         chart-base(
-        chartLabel="Accuracy during one epoch"
-        :chartData="optionLine4"
+        chartLabel="Min"
+        :chartData="chartData.Gradients.Min"
         )
         chart-base(
-        chartLabel="Accuracy over all epochs"
-        :chartData="optionLine5"
+        chartLabel="Max"
+        :chartData="chartData.Gradients.Max"
         )
-      chart-base(
-        chartLabel="Accuracy over all epochs"
-        :chartData="optionLine6"
-      )
+      .statistics-box_row
+        chart-base(
+        chartLabel="Average"
+        :chartData="chartData.Gradients.Average"
+        )
 </template>
 
 <script>
-  import ChartBase from "@/components/charts/chart-base.vue";
-  import dataLine     from "@/components/charts/line.js";
+  import ChartBase    from "@/components/charts/chart-base.vue";
+  import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxDeepLearningRecurrent",
     components: {ChartBase},
+    mixins: [viewBoxMixin],
     data() {
       return {
-        currentTab: 'Gradients',
-        tabset: ['Weights & Output', 'Bias', 'Gradients'],
-        optionLine1: dataLine,
-        optionLine2: dataLine,
-        optionLine3: dataLine,
-        optionLine4: dataLine,
-        optionLine5: dataLine,
-        optionLine6: dataLine,
+        currentTab: 'Output',
+        tabset: ['Output', 'Weights & Bias', 'Gradients'],
       }
     },
     methods: {
       setTab(name) {
-        this.currentTab = name
+        clearInterval(this.idTimer);
+        this.currentTab = name;
+        if(name === 'Output') {
+          this.getStatistics()
+        }
+        else if (name === 'Weights & Bias') {
+          this.getWeightsStatistics()
+        }
+        else if (name === 'Gradients') {
+          this.getGradientsStatistics()
+        }
+
+      },
+      getStatistics() {
+        this.chartRequest(this.boxElementID, 'DeepLearningRecurrent', 'Output')
+      },
+      getWeightsStatistics() {
+        this.chartRequest(this.boxElementID, 'DeepLearningRecurrent', 'Weights&Bias')
+      },
+      getGradientsStatistics() {
+        this.chartRequest(this.boxElementID, 'DeepLearningRecurrent', 'Gradients')
       }
     }
   }

@@ -39,10 +39,10 @@
           i.icon.icon-step-next
     ul.toolbar_list
       li
-        //
+        //:disabled="coreStatus === 'Offline'"
         button.btn.btn--toolbar(type="button"
           v-if="!(coreStatus === 'Training' || coreStatus === 'Validation')"
-        :disabled="coreStatus === 'Offline'"
+
           :class="statusStartBtn"
           @click="trainStart()"
         )

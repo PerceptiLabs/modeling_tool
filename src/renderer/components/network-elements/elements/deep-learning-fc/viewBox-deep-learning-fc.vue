@@ -42,11 +42,8 @@
 </template>
 
 <script>
-  import ChartBase  from "@/components/charts/chart-base.vue";
-
-  import requestApi   from "@/core/api.js";
+  import ChartBase    from "@/components/charts/chart-base.vue";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
-
   export default {
     name: "ViewBoxDeepLearningFC",
     components: {ChartBase},
