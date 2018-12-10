@@ -121,6 +121,7 @@ const actions = {
       value: message
     };
     console.log(theData);
+
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
@@ -132,6 +133,7 @@ const actions = {
         }
         else console.error(err);
       });
+
     watchStatus();
     function watchStatus() {
       let timer = setInterval(()=>{

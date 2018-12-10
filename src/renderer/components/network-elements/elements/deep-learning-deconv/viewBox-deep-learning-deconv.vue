@@ -11,15 +11,18 @@
         :class="{'active': currentTab === tab}"
         ) {{ tab }}
       //&& chartData['Weights&Output']
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output' ")
-      chart-heatmap(
-        chartLabel="Weights"
-        :chartData="chartData['Output&Bias'].Weights"
-      )
-      //chart-base(
-        chartLabel="Bias"
-        /:chartData="chartData['Output&Bias'].Output"
-        )
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output' && chartData['Weights&Output']")
+      .statistics-box_row
+        .statistics-box_col
+          chart-heatmap(
+          chartLabel="Weights"
+          :chartData="chartData['Weights&Output'].Weights"
+          )
+        .statistics-box_col
+          chart-picture(
+          chartLabel="Output"
+          :chartData="chartData['Weights&Output'].Output"
+          )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bias' && chartData.Bias")
       .statistics-box_row
         chart-base(
@@ -46,10 +49,11 @@
 <script>
   import ChartBase    from "@/components/charts/chart-base";
   import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
+  import ChartPicture from "@/components/charts/chart-picture.vue";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxDeepLearningDeconv",
-    components: {ChartBase, ChartHeatmap},
+    components: {ChartBase, ChartHeatmap, ChartPicture},
     mixins: [viewBoxMixin],
     data() {
       return {

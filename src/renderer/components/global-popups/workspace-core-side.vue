@@ -51,7 +51,7 @@ export default {
     },
     startTraining() {
       this.$store.dispatch('globalView/NET_trainingStart');
-      //this.$store.dispatch('mod_api/API_startTraining');
+      this.$store.dispatch('mod_api/API_startTraining');
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

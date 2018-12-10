@@ -238,6 +238,7 @@ const mutations = {
   ADD_arrow(state, val) {
     let startID = state.startArrowID;
     let stopID = val.stopID;
+    console.log(startID, stopID);
     if(stopID == startID) {
       return
     }
@@ -254,7 +255,7 @@ const mutations = {
     // });
 
     //TODO start only one type connection
-    pathNet.network[indexStart].connectionOut.push(stopID.toString());
+    pathNet.network[indexStart].connectionOut.push(stopID.toString()); //ID.toString need for the core
 
     let indexStop = pathNet.network.findIndex((element, index, array)=> { return element.layerId == stopID;});
     pathNet.network[indexStop].connectionIn.push(startID.toString());
@@ -288,10 +289,16 @@ const mutations = {
   },
   DELETE_elConnection(state, value) {
     value.newNet.forEach((el)=>{
-      let connectArr = el.connectionOut.filter((connect)=>{
-        return !value.arrSelectId.includes(connect.id)
+      el.connectionOut = el.connectionOut.filter((connect)=>{
+        //TODO return when return arrowType
+        //return !value.arrSelectId.includes(connect.id)
+        return !value.arrSelectId.includes(connect)
       });
-      el.connectionOut = connectArr
+      el.connectionIn  = el.connectionOut.filter((connect)=>{
+        //TODO return when return arrowType
+        //return !value.arrSelectId.includes(connect.id)
+        return !value.arrSelectId.includes(connect)
+      });
     });
     state.workspaceContent[state.currentNetwork].network = value.newNet;
     value.dispatch('mod_events/EVENT_calcArray', null, {root: true})

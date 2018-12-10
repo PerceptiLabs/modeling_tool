@@ -27,6 +27,9 @@
       ipcRenderer.on('saveNetwork', (event) => {
         this.$store.commit('mod_events/set_saveNetwork')
       });
+      ipcRenderer.on('info', (event) => {
+        console.log(event);
+      });
     },
   }
 </script>

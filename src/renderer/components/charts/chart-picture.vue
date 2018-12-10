@@ -1,6 +1,5 @@
 <template lang="pug">
-  .base-chart(
-  :class="{'full-view': fullView}")
+  .base-chart(:class="{'full-view': fullView}")
     .base-chart_head(v-if="!headerOff")
       .chart-head_title
         h5.ellipsis {{ chartLabel }}
@@ -35,26 +34,7 @@ export default {
     },
   },
   mounted() {
-    this.canvasBox = this.$refs.canvas.getContext('2d');
-    let imgH = this.chartData.length;
-    let imgW = this.chartData[0].length;
-    this.$refs.canvas.style.width = imgW;
-    this.$refs.canvas.style.height = imgH;
-    var imgData = this.canvasBox.createImageData(imgW, imgH);
-    let floatData = this.chartData.reduce((sum, current)=> sum.concat(current),[]);
-    let img = floatData.reduce((sum, current)=> {
-        let ff = Math.round(current * 255);
-        let rgba = [ff, ff, ff, 255];
-        return sum.concat(rgba)
-      },[]);
-    for (var i=0;i<imgData.data.length; i+=4)
-    {
-      imgData.data[i+0]=img[i+0];
-      imgData.data[i+1]=img[i+1];
-      imgData.data[i+2]=img[i+2];
-      imgData.data[i+3]=255;
-    }
-    this.canvasBox.putImageData(imgData,0, 0, 0, 0, 25, 25);
+
   },
   data() {
     return {
@@ -66,19 +46,44 @@ export default {
   },
   computed: {
     // chartModel() {
-    //
-    //   return
+    //   return this.chartData[0];
     // }
   },
   watch: {
     chartData(newData) {
-      console.log('chartData watch');
-
-    }
+      //console.log(newData);
+      // if(newData === null) {
+      //   return
+      // }
+      this.drawPicture(newData[0].data)
+    },
   },
   methods: {
     toggleFullView() {
       this.fullView = !this.fullView
+    },
+    drawPicture(img) {
+      this.canvasBox = this.$refs.canvas.getContext('2d');
+      // let imgH = this.chartModel.height;
+      // let imgW = this.chartModel.width;
+      let imgH = img.length;
+      let imgW = img[0].length/4;
+      // let boxH = this.$refs.canvas.offsetParent.offsetWidth;
+      // let boxW = this.$refs.canvas.offsetParent.offsetHeight;
+      this.$refs.canvas.setAttribute('width', imgW);
+      this.$refs.canvas.setAttribute('height', imgH);
+      if(imgH/imgW >= 0) {
+        this.$refs.canvas.style.minHeight = '100%';
+      }
+      else {
+        this.$refs.canvas.style.width = '100%';
+      }
+
+      let imgData = this.canvasBox.createImageData(imgW, imgH);
+      let floatData = img.reduce((sum, current)=> sum.concat(current),[]);
+      floatData.forEach((el, index) => imgData.data[index] = el);
+
+      this.canvasBox.putImageData(imgData,0, 0);
     }
   },
   beforeDestroy() {
@@ -88,10 +93,12 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  .base-chart_main {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
   .chart-img {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
+
   }
 </style>

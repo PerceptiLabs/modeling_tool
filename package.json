@@ -1,12 +1,13 @@
 {
-  "name": "quantumnet",
-  "version": "0.0.1",
+  "name": "perceptilabs",
+  "version": "0.0.2",
   "author": "StetsenkoAnton <stetsenko.ant1@gmail.com>",
   "description": "QuantumNet is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.",
   "license": null,
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "cross-env BUILD_TARGET=core_local node .electron-vue/build.js && electron-builder",
+    "publish": "electron-builder -p always",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",
     "build:web": "cross-env BUILD_TARGET=web node .electron-vue/build.js",
@@ -17,8 +18,8 @@
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js"
   },
   "build": {
-    "productName": "quantumnet",
-    "appId": "com.perceptilabs.quantumnet",
+    "productName": "perceptilabs",
+    "appId": "com.perceptilabs.perceptilabs",
     "directories": {
       "output": "build"
     },
@@ -27,6 +28,12 @@
     ],
     "extraFiles": [
       "core_local"
+    ],
+    "publish": [
+      {
+        "provider": "generic",
+        "url": "https://gitlab.com"
+      }
     ],
     "dmg": {
       "contents": [
@@ -44,10 +51,19 @@
       ]
     },
     "mac": {
-      "icon": "build/icons/icon.icns"
+      "icon": "build/icons/icon.icns",
+      "category": "public.app-category.productivity",
+      "identity": "Mac Developer: username (XXXXXXXX)",
+      "target": [
+        "dmg"
+      ]
     },
     "win": {
-      "icon": "build/icons/icon.ico"
+      "icon": "build/icons/icon.ico",
+      "target": [
+        "nsis"
+      ],
+      "verifyUpdateCodeSignature": false
     },
     "linux": {
       "icon": "build/icons"
@@ -56,6 +72,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "echarts-gl": "^1.1.1",
+    "electron-updater": "^4.0.5",
     "universal-analytics": "^0.4.20",
     "v-tooltip": "^2.0.0-rc.33",
     "vee-validate": "^2.1.3",

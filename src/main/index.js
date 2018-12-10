@@ -1,10 +1,13 @@
 'use strict';
 
-import { app, BrowserWindow, Menu, ipcMain } from 'electron'
-import ua from 'universal-analytics'
-var visitor = ua('UA-129392553-1');
+import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron'
+import ua               from 'universal-analytics'
+import { autoUpdater }  from 'electron-updater'
 
 let mainWindow;
+//const visitor = ua('UA-129392553-1');
+const visitor = ua('UA-114940346-1');
+const UpdateUrl = 'https://electron-release-server.azurewebsites.net/updates';
 const mainMenu = [
   {
     label: 'File',
@@ -61,6 +64,7 @@ const winURL = process.env.NODE_ENV === 'development'
   : `file://${__dirname}/index.html`;
 
 function createWindow () {
+
   /**
    * Initial window options
    */
@@ -89,7 +93,7 @@ function createWindow () {
     if (process.platform !== 'darwin') {
       app.quit()
     }
-  })
+  });
 
   visitor.pageview("/").send();
 
@@ -99,7 +103,16 @@ function createWindow () {
     //   mainWindow = null
     // })
     mainWindow = null
-  })
+  });
+  /**
+   * start auto update
+   */
+  autoUpdater.setFeedURL(UpdateUrl);
+  //autoUpdater.checkForUpdates();
+  autoUpdater.checkForUpdatesAndNotify();
+  // if (process.env.NODE_ENV === 'production') {
+  //   autoUpdater.checkForUpdates();
+  // }
 }
 
 app.on('ready', createWindow);
@@ -140,16 +153,51 @@ app.on('activate', () => {
  * support auto updating. Code Signing with a valid certificate is required.
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-electron-builder.html#auto-updating
  */
+// autoUpdater.requestHeaders = { "PRIVATE-TOKEN": "Personal access Token" };
+// autoUpdater.autoDownload = true;
 
-/*
-import { autoUpdater } from 'electron-updater'
+// autoUpdater.setFeedURL({
+//   provider: "generic",
+//   url: "https://gitlab.com/_example_repo_/-/jobs/artifacts/master/raw/dist?job=build"
+// });
 
-autoUpdater.on('update-downloaded', () => {
-  autoUpdater.quitAndInstall()
-})
+autoUpdater.on('checking-for-update', ()=> {
+  console.log('Checking for update...');
+  mainWindow.webContents.send('info', 'Checking for update...!');
+});
+autoUpdater.on('update-available', (info)=> {
+  mainWindow.webContents.send('info', 'Update available.');
+});
+autoUpdater.on('update-not-available', (info)=> {
+  mainWindow.webContents.send('info', 'Update not available.');
+});
+autoUpdater.on('error', (err)=> {
+  mainWindow.webContents.send('info', 'Error in auto-updater. ' + err);
+});
+autoUpdater.on('download-progress', (progressObj)=> {
+  let log_message = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}% = ${progressObj.transferred}/${progressObj.total}`;
+  mainWindow.webContents.send('info', log_message);
+});
+autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
+  mainWindow.webContents.send('info', 'Update downloaded');
 
-app.on('ready', () => {
-  if (process.env.NODE_ENV === 'production') autoUpdater.checkForUpdates()
-})
- */
+  const dialogOpts = {
+    type: 'info',
+    buttons: ['Restart', 'Later'],
+    title: 'Application Update',
+    message: process.platform === 'win32' ? releaseNotes : releaseName,
+    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
+  };
+
+  dialog.showMessageBox(dialogOpts, (response) => {
+    if (response === 0) autoUpdater.quitAndInstall()
+  })
+  // setTimeout(function () {
+  //   autoUpdater.quitAndInstall();
+  // }, 500);
+});
+
+
+
+
 export default mainWindow
