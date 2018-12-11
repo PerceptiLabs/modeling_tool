@@ -7,7 +7,10 @@ import { autoUpdater }  from 'electron-updater'
 let mainWindow;
 //const visitor = ua('UA-129392553-1');
 const visitor = ua('UA-114940346-1');
-const UpdateUrl = 'https://electron-release-server.azurewebsites.net/updates';
+const UpdateOpt = {
+  provider: 'generic',
+  url: 'https://electron-release-server.azurewebsites.net/updates',
+};
 const mainMenu = [
   {
     label: 'File',
@@ -43,11 +46,16 @@ const mainMenu = [
   {
     label: 'Help',
     submenu: [
+      {label: 'Version' + app.getVersion()},
       {label: 'Help',   click() { require('electron').shell.openExternal('https://www.perceptilabs.com/html/product.html#tutorials')}},
-      {label: 'About',  click() { require('electron').shell.openExternal('https://www.perceptilabs.com/')}}
+      {label: 'About',  click() { require('electron').shell.openExternal('https://www.perceptilabs.com/')}},
+      {label: 'checkForUpdates',  click() {mainWindow.TESTcheckForUpdates()}},
+      {label: 'checkForUpdatesAndNotify',  click() {mainWindow.TESTcheckForUpdatesAndNotify()}},
+      {label: 'app',  click() {mainWindow.webContents.send('info', autoUpdater)}},
     ]
   }
 ];
+
 
 /**
  * Set `__static` path to static files in production
@@ -82,7 +90,7 @@ function createWindow () {
       //plugins: true,
     }
   });
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   const menuCustom = Menu.buildFromTemplate(mainMenu);
@@ -107,9 +115,21 @@ function createWindow () {
   /**
    * start auto update
    */
-  autoUpdater.setFeedURL(UpdateUrl);
-  //autoUpdater.checkForUpdates();
-  autoUpdater.checkForUpdatesAndNotify();
+  mainWindow.TESTcheckForUpdates = function() {
+    mainWindow.webContents.send('info', 'TESTcheckForUpdates');
+    autoUpdater.setFeedURL(UpdateOpt);
+    autoUpdater.checkForUpdates();
+  };
+  mainWindow.TESTcheckForUpdatesAndNotify = function() {
+    mainWindow.webContents.send('info', 'TESTcheckForUpdatesAndNotify');
+    autoUpdater.setFeedURL(UpdateOpt);
+    autoUpdater.checkForUpdatesAndNotify().then((data)=>{
+      mainWindow.webContents.send('info', data);
+    });
+  }
+  // autoUpdater.setFeedURL(UpdateUrl);
+  // autoUpdater.checkForUpdates();
+  // autoUpdater.checkForUpdatesAndNotify();
   // if (process.env.NODE_ENV === 'production') {
   //   autoUpdater.checkForUpdates();
   // }
@@ -161,15 +181,15 @@ app.on('activate', () => {
 //   url: "https://gitlab.com/_example_repo_/-/jobs/artifacts/master/raw/dist?job=build"
 // });
 
-autoUpdater.on('checking-for-update', ()=> {
+autoUpdater.on('checking-for-update', (info)=> {
   console.log('Checking for update...');
-  mainWindow.webContents.send('info', 'Checking for update...!');
+  mainWindow.webContents.send('info', {type: 'Checking for update...!', info});
 });
 autoUpdater.on('update-available', (info)=> {
-  mainWindow.webContents.send('info', 'Update available.');
+  mainWindow.webContents.send('info', {type: 'Update available.', info});
 });
 autoUpdater.on('update-not-available', (info)=> {
-  mainWindow.webContents.send('info', 'Update not available.');
+  mainWindow.webContents.send('info', {type: 'Update not available.', info});
 });
 autoUpdater.on('error', (err)=> {
   mainWindow.webContents.send('info', 'Error in auto-updater. ' + err);

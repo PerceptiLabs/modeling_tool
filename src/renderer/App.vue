@@ -18,7 +18,7 @@
         }, 5000);
       });
       ipcRenderer.on('newNetwork', (event) => {
-        console.log(event);
+        //console.log(event);
         this.$store.commit('mod_workspace/ADD_loadNetwork');
       });
       ipcRenderer.on('openNetwork', (event) => {
@@ -27,8 +27,8 @@
       ipcRenderer.on('saveNetwork', (event) => {
         this.$store.commit('mod_events/set_saveNetwork')
       });
-      ipcRenderer.on('info', (event) => {
-        console.log(event);
+      ipcRenderer.on('info', (event, data) => {
+        console.log(data);
       });
     },
   }
