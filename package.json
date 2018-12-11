@@ -1,6 +1,6 @@
 {
   "name": "perceptilabs",
-  "version": "0.0.1",
+  "version": "11.0.1",
   "author": "StetsenkoAnton <stetsenko.ant1@gmail.com>",
   "description": "QuantumNet is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.",
   "license": null,
@@ -32,7 +32,7 @@
     "publish": [
       {
         "provider": "generic",
-        "url": "https://gitlab.com"
+        "url": "https://electron-release-server.azurewebsites.net/updates"
       }
     ],
     "dmg": {
@@ -72,7 +72,7 @@
   "dependencies": {
     "axios": "^0.18.0",
     "echarts-gl": "^1.1.1",
-    "electron-updater": "^4.0.5",
+    "electron-updater": "^4.0.6",
     "universal-analytics": "^0.4.20",
     "v-tooltip": "^2.0.0-rc.33",
     "vee-validate": "^2.1.3",
@@ -104,8 +104,8 @@
     "css-loader": "^0.28.11",
     "del": "^3.0.0",
     "devtron": "^1.4.0",
-    "electron": "^2.0.4",
-    "electron-builder": "^20.19.2",
+    "electron": "^3.0.10",
+    "electron-builder": "^20.38.3",
     "electron-debug": "^1.5.0",
     "electron-devtools-installer": "^2.2.4",
     "file-loader": "^1.1.11",
