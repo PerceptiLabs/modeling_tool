@@ -85,7 +85,7 @@ const baseNetDrag = {
       this.$store.commit('mod_workspace/CHANGE_elementPosition', this.rect);
       this.$parent.$parent.createArrowList();
 
-      document.documentElement.removeEventListener('mousedown', this.deselect);//base-net-functional.js
+      //document.documentElement.removeEventListener('mousedown', this.deselect);//base-net-functional.js
       this.$parent.$parent.$el.removeEventListener('mousemove', this.move);
       this.$parent.$parent.$el.removeEventListener('mouseup', this.up);
 

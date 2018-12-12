@@ -32,7 +32,7 @@
     "publish": [
       {
         "provider": "generic",
-        "url": "https://electron-release-server.azurewebsites.net/updates"
+        "url": "https://uantumetdisks.blob.core.windows.net/updates-admin"
       }
     ],
     "dmg": {

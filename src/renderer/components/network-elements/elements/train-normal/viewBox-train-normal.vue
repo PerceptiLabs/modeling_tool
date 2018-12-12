@@ -70,10 +70,6 @@
   import ChartBase    from "@/components/charts/chart-base";
   import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
   import ChartD3      from "@/components/charts/chart-3d.vue";
-  import data3d       from "@/components/charts/3d.js";
-  import dataHeat     from "@/components/charts/hear.js";
-  import dataBar      from "@/components/charts/bar.js";
-  import dataLine     from "@/components/charts/line.js";
 
   import requestApi   from "@/core/api.js";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";

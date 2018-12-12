@@ -82,28 +82,6 @@ export default {
       return model
     }
   },
-  watch: {
-    // fullView(newVal, oldVal) {
-    //   if(newVal) {
-    //     console.log(this.$refs.chart);
-    //     this.h = this.$refs.chart.$el.scrollHeight;
-    //     this.w = this.$refs.chart.$el.scrollWidth;
-    //     this.$refs.chart.resize(
-    //       {
-    //         width: 'auto',
-    //         height: 'auto',
-    //       }
-    //     );
-    //   }
-    //   if (oldVal) {
-    //     this.$refs.chart.resize({
-    //       width: this.w,
-    //       height: this.h,
-    //     });
-    //     //console.log(this.$refs.chart);
-    //   }
-    // }
-  },
   methods: {
     toggleFullView() {
       this.fullView = !this.fullView

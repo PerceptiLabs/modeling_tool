@@ -1,5 +1,5 @@
 <template lang="pug">
-  .network-field(:id="'network' + netIndex")
+  .network-field(:id="'network' + netIndex" ref="network")
     svg.svg-arrow(v-if="arrowsList.length")
       defs
         lineargradient(id="grad")
@@ -23,7 +23,15 @@
           :y1="arrow.positionArrow.y1"
           :x2="arrow.positionArrow.x2"
           :y2="arrow.positionArrow.y2")
-
+        line.svg-arrow_line.arrow--hidden(
+          v-if="preArrow"
+          marker-end="url(#svg-arrow_triangle)"
+          stroke-dasharray="none"
+          :x1="preArrow.x1"
+          :y1="preArrow.y1"
+          :x2="preArrow.x2"
+          :y2="preArrow.y2"
+          )
     component(
       v-for="(el, index) in workspace.network"
       :class="{'element--hidden': el.meta.isInvisible}"
@@ -95,6 +103,9 @@ export default {
   mounted() {
     this.createArrowList()
   },
+  beforeDestroy() {
+    this.removeArrowListener()
+  },
   computed: {
     workspaceJSON() {
       return JSON.stringify(this.workspace)
@@ -107,6 +118,9 @@ export default {
     },
     eventCalcArrow() {
       return this.$store.state.mod_events.calcArray
+    },
+    preArrow() {
+      return this.$store.state.mod_workspace.preArrow
     }
   },
   watch: {
@@ -115,6 +129,20 @@ export default {
     },
   },
   methods: {
+    addArrowListener() {
+      this.$refs.network.addEventListener('mousemove', this.arrowMovePaint);
+      this.$refs.network.addEventListener('mouseup', this.removeArrowListener);
+    },
+    arrowMovePaint(ev) {
+      console.log('arrowMovePaint');
+      ev.preventDefault();
+      ev.stopPropagation();
+    },
+    removeArrowListener() {
+      this.$refs.network.removeEventListener('mousemove', this.arrowMovePaint);
+      this.$refs.network.removeEventListener('mouseup', this.removeArrowListener)
+    },
+
     createArrowList() {
       const size = 72;
       const listID = {};

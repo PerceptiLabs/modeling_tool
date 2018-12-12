@@ -28,7 +28,8 @@ const state = {
   currentNetwork: 0,
   dragElement: {},
   arrowType: 'solid',
-  startArrowID: null
+  startArrowID: null,
+  preArrow: null
 };
 
 const getters = {
@@ -143,6 +144,9 @@ const mutations = {
   SET_workspaceContent (state, value) {
     state.workspaceContent = value
   },
+  SET_preArrow (state, value) {
+    state.preArrow = value
+  },
   SET_startArrowID (state, value) {
     state.startArrowID = value
   },
@@ -236,9 +240,9 @@ const mutations = {
     state.dragElement = {};
   },
   ADD_arrow(state, val) {
+
     let startID = state.startArrowID;
     let stopID = val.stopID;
-    console.log(startID, stopID);
     if(stopID == startID) {
       return
     }

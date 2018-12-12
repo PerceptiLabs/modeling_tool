@@ -1,5 +1,5 @@
 <template lang="pug">
-  .net-element.js-clickout(tabindex="0"
+  .net-element.js-clickout(
     ref="rootBaseElement"
     :style="style"
     :class="active ? 'active' : 'inactive'"
@@ -7,7 +7,7 @@
     @contextmenu.stop.prevent="openContext"
     @keyup.shift.delete="deleteEl()"
     )
-    .net-element_btn
+    .net-element_btn(ref="BaseElement")
       slot
 
     .net-element_window(v-if="settingsIsOpen ")
@@ -22,6 +22,8 @@
 import baseNetDrag        from '@/core/mixins/base-net-drag.js';
 import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
 import clickOutside       from '@/core/mixins/click-outside.js'
+
+let animationId;
 
 export default {
   name: 'NetBaseElement',
@@ -76,24 +78,6 @@ export default {
     }
   },
   watch: {
-    appMode(newVal) {
-      if(newVal == 'addArrow') {
-        this.$parent.$parent.$el.addEventListener('mousemove', this.arrowMovePaint);
-        this.$refs.rootBaseElement.addEventListener('mouseup', this.arrowEndPaint);
-
-        this.$parent.$parent.$el.addEventListener('touchmove', this.arrowMovePaint, true);
-        this.$refs.rootBaseElement.addEventListener('touchend touchcancel', this.arrowEndPaint, true);
-        this.$refs.rootBaseElement.addEventListener('touchstart', this.arrowEndPaint, true);
-      }
-      else {
-        this.$parent.$parent.$el.removeEventListener('mousemove', this.arrowMovePaint);
-        this.$refs.rootBaseElement.removeEventListener('mouseup', this.arrowEndPaint);
-
-        this.$parent.$parent.$el.removeEventListener('touchmove', this.arrowMovePaint, true);
-        this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.arrowEndPaint, true);
-        this.$refs.rootBaseElement.removeEventListener('touchstart', this.arrowEndPaint, true);
-      }
-    },
     statisticsIsOpen(newVal) {
       if(newVal) {
         this.deselect()
@@ -102,7 +86,7 @@ export default {
   },
   methods: {
     switchEvent(ev) {
-      ev.stopPropagation();
+      //ev.stopPropagation();
       if (this.statisticsIsOpen) {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }

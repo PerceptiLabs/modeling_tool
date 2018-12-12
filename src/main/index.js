@@ -9,7 +9,7 @@ let mainWindow;
 const visitor = ua('UA-114940346-1');
 const UpdateOpt = {
   provider: 'generic',
-  url: 'https://electron-release-server.azurewebsites.net/updates',
+  url: 'https://uantumetdisks.blob.core.windows.net/updates-admin',
 };
 const mainMenu = [
   {
@@ -100,7 +100,9 @@ function createWindow () {
     }
   });
   ipcMain.on('appReady', (event, arg) => {
-    mainWindow.checkForUpdates();
+    if(process.env.NODE_ENV !== 'development') {
+      mainWindow.checkForUpdates();
+    }
   });
 
   visitor.pageview("/").send();
@@ -175,7 +177,7 @@ autoUpdater.on('error', (err)=> {
   mainWindow.webContents.send('info', 'Error in auto-updater. ' + err);
 });
 autoUpdater.on('download-progress', (progressObj)=> {
-  let log_message = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}% = ${progressObj.transferred}/${progressObj.total}`;
+  let log_message = `Download speed: ${progressObj.bytesPerSecond}, Downloaded: ${progressObj.percent}%`;
   mainWindow.webContents.send('info', log_message);
 });
 autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
@@ -192,9 +194,6 @@ autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
   dialog.showMessageBox(dialogOpts, (response) => {
     if (response === 0) autoUpdater.quitAndInstall()
   })
-  // setTimeout(function () {
-  //   autoUpdater.quitAndInstall();
-  // }, 500);
 });
 
 

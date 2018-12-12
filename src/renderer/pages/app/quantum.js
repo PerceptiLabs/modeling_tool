@@ -23,54 +23,15 @@ export default {
     this.$store.dispatch('mod_api/API_runServer');
   },
   mounted() {
-    let dragged;
-    let outClassName = 'network-field';
-    this.$refs.layersbar.addEventListener("dragstart", ( event )=> {
-      if ( event.target.draggable && this.appMode === 'edit') {
-        // console.log(event)
-        // console.log('dragstart')
-        dragged = event.target;
-        this.$store.commit('mod_workspace/ADD_dragElement', event);
-        //make it half transparent
-        event.target.style.opacity = .75;
+    this.addDragListener()
+  },
+  data() {
+    return {
+      dragMeta: {
+        dragged: null,
+        outClassName: 'network-field'
       }
-    }, false);
-
-    this.$refs.layersbar.addEventListener("dragend", function( event ) {
-      // reset the transparency
-      //if ( event.target.className == "js-layersbar-draggable" ) {
-      //console.log('dragend')
-      //console.log(event)
-      event.target.style.opacity = "";
-      //}
-    }, false);
-
-    /* events fired on the drop targets */
-    this.$refs.layersbar.addEventListener("dragover", function( event ) {
-      event.preventDefault();
-    }, false);
-
-    this.$refs.layersbar.addEventListener("dragenter", function( event ) {
-      if ( event.target.className.includes(outClassName) && this.appMode === 'edit') {
-        //event.target.style.cursor = "auto";
-        //console.log('dragenter')
-      }
-
-    }, false);
-
-    this.$refs.layersbar.addEventListener("dragleave", function( event ) {
-      if ( event.target.className.includes(outClassName) && this.appMode === 'edit') {
-        //console.log('dragleave')
-        //event.target.style.cursor = "not-allowed";
-      }
-    }, false);
-
-    this.$refs.layersbar.addEventListener("drop", ( event )=> {
-      event.preventDefault();
-      if ( event.target.className.includes(outClassName) && this.appMode === 'edit') {
-        this.$store.commit('mod_workspace/ADD_elToWorkspace', event)
-      }
-    }, false);
+    }
   },
   computed: {
     infoText() {
@@ -102,10 +63,76 @@ export default {
     },
     eventSaveNetwork() {
       this.saveNetwork()
+    },
+    appMode(newVal) {
+      if(newVal == 'edit') {
+        this.$nextTick(function () {
+          this.addDragListener()
+        })
+      }
+      else {
+        this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
+        this.$refs.layersbar.removeEventListener("dragend", this.dragEnd, false);
+        this.$refs.layersbar.removeEventListener("dragover", this.dragOver, false);
+        this.$refs.layersbar.removeEventListener("dragenter", this.dragEnter, false);
+        this.$refs.layersbar.removeEventListener("dragleave", this.dragLeave, false);
+        this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
+      }
     }
   },
   methods: {
     openLoadDialog,
+    addDragListener() {
+      this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
+      this.$refs.layersbar.addEventListener("dragend", this.dragEnd, false);
+      this.$refs.layersbar.addEventListener("dragover", this.dragOver, false);
+      this.$refs.layersbar.addEventListener("dragenter", this.dragEnter, false);
+      this.$refs.layersbar.addEventListener("dragleave", this.dragLeave, false);
+      this.$refs.layersbar.addEventListener("drop", this.dragDrop, false);
+    },
+    dragStart(event) {
+      console.log("dragstart");
+      if ( event.target.draggable && this.appMode === 'edit') {
+        this.dragMeta.dragged = event.target;
+        this.$store.commit('mod_workspace/ADD_dragElement', event);
+        event.target.style.opacity = .75;
+      }
+    },
+    dragEnd(event) {
+      console.log("dragEnd");
+      // reset the transparency
+      //if ( event.target.className == "js-layersbar-draggable" ) {
+      //console.log('dragend')
+      //console.log(event)
+      event.target.style.opacity = "";
+      //}
+    },
+    dragOver(event) {
+      console.log("dragOver");
+      event.preventDefault();
+    },
+    dragEnter(event) {
+      console.log("dragEnter");
+      if ( event.target.className.includes(this.dragMeta.outClassName)) {
+        //event.target.style.cursor = "auto";
+        //console.log('dragenter')
+      }
+    },
+    dragLeave(event) {
+      console.log("dragLeave");
+      if ( event.target.className.includes(this.dragMeta.outClassName)) {
+        //console.log('dragleave')
+        //event.target.style.cursor = "not-allowed";
+      }
+    },
+    dragDrop(event) {
+      console.log("dragDrop");
+      event.preventDefault();
+      if ( event.target.className.includes(this.dragMeta.outClassName)) {
+        this.$store.commit('mod_workspace/ADD_elToWorkspace', event)
+      }
+    },
+
     loadNetwork(pathArr) {
       fs.readFile(pathArr[0],
         (err, data)=> {
