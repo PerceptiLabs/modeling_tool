@@ -49,9 +49,7 @@ const mainMenu = [
       {label: 'Version' + app.getVersion()},
       {label: 'Help',   click() { require('electron').shell.openExternal('https://www.perceptilabs.com/html/product.html#tutorials')}},
       {label: 'About',  click() { require('electron').shell.openExternal('https://www.perceptilabs.com/')}},
-      {label: 'checkForUpdates',  click() {mainWindow.TESTcheckForUpdates()}},
-      {label: 'checkForUpdatesAndNotify',  click() {mainWindow.TESTcheckForUpdatesAndNotify()}},
-      {label: 'app',  click() {mainWindow.webContents.send('info', autoUpdater)}},
+      {label: 'Check for updates',  click() {mainWindow.checkForUpdates()}},
     ]
   }
 ];
@@ -90,17 +88,19 @@ function createWindow () {
       //plugins: true,
     }
   });
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   const menuCustom = Menu.buildFromTemplate(mainMenu);
   Menu.setApplicationMenu(menuCustom);
 
-
   ipcMain.on('acceptClose', (event, arg) => {
     if (process.platform !== 'darwin') {
       app.quit()
     }
+  });
+  ipcMain.on('appReady', (event, arg) => {
+    mainWindow.checkForUpdates();
   });
 
   visitor.pageview("/").send();
@@ -115,24 +115,11 @@ function createWindow () {
   /**
    * start auto update
    */
-  mainWindow.TESTcheckForUpdates = function() {
-    mainWindow.webContents.send('info', 'TESTcheckForUpdates');
+  mainWindow.checkForUpdates = function() {
+    mainWindow.webContents.send('info', 'checkForUpdates');
     autoUpdater.setFeedURL(UpdateOpt);
     autoUpdater.checkForUpdates();
   };
-  mainWindow.TESTcheckForUpdatesAndNotify = function() {
-    mainWindow.webContents.send('info', 'TESTcheckForUpdatesAndNotify');
-    autoUpdater.setFeedURL(UpdateOpt);
-    autoUpdater.checkForUpdatesAndNotify().then((data)=>{
-      mainWindow.webContents.send('info', data);
-    });
-  }
-  // autoUpdater.setFeedURL(UpdateUrl);
-  // autoUpdater.checkForUpdates();
-  // autoUpdater.checkForUpdatesAndNotify();
-  // if (process.env.NODE_ENV === 'production') {
-  //   autoUpdater.checkForUpdates();
-  // }
 }
 
 app.on('ready', createWindow);
@@ -173,13 +160,6 @@ app.on('activate', () => {
  * support auto updating. Code Signing with a valid certificate is required.
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-electron-builder.html#auto-updating
  */
-// autoUpdater.requestHeaders = { "PRIVATE-TOKEN": "Personal access Token" };
-// autoUpdater.autoDownload = true;
-
-// autoUpdater.setFeedURL({
-//   provider: "generic",
-//   url: "https://gitlab.com/_example_repo_/-/jobs/artifacts/master/raw/dist?job=build"
-// });
 
 autoUpdater.on('checking-for-update', (info)=> {
   console.log('Checking for update...');

@@ -45,11 +45,11 @@ const actions = {
     dispatch('API_getStatus');
     setTimeout(()=>{
       if(getters.GET_serverStatus === 'Offline') {
-        // let openServer = exec('core_local/app-server/app-server.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-        // openServer.on('close', (code) => {
-        //   console.error(code);
-        //   commit('SET_serverStatus', {Status: 'Offline'});
-        // });
+        let openServer = exec('core_local/app-server/app-server.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+        openServer.on('close', (code) => {
+          console.error(code);
+          commit('SET_serverStatus', {Status: 'Offline'});
+        });
 
         // openServer.stdout.on('data', (data) => {
         //   console.log(`stdout: ${data}`);

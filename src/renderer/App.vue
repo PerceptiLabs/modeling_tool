@@ -30,6 +30,7 @@
       ipcRenderer.on('info', (event, data) => {
         console.log(data);
       });
+      ipcRenderer.send('appReady');
     },
   }
 </script>

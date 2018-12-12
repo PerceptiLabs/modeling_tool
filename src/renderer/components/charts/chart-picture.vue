@@ -38,24 +38,12 @@ export default {
   },
   data() {
     return {
-      canvasBox: '',
       fullView: false,
-      h: '',
-      w: ''
     }
-  },
-  computed: {
-    // chartModel() {
-    //   return this.chartData[0];
-    // }
   },
   watch: {
     chartData(newData) {
-      //console.log(newData);
-      // if(newData === null) {
-      //   return
-      // }
-      this.drawPicture(newData[0].data)
+      this.drawPicture(newData[0])
     },
   },
   methods: {
@@ -63,15 +51,12 @@ export default {
       this.fullView = !this.fullView
     },
     drawPicture(img) {
-      this.canvasBox = this.$refs.canvas.getContext('2d');
-      // let imgH = this.chartModel.height;
-      // let imgW = this.chartModel.width;
-      let imgH = img.length;
-      let imgW = img[0].length/4;
-      // let boxH = this.$refs.canvas.offsetParent.offsetWidth;
-      // let boxW = this.$refs.canvas.offsetParent.offsetHeight;
+      let imgH = img.height;
+      let imgW = img.width;
       this.$refs.canvas.setAttribute('width', imgW);
       this.$refs.canvas.setAttribute('height', imgH);
+      // let boxH = this.$refs.canvas.offsetParent.offsetWidth;
+      // let boxW = this.$refs.canvas.offsetParent.offsetHeight;
       if(imgH/imgW >= 0) {
         this.$refs.canvas.style.minHeight = '100%';
       }
@@ -79,11 +64,10 @@ export default {
         this.$refs.canvas.style.width = '100%';
       }
 
-      let imgData = this.canvasBox.createImageData(imgW, imgH);
-      let floatData = img.reduce((sum, current)=> sum.concat(current),[]);
-      floatData.forEach((el, index) => imgData.data[index] = el);
-
-      this.canvasBox.putImageData(imgData,0, 0);
+      let canvas = this.$refs.canvas.getContext('2d');
+      let imgData = canvas.createImageData(imgW, imgH);
+      img.data.forEach((el, index) => imgData.data[index] = el);
+      canvas.putImageData(imgData,0, 0);
     }
   },
   beforeDestroy() {

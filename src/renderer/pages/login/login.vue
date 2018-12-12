@@ -3,7 +3,7 @@
     .login_logo
       img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
     .login_main
-      h1 Log In please UPDATE
+      h1 Log In please
       h3 Enter your Email & Password
       form.login_form
         .form_holder

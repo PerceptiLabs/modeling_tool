@@ -47,6 +47,12 @@ export default {
   },
   computed: {
     chartModel() {
+      let valArr = this.chartData[0].data.map((num)=> num[2]);
+      let size = Math.sqrt(this.chartData[0].data.length);
+      let axios = [];
+      for (var i = 0; i <= size-1; i++) {
+        axios.push(i)
+      }
       let model = {
         tooltip: {},
         grid: {
@@ -54,15 +60,15 @@ export default {
         },
         xAxis: {
           boundaryGap: true,
-          data: []
+          data: axios
         },
         yAxis: {
           boundaryGap: true,
-          data: []
+          data: axios
         },
         visualMap: {
-          min: -1.00,
-          max: 1.00,
+          min: Math.min(...valArr),
+          max: Math.max(...valArr),
           top: '10px',
           itemHeight: 300,
           realtime: false,
