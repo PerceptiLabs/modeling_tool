@@ -169,6 +169,17 @@ autoUpdater.on('checking-for-update', (info)=> {
 });
 autoUpdater.on('update-available', (info)=> {
   mainWindow.webContents.send('info', {type: 'Update available.', info});
+
+  dialog.showMessageBox({
+    type: 'info',
+    title: 'Found Updates',
+    message: info.releaseNotes,
+    buttons: ['Yes', 'No']
+  }, (buttonIndex) => {
+    if (buttonIndex === 0) {
+      autoUpdater.downloadUpdate()
+    }
+  })
 });
 autoUpdater.on('update-not-available', (info)=> {
   mainWindow.webContents.send('info', {type: 'Update not available.', info});
@@ -179,6 +190,7 @@ autoUpdater.on('error', (err)=> {
 autoUpdater.on('download-progress', (progressObj)=> {
   let log_message = `Download speed: ${progressObj.bytesPerSecond}, Downloaded: ${progressObj.percent}%`;
   mainWindow.webContents.send('info', log_message);
+  win.setProgressBar(progressObj.percent / 100);
 });
 autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
   mainWindow.webContents.send('info', 'Update downloaded');

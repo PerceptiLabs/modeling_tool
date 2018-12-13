@@ -203,7 +203,7 @@ const mutations = {
   },
   ADD_dragElement(state, event) {
     let newLayer = {
-      layerId: generateID(event.timeStamp),
+      layerId: generateID(event.timeStamp).toString(),
       layerName: event.target.dataset.layer,
       layerType: event.target.dataset.type,
       layerSettings: null,

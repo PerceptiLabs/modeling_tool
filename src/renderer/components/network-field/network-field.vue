@@ -134,7 +134,6 @@ export default {
       this.$refs.network.addEventListener('mouseup', this.removeArrowListener);
     },
     arrowMovePaint(ev) {
-      console.log('arrowMovePaint');
       ev.preventDefault();
       ev.stopPropagation();
     },

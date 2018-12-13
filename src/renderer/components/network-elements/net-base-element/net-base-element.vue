@@ -1,11 +1,11 @@
 <template lang="pug">
-  .net-element.js-clickout(
+  .net-element.js-clickout(tabindex="0"
     ref="rootBaseElement"
     :style="style"
     :class="active ? 'active' : 'inactive'"
     @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings()"
     @contextmenu.stop.prevent="openContext"
-    @keyup.shift.delete="deleteEl()"
+    @keyup.46="deleteEl()"
     )
     .net-element_btn(ref="BaseElement")
       slot
@@ -138,7 +138,9 @@ export default {
       this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
     },
     deleteEl() {
-      this.$store.dispatch('mod_workspace/DELETE_netElement')
+      if(!(this.contextIsOpen || this.settingsIsOpen)) {
+        this.$store.dispatch('mod_workspace/DELETE_netElement')
+      }
     }
   }
 }

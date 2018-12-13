@@ -12,6 +12,15 @@ img {
 }
 
 * {
+  &:not([draggable="true"]) {
+    -moz-user-select: none;
+    -webkit-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    -webkit-user-drag: none;
+    user-drag: none;
+    -webkit-touch-callout: none;
+  }
   &:active,
   &:focus {
     outline: none;

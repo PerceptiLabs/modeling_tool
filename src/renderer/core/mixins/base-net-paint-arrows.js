@@ -27,7 +27,6 @@ const baseNetPaintArrows = {
   },
   methods: {
     arrowStartPaint(ev) {
-      console.log('arrowStartPaint');
       ev.preventDefault();
       ev.stopPropagation();
       let el = this.dataEl.el;
@@ -35,7 +34,6 @@ const baseNetPaintArrows = {
       this.$store.commit('mod_workspace/SET_startArrowID', el.layerId)
     },
     arrowEndPaint(ev) {
-      console.log('arrowEndPaint');
       ev.preventDefault();
       ev.stopPropagation();
       this.$parent.$parent.removeArrowListener();
