@@ -1,5 +1,5 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-process(:draggable="draggable"
+  .btn.btn--layersbar.net-element-process(:draggable="false"  disabled="disabled"
   data-component="ProcessGrayscale"
   data-layer="Grayscale"
   data-type="Other"

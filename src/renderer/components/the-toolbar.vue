@@ -32,16 +32,17 @@
 
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button")
+        button.btn.btn--toolbar(type="button" disabled="disabled")
           i.icon.icon-step-prev
       li
-        button.btn.btn--toolbar(type="button")
+        button.btn.btn--toolbar(type="button" disabled="disabled")
           i.icon.icon-step-next
     ul.toolbar_list
       li
+        //
         button.btn.btn--toolbar(type="button"
           v-if="!(coreStatus === 'Training' || coreStatus === 'Validation')"
-          :disabled="coreStatus === 'Offline'"
+        :disabled="coreStatus === 'Offline'"
           :class="statusStartBtn"
           @click="trainStart()"
         )
@@ -67,21 +68,21 @@
           i.icon.icon-next
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button")
+        button.btn.btn--toolbar(type="button" disabled="disabled")
           i.icon.icon-repeat
       li
-        button.btn.btn--toolbar(type="button")
+        button.btn.btn--toolbar(type="button" disabled="disabled")
           i.icon.icon-box
 
     .toolbar_settings
       //span.text-primary.middle-text(v-html="statusTestText")
-      button.btn.btn--primary(type="button"
+      button.btn.btn--primary(type="button" disabled="disabled"
         v-if="coreStatus == 'Finished'"
         )
         span Run test
         i.icon.icon-circle-o
       span.text-primary.middle-text(v-html="statusTrainingText")
-      button.btn.btn--dark-blue-rev(type="button"
+      button.btn.btn--dark-blue-rev(type="button"  disabled="disabled"
         @click="openStatistics"
         )
         span Layer Mode

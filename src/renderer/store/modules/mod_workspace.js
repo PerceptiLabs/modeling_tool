@@ -1,3 +1,12 @@
+//import { generateID }  from "@/core/helpers.js";
+const generateID = function(input) {
+  let out;
+  let stringID = input.toString();
+  let dotIndex = stringID.indexOf('.');
+  dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
+  out = +out;
+  return out
+};
 function createPathNode(path, state) {
   const network = path.slice();
   const networkId = network.shift();
@@ -14,6 +23,7 @@ const state = {
     {
       networkName: 'Network',
       networkSettings: null,
+      networkID: 'net100',
       networkMeta: {
         openStatistics: false,
         canTestStatistics: false,
@@ -64,35 +74,35 @@ const getters = {
   },
   GET_API_dataCloseServer(state, getters) {
     return {
-      reciever: getters.GET_currentNetwork.networkName,
+      reciever: getters.GET_currentNetwork.networkID,
       action: 'Close',
       value: ''
     };
   },
   GET_API_dataPauseTraining(state, getters) {
     return {
-      reciever: getters.GET_currentNetwork.networkName,
+      reciever: getters.GET_currentNetwork.networkID,
       action: 'Pause',
       value: ''
     };
   },
   GET_API_dataStopTraining(state, getters) {
     return {
-      reciever: getters.GET_currentNetwork.networkName,
+      reciever: getters.GET_currentNetwork.networkID,
       action: 'Stop',
       value: ''
     };
   },
   GET_API_dataSkipValidTraining(state, getters) {
     return {
-      reciever: getters.GET_currentNetwork.networkName,
+      reciever: getters.GET_currentNetwork.networkID,
       action: 'SkipToValidation',
       value: ''
     }
   },
   GET_API_dataGetStatus(state, getters) {
     return {
-      reciever: getters.GET_currentNetwork.networkName,
+      reciever: getters.GET_currentNetwork.networkID,
       action: 'getStatus', //getIter
       value: ''
     };
@@ -100,14 +110,20 @@ const getters = {
 };
 
 const mutations = {
+  SET_metaSelectDisable(state) {
+    let pathNet = state.workspaceContent[state.currentNetwork];
+    pathNet.network.forEach((el)=>{
+      el.meta.isSelected = false;
+    });
+  },
   SET_metaSelect(state, value) {
     //console.log(value);
     //let node = createPathNode(value.path, state);
     //node.meta.isSelected = value.setValue
     let pathNet = state.workspaceContent[state.currentNetwork];
-    pathNet.network.forEach((el)=>{
-      el.meta.isSelected = false;
-    });
+    // pathNet.network.forEach((el)=>{
+    //   el.meta.isSelected = false;
+    // });
     pathNet.network[value.path].meta.isSelected = value.setValue;
   },
   SET_metaMultiSelect(state, value) {
@@ -179,6 +195,7 @@ const mutations = {
     if(net === undefined) {
       newNetwork = {
         networkName: 'New_Network',
+        networkID: 'net' + generateID(Date.now()),
         networkSettings: {
           //isEmpty: true,
         },
@@ -221,14 +238,7 @@ const mutations = {
     };
     state.dragElement = newLayer;
 
-    function generateID(input) {
-      let out;
-      let stringID = input.toString();
-      let dotIndex = stringID.indexOf('.');
-      dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
-      out = +out;
-      return out
-    }
+
   },
   ADD_elToWorkspace(state, event) {
     let top = state.dragElement.meta.top;

@@ -1,5 +1,5 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-train(:draggable="draggable"
+  .btn.btn--layersbar.net-element-train(:draggable="false"  disabled="disabled"
     data-component="TrainDynamic"
     data-layer="Dynamic Routing"
   data-type="Training"

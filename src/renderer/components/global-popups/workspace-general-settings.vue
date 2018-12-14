@@ -13,23 +13,43 @@
               label.form_row
                 .form_label Training
                 .form_input
-                  input(type="number" v-model="settings.Data_partition.Training")
+                  input(type="number"
+                    v-model="settings.Data_partition.Training"
+                    name="Training"
+                    v-validate="'between:0.001,100|required'"
+                    )
                   span &nbsp; %
+                  p.text-error(v-show="errors.has('Training')") {{ errors.first('Training') }}
               label.form_row
                 .form_label Validation
                 .form_input
-                  input(type="number" v-model="settings.Data_partition.Validation")
+                  input(type="number"
+                    v-model="settings.Data_partition.Validation"
+                    name="Validation"
+                    v-validate="'between:0.001,100|required'"
+                    )
                   span &nbsp; %
+                  p.text-error(v-show="errors.has('Validation')") {{ errors.first('Validation') }}
               label.form_row
                 .form_label Test
                 .form_input
-                  input(type="number" v-model="settings.Data_partition.Test")
+                  input(type="number"
+                    v-model="settings.Data_partition.Test"
+                    name="Test"
+                    v-validate="'between:0.001,100|required'"
+                    )
                   span &nbsp; %
+                  p.text-error(v-show="errors.has('Test')") {{ errors.first('Test') }}
         .settings-layer_section
           label.form_row
             .form_label Batch size:
             .form_input
-              input(type="number" v-model="settings.Batch_size")
+              input(type="number"
+                v-model="settings.Batch_size"
+                name="Batch"
+                v-validate="'min_value:1'"
+                )
+              p.text-error(v-show="errors.has('Batch')") {{ errors.first('Batch') }}
         .settings-layer_section
           .form_row
             .form_label Shuffle data:
@@ -42,21 +62,31 @@
           label.form_row
             .form_label Epochs:
             .form_input
-              input(type="number" v-model="settings.Epochs")
+              input(type="number"
+                v-model="settings.Epochs"
+                name="Epochs"
+                v-validate="'min_value:1'"
+                )
+              p.text-error(v-show="errors.has('Epochs')") {{ errors.first('Epochs') }}
         .settings-layer_section
           .form_row
             .form_label Dropout rate:
             .form_input
-              input(type="number" v-model="settings.Dropout_rate")
+              input(type="number"
+                v-model="settings.Dropout_rate"
+                name="Dropout"
+                v-validate="'between:0.001,100|required'"
+                )
+              p.text-error(v-show="errors.has('Dropout')") {{ errors.first('Dropout') }}
         .settings-layer_section
           label.form_row
             .form_label Save model every:
             .form_input
-              input(type="number" v-model="settings.Save_model_every")
+              input(type="number" v-model="settings.Save_model_every" disabled="disabled")
               span &nbsp; epoch
       .popup_foot
         button.btn.btn--primary(type="button"
-          @click="setGlobalSet()") Apply
+          @click="validateForm()") Apply
 
 </template>
 
@@ -75,7 +105,7 @@ export default {
         },
         Dropout_rate: "0.5",
         Shuffle_data: true,
-        Save_model_every: "1"
+        Save_model_every: "0"
       }
     }
   },
@@ -88,8 +118,26 @@ export default {
     networkSettings() {
       return this.$store.getters['mod_workspace/GET_currentNetworkSettings']
     },
+    testValue() {
+      return 100 - (+this.settings.Data_partition.Training + +this.settings.Data_partition.Validation)
+    }
+  },
+  watch: {
+    testValue(newVal) {
+      this.settings.Data_partition.Test = newVal.toString()
+    }
   },
   methods: {
+    validateForm() {
+      this.$validator.validateAll()
+        .then((result) => {
+          if (result) {
+            this.setGlobalSet();
+            return;
+          }
+          //error func
+        });
+    },
     setGlobalSet() {
       this.$store.commit('mod_workspace/SET_networkSettings', this.settings);
       this.closeGlobalSet();

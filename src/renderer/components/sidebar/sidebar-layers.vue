@@ -20,9 +20,9 @@
     .layers_meta.sidebar-content
       .layers_actions
 
-        button.btn.btn--icon(type="button")
+        button.btn.btn--icon(type="button" disabled="disabled")
           i.icon.icon-folder
-        button.btn.btn--icon(type="button"
+        button.btn.btn--icon(type="button"  disabled="disabled"
           @click="deleteElement"
           )
           i.icon.icon-delete
@@ -30,7 +30,7 @@
       .layers_search.d-flex
         i.icon.icon-filter
         .input-wrap_icon
-          input(type="text" placeholder="Enter the name of layer")
+          input(type="text" placeholder="Enter the name of layer" disabled="disabled")
           i.icon.icon-search
 
 

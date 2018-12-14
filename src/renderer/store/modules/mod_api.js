@@ -116,7 +116,7 @@ const actions = {
       };
     });
     const theData = {
-      reciever: net.networkName,
+      reciever: net.networkID,
       action: "Start",
       value: message
     };

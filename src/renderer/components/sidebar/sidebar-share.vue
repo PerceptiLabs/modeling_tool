@@ -4,7 +4,7 @@
       i.icon.icon-user
       span Users
     .sidebar-share_btn
-      button.btn.btn--primary(type="button") Share
+      button.btn.btn--primary(type="button"  disabled="disabled") Share
 
 
 </template>

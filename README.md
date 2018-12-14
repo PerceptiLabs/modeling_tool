@@ -1,6 +1,6 @@
-# quantumnet
+# PerceptiLabs
 
-> QuantumNet is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.
+> PerceptiLabs is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.
 
 #### Build Setup
 

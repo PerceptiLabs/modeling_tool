@@ -17,12 +17,12 @@
         li
           base-radio(groupName="cloud")
             i.icon.icon-cloud
-            span  Account: Quantum net
+            span  Account: PerceptiLabs net
           button.btn.btn--link(type="button") Log out
         li
           base-radio(groupName="cloud")
             i.icon.icon-cloud
-            span  Account: Quantum net
+            span  Account: PerceptiLabs net
           button.btn.btn--link(type="button") Log out
         li
           button.btn.btn--link.cloud_account-add-btn(type="button")

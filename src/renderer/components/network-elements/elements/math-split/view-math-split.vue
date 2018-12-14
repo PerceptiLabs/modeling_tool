@@ -1,5 +1,5 @@
 <template lang="pug">
-  button.btn.btn--layersbar.net-element-math(type="button" :draggable="draggable"
+  .btn.btn--layersbar.net-element-math(:draggable="false"  disabled="disabled"
   data-component="MathSplit"
   data-layer="Split"
   data-type="Other"

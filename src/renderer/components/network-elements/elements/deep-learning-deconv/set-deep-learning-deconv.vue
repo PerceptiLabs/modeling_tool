@@ -41,9 +41,9 @@
             .form_row
               .form_label Zero-padding:
               .form_input
-                base-radio(groupName="group3" valueInput="SAME"  v-model="settings.Padding")
+                base-radio(groupName="group3" valueInput="'SAME'"  v-model="settings.Padding")
                   span SAME
-                base-radio(groupName="group3" valueInput="VALID"  v-model="settings.Padding")
+                base-radio(groupName="group3" valueInput="'VALID'"  v-model="settings.Padding")
                   span VALID
           .settings-layer_section
             .form_row
@@ -89,7 +89,7 @@ export default {
       settings: {
         Deconv_dim: "2D", //Automatic, 1D, 2D, 3D
         Stride: "2",
-        Padding: "SAME", //'SAME', 'VALID'
+        Padding: "'SAME'", //'SAME', 'VALID'
         Feature_maps: "8",
         Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
         Dropout: false, //True, False

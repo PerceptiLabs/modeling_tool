@@ -8,6 +8,10 @@
   .icon + span {
     margin-left: 1rem;
   }
+  &:disabled {
+    opacity: .5;
+    cursor: default;
+  }
 }
 
 .btn--primary {
@@ -128,6 +132,7 @@
 
   color: $white;
   background: $bg-grad-blue;
+  transition: none;
   &:hover,
   &.active {
     color: $disable-txt;

@@ -25,8 +25,16 @@ const openLoadDialog = function (callback, options) {
   })
 };
 
+const generateID = function(input) {
+  let out;
+  let stringID = input.toString();
+  let dotIndex = stringID.indexOf('.');
+  dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
+  out = +out;
+  return out
+};
 
-export {findIndexId, clickOutside, trainingElements, deepLearnElements, openLoadDialog}
+export {findIndexId, clickOutside, trainingElements, deepLearnElements, openLoadDialog, generateID}
 
 
 

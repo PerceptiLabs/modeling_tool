@@ -16,8 +16,8 @@ const mainMenu = [
     label: 'File',
     submenu: [
       {label: 'New',                  click() {mainWindow.webContents.send('newNetwork')}},
-      {label: 'Open trained model',   click() {mainWindow.webContents.send('closeApp', 'whoooooooh!');  }},
-      {label: 'Save trained model',   click() {  }},
+      {label: 'Open trained model', enabled: false, click() {mainWindow.webContents.send('closeApp', 'whoooooooh!');  }},
+      {label: 'Save trained model', enabled: false,  click() {  }},
       {label: 'Open untrained model', click() {mainWindow.webContents.send('openNetwork')}},
       {label: 'Save untrained model', click() {mainWindow.webContents.send('saveNetwork')}},
       {type: 'separator'},
@@ -27,26 +27,26 @@ const mainMenu = [
   {
     label: 'Edit',
     submenu: [
-      {role: 'undo'},
-      {role: 'redo'},
-      {type: 'separator'},
-      {role: 'cut'},
-      {role: 'copy'},
-      {role: 'paste'},
-      {role: 'delete', accelerator: 'Shift+Delete',},
-      {role: 'selectall'},
+      {role: 'undo', enabled: false},
+      {role: 'redo', enabled: false},
+      {type: 'separator', enabled: false},
+      {role: 'cut', enabled: false},
+      {role: 'copy', enabled: false},
+      {role: 'paste', enabled: false},
+      {role: 'delete', accelerator: 'Delete', enabled: false},
+      {role: 'selectall', enabled: false},
     ]
   },
   {
     label: 'Settings',
     submenu: [
-      {label: 'Hyperparameters', click() {mainWindow.webContents.send('asynchronous-reply', 'whoooooooh!')}},
+      {label: 'Hyperparameters', enabled: false, click() {mainWindow.webContents.send('asynchronous-reply', 'whoooooooh!')}},
     ]
   },
   {
     label: 'Help',
     submenu: [
-      {label: 'Version' + app.getVersion()},
+      {label: 'Version ' + app.getVersion()},
       {label: 'Help',   click() { require('electron').shell.openExternal('https://www.perceptilabs.com/html/product.html#tutorials')}},
       {label: 'About',  click() { require('electron').shell.openExternal('https://www.perceptilabs.com/')}},
       {label: 'Check for updates',  click() {mainWindow.checkForUpdates()}},
@@ -79,7 +79,7 @@ function createWindow () {
     width: 1024,
     minHeight: 768,
     minWidth: 1024,
-    backgroundColor: '#383F50',
+    backgroundColor: '#27292F',
     useContentSize: true,
     webPreferences: {
       //contextIsolation: true,
@@ -170,16 +170,13 @@ autoUpdater.on('checking-for-update', (info)=> {
 autoUpdater.on('update-available', (info)=> {
   mainWindow.webContents.send('info', {type: 'Update available.', info});
 
-  dialog.showMessageBox({
+  const dialogOpts = {
     type: 'info',
-    title: 'Found Updates',
+    title: 'Start Download Updates',
     message: info.releaseNotes,
-    buttons: ['Yes', 'No']
-  }, (buttonIndex) => {
-    if (buttonIndex === 0) {
-      autoUpdater.downloadUpdate()
-    }
-  })
+    buttons: ['OK']
+  };
+  dialog.showMessageBox(dialogOpts, (buttonIndex) => {})
 });
 autoUpdater.on('update-not-available', (info)=> {
   mainWindow.webContents.send('info', {type: 'Update not available.', info});
@@ -190,7 +187,7 @@ autoUpdater.on('error', (err)=> {
 autoUpdater.on('download-progress', (progressObj)=> {
   let log_message = `Download speed: ${progressObj.bytesPerSecond}, Downloaded: ${progressObj.percent}%`;
   mainWindow.webContents.send('info', log_message);
-  win.setProgressBar(progressObj.percent / 100);
+  mainWindow.setProgressBar(progressObj.percent / 100);
 });
 autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
   mainWindow.webContents.send('info', 'Update downloaded');

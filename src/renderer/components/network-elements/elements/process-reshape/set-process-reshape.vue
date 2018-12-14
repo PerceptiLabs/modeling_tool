@@ -14,7 +14,7 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              .form_label Input dimensions:
+              .form_label Reshape:
               .form_input
                 triple-input(v-model="settings.Shape")
           //.settings-layer_section
@@ -29,7 +29,7 @@
                 input(type="text")
           .settings-layer_section
             .form_row
-              .form_label Output dimensions:
+              .form_label Transpose:
               .form_input
                 triple-input(v-model="settings.Permutation")
           .settings-layer_foot

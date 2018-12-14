@@ -44,9 +44,9 @@
             .form_row
               .form_label Zero-padding:
               .form_input
-                base-radio(groupName="group3" valueInput="SAME"  v-model="settings.Padding")
+                base-radio(groupName="group3" valueInput="'SAME'"  v-model="settings.Padding")
                   span SAME
-                base-radio(groupName="group3" valueInput="VALID"  v-model="settings.Padding")
+                base-radio(groupName="group3" valueInput="'VALID'"  v-model="settings.Padding")
                   span VALID
           .settings-layer_section
             .form_row
@@ -113,9 +113,9 @@
               .form_row
                 .form_label Zero-padding for pooling:
                 .form_input
-                  base-radio(groupName="Pool_padding" valueInput="SAME" v-model="settings.Pool_padding")
+                  base-radio(groupName="Pool_padding" valueInput="'SAME'" v-model="settings.Pool_padding")
                     span SAME
-                  base-radio(groupName="Pool_padding" valueInput="VALID" v-model="settings.Pool_padding")
+                  base-radio(groupName="Pool_padding" valueInput="'VALID'" v-model="settings.Pool_padding")
                     span VALID
 
           .settings-layer_foot
@@ -143,14 +143,14 @@ export default {
         Conv_dim: "2D", //Automatic, 1D, 2D, 3D
         Patch_size: "3",
         Stride: "2",
-        Padding: "SAME", //'SAME', 'VALID'
+        Padding: "'SAME'", //'SAME', 'VALID'
         Feature_maps: "8",
         Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
         Dropout: false, //True, False
         PoolBool: false, //True, False
         Pooling: "Max", //Max, Mean
         Pool_area: "2",
-        Pool_padding: "SAME", //'SAME', 'VALID'
+        Pool_padding: "'SAME'", //'SAME', 'VALID'
         Pool_stride: "2",
       }
     }
