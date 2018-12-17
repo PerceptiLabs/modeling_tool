@@ -64,10 +64,10 @@
             .form_row
               .form_label Dropout:
               .form_input
-                base-radio(groupName="group5" :valueInput="false"  v-model="settings.Dropout")
-                  span None
                 base-radio(groupName="group5" :valueInput="true"  v-model="settings.Dropout")
-                  span Sigmoid
+                  span Yes
+                base-radio(groupName="group5" :valueInput="false"  v-model="settings.Dropout")
+                  span No
           .settings-layer_section
             .form_row
               .form_label Pooling:

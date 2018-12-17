@@ -79,6 +79,7 @@ export default {
     },
     setTabNetwork(index) {
       this.$store.commit('mod_workspace/SET_currentNetwork', index);
+      this.$store.commit('mod_workspace/SET_metaSelectDisable');
       this.$store.commit('globalView/SET_statisticsIsOpen', false)
     },
     toggleSidebar () {
