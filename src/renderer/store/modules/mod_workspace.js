@@ -308,7 +308,7 @@ const mutations = {
         //return !value.arrSelectId.includes(connect.id)
         return !value.arrSelectId.includes(connect)
       });
-      el.connectionIn  = el.connectionOut.filter((connect)=>{
+      el.connectionIn  = el.connectionIn.filter((connect)=>{
         //TODO return when return arrowType
         //return !value.arrSelectId.includes(connect.id)
         return !value.arrSelectId.includes(connect)
