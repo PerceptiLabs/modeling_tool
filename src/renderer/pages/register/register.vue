@@ -48,12 +48,13 @@
             )
           p.text-error(v-show="errors.has('Confirm password')") {{ errors.first('Confirm password') }}
         .form_holder
-          base-checkbox(name="terms" v-validate="'required'"
-
+          base-checkbox(
+            validateName="policy"
+            v-model="terms"
           )
             span Agree
             router-link(:to="{name: 'policy'}").btn.btn--link  terms and policy
-          p.text-error(v-show="errors.has('terms')") {{ errors.first('terms') }}
+
         .form_holder
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm") Register
         .form_holder
@@ -72,7 +73,8 @@ export default {
         email: '',
         phone: '',
         password: ''
-      }
+      },
+      terms: true
     }
   },
   methods: {

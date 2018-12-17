@@ -6,10 +6,13 @@
       :value="valueInput"
       v-model="checked"
       @change="onChange()"
+      :name="validateName"
+      v-validate="!!validateName ? {required: true} : {required: false}"
     )
     .checkbox-fake(:class="{'checkbox-fake--icon': iconTheme}")
     .checkbox-text(v-if="labelPosition==='right'")
       slot
+    p.text-error(v-show="errors.has(validateName)") {{ errors.first(validateName) }}
 
 </template>
 
@@ -27,6 +30,10 @@ export default {
       type: Boolean,
       default: false
     },
+    validateName: {
+      type: String,
+      default: ''
+    }
   },
   data() {
     return {
@@ -53,6 +60,7 @@ export default {
     padding: 0;
     display: inline-flex;
     align-items: center;
+    position: relative;
 
     input[type=checkbox] {
       opacity: 0;
@@ -105,6 +113,10 @@ export default {
         margin-left: .75em;
       }
     }
-
+    .text-error {
+      position: absolute;
+      top: 100%;
+      left: 0;
+    }
   }
 </style>
