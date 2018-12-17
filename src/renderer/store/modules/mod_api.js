@@ -150,30 +150,32 @@ const actions = {
     }
   },
   API_pauseTraining({commit, dispatch, rootGetters}) {
-    var theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
-      action: "Pause",
-      value: ""
-    };
-    dispatch('API_PUSH_core', theData)
+    // var theData = {
+    //   reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
+    //   action: "Pause",
+    //   value: ""
+    // };
+    const theData = rootGetters['mod_workspace/GET_API_dataPauseTraining'];
+    dispatch('API_PUSH_core', theData);
     commit('RESET_idTimer')
   },
   API_stopTraining({commit, state, dispatch, rootGetters}) {
-    var theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
-      action: "Stop",
-      value: ""
-    };
-
+    // var theData = {
+    //   reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
+    //   action: "Stop",
+    //   value: ""
+    // };
+    const theData = rootGetters['mod_workspace/GET_API_dataStopTraining'];
     dispatch('API_PUSH_core', theData);
     commit('RESET_idTimer')
   },
   API_skipValidTraining({dispatch, rootGetters}) {
-    var theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
-      action: "SkipToValidation",
-      value: ""
-    };
+    // var theData = {
+    //   reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
+    //   action: "SkipToValidation",
+    //   value: ""
+    // };
+    const theData = rootGetters['mod_workspace/GET_API_dataSkipValidTraining'];
     dispatch('API_PUSH_core', theData)
   },
   // API_getStatistics({dispatch, rootGetters}) {

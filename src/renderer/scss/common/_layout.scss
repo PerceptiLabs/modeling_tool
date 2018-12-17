@@ -2,8 +2,10 @@ $sidebar-indent: 10px;
 
 html {
   font-size: $global-font-size;
-
   box-sizing: border-box;
+  @media (min-width: 1440px) {
+    font-size: 10px;
+  }
 }
 
 *,

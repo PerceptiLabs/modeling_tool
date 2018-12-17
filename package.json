@@ -1,7 +1,7 @@
 {
   "name": "PerceptiLabs",
   "version": "0.0.1",
-  "author": "StetsenkoAnton <stetsenko.ant1@gmail.com>",
+  "author": "PerceptiLabs <contact@perceptilabs.com>",
   "description": "PerceptiLabs is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.",
   "license": null,
   "main": "./dist/electron/main.js",
@@ -66,7 +66,7 @@
       "verifyUpdateCodeSignature": false
     },
     "linux": {
-      "icon": "build/icons"
+      "icon": "build/icons/512x512.png"
     }
   },
   "dependencies": {
