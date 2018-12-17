@@ -37,10 +37,10 @@ export default {
   name: 'PageLogin',
   data() {
     return {
-      userEmail: 'test@test.com',
-      userPass: '123123'
-      // userEmail: '',
-      // userPass: ''
+      // userEmail: 'test@test.com',
+      // userPass: '123123'
+      userEmail: '',
+      userPass: ''
     }
   },
   computed: {
