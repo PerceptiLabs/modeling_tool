@@ -100,7 +100,7 @@ function createWindow () {
     }
   });
   ipcMain.on('appReady', (event, arg) => {
-    if(process.env.NODE_ENV !== 'development') {
+    if(process.env.NODE_ENV !== 'development' && process.platform === 'win32' ) {
       mainWindow.checkForUpdates();
     }
   });
@@ -117,13 +117,12 @@ function createWindow () {
   /**
    * start auto update
    */
-  if (process.platform === 'win32') {
-    mainWindow.checkForUpdates = function() {
-      mainWindow.webContents.send('info', 'checkForUpdates');
-      autoUpdater.setFeedURL(UpdateOpt);
-      autoUpdater.checkForUpdates();
-    };
-  }
+
+  mainWindow.checkForUpdates = function() {
+    mainWindow.webContents.send('info', 'checkForUpdates');
+    autoUpdater.setFeedURL(UpdateOpt);
+    autoUpdater.checkForUpdates();
+  };
 }
 
 app.on('ready', createWindow);
