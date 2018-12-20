@@ -48,25 +48,25 @@ const actions = {
         let openServer;
         switch (process.platform) {
           case 'win32':
-            //openServer = spawn('core_local/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = spawn('core_local/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
             break;
           case 'darwin':
-            //openServer = execFile('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-            openServer = execFile('core_local/appServer', ['--version'], (error, stdout, stderr) => {
-              if (error) {
-                throw error;
-              }
-              console.log(stdout);
-            });
+            openServer = execFile('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            // openServer = execFile('core_local/appServer', ['--version'], (error, stdout, stderr) => {
+            //   if (error) {
+            //     throw error;
+            //   }
+            //   console.log(stdout);
+            // });
             break;
           case 'linux':
-            openServer = execFile('core_local/app-server/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
             break;
         }
-        // openServer.on('close', (code) => {
-        //   console.error(code);
-        //   commit('SET_serverStatus', {Status: 'Offline'});
-        // });
+        openServer.on('close', (code) => {
+          console.error(code);
+          commit('SET_serverStatus', {Status: 'Offline'});
+        });
 
         // openServer.stdout.on('data', (data) => {
         //   console.log(`stdout: ${data}`);
@@ -91,7 +91,7 @@ const actions = {
     const client = new requestApi();
     client.sendMessage(dataGetStatus)
       .then((data)=> {
-        console.log(data);
+        //console.log(data);
         commit('SET_serverStatus', data)
       })
       .catch((err) =>{

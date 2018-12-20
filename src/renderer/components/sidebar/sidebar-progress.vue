@@ -14,13 +14,13 @@ export default {
   },
   computed: {
     percentData() {
-      let max = this.$store.getters['mod_workspace/GET_currentNetworkSettings'].Epochs;
-      let current;
-      if(this.$store.state.mod_api.serverStatus === undefined) {
-        current = 0;
+      let settings = this.$store.state.mod_api.serverStatus;
+      let progress;
+      if(settings === null) {
+        progress = 0;
       }
-      else current = this.$store.state.mod_api.serverStatus.Epoch;
-      let result = Math.round(current / max * 100) + '%';
+      else progress = settings.Progress;
+      let result = Math.round(progress * 100) + '%';
       return result
     },
     serverStatus() {
