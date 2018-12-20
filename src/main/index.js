@@ -164,7 +164,7 @@ app.on('activate', () => {
  */
 
 autoUpdater.on('checking-for-update', (info)=> {
-  console.log('Checking for update...');
+  //console.log('Checking for update...');
   mainWindow.webContents.send('info', {type: 'Checking for update...!', info});
 });
 autoUpdater.on('update-available', (info)=> {

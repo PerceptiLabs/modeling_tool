@@ -131,8 +131,6 @@ const actions = {
       action: "Start",
       value: message
     };
-    console.log(theData);
-
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
@@ -247,7 +245,7 @@ const actions = {
         firstByte = Math.floor(headerByteLength / 256);
         secondByte = headerByteLength % 256;
       }
-      console.log(dataJSON);
+      //console.log(dataJSON);
       const message = [
         firstByte, secondByte,
         ...headerByte,
@@ -264,7 +262,7 @@ const actions = {
       let dataString = data.toString();
       let clearData = dataString.slice(dataString.indexOf('}{"result": ') + 12, dataString.length-1);
       socketClient.end();
-      console.log(clearData);
+      //console.log(clearData);
     });
     socketClient.on('error', (err) => {
       console.log('answer error server', err.toString());

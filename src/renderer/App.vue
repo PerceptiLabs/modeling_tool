@@ -11,7 +11,7 @@
     name: 'quantumnet',
     mounted() {
       ipcRenderer.on('closeApp', (event, data) => {
-        console.log(data);
+        //console.log(data);
         this.$store.dispatch('mod_api/API_CLOSE_core');
         setTimeout(()=>{
           ipcRenderer.send('acceptClose')
@@ -28,7 +28,7 @@
         this.$store.commit('mod_events/set_saveNetwork')
       });
       ipcRenderer.on('info', (event, data) => {
-        console.log(data);
+        //console.log(data);
       });
       ipcRenderer.send('appReady');
     },

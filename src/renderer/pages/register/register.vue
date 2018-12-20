@@ -93,10 +93,10 @@ export default {
         });
     },
     registryUser() {
-      console.log('registryUser');
+      //console.log('registryUser');
       this.requestCloudApi('post', 'Customer/CreateGuest', this.user, (result, response, error) => {
         if (result === 'success') {
-          console.log(response);
+          //console.log(response);
           alert('authorization success');
           this.$router.replace('/login');
         }
