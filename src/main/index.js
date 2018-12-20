@@ -117,11 +117,13 @@ function createWindow () {
   /**
    * start auto update
    */
-  mainWindow.checkForUpdates = function() {
-    mainWindow.webContents.send('info', 'checkForUpdates');
-    autoUpdater.setFeedURL(UpdateOpt);
-    autoUpdater.checkForUpdates();
-  };
+  if (process.platform === 'win32') {
+    mainWindow.checkForUpdates = function() {
+      mainWindow.webContents.send('info', 'checkForUpdates');
+      autoUpdater.setFeedURL(UpdateOpt);
+      autoUpdater.checkForUpdates();
+    };
+  }
 }
 
 app.on('ready', createWindow);
