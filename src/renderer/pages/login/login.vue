@@ -43,20 +43,6 @@ export default {
       userPass: ''
     }
   },
-  computed: {
-    // infoText() {
-    //   return this.$store.state.globalView.globalPopup.showInfoPopup
-    // },
-    // eventLoadNetwork() {
-    //   return this.$store.state.mod_events.openNetwork
-    // },
-    // eventSaveNetwork() {
-    //   return this.$store.state.mod_events.saveNetwork
-    // },
-    // currentNetwork() {
-    //   return this.$store.getters['mod_workspace/GET_currentNetwork']
-    // },
-  },
   methods: {
     requestCloudApi,
     validateForm() {

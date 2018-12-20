@@ -45,7 +45,18 @@ const actions = {
     dispatch('API_getStatus');
     setTimeout(()=>{
       if(getters.GET_serverStatus === 'Offline') {
-        let openServer = exec('core_local/app-server/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+        let openServer;
+        switch (process.platform) {
+          case 'win32':
+            openServer = exec('core_local/app-server/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            break;
+          case 'darwin':
+            openServer = exec('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            break;
+          case 'linux':
+            openServer = exec('core_local/app-server/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            break;
+        }
         openServer.on('close', (code) => {
           console.error(code);
           commit('SET_serverStatus', {Status: 'Offline'});
