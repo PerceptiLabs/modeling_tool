@@ -1,7 +1,7 @@
 import requestApi  from "@/core/api.js";
 
 const net = require('net');
-const exec = require('child_process').spawn;
+const {spawn, execFile} = require('child_process');
 
 const namespaced = true;
 
@@ -48,19 +48,25 @@ const actions = {
         let openServer;
         switch (process.platform) {
           case 'win32':
-            openServer = exec('core_local/app-server/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            //openServer = spawn('core_local/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
             break;
           case 'darwin':
-            openServer = exec('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            //openServer = execFile('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = execFile('core_local/appServer', ['--version'], (error, stdout, stderr) => {
+              if (error) {
+                throw error;
+              }
+              console.log(stdout);
+            });
             break;
           case 'linux':
-            openServer = exec('core_local/app-server/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = execFile('core_local/app-server/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
             break;
         }
-        openServer.on('close', (code) => {
-          console.error(code);
-          commit('SET_serverStatus', {Status: 'Offline'});
-        });
+        // openServer.on('close', (code) => {
+        //   console.error(code);
+        //   commit('SET_serverStatus', {Status: 'Offline'});
+        // });
 
         // openServer.stdout.on('data', (data) => {
         //   console.log(`stdout: ${data}`);
@@ -69,7 +75,7 @@ const actions = {
         //   console.log(`stderr: ${data}`);
         // });
       }
-    }, 1000);
+    }, 2000);
     let timer = setInterval(()=>{
       let status = getters.GET_serverStatus;
       if(status === 'Offline') {
@@ -85,6 +91,7 @@ const actions = {
     const client = new requestApi();
     client.sendMessage(dataGetStatus)
       .then((data)=> {
+        console.log(data);
         commit('SET_serverStatus', data)
       })
       .catch((err) =>{

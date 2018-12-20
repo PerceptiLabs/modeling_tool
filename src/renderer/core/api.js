@@ -20,6 +20,7 @@ class Client {
   }
 
   sendMessage(message) {
+    console.log(message);
     var client = this;
     const header = {
       "byteorder": 'little',
