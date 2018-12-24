@@ -60,7 +60,13 @@ const actions = {
             // });
             break;
           case 'linux':
-            openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            //openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = execFile('core_local/appServer', ['--version'], (error, stdout, stderr) => {
+              if (error) {
+                throw error;
+              }
+              console.log(stdout);
+            });
             break;
         }
         openServer.on('close', (code) => {

@@ -7,10 +7,7 @@ import { autoUpdater }  from 'electron-updater'
 let mainWindow;
 //const visitor = ua('UA-129392553-1');
 const visitor = ua('UA-114940346-1');
-const UpdateOpt = {
-  provider: 'generic',
-  url: 'https://uantumetdisks.blob.core.windows.net/updates-admin',
-};
+
 const mainMenu = [
   {
     label: 'File',
@@ -88,7 +85,7 @@ function createWindow () {
       //plugins: true,
     }
   });
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   const menuCustom = Menu.buildFromTemplate(mainMenu);
@@ -99,12 +96,13 @@ function createWindow () {
       app.quit()
     }
   });
+
   ipcMain.on('appReady', (event, arg) => {
-    if(process.env.NODE_ENV !== 'development' && process.platform === 'win32' ) {
+    if(process.env.NODE_ENV !== 'development') {
       mainWindow.checkForUpdates();
     }
   });
-
+  // google analytics
   visitor.pageview("/").send();
 
   mainWindow.on('closed', () => {
@@ -119,7 +117,23 @@ function createWindow () {
    */
 
   mainWindow.checkForUpdates = function() {
+    const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
+    const UpdateOpt = {
+      provider: 'generic',
+      url: ''
+    };
     mainWindow.webContents.send('info', 'checkForUpdates');
+    switch (process.platform) {
+      case 'win32':
+        UpdateOpt.url = UpdateUrl + 'win/';
+        break;
+      case 'darwin':
+        UpdateOpt.url = UpdateUrl + 'ios/';
+        break;
+      case 'linux':
+        UpdateOpt.url = UpdateUrl + 'linux/';
+        break;
+    }
     autoUpdater.setFeedURL(UpdateOpt);
     autoUpdater.checkForUpdates();
   };
