@@ -98,7 +98,7 @@ function createWindow () {
   });
 
   ipcMain.on('appReady', (event, arg) => {
-    if(process.env.NODE_ENV !== 'development') {
+    if(process.env.NODE_ENV !== 'development' || true) {
       mainWindow.checkForUpdates();
     }
   });
@@ -117,12 +117,12 @@ function createWindow () {
    */
 
   mainWindow.checkForUpdates = function() {
+    mainWindow.webContents.send('info', 'checkForUpdates');
     const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
     const UpdateOpt = {
       provider: 'generic',
       url: ''
     };
-    mainWindow.webContents.send('info', 'checkForUpdates');
     switch (process.platform) {
       case 'win32':
         UpdateOpt.url = UpdateUrl + 'win/';
