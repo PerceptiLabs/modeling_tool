@@ -3,6 +3,7 @@
 import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron'
 import ua               from 'universal-analytics'
 import { autoUpdater }  from 'electron-updater'
+autoUpdater.autoDownload = false;
 
 let mainWindow;
 //const visitor = ua('UA-129392553-1');
@@ -189,9 +190,13 @@ autoUpdater.on('update-available', (info)=> {
     type: 'info',
     title: 'Start Download Updates',
     message: info.releaseNotes,
-    buttons: ['OK']
+    buttons: ['OK', 'No']
   };
-  dialog.showMessageBox(dialogOpts, (buttonIndex) => {})
+  dialog.showMessageBox(dialogOpts, (buttonIndex) => {
+    if (buttonIndex === 0) {
+      autoUpdater.downloadUpdate()
+    }
+  })
 });
 autoUpdater.on('update-not-available', (info)=> {
   mainWindow.webContents.send('info', {type: 'Update not available.', info});
