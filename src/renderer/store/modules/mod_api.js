@@ -51,7 +51,10 @@ const actions = {
             openServer = spawn('core_local/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
             break;
           case 'darwin':
-            openServer = execFile('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            let resPath = process.resourcesPath;
+            let path = resPath.slice(resPath.indexOf('Resources') + 1 , resPath.length);
+            console.log(path);
+            openServer = spawn(path + 'core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
             // openServer = execFile('core_local/appServer', ['--version'], (error, stdout, stderr) => {
             //   if (error) {
             //     throw error;
