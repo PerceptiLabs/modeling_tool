@@ -54,22 +54,19 @@ const actions = {
             let resPath = process.resourcesPath;
             let path = resPath.slice(0, resPath.indexOf('Resources'));
             if(process.env.NODE_ENV === 'production') {
-              console.log(process.env.NODE_ENV);
               openServer = spawn(path + 'core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
             }
             else {
-              console.log(process.env.NODE_ENV);
               openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
             }
             break;
           case 'linux':
-            //openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-            // openServer = execFile('core_local/appServer', ['--version'], (error, stdout, stderr) => {
-            //   if (error) {
-            //     throw error;
-            //   }
-            //   console.log(stdout);
-            // });
+            if(process.env.NODE_ENV === 'production') {
+              openServer = spawn(path + '../core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            }
+            else {
+              openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            }
             break;
         }
         openServer.on('close', (code) => {
