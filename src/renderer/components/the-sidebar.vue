@@ -8,7 +8,7 @@
           button.btn(type="button"
             :class="{'active': i === tabSelected}"
             @click="selectTab(i)"
-          :disabled="tabSelected != i"
+            :disabled="tabSelected != i"
           ) {{tab}}
 
       .sidebar_tab(v-show="tabSelected === 0")

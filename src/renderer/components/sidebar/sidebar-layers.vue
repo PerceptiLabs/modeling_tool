@@ -4,7 +4,7 @@
       i.icon.icon-burger.middle-text
       h3 Layers
     //
-    .layers_body(v-bar)
+    .layers_body
       div
         .layer-item-wrap
           .layer-item

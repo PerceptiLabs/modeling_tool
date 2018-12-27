@@ -17,10 +17,6 @@
 
 @import 'pages/login';
 
-@import 'plagins/vuebar';
-@import 'plagins/vue-drag';
-@import 'plagins/tooltip';
-
 @import 'components/network-elements';
 @import 'components/action-list';
 @import 'components/settings-layer';
@@ -28,4 +24,4 @@
 @import 'components/statistics-box';
 @import 'components/info-section';
 
-@import 'directives/editable-field';
+@import 'directives/tooltip';
