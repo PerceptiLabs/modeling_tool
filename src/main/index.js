@@ -71,7 +71,7 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    frame: false,
+    //frame: false,
     height: 768,
     width: 1024,
     minHeight: 768,
@@ -86,7 +86,7 @@ function createWindow () {
     }
   });
 
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
