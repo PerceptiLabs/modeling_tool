@@ -37,12 +37,11 @@ export default {
 
 <style lang="scss" scoped>
   @import "../scss/base";
-  $headerHeight: 3rem;
   .app-header {
     background: #141419;
     display: flex;
     align-items: center;
-    height: $headerHeight;
+    height: $h-header;
     -webkit-app-region: drag;
     .btn {
       -webkit-app-region: no-drag;
@@ -52,7 +51,7 @@ export default {
     padding-left: 2rem;
     padding-right: 2rem;
     img {
-      height: $headerHeight - 1;
+      height: $h-header - 1;
     }
   }
 
@@ -60,8 +59,8 @@ export default {
     margin-left: auto;
     display: flex;
     .btn {
-      height: $headerHeight;
-      width: $headerHeight * 2;
+      height: $h-header;
+      width: $h-header * 2;
       display: flex;
       align-items: center;
       justify-content: center;

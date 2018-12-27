@@ -97,14 +97,17 @@ export default {
   props: ['netIndex'],
   data() {
     return {
-      arrowsList: []
+      arrowsList: [],
+      resizeTimeout: null
     }
   },
   mounted() {
-    this.createArrowList()
+    this.createArrowList();
+    window.addEventListener("resize", this.resizeThrottler, false);
   },
   beforeDestroy() {
-    this.removeArrowListener()
+    this.removeArrowListener();
+    window.removeEventListener("resize", this.resizeThrottler, false);
   },
   computed: {
     workspaceJSON() {
@@ -129,6 +132,17 @@ export default {
     },
   },
   methods: {
+    resizeThrottler() {
+      if ( !this.resizeTimeout ) {
+        this.resizeTimeout = setTimeout(()=> {
+          this.resizeTimeout = null;
+          this.createArrowList();
+        }, 792);
+      }
+    },
+    //-------------
+    //Arrow methods
+    //--------------
     addArrowListener() {
       this.$refs.network.addEventListener('mousemove', this.arrowMovePaint);
       this.$refs.network.addEventListener('mouseup', this.removeArrowListener);
@@ -143,10 +157,15 @@ export default {
     },
 
     createArrowList() {
-      const size = 72;
+      let netElement = this.$refs.network.querySelectorAll('.net-element');
+      let size = 72;
+      if(netElement.length) {
+        size = netElement[0].offsetWidth;
+      }
       const listID = {};
       const connectList = [];
       const net = this.workspace.network;
+
       findAllID();
       findPerspectiveSide();
       calcCorrectPosition();

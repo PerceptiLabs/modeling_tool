@@ -22,7 +22,7 @@
       "layersbar  workspace sidebar";
     grid-template-rows: auto 1fr;
     grid-template-columns: auto 1fr auto;
-    height: 100vh;
+    height: calc(100vh - #{$h-header});
     margin: 0;
   }
   .page_workspace {
