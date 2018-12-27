@@ -1,7 +1,7 @@
 import requestApi  from "@/core/api.js";
 
 const net = require('net');
-const {spawn, execFile} = require('child_process');
+const {spawn} = require('child_process');
 
 const namespaced = true;
 
@@ -62,7 +62,7 @@ const actions = {
             break;
           case 'linux':
             if(process.env.NODE_ENV === 'production') {
-              openServer = spawn(path + '../core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+              openServer = spawn('../core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
             }
             else {
               openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
@@ -114,23 +114,6 @@ const actions = {
       Layers: {}
     };
     net.network.forEach((el)=> {
-      let elType = '';
-
-      // switch (el.componentName) {
-      //   case 'DataData':
-      //     elType = 'Data';
-      //     break;
-      //   case 'TrainNormal':
-      //     elType = 'Train';
-      //     break;
-      //   case 'ProcessHot':
-      //     elType = 'OneHot';
-      //     break;
-      //   case 'LearnDeepConnect':
-      //     elType = 'FC';
-      //     break;
-      // }
-
       message.Layers[el.layerId] = {
         Name: el.layerName,
         Type: el.componentName,
@@ -172,31 +155,16 @@ const actions = {
     }
   },
   API_pauseTraining({commit, dispatch, rootGetters}) {
-    // var theData = {
-    //   reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
-    //   action: "Pause",
-    //   value: ""
-    // };
     const theData = rootGetters['mod_workspace/GET_API_dataPauseTraining'];
     dispatch('API_PUSH_core', theData);
     commit('RESET_idTimer')
   },
   API_stopTraining({commit, state, dispatch, rootGetters}) {
-    // var theData = {
-    //   reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
-    //   action: "Stop",
-    //   value: ""
-    // };
     const theData = rootGetters['mod_workspace/GET_API_dataStopTraining'];
     dispatch('API_PUSH_core', theData);
     commit('RESET_idTimer')
   },
   API_skipValidTraining({dispatch, rootGetters}) {
-    // var theData = {
-    //   reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
-    //   action: "SkipToValidation",
-    //   value: ""
-    // };
     const theData = rootGetters['mod_workspace/GET_API_dataSkipValidTraining'];
     dispatch('API_PUSH_core', theData)
   },

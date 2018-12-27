@@ -14,7 +14,7 @@ const mainMenu = [
     label: 'File',
     submenu: [
       {label: 'New',                  click() {mainWindow.webContents.send('newNetwork')}},
-      {label: 'Open trained model', enabled: false, click() {mainWindow.webContents.send('closeApp', 'whoooooooh!');  }},
+      {label: 'Open trained model', enabled: false, click() {mainWindow.webContents.send('info', 'whoooooooh!');  }},
       {label: 'Save trained model', enabled: false,  click() {  }},
       {label: 'Open untrained model', click() {mainWindow.webContents.send('openNetwork')}},
       {label: 'Save untrained model', click() {mainWindow.webContents.send('saveNetwork')}},
@@ -63,12 +63,10 @@ if (process.env.NODE_ENV !== 'development') {
 
 
 const winURL = process.env.NODE_ENV === 'development'
-  //? `http://localhost:9080`
   ? `http://127.0.0.1:9080`
   : `file://${__dirname}/index.html`;
 
 function createWindow () {
-
   /**
    * Initial window options
    */
@@ -87,65 +85,85 @@ function createWindow () {
       //plugins: true,
     }
   });
+
   mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
+  mainWindow.on('closed', () => {
+    mainWindow = null
+  });
+
+  /**
+   * add custom menu
+   */
   const menuCustom = Menu.buildFromTemplate(mainMenu);
   Menu.setApplicationMenu(menuCustom);
 
-  ipcMain.on('acceptClose', (event, arg) => {
+  /**
+   * listeners for the renderer process
+   */
+  ipcMain.on('appClose', (event, arg) => {
     if (process.platform !== 'darwin') {
       app.quit()
     }
   });
-
-  ipcMain.on('appReady', (event, arg) => {
-    if(process.env.NODE_ENV !== 'development' || true) {
-      mainWindow.checkForUpdates();
-    }
+  ipcMain.on('appMinimize', (event, arg) => {
+    mainWindow.isMinimized()
+      ? mainWindow.restore()
+      : mainWindow.minimize()
   });
-  // google analytics
+  ipcMain.on('appMaximize', (event, arg) => {
+    mainWindow.isMaximized()
+      ? mainWindow.unmaximize()
+      : mainWindow.maximize()
+  });
+  ipcMain.on('appReady', (event, arg) => {
+    mainWindow.checkForUpdates();
+  });
+  ipcMain.on('checkUpdate', (event, arg) => {
+    mainWindow.checkForUpdates();
+  });
+  ipcMain.on('appVersion', (event, arg) => {
+    mainWindow.webContents.send('getAppVersion', app.getVersion());
+  });
+  /**
+   * google analytics
+   */
   visitor.pageview("/").send();
 
-  mainWindow.on('closed', () => {
-    // mainWindow.webContents.send('closeApp');
-    // ipcMain.on('acceptClose', (event, arg) => {
-    //   mainWindow = null
-    // })
-    mainWindow = null
-  });
   /**
    * start auto update
    */
-
   mainWindow.checkForUpdates = function() {
-    mainWindow.webContents.send('info', 'checkForUpdates');
-    const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
-    const UpdateOpt = {
-      provider: 'generic',
-      url: ''
-    };
-    switch (process.platform) {
-      case 'win32':
-        UpdateOpt.url = UpdateUrl + 'win/';
-        break;
-      case 'darwin':
-        UpdateOpt.url = UpdateUrl + 'ios/';
-        break;
-      case 'linux':
-        UpdateOpt.url = UpdateUrl + 'linux/';
-        break;
+    if (process.env.NODE_ENV !== 'development') {
+      mainWindow.webContents.send('info', 'checkForUpdates');
+      const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
+      const UpdateOpt = {
+        provider: 'generic',
+        url: ''
+      };
+      switch (process.platform) {
+        case 'win32':
+          UpdateOpt.url = UpdateUrl + 'win/';
+          break;
+        case 'darwin':
+          UpdateOpt.url = UpdateUrl + 'ios/';
+          break;
+        case 'linux':
+          UpdateOpt.url = UpdateUrl + 'linux/';
+          break;
+      }
+      autoUpdater.setFeedURL(UpdateOpt);
+      autoUpdater.checkForUpdates();
     }
-    autoUpdater.setFeedURL(UpdateOpt);
-    autoUpdater.checkForUpdates();
-  };
+  }
 }
 
 app.on('ready', createWindow);
 
 app.on('before-quit', (event) => {
   //event.preventDefault();
-  mainWindow.webContents.send('closeApp', 'before-quit');
+  //mainWindow.webContents.send('closeApp', 'before-quit');
 });
 // app.on('will-quit', (event) => {
 //   //event.preventDefault();
@@ -158,7 +176,6 @@ app.on('before-quit', (event) => {
 
 
 app.on('window-all-closed', () => {
-  mainWindow.webContents.send('closeApp', 'window-all-closed');
   if (process.platform !== 'darwin') {
     app.quit()
   }
@@ -225,8 +242,5 @@ autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
     if (response === 0) autoUpdater.quitAndInstall()
   })
 });
-
-
-
 
 export default mainWindow

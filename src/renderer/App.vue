@@ -13,13 +13,6 @@
     name: 'quantumnet',
     components: {TheHeader},
     mounted() {
-      ipcRenderer.on('closeApp', (event, data) => {
-        //console.log(data);
-        this.$store.dispatch('mod_api/API_CLOSE_core');
-        setTimeout(()=>{
-          ipcRenderer.send('acceptClose')
-        }, 5000);
-      });
       ipcRenderer.on('newNetwork', (event) => {
         //console.log(event);
         this.$store.commit('mod_workspace/ADD_loadNetwork');

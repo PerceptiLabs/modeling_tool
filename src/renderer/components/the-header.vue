@@ -3,55 +3,35 @@
     .app-header_logo
       img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
     nav.app-header_nav
-      ul.header-nav
-        li(
-          v-for="(item, i) in navMenu"
-          :key="i"
-          )
-          button.btn.btn--link(type="button") {{ item.label }}
-          ul.header-nav_sublist
-            li(
-              v-for="(subItem, i) in item.subMenu"
-              :key="subItem.id")
-              div.separator(v-if="subItem.type === 'separator'")
-              button.btn.btn--link(type="button" v-else
-              ) {{subItem.label}}
-
+      the-menu
     ul.app-header_actions
-      button.btn.btn--app-minify(type="button").i.icon.icon-minus
-      button.btn.btn--app-full(type="button").i.icon.icon-full-screen
-      button.btn.btn--app-close(type="button").i.icon.icon-close
+      button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-minus
+      button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-full-screen
+      button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-close
 </template>
 
 <script>
+  import {ipcRenderer} from 'electron'
+  import TheMenu from '@/components/the-menu.vue'
 export default {
-    name: "TheHeader",
-    data() {
-        return {
-          navMenu: [
-            {
-              label: 'File',
-              subMenu: [
-                { label: 'New',                 enabled: true,  action: 'action' },
-                { label: 'Open trained model',  enabled: false, action: 'action' }
-              ]
-            },
-            {
-              label: 'Edit',
-              subMenu: [
-                { label: 'Undo',  enabled: false,  action: 'action' },
-                { label: 'Redo',  enabled: false, action: 'action' },
-                { type: 'separator' },
-                { label: 'Undo',  enabled: false,  action: 'action' },
-                { label: 'Redo',  enabled: false, action: 'action' },
-              ]
-            }
-          ]
-        }
-    },
-    methods: {
+  name: "TheHeader",
+  components: {TheMenu},
+  data() {
+    return {
 
     }
+  },
+  methods: {
+    appClose() {
+      ipcRenderer.send('appClose')
+    },
+    appMinimize() {
+      ipcRenderer.send('appMinimize')
+    },
+    appMaximize() {
+      ipcRenderer.send('appMaximize')
+    }
+  }
 }
 </script>
 
@@ -75,42 +55,7 @@ export default {
       height: $headerHeight - 1;
     }
   }
-  .header-nav {
-    display: flex;
-    font-weight: 500;
-    > li {
-      position: relative;
-    }
-    > li + li {
-      margin-left: 2rem;
-    }
-  }
-  .header-nav_sublist {
-    display: none;
-    position: absolute;
-    top: 100%;
-    left: -1rem;
-    min-width: 10rem;
-    box-shadow: $box-shad;
-    padding: .5rem 0;
-    background-color: $bg-input;
-    .open-sublist &,
-    .header-nav li:hover & {
-      display: block;
-    }
-    .btn {
-      white-space: nowrap;
-      padding: .25rem 1rem;
-      &:hover {
-        background: #000;
-      }
-    }
-    .separator {
-      margin: .25rem 2px;
-      height: 1px;
-      background: #141419;
-    }
-  }
+
   .app-header_actions {
     margin-left: auto;
     display: flex;
