@@ -306,6 +306,7 @@ export default {
     //font-size: 11px;
     display: flex;
     align-items: center;
+    z-index: 1;
   }
   .toggle-wrap {
     width: $w-layersbar;

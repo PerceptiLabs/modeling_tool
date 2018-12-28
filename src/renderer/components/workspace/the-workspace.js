@@ -74,6 +74,9 @@ export default {
 
   },
   methods: {
+    scaleScroll(e) {
+      e.wheelDelta > 0 ? this.incScale() : this.decScale();
+    },
     deleteTabNetwork(index) {
       this.$store.commit('mod_workspace/DELETE_workspaceTab', index)
     },
@@ -82,20 +85,20 @@ export default {
       this.$store.commit('mod_workspace/SET_metaSelectDisable');
       this.$store.commit('globalView/SET_statisticsIsOpen', false)
     },
-    toggleSidebar () {
+    toggleSidebar() {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
     },
-    decScale () {
-      if (this.scale < 10) {
-        this.scale = 5
+    decScale() {
+      if (this.scale <= 30) {
+        this.scale = 30
       }
-      else this.scale = this.scale - 10
+      else this.scale = this.scale - 5
     },
     incScale () {
-      if (this.scale > 90) {
+      if (this.scale > 95) {
         this.scale = 100
       }
-      else this.scale = this.scale + 10
+      else this.scale = this.scale + 5
     },
     resize(newRect, i) {
       //console.log(newRect);

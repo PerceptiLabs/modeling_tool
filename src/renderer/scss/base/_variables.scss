@@ -88,7 +88,7 @@ $bdrs: .5rem;
 //$w-layersbar: 5.7143rem; //80px
 //$size-layers-btn: 5rem; //70px
 $w-layersbar: 8.2rem; //80px
-$size-layers-btn: 7.2rem; //72px
+//$size-layers-btn: 72px; //72px
 
 $h-sidebar-layers-item: 3.357rem; //33px
 $h-sidebar-layers-indent: 1rem; //14px
@@ -114,3 +114,12 @@ $animation-speed: .3s; // for mixin
 /*----- Popup -----*/
 $popup-indent-top: 2rem;
 $popup-indent-left: 1rem;
+
+
+/*----- CSS VAR -----*/
+:root {
+  --size-layers-btn: 58px;
+  @include media('>=xxlarge') {
+    --size-layers-btn: 72px;
+  }
+}

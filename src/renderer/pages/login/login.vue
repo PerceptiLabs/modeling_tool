@@ -12,7 +12,6 @@
             name="Email"
             v-validate="'required|email'"
             )
-          //
           p.text-error(v-show="errors.has('Email')") {{ errors.first('Email') }}
         .form_holder
           input(type="password" placeholder="Password"
@@ -37,10 +36,10 @@ export default {
   name: 'PageLogin',
   data() {
     return {
-      //userEmail: 'test@test.com',
-      //userPass: '123123'
-      userEmail: '',
-      userPass: ''
+      userEmail: 'test@test.com',
+      userPass: '123123'
+      //userEmail: '',
+      //userPass: ''
     }
   },
   methods: {

@@ -93,8 +93,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: $size-layers-btn;
-  height: $size-layers-btn;
+  width: var(--size-layers-btn);
+  height: var(--size-layers-btn);
   .icon {
     //font-size: 3rem;
     font-size: 3.8rem;

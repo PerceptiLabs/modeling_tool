@@ -21,8 +21,9 @@
           section.network_info-section
             .info-section_head(v-if="statisticsIsOpen")
               h3 Map
-            .info-section_main
+            .info-section_main(@wheel.ctrl="scaleScroll($event)")
               network-field(
+              :style="{zoom: scale + '%'}"
               :netIndex="i"
               )
 

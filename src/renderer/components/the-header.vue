@@ -3,7 +3,7 @@
     .app-header_logo
       img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
     nav.app-header_nav
-      the-menu
+      the-menu(:fullView="fullView")
     ul.app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-minus
       button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-full-screen
@@ -16,6 +16,9 @@
 export default {
   name: "TheHeader",
   components: {TheMenu},
+  props: {
+    fullView: { type: Boolean, default: true}
+  },
   data() {
     return {
 
@@ -38,6 +41,8 @@ export default {
 <style lang="scss" scoped>
   @import "../scss/base";
   .app-header {
+    position: relative;
+    z-index: 2;
     background: #141419;
     display: flex;
     align-items: center;

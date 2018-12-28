@@ -22,17 +22,18 @@ const state = {
   workspaceContent: [
     {
       networkName: 'Network',
-      networkSettings: null,
       networkID: 'net100',
+      network: [],
+      networkSettings: null, //array element settings
       networkMeta: {
         openStatistics: false,
         canTestStatistics: false,
-        netMode: 'edit',
+        netMode: 'edit', //'addArrow', showStatistic
+        scale: 100,
         coreStatus: {
           Status: 'Offline' //Created, Training, Validation, Paused, Finished
         }
       },
-      network: [],
     }
   ],
   currentNetwork: 0,

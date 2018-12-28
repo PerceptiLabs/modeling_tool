@@ -1,12 +1,12 @@
 .workspace_scale()
-  button.btn.btn--icon.workspace-scale_btn(type="button" @click="decScale()" disabled="disabled")
+  button.btn.btn--icon.workspace-scale_btn(type="button" @click="decScale()")
     i.icon.icon-minus
 
   .input-wrap_icon.workspace-scale_input
     input(type="text" v-model.number="scale")
     span %
 
-  button.btn.btn--icon.workspace-scale_btn(type="button" @click="incScale()" disabled="disabled")
+  button.btn.btn--icon.workspace-scale_btn(type="button" @click="incScale()")
     i.icon.icon-zoom-plus
 
   base-checkbox(:iconTheme="true") Map

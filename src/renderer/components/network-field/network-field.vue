@@ -1,6 +1,11 @@
 <template lang="pug">
-  .network-field(:id="'network' + netIndex" ref="network")
-    svg.svg-arrow(v-if="arrowsList.length")
+  .network-field(:id="'network' + netIndex"
+    ref="network"
+  )
+    svg.svg-arrow(
+      v-if="arrowsList.length"
+      ref="svg"
+      )
       defs
         lineargradient(id="grad")
           stop(stop-color='black')
@@ -98,7 +103,7 @@ export default {
   data() {
     return {
       arrowsList: [],
-      resizeTimeout: null
+      resizeTimeout: null,
     }
   },
   mounted() {
@@ -137,8 +142,15 @@ export default {
         this.resizeTimeout = setTimeout(()=> {
           this.resizeTimeout = null;
           this.createArrowList();
+          this.calcSVG();
         }, 792);
       }
+    },
+    calcSVG() {
+      let height = this.$refs.network.scrollHeight;
+      let width = this.$refs.network.scrollWidth;
+      this.$refs.svg.style.height = height;
+      this.$refs.svg.style.width = width;
     },
     //-------------
     //Arrow methods

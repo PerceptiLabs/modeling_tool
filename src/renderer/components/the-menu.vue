@@ -22,20 +22,25 @@
   import {ipcRenderer} from 'electron'
 export default {
   name: "TheMenu",
+  props: {
+    fullView: { type: Boolean, default: true}
+  },
   data() {
     return {
       appVersion: '',
       ctx: this,
+      menuSet: this.fullView,
       navMenu: [
         {
           label: 'File',
           submenu: [
-            {label: 'New',                                    active: function(self) {self.addNewNetwork()} },
+            {label: 'New',                  enabled: this.menuSet,   active: function(self) {self.addNewNetwork()} },
             {label: 'Open trained model',   enabled: false,   active: function(self) {}},
             {label: 'Save trained model',   enabled: false,   active: function(self) {}},
-            {label: 'Open untrained model',                   active: function(self) {self.openNetwork()}},
-            {label: 'Save untrained model',                   active: function(self) {self.saveNetwork()}},
+            {label: 'Open untrained model', enabled: false,   active: function(self) {self.openNetwork()}},
+            {label: 'Save untrained model', enabled: false,   active: function(self) {self.saveNetwork()}},
             {type: 'separator'},
+            {label: 'Log out',                                active: function(self) {self.logOut()}},
             {label: 'Quit',                                   active: function(self) {self.appClose()}}
           ]
         },
@@ -48,7 +53,7 @@ export default {
             {label: 'cut',       enabled: false},
             {label: 'copy',      enabled: false},
             {label: 'paste',     enabled: false},
-            {label: 'delete',    accelerator: 'Delete', enabled: false},
+            {label: 'delete',    enabled: false},
             {label: 'selectall', enabled: false},
           ]
         },
@@ -63,7 +68,7 @@ export default {
           submenu: [
             {label: 'Help',               active: function(self) {self.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
             {label: 'About',              active: function(self) {self.openLink('https://www.perceptilabs.com/')}},
-            {label: 'Check for updates',  active: function(self) {self.checkUpdate()}},
+            {label: 'Check for updates', enabled: false, active: function(self) {self.checkUpdate()}},
             {type: 'separator'},
           ]
         }
@@ -99,6 +104,9 @@ export default {
     },
     saveNetwork() {
       this.$store.commit('mod_events/set_saveNetwork')
+    },
+    logOut() {
+      this.$router.replace('/');
     }
   }
 }
