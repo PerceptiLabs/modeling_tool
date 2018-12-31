@@ -3,25 +3,25 @@
     .checkbox-text(v-if="labelPosition==='left'")
       slot
     input(type="checkbox"
-      :value="valueInput"
-      v-model="checked"
-      @change="onChange()"
-      :name="validateName"
-      v-validate="!!validateName ? {required: true} : {required: false}"
+      v-model="value"
+      data-vv-value-path="value"
+      @change="change"
     )
     .checkbox-fake(:class="{'checkbox-fake--icon': iconTheme}")
     .checkbox-text(v-if="labelPosition==='right'")
       slot
-    p.text-error(v-show="errors.has(validateName)") {{ errors.first(validateName) }}
 
 </template>
 
 <script>
 export default {
   name: 'BaseCheckbox',
+
   props: {
-    value: {type: [Boolean, Array]},
-    valueInput: {String},
+    // value: {type: [Boolean, Array]},
+    // valueInput: {String},
+    label: String,
+    hasError: Boolean,
     labelPosition: {
       type: String,
       default: 'right'
@@ -30,27 +30,45 @@ export default {
       type: Boolean,
       default: false
     },
-    validateName: {
-      type: String,
-      default: ''
-    }
+    // // validateName: {
+    // //   type: String,
+    // //   default: ''
+    // // },
+    // name: {
+    //   type: String,
+    //   default: ''
+    // },
+  },
+  mounted () {
+    this.$el.value = this.value;
   },
   data() {
     return {
-      checkedProxy: false
+      checkedProxy: false,
+      value: null
     }
   },
-  computed: {
-    checked: {
-      get() { return this.value },
-      set (val) { this.checkedProxy = val }
+  watch: {
+    value(value) {
+      this.$emit('input', value);
     }
   },
   methods: {
-    onChange() {
-      this.$emit('input', this.checkedProxy)
+    change (event) {
+      this.value = event.target.checked ? true : null
     }
   }
+  // computed: {
+  //   checked: {
+  //     get() { return this.value },
+  //     set (val) { this.checkedProxy = val }
+  //   }
+  // },
+  // methods: {
+  //   onChange() {
+  //     this.$emit('input', this.checkedProxy)
+  //   }
+  // }
 }
 </script>
 

@@ -26,21 +26,21 @@
             name="Phone"
             v-mask="'+## (###) ###-##-##'"
             )
-        .form_holder
+        //.form_holder
           input(type="email" placeholder="Email"
             v-model="user.email"
             name="Email"
             v-validate="'required|email'"
             )
           p.text-error(v-show="errors.has('Email')") {{ errors.first('Email') }}
-        .form_holder
+        //.form_holder
           input(type="password" placeholder="Password"
             v-model="user.password"
             name="Password"
             v-validate="'required|min:6'"
             ref="userPass")
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
-        .form_holder
+        //.form_holder
           input(type="password" placeholder="Confirm password"
             name="Confirm password"
             v-validate="'required|confirmed:userPass'"
@@ -49,11 +49,14 @@
           p.text-error(v-show="errors.has('Confirm password')") {{ errors.first('Confirm password') }}
         .form_holder
           base-checkbox(
-            validateName="policy"
-            v-model="terms"
+            v-validate="'required'"
+            data-vv-name="checkmeplease"
+            label="checkmeplease"
+            v-model="checkmeplease"
           )
             span Agree
             router-link(:to="{name: 'policy'}").btn.btn--link  terms and policy
+          p.text-error(v-show="errors.has('checkmeplease')") {{ errors.first('checkmeplease') }}
 
         .form_holder
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm") Register
@@ -74,23 +77,25 @@ export default {
         phone: '',
         password: ''
       },
-      terms: true
+      terms: false,
+      checkmeplease: null
     }
   },
   methods: {
     requestCloudApi,
     validateForm() {
-      if(!this.terms) {
-        return
-      }
       this.$validator.validateAll()
         .then((result) => {
+          console.log('result', result);
           if (result) {
-            this.registryUser();
+            //this.registryUser();
             return;
           }
           //error func
-        });
+        })
+        .catch((error)=>{
+          console.log('error', error);
+        })
     },
     registryUser() {
       //console.log('registryUser');
