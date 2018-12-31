@@ -193,28 +193,29 @@ const mutations = {
   // },
   ADD_loadNetwork (state, net) {
     let newNetwork = {};
-    if(net === undefined) {
-      newNetwork = {
-        networkName: 'New_Network',
-        networkID: 'net' + generateID(Date.now()),
-        networkSettings: {
-          //isEmpty: true,
-        },
-        emptyTrainingData: true,
-        networkMeta: {
-          openStatistics: false,
-          canTestStatistics: false,
-          netMode: 'edit',
-          coreStatus: {
-            Status: 'Offline' //Created, Training, Validation, Paused, Finished
-          }
-        },
-        network: []
+    let defaultNetwork = {
+      networkName: 'New_Network',
+      networkID: 'net' + generateID(Date.now()),
+      networkSettings: {
+        //isEmpty: true,
+      },
+      networkMeta: {},
+      network: []
+    };
+    let defaultMeta = {
+      emptyTrainingData: true,
+      openStatistics: false,
+      canTestStatistics: false,
+      netMode: 'edit',
+      coreStatus: {
+        Status: 'Waiting' //Created, Training, Validation, Paused, Finished
       }
-    }
-    else {
-      newNetwork = net;
-    }
+    };
+
+    net === undefined ? newNetwork = defaultNetwork : newNetwork = net;
+
+    newNetwork.networkMeta = defaultMeta;
+
     state.workspaceContent.push(newNetwork);
     let lastIndex = state.workspaceContent.length - 1;
     state.currentNetwork = lastIndex;

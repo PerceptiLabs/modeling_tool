@@ -1,0 +1,40 @@
+{
+ "networkName": "Network234",
+ "networkID": "net100",
+ "network": [
+  {
+   "layerId": "5325413999999873",
+   "layerName": "Data_1",
+   "layerType": "Data",
+   "layerSettings": null,
+   "componentName": "DataData",
+   "connectionOut": [],
+   "connectionIn": [],
+   "meta": {
+    "isLock": false,
+    "isSelected": false,
+    "top": 66,
+    "left": 172
+   },
+   "trainingData": null
+  },
+  {
+   "layerId": "5333121000000101",
+   "layerName": "Data_1",
+   "layerType": "Data",
+   "layerSettings": null,
+   "componentName": "DataData",
+   "connectionOut": [],
+   "connectionIn": [],
+   "meta": {
+    "isLock": false,
+    "isSelected": false,
+    "top": 123,
+    "left": 350
+   },
+   "trainingData": null
+  }
+ ],
+ "networkSettings": null,
+ "networkMeta": {}
+}

@@ -149,7 +149,15 @@ export default {
       const network = this.currentNetwork;
       const jsonNet = cloneNet(network);
 
-      dialog.showSaveDialog((fileName) => {
+      const option = {
+        title:"Save Network",
+        defaultPath: `*/${network.networkName}`,
+        filters: [
+          {name: 'Text', extensions: ['json']},
+        ]
+      };
+
+      dialog.showSaveDialog(null, option, (fileName) => {
         if (fileName === undefined){
           console.log("You didn't save the file");
           return;
@@ -172,6 +180,7 @@ export default {
             outNet[key] = net[key];
           }
         }
+        outNet.networkMeta = {};
         return JSON.stringify(outNet, null, ' ');
       }
       function cloneEl(el) {

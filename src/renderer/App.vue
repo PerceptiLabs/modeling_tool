@@ -13,7 +13,6 @@
     components: {TheHeader},
     mounted() {
       ipcRenderer.on('newNetwork', (event) => {
-        //console.log(event);
         this.$store.commit('mod_workspace/ADD_loadNetwork');
       });
       ipcRenderer.on('openNetwork', (event) => {
