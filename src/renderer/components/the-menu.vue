@@ -12,7 +12,7 @@
           div.separator(v-if="subItem.type === 'separator'")
           button.btn.btn--link(type="button" v-else
             :disabled="subItem.enabled === false"
-            @click="subItem.active(ctx)"
+            @click="subItem.active()"
           ) {{subItem.label}}
           div.btn(v-if="i === navMenu.length - 1 && index === item.submenu.length - 1") Version: {{appVersion}}
 
@@ -22,26 +22,33 @@
   import {ipcRenderer} from 'electron'
 export default {
   name: "TheMenu",
-  props: {
-    fullView: { type: Boolean, default: true}
-  },
   data() {
     return {
       appVersion: '',
-      ctx: this,
-      menuSet: this.fullView,
-      navMenu: [
+      menuSet: false,
+
+    }
+  },
+  mounted() {
+    ipcRenderer.send('appVersion');
+    ipcRenderer.on('getAppVersion', (event, data) => {
+      this.appVersion = data;
+    });
+  },
+  computed: {
+    navMenu() {
+      return [
         {
           label: 'File',
           submenu: [
-            {label: 'New',                  enabled: this.menuSet,   active: function(self) {self.addNewNetwork()} },
-            {label: 'Open trained model',   enabled: false,   active: function(self) {}},
-            {label: 'Save trained model',   enabled: false,   active: function(self) {}},
-            {label: 'Open untrained model', enabled: false,   active: function(self) {self.openNetwork()}},
-            {label: 'Save untrained model', enabled: false,   active: function(self) {self.saveNetwork()}},
+            {label: 'New',                  enabled: this.menuSet,  active: ()=> {this.addNewNetwork()}},
+            {label: 'Open trained model',   enabled: false,         active: ()=> {}},
+            {label: 'Save trained model',   enabled: false,         active: ()=> {}},
+            {label: 'Open untrained model', enabled: this.menuSet,  active: ()=> {this.openNetwork()}},
+            {label: 'Save untrained model', enabled: this.menuSet,  active: ()=> {this.saveNetwork()}},
             {type: 'separator'},
-            {label: 'Log out',                                active: function(self) {self.logOut()}},
-            {label: 'Quit',                                   active: function(self) {self.appClose()}}
+            {label: 'Log out',              enabled: this.menuSet,  active: ()=> {this.logOut()}},
+            {label: 'Quit',                 enabled: true,          active: ()=> {this.appClose()}}
           ]
         },
         {
@@ -60,30 +67,24 @@ export default {
         {
           label: 'Settings',
           submenu: [
-            {label: 'Hyperparameters', enabled: false, active: function(self) {self.appClose()}},
+            {label: 'Hyperparameters', enabled: false, active: ()=> {this.appClose()}},
           ]
         },
         {
           label: 'Help',
           submenu: [
-            {label: 'Help',               active: function(self) {self.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
-            {label: 'About',              active: function(self) {self.openLink('https://www.perceptilabs.com/')}},
-            {label: 'Check for updates', enabled: false, active: function(self) {self.checkUpdate()}},
+            {label: 'Help',                                     active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
+            {label: 'About',                                    active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
+            {label: 'Check for updates', enabled: this.menuSet, active: ()=> {this.checkUpdate()}},
             {type: 'separator'},
           ]
         }
       ]
     }
   },
-  mounted() {
-    ipcRenderer.send('appVersion');
-    ipcRenderer.on('getAppVersion', (event, data) => {
-      this.appVersion = data;
-    });
-  },
-  computed: {
-    version() {
-
+  watch: {
+    '$route' (to, from) {
+      to.name === 'app' ? this.menuSet = true : this.menuSet = false
     }
   },
   methods: {

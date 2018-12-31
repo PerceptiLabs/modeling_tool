@@ -1,6 +1,6 @@
 <template lang="pug">
   #app
-    the-header(:fullView="menuSet")
+    the-header
     router-view
 </template>
 
@@ -27,17 +27,6 @@
       });
       ipcRenderer.send('appReady');
     },
-    data() {
-      return {
-        menuSet: false
-      }
-    },
-    watch: {
-      '$route' (to, from) {
-        console.log('to', to);
-        to.name === 'app' ? this.menuSet = true : this.menuSet = false
-      }
-    }
   }
 </script>
 

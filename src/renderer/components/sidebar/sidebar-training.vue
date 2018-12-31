@@ -39,8 +39,8 @@ export default {
   name: "SidebarTraining",
   components: {SidebarProgress},
   mounted() {
-    // this.setRAM();
-    // this.setCPU();
+    //this.setRAM();
+    //this.setCPU();
     // this.setGPU();
   },
   beforeDestroy() {
@@ -51,7 +51,6 @@ export default {
       timer: {
         timeRam: ''
       },
-      progress: 0,
       optionRAM: {
         grid: {
           top: '5',
@@ -126,24 +125,29 @@ export default {
   methods: {
     setRAM() {
       this.timer.timeRam = setInterval(()=> {
-        let x = this.optionRAM.xAxis.data.length;
-        this.optionRAM.xAxis.data.push(x);
-        this.optionRAM.series[0].data.push(this.random());
-        this.progress = (x + 1)*10;
+        // let x = this.optionRAM.xAxis.data.length;
+        // this.optionRAM.xAxis.data.push(x);
+        console.log(process);
+        //let RAMInfo = process.getSystemMemoryInfo();
+        // let valCPU = Math.round(CPUInfo.free/);
+        // this.optionRAM.series[0].data.push(this.random());
       }, 2000)
     },
     setCPU() {
       this.timer.timeCPU = setInterval(()=> {
-        let x = this.optionCPU.xAxis.data.length;
-        this.optionCPU.xAxis.data.push(x);
-        this.optionCPU.series[0].data.push(this.random());
+        // let x = this.optionCPU.xAxis.data.length;
+        // this.optionCPU.xAxis.data.push(x);
+        let CPUInfo = process.getCPUUsage();
+        let valCPU = Math.round(CPUInfo.percentCPUUsage);
+        console.log(valCPU);
+        this.optionCPU.series[0].data.push(valCPU);
       }, 2000)
     },
     setGPU() {
       this.timer.timeGPU = setInterval(()=> {
-        let x = this.optionGPU.xAxis.data.length;
-        this.optionGPU.xAxis.data.push(x);
-        this.optionGPU.series[0].data.push(this.random());
+        // let x = this.optionGPU.xAxis.data.length;
+        // this.optionGPU.xAxis.data.push(x);
+        this.optionGPU.series[0].data.push();
       }, 2000)
     },
     random() {
