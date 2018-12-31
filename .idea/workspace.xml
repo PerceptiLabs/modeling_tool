@@ -3,7 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="08fcf0ab-12c9-4f1c-81ac-68adb437183c" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/App.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/pages/app/quantum.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/app/quantum.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
@@ -21,8 +20,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/App.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="440">
-              <caret line="20" column="33" selection-start-line="20" selection-start-column="22" selection-end-line="20" selection-end-column="33" />
+            <state relative-caret-position="330">
+              <caret line="15" column="60" lean-forward="true" selection-start-line="15" selection-start-column="8" selection-end-line="15" selection-end-column="60" />
               <folding>
                 <element signature="e#105#141#0" expanded="true" />
               </folding>
@@ -33,17 +32,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/components/the-header.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="-88">
-              <caret line="17" column="24" selection-start-line="17" selection-start-column="24" selection-end-line="17" selection-end-column="24" />
+            <state relative-caret-position="484">
+              <caret line="23" column="9" selection-start-line="23" selection-start-column="2" selection-end-line="23" selection-end-column="9" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="false">
+      <file pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="248">
-              <caret line="196" column="17" selection-start-line="196" selection-start-column="6" selection-end-line="196" selection-end-column="17" />
+            <state relative-caret-position="242">
+              <caret line="21" column="21" selection-start-line="21" selection-start-column="21" selection-end-line="21" selection-end-column="21" />
             </state>
           </provider>
         </entry>
@@ -78,23 +77,14 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/quantum.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="357">
-              <caret line="153" column="45" selection-start-line="153" selection-start-column="45" selection-end-line="153" selection-end-column="45" />
+            <state relative-caret-position="352">
+              <caret line="16" column="17" lean-forward="true" selection-start-line="16" selection-start-column="17" selection-end-line="16" selection-end-column="17" />
               <folding>
                 <element signature="e#0#20#0" expanded="true" />
               </folding>
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/core/helpers.js">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="572">
-              <caret line="36" column="86" selection-start-line="36" selection-start-column="72" selection-end-line="36" selection-end-column="86" />
             </state>
           </provider>
         </entry>
@@ -200,8 +190,8 @@
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-training.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/the-menu.vue" />
         <option value="$PROJECT_DIR$/src/renderer/App.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" />
         <option value="$PROJECT_DIR$/src/renderer/pages/app/quantum.js" />
+        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" />
       </list>
     </option>
   </component>
@@ -268,22 +258,15 @@
               <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="core" type="462c0819:PsiDirectoryNode" />
+              <item name="pages" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
               <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
               <item name="src" type="462c0819:PsiDirectoryNode" />
               <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="store" type="462c0819:PsiDirectoryNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="b2602c69:ProjectViewProjectNode" />
-              <item name="quantumnet" type="462c0819:PsiDirectoryNode" />
-              <item name="src" type="462c0819:PsiDirectoryNode" />
-              <item name="renderer" type="462c0819:PsiDirectoryNode" />
-              <item name="store" type="462c0819:PsiDirectoryNode" />
-              <item name="modules" type="462c0819:PsiDirectoryNode" />
+              <item name="pages" type="462c0819:PsiDirectoryNode" />
+              <item name="app" type="462c0819:PsiDirectoryNode" />
             </path>
           </expand>
           <select />
@@ -467,12 +450,12 @@
       <workItem from="1545990288830" duration="9767000" />
       <workItem from="1546008445563" duration="7962000" />
       <workItem from="1546018843956" duration="89000" />
-      <workItem from="1546243540800" duration="12259000" />
+      <workItem from="1546243540800" duration="12966000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1565353000" />
+    <option name="totallyTimeSpent" value="1566060000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-15" y="0" width="1936" height="1056" extended-state="0" />
@@ -571,9 +554,6 @@
     </option>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/apiCloud.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/.electron-vue/webpack.main.config.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -839,22 +819,8 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-header.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-88">
-          <caret line="17" column="24" selection-start-line="17" selection-start-column="24" selection-end-line="17" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/App.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="440">
-          <caret line="20" column="33" selection-start-line="20" selection-start-column="22" selection-end-line="20" selection-end-column="33" />
-          <folding>
-            <element signature="e#105#141#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/../Network1231231.json">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/core/helpers.js">
       <provider selected="true" editor-type-id="text-editor">
@@ -863,20 +829,37 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-header.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="248">
-          <caret line="196" column="17" selection-start-line="196" selection-start-column="6" selection-end-line="196" selection-end-column="17" />
+        <state relative-caret-position="484">
+          <caret line="23" column="9" selection-start-line="23" selection-start-column="2" selection-end-line="23" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/App.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="15" column="60" lean-forward="true" selection-start-line="15" selection-start-column="8" selection-end-line="15" selection-end-column="60" />
+          <folding>
+            <element signature="e#105#141#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/pages/app/quantum.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="153" column="45" selection-start-line="153" selection-start-column="45" selection-end-line="153" selection-end-column="45" />
+        <state relative-caret-position="352">
+          <caret line="16" column="17" lean-forward="true" selection-start-line="16" selection-start-column="17" selection-end-line="16" selection-end-column="17" />
           <folding>
             <element signature="e#0#20#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="242">
+          <caret line="21" column="21" selection-start-line="21" selection-start-column="21" selection-end-line="21" selection-end-column="21" />
         </state>
       </provider>
     </entry>

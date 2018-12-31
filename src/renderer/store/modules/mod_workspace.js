@@ -18,24 +18,7 @@ function createPathNode(path, state) {
 const namespaced = true;
 
 const state = {
-  //TODO delete isInvisible
-  workspaceContent: [
-    {
-      networkName: 'Network',
-      networkID: 'net100',
-      network: [],
-      networkSettings: null, //array element settings
-      networkMeta: {
-        openStatistics: false,
-        canTestStatistics: false,
-        netMode: 'edit', //'addArrow', showStatistic
-        scale: 100,
-        coreStatus: {
-          Status: 'Offline' //Created, Training, Validation, Paused, Finished
-        }
-      },
-    }
-  ],
+  workspaceContent: [],
   currentNetwork: 0,
   dragElement: {},
   arrowType: 'solid',

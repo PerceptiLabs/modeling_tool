@@ -19,11 +19,14 @@ export default {
     TheWorkspace,
     TheInfoPopup
   },
+  beforeCreate() {
+    this.$store.commit('mod_workspace/ADD_loadNetwork');
+  },
   created() {
     this.$store.dispatch('mod_api/API_runServer');
   },
   mounted() {
-    this.addDragListener()
+    this.addDragListener();
   },
   data() {
     return {
