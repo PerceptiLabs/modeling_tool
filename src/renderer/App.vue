@@ -12,6 +12,7 @@
     name: 'quantumnet',
     components: {TheHeader},
     mounted() {
+      //main process events
       ipcRenderer.on('newNetwork', (event) => {
         this.$store.commit('mod_workspace/ADD_loadNetwork');
       });
@@ -26,6 +27,9 @@
       });
       ipcRenderer.send('appReady');
     },
+    watch: {
+      //global app events
+    }
   }
 </script>
 

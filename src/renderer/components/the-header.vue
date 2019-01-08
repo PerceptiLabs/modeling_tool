@@ -23,7 +23,7 @@ export default {
   },
   methods: {
     appClose() {
-      ipcRenderer.send('appClose')
+      this.$store.dispatch('mod_events/EVENT_closeCore');
     },
     appMinimize() {
       ipcRenderer.send('appMinimize')

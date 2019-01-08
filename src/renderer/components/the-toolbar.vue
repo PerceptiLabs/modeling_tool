@@ -42,7 +42,7 @@
         //
         button.btn.btn--toolbar(type="button"
           v-if="!(coreStatus === 'Training' || coreStatus === 'Validation')"
-        :disabled="coreStatus === 'Offline'"
+          :disabled="coreStatus === 'Offline'"
           :class="statusStartBtn"
           @click="trainStart()"
         )

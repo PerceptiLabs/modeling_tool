@@ -31,6 +31,7 @@ class Client {
     return new Promise((resolve, reject) => {
 
       let dataJSON = JSON.stringify(message);
+      console.log('request:', dataJSON);
       let dataByte = (new TextEncoder('utf-8').encode(dataJSON));
       let dataByteLength = dataByte.length;
 
@@ -59,16 +60,23 @@ class Client {
       let dataLength = '';
       let dataPart = '';
       client.socket.on('data', (data) => {
+
         const dataString = data.toString();
+        console.log('answer: ', dataString);
         if (dataLength) {
           dataPart = dataPart + dataString;
         }
         if (!dataLength) {
-          dataLength = +dataString.slice(dataString.indexOf('content-length') + 16, dataString.indexOf('}{'));
-          dataPart = dataString.slice(dataString.indexOf('}{') + 1 , dataString.length);
+          // console.log(dataString.indexOf('length'));
+          // console.log(dataString.length);
+          dataLength = +dataString.slice(dataString.indexOf('length') + 9, dataString.length - 1);
+          dataPart = dataString.slice(dataString.indexOf('body') + 7 , dataString.indexOf('},') + 1);
+          // console.log('dataLength: ', dataLength);
+          // console.log('dataPart: ', dataPart);
         }
         if(dataPart.length === dataLength) {
           let obgData = JSON.parse(dataPart);
+          console.log('then: ', obgData);
           resolve(obgData);
         }
 
@@ -78,7 +86,7 @@ class Client {
       });
 
       client.socket.on('error', (err) => {
-        reject(err);
+        reject('error core api', err);
       });
 
     });

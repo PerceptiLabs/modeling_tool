@@ -83,8 +83,11 @@ export default {
     }
   },
   watch: {
-    '$route' (to, from) {
-      to.name === 'app' ? this.menuSet = true : this.menuSet = false
+    '$route': {
+      handler(to, from) {
+        to.name === 'app' ? this.menuSet = true : this.menuSet = false
+      },
+      immediate: true
     }
   },
   methods: {
@@ -92,7 +95,7 @@ export default {
       window.open(url,'_blank');
     },
     appClose() {
-      ipcRenderer.send('appClose')
+      this.$store.dispatch('mod_events/EVENT_closeCore');
     },
     checkUpdate() {
       ipcRenderer.send('checkUpdate')
@@ -107,7 +110,8 @@ export default {
       this.$store.commit('mod_events/set_saveNetwork')
     },
     logOut() {
-      this.$router.replace('/');
+      this.$store.dispatch('mod_api/API_CLOSE_core', null, {root: true});
+      this.$router.replace({name: 'login'});
     }
   }
 }

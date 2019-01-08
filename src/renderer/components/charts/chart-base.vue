@@ -43,13 +43,22 @@ export default {
     return {
       fullView: false,
       h: '',
-      w: ''
+      w: '',
     }
   },
   computed: {
     chartModel() {
       let model = {
-        //tooltip: {},
+        tooltip: {},
+        toolbox: {
+          feature: {
+            saveAsImage: {
+              title: 'Save'
+            },
+            //magicType: {type: ['line', 'bar']},
+          }
+        },
+        legend: {},
         yAxis: {},
         xAxis: {
           //boundaryGap: true,
@@ -68,26 +77,7 @@ export default {
     }
   },
   watch: {
-    // fullView(newVal, oldVal) {
-    //   if(newVal) {
-    //     console.log(this.$refs.chart);
-    //     this.h = this.$refs.chart.$el.scrollHeight;
-    //     this.w = this.$refs.chart.$el.scrollWidth;
-    //     this.$refs.chart.resize(
-    //       {
-    //         width: 'auto',
-    //         height: 'auto',
-    //       }
-    //     );
-    //   }
-    //   if (oldVal) {
-    //     this.$refs.chart.resize({
-    //       width: this.w,
-    //       height: this.h,
-    //     });
-    //     //console.log(this.$refs.chart);
-    //   }
-    // }
+
   },
   methods: {
     toggleFullView() {
@@ -102,5 +92,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+  .base-chart_main {
+    height: 300px;
+  }
 </style>
