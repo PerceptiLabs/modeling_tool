@@ -6,8 +6,8 @@
           v-for="(layer, i) in layersbarList"
           :key="i"
         )
-          button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
-            v-tooltip="layer.tooltip"
+          button.btn.btn--layersbar.layer_parent.js-clickout(type="button"
+            v-tooltip:right="layer.tooltip"
             @click.stop="toggleElList(i, $event)"
             :class="[layer.layerClass, {'active': layer.showEl}]"
           )

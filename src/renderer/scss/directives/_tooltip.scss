@@ -2,29 +2,29 @@ $popper-background-color: rgba(#4d556a, .9);
 $arrow-size: 1rem;
 $margin-tooltip: .65rem;
 
-
-.tooltip-wrap {
+.tooltip-wrap{
 	position: relative;
 	&:hover .tooltip {
-		transition: transform .1s 1s;
-		transform: translateY(-50%) rotateY(0deg);
+		transition: transform .1s .5s;
 	}
 }
 
-.tooltip {
-	position: absolute;
+.tooltip-wrap.right {
+	&:hover .tooltip {
+		transform: translateY(-50%) rotateY(0deg);
+	}
+}
+.tooltip-wrap.bottom {
+	&:hover .tooltip {
+		transform: translate(-50%, 0%) rotateY(0deg);
+	}
+}
+
+.tooltip-wrap.right .tooltip{
 	left: 100%;
 	top: 50%;
-	transform: translateY(-50%) rotateX(90deg);
 	margin-left: $margin-tooltip;
-	z-index: 100;
-	min-width: 3rem;
-	max-width: 30rem;
-	padding: .8rem .6rem;
-	border-radius: $bdrs;
-	background-color: $popper-background-color;
-	box-shadow: $icon-shad;
-	white-space: nowrap;
+	transform: translateY(-50%) rotateX(90deg);
 
 	&:before {
 		content: '';
@@ -34,7 +34,6 @@ $margin-tooltip: .65rem;
 		height: 0;
 		transform: translateY(-50%);
 		border-style: solid;
-
 		right: 100%;
 		margin-right: 0;
 		margin-left: 0;
@@ -42,6 +41,61 @@ $margin-tooltip: .65rem;
 		border-color: transparent;
 		border-right-color: $popper-background-color;
 	}
+}
+.tooltip-wrap.bottom .tooltip{
+	left: 50%;
+	top: 100%;
+	margin-top: $margin-tooltip;
+	transform: translate(-50%, 0%) rotateY(90deg);
+
+	&:before {
+		content: '';
+		position: absolute;
+    top: -50%;
+    width: 0;
+    height: 0;
+    transform: translate(50%,50%);
+    border-style: solid;
+    right: 50%;
+    margin-right: 0;
+    margin-left: 0;
+		border-left: 5px solid transparent;
+		border-right: 5px solid transparent;
+		border-top: 5px solid transparent;
+		border-bottom: 5px solid black;
+	}
+}
+.tooltip {
+	position: absolute;
+	transform: translate(-50%, 0%) rotateY(90deg);
+	z-index: 100;
+	min-width: 3rem;
+	max-width: 30rem;
+	padding: .8rem .6rem;
+	border-radius: $bdrs;
+	background-color: $popper-background-color;
+	box-shadow: $icon-shad;
+	white-space: nowrap;
+	font-size: 1rem;
+	color: $col-txt;
+
+	// &:before {
+	// 	content: '';
+	// 	position: absolute;
+	// 	top: 50%;
+	// 	width: 0;
+	// 	height: 0;
+	// 	transform: translateY(-50%);
+	// 	border-style: solid;
+
+	// 	right: 100%;
+	// 	margin-right: 0;
+	// 	margin-left: 0;
+
+	// 	border-width: $arrow-size $arrow-size $arrow-size 0;
+	// 	border-color: transparent;
+	// 	border-right-color: $popper-background-color;
+	// }
 	//&[x-placement^='top'] {
 	//	margin-bottom: $margin-tooltip;
 	//

@@ -9,6 +9,7 @@
         button.btn.btn--toolbar(type="button"
           :disabled="coreStatus == 'Training'"
           :class="{'active': appMode == 'edit'}"
+          v-tooltip:bottom="'Test'"
           @click="setAppMode('edit')"
         )
           i.icon.icon-select
