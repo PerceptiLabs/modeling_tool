@@ -11,3 +11,5 @@ thumbs.db
 !.gitkeep
 .idea
 core_local/*
+.vscode/*
+

@@ -5,17 +5,19 @@ import PageQuantum  from '@/pages/app/quantum.vue'
 import PageLogin    from '@/pages/login/login.vue'
 import PageRegister from '@/pages/register/register.vue'
 import PagePolicy   from '@/pages/policy/policy.vue'
+//import PageAllFiles from '@/pages/all-files/all-files.vue'
 
 Vue.use(Router)
 
 export default new Router({
   //mode: 'history',
   routes: [
-    { path: '/',          name: 'login',    component: PageLogin },
-    { path: '/register',  name: 'register', component: PageRegister },
-    { path: '/policy-page',    name: 'policy',   component: PagePolicy },
-    { path: '/app',       name: 'app',  component: PageQuantum },
-    { path: '*', redirect: '/'
+    { path: '/',              name: 'login',    component: PageLogin },
+    { path: '/register',      name: 'register', component: PageRegister },
+    { path: '/policy-page',   name: 'policy',   component: PagePolicy },
+    { path: '/app',           name: 'app',      component: PageQuantum },
+    //{ path: '/all-files',     name: 'files',    component: PageAllFiles },
+    { path: '*',  redirect: '/'
     }
   ]
 })
