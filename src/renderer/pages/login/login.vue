@@ -28,6 +28,8 @@
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm") log in
         .form_holder
           router-link.btn.btn--link(:to="{name: 'register'}") Register new account
+          
+          router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects 
 </template>
 
 <script>

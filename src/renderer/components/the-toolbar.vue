@@ -9,6 +9,7 @@
         button.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'edit'}"
+          v-tooltip:bottom="'Test'"
           @click="setNetMode('edit')"
         )
           i.icon.icon-select

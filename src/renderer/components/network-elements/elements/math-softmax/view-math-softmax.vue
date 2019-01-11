@@ -3,7 +3,6 @@
   data-component="MathSoftmax"
   data-layer="Softmax"
   data-type="Other"
-  v-tooltip="'Softmax'"
   )
     i.icon.icon-calc-softmax
 
