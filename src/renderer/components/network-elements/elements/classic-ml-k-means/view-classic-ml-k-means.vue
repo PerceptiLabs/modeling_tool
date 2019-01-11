@@ -3,6 +3,7 @@
     data-component="ClassicMLKMeans"
     data-layer="K-Means Clustering"
     data-type="Training"
+    v-tooltip:right="'Classic MLK Means'"
   )
     i.icon.icon-round-sieve
 

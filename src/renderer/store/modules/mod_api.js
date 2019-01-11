@@ -74,7 +74,7 @@ const actions = {
   API_runServer({state, commit, dispatch, getters}) {
     let timer;
     let coreIsStarting = false;
-    checkCore();
+    //checkCore();
 
     function checkCore() {
       const theData = getters.GET_data_GetStatus;

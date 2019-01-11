@@ -2,7 +2,8 @@
   .btn.btn--layersbar.net-element-train(:draggable="false"  disabled="disabled"
     data-component="TrainNormalData"
     data-layer="Normal + Data"
-  data-type="Training"
+    data-type="Training"
+    v-tooltip:right="'Normal + Data'"
   )
     i.icon.icon-l-learn-normData
 

@@ -2,7 +2,8 @@
   .btn.btn--layersbar.net-element-train(:draggable="false"  disabled="disabled"
     data-component="TrainDynamic"
     data-layer="Dynamic Routing"
-  data-type="Training"
+    data-type="Training"
+    v-tooltip:right="'Training'"
   )
     i.icon.icon-learning-dynamic
 

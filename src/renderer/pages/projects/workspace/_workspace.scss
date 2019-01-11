@@ -5,51 +5,59 @@ $iconsGroupColor: #5c6680;
   padding: 4rem 3rem 0 3rem;
   grid-area: workspace;
   background: $bg-workspace;
-    .title-box {
-      justify-content: space-between;
-      margin-bottom: 4rem;
-      .title-box_projectscount{
-        font-size: 1.2rem;
-      }
+
+  .title-box {
+    justify-content: space-between;
+    margin-bottom: 4rem;
+
+    .title-box_projectscount {
+      font-size: 1.2rem;
     }
+  }
 }
+
 .project-list {
   flex-wrap: wrap;
   text-align: center;
   margin: 0 -$indentProjects;
 }
+
 .project-box {
   margin: $indentProjects;
-  &.add-new .project_content{
+
+  &.add-new .project_content {
     display: flex;
   }
-    time{
-      color: $disable-txt;
-    }
 }
+
 .project {
   background: $col-txt2;
   margin-bottom: 1rem;
   position: relative;
   width: 20rem;
-  &:hover{
+
+  &:hover {
     box-shadow: 0 0 0 1px $disable-txt;
   }
-  &.active{
+
+  &.active {
     box-shadow: 0 0 0 2px $col-txt;
   }
-  &.add-new .project_content{
+
+  &.add-new .project_content {
     display: flex;
     justify-content: center;
     align-items: center;
-    color: #495163;
+    color: $bg-toolbar;
     font-size: 9rem;
     text-shadow: none;
   }
 }
+
 .project_ration {
-    padding-top: 100% 
+  padding-top: 100%
 }
+
 .project_content {
   position: absolute;
   width: 100%;
@@ -57,24 +65,28 @@ $iconsGroupColor: #5c6680;
   top: 0;
   left: 0;
 }
+
 .project_content-info {
   justify-content: space-between;
   padding: 1rem;
-    .icon {
-      font-size: 2rem;
-    }
+
+  .icon {
+    font-size: 2rem;
+  }
 }
+
 .content-info_status {
   margin-right: -1rem;
   min-width: 7rem;
-  padding: .3em;
   font-size: 1.2rem;
   font-weight: bold;
   padding: .44em;
+
   &.primary {
     background: $bg-grad-cyan;
     color: $col-txt2;
   }
+
   &.dark-blue {
     background: $bg-grad-blue;
     color: $col-txt;

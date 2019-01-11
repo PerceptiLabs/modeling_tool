@@ -1,4 +1,5 @@
-$popper-background-color: rgba(#4d556a, .9);
+//$popper-background-color: rgba(#4d556a, .5);
+$popper-background-color: rgba(#000, .5);
 $arrow-size: 1rem;
 $margin-tooltip: .65rem;
 
@@ -60,8 +61,8 @@ $margin-tooltip: .65rem;
 	transform: translate(-50%, 0%) rotateY(90deg);
 
 	&:before {
-    top: -50%;
-    transform: translate(50%,50%);
+    top: -100%;
+    transform: translate(50%, 50%);
     right: 50%;
 		border-bottom: $arrow-size solid $popper-background-color;
 	}

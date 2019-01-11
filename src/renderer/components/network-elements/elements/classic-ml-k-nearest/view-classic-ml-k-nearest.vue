@@ -3,6 +3,7 @@
   data-component="ClassicMLKNN"
   data-layer="K Nearest Neighbor"
   data-type="Training"
+  v-tooltip:right="'K Nearest Neighbor'"
   )
     i.icon.icon-round-figur
 

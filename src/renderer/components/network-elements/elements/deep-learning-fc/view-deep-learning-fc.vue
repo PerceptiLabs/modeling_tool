@@ -3,6 +3,7 @@
   data-component="DeepLearningFC"
   data-layer="FullyConnected_1"
   data-type="Other"
+  v-tooltip:right="'Learning FC'"
   )
     i.icon.icon-round
 
