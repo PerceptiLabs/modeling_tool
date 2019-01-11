@@ -16,9 +16,9 @@ ul.workspace_tab-list
       @changeTitle="editNetName"
       )
     button.btn.btn--tabs.tab_statistics(type="button"
-      v-if="tab.networkStatistics"
+      v-if="tab.networkMeta.openStatistics !== null"
       @click.stop="openStatistics"
-      :class="{'active': statisticsIsOpen}")
+      :class="{'active': tab.networkMeta.openStatistics}")
       span Statistics
       i.icon.icon-circle-o
 

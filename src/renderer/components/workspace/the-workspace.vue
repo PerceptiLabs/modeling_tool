@@ -19,12 +19,16 @@
             :elData="statisticsElSelected.viewBox"
             )
           section.network_info-section
-            .info-section_head(v-if="statisticsIsOpen")
+            .info-section_head(
+              v-if="statisticsIsOpen"
+              )
               h3 Map
-            .info-section_main(@wheel.ctrl="scaleScroll($event)")
+            .info-section_main(
+              @wheel.ctrl="scaleScroll($event)"
+              )
               network-field(
-              :style="{zoom: scale + '%'}"
-              :netIndex="i"
+                :style="{zoom: scale + '%'}"
+                :netIndex="i"
               )
 
         general-settings(v-if="showGlobalSet")
@@ -54,7 +58,6 @@
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    //height: $h-sidebar-layers-item;
   }
   .workspace_content {
     background-color: $bg-workspace;
@@ -63,7 +66,6 @@
   }
   .network {
     display: flex;
-    //flex-direction: row-reverse;
     flex: 1 1 100%;
     flex-wrap: wrap;
     width: 100%;

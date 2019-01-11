@@ -14,7 +14,7 @@ const mutations = {
     // console.log(value.viewBox);
     for (var el in value) {
       //console.log(value[el]);
-      value[el].meta.isSelected = true;
+      value[el].layerMeta.isSelected = true;
     }
     // console.log(value);
     state.selectedElArr = value
@@ -22,14 +22,14 @@ const mutations = {
   CHANGE_selectElArr(state, dataEl) {
     let elArr = state.selectedElArr;
     if (dataEl.el.layerType === "Training") {
-      elArr.statistics.meta.isSelected = false;
+      elArr.statistics.layerMeta.isSelected = false;
       elArr.statistics = dataEl.el;
-      elArr.statistics.meta.isSelected = true;
+      elArr.statistics.layerMeta.isSelected = true;
     }
     else {
-      elArr.viewBox.meta.isSelected = false;
+      elArr.viewBox.layerMeta.isSelected = false;
       elArr.viewBox = dataEl.el;
-      elArr.viewBox.meta.isSelected = true;
+      elArr.viewBox.layerMeta.isSelected = true;
     }
   },
 };
@@ -40,7 +40,7 @@ const actions = {
       statistics: null,
       viewBox: null
     };
-    let net = rootGetters['mod_workspace/GET_currentNetworkNet'];
+    let net = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     net.forEach(function(item, i, arr) {
       if(elArr.statistics !== null && elArr.viewBox !== null) {
         return

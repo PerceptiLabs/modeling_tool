@@ -14,7 +14,7 @@
     mounted() {
       //main process events
       ipcRenderer.on('newNetwork', (event) => {
-        this.$store.commit('mod_workspace/ADD_loadNetwork');
+        this.$store.commit('mod_workspace/ADD_network');
       });
       ipcRenderer.on('openNetwork', (event) => {
         this.$store.commit('mod_events/set_openNetwork')

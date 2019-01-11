@@ -101,7 +101,7 @@ export default {
       ipcRenderer.send('checkUpdate')
     },
     addNewNetwork() {
-      this.$store.commit('mod_workspace/ADD_loadNetwork');
+      this.$store.commit('mod_workspace/ADD_network');
     },
     openNetwork() {
       this.$store.commit('mod_events/set_openNetwork')
@@ -110,8 +110,9 @@ export default {
       this.$store.commit('mod_events/set_saveNetwork')
     },
     logOut() {
-      this.$store.dispatch('mod_api/API_CLOSE_core', null, {root: true});
       this.$router.replace({name: 'login'});
+      this.$store.dispatch('mod_api/API_CLOSE_core', null, {root: true});
+      this.$store.commit('mod_workspace/RESET_network');
     }
   }
 }

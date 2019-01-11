@@ -6,20 +6,50 @@ const {spawn} = require('child_process');
 const namespaced = true;
 
 const state = {
-  serverStatus: {
-    Status: 'Offline' //Created, Training, Validation, Paused, Finished
-  },
+  statusLocalCore: 'offline' //online
 };
 
 const getters = {
-  GET_serverStatus(state) {
-    return state.serverStatus.Status;
-  }
+  GET_data_CloseServer(state, getters, rootState, rootGetters) {
+    return {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Close',
+      value: ''
+    };
+  },
+  GET_data_PauseTraining(state, getters, rootState, rootGetters) {
+    return {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Pause',
+      value: ''
+    };
+  },
+  GET_data_StopTraining(state, getters, rootState, rootGetters) {
+    return {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Stop',
+      value: ''
+    };
+  },
+  GET_data_SkipValidTraining(state, getters, rootState, rootGetters) {
+    return {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'SkipToValidation',
+      value: ''
+    }
+  },
+  GET_data_GetStatus(state, getters, rootState, rootGetters) {
+    return {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'getStatus', //getIter
+      value: ''
+    };
+  },
 };
 
 const mutations = {
-  SET_serverStatus(state, value) {
-    state.serverStatus = value
+  SET_statusLocalCore(state, value) {
+    state.statusLocalCore = value
   },
   RESET_idTimer(state, value) {
     clearInterval(state.idTimer);
@@ -42,16 +72,30 @@ const mutations = {
 
 const actions = {
   API_runServer({state, commit, dispatch, getters}) {
-    //check core
-    var timer = setInterval(()=>{
-      let status = getters.GET_serverStatus;
-      if(status === 'Offline') {
-        dispatch('API_getStatus')
-      }
-      else clearInterval(timer);
-    }, 5000);
-    //start core
-    if(getters.GET_serverStatus === 'Offline') {
+    let timer;
+    let coreIsStarting = false;
+    checkCore();
+
+    function checkCore() {
+      const theData = getters.GET_data_GetStatus;
+      const client = new requestApi();
+      client.sendMessage(theData)
+        .then((data)=> {
+          commit('SET_statusLocalCore', 'online')
+        })
+        .catch((err) =>{
+          if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
+            console.error(err);
+          }
+          coreOffline();
+          if(!coreIsStarting) {
+            startCore();
+            waitOnlineCore();
+          }
+        });
+    }
+    function startCore() {
+      coreIsStarting = true;
       let openServer;
       switch (process.platform) {
         case 'win32':
@@ -77,44 +121,51 @@ const actions = {
           break;
       }
       openServer.on('error', (err) => {
-        clearInterval(timer);
-        alert('Core dont started :(');
+        //clearInterval(timer);
+        coreOffline()
       });
       openServer.on('close', (code) => {
         console.log('close core', code);
-        commit('SET_serverStatus', {Status: 'Offline'});
+        coreOffline()
       });
-
-      // openServer.stdout.on('data', (data) => {
-      //   console.log(`stdout: ${data}`);
-      // });
-      // openServer.stderr.on('data', (data) => {
-      //   console.log(`stderr: ${data}`);
-      // });
+    }
+    function waitOnlineCore() {
+      timer = setInterval(()=>{
+        let status = state.statusLocalCore;
+        if(status === 'offline') {
+          checkCore();
+        }
+        else clearInterval(timer);
+      }, 5000);
+    }
+    function coreOffline() {
+      commit('SET_statusLocalCore', 'offline');
     }
   },
 
-  API_getStatus({commit, dispatch, rootGetters}) {
-    const dataGetStatus = rootGetters['mod_workspace/GET_API_dataGetStatus'];
+  API_getStatus({commit, dispatch, getters}) {
+    const theData = getters.GET_data_GetStatus;
     const client = new requestApi();
-    client.sendMessage(dataGetStatus)
+    client.sendMessage(theData)
       .then((data)=> {
-        commit('SET_serverStatus', data)
+        //commit('SET_serverStatus', data)
       })
       .catch((err) =>{
         if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
           console.error(err);
         }
-        commit('SET_serverStatus', {Status: 'Offline'})
+        commit('SET_statusLocalCore', 'Offline')
       });
   },
   API_startTraining({dispatch, getters, rootGetters}) {
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
+    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     let message = {
       Hyperparameters: net.networkSettings,
       Layers: {}
     };
-    net.network.forEach((el)=> {
+    console.log('Hyperparameters ', message.Hyperparameters);
+    elementList.forEach((el)=> {
       message.Layers[el.layerId] = {
         Name: el.layerName,
         Type: el.componentName,
@@ -150,8 +201,8 @@ const actions = {
     //   }, 1000);
     // }
   },
-  API_pauseTraining({commit, dispatch, rootGetters}) {
-    const theData = rootGetters['mod_workspace/GET_API_dataPauseTraining'];
+  API_pauseTraining({commit, getters}) {
+    const theData = getters.GET_data_PauseTraining;
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {})
@@ -160,8 +211,8 @@ const actions = {
       });
     //commit('RESET_idTimer')
   },
-  API_stopTraining({commit, state, dispatch, rootGetters}) {
-    const theData = rootGetters['mod_workspace/GET_API_dataStopTraining'];
+  API_stopTraining({commit, getters}) {
+    const theData = getters.GET_data_StopTraining;
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {})
@@ -170,8 +221,8 @@ const actions = {
       });
     //commit('RESET_idTimer')
   },
-  API_skipValidTraining({dispatch, rootGetters}) {
-    const theData = rootGetters['mod_workspace/GET_API_dataSkipValidTraining'];
+  API_skipValidTraining({getters}) {
+    const theData = getters.GET_data_SkipValidTraining;
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {})
@@ -180,8 +231,8 @@ const actions = {
       });
   },
 
-  API_CLOSE_core({rootGetters}) {
-    const theData = rootGetters['mod_workspace/GET_API_dataCloseServer'];
+  API_CLOSE_core({getters}) {
+    const theData = getters.GET_data_CloseServer;
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {})

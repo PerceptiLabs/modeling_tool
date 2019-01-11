@@ -6,7 +6,7 @@ $margin-tooltip: .65rem;
 .tooltip-wrap {
 	position: relative;
 	&:hover .tooltip {
-		transition: transform .1s 1s;
+		transition: transform .1s .5s;
 		transform: translateY(-50%) rotateY(0deg);
 	}
 }
@@ -42,6 +42,12 @@ $margin-tooltip: .65rem;
 		border-color: transparent;
 		border-right-color: $popper-background-color;
 	}
+	&.tooltip--bottom {
+		&:before {
+
+		}
+	}
+}
 	//&[x-placement^='top'] {
 	//	margin-bottom: $margin-tooltip;
 	//
@@ -101,4 +107,3 @@ $margin-tooltip: .65rem;
 	//		border-left-color: $popper-background-color;
 	//	}
 	//}
-}

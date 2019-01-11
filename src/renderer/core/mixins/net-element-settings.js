@@ -26,7 +26,7 @@ const netElementSettings = {
     applySettings() {
       //console.log(this.settings);
       this.hideAllWindow();
-      this.$store.dispatch('mod_workspace/a_SET_elementSettings', this.settings)
+      this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
     }
   }
 };

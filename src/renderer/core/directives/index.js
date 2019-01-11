@@ -3,7 +3,7 @@ import Vue from 'vue'
 Vue.directive('tooltip', {
   bind: function (el, binding, vnode) {
     let hasClass = el.getAttribute('class');
-    el.className = hasClass + ' tooltip-wrap';
+    el.className = hasClass + ' tooltip-wrap tooltip-wrap--bottom';
 
     let tooltipBlock = document.createElement('div');
     tooltipBlock.className = 'tooltip';

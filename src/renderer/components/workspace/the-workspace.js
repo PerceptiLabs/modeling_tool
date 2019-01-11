@@ -50,23 +50,23 @@ export default {
     showCoreSide() {
       return this.$store.state.globalView.globalPopup.showCoreSideSettings
     },
-    appMode() {
-      return this.$store.state.globalView.appMode
+    networkMode() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     // currentSelectedIndex() {
     //   return this.$store.getters['mod_workspace/GET_currentSelectedIndex']
     // },
     statisticsIsOpen() {
-      return this.$store.state.globalView.statisticsIsOpen
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
     },
     statisticsElSelected() {
       return this.$store.state.mod_statistics.selectedElArr
     },
-    coreStatus() {
-      return this.$store.state.mod_api.serverStatus.Status;
+    statusNetworkCore() {
+      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     currentNet() {
-      return this.$store.getters['mod_workspace/GET_currentNetworkNet']
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
 
   },
@@ -78,12 +78,12 @@ export default {
       e.wheelDelta > 0 ? this.incScale() : this.decScale();
     },
     deleteTabNetwork(index) {
-      this.$store.commit('mod_workspace/DELETE_workspaceTab', index)
+      this.$store.commit('mod_workspace/DELETE_network', index)
     },
     setTabNetwork(index) {
       this.$store.commit('mod_workspace/SET_currentNetwork', index);
-      this.$store.commit('mod_workspace/SET_metaSelectDisable');
-      this.$store.commit('globalView/SET_statisticsIsOpen', false)
+      this.$store.dispatch('mod_workspace/SET_elementUnselect');
+      this.$store.dispatch('mod_workspace/SET_openStatistics', false);
     },
     toggleSidebar() {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
@@ -114,7 +114,7 @@ export default {
     },
     openStatistics() {
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
-      this.$store.commit('globalView/SET_statisticsIsOpen', true);
+      this.$store.dispatch('mod_workspace/SET_openStatistics', true);
       // setTimeout(()=>{
       // }, 2000)
     },

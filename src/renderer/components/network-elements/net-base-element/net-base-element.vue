@@ -66,13 +66,13 @@ export default {
   },
   computed: {
     active() {
-      return this.dataEl.el.meta.isSelected
+      return this.dataEl.el.layerMeta.isSelected
     },
-    appMode() {
-      return this.$store.state.globalView.appMode
+    networkMode() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     statisticsIsOpen() {
-      return this.$store.state.globalView.statisticsIsOpen
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
     }
   },
   watch: {
@@ -91,34 +91,34 @@ export default {
       else if (this.isLock) {
         return
       }
-      else if(this.appMode == 'edit') {
+      else if(this.networkMode == 'edit') {
         this.setFocusEl(ev);
         this.bodyDown(ev)
       }
-      else if (this.appMode == 'addArrow') {
+      else if (this.networkMode == 'addArrow') {
         this.arrowStartPaint(ev)
       }
     },
     openSettings() {
       this.hideAllWindow();
-      if(this.appMode === 'edit') {
+      if(this.networkMode === 'edit') {
         this.settingsIsOpen = true;
       }
     },
     openContext() {
       this.hideAllWindow();
-      if(this.appMode === 'edit') {
+      if(this.networkMode === 'edit') {
         this.contextIsOpen = true;
       }
     },
     setFocusEl(ev) {
       // if(ev.ctrlKey) {
-      //   this.$store.commit('mod_workspace/SET_metaMultiSelect', { path: [this.dataEl.index], setValue: true });
+      //   this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: [this.dataEl.index], setValue: true });
       // }
       // else {
       this.ClickElementTracking = ev.target.closest('.js-clickout');
       document.addEventListener('click', this.clickOutside);
-      this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });
+      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.index], setValue: true });
       //}
     },
     hideAllWindow() {
@@ -132,11 +132,11 @@ export default {
     },
     deselect() {
       this.hideAllWindow();
-      this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
+      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.index], setValue: false });
     },
     deleteEl() {
       if(!(this.contextIsOpen || this.settingsIsOpen)) {
-        this.$store.dispatch('mod_workspace/DELETE_netElement')
+        this.$store.dispatch('mod_workspace/DELETE_element')
       }
     }
   }

@@ -22,7 +22,7 @@
         //:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
         line.svg-arrow_line(
           marker-end="url(#svg-arrow_triangle)"
-          :class="{'arrow--hidden': arrow.l1.meta.isInvisible || arrow.l2.meta.isInvisible}"
+          :class="{'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
           stroke-dasharray="none"
           :x1="arrow.positionArrow.x1"
           :y1="arrow.positionArrow.y1"
@@ -38,8 +38,8 @@
           :y2="preArrow.y2"
           )
     component(
-      v-for="(el, index) in workspace.network"
-      :class="{'element--hidden': el.meta.isInvisible}"
+      v-for="(el, index) in networkElementList"
+      :class="{'element--hidden': el.layerMeta.isInvisible}"
       :key="el.index"
       :is="el.componentName"
       :elementData="{el, index}"
@@ -115,11 +115,14 @@ export default {
     window.removeEventListener("resize", this.resizeThrottler, false);
   },
   computed: {
-    workspaceJSON() {
-      return JSON.stringify(this.workspace)
-    },
-    workspace() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork']
+    // workspaceJSON() {
+    //   return JSON.stringify(this.workspace)
+    // },
+    // workspace() {
+    //   return this.$store.getters['mod_workspace/GET_currentNetwork']
+    // },
+    networkElementList() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
@@ -147,10 +150,12 @@ export default {
       }
     },
     calcSVG() {
-      let height = this.$refs.network.scrollHeight;
-      let width = this.$refs.network.scrollWidth;
-      this.$refs.svg.style.height = height;
-      this.$refs.svg.style.width = width;
+      if(this.networkElementList.length) {
+        let height = this.$refs.network.scrollHeight;
+        let width = this.$refs.network.scrollWidth;
+        this.$refs.svg.style.height = height;
+        this.$refs.svg.style.width = width;
+      }
     },
     //-------------
     //Arrow methods
@@ -176,7 +181,7 @@ export default {
       }
       const listID = {};
       const connectList = [];
-      const net = this.workspace.network;
+      const net = this.networkElementList;
 
       findAllID();
       findPerspectiveSide();
@@ -214,10 +219,10 @@ export default {
               Object.defineProperty(newArrow, 'positionArrow', {
                 get() {
                   return {
-                    x1: this.l1.meta.left + this.correctPosition.start.x,
-                    y1: this.l1.meta.top + this.correctPosition.start.y,
-                    x2: this.l2.meta.left + this.correctPosition.stop.x,
-                    y2: this.l2.meta.top + this.correctPosition.stop.y,
+                    x1: this.l1.layerMeta.left + this.correctPosition.start.x,
+                    y1: this.l1.layerMeta.top + this.correctPosition.start.y,
+                    x2: this.l2.layerMeta.left + this.correctPosition.stop.x,
+                    y2: this.l2.layerMeta.top + this.correctPosition.stop.y,
                   }
                 },
                 enumerable: true,
@@ -231,8 +236,8 @@ export default {
       }
       function findSideMinLength(l1, l2, currentEl) {
         let position = '';
-        (l1.meta.top <= l2.meta.top) ? position = position + 'b' : position = position + 't';
-        (l1.meta.left <= l2.meta.left) ? position = position + 'r' : position = position + 'l';
+        (l1.layerMeta.top <= l2.layerMeta.top) ? position = position + 'b' : position = position + 't';
+        (l1.layerMeta.left <= l2.layerMeta.left) ? position = position + 'r' : position = position + 'l';
 
         // const offsetX = Math.abs(l1.meta.left - l2.meta.left);
         // const offsetY = Math.abs(l1.meta.top - l2.meta.top);
@@ -240,29 +245,29 @@ export default {
         function topDot(dot) {
           return {
             side: 'top',
-            x: dot.meta.left + (size / 2),
-            y: dot.meta.top
+            x: dot.layerMeta.left + (size / 2),
+            y: dot.layerMeta.top
           }
         }
         function rightDot(dot) {
           return {
             side: 'right',
-            x: dot.meta.left + size,
-            y: dot.meta.top + (size / 2)
+            x: dot.layerMeta.left + size,
+            y: dot.layerMeta.top + (size / 2)
           }
         }
         function bottomDot(dot) {
           return {
             side: 'bottom',
-            x: dot.meta.left + (size / 2),
-            y: dot.meta.top + size
+            x: dot.layerMeta.left + (size / 2),
+            y: dot.layerMeta.top + size
           }
         }
         function leftDot(dot) {
           return {
             side: 'left',
-            x: dot.meta.left,
-            y: dot.meta.top + (size / 2)
+            x: dot.layerMeta.left,
+            y: dot.layerMeta.top + (size / 2)
           }
         }
 
@@ -350,10 +355,10 @@ export default {
       }
       function calcCorrectPosition() {
         connectList.forEach((itemEl, itemIndex, itemArr)=> {
-          let currentLeftStart = itemEl.l2.meta.left;
-          let currentTopStart = itemEl.l2.meta.top;
-          let currentLeftEnd = itemEl.l1.meta.left;
-          let currentTopEnd = itemEl.l1.meta.top;
+          let currentLeftStart = itemEl.l2.layerMeta.left;
+          let currentTopStart = itemEl.l2.layerMeta.top;
+          let currentLeftEnd = itemEl.l1.layerMeta.left;
+          let currentTopEnd = itemEl.l1.layerMeta.top;
           let indexSidePositionStart = '';
           let indexSidePositionEnd = '';
           let sideStartLength = itemEl.l1.calcAnchor[itemEl.sideStart].length;
@@ -362,36 +367,36 @@ export default {
           //calc start
           if(itemEl.sideStart === 'left' || itemEl.sideStart === 'right') {
             let sortVertSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
-              return a.meta.top - b.meta.top;
+              return a.layerMeta.top - b.layerMeta.top;
             });
             indexSidePositionStart = sortVertSideStart.findIndex((element, index, array)=> {
-              return element.meta.top == currentTopStart;
+              return element.layerMeta.top == currentTopStart;
             });
           }
           else {
             let sortGorSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
-              return a.meta.left - b.meta.left;
+              return a.layerMeta.left - b.layerMeta.left;
             });
             indexSidePositionStart = sortGorSideStart.findIndex((element, index, array)=> {
-              return element.meta.left == currentLeftStart;
+              return element.layerMeta.left == currentLeftStart;
             });
           }
           itemEl.correctPosition.start = calcValuePosition(itemEl.sideStart, sideStartLength, indexSidePositionStart);
           //calc END
           if(itemEl.sideEnd === 'left' || itemEl.sideEnd === 'right') {
             let sortVertSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
-              return a.meta.top - b.meta.top;
+              return a.layerMeta.top - b.layerMeta.top;
             });
             indexSidePositionEnd = sortVertSideEnd.findIndex((element, index, array)=> {
-              return element.meta.top == currentTopEnd;
+              return element.layerMeta.top == currentTopEnd;
             });
           }
           else {
             let sortGorSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
-              return a.meta.left - b.meta.left;
+              return a.layerMeta.left - b.layerMeta.left;
             });
             indexSidePositionEnd = sortGorSideEnd.findIndex((element, index, array)=> {
-              return element.meta.left == currentLeftEnd;
+              return element.layerMeta.left == currentLeftEnd;
             });
           }
           itemEl.correctPosition.stop = calcValuePosition(itemEl.sideEnd, sideEndLength, indexSidePositionEnd);

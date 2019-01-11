@@ -20,7 +20,7 @@ class Client {
   }
 
   sendMessage(message) {
-    //console.log(message);
+    console.log(message);
     var client = this;
     const header = {
       "byteorder": 'little',
@@ -29,9 +29,8 @@ class Client {
       "content-length": 0,
     };
     return new Promise((resolve, reject) => {
-
       let dataJSON = JSON.stringify(message);
-      console.log('request:', dataJSON);
+      //console.log(dataJSON);
       let dataByte = (new TextEncoder('utf-8').encode(dataJSON));
       let dataByteLength = dataByte.length;
 
@@ -62,21 +61,20 @@ class Client {
       client.socket.on('data', (data) => {
 
         const dataString = data.toString();
-        console.log('answer: ', dataString);
         if (dataLength) {
           dataPart = dataPart + dataString;
         }
         if (!dataLength) {
           // console.log(dataString.indexOf('length'));
           // console.log(dataString.length);
-          dataLength = +dataString.slice(dataString.indexOf('length') + 9, dataString.length - 1);
-          dataPart = dataString.slice(dataString.indexOf('body') + 7 , dataString.indexOf('},') + 1);
+          dataLength = +dataString.slice(dataString.indexOf('length') + 9, dataString.indexOf(','));
+          dataPart = dataString.slice(dataString.indexOf('body') + 7 , dataString.length - 1);
           // console.log('dataLength: ', dataLength);
           // console.log('dataPart: ', dataPart);
         }
         if(dataPart.length === dataLength) {
           let obgData = JSON.parse(dataPart);
-          console.log('then: ', obgData);
+          //console.log(obgData);
           resolve(obgData);
         }
 

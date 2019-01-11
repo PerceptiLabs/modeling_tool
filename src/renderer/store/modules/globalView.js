@@ -3,9 +3,7 @@ const namespaced = true;
 const state = {
   hideLayers: true,
   hideSidebar: true,
-  appMode: 'edit',  //'addArrow', showStatistic
   userMode: 'advanced', //simple
-  statisticsIsOpen: false,
   userToken: '',
   globalPopup: {
     showNetSettings: false,
@@ -22,26 +20,20 @@ const mutations = {
   SET_hideSidebar (state, value) {
     state.hideSidebar = value
   },
-  SET_statisticsIsOpen (state, value) {
-    state.statisticsIsOpen = value
-  },
-  SET_appMode (state, value) {
-    state.appMode = value;
-  },
-  SET_showNetResult (state, value) {
-    state.globalPopup.showNetResult = value
-  },
-  SET_showGlobalSet (state, value) {
-    state.globalPopup.showNetSettings = value
-  },
-  SET_showCoreSideSettings (state, value) {
-    state.globalPopup.showCoreSideSettings = value
-  },
-  SET_infoPopup(state, value) {
-    state.globalPopup.showInfoPopup = value
-  },
   SET_userToken (state, value) {
     state.userToken = value
+  },
+  GP_showNetResult (state, value) {
+    state.globalPopup.showNetResult = value
+  },
+  GP_showNetGlobalSet (state, value) {
+    state.globalPopup.showNetSettings = value
+  },
+  GP_showCoreSideSettings (state, value) {
+    state.globalPopup.showCoreSideSettings = value
+  },
+  GP_infoPopup(state, value) {
+    state.globalPopup.showInfoPopup = value
   },
   HIDE_allGlobalPopups (state) {
     for (var popup in state.globalPopup) {
@@ -52,17 +44,15 @@ const mutations = {
 
 const actions = {
   NET_trainingStart({dispatch, commit}) {
-    //commit('SET_appMode', 'showSta');
     commit('HIDE_allGlobalPopups');
-    commit('SET_statisticsIsOpen', true);
-    dispatch('mod_workspace/a_SET_networkStatistics', true, {root: true});
+    //commit('SET_statisticsIsOpen', true);
     dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
   },
   NET_trainingDone({state, commit, dispatch}) {
-    commit('SET_appMode', 'training-done');
-    commit('SET_showNetResult', true);
+    //commit('SET_appMode', 'training-done');
+    commit('GP_showNetResult', true);
     //dispatch('mod_api/API_stopTraining', null, {root: true});
-    dispatch('mod_workspace/a_SET_canTestStatistics', true, {root: true});
+    dispatch('mod_workspace/SET_canTestStatistics', true, {root: true});
   },
 };
 

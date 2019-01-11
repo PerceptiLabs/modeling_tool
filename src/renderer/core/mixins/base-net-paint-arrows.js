@@ -16,7 +16,7 @@ const baseNetPaintArrows = {
     }
   },
   watch: {
-    appMode(newVal) {
+    networkMode(newVal) {
       if(newVal == 'addArrow') {
         this.$refs.rootBaseElement.addEventListener('mouseup', this.arrowEndPaint);
       }
@@ -37,7 +37,7 @@ const baseNetPaintArrows = {
       ev.preventDefault();
       ev.stopPropagation();
       this.$parent.$parent.removeArrowListener();
-      this.$store.dispatch('mod_workspace/a_ADD_arrow', this.dataEl.el.layerId)
+      this.$store.dispatch('mod_workspace/ADD_arrow', this.dataEl.el.layerId)
     },
   }
 }

@@ -12,7 +12,7 @@
               span {{ workspace.networkName }}
 
         sidebar-layers-item(
-          v-for="(item, i) in workspace.network"
+          v-for="(item, i) in networkElementList"
           :key="item.i"
           :itemData="item"
           :itemIndex="[i]")
@@ -56,13 +56,16 @@ export default {
     workspace() {
       return this.$store.state.mod_workspace.workspaceContent[this.currentNetwork]
     },
+    networkElementList() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
+    },
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
     },
   },
   methods: {
     deleteElement() {
-      let currentSelect =  this.workspace.network.findIndex(function(item) {
+      let currentSelect =  this.networkElementList.findIndex(function(item) {
         //console.log(item);
         return item.meta.isSelected === true;
       });

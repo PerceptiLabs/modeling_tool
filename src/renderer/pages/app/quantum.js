@@ -20,7 +20,7 @@ export default {
     TheInfoPopup
   },
   beforeCreate() {
-    this.$store.commit('mod_workspace/ADD_loadNetwork');
+    this.$store.commit('mod_workspace/ADD_network');
   },
   created() {
     this.$store.dispatch('mod_api/API_runServer');
@@ -49,8 +49,8 @@ export default {
     currentNetwork() {
       return this.$store.getters['mod_workspace/GET_currentNetwork']
     },
-    appMode() {
-      return this.$store.state.globalView.appMode
+    networkMode() {
+      return this.currentNetwork.networkMeta.netMode
     },
   },
 
@@ -67,7 +67,7 @@ export default {
     eventSaveNetwork() {
       this.saveNetwork()
     },
-    appMode(newVal) {
+    networkMode(newVal) {
       if(newVal == 'edit') {
         this.$nextTick(function () {
           this.addDragListener()
@@ -92,7 +92,7 @@ export default {
       this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
     },
     dragStart(event) {
-      if ( event.target.draggable && this.appMode === 'edit' && event.target.className.includes('btn--layersbar')) {
+      if ( event.target.draggable && this.networkMode === 'edit' && event.target.className.includes('btn--layersbar')) {
         this.$refs.layersbar.addEventListener("dragend", this.dragEnd, false);
         this.$refs.layersbar.addEventListener("dragover", this.dragOver, false);
         this.$refs.layersbar.addEventListener("dragenter", this.dragEnter, false);
@@ -131,7 +131,7 @@ export default {
     dragDrop(event) {
       event.preventDefault();
       if ( event.target.className.includes(this.dragMeta.outClassName)) {
-        this.$store.commit('mod_workspace/ADD_elToWorkspace', event)
+        this.$store.dispatch('mod_workspace/ADD_element', event)
       }
     },
 
@@ -140,7 +140,7 @@ export default {
         (err, data)=> {
         if(data) {
           let net = JSON.parse(data.toString());
-          this.$store.commit('mod_workspace/ADD_loadNetwork', net)
+          this.$store.commit('mod_workspace/ADD_network', net)
         }
         else {
           console.error(err);

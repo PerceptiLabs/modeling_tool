@@ -76,13 +76,13 @@ const baseNetDrag = {
       this.top = stickStartPos.top - delta.y;
       this.left = stickStartPos.left - delta.x;
 
-      this.$store.commit('mod_workspace/CHANGE_elementPosition', this.rect);
+      this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
     },
 
     bodyUp() {
       this.bodyDrag = false;
 
-      this.$store.commit('mod_workspace/CHANGE_elementPosition', this.rect);
+      this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
       this.$parent.$parent.createArrowList();
 
       //document.documentElement.removeEventListener('mousedown', this.deselect);//base-net-functional.js
@@ -97,12 +97,12 @@ const baseNetDrag = {
   },
   computed: {
     isLock() {
-      return this.dataEl.el.meta.isLock
+      return this.dataEl.el.layerMeta.isLock
     },
     x() {
       if(this.dataEl.el) {
-        this.left = this.dataEl.el.meta.left;
-        return this.dataEl.el.meta.left
+        this.left = this.dataEl.el.layerMeta.left;
+        return this.dataEl.el.layerMeta.left
       }
       else {
         this.left = 0;
@@ -111,8 +111,8 @@ const baseNetDrag = {
     },
     y() {
       if(this.dataEl.el) {
-        this.top = this.dataEl.el.meta.top;
-        return this.dataEl.el.meta.top
+        this.top = this.dataEl.el.layerMeta.top;
+        return this.dataEl.el.layerMeta.top
       }
       else {
         this.top = 0;

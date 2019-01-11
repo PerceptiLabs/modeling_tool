@@ -1,7 +1,7 @@
 <template lang="pug">
   section.network_info-section
     .info-section_head
-      h3 ViewBox
+      h3 ViewBox {{elData.componentName}}
     .info-section_main(v-if="elData !== null")
       component(
         :is="elData.componentName"

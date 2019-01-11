@@ -2,7 +2,7 @@
   .layer-item-wrap
     //
     .layer-item(
-      :class="{'selected': itemData.meta.isSelected}"
+      :class="{'selected': itemData.layerMeta.isSelected}"
       @click="setSelect(itemIndex)"
       )
       .layer-item_left-sidebar()
@@ -23,7 +23,7 @@
           )
       .layer-item_right-sidebar
         button.btn.btn--icon.visible-icon.visible-icon--lock( type="button"
-          :class="{'invisible-icon': !itemData.meta.isLock}"
+          :class="{'invisible-icon': !itemData.layerMeta.isLock}"
           @click="toggleLock(itemIndex)"
         )
           i.icon.icon-lock
@@ -88,16 +88,16 @@ export default {
       this.isOpen = !this.isOpen
     },
     setSelect(path) {
-      this.$store.commit('mod_workspace/SET_metaSelect', { path, setValue: true });
+      this.$store.dispatch('mod_workspace/SET_elementSelect', { path, setValue: true });
     },
     toggleLock(path) {
-      this.$store.commit('mod_workspace/SET_metaLock', path);
+      this.$store.commit('mod_workspace/SET_elementLock', path);
     },
     toggleVisible(path) {
-      this.$store.commit('mod_workspace/SET_metaVisible', path);
+      this.$store.commit('mod_workspace/SET_elementVisible', path);
     },
     editElName(newName) {
-      this.$store.commit('mod_workspace/SET_layerName', { path: this.itemIndex, setValue: newName });
+      this.$store.commit('mod_workspace/SET_elementName', { path: this.itemIndex, setValue: newName });
     }
   }
 }

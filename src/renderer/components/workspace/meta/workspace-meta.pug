@@ -12,6 +12,6 @@
   base-checkbox(:iconTheme="true") Map
 .workspace_meta-action
   button.btn.btn--color.btn--color__purpur(type="button" disabled="disabled"
-  v-if="statisticsIsOpen && coreStatus == 'Finished'"
+  v-if="statisticsIsOpen && statusNetworkCore == 'Finished'"
   @click="saveModel"
   ) Extract Data

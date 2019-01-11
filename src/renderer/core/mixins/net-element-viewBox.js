@@ -29,7 +29,7 @@ const viewBoxMixin = {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
     },
     serverStatus() {
-      return this.$store.getters['mod_api/GET_serverStatus']
+      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
   },
   watch: {
