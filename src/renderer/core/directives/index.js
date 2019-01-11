@@ -2,14 +2,12 @@ import Vue from 'vue'
 
 Vue.directive('tooltip', {
   bind: function (el, binding, vnode) {
-     el.classList.add('tooltip-wrap', binding.arg);
-     console.log(vnode);
-
-     //let hasClass = el.getAttribute('class');
-     //el.className = hasClass + ' tooltip-wrap';
-
+     el.classList.add('tooltip-wrap');
+     // let hasClass = el.getAttribute('class');
+     // el.className = hasClass + ' tooltip-wrap';
     let tooltipBlock = document.createElement('div');
-    tooltipBlock.className = 'tooltip';
+    // tooltipBlock.className = 'tooltip';
+    tooltipBlock.classList.add('tooltip', `tooltip--${binding.arg}`);
     tooltipBlock.innerHTML = binding.value;
 
     el.appendChild(tooltipBlock)
