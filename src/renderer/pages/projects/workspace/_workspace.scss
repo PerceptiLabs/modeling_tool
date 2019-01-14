@@ -92,3 +92,13 @@ $iconsGroupColor: #5c6680;
     color: $col-txt;
   }
 }
+
+.btn--blue-border {
+  font-size: 1.4rem;
+  border-radius: 2rem;
+  border: 0.2rem solid #7397fe;
+  padding: 1rem 3rem;
+  &:hover {
+    background: #7397fe;
+  }
+}

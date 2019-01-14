@@ -8,7 +8,12 @@
 
 </template>
 <script>
+import UpdatePopup from '@/components/global-popups/update-popup.vue'
+
 export default {
+    components: {
+      UpdatePopup
+    },
     name: 'PageProjects',
     data() {
       return {
@@ -87,7 +92,25 @@ export default {
               time: '25.12.2018 20:24',
               scheme: ''
             }
-          ]
+        ],
+        updateButtons: [
+          {
+            className: 'btn--primary',
+            text: 'Install',
+            action: this.install
+          },
+          {
+            className: 'btn--dark-blue-rev',
+            text: 'Cancel update',
+            action: this.cancel
+          }
+        ],
+        updateShowPopup: false,
+        moreInfoUpdateText: [
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+        ]
       }
     },
     methods: {
@@ -96,6 +119,17 @@ export default {
       },
       addProject() {
         this.$router.push({name: 'app'});
+      },
+      install() {
+        console.log('Install...');
+      },
+      cancel() {
+        console.log('Canceled!');
+        this.updateShowPopup = false;
+      },
+      openPopup(){
+        this.updateShowPopup = true;
+        console.log(this.updateShowPopup = true)
       }
     }
 }
