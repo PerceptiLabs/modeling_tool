@@ -16,11 +16,6 @@
 export default {
   name: "TheHeader",
   components: {TheMenu},
-  data() {
-    return {
-
-    }
-  },
   methods: {
     appClose() {
       this.$store.dispatch('mod_events/EVENT_closeCore');

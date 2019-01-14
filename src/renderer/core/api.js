@@ -69,8 +69,8 @@ class Client {
           // console.log(dataString.length);
           dataLength = +dataString.slice(dataString.indexOf('length') + 9, dataString.indexOf(','));
           dataPart = dataString.slice(dataString.indexOf('body') + 7 , dataString.length);
-          console.log('dataLength: ', dataLength);
-          console.log('dataPart: ', dataPart);
+          // console.log('dataLength: ', dataLength);
+          // console.log('dataPart: ', dataPart);
         }
         if(dataPart.length === dataLength + 1) {
           let obgData = JSON.parse(dataPart.slice(0, -1));

@@ -20,6 +20,7 @@
 </template>
 
 <script>
+  import {pathWebWorkers} from '@/core/constants.js'
 
   export default {
     name: "ChartBase",
@@ -33,22 +34,24 @@
         default: ''
       },
       chartData: {
-        //type: Array,
-        // default: function () {
-        //   return null
-        // }
+        type: Object,
+        default: function () {
+          return null
+        }
+      },
+      customColor: {
+        type: Array,
+        default: function () {
+          return []
+        }
       },
     },
     data() {
       return {
         fullView: false,
-        h: '',
-        w: '',
-      }
-    },
-    computed: {
-      chartModel() {
-        let model = {
+        wWorker: null,
+        chartModel: {},
+        defaultModel: {
           tooltip: {},
           toolbox: {
             feature: {
@@ -62,56 +65,70 @@
           yAxis: {},
           xAxis: {
             //boundaryGap: true,
+            data: []
           },
           series: []
-        };
-        console.log(this.chartData);
-        if (this.chartData === null) {
-          return model
         }
-        if (this.chartData !== null && Array.isArray(this.chartData)) {
-          // model.series = this.chartData;
-          //
-          // let yLength = model.series[0].data.length;
-          // model.xAxis.data = [];
-          // for (var i = 0; i < yLength; i++) {
-          //   model.xAxis.data.push(i);
-          // }
-        }
-        //(this.chartData !== null && typeof this.chartData === 'object')
-        else {
-          model = {...model, ...this.chartData};
-          // model.legend.data = this.chartData.legend;
-          // model.series = this.chartData.series;
-
-          let yLength = model.series[0].data.length;
-          model.xAxis.data = [];
-          for (var i = 0; i < yLength; i++) {
-            model.xAxis.data.push(i);
-          }
-        }
-        return model
       }
     },
-    watch: {},
+
+    computed: {
+      // chartModel() {
+      //   if (this.chartData === null) {
+      //     return this.defaultModel
+      //   }
+      //   let model = {...this.defaultModel, ...this.chartData};
+      //   model.xAxis.data.length = 0;
+      //   for (var i = 0; i < this.chartData.xLength; i++) {
+      //     model.xAxis.data.push(i);
+      //   }
+      //   return model
+      // }
+    },
+    watch: {
+      chartData() {
+        if (this.chartData === null) {
+          this.chartModel = this.defaultModel
+        }
+        let model = {...this.defaultModel, ...this.chartData};
+        model.xAxis.data.length = 0;
+        this.wWorker.postMessage({
+          model,
+          xLength: this.chartData.xLength
+        });
+      }
+    },
     methods: {
       toggleFullView() {
         this.fullView = !this.fullView
+      },
+      applyCustomColor() {
+        if (this.customColor.length) {
+          this.defaultModel.color = this.customColor;
+        }
+      },
+      createWWorker() {
+        this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
+        this.wWorker.addEventListener('message', this.drawChart, false);
+      },
+      drawChart(ev) {
+        this.chartModel = ev.data;
       }
     },
-    beforeDestroy() {
-      //console.log('Destroy chart');
-      //this.$refs.chart.destroy();
+    mounted() {
+      this.applyCustomColor();
+      this.createWWorker();
     },
-    // updated () {
-    //   console.log(this);
-    // }
+    beforeDestroy() {
+      console.log('Destroy chart');
+      this.wWorker.postMessage('close');
+      this.wWorker.removeEventListener('message', this.drawChart, false);
+    },
   }
 </script>
 
 <style lang="scss" scoped>
   .base-chart_main {
     height: 300px;
-    filter: blur(0px);
   }
 </style>

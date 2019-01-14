@@ -51,6 +51,10 @@ const viewBoxMixin = {
       clearInterval(this.idTimer);
       this.getStatistics();
     },
+    setTabAction() {
+      clearInterval(this.idTimer);
+      this.chartData = {};
+    },
     chartRequest(layerId, layerType, view) {
       let theData = {
         reciever: this.currentNetworkID,
