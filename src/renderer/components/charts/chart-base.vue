@@ -12,10 +12,10 @@
           i.icon.icon-full-screen-graph
     .base-chart_main
       v-chart(
-      ref="chart"
-      :auto-resize="true"
-      theme="quantum"
-      :options="chartModel"
+        ref="chart"
+        :auto-resize="true"
+        :options="chartModel"
+        theme="quantum"
       )
 </template>
 
@@ -34,9 +34,9 @@
       },
       chartData: {
         //type: Array,
-        default: function () {
-          return null
-        }
+        // default: function () {
+        //   return null
+        // }
       },
     },
     data() {
@@ -65,23 +65,24 @@
           },
           series: []
         };
+        console.log(this.chartData);
         if (this.chartData === null) {
           return model
         }
         if (this.chartData !== null && Array.isArray(this.chartData)) {
-          model.series = this.chartData;
-
-          let yLength = model.series[0].data.length;
-          model.xAxis.data = [];
-          for (var i = 0; i < yLength; i++) {
-            model.xAxis.data.push(i);
-          }
+          // model.series = this.chartData;
+          //
+          // let yLength = model.series[0].data.length;
+          // model.xAxis.data = [];
+          // for (var i = 0; i < yLength; i++) {
+          //   model.xAxis.data.push(i);
+          // }
         }
         //(this.chartData !== null && typeof this.chartData === 'object')
         else {
-          //model = {...model, ...this.chartData};
-          model.legend.data = this.chartData.legend;
-          model.series = this.chartData.series
+          model = {...model, ...this.chartData};
+          // model.legend.data = this.chartData.legend;
+          // model.series = this.chartData.series;
 
           let yLength = model.series[0].data.length;
           model.xAxis.data = [];
@@ -100,13 +101,17 @@
     },
     beforeDestroy() {
       //console.log('Destroy chart');
-      this.$refs.chart.destroy();
-    }
+      //this.$refs.chart.destroy();
+    },
+    // updated () {
+    //   console.log(this);
+    // }
   }
 </script>
 
 <style lang="scss" scoped>
   .base-chart_main {
     height: 300px;
+    filter: blur(0px);
   }
 </style>

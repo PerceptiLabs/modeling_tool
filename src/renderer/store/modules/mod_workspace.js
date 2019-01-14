@@ -23,7 +23,11 @@ const state = {
   dragElement: {},
   startArrowID: null,
   arrowType: 'solid',
-  preArrow: null
+  preArrow: {
+    show: false,
+    start: {x: 0, y: 0},
+    stop: {x: 0, y: 0},
+  }
 };
 
 const getters = {
@@ -52,10 +56,6 @@ const getters = {
     });
     return selectedIndex;
   },
-  //---------------
-  //  Local CORE DATA
-  //---------------
-
 };
 
 const mutations = {
@@ -256,9 +256,21 @@ const mutations = {
   SET_startArrowID (state, value) {
     state.startArrowID = value
   },
-  // SET_preArrow (state, value) {
-  //   state.preArrow = value
-  // },
+  SET_preArrowStart (state, value) {
+    state.preArrow.start = value;
+    state.preArrow.stop = value;
+    state.preArrow.show = true
+  },
+  SET_preArrowStop (state, value) {
+    state.preArrow.stop = value
+  },
+  CLEAR_preArrow (state) {
+    state.preArrow = {
+      show: false,
+      start: {x: 0, y: 0},
+      stop: {x: 0, y: 0},
+    }
+  },
 };
 
 const actions = {

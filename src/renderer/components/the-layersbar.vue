@@ -28,7 +28,7 @@
 
 <script>
   import clickOutside from '@/core/mixins/click-outside.js'
-  import {trainingElements, deepLearnElements}  from '@/core/helpers.js'
+  import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 
   import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
   import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/view-io-output-backpropagation.vue'

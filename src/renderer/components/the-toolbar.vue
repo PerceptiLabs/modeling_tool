@@ -87,7 +87,7 @@
 
 <script>
 import configApp    from '@/core/globalSettings.js'
-import {trainingElements, deepLearnElements}  from '@/core/helpers.js'
+import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 
 //const {ipcRenderer} = require('electron')
 export default {
