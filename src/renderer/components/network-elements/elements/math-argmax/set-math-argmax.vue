@@ -6,7 +6,8 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
-      :disabled="tabSelected != i"
+        :disabled="tabSelected != i"
+        v-tooltip:right="'ArgMax'"
       )
         h3(v-html="tab")
     .popup_tab-body

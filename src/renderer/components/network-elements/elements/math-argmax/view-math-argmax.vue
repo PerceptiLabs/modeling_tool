@@ -3,6 +3,7 @@
   data-component="MathArgmax"
   data-layer="Argmax"
   data-type="Other"
+  v-tooltip:right="'Argmax'"
   )
     i.icon.icon-l-calc-argmax
 

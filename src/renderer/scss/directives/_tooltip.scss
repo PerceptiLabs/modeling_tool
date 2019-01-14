@@ -60,10 +60,9 @@ $margin-tooltip: .65rem;
 	transform: translate(-50%, 0%) rotateY(90deg);
 
 	&:before {
-		top: -50%;
+		top: -100%;
 		right: 50%;
 		transform: translate(50%,50%);
 		border-bottom: $arrow-size solid $popper-background-color;
 	}
 }
-

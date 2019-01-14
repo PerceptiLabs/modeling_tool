@@ -3,6 +3,7 @@
     data-component="DataEnvironment"
     data-layer="Environment"
     data-type="Data"
+    v-tooltip:right="'Environment'"
   )
     i.icon.icon-map
 

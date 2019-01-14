@@ -9,13 +9,14 @@
         button.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'edit'}"
-          v-tooltip:bottom="'Test'"
+          v-tooltip:bottom="'Select'"
           @click="setNetMode('edit')"
         )
           i.icon.icon-select
 
       li.toolbar_list-arrow-wrap(
         :class="{'disable-hover': statisticsIsOpen}"
+        v-tooltip:bottom="'Arrow'"
       )
         button.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
@@ -35,16 +36,23 @@
 
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button" disabled="disabled")
+        button.btn.btn--toolbar(type="button" 
+          disabled="disabled"
+          v-tooltip:bottom="'Prev step'"
+        )
           i.icon.icon-step-prev
       li
-        button.btn.btn--toolbar(type="button" disabled="disabled")
+        button.btn.btn--toolbar(type="button" 
+          disabled="disabled"
+          v-tooltip:bottom="'Next step'"
+        )
           i.icon.icon-step-next
     ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
+          v-tooltip:bottom="'Run/Stop'"
           @click="clickOnBtn()"
         )
           i.icon.icon-on-off
@@ -52,21 +60,29 @@
         button.btn.btn--toolbar(type="button"
           :class="{'active': statusNetworkCore === 'Paused'}"
           :disabled="!(statusNetworkCore === 'Training' || statusNetworkCore === 'Paused' || statusNetworkCore === 'Validation')"
+          v-tooltip:bottom="'Pause'"
           @click="trainPause()"
         )
           i.icon.icon-pause
       li
         button.btn.btn--toolbar(type="button"
           :disabled="statusNetworkCore !== 'Validation'"
+          v-tooltip:bottom="'Skip'"
           @click="skipValid()"
         )
           i.icon.icon-next
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button" disabled="disabled")
+        button.btn.btn--toolbar(type="button" 
+          disabled="disabled"
+          v-tooltip:bottom="'Repeat'"
+        )
           i.icon.icon-repeat
       li
-        button.btn.btn--toolbar(type="button" disabled="disabled")
+        button.btn.btn--toolbar(type="button" 
+          disabled="disabled"
+          v-tooltip:bottom="'Box'"
+        )
           i.icon.icon-box
 
     .toolbar_settings
