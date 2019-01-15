@@ -1,82 +1,53 @@
 <template lang="pug">
-  div(v-if="isShowPopup").popup-body
-    header.popup-body_header
-      h3.header_title {{title}}
-      span(v-if="isProgress").header_update-status {{updateStatus}}%
+  div
     section.popup-body_info
       span.info_process-name {{processName}}
-      div(v-if="isProgress").info_message Update status: {{updateStatus}}%
-      div(v-else).info_message {{message}}
+      div.info_message Update status: {{updateStatus}}%
       
-      div(v-if="isProgress").info_progress-bar
+      div.info_progress-bar
         div.progress-bar_loading-line-box
           div(:style="{width:`${updateStatus}%`}").progress-bar_loading-line
-
-      button(type="button" @click="isShowAboutUpdate = !isShowAboutUpdate").info_about-update-btn What's new?
-     
-      ul(v-show="isShowAboutUpdate").info_about-update-list
-        li(v-for="(item, index) in aboutUpdateList").about-update-list_item {{item}}
-
+    
     footer.popup-body_footer
-      button(type="button", 
-        v-for='(button, index) in buttons' 
-        :key="index"
-        :class="button.className"
-        @click="button.action"
-      ).btn {{button.text}}
+        button(type="button" @click="backgroundMode" ).btn.btn--primary  Background mode
+        button(type="button" @click="cancelUpdate" ).btn.btn--dark-blue-rev  Cancel update
 </template>
 
 <script>
 export default {
-  name: 'UpdatePopup',
+  name: 'PopupLoading',
   props: {
-    title: {                        // popup title
+    processName: {                                // name loading process
       type: String,
-      default: 'Software update'
+      default: 'Updating Quantum Net software:'
     },
-    processName: {                  // name popup process
-      type: String,
-      default: ''
-    },
-    message: {                      // main text about update
-      type: String,
-      default: ''
-    },
-    isShowPopup: {                  // show all popup
-      type: Boolean,
-      default: true
-    },
-    isProgress: {                   // show progress bar
-      type: Boolean,   
-      default: false
-    },
-    updateStatus: {                 // update number loading status (%)
+    updateStatus: {                               // updates progress (%)
       type: Number,
       default: 0
     },
-    aboutUpdateList: {
-      type: Array,
-      default() {
-        return [];
-      }
-    },
-    buttons: {                      // all buttons with css class and action (click)
-      type: Array,
-      default() {
-        return [];
-      }
+    loadingStatus: {                              // loading Status ('before install', 'installing', 'done')
+      type: String,
+      default: 'before install'
     }
   },
   data() {
     return {
-      isShowAboutUpdate: false,
+      
+    }
+  },
+  methods: {
+    cancelUpdate() {
+      this.$emit('canceledUpdate', {status: 'before install', show: false});
+    },
+    backgroundMode() {
+
     }
   }
 }
 </script>
 
 <style lang="scss" scoped>
-   @import '../../scss/base';
+ @import '../../../scss/base';
 
   .popup-body {
     position: fixed;
@@ -148,7 +119,7 @@ export default {
   .about-update-list_item {
     margin-bottom: 1rem;
     line-height: 1.4rem;
-    font-size: 10px;
+    font-size: 1rem;
 
     &:before {
       content: '-';
@@ -167,10 +138,6 @@ export default {
       margin-right: 1rem;
     }
   }
-
-
-
-
 </style>
 
 

@@ -8,7 +8,7 @@
 
 </template>
 <script>
-import UpdatePopup from '@/components/global-popups/update-popup.vue'
+import UpdatePopup from '@/components/global-popups/update-popup/update-popup.vue'
 
 export default {
     components: {
@@ -93,16 +93,12 @@ export default {
               scheme: ''
             }
         ],
+        processName: '14.11.2018',
         updateButtons: [
           {
             className: 'btn--primary',
             text: 'Install',
             action: this.install
-          },
-          {
-            className: 'btn--dark-blue-rev',
-            text: 'Cancel update',
-            action: this.cancel
           }
         ],
         updateShowPopup: false,
@@ -110,7 +106,11 @@ export default {
           'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
           'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
           'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-        ]
+        ],
+        startLoading: false,
+        fakeTimer: null,
+        progressStatus: 0,
+        message: ''
       }
     },
     methods: {
@@ -120,16 +120,11 @@ export default {
       addProject() {
         this.$router.push({name: 'app'});
       },
-      install() {
-        console.log('Install...');
-      },
-      cancel() {
-        console.log('Canceled!');
-        this.updateShowPopup = false;
-      },
-      openPopup(){
+      openPopup() {
         this.updateShowPopup = true;
-        console.log(this.updateShowPopup = true)
+      },
+      closePopup() {
+        this.updateShowPopup = false;
       }
     }
 }

@@ -24,8 +24,6 @@ ul.project-list.d-flex
     time.text-disable {{project.time}}
 
 update-popup(
-  process-name="Updating Quantum Net software:" 
-  :buttons="updateButtons"
-  :aboutUpdateList="moreInfoUpdateText"
   :isShowPopup="updateShowPopup"
+  @closedPopup="closePopup"
 )
