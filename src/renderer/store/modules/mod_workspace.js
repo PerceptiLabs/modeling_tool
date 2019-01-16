@@ -1,4 +1,4 @@
-//import { generateID }  from "@/core/helpers.js";
+import { findIndexId }  from "@/core/helpers.js";
 const generateID = function(input) {
   let out;
   let stringID = input.toString();
@@ -142,6 +142,23 @@ const mutations = {
     getters.GET_currentNetworkElementList.push(state.dragElement);
     state.dragElement = {};
   },
+  delete_elementConnection(state, {newNet, arrSelectId, dispatch}) {
+    newNet.forEach((el)=>{
+      el.connectionOut = el.connectionOut.filter((connect)=>{
+        //TODO return when return arrowType
+        //return !value.arrSelectId.includes(connect.id)
+        return !arrSelectId.includes(connect)
+      });
+      el.connectionIn  = el.connectionIn.filter((connect)=>{
+        //TODO return when return arrowType
+        //return !value.arrSelectId.includes(connect.id)
+        return !arrSelectId.includes(connect)
+      });
+    });
+    state.workspaceContent[state.currentNetwork].networkElementList = newNet;
+    dispatch('mod_events/EVENT_calcArray', null, {root: true})
+  },
+
   add_arrow(state, {getters, dispatch, stopID}) {
     let startID = state.startArrowID;
     //let stopID = val.stopID;
@@ -169,24 +186,18 @@ const mutations = {
     state.startArrowID = null;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
-  delete_arrow(state, {newNet, arrSelectId, dispatch}) {
-    newNet.forEach((el)=>{
-      el.connectionOut = el.connectionOut.filter((connect)=>{
-        //TODO return when return arrowType
-        //return !value.arrSelectId.includes(connect.id)
-        return !arrSelectId.includes(connect)
-      });
-      el.connectionIn  = el.connectionIn.filter((connect)=>{
-        //TODO return when return arrowType
-        //return !value.arrSelectId.includes(connect.id)
-        return !arrSelectId.includes(connect)
-      });
-    });
-    state.workspaceContent[state.currentNetwork].networkElementList = newNet;
+  delete_arrow(state,{getters, dispatch, arrow}) {
+    let arrowList = getters.GET_currentNetworkElementList;
+    let startID = arrow.startID;
+    let stopID = arrow.stopID;
+    let indexStartEl = findIndexId(arrowList, startID);
+    let indexStopEl = findIndexId(arrowList, stopID);
+    let newConnectionOut = arrowList[indexStartEl].connectionOut.filter((item)=> item !== stopID);
+    let newConnectionIn = arrowList[indexStopEl].connectionIn.filter((item)=> item !== startID);
+    state.workspaceContent[state.currentNetwork].networkElementList[indexStartEl].connectionOut = newConnectionOut;
+    state.workspaceContent[state.currentNetwork].networkElementList[indexStopEl].connectionIn = newConnectionIn;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
-
-
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {getters, settings}) {
     let indexEl = getters.GET_currentSelectedEl[0].index;
@@ -313,10 +324,13 @@ const actions = {
     let newNet = net.filter((el)=>{
       return !arrSelectId.includes(el.layerId)
     });
-    commit('delete_arrow', {newNet, arrSelectId, dispatch})
+    commit('delete_elementConnection', {newNet, arrSelectId, dispatch})
   },
   ADD_arrow({commit, getters, dispatch}, stopID) {
     commit('add_arrow', {getters, dispatch, stopID})
+  },
+  DELETE_arrow({commit, getters, dispatch}, arrow) {
+    commit('delete_arrow', {getters, dispatch, arrow})
   },
   SET_elementUnselect({commit, getters}) {
     commit('set_elementUnselect', {getters})

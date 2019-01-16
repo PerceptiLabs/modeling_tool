@@ -6,7 +6,7 @@
       ref="svg"
       )
       defs
-        lineargradient(id="grad")
+        //-lineargradient(id="grad")
           stop(stop-color='black')
           stop(offset='100%' stop-color='magenta')
         marker#svg-arrow_triangle(
@@ -21,6 +21,12 @@
       )
         //:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
         line.svg-arrow_line(
+          data-tabindex="0"
+          :data-startid="arrow.l1.layerId"
+          :data-stopid="arrow.l2.layerId"
+
+          @keyup.46="deleteArrow($event)"
+          @focus="focusArrow()"
           marker-end="url(#svg-arrow_triangle)"
           :class="{'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
           stroke-dasharray="none"
@@ -152,6 +158,14 @@ export default {
     }
   },
   methods: {
+    deleteArrow(ev) {
+      let connection = {
+        startID: ev.target.dataset.startid,
+        stopID: ev.target.dataset.stopid,
+      };
+      this.$store.dispatch('mod_workspace/DELETE_arrow', connection);
+    },
+    focusArrow() {},
     drawArrows() {
       this.calcOffset();
       this.calcLayerSize();
@@ -482,12 +496,9 @@ export default {
     display: flex;
     flex: 1 1 100%;
     position: relative;
-    .open-statistic & {
-      //transform: scale(.5);
-    }
   }
   .svg-arrow {
-    pointer-events: none;
+    //pointer-events: none;
     position: absolute;
     top: 0;
     left: 0;
@@ -498,9 +509,20 @@ export default {
       stroke: $color-arrow;
     }
   }
+  /*.svg-arrow_arrow:focus {*/
+    /*opacity: .5;*/
+    /*fill: pink;*/
+    /*.svg-arrow_line {*/
+      /*fill: pink;*/
+    /*}*/
+  /*}*/
   .svg-arrow_line {
     stroke: $color-arrow;
     stroke-width: 3;
+    &:focus {
+      opacity: .5;
+      stroke-width: 4;
+    }
   }
 
 
