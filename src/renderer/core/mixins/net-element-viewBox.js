@@ -73,14 +73,11 @@ const viewBoxMixin = {
         const client = new requestApi();
         client.sendMessage(theData)
           .then((data)=> {
-            //Vue.nonreactive(data);
-            //console.log(data);
+            Vue.nonreactive(data);
             if(view.length) {
-              //this.chartData[view] = data
               this.$set(this.chartData, view, data)
             }
             else this.chartData = data
-            //console.log(this.chartData);
           })
           .catch((err) =>{
             console.error(err);

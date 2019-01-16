@@ -48,7 +48,7 @@
     },
     methods: {
       setTab(name) {
-        clearInterval(this.idTimer);
+        this.setTabAction();
         this.currentTab = name;
         if(name === 'Output') {
           this.getStatistics()

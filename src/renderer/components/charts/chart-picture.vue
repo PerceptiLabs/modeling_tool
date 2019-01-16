@@ -34,11 +34,12 @@ export default {
     },
   },
   mounted() {
-
+    this.canvas2D = this.$refs.canvas.getContext('2d');
   },
   data() {
     return {
       fullView: false,
+      canvas2D: null
     }
   },
   watch: {
@@ -51,23 +52,21 @@ export default {
       this.fullView = !this.fullView
     },
     drawPicture(img) {
+      let canvas2d = this.canvas2D;
+      let canvas = this.$refs.canvas;
       let imgH = img.height;
       let imgW = img.width;
-      this.$refs.canvas.setAttribute('width', imgW);
-      this.$refs.canvas.setAttribute('height', imgH);
-      // let boxH = this.$refs.canvas.offsetParent.offsetWidth;
-      // let boxW = this.$refs.canvas.offsetParent.offsetHeight;
-      if(imgH/imgW >= 0) {
+      canvas.setAttribute('width', imgW);
+      canvas.setAttribute('height', imgH);
+      if(imgH/imgW >= 1) {
         this.$refs.canvas.style.minHeight = '100%';
       }
       else {
         this.$refs.canvas.style.width = '100%';
       }
-
-      let canvas = this.$refs.canvas.getContext('2d');
-      let imgData = canvas.createImageData(imgW, imgH);
+      let imgData = canvas2d.createImageData(imgW, imgH);
       img.data.forEach((el, index) => imgData.data[index] = el);
-      canvas.putImageData(imgData,0, 0);
+      canvas2d.putImageData(imgData,0, 0);
     }
   },
   beforeDestroy() {
@@ -77,12 +76,11 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  @import "../../scss/base";
   .base-chart_main {
     display: flex;
     align-items: center;
     justify-content: center;
-  }
-  .chart-img {
-
+    background-color: $bg-workspace;
   }
 </style>

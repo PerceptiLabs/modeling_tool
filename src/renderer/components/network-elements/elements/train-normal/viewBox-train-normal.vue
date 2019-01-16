@@ -90,6 +90,7 @@
     methods: {
       setTab(name) {
         this.setTabAction();
+        this.currentTab = name;
         if(name === 'Prediction') {
           this.getStatistics()
         }
@@ -110,9 +111,9 @@
         this.chartRequest(this.statElementID, 'TrainNormal', 'Loss')
       }
     },
-    // beforeUpdate() {
-    //   console.log(this.chartData);
-    // }
+    mounted() {
+      console.log('train');
+    }
   }
 </script>
 

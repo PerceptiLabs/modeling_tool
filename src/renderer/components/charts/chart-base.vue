@@ -20,7 +20,7 @@
 </template>
 
 <script>
-  import {pathWebWorkers} from '@/core/constants.js'
+  import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
 
   export default {
     name: "ChartBase",
@@ -71,24 +71,11 @@
         }
       }
     },
-
-    computed: {
-      // chartModel() {
-      //   if (this.chartData === null) {
-      //     return this.defaultModel
-      //   }
-      //   let model = {...this.defaultModel, ...this.chartData};
-      //   model.xAxis.data.length = 0;
-      //   for (var i = 0; i < this.chartData.xLength; i++) {
-      //     model.xAxis.data.push(i);
-      //   }
-      //   return model
-      // }
-    },
     watch: {
       chartData() {
         if (this.chartData === null) {
-          this.chartModel = this.defaultModel
+          this.chartModel = this.defaultModel;
+          return
         }
         let model = {...this.defaultModel, ...this.chartData};
         model.xAxis.data.length = 0;
@@ -113,16 +100,18 @@
       },
       drawChart(ev) {
         this.chartModel = ev.data;
+        this.$refs.chart.hideLoading()
       }
     },
     mounted() {
       this.applyCustomColor();
       this.createWWorker();
+      this.$refs.chart.showLoading(chartSpinner)
     },
     beforeDestroy() {
-      console.log('Destroy chart');
       this.wWorker.postMessage('close');
       this.wWorker.removeEventListener('message', this.drawChart, false);
+      this.$refs.chart.dispose();
     },
   }
 </script>

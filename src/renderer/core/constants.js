@@ -1,6 +1,12 @@
 const trainingElements =  ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
-//const trainingElements =  ['TrainNormal'];
 const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningDeconv', 'DeepLearningRecurrent'];
-const pathWebWorkers = './static/webworkers';
 
-export {trainingElements, deepLearnElements, pathWebWorkers}
+const pathWebWorkers = './static/webworkers';
+const chartSpinner = {
+  text: 'Loading…',
+  color: '#6b8ff7',
+  textColor: '#fff',
+  maskColor: 'transparent'
+};
+
+export {trainingElements, deepLearnElements, pathWebWorkers, chartSpinner}
