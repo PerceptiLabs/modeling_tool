@@ -11,7 +11,7 @@
         :class="{'active': currentTab === tab}"
         ) {{ tab }}
       //&& chartData['Weights&Output']
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output' && chartData['Weights&Output']")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output'")
       .statistics-box_row
         .statistics-box_col
           chart-heatmap(
@@ -23,13 +23,13 @@
           chartLabel="Output"
           :chartData="chartData['Weights&Output'].Output"
           )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bias' && chartData.Bias")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bias'")
       .statistics-box_row
         chart-base(
         chartLabel="Bias"
         :chartData="chartData.Bias.Bias"
         )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients' && chartData.Gradients")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
       chart-base(
       chartLabel="Bias"
       :chartData="chartData.Gradients.Gradients"
@@ -48,6 +48,17 @@
     mixins: [viewBoxMixin],
     data() {
       return {
+        chartDataDefault: {
+          'Weights&Output': {
+            Weights: null,
+            Output: null,
+          },
+          Bias: {
+            Bias: null,
+          },
+          Gradients: {
+            Gradients: null,
+          }},
         currentTab: 'Weights & Output',
         tabset: ['Weights & Output', 'Bias', 'Gradients'],
         colorList: ['#83c1ff', '#0070d6', '#6b8ff7']

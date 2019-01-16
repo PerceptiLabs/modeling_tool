@@ -12,12 +12,14 @@ const viewBoxMixin = {
       saveParams: {}
     }
   },
+  created() {
+    if(this.chartDataDefault){
+      this.chartData = {...this.chartDataDefault}
+    }
+  },
   mounted() {
     this.getStatistics();
   },
-  // beforeUpdate() {
-  //   //this.chartData = {};
-  // },
   beforeDestroy() {
     clearInterval(this.idTimer);
     this.chartData = {};
@@ -53,7 +55,7 @@ const viewBoxMixin = {
     },
     setTabAction() {
       clearInterval(this.idTimer);
-      this.chartData = {};
+      this.chartData = {...this.chartDataDefault};
     },
     chartRequest(layerId, layerType, view) {
       let theData = {
