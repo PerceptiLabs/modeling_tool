@@ -2,6 +2,7 @@
   main.page_login
     .login_logo
       img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
+    view-loading(:class="{loading: isLoading}")
     .login_main
       h1 Log In please
       h3 Enter your Email & Password
@@ -25,7 +26,7 @@
 
           ) Remember me
         .form_holder
-          button.btn.btn--dark-blue-rev(type="button" @click="validateForm") log in
+          button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading") log in
         .form_holder
           router-link.btn.btn--link(:to="{name: 'register'}") Register new account
           
@@ -34,12 +35,16 @@
 
 <script>
   import {requestCloudApi} from '@/core/apiCloud.js'
+  import ViewLoading from '@/components/loading/view-loading.vue'
 export default {
   name: 'PageLogin',
+  components: {
+    ViewLoading
+  },
   data() {
     return {
       userEmail: 'test@test.com',
-      userPass: '123123'
+      userPass: '123123',
       //userEmail: '',
       //userPass: ''
     }
@@ -62,18 +67,28 @@ export default {
         "Password": this.userPass
       };
       this.requestCloudApi('post', 'Customer/Login', queryParams, (result, response) => {
+        this.$store.commit('mod_login/SET_showLoader', true);
         if (result === 'success') {
-          //console.log(response);
-          this.$store.commit('globalView/SET_userToken', response.headers.authorization);
-          this.$router.replace('/app');
+          setTimeout(() => {
+            this.$store.commit('mod_login/SET_showLoader', false);
+            this.$store.commit('globalView/SET_userToken', response.headers.authorization);
+            this.$router.replace('/app');
+          }, 3000)
         }
       })
     }
+  },
+  computed: {
+    isLoading() {
+       return this.$store.state.mod_login.showLoader
+   },
+  },
+  mounted(){
+    //console.log(this.$store.state.mod_login.showLoader)
   }
 }
 </script>
 
 <style lang="scss" scoped>
   @import '../../scss/base';
-
 </style>
