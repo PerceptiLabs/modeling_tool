@@ -2,34 +2,37 @@ $indentProjects: 1rem;
 $iconsGroupColor: #5c6680;
 
 .page_workspace {
-  padding: 4rem 3rem 0 3rem;
-  grid-area: workspace;
-  background: $bg-workspace;
+	padding: 4rem 3rem 0 3rem;
+	background: $bg-workspace;
 
-  .title-box {
-    justify-content: space-between;
-    margin-bottom: 4rem;
-
-    .title-box_projectscount {
-      font-size: 1.2rem;
-    }
-  }
+	grid-area: workspace;
+	.title-box {
+		justify-content: space-between;
+		margin-bottom: 4rem;
+		.title-box_projectscount {
+			font-size: 1.2rem;
+		}
+	}
 }
-
 .project-list {
-  flex-wrap: wrap;
-  text-align: center;
-  margin: 0 -$indentProjects;
+	flex-wrap: wrap;
+	margin: 0 -$indentProjects;
+	text-align: center;
 }
-
 .project-box {
+	margin: $indentProjects;
+	&.add-new .project_content {
+		display: flex;
+	}
+	time {
+		color: $disable-txt;
+	}
   margin: $indentProjects;
 
   &.add-new .project_content {
     display: flex;
   }
 }
-
 .project {
   background: $col-txt2;
   margin-bottom: 1rem;
@@ -57,24 +60,20 @@ $iconsGroupColor: #5c6680;
 .project_ration {
   padding-top: 100%
 }
-
 .project_content {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  top: 0;
-  left: 0;
+	position: absolute;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
 }
-
 .project_content-info {
-  justify-content: space-between;
-  padding: 1rem;
-
-  .icon {
-    font-size: 2rem;
-  }
+	justify-content: space-between;
+	padding: 1rem;
+	.icon {
+		font-size: 2rem;
+	}
 }
-
 .content-info_status {
   margin-right: -1rem;
   min-width: 7rem;

@@ -3,7 +3,6 @@
     ref="network"
   )
     svg.svg-arrow(
-      v-if="arrowsList.length"
       ref="svg"
       )
       defs
@@ -17,6 +16,7 @@
           orient="auto")
           polyline(points="0,0 0,4 3.5,2")
       template(
+        v-if="arrowsList.length"
         v-for="(arrow, i) in arrowsList"
       )
         //:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
@@ -28,19 +28,20 @@
           :y1="arrow.positionArrow.y1"
           :x2="arrow.positionArrow.x2"
           :y2="arrow.positionArrow.y2")
-        line.svg-arrow_line.arrow--hidden(
-          v-if="preArrow"
-          marker-end="url(#svg-arrow_triangle)"
-          stroke-dasharray="none"
-          :x1="preArrow.x1"
-          :y1="preArrow.y1"
-          :x2="preArrow.x2"
-          :y2="preArrow.y2"
-          )
+      line.svg-arrow_line.arrow--hidden(
+        v-if="preArrow.show"
+        marker-end="url(#svg-arrow_triangle)"
+        stroke-dasharray="none"
+        :x1="preArrow.start.x"
+        :y1="preArrow.start.y"
+        :x2="preArrow.stop.x"
+        :y2="preArrow.stop.y"
+        )
     component(
       v-for="(el, index) in networkElementList"
-      :class="{'element--hidden': el.layerMeta.isInvisible}"
       :key="el.index"
+      ref="layer"
+      :class="{'element--hidden': el.layerMeta.isInvisible}"
       :is="el.componentName"
       :elementData="{el, index}"
     )
@@ -48,7 +49,6 @@
 </template>
 
 <script>
-
   import IoInput              from '@/components/network-elements/elements/io-input/io-input.vue'
   import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/io-output-backpropagation.vue'
   import IoOutputGenetic      from '@/components/network-elements/elements/io-output-genetic-algorithm/io-output-genetic-algorithm.vue'
@@ -104,15 +104,22 @@ export default {
     return {
       arrowsList: [],
       resizeTimeout: null,
+      layerSize: 52,
+      smallViewPort: true,
+      offset: {
+        offsetX: 0,
+        offsetY: 0,
+      }
     }
   },
   mounted() {
-    this.createArrowList();
-    window.addEventListener("resize", this.resizeThrottler, false);
+    this.calcViewPort();
+    this.drawArrows();
+    window.addEventListener("resize", this.resizeCalc, false);
   },
   beforeDestroy() {
     this.removeArrowListener();
-    window.removeEventListener("resize", this.resizeThrottler, false);
+    window.removeEventListener("resize", this.resizeCalc, false);
   },
   computed: {
     // workspaceJSON() {
@@ -131,31 +138,59 @@ export default {
       return this.$store.state.mod_events.calcArray
     },
     preArrow() {
-      return this.$store.state.mod_workspace.preArrow
-    }
+      return this.$store.state.mod_workspace.preArrow;
+    },
   },
   watch: {
     eventCalcArrow() {
       this.createArrowList()
     },
+    smallViewPort() {
+      this.drawArrows();
+      //this.calcCanvasSize();
+
+    }
   },
   methods: {
-    resizeThrottler() {
-      if ( !this.resizeTimeout ) {
-        this.resizeTimeout = setTimeout(()=> {
-          this.resizeTimeout = null;
-          this.createArrowList();
-          this.calcSVG();
-        }, 792);
+    drawArrows() {
+      this.calcOffset();
+      this.calcLayerSize();
+      this.createArrowList();
+    },
+    resizeCalc(ev) {
+      let width = ev.srcElement.innerWidth;
+      if(this.smallViewPort) {
+        if(width > 1440) {
+          this.smallViewPort = false;
+        }
+      }
+      else {
+        if(width <= 1440) {
+          this.smallViewPort = true;
+        }
       }
     },
-    calcSVG() {
+    // calcCanvasSize() {
+    //   if(this.networkElementList.length) {
+    //     let height = this.$refs.network.scrollHeight;
+    //     let width = this.$refs.network.scrollWidth;
+    //     this.$refs.svg.style.height = height;
+    //     this.$refs.svg.style.width = width;
+    //   }
+    // },
+    calcOffset() {
+      this.offset = {
+       offsetX: this.$refs.network.offsetLeft,
+       offsetY: this.$refs.network.offsetTop
+      };
+    },
+    calcLayerSize() {
       if(this.networkElementList.length) {
-        let height = this.$refs.network.scrollHeight;
-        let width = this.$refs.network.scrollWidth;
-        this.$refs.svg.style.height = height;
-        this.$refs.svg.style.width = width;
+        this.layerSize = this.$refs.layer[0].$el.offsetWidth;
       }
+    },
+    calcViewPort() {
+      return window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
     },
     //-------------
     //Arrow methods
@@ -167,22 +202,24 @@ export default {
     arrowMovePaint(ev) {
       ev.preventDefault();
       ev.stopPropagation();
+      this.$store.commit('mod_workspace/SET_preArrowStop', {
+        x: ev.pageX - this.offset.offsetX,
+        y: ev.pageY - this.offset.offsetY
+      })
     },
     removeArrowListener() {
+      this.$store.commit('mod_workspace/CLEAR_preArrow');
       this.$refs.network.removeEventListener('mousemove', this.arrowMovePaint);
       this.$refs.network.removeEventListener('mouseup', this.removeArrowListener)
     },
-
     createArrowList() {
-      let netElement = this.$refs.network.querySelectorAll('.net-element');
-      let size = 72;
-      if(netElement.length) {
-        size = netElement[0].offsetWidth;
+      if(!this.networkElementList.length) {
+        return
       }
+      const size = this.layerSize;
       const listID = {};
       const connectList = [];
       const net = this.networkElementList;
-
       findAllID();
       findPerspectiveSide();
       calcCorrectPosition();

@@ -30,20 +30,11 @@
         :chartData="chartData.Bias.Bias"
         )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients' && chartData.Gradients")
-      .statistics-box_row
-        chart-base(
-        chartLabel="Min"
-        :chartData="chartData.Gradients.Min"
-        )
-        chart-base(
-        chartLabel="Max"
-        :chartData="chartData.Gradients.Max"
-        )
-      .statistics-box_row
-        chart-base(
-        chartLabel="Average"
-        :chartData="chartData.Gradients.Average"
-        )
+      chart-base(
+      chartLabel="Bias"
+      :chartData="chartData.Gradients.Gradients"
+      :customColor="colorList"
+      )
 </template>
 
 <script>
@@ -59,6 +50,7 @@
       return {
         currentTab: 'Weights & Output',
         tabset: ['Weights & Output', 'Bias', 'Gradients'],
+        colorList: ['#83c1ff', '#0070d6', '#6b8ff7']
       }
     },
     methods: {

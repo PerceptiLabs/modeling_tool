@@ -12,7 +12,8 @@ const state = {
 const getters = {
   GET_data_CloseServer(state, getters, rootState, rootGetters) {
     return {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: 'server',
       action: 'Close',
       value: ''
     };
@@ -74,7 +75,7 @@ const actions = {
   API_runServer({state, commit, dispatch, getters}) {
     let timer;
     let coreIsStarting = false;
-    //checkCore();
+    checkCore();
 
     function checkCore() {
       const theData = getters.GET_data_GetStatus;
@@ -85,7 +86,7 @@ const actions = {
         })
         .catch((err) =>{
           if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
-            console.error(err);
+            console.log('core offline');
           }
           coreOffline();
           if(!coreIsStarting) {

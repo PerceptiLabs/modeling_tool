@@ -12,9 +12,7 @@ const clickOutside = function (event) {
   }
 };
 
-const trainingElements =  ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
-//const trainingElements =  ['TrainNormal'];
-const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningDeconv', 'DeepLearningRecurrent'];
+
 
 const openLoadDialog = function (callback, options) {
   let dialog = remote.dialog;
@@ -23,6 +21,22 @@ const openLoadDialog = function (callback, options) {
       callback(files)
     }
   })
+};
+
+const debounce = function debounce(func, wait, immediate) {//not used
+  let timeout;
+  return function() {
+    const context = this;
+    const args = arguments;
+    let later = function() {
+      timeout = null;
+      if (!immediate) func.apply(context, args);
+    };
+    let callNow = immediate && !timeout;
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+    if (callNow) func.apply(context, args);
+  };
 };
 
 const generateID = function(input) {
@@ -34,7 +48,7 @@ const generateID = function(input) {
   return out
 };
 
-export {findIndexId, clickOutside, trainingElements, deepLearnElements, openLoadDialog, generateID}
+export {findIndexId, clickOutside, openLoadDialog, generateID, debounce}
 
 
 

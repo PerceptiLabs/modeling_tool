@@ -1,10 +1,10 @@
 <template lang="pug">
-    main.page
-      aside.page_sidebar
-        include ./sidebar/sidebar.pug
-          
-      .page_workspace
-        include ./workspace/workspace.pug
+  main.page
+    aside.page_sidebar
+      include ./sidebar/sidebar.pug
+
+    .page_workspace
+      include ./workspace/workspace.pug
 
 </template>
 <script>
@@ -127,7 +127,7 @@ export default {
         this.updateShowPopup = false;
       }
     }
-}
+  }
 </script>
 <style lang="scss" scoped>
   @import '../../scss/base';
@@ -137,8 +137,7 @@ export default {
   .page {
     grid-template-columns: $w-sidebar 1fr;
     grid-template-rows: inherit;
-    grid-template-areas: 
-      "sidebar workspace";
+    grid-template-areas: "sidebar workspace";
   }
 
 </style>

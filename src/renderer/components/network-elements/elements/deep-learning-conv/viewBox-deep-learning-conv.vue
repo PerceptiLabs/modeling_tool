@@ -29,19 +29,24 @@
         :chartData="chartData.Bias.Bias"
         )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients' && chartData.Gradients")
-      .statistics-box_row
+      chart-base(
+        chartLabel="Bias"
+        :chartData="chartData.Gradients.Gradients"
+        :customColor="colorList"
+      )
+      //-.statistics-box_row
         chart-base(
         chartLabel="Min"
-        :chartData="chartData.Gradients.Min"
+        /:chartData="chartData.Gradients.Min"
         )
         chart-base(
         chartLabel="Max"
-        :chartData="chartData.Gradients.Max"
+        /:chartData="chartData.Gradients.Max"
         )
-      .statistics-box_row
+      //-.statistics-box_row
         chart-base(
         chartLabel="Average"
-        :chartData="chartData.Gradients.Average"
+        -:chartData="chartData.Gradients.Average"
         )
 </template>
 
@@ -58,11 +63,12 @@
       return {
         currentTab: 'Weights & Output',
         tabset: ['Weights & Output', 'Bias', 'Gradients'],
+        colorList: ['#83c1ff', '#0070d6', '#6b8ff7']
       }
     },
     methods: {
       setTab(name) {
-        clearInterval(this.idTimer);
+        this.setTabAction();
         this.currentTab = name;
         if(name === 'Weights & Output') {
           this.getStatistics()

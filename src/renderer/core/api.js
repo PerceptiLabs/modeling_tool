@@ -20,7 +20,7 @@ class Client {
   }
 
   sendMessage(message) {
-    console.log(message);
+    //console.log(message);
     var client = this;
     const header = {
       "byteorder": 'little',
@@ -59,8 +59,8 @@ class Client {
       let dataLength = '';
       let dataPart = '';
       client.socket.on('data', (data) => {
-
         const dataString = data.toString();
+        //console.log(dataString);
         if (dataLength) {
           dataPart = dataPart + dataString;
         }
@@ -68,13 +68,13 @@ class Client {
           // console.log(dataString.indexOf('length'));
           // console.log(dataString.length);
           dataLength = +dataString.slice(dataString.indexOf('length') + 9, dataString.indexOf(','));
-          dataPart = dataString.slice(dataString.indexOf('body') + 7 , dataString.length - 1);
+          dataPart = dataString.slice(dataString.indexOf('body') + 7 , dataString.length);
           // console.log('dataLength: ', dataLength);
           // console.log('dataPart: ', dataPart);
         }
-        if(dataPart.length === dataLength) {
-          let obgData = JSON.parse(dataPart);
-          //console.log(obgData);
+        if(dataPart.length === dataLength + 1) {
+          let obgData = JSON.parse(dataPart.slice(0, -1));
+          //console.log('then', obgData);
           resolve(obgData);
         }
 

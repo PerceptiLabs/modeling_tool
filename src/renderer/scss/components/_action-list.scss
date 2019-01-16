@@ -5,25 +5,25 @@
 //      span I
 
 ul.action-list {
-  overflow: hidden;
-  width: 100%;
-  border-radius: $bdrs;
-  background-color: $bg-toolbar;
-  box-shadow: $box-shad;
+	overflow: hidden;
+	width: 100%;
+	border-radius: $bdrs;
+	background-color: $bg-toolbar;
+	box-shadow: $box-shad;
 }
 .action-list_btn {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  padding: .5em 1em;
-  background-color: transparent;
-  &:hover {
-    background: $bg-grad-blue;
-    box-shadow: $box-shad;
-  }
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	padding: .5em 1em;
+	background-color: transparent;
+	&:hover {
+		background: $bg-grad-blue;
+		box-shadow: $box-shad;
+	}
 }
 .action-list_btn-text {
-  margin-right: 3.5rem;
-  white-space: nowrap;
+	margin-right: 3.5rem;
+	white-space: nowrap;
 }

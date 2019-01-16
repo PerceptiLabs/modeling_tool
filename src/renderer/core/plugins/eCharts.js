@@ -196,7 +196,8 @@ ECharts.registerTheme('quantum', {
   "legend": {
     "textStyle": {
       "color": "#e1e1e1"
-    }
+    },
+
   },
   "tooltip": {
     "axisPointer": {
@@ -305,8 +306,8 @@ ECharts.registerTheme('quantum', {
         "width": "3"
       }
     },
-    "symbolSize": "0",
-      "symbol": "emptyCircle",
+    "symbolSize": "0", //show dots
+      "symbol": "emptyCircle", //Circle
       "smooth": true
   },
   "radar": {

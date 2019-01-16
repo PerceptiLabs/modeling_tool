@@ -23,11 +23,13 @@
           chart-base(
           chartLabel="Prediction vs Ground truth"
           :chartData="chartData.Prediction.PvG"
+          :customColor="colorList"
           )
         .statistics-box_col
           chart-base(
           chartLabel="Batch Average Prediction vs Ground truth"
           :chartData="chartData.Prediction.AveragePvG"
+          :customColor="colorList"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy' && chartData.Accuracy")
       chart-base(
@@ -82,11 +84,12 @@
       return {
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
+        colorList: ['#ff0', '#0f0']
       }
     },
     methods: {
       setTab(name) {
-        clearInterval(this.idTimer);
+        this.setTabAction();
         this.currentTab = name;
         if(name === 'Prediction') {
           this.getStatistics()
@@ -107,6 +110,9 @@
       getLossStatistics() {
         this.chartRequest(this.statElementID, 'TrainNormal', 'Loss')
       }
+    },
+    mounted() {
+      console.log('train');
     }
   }
 </script>
