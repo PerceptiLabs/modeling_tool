@@ -69,11 +69,9 @@ export default {
       this.requestCloudApi('post', 'Customer/Login', queryParams, (result, response) => {
         this.$store.commit('mod_login/SET_showLoader', true);
         if (result === 'success') {
-          setTimeout(() => {
-            this.$store.commit('mod_login/SET_showLoader', false);
-            this.$store.commit('globalView/SET_userToken', response.headers.authorization);
-            this.$router.replace('/app');
-          }, 3000)
+          this.$store.commit('mod_login/SET_showLoader', false);
+          this.$store.commit('globalView/SET_userToken', response.headers.authorization);
+          this.$router.replace('/app');
         }
       })
     }
