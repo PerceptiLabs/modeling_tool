@@ -32,28 +32,42 @@ const state = {
 
 const getters = {
   GET_currentNetwork(state)  {
-    return state.workspaceContent[state.currentNetwork];
+    if(state.workspaceContent.length) {
+      return state.workspaceContent[state.currentNetwork];
+    }
+    return ['empty app']
   },
   GET_currentNetworkSettings(state, getters) {
-    return state.workspaceContent[state.currentNetwork].networkSettings;
+    if(state.workspaceContent.length) {
+      return state.workspaceContent[state.currentNetwork].networkSettings;
+    }
+    return {}
   },
   GET_currentNetworkElementList(state, getters) {
-    return state.workspaceContent[state.currentNetwork].networkElementList;
+    if(state.workspaceContent.length) {
+      return state.workspaceContent[state.currentNetwork].networkElementList;
+    }
+    return ['empty app']
   },
   GET_networkCoreStatus(state, getters) {
-    return getters.GET_currentNetwork.networkMeta.coreStatus.Status
+    if(state.workspaceContent.length) {
+      return getters.GET_currentNetwork.networkMeta.coreStatus.Status
+    }
+    return 'empty app'
   },
   GET_currentSelectedEl: (state, getters) => {
     let selectedIndex = [];
-    getters.GET_currentNetworkElementList.forEach(function(el, index, arr) {
-      if(el.layerMeta.isSelected) {
-        selectedIndex.push({
-          index,
-          el
-        });
+    if(state.workspaceContent.length) {
+      getters.GET_currentNetworkElementList.forEach(function (el, index, arr) {
+        if (el.layerMeta.isSelected) {
+          selectedIndex.push({
+            index,
+            el
+          });
 
-      }
-    });
+        }
+      });
+    }
     return selectedIndex;
   },
 };
@@ -117,14 +131,17 @@ const mutations = {
   //---------------
   //  NETWORK META
   //---------------
-  set_networkCanTesting(state, {get, value}) {
-    get.GET_currentNetwork.networkMeta.canTestStatistics = value;
+  set_networkCanTesting(state, {getters, value}) {
+    getters.GET_currentNetwork.networkMeta.canTestStatistics = value;
   },
   set_netMode(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.netMode = value;
   },
   set_openStatistics(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
+  },
+  set_statusNetworkCore(state, {getters, value}) {
+    getters.GET_currentNetwork.networkMeta.coreStatus = value;
   },
   //---------------
   //  NETWORK ELEMENTS
@@ -305,6 +322,9 @@ const actions = {
   },
   SET_openStatistics({commit, getters}, value) {
     commit('set_openStatistics', {getters, value})
+  },
+  SET_statusNetworkCore({commit, getters}, value) {
+    commit('set_statusNetworkCore', {getters, value})
   },
   //---------------
   //  NETWORK ELEMENTS

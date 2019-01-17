@@ -6,7 +6,9 @@ const {spawn} = require('child_process');
 const namespaced = true;
 
 const state = {
-  statusLocalCore: 'offline' //online
+  statusLocalCore: 'offline', //online
+  getStatusTimer: null,
+  startWatchGetStatus: false
 };
 
 const getters = {
@@ -52,9 +54,14 @@ const mutations = {
   SET_statusLocalCore(state, value) {
     state.statusLocalCore = value
   },
-  RESET_idTimer(state, value) {
-    clearInterval(state.idTimer);
-    state.idTimer = value
+  SET_startWatchGetStatus(state, value) {
+    state.startWatchGetStatus = value
+  },
+  SET_getStatusTimer(state, value) {
+    state.getStatusTimer = value
+  },
+  RESET_getStatusTimer(state) {
+    clearInterval(state.getStatusTimer);
   }
 };
 
@@ -75,8 +82,7 @@ const actions = {
   API_runServer({state, commit, dispatch, getters}) {
     let timer;
     let coreIsStarting = false;
-    //checkCore();
-
+    checkCore();
     function checkCore() {
       const theData = getters.GET_data_GetStatus;
       const client = new requestApi();
@@ -144,21 +150,39 @@ const actions = {
     }
   },
 
-  API_getStatus({commit, dispatch, getters}) {
+  API_getStatus({getters, dispatch, commit}) {
+    console.log('API_getStatus');
     const theData = getters.GET_data_GetStatus;
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        //commit('SET_serverStatus', data)
+        dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
         if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
           console.error(err);
         }
-        commit('SET_statusLocalCore', 'Offline')
+        commit('SET_statusLocalCore', 'offline')
       });
   },
+
+  API_startWatchGetStatus({commit, dispatch}, message) {
+    commit('SET_startWatchGetStatus', message);
+    message ? startWatch() : stopWatch();
+
+    function startWatch() {
+      let timer = setInterval(()=>{
+        dispatch('API_getStatus')
+      }, 1000);
+      commit('SET_getStatusTimer', timer);
+    }
+    function stopWatch() {
+      commit('RESET_getStatusTimer');
+    }
+  },
+
   API_startTraining({dispatch, getters, rootGetters}) {
+    console.log('API_startTraining');
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
     const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     let message = {
@@ -179,29 +203,16 @@ const actions = {
       action: "Start",
       value: message
     };
+
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {})
       .catch((err) =>{
         console.error(err);
       });
-
-    // watchStatus();
-    // function watchStatus() {
-    //   let timer = setInterval(()=>{
-    //     let status = getters.GET_serverStatus;
-    //     // if(status !== 'Offline' || status !== 'Finished') {
-    //     //   //console.log('API_startTraining');
-    //     //   dispatch('API_getStatus')
-    //     // }
-    //     // if(status == 'Offline' || status == 'Finished') {
-    //     //   clearInterval(timer);
-    //     // }
-    //     dispatch('API_getStatus')
-    //   }, 1000);
-    // }
+    dispatch('API_startWatchGetStatus', true)
   },
-  API_pauseTraining({commit, getters}) {
+  API_pauseTraining({dispatch, commit, getters}) {
     const theData = getters.GET_data_PauseTraining;
     const client = new requestApi();
     client.sendMessage(theData)
@@ -209,9 +220,14 @@ const actions = {
       .catch((err) =>{
         console.error(err);
       });
-    //commit('RESET_idTimer')
+
+    state.startWatchGetStatus
+      ? dispatch('API_startWatchGetStatus', false)
+      : dispatch('API_startWatchGetStatus', true)
+
   },
-  API_stopTraining({commit, getters}) {
+  API_stopTraining({dispatch, commit, getters}) {
+    console.log('API_stopTraining');
     const theData = getters.GET_data_StopTraining;
     const client = new requestApi();
     client.sendMessage(theData)
@@ -219,7 +235,8 @@ const actions = {
       .catch((err) =>{
         console.error(err);
       });
-    //commit('RESET_idTimer')
+    dispatch('API_startWatchGetStatus', false);
+    dispatch('API_getStatus');
   },
   API_skipValidTraining({getters}) {
     const theData = getters.GET_data_SkipValidTraining;
