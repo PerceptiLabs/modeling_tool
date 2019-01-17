@@ -9,7 +9,7 @@
         button.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'edit'}"
-          v-tooltip:bottom="'Select'"
+          v-tooltip:bottom="'Edit'"
           @click="setNetMode('edit')"
         )
           i.icon.icon-select
@@ -36,21 +36,22 @@
 
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button" 
+        button.btn.btn--toolbar(type="button"
           disabled="disabled"
           v-tooltip:bottom="'Prev step'"
         )
           i.icon.icon-step-prev
       li
-        button.btn.btn--toolbar(type="button" 
+        button.btn.btn--toolbar(type="button"
           disabled="disabled"
           v-tooltip:bottom="'Next step'"
         )
           i.icon.icon-step-next
     ul.toolbar_list
       li
+        //:disabled="statusLocalCore === 'offline'"
         button.btn.btn--toolbar(type="button"
-          :disabled="statusLocalCore === 'offline'"
+
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
           @click="clickOnBtn()"
@@ -73,13 +74,13 @@
           i.icon.icon-next
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button" 
+        button.btn.btn--toolbar(type="button"
           disabled="disabled"
           v-tooltip:bottom="'Repeat'"
         )
           i.icon.icon-repeat
       li
-        button.btn.btn--toolbar(type="button" 
+        button.btn.btn--toolbar(type="button"
           disabled="disabled"
           v-tooltip:bottom="'Box'"
         )

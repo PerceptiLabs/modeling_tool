@@ -1,23 +1,27 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col
-      //chart-base(
-        chartLabel="Accuracy during one epoch"
-        /:chartData="optionLine1"
-        )
+      chart-picture(
+        chartLabel="Output"
+        :chartData="chartData.Output"
+      )
 </template>
 
 <script>
-  // import ChartLine from "@/components/charts/chart-base";
-  // import dataLine  from "@/components/charts/line.js";
+  import ChartPicture from "@/components/charts/chart-picture.vue";
+  import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxProcessGrayscale",
-    //components: {ChartLine},
-    data() {
-      return {
-        optionLine1: dataLine,
-      }
+    components: {ChartPicture},
+    mixins: [viewBoxMixin],
+    methods: {
+      getStatistics() {
+        this.chartRequest(this.boxElementID, 'ProcessGrayscale', '')
+      },
     },
+    updated() {
+      console.log(this.chartData);
+    }
   }
 </script>
 

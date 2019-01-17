@@ -1,7 +1,7 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-math(:draggable="false"  disabled="disabled"
+  .btn.btn--layersbar.net-element-math(:draggable="draggable"
   data-component="MathSoftmax"
-  data-layer="Softmax"
+  data-layer="Softmax_1"
   data-type="Other"
   v-tooltip:right="'Softmax'"
   )

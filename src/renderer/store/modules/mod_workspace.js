@@ -243,7 +243,7 @@ const mutations = {
       layerId: generateID(event.timeStamp).toString(),
       layerName: event.target.dataset.layer,
       layerType: event.target.dataset.type,
-      layerSettings: null,
+      layerSettings: '',
       layerMeta: {
         isInvisible: false,
         isLock: false,
