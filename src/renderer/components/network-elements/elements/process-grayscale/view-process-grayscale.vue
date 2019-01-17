@@ -1,7 +1,7 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-process(:draggable="draggable"
   data-component="ProcessGrayscale"
-  data-layer="Grayscale"
+  data-layer="Grayscale_1"
   data-type="Other"
   v-tooltip:right="'Grayscale'"
 

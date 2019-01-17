@@ -7,7 +7,7 @@ const netElementSettings = {
     }
   },
   mounted() {
-    if(this.layerSettings !== null) {
+    if(typeof(this.layerSettings) !== 'string') {
       this.settings = JSON.parse(JSON.stringify(this.layerSettings));
     }
   },

@@ -98,7 +98,7 @@ export default {
   data() {
     return {
       settings: {
-        N_class: '10',
+        N_class: '1',
         Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
         Learning_rate: "0.01",
         Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop

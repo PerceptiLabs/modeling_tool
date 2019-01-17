@@ -75,7 +75,7 @@ const actions = {
   API_runServer({state, commit, dispatch, getters}) {
     let timer;
     let coreIsStarting = false;
-    checkCore();
+    //checkCore();
 
     function checkCore() {
       const theData = getters.GET_data_GetStatus;
@@ -165,7 +165,6 @@ const actions = {
       Hyperparameters: net.networkSettings,
       Layers: {}
     };
-    console.log('Hyperparameters ', message.Hyperparameters);
     elementList.forEach((el)=> {
       message.Layers[el.layerId] = {
         Name: el.layerName,

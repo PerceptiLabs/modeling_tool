@@ -1,7 +1,7 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-math(:draggable="false"  disabled="disabled"
+  .btn.btn--layersbar.net-element-math(:draggable="draggable"
   data-component="MathArgmax"
-  data-layer="Argmax"
+  data-layer="Argmax_1"
   data-type="Other"
   v-tooltip:right="'Argmax'"
   )
