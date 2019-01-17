@@ -14,19 +14,23 @@
     name: "ViewBoxProcessReshape",
     components: {ChartPicture},
     mixins: [viewBoxMixin],
-   data() {
-    return {
-      //dat: d
-    }
-   },
     methods: {
       getStatistics() {
         this.chartRequest(this.boxElementID, 'ProcessReshape', '')
       },
+    },
+    mounted() {
+      // let arr = [];
+      // for (let i = 0; i < 10000; i++) {
+      //   if(i%2) {
+      //     arr.push(0,0,0,255)
+      //   }
+      //   else {
+      //     arr.push(255,255,255,255)
+      //   }
+      // }
+
+      // console.log(JSON.stringify(arr));
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

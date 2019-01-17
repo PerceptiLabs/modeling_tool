@@ -2,6 +2,7 @@
   main.page_login
     .login_logo
       img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
+    view-loading(:class="{loading: isLoading}")
     .login_main
       h1 Get Started
       h3 Register in 1 minute
@@ -59,15 +60,19 @@
           p.text-error(v-show="errors.has('checkmeplease')") {{ errors.first('checkmeplease') }}
 
         .form_holder
-          button.btn.btn--dark-blue-rev(type="button" @click="validateForm") Register
+          button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading") Register
         .form_holder
           router-link(:to="{name: 'login'}").btn.btn--link Already Have Account
 </template>
 
 <script>
-  import {requestCloudApi} from '@/core/apiCloud.js'
+  import {requestCloudApi}  from '@/core/apiCloud.js'
+  import ViewLoading        from '@/components/loading/view-loading.vue'
 export default {
   name: 'PageRegister',
+  components: {
+    ViewLoading
+  },
   data() {
     return {
       user: {
@@ -75,10 +80,12 @@ export default {
         lastName: '',
         email: '',
         phone: '',
-        password: ''
+        password: '',
+        isLoading: false
       },
       terms: false,
-      checkmeplease: null
+      checkmeplease: null,
+      
     }
   },
   methods: {
@@ -98,10 +105,12 @@ export default {
         })
     },
     registryUser() {
-      //console.log('registryUser');
+      console.log('registryUser');
       this.requestCloudApi('post', 'Customer/CreateGuest', this.user, (result, response, error) => {
+        this.$store.commit('mod_login/SET_showLoader', true);
         if (result === 'success') {
           //console.log(response);
+          this.$store.commit('mod_login/SET_showLoader', false);
           alert('authorization success');
           this.$router.replace('/login');
         }
@@ -111,6 +120,11 @@ export default {
         }
       })
     }
+  },
+  computed: {
+    isLoading() {
+       return this.$store.state.mod_login.showLoader
+   },
   }
 }
 </script>

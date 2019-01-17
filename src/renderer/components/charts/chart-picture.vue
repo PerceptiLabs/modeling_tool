@@ -13,7 +13,7 @@
 </template>
 
 <script>
-
+  import imgDatas    from "@/components/charts/img.js";
 
 export default {
   name: "ChartPicture",
@@ -38,6 +38,7 @@ export default {
   },
   data() {
     return {
+      imgDatas: imgDatas,
       fullView: false,
       canvas2D: null
     }

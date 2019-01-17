@@ -19,9 +19,6 @@
         this.chartRequest(this.boxElementID, 'DataData', '')
       },
     },
-    mounted() {
-      console.log('data');
-    }
   }
 </script>
 

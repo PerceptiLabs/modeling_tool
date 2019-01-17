@@ -135,7 +135,8 @@ function createWindow () {
    * start auto update
    */
   mainWindow.checkForUpdates = function() {
-    if (process.env.NODE_ENV !== 'development') {
+    //if (process.env.NODE_ENV !== 'development') {
+    if (true) {
       mainWindow.webContents.send('info', 'checkForUpdates');
       const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
       const UpdateOpt = {
@@ -144,7 +145,7 @@ function createWindow () {
       };
       switch (process.platform) {
         case 'win32':
-          UpdateOpt.url = UpdateUrl + 'win/';
+          UpdateOpt.url = UpdateUrl + 'winDev/';
           break;
         case 'darwin':
           UpdateOpt.url = UpdateUrl + 'ios/';
