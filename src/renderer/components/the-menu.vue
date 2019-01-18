@@ -120,29 +120,42 @@ export default {
 
 <style lang="scss" scoped>
   @import "../scss/base";
+
   .header-nav {
     display: flex;
     font-weight: 500;
+    height: 100%;
     > li {
       position: relative;
+      font-size: 1.4rem;
+      color: $col-txt;
+      display: flex;
+      align-items: center;
+      &:hover {
+        background: $disable-txt;
+      }
     }
     > li + li {
-      margin-left: 2rem;
+      //margin-left: 2rem;
     }
     .btn {
       -webkit-app-region: no-drag;
+      padding: 0 1rem;
     }
   }
   .header-nav_sublist {
     display: none;
     position: absolute;
-    top: 70%;
-    left: -1rem;
+    top: 100%;
     min-width: 10rem;
     box-shadow: $box-shad;
     padding: .5rem 0;
-    background-color: $bg-input;
+    background-color: $bg-workspace;
     z-index: 1;
+    font-weight: 400;
+    li{
+      color: $white;
+    }
     .open-sublist &,
     .header-nav li:hover & {
       display: block;

@@ -52,6 +52,10 @@ export default {
     }
   }
 
+  .app-header_nav {
+    height: 100%;
+  }
+
   .app-header_actions {
     margin-left: auto;
     display: flex;
