@@ -49,9 +49,8 @@
           i.icon.icon-step-next
     ul.toolbar_list
       li
-        //:disabled="statusLocalCore === 'offline'"
         button.btn.btn--toolbar(type="button"
-
+          :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
           @click="clickOnBtn()"
