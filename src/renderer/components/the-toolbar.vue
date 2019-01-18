@@ -84,6 +84,12 @@
           v-tooltip:bottom="'Box'"
         )
           i.icon.icon-box
+      li
+        button.btn.btn--toolbar(type="button"
+        disabled="disabled"
+        v-tooltip:bottom="'Box'"
+        )
+          i.icon.icon-appClose
 
     .toolbar_settings
       //span.text-primary.middle-text(v-html="statusTestText")
