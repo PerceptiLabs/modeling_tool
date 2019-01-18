@@ -1,13 +1,13 @@
 <template lang="pug">
   header.app-header
     .app-header_logo
-      img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
+      img(src="~@/assets/logo_small_dark.svg" alt="percepti labs logo")
     nav.app-header_nav
       the-menu
     ul.app-header_actions
-      button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-minus
-      button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-full-screen
-      button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-close
+      button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-appMinimaze
+      button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-appResize
+      button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-appClose
 </template>
 
 <script>
@@ -39,16 +39,18 @@ export default {
     display: flex;
     align-items: center;
     height: $h-header;
-    -webkit-app-region: drag;
+    //-webkit-app-region: drag;
     .btn {
       -webkit-app-region: no-drag;
     }
   }
   .app-header_logo {
-    padding-left: 2rem;
-    padding-right: 2rem;
+    height: 100%;
+    width: 14rem;
+    height: 100%;
+    overflow: hidden;
     img {
-      height: $h-header - 1;
+      //height: $h-header - 1;
     }
   }
 
@@ -68,7 +70,7 @@ export default {
       font-size: 1.5em;
       border-radius: 0;
       &:hover {
-        background: $bg-grad-disable;
+        background: #545353;
       }
     }
     .btn--app-minify {
@@ -79,7 +81,7 @@ export default {
     }
     .btn--app-close {
       &:hover {
-        background: $col-error;
+        background: #E94040;
       }
     }
   }
