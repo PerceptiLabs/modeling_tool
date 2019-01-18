@@ -10,7 +10,6 @@ export default {
   computed: {
     percentData() {
       let settings = this.statusNetworkInfo;
-      console.log(settings);
       let progress;
       if(settings === null) {
         progress = 0;

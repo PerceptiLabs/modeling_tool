@@ -182,7 +182,6 @@ const actions = {
   },
 
   API_startTraining({dispatch, getters, rootGetters}) {
-    console.log('API_startTraining');
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
     const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     let message = {
@@ -206,37 +205,44 @@ const actions = {
 
     const client = new requestApi();
     client.sendMessage(theData)
-      .then((data)=> {})
+      .then((data)=> {
+        dispatch('API_startWatchGetStatus', true)
+      })
       .catch((err) =>{
         console.error(err);
       });
-    dispatch('API_startWatchGetStatus', true)
+
   },
-  API_pauseTraining({dispatch, commit, getters}) {
+  API_pauseTraining({dispatch, state, getters}) {
     const theData = getters.GET_data_PauseTraining;
     const client = new requestApi();
     client.sendMessage(theData)
-      .then((data)=> {})
+      .then((data)=> {
+        dispatch('mod_workspace/SET_statusNetworkCore', {Status: 'Paused'}, {root: true});
+        state.startWatchGetStatus
+          ? dispatch('API_startWatchGetStatus', false)
+          : dispatch('API_startWatchGetStatus', true)
+      })
       .catch((err) =>{
         console.error(err);
       });
 
-    state.startWatchGetStatus
-      ? dispatch('API_startWatchGetStatus', false)
-      : dispatch('API_startWatchGetStatus', true)
+
 
   },
-  API_stopTraining({dispatch, commit, getters}) {
+  API_stopTraining({dispatch, getters}) {
     console.log('API_stopTraining');
     const theData = getters.GET_data_StopTraining;
     const client = new requestApi();
     client.sendMessage(theData)
-      .then((data)=> {})
+      .then((data)=> {
+        dispatch('mod_workspace/SET_statusNetworkCore', {Status: 'Stop'}, {root: true});
+        dispatch('API_startWatchGetStatus', false);
+      })
       .catch((err) =>{
         console.error(err);
       });
-    dispatch('API_startWatchGetStatus', false);
-    dispatch('API_getStatus');
+
   },
   API_skipValidTraining({getters}) {
     const theData = getters.GET_data_SkipValidTraining;
@@ -248,14 +254,17 @@ const actions = {
       });
   },
 
-  API_CLOSE_core({getters}) {
+  API_CLOSE_core({getters, dispatch}) {
     const theData = getters.GET_data_CloseServer;
     const client = new requestApi();
     client.sendMessage(theData)
-      .then((data)=> {})
+      .then((data)=> {
+        console.log('data close',data);
+      })
       .catch((err) =>{
         console.error(err);
       });
+    dispatch('API_startWatchGetStatus', false);
   },
 };
 
