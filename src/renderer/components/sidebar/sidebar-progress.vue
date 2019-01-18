@@ -7,14 +7,10 @@
 <script>
 export default {
   name: "SidebarProgress",
-  data() {
-    return {
-
-    }
-  },
   computed: {
     percentData() {
-      let settings = this.$store.state.mod_api.serverStatus;
+      let settings = this.statusNetworkInfo;
+      console.log(settings);
       let progress;
       if(settings === null) {
         progress = 0;
@@ -23,19 +19,19 @@ export default {
       let result = Math.round(progress * 100) + '%';
       return result
     },
-    serverStatus() {
-      return this.$store.getters['mod_api/GET_serverStatus']
+    statusNetworkInfo() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
+    },
+    statusNetworkCore() {
+      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     styleLoader() {
       return {
-        'animation--paused': this.serverStatus === 'Paused',
-        'validation-style': this.serverStatus === 'Validation'
+        'animation--paused': this.statusNetworkCore === 'Paused',
+        'validation-style': this.statusNetworkCore === 'Validation'
       }
     }
   },
-  methods: {
-
-  }
 }
 </script>
 
@@ -78,9 +74,7 @@ export default {
       width: 4.5em;
       height: 4.5em;
       border-radius: 50%;
-
       margin: auto;
-
     }
   }
   .sidebar-progress_data {

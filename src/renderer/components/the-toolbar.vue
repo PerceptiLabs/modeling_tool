@@ -53,7 +53,7 @@
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
-          @click="clickOnBtn()"
+          @click="onOffBtn()"
         )
           i.icon.icon-on-off
       li
@@ -177,21 +177,14 @@ export default {
       return this.$store.state.mod_api.statusLocalCore;
     },
     statusNetworkCore() {
-      return this.currentNetMeta.coreStatus.Status
+      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     statisticsIsOpen() {
       return this.currentNetMeta.openStatistics
     }
   },
-  watch: {
-    statusNetworkCore(newStatus, oldStatus) {
-      if(newStatus === 'Finished' && oldStatus === 'Validation') {
-        this.$store.dispatch('globalView/NET_trainingDone')
-      }
-    }
-  },
   methods: {
-    clickOnBtn() {
+    onOffBtn() {
       if(!(this.statusNetworkCore === 'Training' || this.statusNetworkCore === 'Validation')){
         this.trainStart()
       }

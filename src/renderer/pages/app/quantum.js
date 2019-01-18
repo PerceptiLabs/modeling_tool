@@ -162,7 +162,7 @@ export default {
       function cloneNet(net) {
         var outNet = {};
         for (var key in net) {
-          if(key === 'network') {
+          if(key === 'networkElementList') {
             outNet[key] = JSON.parse(cloneEl(net[key]))
           }
           else {

@@ -73,7 +73,6 @@ export default {
         "Password": this.userPass
       };
       this.requestCloudApi('post', 'Customer/Login', queryParams, (result, response) => {
-        this.$store.commit('mod_login/SET_showLoader', false);
         if (result === 'success') {
           this.$store.commit('mod_login/SET_showLoader', false);
           this.$store.commit('globalView/SET_userToken', response.headers.authorization);

@@ -71,7 +71,12 @@ export default {
 
   },
   watch: {
-
+    statusNetworkCore(newStatus, oldStatus) {
+      if(newStatus === 'Finished' && oldStatus === 'Validation') {
+        this.$store.dispatch('globalView/NET_trainingDone');
+        this.$store.dispatch('API_startWatchGetStatus', false);
+      }
+    }
   },
   methods: {
     scaleScroll(e) {

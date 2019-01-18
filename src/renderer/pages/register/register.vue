@@ -2,7 +2,7 @@
   main.page_login
     .login_logo
       img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
-    view-loading(:class="{loading: isLoading}")
+    view-loading
     .login_main
       h1 Get Started
       h3 Register in 1 minute
@@ -85,8 +85,13 @@ export default {
       },
       terms: false,
       checkmeplease: null,
-      
+
     }
+  },
+  computed: {
+    isLoading() {
+      return this.$store.state.mod_login.showLoader
+    },
   },
   methods: {
     requestCloudApi,
@@ -95,7 +100,7 @@ export default {
         .then((result) => {
           console.log('result', result);
           if (result) {
-            //this.registryUser();
+            this.registryUser();
             return;
           }
           //error func
@@ -120,11 +125,6 @@ export default {
         }
       })
     }
-  },
-  computed: {
-    isLoading() {
-       return this.$store.state.mod_login.showLoader
-   },
   }
 }
 </script>

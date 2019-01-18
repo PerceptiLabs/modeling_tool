@@ -39,6 +39,9 @@ const viewBoxMixin = {
     serverStatus() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
+    doRequest() {
+      return this.$store.state.mod_api.startWatchGetStatus
+    },
   },
   watch: {
     boxElementID() {

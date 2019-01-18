@@ -27,9 +27,6 @@
       });
       ipcRenderer.send('appReady');
     },
-    watch: {
-      //global app events
-    }
   }
 </script>
 
