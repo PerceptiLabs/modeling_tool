@@ -16,38 +16,13 @@
     name: "ViewProcessOneHot",
     components: {ChartBase},
     mixins: [viewBoxMixin],
-    mounted() {
-
-    },
-    data() {
-      return {
-        //Output: null
-      }
-    },
-    computed: {
-      // chartOutData() {
-      //   console.log('chartOutData');
-      //   if (this.$options.Output !== undefined) {
-      //     return this.$options.Output
-      //   } else return null
-      // }
-    },
     methods: {
       getStatistics() {
         this.chartRequest(this.boxElementID, 'ProcessOneHot', '');
-        // this.idTimer = setInterval(()=>{
-        //   let theData = this.returnDataRequest(this.boxElementID, 'OneHot', '');
-        //   const client = new requestApi();
-        //   client.sendMessage(theData)
-        //     .then((data)=> {
-        //       this.Output = data.Output;
-        //     })
-        //     .catch((err) =>{
-        //       console.error(err);
-        //       clearInterval(this.idTimer);
-        //     });
-        // }, this.timeInterval)
       },
+      getData() {
+        this.getStatistics()
+      }
     }
   }
 </script>

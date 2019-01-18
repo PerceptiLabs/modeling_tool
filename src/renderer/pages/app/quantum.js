@@ -23,7 +23,7 @@ export default {
     this.$store.commit('mod_workspace/ADD_network');
   },
   created() {
-    this.$store.dispatch('mod_api/API_runServer');
+
   },
   mounted() {
     this.addDragListener();

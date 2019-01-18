@@ -26,6 +26,9 @@
       getStatistics() {
         this.chartRequest(this.boxElementID, 'ProcessCrop', '')
       },
+      getData() {
+        this.getStatistics()
+      }
     },
   }
 </script>

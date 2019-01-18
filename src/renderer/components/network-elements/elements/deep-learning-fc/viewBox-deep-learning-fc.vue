@@ -60,8 +60,11 @@
     },
     methods: {
       setTab(name) {
-        this.setTabAction();
         this.currentTab = name;
+        this.setTabAction();
+      },
+      getData() {
+        let name = this.currentTab;
         if(name === 'Output') {
           this.getStatistics()
         }
@@ -71,7 +74,6 @@
         else if (name === 'Gradients') {
           this.getGradientsStatistics()
         }
-
       },
       getStatistics() {
         this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Output')

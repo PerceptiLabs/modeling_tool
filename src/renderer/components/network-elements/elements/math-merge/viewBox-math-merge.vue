@@ -18,6 +18,9 @@
       getStatistics() {
         this.chartRequest(this.boxElementID, 'MathMerge', '')
       },
+      getData() {
+        this.getStatistics()
+      }
     }
   }
 </script>

@@ -143,6 +143,9 @@ const mutations = {
   set_statusNetworkCore(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.coreStatus = value;
   },
+  set_statusNetworkCoreStatus(state, {getters, value}) {
+    getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
+  },
   //---------------
   //  NETWORK ELEMENTS
   //---------------
@@ -325,6 +328,9 @@ const actions = {
   },
   SET_statusNetworkCore({commit, getters}, value) {
     commit('set_statusNetworkCore', {getters, value})
+  },
+  SET_statusNetworkCoreStatus({commit, getters}, value) {
+    commit('set_statusNetworkCoreStatus', {getters, value})
   },
   //---------------
   //  NETWORK ELEMENTS

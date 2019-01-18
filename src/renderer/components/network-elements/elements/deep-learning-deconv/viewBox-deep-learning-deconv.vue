@@ -66,8 +66,11 @@
     },
     methods: {
       setTab(name) {
-        clearInterval(this.idTimer);
         this.currentTab = name;
+        this.setTabAction();
+      },
+      getData() {
+        let name = this.currentTab;
         if(name === 'Weights & Output') {
           this.getStatistics()
         }
@@ -77,7 +80,6 @@
         else if (name === 'Gradients') {
           this.getGradientsStatistics()
         }
-
       },
       getStatistics() {//not Weights
         this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Weights&Output')

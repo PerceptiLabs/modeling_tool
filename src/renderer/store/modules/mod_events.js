@@ -34,7 +34,7 @@ const actions = {
 
   EVENT_closeCore({dispatch}) {
     dispatch('mod_api/API_CLOSE_core', null, {root: true});
-    ipcRenderer.send('appClose')
+    ipcRenderer.send('appClose');
   }
 };
 

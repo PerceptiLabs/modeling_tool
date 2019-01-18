@@ -49,16 +49,20 @@ const viewBoxMixin = {
     },
     statElementID() {
       this.resetViewBox();
+    },
+    doRequest(newVal) {
+      newVal ? this.getData() : null;
     }
   },
   methods: {
     resetViewBox() {
       clearInterval(this.idTimer);
-      this.getStatistics();
+      this.getData();
     },
     setTabAction() {
       clearInterval(this.idTimer);
       this.chartData = {...this.chartDataDefault};
+      this.getData();
     },
     chartRequest(layerId, layerType, view) {
       let theData = {
@@ -70,7 +74,7 @@ const viewBoxMixin = {
           view: view
         }
       };
-      //TODO need stop when pause
+
       this.idTimer = setInterval(()=>{
         if(layerId === undefined) {
           return
@@ -88,7 +92,10 @@ const viewBoxMixin = {
             console.error(err);
             clearInterval(this.idTimer);
           });
-      }, this.timeInterval)
+        if(!this.doRequest) {
+          clearInterval(this.idTimer)
+        }
+      }, this.timeInterval);
     }
   }
 };
