@@ -14,7 +14,7 @@
   import {ipcRenderer} from 'electron'
   import TheMenu from '@/components/the-menu.vue'
 export default {
-  name: "TheHeader",
+  name: "LinuxHeader",
   components: {TheMenu},
   methods: {
     appClose() {

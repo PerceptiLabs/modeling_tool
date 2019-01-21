@@ -12,7 +12,7 @@
 
 <script>
   import {ipcRenderer} from 'electron'
-  import TheMenu from '@/components/header/the-menu.vue'
+  import TheMenu from '@/components/the-menu.vue'
 export default {
   name: "WinHeader",
   components: {TheMenu},
