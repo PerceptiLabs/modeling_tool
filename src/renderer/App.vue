@@ -1,8 +1,8 @@
 <template lang="pug">
   #app
-    win-header
+    //win-header
     //linux-header
-    //mac-header
+    mac-header
     router-view
 </template>
 

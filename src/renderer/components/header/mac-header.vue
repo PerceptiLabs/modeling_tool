@@ -35,7 +35,7 @@ export default {
     background: linear-gradient(180deg, #4A4A4A 0%, #3E3E3E 100%);
     display: flex;
     align-items: center;
-    height: 2.1rem;
+    height: $h-header;
     -webkit-app-region: drag;
     .btn {
       -webkit-app-region: no-drag;
