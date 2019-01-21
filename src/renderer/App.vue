@@ -8,7 +8,7 @@
 
 <script>
   import {ipcRenderer}  from 'electron'
-  import WinHeader      from '@/components/the-header.vue'
+  import WinHeader      from '@/components/header/win-header.vue'
   import MacHeader      from '@/components/header/mac-header.vue'
   import LinuxHeader    from '@/components/header/linux-header.vue'
 
