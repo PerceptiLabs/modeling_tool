@@ -55,7 +55,7 @@ const getters = {
     }
     return 'empty app'
   },
-  GET_currentSelectedEl: (state, getters) => {
+  GET_currentSelectedEl(state, getters) {
     let selectedIndex = [];
     if(state.workspaceContent.length) {
       getters.GET_currentNetworkElementList.forEach(function (el, index, arr) {
@@ -69,6 +69,16 @@ const getters = {
       });
     }
     return selectedIndex;
+  },
+  GET_networkIsTraining(state, getters) {
+    let coreStatus = getters.GET_networkCoreStatus;
+    if(coreStatus === 'Training'
+      || coreStatus === 'Validation'
+      || coreStatus === 'Paused'
+    ){
+      return true
+    }
+    else return false
   },
 };
 

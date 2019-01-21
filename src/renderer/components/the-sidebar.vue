@@ -53,8 +53,14 @@ export default {
     statusNetworkCore() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
+    statisticsIsOpen() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+    },
+    isTraining() {
+      return this.$store.getters['mod_workspace/GET_networkIsTraining']
+    },
     showTraining() {
-      if(this.statusNetworkCore === 'Training' || this.statusNetworkCore === 'Validation' || this.statusNetworkCore === 'Paused') {
+      if(this.isTraining && this.statisticsIsOpen) {
         return true
       }
       else return false

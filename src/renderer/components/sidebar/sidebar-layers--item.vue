@@ -1,9 +1,8 @@
 <template lang="pug">
   .layer-item-wrap
-    //
-    .layer-item(
+    .layer-item.js-clickout(
       :class="{'selected': itemData.layerMeta.isSelected}"
-      @click="setSelect(itemIndex)"
+      @click="setSelect(itemIndex, $event)"
       )
       .layer-item_left-sidebar()
         button.btn.btn--icon(type="button")
@@ -49,9 +48,11 @@
 <script>
   import SidebarLayersItem  from '@/components/sidebar/sidebar-layers--item.vue'
   import TextEditable       from '@/components/base/text-editable.vue'
+  import clickOutside       from '@/core/mixins/click-outside.js'
 
 export default {
   name: 'SidebarLayersItem',
+  mixins: [clickOutside],
   components: {
     SidebarLayersItem,
     TextEditable
@@ -76,7 +77,9 @@ export default {
     }
   },
   computed: {
-
+    statisticsIsOpen() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+    },
   },
   methods: {
     currentNode(item) {
@@ -87,18 +90,36 @@ export default {
     toggleOpen() {
       this.isOpen = !this.isOpen
     },
-    setSelect(path) {
-      this.$store.dispatch('mod_workspace/SET_elementSelect', { path, setValue: true });
+    setSelect(path, ev) {
+      console.log(ev);
+      if (this.statisticsIsOpen) {
+        console.log('TODO add functions');
+        //this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
+      }
+      else {
+        this.ClickElementTracking = ev.target.closest('.js-clickout');
+        document.addEventListener('click', this.clickOutside);
+        this.$store.dispatch('mod_workspace/SET_elementSelect', {path, setValue: true});
+      }
+    },
+    clickOutsideAction() {
+      if (!this.statisticsIsOpen) {
+        this.deselect()
+      }
     },
     toggleLock(path) {
       this.$store.commit('mod_workspace/SET_elementLock', path);
+      this.deselect();
     },
     toggleVisible(path) {
       this.$store.commit('mod_workspace/SET_elementVisible', path);
     },
     editElName(newName) {
       this.$store.commit('mod_workspace/SET_elementName', { path: this.itemIndex, setValue: newName });
-    }
+    },
+    deselect() {
+      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: this.itemIndex, setValue: false });
+    },
   }
 }
 </script>
