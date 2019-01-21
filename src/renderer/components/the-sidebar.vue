@@ -50,11 +50,11 @@ export default {
     hideSidebar() {
       return this.$store.state.globalView.hideSidebar
     },
-    coreStatus() {
-      return this.$store.getters['mod_api/GET_serverStatus']
+    statusNetworkCore() {
+      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     showTraining() {
-      if(this.coreStatus === 'Training' || this.coreStatus === 'Validation' || this.coreStatus === 'Paused') {
+      if(this.statusNetworkCore === 'Training' || this.statusNetworkCore === 'Validation' || this.statusNetworkCore === 'Paused') {
         return true
       }
       else return false

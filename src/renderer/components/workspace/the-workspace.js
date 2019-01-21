@@ -71,7 +71,12 @@ export default {
 
   },
   watch: {
-
+    statusNetworkCore(newStatus, oldStatus) {
+      if(newStatus === 'Finished' && oldStatus === 'Validation') {
+        this.$store.dispatch('globalView/NET_trainingDone');
+        this.$store.dispatch('mod_api/API_startWatchGetStatus', false);
+      }
+    }
   },
   methods: {
     scaleScroll(e) {
@@ -83,7 +88,9 @@ export default {
     setTabNetwork(index) {
       this.$store.commit('mod_workspace/SET_currentNetwork', index);
       this.$store.dispatch('mod_workspace/SET_elementUnselect');
-      this.$store.dispatch('mod_workspace/SET_openStatistics', false);
+      if(this.statisticsIsOpen !== null) {
+        this.$store.dispatch('mod_workspace/SET_openStatistics', false);
+      }
     },
     toggleSidebar() {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
@@ -112,11 +119,10 @@ export default {
     editNetName(newName) {
       this.$store.commit('mod_workspace/SET_networkName', newName);
     },
-    openStatistics() {
+    openStatistics(i) {
+      this.setTabNetwork(i);
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
-      // setTimeout(()=>{
-      // }, 2000)
     },
     saveModel() {
       this.$store.commit('mod_events/set_saveNetwork');

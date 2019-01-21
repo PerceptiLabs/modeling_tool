@@ -1,4 +1,3 @@
-
 ul.workspace_tab-list
   li.workspace_tab(
   v-for="(tab, i) in workspace"
@@ -17,7 +16,7 @@ ul.workspace_tab-list
       )
     button.btn.btn--tabs.tab_statistics(type="button"
       v-if="tab.networkMeta.openStatistics !== null"
-      @click.stop="openStatistics"
+      @click.stop="openStatistics(i)"
       :class="{'active': tab.networkMeta.openStatistics}")
       span Statistics
       i.icon.icon-circle-o

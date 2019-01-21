@@ -103,9 +103,7 @@ function createWindow () {
    * listeners for the renderer process
    */
   ipcMain.on('appClose', (event, arg) => {
-    if (process.platform !== 'darwin') {
-      app.quit()
-    }
+    app.quit()
   });
   ipcMain.on('appMinimize', (event, arg) => {
     mainWindow.isMinimized()

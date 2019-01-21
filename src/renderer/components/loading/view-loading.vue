@@ -1,5 +1,5 @@
 <template lang="pug">
-  .loading-status.text-disable Loading...
+  .loading-status.text-disable(:class="{'loading': isLoading}") Loading...
 </template>
 <script>
 export default {
@@ -8,6 +8,11 @@ export default {
     return {
 
     }
+  },
+  computed: {
+    isLoading() {
+      return this.$store.state.mod_login.showLoader
+    },
   }
 }
 </script>

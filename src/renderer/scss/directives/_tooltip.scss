@@ -1,11 +1,11 @@
 $popper-background-color: rgba(#4d556a, .9);
-$arrow-size: 1rem;
+$arrow-size: 1.5rem;
 $margin-tooltip: .65rem;
 
 .tooltip-wrap {
 	position: relative;
 	&:hover .tooltip {
-		transition: transform .1s .5s;
+		transition: transform 0s .5s;
 		&.tooltip--right {
 			transform: translateY(-50%) rotateY(0deg);
 		}
@@ -32,11 +32,8 @@ $margin-tooltip: .65rem;
 	&:before {
 		content: '';
 		position: absolute;
-		width: 0;
-		height: 0;
-		margin-right: 0;
-		margin-left: 0;
-		border: $arrow-size solid transparent;
+		width: $arrow-size;
+		height: $arrow-size;
 	}
 }
 
@@ -49,8 +46,8 @@ $margin-tooltip: .65rem;
 	&:before {
 		top: 50%;
 		right: 100%;
-		transform: translateY(-50%);
-		border-right: $arrow-size solid $popper-background-color;
+		transform: translate(50%,-50%) rotate(45deg);
+		background: linear-gradient(45deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
 	}
 }
 .tooltip--bottom {
@@ -58,11 +55,12 @@ $margin-tooltip: .65rem;
 	left: 50%;
 	margin-top: $margin-tooltip;
 	transform: translate(-50%, 0%) rotateY(90deg);
-
+	box-shadow: 0 -1px 1px rgba(#000, .5);
 	&:before {
-		top: -100%;
-		right: 50%;
-		transform: translate(50%,50%);
-		border-bottom: $arrow-size solid $popper-background-color;
+		bottom: 100%;
+		left: 50%;
+		transform: translate(-50%, 50%) rotate(45deg);
+		box-shadow: -1px -1px 1px rgba(#000, .5);
+		background: linear-gradient(135deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
 	}
 }

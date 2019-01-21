@@ -6,7 +6,9 @@ const {spawn} = require('child_process');
 const namespaced = true;
 
 const state = {
-  statusLocalCore: 'offline' //online
+  statusLocalCore: 'offline', //online
+  getStatusTimer: null,
+  startWatchGetStatus: false
 };
 
 const getters = {
@@ -52,9 +54,14 @@ const mutations = {
   SET_statusLocalCore(state, value) {
     state.statusLocalCore = value
   },
-  RESET_idTimer(state, value) {
-    clearInterval(state.idTimer);
-    state.idTimer = value
+  SET_startWatchGetStatus(state, value) {
+    state.startWatchGetStatus = value
+  },
+  SET_getStatusTimer(state, value) {
+    state.getStatusTimer = value
+  },
+  RESET_getStatusTimer(state) {
+    clearInterval(state.getStatusTimer);
   }
 };
 
@@ -75,26 +82,26 @@ const actions = {
   API_runServer({state, commit, dispatch, getters}) {
     let timer;
     let coreIsStarting = false;
-    checkCore();
+    startCore();
 
-    function checkCore() {
-      const theData = getters.GET_data_GetStatus;
-      const client = new requestApi();
-      client.sendMessage(theData)
-        .then((data)=> {
-          commit('SET_statusLocalCore', 'online')
-        })
-        .catch((err) =>{
-          if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
-            console.log('core offline');
-          }
-          coreOffline();
-          if(!coreIsStarting) {
-            startCore();
-            waitOnlineCore();
-          }
-        });
-    }
+    // function checkCore() {
+    //   const theData = getters.GET_data_GetStatus;
+    //   const client = new requestApi();
+    //   client.sendMessage(theData)
+    //     .then((data)=> {
+    //       commit('SET_statusLocalCore', 'online')
+    //     })
+    //     .catch((err) =>{
+    //       if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
+    //         console.log('core offline');
+    //       }
+    //       coreOffline();
+    //       if(!coreIsStarting) {
+    //         startCore();
+    //         waitOnlineCore();
+    //       }
+    //     });
+    // }
     function startCore() {
       coreIsStarting = true;
       let openServer;
@@ -122,42 +129,66 @@ const actions = {
           break;
       }
       openServer.on('error', (err) => {
-        //clearInterval(timer);
         coreOffline()
       });
       openServer.on('close', (code) => {
-        console.log('close core', code);
         coreOffline()
       });
+      waitOnlineCore()
     }
     function waitOnlineCore() {
       timer = setInterval(()=>{
         let status = state.statusLocalCore;
         if(status === 'offline') {
-          checkCore();
+          getCoreRequest();
         }
         else clearInterval(timer);
       }, 5000);
+    }
+    function getCoreRequest() {
+      const theData = getters.GET_data_GetStatus;
+      const client = new requestApi();
+      client.sendMessage(theData)
+        .then((data)=> {
+          commit('SET_statusLocalCore', 'online')
+        })
+        .catch((err) =>{});
     }
     function coreOffline() {
       commit('SET_statusLocalCore', 'offline');
     }
   },
 
-  API_getStatus({commit, dispatch, getters}) {
+  API_getStatus({getters, dispatch, commit}) {
     const theData = getters.GET_data_GetStatus;
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        //commit('SET_serverStatus', data)
+        dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
         if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
           console.error(err);
         }
-        commit('SET_statusLocalCore', 'Offline')
+        commit('SET_statusLocalCore', 'offline')
       });
   },
+
+  API_startWatchGetStatus({commit, dispatch}, message) {
+    commit('SET_startWatchGetStatus', message);
+    message ? startWatch() : stopWatch();
+
+    function startWatch() {
+      let timer = setInterval(()=>{
+        dispatch('API_getStatus')
+      }, 1000);
+      commit('SET_getStatusTimer', timer);
+    }
+    function stopWatch() {
+      commit('RESET_getStatusTimer');
+    }
+  },
+
   API_startTraining({dispatch, getters, rootGetters}) {
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
     const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
@@ -165,7 +196,6 @@ const actions = {
       Hyperparameters: net.networkSettings,
       Layers: {}
     };
-    console.log('Hyperparameters ', message.Hyperparameters);
     elementList.forEach((el)=> {
       message.Layers[el.layerId] = {
         Name: el.layerName,
@@ -180,47 +210,48 @@ const actions = {
       action: "Start",
       value: message
     };
+
     const client = new requestApi();
     client.sendMessage(theData)
-      .then((data)=> {})
+      .then((data)=> {
+        dispatch('API_startWatchGetStatus', true)
+      })
       .catch((err) =>{
         console.error(err);
       });
 
-    // watchStatus();
-    // function watchStatus() {
-    //   let timer = setInterval(()=>{
-    //     let status = getters.GET_serverStatus;
-    //     // if(status !== 'Offline' || status !== 'Finished') {
-    //     //   //console.log('API_startTraining');
-    //     //   dispatch('API_getStatus')
-    //     // }
-    //     // if(status == 'Offline' || status == 'Finished') {
-    //     //   clearInterval(timer);
-    //     // }
-    //     dispatch('API_getStatus')
-    //   }, 1000);
-    // }
   },
-  API_pauseTraining({commit, getters}) {
+  API_pauseTraining({dispatch, state, getters}) {
     const theData = getters.GET_data_PauseTraining;
     const client = new requestApi();
     client.sendMessage(theData)
-      .then((data)=> {})
+      .then((data)=> {
+        dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
+        dispatch('API_getStatus');
+        state.startWatchGetStatus
+          ? dispatch('API_startWatchGetStatus', false)
+          : dispatch('API_startWatchGetStatus', true)
+      })
       .catch((err) =>{
         console.error(err);
       });
-    //commit('RESET_idTimer')
+
+
+
   },
-  API_stopTraining({commit, getters}) {
+  API_stopTraining({dispatch, getters}) {
     const theData = getters.GET_data_StopTraining;
     const client = new requestApi();
     client.sendMessage(theData)
-      .then((data)=> {})
+      .then((data)=> {
+        dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
+        dispatch('API_getStatus');
+        dispatch('API_startWatchGetStatus', false);
+      })
       .catch((err) =>{
         console.error(err);
       });
-    //commit('RESET_idTimer')
+
   },
   API_skipValidTraining({getters}) {
     const theData = getters.GET_data_SkipValidTraining;
@@ -232,7 +263,7 @@ const actions = {
       });
   },
 
-  API_CLOSE_core({getters}) {
+  API_CLOSE_core({getters, dispatch}) {
     const theData = getters.GET_data_CloseServer;
     const client = new requestApi();
     client.sendMessage(theData)
@@ -240,6 +271,7 @@ const actions = {
       .catch((err) =>{
         console.error(err);
       });
+    dispatch('API_startWatchGetStatus', false);
   },
 };
 

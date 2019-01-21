@@ -9,7 +9,7 @@
         button.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'edit'}"
-          v-tooltip:bottom="'Select'"
+          v-tooltip:bottom="'Edit'"
           @click="setNetMode('edit')"
         )
           i.icon.icon-select
@@ -36,13 +36,13 @@
 
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button" 
+        button.btn.btn--toolbar(type="button"
           disabled="disabled"
           v-tooltip:bottom="'Prev step'"
         )
           i.icon.icon-step-prev
       li
-        button.btn.btn--toolbar(type="button" 
+        button.btn.btn--toolbar(type="button"
           disabled="disabled"
           v-tooltip:bottom="'Next step'"
         )
@@ -53,13 +53,13 @@
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
-          @click="clickOnBtn()"
+          @click="onOffBtn()"
         )
           i.icon.icon-on-off
       li
         button.btn.btn--toolbar(type="button"
           :class="{'active': statusNetworkCore === 'Paused'}"
-          :disabled="!(statusNetworkCore === 'Training' || statusNetworkCore === 'Paused' || statusNetworkCore === 'Validation')"
+          :disabled="!isTraining"
           v-tooltip:bottom="'Pause'"
           @click="trainPause()"
         )
@@ -73,13 +73,13 @@
           i.icon.icon-next
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button" 
+        button.btn.btn--toolbar(type="button"
           disabled="disabled"
           v-tooltip:bottom="'Repeat'"
         )
           i.icon.icon-repeat
       li
-        button.btn.btn--toolbar(type="button" 
+        button.btn.btn--toolbar(type="button"
           disabled="disabled"
           v-tooltip:bottom="'Box'"
         )
@@ -161,6 +161,15 @@ export default {
           break;
       }
     },
+    isTraining() {
+      if(this.statusNetworkCore === 'Training'
+        || this.statusNetworkCore === 'Validation'
+        || this.statusNetworkCore === 'Paused'
+      ){
+        return true
+      }
+      else return false
+    },
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
@@ -177,25 +186,18 @@ export default {
       return this.$store.state.mod_api.statusLocalCore;
     },
     statusNetworkCore() {
-      return this.currentNetMeta.coreStatus.Status
+      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     statisticsIsOpen() {
       return this.currentNetMeta.openStatistics
     }
   },
-  watch: {
-    statusNetworkCore(newStatus, oldStatus) {
-      if(newStatus === 'Finished' && oldStatus === 'Validation') {
-        this.$store.dispatch('globalView/NET_trainingDone')
-      }
-    }
-  },
   methods: {
-    clickOnBtn() {
-      if(!(this.statusNetworkCore === 'Training' || this.statusNetworkCore === 'Validation')){
-        this.trainStart()
+    onOffBtn() {
+      if(this.isTraining){
+        this.trainStop()
       }
-      else this.trainStop()
+      else this.trainStart()
     },
     trainStart() {
       let valid = this.validateNetwork();

@@ -5,16 +5,26 @@
     :key="i"
     )
       button.btn.btn--link(type="button") {{ item.label }}
-      ul.header-nav_sublist
+      ul.header-nav_sublist.show-hide.sublist--top
         li(
-        v-for="(subItem, index) in item.submenu"
-        :key="index")
+          v-for="(subItem, index) in item.submenu"
+          :key="index"
+          :class="{'have-sublist' : subItem.submenu}"
+        )
           div.separator(v-if="subItem.type === 'separator'")
           button.btn.btn--link(type="button" v-else
             :disabled="subItem.enabled === false"
             @click="subItem.active()"
           ) {{subItem.label}}
           div.btn(v-if="i === navMenu.length - 1 && index === item.submenu.length - 1") Version: {{appVersion}}
+          ul.header-nav_sublist.sublist--right
+            li(
+              v-for="(subSubItem, index) in subItem.submenu"
+            )
+              button.btn.btn--link(type="button"
+                :disabled="subSubItem.enabled === false"
+                @click="subItem.active()"
+              ) {{subSubItem.label}}
 
 </template>
 
@@ -41,27 +51,101 @@ export default {
         {
           label: 'File',
           submenu: [
-            {label: 'New',                  enabled: this.menuSet,  active: ()=> {this.addNewNetwork()}},
-            {label: 'Open trained model',   enabled: false,         active: ()=> {}},
-            {label: 'Save trained model',   enabled: false,         active: ()=> {}},
+            {label: 'New project',          enabled: this.menuSet,  active: ()=> {this.addNewNetwork()}},
+            {label: 'New workspace',        enabled: false,         active: ()=> {}},
+            {label: 'Open project',         enabled: false,         active: ()=> {}},
+            {label: 'Save project',         enabled: false,         active: ()=> {}},
+            {label: 'Open model',           enabled: false,         active: ()=> {}},
+            {label: 'Save model',           enabled: false,         active: ()=> {}},
+
             {label: 'Open untrained model', enabled: this.menuSet,  active: ()=> {this.openNetwork()}},
             {label: 'Save untrained model', enabled: this.menuSet,  active: ()=> {this.saveNetwork()}},
+
             {type: 'separator'},
             {label: 'Log out',              enabled: this.menuSet,  active: ()=> {this.logOut()}},
-            {label: 'Quit',                 enabled: true,          active: ()=> {this.appClose()}}
+            {label: 'Exit',                 enabled: true,          active: ()=> {this.appClose()}}
           ]
         },
         {
           label: 'Edit',
           submenu: [
-            {label: 'undo',      enabled: false},
-            {label: 'redo',      enabled: false},
+            {label: 'Undo',       enabled: false},
+            {label: 'Redo',       enabled: false},
             {type: 'separator'},
-            {label: 'cut',       enabled: false},
-            {label: 'copy',      enabled: false},
-            {label: 'paste',     enabled: false},
-            {label: 'delete',    enabled: false},
-            {label: 'selectall', enabled: false},
+            {label: 'Cut',        enabled: false},
+            {label: 'Copy',       enabled: false},
+            {label: 'Paste',      enabled: false},
+            {label: 'Delete',     enabled: false},
+            {label: 'Select all', enabled: false},
+          ]
+        },
+        {
+          label: 'Operations ',
+          submenu: [
+            {
+              label: 'Data',
+              submenu: [
+                {label: 'Data Environment',    enabled: false,    active: ()=> {}},
+              ]
+            },
+            {
+              label: 'Process ',
+              submenu: [
+                {label: 'Reshape',          enabled: false,    active: ()=> {}},
+                {label: 'Word embedding',   enabled: false,    active: ()=> {}},
+                {label: 'Grayscale',        enabled: false,    active: ()=> {}},
+                {label: 'One hot',          enabled: false,    active: ()=> {}},
+                {label: 'Crop',             enabled: false,    active: ()=> {}},
+              ]
+            },
+            {
+              label: 'Deep learning',
+              submenu: [
+                {label: 'Fully connected',      enabled: false,    active: ()=> {}},
+                {label: 'Convolution',          enabled: false,    active: ()=> {}},
+                {label: 'Deconvolution',        enabled: false,    active: ()=> {}},
+                {label: 'Recurrent',            enabled: false,    active: ()=> {}}
+              ]
+            },
+            {
+              label: 'Math',
+              submenu: [
+                {label: 'Argmax',         enabled: false,    active: ()=> {}},
+                {label: 'Merge',          enabled: false,    active: ()=> {}},
+                {label: 'Split',          enabled: false,    active: ()=> {}},
+                {label: 'Softmax',        enabled: false,    active: ()=> {}}
+              ]
+            },
+            {
+              label: 'Training',
+              submenu: [
+                {label: 'Normal',                   enabled: false,    active: ()=> {}},
+                {label: 'Normal+Data',              enabled: false,    active: ()=> {}},
+                {label: 'Reinforcement learning',   enabled: false,    active: ()=> {}},
+                {label: 'Genetic algorithm',        enabled: false,    active: ()=> {}},
+                {label: 'Dynamic routing',          enabled: false,    active: ()=> {}}
+              ]
+            },
+            {
+              label: 'Classic machine learning',
+              submenu: [
+                {label: 'K means clustering',             enabled: false,    active: ()=> {}},
+                {label: 'DBSCAN',                         enabled: false,    active: ()=> {}},
+                {label: 'kNN',                            enabled: false,    active: ()=> {}},
+                {label: 'Random forrest',                 enabled: false,    active: ()=> {}},
+                {label: 'Support vector machine',         enabled: false,    active: ()=> {}}
+              ]
+            },
+          ]
+        },
+        {
+          label: 'Custom'
+        },
+        {
+          label: 'Window',
+          submenu: [
+            {label: 'Edit profile', enabled: false, active: ()=> {this.appClose()}},
+            {label: 'History',      enabled: false, active: ()=> {this.appClose()}},
           ]
         },
         {
@@ -73,9 +157,10 @@ export default {
         {
           label: 'Help',
           submenu: [
-            {label: 'Help',                                     active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
-            {label: 'About',                                    active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
-            {label: 'Check for updates', enabled: this.menuSet, active: ()=> {this.checkUpdate()}},
+            {label: 'Help',                                      active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
+            {label: 'About',                                     active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
+            {label: 'Tutorial mode',      enabled: this.menuSet, active: ()=> {}},
+            {label: 'Check for updates',  enabled: this.menuSet, active: ()=> {this.checkUpdate()}},
             {type: 'separator'},
           ]
         }
@@ -120,38 +205,60 @@ export default {
 
 <style lang="scss" scoped>
   @import "../scss/base";
+
   .header-nav {
     display: flex;
     font-weight: 500;
+    height: 100%;
     > li {
       position: relative;
+      font-size: 1.4rem;
+      color: $col-txt;
+      display: flex;
+      align-items: center;
+      &:hover {
+        background: $disable-txt;
+      }
     }
     > li + li {
-      margin-left: 2rem;
+      //margin-left: 2rem;
     }
     .btn {
       -webkit-app-region: no-drag;
+      padding: 0 1rem;
     }
   }
   .header-nav_sublist {
-    display: none;
+    &.sublist--top{
+      top: 100%;
+    }
+    &.sublist--right{
+      left: 100%;
+      top: 0;
+    }
     position: absolute;
-    top: 70%;
-    left: -1rem;
     min-width: 10rem;
     box-shadow: $box-shad;
-    padding: .5rem 0;
-    background-color: $bg-input;
+    background-color: $bg-workspace;
     z-index: 1;
+    font-weight: 400;
+    li{
+      color: $white;
+      position: relative;
+    }
     .open-sublist &,
-    .header-nav li:hover & {
+    .header-nav li:hover &.show-hide {
       display: block;
     }
     .btn {
       white-space: nowrap;
-      padding: .25rem 1rem;
+      width: 100%;
+      border-radius: 0;
+      text-align: left;
+      padding: 0.7rem 9rem 0.7rem 2rem;
       &:hover {
-        background: #000;
+        background: #124368;
+
       }
     }
     .separator {
@@ -159,5 +266,22 @@ export default {
       height: 1px;
       background: #141419;
     }
+    .have-sublist {
+      &:after {
+        content: '>';
+        position: absolute;
+        top: 20%;
+        right: 1.5rem;
+      }
+      ul {
+        display: none;
+      }
+    }
+    .have-sublist:hover ul {
+      display: block;
+    }
+  }
+  .show-hide{
+    display: none;
   }
 </style>

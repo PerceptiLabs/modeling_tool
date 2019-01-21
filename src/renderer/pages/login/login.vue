@@ -2,7 +2,7 @@
   main.page_login
     .login_logo
       img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
-    view-loading(:class="{loading: isLoading}")
+    view-loading
     .login_main
       h1 Log In please
       h3 Enter your Email & Password
@@ -29,8 +29,8 @@
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading") log in
         .form_holder
           router-link.btn.btn--link(:to="{name: 'register'}") Register new account
-          
-          router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects 
+
+          router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects
 </template>
 
 <script>
@@ -49,6 +49,11 @@ export default {
       //userPass: ''
     }
   },
+  computed: {
+    isLoading() {
+      return this.$store.state.mod_login.showLoader
+    },
+  },
   methods: {
     requestCloudApi,
     validateForm() {
@@ -62,29 +67,20 @@ export default {
       });
     },
     loginUser() {
+      this.$store.commit('mod_login/SET_showLoader', true);
       let queryParams = {
         "Email": this.userEmail,
         "Password": this.userPass
       };
       this.requestCloudApi('post', 'Customer/Login', queryParams, (result, response) => {
-        this.$store.commit('mod_login/SET_showLoader', true);
         if (result === 'success') {
-          setTimeout(() => {
-            this.$store.commit('mod_login/SET_showLoader', false);
-            this.$store.commit('globalView/SET_userToken', response.headers.authorization);
-            this.$router.replace('/app');
-          }, 3000)
+          this.$store.commit('mod_login/SET_showLoader', false);
+          this.$store.commit('globalView/SET_userToken', response.headers.authorization);
+          this.$store.dispatch('mod_api/API_runServer');
+          this.$router.replace('/app');
         }
       })
-    }
-  },
-  computed: {
-    isLoading() {
-       return this.$store.state.mod_login.showLoader
-   },
-  },
-  mounted(){
-    //console.log(this.$store.state.mod_login.showLoader)
+    },
   }
 }
 </script>

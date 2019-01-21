@@ -23,7 +23,7 @@ export default {
     this.$store.commit('mod_workspace/ADD_network');
   },
   created() {
-    this.$store.dispatch('mod_api/API_runServer');
+
   },
   mounted() {
     this.addDragListener();
@@ -32,7 +32,8 @@ export default {
     return {
       dragMeta: {
         dragged: null,
-        outClassName: 'network-field'
+        //outClassName: 'network-field'
+        outClassName: 'svg-arrow'
       }
     }
   },
@@ -105,32 +106,17 @@ export default {
       }
     },
     dragEnd(event) {
-      // reset the transparency
-      //if ( event.target.className == "js-layersbar-draggable" ) {
-      //console.log('dragend')
-      //console.log(event)
       this.offDragListener();
       event.target.style.opacity = "";
-      //}
     },
     dragOver(event) {
       event.preventDefault();
     },
-    dragEnter(event) {
-      if ( event.target.className.includes(this.dragMeta.outClassName)) {
-        //event.target.style.cursor = "auto";
-        //console.log('dragenter')
-      }
-    },
-    dragLeave(event) {
-      if ( event.target.className.includes(this.dragMeta.outClassName)) {
-        //console.log('dragleave')
-        //event.target.style.cursor = "not-allowed";
-      }
-    },
+    dragEnter(event) {},
+    dragLeave(event) {},
     dragDrop(event) {
       event.preventDefault();
-      if ( event.target.className.includes(this.dragMeta.outClassName)) {
+      if ( event.target.classList[0] === this.dragMeta.outClassName) {
         this.$store.dispatch('mod_workspace/ADD_element', event)
       }
     },
@@ -176,7 +162,7 @@ export default {
       function cloneNet(net) {
         var outNet = {};
         for (var key in net) {
-          if(key === 'network') {
+          if(key === 'networkElementList') {
             outNet[key] = JSON.parse(cloneEl(net[key]))
           }
           else {
