@@ -48,6 +48,7 @@
         settings: {
           Type: 'Data',
           accessProperties: {
+            Category:'Local',
             Type: 'Data',
             Path: 'No uploaded file',
           }

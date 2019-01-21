@@ -26,6 +26,7 @@
           :data-stopid="arrow.l2.layerId"
 
           @keyup.46="deleteArrow($event)"
+          @keyup.93.8="deleteArrow($event)"
           @focus="focusArrow()"
           marker-end="url(#svg-arrow_triangle)"
           :class="{'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
@@ -204,7 +205,10 @@ export default {
       }
     },
     calcViewPort() {
-      return window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
+      window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
+      if(!this.smallViewPort) {
+        this.layerSize = 72;
+      }
     },
     //-------------
     //Arrow methods
