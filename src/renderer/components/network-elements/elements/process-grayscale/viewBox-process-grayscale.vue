@@ -18,10 +18,10 @@
       getStatistics() {
         this.chartRequest(this.boxElementID, 'ProcessGrayscale', '')
       },
+      getData() {
+        this.getStatistics()
+      }
     },
-    updated() {
-      console.log(this.chartData);
-    }
   }
 </script>
 

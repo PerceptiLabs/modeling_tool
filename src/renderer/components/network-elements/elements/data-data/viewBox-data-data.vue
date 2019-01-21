@@ -18,6 +18,9 @@
       getStatistics() {
         this.chartRequest(this.boxElementID, 'DataData', '')
       },
+      getData() {
+        this.getStatistics()
+      }
     }
   }
 </script>

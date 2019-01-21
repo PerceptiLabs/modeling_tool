@@ -59,7 +59,7 @@
       li
         button.btn.btn--toolbar(type="button"
           :class="{'active': statusNetworkCore === 'Paused'}"
-          :disabled="!(statusNetworkCore === 'Training' || statusNetworkCore === 'Paused' || statusNetworkCore === 'Validation')"
+          :disabled="!isTraining"
           v-tooltip:bottom="'Pause'"
           @click="trainPause()"
         )
@@ -84,12 +84,6 @@
           v-tooltip:bottom="'Box'"
         )
           i.icon.icon-box
-      li
-        button.btn.btn--toolbar(type="button"
-        disabled="disabled"
-        v-tooltip:bottom="'Box'"
-        )
-          i.icon.icon-appClose
 
     .toolbar_settings
       //span.text-primary.middle-text(v-html="statusTestText")
@@ -167,6 +161,15 @@ export default {
           break;
       }
     },
+    isTraining() {
+      if(this.statusNetworkCore === 'Training'
+        || this.statusNetworkCore === 'Validation'
+        || this.statusNetworkCore === 'Paused'
+      ){
+        return true
+      }
+      else return false
+    },
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
@@ -191,10 +194,10 @@ export default {
   },
   methods: {
     onOffBtn() {
-      if(!(this.statusNetworkCore === 'Training' || this.statusNetworkCore === 'Validation')){
-        this.trainStart()
+      if(this.isTraining){
+        this.trainStop()
       }
-      else this.trainStop()
+      else this.trainStart()
     },
     trainStart() {
       let valid = this.validateNetwork();

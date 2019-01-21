@@ -18,10 +18,10 @@
       getStatistics() {
         this.chartRequest(this.boxElementID, 'MathArgmax', '')
       },
+      getData() {
+        this.getStatistics()
+      }
     },
-    updated() {
-      console.log(this.chartData);
-    }
   }
 </script>
 

@@ -47,11 +47,7 @@ export default {
   .app-header_logo {
     height: 100%;
     width: 14rem;
-    height: 100%;
     overflow: hidden;
-    img {
-      //height: $h-header - 1;
-    }
   }
 
   .app-header_nav {

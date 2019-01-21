@@ -103,8 +103,11 @@
     },
     methods: {
       setTab(name) {
-        this.setTabAction();
         this.currentTab = name;
+        this.setTabAction();
+      },
+      getData() {
+        let name = this.currentTab;
         if(name === 'Prediction') {
           this.getStatistics()
         }

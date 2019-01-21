@@ -79,13 +79,13 @@ export default {
           label: 'Operations ',
           submenu: [
             {
-              label: 'Data', 
+              label: 'Data',
               submenu: [
                 {label: 'Data Environment',         enabled: false,    active: ()=> {}},
               ]
             },
             {
-              label: 'Process ', 
+              label: 'Process ',
               submenu: [
                 {label: 'Reshape',                  enabled: false,    active: ()=> {}},
                 {label: 'Word embedding',           enabled: false,    active: ()=> {}},
@@ -95,7 +95,7 @@ export default {
               ]
             },
             {
-              label: 'Deep learning', 
+              label: 'Deep learning',
               submenu: [
                 {label: 'Fully connected',          enabled: false,    active: ()=> {}},
                 {label: 'Convolution',              enabled: false,    active: ()=> {}},
@@ -104,7 +104,7 @@ export default {
               ]
             },
             {
-              label: 'Math', 
+              label: 'Math',
               submenu: [
                 {label: 'Argmax',                   enabled: false,    active: ()=> {}},
                 {label: 'Merge',                    enabled: false,    active: ()=> {}},
@@ -113,7 +113,7 @@ export default {
               ]
             },
             {
-              label: 'Training', 
+              label: 'Training',
               submenu: [
                 {label: 'Normal',                   enabled: false,    active: ()=> {}},
                 {label: 'Normal+Data',              enabled: false,    active: ()=> {}},
@@ -123,7 +123,7 @@ export default {
               ]
             },
             {
-              label: 'Classic machine learning', 
+              label: 'Classic machine learning',
               submenu: [
                 {label: 'K means clustering',       enabled: false,    active: ()=> {}},
                 {label: 'DBSCAN',                   enabled: false,    active: ()=> {}},
@@ -132,7 +132,7 @@ export default {
                 {label: 'Support vector machine',   enabled: false,    active: ()=> {}}
               ]
             },
-          ] 
+          ]
         },
         {
           label: 'Custom'
@@ -143,7 +143,7 @@ export default {
             {label: 'Edit profile',                 enabled: false, active: ()=> {this.appClose()}},
             {label: 'History',                      enabled: false, active: ()=> {this.appClose()}},
           ]
-        },  
+        },
         {
           label: 'Settings',
           submenu: [
@@ -254,7 +254,7 @@ export default {
       padding: 0.7rem 9rem 0.7rem 2rem;
       &:hover {
         background: #124368;
-        
+
       }
     }
     .separator {

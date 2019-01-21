@@ -76,6 +76,7 @@ export default {
         if (result === 'success') {
           this.$store.commit('mod_login/SET_showLoader', false);
           this.$store.commit('globalView/SET_userToken', response.headers.authorization);
+          this.$store.dispatch('mod_api/API_runServer');
           this.$router.replace('/app');
         }
       })

@@ -6,6 +6,7 @@
     @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings()"
     @contextmenu.stop.prevent="openContext"
     @keyup.46="deleteEl()"
+    @keyup.93.8="deleteEl()"
     )
     .net-element_btn(ref="BaseElement")
       slot

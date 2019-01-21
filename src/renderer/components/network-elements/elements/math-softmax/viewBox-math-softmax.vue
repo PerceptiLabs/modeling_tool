@@ -18,6 +18,9 @@
       getStatistics() {
         this.chartRequest(this.boxElementID, 'MathSoftmax', '')
       },
+      getData() {
+        this.getStatistics()
+      }
     },
   }
 </script>
