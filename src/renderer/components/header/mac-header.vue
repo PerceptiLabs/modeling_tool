@@ -41,7 +41,6 @@ export default {
       -webkit-app-region: no-drag;
     }
   }
-
   .app-header_actions {
     margin-left: auto;
     display: flex;
@@ -76,8 +75,6 @@ export default {
       }
     }
   }
-
-
   .app-header_title {
     flex-grow: 1;
     text-align: center;
