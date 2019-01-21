@@ -12,9 +12,9 @@
 
 <script>
   import {ipcRenderer} from 'electron'
-  import TheMenu from '@/components/the-menu.vue'
+  import TheMenu from '@/components/header/the-menu.vue'
 export default {
-  name: "TheHeader",
+  name: "WinHeader",
   components: {TheMenu},
   methods: {
     appClose() {
@@ -31,7 +31,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../scss/base";
+  @import "../../scss/base";
   .app-header {
     position: relative;
     z-index: 2;

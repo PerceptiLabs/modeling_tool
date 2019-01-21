@@ -200,7 +200,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  @import "../scss/base";
+  @import "../../scss/base";
 
   .header-nav {
     display: flex;

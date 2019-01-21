@@ -1,4 +1,5 @@
 <template lang="pug">
+  h1 LINUX header!
   header.app-header
     .app-header_logo
       img(src="~@/assets/logo_small_dark.svg" alt="percepti labs logo")
@@ -56,7 +57,7 @@ export default {
 
   .app-header_nav {
     height: 100%;
-     -webkit-app-region: no-drag;
+    -webkit-app-region: no-drag;
   }
 
   .app-header_actions {

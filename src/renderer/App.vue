@@ -1,16 +1,20 @@
 <template lang="pug">
   #app
-    the-header
+    //win-header
+    //linux-header
+    mac-header
     router-view
 </template>
 
 <script>
-  import {ipcRenderer} from 'electron'
-  import TheHeader from '@/components/the-header.vue'
+  import {ipcRenderer}  from 'electron'
+  import WinHeader      from '@/components/the-header.vue'
+  //import LinuxHeader    from '@/components/header/linux-header.vue'
+  import MacHeader      from '@/components/header/mac-header.vue'
 
   export default {
     name: 'quantumnet',
-    components: {TheHeader},
+    components: {WinHeader, MacHeader},
     mounted() {
       //main process events
       ipcRenderer.on('newNetwork', (event) => {
