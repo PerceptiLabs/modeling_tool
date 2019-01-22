@@ -10,12 +10,13 @@
           v-for="(subItem, index) in item.submenu"
           :key="index"
           :class="{'have-sublist' : subItem.submenu}"
-        )
+        ) 
           div.separator(v-if="subItem.type === 'separator'")
           button.btn.btn--link(type="button" v-else
             :disabled="subItem.enabled === false"
             @click="subItem.active()"
-          ) {{subItem.label}}
+          ) {{subItem.label}} 
+            i.icon.icon-shevron-right(v-if="subItem.submenu")
           div.btn(v-if="i === navMenu.length - 1 && index === item.submenu.length - 1") Version: {{appVersion}}
           ul.header-nav_sublist.sublist--right
             li(
@@ -262,11 +263,9 @@ export default {
       background: #141419;
     }
     .have-sublist {
-      &:after {
-        content: '>';
+      .icon-shevron-right{
         position: absolute;
-        top: 20%;
-        right: 1.5rem;
+        right: 1rem;
       }
       ul {
         display: none;

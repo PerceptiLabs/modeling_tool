@@ -1,9 +1,9 @@
 <template lang="pug">
-  header.app-header
+  .app-header
     ul.app-header_actions
       button.btn.btn--app-close(type="button" @click="appClose()")
-      button.btn.btn--app-full(type="button" @click="appMaximize()")
-      button.btn.btn--app-minify(type="button" @click="appMinimize()")
+      button.btn.btn--app-full(type="button" @click="appMinimize()")
+      button.btn.btn--app-minify(type="button" @click="appMaximize()")
     .app-header_title PerceptiLabs
 </template>
 
@@ -15,13 +15,13 @@ export default {
   components: {TheMenu},
   methods: {
     appClose() {
-      this.$store.dispatch('mod_events/EVENT_closeCore');
+      this.$emit('appClosed')
     },
     appMinimize() {
-      ipcRenderer.send('appMinimize')
+      this.$emit('appMinimized')
     },
     appMaximize() {
-      ipcRenderer.send('appMaximize')
+      this.$emit('appMaximized')
     }
   }
 }
@@ -63,9 +63,9 @@ export default {
       }
     }
     .btn--app-full {
-      background: #d2d2d2;
+      background: #f6c251;
       &:hover {
-        background: #b1b1b1;
+        background: #d4a642;
       }
     }
     .btn--app-close {
