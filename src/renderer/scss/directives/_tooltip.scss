@@ -6,6 +6,9 @@ $margin-tooltip: .65rem;
 	position: relative;
 	&:hover .tooltip {
 		transition: transform 0s .5s;
+		.workspace & {
+			display: none;
+		}
 		&.tooltip--right {
 			transform: translateY(-50%) rotateY(0deg);
 		}

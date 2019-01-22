@@ -18,13 +18,13 @@ export default {
   components: {TheMenu},
   methods: {
     appClose() {
-      this.$store.dispatch('mod_events/EVENT_closeCore');
+      this.$emit('appClosed')
     },
     appMinimize() {
-      ipcRenderer.send('appMinimize')
+      this.$emit('appMinimized')
     },
     appMaximize() {
-      ipcRenderer.send('appMaximize')
+      this.$emit('appMaximized')
     }
   }
 }
