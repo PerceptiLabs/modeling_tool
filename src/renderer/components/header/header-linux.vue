@@ -1,5 +1,5 @@
 <template lang="pug">
-  header.app-header
+  .app-header
     .app-header_title
       .title_app-name PerceptiLabs
       ul.title_app-actions

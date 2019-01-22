@@ -1,5 +1,5 @@
 <template lang="pug">
-  header.app-header
+  .app-header
     .app-header_logo
       img(src="~@/assets/logo_small_dark.svg" alt="percepti labs logo")
     nav.app-header_nav
@@ -18,13 +18,13 @@ export default {
   components: {TheMenu},
   methods: {
     appClose() {
-      this.$store.dispatch('mod_events/EVENT_closeCore');
+      this.$emit('appClosed')
     },
     appMinimize() {
-      ipcRenderer.send('appMinimize')
+      this.$emit('appMinimized')
     },
     appMaximize() {
-      ipcRenderer.send('appMaximize')
+      this.$emit('appMaximized')
     }
   }
 }
@@ -45,9 +45,10 @@ export default {
     }
   }
   .app-header_logo {
-    height: 100%;
-    width: 14rem;
     overflow: hidden;
+    display: flex;
+    align-items: center;
+    margin: 0 1rem;
   }
 
   .app-header_nav {

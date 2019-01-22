@@ -1,14 +1,36 @@
 <template lang="pug">
-  header.app-header
-
+  header
+    header-win(
+      v-if="operationSystem === 'win32'" 
+      @appClosed='appClose'
+      @appMinimized='appMinimize'
+      @appMaximized='appMaximize'
+    )
+    header-mac(
+      v-if="operationSystem === 'darwin'"
+      @appClosed='appClose'
+      @appMinimized='appMinimize'
+      @appMaximized='appMaximize'
+    )
+    header-linux(
+      v-if="operationSystem === 'linux'"
+      @appClosed='appClose'
+      @appMinimized='appMinimize'
+      @appMaximized='appMaximize'
+    )
 </template>
 <script>
 import {ipcRenderer}  from 'electron'
-import HeaderLinux    from '@/components/header-linux.vue'
-import HeaderWin      from '@/components/header-win.vue'
-import HeaderMac      from '@/components/header-mac.vue'
+import HeaderLinux    from '@/components/header/header-linux.vue'
+import HeaderWin      from '@/components/header/header-win.vue'
+import HeaderMac      from '@/components/header/header-mac.vue'
   export default {
     name: 'TheHeader',
+    components: {
+      HeaderLinux,
+      HeaderWin,
+      HeaderMac
+    },
     data() {
       return {
 
@@ -26,18 +48,8 @@ import HeaderMac      from '@/components/header-mac.vue'
       }
     },
     computed: {
-      header() {
-        switch (process.platform) {
-          case 'win32':
-            
-            break;
-          case 'darwin':
-            
-            break;
-          case 'linux':
-            
-            break;
-        }
+      operationSystem() {
+        return process.platform
       }
     }
   }
