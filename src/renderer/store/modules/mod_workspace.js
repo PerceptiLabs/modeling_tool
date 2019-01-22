@@ -55,7 +55,7 @@ const getters = {
     }
     return 'empty app'
   },
-  GET_currentSelectedEl: (state, getters) => {
+  GET_currentSelectedEl(state, getters) {
     let selectedIndex = [];
     if(state.workspaceContent.length) {
       getters.GET_currentNetworkElementList.forEach(function (el, index, arr) {
@@ -69,6 +69,16 @@ const getters = {
       });
     }
     return selectedIndex;
+  },
+  GET_networkIsTraining(state, getters) {
+    let coreStatus = getters.GET_networkCoreStatus;
+    if(coreStatus === 'Training'
+      || coreStatus === 'Validation'
+      || coreStatus === 'Paused'
+    ){
+      return true
+    }
+    else return false
   },
 };
 
@@ -95,6 +105,7 @@ const mutations = {
     let defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       canTestStatistics: false,
+      zoom: 1,
       netMode: 'edit',//'addArrow', showStatistic
       coreStatus: {
         Status: 'Waiting' //Created, Training, Validation, Paused, Finished
@@ -146,6 +157,9 @@ const mutations = {
   set_statusNetworkCoreStatus(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
   },
+  set_statusNetworkZoom(state, {getters, value}) {
+    getters.GET_currentNetwork.networkMeta.zoom = value;
+  },
   //---------------
   //  NETWORK ELEMENTS
   //---------------
@@ -157,8 +171,10 @@ const mutations = {
   add_element(state, {getters, event}) {
     let top = state.dragElement.layerMeta.top;
     let left = state.dragElement.layerMeta.left;
-    state.dragElement.layerMeta.top = event.offsetY - top;
-    state.dragElement.layerMeta.left = event.offsetX - left;
+    let zoom = getters.GET_currentNetwork.networkMeta.zoom;
+
+    state.dragElement.layerMeta.top = (event.offsetY - top)/zoom;
+    state.dragElement.layerMeta.left = (event.offsetX - left)/zoom;
     getters.GET_currentNetworkElementList.push(state.dragElement);
     state.dragElement = {};
   },
@@ -331,6 +347,9 @@ const actions = {
   },
   SET_statusNetworkCoreStatus({commit, getters}, value) {
     commit('set_statusNetworkCoreStatus', {getters, value})
+  },
+  SET_statusNetworkZoom({commit, getters}, value) {
+    commit('set_statusNetworkZoom', {getters, value})
   },
   //---------------
   //  NETWORK ELEMENTS

@@ -27,7 +27,7 @@
               @wheel.ctrl="scaleScroll($event)"
               )
               network-field(
-                :style="{zoom: scale + '%'}"
+                :style="{zoom: styleScale + '%'}"
                 :netIndex="i"
               )
 

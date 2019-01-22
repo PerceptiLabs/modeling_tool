@@ -8,86 +8,109 @@
 
 </template>
 <script>
-  export default {
+import UpdatePopup from '@/components/global-popups/update-popup/update-popup.vue'
+
+export default {
+    components: {
+      UpdatePopup
+    },
     name: 'PageProjects',
     data() {
       return {
-        source: 'cloud',
-        service: '',
-        projects: [
+          source: 'cloud',
+          service: '',
+          projects: [
+            {
+              id: 1,
+              name: 'Quantum net (Project_1)',
+              icon: 'icon-cloud',
+              trained: true,
+              time: '25.12.2018 20:24',
+              scheme: ''
+            },
+            {
+              id: 2,
+              name: 'Quantum net (Project_2)',
+              icon: 'icon-computer',
+              trained: true,
+              time: '25.12.2018 20:24',
+              scheme: ''
+            },
+            {
+              id: 3,
+              name: 'Quantum net (Project_3)',
+              icon: 'icon-cloud',
+              trained: false,
+              time: '25.12.2018 20:24',
+              scheme: ''
+            },
+            {
+              id: 4,
+              name: 'Quantum net (Project_4)',
+              icon: 'icon-cloud',
+              trained: true,
+              time: '25.12.2018 20:24',
+              scheme: ''
+            },
+            {
+              id: 5,
+              name: 'Quantum net (Project_5)',
+              icon: 'icon-computer',
+              trained: false,
+              time: '25.12.2018 20:24',
+              scheme: ''
+            },
+            {
+              id: 6,
+              name: 'Quantum net (Project_6)',
+              icon: 'icon-cloud',
+              trained: true,
+              time: '25.12.2018 20:24',
+              scheme: ''
+            },
+            {
+              id: 7,
+              name: 'Quantum net (Project_7)',
+              icon: 'icon-cloud',
+              trained: false,
+              time: '25.12.2018 20:24',
+              scheme: ''
+            },
+            {
+              id: 8,
+              name: 'Quantum net (Project_8)',
+              icon: 'icon-computer',
+              trained: true,
+              time: '25.12.2018 20:24',
+              scheme: ''
+            },
+            {
+              id: 9,
+              name: 'Quantum net (Project_9)',
+              icon: 'icon-computer',
+              trained: false,
+              time: '25.12.2018 20:24',
+              scheme: ''
+            }
+        ],
+        processName: '14.11.2018',
+        updateButtons: [
           {
-            id: 1,
-            name: 'Quantum net (Project_1)',
-            icon: 'icon-cloud',
-            trained: true,
-            time: '25.12.2018 20:24',
-            scheme: ''
-          },
-          {
-            id: 2,
-            name: 'Quantum net (Project_2)',
-            icon: 'icon-computer',
-            trained: true,
-            time: '25.12.2018 20:24',
-            scheme: ''
-          },
-          {
-            id: 3,
-            name: 'Quantum net (Project_3)',
-            icon: 'icon-cloud',
-            trained: false,
-            time: '25.12.2018 20:24',
-            scheme: ''
-          },
-          {
-            id: 4,
-            name: 'Quantum net (Project_4)',
-            icon: 'icon-cloud',
-            trained: true,
-            time: '25.12.2018 20:24',
-            scheme: ''
-          },
-          {
-            id: 5,
-            name: 'Quantum net (Project_5)',
-            icon: 'icon-computer',
-            trained: false,
-            time: '25.12.2018 20:24',
-            scheme: ''
-          },
-          {
-            id: 6,
-            name: 'Quantum net (Project_6)',
-            icon: 'icon-cloud',
-            trained: true,
-            time: '25.12.2018 20:24',
-            scheme: ''
-          },
-          {
-            id: 7,
-            name: 'Quantum net (Project_7)',
-            icon: 'icon-cloud',
-            trained: false,
-            time: '25.12.2018 20:24',
-            scheme: ''
-          },
-          {
-            id: 8,
-            name: 'Quantum net (Project_8)',
-            icon: 'icon-computer',
-            trained: true,
-            time: '25.12.2018 20:24',
-            scheme: ''
-          },
-          {
-            id: 9,
-            name: 'Quantum net (Project_9)',
-            icon: 'icon-computer',
-            trained: false,
-            time: '25.12.2018 20:24',
-            scheme: ''
+            className: 'btn--primary',
+            text: 'Install',
+            action: this.install
           }
-        ]
+        ],
+        updateShowPopup: false,
+        moreInfoUpdateText: [
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+        ],
+        startLoading: false,
+        fakeTimer: null,
+        progressStatus: 0,
+        message: ''
       }
     },
     methods: {
@@ -96,6 +119,12 @@
       },
       addProject() {
         this.$router.push({name: 'app'});
+      },
+      openPopup() {
+        this.updateShowPopup = true;
+      },
+      closePopup() {
+        this.updateShowPopup = false;
       }
     }
   }

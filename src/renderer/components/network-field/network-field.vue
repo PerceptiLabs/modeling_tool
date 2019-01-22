@@ -135,6 +135,9 @@ export default {
     // workspace() {
     //   return this.$store.getters['mod_workspace/GET_currentNetwork']
     // },
+    networkScale() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
+    },
     networkElementList() {
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
@@ -221,8 +224,8 @@ export default {
       ev.preventDefault();
       ev.stopPropagation();
       this.$store.commit('mod_workspace/SET_preArrowStop', {
-        x: ev.pageX - this.offset.offsetX,
-        y: ev.pageY - this.offset.offsetY
+        x: (ev.pageX - this.offset.offsetX) / this.networkScale,
+        y: (ev.pageY - this.offset.offsetY) / this.networkScale
       })
     },
     removeArrowListener() {
