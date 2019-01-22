@@ -17,11 +17,11 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
-  .loading-status{
+  .loading-status {
     font-size: 5rem;
     font-weight: 200;
     opacity: 0;
-    &.loading{
+    &.loading {
       opacity: 1;
     }
   }

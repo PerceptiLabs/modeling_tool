@@ -11,11 +11,11 @@ $layers-sidebar: (
 );
 
 @each $name, $color in $layers-sidebar {
-  .net-element-#{$name} {
-    @include multi-transition(opacity);
+	.net-element-#{$name} {
+		@include multi-transition(opacity);
 
-    background: $color;
-  }
+		background: $color;
+	}
 }
 
 $layers-sidebar-active: (
@@ -31,29 +31,29 @@ $layers-sidebar-active: (
 );
 
 @each $name, $color in $layers-sidebar-active {
-  .net-element-#{$name} {
-    &:hover,
-    &.active {
-      background: $color;
-    }
-  }
+	.net-element-#{$name} {
+		&:hover,
+		&.active {
+			background: $color;
+		}
+	}
 }
 
 .net-element-add {
-  color: #5c6680;
-  &:after {
-    display: none;
-  }
+	color: #5c6680;
+	&:after {
+		display: none;
+	}
 }
 
 .net-element {
-  position: absolute;
-  box-sizing: border-box;
-  border-radius: .5rem;
-  background-color: $bg-workspace;
-  &:hover {
-    will-change: top, left;
-  }
+	position: absolute;
+	box-sizing: border-box;
+	border-radius: .5rem;
+	background-color: $bg-workspace;
+	&:hover {
+		will-change: top, left;
+	}
 }
 //.net-element.active:before{
 //  content: '';
@@ -66,9 +66,9 @@ $layers-sidebar-active: (
 //}
 .element--hidden .net-element_btn,
 .arrow--hidden {
-  opacity: .1;
+	opacity: .1;
 }
 /*SETTINGS*/
 .net-element .popup {
-  width: 29rem;
+	width: 29rem;
 }

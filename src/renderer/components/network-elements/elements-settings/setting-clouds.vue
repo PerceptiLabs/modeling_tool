@@ -67,22 +67,21 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../../scss/base";
-  //.clouds-component
   .clouds-component_head {
     display: flex;
     justify-content: space-between;
   }
   .cloud_btn {
-    transition: none;
+    font-size: 2rem;
+    line-height: 1;
     color: $bg-input;
-    border: 2px solid;
-    width: 4.6rem;
-    height: 4.6rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;
-    font-size: 2rem;
+    width: 4.6rem;
+    height: 4.6rem;
+    transition: none;
+    border: 2px solid;
     &:hover,
     &.active {
       box-shadow: $icon-shad;
@@ -102,10 +101,10 @@ export default {
   .cloud_account-list {
     margin-bottom: 1rem;
     li {
-      padding: .25em 0;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      padding: .25em 0;
     }
   }
   .cloud_account-add-btn {

@@ -15,21 +15,20 @@
 <style lang="scss">
   @import "../../scss/base";
   .page {
-    background-color: $bg-window;
     display: grid;
-    grid-template-areas:
-      "toolbar   toolbar    sidebar"
-      "layersbar  workspace sidebar";
+    height: calc(100vh - #{$h-header});
+    margin: 0;
+    background-color: $bg-window;
+    grid-template-areas:  'toolbar   toolbar    sidebar'
+                          'layersbar  workspace sidebar';
     grid-template-rows: auto 1fr;
     grid-template-columns: auto 1fr auto;
-    height: calc(100vh - #{$h-header});
-    //height: 100vh;
-    margin: 0;
   }
   .page_workspace {
-    grid-area: workspace;
     display: flex;
-    flex-direction: column;
     overflow: hidden;
+    flex-direction: column;
+
+    grid-area: workspace;
   }
 </style>

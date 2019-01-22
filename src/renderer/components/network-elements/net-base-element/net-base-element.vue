@@ -157,15 +157,15 @@ export default {
   .net-element_window {
     position: absolute;
     z-index: 2;
-    left: 100%;
     top: 0;
+    left: 100%;
     padding-left: 10px;
   }
   .net-element_btn {
-    padding: 0;
     margin: 0;
+    padding: 0;
     background-color: transparent;
-    .active & .btn{
+    .active & .btn {
       box-shadow: 0 0 20px #fff;
     }
   }

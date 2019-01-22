@@ -203,13 +203,13 @@ export default {
   @import "../scss/base";
 
   .header-nav {
-    display: flex;
     font-weight: 500;
+    display: flex;
     height: 100%;
     > li {
-      position: relative;
       font-size: 1.4rem;
       color: $col-txt;
+      position: relative;
       display: flex;
       align-items: center;
       &:hover {
@@ -220,25 +220,25 @@ export default {
       //margin-left: 2rem;
     }
     .btn {
-      -webkit-app-region: no-drag;
       padding: 0 1rem;
+      -webkit-app-region: no-drag;
     }
   }
   .header-nav_sublist {
-    &.sublist--top{
+    font-weight: 400;
+    position: absolute;
+    z-index: 1;
+    min-width: 10rem;
+    background-color: $bg-workspace;
+    box-shadow: $box-shad;
+    &.sublist--top {
       top: 100%;
     }
-    &.sublist--right{
-      left: 100%;
+    &.sublist--right {
       top: 0;
+      left: 100%;
     }
-    position: absolute;
-    min-width: 10rem;
-    box-shadow: $box-shad;
-    background-color: #23252A;
-    z-index: 1;
-    font-weight: 400;
-    li{
+    li {
       color: $white;
       position: relative;
     }
@@ -247,19 +247,18 @@ export default {
       display: block;
     }
     .btn {
-      white-space: nowrap;
       width: 100%;
-      border-radius: 0;
+      padding: .7rem 9rem .7rem 2rem;
       text-align: left;
-      padding: 0.7rem 9rem 0.7rem 2rem;
+      white-space: nowrap;
+      border-radius: 0;
       &:hover {
         background: #124368;
-
       }
     }
     .separator {
-      margin: .25rem 2px;
       height: 1px;
+      margin: .25rem 2px;
       background: #141419;
     }
     .have-sublist {
@@ -277,7 +276,7 @@ export default {
       display: block;
     }
   }
-  .show-hide{
+  .show-hide {
     display: none;
   }
 </style>

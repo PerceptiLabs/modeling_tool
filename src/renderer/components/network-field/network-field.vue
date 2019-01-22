@@ -499,13 +499,12 @@ export default {
   @import "../../scss/base";
   $color-arrow: #22DDE5;
   .network-field {
-    overflow: auto;
-    display: flex;
-    flex: 1 1 100%;
     position: relative;
+    display: flex;
+    overflow: auto;
+    flex: 1 1 100%;
   }
   .svg-arrow {
-    //pointer-events: none;
     position: absolute;
     top: 0;
     left: 0;
@@ -516,13 +515,6 @@ export default {
       stroke: $color-arrow;
     }
   }
-  /*.svg-arrow_arrow:focus {*/
-    /*opacity: .5;*/
-    /*fill: pink;*/
-    /*.svg-arrow_line {*/
-      /*fill: pink;*/
-    /*}*/
-  /*}*/
   .svg-arrow_line {
     stroke: $color-arrow;
     stroke-width: 3;
@@ -531,7 +523,5 @@ export default {
       stroke-width: 4;
     }
   }
-
-
 </style>
 

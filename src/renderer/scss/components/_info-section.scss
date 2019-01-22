@@ -1,28 +1,28 @@
 .info-section {
-  display: flex;
-  flex: 1 1 50%;
-  flex-direction: column;
-  width: 100%;
+	display: flex;
+	flex: 1 1 50%;
+	flex-direction: column;
+	width: 100%;
 }
 .info-section_head {
-  display: flex;
-  align-items: center;
-  flex: 0 0 auto;
-  justify-content: space-between;
-  padding: .7rem 1rem;
-  background: $bg-toolbar;
+	display: flex;
+	align-items: center;
+	flex: 0 0 auto;
+	justify-content: space-between;
+	padding: .7rem 1rem;
+	background: $bg-toolbar;
 }
 .info-section_title {
-  h3 {
-    margin: 0;
-  }
+	h3 {
+		margin: 0;
+	}
 }
 
 .info-section_main {
-  display: flex;
-  flex: 1 1 100%;
+	display: flex;
+	flex: 1 1 100%;
 }
 .info-section_tab-set {
-  display: flex;
-  flex: 1 1 100%;
+	display: flex;
+	flex: 1 1 100%;
 }

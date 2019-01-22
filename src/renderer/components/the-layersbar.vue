@@ -170,16 +170,17 @@ export default {
   @import "../scss/base";
   $indent: 5px;
   .page_layersbar {
-    grid-area: layersbar;
     max-width: $w-layersbar;
+
+    grid-area: layersbar;
   }
   .layersbar-list {
-    padding: 0;
     margin: 0;
-    list-style: none;
-    transform: translateY(0);
-    transition: transform $animation-speed $animation-speed;
+    padding: 0;
     padding-bottom: 30px;
+    list-style: none;
+    transition: transform $animation-speed $animation-speed;
+    transform: translateY(0);
   }
   .layer {
     position: relative;
@@ -189,35 +190,37 @@ export default {
     position: relative;
     z-index: 1;
     &:after {
-      content: "\e922";
+      content: '\e922';
       font-family: 'icomoon' !important;
-      position: absolute;
+      font-size: 11px;
       line-height: 1;
+      position: absolute;
       right: 1px;
       bottom: 1px;
-      font-size: 11px;
     }
   }
   ul.layer_child-list {
+    //TODO ???
     @include multi-transition (transform, opacity, visibility);
+
     position: absolute;
     top: 0;
     left: -$indent;
-    padding: $indent;
-    margin: 0;
-    list-style: none;
-    opacity: 0;
     visibility: hidden;
+    opacity: 0;
+    margin: 0;
+    padding: $indent;
+    list-style: none;
     @media (max-height: 1000px) {
       .layer:nth-child(n+5) & {
-        bottom: 0;
         top: auto;
+        bottom: 0;
       }
     }
     .active + & {
-      transform: translateX(100%);
-      opacity: 1;
       visibility: visible;
+      opacity: 1;
+      transform: translateX(100%);
     }
     > li + li {
       padding-top: $indent;
@@ -246,5 +249,4 @@ export default {
       transform: translateY(-120%);
     }
   }
-
 </style>

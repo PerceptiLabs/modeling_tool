@@ -59,13 +59,12 @@ export default {
 <style lang="scss" scoped>
   .custom-select {
     position: relative;
-
   }
   .custom-select_view {
-    cursor: default;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    cursor: default;
   }
   .custom-select_option-list {
     position: absolute;

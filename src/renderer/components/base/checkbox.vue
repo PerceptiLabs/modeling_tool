@@ -75,17 +75,17 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .custom-checkbox {
-    padding: 0;
+    position: relative;
     display: inline-flex;
     align-items: center;
-    position: relative;
+    padding: 0;
 
     input[type=checkbox] {
+      position: absolute;
+      left: -9999px;
       opacity: 0;
       width: 1px;
       height: 1px;
-      position: absolute;
-      left: -9999px;
       &:checked + .checkbox-fake {
         background: $bg-grad-blue;
         box-shadow: $icon-shad;
@@ -102,29 +102,29 @@ export default {
       //}
     }
     .checkbox-text {
-      margin-right: .75em;
       font-size: inherit;
       color: inherit;
+      margin-right: .75em;
     }
     .checkbox-fake {
+      position: relative;
+      flex: 0 0 1.4em;
       width: 1.4em;
       height: 1.4em;
-      flex: 0 0 1.4em;
-      background-color: $bg-input;
       cursor: pointer;
-      position: relative;
+      background-color: $bg-input;
       &.checkbox-fake--icon {
         background-color: $bg-workspace;
         &:after {
-          content: "\e937";
-          font-family: "icomoon";
+          content: '\e937';
+          font-family: 'icomoon';
+          font-size: .9em;
+          line-height: 1;
           position: absolute;
           top: 50%;
           left: 50%;
-          transform: translate(-50%, -50%);
           opacity: 0;
-          font-size: .9em;
-          line-height: 1;
+          transform: translate(-50%, -50%);
         }
       }
       + .checkbox-text {
