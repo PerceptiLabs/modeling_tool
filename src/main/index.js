@@ -19,7 +19,7 @@ const mainMenu = [
       {label: 'Open untrained model', click() {mainWindow.webContents.send('openNetwork')}},
       {label: 'Save untrained model', click() {mainWindow.webContents.send('saveNetwork')}},
       {type: 'separator'},
-      {role: 'quit'}
+      {label: 'Quit PersceptiLabs', click() {mainWindow.webContents.send('closeApp')}},
     ]
   },
   {

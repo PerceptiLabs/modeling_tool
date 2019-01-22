@@ -26,6 +26,9 @@
       ipcRenderer.on('saveNetwork', (event) => {
         this.$store.commit('mod_events/set_saveNetwork')
       });
+      ipcRenderer.on('closeApp', (event) => {
+        this.$store.dispatch('mod_events/EVENT_closeCore');
+      });
       ipcRenderer.on('info', (event, data) => {
         console.log(data);
       });
