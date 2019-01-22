@@ -77,7 +77,6 @@ export default {
 
 <style lang="scss">
   @import "../../scss/base";
-
   .sidebar_layers {
     display: flex;
     flex-direction: column;
@@ -85,12 +84,12 @@ export default {
     max-height: 50vh;
   }
   .sidebar-content {
-    padding-left: $h-sidebar-layers-indent;
     padding-right: $h-sidebar-layers-indent;
+    padding-left: $h-sidebar-layers-indent;
   }
   .layers_title {
-    flex: 0 0 auto;
     align-items: center;
+    flex: 0 0 auto;
     height: $h-sidebar-layers-item;
     border-bottom: 1px solid $bg-toolbar;
     h3 {
@@ -98,24 +97,24 @@ export default {
     }
   }
   .layers_body {
-    flex: 1 1 100%;
     display: flex;
+    flex: 1 1 100%;
     flex-direction: column;
     > div {
-      flex: 1 1 100%;
       overflow: auto;
+      flex: 1 1 100%;
     }
   }
   .layers_meta {
+    flex: 0 0 auto;
     padding-top: .6429em;
     padding-bottom: 2em;
-    flex: 0 0 auto;
     border-top: 1px solid $bg-toolbar;
     border-bottom: 1px solid $bg-toolbar;
   }
   .layers_actions {
-    text-align: right;
     padding-bottom: 1rem;
+    text-align: right;
     .btn {
       font-size: 1.2857em;
       + .btn {
@@ -127,11 +126,8 @@ export default {
     align-items: center;
     .icon-filter {
       font-size: 1.5714rem;
-      padding: .25rem;
       margin-right: 1rem;
-    }
-    .input-wrap_icon {
-      //margin-left: .5em;
+      padding: .25rem;
     }
     input {
       box-shadow: $icon-shad;

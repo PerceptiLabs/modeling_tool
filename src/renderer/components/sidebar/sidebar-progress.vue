@@ -42,14 +42,13 @@ export default {
   }
   .sidebar-progress_loader {
     display: block;
-    margin: 0 auto;
+    overflow: hidden;
     width: 8em;
     height: 8em;
-    border-radius: 50%;
-    //background: $color-6;
-    background: linear-gradient(to bottom, $color-6 25%, $bg-window 80%);
+    margin: 0 auto;
     transform: translate(0);
-    overflow: hidden;
+    border-radius: 50%;
+    background: linear-gradient(to bottom, $color-6 25%, $bg-window 80%);
     &.validation-style {
       background: linear-gradient(to bottom, $col-warning 25%, $bg-window 80%);
     }
@@ -57,8 +56,8 @@ export default {
       content: '';
       position: absolute;
       top: 0;
-      left: 50%;
       bottom: 0;
+      left: 50%;
       width: 50%;
       background: $bg-window;
     }
@@ -66,20 +65,20 @@ export default {
       content: '';
       position: absolute;
       top: 0;
-      left: 0;
-      bottom: 0;
       right: 0;
-      background: $bg-workspace;
+      bottom: 0;
+      left: 0;
       width: 4.5em;
       height: 4.5em;
-      border-radius: 50%;
       margin: auto;
+      border-radius: 50%;
+      background: $bg-workspace;
     }
   }
   .sidebar-progress_data {
     position: absolute;
-    left: 50%;
     top: 50%;
+    left: 50%;
     transform: translate(-50%, -50%);
   }
 </style>

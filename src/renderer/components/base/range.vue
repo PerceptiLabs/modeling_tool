@@ -1165,55 +1165,55 @@
   .custom-range-component .custom-range::after {
     content: '';
     position: absolute;
-    left: 0;
+    z-index: 2;
     top: 0;
+    left: 0;
     width: 100%;
     height: 100%;
-    z-index: 2;
   }
   .custom-range-component .custom-range-process {
     position: absolute;
-    border-radius: 15px;
-    background-color: $color-6;
     //transition: all 0s;
     z-index: 1;
+    border-radius: 15px;
+    background-color: $color-6;
   }
   .custom-range-component .custom-range-process.custom-range-process-dragable {
-    cursor: pointer;
     z-index: 3;
+    cursor: pointer;
   }
   .custom-range-component.custom-range-horizontal .custom-range-process {
-    width: 0;
-    height: 100%;
     top: 0;
     left: 0;
+    width: 0;
+    height: 100%;
     /*will-change: width;*/
   }
   .custom-range-component.custom-range-vertical .custom-range-process {
-    width: 100%;
-    height: 0;
     bottom: 0;
     left: 0;
+    width: 100%;
+    height: 0;
     /*will-change: height;*/
   }
   .custom-range-component.custom-range-horizontal-reverse .custom-range-process {
-    width: 0;
-    height: 100%;
     top: 0;
     right: 0;
+    width: 0;
+    height: 100%;
   }
   .custom-range-component.custom-range-vertical-reverse .custom-range-process {
-    width: 100%;
-    height: 0;
     top: 0;
     left: 0;
+    width: 100%;
+    height: 0;
   }
   .custom-range-component .custom-range-dot {
     position: absolute;
+    z-index: 5;
     //transition: all 0s;
     /*will-change: transform;*/
     cursor: pointer;
-    z-index: 5;
   }
   .custom-range-component .custom-range-dot .custom-range-dot-handle {
     width: 100%;
@@ -1244,20 +1244,20 @@
     top: 0;
   }
   .custom-range-component .custom-range-tooltip-wrap {
-    display: none;
     position: absolute;
     z-index: 9;
+    display: none;
   }
   .custom-range-component .custom-range-tooltip {
-    display: block;
     font-size: 14px;
-    white-space: nowrap;
-    padding: 2px 5px;
-    min-width: 20px;
-    text-align: center;
     color: #fff;
-    border-radius: 5px;
+    display: block;
+    min-width: 20px;
+    padding: 2px 5px;
+    text-align: center;
+    white-space: nowrap;
     border: 1px solid #3498db;
+    border-radius: 5px;
     background-color: #3498db;
   }
   .custom-range-component .custom-range-tooltip-wrap.custom-range-tooltip-top {
@@ -1288,10 +1288,10 @@
     left: 50%;
     width: 0;
     height: 0;
+    transform: translate(-50%, 0);
     border: 5px solid transparent;
     /*border: 6px solid transparent\0;*/
     border-top-color: inherit;
-    transform: translate(-50%, 0);
   }
   .custom-range-component .custom-range-tooltip-wrap.vue-merged-tooltip {
     display: block;
@@ -1305,10 +1305,10 @@
     left: 50%;
     width: 0;
     height: 0;
+    transform: translate(-50%, 0);
     border: 5px solid transparent;
     /*border: 6px solid transparent\0;*/
     border-bottom-color: inherit;
-    transform: translate(-50%, 0);
   }
   .custom-range-component .custom-range-tooltip-wrap.custom-range-tooltip-left .custom-range-tooltip::before,
   .custom-range-component .custom-range-tooltip-left .vue-merged-tooltip .custom-range-tooltip::before {
@@ -1318,10 +1318,10 @@
     right: -10px;
     width: 0;
     height: 0;
+    transform: translate(0, -50%);
     border: 5px solid transparent;
     /*border: 6px solid transparent\0;*/
     border-left-color: inherit;
-    transform: translate(0, -50%);
   }
   .custom-range-component .custom-range-tooltip-wrap.custom-range-tooltip-right .custom-range-tooltip::before,
   .custom-range-component .custom-range-tooltip-right .vue-merged-tooltip .custom-range-tooltip::before {
@@ -1331,10 +1331,10 @@
     left: -10px;
     width: 0;
     height: 0;
+    transform: translate(0, -50%);
     border: 5px solid transparent;
     /*border: 6px solid transparent\0;*/
     border-right-color: inherit;
-    transform: translate(0, -50%);
   }
   .custom-range-component .custom-range-dot.custom-range-hover:hover .custom-range-tooltip-wrap {
     display: block;
@@ -1344,12 +1344,12 @@
   }
   .custom-range-component .custom-range-piecewise {
     position: absolute;
-    width: 100%;
-    padding: 0;
-    margin: 0;
-    left: 0;
     top: 0;
+    left: 0;
+    width: 100%;
     height: 100%;
+    margin: 0;
+    padding: 0;
     list-style: none;
   }
   .custom-range-component .custom-range-piecewise-item {
@@ -1359,15 +1359,15 @@
   }
   .custom-range-component .custom-range-piecewise-dot {
     position: absolute;
-    left: 50%;
+    z-index: 2;
     top: 50%;
+    left: 50%;
+    display: inline-block;
     width: 100%;
     height: 100%;
-    display: inline-block;
-    background-color: rgba(0, 0, 0, 0.16);
-    border-radius: 50%;
     transform: translate(-50%, -50%);
-    z-index: 2;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, .16);
     //transition: all .3s;
   }
   .custom-range-component .custom-range-piecewise-item:first-child .custom-range-piecewise-dot,
@@ -1376,33 +1376,34 @@
   }
   .custom-range-component.custom-range-horizontal .custom-range-piecewise-label,
   .custom-range-component.custom-range-horizontal-reverse .custom-range-piecewise-label {
-    position: absolute;
-    display: inline-block;
-    top: 100%;
-    left: 50%;
-    white-space: nowrap;
     font-size: 12px;
     color: #333;
-    transform: translate(-50%, 8px);
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    display: inline-block;
     visibility: visible;
+    transform: translate(-50%, 8px);
+    white-space: nowrap;
   }
   .custom-range-component.custom-range-vertical .custom-range-piecewise-label,
   .custom-range-component.custom-range-vertical-reverse .custom-range-piecewise-label {
-    position: absolute;
-    display: inline-block;
-    top: 50%;
-    left: 100%;
-    white-space: nowrap;
     font-size: 12px;
     color: #333;
-    transform: translate(8px, -50%);
+    position: absolute;
+    top: 50%;
+    left: 100%;
+    display: inline-block;
     visibility: visible;
+    transform: translate(8px, -50%);
+    white-space: nowrap;
   }
   .custom-range-component .custom-range-sr-only {
-    clip: rect(1px, 1px, 1px, 1px);
-    height: 1px;
-    width: 1px;
-    overflow: hidden;
     position: absolute !important;
+    overflow: hidden;
+    clip: rect(1px, 1px, 1px, 1px);
+    width: 1px;
+    height: 1px;
   }
+
 </style>

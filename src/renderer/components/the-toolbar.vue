@@ -265,20 +265,22 @@ export default {
 <style lang="scss" scoped>
   @import "../scss/base";
   .page_toolbar {
-    grid-area: toolbar;
-    background-color: $bg-toolbar;
-    padding: 5px .5em 5px 0;
+    z-index: 1;
     display: flex;
     align-items: center;
-    z-index: 1;
+    padding: 5px .5em 5px 0;
+    background-color: $bg-toolbar;
+
+    grid-area: toolbar;
   }
   .toggle-wrap {
     width: $w-layersbar;
     text-align: center;
     .btn--toolbar {
       @include multi-transition(transform);
-      transform: rotate(0);
+
       margin: auto;
+      transform: rotate(0);
     }
     &.hide-layers {
       .btn--toolbar {
@@ -287,11 +289,11 @@ export default {
     }
   }
   .toolbar_list {
-    padding: 0 .7143rem;
-    margin: 0;
-    list-style: none;
     display: flex;
     align-items: center;
+    margin: 0;
+    padding: 0 .7143rem;
+    list-style: none;
     border-left: 1px solid $toolbar-border;
     > li + li {
       margin-left: .3571rem;
@@ -300,36 +302,36 @@ export default {
   .toolbar_list-arrow-wrap {
     position: relative;
     > .btn {
-      //background-color: $bg-toolbar;
       position: relative;
     }
     &:hover {
-      > .btn {
-        //background-color: $bg-workspace-2;
-      }
+      /*> .btn {*/
+        /*//background-color: $bg-workspace-2;*/
+      /*}*/
       .toolbar_list-arrow {
-        max-height: 7.5rem;
         opacity: 1;
+        max-height: 7.5rem;
       }
     }
     &.disable-hover:hover {
       .toolbar_list-arrow {
-        max-height: 0;
         opacity: 0;
+        max-height: 0;
       }
     }
   }
   .toolbar_list-arrow {
     @include multi-transition(max-height, opacity);
-    padding: 0;
-    margin: 0;
-    list-style: none;
+
     position: absolute;
     top: 0;
     left: 0;
     opacity: 0;
-    max-height: 0;
     overflow: hidden;
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
     li + li {
       margin-top: 2px;
     }
@@ -346,5 +348,4 @@ export default {
       margin-left: 1rem;
     }
   }
-
 </style>

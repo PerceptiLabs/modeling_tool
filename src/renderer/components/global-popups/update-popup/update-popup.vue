@@ -4,13 +4,13 @@
       h3.header_title {{title}}
       span.header_update-status(v-if="updatesLoading") {{progress}}%
     popup-loading(
-      v-if="loadingStatus === 'installing'" 
+      v-if="loadingStatus === 'installing'"
       :updateStatus="progress"
       @canceledUpdate="cancel"
       :loadingStatus="loadingStatus"
     )
     popup-info(
-      v-else 
+      v-else
       @installStarted="install"
       @closedPopup="cancel"
       :aboutUpdateList="updateList"
@@ -24,11 +24,8 @@ import PopupInfo      from '@/components/global-popups/update-popup/popup-info.v
 import PopupLoading   from '@/components/global-popups/update-popup/popup-loading.vue'
 
 export default {
-  components: {
-    PopupInfo,
-    PopupLoading
-  },
-  name: 'UpdatePopup',
+  name: 'PopupUpdate',
+  components: {PopupInfo, PopupLoading},
   props: {
     isShowPopup: {                  // show update popup
       type: Boolean,
@@ -71,7 +68,7 @@ export default {
           clearInterval(this.fakeTimer);
           this.loadingStatus = 'done';
           console.log(this.loadingStatus);
-        } 
+        }
       }, 700)
     }
   }

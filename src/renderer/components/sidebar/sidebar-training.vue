@@ -165,15 +165,15 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .sidebar-content {
-    padding-top: 1rem;
-    flex: 0 0 auto;
     display: flex;
+    flex: 0 0 auto;
     flex-wrap: wrap;
+    padding-top: 1rem;
   }
 
   .pc-chart_box {
-    width: 100%;
     flex: 0 0 100%;
+    width: 100%;
   }
 
   .pc-chart_title {
@@ -181,16 +181,16 @@ export default {
     margin: 1rem 0 .5rem;
   }
   .pc-chart_main {
-    height: 9rem;
     position: relative;
+    height: 9rem;
     background-color: $bg-workspace;
   }
   .pc-chart_chart {
     position: absolute !important;
     top: 0;
+    right: 0;
     bottom: 0;
     left: 0;
-    right: 0;
     width: 100%;
     height: 100%;
   }

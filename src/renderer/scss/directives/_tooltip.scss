@@ -60,7 +60,7 @@ $margin-tooltip: .65rem;
 		bottom: 100%;
 		left: 50%;
 		transform: translate(-50%, 50%) rotate(45deg);
-		box-shadow: -1px -1px 1px rgba(#000, .5);
 		background: linear-gradient(135deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
+		box-shadow: -1px -1px 1px rgba(#000, .5);
 	}
 }

@@ -1,37 +1,33 @@
 $sidebar-indent: 10px;
 
 html {
-  font-size: $global-font-size;
-  box-sizing: border-box;
-  @include media('>=xxlarge') {
-    font-size: 10px;
-  }
+	font-size: $global-font-size;
+	box-sizing: border-box;@include media('>=xxlarge') {
+		font-size: 10px;
+	}
 }
 
 *,
 *:before,
 *:after {
-  box-sizing: inherit;
+	box-sizing: inherit;
 }
 
 * {
-  max-height: 1000000px;
+	max-height: 1000000px;
 }
 
 body {
-  font-family: $base-font-sans-serif;
-  font-weight: normal;
-  line-height: $line-height-base;
+	font-family: $base-font-sans-serif;
+	font-weight: normal;
+	line-height: $line-height-base;
+	color: $base-text-color;
+	display: flex;
+	overflow: hidden;
+	flex-direction: column;
+	min-width: $base-min-width;
+	background: $base-background-color;
 
-  display: flex;
-  overflow: hidden;
-  flex-direction: column;
-
-  min-width: $base-min-width;
-
-  color: $base-text-color;
-  background: $base-background-color;
-
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
 }

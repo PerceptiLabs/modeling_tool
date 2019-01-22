@@ -126,16 +126,13 @@ export default {
 
 <style lang="scss">
   @import "../../scss/base";
-  .layer-item-wrap {
-
-  }
   .layer-item {
     position: relative;
     display: flex;
     align-items: center;
     height: $h-sidebar-layers-item;
-    padding-left: $h-sidebar-layers-indent;
     padding-right: $h-sidebar-layers-indent;
+    padding-left: $h-sidebar-layers-indent;
     border: 1px solid transparent;
     border-bottom: 1px solid $bg-toolbar;
     &:hover {
@@ -151,18 +148,18 @@ export default {
 
   .layer-item_left-sidebar {
     .btn {
-      padding: .5em;
       font-size: 1.2em;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: .5em;
     }
   }
   .layer-item_folder-section {
     .btn {
-      padding: 0;
       display: flex;
       align-items: center;
+      padding: 0;
     }
     &.open {
       .icon-shevron {

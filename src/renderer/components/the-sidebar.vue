@@ -77,38 +77,39 @@ export default {
 <style lang="scss" scoped>
   @import "../scss/base";
   .page_sidebar {
-    grid-area: sidebar;
-    max-width: $w-sidebar;
-    overflow: hidden;
     display: flex;
+    overflow: hidden;
     flex-direction: column;
+    max-width: $w-sidebar;
+
+    grid-area: sidebar;
   }
   .sidebar_tabset {
-    padding: 0;
-    margin: 0;
-    list-style: none;
     display: flex;
     flex: 0 0 auto;
+    margin: 0;
+    padding: 0;
+    list-style: none;
     > li {
       flex: 1 1 50%;
-      max-width: 50%;
       min-width: 75px;
+      max-width: 50%;
     }
     .btn {
-      border-radius: 0;
-      height: $h-toolbar;
-      width: 100%;
-      background-color: $bg-toolbar;
       color: $disable-txt;
+      width: 100%;
+      height: $h-toolbar;
+      border-radius: 0;
+      background-color: $bg-toolbar;
       &.active {
-        background-color: transparent;
         color: inherit;
+        background-color: transparent;
       }
     }
   }
   .sidebar_tab {
-    flex: 1 1 100%;
     display: flex;
+    flex: 1 1 100%;
     flex-direction: column;
     width: $w-sidebar;;
     > * {
@@ -117,10 +118,12 @@ export default {
     }
   }
   //Animations
-  .scroll-right-enter-active, .scroll-right-leave-active {
+  .scroll-right-enter-active,
+  .scroll-right-leave-active {
     transition: max-width .5s;
   }
-  .scroll-right-enter, .scroll-right-leave-to {
+  .scroll-right-enter,
+  .scroll-right-leave-to {
     max-width: 0;
   }
 </style>
