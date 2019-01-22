@@ -12,7 +12,6 @@ const mousedownOutside = {
   },
   methods: {
     mousedownOutside(event) {
-      console.log('clickOutside mixin');
       if (event.target.closest('.js-clickout') !== this.MousedownElementTracking) {
         document.removeEventListener('mousedown', this.mousedownOutside);
         this.MousedownElementTracking = null;
@@ -24,7 +23,6 @@ const mousedownOutside = {
     },
   },
   beforeDestroy() {
-    console.log('beforeDestroy clickOutsideAction');
     document.removeEventListener('mousedown', this.mousedownOutside);
   }
 };

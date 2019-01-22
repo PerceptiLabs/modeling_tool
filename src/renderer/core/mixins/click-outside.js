@@ -12,7 +12,6 @@ const clickOutside = {
   },
   methods: {
     clickOutside(event) {
-      console.log('clickOutside mixin');
       if (event.target.closest('.js-clickout') !== this.ClickElementTracking) {
         document.removeEventListener('click', this.clickOutside);
         this.ClickElementTracking = null;
@@ -24,7 +23,6 @@ const clickOutside = {
     },
   },
   beforeDestroy() {
-    console.log('beforeDestroy clickOutsideAction');
     document.removeEventListener('click', this.clickOutside);
   }
 };
