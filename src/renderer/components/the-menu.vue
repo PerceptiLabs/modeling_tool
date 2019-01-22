@@ -1,31 +1,32 @@
 <template lang="pug">
-  ul.header-nav
-    li(
-    v-for="(item, i) in navMenu"
-    :key="i"
-    )
-      button.btn.btn--link(type="button") {{ item.label }}
-      ul.header-nav_sublist.show-hide.sublist--top
-        li(
-          v-for="(subItem, index) in item.submenu"
-          :key="index"
-          :class="{'have-sublist' : subItem.submenu}"
-        ) 
-          div.separator(v-if="subItem.type === 'separator'")
-          button.btn.btn--link(type="button" v-else
-            :disabled="subItem.enabled === false"
-            @click="subItem.active()"
-          ) {{subItem.label}} 
-            i.icon.icon-shevron-right(v-if="subItem.submenu")
-          div.btn(v-if="i === navMenu.length - 1 && index === item.submenu.length - 1") Version: {{appVersion}}
-          ul.header-nav_sublist.sublist--right
-            li(
-              v-for="(subSubItem, index) in subItem.submenu"
-            )
-              button.btn.btn--link(type="button"
-                :disabled="subSubItem.enabled === false"
-                @click="subItem.active()"
-              ) {{subSubItem.label}}
+  nav.app-header_nav
+    ul.header-nav
+      li(
+      v-for="(item, i) in navMenu"
+      :key="i"
+      )
+        button.btn.btn--link(type="button") {{ item.label }}
+        ul.header-nav_sublist.show-hide.sublist--top
+          li(
+            v-for="(subItem, index) in item.submenu"
+            :key="index"
+            :class="{'have-sublist' : subItem.submenu}"
+          )
+            div.separator(v-if="subItem.type === 'separator'")
+            button.btn.btn--link(type="button" v-else
+              :disabled="subItem.enabled === false"
+              @click="subItem.active()"
+            ) {{subItem.label}}
+              i.icon.icon-shevron-right(v-if="subItem.submenu")
+            div.btn(v-if="i === navMenu.length - 1 && index === item.submenu.length - 1") Version: {{appVersion}}
+            ul.header-nav_sublist.sublist--right
+              li(
+                v-for="(subSubItem, index) in subItem.submenu"
+              )
+                button.btn.btn--link(type="button"
+                  :disabled="subSubItem.enabled === false"
+                  @click="subItem.active()"
+                ) {{subSubItem.label}}
 
 </template>
 
@@ -183,7 +184,7 @@ export default {
       ipcRenderer.send('checkUpdate')
     },
     addNewNetwork() {
-      this.$store.commit('mod_workspace/ADD_network');
+      this.$store.dispatch('mod_workspace/ADD_network');
     },
     openNetwork() {
       this.$store.commit('mod_events/set_openNetwork')
@@ -202,13 +203,16 @@ export default {
 
 <style lang="scss" scoped>
   @import "../scss/base";
-
+  .app-header_nav {
+    height: 100%;
+    -webkit-app-region: no-drag;
+  }
   .header-nav {
     font-weight: 500;
     display: flex;
     height: 100%;
     > li {
-      font-size: 1.4rem;
+      font-size: 14px;
       color: $col-txt;
       position: relative;
       display: flex;

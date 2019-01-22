@@ -30,28 +30,22 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .app-header {
-    position: relative;
-    z-index: 2;
-    background: linear-gradient(180deg, #4A4A4A 0%, #3E3E3E 100%);
     display: flex;
     align-items: center;
-    height: $h-header;
-    -webkit-app-region: drag;
-    .btn {
-      -webkit-app-region: no-drag;
-    }
+    height: $h-header-mac;
+    background: linear-gradient(180deg, #4a4a4a 0%, #3e3e3e 100%);
   }
   .app-header_actions {
-    margin-left: auto;
     display: flex;
+    margin-left: auto;
     .btn {
-      height: 10px;
-      width: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      border-radius: 20rem;
-      margin-left: 1rem;
+      width: 10px;
+      height: 10px;
+      margin-left: 10px;
+      border-radius: 50%;
       &:hover {
         background: #545353;
       }
@@ -69,16 +63,17 @@ export default {
       }
     }
     .btn--app-close {
-      background: #FF6157;
+      background: #ff6157;
       &:hover {
-        background: #E94040;
+        background: #e94040;
       }
     }
   }
   .app-header_title {
+    font-size: 12px;
     flex-grow: 1;
     text-align: center;
-    font-size: 1.2rem;
   }
+
 
 </style>

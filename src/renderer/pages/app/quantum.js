@@ -20,7 +20,7 @@ export default {
     TheInfoPopup
   },
   beforeCreate() {
-    this.$store.commit('mod_workspace/ADD_network');
+    this.$store.dispatch('mod_workspace/ADD_network');
   },
   created() {
 
@@ -126,7 +126,7 @@ export default {
         (err, data)=> {
         if(data) {
           let net = JSON.parse(data.toString());
-          this.$store.commit('mod_workspace/ADD_network', net)
+          this.$store.dispatch('mod_workspace/ADD_network', net)
         }
         else {
           console.error(err);

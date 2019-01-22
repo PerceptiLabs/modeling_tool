@@ -11,8 +11,8 @@ Vue.use(Router);
 
 export default new Router({
   routes: [
-    {path: '/',  name: 'login', component: PageLogin},
-    {path: '/app',name: 'app',   component: PageQuantum},
+    {path: '/',             name: 'login',    component: PageLogin},
+    {path: '/app',          name: 'app',      component: PageQuantum},
     {path: '/register',     name: 'register', component: PageRegister},
     {path: '/policy-page',  name: 'policy',   component: PagePolicy},
     {path: '/projects',     name: 'projects', component: PageProjects },

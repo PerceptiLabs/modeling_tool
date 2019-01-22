@@ -16,19 +16,11 @@
   @import "../../scss/base";
   .page {
     display: grid;
-    height: calc(100vh - #{$h-header});
     margin: 0;
     background-color: $bg-window;
     grid-template-areas:  'toolbar   toolbar    sidebar'
                           'layersbar  workspace sidebar';
     grid-template-rows: auto 1fr;
     grid-template-columns: auto 1fr auto;
-  }
-  .page_workspace {
-    display: flex;
-    overflow: hidden;
-    flex-direction: column;
-
-    grid-area: workspace;
   }
 </style>

@@ -2,13 +2,8 @@
   .network-field(:id="'network' + netIndex"
     ref="network"
   )
-    svg.svg-arrow(
-      ref="svg"
-      )
+    svg.svg-arrow(:style="styleSvgArrow")
       defs
-        //-lineargradient(id="grad")
-          stop(stop-color='black')
-          stop(offset='100%' stop-color='magenta')
         marker#svg-arrow_triangle(
           refX="3" refY="2.25"
           markerWidth="9"
@@ -121,7 +116,6 @@ export default {
   },
   mounted() {
     this.calcViewPort();
-    this.drawArrows();
     window.addEventListener("resize", this.resizeCalc, false);
   },
   beforeDestroy() {
@@ -129,12 +123,6 @@ export default {
     window.removeEventListener("resize", this.resizeCalc, false);
   },
   computed: {
-    // workspaceJSON() {
-    //   return JSON.stringify(this.workspace)
-    // },
-    // workspace() {
-    //   return this.$store.getters['mod_workspace/GET_currentNetwork']
-    // },
     networkScale() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
     },
@@ -150,6 +138,14 @@ export default {
     preArrow() {
       return this.$store.state.mod_workspace.preArrow;
     },
+    styleSvgArrow() {
+      // let size = 100 / this.networkScale;
+      // return {
+      //   width: size + '%',
+      //   height: size + '%',
+      // }
+      return ''
+    }
   },
   watch: {
     eventCalcArrow() {
@@ -157,8 +153,6 @@ export default {
     },
     smallViewPort() {
       this.drawArrows();
-      //this.calcCanvasSize();
-
     }
   },
   methods: {
@@ -500,8 +494,6 @@ export default {
   $color-arrow: #22DDE5;
   .network-field {
     position: relative;
-    display: flex;
-    overflow: auto;
     flex: 1 1 100%;
   }
   .svg-arrow {

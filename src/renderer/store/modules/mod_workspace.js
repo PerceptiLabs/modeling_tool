@@ -93,7 +93,7 @@ const mutations = {
   set_networkElementList(state, {getters, value}) {
     getters.GET_currentNetworkElementList = value
   },
-  ADD_network (state, net) {
+  add_network (state, {dispatch, net}) {
     let newNetwork = {};
     let defaultNetwork = {
       networkName: 'New_Network',
@@ -117,6 +117,7 @@ const mutations = {
 
     state.workspaceContent.push(newNetwork);
     state.currentNetwork = state.workspaceContent.length - 1;
+    //dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
   DELETE_network(state, index) {
     if(state.currentNetwork >= index) {
@@ -324,6 +325,9 @@ const actions = {
   //---------------
   //  NETWORK
   //---------------
+  ADD_network({commit, dispatch}, net) {
+    commit('add_network', {dispatch, net})
+  },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
   },

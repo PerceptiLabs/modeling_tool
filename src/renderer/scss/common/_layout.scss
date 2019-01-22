@@ -2,7 +2,9 @@ $sidebar-indent: 10px;
 
 html {
 	font-size: $global-font-size;
-	box-sizing: border-box;@include media('>=xxlarge') {
+	box-sizing: border-box;
+
+@include media('>=xxlarge') {
 		font-size: 10px;
 	}
 }
@@ -22,9 +24,7 @@ body {
 	font-weight: normal;
 	line-height: $line-height-base;
 	color: $base-text-color;
-	display: flex;
 	overflow: hidden;
-	flex-direction: column;
 	min-width: $base-min-width;
 	background: $base-background-color;
 

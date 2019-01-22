@@ -1,4 +1,11 @@
 @import 'base';
+/*----- CSS VAR -----*/
+:root {
+  --size-layers-btn: 58px;
+  @include media('>=xxlarge') {
+    --size-layers-btn: 72px;
+  }
+}
 /*----- Common styles -----*/
 @import 'fonts/roboto';
 @import 'fonts/icomoon';

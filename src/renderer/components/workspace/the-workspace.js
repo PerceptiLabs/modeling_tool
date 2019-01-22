@@ -17,19 +17,15 @@ export default {
     TheStatistics,
     TheViewBox,
   },
-  data () {
-    return {
-      scale: 100,
-    }
-  },
-  mounted() {
-
-  },
   computed: {
-    styleScale() {
-      let zoom = this.scale / 100;
-      this.$store.dispatch('mod_workspace/SET_statusNetworkZoom', zoom);
-      return this.scale
+    scale: {
+      get: function () {
+        let zoom = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom * 100;
+        return Math.round(zoom);
+      },
+      set: function (newValue) {
+        this.$store.dispatch('mod_workspace/SET_statusNetworkZoom', newValue/100);
+      }
     },
     workspace() {
       return this.$store.state.mod_workspace.workspaceContent
@@ -55,9 +51,6 @@ export default {
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
-    // currentSelectedIndex() {
-    //   return this.$store.getters['mod_workspace/GET_currentSelectedIndex']
-    // },
     statisticsIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
     },
@@ -68,6 +61,7 @@ export default {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     currentNet() {
+      this.scale = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
 
@@ -119,7 +113,7 @@ export default {
       //console.log(e)
     },
     editNetName(newName) {
-      this.$store.commit('mod_workspace/SET_networkName', newName);
+      this.$store.dispatch('mod_workspace/SET_networkName', newName);
     },
     openStatistics(i) {
       this.setTabNetwork(i);

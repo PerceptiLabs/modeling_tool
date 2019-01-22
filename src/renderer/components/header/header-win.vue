@@ -2,8 +2,7 @@
   .app-header
     .app-header_logo
       img(src="~@/assets/logo_small_dark.svg" alt="percepti labs logo")
-    nav.app-header_nav
-      the-menu
+    the-menu
     ul.app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-appMinimaze
       button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-appResize
@@ -33,53 +32,33 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .app-header {
-    position: relative;
-    z-index: 2;
-    background: #141419;
     display: flex;
     align-items: center;
-    height: $h-header;
-    -webkit-app-region: drag;
-    .btn {
-      -webkit-app-region: no-drag;
-    }
+    height: $h-header-win;
+    background: #141419;
   }
   .app-header_logo {
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    margin: 0 1rem;
-  }
-
-  .app-header_nav {
-    height: 100%;
-     -webkit-app-region: no-drag;
+    margin: 0 12px;
   }
 
   .app-header_actions {
-    margin-left: auto;
     display: flex;
+    margin-left: auto;
     .btn {
-      height: $h-header;
-      width: $h-header * 2;
+      font-size: 15px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.5em;
+      width: $h-header-win * 2;
+      height: $h-header-win;
       border-radius: 0;
       &:hover {
         background: #545353;
       }
     }
-    .btn--app-minify {
-
-    }
-    .btn--app-full {
-
-    }
     .btn--app-close {
       &:hover {
-        background: #E94040;
+        background: #e94040;
       }
     }
   }

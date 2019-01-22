@@ -94,7 +94,9 @@ $h-sidebar-layers-item: 3.357rem; //33px
 $h-sidebar-layers-indent: 1rem; //14px
 $w-sidebar: 30rem; //300px
 $h-toolbar: 4em; //56px
-$h-header: 3rem;
+$h-header-win: 30px;
+$h-header-mac: 22px;
+$h-header-linux: 51px;
 
 /*----- Font -----*/
 $base-font-sans-serif: 'roboto', 'Helvetica',  'Arial', sans-serif;
@@ -116,10 +118,4 @@ $popup-indent-top: 2rem;
 $popup-indent-left: 1rem;
 
 
-/*----- CSS VAR -----*/
-:root {
-  --size-layers-btn: 58px;
-  @include media('>=xxlarge') {
-    --size-layers-btn: 72px;
-  }
-}
+

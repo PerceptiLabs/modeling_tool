@@ -6,8 +6,7 @@
         button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-appMinimaze
         button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-appResize
         button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-appClose
-    nav.app-header_nav
-      the-menu
+    the-menu.app-header_nav
 </template>
 
 <script>
@@ -18,13 +17,13 @@ export default {
   components: {TheMenu},
   methods: {
     appClose() {
-      this.$store.dispatch('mod_events/EVENT_closeCore');
+      this.$emit('appClosed')
     },
     appMinimize() {
-      ipcRenderer.send('appMinimize')
+      this.$emit('appMinimized')
     },
     appMaximize() {
-      ipcRenderer.send('appMaximize')
+      this.$emit('appMaximized')
     }
   }
 }
@@ -33,64 +32,51 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .app-header {
-    position: relative;
-    z-index: 2;
-    -webkit-app-region: drag;
     background: #272727;
-    .btn {
-      -webkit-app-region: no-drag;
-    }
   }
   .app-header_title {
-    height: $h-header;
-    background: linear-gradient(180deg, #454545 0%, #212121 100%);
     display: flex;
     align-items: center;
+    height: $h-header-linux - 22px;
+    background: linear-gradient(180deg, #454545 0%, #212121 100%);
   }
   .title_app-name {
-    text-align: center;
-    font-size: 1.4rem;
+    font-size: 14px;
     font-weight: 700;
     flex-grow: 1;
+    text-align: center;
   }
 
   .app-header_nav {
     height: 22px;
-    -webkit-app-region: no-drag;
   }
 
   .title_app-actions {
-    margin-left: auto;
     display: flex;
+    margin-left: auto;
     .btn {
-      height: 18px;
-      width: 18px;
+      font-size: 8px;
+      font-weight: 900;
+      color: #1f1f24;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 15px;
-      background: linear-gradient(180deg, #8F8F8F 0%, #323233 100%);
-      color: #1f1f24;
-      font-weight: 900;
-      font-size: 0.8rem;
-      border-radius: 20rem;
-      margin-right: 1rem;
+      width: 18px;
+      height: 18px;
+      margin-right: 7px;
       border: 1px solid #1e1e1e;
+      border-radius: 50%;
+      background: linear-gradient(180deg, #8f8f8f 0%, #323233 100%);
       &:hover {
         background: #545353;
       }
     }
-    .btn--app-minify {
-
-    }
-    .btn--app-full {
-
-    }
     .btn--app-close {
-      background: linear-gradient(180deg, #F47979 0%, #E32727 100%);
+      background: linear-gradient(180deg, #f47979 0%, #e32727 100%);
       &:hover {
-        background: #E94040;
+        background: #e94040;
       }
     }
   }
+
 </style>

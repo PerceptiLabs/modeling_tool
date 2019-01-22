@@ -5,6 +5,7 @@ const state = {
   hideSidebar: true,
   userMode: 'advanced', //simple
   userToken: '',
+  platform: process.platform,
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,

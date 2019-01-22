@@ -81,7 +81,6 @@ export default {
     overflow: hidden;
     flex-direction: column;
     max-width: $w-sidebar;
-
     grid-area: sidebar;
   }
   .sidebar_tabset {
