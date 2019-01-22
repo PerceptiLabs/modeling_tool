@@ -1,6 +1,6 @@
 /*
   ADD TO EVENT
-* this.ClickElementTracking = ev.target.closest('.clickout');
+* this.ClickElementTracking = ev.target.closest('.js-clickout');
   document.addEventListener('click', this.clickOutside);
 * */
 
@@ -21,6 +21,9 @@ const clickOutside = {
     clickOutsideAction() {
       console.log('need add method clickOutsideAction');
     },
+  },
+  beforeDestroy() {
+    document.removeEventListener('click', this.clickOutside);
   }
 };
 

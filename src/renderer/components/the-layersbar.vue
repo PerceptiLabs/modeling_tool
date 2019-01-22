@@ -66,7 +66,6 @@
   import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/view-classic-ml-random-forest.vue'
   import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/view-classic-ml-vector-machine.vue'
 
-
 export default {
   name: 'TheLayersbar',
   mixins: [clickOutside],
@@ -146,21 +145,22 @@ export default {
   },
   methods: {
     toggleElList(index, ev) {
-      this.ClickElementTracking = ev.target.closest('.js-clickout');
-      document.addEventListener('click', this.clickOutside);
-
       if (this.layersbarList[index].showEl) {
-        this.layersbarList[index].showEl = false
+        this.layersbarList[index].showEl = false;
+        document.removeEventListener('click', this.clickOutside);
       }
       else {
         this.clickOutsideAction();
         this.layersbarList[index].showEl = true;
+
+        this.ClickElementTracking = ev.target.closest('.js-clickout');
+        document.addEventListener('click', this.clickOutside);
       }
     },
     clickOutsideAction() {
       this.layersbarList.forEach((item)=> {
         item.showEl = false
-      })
+      });
     },
   }
 }

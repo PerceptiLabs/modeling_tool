@@ -27,7 +27,9 @@ export default {
   },
   computed: {
     styleScale() {
-      return this.scale / 100
+      let zoom = this.scale / 100;
+      this.$store.dispatch('mod_workspace/SET_statusNetworkZoom', zoom);
+      return this.scale
     },
     workspace() {
       return this.$store.state.mod_workspace.workspaceContent
@@ -76,7 +78,7 @@ export default {
         this.$store.dispatch('globalView/NET_trainingDone');
         this.$store.dispatch('mod_api/API_startWatchGetStatus', false);
       }
-    }
+    },
   },
   methods: {
     scaleScroll(e) {

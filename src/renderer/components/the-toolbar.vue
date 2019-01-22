@@ -162,13 +162,7 @@ export default {
       }
     },
     isTraining() {
-      if(this.statusNetworkCore === 'Training'
-        || this.statusNetworkCore === 'Validation'
-        || this.statusNetworkCore === 'Paused'
-      ){
-        return true
-      }
-      else return false
+      return this.$store.getters['mod_workspace/GET_networkIsTraining']
     },
     hideLayers () {
       return this.$store.state.globalView.hideLayers
