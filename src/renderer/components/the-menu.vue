@@ -235,7 +235,7 @@ export default {
     position: absolute;
     min-width: 10rem;
     box-shadow: $box-shad;
-    background-color: $bg-workspace;
+    background-color: #23252A;
     z-index: 1;
     font-weight: 400;
     li{
