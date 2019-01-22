@@ -30,7 +30,7 @@
         .form_holder
           router-link.btn.btn--link(:to="{name: 'register'}") Register new account
 
-          router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects
+          //router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects
 </template>
 
 <script>
@@ -43,10 +43,10 @@ export default {
   },
   data() {
     return {
-      userEmail: 'test@test.com',
-      userPass: '123123',
-      //userEmail: '',
-      //userPass: ''
+      // userEmail: 'test@test.com',
+      // userPass: '123123',
+      userEmail: '',
+      userPass: ''
     }
   },
   computed: {
