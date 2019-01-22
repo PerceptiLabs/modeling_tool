@@ -6,7 +6,7 @@ $margin-tooltip: .65rem;
 	position: relative;
 	&:hover .tooltip {
 		transition: transform 0s .5s;
-		.workspace & {
+		.workspace_content & {
 			display: none;
 		}
 		&.tooltip--right {
@@ -31,7 +31,7 @@ $margin-tooltip: .65rem;
 	border-radius: $bdrs;
 	background-color: $popper-background-color;
 	box-shadow: $icon-shad;
-
+	pointer-events: none;
 	&:before {
 		content: '';
 		position: absolute;
