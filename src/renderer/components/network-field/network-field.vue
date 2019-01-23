@@ -39,11 +39,6 @@
         :x2="preArrow.stop.x"
         :y2="preArrow.stop.y"
         )
-    .form_input
-      base-radio(groupName="group" valueInput="Data" v-model="settings")
-        span Data
-      base-radio(groupName="group" valueInput="Labels" v-model="settings")
-        span Labels
     component(
       v-for="(el, index) in networkElementList"
       :key="el.index"
@@ -121,7 +116,7 @@ export default {
     }
   },
   mounted() {
-    this.calcViewPort();
+    this.calcViewPort(true);
     window.addEventListener("resize", this.resizeCalc, false);
   },
   beforeDestroy() {
@@ -207,10 +202,13 @@ export default {
         this.layerSize = this.$refs.layer[0].$el.offsetWidth;
       }
     },
-    calcViewPort() {
+    calcViewPort(needCalcArray) {
       window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
       if(!this.smallViewPort) {
         this.layerSize = 72;
+      }
+      if(needCalcArray) {
+        this.drawArrows();
       }
     },
     //-------------

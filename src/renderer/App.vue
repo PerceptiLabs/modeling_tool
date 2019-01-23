@@ -64,7 +64,6 @@
       platform() {
         return this.$store.state.globalView.platform
       }
-
     }
   }
 </script>
