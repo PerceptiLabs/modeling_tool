@@ -62,7 +62,8 @@
     },
     computed: {
       platform() {
-        return this.$store.state.globalView.platform
+        return 'darwin'
+        //return this.$store.state.globalView.platform
       }
 
     }

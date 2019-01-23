@@ -1,9 +1,9 @@
 <template lang="pug">
   .app-header
     ul.app-header_actions
-      button.btn.btn--app-close(type="button" @click="appClose()")
-      button.btn.btn--app-full(type="button" @click="appMinimize()")
-      button.btn.btn--app-minify(type="button" @click="appMaximize()")
+      button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-appClose
+      button.btn.btn--app-full(type="button" @click="appMinimize()").i.icon.icon-appMinimaze
+      button.btn.btn--app-minify(type="button" @click="appMaximize()").i.icon.icon-appMacFullScreenOn
     .app-header_title PerceptiLabs
 </template>
 
@@ -29,6 +29,10 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
+  $yellowBG: #f6c251;
+  $redBG: #ff6157;
+  $greenBG: #2acb42;
+
   .app-header {
     display: flex;
     align-items: center;
@@ -42,30 +46,36 @@ export default {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 10px;
-      height: 10px;
+      width: 12px;
+      height: 12px;
       margin-left: 10px;
       border-radius: 50%;
-      &:hover {
-        background: #545353;
-      }
+      font-size: 6px;
+      font-weight: 900;
     }
     .btn--app-minify {
-      background: #2acb42;
+      background: $greenBG;
+      color: $greenBG;
+      font-size: 9px;
+      border: 1px solid #24ad38;
       &:hover {
-        background: #24af39;
+        color: #188228;
       }
     }
     .btn--app-full {
-      background: #f6c251;
+      background: $yellowBG;
+      color: $yellowBG;
+      border: 1px solid #d1a545;
       &:hover {
-        background: #d4a642;
+        color: #af811e;
       }
     }
     .btn--app-close {
-      background: #ff6157;
+      background: $redBG;
+      color: $redBG;
+      border: 1px solid #d9524a;
       &:hover {
-        background: #e94040;
+        color: #941c15;
       }
     }
   }
