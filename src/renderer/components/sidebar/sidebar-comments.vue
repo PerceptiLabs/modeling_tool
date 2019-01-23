@@ -89,16 +89,16 @@ export default {
   @import "../../scss/base";
   .sidebar_comments {
     display: flex;
-    flex-direction: column;
-    flex: 1;
     overflow: hidden;
+    flex: 1;
+    flex-direction: column;
   }
   .comments_head {
-    flex: 0 0 auto;
     align-items: center;
+    flex: 0 0 auto;
     justify-content: space-between;
-    border-bottom: 1px solid $bg-toolbar;
     min-height: 3.8rem;
+    border-bottom: 1px solid $bg-toolbar;
   }
   .comments_title {
     align-items: center;
@@ -107,27 +107,27 @@ export default {
     }
   }
   .comments-title_label {
-    background-color: $col-error;
-    color: #fff;
-    border-radius: 1em;
-    padding: .75em .5em;
-    font-weight: 300;
-    top: -.9rem;
     font-size: .9rem;
+    font-weight: 300;
+    color: #fff;
+    top: -.9rem;
+    padding: .75em .5em;
+    border-radius: 1em;
+    background-color: $col-error;
   }
   .comments_body {
-    flex: 1 1 100%;
     display: flex;
+    flex: 1 1 100%;
     flex-direction: column;
     > div {
-      flex: 1 1 100%;
       overflow: auto;
+      flex: 1 1 100%;
     }
   }
   .comments-list,
   .user-comments_list {
-    padding: 0;
     margin: 0;
+    padding: 0;
     list-style: none;
     .right-btn {
       margin-left: auto;
@@ -136,15 +136,13 @@ export default {
   .user-comments {
     display: flex;
     align-items: center;
-    border-bottom: 1px solid $bg-toolbar;
     height: $h-sidebar-layers-item;
+    border-bottom: 1px solid $bg-toolbar;
     .btn {
       font-size: 1.2em;
     }
   }
-  .user-comments_list {
 
-  }
   .user-comment {
     padding: .8rem $h-sidebar-layers-indent .8rem 4rem;
     border-bottom: 1px solid $bg-toolbar;
@@ -165,9 +163,9 @@ export default {
     padding-left: 2em;
   }
   .comments_meta {
+    flex: 0 0 auto;
     padding-top: .6em;
     padding-bottom: .6em;
-    flex: 0 0 auto;
     border-top: 1px solid $bg-toolbar;
   }
   .comments_actions {
@@ -181,4 +179,5 @@ export default {
       }
     }
   }
+
 </style>

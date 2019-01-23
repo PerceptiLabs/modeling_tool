@@ -1,8 +1,8 @@
 form,
 fieldset {
-  margin: 0;
-  padding: 0;
-  border-style: none;
+	margin: 0;
+	padding: 0;
+	border-style: none;
 }
 
 //input,
@@ -16,78 +16,75 @@ input[type='url'],
 input[type='date'],
 input[type='number'],
 textarea {
-  font-size: inherit;
-  box-sizing: border-box;
+	font-size: inherit;
+	box-sizing: border-box;
 
 //display: block;
-  width: 100%;
-  min-width: 3rem;
-  height: $input-height;
-  padding: .45rem 1rem;
-  text-overflow: ellipsis;
-  border: none;
-  -webkit-border-radius: 0;
-          border-radius: 0;
-  background-color: $bg-input;
-  box-shadow: none;
-
-  @include placeholder {
-    color: $col-placeholder;
-  }
-  //@include multi-transition (border-color);
-
+	width: 100%;
+	min-width: 3rem;
+	height: $input-height;
+	padding: .45rem 1rem;
+	text-overflow: ellipsis;
+	border: none;
   -webkit-appearance: none;
+	-webkit-border-radius: 0;
+	        border-radius: 0;
+	background-color: $bg-input;
+	box-shadow: none;
   &:focus {
     background: $bg-grad-blue;
-    @include placeholder {
-      color: #fff;
-      opacity: .5;
-    }
-  }
   &::selection {
     background-color: $color-5;
   }
+@include placeholder {
+		color: $col-placeholder;
+	}
+@include placeholder {
+			color: #fff;
+			opacity: .5;
+		}
+	}
 }
 
 input[type='number'] {
-  width: 4em;
-  text-align: center;
+	width: 4em;
+	text-align: center;
 }
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
-  -webkit-appearance: none;
+	-webkit-appearance: none;
 }
 
 select {
-  color: $col-txt;
-  width: 100%;
-  height: $input-height;
-  padding: .45rem;
-  border: $default-border;
-  border-radius: 0;
-  background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="32" height="24" viewBox="0 0 32 24"><polygon points="0,0 32,0 16,24" style="fill: rgb%28127, 127, 127%29"></polygon></svg>');
-  background-repeat: no-repeat;
-  background-position: right center;
-  background-origin: content-box;
-  background-size: 9px 6px;
+	color: $col-txt;
+	width: 100%;
+	height: $input-height;
+	padding: .45rem;
+	border: $default-border;
+	border-radius: 0;
+	background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" version="1.1" width="32" height="24" viewBox="0 0 32 24"><polygon points="0,0 32,0 16,24" style="fill: rgb%28127, 127, 127%29"></polygon></svg>');
+	background-repeat: no-repeat;
+	background-position: right center;
+	background-origin: content-box;
+	background-size: 9px 6px;
 
-  -webkit-appearance: none;
-     -moz-appearance: none;
+	-webkit-appearance: none;
+	   -moz-appearance: none;
 }
 
 textarea {
-  color: $col-txt;
-  min-height: $input-height*2;
-  resize: vertical;
-  vertical-align: top;
+	color: $col-txt;
+	min-height: $input-height*2;
+	resize: vertical;
+	vertical-align: top;
 }
 
 input,
 select,
 textarea {
-  &:focus {
-    outline: none;
-  }
+	&:focus {
+		outline: none;
+	}
 }
 
 button,
@@ -95,78 +92,79 @@ input[type='button'],
 input[type='reset'],
 input[type='file'],
 input[type='submit'] {
-  cursor: pointer;
-  border: none;
-  //@include multi-transition (color, background-color, border-color);
+	cursor: pointer;
+	border: none;
 
-  -webkit-appearance: none;
+//@include multi-transition (color, background-color, border-color);
+
+	-webkit-appearance: none;
 }
 
 
 .input-wrap_icon {
-  position: relative;
-  width: 100%;
-  input {
-    width: 100%;
-    padding-right: 2.5em;
-  }
-  .icon,
-  span {
-    font-size: 1.2857rem;
-    position: absolute;
-    top: 50%;
-    right: .5em;
-    transform: translateY(-50%);
-  }
+	position: relative;
+	width: 100%;
+	input {
+		width: 100%;
+		padding-right: 2.5em;
+	}
+	.icon,
+	span {
+		font-size: 1.2857rem;
+		position: absolute;
+		top: 50%;
+		right: .5em;
+		transform: translateY(-50%);
+	}
 }
 
 .form_label {
-  font-size: 1.4rem;
+	font-size: 1.4rem;
 }
 
 .form_holder {
-  display: block;
-  width: 100%;
-  margin-bottom: $form-indent;
-  .form_label {
-    display: block;
-    margin-bottom: $form-indent/2;
-  }
+	display: block;
+	width: 100%;
+	margin-bottom: $form-indent;
+	.form_label {
+		display: block;
+		margin-bottom: $form-indent/2;
+	}
 }
 
 .form_row {
-  display: flex;
-  align-items: center;
-  .form_row {
-    .form_label {
-      font-size: 1rem;
-    }
-  }
-   + .form_row {
-    margin-top: $form-indent;
-  }
-  .form_input {
-    flex-grow: 1;
-     + .btn {
-      margin-left: $form-indent;
-    }
-  }
-  //.form_label + .form_input {
-  //  //margin-left: 2rem;
-  //}
+	display: flex;
+	align-items: center;
+	.form_row {
+		.form_label {
+			font-size: 1rem;
+		}
+	}
+	 + .form_row {
+		margin-top: $form-indent;
+	}
+	.form_input {
+		flex-grow: 1;
+		 + .btn {
+			margin-left: $form-indent;
+		}
+	}
+	//.form_label + .form_input {
+	//  //margin-left: 2rem;
+	//}
 }
 
 .form_table {
-  display: table;
-  width: 100%;
-  border-spacing: 0 $form-indent;
-  .form_row {
-    display: table-row;
-  }
-  .form_label,
-  .form_input {
-    display: table-cell;
-  }
+	display: table;
+	width: 100%;
+	border-spacing: 0 $form-indent;
+	.form_row {
+		display: table-row;
+	}
+	.form_label,
+	.form_input {
+		display: table-cell;
+	}
 }
 
 

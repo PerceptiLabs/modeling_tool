@@ -1,10 +1,9 @@
 <template lang="pug">
-  .network-field(:id="'network' + netIndex" ref="network")
-    svg.svg-arrow(v-if="arrowsList.length")
+  .network-field(:id="'network' + netIndex"
+    ref="network"
+  )
+    svg.svg-arrow(:style="styleSvgArrow")
       defs
-        lineargradient(id="grad")
-          stop(stop-color='black')
-          stop(offset='100%' stop-color='magenta')
         marker#svg-arrow_triangle(
           refX="3" refY="2.25"
           markerWidth="9"
@@ -12,30 +11,39 @@
           orient="auto")
           polyline(points="0,0 0,4 3.5,2")
       template(
+        v-if="arrowsList.length"
         v-for="(arrow, i) in arrowsList"
       )
         //:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
         line.svg-arrow_line(
+          data-tabindex="0"
+          :data-startid="arrow.l1.layerId"
+          :data-stopid="arrow.l2.layerId"
+
+          @keyup.46="deleteArrow($event)"
+          @keyup.93.8="deleteArrow($event)"
+          @focus="focusArrow()"
           marker-end="url(#svg-arrow_triangle)"
-          :class="{'arrow--hidden': arrow.l1.meta.isInvisible || arrow.l2.meta.isInvisible}"
+          :class="{'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
           stroke-dasharray="none"
           :x1="arrow.positionArrow.x1"
           :y1="arrow.positionArrow.y1"
           :x2="arrow.positionArrow.x2"
           :y2="arrow.positionArrow.y2")
-        line.svg-arrow_line.arrow--hidden(
-          v-if="preArrow"
-          marker-end="url(#svg-arrow_triangle)"
-          stroke-dasharray="none"
-          :x1="preArrow.x1"
-          :y1="preArrow.y1"
-          :x2="preArrow.x2"
-          :y2="preArrow.y2"
-          )
+      line.svg-arrow_line.arrow--hidden(
+        v-if="preArrow.show"
+        marker-end="url(#svg-arrow_triangle)"
+        stroke-dasharray="none"
+        :x1="preArrow.start.x"
+        :y1="preArrow.start.y"
+        :x2="preArrow.stop.x"
+        :y2="preArrow.stop.y"
+        )
     component(
-      v-for="(el, index) in workspace.network"
-      :class="{'element--hidden': el.meta.isInvisible}"
+      v-for="(el, index) in networkElementList"
       :key="el.index"
+      ref="layer"
+      :class="{'element--hidden': el.layerMeta.isInvisible}"
       :is="el.componentName"
       :elementData="{el, index}"
     )
@@ -43,7 +51,6 @@
 </template>
 
 <script>
-
   import IoInput              from '@/components/network-elements/elements/io-input/io-input.vue'
   import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/io-output-backpropagation.vue'
   import IoOutputGenetic      from '@/components/network-elements/elements/io-output-genetic-algorithm/io-output-genetic-algorithm.vue'
@@ -98,23 +105,29 @@ export default {
   data() {
     return {
       arrowsList: [],
-      resizeTimeout: null
+      resizeTimeout: null,
+      layerSize: 52,
+      smallViewPort: true,
+      offset: {
+        offsetX: 0,
+        offsetY: 0,
+      }
     }
   },
   mounted() {
-    this.createArrowList();
-    window.addEventListener("resize", this.resizeThrottler, false);
+    this.calcViewPort();
+    window.addEventListener("resize", this.resizeCalc, false);
   },
   beforeDestroy() {
     this.removeArrowListener();
-    window.removeEventListener("resize", this.resizeThrottler, false);
+    window.removeEventListener("resize", this.resizeCalc, false);
   },
   computed: {
-    workspaceJSON() {
-      return JSON.stringify(this.workspace)
+    networkScale() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
     },
-    workspace() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork']
+    networkElementList() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
@@ -123,21 +136,75 @@ export default {
       return this.$store.state.mod_events.calcArray
     },
     preArrow() {
-      return this.$store.state.mod_workspace.preArrow
+      return this.$store.state.mod_workspace.preArrow;
+    },
+    styleSvgArrow() {
+      // let size = 100 / this.networkScale;
+      // return {
+      //   width: size + '%',
+      //   height: size + '%',
+      // }
+      return ''
     }
   },
   watch: {
     eventCalcArrow() {
       this.createArrowList()
     },
+    smallViewPort() {
+      this.drawArrows();
+    }
   },
   methods: {
-    resizeThrottler() {
-      if ( !this.resizeTimeout ) {
-        this.resizeTimeout = setTimeout(()=> {
-          this.resizeTimeout = null;
-          this.createArrowList();
-        }, 792);
+    deleteArrow(ev) {
+      let connection = {
+        startID: ev.target.dataset.startid,
+        stopID: ev.target.dataset.stopid,
+      };
+      this.$store.dispatch('mod_workspace/DELETE_arrow', connection);
+    },
+    focusArrow() {},
+    drawArrows() {
+      this.calcOffset();
+      this.calcLayerSize();
+      this.createArrowList();
+    },
+    resizeCalc(ev) {
+      let width = ev.srcElement.innerWidth;
+      if(this.smallViewPort) {
+        if(width > 1440) {
+          this.smallViewPort = false;
+        }
+      }
+      else {
+        if(width <= 1440) {
+          this.smallViewPort = true;
+        }
+      }
+    },
+    // calcCanvasSize() {
+    //   if(this.networkElementList.length) {
+    //     let height = this.$refs.network.scrollHeight;
+    //     let width = this.$refs.network.scrollWidth;
+    //     this.$refs.svg.style.height = height;
+    //     this.$refs.svg.style.width = width;
+    //   }
+    // },
+    calcOffset() {
+      this.offset = {
+       offsetX: this.$refs.network.offsetLeft,
+       offsetY: this.$refs.network.offsetTop
+      };
+    },
+    calcLayerSize() {
+      if(this.networkElementList.length) {
+        this.layerSize = this.$refs.layer[0].$el.offsetWidth;
+      }
+    },
+    calcViewPort() {
+      window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
+      if(!this.smallViewPort) {
+        this.layerSize = 72;
       }
     },
     //-------------
@@ -150,22 +217,24 @@ export default {
     arrowMovePaint(ev) {
       ev.preventDefault();
       ev.stopPropagation();
+      this.$store.commit('mod_workspace/SET_preArrowStop', {
+        x: (ev.pageX - this.offset.offsetX) / this.networkScale,
+        y: (ev.pageY - this.offset.offsetY) / this.networkScale
+      })
     },
     removeArrowListener() {
+      this.$store.commit('mod_workspace/CLEAR_preArrow');
       this.$refs.network.removeEventListener('mousemove', this.arrowMovePaint);
       this.$refs.network.removeEventListener('mouseup', this.removeArrowListener)
     },
-
     createArrowList() {
-      let netElement = this.$refs.network.querySelectorAll('.net-element');
-      let size = 72;
-      if(netElement.length) {
-        size = netElement[0].offsetWidth;
+      if(!this.networkElementList.length) {
+        return
       }
+      const size = this.layerSize;
       const listID = {};
       const connectList = [];
-      const net = this.workspace.network;
-
+      const net = this.networkElementList;
       findAllID();
       findPerspectiveSide();
       calcCorrectPosition();
@@ -202,10 +271,10 @@ export default {
               Object.defineProperty(newArrow, 'positionArrow', {
                 get() {
                   return {
-                    x1: this.l1.meta.left + this.correctPosition.start.x,
-                    y1: this.l1.meta.top + this.correctPosition.start.y,
-                    x2: this.l2.meta.left + this.correctPosition.stop.x,
-                    y2: this.l2.meta.top + this.correctPosition.stop.y,
+                    x1: this.l1.layerMeta.left + this.correctPosition.start.x,
+                    y1: this.l1.layerMeta.top + this.correctPosition.start.y,
+                    x2: this.l2.layerMeta.left + this.correctPosition.stop.x,
+                    y2: this.l2.layerMeta.top + this.correctPosition.stop.y,
                   }
                 },
                 enumerable: true,
@@ -219,8 +288,8 @@ export default {
       }
       function findSideMinLength(l1, l2, currentEl) {
         let position = '';
-        (l1.meta.top <= l2.meta.top) ? position = position + 'b' : position = position + 't';
-        (l1.meta.left <= l2.meta.left) ? position = position + 'r' : position = position + 'l';
+        (l1.layerMeta.top <= l2.layerMeta.top) ? position = position + 'b' : position = position + 't';
+        (l1.layerMeta.left <= l2.layerMeta.left) ? position = position + 'r' : position = position + 'l';
 
         // const offsetX = Math.abs(l1.meta.left - l2.meta.left);
         // const offsetY = Math.abs(l1.meta.top - l2.meta.top);
@@ -228,29 +297,29 @@ export default {
         function topDot(dot) {
           return {
             side: 'top',
-            x: dot.meta.left + (size / 2),
-            y: dot.meta.top
+            x: dot.layerMeta.left + (size / 2),
+            y: dot.layerMeta.top
           }
         }
         function rightDot(dot) {
           return {
             side: 'right',
-            x: dot.meta.left + size,
-            y: dot.meta.top + (size / 2)
+            x: dot.layerMeta.left + size,
+            y: dot.layerMeta.top + (size / 2)
           }
         }
         function bottomDot(dot) {
           return {
             side: 'bottom',
-            x: dot.meta.left + (size / 2),
-            y: dot.meta.top + size
+            x: dot.layerMeta.left + (size / 2),
+            y: dot.layerMeta.top + size
           }
         }
         function leftDot(dot) {
           return {
             side: 'left',
-            x: dot.meta.left,
-            y: dot.meta.top + (size / 2)
+            x: dot.layerMeta.left,
+            y: dot.layerMeta.top + (size / 2)
           }
         }
 
@@ -338,10 +407,10 @@ export default {
       }
       function calcCorrectPosition() {
         connectList.forEach((itemEl, itemIndex, itemArr)=> {
-          let currentLeftStart = itemEl.l2.meta.left;
-          let currentTopStart = itemEl.l2.meta.top;
-          let currentLeftEnd = itemEl.l1.meta.left;
-          let currentTopEnd = itemEl.l1.meta.top;
+          let currentLeftStart = itemEl.l2.layerMeta.left;
+          let currentTopStart = itemEl.l2.layerMeta.top;
+          let currentLeftEnd = itemEl.l1.layerMeta.left;
+          let currentTopEnd = itemEl.l1.layerMeta.top;
           let indexSidePositionStart = '';
           let indexSidePositionEnd = '';
           let sideStartLength = itemEl.l1.calcAnchor[itemEl.sideStart].length;
@@ -350,36 +419,36 @@ export default {
           //calc start
           if(itemEl.sideStart === 'left' || itemEl.sideStart === 'right') {
             let sortVertSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
-              return a.meta.top - b.meta.top;
+              return a.layerMeta.top - b.layerMeta.top;
             });
             indexSidePositionStart = sortVertSideStart.findIndex((element, index, array)=> {
-              return element.meta.top == currentTopStart;
+              return element.layerMeta.top == currentTopStart;
             });
           }
           else {
             let sortGorSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
-              return a.meta.left - b.meta.left;
+              return a.layerMeta.left - b.layerMeta.left;
             });
             indexSidePositionStart = sortGorSideStart.findIndex((element, index, array)=> {
-              return element.meta.left == currentLeftStart;
+              return element.layerMeta.left == currentLeftStart;
             });
           }
           itemEl.correctPosition.start = calcValuePosition(itemEl.sideStart, sideStartLength, indexSidePositionStart);
           //calc END
           if(itemEl.sideEnd === 'left' || itemEl.sideEnd === 'right') {
             let sortVertSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
-              return a.meta.top - b.meta.top;
+              return a.layerMeta.top - b.layerMeta.top;
             });
             indexSidePositionEnd = sortVertSideEnd.findIndex((element, index, array)=> {
-              return element.meta.top == currentTopEnd;
+              return element.layerMeta.top == currentTopEnd;
             });
           }
           else {
             let sortGorSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
-              return a.meta.left - b.meta.left;
+              return a.layerMeta.left - b.layerMeta.left;
             });
             indexSidePositionEnd = sortGorSideEnd.findIndex((element, index, array)=> {
-              return element.meta.left == currentLeftEnd;
+              return element.layerMeta.left == currentLeftEnd;
             });
           }
           itemEl.correctPosition.stop = calcValuePosition(itemEl.sideEnd, sideEndLength, indexSidePositionEnd);
@@ -424,16 +493,10 @@ export default {
   @import "../../scss/base";
   $color-arrow: #22DDE5;
   .network-field {
-    overflow: auto;
-    display: flex;
-    flex: 1 1 100%;
     position: relative;
-    .open-statistic & {
-      //transform: scale(.5);
-    }
+    flex: 1 1 100%;
   }
   .svg-arrow {
-    pointer-events: none;
     position: absolute;
     top: 0;
     left: 0;
@@ -447,8 +510,10 @@ export default {
   .svg-arrow_line {
     stroke: $color-arrow;
     stroke-width: 3;
+    &:focus {
+      opacity: .5;
+      stroke-width: 4;
+    }
   }
-
-
 </style>
 

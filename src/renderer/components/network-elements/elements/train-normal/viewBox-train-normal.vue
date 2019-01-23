@@ -11,7 +11,7 @@
         :class="{'active': currentTab === tab}"
         :disabled="i > 2"
         ) {{ tab }}
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction' && chartData.Prediction")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row
         .statistics-box_col
           chart-base(
@@ -23,13 +23,15 @@
           chart-base(
           chartLabel="Prediction vs Ground truth"
           :chartData="chartData.Prediction.PvG"
+          :customColor="colorList"
           )
         .statistics-box_col
           chart-base(
           chartLabel="Batch Average Prediction vs Ground truth"
           :chartData="chartData.Prediction.AveragePvG"
+          :customColor="colorList"
           )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy' && chartData.Accuracy")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
       chart-base(
         chartLabel="Accuracy during one epoch"
         :chartData="chartData.Accuracy.Current"
@@ -38,7 +40,7 @@
         chartLabel="Accuracy over all epochs"
         :chartData="chartData.Accuracy.Total"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss' && chartData.Loss")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-base(
         chartLabel="Loss during one epoch"
         :chartData="chartData.Loss.Current"
@@ -80,14 +82,32 @@
     mixins: [viewBoxMixin],
     data() {
       return {
+        chartDataDefault: {
+          Prediction: {
+            Input: null,
+            PvG: null,
+            AveragePvG: null,
+          },
+          Accuracy: {
+            Current: null,
+            Total: null,
+          },
+          Loss: {
+            Current: null,
+            Total: null,
+          }},
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
+        colorList: ['#ff0', '#0f0']
       }
     },
     methods: {
       setTab(name) {
-        clearInterval(this.idTimer);
         this.currentTab = name;
+        this.setTabAction();
+      },
+      getData() {
+        let name = this.currentTab;
         if(name === 'Prediction') {
           this.getStatistics()
         }
@@ -107,7 +127,7 @@
       getLossStatistics() {
         this.chartRequest(this.statElementID, 'TrainNormal', 'Loss')
       }
-    }
+    },
   }
 </script>
 

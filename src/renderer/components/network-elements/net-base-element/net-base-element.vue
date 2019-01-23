@@ -3,9 +3,11 @@
     ref="rootBaseElement"
     :style="style"
     :class="active ? 'active' : 'inactive'"
+    @click.stop.prevent="switchClickEvent($event)"
     @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings()"
     @contextmenu.stop.prevent="openContext"
     @keyup.46="deleteEl()"
+    @keyup.93.8="deleteEl()"
     )
     .net-element_btn(ref="BaseElement")
       slot
@@ -21,11 +23,11 @@
 <script>
 import baseNetDrag        from '@/core/mixins/base-net-drag.js';
 import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
-import clickOutside       from '@/core/mixins/click-outside.js'
+import mousedownOutside   from '@/core/mixins/mousedown-outside.js'
 
 export default {
   name: 'NetBaseElement',
-  mixins: [baseNetDrag, baseNetPaintArrows, clickOutside],
+  mixins: [baseNetDrag, baseNetPaintArrows, mousedownOutside],
   props: {
     layerContainer: {type: Boolean, default: false},
     dataEl: {
@@ -47,13 +49,13 @@ export default {
     }
   },
   mounted() {
-    this.$refs.rootBaseElement.addEventListener('mousedown', this.switchEvent);
-    this.$refs.rootBaseElement.addEventListener('touchstart', this.switchEvent);
+    this.$refs.rootBaseElement.addEventListener('mousedown', this.switchMousedownEvent);
+    this.$refs.rootBaseElement.addEventListener('touchstart', this.switchMousedownEvent);
   },
 
   beforeDestroy() {
-    this.$refs.rootBaseElement.removeEventListener('mousedown', this.switchEvent);
-    this.$refs.rootBaseElement.removeEventListener('touchstart', this.switchEvent);
+    this.$refs.rootBaseElement.removeEventListener('mousedown', this.switchMousedownEvent);
+    this.$refs.rootBaseElement.removeEventListener('touchstart', this.switchMousedownEvent);
     /*appMode*/
     this.$parent.$parent.$el.removeEventListener('mousemove', this.arrowMovePaint);
     this.$refs.rootBaseElement.removeEventListener('mouseup', this.arrowEndPaint);
@@ -62,18 +64,21 @@ export default {
     this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.arrowEndPaint, true);
     this.$refs.rootBaseElement.removeEventListener('touchstart', this.arrowEndPaint, true);
     /*clickOutsideAction*/
-    document.removeEventListener('click', this.clickOutside);
+    document.removeEventListener('mousedown', this.mousedownOutside);
   },
   computed: {
     active() {
-      return this.dataEl.el.meta.isSelected
+      return this.dataEl.el.layerMeta.isSelected
     },
-    appMode() {
-      return this.$store.state.globalView.appMode
+    networkMode() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     statisticsIsOpen() {
-      return this.$store.state.globalView.statisticsIsOpen
-    }
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+    },
+    isTraining() {
+      return this.$store.getters['mod_workspace/GET_networkIsTraining']
+    },
   },
   watch: {
     statisticsIsOpen(newVal) {
@@ -83,60 +88,64 @@ export default {
     }
   },
   methods: {
-    switchEvent(ev) {
-      //ev.stopPropagation();
-      if (this.statisticsIsOpen) {
-        this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
-      }
-      else if (this.isLock) {
+    switchMousedownEvent(ev) {
+      if (this.isLock) {
         return
       }
-      else if(this.appMode == 'edit') {
+      if(this.networkMode === 'addArrow') {
+        this.arrowStartPaint(ev)
+      }
+      else if(this.networkMode === 'edit') {
         this.setFocusEl(ev);
         this.bodyDown(ev)
       }
-      else if (this.appMode == 'addArrow') {
-        this.arrowStartPaint(ev)
+    },
+    switchClickEvent(ev) {
+      if (this.isLock) {
+        return
+      }
+      else if (this.statisticsIsOpen) {
+        this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
     },
     openSettings() {
       this.hideAllWindow();
-      if(this.appMode === 'edit') {
+      if(this.networkMode === 'edit' && !this.isTraining) {
         this.settingsIsOpen = true;
       }
     },
     openContext() {
       this.hideAllWindow();
-      if(this.appMode === 'edit') {
+      if(this.networkMode === 'edit' && !this.isTraining) {
         this.contextIsOpen = true;
       }
     },
     setFocusEl(ev) {
       // if(ev.ctrlKey) {
-      //   this.$store.commit('mod_workspace/SET_metaMultiSelect', { path: [this.dataEl.index], setValue: true });
+      //   this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: [this.dataEl.index], setValue: true });
       // }
       // else {
-      this.ClickElementTracking = ev.target.closest('.js-clickout');
-      document.addEventListener('click', this.clickOutside);
-      this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: true });
+      this.MousedownElementTracking = ev.target.closest('.js-clickout');
+      document.addEventListener('mousedown', this.mousedownOutside);
+      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.index], setValue: true });
       //}
     },
     hideAllWindow() {
       this.settingsIsOpen = false;
       this.contextIsOpen = false;
     },
-    clickOutsideAction() {
+    mousedownOutsideAction() {
       if (!this.statisticsIsOpen) {
         this.deselect()
       }
     },
     deselect() {
       this.hideAllWindow();
-      this.$store.commit('mod_workspace/SET_metaSelect', { path: [this.dataEl.index], setValue: false });
+      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.index], setValue: false });
     },
     deleteEl() {
       if(!(this.contextIsOpen || this.settingsIsOpen)) {
-        this.$store.dispatch('mod_workspace/DELETE_netElement')
+        this.$store.dispatch('mod_workspace/DELETE_element')
       }
     }
   }
@@ -148,15 +157,15 @@ export default {
   .net-element_window {
     position: absolute;
     z-index: 2;
-    left: 100%;
     top: 0;
+    left: 100%;
     padding-left: 10px;
   }
   .net-element_btn {
-    padding: 0;
     margin: 0;
+    padding: 0;
     background-color: transparent;
-    .active & .btn{
+    .active & .btn {
       box-shadow: 0 0 20px #fff;
     }
   }

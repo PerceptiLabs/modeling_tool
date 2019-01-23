@@ -3,7 +3,7 @@
     data-component="TrainNormal"
     data-layer="Normal"
     data-type="Training"
-  v-tooltip="'Normal'"
+    v-tooltip:right="'Normal'"
   )
     i.icon.icon-training
 

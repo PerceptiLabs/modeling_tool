@@ -1,9 +1,9 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-process(:draggable="false"  disabled="disabled"
+  .btn.btn--layersbar.net-element-process(:draggable="draggable"
   data-component="ProcessCrop"
   data-layer="Crop"
   data-type="Other"
-  v-tooltip="'Crop'"
+  v-tooltip:right="'Crop'"
   )
     i.icon.icon-crop-symbol
 

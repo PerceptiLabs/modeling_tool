@@ -2,36 +2,41 @@
   main.page_workspace
     .workspace_tabset
       include ./tabset/workspace-tabset.pug
-    .workspace
-      .workspace_content
-        .network(
-          v-if="indexCurrentNetwork === i"
-          v-for="(net, i) in workspace"
-          :key="net.i"
-          :class="{'open-statistic': statisticsIsOpen}"
-        )
-          the-statistics(
+    .workspace_content
+      .network(
+        v-if="indexCurrentNetwork === i"
+        v-for="(net, i) in workspace"
+        :key="net.i"
+        :class="{'open-statistic': statisticsIsOpen}"
+      )
+        the-statistics.the-statistics(
+          v-if="statisticsIsOpen"
+          :elData="statisticsElSelected.statistics"
+          )
+        the-view-box.the-view-box(
+          v-if="statisticsIsOpen"
+          :elData="statisticsElSelected.viewBox"
+          )
+        section.network_info-section.the-network-field
+          .info-section_head(
             v-if="statisticsIsOpen"
-            :elData="statisticsElSelected.statistics"
             )
-          the-view-box(
-            v-if="statisticsIsOpen"
-            :elData="statisticsElSelected.viewBox"
+            h3 Map
+          .info-section_main(
+            @wheel.ctrl="scaleScroll($event)"
             )
-          section.network_info-section
-            .info-section_head(v-if="statisticsIsOpen")
-              h3 Map
-            .info-section_main
-              network-field(
+            network-field(
+              :key="i"
+              :style="{zoom: scale + '%'}"
               :netIndex="i"
-              )
+            )
 
         general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
 
-      .workspace_meta
-        include ./meta/workspace-meta.pug
+    .workspace_meta
+      include ./meta/workspace-meta.pug
 
 
 
@@ -43,58 +48,54 @@
   @import "../../scss/base";
   @import "./tabset/workspace-tabset";
   @import "./meta/workspace-meta";
-  .workspace {
+  .page_workspace {
     display: flex;
     flex-direction: column;
-    flex: 1 1 100%;
+    overflow: hidden;
   }
   .workspace_tabset {
+    flex: 0 0 auto;
     padding-top: 1px;
     display: flex;
     justify-content: space-between;
     align-items: flex-end;
-    //height: $h-sidebar-layers-item;
   }
   .workspace_content {
     background-color: $bg-workspace;
     display: flex;
     flex: 1 1 100%;
+    overflow: hidden;
   }
   .network {
-    display: flex;
-    //flex-direction: row-reverse;
-    flex: 1 1 100%;
-    flex-wrap: wrap;
     width: 100%;
+    display: grid;
+    grid-template-areas:  'network-field   network-field'
+                          'network-field    network-field';
+    grid-template-rows: 1fr 1fr;
+    grid-template-columns: 1fr 1fr;
     &.open-statistic {
-      .network_info-section {
-        flex: 1 1 50%;
-        height: 50%;
-        overflow: hidden;
-        &:first-child {
-          flex: 0 0 100%;
-        }
-        &:nth-child(2n) {
-          order: 1;
-        }
-      }
+      display: grid;
+      grid-template-areas:  'the-statistics   the-statistics'
+                            'network-field  view-box';
+    }
+    .the-statistics {
+      grid-area: the-statistics;
+    }
+    .the-view-box {
+      grid-area: view-box;
+    }
+    .the-network-field {
+      grid-area: network-field;
     }
   }
   .network_info-section {
     display: flex;
     flex-direction: column;
-    flex: 1;
+    overflow: hidden;
   }
-  /*canvas {*/
-    /*position: absolute;*/
-    /*left: 0;*/
-    /*right: 0;*/
-    /*bottom: 0;*/
-    /*top: 0;*/
-    /*background-color: #040;*/
-    /*width: 100%;*/
-    /*height: 100%;*/
-  /*}*/
+  .info-section_main {
+    overflow: auto;
+  }
   .workspace_meta {
     flex: 0 0 auto;
     background-color: $bg-workspace-2;

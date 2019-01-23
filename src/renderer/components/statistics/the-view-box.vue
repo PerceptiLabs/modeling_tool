@@ -70,5 +70,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+  @import "../../scss/base";
+  .info-section_main {
+    border-left: 2px solid $bg-window;
+  }
 </style>

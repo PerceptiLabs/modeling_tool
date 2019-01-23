@@ -69,16 +69,12 @@ export default {
 <style lang="scss" scoped>
   @import '../../scss/base';
   .page_policy {
-    text-align: left;
+    position: relative;
     width: auto;
     max-width: 100rem;
-    background: #161719;
+    text-align: left;
     border: 1px solid $login-blue;
-    position: relative;
-    //padding: 3rem;
-    //height: 100vh;
-    //background: linear-gradient(0deg, #23252A -1.66%, #2D2F35 100%);
-    //overflow: auto;
+    background: #161719;
   }
   .policy_main {
     overflow: auto;
@@ -86,22 +82,23 @@ export default {
     padding: 9rem 7.5rem 7.5rem;
   }
   .btn--dark-blue-rev {
+    font-size: 1em;
     position: absolute;
-    left: 50%;
     top: 0;
+    left: 50%;
+    display: inline-block;
+    width: auto;
+    padding: 1.7rem 6rem;
     transform: translate(-50%, -50%);
+    text-align: center;
     text-transform: uppercase;
     border-radius: 0;
-    display: inline-block;
-    text-align: center;
-    width: auto;
-    font-size: 1em;
-    padding: 1.7rem 6rem;
   }
   .btn--link {
-    text-decoration: underline;
-    text-decoration-skip: ink;
     color: $login-blue;
+    text-decoration: underline;
+
+    text-decoration-skip: ink;
     &:hover {
       text-decoration: none;
     }

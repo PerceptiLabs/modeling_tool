@@ -1,3 +1,6 @@
+//import requestApi  from "@/core/api.js";
+import {ipcRenderer} from 'electron'
+
 const namespaced = true;
 
 const state = {
@@ -27,6 +30,11 @@ const actions = {
   },
   EVENT_saveNetwork({commit}) {
     commit('set_saveNetwork');
+  },
+
+  EVENT_closeCore({dispatch}) {
+    dispatch('mod_api/API_CLOSE_core', null, {root: true});
+    ipcRenderer.send('appClose');
   }
 };
 

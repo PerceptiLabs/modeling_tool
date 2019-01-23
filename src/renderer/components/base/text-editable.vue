@@ -50,24 +50,22 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   .editable-field {
-    cursor: pointer;
     position: relative;
+    cursor: pointer;
   }
-  .editable-field_title {
 
-  }
   .editable-field_input-wrap {
     position: absolute;
     top: 50%;
-    left: -.5rem;
     right: -.5rem;
+    left: -.5rem;
     transform: translateY(-50%);
     input {
-      padding: .25rem .5rem;
-      height: auto;
       width: 100%;
+      height: auto;
+      padding: .25rem .5rem;
     }
   }
 </style>

@@ -3,7 +3,7 @@
   data-component="MathSplit"
   data-layer="Split"
   data-type="Other"
-  v-tooltip="'Split'"
+  v-tooltip:right="'Split'"
   )
     i.icon.icon-road-split
 

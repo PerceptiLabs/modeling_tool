@@ -20,6 +20,8 @@
 </template>
 
 <script>
+import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
+import dataHeat     from "@/components/charts/hear.js";
 export default {
   name: "ChartHeatmap",
   props: {
@@ -41,55 +43,66 @@ export default {
   data() {
     return {
       fullView: false,
-      h: '',
-      w: ''
-    }
-  },
-  computed: {
-    chartModel() {
-      let valArr = this.chartData[0].data.map((num)=> num[2]);
-      let size = Math.sqrt(this.chartData[0].data.length);
-      let axios = [];
-      for (var i = 0; i <= size-1; i++) {
-        axios.push(i)
-      }
-      let model = {
+      chartModel: {},
+      defaultModel: {
         tooltip: {},
         grid: {
           right: 50
         },
         xAxis: {
           boundaryGap: true,
-          data: axios
+          data: []
         },
         yAxis: {
           boundaryGap: true,
-          data: axios
+          data: []
         },
         visualMap: {
-          min: Math.min(...valArr),
-          max: Math.max(...valArr),
+          min: 0,
+          max: 1,
           top: '10px',
           itemHeight: 300,
           realtime: false,
           left: 'right',
         },
         series: []
-      };
-      if(this.chartData !== null) {
-        model.series = this.chartData;
       }
-      return model
+    }
+  },
+  watch: {
+    chartData() {
+      if (this.chartData === null) {
+        this.chartModel = this.defaultModel;
+        return
+      }
+      let model = {...this.defaultModel};
+      model.series = this.chartData[0];
+      //model.series = dataHeat.series[0];
+
+      this.wWorker.postMessage(model);
     }
   },
   methods: {
     toggleFullView() {
       this.fullView = !this.fullView
+    },
+    createWWorker() {
+      this.wWorker = new Worker(`${pathWebWorkers}/calcChartHeatMap.js`);
+      this.wWorker.addEventListener('message', this.drawChart, false);
+    },
+    drawChart(ev) {
+      this.chartModel = ev.data;
+      this.$refs.chart.hideLoading()
     }
   },
+  mounted() {
+    this.createWWorker();
+    this.$refs.chart.showLoading(chartSpinner)
+  },
   beforeDestroy() {
-    //console.log('Destroy chart');
-    this.$refs.chart.destroy();
+    this.wWorker.postMessage('close');
+    this.wWorker.removeEventListener('message', this.drawChart, false);
+    this.$refs.chart.dispose();
   }
 }
 </script>

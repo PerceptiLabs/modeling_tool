@@ -48,6 +48,7 @@
         settings: {
           Type: 'Data',
           accessProperties: {
+            Category:'Local',
             Type: 'Data',
             Path: 'No uploaded file',
           }
@@ -81,7 +82,7 @@
         //console.log('saveLoadFile');
         this.settings.accessProperties.Path = pathArr[0];
         //this.applySettings();
-        //this.$store.dispatch('mod_workspace/a_SET_elementSettings', this.settings)
+        //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
     }
   }

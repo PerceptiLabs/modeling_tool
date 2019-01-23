@@ -7,7 +7,7 @@
           :key="i"
         )
           button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
-            v-tooltip="layer.tooltip"
+            v-tooltip:right="layer.tooltip"
             @click.stop="toggleElList(i, $event)"
             :class="[layer.layerClass, {'active': layer.showEl}]"
           )
@@ -28,7 +28,7 @@
 
 <script>
   import clickOutside from '@/core/mixins/click-outside.js'
-  import {trainingElements, deepLearnElements}  from '@/core/helpers.js'
+  import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 
   import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
   import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/view-io-output-backpropagation.vue'
@@ -65,7 +65,6 @@
   import ClassicMLKNN         from '@/components/network-elements/elements/classic-ml-k-nearest/view-classic-ml-k-nearest.vue'
   import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/view-classic-ml-random-forest.vue'
   import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/view-classic-ml-vector-machine.vue'
-
 
 export default {
   name: 'TheLayersbar',
@@ -146,21 +145,22 @@ export default {
   },
   methods: {
     toggleElList(index, ev) {
-      this.ClickElementTracking = ev.target.closest('.js-clickout');
-      document.addEventListener('click', this.clickOutside);
-
       if (this.layersbarList[index].showEl) {
-        this.layersbarList[index].showEl = false
+        this.layersbarList[index].showEl = false;
+        document.removeEventListener('click', this.clickOutside);
       }
       else {
         this.clickOutsideAction();
         this.layersbarList[index].showEl = true;
+
+        this.ClickElementTracking = ev.target.closest('.js-clickout');
+        document.addEventListener('click', this.clickOutside);
       }
     },
     clickOutsideAction() {
       this.layersbarList.forEach((item)=> {
         item.showEl = false
-      })
+      });
     },
   }
 }
@@ -170,16 +170,17 @@ export default {
   @import "../scss/base";
   $indent: 5px;
   .page_layersbar {
-    grid-area: layersbar;
     max-width: $w-layersbar;
+
+    grid-area: layersbar;
   }
   .layersbar-list {
-    padding: 0;
     margin: 0;
-    list-style: none;
-    transform: translateY(0);
-    transition: transform $animation-speed $animation-speed;
+    padding: 0;
     padding-bottom: 30px;
+    list-style: none;
+    transition: transform $animation-speed $animation-speed;
+    transform: translateY(0);
   }
   .layer {
     position: relative;
@@ -189,35 +190,37 @@ export default {
     position: relative;
     z-index: 1;
     &:after {
-      content: "\e922";
+      content: '\e922';
       font-family: 'icomoon' !important;
-      position: absolute;
+      font-size: 11px;
       line-height: 1;
+      position: absolute;
       right: 1px;
       bottom: 1px;
-      font-size: 11px;
     }
   }
   ul.layer_child-list {
+    //TODO ???
     @include multi-transition (transform, opacity, visibility);
+
     position: absolute;
     top: 0;
     left: -$indent;
-    padding: $indent;
-    margin: 0;
-    list-style: none;
-    opacity: 0;
     visibility: hidden;
+    opacity: 0;
+    margin: 0;
+    padding: $indent;
+    list-style: none;
     @media (max-height: 1000px) {
       .layer:nth-child(n+5) & {
-        bottom: 0;
         top: auto;
+        bottom: 0;
       }
     }
     .active + & {
-      transform: translateX(100%);
-      opacity: 1;
       visibility: visible;
+      opacity: 1;
+      transform: translateX(100%);
     }
     > li + li {
       padding-top: $indent;
@@ -246,5 +249,4 @@ export default {
       transform: translateY(-120%);
     }
   }
-
 </style>

@@ -1,36 +1,36 @@
 .settings-layer {
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-  width: 100%;
-   > * {
-    width: 100%;
-  }
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	width: 100%;
+	 > * {
+		width: 100%;
+	}
 }
 
 .settings-layer_section {
-  padding: $popup-indent-top/2 $popup-indent-left;
-   + .settings-layer_section {
-    border-top: 1px solid rgba($bg-input, .5);
-  }
-   > .form_row {
-    .form_label {
-      flex: 0 0 40%;
-      max-width: 40%;
-    }
-     > .form_label {
-      align-self: flex-start;
-      margin-top: .5rem;
-      margin-bottom: .5rem;;
-    }
-  }
-  .form_input {
-    padding-left: 1rem;
-  }
+	padding: $popup-indent-top/2 $popup-indent-left;
+	 + .settings-layer_section {
+		border-top: 1px solid rgba($bg-input, .5);
+	}
+	 > .form_row {
+		.form_label {
+			flex: 0 0 40%;
+			max-width: 40%;
+		}
+		 > .form_label {
+			align-self: flex-start;
+			margin-top: .5rem;
+			margin-bottom: .5rem;;
+		}
+	}
+	.form_input {
+		padding-left: 1rem;
+	}
 }
 
 .settings-layer_foot {
-  @extend .popup_foot;
+	@extend .popup_foot;
 
-  margin-top: auto;
+	margin-top: auto;
 }

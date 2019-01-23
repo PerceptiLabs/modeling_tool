@@ -45,16 +45,16 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .custom-radio {
-    padding: .5em 1em .5em 0;
     display: inline-flex;
     align-items: center;
+    padding: .5em 1em .5em 0;
 
     input[type='radio'] {
+      position: absolute;
+      left: -9999px;
       opacity: 0;
       width: 1px;
       height: 1px;
-      position: absolute;
-      left: -9999px;
       &:checked {
         + .radio-fake {
           background: $bg-grad-blue;
@@ -70,18 +70,18 @@ export default {
       //}
     }
     .radio-fake {
+      position: relative;
+      flex: 0 0 .6em;
       width: .6em;
       height: .6em;
-      flex: 0 0 .6em;
+      cursor: pointer;
       border-radius: 50%;
       background-color: $disable-txt;
-      cursor: pointer;
-      position: relative;
     }
     .radio-text {
-      margin-left: .75em;
       font-size: inherit;
       color: $disable-txt;
+      margin-left: .75em;
     }
   }
 </style>

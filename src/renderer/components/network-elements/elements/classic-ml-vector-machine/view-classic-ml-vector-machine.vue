@@ -3,6 +3,7 @@
     data-component="ClassicMLSVM"
     data-layer="Support Vector Machine"
     data-type="Training"
+    v-tooltip:right="'Support Vector Machine'"
   )
     i.icon.icon-round-figur2
 

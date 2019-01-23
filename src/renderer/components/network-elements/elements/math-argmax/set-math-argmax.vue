@@ -6,7 +6,7 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
-      :disabled="tabSelected != i"
+        :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -18,18 +18,13 @@
             .form_row
               .form_label Dimension:
               .form_input
-                triple-input(
-                  :value1="50"
-                  :value2="60"
-                  :value3="10"
-                  @setValue1="showVal"
-                  @setValue2="showVal"
-                  @setValue3="showVal"
+                input(type="text" v-model="settings.Dim")
 
-                )
           .settings-layer_section
           .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
+            button.btn.btn--primary(type="button"
+              @click="applySettings"
+              ) Apply
 
 
       .popup_body(
@@ -55,16 +50,11 @@ export default {
     return {
       tabs: ['Settings', 'Code'],
       settings: {
-        pooling: false,
-        neurons: 'None',
-        val: 50
+        Dim: -1,
       }
     }
   },
   methods: {
-    showVal(v) {
-      console.log(v);
-    }
   }
 }
 </script>

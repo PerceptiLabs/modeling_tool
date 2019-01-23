@@ -43,7 +43,7 @@
               .form_input
                 input(type="text")
           .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
+            button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 
       .popup_body(
@@ -83,6 +83,12 @@
           fixedBox: false,
           original: false,
           canMoveBox: true
+        },
+        settings: {
+          Offset_height: '0',
+          Offset_width: '0',
+          Target_height: '16',
+          Target_width: '16'
         }
       }
     }

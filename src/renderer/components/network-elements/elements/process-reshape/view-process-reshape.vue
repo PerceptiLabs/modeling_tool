@@ -1,9 +1,9 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-process(:draggable="draggable"
-  data-component="ProcessReshape"
-  data-layer="Reshape"
-  data-type="Other"
-  v-tooltip="'Reshape'"
+    data-component="ProcessReshape"
+    data-layer="Reshape"
+    data-type="Other"
+    v-tooltip:right="'Reshape'"
   )
     i.icon.icon-full-screen
 

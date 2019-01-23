@@ -1,61 +1,79 @@
 // Typography
 
-h1, .h1,
-h2, .h2,
-h3, .h3,
-h4, .h4,
-h5, .h5,
-h6, .h6,
+h1,
+.h1,
+h2,
+.h2,
+h3,
+.h3,
+h4,
+.h4,
+h5,
+.h5,
+h6,
+.h6,
 .h {
-  font-weight: normal;
-  margin: 0 0 .5em;
-  color: inherit;
+	font-weight: normal;
+	color: inherit;
+	margin: 0 0 .5em;
 }
 
-h1, .h1 {
-  font-size: 1.75rem;
+h1,
+.h1 {
+	font-size: 1.75rem;
 }
 
-h2, .h2 {
-  font-size: 1.5rem;
+h2,
+.h2 {
+	font-size: 1.5rem;
 }
 
-h3, .h3, .big-text {
-  font-size: 1.4rem;
+h3,
+.h3,
+.big-text {
+	font-size: 1.4rem;
 }
 
-h4, .h4, .middle-text {
-  font-size: 1.2rem;
+h4,
+.h4,
+.middle-text {
+	font-size: 1.2rem;
 }
 
-h5, .h5 {
-  font-size: 1rem;
+h5,
+.h5 {
+	font-size: 1rem;
 }
 
-h6, .h6, .small-text {
-  font-size: .9rem;
+h6,
+.h6,
+.small-text {
+	font-size: .9rem;
 }
 
 p {
-  margin: 0 0 1em;
+	margin: 0 0 1em;
 }
 
 a {
-  @include multi-transition (color, background-color);
-  text-decoration: none;
-  &:not([class]) {
-    //color: $col-primary;
-    &:hover {
-      //color: $col-primary-hover;
-    }
-  }
+	@include multi-transition (color, background-color);
+
+	text-decoration: none;
+	&:not([class]) {
+		//color: $col-primary;
+		&:hover {
+			//color: $col-primary-hover;
+		}
+	}
 }
 
-a, button, img {
-  @include media('>=large') {
-    &:focus {
-      //outline: 1px dotted $col-primary;
-      //box-shadow: 0 0 1px 1px $white;
-    }
-  }
+a,
+button,
+img {
+	@include media('>=large') {
+		&:focus {
+			//outline: 1px dotted $col-primary;
+			//box-shadow: 0 0 1px 1px $white;
+		}
+	}
 }

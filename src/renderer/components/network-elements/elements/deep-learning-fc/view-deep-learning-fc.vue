@@ -3,7 +3,7 @@
   data-component="DeepLearningFC"
   data-layer="FullyConnected_1"
   data-type="Other"
-  v-tooltip="'Fully Connected'"
+  v-tooltip:right="'Fully Connected'"
   )
     i.icon.icon-round
 

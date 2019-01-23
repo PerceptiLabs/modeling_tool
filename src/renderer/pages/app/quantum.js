@@ -19,17 +19,21 @@ export default {
     TheWorkspace,
     TheInfoPopup
   },
+  beforeCreate() {
+    this.$store.dispatch('mod_workspace/ADD_network');
+  },
   created() {
-    this.$store.dispatch('mod_api/API_runServer');
+
   },
   mounted() {
-    this.addDragListener()
+    this.addDragListener();
   },
   data() {
     return {
       dragMeta: {
         dragged: null,
-        outClassName: 'network-field'
+        //outClassName: 'network-field'
+        outClassName: 'svg-arrow'
       }
     }
   },
@@ -46,8 +50,8 @@ export default {
     currentNetwork() {
       return this.$store.getters['mod_workspace/GET_currentNetwork']
     },
-    appMode() {
-      return this.$store.state.globalView.appMode
+    networkMode() {
+      return this.currentNetwork.networkMeta.netMode
     },
   },
 
@@ -64,7 +68,7 @@ export default {
     eventSaveNetwork() {
       this.saveNetwork()
     },
-    appMode(newVal) {
+    networkMode(newVal) {
       if(newVal == 'edit') {
         this.$nextTick(function () {
           this.addDragListener()
@@ -89,7 +93,7 @@ export default {
       this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
     },
     dragStart(event) {
-      if ( event.target.draggable && this.appMode === 'edit' && event.target.className.includes('btn--layersbar')) {
+      if ( event.target.draggable && this.networkMode === 'edit' && event.target.className.includes('btn--layersbar')) {
         this.$refs.layersbar.addEventListener("dragend", this.dragEnd, false);
         this.$refs.layersbar.addEventListener("dragover", this.dragOver, false);
         this.$refs.layersbar.addEventListener("dragenter", this.dragEnter, false);
@@ -102,33 +106,18 @@ export default {
       }
     },
     dragEnd(event) {
-      // reset the transparency
-      //if ( event.target.className == "js-layersbar-draggable" ) {
-      //console.log('dragend')
-      //console.log(event)
       this.offDragListener();
       event.target.style.opacity = "";
-      //}
     },
     dragOver(event) {
       event.preventDefault();
     },
-    dragEnter(event) {
-      if ( event.target.className.includes(this.dragMeta.outClassName)) {
-        //event.target.style.cursor = "auto";
-        //console.log('dragenter')
-      }
-    },
-    dragLeave(event) {
-      if ( event.target.className.includes(this.dragMeta.outClassName)) {
-        //console.log('dragleave')
-        //event.target.style.cursor = "not-allowed";
-      }
-    },
+    dragEnter(event) {},
+    dragLeave(event) {},
     dragDrop(event) {
       event.preventDefault();
-      if ( event.target.className.includes(this.dragMeta.outClassName)) {
-        this.$store.commit('mod_workspace/ADD_elToWorkspace', event)
+      if ( event.target.classList[0] === this.dragMeta.outClassName) {
+        this.$store.dispatch('mod_workspace/ADD_element', event)
       }
     },
 
@@ -137,7 +126,7 @@ export default {
         (err, data)=> {
         if(data) {
           let net = JSON.parse(data.toString());
-          this.$store.commit('mod_workspace/ADD_loadNetwork', net)
+          this.$store.dispatch('mod_workspace/ADD_network', net)
         }
         else {
           console.error(err);
@@ -149,7 +138,15 @@ export default {
       const network = this.currentNetwork;
       const jsonNet = cloneNet(network);
 
-      dialog.showSaveDialog((fileName) => {
+      const option = {
+        title:"Save Network",
+        defaultPath: `*/${network.networkName}`,
+        filters: [
+          {name: 'Text', extensions: ['json']},
+        ]
+      };
+
+      dialog.showSaveDialog(null, option, (fileName) => {
         if (fileName === undefined){
           console.log("You didn't save the file");
           return;
@@ -165,13 +162,14 @@ export default {
       function cloneNet(net) {
         var outNet = {};
         for (var key in net) {
-          if(key === 'network') {
+          if(key === 'networkElementList') {
             outNet[key] = JSON.parse(cloneEl(net[key]))
           }
           else {
             outNet[key] = net[key];
           }
         }
+        outNet.networkMeta = {};
         return JSON.stringify(outNet, null, ' ');
       }
       function cloneEl(el) {

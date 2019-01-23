@@ -45,16 +45,16 @@ export default {
     padding-bottom: 1rem;
   }
   .pc-cloud_tab {
-    transition: none;
+    font-size: 2rem;
+    line-height: 1;
     color: $bg-input;
-    border: 2px solid;
-    width: 10rem;
-    height: 4.6rem;
     display: flex;
     align-items: center;
     justify-content: center;
-    line-height: 1;
-    font-size: 2rem;
+    width: 10rem;
+    height: 4.6rem;
+    transition: none;
+    border: 2px solid;
     &:hover,
     &.active {
       box-shadow: $icon-shad;

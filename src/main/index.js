@@ -19,7 +19,7 @@ const mainMenu = [
       {label: 'Open untrained model', click() {mainWindow.webContents.send('openNetwork')}},
       {label: 'Save untrained model', click() {mainWindow.webContents.send('saveNetwork')}},
       {type: 'separator'},
-      {role: 'quit'}
+      {label: 'Quit PersceptiLabs', click() {mainWindow.webContents.send('closeApp')}},
     ]
   },
   {
@@ -71,7 +71,7 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    //frame: false,
+    frame: false,
     height: 768,
     width: 1024,
     minHeight: 768,
@@ -103,9 +103,7 @@ function createWindow () {
    * listeners for the renderer process
    */
   ipcMain.on('appClose', (event, arg) => {
-    if (process.platform !== 'darwin') {
-      app.quit()
-    }
+    app.quit()
   });
   ipcMain.on('appMinimize', (event, arg) => {
     mainWindow.isMinimized()
@@ -135,7 +133,8 @@ function createWindow () {
    * start auto update
    */
   mainWindow.checkForUpdates = function() {
-    if (process.env.NODE_ENV !== 'development') {
+    //if (process.env.NODE_ENV !== 'development') {
+    if (true) {
       mainWindow.webContents.send('info', 'checkForUpdates');
       const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
       const UpdateOpt = {

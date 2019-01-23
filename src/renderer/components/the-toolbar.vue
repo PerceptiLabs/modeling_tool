@@ -7,77 +7,88 @@
     ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
-          :disabled="coreStatus == 'Training'"
-          :class="{'active': appMode == 'edit'}"
-          @click="setAppMode('edit')"
+          :disabled="statisticsIsOpen"
+          :class="{'active': networkMode === 'edit'}"
+          v-tooltip:bottom="'Edit'"
+          @click="setNetMode('edit')"
         )
           i.icon.icon-select
+
       li.toolbar_list-arrow-wrap(
-        :class="{'disable-hover': appMode == 'training'}"
+        :class="{'disable-hover': statisticsIsOpen}"
+        v-tooltip:bottom="'Arrow'"
       )
         button.btn.btn--toolbar(type="button"
-          :disabled="coreStatus == 'Training'"
-          :class="{'active': appMode == 'addArrow'}"
+          :disabled="statisticsIsOpen"
+          :class="{'active': networkMode === 'addArrow'}"
           @click="setArrowType(arrowList[0].arrowType)"
         )
           i.icon(:class="arrowList[0].iconClass")
         ul.toolbar_list-arrow
           li(
             v-for="(arrow, index) in arrowList"
-            :key="index")
+            :key="index"
+            )
             button.btn.btn--toolbar(type="button"
-            @click="setArrowType(arrow.arrowType, index)"
+              @click="setArrowType(arrow.arrowType, index)"
             )
               i.icon(:class="arrow.iconClass")
 
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button" disabled="disabled")
+        button.btn.btn--toolbar(type="button"
+          disabled="disabled"
+          v-tooltip:bottom="'Prev step'"
+        )
           i.icon.icon-step-prev
       li
-        button.btn.btn--toolbar(type="button" disabled="disabled")
+        button.btn.btn--toolbar(type="button"
+          disabled="disabled"
+          v-tooltip:bottom="'Next step'"
+        )
           i.icon.icon-step-next
     ul.toolbar_list
       li
-        //
         button.btn.btn--toolbar(type="button"
-          v-if="!(coreStatus === 'Training' || coreStatus === 'Validation')"
-        :disabled="coreStatus === 'Offline'"
+          :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
-          @click="trainStart()"
-        )
-          i.icon.icon-on-off
-        button.btn.btn--toolbar(type="button"
-        v-else
-        :class="statusStartBtn"
-        @click="trainStop()"
+          v-tooltip:bottom="'Run/Stop'"
+          @click="onOffBtn()"
         )
           i.icon.icon-on-off
       li
         button.btn.btn--toolbar(type="button"
-          :class="{'active': appMode == 'learn-pause'}"
-          :disabled="!(coreStatus === 'Training' || coreStatus === 'Paused' || coreStatus === 'Validation')"
+          :class="{'active': statusNetworkCore === 'Paused'}"
+          :disabled="!isTraining"
+          v-tooltip:bottom="'Pause'"
           @click="trainPause()"
         )
           i.icon.icon-pause
       li
         button.btn.btn--toolbar(type="button"
-          :disabled="coreStatus !== 'Validation'"
+          :disabled="statusNetworkCore !== 'Validation'"
+          v-tooltip:bottom="'Skip'"
           @click="skipValid()"
         )
           i.icon.icon-next
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button" disabled="disabled")
+        button.btn.btn--toolbar(type="button"
+          disabled="disabled"
+          v-tooltip:bottom="'Repeat'"
+        )
           i.icon.icon-repeat
       li
-        button.btn.btn--toolbar(type="button" disabled="disabled")
+        button.btn.btn--toolbar(type="button"
+          disabled="disabled"
+          v-tooltip:bottom="'Box'"
+        )
           i.icon.icon-box
 
     .toolbar_settings
       //span.text-primary.middle-text(v-html="statusTestText")
       button.btn.btn--primary(type="button" disabled="disabled"
-        v-if="coreStatus == 'Finished'"
+        v-if="statusNetworkCore == 'Finished'"
         )
         span Run test
         i.icon.icon-circle-o
@@ -88,25 +99,11 @@
         span Layer Mode
         i.icon.icon-ellipse
 
-    //-.test-api
-      //div
-        span.big-text Dev Mode:
-          span.text-error  {{ devMode }}
-        span.big-text Version:
-          span.text-error  {{ versionApi }}
-      div
-        p.big-text Core status: {{ coreStatus }}
-        button.btn.btn--primary(type="button" @click="TEST_checkStatus") check status
-        button.btn.btn--primary(type="button" @click="TEST_stop") stop
-        button.btn.btn--primary(type="button" @click="TEST_close") close CoreProcess
-        router-link.btn.btn--primary(:to="{name: 'login'}") go to Login
-
-
 </template>
 
 <script>
 import configApp    from '@/core/globalSettings.js'
-import {trainingElements, deepLearnElements}  from '@/core/helpers.js'
+import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 
 //const {ipcRenderer} = require('electron')
 export default {
@@ -131,21 +128,16 @@ export default {
       ]
     }
   },
-  mounted() {
-    // ipcRenderer.on('asynchronous-reply', (event, arg) => {
-    //   console.log(arg);
-    // })
-  },
   computed: {
     statusStartBtn() {
       return {
-        'text-error':   this.coreStatus == 'Training' || this.coreStatus == 'Validation',
-        'text-warning': this.coreStatus == 'Paused',
-        'text-success': this.coreStatus == 'Finished',
+        'text-error':   this.statusNetworkCore == 'Training' || this.statusNetworkCore == 'Validation',
+        'text-warning': this.statusNetworkCore == 'Paused',
+        'text-success': this.statusNetworkCore == 'Finished',
       }
     },
     statusTrainingText() {
-      switch (this.coreStatus) {
+      switch (this.statusNetworkCore) {
         case 'Training':
         case 'Validation':
           return '<i class="icon icon-repeat animation-loader"></i> Training';
@@ -159,7 +151,7 @@ export default {
       }
     },
     statusTestText() {
-      switch (this.coreStatus) {
+      switch (this.statusNetworkCore) {
         case 'Training':
         case 'Validation':
           return '<i class="icon icon-repeat animation-loader"></i> Test running';
@@ -169,48 +161,44 @@ export default {
           break;
       }
     },
+    isTraining() {
+      return this.$store.getters['mod_workspace/GET_networkIsTraining']
+    },
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
-    // resultSym() {
-    //   return this.$store.state.mod_api.symPY
-    // },
-    versionApi() {
-      return configApp.version
+    currentElList() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
-    devMode() {
-      return configApp.developMode
+    currentNetMeta() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta
     },
-    appMode() {
-      return this.$store.state.globalView.appMode
+    networkMode() {
+      return this.currentNetMeta.netMode
     },
-    // networkSettings() {
-    //   return this.$store.getters['mod_workspace/GET_currentNetworkSettings']
-    // },
-    currentNet() {
-      return this.$store.getters['mod_workspace/GET_currentNetworkNet']
+    statusLocalCore() {
+      return this.$store.state.mod_api.statusLocalCore;
     },
-    currentGlobalNet() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork']
+    statusNetworkCore() {
+      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
-    coreStatus() {
-      return this.$store.state.mod_api.serverStatus.Status;
-    }
-  },
-  watch: {
-    coreStatus(newStatus, oldStatus) {
-      if(newStatus === 'Finished' && oldStatus === 'Validation') {
-        this.$store.dispatch('globalView/NET_trainingDone')
-      }
+    statisticsIsOpen() {
+      return this.currentNetMeta.openStatistics
     }
   },
   methods: {
+    onOffBtn() {
+      if(this.isTraining){
+        this.trainStop()
+      }
+      else this.trainStart()
+    },
     trainStart() {
       let valid = this.validateNetwork();
       if (!valid) {
         return
       }
-      this.$store.commit('globalView/SET_showGlobalSet', true);
+      this.$store.commit('globalView/GP_showNetGlobalSet', true);
 
       //if show GlobalSet once
       // if(this.networkSettings.isEmpty) {
@@ -230,16 +218,16 @@ export default {
       this.$store.dispatch('mod_api/API_skipValidTraining');
     },
     validateNetwork() {
-      let net = this.currentNet;
+      let net = this.currentElList;
       let typeData = net.find((element)=> element.layerType === 'Data');
       if(typeData === undefined) {
-        this.$store.commit('globalView/SET_infoPopup', 'Date element missing');
+        this.$store.commit('globalView/GP_infoPopup', 'Date element missing');
         return false
       }
 
       let typeTraining = net.find((element)=> element.layerType === 'Training');
       if(typeTraining === undefined) {
-        this.$store.commit('globalView/SET_infoPopup', 'Classic Machine Learning or Training element missing');
+        this.$store.commit('globalView/GP_infoPopup', 'Classic Machine Learning or Training element missing');
         return false
       }
 
@@ -249,7 +237,7 @@ export default {
         deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
       }
       if(deepLearnIncluded === undefined) {
-        this.$store.commit('globalView/SET_infoPopup', 'If you use the Training elements, you must use the Deep Learn elements');
+        this.$store.commit('globalView/GP_infoPopup', 'If you use the Training elements, you must use the Deep Learn elements');
         return false
       }
 
@@ -258,39 +246,17 @@ export default {
     toggleLayers () {
       this.$store.commit('globalView/SET_hideLayers', !this.hideLayers)
     },
-    // PY() {
-    //   v
-    // },
-
     setArrowType(type, index) {
-      this.setAppMode('addArrow');
+      this.setNetMode('addArrow');
       this.$store.commit('mod_workspace/SET_arrowType', {type, store: this.$store});
       let selectArray = this.arrowList.splice(index, 1);
       this.arrowList.unshift(selectArray[0]);
     },
-    setAppMode(type) {
-      this.$store.commit('globalView/SET_appMode', type)
+    setNetMode(type) {
+      this.$store.dispatch('mod_workspace/SET_netMode', type)
     },
     openStatistics() {
-      this.$store.commit('globalView/SET_showStatistics', true)
-    },
-    testStart() {
-      //this.setAppMode('testing');
-    },
-    TEST_sendMain() {
-      ipcRenderer.send('asynchronous-message', 'ping')
-    },
-    TEST_checkStatus() {
-      this.$store.dispatch('mod_api/API_getStatus');
-    },
-    TEST_stop() {
-      this.$store.dispatch('mod_api/API_stopTraining');
-    },
-    TEST_close() {
-      this.$store.dispatch('mod_api/API_CLOSE_core');
-    },
-    TEST_getStatistics() {
-      this.$store.dispatch('mod_api/API_getStatistics');
+      this.$store.commit('mod_workspace/SET_openStatistics', true)
     },
   }
 }
@@ -299,21 +265,22 @@ export default {
 <style lang="scss" scoped>
   @import "../scss/base";
   .page_toolbar {
-    grid-area: toolbar;
-    background-color: $bg-toolbar;
-    padding: 5px .5em 5px 0;
-    //height: $h-toolbar;
-    //font-size: 11px;
+    z-index: 1;
     display: flex;
     align-items: center;
+    padding: 5px .5em 5px 0;
+    background-color: $bg-toolbar;
+
+    grid-area: toolbar;
   }
   .toggle-wrap {
     width: $w-layersbar;
     text-align: center;
     .btn--toolbar {
       @include multi-transition(transform);
-      transform: rotate(0);
+
       margin: auto;
+      transform: rotate(0);
     }
     &.hide-layers {
       .btn--toolbar {
@@ -322,11 +289,11 @@ export default {
     }
   }
   .toolbar_list {
-    padding: 0 .7143rem;
-    margin: 0;
-    list-style: none;
     display: flex;
     align-items: center;
+    margin: 0;
+    padding: 0 .7143rem;
+    list-style: none;
     border-left: 1px solid $toolbar-border;
     > li + li {
       margin-left: .3571rem;
@@ -335,36 +302,36 @@ export default {
   .toolbar_list-arrow-wrap {
     position: relative;
     > .btn {
-      //background-color: $bg-toolbar;
       position: relative;
     }
     &:hover {
-      > .btn {
-        //background-color: $bg-workspace-2;
-      }
+      /*> .btn {*/
+        /*//background-color: $bg-workspace-2;*/
+      /*}*/
       .toolbar_list-arrow {
-        max-height: 7.5rem;
         opacity: 1;
+        max-height: 7.5rem;
       }
     }
     &.disable-hover:hover {
       .toolbar_list-arrow {
-        max-height: 0;
         opacity: 0;
+        max-height: 0;
       }
     }
   }
   .toolbar_list-arrow {
     @include multi-transition(max-height, opacity);
-    padding: 0;
-    margin: 0;
-    list-style: none;
+
     position: absolute;
     top: 0;
     left: 0;
     opacity: 0;
-    max-height: 0;
     overflow: hidden;
+    max-height: 0;
+    margin: 0;
+    padding: 0;
+    list-style: none;
     li + li {
       margin-top: 2px;
     }
@@ -381,19 +348,4 @@ export default {
       margin-left: 1rem;
     }
   }
-
-  /*.test-api {*/
-    /*display: flex;*/
-    /*align-items: center;*/
-    /*font-weight: bold;*/
-    /*> * {*/
-      /*margin: 0 .5em;*/
-    /*}*/
-    /*input {*/
-      /*width: 5em;*/
-    /*}*/
-    /*span span {*/
-      /*font-weight: normal;*/
-    /*}*/
-  /*}*/
 </style>

@@ -1,9 +1,8 @@
 <template lang="pug">
   .layer-item-wrap
-    //
-    .layer-item(
-      :class="{'selected': itemData.meta.isSelected}"
-      @click="setSelect(itemIndex)"
+    .layer-item.js-clickout(
+      :class="{'selected': itemData.layerMeta.isSelected}"
+      @click="setSelect(itemIndex, $event)"
       )
       .layer-item_left-sidebar()
         button.btn.btn--icon(type="button")
@@ -23,7 +22,7 @@
           )
       .layer-item_right-sidebar
         button.btn.btn--icon.visible-icon.visible-icon--lock( type="button"
-          :class="{'invisible-icon': !itemData.meta.isLock}"
+          :class="{'invisible-icon': !itemData.layerMeta.isLock}"
           @click="toggleLock(itemIndex)"
         )
           i.icon.icon-lock
@@ -49,9 +48,11 @@
 <script>
   import SidebarLayersItem  from '@/components/sidebar/sidebar-layers--item.vue'
   import TextEditable       from '@/components/base/text-editable.vue'
+  import clickOutside       from '@/core/mixins/click-outside.js'
 
 export default {
   name: 'SidebarLayersItem',
+  mixins: [clickOutside],
   components: {
     SidebarLayersItem,
     TextEditable
@@ -76,7 +77,9 @@ export default {
     }
   },
   computed: {
-
+    statisticsIsOpen() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+    },
   },
   methods: {
     currentNode(item) {
@@ -87,34 +90,49 @@ export default {
     toggleOpen() {
       this.isOpen = !this.isOpen
     },
-    setSelect(path) {
-      this.$store.commit('mod_workspace/SET_metaSelect', { path, setValue: true });
+    setSelect(path, ev) {
+      console.log(ev);
+      if (this.statisticsIsOpen) {
+        console.log('TODO add functions');
+        //this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
+      }
+      else {
+        this.ClickElementTracking = ev.target.closest('.js-clickout');
+        document.addEventListener('click', this.clickOutside);
+        this.$store.dispatch('mod_workspace/SET_elementSelect', {path, setValue: true});
+      }
+    },
+    clickOutsideAction() {
+      if (!this.statisticsIsOpen) {
+        this.deselect()
+      }
     },
     toggleLock(path) {
-      this.$store.commit('mod_workspace/SET_metaLock', path);
+      this.$store.commit('mod_workspace/SET_elementLock', path);
+      this.deselect();
     },
     toggleVisible(path) {
-      this.$store.commit('mod_workspace/SET_metaVisible', path);
+      this.$store.commit('mod_workspace/SET_elementVisible', path);
     },
     editElName(newName) {
-      this.$store.commit('mod_workspace/SET_layerName', { path: this.itemIndex, setValue: newName });
-    }
+      this.$store.commit('mod_workspace/SET_elementName', { path: this.itemIndex, setValue: newName });
+    },
+    deselect() {
+      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: this.itemIndex, setValue: false });
+    },
   }
 }
 </script>
 
 <style lang="scss">
   @import "../../scss/base";
-  .layer-item-wrap {
-
-  }
   .layer-item {
     position: relative;
     display: flex;
     align-items: center;
     height: $h-sidebar-layers-item;
-    padding-left: $h-sidebar-layers-indent;
     padding-right: $h-sidebar-layers-indent;
+    padding-left: $h-sidebar-layers-indent;
     border: 1px solid transparent;
     border-bottom: 1px solid $bg-toolbar;
     &:hover {
@@ -130,18 +148,18 @@ export default {
 
   .layer-item_left-sidebar {
     .btn {
-      padding: .5em;
       font-size: 1.2em;
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: .5em;
     }
   }
   .layer-item_folder-section {
     .btn {
-      padding: 0;
       display: flex;
       align-items: center;
+      padding: 0;
     }
     &.open {
       .icon-shevron {
