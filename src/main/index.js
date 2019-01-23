@@ -106,14 +106,28 @@ function createWindow () {
     app.quit()
   });
   ipcMain.on('appMinimize', (event, arg) => {
-    mainWindow.isMinimized()
-      ? mainWindow.restore()
-      : mainWindow.minimize()
+    if(process.platform === 'darwin' && mainWindow.isFullScreen()) {
+      mainWindow.setFullScreen(false);
+      setTimeout(()=>{mainWindow.minimize();}, 1000)
+    }
+    else {
+      mainWindow.isMinimized()
+        ? mainWindow.restore()
+        : mainWindow.minimize()
+    }
+
   });
   ipcMain.on('appMaximize', (event, arg) => {
-    mainWindow.isMaximized()
-      ? mainWindow.unmaximize()
-      : mainWindow.maximize()
+    if(process.platform === 'darwin') {
+      mainWindow.isMaximized()
+        ? mainWindow.setFullScreen(false)
+        : mainWindow.setFullScreen(true)
+    }
+    else {
+      mainWindow.isMaximized()
+        ? mainWindow.unmaximize()
+        : mainWindow.maximize()
+    }
   });
   ipcMain.on('appReady', (event, arg) => {
     mainWindow.checkForUpdates();
