@@ -3,7 +3,7 @@
     ref="rootBaseElement"
     :style="style"
     :class="active ? 'active' : 'inactive'"
-    @click.stop.prevent="switchClickEvent($event)"
+    @click="switchClickEvent($event)"
     @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings()"
     @contextmenu.stop.prevent="openContext"
     @keyup.46="deleteEl()"

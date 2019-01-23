@@ -1,28 +1,27 @@
 <template lang="pug">
-  transition(name="scroll-right")
-    aside.page_sidebar(v-show="hideSidebar")
-      ul.sidebar_tabset
-        li(v-for="(tab, i) in tabset"
-          :key="i"
-        )
-          button.btn(type="button"
-            :class="{'active': i === tabSelected}"
-            @click="selectTab(i)"
-            :disabled="tabSelected != i"
-          ) {{tab}}
+  aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar}")
+    ul.sidebar_tabset
+      li(v-for="(tab, i) in tabset"
+        :key="i"
+      )
+        button.btn(type="button"
+          :class="{'active': i === tabSelected}"
+          @click="selectTab(i)"
+          :disabled="tabSelected != i"
+        ) {{tab}}
 
-      .sidebar_tab(v-show="tabSelected === 0")
-        //include ./sidebar/blocks/Project.pug
-        sidebar-layers
-        sidebar-training(v-if="showTraining")
-        //sidebar-comments(v-else)
-        sidebar-share
-      .sidebar_tab(v-show="tabSelected === 1")
-        include ./sidebar/blocks/Save.pug
-      .sidebar_tab(v-show="tabSelected === 2")
-        include ./sidebar/blocks/Import.pug
-      .sidebar_tab(v-show="tabSelected === 3")
-        include ./sidebar/blocks/Code.pug
+    .sidebar_tab(v-show="tabSelected === 0")
+      //include ./sidebar/blocks/Project.pug
+      sidebar-layers
+      sidebar-training(v-if="showTraining")
+      //sidebar-comments(v-else)
+      sidebar-share
+    .sidebar_tab(v-show="tabSelected === 1")
+      include ./sidebar/blocks/Save.pug
+    .sidebar_tab(v-show="tabSelected === 2")
+      include ./sidebar/blocks/Import.pug
+    .sidebar_tab(v-show="tabSelected === 3")
+      include ./sidebar/blocks/Code.pug
 
 </template>
 
@@ -82,6 +81,10 @@ export default {
     flex-direction: column;
     max-width: $w-sidebar;
     grid-area: sidebar;
+    transition: max-width .3s;
+    &.page_sidebar--hide {
+      max-width: 0;
+    }
   }
   .sidebar_tabset {
     display: flex;
@@ -113,16 +116,6 @@ export default {
     width: $w-sidebar;;
     > * {
       width: 100%;
-      //flex: 1 1 auto;
     }
-  }
-  //Animations
-  .scroll-right-enter-active,
-  .scroll-right-leave-active {
-    transition: max-width .5s;
-  }
-  .scroll-right-enter,
-  .scroll-right-leave-to {
-    max-width: 0;
   }
 </style>

@@ -64,10 +64,6 @@ export default {
           color: $col-txt;
         }
       }
-      //&:focus + .checkbox-fake {
-      //  outline: 1px dotted $col-primary;
-      //  box-shadow: 0 0 1px 1px $white;
-      //}
     }
     .radio-fake {
       position: relative;

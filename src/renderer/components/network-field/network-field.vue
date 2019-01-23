@@ -39,6 +39,11 @@
         :x2="preArrow.stop.x"
         :y2="preArrow.stop.y"
         )
+    .form_input
+      base-radio(groupName="group" valueInput="Data" v-model="settings")
+        span Data
+      base-radio(groupName="group" valueInput="Labels" v-model="settings")
+        span Labels
     component(
       v-for="(el, index) in networkElementList"
       :key="el.index"
@@ -104,6 +109,7 @@ export default {
   props: ['netIndex'],
   data() {
     return {
+      settings: 'Data',
       arrowsList: [],
       resizeTimeout: null,
       layerSize: 52,

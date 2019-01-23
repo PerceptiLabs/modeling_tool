@@ -2,21 +2,21 @@
   #app
     header-win.app-header(
       v-if="platform === 'win32'"
-      @appClosed='appClose'
-      @appMinimized='appMinimize'
-      @appMaximized='appMaximize'
+      @appClosed="appClose"
+      @appMinimized="appMinimize"
+      @appMaximized="appMaximize"
     )
     header-mac.app-header(
       v-if="platform === 'darwin'"
-      @appClosed='appClose'
-      @appMinimized='appMinimize'
-      @appMaximized='appMaximize'
+      @appClosed="appClose"
+      @appMinimized="appMinimize"
+      @appMaximized="appMaximize"
     )
     header-linux.app-header(
       v-if="platform === 'linux'"
-      @appClosed='appClose'
-      @appMinimized='appMinimize'
-      @appMaximized='appMaximize'
+      @appClosed="appClose"
+      @appMinimized="appMinimize"
+      @appMaximized="appMaximize"
     )
     router-view.app-page
 </template>
