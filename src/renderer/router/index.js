@@ -6,6 +6,7 @@ import PageLogin    from '@/pages/login/login.vue'
 import PageRegister from '@/pages/register/register.vue'
 import PagePolicy   from '@/pages/policy/policy.vue'
 import PageProjects from '@/pages/projects/projects.vue'
+import PageHome     from '@/pages/home/home.vue'
 
 Vue.use(Router);
 
@@ -16,6 +17,7 @@ export default new Router({
     {path: '/register',     name: 'register', component: PageRegister},
     {path: '/policy-page',  name: 'policy',   component: PagePolicy},
     {path: '/projects',     name: 'projects', component: PageProjects },
+    {path: '/home',         name: 'home',     component: PageHome },
     {path: '*', redirect: '/'}
   ]
 })

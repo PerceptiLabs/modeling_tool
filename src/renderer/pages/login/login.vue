@@ -31,6 +31,7 @@
           router-link.btn.btn--link(:to="{name: 'register'}") Register new account
 
           //router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects
+          router-link.btn.btn--link(:to="{name: 'home'}" style="margin-left: 10px") Home
 </template>
 
 <script>
