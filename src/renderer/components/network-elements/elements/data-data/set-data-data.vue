@@ -44,7 +44,6 @@
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
-        //loadPath: 'No uploaded file',
         settings: {
           Type: 'Data',
           accessProperties: {
@@ -55,16 +54,9 @@
         }
       }
     },
-    watch: {
-      // loadPath(newPath) {
-      //   this.settings.accessProperties.Path = newPath;
-      //   //this.applySettings();
-      // }
-    },
     methods: {
       openLoadDialog,
       loadFile() {
-        //console.log('loadFile');
         let opt = {
           title:"Load file in Data element",
           properties: ['openDirectory']
@@ -78,8 +70,7 @@
         };
         this.openLoadDialog(this.saveLoadFile, opt)
       },
-      saveLoadFile(pathArr) {
-        //console.log('saveLoadFile');
+      saveLoadFile(pathArr) {;
         this.settings.accessProperties.Path = pathArr[0];
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
