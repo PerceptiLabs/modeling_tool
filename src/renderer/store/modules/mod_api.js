@@ -83,7 +83,7 @@ const actions = {
   API_runServer({state, commit, dispatch, getters}) {
     let timer;
     let coreIsStarting = false;
-    startCore();
+    //startCore();
 
     function startCore() {
       coreIsStarting = true;

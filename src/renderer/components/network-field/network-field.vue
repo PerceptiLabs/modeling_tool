@@ -112,7 +112,9 @@ export default {
       offset: {
         offsetX: 0,
         offsetY: 0,
-      }
+      },
+      svgWidth: '100%',
+      svgHeight: '100%',
     }
   },
   mounted() {
@@ -140,15 +142,16 @@ export default {
       return this.$store.state.mod_workspace.preArrow;
     },
     styleSvgArrow() {
-      // let size = 100 / this.networkScale;
-      // return {
-      //   width: size + '%',
-      //   height: size + '%',
-      // }
-      return ''
+      return {
+        width: this.svgWidth,
+        height: this.svgHeight,
+      }
     }
   },
   watch: {
+    networkScale() {
+      this.calcSvgSize()
+    },
     eventCalcArrow() {
       this.createArrowList()
     },
@@ -183,14 +186,6 @@ export default {
         }
       }
     },
-    // calcCanvasSize() {
-    //   if(this.networkElementList.length) {
-    //     let height = this.$refs.network.scrollHeight;
-    //     let width = this.$refs.network.scrollWidth;
-    //     this.$refs.svg.style.height = height;
-    //     this.$refs.svg.style.width = width;
-    //   }
-    // },
     calcOffset() {
       this.offset = {
        offsetX: this.$refs.network.offsetLeft,
@@ -210,6 +205,19 @@ export default {
       if(needCalcArray) {
         this.drawArrows();
       }
+    },
+    calcSvgSize() {
+      let scrollHeight = this.$refs.network.scrollHeight;
+      let scrollWidth = this.$refs.network.scrollWidth;
+      let offsetHeight = this.$refs.network.offsetHeight;
+      let offsetWidth = this.$refs.network.offsetWidth;
+      scrollHeight > offsetHeight
+        ? this.svgHeight = scrollHeight + 'px'
+        : this.svgHeight = '100%';
+      scrollWidth > offsetWidth
+        ? this.svgWidth = scrollWidth + 'px'
+        : this.svgWidth = '100%';
+
     },
     //-------------
     //Arrow methods
@@ -235,6 +243,8 @@ export default {
       if(!this.networkElementList.length) {
         return
       }
+      this.calcSvgSize();
+
       const size = this.layerSize;
       const listID = {};
       const connectList = [];
@@ -520,4 +530,3 @@ export default {
     }
   }
 </style>
-
