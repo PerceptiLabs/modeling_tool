@@ -1,28 +1,27 @@
 <template lang="pug">
-  transition(name="scroll-left")
-    aside.page_layersbar(v-show="hideLayers" )
-      ul.layersbar-list
-        li.layer(
-          v-for="(layer, i) in layersbarList"
-          :key="i"
+  aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers}")
+    ul.layersbar-list
+      li.layer(
+        v-for="(layer, i) in layersbarList"
+        :key="i"
+      )
+        button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
+          v-tooltip:right="layer.tooltip"
+          @click.stop="toggleElList(i, $event)"
+          :class="[layer.layerClass, {'active': layer.showEl}]"
         )
-          button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
-            v-tooltip:right="layer.tooltip"
-            @click.stop="toggleElList(i, $event)"
-            :class="[layer.layerClass, {'active': layer.showEl}]"
+          i.icon(:class="layer.iconClass")
+        ul.layer_child-list(
+          v-if="layer.networkElements"
+        )
+          li(
+            v-for="(element, i) in layer.networkElements"
+            :key="i"
           )
-            i.icon(:class="layer.iconClass")
-          ul.layer_child-list(
-            v-if="layer.networkElements"
-          )
-            li(
-              v-for="(element, i) in layer.networkElements"
-              :key="i"
-            )
-              component(:is="element" :draggable='true')
-        li.layer
-          button.btn.btn--layersbar.net-element-add(type="button")
-            i.icon.icon-add
+            component(:is="element" :draggable='true')
+      li.layer
+        button.btn.btn--layersbar.net-element-add(type="button")
+          i.icon.icon-add
 
 </template>
 
@@ -169,10 +168,19 @@ export default {
 <style lang="scss">
   @import "../scss/base";
   $indent: 5px;
+
   .page_layersbar {
     max-width: $w-layersbar;
-
     grid-area: layersbar;
+    transition: max-width $animation-speed;
+    &.page_layersbar--hide {
+      transition: max-width $animation-speed $animation-speed;
+      max-width: 0;
+      .layersbar-list {
+        transition: transform $animation-speed;
+        transform: translateY(-120%);
+      }
+    }
   }
   .layersbar-list {
     margin: 0;
@@ -200,9 +208,7 @@ export default {
     }
   }
   ul.layer_child-list {
-    //TODO ???
     @include multi-transition (transform, opacity, visibility);
-
     position: absolute;
     top: 0;
     left: -$indent;
@@ -224,29 +230,6 @@ export default {
     }
     > li + li {
       padding-top: $indent;
-    }
-  }
-
-  //Animations
-  .scroll-left-enter {
-    max-width: 0;
-    .layersbar-list {
-      transform: translateY(-120%);
-    }
-  }
-  .scroll-left-enter-active {
-    transition: max-width $animation-speed 0s;
-  }
-  .scroll-left-leave-active {
-    transition: max-width $animation-speed $animation-speed;
-    .layersbar-list {
-      transition: transform $animation-speed;
-    }
-  }
-  .scroll-left-leave-to {
-    max-width: 0;
-    .layersbar-list {
-      transform: translateY(-120%);
     }
   }
 </style>

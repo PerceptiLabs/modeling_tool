@@ -47,7 +47,7 @@ export default {
       // userEmail: 'test@test.com',
       // userPass: '123123',
       userEmail: '',
-      userPass: ''
+      userPass: '',
     }
   },
   computed: {

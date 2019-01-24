@@ -104,6 +104,7 @@ export default {
   props: ['netIndex'],
   data() {
     return {
+      settings: 'Data',
       arrowsList: [],
       resizeTimeout: null,
       layerSize: 52,
@@ -115,7 +116,7 @@ export default {
     }
   },
   mounted() {
-    this.calcViewPort();
+    this.calcViewPort(true);
     window.addEventListener("resize", this.resizeCalc, false);
   },
   beforeDestroy() {
@@ -201,10 +202,13 @@ export default {
         this.layerSize = this.$refs.layer[0].$el.offsetWidth;
       }
     },
-    calcViewPort() {
+    calcViewPort(needCalcArray) {
       window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
       if(!this.smallViewPort) {
         this.layerSize = 72;
+      }
+      if(needCalcArray) {
+        this.drawArrows();
       }
     },
     //-------------
