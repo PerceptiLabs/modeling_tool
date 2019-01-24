@@ -1,5 +1,5 @@
 <template lang="pug">
-  div.page(ref="layersbar")
+  .page(ref="layersbar")
     the-workspace
     the-toolbar
     the-layersbar
@@ -12,11 +12,10 @@
 
 <script src="./quantum.js"></script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   @import "../../scss/base";
   .page {
     display: grid;
-    margin: 0;
     background-color: $bg-window;
     grid-template-areas:  'toolbar   toolbar    sidebar'
                           'layersbar  workspace sidebar';

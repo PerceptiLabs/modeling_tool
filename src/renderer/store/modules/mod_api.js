@@ -83,35 +83,36 @@ const actions = {
   API_runServer({state, commit, dispatch, getters}) {
     let timer;
     let coreIsStarting = false;
-    //startCore();
+    startCore();
 
     function startCore() {
       coreIsStarting = true;
       let openServer;
       switch (process.platform) {
         case 'win32':
-          openServer = spawn(`${pathCore}/appServer.exe`, [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           break;
         case 'darwin':
           let resPath = process.resourcesPath;
           let path = resPath.slice(0, resPath.indexOf('Resources'));
           if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           else {
-            openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           break;
         case 'linux':
           if(process.env.NODE_ENV === 'production') {
-            openServer = spawn('../core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = spawn('../core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           else {
-            openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           break;
       }
       openServer.on('error', (err) => {
+        console.log(err);
         coreOffline()
       });
       openServer.on('close', (code) => {

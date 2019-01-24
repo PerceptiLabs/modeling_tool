@@ -26,6 +26,9 @@
     "files": [
       "dist/electron/**/*"
     ],
+    "extraFiles": [
+      "core"
+    ],
     "publish": [
       {
         "provider": "generic",
