@@ -5,6 +5,7 @@ $iconsGroupColor: #5c6680;
 	padding: 4rem 3rem 0 3rem;
 	background: $bg-workspace;
 	grid-area: recent-files;
+	overflow-y: scroll; 
 	.title-box {
 		justify-content: space-between;
 		margin-bottom: 4rem;

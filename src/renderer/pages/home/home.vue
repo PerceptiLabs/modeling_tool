@@ -147,7 +147,7 @@ export default {
 
   .page {
     grid-template-columns: $w-sidebar 1fr;
-    grid-template-rows: $w-sidebar auto;
+    grid-template-rows: 40rem auto;
     grid-template-areas:  "sidebar basic-templates"
                           "sidebar recent-files";
   }

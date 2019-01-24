@@ -1,27 +1,28 @@
 <template lang="pug">
-  aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers}")
-    ul.layersbar-list
-      li.layer(
-        v-for="(layer, i) in layersbarList"
-        :key="i"
-      )
-        button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
-          v-tooltip:right="layer.tooltip"
-          @click.stop="toggleElList(i, $event)"
-          :class="[layer.layerClass, {'active': layer.showEl}]"
+  transition(name="scroll-left")
+    aside.page_layersbar(v-show="hideLayers" )
+      ul.layersbar-list
+        li.layer(
+          v-for="(layer, i) in layersbarList"
+          :key="i"
         )
-          i.icon(:class="layer.iconClass")
-        ul.layer_child-list(
-          v-if="layer.networkElements"
-        )
-          li(
-            v-for="(element, i) in layer.networkElements"
-            :key="i"
+          button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
+            v-tooltip:right="layer.tooltip"
+            @click.stop="toggleElList(i, $event)"
+            :class="[layer.layerClass, {'active': layer.showEl}]"
           )
-            component(:is="element" :draggable='true')
-      li.layer
-        button.btn.btn--layersbar.net-element-add(type="button")
-          i.icon.icon-add
+            i.icon(:class="layer.iconClass")
+          ul.layer_child-list(
+            v-if="layer.networkElements"
+          )
+            li(
+              v-for="(element, i) in layer.networkElements"
+              :key="i"
+            )
+              component(:is="element" :draggable='true')
+        li.layer
+          button.btn.btn--layersbar.net-element-add(type="button")
+            i.icon.icon-add
 
 </template>
 
@@ -64,6 +65,7 @@
   import ClassicMLKNN         from '@/components/network-elements/elements/classic-ml-k-nearest/view-classic-ml-k-nearest.vue'
   import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/view-classic-ml-random-forest.vue'
   import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/view-classic-ml-vector-machine.vue'
+
 
 export default {
   name: 'TheLayersbar',
@@ -144,22 +146,21 @@ export default {
   },
   methods: {
     toggleElList(index, ev) {
+      this.ClickElementTracking = ev.target.closest('.js-clickout');
+      document.addEventListener('click', this.clickOutside);
+
       if (this.layersbarList[index].showEl) {
-        this.layersbarList[index].showEl = false;
-        document.removeEventListener('click', this.clickOutside);
+        this.layersbarList[index].showEl = false
       }
       else {
         this.clickOutsideAction();
         this.layersbarList[index].showEl = true;
-
-        this.ClickElementTracking = ev.target.closest('.js-clickout');
-        document.addEventListener('click', this.clickOutside);
       }
     },
     clickOutsideAction() {
       this.layersbarList.forEach((item)=> {
         item.showEl = false
-      });
+      })
     },
   }
 }
@@ -168,27 +169,17 @@ export default {
 <style lang="scss">
   @import "../scss/base";
   $indent: 5px;
-
   .page_layersbar {
-    max-width: $w-layersbar;
     grid-area: layersbar;
-    transition: max-width $animation-speed;
-    &.page_layersbar--hide {
-      transition: max-width $animation-speed $animation-speed;
-      max-width: 0;
-      .layersbar-list {
-        transition: transform $animation-speed;
-        transform: translateY(-120%);
-      }
-    }
+    max-width: $w-layersbar;
   }
   .layersbar-list {
-    margin: 0;
     padding: 0;
-    padding-bottom: 30px;
+    margin: 0;
     list-style: none;
-    transition: transform $animation-speed $animation-speed;
     transform: translateY(0);
+    transition: transform $animation-speed $animation-speed;
+    padding-bottom: 30px;
   }
   .layer {
     position: relative;
@@ -198,13 +189,13 @@ export default {
     position: relative;
     z-index: 1;
     &:after {
-      content: '\e922';
+      content: "\e922";
       font-family: 'icomoon' !important;
-      font-size: 11px;
-      line-height: 1;
       position: absolute;
+      line-height: 1;
       right: 1px;
       bottom: 1px;
+      font-size: 11px;
     }
   }
   ul.layer_child-list {
@@ -212,24 +203,48 @@ export default {
     position: absolute;
     top: 0;
     left: -$indent;
-    visibility: hidden;
-    opacity: 0;
-    margin: 0;
     padding: $indent;
+    margin: 0;
     list-style: none;
+    opacity: 0;
+    visibility: hidden;
     @media (max-height: 1000px) {
       .layer:nth-child(n+5) & {
-        top: auto;
         bottom: 0;
+        top: auto;
       }
     }
     .active + & {
-      visibility: visible;
-      opacity: 1;
       transform: translateX(100%);
+      opacity: 1;
+      visibility: visible;
     }
     > li + li {
       padding-top: $indent;
     }
   }
+
+  //Animations
+  .scroll-left-enter {
+    max-width: 0;
+    .layersbar-list {
+      transform: translateY(-120%);
+    }
+  }
+  .scroll-left-enter-active {
+    transition: max-width $animation-speed 0s;
+  }
+  .scroll-left-leave-active {
+    transition: max-width $animation-speed $animation-speed;
+    .layersbar-list {
+      transition: transform $animation-speed;
+    }
+  }
+  .scroll-left-leave-to {
+    max-width: 0;
+    .layersbar-list {
+      transform: translateY(-120%);
+    }
+  }
+
 </style>
