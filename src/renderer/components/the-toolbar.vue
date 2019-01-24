@@ -102,7 +102,7 @@
 </template>
 
 <script>
-import configApp    from '@/core/globalSettings.js'
+//import configApp    from '@/core/globalSettings.js'
 import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 
 //const {ipcRenderer} = require('electron')

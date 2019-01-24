@@ -14,8 +14,8 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              input.form_input(type="text" v-model="settings.accessProperties.Path")
-              button.btn.btn--primary(type="button" @click="loadFile") Load
+              input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
+              button.btn.btn--primary(type="button" @click="loadFile" disabled="disabled") Load
           .settings-layer_section
             .form_row
               .form_label Data type:
@@ -50,7 +50,7 @@
           accessProperties: {
             Category:'Local',
             Type: 'Data',
-            Path: 'No uploaded file',
+            Path: '..\\mnist',
           }
         }
       }

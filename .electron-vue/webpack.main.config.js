@@ -10,16 +10,16 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const BabiliWebpackPlugin = require('babili-webpack-plugin')
 
-let usePlagin;
-if(process.env.BUILD_TARGET === 'core_local') {
-  usePlagin = [
-    new webpack.NoEmitOnErrorsPlugin(),
-    new CopyWebpackPlugin([
-      {from:'core_local',to:'core_local'}
-    ]),
-  ]
-}
-else usePlagin = [new webpack.NoEmitOnErrorsPlugin()]
+let usePlagin = [new webpack.NoEmitOnErrorsPlugin()];
+// if(process.env.BUILD_TARGET === 'core_local') {
+//   usePlagin = [
+//     new webpack.NoEmitOnErrorsPlugin(),
+//     new CopyWebpackPlugin([
+//       {from:'core_local',to:'core_local'}
+//     ]),
+//   ]
+// }
+// else usePlagin = [new webpack.NoEmitOnErrorsPlugin()]
 
 let mainConfig = {
   entry: {
@@ -83,24 +83,24 @@ if (process.env.NODE_ENV !== 'production') {
  * Adjust mainConfig for production settings
  */
 if (process.env.NODE_ENV === 'production') {
-  if(process.env.BUILD_TARGET === 'core_local') {
-    mainConfig.plugins.push(
-      new BabiliWebpackPlugin(),
-      new webpack.DefinePlugin({
-        'process.env.NODE_ENV': '"production"',
-        'process.env.BUILD_TARGET': '"core_local"'
-      })
-    )
-  }
-  else {
-    mainConfig.plugins.push(
-      new BabiliWebpackPlugin(),
-      new webpack.DefinePlugin({
-        'process.env.NODE_ENV': '"production"',
-        'process.env.BUILD_TARGET': '"core_cloud"'
-      })
-    )
-  }
+  mainConfig.plugins.push(
+    new BabiliWebpackPlugin(),
+    new webpack.DefinePlugin({
+      'process.env.NODE_ENV': '"production"'
+    })
+  )
+  // if(process.env.BUILD_TARGET === 'core_local') {
+  //
+  // }
+  // else {
+  //   mainConfig.plugins.push(
+  //     new BabiliWebpackPlugin(),
+  //     new webpack.DefinePlugin({
+  //       'process.env.NODE_ENV': '"production"',
+  //       'process.env.BUILD_TARGET': '"core_cloud"'
+  //     })
+  //   )
+  // }
 }
 
 module.exports = mainConfig

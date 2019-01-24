@@ -1,6 +1,7 @@
 import requestApi  from "@/core/api.js";
+import {pathCore}  from "@/core/constants.js";
 
-const net = require('net');
+//const net = require('net');
 const {spawn} = require('child_process');
 
 const namespaced = true;
@@ -84,30 +85,12 @@ const actions = {
     let coreIsStarting = false;
     startCore();
 
-    // function checkCore() {
-    //   const theData = getters.GET_data_GetStatus;
-    //   const client = new requestApi();
-    //   client.sendMessage(theData)
-    //     .then((data)=> {
-    //       commit('SET_statusLocalCore', 'online')
-    //     })
-    //     .catch((err) =>{
-    //       if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
-    //         console.log('core offline');
-    //       }
-    //       coreOffline();
-    //       if(!coreIsStarting) {
-    //         startCore();
-    //         waitOnlineCore();
-    //       }
-    //     });
-    // }
     function startCore() {
       coreIsStarting = true;
       let openServer;
       switch (process.platform) {
         case 'win32':
-          openServer = spawn('core_local/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          openServer = spawn(`${pathCore}/appServer.exe`, [], {stdio: ['ignore', 'ignore', 'pipe'] });
           break;
         case 'darwin':
           let resPath = process.resourcesPath;
