@@ -23,14 +23,14 @@
 
 <script>
   import {ipcRenderer}  from 'electron'
+  import HeaderLinux from '@/components/header/header-linux.vue';
+  import HeaderWin from '@/components/header/header-win.vue';
+  import HeaderMac from '@/components/header/header-mac.vue';
+
 
   export default {
     name: 'quantumnet',
-    components: {
-      HeaderLinux: () => import ('@/components/header/header-linux.vue'),
-      HeaderWin: () => import ('@/components/header/header-win.vue'),
-      HeaderMac: () => import ('@/components/header/header-mac.vue'),
-      },
+    components: {HeaderLinux, HeaderWin, HeaderMac},
     mounted() {
       //main process events
       ipcRenderer.on('newNetwork', (event) => {
