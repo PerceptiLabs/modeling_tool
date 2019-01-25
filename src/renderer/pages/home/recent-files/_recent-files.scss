@@ -1,11 +1,18 @@
 $indentProjects: 1rem;
 $iconsGroupColor: #5c6680;
 
+.home-title {
+  text-transform: uppercase;
+  font-weight: 500;
+  font-size: 1.8rem;
+}
+
 .page_recent-files {
-	padding: 4rem 3rem 0 3rem;
+	margin: 4rem 4rem 0 4rem;
+	padding: 0 1rem;
 	background: $bg-workspace;
 	grid-area: recent-files;
-	overflow-y: scroll; 
+	overflow-x: hidden;
 	.title-box {
 		justify-content: space-between;
 		margin-bottom: 4rem;
@@ -14,6 +21,26 @@ $iconsGroupColor: #5c6680;
 		}
 	}
 }
+
+.filter-recent-files {
+	display: flex;
+	align-items: center;
+	color: $col-txt;
+	.icon-filter {
+		font-size: 1.6rem;
+		margin-right: 1rem;
+		color: $disable-txt;
+	}
+	input {
+		background: none;
+		border-bottom: 1px solid $disable-txt;
+		font-style: italic;
+		padding: 0;
+		width: 14rem;
+	}
+}
+
+
 .project-list {
 	flex-wrap: wrap;
 	margin: 0 -$indentProjects;

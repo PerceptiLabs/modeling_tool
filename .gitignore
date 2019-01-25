@@ -10,6 +10,6 @@ npm-debug.log.*
 thumbs.db
 !.gitkeep
 .idea
-core_local/*
+static/core/*
 .vscode/*
 

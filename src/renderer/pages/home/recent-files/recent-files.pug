@@ -1,8 +1,9 @@
 .title-box.d-flex
-    h2 RECENT FILES 
+    .home-title RECENT FILES 
       span.title-box_projectscount ({{projects.length}})
-    button.btn.btn--blue-border(type="button" @click="openPopup")
-      span Open
+    .filter-recent-files
+      .i.icon.icon-filter 
+      input(type="text" placeholder="Filter recent files" v-model="search")
     
 ul.project-list.d-flex
   article.project-box
@@ -12,7 +13,7 @@ ul.project-list.d-flex
         i.icon.icon-zoom-plus
     h3 Add new project
   
-  article.project-box(v-for="project in projects")
+  article.project-box(v-for="project in filteredProjects")
     button.project(@click="openProject")
       .project_ration
       .project_content

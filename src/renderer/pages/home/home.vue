@@ -21,6 +21,7 @@ export default {
       return {
           source: 'cloud',
           service: '',
+          search: '',
           projects: [
             {
               id: 1,
@@ -136,6 +137,13 @@ export default {
       closePopup() {
         this.updateShowPopup = false;
       }
+    },
+    computed: {
+      filteredProjects() {
+        return this.projects.filter((project)=> {
+          return project.name.match(this.search);
+        })
+      }
     }
   }
 </script>
@@ -146,8 +154,10 @@ export default {
   @import './recent-files/recent-files';
 
   .page {
+    display: grid;
+    background: $bg-workspace;
     grid-template-columns: $w-sidebar 1fr;
-    grid-template-rows: 40rem auto;
+    grid-template-rows: auto 1fr;
     grid-template-areas:  "sidebar basic-templates"
                           "sidebar recent-files";
   }
