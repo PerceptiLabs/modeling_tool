@@ -1,25 +1,12 @@
 $indentProjects: 1rem;
 $iconsGroupColor: #5c6680;
 
-.home-title {
-  text-transform: uppercase;
-  font-weight: 500;
-  font-size: 1.8rem;
-}
-
 .page_recent-files {
 	margin: 4rem 4rem 0 4rem;
 	padding: 0 1rem;
 	background: $bg-workspace;
 	grid-area: recent-files;
 	overflow-x: hidden;
-	.title-box {
-		justify-content: space-between;
-		margin-bottom: 4rem;
-		.title-box_projectscount {
-			font-size: 1.2rem;
-		}
-	}
 }
 
 .filter-recent-files {
@@ -42,6 +29,7 @@ $iconsGroupColor: #5c6680;
 
 
 .project-list {
+	display: flex;
 	flex-wrap: wrap;
 	margin: 0 -$indentProjects;
 	text-align: center;

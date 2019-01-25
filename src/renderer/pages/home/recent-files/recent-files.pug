@@ -1,9 +1,9 @@
-.title-box.d-flex
-    .home-title RECENT FILES 
-      span.title-box_projectscount ({{projects.length}})
-    .filter-recent-files
-      .i.icon.icon-filter 
-      input(type="text" placeholder="Filter recent files" v-model="search")
+.home-title-box
+  h2 Recent files
+    span.title-box_projectscount ({{projects.length}})
+  .filter-recent-files
+    .i.icon.icon-filter 
+    input(type="text" placeholder="Filter recent files" v-model="search")
     
 ul.project-list.d-flex
   article.project-box

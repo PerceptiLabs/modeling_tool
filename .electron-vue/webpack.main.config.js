@@ -10,14 +10,14 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 const BabiliWebpackPlugin = require('babili-webpack-plugin')
 
-let usePlagin = [new webpack.NoEmitOnErrorsPlugin()];
+let usePlagin = [
+  new webpack.NoEmitOnErrorsPlugin(),
+  new CopyWebpackPlugin([
+    {from:'core',to:'core'}
+  ]),
+];
 // if(process.env.BUILD_TARGET === 'core_local') {
-//   usePlagin = [
-//     new webpack.NoEmitOnErrorsPlugin(),
-//     new CopyWebpackPlugin([
-//       {from:'core_local',to:'core_local'}
-//     ]),
-//   ]
+//
 // }
 // else usePlagin = [new webpack.NoEmitOnErrorsPlugin()]
 

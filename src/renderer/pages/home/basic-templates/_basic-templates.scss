@@ -1,11 +1,25 @@
 $paddingBlocks: 3rem;
 $distance: 5rem;
 $colorGreen: #22DDE5;
+$colorGrey: #727272;
 
-.home-title {
-  text-transform: uppercase;
-  font-weight: 500;
-  font-size: 1.8rem;
+.home-title-box {
+  margin-bottom: $distance;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  .title-box_projectscount {
+    font-size: 1.2rem;
+    margin-left: 1rem;
+  }
+  h2 {
+    text-transform: uppercase;
+    font-weight: 500;
+    font-size: 1.8rem;
+    margin-bottom: 0;
+    display: flex;
+    align-items: center;
+  }
 }
 .home-menu-name {
   display: block;
@@ -18,11 +32,11 @@ $colorGreen: #22DDE5;
   background: $bg-workspace;
   display: flex;
   padding: $distance 0;
-  border-bottom: 1px solid #727272;
+  border-bottom: 1px solid $colorGrey;
   margin: 0 $distance;
 }
 .basic-templates_templates {
-  border-right: 1px solid #727272;
+  border-right: 1px solid $colorGrey;
   flex-grow: 2;
   display: flex;
   flex-direction: column;
@@ -31,9 +45,7 @@ $colorGreen: #22DDE5;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  width: 100%;
   flex-grow: 1;
-  padding-top: $distance;
 }
 .tempates_menu-btn {
   background: none;
@@ -52,7 +64,6 @@ $colorGreen: #22DDE5;
   justify-content: center;
   align-items: center;
   flex-direction: column;
-  padding-top: $distance;
 }
 .elements_model {
   display: flex;

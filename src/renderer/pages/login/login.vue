@@ -44,10 +44,10 @@ export default {
   },
   data() {
     return {
-      // userEmail: 'test@test.com',
-      // userPass: '123123',
-      userEmail: '',
-      userPass: '',
+      userEmail: 'test@test.com',
+      userPass: '123123',
+      // userEmail: '',
+      // userPass: '',
     }
   },
   computed: {
@@ -77,7 +77,9 @@ export default {
         if (result === 'success') {
           this.$store.commit('mod_login/SET_showLoader', false);
           this.$store.commit('globalView/SET_userToken', response.headers.authorization);
-          this.$store.dispatch('mod_api/API_runServer');
+          if(process.env.BUILD_TARGET !== 'web') {
+            this.$store.dispatch('mod_api/API_runServer');
+          }
           this.$router.replace('/app');
         }
       })

@@ -135,6 +135,9 @@ export default {
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
     },
+    statisticsIsOpen() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+    },
     eventCalcArrow() {
       return this.$store.state.mod_events.calcArray
     },
@@ -149,6 +152,9 @@ export default {
     }
   },
   watch: {
+    statisticsIsOpen() {
+      this.calcSvgSize()
+    },
     networkScale() {
       this.calcSvgSize()
     },
