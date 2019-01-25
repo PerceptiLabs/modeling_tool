@@ -1,9 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-    </list>
+    <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,9 +32,30 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="132">
+              <caret line="213" column="6" lean-forward="true" selection-start-line="213" selection-start-column="6" selection-end-line="213" selection-end-column="6" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="176">
+              <caret line="83" column="14" lean-forward="true" selection-start-line="83" selection-start-column="14" selection-end-line="83" selection-end-column="14" />
+              <folding>
+                <element signature="e#0#40#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/App.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="753">
+            <state relative-caret-position="66">
               <caret line="39" column="56" lean-forward="true" selection-start-line="39" selection-start-column="8" selection-end-line="39" selection-end-column="56" />
               <folding>
                 <element signature="e#570#607#0" expanded="true" />
@@ -45,11 +64,11 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/router/index.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="44">
-              <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
+            <state relative-caret-position="616">
+              <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
               <folding>
                 <element signature="e#0#24#0" expanded="true" />
                 <element signature="e#623#674#0" expanded="true" />
@@ -119,8 +138,8 @@
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="1939" />
-    <option name="y" value="-15" />
+    <option name="x" value="1934" />
+    <option name="y" value="-14" />
     <option name="width" value="1936" />
     <option name="height" value="1056" />
   </component>
@@ -162,7 +181,37 @@
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-field" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="router" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="store" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="store" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="modules" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
           </expand>
           <select />
@@ -321,15 +370,15 @@
       <workItem from="1548252373288" duration="9157000" />
       <workItem from="1548265032205" duration="4355000" />
       <workItem from="1548316661167" duration="23657000" />
-      <workItem from="1548404194099" duration="1602000" />
+      <workItem from="1548404194099" duration="2430000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="41209000" />
+    <option name="totallyTimeSpent" value="42037000" />
   </component>
   <component name="ToolWindowManager">
-    <frame x="1912" y="-8" width="1936" height="1056" extended-state="6" />
+    <frame x="1912" y="-8" width="1936" height="1056" extended-state="7" />
     <editor active="true" />
     <layout>
       <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49833333" visible="true" weight="0.20306715" />
@@ -344,7 +393,7 @@
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="8" weight="0.6086956" />
+      <window_info anchor="bottom" id="Version Control" order="8" visible="true" weight="0.17948718" />
       <window_info anchor="bottom" id="Event Log" order="9" side_tool="true" weight="0.32887402" />
       <window_info anchor="bottom" id="Terminal" order="10" weight="0.17948718" />
       <window_info anchor="bottom" id="TypeScript" order="11" weight="0.32960895" />
@@ -577,13 +626,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="547">
-          <caret line="155" column="24" selection-start-line="155" selection-start-column="24" selection-end-line="155" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/.electron-vue/dev-runner.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-2814" />
@@ -652,16 +694,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="242">
-          <caret line="83" column="14" lean-forward="true" selection-start-line="83" selection-start-column="14" selection-end-line="83" selection-end-column="14" />
-          <folding>
-            <element signature="e#0#40#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/index.js">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -689,16 +721,9 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-154">
-          <caret line="95" column="13" selection-start-line="95" selection-start-column="2" selection-end-line="95" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/App.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="753">
+        <state relative-caret-position="66">
           <caret line="39" column="56" lean-forward="true" selection-start-line="39" selection-start-column="8" selection-end-line="39" selection-end-column="56" />
           <folding>
             <element signature="e#570#607#0" expanded="true" />
@@ -706,14 +731,38 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-154">
+          <caret line="95" column="13" selection-start-line="95" selection-start-column="2" selection-end-line="95" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/router/index.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="44">
-          <caret line="2" lean-forward="true" selection-start-line="2" selection-end-line="2" />
+        <state relative-caret-position="616">
+          <caret line="28" lean-forward="true" selection-start-line="28" selection-end-line="28" />
           <folding>
             <element signature="e#0#24#0" expanded="true" />
             <element signature="e#623#674#0" expanded="true" />
             <marker date="1548344931127" expanded="true" signature="629:896" ph="..." />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="132">
+          <caret line="213" column="6" lean-forward="true" selection-start-line="213" selection-start-column="6" selection-end-line="213" selection-end-column="6" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="176">
+          <caret line="83" column="14" lean-forward="true" selection-start-line="83" selection-start-column="14" selection-end-line="83" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#40#0" expanded="true" />
           </folding>
         </state>
       </provider>
