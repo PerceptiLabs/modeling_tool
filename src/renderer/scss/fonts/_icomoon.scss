@@ -289,10 +289,14 @@ $folder: 'icomoon';
 .icon-shevron-right:before {
   content: "\e931";
 }
-.icon-appMacFullScreenOn:before {
+.icon-appMinimizeMac:before {
   content: "\e958";
 }
-.icon-appMacFullScreenOff:before {
+.icon-appFullscreenMac:before {
   content: "\e959";
 }
+.icon-appCloseMac:before {
+  content: "\e95a";
+}
+
 
