@@ -11,6 +11,7 @@
 </template>
 <script>
 import UpdatePopup from '@/components/global-popups/update-popup/update-popup.vue'
+import {ipcRenderer}  from 'electron'
 
 export default {
     components: {
@@ -22,6 +23,7 @@ export default {
           source: 'cloud',
           service: '',
           search: '',
+          appVersion: '',
           projects: [
             {
               id: 1,
@@ -136,6 +138,9 @@ export default {
       },
       closePopup() {
         this.updateShowPopup = false;
+      },
+      openImageClassification() {
+         this.$router.push({name: 'app'});
       }
     },
     computed: {
@@ -144,7 +149,13 @@ export default {
           return project.name.match(this.search);
         })
       }
-    }
+    },
+    mounted() {
+      ipcRenderer.send('appVersion');
+      ipcRenderer.on('getAppVersion', (event, data) => {
+        this.appVersion = data;
+      });
+  },
   }
 </script>
 <style lang="scss" scoped>

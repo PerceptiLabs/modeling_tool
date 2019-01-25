@@ -93,7 +93,7 @@
         span Run test
         i.icon.icon-circle-o
       span.text-primary.middle-text(v-html="statusTrainingText")
-      button.btn.btn--dark-blue-rev(type="button"  disabled="disabled"
+      button.btn.btn--dark-blue-rev(type="button" 
         @click="openStatistics"
         )
         span Layer Mode
@@ -104,6 +104,7 @@
 <script>
 //import configApp    from '@/core/globalSettings.js'
 import {trainingElements, deepLearnElements}  from '@/core/constants.js'
+import {loadNetwork} from '@/core/helpers.js'
 
 //const {ipcRenderer} = require('electron')
 export default {
@@ -256,7 +257,8 @@ export default {
       this.$store.dispatch('mod_workspace/SET_netMode', type)
     },
     openStatistics() {
-      this.$store.commit('mod_workspace/SET_openStatistics', true)
+      this.$store.commit('mod_events/set_openNetwork');
+      //this.$store.commit('mod_workspace/SET_openStatistics', true)
     },
   }
 }

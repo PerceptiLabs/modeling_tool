@@ -1,4 +1,5 @@
 import {remote} from "electron";
+import fs from 'fs';
 
 const findIndexId = function (arr, ID) {
   return arr.findIndex(function(item) {return item.layerId == ID});
@@ -22,6 +23,19 @@ const openLoadDialog = function (callback, options) {
     }
   })
 };
+
+const loadNetwork = function (pathArr) {
+  fs.readFile(pathArr[0],
+    (err, data)=> {
+    if(data) {
+      let net = JSON.parse(data.toString());
+      this.$store.dispatch('mod_workspace/ADD_network', net)
+    }
+    else {
+      console.error(err);
+    }
+  });
+}
 
 const debounce = function debounce(func, wait, immediate) {//not used
   let timeout;
@@ -48,7 +62,7 @@ const generateID = function(input) {
   return out
 };
 
-export {findIndexId, clickOutside, openLoadDialog, generateID, debounce}
+export {findIndexId, clickOutside, openLoadDialog, generateID, debounce, loadNetwork}
 
 
 

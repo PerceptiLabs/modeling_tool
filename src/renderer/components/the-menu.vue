@@ -181,7 +181,7 @@ export default {
       this.$store.dispatch('mod_events/EVENT_closeCore');
     },
     checkUpdate() {
-      ipcRenderer.send('checkUpdate')
+      ipcRenderer.send('checkUpdate');
     },
     addNewNetwork() {
       this.$store.dispatch('mod_workspace/ADD_network');
@@ -190,7 +190,7 @@ export default {
       this.$store.commit('mod_events/set_openNetwork')
     },
     saveNetwork() {
-      this.$store.commit('mod_events/set_saveNetwork')
+      this.$store.commit('mod_events/set_saveNetwork');
     },
     logOut() {
       this.$router.replace({name: 'login'});
