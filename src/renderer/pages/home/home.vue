@@ -12,6 +12,7 @@
 <script>
 import UpdatePopup from '@/components/global-popups/update-popup/update-popup.vue'
 import {ipcRenderer}  from 'electron'
+import {loadNetwork} from '@/core/helpers.js'
 
 export default {
     components: {
@@ -24,6 +25,11 @@ export default {
           service: '',
           search: '',
           appVersion: '',
+          templateModels: {
+            path_1: ['.\\src\\renderer\\pages\\home\\test02.json'],
+            path_2: ['.\\src\\renderer\\pages\\home\\test02.json'],
+            path_3: ['.\\src\\renderer\\pages\\home\\test02.json']
+          },
           projects: [
             {
               id: 1,
@@ -127,6 +133,7 @@ export default {
       }
     },
     methods: {
+      loadNetwork,
       openProject() {
         this.$router.push({name: 'app'});
       },
@@ -139,8 +146,9 @@ export default {
       closePopup() {
         this.updateShowPopup = false;
       },
-      openImageClassification() {
+      openTemplateModel(path) {
          this.$router.push({name: 'app'});
+         this.loadNetwork(path);
       }
     },
     computed: {
