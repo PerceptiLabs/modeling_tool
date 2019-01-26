@@ -14,8 +14,8 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              input.form_input(type="text" v-model="settings.accessProperties.Path")
-              button.btn.btn--primary(type="button" @click="loadFile") Load
+              input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
+              button.btn.btn--primary(type="button" @click="loadFile" disabled="disabled") Load
           .settings-layer_section
             .form_row
               .form_label Data type:
@@ -44,26 +44,19 @@
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
-        //loadPath: 'No uploaded file',
         settings: {
           Type: 'Data',
           accessProperties: {
+            Category:'Local',
             Type: 'Data',
-            Path: 'No uploaded file',
+            Path: '..\\mnist',
           }
         }
       }
     },
-    watch: {
-      // loadPath(newPath) {
-      //   this.settings.accessProperties.Path = newPath;
-      //   //this.applySettings();
-      // }
-    },
     methods: {
       openLoadDialog,
       loadFile() {
-        //console.log('loadFile');
         let opt = {
           title:"Load file in Data element",
           properties: ['openDirectory']
@@ -77,11 +70,10 @@
         };
         this.openLoadDialog(this.saveLoadFile, opt)
       },
-      saveLoadFile(pathArr) {
-        //console.log('saveLoadFile');
+      saveLoadFile(pathArr) {;
         this.settings.accessProperties.Path = pathArr[0];
         //this.applySettings();
-        //this.$store.dispatch('mod_workspace/a_SET_elementSettings', this.settings)
+        //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
     }
   }

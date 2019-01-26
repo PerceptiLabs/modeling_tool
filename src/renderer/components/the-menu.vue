@@ -1,20 +1,32 @@
 <template lang="pug">
-  ul.header-nav
-    li(
-    v-for="(item, i) in navMenu"
-    :key="i"
-    )
-      button.btn.btn--link(type="button") {{ item.label }}
-      ul.header-nav_sublist
-        li(
-        v-for="(subItem, index) in item.submenu"
-        :key="index")
-          div.separator(v-if="subItem.type === 'separator'")
-          button.btn.btn--link(type="button" v-else
-            :disabled="subItem.enabled === false"
-            @click="subItem.active(ctx)"
-          ) {{subItem.label}}
-          div.btn(v-if="i === navMenu.length - 1 && index === item.submenu.length - 1") Version: {{appVersion}}
+  nav.app-header_nav
+    ul.header-nav
+      li(
+      v-for="(item, i) in navMenu"
+      :key="i"
+      )
+        button.btn.btn--link(type="button") {{ item.label }}
+        ul.header-nav_sublist.show-hide.sublist--top
+          li(
+            v-for="(subItem, index) in item.submenu"
+            :key="index"
+            :class="{'have-sublist' : subItem.submenu}"
+          )
+            div.separator(v-if="subItem.type === 'separator'")
+            button.btn.btn--link(type="button" v-else
+              :disabled="subItem.enabled === false"
+              @click="subItem.active()"
+            ) {{subItem.label}}
+              i.icon.icon-shevron-right(v-if="subItem.submenu")
+            div.btn(v-if="i === navMenu.length - 1 && index === item.submenu.length - 1") Version: {{appVersion}}
+            ul.header-nav_sublist.sublist--right
+              li(
+                v-for="(subSubItem, index) in subItem.submenu"
+              )
+                button.btn.btn--link(type="button"
+                  :disabled="subSubItem.enabled === false"
+                  @click="subItem.active()"
+                ) {{subSubItem.label}}
 
 </template>
 
@@ -25,49 +37,8 @@ export default {
   data() {
     return {
       appVersion: '',
-      ctx: this,
-      navMenu: [
-        {
-          label: 'File',
-          submenu: [
-            {label: 'New',                                    active: function(self) {self.addNewNetwork()} },
-            {label: 'Open trained model',   enabled: false,   active: function(self) {}},
-            {label: 'Save trained model',   enabled: false,   active: function(self) {}},
-            {label: 'Open untrained model',                   active: function(self) {self.openNetwork()}},
-            {label: 'Save untrained model',                   active: function(self) {self.saveNetwork()}},
-            {type: 'separator'},
-            {label: 'Quit',                                   active: function(self) {self.appClose()}}
-          ]
-        },
-        {
-          label: 'Edit',
-          submenu: [
-            {label: 'undo',      enabled: false},
-            {label: 'redo',      enabled: false},
-            {type: 'separator'},
-            {label: 'cut',       enabled: false},
-            {label: 'copy',      enabled: false},
-            {label: 'paste',     enabled: false},
-            {label: 'delete',    accelerator: 'Delete', enabled: false},
-            {label: 'selectall', enabled: false},
-          ]
-        },
-        {
-          label: 'Settings',
-          submenu: [
-            {label: 'Hyperparameters', enabled: false, active: function(self) {self.appClose()}},
-          ]
-        },
-        {
-          label: 'Help',
-          submenu: [
-            {label: 'Help',               active: function(self) {self.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
-            {label: 'About',              active: function(self) {self.openLink('https://www.perceptilabs.com/')}},
-            {label: 'Check for updates',  active: function(self) {self.checkUpdate()}},
-            {type: 'separator'},
-          ]
-        }
-      ]
+      menuSet: false,
+
     }
   },
   mounted() {
@@ -77,8 +48,129 @@ export default {
     });
   },
   computed: {
-    version() {
-
+    navMenu() {
+      return [
+        {
+          label: 'File',
+          submenu: [
+            {label: 'New project',                  enabled: this.menuSet,  active: ()=> {this.addNewNetwork()}},
+            {label: 'New workspace',                enabled: false,         active: ()=> {}},
+            {label: 'Open project',                 enabled: false,         active: ()=> {}},
+            {label: 'Save project',                 enabled: false,         active: ()=> {}},
+            {label: 'Open model',                   enabled: this.menuSet,  active: ()=> {this.openNetwork()}},
+            {label: 'Save model',                   enabled: this.menuSet,  active: ()=> {this.saveNetwork()}},
+            {type: 'separator'},
+            {label: 'Log out',                      enabled: this.menuSet,  active: ()=> {this.logOut()}},
+            {label: 'Exit',                         enabled: true,          active: ()=> {this.appClose()}}
+          ]
+        },
+        {
+          label: 'Edit',
+          submenu: [
+            {label: 'Undo',                         enabled: false},
+            {label: 'Redo',                         enabled: false},
+            {type: 'separator'},
+            {label: 'Cut',                          enabled: false},
+            {label: 'Copy',                         enabled: false},
+            {label: 'Paste',                        enabled: false},
+            {label: 'Delete',                       enabled: false},
+            {label: 'Select all',                   enabled: false},
+          ]
+        },
+        {
+          label: 'Operations ',
+          submenu: [
+            {
+              label: 'Data',
+              submenu: [
+                {label: 'Data Environment',         enabled: false,    active: ()=> {}},
+              ]
+            },
+            {
+              label: 'Process ',
+              submenu: [
+                {label: 'Reshape',                  enabled: false,    active: ()=> {}},
+                {label: 'Word embedding',           enabled: false,    active: ()=> {}},
+                {label: 'Grayscale',                enabled: false,    active: ()=> {}},
+                {label: 'One hot',                  enabled: false,    active: ()=> {}},
+                {label: 'Crop',                     enabled: false,    active: ()=> {}},
+              ]
+            },
+            {
+              label: 'Deep learning',
+              submenu: [
+                {label: 'Fully connected',          enabled: false,    active: ()=> {}},
+                {label: 'Convolution',              enabled: false,    active: ()=> {}},
+                {label: 'Deconvolution',            enabled: false,    active: ()=> {}},
+                {label: 'Recurrent',                enabled: false,    active: ()=> {}}
+              ]
+            },
+            {
+              label: 'Math',
+              submenu: [
+                {label: 'Argmax',                   enabled: false,    active: ()=> {}},
+                {label: 'Merge',                    enabled: false,    active: ()=> {}},
+                {label: 'Split',                    enabled: false,    active: ()=> {}},
+                {label: 'Softmax',                  enabled: false,    active: ()=> {}}
+              ]
+            },
+            {
+              label: 'Training',
+              submenu: [
+                {label: 'Normal',                   enabled: false,    active: ()=> {}},
+                {label: 'Normal+Data',              enabled: false,    active: ()=> {}},
+                {label: 'Reinforcement learning',   enabled: false,    active: ()=> {}},
+                {label: 'Genetic algorithm',        enabled: false,    active: ()=> {}},
+                {label: 'Dynamic routing',          enabled: false,    active: ()=> {}}
+              ]
+            },
+            {
+              label: 'Classic machine learning',
+              submenu: [
+                {label: 'K means clustering',       enabled: false,    active: ()=> {}},
+                {label: 'DBSCAN',                   enabled: false,    active: ()=> {}},
+                {label: 'kNN',                      enabled: false,    active: ()=> {}},
+                {label: 'Random forrest',           enabled: false,    active: ()=> {}},
+                {label: 'Support vector machine',   enabled: false,    active: ()=> {}}
+              ]
+            },
+          ]
+        },
+        {
+          label: 'Custom'
+        },
+        {
+          label: 'Window',
+          submenu: [
+            {label: 'Edit profile',                 enabled: false, active: ()=> {this.appClose()}},
+            {label: 'History',                      enabled: false, active: ()=> {this.appClose()}},
+          ]
+        },
+        {
+          label: 'Settings',
+          submenu: [
+            {label: 'Hyperparameters',              enabled: false, active: ()=> {this.appClose()}},
+          ]
+        },
+        {
+          label: 'Help',
+          submenu: [
+            {label: 'Help',                                                 active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
+            {label: 'About',                                                active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
+            {label: 'Tutorial mode',                enabled: this.menuSet,  active: ()=> {}},
+            {label: 'Check for updates',            enabled: this.menuSet,  active: ()=> {this.checkUpdate()}},
+            {type: 'separator'},
+          ]
+        }
+      ]
+    }
+  },
+  watch: {
+    '$route': {
+      handler(to, from) {
+        to.name === 'app' ? this.menuSet = true : this.menuSet = false
+      },
+      immediate: true
     }
   },
   methods: {
@@ -86,19 +178,24 @@ export default {
       window.open(url,'_blank');
     },
     appClose() {
-      ipcRenderer.send('appClose')
+      this.$store.dispatch('mod_events/EVENT_closeCore');
     },
     checkUpdate() {
-      ipcRenderer.send('checkUpdate')
+      ipcRenderer.send('checkUpdate');
     },
     addNewNetwork() {
-      this.$store.commit('mod_workspace/ADD_loadNetwork');
+      this.$store.dispatch('mod_workspace/ADD_network');
     },
     openNetwork() {
       this.$store.commit('mod_events/set_openNetwork')
     },
     saveNetwork() {
-      this.$store.commit('mod_events/set_saveNetwork')
+      this.$store.commit('mod_events/set_saveNetwork');
+    },
+    logOut() {
+      this.$router.replace({name: 'login'});
+      this.$store.dispatch('mod_api/API_CLOSE_core', null, {root: true});
+      this.$store.commit('mod_workspace/RESET_network');
     }
   }
 }
@@ -106,44 +203,83 @@ export default {
 
 <style lang="scss" scoped>
   @import "../scss/base";
+  .app-header_nav {
+    height: 100%;
+    -webkit-app-region: no-drag;
+  }
   .header-nav {
-    display: flex;
     font-weight: 500;
+    display: flex;
+    height: 100%;
     > li {
+      font-size: 14px;
+      color: $col-txt;
       position: relative;
+      display: flex;
+      align-items: center;
+      &:hover {
+        background: $disable-txt;
+      }
     }
     > li + li {
-      margin-left: 2rem;
+      //margin-left: 2rem;
     }
     .btn {
+      padding: 0 1rem;
       -webkit-app-region: no-drag;
     }
   }
   .header-nav_sublist {
-    display: none;
+    font-weight: 400;
     position: absolute;
-    top: 70%;
-    left: -1rem;
-    min-width: 10rem;
-    box-shadow: $box-shad;
-    padding: .5rem 0;
-    background-color: $bg-input;
     z-index: 1;
+    min-width: 10rem;
+    background-color: $bg-workspace;
+    box-shadow: $box-shad;
+    &.sublist--top {
+      top: 100%;
+    }
+    &.sublist--right {
+      top: 0;
+      left: 100%;
+    }
+    li {
+      color: $white;
+      position: relative;
+    }
     .open-sublist &,
-    .header-nav li:hover & {
+    .header-nav li:hover &.show-hide {
       display: block;
     }
     .btn {
+      width: 100%;
+      padding: .7rem 9rem .7rem 2rem;
+      text-align: left;
       white-space: nowrap;
-      padding: .25rem 1rem;
+      border-radius: 0;
       &:hover {
-        background: #000;
+        background: #124368;
       }
     }
     .separator {
-      margin: .25rem 2px;
       height: 1px;
+      margin: .25rem 2px;
       background: #141419;
     }
+    .have-sublist {
+      .icon-shevron-right{
+        position: absolute;
+        right: 1rem;
+      }
+      ul {
+        display: none;
+      }
+    }
+    .have-sublist:hover ul {
+      display: block;
+    }
+  }
+  .show-hide {
+    display: none;
   }
 </style>

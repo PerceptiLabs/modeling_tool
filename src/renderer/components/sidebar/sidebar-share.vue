@@ -23,17 +23,18 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .sidebar_share {
-    background: #4B4B5C;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    margin-top: auto;
     padding-top: .5rem;
     padding-bottom: .5rem;
-    margin-top: auto;
+    background: #4b4b5c;
   }
   .sidebar-share_icon {
     .icon {
       margin-right: .3rem;
     }
   }
+
 </style>

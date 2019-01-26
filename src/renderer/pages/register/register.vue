@@ -2,6 +2,7 @@
   main.page_login
     .login_logo
       img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
+    view-loading
     .login_main
       h1 Get Started
       h3 Register in 1 minute
@@ -26,21 +27,21 @@
             name="Phone"
             v-mask="'+## (###) ###-##-##'"
             )
-        .form_holder
+        //.form_holder
           input(type="email" placeholder="Email"
             v-model="user.email"
             name="Email"
             v-validate="'required|email'"
             )
           p.text-error(v-show="errors.has('Email')") {{ errors.first('Email') }}
-        .form_holder
+        //.form_holder
           input(type="password" placeholder="Password"
             v-model="user.password"
             name="Password"
             v-validate="'required|min:6'"
             ref="userPass")
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
-        .form_holder
+        //.form_holder
           input(type="password" placeholder="Confirm password"
             name="Confirm password"
             v-validate="'required|confirmed:userPass'"
@@ -49,22 +50,29 @@
           p.text-error(v-show="errors.has('Confirm password')") {{ errors.first('Confirm password') }}
         .form_holder
           base-checkbox(
-            validateName="policy"
-            v-model="terms"
+            v-validate="'required'"
+            data-vv-name="checkmeplease"
+            label="checkmeplease"
+            v-model="checkmeplease"
           )
             span Agree
             router-link(:to="{name: 'policy'}").btn.btn--link  terms and policy
+          p.text-error(v-show="errors.has('checkmeplease')") {{ errors.first('checkmeplease') }}
 
         .form_holder
-          button.btn.btn--dark-blue-rev(type="button" @click="validateForm") Register
+          button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading") Register
         .form_holder
           router-link(:to="{name: 'login'}").btn.btn--link Already Have Account
 </template>
 
 <script>
-  import {requestCloudApi} from '@/core/apiCloud.js'
+  import {requestCloudApi}  from '@/core/apiCloud.js'
+  import ViewLoading        from '@/components/loading/view-loading.vue'
 export default {
   name: 'PageRegister',
+  components: {
+    ViewLoading
+  },
   data() {
     return {
       user: {
@@ -72,31 +80,42 @@ export default {
         lastName: '',
         email: '',
         phone: '',
-        password: ''
+        password: '',
+        isLoading: false
       },
-      terms: true
+      terms: false,
+      checkmeplease: null,
+
     }
+  },
+  computed: {
+    isLoading() {
+      return this.$store.state.mod_login.showLoader
+    },
   },
   methods: {
     requestCloudApi,
     validateForm() {
-      if(!this.terms) {
-        return
-      }
       this.$validator.validateAll()
         .then((result) => {
+          console.log('result', result);
           if (result) {
             this.registryUser();
             return;
           }
           //error func
-        });
+        })
+        .catch((error)=>{
+          console.log('error', error);
+        })
     },
     registryUser() {
-      //console.log('registryUser');
+      console.log('registryUser');
       this.requestCloudApi('post', 'Customer/CreateGuest', this.user, (result, response, error) => {
+        this.$store.commit('mod_login/SET_showLoader', true);
         if (result === 'success') {
           //console.log(response);
+          this.$store.commit('mod_login/SET_showLoader', false);
           alert('authorization success');
           this.$router.replace('/login');
         }

@@ -1,9 +1,9 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-process(:draggable="false"  disabled="disabled"
+  .btn.btn--layersbar.net-element-process(:draggable="draggable"
   data-component="ProcessEmbed"
   data-layer="Word Embedding"
   data-type="Other"
-  v-tooltip="'Word Embedding'"
+  v-tooltip:right="'World Embedding'"
   )
     i.icon.icon-put-in-button
 

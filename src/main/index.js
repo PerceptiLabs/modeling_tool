@@ -19,7 +19,7 @@ const mainMenu = [
       {label: 'Open untrained model', click() {mainWindow.webContents.send('openNetwork')}},
       {label: 'Save untrained model', click() {mainWindow.webContents.send('saveNetwork')}},
       {type: 'separator'},
-      {role: 'quit'}
+      {label: 'Quit PersceptiLabs', click() {mainWindow.webContents.send('closeApp')}},
     ]
   },
   {
@@ -71,7 +71,7 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    //frame: false,
+    frame: false,
     height: 768,
     width: 1024,
     minHeight: 768,
@@ -86,7 +86,7 @@ function createWindow () {
     }
   });
 
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
@@ -103,19 +103,31 @@ function createWindow () {
    * listeners for the renderer process
    */
   ipcMain.on('appClose', (event, arg) => {
-    if (process.platform !== 'darwin') {
-      app.quit()
-    }
+    app.quit()
   });
   ipcMain.on('appMinimize', (event, arg) => {
-    mainWindow.isMinimized()
-      ? mainWindow.restore()
-      : mainWindow.minimize()
+    if(process.platform === 'darwin' && mainWindow.isFullScreen()) {
+      mainWindow.setFullScreen(false);
+      setTimeout(()=>{mainWindow.minimize();}, 1000)
+    }
+    else {
+      mainWindow.isMinimized()
+        ? mainWindow.restore()
+        : mainWindow.minimize()
+    }
+
   });
   ipcMain.on('appMaximize', (event, arg) => {
-    mainWindow.isMaximized()
-      ? mainWindow.unmaximize()
-      : mainWindow.maximize()
+    if(process.platform === 'darwin') {
+      mainWindow.isMaximized()
+        ? mainWindow.setFullScreen(false)
+        : mainWindow.setFullScreen(true)
+    }
+    else {
+      mainWindow.isMaximized()
+        ? mainWindow.unmaximize()
+        : mainWindow.maximize()
+    }
   });
   ipcMain.on('appReady', (event, arg) => {
     mainWindow.checkForUpdates();
@@ -135,7 +147,8 @@ function createWindow () {
    * start auto update
    */
   mainWindow.checkForUpdates = function() {
-    if (process.env.NODE_ENV !== 'development') {
+    //if (process.env.NODE_ENV !== 'development') {
+    if (true) {
       mainWindow.webContents.send('info', 'checkForUpdates');
       const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
       const UpdateOpt = {

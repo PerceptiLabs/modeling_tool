@@ -2,20 +2,24 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-      chartLabel="Accuracy during one epoch"
-      :chartData="optionLine1"
+        chartLabel="Accuracy during one epoch"
+        :chartData="chartData.Output"
       )
 </template>
 
 <script>
   import ChartBase from "@/components/charts/chart-base";
-  import dataLine  from "@/components/charts/line.js";
+  import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxMathSoftmax",
     components: {ChartBase},
-    data() {
-      return {
-        optionLine1: dataLine,
+    mixins: [viewBoxMixin],
+    methods: {
+      getStatistics() {
+        this.chartRequest(this.boxElementID, 'MathSoftmax', '')
+      },
+      getData() {
+        this.getStatistics()
       }
     },
   }

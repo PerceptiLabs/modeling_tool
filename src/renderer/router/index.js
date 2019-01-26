@@ -1,21 +1,28 @@
 import Vue    from 'vue'
 import Router from 'vue-router'
 
-import PageQuantum  from '@/pages/app/quantum.vue'
-import PageLogin    from '@/pages/login/login.vue'
-import PageRegister from '@/pages/register/register.vue'
-import PagePolicy   from '@/pages/policy/policy.vue'
+// export const PageQuantum  = () => import(/* webpackChunkName: 'page-app' */ '@/pages/app/quantum.vue');
+// export const PageLogin    = () => import(/* webpackChunkName: 'page-login' */ '@/pages/login/login.vue');
+// export const PageRegister = () => import(/* webpackChunkName: 'page-register' */ '@/pages/register/register.vue');
+// export const PagePolicy   = () => import(/* webpackChunkName: 'page-policy' */ '@/pages/policy/policy.vue');
+// export const PageProjects = () => import(/* webpackChunkName: 'page-projects' */ '@/pages/projects/projects.vue');
+import PageQuantum  from '@/pages/app/quantum.vue';
+import PageLogin    from '@/pages/login/login.vue';
+import PageRegister from '@/pages/register/register.vue';
+import PagePolicy   from '@/pages/policy/policy.vue';
+import PageProjects from '@/pages/projects/projects.vue';
+import PageHome     from '@/pages/home/home.vue'
 
-Vue.use(Router)
+Vue.use(Router);
 
 export default new Router({
-  //mode: 'history',
   routes: [
-    { path: '/',          name: 'login',    component: PageLogin },
-    { path: '/register',  name: 'register', component: PageRegister },
-    { path: '/policy-page',    name: 'policy',   component: PagePolicy },
-    { path: '/app',       name: 'app',  component: PageQuantum },
-    { path: '*', redirect: '/'
-    }
+    {path: '/',             name: 'login',    component: PageLogin},
+    {path: '/app',          name: 'app',      component: PageQuantum},
+    {path: '/register',     name: 'register', component: PageRegister},
+    {path: '/policy-page',  name: 'policy',   component: PagePolicy},
+    {path: '/projects',     name: 'projects', component: PageProjects },
+    {path: '/home',         name: 'home',     component: PageHome },
+    {path: '*', redirect: '/'}
   ]
 })

@@ -139,9 +139,9 @@ export default {
         });
     },
     setGlobalSet() {
-      this.$store.commit('mod_workspace/SET_networkSettings', this.settings);
+      this.$store.dispatch('mod_workspace/SET_networkSettings', this.settings);
       this.closeGlobalSet();
-      this.$store.commit('globalView/SET_showCoreSideSettings', true);
+      this.$store.commit('globalView/GP_showCoreSideSettings', true);
     },
     closeGlobalSet() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

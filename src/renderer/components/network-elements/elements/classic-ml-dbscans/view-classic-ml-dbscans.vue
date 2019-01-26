@@ -3,6 +3,7 @@
     data-component="ClassicMLDbscans"
     data-layer="DBSCAN"
     data-type="Training"
+    v-tooltip:right="'DBSCAN'"
   )
     i.icon.icon-round-three
 

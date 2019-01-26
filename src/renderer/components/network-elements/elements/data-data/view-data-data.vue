@@ -3,7 +3,7 @@
     data-component="DataData"
     data-layer="Data_1"
     data-type="Data"
-    v-tooltip="'Data'"
+    v-tooltip:right="'Data'"
   )
     i.icon.icon-data
 

@@ -17,17 +17,15 @@ export default {
     TheStatistics,
     TheViewBox,
   },
-  data () {
-    return {
-      scale: 100,
-    }
-  },
-  mounted() {
-
-  },
   computed: {
-    styleScale() {
-      return this.scale / 100
+    scale: {
+      get: function () {
+        let zoom = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom * 100;
+        return Math.round(zoom);
+      },
+      set: function (newValue) {
+        this.$store.dispatch('mod_workspace/SET_statusNetworkZoom', newValue/100);
+      }
     },
     workspace() {
       return this.$store.state.mod_workspace.workspaceContent
@@ -50,52 +48,60 @@ export default {
     showCoreSide() {
       return this.$store.state.globalView.globalPopup.showCoreSideSettings
     },
-    appMode() {
-      return this.$store.state.globalView.appMode
+    networkMode() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
-    // currentSelectedIndex() {
-    //   return this.$store.getters['mod_workspace/GET_currentSelectedIndex']
-    // },
     statisticsIsOpen() {
-      return this.$store.state.globalView.statisticsIsOpen
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
     },
     statisticsElSelected() {
       return this.$store.state.mod_statistics.selectedElArr
     },
-    coreStatus() {
-      return this.$store.state.mod_api.serverStatus.Status;
+    statusNetworkCore() {
+      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     currentNet() {
-      return this.$store.getters['mod_workspace/GET_currentNetworkNet']
+      this.scale = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
 
   },
   watch: {
-
+    statusNetworkCore(newStatus, oldStatus) {
+      if(newStatus === 'Finished' && oldStatus === 'Validation') {
+        this.$store.dispatch('globalView/NET_trainingDone');
+        this.$store.dispatch('mod_api/API_startWatchGetStatus', false);
+      }
+    },
   },
   methods: {
+    scaleScroll(e) {
+      e.wheelDelta > 0 ? this.incScale() : this.decScale();
+    },
     deleteTabNetwork(index) {
-      this.$store.commit('mod_workspace/DELETE_workspaceTab', index)
+      this.$store.commit('mod_workspace/DELETE_network', index)
     },
     setTabNetwork(index) {
       this.$store.commit('mod_workspace/SET_currentNetwork', index);
-      this.$store.commit('mod_workspace/SET_metaSelectDisable');
-      this.$store.commit('globalView/SET_statisticsIsOpen', false)
+      this.$store.dispatch('mod_workspace/SET_elementUnselect');
+      if(this.statisticsIsOpen !== null) {
+        this.$store.dispatch('mod_workspace/SET_openStatistics', false);
+      }
     },
-    toggleSidebar () {
+    toggleSidebar() {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
     },
-    decScale () {
-      if (this.scale < 10) {
-        this.scale = 5
+    decScale() {
+      if (this.scale <= 30) {
+        this.scale = 30
       }
-      else this.scale = this.scale - 10
+      else this.scale = this.scale - 5
     },
     incScale () {
-      if (this.scale > 90) {
+      if (this.scale > 95) {
         this.scale = 100
       }
-      else this.scale = this.scale + 10
+      else this.scale = this.scale + 5
     },
     resize(newRect, i) {
       //console.log(newRect);
@@ -107,13 +113,12 @@ export default {
       //console.log(e)
     },
     editNetName(newName) {
-      this.$store.commit('mod_workspace/SET_networkName', newName);
+      this.$store.dispatch('mod_workspace/SET_networkName', newName);
     },
-    openStatistics() {
+    openStatistics(i) {
+      this.setTabNetwork(i);
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
-      this.$store.commit('globalView/SET_statisticsIsOpen', true);
-      // setTimeout(()=>{
-      // }, 2000)
+      this.$store.dispatch('mod_workspace/SET_openStatistics', true);
     },
     saveModel() {
       this.$store.commit('mod_events/set_saveNetwork');

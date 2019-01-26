@@ -1,11 +1,5 @@
 const baseNetDrag = {
   props: {
-    parentScaleX: {
-      type: Number, default: 1,
-    },
-    parentScaleY: {
-      type: Number, default: 1,
-    },
     dataEl: {type: Object},
   },
   data() {
@@ -69,20 +63,20 @@ const baseNetDrag = {
       const stickStartPos = this.stickStartPos;
 
       let delta = {
-        x: (stickStartPos.mouseX - (ev.pageX || ev.touches[0].pageX)) / this.parentScaleX,
-        y: (stickStartPos.mouseY - (ev.pageY || ev.touches[0].pageY)) / this.parentScaleY
+        x: (stickStartPos.mouseX - (ev.pageX || ev.touches[0].pageX)) / this.networkScale,
+        y: (stickStartPos.mouseY - (ev.pageY || ev.touches[0].pageY)) / this.networkScale
       };
 
       this.top = stickStartPos.top - delta.y;
       this.left = stickStartPos.left - delta.x;
 
-      this.$store.commit('mod_workspace/CHANGE_elementPosition', this.rect);
+      this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
     },
 
     bodyUp() {
       this.bodyDrag = false;
 
-      this.$store.commit('mod_workspace/CHANGE_elementPosition', this.rect);
+      this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
       this.$parent.$parent.createArrowList();
 
       //document.documentElement.removeEventListener('mousedown', this.deselect);//base-net-functional.js
@@ -96,13 +90,16 @@ const baseNetDrag = {
 
   },
   computed: {
+    networkScale() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
+    },
     isLock() {
-      return this.dataEl.el.meta.isLock
+      return this.dataEl.el.layerMeta.isLock
     },
     x() {
       if(this.dataEl.el) {
-        this.left = this.dataEl.el.meta.left;
-        return this.dataEl.el.meta.left
+        this.left = this.dataEl.el.layerMeta.left;
+        return this.dataEl.el.layerMeta.left
       }
       else {
         this.left = 0;
@@ -111,8 +108,8 @@ const baseNetDrag = {
     },
     y() {
       if(this.dataEl.el) {
-        this.top = this.dataEl.el.meta.top;
-        return this.dataEl.el.meta.top
+        this.top = this.dataEl.el.layerMeta.top;
+        return this.dataEl.el.layerMeta.top
       }
       else {
         this.top = 0;

@@ -1,9 +1,10 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-process(:draggable="false"  disabled="disabled"
+  .btn.btn--layersbar.net-element-process(:draggable="draggable"
   data-component="ProcessGrayscale"
-  data-layer="Grayscale"
+  data-layer="Grayscale_1"
   data-type="Other"
-  v-tooltip="'Grayscale'"
+  v-tooltip:right="'Grayscale'"
+
   )
     i.icon.icon-sieve
 

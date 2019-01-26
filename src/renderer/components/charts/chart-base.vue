@@ -1,106 +1,123 @@
 <template lang="pug">
   .base-chart(
-    ref="baseChart"
-    :class="{'full-view': fullView}")
+  ref="baseChart"
+  :class="{'full-view': fullView}")
     .base-chart_head(v-if="!headerOff")
       .chart-head_title
         h5.ellipsis {{ chartLabel }}
       .chart-head_meta
         button.btn.btn--link(type="button"
-          :class="{'text-primary': fullView}"
-          @click="toggleFullView")
+        :class="{'text-primary': fullView}"
+        @click="toggleFullView")
           i.icon.icon-full-screen-graph
     .base-chart_main
       v-chart(
         ref="chart"
         :auto-resize="true"
-        theme="quantum"
         :options="chartModel"
+        theme="quantum"
       )
 </template>
 
 <script>
+  import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
 
-export default {
-  name: "ChartBase",
-  props: {
-    headerOff: {
-      type: Boolean,
-      default: false
+  export default {
+    name: "ChartBase",
+    props: {
+      headerOff: {
+        type: Boolean,
+        default: false
+      },
+      chartLabel: {
+        type: String,
+        default: ''
+      },
+      chartData: {
+        type: Object,
+        default: function () {
+          return null
+        }
+      },
+      customColor: {
+        type: Array,
+        default: function () {
+          return []
+        }
+      },
     },
-    chartLabel: {
-      type: String,
-      default: ''
-    },
-    chartData: {
-      type: Array,
-      default: function() {
-        return null
-      }
-    },
-  },
-  data() {
-    return {
-      fullView: false,
-      h: '',
-      w: ''
-    }
-  },
-  computed: {
-    chartModel() {
-      let model = {
-        //tooltip: {},
-        yAxis: {},
-        xAxis: {
-          //boundaryGap: true,
-        },
-        series: []
-      };
-      if(this.chartData !== null) {
-        model.series = this.chartData;
-        let yLength = model.series[0].data.length;
-        model.xAxis.data = [];
-        for (var i = 0; i < yLength; i++) {
-          model.xAxis.data.push(i);
+    data() {
+      return {
+        fullView: false,
+        wWorker: null,
+        chartModel: {},
+        defaultModel: {
+          tooltip: {},
+          toolbox: {
+            feature: {
+              saveAsImage: {
+                title: 'Save'
+              },
+              //magicType: {type: ['line', 'bar']},
+            }
+          },
+          legend: {},
+          yAxis: {},
+          xAxis: {
+            //boundaryGap: true,
+            data: []
+          },
+          series: []
         }
       }
-      return model
-    }
-  },
-  watch: {
-    // fullView(newVal, oldVal) {
-    //   if(newVal) {
-    //     console.log(this.$refs.chart);
-    //     this.h = this.$refs.chart.$el.scrollHeight;
-    //     this.w = this.$refs.chart.$el.scrollWidth;
-    //     this.$refs.chart.resize(
-    //       {
-    //         width: 'auto',
-    //         height: 'auto',
-    //       }
-    //     );
-    //   }
-    //   if (oldVal) {
-    //     this.$refs.chart.resize({
-    //       width: this.w,
-    //       height: this.h,
-    //     });
-    //     //console.log(this.$refs.chart);
-    //   }
-    // }
-  },
-  methods: {
-    toggleFullView() {
-      this.fullView = !this.fullView
-    }
-  },
-  beforeDestroy() {
-    //console.log('Destroy chart');
-    this.$refs.chart.destroy();
+    },
+    watch: {
+      chartData() {
+        if (this.chartData === null) {
+          this.chartModel = this.defaultModel;
+          return
+        }
+        let model = {...this.defaultModel, ...this.chartData};
+        model.xAxis.data.length = 0;
+        this.wWorker.postMessage({
+          model,
+          xLength: this.chartData.xLength
+        });
+      }
+    },
+    methods: {
+      toggleFullView() {
+        this.fullView = !this.fullView
+      },
+      applyCustomColor() {
+        if (this.customColor.length) {
+          this.defaultModel.color = this.customColor;
+        }
+      },
+      createWWorker() {
+        this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
+        this.wWorker.addEventListener('message', this.drawChart, false);
+      },
+      drawChart(ev) {
+        this.chartModel = ev.data;
+        this.$refs.chart.hideLoading()
+      }
+    },
+    mounted() {
+      this.applyCustomColor();
+      this.createWWorker();
+      this.$refs.chart.showLoading(chartSpinner)
+    },
+    beforeDestroy() {
+      this.wWorker.postMessage('close');
+      this.wWorker.removeEventListener('message', this.drawChart, false);
+      this.$refs.chart.dispose();
+    },
   }
-}
 </script>
 
 <style lang="scss" scoped>
-
+  .base-chart_main {
+    height: 300px;
+  }
 </style>

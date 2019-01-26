@@ -3,6 +3,7 @@
   data-component="TrainGenetic"
   data-layer="Genetic Algorithm"
   data-type="Training"
+  v-tooltip:right="'Genetic Algorithm'"
   )
     i.icon.icon-learning-genetic
 

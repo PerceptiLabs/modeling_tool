@@ -1,29 +1,68 @@
 import requestApi  from "@/core/api.js";
+import {pathCore}  from "@/core/constants.js";
 
-const net = require('net');
+//const net = require('net');
 const {spawn} = require('child_process');
 
 const namespaced = true;
 
 const state = {
-  serverStatus: {
-    Status: 'Offline' //Created, Training, Validation, Paused, Finished
-  },
+  statusLocalCore: 'offline', //online
+  getStatusTimer: null,
+  startWatchGetStatus: false
 };
 
 const getters = {
-  GET_serverStatus(state) {
-    return state.serverStatus.Status;
-  }
+  GET_data_CloseServer(state, getters, rootState, rootGetters) {
+    return {
+      //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: 'server',
+      action: 'Close',
+      value: ''
+    };
+  },
+  GET_data_PauseTraining(state, getters, rootState, rootGetters) {
+    return {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Pause',
+      value: ''
+    };
+  },
+  GET_data_StopTraining(state, getters, rootState, rootGetters) {
+    return {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Stop',
+      value: ''
+    };
+  },
+  GET_data_SkipValidTraining(state, getters, rootState, rootGetters) {
+    return {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'SkipToValidation',
+      value: ''
+    }
+  },
+  GET_data_GetStatus(state, getters, rootState, rootGetters) {
+    return {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'getStatus', //getIter
+      value: ''
+    };
+  },
 };
 
 const mutations = {
-  SET_serverStatus(state, value) {
-    state.serverStatus = value
+  SET_statusLocalCore(state, value) {
+    state.statusLocalCore = value
   },
-  RESET_idTimer(state, value) {
-    clearInterval(state.idTimer);
-    state.idTimer = value
+  SET_startWatchGetStatus(state, value) {
+    state.startWatchGetStatus = value
+  },
+  SET_getStatusTimer(state, value) {
+    state.getStatusTimer = value
+  },
+  RESET_getStatusTimer(state) {
+    clearInterval(state.getStatusTimer);
   }
 };
 
@@ -42,78 +81,106 @@ const mutations = {
 
 const actions = {
   API_runServer({state, commit, dispatch, getters}) {
-    dispatch('API_getStatus');
-    setTimeout(()=>{
-      if(getters.GET_serverStatus === 'Offline') {
-        let openServer;
-        switch (process.platform) {
-          case 'win32':
-            openServer = spawn('core_local/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-            break;
-          case 'darwin':
-            let resPath = process.resourcesPath;
-            let path = resPath.slice(0, resPath.indexOf('Resources'));
-            if(process.env.NODE_ENV === 'production') {
-              openServer = spawn(path + 'core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-            }
-            else {
-              openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-            }
-            break;
-          case 'linux':
-            if(process.env.NODE_ENV === 'production') {
-              openServer = spawn('../core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-            }
-            else {
-              openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-            }
-            break;
+    let timer;
+    let coreIsStarting = false;
+    // startCore();
+    //
+    // function startCore() {
+    //   coreIsStarting = true;
+    //   let openServer;
+    //   switch (process.platform) {
+    //     case 'win32':
+    //       openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+    //       break;
+    //     case 'darwin':
+    //       let resPath = process.resourcesPath;
+    //       let path = resPath.slice(0, resPath.indexOf('Resources'));
+    //       if(process.env.NODE_ENV === 'production') {
+    //         openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+    //       }
+    //       else {
+    //         openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+    //       }
+    //       break;
+    //     case 'linux':
+    //       if(process.env.NODE_ENV === 'production') {
+    //         openServer = spawn('../core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+    //       }
+    //       else {
+    //         openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+    //       }
+    //       break;
+    //   }
+    //   openServer.on('error', (err) => {
+    //     console.log(err);
+    //     coreOffline()
+    //   });
+    //   openServer.on('close', (code) => {
+    //     coreOffline()
+    //   });
+    //   waitOnlineCore()
+    // }
+    function waitOnlineCore() {
+      timer = setInterval(()=>{
+        let status = state.statusLocalCore;
+        if(status === 'offline') {
+          getCoreRequest();
         }
-        openServer.on('close', (code) => {
-          console.error(code);
-          commit('SET_serverStatus', {Status: 'Offline'});
-        });
-
-        // openServer.stdout.on('data', (data) => {
-        //   console.log(`stdout: ${data}`);
-        // });
-        // openServer.stderr.on('data', (data) => {
-        //   console.log(`stderr: ${data}`);
-        // });
-      }
-    }, 2000);
-    let timer = setInterval(()=>{
-      let status = getters.GET_serverStatus;
-      if(status === 'Offline') {
-        //console.log('API_runServer');
-        dispatch('API_getStatus')
-      }
-      else clearInterval(timer);
-    }, 5000);
+        else clearInterval(timer);
+      }, 5000);
+    }
+    function getCoreRequest() {
+      const theData = getters.GET_data_GetStatus;
+      const client = new requestApi();
+      client.sendMessage(theData)
+        .then((data)=> {
+          commit('SET_statusLocalCore', 'online')
+        })
+        .catch((err) =>{});
+    }
+    function coreOffline() {
+      commit('SET_statusLocalCore', 'offline');
+    }
   },
 
-  API_getStatus({commit, dispatch, rootGetters}) {
-    const dataGetStatus = rootGetters['mod_workspace/GET_API_dataGetStatus'];
+  API_getStatus({getters, dispatch, commit}) {
+    const theData = getters.GET_data_GetStatus;
     const client = new requestApi();
-    client.sendMessage(dataGetStatus)
+    client.sendMessage(theData)
       .then((data)=> {
-        //console.log(data);
-        commit('SET_serverStatus', data)
+        dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
         if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
           console.error(err);
         }
-        commit('SET_serverStatus', {Status: 'Offline'})
+        commit('SET_statusLocalCore', 'offline')
       });
   },
+
+  API_startWatchGetStatus({commit, dispatch}, message) {
+    commit('SET_startWatchGetStatus', message);
+    message ? startWatch() : stopWatch();
+
+    function startWatch() {
+      let timer = setInterval(()=>{
+        dispatch('API_getStatus')
+      }, 1000);
+      commit('SET_getStatusTimer', timer);
+    }
+    function stopWatch() {
+      commit('RESET_getStatusTimer');
+    }
+  },
+
   API_startTraining({dispatch, getters, rootGetters}) {
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
+    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     let message = {
       Hyperparameters: net.networkSettings,
       Layers: {}
     };
-    net.network.forEach((el)=> {
+    elementList.forEach((el)=> {
       message.Layers[el.layerId] = {
         Name: el.layerName,
         Type: el.componentName,
@@ -127,129 +194,69 @@ const actions = {
       action: "Start",
       value: message
     };
+
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-
+        dispatch('API_startWatchGetStatus', true)
       })
       .catch((err) =>{
-        if(err.toString() === "Error: connect ECONNREFUSED 127.0.0.1:5000") {
-          commit('SET_serverStatus', {Status: 'Offline'})
-        }
-        else console.error(err);
+        console.error(err);
       });
 
-    watchStatus();
-    function watchStatus() {
-      let timer = setInterval(()=>{
-        let status = getters.GET_serverStatus;
-        // if(status !== 'Offline' || status !== 'Finished') {
-        //   //console.log('API_startTraining');
-        //   dispatch('API_getStatus')
-        // }
-        // if(status == 'Offline' || status == 'Finished') {
-        //   clearInterval(timer);
-        // }
-        dispatch('API_getStatus')
-      }, 1000);
-    }
   },
-  API_pauseTraining({commit, dispatch, rootGetters}) {
-    const theData = rootGetters['mod_workspace/GET_API_dataPauseTraining'];
-    dispatch('API_PUSH_core', theData);
-    commit('RESET_idTimer')
+  API_pauseTraining({dispatch, state, getters}) {
+    const theData = getters.GET_data_PauseTraining;
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {
+        dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
+        dispatch('API_getStatus');
+        state.startWatchGetStatus
+          ? dispatch('API_startWatchGetStatus', false)
+          : dispatch('API_startWatchGetStatus', true)
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+
+
+
   },
-  API_stopTraining({commit, state, dispatch, rootGetters}) {
-    const theData = rootGetters['mod_workspace/GET_API_dataStopTraining'];
-    dispatch('API_PUSH_core', theData);
-    commit('RESET_idTimer')
+  API_stopTraining({dispatch, getters}) {
+    const theData = getters.GET_data_StopTraining;
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {
+        dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
+        dispatch('API_getStatus');
+        dispatch('API_startWatchGetStatus', false);
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+
   },
-  API_skipValidTraining({dispatch, rootGetters}) {
-    const theData = rootGetters['mod_workspace/GET_API_dataSkipValidTraining'];
-    dispatch('API_PUSH_core', theData)
+  API_skipValidTraining({getters}) {
+    const theData = getters.GET_data_SkipValidTraining;
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {})
+      .catch((err) =>{
+        console.error(err);
+      });
   },
-  // API_getStatistics({dispatch, rootGetters}) {
-  //   // var theData = {
-  //   //   reciever: "Network1",
-  //   //   action: "getStatistics",
-  //   //   value: {
-  //   //     layerId: '2',
-  //   //     variable: 'W',
-  //   //     innervariable: ''
-  //   //   }
-  //   // };
-  //   var theData = {
-  //     reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkName,
-  //     action: "getLayerStatistics",//getStatistics
-  //     value: {
-  //       layerId:"2",
-  //       layerType:"FC",//FC //Data ///Train //OneHot
-  //       view:"Output" //Output, Weights&Bias // Predicition  Accuracy
-  //     }
-  //     // value: {
-  //     //   layerId: '4',
-  //     //   variable:"Y",
-  //     //   innervariable:"" //last arrey
-  //     // }
-  //   };
-  //   dispatch('API_PUSH_core', theData)
-  // },
-  API_CLOSE_core({commit, dispatch, rootGetters}) {
-    const theData = rootGetters['mod_workspace/GET_API_dataCloseServer'];
-    dispatch('API_PUSH_core', theData);
-    commit('RESET_idTimer')
+
+  API_CLOSE_core({getters, dispatch}) {
+    const theData = getters.GET_data_CloseServer;
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {})
+      .catch((err) =>{
+        console.error(err);
+      });
+    dispatch('API_startWatchGetStatus', false);
   },
-  API_PUSH_core({commit}, data) {
-    const header = {
-      "byteorder": 'little',
-      "content-type": 'text/json',
-      "content-encoding": 'utf-8',
-      "content-length": 0,
-    };
-
-    let socketClient = net.connect({host:'127.0.0.1', port:5000}, () => {
-
-      let dataJSON = JSON.stringify(data);
-      let dataByte = (new TextEncoder('utf-8').encode(dataJSON));
-      let dataByteLength = dataByte.length;
-
-      header["content-length"] = dataByteLength;
-
-      let headerJSON = JSON.stringify(header);
-      let headerByte = (new TextEncoder('utf-8').encode(headerJSON));
-      let headerByteLength = headerByte.length;
-
-      let firstByte = 0;
-      let secondByte = headerByteLength;
-
-      if(headerByteLength > 256) {
-        firstByte = Math.floor(headerByteLength / 256);
-        secondByte = headerByteLength % 256;
-      }
-      //console.log(dataJSON);
-      const message = [
-        firstByte, secondByte,
-        ...headerByte,
-        ...dataByte
-      ];
-
-      const buf6 = Buffer.from(message);
-      socketClient.write(buf6);
-    });
-
-    socketClient.on('end', ()=>{});
-
-    socketClient.on('data', (data) => {
-      let dataString = data.toString();
-      let clearData = dataString.slice(dataString.indexOf('}{"result": ') + 12, dataString.length-1);
-      socketClient.end();
-      //console.log(clearData);
-    });
-    socketClient.on('error', (err) => {
-      console.log('answer error server', err.toString());
-      socketClient.end();
-    });
-  }
 };
 
 export default {

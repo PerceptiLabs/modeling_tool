@@ -14,19 +14,13 @@
     name: "ViewBoxProcessReshape",
     components: {ChartPicture},
     mixins: [viewBoxMixin],
-   data() {
-    return {
-      //dat: d
-    }
-   },
     methods: {
       getStatistics() {
         this.chartRequest(this.boxElementID, 'ProcessReshape', '')
       },
+      getData() {
+        this.getStatistics()
+      }
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

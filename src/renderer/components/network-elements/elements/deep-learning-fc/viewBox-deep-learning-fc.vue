@@ -10,12 +10,12 @@
         @click="setTab(tab)"
         :class="{'active': currentTab === tab}"
         ) {{ tab }}
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output' && chartData.Output")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output'")
       chart-base(
         chartLabel="Value"
         :chartData="chartData.Output.Output"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias' && chartData['Weights&Bias']")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias'")
       chart-base(
         chartLabel="Weights"
         :chartData="chartData['Weights&Bias'].Weights"
@@ -24,21 +24,12 @@
         chartLabel="Bias"
         :chartData="chartData['Weights&Bias'].Bias"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients' && chartData.Gradients")
-      .statistics-box_row
-        chart-base(
-        chartLabel="Min"
-        :chartData="chartData.Gradients.Min"
-        )
-        chart-base(
-        chartLabel="Max"
-        :chartData="chartData.Gradients.Max"
-        )
-      .statistics-box_row
-        chart-base(
-        chartLabel="Average"
-        :chartData="chartData.Gradients.Average"
-        )
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
+      chart-base(
+        chartLabel="Bias"
+        :chartData="chartData.Gradients.Gradients"
+        :customColor="colorList"
+      )
 </template>
 
 <script>
@@ -50,14 +41,30 @@
     mixins: [viewBoxMixin],
     data() {
       return {
+        chartDataDefault: {
+          Output: {
+            Output: null,
+          },
+          'Weights&Bias': {
+            Weights: null,
+            Bias: null,
+          },
+          Gradients: {
+            Gradients: null,
+          }
+        },
         currentTab: 'Output',
         tabset: ['Output', 'Weights & Bias', 'Gradients'],
+        colorList: ['#83c1ff', '#0070d6', '#6b8ff7']
       }
     },
     methods: {
       setTab(name) {
-        clearInterval(this.idTimer);
         this.currentTab = name;
+        this.setTabAction();
+      },
+      getData() {
+        let name = this.currentTab;
         if(name === 'Output') {
           this.getStatistics()
         }
@@ -67,7 +74,6 @@
         else if (name === 'Gradients') {
           this.getGradientsStatistics()
         }
-
       },
       getStatistics() {
         this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Output')

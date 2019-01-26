@@ -31,11 +31,11 @@ export default {
   methods: {
     runTest() {
       this.closePopup();
-      //this.$store.commit('globalView/SET_appMode', 'training');
+      //this.$store.dispatch('mod_workspace/SET_netMode', 'training');
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
-      this.$store.commit('globalView/SET_appMode', 'edit');
+      this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
     }
   }
 }

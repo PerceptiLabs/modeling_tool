@@ -1,3 +1,6 @@
+import VueNonreactive from 'vue-nonreactive/vue-nonreactive.js';
+import Vue from 'vue'
+Vue.use(VueNonreactive);
 import requestApi   from "@/core/api.js";
 
 const viewBoxMixin = {
@@ -7,6 +10,11 @@ const viewBoxMixin = {
       idTimer: null,
       timeInterval: 2000,
       saveParams: {}
+    }
+  },
+  created() {
+    if(this.chartDataDefault){
+      this.chartData = {...this.chartDataDefault}
     }
   },
   mounted() {
@@ -25,57 +33,40 @@ const viewBoxMixin = {
       let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType !== 'Training');
       return viewBoxEl === undefined ? undefined : viewBoxEl.el.layerId.toString()
     },
-    currentNetworkName() {
+    currentNetworkID() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
     },
     serverStatus() {
-      return this.$store.getters['mod_api/GET_serverStatus']
+      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
+    },
+    doRequest() {
+      return this.$store.state.mod_api.startWatchGetStatus
     },
   },
   watch: {
-    serverStatus(newStatus, oldStatus) {
-      if(oldStatus === 'Paused') {
-        this.returnDataRequest(this.saveParams.layerId, this.saveParams.layerType, this.saveParams.view);
-      }
-    },
     boxElementID() {
       this.resetViewBox();
     },
     statElementID() {
       this.resetViewBox();
+    },
+    doRequest(newVal) {
+      newVal ? this.getData() : null;
     }
   },
   methods: {
     resetViewBox() {
       clearInterval(this.idTimer);
-      this.getStatistics();
+      this.getData();
     },
-    returnDataRequest(layerId, layerType, view) {
-      return {
-        reciever: this.currentNetworkName,
-        action: 'getLayerStatistics',
-        value: {
-          layerId: layerId,
-          layerType: layerType,
-          view: view
-        }
-      };
+    setTabAction() {
+      clearInterval(this.idTimer);
+      this.chartData = {...this.chartDataDefault};
+      this.getData();
     },
     chartRequest(layerId, layerType, view) {
-      // if(layerId === undefined) {
-      //   setTimeout(()=>{
-      //     this.chartRequest(layerId, layerType, view);
-      //   }, 500);
-      //   return
-      // }
-      //TODO it is not work
-      this.saveParams = {
-          layerId,
-          layerType,
-          view
-      };
       let theData = {
-        reciever: this.currentNetworkName,
+        reciever: this.currentNetworkID,
         action: 'getLayerStatistics',
         value: {
           layerId: layerId,
@@ -83,31 +74,28 @@ const viewBoxMixin = {
           view: view
         }
       };
-      //TODO need stop when pause
+
       this.idTimer = setInterval(()=>{
-        // if(this.serverStatus === 'Finished') {
-        //   clearInterval(this.idTimer);
-        // }
-        //if(this.serverStatus === 'Training') {
         if(layerId === undefined) {
           return
         }
-          const client = new requestApi();
-          client.sendMessage(theData)
-            .then((data)=> {
-              //console.log(data);
-              if(view.length) {
-                //this.chartData[view] = data
-                this.$set(this.chartData, view, data)
-              }
-              else this.chartData = data
-            })
-            .catch((err) =>{
-              console.error(err);
-              clearInterval(this.idTimer);
-            });
-        //}
-      }, this.timeInterval)
+        const client = new requestApi();
+        client.sendMessage(theData)
+          .then((data)=> {
+            Vue.nonreactive(data);
+            if(view.length) {
+              this.$set(this.chartData, view, data)
+            }
+            else this.chartData = data
+          })
+          .catch((err) =>{
+            console.error(err);
+            clearInterval(this.idTimer);
+          });
+        if(!this.doRequest) {
+          clearInterval(this.idTimer)
+        }
+      }, this.timeInterval);
     }
   }
 };
