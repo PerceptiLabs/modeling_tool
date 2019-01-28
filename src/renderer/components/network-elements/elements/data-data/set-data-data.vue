@@ -41,6 +41,16 @@
     components: {
       SettingsCloud
     },
+    created() {
+      if(process.platform === 'linux') {
+        let resPath = process.resourcesPath;
+        let path = resPath.slice(0, resPath.indexOf('Resources'));
+        this.settings.accessProperties.Path = path + 'mnist'
+      }
+      else {
+        this.settings.accessProperties.Path = '..\\mnist'
+      }
+    },
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
