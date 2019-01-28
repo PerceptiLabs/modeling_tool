@@ -2,22 +2,19 @@ section.basic-templates_templates
   .home-title-box
     h2 Basic templates
   ul.tempates_menu
-    li
-      button(type="button").tempates_menu-btn
-        img(src="~@/assets/imageClassification.svg"   alt="classification")
-        span.home-menu-name Image Classification
-    li 
-      button(type="button").tempates_menu-btn
-        img(src="~@/assets/timeSeriesRegression.svg"  alt="time series regression")
-        span.home-menu-name Timeseries Regression
-    li
-      button(type="button").tempates_menu-btn
-        img(src="~@/assets/reinforcementLearning.svg" alt="reinforce ment learning")
-        span.home-menu-name Reinforcement Learning
+    button(type="button" @click="openTemplateModel(templateModels.path_1)").tempates_menu-btn
+      img(src="~@/assets/imageClassification.svg"   alt="classification")
+      span.home-menu-name Image Classification
+    button(type="button" @click="openTemplateModel(templateModels.path_2)").tempates_menu-btn
+      img(src="~@/assets/timeSeriesRegression.svg"  alt="time series regression")
+      span.home-menu-name Timeseries Regression
+    button(type="button" @click="openTemplateModel(templateModels.path_3)").tempates_menu-btn
+      img(src="~@/assets/reinforcementLearning.svg" alt="reinforce ment learning")
+      span.home-menu-name Reinforcement Learning
     
 section.basic-templates_crash-course
   .home-title-box
-    h2 Basic templates
+    h2 Ai crash course
   .crash-course_elements 
     .elements_model
       .model_icon-box.i.icon.icon-data.icon-box--outline

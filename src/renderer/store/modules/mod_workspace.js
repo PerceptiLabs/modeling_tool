@@ -8,6 +8,7 @@ const generateID = function(input) {
   return out
 };
 function createPathNode(path, state) {
+  console.log('createPathNode');
   const network = path.slice();
   const networkId = network.shift();
   const initValue = state.workspaceContent[state.currentNetwork].networkElementList[networkId];

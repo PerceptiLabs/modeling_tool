@@ -93,7 +93,7 @@
         span Run test
         i.icon.icon-circle-o
       span.text-primary.middle-text(v-html="statusTrainingText")
-      button.btn.btn--dark-blue-rev(type="button"  disabled="disabled"
+      button.btn.btn--dark-blue-rev(type="button" disabled="disabled"
         @click="openStatistics"
         )
         span Layer Mode
@@ -256,7 +256,7 @@ export default {
       this.$store.dispatch('mod_workspace/SET_netMode', type)
     },
     openStatistics() {
-      this.$store.commit('mod_workspace/SET_openStatistics', true)
+      //this.$store.commit('mod_workspace/SET_openStatistics', true)
     },
   }
 }

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import {remote} from 'electron'
-import {openLoadDialog} from '@/core/helpers.js'
+import {openLoadDialog, loadNetwork} from '@/core/helpers.js'
 
 
 
@@ -82,6 +82,7 @@ export default {
   },
   methods: {
     openLoadDialog,
+    loadNetwork,
     addDragListener() {
       this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
     },
@@ -119,19 +120,6 @@ export default {
       if ( event.target.classList[0] === this.dragMeta.outClassName) {
         this.$store.dispatch('mod_workspace/ADD_element', event)
       }
-    },
-
-    loadNetwork(pathArr) {
-      fs.readFile(pathArr[0],
-        (err, data)=> {
-        if(data) {
-          let net = JSON.parse(data.toString());
-          this.$store.dispatch('mod_workspace/ADD_network', net)
-        }
-        else {
-          console.error(err);
-        }
-      });
     },
     saveNetwork() {
       const dialog = remote.dialog;
