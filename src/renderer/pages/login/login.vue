@@ -22,6 +22,9 @@
             )
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
         .form_holder
+
+
+        .form_holder
           base-checkbox(
 
           ) Remember me

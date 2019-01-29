@@ -1,19 +1,17 @@
 'use strict';
 
 import { app, BrowserWindow, Menu, ipcMain, dialog }  from 'electron'
-import ua                                             from 'universal-analytics'
 import { autoUpdater }                                from 'electron-updater'
-import uuid                                           from 'uuid/v4';
 import { JSONStorage }                                from 'node-localstorage';
+import uuid                                           from 'uuid/v4';
+import ua                                             from 'universal-analytics'
 
 autoUpdater.autoDownload = false;
 
 let mainWindow;
 const nodeStorage = new JSONStorage(app.getPath('userData'));
 const userId      = nodeStorage.getItem('userid') || uuid();
-const visitor     = ua('UA-16176704-3', {uid: userId});
-console.log('VISITOR', visitor);
-//const visitor = ua('UA-114940346-1', userId);
+const visitor     = ua('UA-114940346-1', {uid: userId});
 
 const mainMenu = [
   {
@@ -150,14 +148,13 @@ function createWindow () {
    */
   ipcMain.on('changeRoute', (event, arg) => {
     visitor.pageview(arg).send();
-    console.log(arg);
   });
   /**
    * start auto update
    */
   mainWindow.checkForUpdates = function() {
     //if (process.env.NODE_ENV !== 'development') {
-    if (true) {
+    if (process.env.NODE_ENV !== 'development') {
       mainWindow.webContents.send('info', 'checkForUpdates');
       const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
       const UpdateOpt = {
@@ -166,7 +163,7 @@ function createWindow () {
       };
       switch (process.platform) {
         case 'win32':
-          UpdateOpt.url = UpdateUrl + 'winDev/';
+          UpdateOpt.url = UpdateUrl + 'win/';
           break;
         case 'darwin':
           UpdateOpt.url = UpdateUrl + 'ios/';

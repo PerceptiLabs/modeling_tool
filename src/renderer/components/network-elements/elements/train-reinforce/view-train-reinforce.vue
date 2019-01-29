@@ -1,9 +1,9 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-train(:draggable="false"  disabled="disabled"
-  data-component="TrainReinforce"
-  data-layer="Reinforcement Learning"
-  data-type="Training"
-  v-tooltip:right="'Training Reinforce'"
+  .btn.btn--layersbar.net-element-train(:draggable="true"
+    data-component="TrainReinforce"
+    data-layer="Reinforcement Learning"
+    data-type="Training"
+    v-tooltip:right="'Training Reinforce'"
   )
     i.icon.icon-learning-reinforcement
 
