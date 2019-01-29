@@ -65,7 +65,17 @@
       platform() {
         return this.$store.state.globalView.platform
       }
+    },
+    watch: {
+    '$route': {
+      handler(to, from) {
+        if(process.env.NODE_ENV === 'production') {
+          ipcRenderer.send('changeRoute', to.fullPath)
+        }
+      },
+      immediate: true
     }
+  }
   }
 </script>
 

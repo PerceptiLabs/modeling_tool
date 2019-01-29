@@ -1,13 +1,19 @@
 'use strict';
 
-import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron'
-import ua               from 'universal-analytics'
-import { autoUpdater }  from 'electron-updater'
+import { app, BrowserWindow, Menu, ipcMain, dialog }  from 'electron'
+import ua                                             from 'universal-analytics'
+import { autoUpdater }                                from 'electron-updater'
+import uuid                                           from 'uuid/v4';
+import { JSONStorage }                                from 'node-localstorage';
+
 autoUpdater.autoDownload = false;
 
 let mainWindow;
-//const visitor = ua('UA-129392553-1');
-const visitor = ua('UA-114940346-1');
+const nodeStorage = new JSONStorage(app.getPath('userData'));
+const userId      = nodeStorage.getItem('userid') || uuid();
+const visitor     = ua('UA-16176704-3', {uid: userId});
+console.log('VISITOR', visitor);
+//const visitor = ua('UA-114940346-1', userId);
 
 const mainMenu = [
   {
@@ -138,11 +144,14 @@ function createWindow () {
   ipcMain.on('appVersion', (event, arg) => {
     mainWindow.webContents.send('getAppVersion', app.getVersion());
   });
+  
   /**
    * google analytics
    */
-  visitor.pageview("/").send();
-
+  ipcMain.on('changeRoute', (event, arg) => {
+    visitor.pageview(arg).send();
+    console.log(arg);
+  });
   /**
    * start auto update
    */
@@ -157,7 +166,7 @@ function createWindow () {
       };
       switch (process.platform) {
         case 'win32':
-          UpdateOpt.url = UpdateUrl + 'win/';
+          UpdateOpt.url = UpdateUrl + 'winDev/';
           break;
         case 'darwin':
           UpdateOpt.url = UpdateUrl + 'ios/';
