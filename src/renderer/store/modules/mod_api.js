@@ -93,9 +93,9 @@ const actions = {
           openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           break;
         case 'darwin':
-          let resPath = process.resourcesPath;
-          let path = resPath.slice(0, resPath.indexOf('Resources'));
           if(process.env.NODE_ENV === 'production') {
+            let resPath = process.resourcesPath;
+            let path = resPath.slice(0, resPath.indexOf('Resources'));
             openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           else {
@@ -104,7 +104,9 @@ const actions = {
           break;
         case 'linux':
           if(process.env.NODE_ENV === 'production') {
-            openServer = spawn('../core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            let resPath = process.resourcesPath;
+            let path = resPath.slice(0, resPath.indexOf('resources'));
+            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           else {
             openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
