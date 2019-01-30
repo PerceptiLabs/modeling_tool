@@ -11,9 +11,8 @@ autoUpdater.autoDownload = false;
 let mainWindow;
 const nodeStorage = new JSONStorage(app.getPath('userData'));
 const userId      = nodeStorage.getItem('userid') || uuid();
-const visitor     = ua('UA-16176704-3', {uid: userId});
-console.log('VISITOR', visitor);
-//const visitor = ua('UA-114940346-1', userId);
+const visitor     = ua('UA-16176704-3', {uid: userId}); //UA-114940346-1
+
 
 const mainMenu = [
   {
@@ -224,20 +223,25 @@ autoUpdater.on('checking-for-update', (info)=> {
   mainWindow.webContents.send('info', {type: 'Checking for update...!', info});
 });
 autoUpdater.on('update-available', (info)=> {
-  mainWindow.webContents.send('info', {type: 'Update available.', info});
+  mainWindow.webContents.send('info', {type: 'Update available.', updateFounded: true, info});
 
-  const dialogOpts = {
-    type: 'info',
-    title: 'Start Download Updates',
-    message: info.releaseNotes,
-    buttons: ['OK', 'No']
-  };
-  dialog.showMessageBox(dialogOpts, (buttonIndex) => {
-    if (buttonIndex === 0) {
-      autoUpdater.downloadUpdate()
-    }
-  })
+  // const dialogOpts = {
+  //   type: 'info',
+  //   title: 'Start Download Updates',
+  //   message: info.releaseNotes,
+  //   buttons: ['OK', 'No']
+  // };
+  // dialog.showMessageBox(dialogOpts, (buttonIndex) => {
+  //   if (buttonIndex === 0) {
+  //     autoUpdater.downloadUpdate()
+  //   }
+  // })
 });
+ipcMain.on('update-start', (info)=> {
+  console.log('______FROM INDEX_____');
+  autoUpdater.downloadUpdate();
+})
+
 autoUpdater.on('update-not-available', (info)=> {
   mainWindow.webContents.send('info', {type: 'Update not available.', info});
 });

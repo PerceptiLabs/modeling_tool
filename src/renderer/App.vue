@@ -18,19 +18,34 @@
       @appMinimized="appMinimize"
       @appMaximized="appMaximize"
     )
+    update-popup(
+      :isShowPopup="updateShowPopup"
+      @updateStarted="updateStart"
+    ) 
     router-view.app-page
 </template>
 
 <script>
   import {ipcRenderer}  from 'electron'
-  import HeaderLinux from '@/components/header/header-linux.vue';
-  import HeaderWin from '@/components/header/header-win.vue';
-  import HeaderMac from '@/components/header/header-mac.vue';
+  import HeaderLinux    from '@/components/header/header-linux.vue';
+  import HeaderWin      from '@/components/header/header-win.vue';
+  import HeaderMac      from '@/components/header/header-mac.vue';
+  import updatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
 
 
   export default {
     name: 'quantumnet',
-    components: {HeaderLinux, HeaderWin, HeaderMac},
+    data() {
+      return {
+        updateShowPopup: false
+      }
+    },
+    components: {
+      HeaderLinux, 
+      HeaderWin, 
+      HeaderMac, 
+      updatePopup
+    },
     mounted() {
       //main process events
       ipcRenderer.on('newNetwork', (event) => {
@@ -46,7 +61,8 @@
         this.appClose();
       });
       ipcRenderer.on('info', (event, data) => {
-        console.log(data);
+        if(data.updateFounded) this.updateShowPopup = true;
+        console.log('DATA', data);
       });
       ipcRenderer.send('appReady');
     },
@@ -59,6 +75,10 @@
       },
       appMaximize() {
         ipcRenderer.send('appMaximize')
+      },
+      updateStart() {
+        console.log('From App');
+        ipcRenderer.send('update-start')
       }
     },
     computed: {
