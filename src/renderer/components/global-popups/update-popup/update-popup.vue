@@ -1,12 +1,14 @@
 <template lang="pug">
-  div(v-if="isShowPopup").popup-body
-    header.popup-body_header
+  div(v-if="isShowPopup" :class="{'bg-mode' :  bgMode}").popup-body
+    header.popup-body_header(@click="background")
       h3.header_title {{title}}
-      span.header_update-status(v-if="updatesLoading") {{progress}}%
+      span.header_update-status(v-if="loadingStatus === 'installing'") {{progress}}%
+      span.header_update-status(v-if="loadingStatus === 'done'") Done
     popup-loading(
       v-if="loadingStatus === 'installing'"
       :updateStatus="progress"
       @canceledUpdate="cancel"
+      @backgroundMode="background"
       :loadingStatus="loadingStatus"
     )
     popup-info(
@@ -36,6 +38,7 @@ export default {
     return {
       title: 'Software update',
       updatesLoading: false,
+      bgMode: false,
       loadingStatus: 'before install',
       progress: 0,
       mainUpdateMessage: 'Availible 5 new update',
@@ -50,13 +53,16 @@ export default {
     install(loadingStatus) {
       this.loadingStatus = loadingStatus;
       this.$emit('updateStarted', loadingStatus);
-      //this.startFakeLoading();
+      this.startFakeLoading();
     },
     cancel(cencel) {
       this.loadingStatus = cencel.status;
       this.progress = 0;
       this.$emit('closedPopup')
       clearInterval(this.fakeTimer);
+    },
+    background() {
+      this.bgMode = !this.bgMode;
     },
     closePopup() {
       this.$emit('closedPopup')
@@ -68,7 +74,6 @@ export default {
           this.progress = 100;
           clearInterval(this.fakeTimer);
           this.loadingStatus = 'done';
-          console.log(this.loadingStatus);
         }
       }, 700)
     }

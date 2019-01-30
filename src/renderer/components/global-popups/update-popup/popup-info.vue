@@ -1,5 +1,5 @@
 <template lang="pug">
-  div
+  div.info-box
     section.popup-body_info
       span.info_process-name {{time}}
       div.info_message(v-if="loadingStatus === 'done'") Don't have any updates
@@ -50,7 +50,7 @@ export default {
       this.$emit('installStarted', 'installing')
     },
     closePopup() {
-      this.$emit('closedPopup');
+      this.$emit('closedPopup', status);
     }
   }
 }

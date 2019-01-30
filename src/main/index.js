@@ -140,6 +140,10 @@ function createWindow () {
   ipcMain.on('checkUpdate', (event, arg) => {
     mainWindow.checkForUpdates();
   });
+  ipcMain.on('update-start', (info)=> {
+    autoUpdater.downloadUpdate();
+  })
+  
 
   /**
    * google analytics
@@ -152,7 +156,7 @@ function createWindow () {
    */
   mainWindow.checkForUpdates = function() {
     //if (process.env.NODE_ENV !== 'development') {
-    if (process.env.NODE_ENV !== 'development') {
+    if (true) {
       mainWindow.webContents.send('info', 'checkForUpdates');
       const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
       const UpdateOpt = {
@@ -161,7 +165,7 @@ function createWindow () {
       };
       switch (process.platform) {
         case 'win32':
-          UpdateOpt.url = UpdateUrl + 'win/';
+          UpdateOpt.url = UpdateUrl + 'winDev/';
           break;
         case 'darwin':
           UpdateOpt.url = UpdateUrl + 'ios/';
@@ -219,25 +223,9 @@ autoUpdater.on('checking-for-update', (info)=> {
   mainWindow.webContents.send('info', {type: 'Checking for update...!', info});
 });
 autoUpdater.on('update-available', (info)=> {
-  mainWindow.webContents.send('info', {type: 'Update available.', updateFounded: true, info});
-
-  // const dialogOpts = {
-  //   type: 'info',
-  //   title: 'Start Download Updates',
-  //   message: info.releaseNotes,
-  //   buttons: ['OK', 'No']
-  // };
-  // dialog.showMessageBox(dialogOpts, (buttonIndex) => {
-  //   if (buttonIndex === 0) {
-  //     autoUpdater.downloadUpdate()
-  //   }
-  // })
+  mainWindow.webContents.send('info', {type: 'Update available.', info});
+  mainWindow.webContents.send('update-finded', info);
 });
-ipcMain.on('update-start', (info)=> {
-  console.log('______FROM INDEX_____');
-  autoUpdater.downloadUpdate();
-})
-
 autoUpdater.on('update-not-available', (info)=> {
   mainWindow.webContents.send('info', {type: 'Update not available.', info});
 });

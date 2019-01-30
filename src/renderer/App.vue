@@ -21,6 +21,7 @@
     update-popup(
       :isShowPopup="updateShowPopup"
       @updateStarted="updateStart"
+      @closedPopup="updateCencel"
     ) 
     router-view.app-page
 </template>
@@ -60,9 +61,12 @@
       ipcRenderer.on('closeApp', (event) => {
         this.appClose();
       });
+      ipcRenderer.on('update-finded', (event, update) => {
+        this.updateShowPopup = true;
+        console.log('upadate', update);
+      });
       ipcRenderer.on('info', (event, data) => {
-        if(data.updateFounded) this.updateShowPopup = true;
-        console.log('DATA', data);
+        console.log(data);
       });
       ipcRenderer.on('getAppVersion', (event, data) => {
         this.$store.commit('globalView/SET_appVersion', data)
@@ -81,8 +85,13 @@
         ipcRenderer.send('appMaximize')
       },
       updateStart() {
-        console.log('From App');
         ipcRenderer.send('update-start')
+      },
+      updateCencel() {
+        this.updateShowPopup = false;
+      },
+      updateHide() {
+        this.backgroundUpdate = true;
       }
     },
     computed: {
