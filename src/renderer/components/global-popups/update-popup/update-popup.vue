@@ -49,7 +49,8 @@ export default {
   methods: {
     install(loadingStatus) {
       this.loadingStatus = loadingStatus;
-      this.startFakeLoading();
+      this.$emit('updateStarted', loadingStatus);
+      //this.startFakeLoading();
     },
     cancel(cencel) {
       this.loadingStatus = cencel.status;
