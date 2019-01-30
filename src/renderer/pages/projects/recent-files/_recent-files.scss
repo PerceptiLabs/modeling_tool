@@ -2,110 +2,131 @@ $indentProjects: 1rem;
 $iconsGroupColor: #5c6680;
 
 
-
 .filter-recent-files {
-	display: flex;
-	align-items: center;
-	color: $col-txt;
-	.icon-filter {
-		font-size: 1.6rem;
-		margin-right: 1rem;
-		color: $disable-txt;
-	}
-	input {
-		background: none;
-		border-bottom: 1px solid $disable-txt;
-		font-style: italic;
-		padding: 0;
-		width: 14rem;
-	}
+  display: flex;
+  align-items: center;
+  color: $col-txt;
+
+  .icon-filter {
+    font-size: 1.6rem;
+    margin-right: 1rem;
+    color: $disable-txt;
+  }
+
+  input {
+    background: none;
+    border-bottom: 1px solid $disable-txt;
+    font-style: italic;
+    padding: 0;
+    width: 14rem;
+  }
 }
 
 
 .project-list {
-	display: flex;
-	flex-wrap: wrap;
-	margin: 0 -$indentProjects;
-	text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  margin: 0 -$indentProjects;
+  text-align: center;
 }
+
 .project-box {
-	margin: $indentProjects;
-	&.add-new .project_content {
-		display: flex;
-	}
-	time {
-		color: $disable-txt;
-	}
+  margin: $indentProjects;
 
-	&.add-new .project_content {
-		display: flex;
-	}
+  &.add-new .project_content {
+    display: flex;
+  }
+
+  time {
+    color: $disable-txt;
+  }
+
+  &.add-new .project_content {
+    display: flex;
+  }
 }
+
 .project {
-	position: relative;
-	width: 20rem;
-	margin-bottom: 1rem;
-	background: $col-txt2;
+  position: relative;
+  width: 20rem;
+  margin-bottom: 1rem;
+  background: $col-txt2;
+  &:after {
+    content: '';
+    display: block;
+    padding-top: 100%;
+  }
 
-	&:hover {
-		box-shadow: 0 0 0 1px $disable-txt;
-	}
+  &:hover {
+    box-shadow: 0 0 0 1px $disable-txt;
+  }
 
-	&.active {
-		box-shadow: 0 0 0 2px $col-txt;
-	}
+  &.active {
+    box-shadow: 0 0 0 2px $col-txt;
+  }
 
-	&.add-new .project_content {
-		font-size: 9rem;
-		color: $bg-toolbar;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		text-shadow: none;
-	}
+  &.add-new .project_content {
+    font-size: 9rem;
+    color: $bg-toolbar;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: none;
+  }
 }
 
-.project_ration {
-	padding-top: 100%;
-}
 .project_content {
-	position: absolute;
-	top: 0;
-	right: 0;
-	bottom: 0;
-	left: 0;
+  display: flex;
+  flex-direction: column;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
 }
-.project_content-info {
-	justify-content: space-between;
-	padding: 1rem;
-	.icon {
-		font-size: 2rem;
-	}
+
+.project-content_info {
+  display: flex;
+  justify-content: space-between;
+  padding: 1rem 0 0 1rem;
+  width: 100%;
+  flex: 0 0 auto;
+  .icon {
+    font-size: 2rem;
+  }
+}
+.project-content_img {
+  width: 100%;
+  flex: 1 1 100%;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 .content-info_status {
-	font-size: 1.2rem;
-	font-weight: bold;
-	min-width: 7rem;
-	margin-right: -1rem;
-	padding: .44em;
+  font-size: 1.2rem;
+  font-weight: bold;
+  min-width: 7rem;
+  padding: .44em;
 
-	&.primary {
-		color: $col-txt2;
-		background: $bg-grad-cyan;
-	}
+  &.primary {
+    color: $col-txt2;
+    background: $bg-grad-cyan;
+  }
 
-	&.dark-blue {
-		color: $col-txt;
-		background: $bg-grad-blue;
-	}
+  &.dark-blue {
+    color: $col-txt;
+    background: $bg-grad-blue;
+  }
 }
 
 .btn--blue-border {
-	font-size: 1.4rem;
-	padding: 1rem 3rem;
-	border: .2rem solid $color-5;
-	border-radius: 2rem;
-	&:hover {
-		background: $color-5;
-	}
+  font-size: 1.4rem;
+  padding: 1rem 3rem;
+  border: .2rem solid $color-5;
+  border-radius: 2rem;
+
+  &:hover {
+    background: $color-5;
+  }
 }

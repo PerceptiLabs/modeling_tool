@@ -2,16 +2,17 @@
 
 import { app, BrowserWindow, Menu, ipcMain, dialog }  from 'electron'
 import { autoUpdater }                                from 'electron-updater'
-import { JSONStorage }                                from 'node-localstorage';
-import uuid                                           from 'uuid/v4';
+// import { JSONStorage }                                from 'node-localstorage';
+// import uuid                                           from 'uuid/v4';
 import ua                                             from 'universal-analytics'
 
 autoUpdater.autoDownload = false;
 
 let mainWindow;
-const nodeStorage = new JSONStorage(app.getPath('userData'));
-const userId      = nodeStorage.getItem('userid') || uuid();
-const visitor     = ua('UA-114940346-1', {uid: userId});
+// const nodeStorage = new JSONStorage(app.getPath('userData'));
+// const userId      = nodeStorage.getItem('userid') || uuid();
+//const visitor     = ua('UA-114940346-1', {uid: userId});
+let visitor;
 
 const mainMenu = [
   {
@@ -90,7 +91,7 @@ function createWindow () {
     }
   });
 
-  //mainWindow.webContents.openDevTools();
+  mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
@@ -136,6 +137,8 @@ function createWindow () {
   ipcMain.on('appReady', (event, arg) => {
     mainWindow.checkForUpdates();
     mainWindow.webContents.send('getAppVersion', app.getVersion());
+    console.log(arg);
+    visitor = ua('UA-114940346-1', {uid: arg});
   });
   ipcMain.on('checkUpdate', (event, arg) => {
     mainWindow.checkForUpdates();

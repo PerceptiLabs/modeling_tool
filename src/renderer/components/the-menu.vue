@@ -43,6 +43,9 @@ export default {
     appVersion() {
       return this.$store.state.globalView.appVersion
     },
+    userIsLogin() {
+      return this.$store.state.globalView.userToken
+    },
     navMenu() {
       return [
         {
@@ -161,9 +164,9 @@ export default {
     }
   },
   watch: {
-    '$route': {
+    userIsLogin: {
       handler(to, from) {
-        to.name === 'app' ? this.menuSet = true : this.menuSet = false
+        to ? this.menuSet = true : this.menuSet = false
       },
       immediate: true
     }
@@ -179,18 +182,29 @@ export default {
       ipcRenderer.send('checkUpdate');
     },
     addNewNetwork() {
+      if(this.$router.history.current.name !== 'app') {
+        this.$router.replace({name: 'app'});
+      }
       this.$store.dispatch('mod_workspace/ADD_network');
     },
     openNetwork() {
+      if(this.$router.history.current.name !== 'app') {
+        this.$router.replace({name: 'app'});
+      }
       this.$store.commit('mod_events/set_openNetwork')
     },
     saveNetwork() {
+      if(this.$router.history.current.name !== 'app') {
+        return
+      }
       this.$store.commit('mod_events/set_saveNetwork');
     },
     logOut() {
-      this.$router.replace({name: 'login'});
+      localStorage.removeItem('userToken');
+      this.$store.commit('globalView/SET_userToken', '');
       this.$store.dispatch('mod_api/API_CLOSE_core', null, {root: true});
       this.$store.commit('mod_workspace/RESET_network');
+      this.$router.replace({name: 'login'});
     }
   }
 }

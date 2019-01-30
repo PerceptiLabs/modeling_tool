@@ -35,7 +35,7 @@ export default {
   data() {
     return {
       checkedProxy: false,
-      value: null
+      value: false
     }
   },
   watch: {
@@ -45,20 +45,9 @@ export default {
   },
   methods: {
     change (event) {
-      this.value = event.target.checked ? true : null
+      this.value = event.target.checked ? true : false
     }
   }
-  // computed: {
-  //   checked: {
-  //     get() { return this.value },
-  //     set (val) { this.checkedProxy = val }
-  //   }
-  // },
-  // methods: {
-  //   onChange() {
-  //     this.$emit('input', this.checkedProxy)
-  //   }
-  // }
 }
 </script>
 

@@ -4,6 +4,7 @@ const state = {
   hideLayers: true,
   hideSidebar: true,
   userMode: 'advanced', //simple
+  userID: '',
   userToken: '',
   platform: process.platform,
   appVersion: '',
@@ -24,6 +25,9 @@ const mutations = {
   },
   SET_userToken (state, value) {
     state.userToken = value
+  },
+  SET_userID (state, value) {
+    state.userID = value
   },
   SET_appVersion (state, value) {
     state.appVersion = value
