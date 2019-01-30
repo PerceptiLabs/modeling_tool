@@ -52,17 +52,16 @@
         return this.$store.state.globalView.appVersion
       },
       filteredProjects() {
-        return this.projects.filter((project) => {
-          return project.name.match(this.search);
-        })
+        return this.projects.filter((project) => project.name.match(this.search))
       }
     },
     methods: {
       loadNetwork,
       openProject() {
-        this.$router.push({name: 'app'});
+        //this.$router.push({name: 'app'});
       },
-      addProject() {
+      addNewProject() {
+        this.$store.dispatch('mod_workspace/ADD_network');
         this.$router.push({name: 'app'});
       },
       openTemplateModel(path) {
@@ -87,7 +86,8 @@
     background: $bg-workspace;
     grid-template-columns: $w-sidebar 1fr;
     grid-template-rows: auto 1fr;
-    grid-template-areas: "sidebar basic-templates" "sidebar recent-files";
+    grid-template-areas: "sidebar basic-templates"
+                        "sidebar recent-files";
   }
 
   .page-projects_sidebar {

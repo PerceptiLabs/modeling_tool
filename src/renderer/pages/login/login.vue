@@ -31,7 +31,6 @@
         .form_holder
           router-link.btn.btn--link(:to="{name: 'register'}") Register new account
 
-          router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects
 </template>
 
 <script>
@@ -79,7 +78,7 @@ export default {
           if(process.env.BUILD_TARGET !== 'web') {
             this.$store.dispatch('mod_api/API_runServer');
           }
-          this.$router.replace('/app');
+          this.$router.replace('/projects');
         }
       })
     },

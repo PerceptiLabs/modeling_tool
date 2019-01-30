@@ -19,12 +19,6 @@ export default {
     TheWorkspace,
     TheInfoPopup
   },
-  beforeCreate() {
-    this.$store.dispatch('mod_workspace/ADD_network');
-  },
-  created() {
-
-  },
   mounted() {
     this.addDragListener();
   },

@@ -7,13 +7,16 @@
     
 ul.project-list
   article.project-box
-    button.project.add-new(@click="addProject")
+    button.project.add-new(@click="addNewProject")
       .project_ration
       .project_content
         i.icon.icon-zoom-plus
     h3 Add new project
   
-  article.project-box(v-for="project in filteredProjects")
+  article.project-box(
+    v-for="(project, i) in filteredProjects"
+    :key="project.i"
+    )
     button.project(@click="openProject")
       .project_ration
       .project_content
