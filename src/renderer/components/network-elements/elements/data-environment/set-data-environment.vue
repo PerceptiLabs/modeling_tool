@@ -14,7 +14,7 @@
       )
         .settings-layer
           .settings-layer_section
-            base-select(:selectOptions="items")
+            base-select(v-model="settings.Properties.accessProperties.Atari" :selectOptions="selectOptions")
 
       .popup_body(
         :class="{'active': tabSelected == 1}"
@@ -37,8 +37,25 @@
     },
     data() {
       return {
-        items: ['Foo', 'Bar', 'Fizz', 'Buzz'],
-        tabs: ['Gym', '<i class="icon icon-search"></i> Unity']
+        selectOptions: [
+          { text: 'Breakout', value: 'Breakout' },
+          { text: '2', value: 'b' },
+          { text: '3', value: 'c' }
+        ],
+        tabs: ['Gym', '<i class="icon icon-search"></i> Unity'],
+        settings: {
+          Name: 'Data_1',
+          Type: 'DataEnvironment',
+          Properties: {
+            Type: 'Environment',
+            accessProperties: {
+              EnvType: 'Gym',
+              Atari: 'Breakout', //select
+              Category: 'Local',
+              Type: 'Data',
+            }
+          }
+        }
       }
     }
   }

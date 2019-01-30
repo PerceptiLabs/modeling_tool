@@ -1,28 +1,27 @@
 <template lang="pug">
-  transition(name="scroll-left")
-    aside.page_layersbar(v-show="hideLayers" )
-      ul.layersbar-list
-        li.layer(
-          v-for="(layer, i) in layersbarList"
-          :key="i"
+  aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers}")
+    ul.layersbar-list
+      li.layer(
+        v-for="(layer, i) in layersbarList"
+        :key="i"
+      )
+        button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
+          v-tooltip:right="layer.tooltip"
+          @click.stop="toggleElList(i, $event)"
+          :class="[layer.layerClass, {'active': layer.showEl}]"
         )
-          button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
-            v-tooltip:right="layer.tooltip"
-            @click.stop="toggleElList(i, $event)"
-            :class="[layer.layerClass, {'active': layer.showEl}]"
+          i.icon(:class="layer.iconClass")
+        ul.layer_child-list(
+          v-if="layer.networkElements"
+        )
+          li(
+            v-for="(element, i) in layer.networkElements"
+            :key="i"
           )
-            i.icon(:class="layer.iconClass")
-          ul.layer_child-list(
-            v-if="layer.networkElements"
-          )
-            li(
-              v-for="(element, i) in layer.networkElements"
-              :key="i"
-            )
-              component(:is="element" :draggable='true')
-        li.layer
-          button.btn.btn--layersbar.net-element-add(type="button")
-            i.icon.icon-add
+            component(:is="element" :draggable='true')
+      li.layer
+        button.btn.btn--layersbar.net-element-add(type="button")
+          i.icon.icon-add
 
 </template>
 
@@ -146,21 +145,22 @@ export default {
   },
   methods: {
     toggleElList(index, ev) {
-      this.ClickElementTracking = ev.target.closest('.js-clickout');
-      document.addEventListener('click', this.clickOutside);
-
       if (this.layersbarList[index].showEl) {
-        this.layersbarList[index].showEl = false
+        this.layersbarList[index].showEl = false;
+        document.removeEventListener('click', this.clickOutside);
       }
       else {
         this.clickOutsideAction();
         this.layersbarList[index].showEl = true;
+
+        this.ClickElementTracking = ev.target.closest('.js-clickout');
+        document.addEventListener('click', this.clickOutside);
       }
     },
     clickOutsideAction() {
       this.layersbarList.forEach((item)=> {
         item.showEl = false
-      })
+      });
     },
   }
 }
@@ -170,16 +170,25 @@ export default {
   @import "../scss/base";
   $indent: 5px;
   .page_layersbar {
-    grid-area: layersbar;
     max-width: $w-layersbar;
+    grid-area: layersbar;
+    transition: max-width $animation-speed;
+    &.page_layersbar--hide {
+      transition: max-width $animation-speed $animation-speed;
+      max-width: 0;
+      .layersbar-list {
+        transition: transform $animation-speed;
+        transform: translateY(-120%);
+      }
+    }
   }
   .layersbar-list {
-    padding: 0;
     margin: 0;
-    list-style: none;
-    transform: translateY(0);
-    transition: transform $animation-speed $animation-speed;
+    padding: 0;
     padding-bottom: 30px;
+    list-style: none;
+    transition: transform $animation-speed $animation-speed;
+    transform: translateY(0);
   }
   .layer {
     position: relative;
@@ -189,13 +198,13 @@ export default {
     position: relative;
     z-index: 1;
     &:after {
-      content: "\e922";
+      content: '\e922';
       font-family: 'icomoon' !important;
-      position: absolute;
+      font-size: 11px;
       line-height: 1;
+      position: absolute;
       right: 1px;
       bottom: 1px;
-      font-size: 11px;
     }
   }
   ul.layer_child-list {
@@ -203,47 +212,24 @@ export default {
     position: absolute;
     top: 0;
     left: -$indent;
-    padding: $indent;
-    margin: 0;
-    list-style: none;
-    opacity: 0;
     visibility: hidden;
+    opacity: 0;
+    margin: 0;
+    padding: $indent;
+    list-style: none;
     @media (max-height: 1000px) {
       .layer:nth-child(n+5) & {
-        bottom: 0;
         top: auto;
+        bottom: 0;
       }
     }
     .active + & {
-      transform: translateX(100%);
-      opacity: 1;
       visibility: visible;
+      opacity: 1;
+      transform: translateX(100%);
     }
     > li + li {
       padding-top: $indent;
-    }
-  }
-
-  //Animations
-  .scroll-left-enter {
-    max-width: 0;
-    .layersbar-list {
-      transform: translateY(-120%);
-    }
-  }
-  .scroll-left-enter-active {
-    transition: max-width $animation-speed 0s;
-  }
-  .scroll-left-leave-active {
-    transition: max-width $animation-speed $animation-speed;
-    .layersbar-list {
-      transition: transform $animation-speed;
-    }
-  }
-  .scroll-left-leave-to {
-    max-width: 0;
-    .layersbar-list {
-      transform: translateY(-120%);
     }
   }
 

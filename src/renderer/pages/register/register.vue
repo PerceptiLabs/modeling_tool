@@ -27,21 +27,21 @@
             name="Phone"
             v-mask="'+## (###) ###-##-##'"
             )
-        //.form_holder
+        .form_holder
           input(type="email" placeholder="Email"
             v-model="user.email"
             name="Email"
             v-validate="'required|email'"
             )
           p.text-error(v-show="errors.has('Email')") {{ errors.first('Email') }}
-        //.form_holder
+        .form_holder
           input(type="password" placeholder="Password"
             v-model="user.password"
             name="Password"
             v-validate="'required|min:6'"
             ref="userPass")
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
-        //.form_holder
+        .form_holder
           input(type="password" placeholder="Confirm password"
             name="Confirm password"
             v-validate="'required|confirmed:userPass'"

@@ -18,8 +18,6 @@ export default {
   name: 'BaseCheckbox',
 
   props: {
-    // value: {type: [Boolean, Array]},
-    // valueInput: {String},
     label: String,
     hasError: Boolean,
     labelPosition: {
@@ -29,15 +27,7 @@ export default {
     iconTheme: {
       type: Boolean,
       default: false
-    },
-    // // validateName: {
-    // //   type: String,
-    // //   default: ''
-    // // },
-    // name: {
-    //   type: String,
-    //   default: ''
-    // },
+    }
   },
   mounted () {
     this.$el.value = this.value;

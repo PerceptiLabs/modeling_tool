@@ -1,5 +1,5 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-data(:draggable="false"  disabled="disabled"
+  .btn.btn--layersbar.net-element-data(:draggable="true"
     data-component="DataEnvironment"
     data-layer="Environment"
     data-type="Data"

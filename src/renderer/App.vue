@@ -64,6 +64,10 @@
         if(data.updateFounded) this.updateShowPopup = true;
         console.log('DATA', data);
       });
+      ipcRenderer.on('getAppVersion', (event, data) => {
+        this.$store.commit('globalView/SET_appVersion', data)
+      });
+
       ipcRenderer.send('appReady');
     },
     methods: {

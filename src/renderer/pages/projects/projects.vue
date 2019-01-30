@@ -1,143 +1,137 @@
 <template lang="pug">
-  main.page
-    aside.page_sidebar
+  .page-projects
+    aside.page-projects_sidebar
       include ./sidebar/sidebar.pug
-
-    .page_workspace
-      include ./workspace/workspace.pug
+    .page-projects_basic-templates
+      include ./basic-templates/basic-templates.pug
+    main.page-projects_recent-files
+      include ./recent-files/recent-files.pug
 
 </template>
 <script>
-import UpdatePopup from '@/components/global-popups/update-popup/update-popup.vue'
+  import {loadNetwork} from '@/core/helpers.js'
 
-export default {
-    components: {
-      UpdatePopup
-    },
+  export default {
     name: 'PageProjects',
     data() {
       return {
-          source: 'cloud',
-          service: '',
-          projects: [
-            {
-              id: 1,
-              name: 'Quantum net (Project_1)',
-              icon: 'icon-cloud',
-              trained: true,
-              time: '25.12.2018 20:24',
-              scheme: ''
-            },
-            {
-              id: 2,
-              name: 'Quantum net (Project_2)',
-              icon: 'icon-computer',
-              trained: true,
-              time: '25.12.2018 20:24',
-              scheme: ''
-            },
-            {
-              id: 3,
-              name: 'Quantum net (Project_3)',
-              icon: 'icon-cloud',
-              trained: false,
-              time: '25.12.2018 20:24',
-              scheme: ''
-            },
-            {
-              id: 4,
-              name: 'Quantum net (Project_4)',
-              icon: 'icon-cloud',
-              trained: true,
-              time: '25.12.2018 20:24',
-              scheme: ''
-            },
-            {
-              id: 5,
-              name: 'Quantum net (Project_5)',
-              icon: 'icon-computer',
-              trained: false,
-              time: '25.12.2018 20:24',
-              scheme: ''
-            },
-            {
-              id: 6,
-              name: 'Quantum net (Project_6)',
-              icon: 'icon-cloud',
-              trained: true,
-              time: '25.12.2018 20:24',
-              scheme: ''
-            },
-            {
-              id: 7,
-              name: 'Quantum net (Project_7)',
-              icon: 'icon-cloud',
-              trained: false,
-              time: '25.12.2018 20:24',
-              scheme: ''
-            },
-            {
-              id: 8,
-              name: 'Quantum net (Project_8)',
-              icon: 'icon-computer',
-              trained: true,
-              time: '25.12.2018 20:24',
-              scheme: ''
-            },
-            {
-              id: 9,
-              name: 'Quantum net (Project_9)',
-              icon: 'icon-computer',
-              trained: false,
-              time: '25.12.2018 20:24',
-              scheme: ''
-            }
-        ],
-        processName: '14.11.2018',
-        updateButtons: [
+        source: 'computer',
+        service: '',
+        search: '',
+        basicTemplats: [
           {
-            className: 'btn--primary',
-            text: 'Install',
-            action: this.install
-          }
+            title: 'Image Classification',
+            imgPath: './static/imgs/imageClassification.svg',
+            netPath: ['.\\src\\renderer\\pages\\projects\\test02.json']
+          },
+          {
+            title: 'Timeseries Regression',
+            imgPath: './static/imgs/timeSeriesRegression.svg',
+            netPath: ['.\\src\\renderer\\pages\\projects\\test02.json']
+          },
+          {
+            title: 'Reinforcement Learning',
+            imgPath: './static/imgs/reinforcementLearning.svg',
+            netPath: ['.\\src\\renderer\\pages\\projects\\test02.json']
+          },
         ],
-        updateShowPopup: false,
-        moreInfoUpdateText: [
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-          'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
+        projects: [
+          {
+            id: 1,
+            name: 'Quantum net (Project_1)',
+            icon: 'icon-cloud', //icon-computer
+            trained: true, //true
+            time: '25.12.2018 20:24',
+            scheme: ''
+          },
         ],
-        startLoading: false,
-        fakeTimer: null,
-        progressStatus: 0,
-        message: ''
+      }
+    },
+    computed: {
+      appVersion() {
+        return this.$store.state.globalView.appVersion
+      },
+      filteredProjects() {
+        return this.projects.filter((project) => {
+          return project.name.match(this.search);
+        })
       }
     },
     methods: {
+      loadNetwork,
       openProject() {
         this.$router.push({name: 'app'});
       },
       addProject() {
         this.$router.push({name: 'app'});
       },
-      openPopup() {
-        this.updateShowPopup = true;
-      },
-      closePopup() {
-        this.updateShowPopup = false;
+      openTemplateModel(path) {
+        this.$router.push({name: 'app'});
+        this.loadNetwork(path);
       }
     }
   }
 </script>
 <style lang="scss" scoped>
   @import '../../scss/base';
-  @import './sidebar/sidebar';
-  @import './workspace/workspace';
 
-  .page {
+  $section-indent: 5rem;
+
+  @import './sidebar/sidebar';
+  @import './basic-templates/basic-templates';
+  @import './recent-files/recent-files';
+
+
+  .page-projects {
+    display: grid;
+    background: $bg-workspace;
     grid-template-columns: $w-sidebar 1fr;
-    grid-template-rows: inherit;
-    grid-template-areas: "sidebar workspace";
+    grid-template-rows: auto 1fr;
+    grid-template-areas: "sidebar basic-templates" "sidebar recent-files";
+  }
+
+  .page-projects_sidebar {
+    grid-area: sidebar;
+    padding: $section-indent 1rem 1rem 1rem;
+    background: $col-txt2;
+    h3 {
+      margin: 2rem 0;
+    }
+  }
+
+  .page-projects_basic-templates {
+    grid-area: basic-templates;
+    display: flex;
+    border-bottom: 1px solid $colorGrey;
+    margin: 0 $section-indent;
+    padding: $section-indent 0;
+  }
+
+  .page-projects_recent-files {
+    grid-area: recent-files;
+    padding: $section-indent;
+    overflow: auto;
+  }
+
+  .page-projects_title {
+    margin-bottom: $section-indent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    h2 {
+      display: flex;
+      align-items: center;
+      text-transform: uppercase;
+      font-weight: 500;
+      font-size: 1.8rem;
+      margin-bottom: 0;
+    }
+
+    .title-box_projectscount {
+      font-size: 1.2rem;
+      margin-left: 1rem;
+    }
   }
 
 </style>

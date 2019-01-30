@@ -5,6 +5,7 @@ $folder: 'icomoon';
   src:  url('#{$font-path}/#{$folder}/icomoon.woff?zddcqb') format('woff');
   font-weight: normal;
   font-style: normal;
+  font-display: block;
 }
 
 .icon {

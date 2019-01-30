@@ -511,7 +511,6 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
-  $color-arrow: #22DDE5;
   .network-field {
     position: relative;
     flex: 1 1 100%;
@@ -523,12 +522,12 @@ export default {
     width: 100%;
     height: 100%;
     marker#svg-arrow_triangle {
-      fill: $color-arrow;
-      stroke: $color-arrow;
+      fill: $col-primary;
+      stroke: $col-primary;
     }
   }
   .svg-arrow_line {
-    stroke: $color-arrow;
+    stroke: $col-primary;
     stroke-width: 3;
     &:focus {
       opacity: .5;
