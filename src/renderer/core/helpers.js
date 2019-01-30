@@ -5,13 +5,13 @@ const findIndexId = function (arr, ID) {
   return arr.findIndex(function(item) {return item.layerId == ID});
 };
 
-const clickOutside = function (event) {
-  //console.log('clickOutside');
-  if (event.target.closest('.clickout') !== this.currentNode) {
-    document.removeEventListener('click', this.clickOutside);
-    this.clickOutsideAction();
-  }
-};
+// const clickOutside = function (event) {
+//   //console.log('clickOutside');
+//   if (event.target.closest('.clickout') !== this.currentNode) {
+//     document.removeEventListener('click', this.clickOutside);
+//     this.clickOutsideAction();
+//   }
+// };
 
 
 
@@ -29,29 +29,29 @@ const loadNetwork = function (pathArr) {
     (err, data)=> {
     if(data) {
       let net = JSON.parse(data.toString());
-      this.$store.dispatch('mod_workspace/ADD_network', net)
+      this.$store.dispatch('mod_workspace/ADD_network', net.network)
     }
     else {
       console.error(err);
     }
   });
-}
-
-const debounce = function debounce(func, wait, immediate) {//not used
-  let timeout;
-  return function() {
-    const context = this;
-    const args = arguments;
-    let later = function() {
-      timeout = null;
-      if (!immediate) func.apply(context, args);
-    };
-    let callNow = immediate && !timeout;
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-    if (callNow) func.apply(context, args);
-  };
 };
+
+// const debounce = function debounce(func, wait, immediate) {//not used
+//   let timeout;
+//   return function() {
+//     const context = this;
+//     const args = arguments;
+//     let later = function() {
+//       timeout = null;
+//       if (!immediate) func.apply(context, args);
+//     };
+//     let callNow = immediate && !timeout;
+//     clearTimeout(timeout);
+//     timeout = setTimeout(later, wait);
+//     if (callNow) func.apply(context, args);
+//   };
+// };
 
 const generateID = function(input) {
   let out;
@@ -62,7 +62,7 @@ const generateID = function(input) {
   return out
 };
 
-export {findIndexId, clickOutside, openLoadDialog, generateID, debounce, loadNetwork}
+export {findIndexId, openLoadDialog, loadNetwork, generateID}
 
 
 

@@ -1,12 +1,12 @@
-import { findIndexId }  from "@/core/helpers.js";
-const generateID = function(input) {
-  let out;
-  let stringID = input.toString();
-  let dotIndex = stringID.indexOf('.');
-  dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
-  out = +out;
-  return out
-};
+import { findIndexId, generateID }  from "@/core/helpers.js";
+// const generateID = function(input) {
+//   let out;
+//   let stringID = input.toString();
+//   let dotIndex = stringID.indexOf('.');
+//   dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
+//   out = +out;
+//   return out
+// };
 function createPathNode(path, state) {
   console.log('createPathNode');
   const network = path.slice();

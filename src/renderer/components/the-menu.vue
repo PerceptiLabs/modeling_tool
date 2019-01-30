@@ -53,8 +53,8 @@ export default {
           submenu: [
             {label: 'New project',                  enabled: this.menuSet,  active: ()=> {this.addNewNetwork()}},
             {label: 'New workspace',                enabled: false,         active: ()=> {}},
-            {label: 'Open project',                 enabled: false,         active: ()=> {}},
-            {label: 'Save project',                 enabled: false,         active: ()=> {}},
+            {label: 'Open project',                 enabled: this.menuSet,  active: ()=> {this.openProject()}},
+            {label: 'Save project',                 enabled: this.menuSet,  active: ()=> {this.saveProject()}},
             {label: 'Open model',                   enabled: this.menuSet,  active: ()=> {this.openNetwork()}},
             {label: 'Save model',                   enabled: this.menuSet,  active: ()=> {this.saveNetwork()}},
             {type: 'separator'},
@@ -193,11 +193,17 @@ export default {
       }
       this.$store.commit('mod_events/set_openNetwork')
     },
+    openProject() {
+
+    },
     saveNetwork() {
       if(this.$router.history.current.name !== 'app') {
         return
       }
       this.$store.commit('mod_events/set_saveNetwork');
+    },
+    saveProject() {
+
     },
     logOut() {
       localStorage.removeItem('userToken');
