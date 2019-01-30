@@ -6,6 +6,7 @@ $folder: 'roboto';
         url('#{$font-path}/#{$folder}/roboto-black-webfont.woff') format('woff');
   font-weight: 900;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -14,6 +15,7 @@ $folder: 'roboto';
         url('#{$font-path}/#{$folder}/roboto-bold-webfont.woff') format('woff');
   font-weight: 700;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -22,6 +24,7 @@ $folder: 'roboto';
         url('#{$font-path}/#{$folder}/roboto-medium-webfont.woff') format('woff');
   font-weight: 500;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -30,6 +33,7 @@ $folder: 'roboto';
         url('#{$font-path}/#{$folder}/roboto-regular-webfont.woff') format('woff');
   font-weight: normal;
   font-style: normal;
+  font-display: swap;
 }
 
 @font-face {
@@ -38,4 +42,5 @@ $folder: 'roboto';
         url('#{$font-path}/#{$folder}/roboto-thin-webfont.woff') format('woff');
   font-weight: 300;
   font-style: normal;
+  font-display: swap;
 }

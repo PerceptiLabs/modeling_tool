@@ -1,11 +1,19 @@
 $iconsGroupColor: #5c6680;
 
-.page_sidebar {
-	padding: 4rem 1rem 0 1rem;
 
-	grid-area: sidebar;
-	h3 {
-		margin: 2rem 0;
+
+.copyryght {
+	text-align: center;
+	margin-bottom: 10rem;
+}
+.copyryght_logo {
+	width: 20rem;
+	margin-bottom: 3rem;
+}
+.copyryght_text {
+	p {
+		font-size: 13px;
+		margin-bottom: 0.5rem
 	}
 }
 

@@ -6,6 +6,7 @@ const state = {
   userMode: 'advanced', //simple
   userToken: '',
   platform: process.platform,
+  appVersion: '',
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,
@@ -23,6 +24,9 @@ const mutations = {
   },
   SET_userToken (state, value) {
     state.userToken = value
+  },
+  SET_appVersion (state, value) {
+    state.appVersion = value
   },
   GP_showNetResult (state, value) {
     state.globalPopup.showNetResult = value

@@ -21,8 +21,6 @@
             v-validate="'required|min:6'"
             )
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
-        .form_holder
-
 
         .form_holder
           base-checkbox(
@@ -33,8 +31,7 @@
         .form_holder
           router-link.btn.btn--link(:to="{name: 'register'}") Register new account
 
-          //router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects
-          //router-link.btn.btn--link(:to="{name: 'home'}" style="margin-left: 10px") Home
+          router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects
 </template>
 
 <script>
@@ -67,7 +64,6 @@ export default {
             this.loginUser();
             return;
           }
-          //error func
       });
     },
     loginUser() {

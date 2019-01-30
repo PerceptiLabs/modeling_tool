@@ -135,14 +135,12 @@ function createWindow () {
   });
   ipcMain.on('appReady', (event, arg) => {
     mainWindow.checkForUpdates();
+    mainWindow.webContents.send('getAppVersion', app.getVersion());
   });
   ipcMain.on('checkUpdate', (event, arg) => {
     mainWindow.checkForUpdates();
   });
-  ipcMain.on('appVersion', (event, arg) => {
-    mainWindow.webContents.send('getAppVersion', app.getVersion());
-  });
-  
+
   /**
    * google analytics
    */

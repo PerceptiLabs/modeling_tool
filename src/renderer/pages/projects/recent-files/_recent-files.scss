@@ -1,19 +1,29 @@
 $indentProjects: 1rem;
 $iconsGroupColor: #5c6680;
 
-.page_workspace {
-	padding: 4rem 3rem 0 3rem;
-	background: $bg-workspace;
-	grid-area: workspace;
-	.title-box {
-		justify-content: space-between;
-		margin-bottom: 4rem;
-		.title-box_projectscount {
-			font-size: 1.2rem;
-		}
+
+
+.filter-recent-files {
+	display: flex;
+	align-items: center;
+	color: $col-txt;
+	.icon-filter {
+		font-size: 1.6rem;
+		margin-right: 1rem;
+		color: $disable-txt;
+	}
+	input {
+		background: none;
+		border-bottom: 1px solid $disable-txt;
+		font-style: italic;
+		padding: 0;
+		width: 14rem;
 	}
 }
+
+
 .project-list {
+	display: flex;
 	flex-wrap: wrap;
 	margin: 0 -$indentProjects;
 	text-align: center;

@@ -1,0 +1,28 @@
+section.basic-templates_templates
+  .page-projects_title
+    h2 Basic templates
+  ul.template-list
+    button.template(type="button"
+      v-for="(temp, i) in basicTemplats"
+      :key="temp.i"
+      @click="openTemplateModel(temp.netPath)"
+      )
+      img(:src="temp.imgPath" alt="classification")
+      span.template_title {{ temp.title }}
+    //button.template(type="button" @click="openTemplateModel(templateModels.path_2)")
+    //  img(src="~@/assets/img/timeSeriesRegression.svg"  alt="time series regression")
+    //  span.template_title Timeseries Regression
+    //button.template(type="button" @click="openTemplateModel(templateModels.path_3)")
+    //  img(src="~@/assets/img/reinforcementLearning.svg" alt="reinforce ment learning")
+    //  span.template_title Reinforcement Learning
+    
+section.basic-templates_crash-course
+  .page-projects_title
+    h2 Ai crash course
+  .crash-course_elements 
+    .elements_model
+      .model_icon-box.i.icon.icon-data.icon-box--outline
+      .model_arrow.icon.icon-layer-arrow1
+      .model_icon-box.i.icon.icon-round
+    span.template_title Learn the basics.
+    button.btn.btn--crash-course(type="button") Begin Tutorial

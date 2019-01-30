@@ -48,6 +48,10 @@
       ipcRenderer.on('info', (event, data) => {
         console.log(data);
       });
+      ipcRenderer.on('getAppVersion', (event, data) => {
+        this.$store.commit('globalView/SET_appVersion', data)
+      });
+
       ipcRenderer.send('appReady');
     },
     methods: {

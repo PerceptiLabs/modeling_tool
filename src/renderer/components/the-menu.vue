@@ -36,18 +36,13 @@ export default {
   name: "TheMenu",
   data() {
     return {
-      appVersion: '',
       menuSet: false,
-
     }
   },
-  mounted() {
-    ipcRenderer.send('appVersion');
-    ipcRenderer.on('getAppVersion', (event, data) => {
-      this.appVersion = data;
-    });
-  },
   computed: {
+    appVersion() {
+      return this.$store.state.globalView.appVersion
+    },
     navMenu() {
       return [
         {
