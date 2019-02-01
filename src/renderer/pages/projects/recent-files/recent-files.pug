@@ -17,7 +17,7 @@ ul.project-list
     v-for="(project, i) in filteredProjects"
     :key="project.i"
     )
-    button.project(@click="openProject")
+    button.project(@click="openTemplate(project.path)")
       .project_content
         .project-content_info
           i.icon(:class="project.isCloud ? 'icon-cloud' : 'icon-computer'")

@@ -18,16 +18,19 @@
       @appMinimized="appMinimize"
       @appMaximized="appMaximize"
     )
+    router-view.app-page
     update-popup(
       :isShowPopup="updateShowPopup"
       @updateStarted="updateStart"
-    ) 
-    router-view.app-page
+    )
 </template>
 
 <script>
   import uuid           from 'uuid/v4';
   import {ipcRenderer}  from 'electron'
+
+  import {openLoadDialog, loadNetwork} from '@/core/helpers.js'
+
   import HeaderLinux    from '@/components/header/header-linux.vue';
   import HeaderWin      from '@/components/header/header-win.vue';
   import HeaderMac      from '@/components/header/header-mac.vue';
@@ -39,20 +42,13 @@
     components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup },
     data() {
       return {
-        updateShowPopup: false
+        updateShowPopup: false,
+        userId: ''
       }
     },
     mounted() {
-      let localUserID = localStorage.getItem('userId');
-      let userId = '';
-      if(localUserID) {
-        userId = localUserID;
-      }
-      else {
-        userId = uuid();
-        localStorage.setItem('userId', userId)
-      }
-      this.$store.commit('globalView/SET_userID', userId);
+      this.checkToken();
+      this.checkUserID();
 
       ipcRenderer.on('newNetwork', (event) => {
         this.$store.dispatch('mod_workspace/ADD_network');
@@ -74,9 +70,38 @@
         this.$store.commit('globalView/SET_appVersion', data)
       });
 
-      ipcRenderer.send('appReady', userId);
+      ipcRenderer.send('appReady', this.userId);
+    },
+    computed: {
+      platform() {
+        return this.$store.state.globalView.platform
+      },
+      eventLoadNetwork() {
+        return this.$store.state.mod_events.openNetwork
+      },
+    },
+    watch: {
+      eventLoadNetwork() {
+        let opt = {
+          title:"Load Network",
+          filters: [
+            {name: 'Text', extensions: ['json']},
+          ]
+        };
+        this.openLoadDialog(this.loadNetwork, opt)
+      },
+      '$route': {
+        handler(to, from) {
+          if(process.env.NODE_ENV === 'production') {
+            ipcRenderer.send('changeRoute', to.fullPath)
+          }
+        },
+        immediate: true
+      }
     },
     methods: {
+      openLoadDialog,
+      loadNetwork,
       appClose() {
         this.$store.dispatch('mod_events/EVENT_closeCore');
       },
@@ -89,23 +114,25 @@
       updateStart() {
         console.log('From App');
         ipcRenderer.send('update-start')
-      }
-    },
-    computed: {
-      platform() {
-        return this.$store.state.globalView.platform
-      }
-    },
-    watch: {
-    '$route': {
-      handler(to, from) {
-        if(process.env.NODE_ENV === 'production') {
-          ipcRenderer.send('changeRoute', to.fullPath)
+      },
+      checkUserID() {
+        let localUserID = localStorage.getItem('userId');
+        if(localUserID) {
+          this.userId = localUserID;
+        }
+        else {
+          this.userId = uuid();
+          localStorage.setItem('userId', this.userId)
+        }
+        this.$store.commit('globalView/SET_userID', this.userId);
+      },
+      checkToken() {
+        let localUserToken = localStorage.getItem('userToken');
+        if(localUserToken) {
+          this.$store.commit('globalView/SET_userToken', localUserToken);
         }
       },
-      immediate: true
-    }
-  }
+    },
   }
 </script>
 

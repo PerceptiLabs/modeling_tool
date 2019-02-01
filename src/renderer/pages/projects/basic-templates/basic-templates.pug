@@ -5,7 +5,7 @@ section.basic-templates_templates
     button.template(type="button"
       v-for="(temp, i) in basicTemplats"
       :key="temp.i"
-      @click="openTemplateModel(temp.netPath)"
+      @click="openTemplate(temp.netPath)"
       )
       img(:src="temp.imgPath" alt="classification")
       span.template_title {{ temp.title }}

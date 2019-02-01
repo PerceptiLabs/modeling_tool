@@ -40,7 +40,9 @@ export default {
     ViewLoading
   },
   mounted() {
-    this.checkToken()
+    if(this.userIsLogin) {
+      this.loginUser()
+    }
   },
   data() {
     return {
@@ -54,6 +56,9 @@ export default {
   computed: {
     isLoading() {
       return this.$store.state.mod_login.showLoader
+    },
+    userIsLogin() {
+      return this.$store.state.globalView.userToken
     },
   },
   methods: {
@@ -77,21 +82,16 @@ export default {
         if (result === 'success') {
           this.$store.commit('mod_login/SET_showLoader', false);
           let token = response.data.data.token;
+          this.$store.commit('globalView/SET_userToken', token);
           if(this.saveToken) {
             localStorage.setItem('userToken', token);
           }
-          this.loginUser(token)
+          this.loginUser()
         }
       })
     },
-    checkToken() {
-      let localUserToken = localStorage.getItem('userToken');
-      if(localUserToken) {
-        this.loginUser(localUserToken)
-      }
-    },
-    loginUser(token) {
-      this.$store.commit('globalView/SET_userToken', token);
+
+    loginUser() {
       this.$router.replace('/projects');
     }
   }
