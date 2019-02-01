@@ -19,9 +19,10 @@
       @appMaximized="appMaximize"
     )
     update-popup(
-      :isShowPopup="updateShowPopup"
-      @updateStarted="updateStart"
-      @closedPopup="updateCencel"
+      :progress="percentProgress"
+      :updateInfo="updateInfo"
+      @startedUpdate="updateStart"
+      @restartApp="restartApp"
     ) 
     router-view.app-page
 </template>
@@ -38,7 +39,8 @@
     name: 'quantumnet',
     data() {
       return {
-        updateShowPopup: false
+        percentProgress: 0,
+        updateInfo: {}
       }
     },
     components: {
@@ -62,8 +64,18 @@
         this.appClose();
       });
       ipcRenderer.on('update-finded', (event, update) => {
-        this.updateShowPopup = true;
-        console.log('upadate', update);
+        this.updateInfo = update;
+        this.$store.commit('globalView/SET_showPopupUpdates', true)
+      });
+      ipcRenderer.on('update-not-finded', (event, update) => {
+        this.$store.commit('globalView/SET_showPopupUpdates', true)
+        this.$store.commit('globalView/SET_updateStatus', 'not update')
+      });
+      ipcRenderer.on('percent-progress', (event, percent) => {
+        this.percentProgress = Math.round(percent);
+      });
+      ipcRenderer.on('download-completed', (event, percent) => {
+        this.$store.commit('globalView/SET_updateStatus', 'done')
       });
       ipcRenderer.on('info', (event, data) => {
         console.log(data);
@@ -87,8 +99,8 @@
       updateStart() {
         ipcRenderer.send('update-start')
       },
-      updateCencel() {
-        this.updateShowPopup = false;
+      restartApp() {
+        ipcRenderer.send('restart-app-after-update')
       },
       updateHide() {
         this.backgroundUpdate = true;
@@ -97,6 +109,9 @@
     computed: {
       platform() {
         return this.$store.state.globalView.platform
+      },
+      showPopupUpdates() {
+        return this.$store.state.globalView.showPopupUpdates
       }
     },
     watch: {
