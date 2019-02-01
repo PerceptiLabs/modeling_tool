@@ -1,21 +1,23 @@
 <template lang="pug">
-  div(v-if="isShowPopup").popup-body
-    header.popup-body_header
+  div(v-if="showPopupUpdates" :class="{'bg-mode' :  bgMode}").popup-body
+    header.popup-body_header(@click="background")
       h3.header_title {{title}}
-      span.header_update-status(v-if="updatesLoading") {{progress}}%
+      span.header_update-status(v-if="updateStatus === 'downloading'") {{progress}}%
+      span.header_update-status(v-if="updateStatus === 'done'") Done
     popup-loading(
-      v-if="loadingStatus === 'installing'"
-      :updateStatus="progress"
-      @canceledUpdate="cancel"
-      :loadingStatus="loadingStatus"
+      v-if="updateStatus === 'downloading'"
+      :progressStatus="progress"
+      @canceledUpdate="cancelUpdate"
+      @backgroundMode="background"
     )
     popup-info(
       v-else
-      @installStarted="install"
-      @closedPopup="cancel"
-      :aboutUpdateList="updateList"
+      @startedUpdate="startUpdate"
+      @closedPopup="cancelUpdate"
+      @restartApp="restartApp"
       :message="mainUpdateMessage"
-      :loadingStatus="loadingStatus"
+      :aboutUpdateList="updateList"
+      :updatePopupInfo="updateInfo"
     )
 </template>
 
@@ -31,13 +33,20 @@ export default {
       type: Boolean,
       default: true
     },
+    progress: {                     // progress (%)
+      type: Number,
+      default: 0
+    },
+    updateInfo: {                   // info about update (property from App.vue)
+      type: Object,
+      default: {}
+    }
   },
   data() {
     return {
       title: 'Software update',
       updatesLoading: false,
-      loadingStatus: 'before install',
-      progress: 0,
+      bgMode: false,
       mainUpdateMessage: 'Availible 5 new update',
       updateList: [
         'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
@@ -46,20 +55,34 @@ export default {
       ]
     }
   },
+  computed: {
+    updateStatus() {
+      return this.$store.state.globalView.updateStatus
+    },
+    showPopupUpdates() {
+      return this.$store.state.globalView.showPopupUpdates
+    }
+  },
   methods: {
-    install(loadingStatus) {
-      this.loadingStatus = loadingStatus;
-      this.$emit('updateStarted', loadingStatus);
+    startUpdate(status) {
+      this.$store.commit('globalView/SET_updateStatus', 'downloading')
+      this.$emit('startedUpdate');
       //this.startFakeLoading();
     },
-    cancel(cencel) {
-      this.loadingStatus = cencel.status;
+    cancelUpdate(cencel) {
+      this.updateStatus = cencel.status;
       this.progress = 0;
       this.$emit('closedPopup')
       clearInterval(this.fakeTimer);
     },
+    background() {
+      this.bgMode = !this.bgMode;
+    },
     closePopup() {
       this.$emit('closedPopup')
+    },
+    restartApp() {
+      this.$emit('restartApp')
     },
     startFakeLoading() {
       this.fakeTimer = setInterval( () => {
@@ -67,8 +90,7 @@ export default {
         if (this.progress >= 100) {
           this.progress = 100;
           clearInterval(this.fakeTimer);
-          this.loadingStatus = 'done';
-          console.log(this.loadingStatus);
+          this.updateStatus = 'done';
         }
       }, 700)
     }

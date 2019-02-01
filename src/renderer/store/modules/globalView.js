@@ -8,6 +8,8 @@ const state = {
   userToken: '',
   platform: process.platform,
   appVersion: '',
+  updateStatus: 'before update', // ('before update', 'downloading', not update, 'done')
+  showPopupUpdates: false,
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,
@@ -31,6 +33,12 @@ const mutations = {
   },
   SET_appVersion (state, value) {
     state.appVersion = value
+  },
+  SET_updateStatus (state, value) {
+    state.updateStatus = value
+  },
+  SET_showPopupUpdates (state, value) {
+    state.showPopupUpdates = value
   },
   GP_showNetResult (state, value) {
     state.globalPopup.showNetResult = value

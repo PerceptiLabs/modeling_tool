@@ -9,6 +9,12 @@
 	transform: translate(-99%, -99%);
 	border-radius: .5rem;
 	background: $bg-toolbar;
+	&.bg-mode{
+		padding-bottom: 0;
+		.info-box {
+			display: none;
+		}
+	}
 }
 .popup-body_header {
 	font-size: 1.4rem;

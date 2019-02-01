@@ -156,7 +156,7 @@ export default {
             {label: 'Help',                                                 active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
             {label: 'About',                                                active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
             {label: 'Tutorial mode',                enabled: this.menuSet,  active: ()=> {}},
-            {label: 'Check for updates',            enabled: this.menuSet,  active: ()=> {this.checkUpdate()}},
+            {label: 'Check for updates',                                    active: ()=> {this.checkUpdate()}},
             {type: 'separator'},
           ]
         }
@@ -179,7 +179,7 @@ export default {
       this.$store.dispatch('mod_events/EVENT_closeCore');
     },
     checkUpdate() {
-      ipcRenderer.send('checkUpdate');
+      ipcRenderer.send('checkUpdate', 'userCheck');
     },
     addNewNetwork() {
       this.$store.dispatch('mod_workspace/ADD_network');

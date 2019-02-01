@@ -141,8 +141,18 @@ function createWindow () {
     visitor = ua('UA-114940346-1', {uid: arg});
   });
   ipcMain.on('checkUpdate', (event, arg) => {
-    mainWindow.checkForUpdates();
+    mainWindow.checkForUpdates(arg);
+    autoUpdater.on('update-not-available', (info)=> {
+      mainWindow.webContents.send('update-not-finded', info);
+    });
   });
+  ipcMain.on('update-start', (info)=> {
+    autoUpdater.downloadUpdate();
+  })
+  ipcMain.on('restart-app-after-update', (info)=> {
+    autoUpdater.quitAndInstall();
+  })
+  
 
   /**
    * google analytics
@@ -155,7 +165,7 @@ function createWindow () {
    */
   mainWindow.checkForUpdates = function() {
     //if (process.env.NODE_ENV !== 'development') {
-    if (process.env.NODE_ENV !== 'development') {
+    if (true) {
       mainWindow.webContents.send('info', 'checkForUpdates');
       const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
       const UpdateOpt = {
@@ -218,54 +228,26 @@ app.on('activate', () => {
  */
 
 autoUpdater.on('checking-for-update', (info)=> {
-  //console.log('Checking for update...');
+  console.log('Checking for update...');
   mainWindow.webContents.send('info', {type: 'Checking for update...!', info});
 });
 autoUpdater.on('update-available', (info)=> {
-  mainWindow.webContents.send('info', {type: 'Update available.', updateFounded: true, info});
-
-  // const dialogOpts = {
-  //   type: 'info',
-  //   title: 'Start Download Updates',
-  //   message: info.releaseNotes,
-  //   buttons: ['OK', 'No']
-  // };
-  // dialog.showMessageBox(dialogOpts, (buttonIndex) => {
-  //   if (buttonIndex === 0) {
-  //     autoUpdater.downloadUpdate()
-  //   }
-  // })
+  mainWindow.webContents.send('info', {type: 'Update available.', info});
+  mainWindow.webContents.send('update-finded', info);
 });
-ipcMain.on('update-start', (info)=> {
-  console.log('______FROM INDEX_____');
-  autoUpdater.downloadUpdate();
-})
 
-autoUpdater.on('update-not-available', (info)=> {
-  mainWindow.webContents.send('info', {type: 'Update not available.', info});
-});
 autoUpdater.on('error', (err)=> {
   mainWindow.webContents.send('info', 'Error in auto-updater. ' + err);
 });
 autoUpdater.on('download-progress', (progressObj)=> {
+  mainWindow.webContents.send('percent-progress', progressObj.percent);
   let log_message = `Download speed: ${progressObj.bytesPerSecond}, Downloaded: ${progressObj.percent}%`;
   mainWindow.webContents.send('info', log_message);
   mainWindow.setProgressBar(progressObj.percent / 100);
 });
 autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
   mainWindow.webContents.send('info', 'Update downloaded');
-
-  const dialogOpts = {
-    type: 'info',
-    buttons: ['Restart', 'Later'],
-    title: 'Application Update',
-    message: process.platform === 'win32' ? releaseNotes : releaseName,
-    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
-  };
-
-  dialog.showMessageBox(dialogOpts, (response) => {
-    if (response === 0) autoUpdater.quitAndInstall()
-  })
+  mainWindow.webContents.send('download-completed');
 });
 
 export default mainWindow
