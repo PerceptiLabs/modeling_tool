@@ -87,7 +87,6 @@ const viewBoxMixin = {
               this.$set(this.chartData, view, data)
             }
             else this.chartData = data;
-            console.log(data);
           })
           .catch((err) =>{
             console.error(err);

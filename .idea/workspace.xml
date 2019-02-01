@@ -2,20 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/img/imageClassification.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/img/reinforcementLearning.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/img/timeSeriesRegression.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/helpers.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/helpers.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/projects/fake_test_2.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/projects/fake_test_3.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/projects/projects.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/projects/projects.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/projects/test02.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/basic-template/base-template-1.json" beforeDir="false" afterPath="$PROJECT_DIR$/static/basic-template/base-template-1.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -96,13 +84,25 @@
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/pages/projects/projects.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="682">
-              <caret line="61" column="26" selection-start-line="61" selection-start-column="26" selection-end-line="61" selection-end-column="26" />
+            <state relative-caret-position="484">
+              <caret line="40" column="44" lean-forward="true" selection-start-line="40" selection-start-column="44" selection-end-line="40" selection-end-column="44" />
               <folding>
                 <element signature="e#300#345#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="484">
+              <caret line="88" column="39" selection-start-line="88" selection-start-column="39" selection-end-line="88" selection-end-column="39" />
+              <folding>
+                <element signature="e#0#64#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -194,7 +194,6 @@
         <option value="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-reinforce/viewBox-train-reinforce.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/base/checkbox.vue" />
         <option value="$PROJECT_DIR$/src/renderer/pages/projects/recent-files/_recent-files.scss" />
         <option value="$PROJECT_DIR$/../teraning model/progects.json" />
@@ -210,6 +209,7 @@
         <option value="$PROJECT_DIR$/src/renderer/core/helpers.js" />
         <option value="$PROJECT_DIR$/src/renderer/App.vue" />
         <option value="$PROJECT_DIR$/src/renderer/pages/projects/projects.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" />
       </list>
     </option>
   </component>
@@ -250,15 +250,15 @@
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="pages" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="core" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="pages" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="projects" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="core" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="mixins" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
@@ -440,12 +440,12 @@
       <workItem from="1548922774065" duration="599000" />
       <workItem from="1548926532142" duration="1882000" />
       <workItem from="1548939235328" duration="10375000" />
-      <workItem from="1549003506870" duration="13024000" />
+      <workItem from="1549003506870" duration="13095000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="133716000" />
+    <option name="totallyTimeSpent" value="133787000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -670,16 +670,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="506">
-          <caret line="89" column="30" lean-forward="true" selection-start-line="89" selection-start-column="12" selection-end-line="89" selection-end-column="30" />
-          <folding>
-            <element signature="e#0#64#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-reinforce/viewBox-train-reinforce.vue">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2486">
@@ -858,10 +848,20 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/pages/projects/projects.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="682">
-          <caret line="61" column="26" selection-start-line="61" selection-start-column="26" selection-end-line="61" selection-end-column="26" />
+        <state relative-caret-position="484">
+          <caret line="40" column="44" lean-forward="true" selection-start-line="40" selection-start-column="44" selection-end-line="40" selection-end-column="44" />
           <folding>
             <element signature="e#300#345#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="484">
+          <caret line="88" column="39" selection-start-line="88" selection-start-column="39" selection-end-line="88" selection-end-column="39" />
+          <folding>
+            <element signature="e#0#64#0" expanded="true" />
           </folding>
         </state>
       </provider>
