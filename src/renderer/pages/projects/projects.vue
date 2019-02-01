@@ -9,8 +9,9 @@
 
 </template>
 <script>
-  import {loadNetwork} from '@/core/helpers.js'
-  import {pathBasicTemplate} from '@/core/constants.js'
+  import {loadNetwork}        from '@/core/helpers.js'
+  import {pathBasicTemplate}  from '@/core/constants.js'
+  import basicTemplate1       from '@/core/basic-template/base-template-1.js'
 
   export default {
     name: 'PageProjects',
@@ -26,21 +27,21 @@
         service: '',
         search: '',
         projects: [],
-        basicTemplats: [
+        basicTemplates: [
           {
             title: 'Image Classification',
             imgPath: './static/imgs/imageClassification.svg',
-            netPath: [`${pathBasicTemplate}/base-template-1.json`]
+            template: basicTemplate1
           },
           {
             title: 'Timeseries Regression',
             imgPath: './static/imgs/timeSeriesRegression.svg',
-            netPath: [`${pathBasicTemplate}/base-template-1.json`]
+            template: basicTemplate1
           },
           {
             title: 'Reinforcement Learning',
             imgPath: './static/imgs/reinforcementLearning.svg',
-            netPath: [`${pathBasicTemplate}/base-template-1.json`]
+            template: basicTemplate1
           },
         ]
       }
@@ -65,6 +66,10 @@
             this.goNextPage();
           })
           .catch((err)=> console.log(err))
+      },
+      openBasicTemplate(net) {
+        this.$store.dispatch('mod_workspace/ADD_network', net.network);
+        this.goNextPage();
       },
       goNextPage() {
         this.$router.push({name: 'app'});

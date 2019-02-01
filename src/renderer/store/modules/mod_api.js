@@ -80,9 +80,10 @@ const mutations = {
 
 
 const actions = {
-  API_runServer({state, commit, dispatch, getters}) {
+  API_runServer({state, commit, dispatch, getters, rootGetters}) {
     let timer;
     let coreIsStarting = false;
+    var path = rootGetters['globalView/appPath'];
     startCore();
 
     function startCore() {
@@ -94,8 +95,8 @@ const actions = {
           break;
         case 'darwin':
           if(process.env.NODE_ENV === 'production') {
-            let resPath = process.resourcesPath;
-            let path = resPath.slice(0, resPath.indexOf('Resources'));
+            // let resPath = process.resourcesPath;
+            // let path = resPath.slice(0, resPath.indexOf('Resources'));
             openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           else {
@@ -104,8 +105,8 @@ const actions = {
           break;
         case 'linux':
           if(process.env.NODE_ENV === 'production') {
-            let resPath = process.resourcesPath;
-            let path = resPath.slice(0, resPath.indexOf('resources'));
+            // let resPath = process.resourcesPath;
+            // let path = resPath.slice(0, resPath.indexOf('resources'));
             openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           else {

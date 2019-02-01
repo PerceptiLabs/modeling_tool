@@ -8,6 +8,7 @@ const state = {
   userToken: '',
   platform: process.platform,
   appVersion: '',
+  appPath: '',
   updateStatus: 'before update', // ('before update', 'downloading', not update, 'done')
   showPopupUpdates: false,
   globalPopup: {
@@ -17,6 +18,11 @@ const state = {
     showInfoPopup: false
   }
 };
+const getters = {
+  GET_appPath(state) {
+    return state.appPath
+  }
+}
 
 const mutations = {
   SET_hideLayers (state, value) {
@@ -33,6 +39,9 @@ const mutations = {
   },
   SET_appVersion (state, value) {
     state.appVersion = value
+  },
+  SET_appPath (state, value) {
+    state.appPath = value
   },
   SET_updateStatus (state, value) {
     state.updateStatus = value
@@ -76,6 +85,7 @@ const actions = {
 export default {
   namespaced,
   state,
+  getters,
   mutations,
   actions
 }
