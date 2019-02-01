@@ -95,7 +95,6 @@ const mutations = {
     getters.GET_currentNetworkElementList = value
   },
   add_network (state, {dispatch, net}) {
-    console.log(net);
     let newNetwork = {};
     let defaultNetwork = {
       networkName: 'New_Network',

@@ -154,6 +154,9 @@
         let localUserToken = localStorage.getItem('userToken');
         if(localUserToken) {
           this.$store.commit('globalView/SET_userToken', localUserToken);
+          if(this.$router.history.current.name === 'login') {
+            this.$router.replace({name: 'projects'});
+          }
         }
       },
     },

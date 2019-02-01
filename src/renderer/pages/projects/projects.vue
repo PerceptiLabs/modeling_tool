@@ -60,7 +60,6 @@
         this.goNextPage()
       },
       openTemplate(path) {
-        console.log(path);
         this.loadNetwork(path)
           .then(() => {
             this.goNextPage();

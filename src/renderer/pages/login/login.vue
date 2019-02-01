@@ -50,7 +50,7 @@ export default {
       // userPass: '123123',
       userEmail: '',
       userPass: '',
-      saveToken: false
+      saveToken: true
     }
   },
   computed: {

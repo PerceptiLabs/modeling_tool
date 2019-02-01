@@ -32,7 +32,6 @@ const openLoadDialog = function (callback, options) {
 //   });
 // };
 const loadNetwork = function (pathArr) {
-  console.log(pathArr);
   return readFilePromiseNative(pathArr[0]).then(
     (data) => {
       let net = JSON.parse(data.toString());

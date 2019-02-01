@@ -90,7 +90,7 @@ const actions = {
       let openServer;
       switch (process.platform) {
         case 'win32':
-          //openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           break;
         case 'darwin':
           if(process.env.NODE_ENV === 'production') {
@@ -113,13 +113,13 @@ const actions = {
           }
           break;
       }
-      // openServer.on('error', (err) => {
-      //   console.log(err);
-      //   coreOffline()
-      // });
-      // openServer.on('close', (code) => {
-      //   coreOffline()
-      // });
+      openServer.on('error', (err) => {
+        console.log(err);
+        coreOffline()
+      });
+      openServer.on('close', (code) => {
+        coreOffline()
+      });
       waitOnlineCore()
     }
     function waitOnlineCore() {
