@@ -42,17 +42,18 @@
       SettingsCloud
     },
     mounted() {
-      // if(process.platform === 'linux') {
-      //   let resPath = process.resourcesPath;
-      //   let path = resPath.slice(0, resPath.indexOf('Resources'));
-      //   this.settings.accessProperties.Path = path + 'mnist'
-      // }
-      // else {
-      //   this.settings.accessProperties.Path = '..\\mnist'
-      // }
-
       if(process.env.NODE_ENV === 'production' && !this.settings.accessProperties.Path) {
-        this.settings.accessProperties.Path = this.appPath + 'core\\mnist'
+        switch (process.platform) {
+          case 'win32':
+            this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
+            break;
+          case 'darwin':
+            this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
+            break;
+          case 'linux':
+            this.settings.accessProperties.Path = this.appPath + 'core/mnist';
+            break;
+        }
       }
     },
     data() {
