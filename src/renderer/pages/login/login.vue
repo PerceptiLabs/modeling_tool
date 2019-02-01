@@ -23,15 +23,12 @@
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
 
         .form_holder
-          base-checkbox(
-
-          ) Remember me
+          base-checkbox(v-model="saveToken") Remember me
         .form_holder
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading") log in
         .form_holder
           router-link.btn.btn--link(:to="{name: 'register'}") Register new account
 
-          router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects
 </template>
 
 <script>
@@ -42,12 +39,16 @@ export default {
   components: {
     ViewLoading
   },
+  mounted() {
+    this.checkToken()
+  },
   data() {
     return {
       // userEmail: 'test@test.com',
       // userPass: '123123',
       userEmail: '',
       userPass: '',
+      saveToken: false
     }
   },
   computed: {
@@ -61,12 +62,12 @@ export default {
       this.$validator.validateAll()
         .then((result) => {
           if (result) {
-            this.loginUser();
+            this.requestLoginUser();
             return;
           }
       });
     },
-    loginUser() {
+    requestLoginUser() {
       this.$store.commit('mod_login/SET_showLoader', true);
       let queryParams = {
         "Email": this.userEmail,
@@ -75,14 +76,24 @@ export default {
       this.requestCloudApi('post', 'Customer/Login', queryParams, (result, response) => {
         if (result === 'success') {
           this.$store.commit('mod_login/SET_showLoader', false);
-          this.$store.commit('globalView/SET_userToken', response.headers.authorization);
-          if(process.env.BUILD_TARGET !== 'web') {
-            this.$store.dispatch('mod_api/API_runServer');
+          let token = response.data.data.token;
+          if(this.saveToken) {
+            localStorage.setItem('userToken', token);
           }
-          this.$router.replace('/app');
+          this.loginUser(token)
         }
       })
     },
+    checkToken() {
+      let localUserToken = localStorage.getItem('userToken');
+      if(localUserToken) {
+        this.loginUser(localUserToken)
+      }
+    },
+    loginUser(token) {
+      this.$store.commit('globalView/SET_userToken', token);
+      this.$router.replace('/projects');
+    }
   }
 }
 </script>

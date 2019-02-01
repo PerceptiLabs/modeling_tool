@@ -7,19 +7,23 @@
     
 ul.project-list
   article.project-box
-    button.project.add-new(@click="addProject")
+    button.project.add-new(@click="addNewProject")
       .project_ration
       .project_content
         i.icon.icon-zoom-plus
     h3 Add new project
   
-  article.project-box(v-for="project in filteredProjects")
+  article.project-box(
+    v-for="(project, i) in filteredProjects"
+    :key="project.i"
+    )
     button.project(@click="openProject")
-      .project_ration
       .project_content
-        .project_content-info.d-flex
-          i.icon(:class="project.icon")
-          span.content-info_status.primary(v-if="project.trained") Trained
+        .project-content_info
+          i.icon(:class="project.isCloud ? 'icon-cloud' : 'icon-computer'")
+          span.content-info_status.primary(v-if="project.trainedPath") Trained
           span.content-info_status.dark-blue(v-else) Not trained
+        .project-content_img
+          img(:src="project.image")
     h3 {{project.name}}
     time.text-disable {{project.time}}

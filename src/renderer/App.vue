@@ -28,6 +28,7 @@
 </template>
 
 <script>
+  import uuid           from 'uuid/v4';
   import {ipcRenderer}  from 'electron'
   import HeaderLinux    from '@/components/header/header-linux.vue';
   import HeaderWin      from '@/components/header/header-win.vue';
@@ -37,20 +38,25 @@
 
   export default {
     name: 'quantumnet',
+    components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup },
     data() {
       return {
         percentProgress: 0,
         updateInfo: {}
       }
     },
-    components: {
-      HeaderLinux, 
-      HeaderWin, 
-      HeaderMac, 
-      updatePopup
-    },
     mounted() {
-      //main process events
+      let localUserID = localStorage.getItem('userId');
+      let userId = '';
+      if(localUserID) {
+        userId = localUserID;
+      }
+      else {
+        userId = uuid();
+        localStorage.setItem('userId', userId)
+      }
+      this.$store.commit('globalView/SET_userID', userId);
+
       ipcRenderer.on('newNetwork', (event) => {
         this.$store.dispatch('mod_workspace/ADD_network');
       });
@@ -84,7 +90,7 @@
         this.$store.commit('globalView/SET_appVersion', data)
       });
 
-      ipcRenderer.send('appReady');
+      ipcRenderer.send('appReady', userId);
     },
     methods: {
       appClose() {

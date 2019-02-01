@@ -86,7 +86,8 @@ const viewBoxMixin = {
             if(view.length) {
               this.$set(this.chartData, view, data)
             }
-            else this.chartData = data
+            else this.chartData = data;
+            console.log(data);
           })
           .catch((err) =>{
             console.error(err);
