@@ -146,7 +146,6 @@
       calcAppPath() {
         let resPath = process.resourcesPath;
         var path = '';
-        console.log(process);
         switch (process.platform) {
           case 'win32':
             path = resPath.slice(0, resPath.indexOf('resources'));
