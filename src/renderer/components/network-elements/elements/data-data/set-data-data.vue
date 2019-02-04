@@ -15,7 +15,7 @@
           .settings-layer_section
             .form_row
               input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
-              button.btn.btn--primary(type="button" @click="loadFile" disabled="disabled") Load
+              button.btn.btn--primary(type="button" @click="loadFile") Load
           .settings-layer_section
             .form_row
               .form_label Data type:
