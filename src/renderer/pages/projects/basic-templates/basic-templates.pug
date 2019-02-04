@@ -3,9 +3,9 @@ section.basic-templates_templates
     h2 Basic templates
   ul.template-list
     button.template(type="button"
-      v-for="(temp, i) in basicTemplats"
+      v-for="(temp, i) in basicTemplates"
       :key="temp.i"
-      @click="openTemplate(temp.netPath)"
+      @click="openBasicTemplate(temp.template)"
       )
       img(:src="temp.imgPath" alt="classification")
       span.template_title {{ temp.title }}

@@ -57,6 +57,9 @@ export default {
     statisticsElSelected() {
       return this.$store.state.mod_statistics.selectedElArr
     },
+    testIsOpen() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+    },
     statusNetworkCore() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
@@ -86,6 +89,7 @@ export default {
       this.$store.dispatch('mod_workspace/SET_elementUnselect');
       if(this.statisticsIsOpen !== null) {
         this.$store.dispatch('mod_workspace/SET_openStatistics', false);
+        this.$store.dispatch('mod_workspace/SET_openTest', false);
       }
     },
     toggleSidebar() {
@@ -118,7 +122,14 @@ export default {
     openStatistics(i) {
       this.setTabNetwork(i);
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
+      this.$store.dispatch('mod_workspace/SET_openTest', false);
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+    },
+    openTest(i) {
+      this.setTabNetwork(i);
+      this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
+      this.$store.dispatch('mod_workspace/SET_openStatistics', false );
+      this.$store.dispatch('mod_workspace/SET_openTest', true);
     },
     saveModel() {
       this.$store.commit('mod_events/set_saveNetwork');

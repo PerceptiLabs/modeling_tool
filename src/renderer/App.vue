@@ -87,6 +87,8 @@
       });
 
       ipcRenderer.send('appReady', this.userId);
+      this.sendPathToAnalist('/');
+      this.calcAppPath();
     },
     computed: {
       platform() {
@@ -111,16 +113,18 @@
       },
       '$route': {
         handler(to, from) {
-          if(process.env.NODE_ENV === 'production') {
-            ipcRenderer.send('changeRoute', to.fullPath)
-          }
-        },
-        immediate: true
+          this.sendPathToAnalist(to.fullPath)
+        }
       }
     },
     methods: {
       openLoadDialog,
       loadNetwork,
+      sendPathToAnalist(path) {
+        if(process.env.NODE_ENV === 'production') {
+          ipcRenderer.send('changeRoute', path)
+        }
+      },
       appClose() {
         this.$store.dispatch('mod_events/EVENT_closeCore');
       },
@@ -136,8 +140,25 @@
       restartApp() {
         ipcRenderer.send('restart-app-after-update')
       },
-      updateHide() {
-        this.backgroundUpdate = true;
+      // updateHide() {
+      //   this.backgroundUpdate = true;
+      // },
+      calcAppPath() {
+        let resPath = process.resourcesPath;
+        var path = '';
+        console.log(process);
+        switch (process.platform) {
+          case 'win32':
+            path = resPath.slice(0, resPath.indexOf('resources'));
+            break;
+          case 'darwin':
+            path = resPath.slice(0, resPath.indexOf('Resources'));
+            break;
+          case 'linux':
+            path = resPath.slice(0, resPath.indexOf('resources'));
+            break
+        }
+        this.$store.commit('globalView/SET_appPath', path);
       },
       checkUserID() {
         let localUserID = localStorage.getItem('userId');

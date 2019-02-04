@@ -91,7 +91,7 @@ function createWindow () {
     }
   });
 
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
@@ -148,10 +148,10 @@ function createWindow () {
   });
   ipcMain.on('update-start', (info)=> {
     autoUpdater.downloadUpdate();
-  })
+  });
   ipcMain.on('restart-app-after-update', (info)=> {
     autoUpdater.quitAndInstall();
-  })
+  });
   
 
   /**
@@ -164,7 +164,6 @@ function createWindow () {
    * start auto update
    */
   mainWindow.checkForUpdates = function() {
-    //if (process.env.NODE_ENV !== 'development') {
     if (process.env.NODE_ENV !== 'development') {
       mainWindow.webContents.send('info', 'checkForUpdates');
       const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/';

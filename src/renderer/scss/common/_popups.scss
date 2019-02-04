@@ -10,7 +10,7 @@
 	align-items: center;
 	justify-content: center;
 	height: 3.5rem;
-	background: $bg-grad-blue;
+	background: $bg-window;
 	box-shadow: $icon-shad;
 	&.disable {
 		color: $disable-txt;
@@ -82,7 +82,7 @@
 	.popup {
 		position: relative;
 		z-index: 1;
-		width: 29rem;
+		width: 34rem;
 		box-shadow: $box-shad;
 	}
 }

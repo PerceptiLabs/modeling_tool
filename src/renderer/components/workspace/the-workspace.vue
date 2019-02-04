@@ -7,8 +7,9 @@
         v-if="indexCurrentNetwork === i"
         v-for="(net, i) in workspace"
         :key="net.i"
-        :class="{'open-statistic': statisticsIsOpen}"
+        :class="{'open-statistic': statisticsIsOpen, 'open-test': testIsOpen}"
       )
+        
         the-statistics.the-statistics(
           v-if="statisticsIsOpen"
           :elData="statisticsElSelected.statistics"
@@ -19,7 +20,7 @@
           )
         section.network_info-section.the-network-field
           .info-section_head(
-            v-if="statisticsIsOpen"
+            v-if="statisticsIsOpen || testIsOpen"
             )
             h3 Map
           .info-section_main(
@@ -74,9 +75,12 @@
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 1fr 1fr;
     &.open-statistic {
-      display: grid;
       grid-template-areas:  'the-statistics   the-statistics'
                             'network-field  view-box';
+    }
+    &.open-test {
+      grid-template-areas:  'the-statistics   the-statistics'
+                            'network-field  network-field';
     }
     .the-statistics {
       grid-area: the-statistics;

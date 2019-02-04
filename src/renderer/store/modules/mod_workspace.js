@@ -105,6 +105,7 @@ const mutations = {
     };
     let defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
+      openTest: null,
       canTestStatistics: false,
       zoom: 1,
       netMode: 'edit',//'addArrow', showStatistic
@@ -152,6 +153,9 @@ const mutations = {
   },
   set_openStatistics(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
+  },
+  set_openTest(state, {getters, value}) {
+    getters.GET_currentNetwork.networkMeta.openTest = value;
   },
   set_statusNetworkCore(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.coreStatus = value;
@@ -346,6 +350,9 @@ const actions = {
   },
   SET_openStatistics({commit, getters}, value) {
     commit('set_openStatistics', {getters, value})
+  },
+  SET_openTest({commit, getters}, value) {
+    commit('set_openTest', {getters, value})
   },
   SET_statusNetworkCore({commit, getters}, value) {
     commit('set_statusNetworkCore', {getters, value})

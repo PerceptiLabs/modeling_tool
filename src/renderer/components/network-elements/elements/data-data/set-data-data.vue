@@ -14,7 +14,7 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
+              input.form_input(type="text" v-model="settings.accessProperties.Path")
               button.btn.btn--primary(type="button" @click="loadFile") Load
           .settings-layer_section
             .form_row
@@ -41,14 +41,19 @@
     components: {
       SettingsCloud
     },
-    created() {
-      if(process.platform === 'linux') {
-        let resPath = process.resourcesPath;
-        let path = resPath.slice(0, resPath.indexOf('Resources'));
-        this.settings.accessProperties.Path = path + 'mnist'
-      }
-      else {
-        this.settings.accessProperties.Path = '..\\mnist'
+    mounted() {
+      if(process.env.NODE_ENV === 'production' && !this.settings.accessProperties.Path) {
+        switch (process.platform) {
+          case 'win32':
+            this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
+            break;
+          case 'darwin':
+            this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
+            break;
+          case 'linux':
+            this.settings.accessProperties.Path = this.appPath + 'core/mnist';
+            break;
+        }
       }
     },
     data() {
@@ -59,9 +64,14 @@
           accessProperties: {
             Category:'Local',
             Type: 'Data',
-            Path: '..\\mnist',
+            Path: '',
           }
         }
+      }
+    },
+    computed: {
+      appPath() {
+        return this.$store.getters['globalView/GET_appPath']
       }
     },
     methods: {

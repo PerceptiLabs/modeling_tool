@@ -20,6 +20,10 @@ ul.workspace_tab-list
       :class="{'active': tab.networkMeta.openStatistics}")
       span Statistics
       i.icon.icon-circle-o
+    button.btn.btn--tabs.tab_statistics(type="button"
+      @click.stop="openTest(i)"
+      )
+      span Test
 
 
 .toggle-sidebar(:class="{'hide-sidebar': !hideSidebar}")
