@@ -18,9 +18,6 @@ export default {
   },
   mounted() {
     this.addDragListener();
-    if(process.env.BUILD_TARGET !== 'web') {
-      this.$store.dispatch('mod_api/API_runServer');
-    }
   },
   data() {
     return {

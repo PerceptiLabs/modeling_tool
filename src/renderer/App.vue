@@ -99,6 +99,9 @@
       },
       showPopupUpdates() {
         return this.$store.state.globalView.showPopupUpdates
+      },
+      userIsLogin() {
+        return this.$store.getters['globalView/GET_userIsLogin']
       }
     },
     watch: {
@@ -110,6 +113,13 @@
           ]
         };
         this.openLoadDialog(this.loadNetwork, opt)
+      },
+      userIsLogin(newVal) {
+        if(process.env.BUILD_TARGET !== 'web') {
+          newVal
+            ? this.$store.dispatch('mod_api/API_runServer')
+            : this.$store.dispatch('mod_api/API_CLOSE_core');
+        }
       },
       '$route': {
         handler(to, from) {
@@ -126,7 +136,7 @@
         }
       },
       appClose() {
-        this.$store.dispatch('mod_events/EVENT_closeCore');
+        this.$store.dispatch('mod_events/EVENT_closeApp');
       },
       appMinimize() {
         ipcRenderer.send('appMinimize')

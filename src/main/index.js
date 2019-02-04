@@ -137,7 +137,6 @@ function createWindow () {
   ipcMain.on('appReady', (event, arg) => {
     mainWindow.checkForUpdates();
     mainWindow.webContents.send('getAppVersion', app.getVersion());
-    console.log(arg);
     visitor = ua('UA-114940346-1', {uid: arg});
   });
   ipcMain.on('checkUpdate', (event, arg) => {

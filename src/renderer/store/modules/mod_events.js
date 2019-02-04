@@ -32,7 +32,7 @@ const actions = {
     commit('set_saveNetwork');
   },
 
-  EVENT_closeCore({dispatch}) {
+  EVENT_closeApp({dispatch}) {
     dispatch('mod_api/API_CLOSE_core', null, {root: true});
     ipcRenderer.send('appClose');
   }
