@@ -62,6 +62,9 @@
       ipcRenderer.on('saveNetwork', (event) => {
         this.$store.commit('mod_events/set_saveNetwork')
       });
+      ipcRenderer.on('logOut', (event) => {
+        this.logOut();
+      });
       ipcRenderer.on('closeApp', (event) => {
         this.appClose();
       });
@@ -97,12 +100,16 @@
       eventLoadNetwork() {
         return this.$store.state.mod_events.openNetwork
       },
+      eventLogout() {
+        return this.$store.state.mod_events.logOut
+      },
       showPopupUpdates() {
         return this.$store.state.globalView.showPopupUpdates
       },
       userIsLogin() {
         return this.$store.getters['globalView/GET_userIsLogin']
-      }
+      },
+
     },
     watch: {
       eventLoadNetwork() {
@@ -189,6 +196,12 @@
           }
         }
       },
+      logOut() {
+        localStorage.removeItem('userToken');
+        this.$store.commit('globalView/SET_userToken', '');
+        this.$store.commit('mod_workspace/RESET_network');
+        this.$router.replace({name: 'login'});
+      }
     },
   }
 </script>

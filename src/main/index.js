@@ -18,13 +18,14 @@ const mainMenu = [
   {
     label: 'File',
     submenu: [
-      {label: 'New',                  click() {mainWindow.webContents.send('newNetwork')}},
-      {label: 'Open trained model', enabled: false, click() {mainWindow.webContents.send('info', 'whoooooooh!');  }},
-      {label: 'Save trained model', enabled: false,  click() {  }},
-      {label: 'Open untrained model', click() {mainWindow.webContents.send('openNetwork')}},
-      {label: 'Save untrained model', click() {mainWindow.webContents.send('saveNetwork')}},
+      {label: 'New',                                    click() {mainWindow.webContents.send('newNetwork')}},
+      {label: 'Open trained model',   enabled: false,   click() {mainWindow.webContents.send('info', 'whoooooooh!');  }},
+      {label: 'Save trained model',   enabled: false,   click() {  }},
+      {label: 'Open untrained model',                   click() {mainWindow.webContents.send('openNetwork')}},
+      {label: 'Save untrained model',                   click() {mainWindow.webContents.send('saveNetwork')}},
       {type: 'separator'},
-      {label: 'Quit PersceptiLabs', click() {mainWindow.webContents.send('closeApp')}},
+      {label: 'Log out',                                click() {mainWindow.webContents.send('logOut')}},
+      {label: 'Quit PersceptiLabs',                     click() {mainWindow.webContents.send('closeApp')}},
     ]
   },
   {

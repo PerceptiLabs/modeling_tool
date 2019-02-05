@@ -169,6 +169,9 @@ export default {
         to ? this.menuSet = true : this.menuSet = false
       },
       immediate: true
+    },
+    eventLogout() {
+      this.logOut()
     }
   },
   methods: {
@@ -203,10 +206,7 @@ export default {
 
     },
     logOut() {
-      localStorage.removeItem('userToken');
-      this.$store.commit('globalView/SET_userToken', '');
-      this.$store.commit('mod_workspace/RESET_network');
-      this.$router.replace({name: 'login'});
+      this.$store.dispatch('mod_events/EVENT_logOut')
     }
   }
 }
