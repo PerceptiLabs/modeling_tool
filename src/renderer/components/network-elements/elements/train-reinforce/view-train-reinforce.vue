@@ -5,7 +5,7 @@
     data-type="Training"
     v-tooltip:right="'Training Reinforce'"
   )
-    i.icon.icon-learning-reinforcement
+    i.icon.icon-learning-reinforcement1
 
 </template>
 
