@@ -9,7 +9,10 @@
         :key="net.i"
         :class="{'open-statistic': statisticsIsOpen, 'open-test': testIsOpen}"
       )
-        
+        the-test.the-test(
+          v-if="testIsOpen"
+          :elData="statisticsElSelected.statistics"
+          )
         the-statistics.the-statistics(
           v-if="statisticsIsOpen"
           :elData="statisticsElSelected.statistics"
@@ -79,11 +82,14 @@
                             'network-field  view-box';
     }
     &.open-test {
-      grid-template-areas:  'the-statistics   the-statistics'
+      grid-template-areas:  'the-test   the-test'
                             'network-field  network-field';
     }
     .the-statistics {
       grid-area: the-statistics;
+    }
+    .the-test {
+      grid-area: the-test;
     }
     .the-view-box {
       grid-area: view-box;

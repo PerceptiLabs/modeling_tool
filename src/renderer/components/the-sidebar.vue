@@ -13,9 +13,25 @@
     .sidebar_tab(v-show="tabSelected === 0")
       //include ./sidebar/blocks/Project.pug
       sidebar-layers
+
       sidebar-training(v-if="showTraining")
       //sidebar-comments(v-else)
+      
+      .testing-results(v-if="testIsOpen")
+        h3 Results
+        
+        p.testing-results-title Validation:
+
+        p Validation Acuracy: 70.86%
+        p Validation Loss: 2.35
+
+        p.testing-results-title Training:
+
+        p Training Accuracy: 71.35%
+        p Training Loss: 2.28
+
       sidebar-share
+
     .sidebar_tab(v-show="tabSelected === 1")
       include ./sidebar/blocks/Save.pug
     .sidebar_tab(v-show="tabSelected === 2")
@@ -55,9 +71,13 @@ export default {
     statisticsIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
     },
+    testIsOpen() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+    },
     isTraining() {
       return this.$store.getters['mod_workspace/GET_networkIsTraining']
     },
+    
     showTraining() {
       if(this.isTraining && this.statisticsIsOpen) {
         return true
@@ -116,6 +136,19 @@ export default {
     width: $w-sidebar;;
     > * {
       width: 100%;
+    }
+  }
+
+  .testing-results {
+    padding: 1rem;
+    h3 {
+      margin-bottom: 2rem;
+    }
+    .testing-results-title {
+      margin: 2rem 0;
+    }
+    p {
+      font-size: 1.2rem;
     }
   }
 </style>
