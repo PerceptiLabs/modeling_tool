@@ -17,6 +17,14 @@
   &.active {
     background-color: $bg-workspace;
   }
+  .btn--tabs.testing-tab {
+    margin-left: -1.5rem;
+    padding: .25em 0.8em;
+    &.active, &:hover {
+      background: $color-10;
+      color: $bg-toolbar;
+    }
+  }
 }
 .tab_close {
   margin-right: 1.25rem;
@@ -32,7 +40,7 @@
 }
 .tab_statistics {
   height: 100%;
-  padding: .25em .8em;
+  padding: .25em 1.7em;
   border-radius: 1rem 1rem 0 0;
   font-size: 1rem;
   min-width: auto;
