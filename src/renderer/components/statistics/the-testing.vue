@@ -2,6 +2,13 @@
   section.network_info-section
     .info-section_head
       h3 Testing
+    .testing-head
+      .testing-head_progress-bar-box
+        .progress-bar-box_progress(:style="{width: progress + '%'}")
+      .testing-head_controls  
+        button.controls-btn.i.icon.icon-player-prev
+        button.controls-btn.i.icon.icon-player-play
+        button.controls-btn.i.icon.icon-player-next
     .info-section_main(v-if="elData !== null")
       component(
         :is="elData.componentName"
@@ -39,7 +46,7 @@ export default {
   },
   data() {
     return {
-
+      progress: 30
     }
   },
   methods: {
@@ -52,5 +59,25 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+  @import "../../scss/base";
+  .testing-head_progress-bar-box {
+    width: 100%;
+    height: 0.5rem;
+    background: #151515;
+  }
+  .progress-bar-box_progress {
+    height: 100%;
+    background: $color-10;
+  }
+  .testing-head_controls {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0;
+  }
+  .controls-btn {
+    background: none;
+    color: $color-10;
+    font-size: 2.5rem;
+  }
 
 </style>

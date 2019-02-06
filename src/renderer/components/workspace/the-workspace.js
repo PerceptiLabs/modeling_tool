@@ -81,7 +81,7 @@ export default {
       if(newStatus === 'Finished' && oldStatus === 'Validation') {
         this.$store.dispatch('globalView/NET_trainingDone');
         this.$store.dispatch('mod_api/API_startWatchGetStatus', false);
-        this.showTestTab = true;
+        this.showTestingTab = true;
       }
     },
   },
