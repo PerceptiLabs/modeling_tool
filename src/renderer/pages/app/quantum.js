@@ -18,9 +18,6 @@ export default {
   },
   mounted() {
     this.addDragListener();
-    if(process.env.BUILD_TARGET !== 'web') {
-      this.$store.dispatch('mod_api/API_runServer');
-    }
   },
   data() {
     return {
@@ -134,13 +131,15 @@ export default {
         let projectsList = [];
         if(localProjectsList) {
           projectsList = JSON.parse(localProjectsList);
-          let findIdProj = projectsList.findIndex((proj)=> proj.id === project.id);
-          if(findIdProj >= 0) {
-            return
+          let indexIdProj = projectsList.findIndex((proj)=> proj.id === project.id);
+          if(indexIdProj >= 0) {
+            project.path = [];
+            project.path.push(path);
+            projectsList[indexIdProj] = project;
           }
         }
         project.path = [];
-        project.path.push(path)
+        project.path.push(path);
         projectsList.push(project);
         localStorage.setItem('projectsList', JSON.stringify(projectsList))
       }

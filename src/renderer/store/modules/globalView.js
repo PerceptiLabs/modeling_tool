@@ -21,8 +21,13 @@ const state = {
 const getters = {
   GET_appPath(state) {
     return state.appPath
+  },
+  GET_userIsLogin(state) {
+    if(state.userToken) return true;
+    else return false;
+
   }
-}
+};
 
 const mutations = {
   SET_hideLayers (state, value) {

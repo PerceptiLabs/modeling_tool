@@ -44,7 +44,7 @@ export default {
       return this.$store.state.globalView.appVersion
     },
     userIsLogin() {
-      return this.$store.state.globalView.userToken
+      return this.$store.getters['globalView/GET_userIsLogin']
     },
     navMenu() {
       return [
@@ -169,6 +169,9 @@ export default {
         to ? this.menuSet = true : this.menuSet = false
       },
       immediate: true
+    },
+    eventLogout() {
+      this.logOut()
     }
   },
   methods: {
@@ -176,7 +179,7 @@ export default {
       window.open(url,'_blank');
     },
     appClose() {
-      this.$store.dispatch('mod_events/EVENT_closeCore');
+      this.$store.dispatch('mod_events/EVENT_closeApp');
     },
     checkUpdate() {
       ipcRenderer.send('checkUpdate', 'userCheck');
@@ -203,11 +206,7 @@ export default {
 
     },
     logOut() {
-      localStorage.removeItem('userToken');
-      this.$store.commit('globalView/SET_userToken', '');
-      this.$store.dispatch('mod_api/API_CLOSE_core', null, {root: true});
-      this.$store.commit('mod_workspace/RESET_network');
-      this.$router.replace({name: 'login'});
+      this.$store.dispatch('mod_events/EVENT_logOut')
     }
   }
 }

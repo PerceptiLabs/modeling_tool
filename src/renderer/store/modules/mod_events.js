@@ -6,7 +6,8 @@ const namespaced = true;
 const state = {
   calcArray: 0,
   openNetwork: 0,
-  saveNetwork: 0
+  saveNetwork: 0,
+  logOut: 0,
 };
 
 const mutations = {
@@ -18,6 +19,9 @@ const mutations = {
   },
   set_saveNetwork(state) {
     state.saveNetwork++
+  },
+  set_logOut(state) {
+    state.logOut++
   },
 };
 
@@ -31,8 +35,10 @@ const actions = {
   EVENT_saveNetwork({commit}) {
     commit('set_saveNetwork');
   },
-
-  EVENT_closeCore({dispatch}) {
+  EVENT_logOut({commit}) {
+    commit('set_logOut');
+  },
+  EVENT_closeApp({dispatch}) {
     dispatch('mod_api/API_CLOSE_core', null, {root: true});
     ipcRenderer.send('appClose');
   }

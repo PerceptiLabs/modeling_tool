@@ -88,6 +88,7 @@ export default {
           }
           this.loginUser()
         }
+        else this.$store.commit('mod_login/SET_showLoader', false);
       })
     },
 
