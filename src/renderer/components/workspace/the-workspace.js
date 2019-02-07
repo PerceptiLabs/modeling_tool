@@ -4,7 +4,7 @@ import GeneralSettings  from "@/components/global-popups/workspace-general-setti
 import GeneralResult    from "@/components/global-popups/workspace-result";
 import SelectCoreSide   from "@/components/global-popups/workspace-core-side";
 import TheStatistics    from "@/components/statistics/the-statistics.vue";
-import TheTest          from "@/components/statistics/the-testing.vue";
+import TheTesting       from "@/components/statistics/the-testing.vue";
 import TheViewBox       from "@/components/statistics/the-view-box";
 
 export default {
@@ -16,7 +16,7 @@ export default {
     GeneralResult,
     SelectCoreSide,
     TheStatistics,
-    TheTest,
+    TheTesting,
     TheViewBox,
   },
   data() {

@@ -87,11 +87,11 @@
 
     .toolbar_settings
       //span.text-primary.middle-text(v-html="statusTestText")
-      button.btn.btn--primary(type="button" disabled="disabled"
-        v-if="statusNetworkCore == 'Finished'"
-        )
-        span Run test
-        i.icon.icon-circle-o
+      //- button.btn.btn--primary(type="button" disabled="disabled"
+      //-   v-if="statusNetworkCore == 'Finished'"
+      //-   )
+      //-   span Run test
+      //-   i.icon.icon-circle-o
       span.text-primary.middle-text(v-html="statusTrainingText")
       button.btn.btn--dark-blue-rev(type="button" disabled="disabled"
         @click="openStatistics"

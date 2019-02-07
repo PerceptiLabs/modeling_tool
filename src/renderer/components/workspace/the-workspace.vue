@@ -9,16 +9,13 @@
         :key="net.i"
         :class="{'open-statistic': statisticsIsOpen, 'open-test': testIsOpen}"
       )
-        the-test.the-test(
-          v-if="testIsOpen"
-          :elData="statisticsElSelected.statistics"
-          )
+        the-testing.the-testing(v-if="testIsOpen")
         the-statistics.the-statistics(
-          v-if="statisticsIsOpen"
+          v-if="statisticsIsOpen || testIsOpen"
           :elData="statisticsElSelected.statistics"
           )
         the-view-box.the-view-box(
-          v-if="statisticsIsOpen"
+          v-if="statisticsIsOpen  || testIsOpen"
           :elData="statisticsElSelected.viewBox"
           )
         section.network_info-section.the-network-field
@@ -82,14 +79,17 @@
                             'network-field  view-box';
     }
     &.open-test {
-      grid-template-areas:  'the-test   the-test'
+      grid-template-rows: auto 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:  'the-testing   the-testing'
+                            'the-statistics   view-box'
                             'network-field  network-field';
     }
     .the-statistics {
       grid-area: the-statistics;
     }
-    .the-test {
-      grid-area: the-test;
+    .the-testing {
+      grid-area: the-testing;
     }
     .the-view-box {
       grid-area: view-box;

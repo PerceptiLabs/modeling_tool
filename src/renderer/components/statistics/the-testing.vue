@@ -1,19 +1,17 @@
 <template lang="pug">
-  section.network_info-section
-    .info-section_head
-      h3 Testing
     .testing-head
-      .testing-head_progress-bar-box
-        .progress-bar-box_progress(:style="{width: progress + '%'}")
-      .testing-head_controls  
-        button.controls-btn.i.icon.icon-player-prev
-        button.controls-btn.i.icon.icon-player-play
-        button.controls-btn.i.icon.icon-player-next
-    .info-section_main(v-if="elData !== null")
-      component(
-        :is="elData.componentName"
-        :elementData="elData.viewBox"
-      )
+    //- .testing-head
+    //-   .testing-head_progress-bar-box
+    //-     .progress-bar-box_progress(:style="{width: progress + '%'}")
+    //-   .testing-head_controls  
+    //-     button.controls-btn.i.icon.icon-player-prev
+    //-     button.controls-btn.i.icon.icon-player-play
+    //-     button.controls-btn.i.icon.icon-player-next
+    //- .info-section_main(v-if="elData !== null")
+    //-   component(
+    //-     :is="elData.componentName"
+    //-     :elementData="elData.viewBox"
+    //-   )
 </template>
 
 <script>
@@ -31,7 +29,7 @@
 
 
 export default {
-  name: "TheStatistics",
+  name: "TheTesting",
   components: {
     TrainNormal, TrainNormalData, TrainGenetic, TrainDynamic, TrainReinforce,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
@@ -60,6 +58,11 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
+
+  .testing-head {
+    border-top: 1px solid $color-10;
+    background: $col-txt2;
+  }
   .testing-head_progress-bar-box {
     width: 100%;
     height: 0.5rem;
