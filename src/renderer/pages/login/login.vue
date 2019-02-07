@@ -82,7 +82,7 @@ export default {
         if (result === 'success') {
           this.$store.commit('mod_login/SET_showLoader', false);
           let token = response.data.data.token;
-          this.$store.commit('globalView/SET_userToken', token);
+          this.$store.dispatch('globalView/SET_userToken', token);
           if(this.saveToken) {
             localStorage.setItem('userToken', token);
           }

@@ -114,12 +114,14 @@ const mutations = {
       }
     };
 
-    net === undefined ? newNetwork = defaultNetwork : newNetwork = net;
+    net.network === undefined ? newNetwork = defaultNetwork : newNetwork = net.network;
     newNetwork.networkMeta = defaultMeta;
 
     state.workspaceContent.push(newNetwork);
     state.currentNetwork = state.workspaceContent.length - 1;
-    //dispatch('mod_events/EVENT_calcArray', null, {root: true})
+    if(net.ctx.$router.history.current.name !== 'app') {
+      net.ctx.$router.replace({name: 'app'});
+    }
   },
   DELETE_network(state, index) {
     if(state.currentNetwork >= index) {
@@ -362,6 +364,9 @@ const actions = {
   },
   SET_statusNetworkZoom({commit, getters}, value) {
     commit('set_statusNetworkZoom', {getters, value})
+  },
+  RESET_network({commit}) {
+    commit('RESET_network')
   },
   //---------------
   //  NETWORK ELEMENTS

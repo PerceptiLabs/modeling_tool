@@ -35,6 +35,7 @@
       chart-base(
         chartLabel="Accuracy during one epoch"
         :chartData="chartData.Accuracy.Current"
+        :customColor="colorListAccuracy"
       )
       chart-base(
         chartLabel="Accuracy over all epochs"
@@ -44,6 +45,7 @@
       chart-base(
         chartLabel="Loss during one epoch"
         :chartData="chartData.Loss.Current"
+        :customColor="colorListAccuracy"
       )
       chart-base(
         chartLabel="Loss over all epochs"
@@ -73,7 +75,6 @@
   import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
   import ChartD3      from "@/components/charts/chart-3d.vue";
 
-  import requestApi   from "@/core/api.js";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
 
   export default {
@@ -98,7 +99,9 @@
           }},
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
-        colorList: ['#ff0', '#0f0']
+        colorList: ['#FECF73', '#6B8FF7'],
+        colorListAccuracy: ['#9173FF', '#6B8FF7'],
+
       }
     },
     computed: {

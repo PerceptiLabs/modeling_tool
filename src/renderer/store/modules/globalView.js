@@ -23,9 +23,7 @@ const getters = {
     return state.appPath
   },
   GET_userIsLogin(state) {
-    if(state.userToken) return true;
-    else return false;
-
+    return state.userToken ? true : false
   }
 };
 
@@ -36,7 +34,7 @@ const mutations = {
   SET_hideSidebar (state, value) {
     state.hideSidebar = value
   },
-  SET_userToken (state, value) {
+  set_userToken (state, value) {
     state.userToken = value
   },
   SET_userID (state, value) {
@@ -85,6 +83,14 @@ const actions = {
     //dispatch('mod_api/API_stopTraining', null, {root: true});
     dispatch('mod_workspace/SET_canTestStatistics', true, {root: true});
   },
+  SET_userToken({commit, dispatch}, value) {
+    commit('set_userToken', value);
+    if(process.env.BUILD_TARGET !== 'web') {
+     value
+       ? dispatch('mod_api/API_runServer', null, {root: true})
+       : dispatch('mod_api/API_CLOSE_core', null, {root: true});
+    }
+  }
 };
 
 export default {

@@ -13,7 +13,7 @@ ECharts.registerTheme('quantum', {
   },
   "color": [
     "#6b8ff7",
-    "#f7e96b",
+    "#FECF73",
     "#46d65d",
     "#fe7373",
     "#e273fe",

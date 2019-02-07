@@ -14,8 +14,8 @@
         .settings-layer
           .settings-layer_section
             .form_row
-              input.form_input(type="text" v-model="settings.accessProperties.Path")
-              button.btn.btn--primary(type="button" @click="loadFile") Load
+              input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
+              button.btn.btn--primary(type="button" @click="loadFile" :disabled="isDisabled") Load
           .settings-layer_section
             .form_row
               .form_label Data type:
@@ -48,12 +48,13 @@
             this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
             break;
           case 'darwin':
-            this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
+            this.settings.accessProperties.Path = this.appPath + 'core/mnist';
             break;
           case 'linux':
             this.settings.accessProperties.Path = this.appPath + 'core/mnist';
             break;
         }
+        this.applySettings();
       }
     },
     data() {
@@ -72,6 +73,9 @@
     computed: {
       appPath() {
         return this.$store.getters['globalView/GET_appPath']
+      },
+      isDisabled() {
+        return process.env.NODE_ENV === 'production'
       }
     },
     methods: {
