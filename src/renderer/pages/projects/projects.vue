@@ -57,19 +57,19 @@
     methods: {
       loadNetwork,
       addNewProject() {
-        this.$store.dispatch('mod_workspace/ADD_network');
-        this.goNextPage()
+        this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+        //this.goNextPage()
       },
       openTemplate(path) {
         this.loadNetwork(path)
           .then(() => {
-            this.goNextPage();
+            //this.goNextPage();
           })
           .catch((err)=> console.log(err))
       },
       openBasicTemplate(net) {
-        this.$store.dispatch('mod_workspace/ADD_network', net.network);
-        this.goNextPage();
+        this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
+        //this.goNextPage();
       },
       goNextPage() {
         this.$router.push({name: 'app'});

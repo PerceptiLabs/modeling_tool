@@ -35,10 +35,7 @@ const loadNetwork = function (pathArr) {
   return readFilePromiseNative(pathArr[0]).then(
     (data) => {
       let net = JSON.parse(data.toString());
-      this.$store.dispatch('mod_workspace/ADD_network', net.network);
-      if(this.$router.history.current.name !== 'app') {
-        this.$router.replace({name: 'app'});
-      }
+      this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
     }
   );
   function readFilePromiseNative(path) {

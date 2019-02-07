@@ -11,8 +11,8 @@ ul.switcher.d-flex
       input(type="radio" value="computer" v-model="source")
       span Computer
   li
-    label
-      input(type="radio" value="cloud" v-model="source")
+    label()
+      input(type="radio" value="cloud" v-model="source" disabled="disabled")
       span Cloud
     
 h3 Import as:

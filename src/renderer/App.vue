@@ -54,7 +54,7 @@
       this.checkUserID();
 
       ipcRenderer.on('newNetwork', (event) => {
-        this.$store.dispatch('mod_workspace/ADD_network');
+        this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
       });
       ipcRenderer.on('openNetwork', (event) => {
         this.$store.commit('mod_events/set_openNetwork')
@@ -106,10 +106,6 @@
       showPopupUpdates() {
         return this.$store.state.globalView.showPopupUpdates
       },
-      userIsLogin() {
-        return this.$store.getters['globalView/GET_userIsLogin']
-      },
-
     },
     watch: {
       eventLoadNetwork() {
@@ -120,13 +116,6 @@
           ]
         };
         this.openLoadDialog(this.loadNetwork, opt)
-      },
-      userIsLogin(newVal) {
-        if(process.env.BUILD_TARGET !== 'web') {
-          newVal
-            ? this.$store.dispatch('mod_api/API_runServer')
-            : this.$store.dispatch('mod_api/API_CLOSE_core');
-        }
       },
       '$route': {
         handler(to, from) {
@@ -190,17 +179,14 @@
       checkToken() {
         let localUserToken = localStorage.getItem('userToken');
         if(localUserToken) {
-          this.$store.commit('globalView/SET_userToken', localUserToken);
+          this.$store.dispatch('globalView/SET_userToken', localUserToken);
           if(this.$router.history.current.name === 'login') {
             this.$router.replace({name: 'projects'});
           }
         }
       },
       logOut() {
-        localStorage.removeItem('userToken');
-        this.$store.commit('globalView/SET_userToken', '');
-        this.$store.commit('mod_workspace/RESET_network');
-        this.$router.replace({name: 'login'});
+        this.$store.dispatch('mod_events/EVENT_logOut', this)
       }
     },
   }

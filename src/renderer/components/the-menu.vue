@@ -169,9 +169,6 @@ export default {
         to ? this.menuSet = true : this.menuSet = false
       },
       immediate: true
-    },
-    eventLogout() {
-      this.logOut()
     }
   },
   methods: {
@@ -185,10 +182,10 @@ export default {
       ipcRenderer.send('checkUpdate', 'userCheck');
     },
     addNewNetwork() {
-      this.$store.dispatch('mod_workspace/ADD_network');
-      if(this.$router.history.current.name !== 'app') {
-        this.$router.replace({name: 'app'});
-      }
+      this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+      // if(this.$router.history.current.name !== 'app') {
+      //   this.$router.replace({name: 'app'});
+      // }
     },
     openNetwork() {
       this.$store.commit('mod_events/set_openNetwork')
@@ -206,7 +203,7 @@ export default {
 
     },
     logOut() {
-      this.$store.dispatch('mod_events/EVENT_logOut')
+      this.$store.dispatch('mod_events/EVENT_logOut', this)
     }
   }
 }
