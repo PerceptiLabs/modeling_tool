@@ -25,6 +25,7 @@
       @startedUpdate="updateStart"
       @restartApp="restartApp"
     )
+    tutorial
 </template>
 
 <script>
@@ -37,11 +38,13 @@
   import HeaderWin      from '@/components/header/header-win.vue';
   import HeaderMac      from '@/components/header/header-mac.vue';
   import updatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
+  import Tutorial       from '@/components/tutorial/tutorial.vue';
+
 
 
   export default {
     name: 'quantumnet',
-    components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup },
+    components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, Tutorial },
     data() {
       return {
         percentProgress: 0,
