@@ -221,7 +221,7 @@ export default {
       let net = this.currentElList;
       let typeData = net.find((element)=> element.layerType === 'Data');
       if(typeData === undefined) {
-        this.$store.commit('globalView/GP_infoPopup', 'Date element missing');
+        this.$store.commit('globalView/GP_infoPopup', 'Data element missing');
         return false
       }
 
