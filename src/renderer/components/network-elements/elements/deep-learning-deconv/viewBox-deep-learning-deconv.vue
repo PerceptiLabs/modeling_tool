@@ -1,6 +1,6 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset
+    ul.statistics-box_tabset(v-if="!testIsOpen")
       li.statistics-box_tab(
       v-for="(tab, i) in tabset"
       :key="i"
@@ -13,7 +13,7 @@
       //&& chartData['Weights&Output']
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output'")
       .statistics-box_row
-        .statistics-box_col
+        .statistics-box_col(v-if="!testIsOpen")
           chart-heatmap(
           chartLabel="Weights"
           :chartData="chartData['Weights&Output'].Weights"

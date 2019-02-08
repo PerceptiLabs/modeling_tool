@@ -42,6 +42,9 @@ const viewBoxMixin = {
     doRequest() {
       return this.$store.state.mod_api.startWatchGetStatus
     },
+    testIsOpen() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+    },
   },
   watch: {
     boxElementID() {

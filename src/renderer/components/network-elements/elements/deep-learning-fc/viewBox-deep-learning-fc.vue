@@ -1,6 +1,6 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset
+    ul.statistics-box_tabset(v-if="!testIsOpen")
       li.statistics-box_tab(
       v-for="(tab, i) in tabset"
       :key="i"
