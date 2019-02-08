@@ -1,6 +1,6 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset
+    ul.statistics-box_tabset(v-if="!testIsOpen")
       li.statistics-box_tab(
       v-for="(tab, i) in tabset"
       :key="i"
@@ -18,7 +18,7 @@
             chartLabel="Input"
             :chartData="chartData.Prediction.Input"
             )
-      .statistics-box_row
+      .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
           chart-base(
           chartLabel="Prediction vs Ground truth"
@@ -103,6 +103,11 @@
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
 
       }
+    },
+    computed: {
+      testIsOpen() {
+        return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+      },
     },
     methods: {
       setTab(name) {

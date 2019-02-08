@@ -17,18 +17,18 @@
       sidebar-training(v-if="showTraining")
       //sidebar-comments(v-else)
       
-      .testing-results(v-if="testIsOpen")
-        h3 Results
+      //- .testing-results(v-if="testIsOpen")
+      //-   h3 Results
         
-        p.testing-results-title Validation:
+      //-   p.testing-results-title Validation:
 
-        p Validation Acuracy: 70.86%
-        p Validation Loss: 2.35
+      //-   p Validation Acuracy: 70.86%
+      //-   p Validation Loss: 2.35
 
-        p.testing-results-title Training:
+      //-   p.testing-results-title Training:
 
-        p Training Accuracy: 71.35%
-        p Training Loss: 2.28
+      //-   p Training Accuracy: 71.35%
+      //-   p Training Loss: 2.28
 
       sidebar-share
 

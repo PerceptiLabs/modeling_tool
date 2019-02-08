@@ -1,6 +1,6 @@
 <template lang="pug">
   section.network_info-section
-    .info-section_head
+    .info-section_head(v-if="!testIsOpen")
       h3 Statistics
     .info-section_main(v-if="elData !== null")
       component(
@@ -46,7 +46,9 @@ export default {
 
   },
   computed: {
-
+      testIsOpen() {
+        return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+      }
   }
 }
 </script>

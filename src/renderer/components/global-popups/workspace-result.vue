@@ -8,15 +8,15 @@
       .popup_body
         .settings-layer_section
 
-        .body_results-info
-          .results-info--validation
-            p Validation
-            span Validation Accuracy: 70.86%
-            span Validation Loss: 2.35
-          .results-info--validation
-              p Training
-              span Training Accuracy: 71.35%
-              span Training Loss: 2.28  
+        //- .body_results-info
+        //-   .results-info--validation
+        //-     p Validation
+        //-     span Validation Accuracy: 70.86%
+        //-     span Validation Loss: 2.35
+        //-   .results-info--validation
+        //-       p Training
+        //-       span Training Accuracy: 71.35%
+        //-       span Training Loss: 2.28  
 
       .popup_foot
         button.btn.btn--primary(type="button"
@@ -40,6 +40,11 @@ export default {
     runTest() {
       this.closePopup();
       //this.$store.dispatch('mod_workspace/SET_netMode', 'training');
+      this.$store.commit('mod_workspace/SET_currentNetwork', 0);
+      this.$store.dispatch('mod_workspace/SET_elementUnselect');
+      this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
+      this.$store.dispatch('mod_workspace/SET_openStatistics', false );
+      this.$store.dispatch('mod_workspace/SET_openTest', true);
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
