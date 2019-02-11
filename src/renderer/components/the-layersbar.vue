@@ -1,5 +1,5 @@
 <template lang="pug">
-  aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers}")
+  aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers, 'tutorial-active': leftToolBarActive}")
     ul.layersbar-list
       li.layer(
         v-for="(layer, i) in layersbarList"
@@ -142,6 +142,9 @@ export default {
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
+    leftToolBarActive() {
+      return this.$store.state.mod_tutorials.leftToolBarActive
+    }
   },
   methods: {
     toggleElList(index, ev) {
@@ -232,5 +235,12 @@ export default {
       padding-top: $indent;
     }
   }
-
+  
+  .tutorial-active {
+    position: relative;
+    z-index: 20;
+    button {
+      box-shadow: 0 0 110px #fff;
+    }
+  }
 </style>

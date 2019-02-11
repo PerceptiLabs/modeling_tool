@@ -168,6 +168,15 @@
   }
 }
 
+.btn--crash-course {
+  font-size: 1.5rem;
+  font-weight: 500;
+  background: $col-txt2;
+  padding: 0.7rem 2.5rem;
+  border: 1px solid $login-blue;
+  border-radius: 2rem;
+}
+
 //
 //.btn--social-login {
 //  @include multi-transition (color, background-color, border-color);
