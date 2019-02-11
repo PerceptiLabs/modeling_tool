@@ -40,7 +40,7 @@
 
 
   export default {
-    name: 'quantumnet',
+    name: 'TheApp',
     components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup },
     data() {
       return {
@@ -50,6 +50,7 @@
       }
     },
     mounted() {
+      this.calcAppPath();
       this.checkToken();
       this.checkUserID();
 
@@ -91,7 +92,6 @@
 
       ipcRenderer.send('appReady', this.userId);
       this.sendPathToAnalist('/');
-      this.calcAppPath();
     },
     computed: {
       platform() {
