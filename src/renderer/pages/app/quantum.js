@@ -6,6 +6,7 @@ import TheLayersbar from '@/components/the-layersbar.vue'
 import TheSidebar   from '@/components/the-sidebar.vue'
 import TheWorkspace from '@/components/workspace/the-workspace.vue'
 import TheInfoPopup from "@/components/global-popups/the-info-popup";
+import TheTutorial from "@/components/tutorial/the-tutorial";
 
 export default {
   name: 'pageQuantum',
@@ -14,7 +15,8 @@ export default {
     TheLayersbar,
     TheSidebar,
     TheWorkspace,
-    TheInfoPopup
+    TheInfoPopup,
+    TheTutorial
   },
   mounted() {
     this.addDragListener();

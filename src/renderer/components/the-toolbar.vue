@@ -1,5 +1,5 @@
 <template lang="pug">
-  aside.page_toolbar
+  aside.page_toolbar(:class="{'tutorial-active-run-button': tutorialRunButtonActive}")
     .toggle-wrap(:class="{'hide-layers': !hideLayers}")
       button.btn.btn--toolbar(type="button" @click="toggleLayers()")
         i.icon.icon-hide-top
@@ -54,8 +54,10 @@
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
           @click="onOffBtn()"
+          class="run-button"
         )
           i.icon.icon-on-off
+          span Run
       li
         button.btn.btn--toolbar(type="button"
           :class="{'active': statusNetworkCore === 'Paused'}"
@@ -98,7 +100,7 @@
         )
         span Layer Mode
         i.icon.icon-ellipse
-
+    .tutorial-background(v-if="tutorialRunButtonActive")
 </template>
 
 <script>
@@ -184,6 +186,9 @@ export default {
     },
     statisticsIsOpen() {
       return this.currentNetMeta.openStatistics
+    },
+    tutorialRunButtonActive() {
+      return this.$store.state.mod_tutorials.runButtonsActive
     }
   },
   methods: {
@@ -270,7 +275,7 @@ export default {
     align-items: center;
     padding: 5px .5em 5px 0;
     background-color: $bg-toolbar;
-
+    position: relative;
     grid-area: toolbar;
   }
   .toggle-wrap {
@@ -297,6 +302,17 @@ export default {
     border-left: 1px solid $toolbar-border;
     > li + li {
       margin-left: .3571rem;
+    }
+  }
+  .run-button {
+    background: $col-primary;
+    color: $col-txt2;
+    font-weight: 700;
+    width: auto;
+    font-size: 1.3rem;
+    padding: 0 .5rem;
+    span {
+      margin-left: 0.2rem;
     }
   }
   .toolbar_list-arrow-wrap {
@@ -348,4 +364,21 @@ export default {
       margin-left: 1rem;
     }
   }
+
+  // .tutorial-active-run-button {
+  //   z-index: 2;
+  //   .run-button {
+  //     box-shadow: 0 0 25px $white;
+  //     position: relative;
+  //     z-index: 20
+  //   }
+  // }
+  // .tutorial-background {
+  //   position: absolute;
+  //   top: 0;
+  //   left: 0;
+  //   width: 100%;
+  //   height: 100%;
+  //   background: rgba(35, 37, 42, 0.7);
+  // }
 </style>

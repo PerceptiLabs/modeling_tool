@@ -1,112 +1,119 @@
 <template lang="pug">
-  .tutorial-box
-    
+  .tutorial-box(v-if="true")
     .tutorial-box_modal-popup(
       v-for="(step, index) in firstTutorial" 
       key="index"
-      v-if="activeSlide === index"
+      v-if="activeStep === index"
     )
       .modal-popup_eyes
         .eyes.eye-one
           .eye_pupil(:class="step.lookEyesClass")
         .eyes.eye-two
           .eye_pupil(:class="step.lookEyesClass")
-      button.close-tutorial.i.icon.icon-empty
+      button.close-tutorial.i.icon.icon-appClose(@click="closeTutorial")
       .modal-popup_title {{step.title}}
       .modal-popup_info {{step.text}}
       .modal-popup_after-info
-        img(:src="step.img" alt="step image" v-if="step.img")
-        button.btn--crash-course(v-if="step.button") {{step.button}} 
+        img(
+          :src="step.img" 
+          alt="step image" 
+          v-if="step.img"
+        )
+        button.btn--crash-course(
+          v-if="step.button" 
+          @click="step.button.action"
+        ) {{step.button.text}} 
         
-      button.modal-popup_control.prev-button.i.icon.icon-player-play(@click="step.prevStepActive" v-show="activeSlide > 0")
-      button.modal-popup_control.next-button.i.icon.icon-player-play(@click="step.nextStepActive" v-show="activeSlide < firstTutorial.length - 1")
+      button.modal-popup_control.prev-button.i.icon.icon-player-play(
+        @click="set_stepActive('prev')" 
+        v-show="activeStep > 0"
+      )
+      button.modal-popup_control.next-button.i.icon.icon-player-play(
+        @click="set_stepActive('next')" 
+        v-show="activeStep < firstTutorial.length - 1"
+      )
       footer.modal-popup_footer
         button.footer_skip-button Skip intro
 
         ul.footer_all-slides-controls
           li.all-slides-controls_control(
             v-for="(control, index) in firstTutorial"
-            :class="{'active': activeSlide === index}"
-            @click="activeSlide = index"
+            :class="{'active': activeStep === index}"
+            @click="dot_stepActive(index)"
           )
 </template>
 <script>
 export default {
-  name: 'Tutorial',
+  name: 'TheTutorial',
   data() {
     return {
-      activeSlide: 0,
+      activeStep: 0,
       firstTutorial: [
         {
           title: 'What is AI?',
           text: 'AI refers to a machine or a software program that simulates human intelligence to accomplish a certain task (often in a narrow area).',
           img: './static/imgs/tutorial/tutorial-1_step-1-icon.svg',
-          lookEyesClass: 'look-bottom',
-          prevStepActive: ()=> {this.prevStep()},
-          nextStepActive: ()=> {this.nextStep()}
+          lookEyesClass: 'look-bottom'
         },
         {
           title: 'How does it work?',
           text: 'AI learns to respond to information in a certain way, depending on what you train it for. It uses historical data and algorithms to generate a model that is able to make decisions and/or predictions.',
           img: './static/imgs/tutorial/tutorial-1_step-2-icon.svg',
-          lookEyesClass: 'look-bottom',
-          prevStepActive: ()=> {this.prevStep()},
-          nextStepActive: ()=> {this.goToThreeStep()}
+          lookEyesClass: 'look-bottom'
         },
         {
           title: 'Where do I begin?',
           text: 'The left toolbar contains all the operations you need to build your AI model. Fret not - we’ve coded the backend for you! All you have to do is drop your desired operations onto this workspace.',
           img: './static/imgs/tutorial/tutorial-1_step-3-icon.svg',
-          lookEyesClass: 'look-left',
-          prevStepActive: ()=> {this.backToTwoStep()},
-          nextStepActive: ()=> {this.nextStep()}
+          lookEyesClass: 'look-left'
         },
         {
           title: 'Customise with PerceptiLabs',
           text: 'PerceptiLabs allows you to customise everything from building your model to managing your workflow. On the right, get an overview of your project, customize your profile settings, and import/ export your favourite models.',
           img: './static/imgs/tutorial/tutorial-1_step-4-icon.svg',
-          lookEyesClass: 'look-top-right',
-          prevStepActive: ()=> {this.prevStep()},
-          nextStepActive: ()=> {this.nextStep()}
+          lookEyesClass: 'look-top-right'
         },
         {
           title: 'Don’t forget to ‘Run’',
           text: 'When you are satisfied with the neural network you have built on this workspace, be sure to hit the ‘Run’ button above to generate your AI model.',
           img: './static/imgs/tutorial/tutorial-1_step-5-icon.svg',
-          lookEyesClass: 'look-top-left',
-          prevStepActive: ()=> {this.prevStep()},
-          nextStepActive: ()=> {this.nextStep()}
+          lookEyesClass: 'look-top-left'
         },
         {
           title: 'Build your first neural network!',
           text: 'Following this introduction is a step-by-step guide on how to build a simple neural network. It creates an AI model for image classification, which programmes the computer to recognise and classify simple images. ',
-          button: `Let's Try It`,
-          lookEyesClass: 'look-close',
-          prevStepActive: ()=> {this.prevStep()},
-          nextStepActive: ()=> {this.nextStep()}
+          button: {
+            text: `Let's Try It`,
+            action: ()=> {this.closeTutorial()}
+          },
+          lookEyesClass: 'look-close'
         }
       ]
     }
   },
+  computed: {
+    statusShowTutorial() {
+      return this.$store.state.mod_tutorials.showTutorial
+    }
+  },
   methods: {
-    nextStep() {
-      this.activeSlide++
+    closeTutorial() {
+      this.$store.commit('mod_tutorials/SET_showTutorial', false)
+      this.deactivateAllElements()
+      this.activeSlide = 0
     },
-    prevStep() {
-      this.activeSlide--
+    set_stepActive(way) {
+      way === 'next' ? this.activeStep++ : this.activeStep--
+      this.$store.commit('mod_tutorials/SET_activeStep', this.activeStep)
     },
-    goToThreeStep() {
-      this.nextStep();
-      this.$store.commit('mod_tutorials/SET_leftToolBarActive', true)
-    },
-    backToTwoStep() {
-      this.prevStep();
-      this.$store.commit('mod_tutorials/SET_leftToolBarActive', false);
+    dot_stepActive(index) {
+      this.activeStep = index;
+      this.$store.commit('mod_tutorials/SET_activeStep', this.activeStep)
     }
   }
 }
 </script>
-<style lang="scss" scoped>
+<style lang="scss">
   @import "../../scss/base";
   $distance-control-btn: -6rem;
   $popup-bg-gradient:linear-gradient(to top, #212328, #252931);
@@ -115,7 +122,6 @@ export default {
     position: fixed;
     top: 0;
     left: 0;
-    background: rgba(0, 0, 0, .5);
     width: 100%;
     height: 100%;
     z-index: 1;
@@ -126,20 +132,24 @@ export default {
   }
   .tutorial-box_modal-popup {
     border: 1px solid $col-primary;
-    border-radius: 5px;
+    border-radius: 1rem;
     padding: 6rem 3rem 2rem 3rem;
     position: relative;
     background: $popup-bg-gradient;
     width: 41rem;
+    min-height: 35rem;
 
     button.close-tutorial {
       color: $col-primary;
       position: absolute;
-      font-size: 2rem;
       top: .4rem;
       left: .4rem;
       padding: 0;
       background: none;
+      border: 1px solid $col-primary;
+      border-radius: 20rem;
+      font-size: 1.6rem;
+      padding: 0.1rem;
     }
   }
   .modal-popup_eyes {
@@ -171,6 +181,7 @@ export default {
     position: absolute;
     top: 0;
     left: 0;
+    transition: transform 1s;
     
     &.look-top {
       transform: translate(27%, 10%);
@@ -250,10 +261,11 @@ export default {
     background: none;
   }
   .footer_all-slides-controls {
-    margin: auto;
     display: flex;
-    width: 100%;
-    justify-content: center;
+    position: absolute;
+    left: 50%;
+    top: 95%;
+    transform: translate(-50%, 0);
   }
   .all-slides-controls_control {
     width:  .7rem;

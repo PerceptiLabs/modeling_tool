@@ -8,6 +8,7 @@
       v-if="infoText"
       :infoText="infoText"
     )
+    the-tutorial
 </template>
 
 <script src="./quantum.js"></script>

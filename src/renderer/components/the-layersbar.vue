@@ -1,6 +1,6 @@
 <template lang="pug">
-  aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers, 'tutorial-active': leftToolBarActive}")
-    ul.layersbar-list
+  aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers}")
+    ul.layersbar-list(:class="{'tutorial-active': activeStep === 2}")
       li.layer(
         v-for="(layer, i) in layersbarList"
         :key="i"
@@ -142,8 +142,8 @@ export default {
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
-    leftToolBarActive() {
-      return this.$store.state.mod_tutorials.leftToolBarActive
+    activeStep() {
+      return this.$store.state.mod_tutorials.activeStep
     }
   },
   methods: {
@@ -233,14 +233,6 @@ export default {
     }
     > li + li {
       padding-top: $indent;
-    }
-  }
-  
-  .tutorial-active {
-    position: relative;
-    z-index: 20;
-    button {
-      box-shadow: 0 0 110px #fff;
     }
   }
 </style>

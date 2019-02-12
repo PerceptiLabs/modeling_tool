@@ -1,5 +1,5 @@
 <template lang="pug">
-  aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar}")
+  aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar, 'tutorial-active-right-tool-bar': rightToolbarActive}")
     ul.sidebar_tabset
       li(v-for="(tab, i) in tabset"
         :key="i"
@@ -83,6 +83,9 @@ export default {
         return true
       }
       else return false
+    },
+    rightToolbarActive() {
+      return this.$store.state.mod_tutorials.rightToolBarActive
     }
   },
   methods: {
@@ -151,4 +154,9 @@ export default {
       font-size: 1.2rem;
     }
   }
+  .tutorial-active-right-tool-bar {
+    z-index: 20;
+    box-shadow: 0 0 85px $white;
+  }
+
 </style>
