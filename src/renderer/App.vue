@@ -90,8 +90,7 @@
       });
 
       ipcRenderer.send('appReady');
-      this.sendPathToAnalist('/');
-      this.$route
+      this.sendPathToAnalist(this.$route.fullPath);
     },
     computed: {
       platform() {
@@ -130,7 +129,7 @@
       openLoadDialog,
       loadNetwork,
       sendPathToAnalist(path) {
-        if(process.env.NODE_ENV !== 'production') {
+        if(process.env.NODE_ENV === 'production') {
           ipcRenderer.send('changeRoute', {path, id: this.userToken})
         }
       },
