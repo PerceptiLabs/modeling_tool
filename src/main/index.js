@@ -102,8 +102,10 @@ function createWindow () {
   /**
    * add custom menu
    */
-  const menuCustom = Menu.buildFromTemplate(mainMenu);
-  Menu.setApplicationMenu(menuCustom);
+  if(process.platform === 'darwin') {
+    const menuCustom = Menu.buildFromTemplate(mainMenu);
+    Menu.setApplicationMenu(menuCustom);
+  }
 
   /**
    * listeners for the renderer process
@@ -135,10 +137,9 @@ function createWindow () {
         : mainWindow.maximize()
     }
   });
-  ipcMain.on('appReady', (event, arg) => {
+  ipcMain.on('appReady', (event) => {
     mainWindow.checkForUpdates();
     mainWindow.webContents.send('getAppVersion', app.getVersion());
-    visitor = ua('UA-114940346-1', {uid: arg});
   });
   ipcMain.on('checkUpdate', (event, arg) => {
     mainWindow.checkForUpdates(arg);
@@ -158,7 +159,8 @@ function createWindow () {
    * google analytics
    */
   ipcMain.on('changeRoute', (event, arg) => {
-    visitor.pageview(arg).send();
+    visitor = ua('UA-114940346-1', {uid: arg.token});
+    visitor.pageview(arg.path).send();
   });
   /**
    * start auto update
@@ -227,7 +229,7 @@ app.on('activate', () => {
  */
 
 autoUpdater.on('checking-for-update', (info)=> {
-  console.log('Checking for update...');
+  //console.log('Checking for update...');
   mainWindow.webContents.send('info', {type: 'Checking for update...!', info});
 });
 autoUpdater.on('update-available', (info)=> {

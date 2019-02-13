@@ -28,7 +28,7 @@
 </template>
 
 <script>
-  import uuid           from 'uuid/v4';
+  //import uuid           from 'uuid/v4';
   import {ipcRenderer}  from 'electron'
 
   import {openLoadDialog, loadNetwork} from '@/core/helpers.js'
@@ -46,13 +46,12 @@
       return {
         percentProgress: 0,
         updateInfo: {},
-        userId: ''
       }
     },
     mounted() {
       this.calcAppPath();
       this.checkToken();
-      this.checkUserID();
+      //this.checkUserID();
 
       ipcRenderer.on('newNetwork', (event) => {
         this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
@@ -90,8 +89,9 @@
         this.$store.commit('globalView/SET_appVersion', data)
       });
 
-      ipcRenderer.send('appReady', this.userId);
+      ipcRenderer.send('appReady');
       this.sendPathToAnalist('/');
+      this.$route
     },
     computed: {
       platform() {
@@ -106,6 +106,9 @@
       showPopupUpdates() {
         return this.$store.state.globalView.showPopupUpdates
       },
+      userToken() {
+        return this.$store.state.globalView.userToken
+      }
     },
     watch: {
       eventLoadNetwork() {
@@ -127,8 +130,8 @@
       openLoadDialog,
       loadNetwork,
       sendPathToAnalist(path) {
-        if(process.env.NODE_ENV === 'production') {
-          ipcRenderer.send('changeRoute', path)
+        if(process.env.NODE_ENV !== 'production') {
+          ipcRenderer.send('changeRoute', {path, id: this.userToken})
         }
       },
       appClose() {
@@ -165,17 +168,18 @@
         }
         this.$store.commit('globalView/SET_appPath', path);
       },
-      checkUserID() {
-        let localUserID = localStorage.getItem('userId');
-        if(localUserID) {
-          this.userId = localUserID;
-        }
-        else {
-          this.userId = uuid();
-          localStorage.setItem('userId', this.userId)
-        }
-        this.$store.commit('globalView/SET_userID', this.userId);
-      },
+      //TODO DELETE ALL ACTION USER ID DONT USED
+      // checkUserID() {
+      //   let localUserID = localStorage.getItem('userId');
+      //   if(localUserID) {
+      //     this.userId = localUserID;
+      //   }
+      //   else {
+      //     this.userId = uuid();
+      //     localStorage.setItem('userId', this.userId)
+      //   }
+      //   this.$store.commit('globalView/SET_userID', this.userId);
+      // },
       checkToken() {
         let localUserToken = localStorage.getItem('userToken');
         if(localUserToken) {

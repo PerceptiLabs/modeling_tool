@@ -12,20 +12,20 @@
         :disabled="i > 2"
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
-      .statistics-box_row
+      .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
           chart-base(
             chartLabel="Input"
             :chartData="chartData.Prediction.Input"
             )
-      .statistics-box_row(v-if="!testIsOpen")
+      .statistics-box_row
         .statistics-box_col
           chart-base(
             chartLabel="Prediction vs Ground truth"
             :chartData="chartData.Prediction.PvG"
             :customColor="colorList"
           )
-        .statistics-box_col
+        .statistics-box_col(v-if="!testIsOpen")
           chart-base(
             chartLabel="Batch Average Prediction vs Ground truth"
             :chartData="chartData.Prediction.AveragePvG"
