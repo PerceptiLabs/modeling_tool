@@ -155,7 +155,7 @@ export default {
           submenu: [
             {label: 'Help',                                                 active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
             {label: 'About',                                                active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
-            {label: 'Tutorial mode',                enabled: this.menuSet,  active: ()=> {this.showTutorial}},
+            {label: 'Tutorial mode',                enabled: this.menuSet,  active: ()=> {this.showTutorial()}},
             {label: 'Check for updates',                                    active: ()=> {this.checkUpdate()}},
             {type: 'separator'},
           ]

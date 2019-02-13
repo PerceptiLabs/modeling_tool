@@ -1,5 +1,5 @@
 <template lang="pug">
-  aside.page_toolbar(:class="{'tutorial-active-run-button': tutorialRunButtonActive}")
+  aside.page_toolbar
     .toggle-wrap(:class="{'hide-layers': !hideLayers}")
       button.btn.btn--toolbar(type="button" @click="toggleLayers()")
         i.icon.icon-hide-top
@@ -48,7 +48,7 @@
         )
           i.icon.icon-step-next
     ul.toolbar_list
-      li
+      li(:class="{'tutorial-active': activeStep === 4}")
         button.btn.btn--toolbar(type="button"
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
@@ -100,7 +100,6 @@
         )
         span Layer Mode
         i.icon.icon-ellipse
-    .tutorial-background(v-if="tutorialRunButtonActive")
 </template>
 
 <script>
@@ -189,6 +188,9 @@ export default {
     },
     tutorialRunButtonActive() {
       return this.$store.state.mod_tutorials.runButtonsActive
+    },
+    activeStep() {
+      return this.$store.state.mod_tutorials.activeStep
     }
   },
   methods: {
@@ -270,7 +272,7 @@ export default {
 <style lang="scss" scoped>
   @import "../scss/base";
   .page_toolbar {
-    z-index: 1;
+    //z-index: 1;
     display: flex;
     align-items: center;
     padding: 5px .5em 5px 0;
@@ -364,21 +366,4 @@ export default {
       margin-left: 1rem;
     }
   }
-
-  // .tutorial-active-run-button {
-  //   z-index: 2;
-  //   .run-button {
-  //     box-shadow: 0 0 25px $white;
-  //     position: relative;
-  //     z-index: 20
-  //   }
-  // }
-  // .tutorial-background {
-  //   position: absolute;
-  //   top: 0;
-  //   left: 0;
-  //   width: 100%;
-  //   height: 100%;
-  //   background: rgba(35, 37, 42, 0.7);
-  // }
 </style>

@@ -2,11 +2,8 @@ const namespaced = true;
 
 const state = {
   showTutorial: false,
-  leftToolBarActive: false,
-  rightToolBarActive: false,
-  runButtonsActive: false,
   activeStep: 0,
-  firstTimeApp: localStorage.showFirstAppTutorial || true
+  firstTimeApp: localStorage.showFirstAppTutorial ? false : true
 };
 
 const mutations = {
@@ -26,11 +23,13 @@ const mutations = {
     state.activeStep = value;
   },
   SET_showTutorial(state, value) {
+    
     state.showTutorial = value;
   },
   SET_firstTimeApp(state, value) {
-    localStorage.showFirstAppTutorial = true;
+    localStorage.showFirstAppTutorial = value;
     state.showTutorial = value;
+    state.firstTimeApp = value;
   }
 };
 

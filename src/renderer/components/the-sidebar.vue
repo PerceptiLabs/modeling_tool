@@ -1,5 +1,5 @@
 <template lang="pug">
-  aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar, 'tutorial-active-right-tool-bar': rightToolbarActive}")
+  aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar, 'tutorial-active': activeStep === 3}")
     ul.sidebar_tabset
       li(v-for="(tab, i) in tabset"
         :key="i"
@@ -84,8 +84,8 @@ export default {
       }
       else return false
     },
-    rightToolbarActive() {
-      return this.$store.state.mod_tutorials.rightToolBarActive
+    activeStep() {
+      return this.$store.state.mod_tutorials.activeStep
     }
   },
   methods: {
@@ -136,7 +136,7 @@ export default {
     display: flex;
     flex: 1 1 100%;
     flex-direction: column;
-    width: $w-sidebar;;
+    width: $w-sidebar;
     > * {
       width: 100%;
     }
@@ -153,10 +153,6 @@ export default {
     p {
       font-size: 1.2rem;
     }
-  }
-  .tutorial-active-right-tool-bar {
-    z-index: 20;
-    box-shadow: 0 0 85px $white;
   }
 
 </style>

@@ -1,5 +1,5 @@
 <template lang="pug">
-  .tutorial-box(v-if="true")
+  .tutorial-box(v-if="statusShowTutorial || isFirstTimetApp")
     .tutorial-box_modal-popup(
       v-for="(step, index) in firstTutorial" 
       key="index"
@@ -33,7 +33,7 @@
         v-show="activeStep < firstTutorial.length - 1"
       )
       footer.modal-popup_footer
-        button.footer_skip-button Skip intro
+        button.footer_skip-button(@click="skipTutorial") Skip intro
 
         ul.footer_all-slides-controls
           li.all-slides-controls_control(
@@ -94,13 +94,16 @@ export default {
   computed: {
     statusShowTutorial() {
       return this.$store.state.mod_tutorials.showTutorial
+    },
+    isFirstTimetApp() {
+      return this.$store.state.mod_tutorials.firstTimeApp
     }
   },
   methods: {
     closeTutorial() {
+      this.activeStep = 0;
+      this.$store.commit('mod_tutorials/SET_activeStep', this.activeStep)
       this.$store.commit('mod_tutorials/SET_showTutorial', false)
-      this.deactivateAllElements()
-      this.activeSlide = 0
     },
     set_stepActive(way) {
       way === 'next' ? this.activeStep++ : this.activeStep--
@@ -109,6 +112,10 @@ export default {
     dot_stepActive(index) {
       this.activeStep = index;
       this.$store.commit('mod_tutorials/SET_activeStep', this.activeStep)
+    },
+    skipTutorial() {
+      this.closeTutorial()
+      this.$store.commit('mod_tutorials/SET_firstTimeApp', false)
     }
   }
 }
@@ -138,6 +145,7 @@ export default {
     background: $popup-bg-gradient;
     width: 41rem;
     min-height: 35rem;
+    margin-right: $w-sidebar - 10rem;
 
     button.close-tutorial {
       color: $col-primary;
