@@ -12,24 +12,24 @@
         :disabled="i > 2"
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
-      .statistics-box_row
+      .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
           chart-base(
             chartLabel="Input"
             :chartData="chartData.Prediction.Input"
             )
-      .statistics-box_row(v-if="!testIsOpen")
+      .statistics-box_row
         .statistics-box_col
           chart-base(
-          chartLabel="Prediction vs Ground truth"
-          :chartData="chartData.Prediction.PvG"
-          :customColor="colorList"
+            chartLabel="Prediction vs Ground truth"
+            :chartData="chartData.Prediction.PvG"
+            :customColor="colorList"
           )
-        .statistics-box_col
+        .statistics-box_col(v-if="!testIsOpen")
           chart-base(
-          chartLabel="Batch Average Prediction vs Ground truth"
-          :chartData="chartData.Prediction.AveragePvG"
-          :customColor="colorList"
+            chartLabel="Batch Average Prediction vs Ground truth"
+            :chartData="chartData.Prediction.AveragePvG"
+            :customColor="colorList"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
       chart-base(
@@ -40,6 +40,7 @@
       chart-base(
         chartLabel="Accuracy over all epochs"
         :chartData="chartData.Accuracy.Total"
+        :customColor="colorListAccuracy"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-base(
@@ -50,7 +51,8 @@
       chart-base(
         chartLabel="Loss over all epochs"
         :chartData="chartData.Loss.Total"
-        )
+        :customColor="colorListAccuracy"
+      )
     //.statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
       chart-base(
       chartLabel="F1 during one epoch"
@@ -99,15 +101,10 @@
           }},
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
-        colorList: ['#FECF73', '#6B8FF7'],
+        colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
 
       }
-    },
-    computed: {
-      testIsOpen() {
-        return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
-      },
     },
     methods: {
       setTab(name) {

@@ -82,7 +82,7 @@
       grid-template-rows: auto 1fr 1fr;
       grid-template-columns: 1fr 1fr;
       grid-template-areas:  'the-testing   the-testing'
-                            'the-statistics   view-box'
+                            'view-box   the-statistics'
                             'network-field  network-field';
     }
     .the-statistics {

@@ -120,8 +120,8 @@ export default {
           this.$router.replace('/login');
         }
         else {
-          console.log(error);
-          alert(error.Message);
+          this.$store.commit('mod_login/SET_showLoader', false);
+          alert("Bed request, please try again");
         }
       })
     }

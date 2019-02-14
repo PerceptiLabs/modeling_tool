@@ -18,6 +18,12 @@ npm run build
 # lint all JS/Vue component files in `src/`
 npm run lint
 
+# clone project
+git clone --depth=1 https://redmine-git.webssa.com/git/quantumnet
+git remote set-branches origin '*'
+git fetch -v
+git checkout BRACH //dev, master, beta-testing, web
+
 ```
 
 ---

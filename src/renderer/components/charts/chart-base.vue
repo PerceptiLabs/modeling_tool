@@ -7,8 +7,9 @@
         h5.ellipsis {{ chartLabel }}
       .chart-head_meta
         button.btn.btn--link(type="button"
-        :class="{'text-primary': fullView}"
-        @click="toggleFullView")
+          :class="{'text-primary': fullView}"
+          @click="toggleFullView"
+        )
           i.icon.icon-full-screen-graph
     .base-chart_main
       v-chart(
@@ -45,6 +46,16 @@
           return []
         }
       },
+    },
+    mounted() {
+      this.applyCustomColor();
+      this.createWWorker();
+      this.$refs.chart.showLoading(chartSpinner)
+    },
+    beforeDestroy() {
+      this.wWorker.postMessage('close');
+      this.wWorker.removeEventListener('message', this.drawChart, false);
+      this.$refs.chart.dispose();
     },
     data() {
       return {
@@ -102,16 +113,6 @@
         this.chartModel = ev.data;
         this.$refs.chart.hideLoading()
       }
-    },
-    mounted() {
-      this.applyCustomColor();
-      this.createWWorker();
-      this.$refs.chart.showLoading(chartSpinner)
-    },
-    beforeDestroy() {
-      this.wWorker.postMessage('close');
-      this.wWorker.removeEventListener('message', this.drawChart, false);
-      this.$refs.chart.dispose();
     },
   }
 </script>

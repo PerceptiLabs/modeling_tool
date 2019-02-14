@@ -76,6 +76,9 @@ export default {
     statisticsIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
     },
+    testingIsOpen() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+    },
     isTraining() {
       return this.$store.getters['mod_workspace/GET_networkIsTraining']
     },
@@ -104,7 +107,7 @@ export default {
       if (this.isLock) {
         return
       }
-      else if (this.statisticsIsOpen) {
+      else if (this.statisticsIsOpen || this.testingIsOpen) {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
     },

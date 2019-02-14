@@ -88,7 +88,10 @@ export default {
           }
           this.loginUser()
         }
-        else this.$store.commit('mod_login/SET_showLoader', false);
+        else {
+          this.$store.commit('mod_login/SET_showLoader', false);
+          alert("Bed request, please try again");
+        }
       })
     },
 
