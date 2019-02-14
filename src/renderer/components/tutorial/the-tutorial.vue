@@ -4,7 +4,7 @@
       button.close-tutorial.i.icon.icon-appClose(@click="closeTutorial")
       .modal-popup_step-info(
         v-for="(step, index) in firstTutorial" 
-        key="index"
+        :key="index"
         v-if="activeStep === index"
         )
         .step-info_eyes
@@ -146,7 +146,8 @@ export default {
     background: $popup-bg-gradient;
     width: 41rem;
     min-height: 35rem;
-    margin-right: $w-sidebar - 10rem;
+    margin-right: $w-sidebar;
+    margin-left: $w-layersbar;
 
     button.close-tutorial {
       color: $col-primary;
@@ -159,6 +160,7 @@ export default {
       border-radius: 20rem;
       font-size: 1.6rem;
       padding: 0.1rem;
+      z-index: 1;
     }
   }
   .step-info_eyes {
