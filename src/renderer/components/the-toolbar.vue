@@ -315,6 +315,7 @@ export default {
     padding: 0 .5rem;
     span {
       margin-left: 0.2rem;
+      font-size: 1.2rem;
     }
   }
   .toolbar_list-arrow-wrap {

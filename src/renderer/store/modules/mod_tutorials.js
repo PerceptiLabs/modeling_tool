@@ -23,8 +23,8 @@ const mutations = {
     state.activeStep = value;
   },
   SET_showTutorial(state, value) {
-    
     state.showTutorial = value;
+    state.firstTimeApp = value;
   },
   SET_firstTimeApp(state, value) {
     localStorage.showFirstAppTutorial = value;

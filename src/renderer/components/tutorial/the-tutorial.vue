@@ -1,28 +1,29 @@
 <template lang="pug">
   .tutorial-box(v-if="statusShowTutorial || isFirstTimetApp")
-    .tutorial-box_modal-popup(
-      v-for="(step, index) in firstTutorial" 
-      key="index"
-      v-if="activeStep === index"
-    )
-      .modal-popup_eyes
-        .eyes.eye-one
-          .eye_pupil(:class="step.lookEyesClass")
-        .eyes.eye-two
-          .eye_pupil(:class="step.lookEyesClass")
+    .tutorial-box_modal-popup
       button.close-tutorial.i.icon.icon-appClose(@click="closeTutorial")
-      .modal-popup_title {{step.title}}
-      .modal-popup_info {{step.text}}
-      .modal-popup_after-info
-        img(
-          :src="step.img" 
-          alt="step image" 
-          v-if="step.img"
+      .modal-popup_step-info(
+        v-for="(step, index) in firstTutorial" 
+        key="index"
+        v-if="activeStep === index"
         )
-        button.btn--crash-course(
-          v-if="step.button" 
-          @click="step.button.action"
-        ) {{step.button.text}} 
+        .step-info_eyes
+          .eyes.eye-one
+            .eye_pupil(:class="step.lookEyesClass")
+          .eyes.eye-two
+            .eye_pupil(:class="step.lookEyesClass")
+        .step-info_title {{step.title}}
+        .step-info_text {{step.text}}
+        .step-info_after-text
+          img(
+            :src="step.img" 
+            alt="step image" 
+            v-if="step.img"
+          )
+          button.btn--crash-course(
+            v-if="step.button" 
+            @click="step.button.action"
+          ) {{step.button.text}} 
         
       button.modal-popup_control.prev-button.i.icon.icon-player-play(
         @click="set_stepActive('prev')" 
@@ -160,7 +161,7 @@ export default {
       padding: 0.1rem;
     }
   }
-  .modal-popup_eyes {
+  .step-info_eyes {
     display: flex;
     justify-content: center;
     position: absolute;
@@ -223,15 +224,17 @@ export default {
       background: none;
     }
   }
-  .modal-popup_title {
+  .step-info_title {
     text-align: center;
     font-size: 2rem;
     margin-bottom: 2rem;
   }
-  .modal-popup_info {
+  .modal-popup_step-info {
     font-size: 1.4rem;
-    margin-bottom: 2rem;
     line-height: 1.6rem;
+  }
+  .step-info_text {
+    margin-bottom: 2rem;
   }
   .modal-popup_control {
     position: absolute;
@@ -252,7 +255,7 @@ export default {
       right: -6rem;
     }
   }
-  .modal-popup_after-info {
+  .step-info_after-text {
     text-align: center;
   }
   .modal-popup_footer {
