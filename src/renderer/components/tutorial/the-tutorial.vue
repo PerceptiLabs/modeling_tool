@@ -53,31 +53,31 @@ export default {
         {
           title: 'What is AI?',
           text: 'AI refers to a machine or a software program that simulates human intelligence to accomplish a certain task (often in a narrow area).',
-          img: './static/imgs/tutorial/tutorial-1_step-1-icon.svg',
+          img: './static/img/tutorial/tutorial-1_step-1-icon.svg',
           lookEyesClass: 'look-bottom'
         },
         {
           title: 'How does it work?',
           text: 'AI learns to respond to information in a certain way, depending on what you train it for. It uses historical data and algorithms to generate a model that is able to make decisions and/or predictions.',
-          img: './static/imgs/tutorial/tutorial-1_step-2-icon.svg',
+          img: './static/img/tutorial/tutorial-1_step-2-icon.svg',
           lookEyesClass: 'look-bottom'
         },
         {
           title: 'Where do I begin?',
           text: 'The left toolbar contains all the operations you need to build your AI model. Fret not - we’ve coded the backend for you! All you have to do is drop your desired operations onto this workspace.',
-          img: './static/imgs/tutorial/tutorial-1_step-3-icon.svg',
+          img: './static/img/tutorial/tutorial-1_step-3-icon.svg',
           lookEyesClass: 'look-left'
         },
         {
           title: 'Customise with PerceptiLabs',
           text: 'PerceptiLabs allows you to customise everything from building your model to managing your workflow. On the right, get an overview of your project, customize your profile settings, and import/ export your favourite models.',
-          img: './static/imgs/tutorial/tutorial-1_step-4-icon.svg',
+          img: './static/img/tutorial/tutorial-1_step-4-icon.svg',
           lookEyesClass: 'look-top-right'
         },
         {
           title: 'Don’t forget to ‘Run’',
           text: 'When you are satisfied with the neural network you have built on this workspace, be sure to hit the ‘Run’ button above to generate your AI model.',
-          img: './static/imgs/tutorial/tutorial-1_step-5-icon.svg',
+          img: './static/img/tutorial/tutorial-1_step-5-icon.svg',
           lookEyesClass: 'look-top-left'
         },
         {

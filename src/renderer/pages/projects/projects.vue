@@ -30,17 +30,17 @@
         basicTemplates: [
           {
             title: 'Image Classification',
-            imgPath: './static/imgs/imageClassification.svg',
+            imgPath: './static/img/imageClassification.svg',
             template: basicTemplate1
           },
           {
             title: 'Timeseries Regression',
-            imgPath: './static/imgs/timeSeriesRegression.svg',
+            imgPath: './static/img/timeSeriesRegression.svg',
             template: basicTemplate1
           },
           {
             title: 'Reinforcement Learning',
-            imgPath: './static/imgs/reinforcementLearning.svg',
+            imgPath: './static/img/reinforcementLearning.svg',
             template: basicTemplate1
           },
         ]

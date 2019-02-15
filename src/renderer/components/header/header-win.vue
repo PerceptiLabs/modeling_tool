@@ -1,7 +1,7 @@
 <template lang="pug">
   .app-header
     .app-header_logo
-      img(src="~@/assets/logo_small_dark.svg" alt="percepti labs logo")
+      img(src="./../../../../static/img/logo_small_dark.svg" alt="percepti labs logo")
     the-menu
     ul.app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-appMinimaze
