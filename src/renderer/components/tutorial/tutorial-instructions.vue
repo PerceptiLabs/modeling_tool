@@ -160,6 +160,11 @@ export default {
     }
     &.list_subtitle {
       padding: $title-padding;
+      &:before {
+        content: "\e901";
+        font-family: "icomoon";
+        speak: none;
+      }
     }
     p {
       margin-bottom: 0.3rem;
