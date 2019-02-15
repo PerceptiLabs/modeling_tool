@@ -18,11 +18,19 @@ export default {
     TheInfoPopup,
     TheTutorial
   },
+  created() {
+    if(this.currentNetwork[0] === "empty app") {
+      this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+    }
+  },
   mounted() {
-    this.addDragListener();
+    this.showPage = true;
+    this.$store.dispatch('mod_api/API_runServer');
+    this.$nextTick(()=> this.addDragListener())
   },
   data() {
     return {
+      showPage: false,
       dragMeta: {
         dragged: null,
         //outClassName: 'network-field'
@@ -41,7 +49,9 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetwork']
     },
     networkMode() {
-      return this.currentNetwork.networkMeta.netMode
+      return this.currentNetwork.networkMeta
+        ? this.currentNetwork.networkMeta.netMode
+        : 'edit'
     },
   },
 
