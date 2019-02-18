@@ -3,42 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/icomoon/icomoon.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/icomoon/selection.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-black-webfont.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-black-webfont.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-bold-webfont.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-bold-webfont.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-italic-webfont.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-italic-webfont.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-light-webfont.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-light-webfont.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-medium-webfont.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-medium-webfont.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-regular-webfont.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-regular-webfont.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-thin-webfont.woff" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/fonts/roboto/roboto-thin-webfont.woff2" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/logo_small_dark.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/assets/percepti-labs-logo.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/header/header-win.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/header/header-win.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/tutorial/the-tutorial.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/tutorial/the-tutorial.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/policy/policy.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/policy/policy.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/projects/projects.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/projects/projects.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/projects/sidebar/sidebar.pug" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/projects/sidebar/sidebar.pug" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/register/register.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/register/register.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/_common.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/_common.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/fonts/_roboto.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/fonts/_roboto.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/imgs/imageClassification.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/imgs/reinforcementLearning.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/imgs/timeSeriesRegression.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/imgs/tutorial/tutorial-1_step-1-icon.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/imgs/tutorial/tutorial-1_step-2-icon.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/imgs/tutorial/tutorial-1_step-3-icon.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/imgs/tutorial/tutorial-1_step-4-icon.svg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/imgs/tutorial/tutorial-1_step-5-icon.svg" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/scss/components/_charts.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/components/_charts.scss" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -52,37 +19,37 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/pages/register/register.vue">
+        <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="66">
-              <caret line="3" column="39" selection-start-line="3" selection-start-column="39" selection-end-line="3" selection-end-column="39" />
+            <state relative-caret-position="794">
+              <caret line="223" column="4" selection-start-line="223" selection-start-column="4" selection-end-line="223" selection-end-column="4" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/header/header-win.vue">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="66">
-              <caret line="3" column="26" lean-forward="true" selection-start-line="3" selection-start-column="26" selection-end-line="3" selection-end-column="26" />
+            <state relative-caret-position="1958">
+              <caret line="89" column="17" selection-start-line="89" selection-start-column="17" selection-end-line="89" selection-end-column="17" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/renderer/scss/_common.scss">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="198">
-              <caret line="9" column="24" selection-start-line="9" selection-start-column="24" selection-end-line="9" selection-end-column="24" />
+            <state relative-caret-position="-308">
+              <caret line="16" column="8" selection-start-line="16" selection-start-column="8" selection-end-line="16" selection-end-column="8" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/pages/policy/policy.vue">
+        <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_charts.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="66">
-              <caret line="3" column="15" lean-forward="true" selection-start-line="3" selection-start-column="15" selection-end-line="3" selection-end-column="15" />
+            <state relative-caret-position="924">
+              <caret line="42" column="30" selection-start-line="42" selection-start-column="30" selection-end-line="42" selection-end-column="30" />
             </state>
           </provider>
         </entry>
@@ -91,7 +58,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>backgroundUpdate</find>
       <find>rootGetters</find>
       <find>resourcesPath</find>
       <find>this.$store.getters</find>
@@ -121,6 +87,7 @@
       <find>imgs</find>
       <find>format('woff')</find>
       <find>.svg</find>
+      <find>this.$nextTick</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -134,14 +101,11 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-reinforce/viewBox-train-reinforce.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/base/checkbox.vue" />
         <option value="$PROJECT_DIR$/src/renderer/pages/projects/recent-files/_recent-files.scss" />
         <option value="$PROJECT_DIR$/../teraning model/progects.json" />
         <option value="$PROJECT_DIR$/src/renderer/core/constants.js" />
         <option value="$PROJECT_DIR$/src/renderer/pages/projects/recent-files/recent-files.pug" />
         <option value="$PROJECT_DIR$/src/renderer/core/basic-template/base-template-1.js" />
-        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/header/header-mac.vue" />
         <option value="$PROJECT_DIR$/src/renderer/pages/projects/basic-templates/basic-templates.pug" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-environment/view-data-environment.vue" />
@@ -157,7 +121,6 @@
         <option value="$PROJECT_DIR$/src/renderer/scss/common/_popups.scss" />
         <option value="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-progress.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" />
         <option value="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/viewBox-deep-learning-fc.vue" />
@@ -185,12 +148,16 @@
         <option value="$PROJECT_DIR$/src/renderer/pages/register/register.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/header/header-win.vue" />
         <option value="$PROJECT_DIR$/src/renderer/scss/_common.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" />
+        <option value="$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/scss/components/_charts.scss" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-8" />
-    <option name="y" value="-8" />
+    <option name="x" value="-21" />
+    <option name="y" value="-6" />
     <option name="width" value="1936" />
     <option name="height" value="1056" />
   </component>
@@ -225,7 +192,30 @@
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="charts" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="scss" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="scss" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
           </expand>
           <select />
@@ -408,11 +398,12 @@
       <workItem from="1549049737259" duration="92000" />
       <workItem from="1549265965335" duration="8032000" />
       <workItem from="1549549839340" duration="251000" />
+      <workItem from="1550481043938" duration="5870000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="189909000" />
+    <option name="totallyTimeSpent" value="200265000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -539,23 +530,6 @@
     </option>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/renderer/pages/projects/recent-files/recent-files.pug">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="19" column="52" selection-start-line="19" selection-start-column="52" selection-end-line="19" selection-end-column="52" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/helpers.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="32" column="5" lean-forward="true" selection-start-line="32" selection-start-column="5" selection-end-line="32" selection-end-column="5" />
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package-lock.json">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="265">
@@ -676,13 +650,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="728">
-          <caret line="223" column="4" selection-start-line="223" selection-start-column="4" selection-end-line="223" selection-end-column="4" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/main.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-350">
@@ -715,13 +682,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="310">
           <caret line="52" column="26" selection-start-line="43" selection-start-column="7" selection-end-line="58" selection-end-column="9" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="946">
-          <caret line="85" column="19" selection-start-line="85" selection-start-column="19" selection-end-line="85" selection-end-column="19" />
         </state>
       </provider>
     </entry>
@@ -870,13 +830,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/pages/policy/policy.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="66">
-          <caret line="3" column="15" lean-forward="true" selection-start-line="3" selection-start-column="15" selection-end-line="3" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/pages/register/register.vue">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="66">
@@ -893,8 +846,43 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/scss/_common.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="9" column="24" selection-start-line="9" selection-start-column="24" selection-end-line="9" selection-end-column="24" />
+        <state relative-caret-position="726">
+          <caret line="33" lean-forward="true" selection-start-line="33" selection-end-line="33" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/pages/policy/policy.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="3" column="15" lean-forward="true" selection-start-line="3" selection-start-column="15" selection-end-line="3" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="794">
+          <caret line="223" column="4" selection-start-line="223" selection-start-column="4" selection-end-line="223" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_charts.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="924">
+          <caret line="42" column="30" selection-start-line="42" selection-start-column="30" selection-end-line="42" selection-end-column="30" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1958">
+          <caret line="89" column="17" selection-start-line="89" selection-start-column="17" selection-end-line="89" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-308">
+          <caret line="16" column="8" selection-start-line="16" selection-start-column="8" selection-end-line="16" selection-end-column="8" />
         </state>
       </provider>
     </entry>

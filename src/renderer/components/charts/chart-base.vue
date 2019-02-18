@@ -98,7 +98,8 @@
     },
     methods: {
       toggleFullView() {
-        this.fullView = !this.fullView
+        this.fullView = !this.fullView;
+        this.$nextTick(()=>this.$refs.chart.resize());
       },
       applyCustomColor() {
         if (this.customColor.length) {

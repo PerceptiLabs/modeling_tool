@@ -60,10 +60,10 @@ export default {
       canvas.setAttribute('width', imgW);
       canvas.setAttribute('height', imgH);
       if(imgH/imgW >= 1) {
-        this.$refs.canvas.style.minHeight = '100%';
+        //this.$refs.canvas.style.minHeight = '100%';
       }
       else {
-        this.$refs.canvas.style.width = '100%';
+        //this.$refs.canvas.style.width = '100%';
       }
       let imgData = canvas2d.createImageData(imgW, imgH);
       img.data.forEach((el, index) => imgData.data[index] = el);
@@ -83,5 +83,10 @@ export default {
     align-items: center;
     justify-content: center;
     background-color: $bg-workspace;
+  }
+  .chart-img {
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
   }
 </style>
