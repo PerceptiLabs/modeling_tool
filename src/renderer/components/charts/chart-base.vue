@@ -1,7 +1,8 @@
 <template lang="pug">
   .base-chart(
-  ref="baseChart"
-  :class="{'full-view': fullView}")
+    ref="baseChart"
+    :class="{'full-view': fullView}"
+    )
     .base-chart_head(v-if="!headerOff")
       .chart-head_title
         h5.ellipsis {{ chartLabel }}
@@ -50,12 +51,14 @@
     mounted() {
       this.applyCustomColor();
       this.createWWorker();
-      this.$refs.chart.showLoading(chartSpinner)
+      this.$refs.chart.showLoading(chartSpinner);
+      window.addEventListener("resize", ()=> { this.$refs.chart.resize()}, false);
     },
     beforeDestroy() {
       this.wWorker.postMessage('close');
       this.wWorker.removeEventListener('message', this.drawChart, false);
       this.$refs.chart.dispose();
+      window.removeEventListener("resize", ()=> { this.$refs.chart.resize()}, false);
     },
     data() {
       return {

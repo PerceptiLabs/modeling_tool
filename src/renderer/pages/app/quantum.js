@@ -25,7 +25,6 @@ export default {
   },
   mounted() {
     this.showPage = true;
-    this.$store.dispatch('mod_api/API_runServer');
     this.$nextTick(()=> this.addDragListener())
   },
   data() {
