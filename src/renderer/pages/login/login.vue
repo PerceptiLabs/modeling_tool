@@ -1,7 +1,7 @@
 <template lang="pug">
   main.page_login
     .login_logo
-      //img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
+      img(src="./../../../../static/img/percepti-labs-logo.svg" alt="percepti labs logo")
     view-loading
     .login_main
       h1 Log In please

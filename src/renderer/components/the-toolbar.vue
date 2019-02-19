@@ -57,7 +57,7 @@
           class="run-button"
         )
           i.icon.icon-on-off
-          span(v-html="statusStartBtn['bg-error'] ? 'Stop' : 'Run'")
+          span(v-html="statusNetworkCore === 'Training' || statusNetworkCore == 'Paused' ? 'Stop' : 'Run'")
       li
         button.btn.btn--toolbar(type="button"
           :class="{'active': statusNetworkCore === 'Paused'}"

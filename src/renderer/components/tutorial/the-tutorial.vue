@@ -13,7 +13,7 @@
           .eyes.eye-two
             .eye_pupil(:class="step.lookEyesClass")
         .step-info_title {{step.title}}
-        .step-info_text {{step.text}}
+        p.step-info_text(v-html="step.text")
         .step-info_after-text
           img(
             :src="step.img" 
@@ -82,7 +82,7 @@ export default {
         },
         {
           title: 'Now you know the basics of the program. Feel free to start building your first AI!',
-          text: 'Remember, this is a Beta version, if you find any errors or have any suggestions, please let us know on contact@perceptilabs.com Any feedback is highly appreciated!',
+          text: 'Remember, this is a Beta version, if you find any errors or have any suggestions, please let us know on contact@perceptilabs.com. <br>Any feedback is highly appreciated!',
           button: {
             text: `Let's Try It`,
             action: ()=> {this.closeTutorial()}
