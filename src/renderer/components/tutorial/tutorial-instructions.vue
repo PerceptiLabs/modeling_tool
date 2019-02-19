@@ -22,18 +22,6 @@
           :key="index"
           :class="instruction.class_style"
         )
-      //- ul.list-area_list
-      //-   .list-element.list_title Step 1. Import your data
-      //-   .list-element.list_subtitle  
-      //-     |In the 
-      //-     .marker Operations Toolbar 
-      //-     | go to 
-      //-     .marker Data 
-      //-     | > Select and drop 
-      //-     .marker Data 
-      //-     | to workspace > Load dataset
-      //-   .list-element For this tutorial we will use the MNIST dataset
-      //-   .list-element Every input image has been flattened out to a 784x1 array
       footer.list-area_footer
         button.footer_all-tutorials-btn
           i.icon.icon-shevron-right
