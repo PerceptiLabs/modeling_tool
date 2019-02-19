@@ -49,7 +49,7 @@
           i.icon.icon-step-next
     ul.toolbar_list
       li(:class="{'tutorial-active': activeStep === 4}")
-        button.btn.btn--toolbar(type="button"
+        button.btn.btn--toolbar.bg-primary(type="button"
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
@@ -57,7 +57,7 @@
           class="run-button"
         )
           i.icon.icon-on-off
-          span Run
+          span(v-html="statusStartBtn['bg-error'] ? 'Stop' : 'Run'")
       li
         button.btn.btn--toolbar(type="button"
           :class="{'active': statusNetworkCore === 'Paused'}"
@@ -132,9 +132,9 @@ export default {
   computed: {
     statusStartBtn() {
       return {
-        'text-error':   this.statusNetworkCore == 'Training' || this.statusNetworkCore == 'Validation',
-        'text-warning': this.statusNetworkCore == 'Paused',
-        'text-success': this.statusNetworkCore == 'Finished',
+        'bg-error':   this.statusNetworkCore == 'Training' || this.statusNetworkCore == 'Validation',
+        'bg-warning': this.statusNetworkCore == 'Paused',
+        'bg-success': this.statusNetworkCore == 'Finished',
       }
     },
     statusTrainingText() {
@@ -144,7 +144,7 @@ export default {
           return '<i class="icon icon-repeat animation-loader"></i> Training';
           break;
         case 'Paused':
-          return 'Training pause';
+          return 'Training paused';
           break;
         case 'Finished':
           return 'Training completed';
@@ -307,12 +307,14 @@ export default {
     }
   }
   .run-button {
-    background: $col-primary;
     color: $col-txt2;
     font-weight: 700;
     width: auto;
     font-size: 1.3rem;
     padding: 0 .5rem;
+    &:hover {
+      color: $col-primary;
+    }
     span {
       margin-left: 0.2rem;
       font-size: 1.2rem;

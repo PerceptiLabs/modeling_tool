@@ -81,8 +81,8 @@ export default {
           lookEyesClass: 'look-top-left'
         },
         {
-          title: 'Build your first neural network!',
-          text: 'Following this introduction is a step-by-step guide on how to build a simple neural network. It creates an AI model for image classification, which programmes the computer to recognise and classify simple images. ',
+          title: 'Now you know the basics of the program. Feel free to start building your first AI!',
+          text: 'Remember, this is a Beta version, if you find any errors or have any suggestions, please let us know on contact@perceptilabs.com Any feedback is highly appreciated!',
           button: {
             text: `Let's Try It`,
             action: ()=> {this.closeTutorial()}
@@ -233,7 +233,6 @@ export default {
   }
   .modal-popup_step-info {
     font-size: 1.4rem;
-    line-height: 1.6rem;
   }
   .step-info_text {
     margin-bottom: 2rem;

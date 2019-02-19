@@ -162,7 +162,18 @@ $prevBreakPoint: 'xxlarge';
   text-overflow: ellipsis;
   overflow: hidden;
 }
-
+.bg-primary {
+  background-color: $col-primary;
+}
+.bg-success {
+  background-color: $col-success;
+}
+.bg-warning {
+  background-color: $col-warning;
+}
+.bg-error {
+  background-color: $col-error;
+}
 /* ---------------------------------------------------------
    3. Background decoration
    ---------------------------------------------------------*/
