@@ -6,7 +6,6 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
-      :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -80,7 +79,7 @@
           :class="{'active': tabSelected == 1}"
         )
         settings-code(
-        :trainingMode="true"
+          :the-code="coreCode"
         )
 
 </template>
@@ -92,9 +91,7 @@ import SettingsCode   from '@/components/network-elements/elements-settings/sett
 export default {
   name: 'SetTrainNormal',
   mixins: [mixinSet],
-  components: {
-    SettingsCode
-  },
+  components: { SettingsCode },
   data() {
     return {
       settings: {
@@ -103,8 +100,14 @@ export default {
         Learning_rate: "0.01",
         Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop
         Training_iters: "20000"
-      }
+      },
     }
   },
+  computed: {
+    coreCode() {
+      return `Y=tf.reshape(X, [-1]+[${this.settings.Loss} for ${this.settings.Learning_rate} in "+str(${this.settings.Optimizer})+"]);
+              Y=tf.transpose(Y,perm="+str([0]+[i+1 for i in properties["Permutation"]])+")`
+    }
+  }
 }
 </script>

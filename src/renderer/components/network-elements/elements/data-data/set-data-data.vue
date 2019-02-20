@@ -38,25 +38,23 @@
   export default {
     name: 'SetDataData',
     mixins: [mixinSet],
-    components: {
-      SettingsCloud
+    components: { SettingsCloud },
+    mounted() {
+      // if(process.env.NODE_ENV === 'production' && !this.settings.accessProperties.Path) {
+      //   switch (process.platform) {
+      //     case 'win32':
+      //       this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
+      //       break;
+      //     case 'darwin':
+      //       this.settings.accessProperties.Path = this.appPath + 'core/mnist';
+      //       break;
+      //     case 'linux':
+      //       this.settings.accessProperties.Path = this.appPath + 'core/mnist';
+      //       break;
+      //   }
+      //   this.applySettings();
+      // }
     },
-    // mounted() {
-    //   if(process.env.NODE_ENV === 'production' && !this.settings.accessProperties.Path) {
-    //     switch (process.platform) {
-    //       case 'win32':
-    //         this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
-    //         break;
-    //       case 'darwin':
-    //         this.settings.accessProperties.Path = this.appPath + 'core/mnist';
-    //         break;
-    //       case 'linux':
-    //         this.settings.accessProperties.Path = this.appPath + 'core/mnist';
-    //         break;
-    //     }
-    //     this.applySettings();
-    //   }
-    // },
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
@@ -94,7 +92,7 @@
         };
         this.openLoadDialog(this.saveLoadFile, opt)
       },
-      saveLoadFile(pathArr) {;
+      saveLoadFile(pathArr) {
         this.settings.accessProperties.Path = pathArr[0];
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)

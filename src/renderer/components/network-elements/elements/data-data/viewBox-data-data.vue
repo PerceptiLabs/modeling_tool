@@ -15,11 +15,8 @@
     components: {ChartBase},
     mixins: [viewBoxMixin],
     methods: {
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'DataData', '')
-      },
       getData() {
-        this.getStatistics()
+        this.chartRequest(this.boxElementID, 'DataData', '')
       }
     }
   }

@@ -15,11 +15,8 @@
     components: {ChartBase},
     mixins: [viewBoxMixin],
     methods: {
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'MathArgmax', '')
-      },
       getData() {
-        this.getStatistics()
+        this.chartRequest(this.boxElementID, 'MathArgmax', '')
       }
     },
   }

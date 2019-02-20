@@ -80,7 +80,7 @@ export default {
     statusNetworkCore(newStatus, oldStatus) {
       if(newStatus === 'Finished' && oldStatus === 'Validation') {
         this.$store.dispatch('globalView/NET_trainingDone');
-        this.$store.dispatch('mod_api/API_startWatchGetStatus', false);
+        this.$store.dispatch('mod_events/EVENT_startDoRequest', false);
         this.showTestingTab = true;
       }
     },

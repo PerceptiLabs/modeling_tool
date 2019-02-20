@@ -41,7 +41,7 @@
     mixins: [viewBoxMixin],
     data() {
       return {
-        chartDataDefault: {
+        chartData: {
           Output: {
             Output: null,
           },
@@ -64,25 +64,17 @@
         this.setTabAction();
       },
       getData() {
-        let name = this.currentTab;
-        if(name === 'Output') {
-          this.getStatistics()
+        switch (this.currentTab) {
+          case 'Output':
+            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Output')
+            break;
+          case 'Weights & Bias':
+            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Weights&Bias')
+            break;
+          case 'Gradients':
+            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Gradients')
+            break;
         }
-        else if (name === 'Weights & Bias') {
-          this.getWeightsStatistics()
-        }
-        else if (name === 'Gradients') {
-          this.getGradientsStatistics()
-        }
-      },
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Output')
-      },
-      getWeightsStatistics() {
-        this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Weights&Bias')
-      },
-      getGradientsStatistics() {
-        this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Gradients')
       }
     }
   }

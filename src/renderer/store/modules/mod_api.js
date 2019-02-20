@@ -9,7 +9,6 @@ const namespaced = true;
 const state = {
   statusLocalCore: 'offline', //online
   getStatusTimer: null,
-  startWatchGetStatus: false
 };
 
 const getters = {
@@ -55,9 +54,9 @@ const mutations = {
   SET_statusLocalCore(state, value) {
     state.statusLocalCore = value
   },
-  SET_startWatchGetStatus(state, value) {
-    state.startWatchGetStatus = value
-  },
+  // SET_startWatchGetStatus(state, value) {
+  //   state.startWatchGetStatus = value
+  // },
   SET_getStatusTimer(state, value) {
     state.getStatusTimer = value
   },
@@ -157,20 +156,20 @@ const actions = {
       });
   },
 
-  API_startWatchGetStatus({commit, dispatch}, message) {
-    commit('SET_startWatchGetStatus', message);
-    message ? startWatch() : stopWatch();
-
-    function startWatch() {
-      let timer = setInterval(()=>{
-        dispatch('API_getStatus')
-      }, 1000);
-      commit('SET_getStatusTimer', timer);
-    }
-    function stopWatch() {
-      commit('RESET_getStatusTimer');
-    }
-  },
+  // API_startWatchGetStatus({commit, dispatch}, message) {
+  //   commit('SET_startWatchGetStatus', message);
+  //   message ? startWatch() : stopWatch();
+  //
+  //   function startWatch() {
+  //     let timer = setInterval(()=>{
+  //       dispatch('API_getStatus')
+  //     }, 1000);
+  //     commit('SET_getStatusTimer', timer);
+  //   }
+  //   function stopWatch() {
+  //     commit('RESET_getStatusTimer');
+  //   }
+  // },
 
   API_startTraining({dispatch, getters, rootGetters}) {
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
@@ -197,30 +196,27 @@ const actions = {
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        dispatch('API_startWatchGetStatus', true)
+        dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
       })
       .catch((err) =>{
         console.error(err);
       });
 
   },
-  API_pauseTraining({dispatch, state, getters}) {
+  API_pauseTraining({dispatch, rootState, getters}) {
     const theData = getters.GET_data_PauseTraining;
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
         dispatch('API_getStatus');
-        state.startWatchGetStatus
-          ? dispatch('API_startWatchGetStatus', false)
-          : dispatch('API_startWatchGetStatus', true)
+        rootState.mod_events.chartsRequest.waitGlobalEvent
+          ? dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+          : dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
       })
       .catch((err) =>{
         console.error(err);
       });
-
-
-
   },
   API_stopTraining({dispatch, getters}) {
     const theData = getters.GET_data_StopTraining;
@@ -229,7 +225,7 @@ const actions = {
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
         dispatch('API_getStatus');
-        dispatch('API_startWatchGetStatus', false);
+        dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
       })
       .catch((err) =>{
         console.error(err);
@@ -254,7 +250,7 @@ const actions = {
       .catch((err) =>{
         console.error(err);
       });
-    dispatch('API_startWatchGetStatus', false);
+    dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
   },
 };
 

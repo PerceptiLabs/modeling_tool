@@ -6,7 +6,6 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
-      :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -38,7 +37,9 @@
       .popup_body(
           :class="{'active': tabSelected == 1}"
         )
-        settings-code
+        settings-code(
+          :the-code="coreCode"
+        )
 
 </template>
 
@@ -56,11 +57,16 @@
     },
     data() {
       return {
-        tabs: ['Settings', 'Code'],
         settings: {
           Shape: [28,28,1],
           Permutation: [0,1,2],
         }
+      }
+    },
+    computed: {
+      coreCode() {
+        return `Y=tf.reshape(X, [-1]+[layer_output for layer_output in "+str(${this.settings.Shape})+"]);
+                Y=tf.transpose(Y,perm="+str([0]+[i+1 for i in ${this.settings.Permutation}])+")`
       }
     }
   }

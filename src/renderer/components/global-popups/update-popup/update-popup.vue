@@ -84,16 +84,16 @@ export default {
     restartApp() {
       this.$emit('restartApp')
     },
-    startFakeLoading() {
-      this.fakeTimer = setInterval( () => {
-        this.progress = this.progress + 17;
-        if (this.progress >= 100) {
-          this.progress = 100;
-          clearInterval(this.fakeTimer);
-          this.updateStatus = 'done';
-        }
-      }, 700)
-    }
+    // startFakeLoading() {
+    //   this.fakeTimer = setInterval( () => {
+    //     this.progress = this.progress + 17;
+    //     if (this.progress >= 100) {
+    //       this.progress = 100;
+    //       clearInterval(this.fakeTimer);
+    //       this.updateStatus = 'done';
+    //     }
+    //   }, 700)
+    // }
   }
 }
 </script>
