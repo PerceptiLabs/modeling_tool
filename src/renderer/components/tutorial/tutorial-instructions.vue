@@ -1,5 +1,6 @@
 <template lang="pug">
-  .tutorial-instruction-box
+.tutorial-instruction-box 
+    //(v-if="tutorialMode")
     button.btn.btn--dark-blue-rev.green-status(type="button"
       @click="showInstructions"
     )
@@ -15,22 +16,23 @@
           i.icon.icon-shevron
           i.icon.icon-shevron
       
+      p.list-area_title {{interective[activeStep].title}}
       ul.list-area_list
         .list-element(
-          v-for="(instruction, index) in tutorialSteps.step_1"
-          v-html="instruction.content"
+          v-for="(point, index) in points"
+          v-html="point.content"
           :key="index"
-          :class="instruction.class_style"
+          :class="[point.class_style, {'active': point.isActive}]"
         )
+          
       footer.list-area_footer
         button.footer_all-tutorials-btn
           i.icon.icon-shevron-right
           span All tutorials
-        .curent-steps 1/{{allsteps}}
+        .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
         div
-          button.footer_btn Back
-          button.footer_btn(disabled) Next
-
+          button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back
+          button.footer_btn(v-if="stepCount < stepsLength" @click="changeStep('next')") Next
 </template>
 <script>
 export default {
@@ -38,47 +40,49 @@ export default {
   data() {
     return {
       isShowInstructions: false,
-      tutorialSteps: {
-        step_0: [
-          {
-            class_style: 'list_title',
-            content: 'Instructions:',
-          },
-          {
-            content: 'When working with AI, you can divide the process into 2 overarching steps:'
-          },
-          {
-            content: '<p>1) Knowing your data</p> <p>2) Building your model</p>'
-          }
-        ],
-        step_1: [
-          {
-            class_style: 'list_title',
-            content: 'Step 1. Import your data',
-          },
-          {
-            class_style: 'list_subtitle',
-            content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset'
-          },
-          {
-            content: 'For this tutorial we will use the MNIST dataset'
-          },
-          {
-            content: 'Every input image has been flattened out to a 784x1 array'
-          }
-        ]
-      }
+      count: 0
     }
   },
   computed: {
-    allsteps() {
-      return Object.keys(this.tutorialSteps).length
+    interective() {
+      return this.$store.state.mod_tutorials.interective
+    },
+    tutorialMode() {
+      return this.$store.state.mod_tutorials.tutorialMode
+    },
+    stepsLength() {
+      return Object.keys(this.interective).length - 1
+    },
+    stepCount() {
+      return this.$store.state.mod_tutorials.activeStepMainTutorial
+    },
+    activeStep() {
+      return Object.keys(this.interective)[this.stepCount]
+    },
+    points() {
+      return this.interective[this.activeStep].points
     }
   },
   methods: {
     showInstructions() {
-      this.isShowInstructions =  !this.isShowInstructions; 
+      this.isShowInstructions =  !this.isShowInstructions
+    },
+    changeStep(way) {
+      way === 'next' ? this.count++ : this.count--
+      this.$store.commit('mod_tutorials/SET_activeStepMainTutorial', this.count)
+      //this.pointActivated()
+    },
+    pointActivated() {
+      // this.points.forEach(point, index => {
+      //   if(!point.done && !point.isActive) {
+      //     this.$store.commit('mod_tutorials/SET_pointActivate', {step: this.activeStep, point: index})
+      //     return
+      //   }
+      // });
     }
+  },
+  mounted() {
+    //this.pointActivated()
   }
 }
 </script>
@@ -149,15 +153,36 @@ export default {
       }
     }
   }
+  .list-area_title {
+    font-size: 1.2rem;
+    padding: 0 2.5rem;
+    font-weight: 500;
+  }
   .list-area_list {
     height: 15rem;
     overflow: scroll;
   }
   .list-element {
-    padding: 0 3rem;
     margin-bottom: 1.5rem;
     font-size: 1.2rem;
-    &.list_title {
+    position: relative;
+    padding: 0 2.5rem;
+    &:before {
+      position: absolute;
+      top: 0;
+      left: 2.6rem;
+      font-family: "icomoon";
+      speak: none;
+    }
+    &.active:before {
+      content: "\e901";
+      left: 2rem;
+    }
+    &.done:before {
+      content: "\e937";
+      left: 2rem;
+    }
+    &.list_title{
       font-weight: 700;
       font-size: 1.2rem;
       padding: $title-padding;
@@ -165,18 +190,20 @@ export default {
     &.list_subtitle {
       padding: $title-padding;
       &:before {
-        content: "\e901";
-        font-family: "icomoon";
-        speak: none;
+        position: static;
+        margin-right: 0.5rem;
       }
-    }
-    p {
-      margin-bottom: 0.3rem;
     }
     .marker {
       color: #3bc5ff;
       font-weight: 700;
       display: inline;
+    }
+    & .text-block{
+      margin-bottom: 1rem;
+    }
+    p {
+        margin-bottom: 0.2rem;
     }
   }
   .list-area_footer {

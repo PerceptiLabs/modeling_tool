@@ -67,3 +67,30 @@ $margin-tooltip: .65rem;
 		box-shadow: -1px -1px 1px rgba(#000, .5);
 	}
 }
+
+.tooltip-tutorial {
+	font-size: 1.2rem;
+	color: $bg-workspace;
+	position: absolute;
+	z-index: 100;
+	min-width: 3rem;
+	max-width: 30rem;
+	padding: .8rem .6rem;
+	border-radius: 0.2rem;
+	white-space: nowrap;
+	background-color: #3BC5FF;
+	box-shadow: $icon-shad;
+	pointer-events: none;
+	left: 120%;
+	text-align: left;
+	&:before {
+		content: '';
+		position: absolute;
+		right: 100%;
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-right: 10px solid #3BC5FF;
+    border-bottom: 6px solid transparent;
+	}
+}

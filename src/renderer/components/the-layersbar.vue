@@ -7,6 +7,7 @@
       )
         button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
           v-tooltip:right="layer.tooltip"
+          v-tooltipTutorial="layer.tooltipTutorial"
           @click.stop="toggleElList(i, $event)"
           :class="[layer.layerClass, {'active': layer.showEl}]"
         )
@@ -90,6 +91,7 @@ export default {
         // },
         {
           tooltip: 'Data',
+          tooltipTutorial: 'Data > Data...',
           layerClass: 'net-element-data',
           iconClass: 'icon-data',
           showEl: false,
