@@ -18,6 +18,7 @@ const state = {
     },
     import_data: {
       title: 'Step 1. Import your data',
+      tooltip: 'Data > Data...',
       points: [
         {
           done: false,
@@ -67,6 +68,14 @@ const mutations = {
     localStorage.showFirstAppTutorial = value;
     state.showTutorial = value;
     state.firstTimeApp = value;
+  },
+  SET_pointActivate(state, value) {
+    let points = state.interective[value.step].points;
+    points[value.point].isActive = value.isActive;
+  },
+  SET_pointDone(state, value) {
+    let points = state.interective[value.step].points;
+    points[value.point].done = value.done;
   }
 };
 

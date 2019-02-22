@@ -7,7 +7,7 @@
       )
         button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
           v-tooltip:right="layer.tooltip"
-          v-tooltipTutorial="layer.tooltipTutorial"
+          v-tooltipTutorial="{text:layer.tooltipTutorial, isActive: tutorialActiveElement}"
           @click.stop="toggleElList(i, $event)"
           :class="[layer.layerClass, {'active': layer.showEl}]"
         )
@@ -146,6 +146,9 @@ export default {
     },
     activeStepStoryboard() {
       return this.$store.state.mod_tutorials.activeStepStoryboard
+    },
+    tutorialActiveElement() {
+      return this.$store.state.mod_tutorials.interective.import_data.points[0].isActive
     }
   },
   methods: {

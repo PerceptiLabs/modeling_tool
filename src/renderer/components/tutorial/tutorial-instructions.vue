@@ -68,21 +68,37 @@ export default {
       this.isShowInstructions =  !this.isShowInstructions
     },
     changeStep(way) {
-      way === 'next' ? this.count++ : this.count--
-      this.$store.commit('mod_tutorials/SET_activeStepMainTutorial', this.count)
-      //this.pointActivated()
+      if(way === 'next') {
+        this.count++
+        this.$store.commit('mod_tutorials/SET_activeStepMainTutorial', this.count)
+        this.pointActivate()
+      } else {
+          this.count--
+          this.$store.commit('mod_tutorials/SET_activeStepMainTutorial', this.count)
+          this.pointsDeactivate()
+      }
     },
-    pointActivated() {
-      // this.points.forEach(point, index => {
-      //   if(!point.done && !point.isActive) {
-      //     this.$store.commit('mod_tutorials/SET_pointActivate', {step: this.activeStep, point: index})
-      //     return
-      //   }
-      // });
+    pointActivate() {
+      this.pointsDeactivate()
+      for(let index = 0; index < this.points.length; index++ ) {
+        let point = this.points[index]
+        if(!point.done && !point.isActive) { 
+          this.$store.commit('mod_tutorials/SET_pointActivate', {step: this.activeStep, point: index, isActive: true})
+          break
+        }
+      }
+    },
+    pointsDeactivate() {
+      for(let index = 0; index < this.points.length; index++ ) {
+        if(this.activeStep !== 'first_instructions') {
+          this.$store.commit('mod_tutorials/SET_pointActivate', {step: this.activeStep, point: index, isActive: false})
+          this.$store.commit('mod_tutorials/SET_pointDone', {step: this.activeStep, point: index, done: false})
+        }
+      } 
     }
   },
   mounted() {
-    //this.pointActivated()
+    
   }
 }
 </script>
