@@ -3,7 +3,8 @@
     .settings-layer_section
       .form_holder
         label.form_label Cost function:
-        textarea(v-model="theCode" readonly="true")
+        code-hq( v-model="theCode")
+        //textarea(v-model="theCode" readonly="true")
       //-.form_holder(v-if="trainingMode")
         label.form_label Optimizer:
         textarea
@@ -17,8 +18,11 @@
 </template>
 
 <script>
+  import codeHq    from "@/components/network-elements/elements-settings/code-hq.vue";
+
 export default {
   name: "SettingsCode",
+  components: {codeHq},
   props: {
     trainingMode: {
       type: Boolean,
@@ -28,14 +32,6 @@ export default {
       type: String,
       default: ''
     },
-  },
-  data() {
-    return {
-
-    }
-  },
-  methods: {
-
   }
 }
 </script>
