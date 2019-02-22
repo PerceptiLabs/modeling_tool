@@ -1,12 +1,12 @@
 import fs from 'fs';
 import {remote} from 'electron'
 
-import TheToolbar   from '@/components/the-toolbar.vue'
-import TheLayersbar from '@/components/the-layersbar.vue'
-import TheSidebar   from '@/components/the-sidebar.vue'
-import TheWorkspace from '@/components/workspace/the-workspace.vue'
-import TheInfoPopup from "@/components/global-popups/the-info-popup";
-import TheTutorial  from "@/components/tutorial/the-tutorial";
+import TheToolbar         from '@/components/the-toolbar.vue'
+import TheLayersbar       from '@/components/the-layersbar.vue'
+import TheSidebar         from '@/components/the-sidebar.vue'
+import TheWorkspace       from '@/components/workspace/the-workspace.vue'
+import TheInfoPopup       from "@/components/global-popups/the-info-popup.vue";
+import TutorialStoryboard from "@/components/tutorial/tutorial-storyboard.vue";
 
 export default {
   name: 'pageQuantum',
@@ -16,7 +16,7 @@ export default {
     TheSidebar,
     TheWorkspace,
     TheInfoPopup,
-    TheTutorial
+    TutorialStoryboard
   },
   created() {
     if(this.currentNetwork[0] === "empty app") {

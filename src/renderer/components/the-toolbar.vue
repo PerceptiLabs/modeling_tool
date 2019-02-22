@@ -48,7 +48,7 @@
         )
           i.icon.icon-step-next
     ul.toolbar_list
-      li(:class="{'tutorial-active': activeStep === 4}")
+      li(:class="{'tutorial-active': activeStepStoryboard === 4}")
         button.btn.btn--toolbar(type="button"
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
@@ -195,8 +195,8 @@ export default {
     tutorialRunButtonActive() {
       return this.$store.state.mod_tutorials.runButtonsActive
     },
-    activeStep() {
-      return this.$store.state.mod_tutorials.activeStep
+    activeStepStoryboard() {
+      return this.$store.state.mod_tutorials.activeStepStoryboard
     }
   },
   methods: {

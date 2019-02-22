@@ -1,5 +1,5 @@
 <template lang="pug">
-  aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar, 'tutorial-active': activeStep === 3}")
+  aside.page_sidebar(:class="{'page_sidebar--hide': !hideSidebar, 'tutorial-active': activeStepStoryboard === 3}")
     ul.sidebar_tabset
       li(v-for="(tab, i) in tabset"
         :key="i"
@@ -84,8 +84,8 @@ export default {
       }
       else return false
     },
-    activeStep() {
-      return this.$store.state.mod_tutorials.activeStep
+    activeStepStoryboard() {
+      return this.$store.state.mod_tutorials.activeStepStoryboard
     }
   },
   methods: {

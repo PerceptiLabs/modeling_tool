@@ -1,6 +1,6 @@
 <template lang="pug">
   aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers}")
-    ul.layersbar-list(:class="{'tutorial-active': activeStep === 2}")
+    ul.layersbar-list(:class="{'tutorial-active': activeStepStoryboard === 2}")
       li.layer(
         v-for="(layer, i) in layersbarList"
         :key="i"
@@ -142,8 +142,8 @@ export default {
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
-    activeStep() {
-      return this.$store.state.mod_tutorials.activeStep
+    activeStepStoryboard() {
+      return this.$store.state.mod_tutorials.activeStepStoryboard
     }
   },
   methods: {

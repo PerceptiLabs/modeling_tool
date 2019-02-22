@@ -45,7 +45,7 @@
 </template>
 <script>
 export default {
-  name: 'TheTutorial',
+  name: 'TutorialStoryboard',
   data() {
     return {
       activeStep: 0,
@@ -94,7 +94,7 @@ export default {
   },
   computed: {
     statusShowTutorial() {
-      return this.$store.state.mod_tutorials.showTutorial
+      return this.$store.state.mod_tutorials.showTutorialStoryBoard
     },
     isFirstTimetApp() {
       return this.$store.state.mod_tutorials.firstTimeApp
@@ -103,16 +103,16 @@ export default {
   methods: {
     closeTutorial() {
       this.activeStep = 0;
-      this.$store.commit('mod_tutorials/SET_activeStep', this.activeStep)
-      this.$store.commit('mod_tutorials/SET_showTutorial', false)
+      this.$store.commit('mod_tutorials/SET_activeStepStoryboard', this.activeStep)
+      this.$store.commit('mod_tutorials/SET_showTutorialStoryBoard', false)
     },
     set_stepActive(way) {
       way === 'next' ? this.activeStep++ : this.activeStep--
-      this.$store.commit('mod_tutorials/SET_activeStep', this.activeStep)
+      this.$store.commit('mod_tutorials/SET_activeStepStoryboard', this.activeStep)
     },
     dot_stepActive(index) {
       this.activeStep = index;
-      this.$store.commit('mod_tutorials/SET_activeStep', this.activeStep)
+      this.$store.commit('mod_tutorials/SET_activeStepStoryboard', this.activeStep)
     },
     skipTutorial() {
       this.closeTutorial()
