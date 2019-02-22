@@ -224,13 +224,12 @@ const actions = {
     client.sendMessage(theData)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
-        dispatch('API_getStatus');
         dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+        dispatch('API_getStatus');
       })
       .catch((err) =>{
         console.error(err);
       });
-
   },
   API_skipValidTraining({getters}) {
     const theData = getters.GET_data_SkipValidTraining;

@@ -40,9 +40,9 @@ const viewBoxMixin = {
     eventRequest() {
       return this.$store.state.mod_events.chartsRequest.doRequest
     },
-    eventShowChart() {
-      //return this.$store.state.mod_api.startWatchGetStatus
-    },
+    // eventShowChart() {
+    //   //return this.$store.state.mod_api.startWatchGetStatus
+    // },
     testIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
     },
@@ -54,8 +54,8 @@ const viewBoxMixin = {
     statElementID() {
       this.resetViewBox();
     },
-    eventRequest() {
-      this.getData();
+    eventRequest(newVal) {
+      if(!(newVal % 2)) this.getData();
     }
   },
   methods: {
@@ -70,7 +70,7 @@ const viewBoxMixin = {
       if(layerId === undefined) {
         return
       }
-      this.$store.commit('mod_events/set_charts_requestCounterAdd');
+      //this.$store.commit('mod_events/set_charts_requestCounterAdd');
       let theData = {
         reciever: this.currentNetworkID,
         action: 'getLayerStatistics',
@@ -85,7 +85,6 @@ const viewBoxMixin = {
       client.sendMessage(theData)
         .then((data)=> {
           //console.log(data);
-          this.$store.commit('mod_events/set_charts_waitGlobalEventReduce');
           if(data === 'Null') {
             return
           }
@@ -97,7 +96,6 @@ const viewBoxMixin = {
         })
         .catch((err)=> {
           console.log('answer err');
-          this.$store.commit('mod_events/set_charts_waitGlobalEventReduce');
           console.error(err);
         });
     }

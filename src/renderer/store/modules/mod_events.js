@@ -7,13 +7,14 @@ const state = {
   calcArray: 0,
   openNetwork: 0,
   saveNetwork: 0,
+  chartResize: 0,
   chartsRequest: {
-    timeInterval: 2000,
+    timeInterval: 1000,
     timerID: null,
     waitGlobalEvent: false,
     doRequest: 0,
-    requestCounter: 0,
-    showCharts: 0
+    //requestCounter: 0,
+    //showCharts: 0
   }
 };
 
@@ -27,8 +28,10 @@ const mutations = {
   set_saveNetwork(state) {
     state.saveNetwork++
   },
+  set_chartResize(state) {
+    state.chartResize++
+  },
   set_charts_doRequest(state) {
-    console.log('doRequest');
     state.chartsRequest.doRequest++
   },
   // set_charts_showCharts(state) {
@@ -40,16 +43,15 @@ const mutations = {
   set_charts_waitGlobalEvent(state, isWait) {
     state.chartsRequest.waitGlobalEvent = isWait
   },
-  set_charts_requestCounterAdd(state) {
-    state.chartsRequest.requestCounter++
-  },
-  set_charts_waitGlobalEventReduce(state) {
-    state.chartsRequest.requestCounter--;
-    if(state.chartsRequest.requestCounter === 0) {
-      console.log('showCharts');
-      state.chartsRequest.showCharts++
-    }
-  },
+  // set_charts_requestCounterAdd(state) {
+  //   state.chartsRequest.requestCounter++
+  // },
+  // set_charts_waitGlobalEventReduce(state) {
+  //   state.chartsRequest.requestCounter--;
+  //   if(state.chartsRequest.requestCounter === 0) {
+  //     state.chartsRequest.showCharts++
+  //   }
+  // },
 };
 
 const actions = {
@@ -76,15 +78,18 @@ const actions = {
     if(isStart) {
       let timer = setInterval(()=> {
         commit('set_charts_doRequest');
+        dispatch('mod_api/API_getStatus', null, {root: true});
       }, state.chartsRequest.timeInterval);
       commit('set_charts_waitGlobalEvent', isStart);
       commit('set_charts_timerID', timer);
-      dispatch('mod_api/API_getStatus', null, {root: true});
     }
     else {
       commit('set_charts_waitGlobalEvent', isStart);
       clearInterval(state.chartsRequest.timerID);
     }
+  },
+  EVENT_chartResize({commit}) {
+    commit('set_chartResize')
   }
 };
 

@@ -13,40 +13,31 @@
 </template>
 
 <script>
-  import imgDatas    from "@/components/charts/img.js";
+import chartMixin from "@/core/mixins/charts.js";
 
 export default {
   name: "ChartPicture",
-  props: {
-    headerOff: {
-      type: Boolean,
-      default: false
-    },
-    chartLabel: {
-      type: String,
-      default: ''
-    },
-    chartData: {
-      type: Array,
-      default: function() {
-        return null
-      }
-    },
-  },
+  mixins: [chartMixin],
   mounted() {
     this.canvas2D = this.$refs.canvas.getContext('2d');
   },
   data() {
     return {
-      imgDatas: imgDatas,
-      fullView: false,
+      imgDataBuffer: null,
       canvas2D: null
     }
   },
   watch: {
-    chartData(newData) {
-      this.drawPicture(newData[0])
+    '$store.state.mod_events.chartsRequest.doRequest': {
+      handler(newVal) {
+        if(newVal % 2 && this.imgDataBuffer !== null) this.drawPicture(this.imgDataBuffer);
+      }
     },
+    chartData(newData) {
+      this.isNeedWait
+        ? this.imgDataBuffer = JSON.parse(JSON.stringify(newData[0]))
+        : this.drawPicture(newData[0])
+    }
   },
   methods: {
     toggleFullView() {
@@ -59,19 +50,11 @@ export default {
       let imgW = img.width;
       canvas.setAttribute('width', imgW);
       canvas.setAttribute('height', imgH);
-      if(imgH/imgW >= 1) {
-        //this.$refs.canvas.style.minHeight = '100%';
-      }
-      else {
-        //this.$refs.canvas.style.width = '100%';
-      }
+
       let imgData = canvas2d.createImageData(imgW, imgH);
       img.data.forEach((el, index) => imgData.data[index] = el);
       canvas2d.putImageData(imgData,0, 0);
     }
-  },
-  beforeDestroy() {
-    //console.log('Destroy chart');
   }
 }
 </script>

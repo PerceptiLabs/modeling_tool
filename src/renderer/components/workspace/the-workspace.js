@@ -132,12 +132,14 @@ export default {
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
       this.$store.dispatch('mod_workspace/SET_openTest', false);
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+      this.$store.dispatch('mod_events/EVENT_chartResize');
     },
     openTest(i) {
       this.setTabNetwork(i);
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
       this.$store.dispatch('mod_workspace/SET_openStatistics', false );
       this.$store.dispatch('mod_workspace/SET_openTest', true);
+      this.$store.dispatch('mod_events/EVENT_chartResize');
     },
     saveModel() {
       this.$store.commit('mod_events/set_saveNetwork');

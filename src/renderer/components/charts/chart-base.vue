@@ -23,48 +23,17 @@
 
 <script>
   import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
+  import chartMixin                     from "@/core/mixins/charts.js";
 
   export default {
     name: "ChartBase",
-    props: {
-      headerOff: {
-        type: Boolean,
-        default: false
-      },
-      chartLabel: {
-        type: String,
-        default: ''
-      },
-      chartData: {
-        type: Object,
-        default: function () {
-          return null
-        }
-      },
-      customColor: {
-        type: Array,
-        default: function () {
-          return []
-        }
-      },
-    },
+    mixins: [chartMixin],
     mounted() {
       this.applyCustomColor();
-      this.createWWorker();
-      this.$refs.chart.showLoading(chartSpinner);
-      window.addEventListener("resize", ()=> { this.$refs.chart.resize()}, false);
-    },
-    beforeDestroy() {
-      this.wWorker.postMessage('close');
-      this.wWorker.removeEventListener('message', this.drawChart, false);
-      this.$refs.chart.dispose();
-      window.removeEventListener("resize", ()=> { this.$refs.chart.resize()}, false);
     },
     data() {
       return {
-        fullView: false,
-        wWorker: null,
-        chartModel: {},
+        chartSpinner,
         defaultModel: {
           tooltip: {},
           toolbox: {
@@ -100,10 +69,6 @@
       }
     },
     methods: {
-      toggleFullView() {
-        this.fullView = !this.fullView;
-        this.$nextTick(()=>this.$refs.chart.resize());
-      },
       applyCustomColor() {
         if (this.customColor.length) {
           this.defaultModel.color = this.customColor;
@@ -112,10 +77,6 @@
       createWWorker() {
         this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
         this.wWorker.addEventListener('message', this.drawChart, false);
-      },
-      drawChart(ev) {
-        this.chartModel = ev.data;
-        this.$refs.chart.hideLoading()
       }
     },
   }
