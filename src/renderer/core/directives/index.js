@@ -11,7 +11,7 @@ Vue.directive('tooltip', {
 });
 
 Vue.directive('tooltipTutorial', {
-  bind: function (el, binding, vnode) {
+  update: function (el, binding, vnode) {
     console.log(binding.value.isActive)
     if(binding.value.isActive && binding.value.text) {
       let tooltipBlock = document.createElement('div');
