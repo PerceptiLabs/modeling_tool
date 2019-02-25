@@ -2,16 +2,12 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-deconv/set-deep-learning-deconv.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-deconv/set-deep-learning-deconv.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-argmax/set-math-argmax.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-argmax/set-math-argmax.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-one-hot/set-process-one-hot.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-one-hot/set-process-one-hot.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/charts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/charts.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -25,31 +21,75 @@
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-split/set-math-split.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-966" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="552">
+            <state relative-caret-position="1408">
               <caret line="66" column="91" lean-forward="true" selection-start-line="66" selection-start-column="69" selection-end-line="66" selection-end-column="91" />
-              <folding>
-                <element signature="e#1281#1348#0" expanded="true" />
-              </folding>
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-argmax/set-math-argmax.vue">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal/train-normal.vue">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal/set-train-normal.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="728">
-              <caret line="58" column="60" selection-start-line="58" selection-start-column="40" selection-end-line="58" selection-end-column="60" />
+            <state relative-caret-position="1804">
+              <caret line="82" column="9" lean-forward="true" selection-start-line="80" selection-start-column="21" selection-end-line="82" selection-end-column="9" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal-data/set-train-normal-data.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="728">
-              <caret line="109" column="94" selection-start-line="109" selection-start-column="94" selection-end-line="109" selection-end-column="94" />
+            <state relative-caret-position="-2220" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-reinforce/set-train-reinforce.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-1516" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/train-dynamic.vue">
+          <provider selected="true" editor-type-id="text-editor" />
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/set-train-dunamic.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-528" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="154">
+              <caret line="7" column="46" selection-start-line="7" selection-start-column="46" selection-end-line="7" selection-end-column="46" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-one-hot/set-process-one-hot.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1100">
+              <caret line="51" column="5" lean-forward="true" selection-start-line="51" selection-start-column="5" selection-end-line="51" selection-end-column="5" />
             </state>
           </provider>
         </entry>
@@ -154,14 +194,14 @@
         <option value="$PROJECT_DIR$/src/renderer/scss/components/_vscode-theme-dark_plus.scss" />
         <option value="$PROJECT_DIR$/src/renderer/core/mixins/charts.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-one-hot/set-process-one-hot.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-deconv/set-deep-learning-deconv.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-argmax/set-math-argmax.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue" />
       </list>
     </option>
   </component>
@@ -237,7 +277,7 @@
               <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="deep-learning-conv" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="math-argmax" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
@@ -248,6 +288,76 @@
               <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="math-merge" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="math-softmax" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="math-split" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="process-embed" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="process-grayscale" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="process-one-hot" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="train-normal-data" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="train-reinforce" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
@@ -464,12 +574,12 @@
       <workItem from="1550765562649" duration="399000" />
       <workItem from="1550765991377" duration="55000" />
       <workItem from="1550820432117" duration="25498000" />
-      <workItem from="1551078318293" duration="18928000" />
+      <workItem from="1551078318293" duration="19431000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="283491000" />
+    <option name="totallyTimeSpent" value="283994000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -563,38 +673,6 @@
     </option>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-split/viewBox-math-split.vue">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/viewBox-process-crop.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="484">
-          <caret line="24" column="14" selection-start-line="24" selection-start-column="14" selection-end-line="24" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-grayscale/viewBox-process-grayscale.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="330">
-          <caret line="16" column="14" selection-start-line="16" selection-start-column="14" selection-end-line="16" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-one-hot/viewBox-process-one-hot.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="352">
-          <caret line="18" column="14" selection-start-line="18" selection-start-column="14" selection-end-line="18" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-embed/viewBox-process-embed.vue">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/viewBox-train-dynamic.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-1428" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/viewBox-deep-learning-conv.vue">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="425">
@@ -634,16 +712,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="154">
           <caret line="7" selection-start-line="7" selection-end-line="7" selection-end-column="36" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal/set-train-normal.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="222">
-          <caret line="82" column="9" lean-forward="true" selection-start-line="80" selection-start-column="21" selection-end-line="82" selection-end-column="9" />
-          <folding>
-            <element signature="e#3029#3096#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -839,32 +907,8 @@
     <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/view-process-reshape.vue">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-one-hot/set-process-one-hot.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="508">
-          <caret line="51" column="5" lean-forward="true" selection-start-line="51" selection-start-column="5" selection-end-line="51" selection-end-column="5" />
-          <folding>
-            <element signature="e#841#908#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="530">
-          <caret line="95" column="228" selection-start-line="95" selection-start-column="228" selection-end-line="95" selection-end-column="228" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js">
       <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="755">
-          <caret line="103" column="19" lean-forward="true" selection-start-line="103" selection-start-column="19" selection-end-line="103" selection-end-column="19" />
-        </state>
-      </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal/viewBox-train-normal.vue">
       <provider selected="true" editor-type-id="text-editor">
@@ -873,13 +917,6 @@
           <folding>
             <element signature="e#2441#2499#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-deconv/set-deep-learning-deconv.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="100" column="13" lean-forward="true" selection-start-line="100" selection-start-column="13" selection-end-line="100" selection-end-column="13" />
         </state>
       </provider>
     </entry>
@@ -893,42 +930,100 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="688">
-          <caret line="94" column="89" selection-start-line="94" selection-start-column="89" selection-end-line="94" selection-end-column="89" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="552">
-          <caret line="66" column="91" lean-forward="true" selection-start-line="66" selection-start-column="69" selection-end-line="66" selection-end-column="91" />
-          <folding>
-            <element signature="e#1281#1348#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="154">
+          <caret line="7" column="46" selection-start-line="7" selection-start-column="46" selection-end-line="7" selection-end-column="46" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="248">
+        <state relative-caret-position="3454">
           <caret line="158" column="2" selection-start-line="158" selection-start-column="2" selection-end-line="211" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-deconv/set-deep-learning-deconv.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="7" column="46" selection-start-line="7" selection-start-column="46" selection-end-line="7" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="7" column="46" selection-start-line="7" selection-start-column="46" selection-end-line="7" selection-end-column="46" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="7" column="46" selection-start-line="7" selection-start-column="46" selection-end-line="7" selection-end-column="46" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-argmax/set-math-argmax.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="728">
-          <caret line="58" column="60" selection-start-line="58" selection-start-column="40" selection-end-line="58" selection-end-column="60" />
+        <state relative-caret-position="154">
+          <caret line="7" column="46" selection-start-line="7" selection-start-column="46" selection-end-line="7" selection-end-column="46" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-split/set-math-split.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="728">
-          <caret line="109" column="94" selection-start-line="109" selection-start-column="94" selection-end-line="109" selection-end-column="94" />
+        <state relative-caret-position="-966" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="7" column="46" selection-start-line="7" selection-start-column="46" selection-end-line="7" selection-end-column="46" />
         </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-one-hot/set-process-one-hot.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1100">
+          <caret line="51" column="5" lean-forward="true" selection-start-line="51" selection-start-column="5" selection-end-line="51" selection-end-column="5" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/train-dynamic.vue">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/set-train-dunamic.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-528" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1408">
+          <caret line="66" column="91" lean-forward="true" selection-start-line="66" selection-start-column="69" selection-end-line="66" selection-end-column="91" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal/train-normal.vue">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal/set-train-normal.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1804">
+          <caret line="82" column="9" lean-forward="true" selection-start-line="80" selection-start-column="21" selection-end-line="82" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal-data/set-train-normal-data.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2220" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-reinforce/set-train-reinforce.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1516" />
       </provider>
     </entry>
   </component>
