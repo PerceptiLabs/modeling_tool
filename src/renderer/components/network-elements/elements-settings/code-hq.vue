@@ -1,13 +1,12 @@
 <template>
   <div class="code-hq">
-    <textarea ref="textarea" :name="name" :placeholder="placeholder" ></textarea>
+    <textarea ref="textarea" :name="name" :placeholder="placeholder"></textarea>
   </div>
 </template>
 
 <script>
   // lib
-  import _CodeMirror from 'codemirror/lib/codemirror.js';
-  const CodeMirror = _CodeMirror;
+  import CodeMirror from 'codemirror/lib/codemirror.js';
   import 'codemirror/mode/python/python.js'
   // theme css
   import 'codemirror/lib/codemirror.css'
@@ -209,3 +208,12 @@
     }
   }
 </script>
+<style lang="scss">
+  @import "../../../scss/base";
+  .CodeMirror-sizer {
+    margin: 0 !important;
+  }
+  .CodeMirror-gutters {
+    background: transparent !important;
+  }
+</style>
