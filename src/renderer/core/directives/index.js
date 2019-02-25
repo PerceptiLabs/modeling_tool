@@ -12,12 +12,14 @@ Vue.directive('tooltip', {
 
 Vue.directive('tooltipTutorial', {
   update: function (el, binding, vnode) {
-    console.log(binding.value.isActive)
     if(binding.value.isActive && binding.value.text) {
       let tooltipBlock = document.createElement('div');
       tooltipBlock.classList.add('tooltip-tutorial');
       tooltipBlock.innerHTML = binding.value.text;
       el.appendChild(tooltipBlock)
+    } else {
+        let tooltip = el.querySelector('.tooltip-tutorial');
+        if (tooltip) tooltip.remove();
     }
   },
 });

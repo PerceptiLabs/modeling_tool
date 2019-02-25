@@ -1,6 +1,6 @@
 <template lang="pug">
 .tutorial-instruction-box 
-    //(v-if="tutorialMode")
+    //(v-if="isTutorialMode")
     button.btn.btn--dark-blue-rev.green-status(type="button"
       @click="showInstructions"
     )
@@ -35,6 +35,7 @@
           button.footer_btn(v-if="stepCount < stepsLength" @click="changeStep('next')") Next
 </template>
 <script>
+import { mapGetters, mapMutations } from 'vuex';
 export default {
   name: 'TutorialInstructions',
   data() {
@@ -44,37 +45,34 @@ export default {
     }
   },
   computed: {
-    interective() {
-      return this.$store.state.mod_tutorials.interective
-    },
-    tutorialMode() {
-      return this.$store.state.mod_tutorials.tutorialMode
-    },
+    ...mapGetters({
+      activeStep:     'mod_tutorials/getActiveStep',
+      points:         'mod_tutorials/getPoints',
+      interective:    'mod_tutorials/getIterective',
+      isTutorialMode: 'mod_tutorials/getIstutorialMode',
+      stepCount:      'mod_tutorials/getActiveStepMainTutorial'
+    }),
     stepsLength() {
       return Object.keys(this.interective).length - 1
-    },
-    stepCount() {
-      return this.$store.state.mod_tutorials.activeStepMainTutorial
-    },
-    activeStep() {
-      return Object.keys(this.interective)[this.stepCount]
-    },
-    points() {
-      return this.interective[this.activeStep].points
     }
   },
   methods: {
+    ...mapMutations({
+      setActiveStep:  'mod_tutorials/SET_activeStepMainTutorial',
+      setActivePoint: 'mod_tutorials/SET_pointActivate',
+      setPointDone:   'mod_tutorials/SET_pointDone'
+    }),
     showInstructions() {
       this.isShowInstructions =  !this.isShowInstructions
     },
     changeStep(way) {
       if(way === 'next') {
         this.count++
-        this.$store.commit('mod_tutorials/SET_activeStepMainTutorial', this.count)
+        this.setActiveStep(this.count)
         this.pointActivate()
       } else {
           this.count--
-          this.$store.commit('mod_tutorials/SET_activeStepMainTutorial', this.count)
+          this.setActiveStep(this.count)
           this.pointsDeactivate()
       }
     },
@@ -82,8 +80,8 @@ export default {
       this.pointsDeactivate()
       for(let index = 0; index < this.points.length; index++ ) {
         let point = this.points[index]
-        if(!point.done && !point.isActive) { 
-          this.$store.commit('mod_tutorials/SET_pointActivate', {step: this.activeStep, point: index, isActive: true})
+        if(!point.done && !point.isActive) {
+          this.setActivePoint({step: this.activeStep, point: index, isActive: true})
           break
         }
       }
@@ -91,8 +89,8 @@ export default {
     pointsDeactivate() {
       for(let index = 0; index < this.points.length; index++ ) {
         if(this.activeStep !== 'first_instructions') {
-          this.$store.commit('mod_tutorials/SET_pointActivate', {step: this.activeStep, point: index, isActive: false})
-          this.$store.commit('mod_tutorials/SET_pointDone', {step: this.activeStep, point: index, done: false})
+          this.setActivePoint({step: this.activeStep, point: index, isActive: false})
+          this.setPointDone({step: this.activeStep, point: index, done: false})
         }
       } 
     }

@@ -1,9 +1,11 @@
 const namespaced = true;
 
 const state = {
+  isTutorialMode: false,
   showTutorialStoryBoard: false,
   activeStepStoryboard: 0,
   activeStepMainTutorial: 0,
+  activePointMainTutorial: 0,
   firstTimeApp: localStorage.showFirstAppTutorial ? false : true,
   interective: {
     first_instructions: {
@@ -50,6 +52,27 @@ const state = {
   }
 };
 
+const getters = {
+  getIterective(state) {
+    return state.interective
+  },
+  getIstutorialMode(state) {
+    return state.isTutorialMode
+  },
+  getActiveStepMainTutorial(state) {
+    return state.activeStepMainTutorial
+  },
+  getActiveStep(state) {
+    return Object.keys(state.interective)[state.activeStepMainTutorial]
+  },
+  getPoints(state, getters) {
+    return state.interective[getters.getActiveStep].points
+  },
+  getActivePoint(state, getters) {
+    return getters.getPoints[state.activePointMainTutorial].isActive
+  }
+}
+
 const mutations = {
   SET_runButtonsActive(state, value) {
     state.runButtonsActive = value;
@@ -69,7 +92,7 @@ const mutations = {
     state.showTutorial = value;
     state.firstTimeApp = value;
   },
-  SET_pointActivate(state, value) {
+  SET_pointActivate(state, value,) {
     let points = state.interective[value.step].points;
     points[value.point].isActive = value.isActive;
   },
@@ -86,6 +109,7 @@ const actions = {
 export default {
   namespaced,
   state,
+  getters,
   mutations,
   actions
 }

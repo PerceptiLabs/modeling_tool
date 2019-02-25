@@ -7,7 +7,7 @@
       )
         button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
           v-tooltip:right="layer.tooltip"
-          v-tooltipTutorial="{text:layer.tooltipTutorial, isActive: tutorialActiveElement}"
+          v-tooltipTutorial="{text:layer.tooltipTutorial, isActive: activePoint}"
           @click.stop="toggleElList(i, $event)"
           :class="[layer.layerClass, {'active': layer.showEl}]"
         )
@@ -29,6 +29,7 @@
 <script>
   import clickOutside from '@/core/mixins/click-outside.js'
   import {trainingElements, deepLearnElements}  from '@/core/constants.js'
+  import { mapGetters }       from 'vuex';
 
   import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
   import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/view-io-output-backpropagation.vue'
@@ -141,14 +142,14 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      activePoint: 'mod_tutorials/getActivePoint'
+    }),
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
     activeStepStoryboard() {
       return this.$store.state.mod_tutorials.activeStepStoryboard
-    },
-    tutorialActiveElement() {
-      return this.$store.state.mod_tutorials.interective.import_data.points[0].isActive
     }
   },
   methods: {
