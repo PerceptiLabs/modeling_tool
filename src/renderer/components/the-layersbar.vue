@@ -7,7 +7,7 @@
       )
         button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
           v-tooltip:right="layer.tooltip"
-          v-tooltipTutorial="{text:layer.tooltipTutorial, isActive: activePoint}"
+          v-tooltipTutorial="{text:layer.tooltipTutorial, actionStatus: activeAction.actionStatus}"
           @click.stop="toggleElList(i, $event)"
           :class="[layer.layerClass, {'active': layer.showEl}]"
         )
@@ -92,7 +92,6 @@ export default {
         // },
         {
           tooltip: 'Data',
-          tooltipTutorial: 'Data > Data...',
           layerClass: 'net-element-data',
           iconClass: 'icon-data',
           showEl: false,
@@ -143,7 +142,10 @@ export default {
   },
   computed: {
     ...mapGetters({
-      activePoint: 'mod_tutorials/getActivePoint'
+      tutorialObject: 'mod_tutorials/getIterective',
+      activePoint:    'mod_tutorials/getActivePoint',
+      activeAction:   'mod_tutorials/getActiveAction',
+      isTutorialMode: 'mod_tutorials/getIstutorialMode'
     }),
     hideLayers () {
       return this.$store.state.globalView.hideLayers
@@ -171,6 +173,16 @@ export default {
         item.showEl = false
       });
     },
+  },
+  mounted() {
+    
+  },
+  watch: {
+    activeAction() {
+      if(this.isTutorialMode) {
+        this.layersbarList[0].tooltipTutorial = this.activeAction.tooltip
+      }
+    }
   }
 }
 </script>

@@ -1,17 +1,24 @@
 const namespaced = true;
 
 const state = {
-  isTutorialMode: false,
+  isTutorialMode: true,
   showTutorialStoryBoard: false,
   activeStepStoryboard: 0,
   activeStepMainTutorial: 0,
   activePointMainTutorial: 0,
+  activeActionMainTutorial: 0,
   firstTimeApp: localStorage.showFirstAppTutorial ? false : true,
   interective: {
     first_instructions: {
       title: 'Instructions:',
       points: [
         {
+          actions: [
+            {
+              tooltip: '',
+              actionStatus: 'done'
+            },
+          ],
           done: true,
           isActive: false,
           content: '<div class="text-block">When working with AI, you can divide the process into 2 overarching steps:</div><p>1) Knowing your data</p> <p>2) Building your model</p>'
@@ -20,14 +27,30 @@ const state = {
     },
     import_data: {
       title: 'Step 1. Import your data',
-      tooltip: 'Data > Data...',
       points: [
         {
           done: false,
           isActive: false,
           class_style: 'list_subtitle',
-          tooltip: 'Data > Data...',
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset',
+          actions: [
+            {
+              tooltip: 'Data > Data...',
+              actionStatus: 'disabled'
+            },
+            {
+              tooltip: 'Data > Data...',
+              actionStatus: 'disabled'
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              actionStatus: 'disabled'
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              actionStatus: 'disabled'
+            }
+          ],
         },
         {
           done: false,
@@ -45,7 +68,7 @@ const state = {
           done: false,
           isActive: false,
           tooltip: 'Data > Data...',
-          content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
+          content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.'
         }
       ]
     }
@@ -69,7 +92,10 @@ const getters = {
     return state.interective[getters.getActiveStep].points
   },
   getActivePoint(state, getters) {
-    return getters.getPoints[state.activePointMainTutorial].isActive
+    return getters.getPoints[state.activePointMainTutorial]
+  },
+  getActiveAction(state, getters) {
+    return getters.getActivePoint.actions[state.activeActionMainTutorial]
   }
 }
 
@@ -95,6 +121,10 @@ const mutations = {
   SET_pointActivate(state, value,) {
     let points = state.interective[value.step].points;
     points[value.point].isActive = value.isActive;
+  },
+  SET_activeAction(state, value) {
+    let actions = state.interective[value.step].points[value.point].actions;
+    actions[value.action].actionStatus = value.actionStatus
   },
   SET_pointDone(state, value) {
     let points = state.interective[value.step].points;

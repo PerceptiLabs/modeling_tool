@@ -1,6 +1,5 @@
 <template lang="pug">
-.tutorial-instruction-box 
-    //(v-if="isTutorialMode")
+.tutorial-instruction-box(v-if="isTutorialMode") 
     button.btn.btn--dark-blue-rev.green-status(type="button"
       @click="showInstructions"
     )
@@ -50,7 +49,7 @@ export default {
       points:         'mod_tutorials/getPoints',
       interective:    'mod_tutorials/getIterective',
       isTutorialMode: 'mod_tutorials/getIstutorialMode',
-      stepCount:      'mod_tutorials/getActiveStepMainTutorial'
+      stepCount:      'mod_tutorials/getActiveStepMainTutorial',
     }),
     stepsLength() {
       return Object.keys(this.interective).length - 1
@@ -58,9 +57,10 @@ export default {
   },
   methods: {
     ...mapMutations({
-      setActiveStep:  'mod_tutorials/SET_activeStepMainTutorial',
-      setActivePoint: 'mod_tutorials/SET_pointActivate',
-      setPointDone:   'mod_tutorials/SET_pointDone'
+      setActiveStep:    'mod_tutorials/SET_activeStepMainTutorial',
+      setActivePoint:   'mod_tutorials/SET_pointActivate',
+      setPointDone:     'mod_tutorials/SET_pointDone',
+      setActiveAction:  'mod_tutorials/SET_activeAction'
     }),
     showInstructions() {
       this.isShowInstructions =  !this.isShowInstructions
@@ -78,10 +78,40 @@ export default {
     },
     pointActivate() {
       this.pointsDeactivate()
-      for(let index = 0; index < this.points.length; index++ ) {
-        let point = this.points[index]
+      let actionsDoneCount = 0;
+      
+      for(let indexPoint = 0; indexPoint < this.points.length; indexPoint++ ) {
+        let point = this.points[indexPoint]
         if(!point.done && !point.isActive) {
-          this.setActivePoint({step: this.activeStep, point: index, isActive: true})
+          this.setActivePoint({step: this.activeStep, point: indexPoint, isActive: true})
+          
+          for(let indexAction = 0; indexAction < point.actions.length; indexAction++) {
+            let action = point.actions[indexAction]
+            if(action.actionStatus === 'done') {
+              actionsDoneCount++
+              if(actionsDoneCount === point.actions.length) {
+                
+                break
+              }
+            }
+            if(action.actionStatus === 'active') {
+                this.setActiveAction({
+                step: this.activeStep, 
+                point: indexPoint, 
+                action: indexAction, 
+                actionStatus: 'done'
+              })
+            }
+            if(action.actionStatus === 'disabled') {
+              this.setActiveAction({
+                step: this.activeStep, 
+                point: indexPoint, 
+                action: indexAction, 
+                actionStatus: 'active'
+              })
+              break
+            }
+          }
           break
         }
       }
