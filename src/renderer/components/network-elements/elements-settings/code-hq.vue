@@ -10,7 +10,7 @@
   import 'codemirror/mode/python/python.js'
   // theme css
   import 'codemirror/lib/codemirror.css'
-  import 'codemirror/theme/monokai.css'
+  //import 'codemirror/theme/monokai.css'
   //import 'codemirror/theme/base16-dark.css' //#5B657B
   // require active-line.js
   import'codemirror/addon/selection/active-line.js'
@@ -210,6 +210,10 @@
 </script>
 <style lang="scss">
   @import "../../../scss/base";
+  @import "../../../scss/components/vscode-theme-dark_plus";
+
+
+
   .CodeMirror-sizer {
     margin: 0 !important;
   }

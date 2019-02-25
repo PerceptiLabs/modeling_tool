@@ -2,9 +2,9 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/renderer/scss/components/_vscode-theme-dark_plus.scss" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/code-hq.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/code-hq.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -17,29 +17,47 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/renderer/pages/login/login.vue">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/code-hq.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="68">
-              <caret line="72" column="9" lean-forward="true" selection-start-line="72" selection-start-column="9" selection-end-line="72" selection-end-column="9" />
+            <state relative-caret-position="4380">
+              <caret line="208" column="3" lean-forward="true" selection-start-line="208" selection-start-column="3" selection-end-line="208" selection-end-column="3" />
+              <folding>
+                <element signature="e#158#212#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_vscode-theme-dark_plus.scss">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="220">
+              <caret line="10" column="15" selection-start-line="10" selection-start-column="15" selection-end-line="10" selection-end-column="15" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/renderer/scss/base/_variables.scss">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="550">
+              <caret line="25" column="13" lean-forward="true" selection-start-line="25" selection-start-column="13" selection-end-line="25" selection-end-column="13" />
             </state>
           </provider>
         </entry>
       </file>
     </leaf>
   </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="SCSS File" />
+      </list>
+    </option>
+  </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>date ele</find>
-      <find>.popup_header</find>
-      <find>vue</find>
-      <find>customColor</find>
-      <find>SET_appPath</find>
-      <find>consol</find>
-      <find>imgs</find>
-      <find>format('woff')</find>
-      <find>.svg</find>
-      <find>this.$nextTick</find>
       <find>debounce</find>
       <find>API_runServer</find>
       <find>Training pause</find>
@@ -60,6 +78,16 @@
       <find>switchMerge</find>
       <find>vue-codemirror</find>
       <find>name</find>
+      <find>.cm-s-monokai</find>
+      <find>.cm-s-monokai</find>
+      <find>&quot;: &quot;</find>
+      <find>cm-comment</find>
+      <find>#f8f8f2</find>
+      <find>set-process-reshape.vue</find>
+      <find>builtin</find>
+      <find>string</find>
+      <find>key</find>
+      <find>number</find>
     </findStrings>
     <dirStrings>
       <dir>G:\progects\quantumnet\src\renderer</dir>
@@ -76,7 +104,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/renderer/scss/fonts/_roboto.scss" />
         <option value="$PROJECT_DIR$/src/renderer/pages/projects/sidebar/sidebar.pug" />
         <option value="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" />
         <option value="$PROJECT_DIR$/src/renderer/pages/policy/policy.vue" />
@@ -121,12 +148,13 @@
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/codeHq.vue" />
         <option value="$PROJECT_DIR$/src/renderer/main.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/setting-code.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue" />
         <option value="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" />
         <option value="$PROJECT_DIR$/src/renderer/scss/common/_popups.scss" />
         <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/code-hq.vue" />
         <option value="$PROJECT_DIR$/src/renderer/pages/login/login.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/scss/components/_vscode-theme-dark_plus.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue" />
       </list>
     </option>
   </component>
@@ -167,6 +195,49 @@
               <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="process-reshape" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements-settings" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="pages" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
@@ -176,6 +247,29 @@
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="pages" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="login" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="scss" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="scss" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="base" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="scss" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
           </expand>
           <select />
@@ -188,6 +282,7 @@
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editor.config.ad.shown" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="list.type.of.created.stylesheet" value="SCSS" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="G:\progects\quantumnet\node_modules\prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.HTML" />
@@ -367,12 +462,12 @@
       <workItem from="1550765562649" duration="399000" />
       <workItem from="1550765991377" duration="55000" />
       <workItem from="1550820432117" duration="25498000" />
-      <workItem from="1551078318293" duration="5896000" />
+      <workItem from="1551078318293" duration="12000000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="270459000" />
+    <option name="totallyTimeSpent" value="276563000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -466,23 +561,6 @@
     </option>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="482">
-          <caret line="150" column="35" selection-start-line="150" selection-start-column="35" selection-end-line="150" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-dbscans/viewBox-classic-ml-dbscans.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-240" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-means/viewBox-classic-ml-k-means.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-240" />
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-nearest/viewBox-classic-ml-k-nearest.vue">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-240" />
@@ -763,30 +841,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1496">
-          <caret line="70" column="8" selection-start-line="70" selection-start-column="8" selection-end-line="70" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="684">
           <caret line="122" column="43" selection-start-line="122" selection-start-column="43" selection-end-line="122" selection-end-column="43" />
           <folding>
             <element signature="e#0#40#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/code-hq.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="206" column="20" lean-forward="true" selection-start-line="206" selection-start-column="20" selection-end-line="206" selection-end-column="20" />
-          <folding>
-            <element signature="e#158#212#0" expanded="true" />
-            <element signature="e#310#348#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -812,10 +872,51 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/node_modules/codemirror/theme/monokai.css">
+      <provider selected="true" editor-type-id="text-editor">
+        <state>
+          <caret selection-end-line="41" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/code-hq.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4380">
+          <caret line="208" column="3" lean-forward="true" selection-start-line="208" selection-start-column="3" selection-end-line="208" selection-end-column="3" />
+          <folding>
+            <element signature="e#158#212#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_vscode-theme-dark_plus.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="220">
+          <caret line="10" column="15" selection-start-line="10" selection-start-column="15" selection-end-line="10" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/pages/login/login.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="68">
-          <caret line="72" column="9" lean-forward="true" selection-start-line="72" selection-start-column="9" selection-end-line="72" selection-end-column="9" />
+        <state>
+          <caret line="6" column="22" lean-forward="true" selection-start-line="6" selection-start-column="22" selection-end-line="6" selection-end-column="22" />
+          <folding>
+            <element signature="e#1138#1188#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="706">
+          <caret line="75" lean-forward="true" selection-start-line="75" selection-end-line="75" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/base/_variables.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="550">
+          <caret line="25" column="13" lean-forward="true" selection-start-line="25" selection-start-column="13" selection-end-line="25" selection-end-column="13" />
         </state>
       </provider>
     </entry>
