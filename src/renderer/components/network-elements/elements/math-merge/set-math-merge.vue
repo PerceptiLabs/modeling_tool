@@ -45,10 +45,10 @@
             ) Apply
 
 
-      .popup_body(
-        :class="{'active': tabSelected == 1}"
+      .popup_body(:class="{'active': tabSelected == 1}")
+        settings-code(
+          :the-code="coreCode"
         )
-        settings-code
 
 </template>
 
@@ -74,6 +74,42 @@ export default {
   methods: {
     showVal(v) {
       console.log(v);
+    }
+  },
+  computed: {
+    coreCode() {
+      switch (this.settings.Type) {
+        case 'Add':
+          return `for i in range(0,len(list(X.values())),2):
+                    if not Y:
+                       Y=list(X.values())[i]
+                    Y=tf. add(list(X.values())[i],Y)`
+          break;
+        case 'Sub':
+          return `for i in range(0,len(list(X.values())),2):
+                    if not Y:
+                       Y=list(X.values())[i]
+                    Y=tf. subtract(list(X.values())[i],Y)`
+          break;
+        case 'Multi':
+          return `for i in range(0,len(list(X.values())),2):
+                  if not Y:
+                     Y=list(X.values())[i]
+                  Y=tf.multiply(list(X.values())[i],Y)`
+          break;
+        case 'Div':
+          return `for i in range(0,len(list(X.values())),2):
+                    if not Y:
+                       Y=list(X.values())[i]
+                    Y=tf.divide(list(X.values())[i],Y)`
+          break;
+        case 'Concat':
+          return `for c in range(0,len(list(X.values())),2):
+                    if not Y:
+                       Y=c
+                    Y=tf.concat([Y, list(X.values())[c]],properties["${this.settings.Merge_dim}"])`
+          break;
+      }
     }
   }
 }

@@ -22,14 +22,14 @@ const chartsMixin = {
     }
   },
   mounted() {
-    if(this._name != '<ChartPicture>') {
+    if(this._name !== '<ChartPicture>') {
       this.$refs.chart.showLoading(this.chartSpinner);
       this.createWWorker();
       window.addEventListener("resize", ()=> { this.$refs.chart.resize()}, false);
     }
   },
   beforeDestroy() {
-    if(this._name != '<ChartPicture>') {
+    if(this._name !== '<ChartPicture>') {
       this.wWorker.postMessage('close');
       this.wWorker.removeEventListener('message', this.drawChart, false);
       this.$refs.chart.dispose();
@@ -57,7 +57,7 @@ const chartsMixin = {
     },
     '$store.state.mod_events.chartResize': {
       handler() {
-        this.$refs.chart.resize();
+        if(this._name !== '<ChartPicture>') this.$refs.chart.resize();
       }
     }
   },

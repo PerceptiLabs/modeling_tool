@@ -64,7 +64,9 @@
       .popup_body(
           :class="{'active': tabSelected == 1}"
         )
-        settings-code
+        settings-code(
+          :the-code="coreCode"
+        )
 
 </template>
 
@@ -86,6 +88,21 @@
           Activation_function: "Sigmoid",
           Dropout: false,
         }
+      }
+    },
+    computed: {
+      coreCode() {
+        return `
+        shape=[input_size,properties["${this.settings.Neurons}"]];
+        initial = tf.truncated_normal(shape, stddev=0.1);
+        W=tf.Variable(initial);
+        initial = tf.constant(0.1, shape=[properties["${this.settings.Neurons}"]]);
+        b=tf.Variable(initial);
+        flat_node=tf.cast(tf.reshape(X,[-1,input_size]),dtype=tf.float32);
+        node=tf.matmul(flat_node,W);
+        node=tf.nn.dropout(node,keep_prob);
+        node=node+b
+        `
       }
     }
   }

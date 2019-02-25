@@ -49,7 +49,9 @@
       .popup_body(
           :class="{'active': tabSelected == 1}"
         )
-        settings-code
+        settings-code(
+          :the-code="coreCode"
+        )
 
 </template>
 
@@ -73,8 +75,29 @@ export default {
       }
     }
   },
-  methods: {
-
+  computed: {
+    coreCode() {
+      switch (this.settings.Version) {
+        case 'LSTM':
+          return `node=tf.reshape(X,[-1, properties["${this.settings.Time_steps}"], np.prod(X.get_shape().as_list()[1:])]);
+                  cell = tf.nn.rnn_cell.LSTMCell(properties["${this.settings.Neurons}"], state_is_tuple=True);
+                  rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
+                  Y=tf.reshape(rnn_outputs,[-1,cell.output_size])`
+          break;
+        case 'GRU':
+          return `node=tf.reshape(X,[-1, properties["${this.settings.Time_steps}"], np.prod(X.get_shape().as_list()[1:])]);
+                  cell = tf.nn.rnn_cell.GRUCell(properties["${this.settings.Neurons}"]);
+                  rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
+                  Y=tf.reshape(rnn_outputs,[-1,cell.output_size])`
+          break;
+        case 'RNN':
+          return `node=tf.reshape(X,[-1, properties["${this.settings.Time_steps}"], np.prod(X.get_shape().as_list()[1:])]);
+                  cell = tf.nn.rnn_cell.BasicRNNCell(properties["${this.settings.Neurons}"]);
+                  rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
+                  Y=tf.reshape(rnn_outputs,[-1,cell.output_size])`
+          break;
+      }
+    }
   }
 }
 </script>

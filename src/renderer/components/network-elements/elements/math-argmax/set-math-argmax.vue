@@ -27,10 +27,10 @@
               ) Apply
 
 
-      .popup_body(
-        :class="{'active': tabSelected == 1}"
+      .popup_body(:class="{'active': tabSelected == 1}")
+        settings-code(
+          :the-code="coreCode"
         )
-        settings-code
 
 </template>
 
@@ -54,7 +54,10 @@ export default {
       }
     }
   },
-  methods: {
+  computed: {
+    coreCode() {
+      return `Y=tf.argmax(X,properties["${this.settings.Dim}"])`
+    }
   }
 }
 </script>
