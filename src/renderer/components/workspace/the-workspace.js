@@ -98,11 +98,7 @@ export default {
         const scaleH = net.offsetHeight/net.scrollHeight;
         const scaleW = net.offsetWidth/net.scrollWidth;
         const maxScale = scaleH < scaleW ? scaleH : scaleW;
-        console.log(this.scale);
         this.scale = +maxScale.toFixed(1) * 100
-        // if(maxScale < 1) {
-        //   this.scale = +maxScale.toFixed(1) * 100
-        // }
       })
       //console.log('calcScaleMap');
     },
