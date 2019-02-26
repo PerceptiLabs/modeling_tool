@@ -53,7 +53,8 @@ export default {
   },
   computed: {
     coreCode() {
-      return `Y=tf.one_hot(tf.cast(X,dtype=tf.int32),properties['${this.settings.N_class}'])`
+      return `
+      Y=tf.one_hot(tf.cast(X,dtype=tf.int32),properties['${this.settings.N_class}'])`
     }
   }
 }

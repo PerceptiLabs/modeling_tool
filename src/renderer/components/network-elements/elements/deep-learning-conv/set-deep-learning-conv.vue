@@ -168,44 +168,48 @@ export default {
       }
       switch (this.settings.Conv_dim) {
         case 'Automatic':
-          return `properties["${this.settings.Conv_dim}"] = str(len(X.get_shape())-1) + "D"
-                  ${addPooling}`
+          return `
+          properties["${this.settings.Conv_dim}"] = str(len(X.get_shape())-1) + "D"
+          ${addPooling}`
           break;
         case '1D':
-          return `shape=[properties["${this.settings.Patch_size}"],X.get_shape()[-1].value,properties["${this.settings.Feature_maps}"]];
-                  initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(properties["${this.settings.Patch_size}"]**2 * properties["${this.settings.Feature_maps}"])));
-                  W = tf.Variable(initial);
-                  initial = tf.constant(0.1, shape=[properties["${this.settings.Feature_maps}"]]);
-                  b=tf.Variable(initial);
-                  node = tf.nn.conv1d(X, W, properties["${this.settings.Stride}"],
-                  padding=properties["${this.settings.Padding}"]);
-                  node=tf.nn.dropout(node, keep_prob);
-                  node=node+b
-                  ${addPooling}`
+          return `
+          shape=[properties["${this.settings.Patch_size}"],X.get_shape()[-1].value,properties["${this.settings.Feature_maps}"]];
+          initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(properties["${this.settings.Patch_size}"]**2 * properties["${this.settings.Feature_maps}"])));
+          W = tf.Variable(initial);
+          initial = tf.constant(0.1, shape=[properties["${this.settings.Feature_maps}"]]);
+          b=tf.Variable(initial);
+          node = tf.nn.conv1d(X, W, properties["${this.settings.Stride}"],
+          padding=properties["${this.settings.Padding}"]);
+          node=tf.nn.dropout(node, keep_prob);
+          node=node+b
+          ${addPooling}`
           break;
         case '2D':
-          return `shape=[properties["${this.settings.Patch_size}"],properties["${this.settings.Patch_size}"],X.get_shape()[-1].value,properties["${this.settings.Feature_maps}"]];
-                  initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(properties["${this.settings.Patch_size}"]**2 * properties["${this.settings.Feature_maps}"])));
-                  W = tf.Variable(initial);
-                  initial = tf.constant(0.1, shape=[properties["${this.settings.Feature_maps}"]]);
-                  b=tf.Variable(initial);
-                  node = tf.nn.conv2d(X, W, strides=[1, properties["${this.settings.Stride}"],properties["${this.settings.Stride}"], 1], padding=properties["${this.settings.Padding}"]);
-                  node=tf.nn.dropout(node, keep_prob);
-                  node=node+b
-                  ${addPooling}`
+          return `
+          shape=[properties["${this.settings.Patch_size}"],properties["${this.settings.Patch_size}"],X.get_shape()[-1].value,properties["${this.settings.Feature_maps}"]];
+          initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(properties["${this.settings.Patch_size}"]**2 * properties["${this.settings.Feature_maps}"])));
+          W = tf.Variable(initial);
+          initial = tf.constant(0.1, shape=[properties["${this.settings.Feature_maps}"]]);
+          b=tf.Variable(initial);
+          node = tf.nn.conv2d(X, W, strides=[1, properties["${this.settings.Stride}"],properties["${this.settings.Stride}"], 1], padding=properties["${this.settings.Padding}"]);
+          node=tf.nn.dropout(node, keep_prob);
+          node=node+b
+          ${addPooling}`
           break;
         case '3D':
-          return `shape=[properties["${this.settings.Patch_size}"],properties["${this.settings.Patch_size}"],properties["${this.settings.Patch_size}"],X.get_shape()[-1].value,properties["${this.settings.Feature_maps}"]];
-                  initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(properties["${this.settings.Patch_size}"]**2 * properties["${this.settings.Feature_maps}"])));
-                  W = tf.Variable(initial);
-                  initial = tf.constant(0.1, shape=[properties["${this.settings.Feature_maps}"]]);
-                  b=tf.Variable(initial);
-                  node = tf.nn.conv3d(X, W, strides=[1, properties["${this.settings.Stride}"],
-                  properties["${this.settings.Stride}"], properties["${this.settings.Stride}"], 1],
-                  padding=properties["${this.settings.Padding}"]);
-                  node=tf.nn.dropout(node, keep_prob);
-                  node=node+b
-                  ${addPooling}`
+          return `
+          shape=[properties["${this.settings.Patch_size}"],properties["${this.settings.Patch_size}"],properties["${this.settings.Patch_size}"],X.get_shape()[-1].value,properties["${this.settings.Feature_maps}"]];
+          initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(properties["${this.settings.Patch_size}"]**2 * properties["${this.settings.Feature_maps}"])));
+          W = tf.Variable(initial);
+          initial = tf.constant(0.1, shape=[properties["${this.settings.Feature_maps}"]]);
+          b=tf.Variable(initial);
+          node = tf.nn.conv3d(X, W, strides=[1, properties["${this.settings.Stride}"],
+          properties["${this.settings.Stride}"], properties["${this.settings.Stride}"], 1],
+          padding=properties["${this.settings.Padding}"]);
+          node=tf.nn.dropout(node, keep_prob);
+          node=node+b
+          ${addPooling}`
           break;
       }
     }

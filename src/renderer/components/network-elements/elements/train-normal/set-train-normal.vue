@@ -105,8 +105,9 @@ export default {
   },
   computed: {
     coreCode() {
-      return `Y=tf.reshape(X, [-1]+[${this.settings.Loss} for ${this.settings.Learning_rate} in "+str(${this.settings.Optimizer})+"]);
-              Y=tf.transpose(Y,perm="+str([0]+[i+1 for i in properties["Permutation"]])+")`
+      return `
+      Y=tf.reshape(X, [-1]+[${this.settings.Loss} for ${this.settings.Learning_rate} in "+str(${this.settings.Optimizer})+"]);
+      Y=tf.transpose(Y,perm="+str([0]+[i+1 for i in properties["Permutation"]])+")`
     }
   }
 }

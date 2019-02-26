@@ -92,7 +92,8 @@
     },
     computed: {
       coreCode() {
-        return `Y=tf.image.crop_to_bounding_box(X, properties["${this.settings.Offset_height}"], properties["${this.settings.Offset_width}"], properties["${this.settings.Target_height}"], properties["${this.settings.Target_width}"])`
+        return `
+        Y=tf.image.crop_to_bounding_box(X, properties["${this.settings.Offset_height}"], properties["${this.settings.Offset_width}"], properties["${this.settings.Target_height}"], properties["${this.settings.Target_width}"])`
       }
     }
   }
