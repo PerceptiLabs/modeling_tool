@@ -21,7 +21,7 @@
           v-for="(point, index) in points"
           v-html="point.content"
           :key="index"
-          :class="[point.class_style, {'active': point.isActive}]"
+          :class="[point.class_style, {'active': point.pointStatus === 'active'}]"
         )
           
       footer.list-area_footer
@@ -34,7 +34,7 @@
           button.footer_btn(v-if="stepCount < stepsLength" @click="changeStep('next')") Next
 </template>
 <script>
-import { mapGetters, mapMutations } from 'vuex';
+import { mapGetters, mapMutations, mapActions } from 'vuex';
 export default {
   name: 'TutorialInstructions',
   data() {
@@ -58,71 +58,22 @@ export default {
   methods: {
     ...mapMutations({
       setActiveStep:    'mod_tutorials/SET_activeStepMainTutorial',
-      setActivePoint:   'mod_tutorials/SET_pointActivate',
-      setPointDone:     'mod_tutorials/SET_pointDone',
-      setActiveAction:  'mod_tutorials/SET_activeAction'
+    }),
+    ...mapActions({
+      pointActivate:    'mod_tutorials/pointActivate',
+      pointsDeactivate: 'mod_tutorials/pointsDeactivate',
     }),
     showInstructions() {
       this.isShowInstructions =  !this.isShowInstructions
     },
     changeStep(way) {
       if(way === 'next') {
-        this.count++
-        this.setActiveStep(this.count)
+        this.setActiveStep(way)
         this.pointActivate()
       } else {
-          this.count--
-          this.setActiveStep(this.count)
+          this.setActiveStep(way)
           this.pointsDeactivate()
       }
-    },
-    pointActivate() {
-      this.pointsDeactivate()
-      let actionsDoneCount = 0;
-      
-      for(let indexPoint = 0; indexPoint < this.points.length; indexPoint++ ) {
-        let point = this.points[indexPoint]
-        if(!point.done && !point.isActive) {
-          this.setActivePoint({step: this.activeStep, point: indexPoint, isActive: true})
-          
-          for(let indexAction = 0; indexAction < point.actions.length; indexAction++) {
-            let action = point.actions[indexAction]
-            if(action.actionStatus === 'done') {
-              actionsDoneCount++
-              if(actionsDoneCount === point.actions.length) {
-                
-                break
-              }
-            }
-            if(action.actionStatus === 'active') {
-                this.setActiveAction({
-                step: this.activeStep, 
-                point: indexPoint, 
-                action: indexAction, 
-                actionStatus: 'done'
-              })
-            }
-            if(action.actionStatus === 'disabled') {
-              this.setActiveAction({
-                step: this.activeStep, 
-                point: indexPoint, 
-                action: indexAction, 
-                actionStatus: 'active'
-              })
-              break
-            }
-          }
-          break
-        }
-      }
-    },
-    pointsDeactivate() {
-      for(let index = 0; index < this.points.length; index++ ) {
-        if(this.activeStep !== 'first_instructions') {
-          this.setActivePoint({step: this.activeStep, point: index, isActive: false})
-          this.setPointDone({step: this.activeStep, point: index, done: false})
-        }
-      } 
     }
   },
   mounted() {
