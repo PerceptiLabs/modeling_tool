@@ -74,7 +74,13 @@ export default {
       this.scale = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
-
+    networkClass() {
+      this.calcScaleMap();
+      return {
+        'open-statistic': this.statisticsIsOpen,
+        'open-test': this.testIsOpen
+      }
+    }
   },
   watch: {
     statusNetworkCore(newStatus, oldStatus) {
@@ -86,6 +92,20 @@ export default {
     },
   },
   methods: {
+    calcScaleMap() {
+      this.$nextTick(()=>{
+        const net = this.$refs.networkField[0].$refs.network;
+        const scaleH = net.offsetHeight/net.scrollHeight;
+        const scaleW = net.offsetWidth/net.scrollWidth;
+        const maxScale = scaleH < scaleW ? scaleH : scaleW;
+        console.log(this.scale);
+        this.scale = +maxScale.toFixed(1) * 100
+        // if(maxScale < 1) {
+        //   this.scale = +maxScale.toFixed(1) * 100
+        // }
+      })
+      //console.log('calcScaleMap');
+    },
     scaleScroll(e) {
       e.wheelDelta > 0 ? this.incScale() : this.decScale();
     },
