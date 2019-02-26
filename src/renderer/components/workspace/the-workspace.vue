@@ -2,7 +2,7 @@
   main.page_workspace
     .workspace_tabset
       include ./tabset/workspace-tabset.pug
-    .workspace_content
+    .workspace_content(ref="workspaceNet")
       .network(
         v-if="indexCurrentNetwork === i"
         v-for="(net, i) in workspace"
@@ -29,7 +29,7 @@
             network-field(
               ref="networkField"
               :key="i"
-              :style="{zoom: scale + '%'}"
+              :style="{zoom: scaleNet + '%'}"
               :netIndex="i"
             )
 
