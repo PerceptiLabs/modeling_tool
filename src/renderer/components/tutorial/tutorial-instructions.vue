@@ -21,7 +21,7 @@
           v-for="(point, index) in points"
           v-html="point.content"
           :key="index"
-          :class="[point.class_style, {'active': point.pointStatus === 'active'}]"
+          :class="[point.class_style, {'active': point.pointStatus === 'active', 'done': point.pointStatus === 'done'}]"
         )
           
       footer.list-area_footer
@@ -71,13 +71,11 @@ export default {
         this.setActiveStep(way)
         this.pointActivate()
       } else {
-          this.setActiveStep(way)
           this.pointsDeactivate()
+          this.setActiveStep(way)
+          //this.pointsDeactivate()
       }
     }
-  },
-  mounted() {
-    
   }
 }
 </script>
@@ -171,7 +169,7 @@ export default {
     }
     &.active:before {
       content: "\e901";
-      left: 2rem;
+      left: 1rem;
     }
     &.done:before {
       content: "\e937";

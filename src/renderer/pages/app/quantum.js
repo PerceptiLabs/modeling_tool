@@ -98,6 +98,7 @@ export default {
     dragEnd(event) {
       this.offDragListener();
       event.target.style.opacity = "";
+      console.log(event);
     },
     dragOver(event) {
       event.preventDefault();

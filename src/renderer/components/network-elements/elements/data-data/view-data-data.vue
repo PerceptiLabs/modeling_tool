@@ -4,7 +4,7 @@
     data-layer="Data_1"
     data-type="Data"
     v-tooltip:right="'Data'"
-    v-tooltipTutorial ="{text: activeAction.tooltip, actionStatus: activeAction.actionStatus}"
+    v-tooltipTutorial ="{text: activeAction.tooltip, actionName: tutorialActionName('two'), test: 'from data data'}"
   )
     i.icon.icon-data
 
@@ -24,6 +24,11 @@ export default {
     ...mapGetters({
       activeAction:  'mod_tutorials/getActiveAction',
     })
+  },
+  methods: {
+    tutorialActionName(value) {
+      return this.activeAction.name === value
+    }
   }
 }
 </script>

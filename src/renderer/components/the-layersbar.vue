@@ -7,7 +7,7 @@
       )
         button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
           v-tooltip:right="layer.tooltip"
-          v-tooltipTutorial="{text:layer.tooltipTutorial, actionStatus: activeAction.actionStatus}"
+          v-tooltipTutorial="{text:layer.tooltipTutorial, actionName: tutorialActionName('one')}"
           @click.stop="toggleElList(i, $event)"
           :class="[layer.layerClass, {'active': layer.showEl}]"
         )
@@ -29,7 +29,7 @@
 <script>
   import clickOutside from '@/core/mixins/click-outside.js'
   import {trainingElements, deepLearnElements}  from '@/core/constants.js'
-  import { mapGetters }       from 'vuex';
+  import { mapGetters, mapActions }       from 'vuex';
 
   import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
   import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/view-io-output-backpropagation.vue'
@@ -142,8 +142,6 @@ export default {
   },
   computed: {
     ...mapGetters({
-      tutorialObject: 'mod_tutorials/getIterective',
-      activePoint:    'mod_tutorials/getActivePoint',
       activeAction:   'mod_tutorials/getActiveAction',
       isTutorialMode: 'mod_tutorials/getIstutorialMode'
     }),
@@ -155,7 +153,11 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
     toggleElList(index, ev) {
+      if(this.isTutorialMode) this.tutorialPointActivate()
       if (this.layersbarList[index].showEl) {
         this.layersbarList[index].showEl = false;
         document.removeEventListener('click', this.clickOutside);
@@ -163,7 +165,6 @@ export default {
       else {
         this.clickOutsideAction();
         this.layersbarList[index].showEl = true;
-
         this.ClickElementTracking = ev.target.closest('.js-clickout');
         document.addEventListener('click', this.clickOutside);
       }
@@ -173,15 +174,16 @@ export default {
         item.showEl = false
       });
     },
+    tutorialActionName(value) {
+      return this.activeAction.name === value
+    }
   },
   mounted() {
     
   },
   watch: {
     activeAction() {
-      if(this.isTutorialMode) {
-        this.layersbarList[0].tooltipTutorial = this.activeAction.tooltip
-      }
+      this.layersbarList[0].tooltipTutorial = this.activeAction.tooltip
     }
   }
 }
