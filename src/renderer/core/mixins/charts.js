@@ -1,9 +1,5 @@
 const chartsMixin = {
   props: {
-    headerOff: {
-      type: Boolean,
-      default: false
-    },
     chartLabel: {
       type: String,
       default: ''
@@ -47,6 +43,9 @@ const chartsMixin = {
   computed: {
     isNeedWait() {
       return this.$store.state.mod_events.chartsRequest.waitGlobalEvent
+    },
+    headerOff() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
     }
   },
   watch: {

@@ -37,6 +37,9 @@ export default {
       }
     }
   },
+  mounted() {
+    console.log(this.$root);
+  },
   data() {
     return {
 
@@ -54,5 +57,8 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+  @import "../../scss/base";
+  .open-test .the-statistics .info-section_main {
+    border-left: 2px solid $bg-window;
+  }
 </style>

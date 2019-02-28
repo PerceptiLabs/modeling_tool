@@ -37,12 +37,6 @@ const viewBoxMixin = {
     serverStatus() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
-    eventRequest() {
-      return this.$store.state.mod_events.chartsRequest.doRequest
-    },
-    // eventShowChart() {
-    //   //return this.$store.state.mod_api.startWatchGetStatus
-    // },
     testIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
     },
@@ -54,9 +48,11 @@ const viewBoxMixin = {
     statElementID() {
       this.resetViewBox();
     },
-    eventRequest(newVal) {
-      if(!(newVal % 2)) this.getData();
-    }
+    '$store.state.mod_events.chartsRequest.doRequest': {
+      handler(newVal) {
+        if(!(newVal % 2)) this.getData();
+      }
+    },
   },
   methods: {
     resetViewBox() {
@@ -73,7 +69,10 @@ const viewBoxMixin = {
       //this.$store.commit('mod_events/set_charts_requestCounterAdd');
       let theData = {
         reciever: this.currentNetworkID,
-        action: 'getLayerStatistics',
+        //action: 'getLayerStatistics',
+        action: this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+          ? 'getTestingStatistics'
+          : 'getTrainingStatistics',
         value: {
           layerId: layerId,
           layerType: layerType,

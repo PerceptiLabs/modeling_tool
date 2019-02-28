@@ -20,9 +20,8 @@ ul.workspace_tab-list
       :class="{'active': tab.networkMeta.openStatistics}")
       span Statistics
       i.icon.icon-circle-o
-    button.btn.btn--tabs.tab_statistics(type="button"
+    button.btn.btn--tabs.tab_statistics.tab--testing(type="button"
       v-if="showTestingTab"
-      class="testing-tab"
       :class="{'active': tab.networkMeta.openTest}"
       @click.stop="openTest(i)"
       )

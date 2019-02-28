@@ -73,9 +73,9 @@ export default {
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
   @import "../../scss/base";
-  .info-section_main {
+  .open-statistic .the-view-box .info-section_main {
     border-left: 2px solid $bg-window;
   }
 </style>

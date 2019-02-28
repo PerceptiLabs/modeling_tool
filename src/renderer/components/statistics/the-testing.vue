@@ -1,58 +1,49 @@
 <template lang="pug">
+  section
     .testing-head
-    //- .testing-head
-    //-   .testing-head_progress-bar-box
-    //-     .progress-bar-box_progress(:style="{width: progress + '%'}")
-    //-   .testing-head_controls  
-    //-     button.controls-btn.i.icon.icon-player-prev
-    //-     button.controls-btn.i.icon.icon-player-play
-    //-     button.controls-btn.i.icon.icon-player-next
-    //- .info-section_main(v-if="elData !== null")
-    //-   component(
-    //-     :is="elData.componentName"
-    //-     :elementData="elData.viewBox"
-    //-   )
+      .info-section_head
+        .w-50
+          h3 Input
+        .w-50
+          h3 Output
+      .testing-head_progress-bar-box
+        .progress-bar-box_progress(:style="{width: progress + '%'}")
+      .testing-head_controls
+        button.btn.btn--link.icon.icon-player-prev(type="button" @click="postTestMove('previousStep')")
+        button.btn.btn--link.icon.icon-player-play(type="button" @click="postTestStart()")
+        button.btn.btn--link.icon.icon-player-next(type="button" @click="postTestMove('nextStep')")
+    //-.info-section_main(v-if="elData !== null")
+      component(
+      //  :is="elData.componentName"
+      //  :elementData="elData.viewBox"
+      //)
 </template>
 
 <script>
-  import ClassicMLDbscans     from '@/components/network-elements/elements/classic-ml-dbscans/viewBox-classic-ml-dbscans.vue'
-  import ClassicMLKMeans      from '@/components/network-elements/elements/classic-ml-k-means/viewBox-classic-ml-k-means.vue'
-  import ClassicMLKNN         from '@/components/network-elements/elements/classic-ml-k-nearest/viewBox-classic-ml-k-nearest.vue'
-  import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/viewBox-classic-ml-random-forest.vue'
-  import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/viewBox-classic-ml-vector-machine.vue'
-
-  import TrainDynamic     from '@/components/network-elements/elements/train-dynamic/viewBox-train-dynamic.vue'
-  import TrainGenetic     from '@/components/network-elements/elements/train-genetic/viewBox-train-genetic.vue'
-  import TrainNormal      from '@/components/network-elements/elements/train-normal/viewBox-train-normal.vue'
-  import TrainNormalData  from '@/components/network-elements/elements/train-normal-data/viewBox-train-normal-data.vue'
-  import TrainReinforce   from '@/components/network-elements/elements/train-reinforce/viewBox-train-reinforce.vue'
-
-
 export default {
   name: "TheTesting",
-  components: {
-    TrainNormal, TrainNormalData, TrainGenetic, TrainDynamic, TrainReinforce,
-    ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
-  },
-  props: {
-    elData: {
-      type: Object,
-      default: function () {
-        return {}
-      }
-    }
-  },
   data() {
     return {
-      progress: 30
+      //progress: 30
     }
   },
-  methods: {
-
-  },
   computed: {
+    progress() {
+      let prog = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus.Progress;
+      return Math.round(prog * 100);
+    },
+  },
+  methods: {
+    postTestStart() {
+      this.$store.dispatch('mod_api/API_postTestPlay')
+    },
+    postTestMove(request) {
+      this.$store.dispatch('mod_api/API_postTestMove', request);
+      this.$store.commit('mod_events/set_charts_doRequest');
+      this.$nextTick(()=>this.$store.commit('mod_events/set_charts_doRequest'));
 
-  }
+    },
+  },
 }
 </script>
 
@@ -61,7 +52,7 @@ export default {
 
   .testing-head {
     border-top: 1px solid $color-10;
-    background: $col-txt2;
+    //background: $bg-toolbar;
   }
   .testing-head_progress-bar-box {
     width: 100%;
@@ -69,6 +60,7 @@ export default {
     background: #151515;
   }
   .progress-bar-box_progress {
+    @include multi-transition(width);
     height: 100%;
     background: $color-10;
   }
@@ -76,11 +68,12 @@ export default {
     display: flex;
     justify-content: center;
     padding: 1rem 0;
-  }
-  .controls-btn {
-    background: none;
-    color: $color-10;
-    font-size: 2.5rem;
+    background-color: $bg-workspace;
+    .btn {
+      color: $color-10;
+      font-size: 2.5rem;
+      margin: 0 .25em;
+    }
   }
 
 </style>

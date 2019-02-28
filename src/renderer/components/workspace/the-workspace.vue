@@ -83,19 +83,20 @@
       grid-template-areas:  'the-testing   the-testing'
                             'view-box   the-statistics'
                             'network-field  network-field';
+
     }
-    .the-statistics {
-      grid-area: the-statistics;
-    }
-    .the-testing {
-      grid-area: the-testing;
-    }
-    .the-view-box {
-      grid-area: view-box;
-    }
-    .the-network-field {
-      grid-area: network-field;
-    }
+  }
+  .the-statistics {
+    grid-area: the-statistics;
+  }
+  .the-view-box {
+    grid-area: view-box;
+  }
+  .the-testing {
+    grid-area: the-testing;
+  }
+  .the-network-field {
+    grid-area: network-field;
   }
   .network_info-section {
     display: flex;

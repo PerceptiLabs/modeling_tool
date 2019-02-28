@@ -12,42 +12,7 @@ const state = {
 };
 
 const getters = {
-  GET_data_CloseServer(state, getters, rootState, rootGetters) {
-    return {
-      //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      reciever: 'server',
-      action: 'Close',
-      value: ''
-    };
-  },
-  GET_data_PauseTraining(state, getters, rootState, rootGetters) {
-    return {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: 'Pause',
-      value: ''
-    };
-  },
-  GET_data_StopTraining(state, getters, rootState, rootGetters) {
-    return {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: 'Stop',
-      value: ''
-    };
-  },
-  GET_data_SkipValidTraining(state, getters, rootState, rootGetters) {
-    return {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: 'SkipToValidation',
-      value: ''
-    }
-  },
-  GET_data_GetStatus(state, getters, rootState, rootGetters) {
-    return {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: 'getStatus', //getIter
-      value: ''
-    };
-  },
+
 };
 
 const mutations = {
@@ -64,19 +29,6 @@ const mutations = {
     clearInterval(state.getStatusTimer);
   }
 };
-
-// Actions(value):
-
-// Start(Json Network)
-// Stop(None)
-// Pause(None)
-// SkipToValidation(None)
-// Save(path)
-// Close(None)
-// getStatistics({“layerId”:string,”variable”:string,”innervariable”:string})    (Send “”, empty string, if not use field)
-// getLayerStatistics({“layerId”:string,”variable”:string,”innervariable”:string})    (Send “”, empty string, if not use field)
-// getStatus(None)
-
 
 const actions = {
   API_runServer({state, commit, dispatch, getters, rootGetters}) {
@@ -128,24 +80,35 @@ const actions = {
       }, 5000);
     }
     function getCoreRequest() {
-      const theData = getters.GET_data_GetStatus;
+      const theData = {
+        reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+        action: 'getStatus',
+        value: ''
+      };
       const client = new requestApi();
       client.sendMessage(theData)
         .then((data)=> {
           commit('SET_statusLocalCore', 'online')
         })
-        .catch((err) =>{});
+        .catch((err) =>{
+         // console.log(err);
+        });
     }
     function coreOffline() {
       commit('SET_statusLocalCore', 'offline');
     }
   },
 
-  API_getStatus({getters, dispatch, commit}) {
-    const theData = getters.GET_data_GetStatus;
+  API_getStatus({rootGetters, dispatch, commit}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.openTest ? 'getTestStatus' :'getStatus',
+      value: ''
+    };
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
+        console.log('API_getStatus ', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -155,21 +118,6 @@ const actions = {
         commit('SET_statusLocalCore', 'offline')
       });
   },
-
-  // API_startWatchGetStatus({commit, dispatch}, message) {
-  //   commit('SET_startWatchGetStatus', message);
-  //   message ? startWatch() : stopWatch();
-  //
-  //   function startWatch() {
-  //     let timer = setInterval(()=>{
-  //       dispatch('API_getStatus')
-  //     }, 1000);
-  //     commit('SET_getStatusTimer', timer);
-  //   }
-  //   function stopWatch() {
-  //     commit('RESET_getStatusTimer');
-  //   }
-  // },
 
   API_startTraining({dispatch, getters, rootGetters}) {
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
@@ -203,23 +151,34 @@ const actions = {
       });
 
   },
-  API_pauseTraining({dispatch, rootState, getters}) {
-    const theData = getters.GET_data_PauseTraining;
+  API_pauseTraining({dispatch, rootState, rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Pause',
+      value: ''
+    };
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
         dispatch('API_getStatus');
-        rootState.mod_events.chartsRequest.waitGlobalEvent
-          ? dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
-          : dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
+        if(rootState.mod_events.chartsRequest.waitGlobalEvent) {
+          dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
+          dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+        }
+        else {
+          dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
+        }
       })
       .catch((err) =>{
         console.error(err);
       });
   },
-  API_stopTraining({dispatch, getters}) {
-    const theData = getters.GET_data_StopTraining;
+  API_stopTraining({dispatch, rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Stop',
+      value: ''
+    };
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
@@ -231,8 +190,12 @@ const actions = {
         console.error(err);
       });
   },
-  API_skipValidTraining({getters}) {
-    const theData = getters.GET_data_SkipValidTraining;
+  API_skipValidTraining({rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'SkipToValidation',
+      value: ''
+    };
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {})
@@ -242,7 +205,12 @@ const actions = {
   },
 
   API_CLOSE_core({getters, dispatch}) {
-    const theData = getters.GET_data_CloseServer;
+    const theData = {
+      //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: 'server',
+      action: 'Close',
+      value: ''
+    };
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {})
@@ -250,6 +218,56 @@ const actions = {
         console.error(err);
       });
     dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+  },
+  API_postTestStart({rootGetters, rootState, dispatch}) {
+    console.log('API_postTestStart');
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'startTest',
+      value: ''
+    };
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {
+
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+  },
+  API_postTestPlay({rootGetters, rootState, dispatch}) {
+    console.log('API_postTestPlay');
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'playTest',
+      value: ''
+    };
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {
+        rootState.mod_events.chartsRequest.waitGlobalEvent
+          ? dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+          : dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+  },
+  API_postTestMove({rootGetters, rootState, dispatch}, request) {
+    console.log('API_postTestMove ', request);
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: request, //nextStep, previousStep
+      value: ''
+    };
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {
+        dispatch('mod_api/API_getStatus', null, {root: true});
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
   },
 };
 

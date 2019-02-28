@@ -39,12 +39,13 @@ export default {
   methods: {
     runTest() {
       this.closePopup();
-      //this.$store.dispatch('mod_workspace/SET_netMode', 'training');
+      this.$store.dispatch('mod_api/API_postTestStart');
       this.$store.commit('mod_workspace/SET_currentNetwork', 0);
       this.$store.dispatch('mod_workspace/SET_elementUnselect');
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
       this.$store.dispatch('mod_workspace/SET_openStatistics', false );
       this.$store.dispatch('mod_workspace/SET_openTest', true);
+      //TODO нужно обнулить currentNet.networkMeta.coreStatus.Progress
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

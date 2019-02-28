@@ -17,14 +17,6 @@
   &.active {
     background-color: $bg-workspace;
   }
-  .btn--tabs.testing-tab {
-    margin-left: -1.5rem;
-    padding: .25em 0.8em;
-    &.active, &:hover {
-      background: $color-10;
-      color: $bg-toolbar;
-    }
-  }
 }
 .tab_close {
   margin-right: 1.25rem;
@@ -46,6 +38,16 @@
   min-width: auto;
   .icon {
     font-size: 1.2em;
+  }
+  &.tab--testing {
+    border-left: 1px solid;
+    margin-left: -1.25rem;
+    padding-left: .8em;
+    padding-right: .8em;
+    &.active, &:hover {
+      background: $color-10;
+      color: $bg-toolbar;
+    }
   }
 }
 
