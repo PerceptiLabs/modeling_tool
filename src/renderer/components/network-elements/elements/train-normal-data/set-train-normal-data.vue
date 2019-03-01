@@ -96,12 +96,13 @@
               .form_label Learning rate:
               .form_input
                 input(type="number")
-      .popup_body(
-          :class="{'active': tabSelected == 2}"
-        )
+
+      .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
-        :trainingMode="true"
+        :the-code="coreCode"
         )
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 

@@ -24,9 +24,8 @@ const netElementSettings = {
       this.tabSelected = i;
     },
     applySettings() {
-      //console.log(this.settings);
       this.hideAllWindow();
-      this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
+      this.$store.dispatch('mod_workspace/SET_elementSettings', this.coreCode)
     }
   }
 };

@@ -54,18 +54,15 @@
                   span Yes
                 base-radio(groupName="group3")
                   span No
-          .settings-layer_foot
-            button.btn.btn--primary(type="button"
-              @click="applySettings"
-            ) Apply
 
 
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
-        )
+
+      .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
-          :the-code="coreCode"
+        :the-code="coreCode"
         )
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -92,10 +89,13 @@
     computed: {
       coreCode() {
         return `
-        shape=[input_size,properties["${this.settings.Neurons}"]];
+        input_size=1
+	        for element in X.get_shape().as_list()[1:]:
+            input_size*=element
+        shape=[input_size,${this.settings.Neurons}];
         initial = tf.truncated_normal(shape, stddev=0.1);
         W=tf.Variable(initial);
-        initial = tf.constant(0.1, shape=[properties["${this.settings.Neurons}"]]);
+        initial = tf.constant(0.1, shape=[${this.settings.Neurons}]);
         b=tf.Variable(initial);
         flat_node=tf.cast(tf.reshape(X,[-1,input_size]),dtype=tf.float32);
         node=tf.matmul(flat_node,W);

@@ -43,13 +43,12 @@
                 .form_input
                   input(type="text")
 
-          .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
-
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
+      .popup_body(:class="{'active': tabSelected == 1}")
+        settings-code(
+        :the-code="coreCode"
         )
-        settings-code
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 

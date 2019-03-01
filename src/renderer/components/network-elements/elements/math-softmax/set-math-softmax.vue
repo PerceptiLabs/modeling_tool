@@ -24,12 +24,12 @@
             @click="applySettings"
             ) Apply
 
-      .popup_body(
-          :class="{'active': tabSelected == 0}"
-        )
+      .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
-          :the-code="coreCode"
+        :the-code="coreCode"
         )
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 

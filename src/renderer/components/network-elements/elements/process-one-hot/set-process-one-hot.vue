@@ -19,17 +19,12 @@
               .form_input
                 input(type="text" v-model="settings.N_class")
 
-          .settings-layer_foot
-            button.btn.btn--primary(type="button"
-            @click="applySettings"
-            ) Apply
-
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
-        )
+      .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
-          :the-code="coreCode"
+        :the-code="coreCode"
         )
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -54,7 +49,7 @@ export default {
   computed: {
     coreCode() {
       return `
-      Y=tf.one_hot(tf.cast(X,dtype=tf.int32),properties['${this.settings.N_class}'])`
+      Y=tf.one_hot(tf.cast(X,dtype=tf.int32),'${this.settings.N_class})`
     }
   }
 }

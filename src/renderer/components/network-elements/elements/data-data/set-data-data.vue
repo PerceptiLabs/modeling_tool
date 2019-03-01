@@ -24,10 +24,11 @@
                   span Data
                 base-radio(groupName="group" valueInput="Labels" v-model="settings.accessProperties.Type")
                   span Labels
-          .settings-layer_foot
-            button.btn.btn--primary(type="button" @click="applySettings") Apply
+
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-cloud
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -78,6 +79,10 @@
     },
     methods: {
       openLoadDialog,
+      applySettings() {
+        this.hideAllWindow();
+        this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
+      },
       loadFile() {
         let opt = {
           title:"Load file in Data element",

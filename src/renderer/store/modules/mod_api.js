@@ -127,20 +127,32 @@ const actions = {
       Layers: {}
     };
     elementList.forEach((el)=> {
-      message.Layers[el.layerId] = {
-        Name: el.layerName,
-        Type: el.componentName,
-        Properties: el.layerSettings,
-        backward_connections: el.connectionIn,
-        forward_connections: el.connectionOut
-      };
+      if(el.componentName === 'DataData') {
+        message.Layers[el.layerId] = {
+          Name: el.layerName,
+          Type: el.componentName,
+          Properties: el.layerSettings,
+          //Code: el.coreCode,
+          backward_connections: el.connectionIn,
+          forward_connections: el.connectionOut
+        };
+      }
+      else {
+        message.Layers[el.layerId] = {
+          Name: el.layerName,
+          Type: el.componentName,
+          //Properties: el.layerSettings,
+          Code: el.layerSettings,
+          backward_connections: el.connectionIn,
+          forward_connections: el.connectionOut
+        };
+      }
     });
     const theData = {
       reciever: net.networkID,
       action: "Start",
       value: message
     };
-
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {

@@ -41,16 +41,13 @@
               .form_label Reshape data:
               .form_input
                 input(type="text")
-          .settings-layer_foot
-            button.btn.btn--primary(type="button" @click="applySettings") Apply
 
-
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
-        )
+      .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
-          :the-code="coreCode"
+        :the-code="coreCode"
         )
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -93,7 +90,7 @@
     computed: {
       coreCode() {
         return `
-        Y=tf.image.crop_to_bounding_box(X, properties["${this.settings.Offset_height}"], properties["${this.settings.Offset_width}"], properties["${this.settings.Target_height}"], properties["${this.settings.Target_width}"])`
+        Y=tf.image.crop_to_bounding_box(X, ${this.settings.Offset_height}, ${this.settings.Offset_width}, ${this.settings.Target_height}, ${this.settings.Target_width})`
       }
     }
   }

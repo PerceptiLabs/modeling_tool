@@ -36,18 +36,13 @@
                 div
                   base-radio(groupName="group" valueInput="Div" v-model="settings.Type")
                     span Division
-          .settings-layer_section
-
-          .settings-layer_foot
-            button.btn.btn--primary(type="button"
-            @click="applySettings"
-            ) Apply
-
 
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
-          :the-code="coreCode"
+        :the-code="coreCode"
         )
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -111,7 +106,7 @@ export default {
           for c in range(0,len(list(X.values())),2):
             if not Y:
                Y=c
-            Y=tf.concat([Y, list(X.values())[c]],properties["${this.settings.Merge_dim}"])`
+            Y=tf.concat([Y, list(X.values())[c]],${this.settings.Merge_dim})`
           break;
       }
     }

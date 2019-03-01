@@ -11,8 +11,6 @@
       //-.form_holder(v-if="trainingMode")
         label.form_label Learning Rate:
         textarea
-    .settings-layer_foot
-      button.btn.btn--primary(type="button" disabled="true") Apply
 
 
 </template>

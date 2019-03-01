@@ -19,17 +19,12 @@
               .form_input
                 input(type="text" v-model="settings.Dim")
 
-          .settings-layer_section
-          .settings-layer_foot
-            button.btn.btn--primary(type="button"
-              @click="applySettings"
-              ) Apply
-
-
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
-          :the-code="coreCode"
+        :the-code="coreCode"
         )
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -55,7 +50,7 @@ export default {
   },
   computed: {
     coreCode() {
-      return `Y=tf.argmax(X,properties["${this.settings.Dim}"])`
+      return `Y=tf.argmax(X,${this.settings.Dim})`
     }
   }
 }
