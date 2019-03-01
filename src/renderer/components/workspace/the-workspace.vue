@@ -2,12 +2,12 @@
   main.page_workspace
     .workspace_tabset
       include ./tabset/workspace-tabset.pug
-    .workspace_content
+    .workspace_content(ref="workspaceNet")
       .network(
         v-if="indexCurrentNetwork === i"
         v-for="(net, i) in workspace"
         :key="net.i"
-        :class="{'open-statistic': statisticsIsOpen, 'open-test': testIsOpen}"
+        :class="networkClass"
       )
         the-testing.the-testing(v-if="testIsOpen")
         the-statistics.the-statistics(
@@ -27,8 +27,9 @@
             @wheel.ctrl="scaleScroll($event)"
             )
             network-field(
+              ref="networkField"
               :key="i"
-              :style="{zoom: scale + '%'}"
+              :style="{zoom: scaleNet + '%'}"
               :netIndex="i"
             )
 
@@ -38,8 +39,6 @@
 
     .workspace_meta
       include ./meta/workspace-meta.pug
-
-
 
 </template>
 

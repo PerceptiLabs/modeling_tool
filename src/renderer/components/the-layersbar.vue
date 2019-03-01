@@ -7,9 +7,9 @@
       )
         button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
           v-tooltip:right="layer.tooltip"
-          v-tooltipTutorial="{text:layer.tooltipTutorial, actionName: tutorialActionName('one')}"
           @click.stop="toggleElList(i, $event)"
           :class="[layer.layerClass, {'active': layer.showEl}]"
+          :id="layer.id"
         )
           i.icon(:class="layer.iconClass")
         ul.layer_child-list(
@@ -95,7 +95,8 @@ export default {
           layerClass: 'net-element-data',
           iconClass: 'icon-data',
           showEl: false,
-          networkElements: ['DataData', 'DataEnvironment']
+          networkElements: ['DataData', 'DataEnvironment'],
+          id:'tutorial_data'
           //networkElements: ['DataData']
         },
         {
@@ -103,7 +104,8 @@ export default {
           layerClass: 'net-element-process',
           iconClass: 'icon-settings',
           showEl: false,
-          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-crop']
+          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-crop'],
+          id:'tutorial_processing'
           //networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot']
         },
         {
@@ -112,14 +114,16 @@ export default {
           iconClass: 'icon-network',
           showEl: false,
           //networkElements: ['LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent']
-          networkElements: deepLearnElements
+          networkElements: deepLearnElements,
+          id:'tutorial_deep-learning'
         },
         {
           tooltip: 'Mathematics',
           layerClass: 'net-element-math',
           iconClass: 'icon-calc',
           showEl: false,
-          networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax']
+          networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax'],
+          id:'tutorial_mathematics'
           //networkElements: ['MathArgmax', 'MathMerge', 'MathSoftmax']
         },
         {
@@ -128,23 +132,21 @@ export default {
           iconClass: 'icon-training',
           showEl: false,
           //networkElements: ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
-          networkElements: trainingElements
+          networkElements: trainingElements,
+          id:'tutorial_training'
         },
         {
           tooltip: 'Classic Machine Learning',
           layerClass: 'net-element-learn-class',
           iconClass: 'icon-mind',
           showEl: false,
-          networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM']
+          networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
+          id:'tutorial_classic-machine-learning'
         }
       ],
     }
   },
   computed: {
-    ...mapGetters({
-      activeAction:   'mod_tutorials/getActiveAction',
-      isTutorialMode: 'mod_tutorials/getIstutorialMode'
-    }),
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
@@ -157,7 +159,7 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     toggleElList(index, ev) {
-      if(this.isTutorialMode) this.tutorialPointActivate()
+      this.tutorialPointActivate('next')
       if (this.layersbarList[index].showEl) {
         this.layersbarList[index].showEl = false;
         document.removeEventListener('click', this.clickOutside);
@@ -173,18 +175,10 @@ export default {
       this.layersbarList.forEach((item)=> {
         item.showEl = false
       });
-    },
-    tutorialActionName(value) {
-      return this.activeAction.name === value
     }
   },
   mounted() {
     
-  },
-  watch: {
-    activeAction() {
-      this.layersbarList[0].tooltipTutorial = this.activeAction.tooltip
-    }
   }
 }
 </script>

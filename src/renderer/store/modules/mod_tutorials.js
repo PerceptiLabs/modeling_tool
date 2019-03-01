@@ -1,12 +1,16 @@
+import { isNumber } from "util";
+
 const namespaced = true;
 
 const state = {
   isTutorialMode: true,
   showTutorialStoryBoard: false,
   activeStepStoryboard: 0,
+  
   activeStepMainTutorial: 0,
   activePointMainTutorial: 0,
   activeActionMainTutorial: 0,
+  
   firstTimeApp: localStorage.showFirstAppTutorial ? false : true,
   interective: {
     first_instructions: {
@@ -28,110 +32,96 @@ const state = {
       title: 'Step 1. Import your data',
       points: [
         {
+          type: 'interactive',
           pointStatus:'disabled',
           class_style: 'list_subtitle',
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset',
           actions: [
             {
               tooltip: 'Data > Data...1',
-              actionStatus: 'disabled',
-              name: 'one'
+              id: 'tutorial_data',
+              status: 'disabled'
             },
             {
               tooltip: 'Data > Data...2',
-              actionStatus: 'disabled',
-              name: 'two'
+              id: 'tutorial_data-data',
+              status: 'disabled'
             },
             {
               tooltip: 'Select MNIST dataset > Load...',
-              actionStatus: 'disabled',
-              name: 'three'
+              id: 'tutorial_data-data',
+              status: 'disabled'
             },
             {
               tooltip: 'Select MNIST dataset > Load...',
-              actionStatus: 'disabled',
-              name: 'four'
+              id: 'tutorial_button-load',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Apply loaded MNIST',
+              id: 'tutorial_button-apply',
+              status: 'disabled'
+            },
+            {
+              status: 'disabled'
             }
           ],
         },
         {
+          type: 'static',
           pointStatus:'disabled',
-          tooltip: 'Data > Data...',
           content: 'For this tutorial we will use the MNIST dataset',
           actions: [
             {
-              tooltip: 'Data > Data...1',
-              actionStatus: 'disabled',
-              name: 'one'
-            },
-            {
-              tooltip: 'Data > Data...2',
-              actionStatus: 'disabled',
-              name: 'two'
-            },
-            {
-              tooltip: 'Select MNIST dataset > Load...',
-              actionStatus: 'disabled',
-              name: 'three'
-            },
-            {
-              tooltip: 'Select MNIST dataset > Load...',
-              actionStatus: 'disabled',
-              name: 'four'
+              status: 'disabled',
+              tooltip: ''
             }
           ],
         },
         {
+          type: 'static',
           pointStatus:'disabled',
-          tooltip: 'Select MNIST dataset > Load...',
           content: 'Every input image has been flattened out to a 784x1 array.',
           actions: [
             {
-              tooltip: 'Data > Data...1',
-              actionStatus: 'disabled',
-              name: 'one'
+              status: 'disabled',
+              tooltip: ''
             },
-            {
-              tooltip: 'Data > Data...2',
-              actionStatus: 'disabled',
-              name: 'two'
-            },
-            {
-              tooltip: 'Select MNIST dataset > Load...',
-              actionStatus: 'disabled',
-              name: 'three'
-            },
-            {
-              tooltip: 'Select MNIST dataset > Load...',
-              actionStatus: 'disabled',
-              name: 'four'
-            }
           ],
         },
         {
+          type: 'interactive',
           pointStatus:'disabled',
           tooltip: 'Data > Data...',
           content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
           actions: [
             {
-              tooltip: 'Data > Data...1',
-              actionStatus: 'disabled',
-              name: 'one'
+              tooltip: 'Data > Data...3',
+              id: 'tutorial_data',
+              status: 'disabled'
             },
             {
-              tooltip: 'Data > Data...2',
-              actionStatus: 'disabled',
-              name: 'two'
-            },
-            {
-              tooltip: 'Select MNIST dataset > Load...',
-              actionStatus: 'disabled',
-              name: 'three'
+              tooltip: 'Data > Data...4',
+              id: 'tutorial_data-data',
+              status: 'disabled'
             },
             {
               tooltip: 'Select MNIST dataset > Load...',
-              actionStatus: 'disabled',
-              name: 'four'
+              id: 'tutorial_data-data',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              id: 'tutorial_button-load',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Apply loaded MNIST',
+              id: 'tutorial_button-apply',
+              status: 'disabled'
+            },
+            {
+              status: 'disabled'
             }
           ],
         }
@@ -150,6 +140,12 @@ const getters = {
   getActiveStepMainTutorial(state) {
     return state.activeStepMainTutorial
   },
+  getActivePointMainTutorial(state) {
+    return state.activePointMainTutorial
+  },
+  getActiveActionMainTutorial(state) {
+    return state.activeActionMainTutorial
+  },
   getActiveStep(state) {
     return Object.keys(state.interective)[state.activeStepMainTutorial]
   },
@@ -160,15 +156,14 @@ const getters = {
     return getters.getPoints[state.activePointMainTutorial]
   },
   getActiveAction(state, getters) {
-    console.log(getters.getActivePoint)
     return getters.getActivePoint.actions[state.activeActionMainTutorial]
   },
   getIsAllActionsDone(state, getters) {
-    var count = 1;
+    var count = 0;
     getters.getActivePoint.actions.forEach(action => {
-      if(action.actionStatus === 'done') count++
+      if(action.status === 'done') count++
     });
-    return count
+    return count === getters.getActivePoint.actions.length
     //return true
   }
 }
@@ -189,13 +184,16 @@ const mutations = {
   },
   SET_activeStepMainTutorial(state, value) {
     value === 'next' ? state.activeStepMainTutorial++ : state.activeStepMainTutorial--
-    console.log(state.activeStepMainTutorial)
   },
   SET_activePointMainTutorial(state, value) {
-    state.activePointMainTutorial = value
+    value === 'next' ? state.activePointMainTutorial++ : state.activePointMainTutorial--
   },
   SET_activeActionMainTutorial(state, value) {
-    state.activeActionMainTutorial = value
+    if(isNumber(value)) {
+      state.activeActionMainTutorial = value
+    } else if(value === 'next') {
+      state.activeActionMainTutorial++
+    }
   },
   SET_firstTimeApp(state, value) {
     localStorage.showFirstAppTutorial = value;
@@ -208,64 +206,75 @@ const mutations = {
   },
   SET_activeAction(state, value) {
     let actions = state.interective[value.step].points[value.point].actions;
-    actions[value.action].actionStatus = value.actionStatus
+    actions[value.action].status = value.status
   }
 };
 
 const actions = {
-  pointActivate({ state, commit, dispatch, getters}) {
-    console.log(getters.getActiveStep)
-    for(let indexPoint = 0; indexPoint < getters.getPoints.length; indexPoint++ ) {
-      let point = getters.getPoints[indexPoint]
-      if(getters.getIsAllActionsDone === 3 ) {
-        commit('SET_pointActivate', {step: getters.getActiveStep, point: indexPoint - 1, pointStatus: 'done'});
-        commit('SET_activePointMainTutorial', indexPoint)
-        commit('SET_pointActivate', {step: getters.getActiveStep, point: indexPoint, pointStatus: 'active'});
-        for(let indexAction = 0; indexAction < point.actions.length; indexAction++) {
-          let action = point.actions[indexAction]
-          if(action.actionStatus === 'active') {
-            commit('SET_activeAction',{
+  
+  pointActivate({commit, dispatch, getters}, value) {
+    if(getters.getIstutorialMode) {
+
+      //1. check first action element 
+      if(value === 'next') commit('SET_activeActionMainTutorial', 'next')
+
+      //2. remove old tooltip
+      let activeTooltip = document.querySelector('.tooltip-tutorial')
+      if(activeTooltip) activeTooltip.remove()
+      
+      //3. create new tooltip
+      console.log('1.',  getters.getActivePoint.content)
+      if(getters.getActiveAction.tooltip) {
+        let element = document.getElementById(getters.getActiveAction.id)
+        element.classList.add('tutorial-relative')
+        let tooltipBlock = document.createElement('div');
+        tooltipBlock.classList.add('tooltip-tutorial');
+        tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
+        element.appendChild(tooltipBlock)
+      }
+     
+      //4. remove id atribute in .info-section_main element
+      let infoSectionTutorialElem = document.querySelector('.info-section_main').querySelector(`#${getters.getActiveAction.id}`)
+      if(infoSectionTutorialElem) infoSectionTutorialElem.setAttribute('id', '')
+     
+      //5. set action is done
+      commit('SET_activeAction', {
+        step: getters.getActiveStep, 
+        point: getters.getActivePointMainTutorial, 
+        action: getters.getActiveActionMainTutorial, 
+        status: 'done'})
+
+      //6. marker point
+      if(getters.getIsAllActionsDone) {
+        commit('SET_pointActivate', {
+          step: getters.getActiveStep, 
+          point: getters.getActivePointMainTutorial, 
+          pointStatus: 'done'
+        });
+        commit('SET_activePointMainTutorial', 'next')
+        commit('SET_activeActionMainTutorial', 0)
+      }
+
+      //7. check type action
+      if(getters.getActivePoint.type === 'static') {
+        commit('SET_activeActionMainTutorial', 0)
+        for (let i = 0; i < getters.getPoints.length; i++) {
+          if(getters.getPoints[i].type === 'static') {
+            commit('SET_pointActivate', {
               step: getters.getActiveStep, 
-              point: indexPoint,
-              action: indexAction, 
-              actionStatus: 'done'
-            })
-          }
-          if(action.actionStatus === 'disabled') {
-            commit('SET_activeActionMainTutorial', indexAction)
-            commit('SET_activeAction',{
-              step: getters.getActiveStep, 
-              point: indexPoint, 
-              action: indexAction, 
-              actionStatus: 'active'
-            })
-            break
+              point: i,
+              pointStatus: 'done'
+            });
+            commit('SET_activePointMainTutorial', 'next')
           }
         }
-        break
       } else {
-        if(getters.getActiveStep !== 'first_instructions') commit('SET_pointActivate', {step: getters.getActiveStep, point: state.activePointMainTutorial, pointStatus: 'active'});
-        for(let indexAction = 0; indexAction < point.actions.length; indexAction++) {
-          let action = point.actions[indexAction]
-          if(action.actionStatus === 'active') {
-            commit('SET_activeAction',{
-              step: getters.getActiveStep, 
-              point: indexPoint,
-              action: indexAction, 
-              actionStatus: 'done'
-            })
-          }
-          if(action.actionStatus === 'disabled') {
-            commit('SET_activeActionMainTutorial', indexAction)
-            commit('SET_activeAction',{
-              step: getters.getActiveStep, 
-              point: indexPoint, 
-              action: indexAction, 
-              actionStatus: 'active'
-            })
-            break
-          }
-        }
+        commit('SET_pointActivate', {
+          step: getters.getActiveStep, 
+          point: getters.getActivePointMainTutorial, 
+          pointStatus: 'active'
+        });
+        console.log('2.', getters.getActivePoint.content)
       }
     }
   },

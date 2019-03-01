@@ -3,7 +3,7 @@
     i.icon.icon-minus
 
   .input-wrap_icon.workspace-scale_input
-    input(type="text" v-model.number="scale")
+    input(type="text" v-model.number="scaleNet")
     span %
 
   button.btn.btn--icon.workspace-scale_btn(type="button" @click="incScale()")
@@ -13,5 +13,5 @@
 .workspace_meta-action
   button.btn.btn--color.btn--color__purpur(type="button" disabled="disabled"
     v-if="statisticsIsOpen && statusNetworkCore == 'Finished'"
-    @click="saveModel"
+    @click="saveNetwork"
   ) Extract Data

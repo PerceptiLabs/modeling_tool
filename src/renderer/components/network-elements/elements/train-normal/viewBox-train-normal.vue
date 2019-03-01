@@ -85,7 +85,7 @@
     mixins: [viewBoxMixin],
     data() {
       return {
-        chartDataDefault: {
+        chartData: {
           Prediction: {
             Input: null,
             PvG: null,
@@ -98,7 +98,8 @@
           Loss: {
             Current: null,
             Total: null,
-          }},
+          }
+        },
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
         colorList: ['#6B8FF7', '#FECF73'],
@@ -112,25 +113,17 @@
         this.setTabAction();
       },
       getData() {
-        let name = this.currentTab;
-        if(name === 'Prediction') {
-          this.getStatistics()
+        switch (this.currentTab) {
+          case 'Prediction':
+            this.chartRequest(this.statElementID, 'TrainNormal', 'Prediction');
+            break;
+          case 'Accuracy':
+            this.chartRequest(this.statElementID, 'TrainNormal', 'Accuracy');
+            break;
+          case 'Loss':
+            this.chartRequest(this.statElementID, 'TrainNormal', 'Loss');
+            break;
         }
-        else if (name === 'Accuracy') {
-          this.getAccStatistics()
-        }
-        else if (name === 'Loss') {
-          this.getLossStatistics()
-        }
-      },
-      getStatistics() {
-        this.chartRequest(this.statElementID, 'TrainNormal', 'Prediction')
-      },
-      getAccStatistics() {
-        this.chartRequest(this.statElementID, 'TrainNormal', 'Accuracy')
-      },
-      getLossStatistics() {
-        this.chartRequest(this.statElementID, 'TrainNormal', 'Loss')
       }
     },
   }

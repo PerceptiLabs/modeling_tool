@@ -21,7 +21,7 @@
             v-validate="'alpha_spaces'"
             )
           p.text-error(v-show="errors.has('First Name')") {{ errors.first('First Name') }}
-        .form_holder
+        //-.form_holder
           input(type="tel" placeholder="Phone"
             v-model="user.phone"
             name="Phone"
@@ -79,7 +79,7 @@ export default {
         firstName: '',
         lastName: '',
         email: '',
-        phone: '',
+        phone: '+00 (000) 000-00-00',
         password: '',
         isLoading: false
       },

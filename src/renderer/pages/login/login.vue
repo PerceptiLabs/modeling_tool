@@ -1,7 +1,7 @@
 <template lang="pug">
   main.page_login
     .login_logo
-      //img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
+      img(src="./../../../../static/img/percepti-labs-logo.svg" alt="percepti labs logo")
     view-loading
     .login_main
       h1 Log In please
@@ -81,16 +81,23 @@ export default {
       this.requestCloudApi('post', 'Customer/Login', queryParams, (result, response) => {
         if (result === 'success') {
           this.$store.commit('mod_login/SET_showLoader', false);
-          let token = response.data.data.token;
-          this.$store.dispatch('globalView/SET_userToken', token);
+          let token = parseJwt(response.data.data.token);
+
+          this.$store.dispatch('globalView/SET_userToken', token.unique_name);
           if(this.saveToken) {
-            localStorage.setItem('userToken', token);
+            localStorage.setItem('userToken', token.unique_name);
           }
           this.loginUser()
         }
         else {
           this.$store.commit('mod_login/SET_showLoader', false);
           alert("Bed request, please try again");
+        }
+
+        function parseJwt(token) {
+          var base64Url = token.split('.')[1];
+          var base64 = base64Url.replace('-', '+').replace('_', '/');
+          return JSON.parse(window.atob(base64));
         }
       })
     },

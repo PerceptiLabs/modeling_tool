@@ -6,7 +6,6 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
-      :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -28,7 +27,9 @@
       .popup_body(
           :class="{'active': tabSelected == 1}"
         )
-        settings-code
+        settings-code(
+          :the-code="coreCode"
+        )
 
 </template>
 
@@ -50,8 +51,11 @@ export default {
       }
     }
   },
-  methods: {
-
+  computed: {
+    coreCode() {
+      return `
+      Y=tf.one_hot(tf.cast(X,dtype=tf.int32),properties['${this.settings.N_class}'])`
+    }
   }
 }
 </script>

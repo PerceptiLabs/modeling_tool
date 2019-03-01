@@ -3,35 +3,35 @@
     .settings-layer_section
       .form_holder
         label.form_label Cost function:
-        textarea
-      .form_holder(v-if="trainingMode")
+        code-hq( v-model="theCode")
+        //textarea(v-model="theCode" readonly="true")
+      //-.form_holder(v-if="trainingMode")
         label.form_label Optimizer:
         textarea
-      .form_holder(v-if="trainingMode")
+      //-.form_holder(v-if="trainingMode")
         label.form_label Learning Rate:
         textarea
     .settings-layer_foot
-      button.btn.btn--primary(type="button") Apply
+      button.btn.btn--primary(type="button" disabled="true") Apply
 
 
 </template>
 
 <script>
+  import codeHq    from "@/components/network-elements/elements-settings/code-hq.vue";
+
 export default {
   name: "SettingsCode",
+  components: {codeHq},
   props: {
     trainingMode: {
       type: Boolean,
       default: false
-    }
-  },
-  data() {
-    return {
-
-    }
-  },
-  methods: {
-
+    },
+    theCode: {
+      type: String,
+      default: ''
+    },
   }
 }
 </script>

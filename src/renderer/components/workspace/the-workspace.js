@@ -1,3 +1,8 @@
+import html2canvas  from 'html2canvas';
+import {remote}     from 'electron'
+import fs           from 'fs';
+
+
 import TextEditable     from '@/components/base/text-editable.vue'
 import NetworkField     from '@/components/network-field/network-field.vue'
 import GeneralSettings  from "@/components/global-popups/workspace-general-settings.vue";
@@ -6,6 +11,7 @@ import SelectCoreSide   from "@/components/global-popups/workspace-core-side";
 import TheStatistics    from "@/components/statistics/the-statistics.vue";
 import TheTesting       from "@/components/statistics/the-testing.vue";
 import TheViewBox       from "@/components/statistics/the-view-box";
+
 
 export default {
   name: 'WorkspaceContent',
@@ -21,11 +27,11 @@ export default {
   },
   data() {
     return {
-      showTestingTab: false
+      showTestingTab: false,
     }
   },
   computed: {
-    scale: {
+    scaleNet: {
       get: function () {
         let zoom = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom * 100;
         return Math.round(zoom);
@@ -74,18 +80,41 @@ export default {
       this.scale = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
-
+    currentNetwork() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork']
+    },
+    networkClass() {
+      this.calcScaleMap();
+      return {
+        'open-statistic': this.statisticsIsOpen,
+        'open-test': this.testIsOpen
+      }
+    }
   },
   watch: {
     statusNetworkCore(newStatus, oldStatus) {
       if(newStatus === 'Finished' && oldStatus === 'Validation') {
         this.$store.dispatch('globalView/NET_trainingDone');
-        this.$store.dispatch('mod_api/API_startWatchGetStatus', false);
+        this.$store.dispatch('mod_events/EVENT_startDoRequest', false);
         this.showTestingTab = true;
+      }
+    },
+    '$store.state.mod_events.saveNetwork': {
+      handler() {
+        this.saveNetwork();
       }
     },
   },
   methods: {
+    calcScaleMap() {
+      this.$nextTick(()=>{
+        const net = this.$refs.networkField[0].$refs.network;
+        const scaleH = net.offsetHeight/net.scrollHeight;
+        const scaleW = net.offsetWidth/net.scrollWidth;
+        const maxScale = scaleH < scaleW ? scaleH : scaleW;
+        this.scaleNet = +maxScale.toFixed(1) * 100
+      })
+    },
     scaleScroll(e) {
       e.wheelDelta > 0 ? this.incScale() : this.decScale();
     },
@@ -104,16 +133,16 @@ export default {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
     },
     decScale() {
-      if (this.scale <= 30) {
-        this.scale = 30
+      if (this.scaleNet <= 30) {
+        this.scaleNet = 30
       }
-      else this.scale = this.scale - 5
+      else this.scaleNet = this.scaleNet - 5
     },
     incScale () {
-      if (this.scale > 95) {
-        this.scale = 100
+      if (this.scaleNet > 95) {
+        this.scaleNet = 100
       }
-      else this.scale = this.scale + 5
+      else this.scaleNet = this.scaleNet + 5
     },
     resize(newRect, i) {
       //console.log(newRect);
@@ -132,15 +161,122 @@ export default {
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
       this.$store.dispatch('mod_workspace/SET_openTest', false);
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+      this.$store.dispatch('mod_events/EVENT_chartResize');
     },
     openTest(i) {
       this.setTabNetwork(i);
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
       this.$store.dispatch('mod_workspace/SET_openStatistics', false );
       this.$store.dispatch('mod_workspace/SET_openTest', true);
+      this.$store.dispatch('mod_events/EVENT_chartResize');
     },
-    saveModel() {
-      this.$store.commit('mod_events/set_saveNetwork');
-    }
+    saveNetwork() {
+      const dialog = remote.dialog;
+      const network = this.currentNetwork;
+      doScreenShot(this)
+        .then((img)=> {
+          const stringNet = cloneNet(network, img);
+          openSaveDialog(stringNet)
+        })
+        .catch((err)=> {console.log(err)})
+
+
+      function openSaveDialog(jsonNet) {
+        const option = {
+          title:"Save Network",
+          defaultPath: `*/${network.networkName}`,
+          filters: [
+            {name: 'Text', extensions: ['json']},
+          ]
+        };
+        dialog.showSaveDialog(null, option, (fileName) => {
+          if (fileName === undefined){
+            console.log("You didn't save the file");
+            return;
+          }
+          fs.writeFile(fileName, jsonNet, (err) => {
+            if(err){
+              alert("An error ocurred creating the file "+ err.message)
+            }
+
+            alert("The file has been succesfully saved");
+            savePathToLocal(JSON.parse(jsonNet).project, fileName)
+          });
+        });
+      }
+
+      function doScreenShot(ctx) {
+        return new Promise((resolve, reject)=> {
+          const el = ctx.$refs.workspaceNet;
+          const options = {
+            scale: 0.15 //180x135
+          };
+          return html2canvas(el, options)
+            .then((canvas)=> {
+              resolve(canvas.toDataURL())
+            });
+        })
+      }
+      function savePathToLocal(project, path) {
+        let localProjectsList = localStorage.getItem('projectsList');
+        let projectsList = [];
+        if(localProjectsList) {
+          projectsList = JSON.parse(localProjectsList);
+          let indexIdProj = projectsList.findIndex((proj)=> proj.id === project.id);
+          if(indexIdProj >= 0) {
+            project.path = [];
+            project.path.push(path);
+            projectsList[indexIdProj] = project;
+          }
+        }
+        project.path = [];
+        project.path.push(path);
+        projectsList.push(project);
+        localStorage.setItem('projectsList', JSON.stringify(projectsList))
+      }
+      function cloneNet(net, imgPath) {
+        //clone network
+        var outNet = {};
+        for (var key in net) {
+          if(key === 'networkElementList') {
+            outNet[key] = JSON.parse(cloneEl(net[key]))
+          }
+          else {
+            outNet[key] = net[key];
+          }
+        }
+        outNet.networkMeta = {};
+        //create project
+        let time = new Date();
+        var timeOptions = {
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          timezone: 'UTC',
+          hour: 'numeric',
+          minute: 'numeric',
+        };
+        let toJson = {
+          project: {
+            time: time.toLocaleString("ru", timeOptions),
+            image: imgPath,
+            name: outNet.networkName,
+            id: outNet.networkID,
+            trainedPath: '',
+            isCloud: false
+          },
+          network: outNet
+        };
+        return JSON.stringify(toJson, null, ' ');
+      }
+      function cloneEl(el) {
+        return JSON.stringify(el, (key, val)=> {
+          if (key === 'calcAnchor') {
+            return undefined;
+          }
+          return val;
+        }, ' ');
+      }
+    },
   }
 }

@@ -6,7 +6,6 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
-        :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -49,7 +48,9 @@
       .popup_body(
           :class="{'active': tabSelected == 1}"
         )
-        settings-code
+        settings-code(
+          :the-code="coreCode"
+        )
 
 </template>
 
@@ -66,9 +67,6 @@
       TripleInput,
       SettingsCode,
       VueCropper
-    },
-    mounted() {
-      //this.$refs.cropper.startCrop()
     },
     data() {
       return {
@@ -90,6 +88,12 @@
           Target_height: '16',
           Target_width: '16'
         }
+      }
+    },
+    computed: {
+      coreCode() {
+        return `
+        Y=tf.image.crop_to_bounding_box(X, properties["${this.settings.Offset_height}"], properties["${this.settings.Offset_width}"], properties["${this.settings.Target_height}"], properties["${this.settings.Target_width}"])`
       }
     }
   }

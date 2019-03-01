@@ -73,7 +73,6 @@ export default {
       } else {
           this.pointsDeactivate()
           this.setActiveStep(way)
-          //this.pointsDeactivate()
       }
     }
   }
@@ -239,4 +238,38 @@ export default {
     font-size: 1.2;
     color: $color-text-instructions;
   }
+.tooltip-tutorial {
+  font-size: 1.2rem;
+  font-weight: 400;
+	color: $bg-workspace;
+	position: absolute;
+	z-index: 100;
+	min-width: 3rem;
+	max-width: 30rem;
+	padding: .8rem .6rem;
+	border-radius: 0.2rem;
+	white-space: nowrap;
+	background-color: #3BC5FF;
+	box-shadow: $icon-shad;
+	pointer-events: none;
+	left: 120%;
+	text-align: left;
+	&:before {
+		content: '';
+		position: absolute;
+		right: 100%;
+    width: 0;
+    height: 0;
+    border-top: 6px solid transparent;
+    border-right: 10px solid #3BC5FF;
+    border-bottom: 6px solid transparent;
+	}
+}
+.tutorial-relative{
+  position: relative;
+  overflow: visible;
+}
+button.btn--primary.tutorial-relative .tooltip-tutorial{
+  top: 0;
+}
 </style>

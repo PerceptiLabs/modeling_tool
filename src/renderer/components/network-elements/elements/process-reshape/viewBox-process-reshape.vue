@@ -15,11 +15,8 @@
     components: {ChartPicture},
     mixins: [viewBoxMixin],
     methods: {
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'ProcessReshape', '')
-      },
       getData() {
-        this.getStatistics()
+        this.chartRequest(this.boxElementID, 'ProcessReshape', '')
       }
     }
   }

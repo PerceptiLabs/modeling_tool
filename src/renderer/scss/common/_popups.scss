@@ -31,20 +31,24 @@
 	}
 }
 .popup_tab-body {
-	display: flex;
-	.popup_body {
-		flex: 0 0 100%;
-		margin-right: -100%;
-		transform: rotateY(90deg);
-		transform-origin: left;
-		 + .popup_body {
-			transform: rotateY(-90deg);
-			transform-origin: right;
-		}
-		&.active {
-			transform: rotateY(0deg);
-		}
-	}
+  display: flex;
+  .popup_body {
+    flex: 0 0 100%;
+    margin-right: -100%;
+    transform: rotateY(90deg);
+    transform-origin: left;
+    width: 0;
+    overflow: hidden;
+      + .popup_body {
+        transform: rotateY(-90deg);
+        transform-origin: right;
+      }
+      &.active {
+        transform: rotateY(0deg);
+        width: 100%;
+        overflow: visible;
+      }
+  }
 }
 .popup_body {
 	display: flex;

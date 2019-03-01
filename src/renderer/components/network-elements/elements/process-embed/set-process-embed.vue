@@ -9,24 +9,24 @@
       )
         h3(v-html="tab")
     .popup_tab-body
-      .popup_body(
-        :class="{'active': tabSelected == 0}"
-      )
+      //-.popup_body(
+        /:class="{'active': tabSelected == 0}"
+        )
         .settings-layer
           .settings-layer_section
             .form_row
-              .form_label Dimension:
+              .form_label Number of classes:
               .form_input
-                input(type="text" v-model="settings.Dim")
+                input(type="text" v-model="settings.N_class")
 
-          .settings-layer_section
           .settings-layer_foot
             button.btn.btn--primary(type="button"
-              @click="applySettings"
-              ) Apply
+            @click="applySettings"
+            ) Apply
 
-
-      .popup_body(:class="{'active': tabSelected == 1}")
+      .popup_body(
+          :class="{'active': tabSelected == 0}"
+        )
         settings-code(
           :the-code="coreCode"
         )
@@ -36,26 +36,29 @@
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
 import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
-import TripleInput    from "@/components/base/triple-input";
 
 export default {
-  name: 'SetMathArgmax',
+  name: 'SetProcessEmbed',
   mixins: [mixinSet],
   components: {
-    TripleInput,
-    SettingsCode,
+    SettingsCode
   },
   data() {
     return {
-      tabs: ['Settings', 'Code'],
-      settings: {
-        Dim: -1,
-      }
+      tabs: ['Code'],
+      // settings: {
+      //   N_class: '10',
+      // }
     }
   },
   computed: {
     coreCode() {
-      return `Y=tf.argmax(X,properties["${this.settings.Dim}"])`
+      return `
+      words = tf.string_split(X);
+      vocab_size=words.get_shape().as_list()[0];
+      embed_size=10;
+      embedding = tf.Variable(tf.random_uniform((vocab_size, embed_size), -1, 1));
+      Y = tf.nn.embedding_lookup(embedding, X)`
     }
   }
 }

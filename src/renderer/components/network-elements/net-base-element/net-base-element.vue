@@ -24,6 +24,7 @@
 import baseNetDrag        from '@/core/mixins/base-net-drag.js';
 import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
 import mousedownOutside   from '@/core/mixins/mousedown-outside.js'
+import {mapActions}       from 'vuex';
 
 export default {
   name: 'NetBaseElement',
@@ -91,6 +92,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
     switchMousedownEvent(ev) {
       if (this.isLock) {
         return
@@ -112,6 +116,7 @@ export default {
       }
     },
     openSettings() {
+      setTimeout(()=>{this.tutorialPointActivate('next')}, 0) 
       this.hideAllWindow();
       if(this.networkMode === 'edit' && !this.isTraining) {
         this.settingsIsOpen = true;

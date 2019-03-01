@@ -3,8 +3,7 @@
     data-component="DataData"
     data-layer="Data_1"
     data-type="Data"
-    v-tooltip:right="'Data'"
-    v-tooltipTutorial ="{text: activeAction.tooltip, actionName: tutorialActionName('two'), test: 'from data data'}"
+    id="tutorial_data-data"
   )
     i.icon.icon-data
 
@@ -18,16 +17,6 @@ export default {
     draggable: {
       type: Boolean,
       default: false
-    }
-  },
-  computed: {
-    ...mapGetters({
-      activeAction:  'mod_tutorials/getActiveAction',
-    })
-  },
-  methods: {
-    tutorialActionName(value) {
-      return this.activeAction.name === value
     }
   }
 }

@@ -7,23 +7,21 @@ const viewBoxMixin = {
   data() {
     return {
       chartData: {},
-      idTimer: null,
-      timeInterval: 2000,
       saveParams: {}
     }
   },
-  created() {
-    if(this.chartDataDefault){
-      this.chartData = {...this.chartDataDefault}
-    }
-  },
+  // created() {
+  //   // if(this.chartDataDefault){
+  //   //   this.chartData = {...this.chartDataDefault}
+  //   // }
+  // },
   mounted() {
-    this.getStatistics();
+    this.getData();
   },
-  beforeDestroy() {
-    clearInterval(this.idTimer);
-    this.chartData = {};
-  },
+  // beforeDestroy() {
+  //   clearInterval(this.idTimer);
+  //   this.chartData = {};
+  // },
   computed: {
     statElementID() {
       let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType === 'Training');
@@ -39,9 +37,12 @@ const viewBoxMixin = {
     serverStatus() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
-    doRequest() {
-      return this.$store.state.mod_api.startWatchGetStatus
+    eventRequest() {
+      return this.$store.state.mod_events.chartsRequest.doRequest
     },
+    // eventShowChart() {
+    //   //return this.$store.state.mod_api.startWatchGetStatus
+    // },
     testIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
     },
@@ -53,21 +54,23 @@ const viewBoxMixin = {
     statElementID() {
       this.resetViewBox();
     },
-    doRequest(newVal) {
-      newVal ? this.getData() : null;
+    eventRequest(newVal) {
+      if(!(newVal % 2)) this.getData();
     }
   },
   methods: {
     resetViewBox() {
-      clearInterval(this.idTimer);
       this.getData();
     },
     setTabAction() {
-      clearInterval(this.idTimer);
-      this.chartData = {...this.chartDataDefault};
+      //this.chartData = {...this.chartDataDefault};
       this.getData();
     },
     chartRequest(layerId, layerType, view) {
+      if(layerId === undefined) {
+        return
+      }
+      //this.$store.commit('mod_events/set_charts_requestCounterAdd');
       let theData = {
         reciever: this.currentNetworkID,
         action: 'getLayerStatistics',
@@ -77,28 +80,24 @@ const viewBoxMixin = {
           view: view
         }
       };
-
-      this.idTimer = setInterval(()=>{
-        if(layerId === undefined) {
-          return
-        }
-        const client = new requestApi();
-        client.sendMessage(theData)
-          .then((data)=> {
-            Vue.nonreactive(data);
-            if(view.length) {
-              this.$set(this.chartData, view, data)
-            }
-            else this.chartData = data;
-          })
-          .catch((err) =>{
-            console.error(err);
-            clearInterval(this.idTimer);
-          });
-        if(!this.doRequest) {
-          clearInterval(this.idTimer)
-        }
-      }, this.timeInterval);
+      //console.log('send');
+      const client = new requestApi();
+      client.sendMessage(theData)
+        .then((data)=> {
+          //console.log(data);
+          if(data === 'Null') {
+            return
+          }
+          Vue.nonreactive(data);
+          if(view.length) {
+            this.$set(this.chartData, view, data)
+          }
+          else this.chartData = data;
+        })
+        .catch((err)=> {
+          console.log('answer err');
+          console.error(err);
+        });
     }
   }
 };

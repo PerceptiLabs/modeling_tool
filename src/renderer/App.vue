@@ -49,7 +49,6 @@
       }
     },
     mounted() {
-      console.log(this.$parent)
       this.calcAppPath();
       this.checkToken();
       //this.checkUserID();

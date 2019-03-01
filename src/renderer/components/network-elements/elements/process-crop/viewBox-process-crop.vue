@@ -23,11 +23,8 @@
     components: {ChartHeatmap, ChartPicture},
     mixins: [viewBoxMixin],
     methods: {
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'ProcessCrop', '')
-      },
       getData() {
-        this.getStatistics()
+        this.chartRequest(this.boxElementID, 'ProcessCrop', '')
       }
     },
   }
