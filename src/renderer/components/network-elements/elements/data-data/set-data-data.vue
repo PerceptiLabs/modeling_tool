@@ -59,6 +59,7 @@
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
+        coreCode: '',
         settings: {
           Type: 'Data',
           accessProperties: {
@@ -79,10 +80,6 @@
     },
     methods: {
       openLoadDialog,
-      applySettings() {
-        this.hideAllWindow();
-        this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
-      },
       loadFile() {
         let opt = {
           title:"Load file in Data element",

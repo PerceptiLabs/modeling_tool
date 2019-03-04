@@ -5,14 +5,14 @@
       @click="openList"
       @blur="closeList"
       )
-      span {{ selected }}
+      span {{ selectedText }}
       i.icon.icon-shevron
 
     ul.custom-select_option-list.action-list(v-if="isOpenList")
       button.custom-select_option.action-list_btn(type="button"
         v-for="(option, i) in selectOptions"
         :key="i"
-        @mousedown="selectedOption(option)"
+        @mousedown="selectedOption(option.value)"
       )
         span.action-list_btn-text {{ option.text }}
 
@@ -34,15 +34,20 @@ export default {
     }
   },
   mounted() {
-    if(this.selectOptions.length && this.value) {
-      let index = this.selectOptions.findIndex((el)=>el.value === this.value)
-      this.selectedOption(this.selectOptions[index])
-    }
+    //
   },
   data() {
     return {
       isOpenList: false,
-      selected: '',
+      selectedText: '',
+    }
+  },
+  watch: {
+    value(newVal) {
+      if(this.selectOptions.length && newVal) {
+        let index = this.selectOptions.findIndex((el)=>el.value === newVal);
+        this.selectedText = this.selectOptions[index].text;
+      }
     }
   },
   methods: {
@@ -53,9 +58,8 @@ export default {
       this.isOpenList = false;
     },
     selectedOption(opt) {
-      this.selected = opt.text;
       this.closeList();
-      this.$emit('input', opt.value)
+      this.$emit('input', opt)
     },
   }
 }

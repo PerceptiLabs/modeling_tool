@@ -142,7 +142,7 @@ const actions = {
           Name: el.layerName,
           Type: el.componentName,
           //Properties: el.layerSettings,
-          Code: el.layerSettings,
+          Code: el.layerCode,
           backward_connections: el.connectionIn,
           forward_connections: el.connectionOut
         };
@@ -153,6 +153,7 @@ const actions = {
       action: "Start",
       value: message
     };
+    console.log(theData);
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {

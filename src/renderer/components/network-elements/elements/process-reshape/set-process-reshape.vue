@@ -63,10 +63,8 @@
     },
     computed: {
       coreCode() {
-        return `
-        Y=tf.reshape(X, [-1]+[layer_output for layer_output in "+str(${this.settings.Shape})+"]);
-        Y=tf.transpose(Y,perm="+str([0]+[i+1 for i in ${this.settings.Permutation}])+")
-        `
+        return `Y=tf.reshape(X, [-1]+[layer_output for layer_output in "+str(${this.settings.Shape})+"]);
+Y=tf.transpose(Y,perm="+str([0]+[i+1 for i in ${this.settings.Permutation}])+");`
       }
     }
   }

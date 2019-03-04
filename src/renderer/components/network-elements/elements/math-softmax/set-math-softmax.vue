@@ -54,7 +54,7 @@ export default {
   computed: {
     coreCode() {
       return `
-      Y=tf.nn.softmax(X)`
+      Y=tf.nn.softmax(X);`
     }
   }
 }

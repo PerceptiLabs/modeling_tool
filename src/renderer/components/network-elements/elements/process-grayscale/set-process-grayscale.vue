@@ -49,7 +49,7 @@ export default {
   computed: {
     coreCode() {
       return `
-      Y=tf.image.rgb_to_grayscale(X)`
+      Y=tf.image.rgb_to_grayscale(X);`
     }
   }
 }

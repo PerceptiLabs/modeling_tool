@@ -25,7 +25,14 @@ const netElementSettings = {
     },
     applySettings() {
       this.hideAllWindow();
-      this.$store.dispatch('mod_workspace/SET_elementSettings', this.coreCode)
+      if(this._name === '<SetTrainNormal>') {
+        this.settings.Labels = this.idSelectElement;
+      }
+      const saveSettings = {
+        'code': this.coreCode,
+        'set': this.settings
+      };
+      this.$store.dispatch('mod_workspace/SET_elementSettings', saveSettings)
     }
   }
 };

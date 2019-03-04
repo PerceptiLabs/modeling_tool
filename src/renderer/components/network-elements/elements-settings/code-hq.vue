@@ -38,7 +38,7 @@
           autoCloseBrackets: true,
           tabSize: 4,
           styleActiveLine: true,
-          lineNumbers: true,
+          lineNumbers: false,
           line: true,
           mode: 'text/x-python',
           theme: "monokai",
@@ -211,9 +211,6 @@
 <style lang="scss">
   @import "../../../scss/base";
   @import "../../../scss/components/vscode-theme-dark_plus";
-
-
-
   .CodeMirror-sizer {
     margin: 0 !important;
   }

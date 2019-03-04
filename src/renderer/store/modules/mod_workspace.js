@@ -244,8 +244,10 @@ const mutations = {
   },
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {getters, settings}) {
+    console.log(settings);
     let indexEl = getters.GET_currentSelectedEl[0].index;
-    getters.GET_currentNetworkElementList[indexEl].layerSettings = settings; //TODO NEED CHECK
+    getters.GET_currentNetworkElementList[indexEl].layerSettings = settings.set;  //TODO NEED CHECK
+    getters.GET_currentNetworkElementList[indexEl].layerCode = settings.code;     //TODO NEED CHECK
   },
 
 
@@ -288,6 +290,7 @@ const mutations = {
       layerName: event.target.dataset.layer,
       layerType: event.target.dataset.type,
       layerSettings: '',
+      layerCode: '',
       layerMeta: {
         isInvisible: false,
         isLock: false,

@@ -55,8 +55,6 @@
                 base-radio(groupName="group3")
                   span No
 
-
-
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
         :the-code="coreCode"
@@ -88,20 +86,33 @@
     },
     computed: {
       coreCode() {
-        return `
-        input_size=1
-	        for element in X.get_shape().as_list()[1:]:
-            input_size*=element
-        shape=[input_size,${this.settings.Neurons}];
-        initial = tf.truncated_normal(shape, stddev=0.1);
-        W=tf.Variable(initial);
-        initial = tf.constant(0.1, shape=[${this.settings.Neurons}]);
-        b=tf.Variable(initial);
-        flat_node=tf.cast(tf.reshape(X,[-1,input_size]),dtype=tf.float32);
-        node=tf.matmul(flat_node,W);
-        node=tf.nn.dropout(node,keep_prob);
-        node=node+b
-        `
+        let activeFunc = '';
+        switch (this.settings.Activation_function) {
+          case 'Sigmoid':
+            activeFunc = `Y=tf.sigmoid(node);`;
+            break;
+          case 'ReLU':
+            activeFunc = `Y=tf.nn.relu(node);`;
+            break;
+          case 'Tanh':
+            activeFunc = `Y=tf.tanh(node);`;
+            break;
+          case 'None':
+            activeFunc = `Y=node;`;
+            break;
+        }
+        const fc = `input_size=1
+for element in X.get_shape().as_list()[1:]:
+  input_size*=element
+shape=[input_size,${this.settings.Neurons}];
+initial = tf.truncated_normal(shape, stddev=0.1);
+W=tf.Variable(initial);
+initial = tf.constant(0.1, shape=[${this.settings.Neurons}]);
+b=tf.Variable(initial);
+flat_node=tf.cast(tf.reshape(X,[-1,input_size]),dtype=tf.float32);
+node=tf.matmul(flat_node,W)${this.settings.Dropout ? '\\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
+node=node+b;`;
+        return `${fc}\n${activeFunc}`
       }
     }
   }
