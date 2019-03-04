@@ -163,7 +163,8 @@ const getters = {
     getters.getActivePoint.actions.forEach(action => {
       if(action.status === 'done') count++
     });
-    return count === getters.getActivePoint.actions.length
+    //return {isDone: count === getters.getActivePoint.actions.length - 1, count}
+    return count === getters.getActivePoint.actions.length - 1
     //return true
   }
 }
@@ -215,89 +216,64 @@ const actions = {
   pointActivate({commit, dispatch, getters}, value) {
     if(getters.getIstutorialMode) {
 
-      //1. check first action element 
       if(value === 'next') commit('SET_activeActionMainTutorial', 'next')
-
-      //2. remove old tooltip
-      let activeTooltip = document.querySelector('.tooltip-tutorial')
-      if(activeTooltip) activeTooltip.remove()
       
-      //3. create new tooltip
-      console.log('1.',  getters.getActivePoint.content)
-      if(getters.getActiveAction.tooltip) {
-        let element = document.getElementById(getters.getActiveAction.id)
-        element.classList.add('tutorial-relative')
-        let tooltipBlock = document.createElement('div');
-        tooltipBlock.classList.add('tooltip-tutorial');
-        tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
-        element.appendChild(tooltipBlock)
+      if(getters.getIsAllActionsDone) {
+        commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
+        commit('SET_activePointMainTutorial', 'next')
+        commit('SET_activeActionMainTutorial', 0)
       }
+
+      dispatch('checkAndSetActiveStep')
+      dispatch('createTooltip')
+      dispatch('removeIdInWorkspace')
      
-      //4. remove id atribute in .info-section_main element
-      let infoSectionTutorialElem = document.querySelector('.info-section_main').querySelector(`#${getters.getActiveAction.id}`)
-      if(infoSectionTutorialElem) infoSectionTutorialElem.setAttribute('id', '')
-     
-      //5. set action is done
       commit('SET_activeAction', {
         step: getters.getActiveStep, 
         point: getters.getActivePointMainTutorial, 
         action: getters.getActiveActionMainTutorial, 
         status: 'done'})
+    }
+    
+  },
 
-      //6. marker point
-      if(getters.getIsAllActionsDone) {
-        commit('SET_pointActivate', {
-          step: getters.getActiveStep, 
-          point: getters.getActivePointMainTutorial, 
-          pointStatus: 'done'
-        });
-        commit('SET_activePointMainTutorial', 'next')
-        commit('SET_activeActionMainTutorial', 0)
-      }
+  pointsDeactivate({commit, getters}) {
 
-      //7. check type action
-      if(getters.getActivePoint.type === 'static') {
-        commit('SET_activeActionMainTutorial', 0)
-        for (let i = 0; i < getters.getPoints.length; i++) {
-          if(getters.getPoints[i].type === 'static') {
-            commit('SET_pointActivate', {
-              step: getters.getActiveStep, 
-              point: i,
-              pointStatus: 'done'
-            });
-            commit('SET_activePointMainTutorial', 'next')
-          }
-        }
-      } else {
-        commit('SET_pointActivate', {
-          step: getters.getActiveStep, 
-          point: getters.getActivePointMainTutorial, 
-          pointStatus: 'active'
-        });
-        console.log('2.', getters.getActivePoint.content)
-      }
+  },
+  createTooltip({commit, getters}) {
+    let activeTooltip = document.querySelector('.tooltip-tutorial')
+    if(activeTooltip) activeTooltip.remove()
+    if(getters.getActiveAction.tooltip) {
+      let element = document.getElementById(getters.getActiveAction.id)
+      element.classList.add('tutorial-relative')
+      let tooltipBlock = document.createElement('div');
+      tooltipBlock.classList.add('tooltip-tutorial');
+      tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
+      element.appendChild(tooltipBlock)
     }
   },
-  pointsDeactivate({commit, getters}) {
-    commit('SET_activeActionMainTutorial', 0)
-    for(let indexPoint = 0; indexPoint < getters.getPoints.length; indexPoint++ ) {
-      if(getters.getActiveStep !== 'first_instructions') {
-        let point = getters.getPoints[indexPoint]
-        commit('SET_pointActivate',{
-          step: getters.getActiveStep, 
-          point: indexPoint, 
-          pointStatus: 'disabled'
-        })
-        for(let indexAction = 0; indexAction < point.actions.length; indexAction++) {
-          commit('SET_activeAction',{
-            step: getters.getActiveStep, 
-            point: indexPoint, 
-            action: indexAction, 
-            actionStatus: 'disabled'
-          })
+  checkAndSetActiveStep({commit, getters}) {
+    if(getters.getActivePoint.type === 'static') {
+      commit('SET_activeActionMainTutorial', 0)
+      for (let i = 0; i < getters.getPoints.length; i++) {
+        if(getters.getPoints[i].type === 'static') {
+          commit('SET_pointActivate', {step: getters.getActiveStep, point: i, pointStatus: 'done'});
+          commit('SET_activePointMainTutorial', 'next')
+        } 
+        else if(getters.getPoints[i].pointStatus === 'done') {
+          continue
+        } 
+        else {
+          commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'active'});
         }
       }
-    } 
+    } else {
+      commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'active'});
+    }
+  },
+  removeIdInWorkspace({getters}) {
+    let infoSectionTutorialElem = document.querySelector('.info-section_main').querySelector(`#${getters.getActiveAction.id}`)
+    if(infoSectionTutorialElem) infoSectionTutorialElem.setAttribute('id', '')
   }
 };
 
