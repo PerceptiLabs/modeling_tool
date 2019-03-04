@@ -126,6 +126,105 @@ const state = {
           ],
         }
       ]
+    },
+    precessing_reshape: {
+      title: 'Step 2. Reshape the dataset',
+      points: [
+        {
+          type: 'interactive',
+          pointStatus:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset',
+          actions: [
+            {
+              tooltip: 'Data > Data...1',
+              id: 'tutorial_data',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Data > Data...2',
+              id: 'tutorial_data-data',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              id: 'tutorial_data-data',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              id: 'tutorial_button-load',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Apply loaded MNIST',
+              id: 'tutorial_button-apply',
+              status: 'disabled'
+            },
+            {
+              status: 'disabled'
+            }
+          ],
+        },
+        {
+          type: 'static',
+          pointStatus:'disabled',
+          content: 'For this tutorial we will use the MNIST dataset',
+          actions: [
+            {
+              status: 'disabled',
+              tooltip: ''
+            }
+          ],
+        },
+        {
+          type: 'static',
+          pointStatus:'disabled',
+          content: 'Every input image has been flattened out to a 784x1 array.',
+          actions: [
+            {
+              status: 'disabled',
+              tooltip: ''
+            },
+          ],
+        },
+        {
+          type: 'interactive',
+          pointStatus:'disabled',
+          tooltip: 'Data > Data...',
+          content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
+          actions: [
+            {
+              tooltip: 'Data > Data...3',
+              id: 'tutorial_data',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Data > Data...4',
+              id: 'tutorial_data-data',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              id: 'tutorial_data-data',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              id: 'tutorial_button-load',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Apply loaded MNIST',
+              id: 'tutorial_button-apply',
+              status: 'disabled'
+            },
+            {
+              status: 'disabled'
+            }
+          ],
+        }
+      ]
     }
   }
 };
@@ -159,13 +258,19 @@ const getters = {
     return getters.getActivePoint.actions[state.activeActionMainTutorial]
   },
   getIsAllActionsDone(state, getters) {
+    console.log('active point: ', getters.getActivePoint,'active step count:', getters.getActiveStepMainTutorial, 'active point count:', getters.getActivePointMainTutorial, 'active action count: ', getters.getActiveActionMainTutorial)
     var count = 0;
     getters.getActivePoint.actions.forEach(action => {
       if(action.status === 'done') count++
     });
-    //return {isDone: count === getters.getActivePoint.actions.length - 1, count}
     return count === getters.getActivePoint.actions.length - 1
-    //return true
+  },
+  getAllPointsIsDone(state, getters) {
+    var count = 0;
+    getters.getPoints.forEach(point => {
+      if(point.pointStatus === 'done') count++
+    });
+    return count === getters.getPoints.length
   }
 }
 
@@ -187,7 +292,11 @@ const mutations = {
     value === 'next' ? state.activeStepMainTutorial++ : state.activeStepMainTutorial--
   },
   SET_activePointMainTutorial(state, value) {
-    value === 'next' ? state.activePointMainTutorial++ : state.activePointMainTutorial--
+    if(isNumber(value)) {
+      state.activePointMainTutorial = value
+    } else if(value === 'next') {
+      state.activePointMainTutorial++
+    }
   },
   SET_activeActionMainTutorial(state, value) {
     if(isNumber(value)) {
@@ -212,7 +321,6 @@ const mutations = {
 };
 
 const actions = {
-  
   pointActivate({commit, dispatch, getters}, value) {
     if(getters.getIstutorialMode) {
 
@@ -223,24 +331,26 @@ const actions = {
         commit('SET_activePointMainTutorial', 'next')
         commit('SET_activeActionMainTutorial', 0)
       }
-
-      dispatch('checkAndSetActiveStep')
-      dispatch('createTooltip')
-      dispatch('removeIdInWorkspace')
-     
-      commit('SET_activeAction', {
-        step: getters.getActiveStep, 
-        point: getters.getActivePointMainTutorial, 
-        action: getters.getActiveActionMainTutorial, 
-        status: 'done'})
+      if(getters.getAllPointsIsDone) {
+        console.log('step complete!')
+        commit('SET_activePointMainTutorial', 0)
+      } else {
+        dispatch('checkAndSetActiveStep')
+        dispatch('createTooltip')
+        dispatch('removeIdInWorkspace')
+        commit('SET_activeAction', {
+          step: getters.getActiveStep, 
+          point: getters.getActivePointMainTutorial, 
+          action: getters.getActiveActionMainTutorial, 
+          status: 'done'})
+      }
     }
-    
-  },
 
+  },
   pointsDeactivate({commit, getters}) {
 
   },
-  createTooltip({commit, getters}) {
+  createTooltip({getters}) {
     let activeTooltip = document.querySelector('.tooltip-tutorial')
     if(activeTooltip) activeTooltip.remove()
     if(getters.getActiveAction.tooltip) {
@@ -253,6 +363,7 @@ const actions = {
     }
   },
   checkAndSetActiveStep({commit, getters}) {
+    
     if(getters.getActivePoint.type === 'static') {
       commit('SET_activeActionMainTutorial', 0)
       for (let i = 0; i < getters.getPoints.length; i++) {

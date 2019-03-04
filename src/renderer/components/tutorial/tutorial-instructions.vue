@@ -30,8 +30,9 @@
           span All tutorials
         .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
         div
-          button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back
-          button.footer_btn(v-if="stepCount < stepsLength" @click="changeStep('next')") Next
+          //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back 
+          button.footer_btn(v-if="isFirstStep" @click="changeStep('next')") Next
+          button.footer_btn(v-else @click="changeStep('next')" :disabled="!allPointsIsDone") Next
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex';
@@ -45,14 +46,18 @@ export default {
   },
   computed: {
     ...mapGetters({
-      activeStep:     'mod_tutorials/getActiveStep',
-      points:         'mod_tutorials/getPoints',
-      interective:    'mod_tutorials/getIterective',
-      isTutorialMode: 'mod_tutorials/getIstutorialMode',
-      stepCount:      'mod_tutorials/getActiveStepMainTutorial',
+      activeStep:       'mod_tutorials/getActiveStep',
+      points:           'mod_tutorials/getPoints',
+      interective:      'mod_tutorials/getIterective',
+      isTutorialMode:   'mod_tutorials/getIstutorialMode',
+      stepCount:        'mod_tutorials/getActiveStepMainTutorial',
+      allPointsIsDone:  'mod_tutorials/getAllPointsIsDone',
     }),
     stepsLength() {
       return Object.keys(this.interective).length - 1
+    },
+    isFirstStep() {
+      return this.interective[this.activeStep].points[0].pointStatus === 'first'
     }
   },
   methods: {
@@ -158,7 +163,7 @@ export default {
     margin-bottom: 1.5rem;
     font-size: 1.2rem;
     position: relative;
-    padding: 0 2.5rem;
+    padding: 0 2.5rem 0 3.5rem;
     &:before {
       position: absolute;
       top: 0;
@@ -168,7 +173,7 @@ export default {
     }
     &.active:before {
       content: "\e901";
-      left: 1rem;
+      left: 2rem;
     }
     &.done:before {
       content: "\e937";
