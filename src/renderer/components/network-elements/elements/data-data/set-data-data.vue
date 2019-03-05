@@ -11,24 +11,29 @@
         h3(v-html="tab")
     .popup_tab-body
       .popup_body(:class="{'active': tabSelected == 0}")
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
-              button.btn.btn--primary(type="button" @click="loadFile" :disabled="isDisabled") Load
-          .settings-layer_section
-            .form_row
-              .form_label Data type:
-              .form_input
-                base-radio(groupName="group" valueInput="Data" v-model="settings.accessProperties.Type")
-                  span Data
-                base-radio(groupName="group" valueInput="Labels" v-model="settings.accessProperties.Type")
-                  span Labels
+        .settings-layer(v-if="!settings.accessProperties.Path.length")
+          .settings-layer_section.section-data-select
+            button.btn(type="button" @click="loadFolder")
+              i.icon.icon-open-folder
+            span.data-select_text or
+            button.btn(type="button" @click="loadFile")
+              i.icon.icon-open-file
+        .settings-layer_section(v-else)
+          .form_row
+            input.form_input(type="text" v-model="inputPath" readonly="readonly")
+            button.btn.btn--primary(type="button" @click="clearPath") Clear
+          .form_row
+            base-select
+          .form_row
+            div
 
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-cloud
     .settings-layer_foot
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
+      button.btn.btn--primary(type="button"
+        v-show="settings.accessProperties.Path.length"
+        @click="applySettings"
+        ) Apply
 
 </template>
 
@@ -41,20 +46,7 @@
     mixins: [mixinSet],
     components: { SettingsCloud },
     mounted() {
-      // if(process.env.NODE_ENV === 'production' && !this.settings.accessProperties.Path) {
-      //   switch (process.platform) {
-      //     case 'win32':
-      //       this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
-      //       break;
-      //     case 'darwin':
-      //       this.settings.accessProperties.Path = this.appPath + 'core/mnist';
-      //       break;
-      //     case 'linux':
-      //       this.settings.accessProperties.Path = this.appPath + 'core/mnist';
-      //       break;
-      //   }
-      //   this.applySettings();
-      // }
+
     },
     data() {
       return {
@@ -65,7 +57,7 @@
           accessProperties: {
             Category:'Local',
             Type: 'Data',
-            Path: '',
+            Path: [],
           }
         }
       }
@@ -76,29 +68,67 @@
       },
       isDisabled() {
         return process.env.NODE_ENV === 'production'
+      },
+      inputPath() {
+        return this.settings.accessProperties.Path.join(', ')
       }
     },
     methods: {
       openLoadDialog,
       loadFile() {
         let opt = {
-          title:"Load file in Data element",
+          title:"Load file or files",
+          properties: ['openFile', 'multiSelections'],
+          filters: [
+            {name: 'All', extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz']},
+            {name: 'Images', extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff']},
+            {name: 'Text', extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
+          ]
+        };
+        this.openLoadDialog(this.saveLoadFile, opt)
+      },
+      loadFolder() {
+        let opt = {
+          title:"Load folder",
           properties: ['openDirectory']
-          // filters: [
-          //   // {name: 'Images', extensions: ['png', 'gif']},
-          //   // {name: 'Python', extensions: ['pickle', 'numpy']},
-          //   // {name: 'Text', extensions: ['txt', 'json', 'csv']},
-          //   // {name: 'Any', extensions: ['png', 'gif', 'pickle', 'numpy', 'txt', 'json', 'csv']},
-          //   {name: 'Folder', extensions: ['gz']}
-          // ]
         };
         this.openLoadDialog(this.saveLoadFile, opt)
       },
       saveLoadFile(pathArr) {
-        this.settings.accessProperties.Path = pathArr[0];
+        this.settings.accessProperties.Path = pathArr;
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
+      clearPath() {
+        this.settings.accessProperties.Path = [];
+      }
     }
   }
 </script>
+<style lang="scss" scoped>
+  @import "../../../../scss/base";
+  .settings-layer {
+    justify-content: center;
+  }
+  .section-data-select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 6.4rem;
+      height: 6.4rem;
+      background-color: $bg-input;
+      font-size: 4rem;
+      &:hover {
+        box-shadow: inset 0 0 1px 1px $color-5;
+      }
+    }
+  }
+  .data-select_text {
+    margin: 0 1.4rem;
+  }
+</style>

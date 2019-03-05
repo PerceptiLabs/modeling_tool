@@ -68,6 +68,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .custom-select {
+    width: 100%;
     position: relative;
   }
   .custom-select_view {

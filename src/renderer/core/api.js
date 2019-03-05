@@ -1,5 +1,7 @@
 const net = require('net');
 
+
+/*GENERAL CORE*/
 class Client {
   constructor(port, address) {
     this.socket = new net.Socket();
