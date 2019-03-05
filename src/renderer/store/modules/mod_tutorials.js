@@ -5,6 +5,8 @@ const namespaced = true;
 const state = {
   isTutorialMode: true,
   showTutorialStoryBoard: false,
+  mainTutorialIsStarted: false,
+  
   activeStepStoryboard: 0,
   
   activeStepMainTutorial: 0,
@@ -236,6 +238,9 @@ const getters = {
   getIstutorialMode(state) {
     return state.isTutorialMode
   },
+  getMainTutorialIsStarted(state) {
+    return state.mainTutorialIsStarted
+  },
   getActiveStepMainTutorial(state) {
     return state.activeStepMainTutorial
   },
@@ -258,12 +263,12 @@ const getters = {
     return getters.getActivePoint.actions[state.activeActionMainTutorial]
   },
   getIsAllActionsDone(state, getters) {
-    console.log('active point: ', getters.getActivePoint,'active step count:', getters.getActiveStepMainTutorial, 'active point count:', getters.getActivePointMainTutorial, 'active action count: ', getters.getActiveActionMainTutorial)
+    //console.log('active point: ', getters.getActivePoint,'active step count:', getters.getActiveStepMainTutorial, 'active point count:', getters.getActivePointMainTutorial, 'active action count: ', getters.getActiveActionMainTutorial)
     var count = 0;
     getters.getActivePoint.actions.forEach(action => {
       if(action.status === 'done') count++
     });
-    return count === getters.getActivePoint.actions.length - 1
+    return count === getters.getActivePoint.actions.length
   },
   getAllPointsIsDone(state, getters) {
     var count = 0;
@@ -277,6 +282,9 @@ const getters = {
 const mutations = {
   SET_isTutorialMode(state, value) {
     state.isTutorialMode = value
+  },
+  SET_mainTutorialIsStarted(state, value) {
+    state.mainTutorialIsStarted = value
   },
   SET_runButtonsActive(state, value) {
     state.runButtonsActive = value;
@@ -322,28 +330,57 @@ const mutations = {
 
 const actions = {
   pointActivate({commit, dispatch, getters}, value) {
-    if(getters.getIstutorialMode) {
+    if(getters.getIstutorialMode && getters.getMainTutorialIsStarted) {
 
-      if(value === 'next') commit('SET_activeActionMainTutorial', 'next')
-      
-      if(getters.getIsAllActionsDone) {
-        commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
-        commit('SET_activePointMainTutorial', 'next')
-        commit('SET_activeActionMainTutorial', 0)
-      }
       if(getters.getAllPointsIsDone) {
         console.log('step complete!')
         commit('SET_activePointMainTutorial', 0)
       } else {
+        if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
+          console.log(getters.getActiveAction.id,'--------', value.validation)
+          if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
+          dispatch('checkAndSetActiveStep')
+          dispatch('createTooltip')
+          dispatch('removeIdInWorkspace')
+          commit('SET_activeAction', {
+            step: getters.getActiveStep, 
+            point: getters.getActivePointMainTutorial, 
+            action: getters.getActiveActionMainTutorial, 
+            status: 'done'
+          })
+          console.log(getters.getIsAllActionsDone)
+        }
+      }
+
+      if(getters.getIsAllActionsDone) {
+        commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
+        commit('SET_activePointMainTutorial', 'next')
+        commit('SET_activeActionMainTutorial', 0)
         dispatch('checkAndSetActiveStep')
         dispatch('createTooltip')
         dispatch('removeIdInWorkspace')
-        commit('SET_activeAction', {
-          step: getters.getActiveStep, 
-          point: getters.getActivePointMainTutorial, 
-          action: getters.getActiveActionMainTutorial, 
-          status: 'done'})
+        // commit('SET_activeAction', {
+        //   step: getters.getActiveStep, 
+        //   point: getters.getActivePointMainTutorial, 
+        //   action: getters.getActiveActionMainTutorial, 
+        //   status: 'done'
+        // })
+        console.log(getters.getActiveAction.id,'--------', value.validation)
+        if(getters.getAllPointsIsDone) {
+          console.log('step complete!')
+          commit('SET_activePointMainTutorial', 0)
+        }
       }
+
+      // if(getters.getIsAllActionsDone) {
+      //   console.log(1)
+      //   commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
+      //   commit('SET_activePointMainTutorial', 'next')
+      //   commit('SET_activeActionMainTutorial', 0)
+      //   if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
+      //   console.log(getters.getActiveAction,'--------', value.validation)
+      // }
+
     }
 
   },

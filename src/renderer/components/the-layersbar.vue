@@ -159,7 +159,7 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     toggleElList(index, ev) {
-      this.tutorialPointActivate('next')
+      this.tutorialPointActivate({way:'next', validation: 'tutorial_data'})
       if (this.layersbarList[index].showEl) {
         this.layersbarList[index].showEl = false;
         document.removeEventListener('click', this.clickOutside);

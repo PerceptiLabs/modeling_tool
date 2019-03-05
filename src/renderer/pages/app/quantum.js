@@ -95,7 +95,7 @@ export default {
     dragEnd(event) {
       this.offDragListener();
       event.target.style.opacity = "";
-      this.tutorialPointActivate('next')
+      this.tutorialPointActivate({way: 'next', validation: 'tutorial_data-data'})
     },
     dragOver(event) {
       event.preventDefault();

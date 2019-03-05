@@ -207,6 +207,7 @@ export default {
     },
     showTutorial() {
       this.$store.commit('mod_tutorials/SET_showTutorialStoryBoard', true);
+      this.$store.commit('mod_tutorials/SET_isTutorialMode', true);
     }
   }
 }

@@ -116,7 +116,7 @@ export default {
       }
     },
     openSettings() {
-      setTimeout(()=>{this.tutorialPointActivate('next')}, 0) 
+      setTimeout(()=>{this.tutorialPointActivate({way:'next', validation:'tutorial_data-data'})}, 0)
       this.hideAllWindow();
       if(this.networkMode === 'edit' && !this.isTraining) {
         this.settingsIsOpen = true;

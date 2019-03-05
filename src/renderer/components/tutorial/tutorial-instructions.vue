@@ -31,7 +31,7 @@
         .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
         div
           //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back 
-          button.footer_btn(v-if="isFirstStep" @click="changeStep('next')") Next
+          button.footer_btn(v-if="isFirstStep" @click="startTutorial('next')") Next
           button.footer_btn(v-else @click="changeStep('next')" :disabled="!allPointsIsDone") Next
 </template>
 <script>
@@ -62,7 +62,9 @@ export default {
   },
   methods: {
     ...mapMutations({
-      setActiveStep:    'mod_tutorials/SET_activeStepMainTutorial',
+      setActiveStep:        'mod_tutorials/SET_activeStepMainTutorial',
+      setTootorialIstarted: 'mod_tutorials/SET_mainTutorialIsStarted',
+      goToFirstStep:        'mod_tutorials/SET_activeActionMainTutorial'
     }),
     ...mapActions({
       pointActivate:    'mod_tutorials/pointActivate',
@@ -79,6 +81,11 @@ export default {
           this.pointsDeactivate()
           this.setActiveStep(way)
       }
+    },
+    startTutorial(way) {
+      this.setTootorialIstarted(true)
+      this.setActiveStep(way)
+      this.pointActivate({way: 'null', validation: 'tutorial_data'})
     }
   }
 }
@@ -91,7 +98,7 @@ export default {
 
   .btn--dark-blue-rev {
     position: relative;
-    z-index: 2;
+    z-index: 1;
   }
   .tutorial-instruction-box {
     position: relative;
@@ -218,6 +225,7 @@ export default {
     align-items: center;
     color: $color-text-instructions;
     padding: 0;
+    opacity: 0;
     .icon {
       transform: rotate(-180deg);
       display: inline-block;
