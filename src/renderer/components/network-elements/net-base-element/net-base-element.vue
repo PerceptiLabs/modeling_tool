@@ -9,10 +9,11 @@
     @keyup.46="deleteEl()"
     @keyup.93.8="deleteEl()"
     )
+    .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
     .net-element_btn(ref="BaseElement")
       slot
 
-    .net-element_window(v-if="settingsIsOpen ")
+    .net-element_window(v-if="settingsIsOpen")
       slot(name="settings")
 
     .net-element_window.net-element_context-menu(v-if="contextIsOpen")
@@ -67,6 +68,9 @@ export default {
     document.removeEventListener('mousedown', this.mousedownOutside);
   },
   computed: {
+    beForEnd() {
+      return this.dataEl.el.layerMeta.OutputDim
+    },
     active() {
       return this.dataEl.el.layerMeta.isSelected
     },
@@ -171,5 +175,14 @@ export default {
     .active & .btn {
       box-shadow: 0 0 20px #fff;
     }
+  }
+  .net-element_be-for-end {
+    font-size: 1.2rem;
+    position: absolute;
+    top: -2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background-color: rgba($bg-workspace, .5);
   }
 </style>

@@ -244,7 +244,6 @@ const mutations = {
   },
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {getters, settings}) {
-    console.log(settings);
     let indexEl = getters.GET_currentSelectedEl[0].index;
     getters.GET_currentNetworkElementList[indexEl].layerSettings = settings.set;  //TODO NEED CHECK
     getters.GET_currentNetworkElementList[indexEl].layerCode = settings.code;     //TODO NEED CHECK
@@ -277,6 +276,12 @@ const mutations = {
     net[el].layerMeta.top = value.top;
     net[el].layerMeta.left = value.left;
   },
+  set_elementBeForEnd(state, {getters, value}) {
+    getters.GET_currentNetworkElementList.forEach((el)=>{
+      el.layerMeta.OutputDim = value[el.layerId].OutputDim;
+      el.layerMeta.InputDim = value[el.layerId].InputDim
+    });
+  },
 
   //---------------
   //  OTHER
@@ -296,7 +301,9 @@ const mutations = {
         isLock: false,
         isSelected: false,
         top: event.target.clientHeight/2,
-        left: event.target.clientWidth/2
+        left: event.target.clientWidth/2,
+        OutputDim: '',
+        InputDim: ''
       },
       componentName: event.target.dataset.component,
       connectionOut: [],
@@ -406,9 +413,13 @@ const actions = {
   SET_elementMultiSelect({commit, getters}, value) {
     commit('set_elementMultiSelect', {getters, value})
   },
+  SET_elementBeForEnd({commit, getters}, value) {
+    commit('set_elementBeForEnd', {getters, value})
+  },
   CHANGE_elementPosition({commit, getters}, value) {
     commit('change_elementPosition', {getters, value})
   },
+
 };
 
 export default {

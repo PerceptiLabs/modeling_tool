@@ -4,6 +4,33 @@ import {pathCore}  from "@/core/constants.js";
 //const net = require('net');
 const {spawn} = require('child_process');
 
+function prepareNetwork(elementList) {
+  let layers = {};
+  elementList.forEach((el)=> {
+    if(el.componentName === 'DataData') {
+      layers[el.layerId] = {
+        Name: el.layerName,
+        Type: el.componentName,
+        Properties: el.layerSettings,
+        //Code: el.coreCode,
+        backward_connections: el.connectionIn,
+        forward_connections: el.connectionOut
+      };
+    }
+    else {
+      layers[el.layerId] = {
+        Name: el.layerName,
+        Type: el.componentName,
+        //Properties: el.layerSettings,
+        Code: el.layerCode,
+        backward_connections: el.connectionIn,
+        forward_connections: el.connectionOut
+      };
+    }
+  });
+  return layers
+}
+
 const namespaced = true;
 
 const state = {
@@ -40,34 +67,34 @@ const actions = {
     function startCore() {
       coreIsStarting = true;
       let openServer;
-      // switch (process.platform) {
-      //   case 'win32':
-      //     openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-      //     break;
-      //   case 'darwin':
-      //     if(process.env.NODE_ENV === 'production') {
-      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-      //     }
-      //     else {
-      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-      //     }
-      //     break;
-      //   case 'linux':
-      //     if(process.env.NODE_ENV === 'production') {
-      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-      //     }
-      //     else {
-      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-      //     }
-      //     break;
-      // }
-      // openServer.on('error', (err) => {
-      //   console.log(err);
-      //   coreOffline()
-      // });
-      // openServer.on('close', (code) => {
-      //   coreOffline()
-      // });
+      switch (process.platform) {
+        case 'win32':
+          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          break;
+        case 'darwin':
+          if(process.env.NODE_ENV === 'production') {
+            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          }
+          else {
+            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          }
+          break;
+        case 'linux':
+          if(process.env.NODE_ENV === 'production') {
+            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          }
+          else {
+            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          }
+          break;
+      }
+      openServer.on('error', (err) => {
+        console.log(err);
+        coreOffline()
+      });
+      openServer.on('close', (code) => {
+        coreOffline()
+      });
       waitOnlineCore()
     }
     function waitOnlineCore() {
@@ -108,7 +135,7 @@ const actions = {
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        console.log('API_getStatus ', data);
+        //console.log('API_getStatus ', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -124,30 +151,9 @@ const actions = {
     const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     let message = {
       Hyperparameters: net.networkSettings,
-      Layers: {}
+      Layers: prepareNetwork(elementList)
     };
-    elementList.forEach((el)=> {
-      if(el.componentName === 'DataData') {
-        message.Layers[el.layerId] = {
-          Name: el.layerName,
-          Type: el.componentName,
-          Properties: el.layerSettings,
-          //Code: el.coreCode,
-          backward_connections: el.connectionIn,
-          forward_connections: el.connectionOut
-        };
-      }
-      else {
-        message.Layers[el.layerId] = {
-          Name: el.layerName,
-          Type: el.componentName,
-          //Properties: el.layerSettings,
-          Code: el.layerCode,
-          backward_connections: el.connectionIn,
-          forward_connections: el.connectionOut
-        };
-      }
-    });
+
     const theData = {
       reciever: net.networkID,
       action: "Start",
@@ -281,6 +287,26 @@ const actions = {
       .catch((err) =>{
         console.error(err);
       });
+  },
+
+  API_getBeForEnd({dispatch, getters, rootGetters}) {
+    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "getNetworkData",
+      value: prepareNetwork(elementList)
+    };
+    console.log(theData);
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {
+        console.log(data);
+        dispatch('mod_workspace/SET_elementBeForEnd', data, {root: true});
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+
   },
 };
 

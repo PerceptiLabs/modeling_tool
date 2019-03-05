@@ -20,12 +20,14 @@
               i.icon.icon-open-file
         .settings-layer_section(v-else)
           .form_row
-            input.form_input(type="text" v-model="inputPath" readonly="readonly")
+            input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
             button.btn.btn--primary(type="button" @click="clearPath") Clear
           .form_row
             base-select
           .form_row
-            div
+            chart-picture(
+            :chartData="imgData"
+            )
 
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-cloud
@@ -38,13 +40,27 @@
 </template>
 
 <script>
+  import VueNonreactive from 'vue-nonreactive/vue-nonreactive.js';
+  import Vue from 'vue'
+  Vue.use(VueNonreactive);
+
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
   import {openLoadDialog} from '@/core/helpers.js'
+
+  import requestApi   from "@/core/api.js";
+  import ChartPicture from "../../../charts/chart-picture";
+
   export default {
     name: 'SetDataData',
     mixins: [mixinSet],
-    components: { SettingsCloud },
+    components: {ChartPicture, SettingsCloud },
+    props: {
+      layerId: {
+        type: String,
+        default: ''
+      }
+    },
     mounted() {
 
     },
@@ -52,12 +68,13 @@
       return {
         tabs: ['Computer', 'Cloud'],
         coreCode: '',
+        imgData: [],
         settings: {
           Type: 'Data',
           accessProperties: {
             Category:'Local',
             Type: 'Data',
-            Path: [],
+            Path: '',
           }
         }
       }
@@ -69,8 +86,22 @@
       isDisabled() {
         return process.env.NODE_ENV === 'production'
       },
-      inputPath() {
-        return this.settings.accessProperties.Path.join(', ')
+      currentNetworkID() {
+        return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
+      },
+      // inputPath() {
+      //   return this.settings.accessProperties.Path.join(', ')
+      // }
+    },
+    watch: {
+      'settings.accessProperties.Path': {
+        handler(newVal) {
+          console.log('watch path ', newVal);
+          if(newVal) {
+            this.getDataImg()
+          }
+        },
+        immediate: true
       }
     },
     methods: {
@@ -95,12 +126,43 @@
         this.openLoadDialog(this.saveLoadFile, opt)
       },
       saveLoadFile(pathArr) {
-        this.settings.accessProperties.Path = pathArr;
+        this.settings.accessProperties.Path = pathArr[0];
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
       clearPath() {
         this.settings.accessProperties.Path = [];
+      },
+      getDataImg() {
+        let theData = {
+          reciever: this.currentNetworkID,
+          action: 'getData',
+          value: {
+            Id: this.layerId,
+            Type: 'DataData',
+            Properties: this.settings
+          }
+        };
+        console.log('send ', theData);
+        const client = new requestApi();
+        client.sendMessage(theData)
+          .then((data)=> {
+            //console.log(data);
+            if(data === 'Null') {
+              return
+            }
+            Vue.nonreactive(data);
+            this.imgData = data;
+            console.log(data);
+            // if(view.length) {
+            //   this.$set(this.chartData, view, data)
+            // }
+            // else this.chartData = data;
+          })
+          .catch((err)=> {
+            console.log('answer err');
+            console.error(err);
+          });
       }
     }
   }
