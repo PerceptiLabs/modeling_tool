@@ -268,6 +268,7 @@ const getters = {
     getters.getActivePoint.actions.forEach(action => {
       if(action.status === 'done') count++
     });
+    //console.log(getters.getActivePoint.actions.length, '---', count);
     return count === getters.getActivePoint.actions.length
   },
   getAllPointsIsDone(state, getters) {
@@ -321,6 +322,7 @@ const mutations = {
   SET_pointActivate(state, value,) {
     let points = state.interective[value.step].points;
     points[value.point].pointStatus = value.pointStatus;
+
   },
   SET_activeAction(state, value) {
     let actions = state.interective[value.step].points[value.point].actions;
@@ -332,13 +334,19 @@ const actions = {
   pointActivate({commit, dispatch, getters}, value) {
     if(getters.getIstutorialMode && getters.getMainTutorialIsStarted) {
 
-      if(getters.getAllPointsIsDone) {
-        console.log('step complete!')
-        commit('SET_activePointMainTutorial', 0)
-      } else {
-        if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
-          console.log(getters.getActiveAction.id,'--------', value.validation)
-          if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
+      if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
+        if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
+        dispatch('checkAndSetActiveStep')
+        dispatch('createTooltip')
+        dispatch('removeIdInWorkspace')
+        commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
+      }
+
+      if(getters.getIsAllActionsDone) {
+        commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
+        commit('SET_activePointMainTutorial', 'next')
+        commit('SET_activeActionMainTutorial', 0)
+        if(!(getters.getAllPointsIsDone)) {
           dispatch('checkAndSetActiveStep')
           dispatch('createTooltip')
           dispatch('removeIdInWorkspace')
@@ -348,41 +356,12 @@ const actions = {
             action: getters.getActiveActionMainTutorial, 
             status: 'done'
           })
-          console.log(getters.getIsAllActionsDone)
+        } else {
+          commit('SET_activePointMainTutorial', 0) 
         }
       }
-
-      if(getters.getIsAllActionsDone) {
-        commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
-        commit('SET_activePointMainTutorial', 'next')
-        commit('SET_activeActionMainTutorial', 0)
-        dispatch('checkAndSetActiveStep')
-        dispatch('createTooltip')
-        dispatch('removeIdInWorkspace')
-        // commit('SET_activeAction', {
-        //   step: getters.getActiveStep, 
-        //   point: getters.getActivePointMainTutorial, 
-        //   action: getters.getActiveActionMainTutorial, 
-        //   status: 'done'
-        // })
-        console.log(getters.getActiveAction.id,'--------', value.validation)
-        if(getters.getAllPointsIsDone) {
-          console.log('step complete!')
-          commit('SET_activePointMainTutorial', 0)
-        }
-      }
-
-      // if(getters.getIsAllActionsDone) {
-      //   console.log(1)
-      //   commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
-      //   commit('SET_activePointMainTutorial', 'next')
-      //   commit('SET_activeActionMainTutorial', 0)
-      //   if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
-      //   console.log(getters.getActiveAction,'--------', value.validation)
-      // }
 
     }
-
   },
   pointsDeactivate({commit, getters}) {
 
@@ -401,7 +380,7 @@ const actions = {
   },
   checkAndSetActiveStep({commit, getters}) {
     
-    if(getters.getActivePoint.type === 'static') {
+    if(getters.getActivePoint && getters.getActivePoint.type === 'static') {
       commit('SET_activeActionMainTutorial', 0)
       for (let i = 0; i < getters.getPoints.length; i++) {
         if(getters.getPoints[i].type === 'static') {

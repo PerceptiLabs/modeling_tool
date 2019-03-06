@@ -52,6 +52,7 @@ export default {
       isTutorialMode:   'mod_tutorials/getIstutorialMode',
       stepCount:        'mod_tutorials/getActiveStepMainTutorial',
       allPointsIsDone:  'mod_tutorials/getAllPointsIsDone',
+      activePoint:      'mod_tutorials/getActivePoint'
     }),
     stepsLength() {
       return Object.keys(this.interective).length - 1
@@ -76,16 +77,13 @@ export default {
     changeStep(way) {
       if(way === 'next') {
         this.setActiveStep(way)
-        this.pointActivate()
-      } else {
-          this.pointsDeactivate()
-          this.setActiveStep(way)
+        this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
       }
     },
     startTutorial(way) {
       this.setTootorialIstarted(true)
       this.setActiveStep(way)
-      this.pointActivate({way: 'null', validation: 'tutorial_data'})
+      this.pointActivate({way: null, validation: 'tutorial_data'})
     }
   }
 }
