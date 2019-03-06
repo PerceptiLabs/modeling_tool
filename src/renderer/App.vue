@@ -139,7 +139,7 @@
         setTimeout(()=>{
           splash.remove();
           document.body.className = "";
-        }, 5500)
+        }, 1000)
       },
       appClose() {
         this.$store.dispatch('mod_events/EVENT_closeApp');
