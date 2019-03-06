@@ -276,6 +276,7 @@ const getters = {
     getters.getPoints.forEach(point => {
       if(point.pointStatus === 'done') count++
     });
+    //console.log(getters.getPoints.length, '--', count)
     return count === getters.getPoints.length
   }
 }
@@ -333,7 +334,7 @@ const mutations = {
 const actions = {
   pointActivate({commit, dispatch, getters}, value) {
     if(getters.getIstutorialMode && getters.getMainTutorialIsStarted) {
-
+      
       if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
         if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
         dispatch('checkAndSetActiveStep')
@@ -344,9 +345,13 @@ const actions = {
 
       if(getters.getIsAllActionsDone) {
         commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
-        commit('SET_activePointMainTutorial', 'next')
+        console.log(getters.getActivePointMainTutorial, getters.getPoints.length - 1)
+        if(getters.getActivePointMainTutorial < getters.getPoints.length - 1) commit('SET_activePointMainTutorial', 'next')
         commit('SET_activeActionMainTutorial', 0)
-        if(!(getters.getAllPointsIsDone)) {
+
+        if(getters.getAllPointsIsDone) {
+          commit('SET_activePointMainTutorial', 0) 
+        } else {
           dispatch('checkAndSetActiveStep')
           dispatch('createTooltip')
           dispatch('removeIdInWorkspace')
@@ -356,8 +361,6 @@ const actions = {
             action: getters.getActiveActionMainTutorial, 
             status: 'done'
           })
-        } else {
-          commit('SET_activePointMainTutorial', 0) 
         }
       }
 
