@@ -15,12 +15,17 @@ const chartsMixin = {
       default: function () {
         return []
       }
-    }
+    },
+    disableHeader: {
+      type: Boolean,
+      default: false
+    },
   },
   mounted() {
     if(this._name !== '<ChartPicture>') {
       this.$refs.chart.showLoading(this.chartSpinner);
       this.createWWorker();
+      this.sendDataToWWorker();
       window.addEventListener("resize", ()=> { this.$refs.chart.resize()}, false);
     }
   },
@@ -45,7 +50,7 @@ const chartsMixin = {
       return this.$store.state.mod_events.chartsRequest.waitGlobalEvent
     },
     headerOff() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest || this.disableHeader;
     }
   },
   watch: {

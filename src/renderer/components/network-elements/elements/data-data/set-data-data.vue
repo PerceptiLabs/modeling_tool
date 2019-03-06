@@ -20,13 +20,28 @@
               i.icon.icon-open-file
         .settings-layer_section(v-else)
           .form_row
+            button.btn.btn--link(type="button" @click="clearPath")
+              i.icon.icon-backward
+              span Back
+          .form_row
             input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
-            button.btn.btn--primary(type="button" @click="clearPath") Clear
           .form_row
             base-select
           .form_row
             chart-picture(
-            :chartData="imgData"
+              v-if="imgType === 'image'"
+              :disable-header="true"
+              :chartData="imgData"
+            )
+            chart-base(
+              v-if="imgType === 'line' || imgType === 'bar'"
+              :disable-header="true"
+              :chartData="imgData"
+            )
+            chart-heatmap(
+              v-if="imgType === 'heatmap'"
+              :disable-header="true"
+              :chartData="imgData"
             )
 
       .popup_body(:class="{'active': tabSelected == 1}")
@@ -40,21 +55,19 @@
 </template>
 
 <script>
-  import VueNonreactive from 'vue-nonreactive/vue-nonreactive.js';
-  import Vue from 'vue'
-  Vue.use(VueNonreactive);
-
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
   import {openLoadDialog} from '@/core/helpers.js'
 
   import requestApi   from "@/core/api.js";
   import ChartPicture from "../../../charts/chart-picture";
+  import ChartBase from "../../../charts/chart-base";
+  import ChartHeatmap from "../../../charts/chart-heatmap";
 
   export default {
     name: 'SetDataData',
     mixins: [mixinSet],
-    components: {ChartPicture, SettingsCloud },
+    components: {ChartHeatmap, ChartBase, ChartPicture, SettingsCloud },
     props: {
       layerId: {
         type: String,
@@ -68,7 +81,8 @@
       return {
         tabs: ['Computer', 'Cloud'],
         coreCode: '',
-        imgData: [],
+        imgData: null,
+        imgType: '',
         settings: {
           Type: 'Data',
           accessProperties: {
@@ -96,7 +110,6 @@
     watch: {
       'settings.accessProperties.Path': {
         handler(newVal) {
-          console.log('watch path ', newVal);
           if(newVal) {
             this.getDataImg()
           }
@@ -136,7 +149,7 @@
       getDataImg() {
         let theData = {
           reciever: this.currentNetworkID,
-          action: 'getData',
+          action: 'getDataPlot',
           value: {
             Id: this.layerId,
             Type: 'DataData',
@@ -147,13 +160,12 @@
         const client = new requestApi();
         client.sendMessage(theData)
           .then((data)=> {
-            //console.log(data);
             if(data === 'Null') {
               return
             }
-            Vue.nonreactive(data);
+            this.imgType = data.series[0].type;
             this.imgData = data;
-            console.log(data);
+
             // if(view.length) {
             //   this.$set(this.chartData, view, data)
             // }

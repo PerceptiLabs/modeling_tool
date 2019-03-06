@@ -82,7 +82,6 @@ function createWindow () {
     width: 1024,
     minHeight: 768,
     minWidth: 1024,
-    backgroundColor: '#27292F',
     useContentSize: true,
     webPreferences: {
       //contextIsolation: true,

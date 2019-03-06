@@ -56,6 +56,20 @@
     },
     watch: {
       chartData() {
+        this.sendDataToWWorker()
+      }
+    },
+    methods: {
+      applyCustomColor() {
+        if (this.customColor.length) {
+          this.defaultModel.color = this.customColor;
+        }
+      },
+      createWWorker() {
+        this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
+        this.wWorker.addEventListener('message', this.drawChart, false);
+      },
+      sendDataToWWorker() {
         if (this.chartData === null) {
           this.chartModel = this.defaultModel;
           return
@@ -68,22 +82,11 @@
         });
       }
     },
-    methods: {
-      applyCustomColor() {
-        if (this.customColor.length) {
-          this.defaultModel.color = this.customColor;
-        }
-      },
-      createWWorker() {
-        this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
-        this.wWorker.addEventListener('message', this.drawChart, false);
-      }
-    },
   }
 </script>
 
 <style lang="scss" scoped>
   .base-chart_main {
-    height: 300px;
+    height: 200px;
   }
 </style>

@@ -296,11 +296,9 @@ const actions = {
       action: "getNetworkData",
       value: prepareNetwork(elementList)
     };
-    console.log(theData);
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        console.log(data);
         dispatch('mod_workspace/SET_elementBeForEnd', data, {root: true});
       })
       .catch((err) =>{

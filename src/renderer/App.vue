@@ -89,7 +89,7 @@
         this.$store.commit('globalView/SET_appVersion', data)
       });
 
-      ipcRenderer.send('appReady');
+      this.appReady();
       this.sendPathToAnalist(this.$route.fullPath);
     },
     computed: {
@@ -132,6 +132,14 @@
         if(process.env.NODE_ENV === 'production') {
           ipcRenderer.send('changeRoute', {path, id: this.userToken})
         }
+      },
+      appReady() {
+        ipcRenderer.send('appReady');
+        const splash = document.getElementById('splashscreen');
+        setTimeout(()=>{
+          splash.remove();
+          document.body.className = "";
+        }, 5500)
       },
       appClose() {
         this.$store.dispatch('mod_events/EVENT_closeApp');
