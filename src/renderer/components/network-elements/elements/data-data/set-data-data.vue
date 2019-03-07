@@ -24,7 +24,7 @@
               i.icon.icon-backward
               span Back
           .form_row
-            input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
+            input.form_input(type="text" v-model="inputPath" readonly="readonly")
           .form_row
             base-select
           .form_row
@@ -34,7 +34,7 @@
               :chartData="imgData"
             )
             chart-base(
-              v-if="imgType === 'line' || imgType === 'bar'"
+              v-if="imgType === 'line' || imgType === 'bar' || imgType === 'scatter'"
               :disable-header="true"
               :chartData="imgData"
             )
@@ -88,7 +88,7 @@
           accessProperties: {
             Category:'Local',
             Type: 'Data',
-            Path: '',
+            Path: [],
           }
         }
       }
@@ -103,9 +103,9 @@
       currentNetworkID() {
         return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
       },
-      // inputPath() {
-      //   return this.settings.accessProperties.Path.join(', ')
-      // }
+      inputPath() {
+        return this.settings.accessProperties.Path.join(', ')
+      }
     },
     watch: {
       'settings.accessProperties.Path': {
@@ -139,7 +139,7 @@
         this.openLoadDialog(this.saveLoadFile, opt)
       },
       saveLoadFile(pathArr) {
-        this.settings.accessProperties.Path = pathArr[0];
+        this.settings.accessProperties.Path = pathArr;
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
@@ -163,6 +163,7 @@
             if(data === 'Null') {
               return
             }
+            console.log(data);
             this.imgType = data.series[0].type;
             this.imgData = data;
 

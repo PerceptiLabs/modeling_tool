@@ -221,7 +221,8 @@ arg_label=tf.argmax(X['${this.labels}'],-1);
 correct_prediction = tf.equal(arg_output, arg_label);
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
 
-      return `N_class=list(X.values())[-1].get_shape().as_list()[-1];
+      //return `N_class=list(X.values())[-1].get_shape().as_list()[-1];
+      return `N_class=[[10],[10]][-1][-1];
 ${loss}
 ${optimizer}
 ${accuracy}`

@@ -54,23 +54,21 @@ export default {
       }
     }
   },
-  watch: {
-    chartData() {
-      if (this.chartData === null) {
-        this.chartModel = this.defaultModel;
-        return
-      }
-      let model = {...this.defaultModel};
-      model.series = this.chartData[0];
-      //model.series = dataHeat.series[0];
-
-      this.wWorker.postMessage(model);
-    }
-  },
   methods: {
     createWWorker() {
       this.wWorker = new Worker(`${pathWebWorkers}/calcChartHeatMap.js`);
       this.wWorker.addEventListener('message', this.drawChart, false);
+    },
+    sendDataToWWorker(data) {
+      if (data === null || data === undefined) {
+        this.chartModel = this.defaultModel;
+        return
+      }
+      let model = {...this.defaultModel};
+      model.series = data[0];
+      //model.series = dataHeat.series[0];
+
+      this.wWorker.postMessage(model);
     }
   }
 }

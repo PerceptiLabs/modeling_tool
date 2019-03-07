@@ -18,10 +18,9 @@ const viewBoxMixin = {
   mounted() {
     this.getData();
   },
-  // beforeDestroy() {
-  //   clearInterval(this.idTimer);
-  //   this.chartData = {};
-  // },
+  beforeDestroy() {
+    this.chartData = {};
+  },
   computed: {
     statElementID() {
       let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType === 'Training');

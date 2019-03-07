@@ -135,7 +135,7 @@ const actions = {
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        //console.log('API_getStatus ', data);
+        console.log('API_getStatus ', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -159,7 +159,8 @@ const actions = {
       action: "Start",
       value: message
     };
-    console.log(theData);
+    console.log(JSON.stringify(theData));
+
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {

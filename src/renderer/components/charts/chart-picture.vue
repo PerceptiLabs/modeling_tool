@@ -32,11 +32,6 @@ export default {
       handler(newVal) {
         if(newVal % 2 && this.imgDataBuffer !== null) this.drawPicture(this.imgDataBuffer);
       }
-    },
-    chartData(newData) {
-      this.isNeedWait
-        ? this.imgDataBuffer = JSON.parse(JSON.stringify(newData[0]))
-        : this.drawPicture(newData[0])
     }
   },
   methods: {
@@ -54,6 +49,12 @@ export default {
       let imgData = canvas2d.createImageData(imgW, imgH);
       img.data.forEach((el, index) => imgData.data[index] = el);
       canvas2d.putImageData(imgData,0, 0);
+    },
+    sendDataToWWorker(data) {
+      if (data === null || data === undefined) return;
+      this.isNeedWait
+        ? this.imgDataBuffer = JSON.parse(JSON.stringify(data[0]))
+        : this.drawPicture(data[0])
     }
   }
 }

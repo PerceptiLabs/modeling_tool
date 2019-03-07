@@ -27,6 +27,7 @@ const chartsMixin = {
       this.createWWorker();
       this.sendDataToWWorker();
       window.addEventListener("resize", ()=> { this.$refs.chart.resize()}, false);
+      this.$refs.chart.resize();
     }
   },
   beforeDestroy() {
@@ -63,6 +64,9 @@ const chartsMixin = {
       handler() {
         if(this._name !== '<ChartPicture>') this.$refs.chart.resize();
       }
+    },
+    chartData(newData) {
+      this.sendDataToWWorker(newData)
     }
   },
   methods: {

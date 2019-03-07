@@ -54,11 +54,6 @@
         }
       }
     },
-    watch: {
-      chartData() {
-        this.sendDataToWWorker()
-      }
-    },
     methods: {
       applyCustomColor() {
         if (this.customColor.length) {
@@ -69,16 +64,17 @@
         this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
         this.wWorker.addEventListener('message', this.drawChart, false);
       },
-      sendDataToWWorker() {
-        if (this.chartData === null) {
+      sendDataToWWorker(data) {
+        console.log(data);
+        if (data === null || data === undefined) {
           this.chartModel = this.defaultModel;
           return
         }
-        let model = {...this.defaultModel, ...this.chartData};
+        let model = {...this.defaultModel, ...data};
         model.xAxis.data.length = 0;
         this.wWorker.postMessage({
           model,
-          xLength: this.chartData.xLength
+          xLength: data.xLength
         });
       }
     },

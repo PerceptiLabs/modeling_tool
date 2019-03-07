@@ -166,7 +166,9 @@ export default {
           dim = `${this.settings.Conv_dim} = str(len(X.get_shape())-1) + "D";`;
           break;
         case '1D':
-          dim = `shape=[${this.settings.Patch_size},X.get_shape()[-1].value,${this.settings.Feature_maps}];
+          //shape=[${this.settings.Patch_size},X.get_shape()[-1].value,${this.settings.Feature_maps}];
+          dim = `X.get_shape()[-1].value
+With array and [-1] at end
 initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Patch_size}**2 * ${this.settings.Feature_maps})));
 initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
 b=tf.Variable(initial);
@@ -174,7 +176,8 @@ node = tf.nn.conv1d(X, W, ${this.settings.Stride}, padding=${this.settings.Paddi
 node=node+b;`;
           break;
         case '2D':
-          dim = `shape=[${this.settings.Patch_size},${this.settings.Patch_size},X.get_shape()[-1].value,${this.settings.Feature_maps}];
+          //shape=[${this.settings.Patch_size},${this.settings.Patch_size},X.get_shape()[-1].value,${this.settings.Feature_maps}];
+          dim = `shape=[3,3,[28,28,1][-1],8];
 initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Patch_size}**2 * ${this.settings.Feature_maps})));
 W = tf.Variable(initial);
 initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
