@@ -88,6 +88,7 @@
   import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/classic-ml-vector-machine.vue'
 
   import LayerContainer       from '@/components/network-elements/elements/layer-container/view-layer-container.vue'
+  import { mapGetters, mapMutations, mapActions } from 'vuex';
 
 export default {
   name: 'NetworkField',
@@ -126,6 +127,9 @@ export default {
     window.removeEventListener("resize", this.resizeCalc, false);
   },
   computed: {
+    ...mapGetters({
+      tutorialActiveAction:  'mod_tutorials/getActiveAction'
+    }),
     networkScale() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
     },
@@ -166,6 +170,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
     deleteArrow(ev) {
       let connection = {
         startID: ev.target.dataset.startid,
@@ -244,6 +251,8 @@ export default {
       this.$store.commit('mod_workspace/CLEAR_preArrow');
       this.$refs.network.removeEventListener('mousemove', this.arrowMovePaint);
       this.$refs.network.removeEventListener('mouseup', this.removeArrowListener)
+      this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id})
+      console.log(this.tutorialActiveAction.id)
     },
     createArrowList() {
       if(!this.networkElementList.length) {
@@ -267,6 +276,7 @@ export default {
         });
       }
       function findPerspectiveSide() {
+        
         net.forEach((itemEl, indexEl, arrNet)=> {
           if(itemEl.connectionOut.length > 0) {
             for (var numEl in itemEl.connectionOut) {
@@ -446,6 +456,7 @@ export default {
             });
           }
           else {
+           
             let sortGorSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
               return a.layerMeta.left - b.layerMeta.left;
             });
@@ -473,6 +484,7 @@ export default {
           }
           itemEl.correctPosition.stop = calcValuePosition(itemEl.sideEnd, sideEndLength, indexSidePositionEnd);
         })
+        
       }
       function calcValuePosition(side, lengthSide, indexSide) {
         switch(side) {

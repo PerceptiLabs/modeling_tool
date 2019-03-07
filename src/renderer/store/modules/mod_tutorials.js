@@ -40,12 +40,12 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset',
           actions: [
             {
-              tooltip: 'Data > Data...1',
+              tooltip: 'Data > Data...',
               id: 'tutorial_data',
               status: 'disabled'
             },
             {
-              tooltip: 'Data > Data...2',
+              tooltip: 'Data > Data...',
               id: 'tutorial_data-data',
               status: 'disabled'
             },
@@ -98,12 +98,12 @@ const state = {
           content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
           actions: [
             {
-              tooltip: 'Data > Data...3',
+              tooltip: 'Data > Data...',
               id: 'tutorial_data',
               status: 'disabled'
             },
             {
-              tooltip: 'Data > Data...4',
+              tooltip: 'Data > Data...',
               id: 'tutorial_data-data',
               status: 'disabled'
             },
@@ -136,21 +136,21 @@ const state = {
           type: 'interactive',
           pointStatus:'disabled',
           class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > Connect input > Operation settings  ',
           actions: [
             {
-              tooltip: 'Data > Data...1',
-              id: 'tutorial_data',
+              tooltip: 'Processing > Reshape...',
+              id: 'tutorial_processing',
               status: 'disabled'
             },
             {
-              tooltip: 'Data > Data...2',
-              id: 'tutorial_data-data',
+              tooltip: 'Processing > Reshape...',
+              id: 'tutorial_process-reshape',
               status: 'disabled'
             },
             {
-              tooltip: 'Select MNIST dataset > Load...',
-              id: 'tutorial_data-data',
+              tooltip: 'Processing > Reshape...',
+              id: 'tutorial_process-reshape',
               status: 'disabled'
             },
             {
@@ -197,12 +197,12 @@ const state = {
           content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
           actions: [
             {
-              tooltip: 'Data > Data...3',
+              tooltip: 'Data > Data...',
               id: 'tutorial_data',
               status: 'disabled'
             },
             {
-              tooltip: 'Data > Data...4',
+              tooltip: 'Data > Data...',
               id: 'tutorial_data-data',
               status: 'disabled'
             },
@@ -263,12 +263,10 @@ const getters = {
     return getters.getActivePoint.actions[state.activeActionMainTutorial]
   },
   getIsAllActionsDone(state, getters) {
-    //console.log('active point: ', getters.getActivePoint,'active step count:', getters.getActiveStepMainTutorial, 'active point count:', getters.getActivePointMainTutorial, 'active action count: ', getters.getActiveActionMainTutorial)
     var count = 0;
     getters.getActivePoint.actions.forEach(action => {
       if(action.status === 'done') count++
     });
-    //console.log(getters.getActivePoint.actions.length, '---', count);
     return count === getters.getActivePoint.actions.length
   },
   getAllPointsIsDone(state, getters) {
@@ -276,7 +274,6 @@ const getters = {
     getters.getPoints.forEach(point => {
       if(point.pointStatus === 'done') count++
     });
-    //console.log(getters.getPoints.length, '--', count)
     return count === getters.getPoints.length
   }
 }
@@ -345,7 +342,6 @@ const actions = {
 
       if(getters.getIsAllActionsDone) {
         commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
-        console.log(getters.getActivePointMainTutorial, getters.getPoints.length - 1)
         if(getters.getActivePointMainTutorial < getters.getPoints.length - 1) commit('SET_activePointMainTutorial', 'next')
         commit('SET_activeActionMainTutorial', 0)
 
@@ -374,6 +370,7 @@ const actions = {
     if(activeTooltip) activeTooltip.remove()
     if(getters.getActiveAction.tooltip) {
       let element = document.getElementById(getters.getActiveAction.id)
+      console.log(element)
       element.classList.add('tutorial-relative')
       let tooltipBlock = document.createElement('div');
       tooltipBlock.classList.add('tooltip-tutorial');
