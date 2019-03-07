@@ -333,10 +333,10 @@ const actions = {
     if(getters.getIstutorialMode && getters.getMainTutorialIsStarted) {
       
       if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
+        if(value.drop) dispatch('removeIdInWorkspace')
         if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
         dispatch('checkAndSetActiveStep')
-        dispatch('createTooltip')
-        dispatch('removeIdInWorkspace')
+        dispatch('createTooltip', value.drop)
         commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
       }
 
@@ -365,12 +365,17 @@ const actions = {
   pointsDeactivate({commit, getters}) {
 
   },
-  createTooltip({getters}) {
+  createTooltip({getters}, drop) {
     let activeTooltip = document.querySelector('.tooltip-tutorial')
     if(activeTooltip) activeTooltip.remove()
     if(getters.getActiveAction.tooltip) {
-      let element = document.getElementById(getters.getActiveAction.id)
-      console.log(element)
+      let element
+      if(drop) {
+        let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}`)
+        element = workspaceElements[workspaceElements.length - 1]
+      } else {
+        element = document.getElementById(getters.getActiveAction.id)
+      }
       element.classList.add('tutorial-relative')
       let tooltipBlock = document.createElement('div');
       tooltipBlock.classList.add('tooltip-tutorial');
@@ -400,7 +405,10 @@ const actions = {
   },
   removeIdInWorkspace({getters}) {
     let infoSectionTutorialElem = document.querySelector('.info-section_main').querySelector(`#${getters.getActiveAction.id}`)
-    if(infoSectionTutorialElem) infoSectionTutorialElem.setAttribute('id', '')
+    if(infoSectionTutorialElem) {
+      infoSectionTutorialElem.setAttribute('id', '')
+      infoSectionTutorialElem.classList.add(getters.getActiveAction.id)
+    } 
   }
 };
 
