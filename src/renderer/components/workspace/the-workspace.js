@@ -124,6 +124,7 @@ export default {
     setTabNetwork(index) {
       this.$store.commit('mod_workspace/SET_currentNetwork', index);
       this.$store.dispatch('mod_workspace/SET_elementUnselect');
+      this.$store.dispatch('mod_events/EVENT_startDoRequest', false);
       if(this.statisticsIsOpen !== null) {
         this.$store.dispatch('mod_workspace/SET_openStatistics', false);
         this.$store.dispatch('mod_workspace/SET_openTest', false);

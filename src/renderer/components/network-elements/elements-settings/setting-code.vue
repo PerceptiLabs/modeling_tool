@@ -2,7 +2,7 @@
   .settings-layer
     .settings-layer_section
       .form_holder
-        label.form_label Cost function:
+        //label.form_label Cost function:
         code-hq( v-model="theCode")
         //textarea(v-model="theCode" readonly="true")
       //-.form_holder(v-if="trainingMode")

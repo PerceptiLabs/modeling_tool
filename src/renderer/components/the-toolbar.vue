@@ -86,8 +86,6 @@
           v-tooltip:bottom="'Box'"
         )
           i.icon.icon-box
-      li
-        button.btn.btn--toolbar(type="button" @click="senddd()") get be4end
 
     .toolbar_settings
       //span.text-primary.middle-text(v-html="statusTestText")
@@ -196,9 +194,6 @@ export default {
     }
   },
   methods: {
-    senddd() {
-      this.$store.dispatch('mod_api/API_getBeForEnd');
-    },
     onOffBtn() {
       if(this.isTraining){
         this.trainStop()

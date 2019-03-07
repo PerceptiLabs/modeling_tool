@@ -64,8 +64,8 @@
         this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
         this.wWorker.addEventListener('message', this.drawChart, false);
       },
-      sendDataToWWorker(data) {
-        console.log(data);
+      sendDataToWWorker(dataWatch) {
+        let data = dataWatch || this.chartData;
         if (data === null || data === undefined) {
           this.chartModel = this.defaultModel;
           return

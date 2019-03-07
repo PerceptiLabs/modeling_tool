@@ -13,10 +13,16 @@
       .popup_body(:class="{'active': tabSelected == 0}")
         .settings-layer(v-if="!settings.accessProperties.Path.length")
           .settings-layer_section.section-data-select
-            button.btn(type="button" @click="loadFolder")
+            button.btn(type="button"
+              :disabled="disabledBtn"
+              @click="loadFolder"
+              )
               i.icon.icon-open-folder
             span.data-select_text or
-            button.btn(type="button" @click="loadFile")
+            button.btn(type="button"
+              :disabled="disabledBtn"
+              @click="loadFile"
+              )
               i.icon.icon-open-file
         .settings-layer_section(v-else)
           .form_row
@@ -75,7 +81,7 @@
       }
     },
     mounted() {
-
+      this.getDataMeta()
     },
     data() {
       return {
@@ -83,6 +89,8 @@
         coreCode: '',
         imgData: null,
         imgType: '',
+        dataColumns: [],
+        disabledBtn: false,
         settings: {
           Type: 'Data',
           accessProperties: {
@@ -120,6 +128,7 @@
     methods: {
       openLoadDialog,
       loadFile() {
+        this.disabledBtn = true;
         let opt = {
           title:"Load file or files",
           properties: ['openFile', 'multiSelections'],
@@ -132,6 +141,7 @@
         this.openLoadDialog(this.saveLoadFile, opt)
       },
       loadFolder() {
+        this.disabledBtn = true;
         let opt = {
           title:"Load folder",
           properties: ['openDirectory']
@@ -139,12 +149,43 @@
         this.openLoadDialog(this.saveLoadFile, opt)
       },
       saveLoadFile(pathArr) {
+        this.disabledBtn = false;
         this.settings.accessProperties.Path = pathArr;
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
       clearPath() {
         this.settings.accessProperties.Path = [];
+      },
+      getDataMeta() {
+        let theData = {
+          reciever: this.currentNetworkID,
+          action: 'getDataMeta',
+          value: {
+            Id: this.layerId,
+            Type: 'DataData',
+            Properties: this.settings
+          }
+        };
+        console.log('getDataMeta');
+        const client = new requestApi();
+        client.sendMessage(theData)
+          .then((data)=> {
+            if(data === 'Null') {
+              return
+            }
+            console.log('answer getDataMeta', data);
+            //this.dataColumns = data;
+
+            // if(view.length) {
+            //   this.$set(this.chartData, view, data)
+            // }
+            // else this.chartData = data;
+          })
+          .catch((err)=> {
+            console.log('answer err');
+            console.error(err);
+          });
       },
       getDataImg() {
         let theData = {
@@ -156,14 +197,13 @@
             Properties: this.settings
           }
         };
-        console.log('send ', theData);
         const client = new requestApi();
         client.sendMessage(theData)
           .then((data)=> {
             if(data === 'Null') {
               return
             }
-            console.log(data);
+            //console.log('answer getDataImg', data);
             this.imgType = data.series[0].type;
             this.imgData = data;
 

@@ -211,6 +211,9 @@
 <style lang="scss">
   @import "../../../scss/base";
   @import "../../../scss/components/vscode-theme-dark_plus";
+  .code-hq {
+    font-size: 16px;
+  }
   .CodeMirror-sizer {
     margin: 0 !important;
   }

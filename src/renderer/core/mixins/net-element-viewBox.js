@@ -78,11 +78,11 @@ const viewBoxMixin = {
           view: view
         }
       };
-      //console.log('send');
+      console.log('get layer', theData);
       const client = new requestApi();
       client.sendMessage(theData)
         .then((data)=> {
-          //console.log(data);
+          console.log('answer layer', data);
           if(data === 'Null') {
             return
           }

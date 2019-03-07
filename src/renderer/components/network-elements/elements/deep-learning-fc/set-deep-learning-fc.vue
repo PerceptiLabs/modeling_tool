@@ -103,7 +103,7 @@
         }
         //for element in X.get_shape().as_list()[1:]:
         const fc = `input_size=1
-for element in [14,14,8]:
+for element in ${this.codeInputDim}:
   input_size*=element
 shape=[input_size,${this.settings.Neurons}];
 initial = tf.truncated_normal(shape, stddev=0.1);

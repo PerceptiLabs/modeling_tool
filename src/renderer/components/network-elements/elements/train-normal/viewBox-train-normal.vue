@@ -107,6 +107,11 @@
 
       }
     },
+    watch: {
+      testIsOpen(newVal) {
+        newVal ? this.setTab('Prediction') : null
+      }
+    },
     methods: {
       setTab(name) {
         this.currentTab = name;

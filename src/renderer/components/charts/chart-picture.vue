@@ -50,7 +50,8 @@ export default {
       img.data.forEach((el, index) => imgData.data[index] = el);
       canvas2d.putImageData(imgData,0, 0);
     },
-    sendDataToWWorker(data) {
+    sendDataToWWorker(dataWatch) {
+      let data = dataWatch || this.chartData;
       if (data === null || data === undefined) return;
       this.isNeedWait
         ? this.imgDataBuffer = JSON.parse(JSON.stringify(data[0]))

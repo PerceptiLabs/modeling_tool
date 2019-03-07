@@ -1,5 +1,10 @@
 const netElementSettings = {
   inject: ['hideAllWindow'],
+  props: {
+    currentEl: {
+      type: Object,
+    }
+  },
   data() {
     return {
       tabSelected: 0,
@@ -17,6 +22,9 @@ const netElementSettings = {
     },
     layerSettings() {
       return this.$store.getters['mod_workspace/GET_currentSelectedEl'][0].el.layerSettings;
+    },
+    codeInputDim() {
+      return this.currentEl.layerMeta.InputDim
     }
   },
   methods: {

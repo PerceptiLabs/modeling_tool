@@ -132,10 +132,11 @@ const actions = {
       action: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.openTest ? 'getTestStatus' :'getStatus',
       value: ''
     };
+    console.log('API_getStatus get', theData);
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        console.log('API_getStatus ', data);
+        console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -153,14 +154,11 @@ const actions = {
       Hyperparameters: net.networkSettings,
       Layers: prepareNetwork(elementList)
     };
-
     const theData = {
       reciever: net.networkID,
       action: "Start",
       value: message
     };
-    console.log(JSON.stringify(theData));
-
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {

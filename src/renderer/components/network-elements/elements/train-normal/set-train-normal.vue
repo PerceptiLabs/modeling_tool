@@ -111,11 +111,6 @@ export default {
   name: 'SetTrainNormal',
   mixins: [mixinSet],
   components: { SettingsCode },
-  props: {
-    inputId: {
-      type: Array,
-    }
-  },
   created() {
     this.inputId.forEach((id)=>{
       let el = this.currentNetworkList.filter((element)=> element.layerId === id);
@@ -124,9 +119,6 @@ export default {
         value: el[0].layerId
       })
     });
-    // this.$nextTick(()=>{
-    //
-    // });
   },
   mounted() {
     if(this.settings.Labels) {
@@ -154,6 +146,9 @@ export default {
     }
   },
   computed: {
+    inputId() {
+      return this.currentEl.connectionIn
+    },
     network_output() {
       return this.inputId.filter((id)=>id !== this.idSelectElement)
     },
@@ -222,7 +217,7 @@ correct_prediction = tf.equal(arg_output, arg_label);
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
 
       //return `N_class=list(X.values())[-1].get_shape().as_list()[-1];
-      return `N_class=[[10],[10]][-1][-1];
+      return `N_class=${this.codeInputDim}[-1][-1];
 ${loss}
 ${optimizer}
 ${accuracy}`

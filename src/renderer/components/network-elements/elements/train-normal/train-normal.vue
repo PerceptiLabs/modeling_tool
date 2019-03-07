@@ -6,7 +6,7 @@
     template(slot="context")
       context-menu
     template(slot="settings")
-      settings-el(:input-id="elementData.el.connectionIn")
+      settings-el(:current-el="elementData.el")
 </template>
 
 <script>

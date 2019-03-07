@@ -59,7 +59,8 @@ export default {
       this.wWorker = new Worker(`${pathWebWorkers}/calcChartHeatMap.js`);
       this.wWorker.addEventListener('message', this.drawChart, false);
     },
-    sendDataToWWorker(data) {
+    sendDataToWWorker(dataWatch) {
+      let data = dataWatch || this.chartData;
       if (data === null || data === undefined) {
         this.chartModel = this.defaultModel;
         return

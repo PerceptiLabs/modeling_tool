@@ -47,7 +47,6 @@ export default {
         : 'edit'
     },
   },
-
   watch: {
     networkMode(newVal) {
       if(newVal == 'edit') {
@@ -59,6 +58,12 @@ export default {
         this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
         this.offDragListener();
       }
+    },
+    currentNetwork: {
+      handler() {
+        this.$store.dispatch('mod_api/API_getBeForEnd');
+      },
+      deep: true
     }
   },
   methods: {

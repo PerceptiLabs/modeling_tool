@@ -108,32 +108,32 @@ export default {
           dim = `${this.settings.Deconv_dim} = str(len(X.get_shape())-1) + "D";`;
           break;
         case '1D':
-          dim = `shape=[${this.settings.Stride},X.get_shape()[-1].value, ${this.settings.Feature_maps}];
+          dim = `shape=[${this.settings.Stride},${this.codeInputDim}[-1], ${this.settings.Feature_maps}];
 initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Stride}**2 *${this.settings.Feature_maps})));
 W = tf.Variable(initial);
 initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
 b=tf.Variable(initial);
-output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*${this.settings.Stride} for node_shape in X.get_shape().as_list()[1:-1]]+[${this.settings.Feature_maps}]);
+output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*${this.settings.Stride} for node_shape in ${this.codeInputDim}]+[${this.settings.Feature_maps}]);
 node = tf.nn.conv1d_transpose(X, W, output_shape, ${this.settings.Stride},padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
 node=node+b;`;
           break;
         case '2D':
-          dim = `shape=[${this.settings.Stride},${this.settings.Stride},X.get_shape()[-1].value,${this.settings.Feature_maps}];
+          dim = `shape=[${this.settings.Stride},${this.settings.Stride},${this.codeInputDim}[-1],${this.settings.Feature_maps}];
 initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Stride}**2 * ${this.settings.Feature_maps})));
 W = tf.Variable(initial);
 initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
 b=tf.Variable(initial);
-output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*"+${this.settings.Stride}+" for node_shape in X.get_shape().as_list()[1:-1]]+["+${this.settings.Feature_maps}+"]);
+output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*"+${this.settings.Stride}+" for node_shape in ${this.codeInputDim}]+["+${this.settings.Feature_maps}+"]);
 node = tf.nn.conv2d_transpose(X, W, output_shape, strides=[1, ${this.settings.Stride}, ${this.settings.Stride}, 1], padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
 node=node+b;`;
           break;
         case '3D':
-          dim = `shape=[${this.settings.Stride},${this.settings.Stride},Stride"],X.get_shape()[-1].value,${this.settings.Feature_maps}];
+          dim = `shape=[${this.settings.Stride},${this.settings.Stride},Stride"],${this.codeInputDim}[-1],${this.settings.Feature_maps}];
 initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Stride}**2 * ${this.settings.Feature_maps})));
 W = tf.Variable(initial);
 initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
 b=tf.Variable(initial);
-output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*${this.settings.Stride} for node_shape in X.get_shape().as_list()[1:-1]]+[${this.settings.Feature_maps}]);
+output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*${this.settings.Stride} for node_shape in ${this.codeInputDim}]+[${this.settings.Feature_maps}]);
 node = tf.nn.conv3d_transpose(X, W, output_shape, strides=[1, ${this.settings.Stride}, ${this.settings.Stride}, ${this.settings.Stride}, 1], padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
 node=node+b;`;
           break;
