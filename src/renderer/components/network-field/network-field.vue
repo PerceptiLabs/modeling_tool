@@ -163,6 +163,7 @@ export default {
       this.calcSvgSize()
     },
     eventCalcArrow() {
+      this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id, makeClass: true})
       this.createArrowList()
     },
     smallViewPort() {
@@ -251,15 +252,13 @@ export default {
       this.$store.commit('mod_workspace/CLEAR_preArrow');
       this.$refs.network.removeEventListener('mousemove', this.arrowMovePaint);
       this.$refs.network.removeEventListener('mouseup', this.removeArrowListener)
-      this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id})
-      console.log(this.tutorialActiveAction.id)
     },
     createArrowList() {
       if(!this.networkElementList.length) {
         return
       }
       this.calcSvgSize();
-
+      
       const size = this.layerSize;
       const listID = {};
       const connectList = [];
@@ -276,7 +275,6 @@ export default {
         });
       }
       function findPerspectiveSide() {
-        
         net.forEach((itemEl, indexEl, arrNet)=> {
           if(itemEl.connectionOut.length > 0) {
             for (var numEl in itemEl.connectionOut) {

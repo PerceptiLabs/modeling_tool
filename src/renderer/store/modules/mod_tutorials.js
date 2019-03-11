@@ -149,23 +149,25 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Processing > Reshape...',
+              tooltip: 'Connect input...',
               id: 'tutorial_process-reshape',
               status: 'disabled'
             },
             {
-              tooltip: 'Select MNIST dataset > Load...',
-              id: 'tutorial_button-load',
+              tooltip: 'Open settings...',
+              id: 'tutorial_process-reshape',
               status: 'disabled'
             },
             {
-              tooltip: 'Apply loaded MNIST',
-              id: 'tutorial_button-apply',
+              tooltip: 'Reshape to 28x28x1 > Apply changes...',
+              id: 'tutorial_input-reshape',
               status: 'disabled'
             },
             {
+              tooltip: 'Reshape to 28x28x111111111 > Apply changes...',
+              id: 'tutorial_processing',
               status: 'disabled'
-            }
+            },
           ],
         },
         {
@@ -333,10 +335,10 @@ const actions = {
     if(getters.getIstutorialMode && getters.getMainTutorialIsStarted) {
       
       if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
-        if(value.drop) dispatch('removeIdInWorkspace')
+        if(value.makeClass) dispatch('removeIdInWorkspace')
         if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
         dispatch('checkAndSetActiveStep')
-        dispatch('createTooltip', value.drop)
+        dispatch('createTooltip', value.makeClass)
         commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
       }
 
@@ -365,21 +367,16 @@ const actions = {
   pointsDeactivate({commit, getters}) {
 
   },
-  createTooltip({getters}, drop) {
+  createTooltip({getters}, makeClass) {
     let activeTooltip = document.querySelector('.tooltip-tutorial')
     if(activeTooltip) activeTooltip.remove()
     if(getters.getActiveAction.tooltip) {
-      let element
-      if(drop) {
-        let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}`)
-        element = workspaceElements[workspaceElements.length - 1]
-      } else {
-        element = document.getElementById(getters.getActiveAction.id)
-      }
-      element.classList.add('tutorial-relative')
+      let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}`)
+      let element = makeClass ? workspaceElements[workspaceElements.length - 1] : document.getElementById(getters.getActiveAction.id)
       let tooltipBlock = document.createElement('div');
       tooltipBlock.classList.add('tooltip-tutorial');
       tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
+      console.log(getters.getActiveAction)
       element.appendChild(tooltipBlock)
     }
   },
