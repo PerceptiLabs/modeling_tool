@@ -19,14 +19,13 @@
   font-size: 1.2rem;
   font-weight: bold;
   color: $col-txt2;
-  overflow: hidden;
   min-width: 9rem;
   height: 3rem;
   padding: .5em;
   text-align: center;
   text-overflow: ellipsis;
   background: $bg-grad-cyan;
-
+  position: relative;
   &.disable {
     background: linear-gradient(#489671, #337a7f);
   }

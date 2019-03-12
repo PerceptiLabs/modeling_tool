@@ -280,7 +280,20 @@ export default {
   position: relative;
   overflow: visible;
 }
-button.btn--primary.tutorial-relative .tooltip-tutorial{
+button.btn--primary .tooltip-tutorial{
   top: 0;
+}
+.tutorial_input-reshape {
+  position: relative;
+  .tooltip-tutorial {
+    left: 105%
+  }
+}
+.schematic{
+  width: 7.5rem;
+  height: 7.5rem;
+  border: 2px dotted #3185aa;
+  border-radius: 5px;
+  position: absolute;
 }
 </style>

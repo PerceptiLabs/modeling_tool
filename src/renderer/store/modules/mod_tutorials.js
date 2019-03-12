@@ -40,13 +40,18 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset',
           actions: [
             {
-              tooltip: 'Data > Data...',
+              tooltip: 'Data > Data...', 
               id: 'tutorial_data',
               status: 'disabled'
             },
             {
               tooltip: 'Data > Data...',
               id: 'tutorial_data-data',
+              schematic: {
+                type: 'square',
+                top: 18,
+                left: 25
+              },
               status: 'disabled'
             },
             {
@@ -105,6 +110,11 @@ const state = {
             {
               tooltip: 'Data > Data...',
               id: 'tutorial_data-data',
+              schematic: {
+                type: 'square',
+                top: 32,
+                left: 25
+              },
               status: 'disabled'
             },
             {
@@ -146,11 +156,26 @@ const state = {
             {
               tooltip: 'Processing > Reshape...',
               id: 'tutorial_process-reshape',
+              schematic: {
+                type: 'square',
+                top: 18,
+                left: 40
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select to create a connection...',
+              id: 'tutorial_list-arrow',
               status: 'disabled'
             },
             {
               tooltip: 'Connect input...',
               id: 'tutorial_process-reshape',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Go back to work with items...',
+              id: 'tutorial_pointer',
               status: 'disabled'
             },
             {
@@ -163,71 +188,32 @@ const state = {
               id: 'tutorial_input-reshape',
               status: 'disabled'
             },
-            {
-              tooltip: 'Reshape to 28x28x111111111 > Apply changes...',
-              id: 'tutorial_processing',
-              status: 'disabled'
-            },
           ],
         },
         {
           type: 'static',
           pointStatus:'disabled',
-          content: 'For this tutorial we will use the MNIST dataset',
+          content: 'We want to build an image classifier by using images as input, not a flattened array',
           actions: [
             {
               status: 'disabled',
               tooltip: ''
             }
-          ],
-        },
-        {
-          type: 'static',
-          pointStatus:'disabled',
-          content: 'Every input image has been flattened out to a 784x1 array.',
-          actions: [
-            {
-              status: 'disabled',
-              tooltip: ''
-            },
           ],
         },
         {
           type: 'interactive',
           pointStatus:'disabled',
-          tooltip: 'Data > Data...',
-          content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
+          class_style: 'list_subtitle',
+          content: 'Reshape the dataset into images of shape 28x28x1. ',
           actions: [
             {
-              tooltip: 'Data > Data...',
-              id: 'tutorial_data',
-              status: 'disabled'
-            },
-            {
-              tooltip: 'Data > Data...',
-              id: 'tutorial_data-data',
-              status: 'disabled'
-            },
-            {
-              tooltip: 'Select MNIST dataset > Load...',
-              id: 'tutorial_data-data',
-              status: 'disabled'
-            },
-            {
-              tooltip: 'Select MNIST dataset > Load...',
-              id: 'tutorial_button-load',
-              status: 'disabled'
-            },
-            {
-              tooltip: 'Apply loaded MNIST',
-              id: 'tutorial_button-apply',
-              status: 'disabled'
-            },
-            {
+              tooltip: 'Reshape to 28x28x1 > Apply changes...',
+              id: 'tutorial_input-reshape',
               status: 'disabled'
             }
           ],
-        }
+        },
       ]
     }
   }
@@ -333,13 +319,16 @@ const mutations = {
 const actions = {
   pointActivate({commit, dispatch, getters}, value) {
     if(getters.getIstutorialMode && getters.getMainTutorialIsStarted) {
-      
       if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
         if(value.makeClass) dispatch('removeIdInWorkspace')
         if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
+        dispatch('removeSchematicElement')
+        if(getters.getActiveAction.schematic) dispatch('drawSchematicElement', getters.getActiveAction.schematic)
         dispatch('checkAndSetActiveStep')
         dispatch('createTooltip', value.makeClass)
+
         commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
+        console.log(getters.getActiveAction.id)
       }
 
       if(getters.getIsAllActionsDone) {
@@ -372,11 +361,11 @@ const actions = {
     if(activeTooltip) activeTooltip.remove()
     if(getters.getActiveAction.tooltip) {
       let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}`)
-      let element = makeClass ? workspaceElements[workspaceElements.length - 1] : document.getElementById(getters.getActiveAction.id)
+      let element = makeClass && workspaceElements[workspaceElements.length - 1] ? workspaceElements[workspaceElements.length - 1] : document.getElementById(getters.getActiveAction.id)
       let tooltipBlock = document.createElement('div');
       tooltipBlock.classList.add('tooltip-tutorial');
       tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
-      console.log(getters.getActiveAction)
+      //console.log(getters.getActiveAction)
       element.appendChild(tooltipBlock)
     }
   },
@@ -406,6 +395,18 @@ const actions = {
       infoSectionTutorialElem.setAttribute('id', '')
       infoSectionTutorialElem.classList.add(getters.getActiveAction.id)
     } 
+  },
+  drawSchematicElement({}, schematic) {
+    let infoSection = document.querySelector('.info-section_main')
+    let element = document.createElement('div');
+    element.classList.add('schematic');
+    infoSection.insertBefore(element, infoSection.firstChild)
+    element.style.top = schematic.top + 'rem'
+    element.style.left = schematic.left + 'rem'
+  },
+  removeSchematicElement() {
+    let schematic = document.querySelector('.schematic')
+    if(schematic) schematic.remove()
   }
 };
 

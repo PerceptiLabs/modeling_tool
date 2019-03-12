@@ -32,7 +32,7 @@
               .form_input
                 triple-input(v-model="settings.Permutation")
           .settings-layer_foot
-            button.btn.btn--primary(type="button" @click="applySettings") Apply
+            button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_button-apply") Apply
 
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
@@ -45,6 +45,7 @@
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
   import TripleInput    from "@/components/base/triple-input";
+  import { mapActions } from 'vuex';
 
   export default {
     name: 'SetProcessReshape',
@@ -67,6 +68,15 @@
         Y=tf.reshape(X, [-1]+[layer_output for layer_output in "+str(${this.settings.Shape})+"]);
         Y=tf.transpose(Y,perm="+str([0]+[i+1 for i in ${this.settings.Permutation}])+")
         `
+      }
+    },
+    methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
+      saveSettings() {
+        this.applySettings()
+        this.tutorialPointActivate({way: 'next', validation: ''})
       }
     }
   }
