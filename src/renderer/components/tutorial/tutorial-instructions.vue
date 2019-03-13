@@ -91,6 +91,7 @@ export default {
 <style lang="scss">
   @import "../../scss/base";
   $color-text-instructions:#AEAEAE;
+  $color-schematic-element: #3185aa;
   $title-padding: 0 2.1rem;
 
 
@@ -290,10 +291,16 @@ button.btn--primary .tooltip-tutorial{
   }
 }
 .schematic{
+  position: absolute;
+}
+.schematic--square {
   width: 7.5rem;
   height: 7.5rem;
-  border: 2px dotted #3185aa;
   border-radius: 5px;
-  position: absolute;
+  border: 2px dotted $color-schematic-element;
+}
+.schematic--arrow {
+  width: 12rem;
+  border-bottom: 2px dotted $color-schematic-element;
 }
 </style>

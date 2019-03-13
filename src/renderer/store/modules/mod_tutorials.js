@@ -49,8 +49,12 @@ const state = {
               id: 'tutorial_data-data',
               schematic: {
                 type: 'square',
-                top: 18,
-                left: 25
+                top: 16.4,
+                left: 26
+              },
+              position_element: {
+                top: 6.5,
+                left: 18
               },
               status: 'disabled'
             },
@@ -112,8 +116,12 @@ const state = {
               id: 'tutorial_data-data',
               schematic: {
                 type: 'square',
-                top: 32,
-                left: 25
+                top: 32.4,
+                left: 26
+              },
+              position_element: {
+                top: 22.5,
+                left: 18
               },
               status: 'disabled'
             },
@@ -158,8 +166,12 @@ const state = {
               id: 'tutorial_process-reshape',
               schematic: {
                 type: 'square',
-                top: 18,
-                left: 40
+                top: 16.4,
+                left: 42,
+              },
+              position_element: {
+                top: 6.5,
+                left: 34
               },
               status: 'disabled'
             },
@@ -171,6 +183,9 @@ const state = {
             {
               tooltip: 'Connect input...',
               id: 'tutorial_process-reshape',
+              schematic: {
+                type: 'arrow'
+              },
               status: 'disabled'
             },
             {
@@ -321,14 +336,13 @@ const actions = {
     if(getters.getIstutorialMode && getters.getMainTutorialIsStarted) {
       if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
         if(value.makeClass) dispatch('removeIdInWorkspace')
+        dispatch('changeElementPosition', getters.getActiveAction.position_element)
         if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
         dispatch('removeSchematicElement')
         if(getters.getActiveAction.schematic) dispatch('drawSchematicElement', getters.getActiveAction.schematic)
         dispatch('checkAndSetActiveStep')
         dispatch('createTooltip', value.makeClass)
-
         commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
-        console.log(getters.getActiveAction.id)
       }
 
       if(getters.getIsAllActionsDone) {
@@ -353,9 +367,6 @@ const actions = {
 
     }
   },
-  pointsDeactivate({commit, getters}) {
-
-  },
   createTooltip({getters}, makeClass) {
     let activeTooltip = document.querySelector('.tooltip-tutorial')
     if(activeTooltip) activeTooltip.remove()
@@ -365,12 +376,10 @@ const actions = {
       let tooltipBlock = document.createElement('div');
       tooltipBlock.classList.add('tooltip-tutorial');
       tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
-      //console.log(getters.getActiveAction)
       element.appendChild(tooltipBlock)
     }
   },
   checkAndSetActiveStep({commit, getters}) {
-    
     if(getters.getActivePoint && getters.getActivePoint.type === 'static') {
       commit('SET_activeActionMainTutorial', 0)
       for (let i = 0; i < getters.getPoints.length; i++) {
@@ -396,17 +405,38 @@ const actions = {
       infoSectionTutorialElem.classList.add(getters.getActiveAction.id)
     } 
   },
-  drawSchematicElement({}, schematic) {
+  drawSchematicElement({getters}, schematic) {
     let infoSection = document.querySelector('.info-section_main')
     let element = document.createElement('div');
     element.classList.add('schematic');
     infoSection.insertBefore(element, infoSection.firstChild)
-    element.style.top = schematic.top + 'rem'
-    element.style.left = schematic.left + 'rem'
+    switch (schematic.type) {
+      case 'square':
+        element.classList.add('schematic--square');
+        element.style.top = schematic.top + 'rem'
+        element.style.left = schematic.left + 'rem'
+        break;
+      case 'arrow':
+        element.classList.add('schematic--arrow');
+        let activeElementPosition =  document.querySelector(`.${getters.getActiveAction.id}`).getBoundingClientRect()
+        element.style.top = activeElementPosition.top + (activeElementPosition.height / 2)  + 'px'
+        element.style.left = activeElementPosition.left - (activeElementPosition.width + activeElementPosition.width / 2) +  'px'
+        break;
+    }
+    
   },
   removeSchematicElement() {
-    let schematic = document.querySelector('.schematic')
-    if(schematic) schematic.remove()
+    let schematicElement = document.querySelector('.schematic')
+    if(schematicElement) schematicElement.remove()
+  },
+  changeElementPosition({getters}, position_element) {
+    if(position_element) {
+      let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}`)
+      let activeElement = workspaceElements[workspaceElements.length - 1]
+      let parent = activeElement.parentElement.parentElement
+      parent.style.top = position_element.top + 'rem'
+      parent.style.left = position_element.left + 'rem'
+    }
   }
 };
 
