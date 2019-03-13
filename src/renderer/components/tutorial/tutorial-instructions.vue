@@ -10,7 +10,7 @@
       header.list-area_header
         div
           button.header_close-instructions.i.icon.icon-appClose(@click="showInstructions")
-          span.header_title title_q
+          //span.header_title title_q
         .header_arrows-top
           i.icon.icon-shevron
           i.icon.icon-shevron

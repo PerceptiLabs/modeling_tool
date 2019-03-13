@@ -230,6 +230,90 @@ const state = {
           ],
         },
       ]
+    },
+    convolutional_layer: {
+      title: 'Step 3. Use a Convolutional layer',
+      points: [
+        {
+          type: 'interactive',
+          pointStatus:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Convolution</div> > Connect input > Operation settings ',
+          actions: [
+            {
+              tooltip: 'Deep Learning > Convolution...',
+              id: 'tutorial_deep-learning',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Deep Learning > Convolution...',
+              id: 'tutorial_fully-connected',
+              schematic: {
+                type: 'square',
+                top: 16.4,
+                left: 58,
+              },
+              position_element: {
+                top: 6.5,
+                left: 50
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select to create a connection...',
+              id: 'tutorial_list-arrow',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_fully-connected',
+              schematic: {
+                type: 'arrow'
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Go back to work with items...',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Open settings...',
+              id: 'tutorial_fully-connected',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Reshape to 28x28x1 > Apply changes...',
+              id: 'tutorial_input-reshape',
+              status: 'disabled'
+            },
+          ],
+        },
+        {
+          type: 'static',
+          pointStatus:'disabled',
+          content: 'We want to build an image classifier by using images as input, not a flattened array',
+          actions: [
+            {
+              status: 'disabled',
+              tooltip: ''
+            }
+          ],
+        },
+        {
+          type: 'interactive',
+          pointStatus:'disabled',
+          class_style: 'list_subtitle',
+          content: 'Reshape the dataset into images of shape 28x28x1. ',
+          actions: [
+            {
+              tooltip: 'Reshape to 28x28x1 > Apply changes...',
+              id: 'tutorial_input-reshape',
+              status: 'disabled'
+            }
+          ],
+        },
+      ]
     }
   }
 };
@@ -371,6 +455,7 @@ const actions = {
     let activeTooltip = document.querySelector('.tooltip-tutorial')
     if(activeTooltip) activeTooltip.remove()
     if(getters.getActiveAction.tooltip) {
+      console.log(getters.getActiveAction.id)
       let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}`)
       let element = makeClass && workspaceElements[workspaceElements.length - 1] ? workspaceElements[workspaceElements.length - 1] : document.getElementById(getters.getActiveAction.id)
       let tooltipBlock = document.createElement('div');
