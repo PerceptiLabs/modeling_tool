@@ -8,7 +8,7 @@
       v-if="infoText"
       :infoText="infoText"
     )
-    the-tutorial
+    tutorial-storyboard
 </template>
 
 <script src="./quantum.js"></script>

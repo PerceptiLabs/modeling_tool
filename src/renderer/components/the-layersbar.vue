@@ -1,6 +1,6 @@
 <template lang="pug">
   aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers}")
-    ul.layersbar-list(:class="{'tutorial-active': activeStep === 2}")
+    ul.layersbar-list(:class="{'tutorial-active': activeStepStoryboard === 2}")
       li.layer(
         v-for="(layer, i) in layersbarList"
         :key="i"
@@ -9,6 +9,7 @@
           v-tooltip:right="layer.tooltip"
           @click.stop="toggleElList(i, $event)"
           :class="[layer.layerClass, {'active': layer.showEl}]"
+          :id="layer.id"
         )
           i.icon(:class="layer.iconClass")
         ul.layer_child-list(
@@ -28,6 +29,7 @@
 <script>
   import clickOutside from '@/core/mixins/click-outside.js'
   import {trainingElements, deepLearnElements}  from '@/core/constants.js'
+  import { mapGetters, mapActions }       from 'vuex';
 
   import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
   import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/view-io-output-backpropagation.vue'
@@ -93,7 +95,8 @@ export default {
           layerClass: 'net-element-data',
           iconClass: 'icon-data',
           showEl: false,
-          networkElements: ['DataData', 'DataEnvironment']
+          networkElements: ['DataData', 'DataEnvironment'],
+          id:'tutorial_data'
           //networkElements: ['DataData']
         },
         {
@@ -101,7 +104,8 @@ export default {
           layerClass: 'net-element-process',
           iconClass: 'icon-settings',
           showEl: false,
-          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-crop']
+          networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-crop'],
+          id:'tutorial_processing'
           //networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'process-hot']
         },
         {
@@ -110,14 +114,16 @@ export default {
           iconClass: 'icon-network',
           showEl: false,
           //networkElements: ['LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent']
-          networkElements: deepLearnElements
+          networkElements: deepLearnElements,
+          id:'tutorial_deep-learning'
         },
         {
           tooltip: 'Mathematics',
           layerClass: 'net-element-math',
           iconClass: 'icon-calc',
           showEl: false,
-          networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax']
+          networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax'],
+          id:'tutorial_mathematics'
           //networkElements: ['MathArgmax', 'MathMerge', 'MathSoftmax']
         },
         {
@@ -126,14 +132,16 @@ export default {
           iconClass: 'icon-training',
           showEl: false,
           //networkElements: ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
-          networkElements: trainingElements
+          networkElements: trainingElements,
+          id:'tutorial_training'
         },
         {
           tooltip: 'Classic Machine Learning',
           layerClass: 'net-element-learn-class',
           iconClass: 'icon-mind',
           showEl: false,
-          networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM']
+          networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
+          id:'tutorial_classic-machine-learning'
         }
       ],
     }
@@ -142,12 +150,16 @@ export default {
     hideLayers () {
       return this.$store.state.globalView.hideLayers
     },
-    activeStep() {
-      return this.$store.state.mod_tutorials.activeStep
+    activeStepStoryboard() {
+      return this.$store.state.mod_tutorials.activeStepStoryboard
     }
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
     toggleElList(index, ev) {
+      this.tutorialPointActivate('next')
       if (this.layersbarList[index].showEl) {
         this.layersbarList[index].showEl = false;
         document.removeEventListener('click', this.clickOutside);
@@ -155,7 +167,6 @@ export default {
       else {
         this.clickOutsideAction();
         this.layersbarList[index].showEl = true;
-
         this.ClickElementTracking = ev.target.closest('.js-clickout');
         document.addEventListener('click', this.clickOutside);
       }
@@ -164,7 +175,10 @@ export default {
       this.layersbarList.forEach((item)=> {
         item.showEl = false
       });
-    },
+    }
+  },
+  mounted() {
+    
   }
 }
 </script>

@@ -12,6 +12,7 @@
   import {loadNetwork}        from '@/core/helpers.js'
   import {pathBasicTemplate}  from '@/core/constants.js'
   import basicTemplate1       from '@/core/basic-template/base-template-1.js'
+  import {mapMutations}       from 'vuex';
 
   export default {
     name: 'PageProjects',
@@ -55,6 +56,9 @@
       }
     },
     methods: {
+      ...mapMutations({
+        setTutorialMode: 'mod_tutorials/SET_isTutorialMode'
+      }),
       loadNetwork,
       addNewProject() {
         this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
@@ -73,6 +77,10 @@
       },
       goNextPage() {
         this.$router.push({name: 'app'});
+      },
+      beginTutorial() {
+        this.setTutorialMode(true)
+        this.goNextPage()
       }
     }
   }

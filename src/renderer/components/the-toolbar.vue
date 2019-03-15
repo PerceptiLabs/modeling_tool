@@ -48,8 +48,8 @@
         )
           i.icon.icon-step-next
     ul.toolbar_list
-      li(:class="{'tutorial-active': activeStep === 4}")
-        button.btn.btn--toolbar.bg-primary(type="button"
+      li(:class="{'tutorial-active': activeStepStoryboard === 4}")
+        button.btn.btn--toolbar(type="button"
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
@@ -95,20 +95,26 @@
       //-   span Run test
       //-   i.icon.icon-circle-o
       span.text-primary.middle-text(v-html="statusTrainingText")
-      button.btn.btn--dark-blue-rev(type="button" disabled="disabled"
-        @click="openStatistics"
-        )
-        span Layer Mode
-        i.icon.icon-ellipse
+      //- button.btn.btn--dark-blue-rev(type="button" disabled="disabled"
+      //-   @click="openStatistics"
+      //-   )
+      //-   span Layer Mode
+      //-   i.icon.icon-ellipse
+
+      tutorial-instructions
 </template>
 
 <script>
 //import configApp    from '@/core/globalSettings.js'
 import {trainingElements, deepLearnElements}  from '@/core/constants.js'
+import TutorialInstructions                   from '@/components/tutorial/tutorial-instructions.vue'
 
 //const {ipcRenderer} = require('electron')
 export default {
   name: 'TheToolbar',
+  components: {
+    TutorialInstructions
+  },
   data() {
     return {
       x: null,
@@ -189,8 +195,8 @@ export default {
     tutorialRunButtonActive() {
       return this.$store.state.mod_tutorials.runButtonsActive
     },
-    activeStep() {
-      return this.$store.state.mod_tutorials.activeStep
+    activeStepStoryboard() {
+      return this.$store.state.mod_tutorials.activeStepStoryboard
     }
   },
   methods: {

@@ -206,7 +206,7 @@ export default {
       this.$store.dispatch('mod_events/EVENT_logOut', this)
     },
     showTutorial() {
-      this.$store.commit('mod_tutorials/SET_showTutorial', true);
+      this.$store.commit('mod_tutorials/SET_showTutorialStoryBoard', true);
     }
   }
 }

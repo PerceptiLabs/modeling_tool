@@ -15,7 +15,7 @@
           .settings-layer_section
             .form_row
               input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
-              button.btn.btn--primary(type="button" @click="loadFile" :disabled="isDisabled") Load
+              button.btn.btn--primary(type="button" @click="loadFile" :disabled="isDisabled" id="tutorial_button-load") Load
           .settings-layer_section
             .form_row
               .form_label Data type:
@@ -24,7 +24,8 @@
                   span Data
                 base-radio(groupName="group" valueInput="Labels" v-model="settings.accessProperties.Type")
                   span Labels
-
+          .settings-layer_foot
+            button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_button-apply") Apply
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-cloud
     .settings-layer_foot
@@ -33,9 +34,10 @@
 </template>
 
 <script>
-  import mixinSet       from '@/core/mixins/net-element-settings.js';
-  import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
+  import mixinSet         from '@/core/mixins/net-element-settings.js';
+  import SettingsCloud    from '@/components/network-elements/elements-settings/setting-clouds.vue';
   import {openLoadDialog} from '@/core/helpers.js'
+  import {mapActions}     from 'vuex';
   export default {
     name: 'SetDataData',
     mixins: [mixinSet],
@@ -78,6 +80,9 @@
       }
     },
     methods: {
+      ...mapActions({
+        tutorialPointActivate:    'mod_tutorials/pointActivate',
+      }),
       openLoadDialog,
       applySettings() {
         this.hideAllWindow();
@@ -98,10 +103,15 @@
         this.openLoadDialog(this.saveLoadFile, opt)
       },
       saveLoadFile(pathArr) {
+        this.tutorialPointActivate('next')
         this.settings.accessProperties.Path = pathArr[0];
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
+      saveSettings() {
+        this.applySettings()
+        this.tutorialPointActivate('next')
+      }
     }
   }
 </script>
