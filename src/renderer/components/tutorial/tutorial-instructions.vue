@@ -77,6 +77,7 @@ export default {
     changeStep(way) {
       if(way === 'next') {
         this.setActiveStep(way)
+        console.log(this.activePoint.actions[0].id)
         this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
       }
     },
@@ -277,12 +278,23 @@ export default {
     border-bottom: 6px solid transparent;
 	}
 }
+.tooltip-tutorial_italic {
+  font-style: italic;
+ 
+}
+.tooltip-tutorial_bold {
+  font-weight: 700;
+  display: inline-block;
+}
 .tutorial-relative{
   position: relative;
   overflow: visible;
 }
-button.btn--primary .tooltip-tutorial{
+button.btn--primary .tooltip-tutorial, .form_input .tooltip-tutorial{
   top: 0;
+}
+.tutorial_neurons, #tutorial_patch-size, #tutorial_stride, #tutorial_feature-maps{
+  position: relative;
 }
 .tutorial_input-reshape {
   position: relative;

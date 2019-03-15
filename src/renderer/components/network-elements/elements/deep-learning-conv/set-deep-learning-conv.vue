@@ -26,18 +26,18 @@
           .settings-layer_section
             .form_row
               .form_label Patch size:
-              .form_input
-                input(type="text" v-model="settings.Patch_size")
+              .form_input(id="tutorial_patch-size")
+                input(type="text" @input="changeInputFields($event, 'Patch_size')")
           .settings-layer_section
             .form_row
               .form_label Stride:
-              .form_input
-                input(type="text" v-model="settings.Stride")
+              .form_input(id="tutorial_stride")
+                input(type="text" @input="changeInputFields($event, 'Stride')")
           .settings-layer_section
             .form_row
               .form_label Feature maps:
-              .form_input
-                input(type="text" v-model="settings.Feature_maps")
+              .form_input(id="tutorial_feature-maps")
+                input(type="text" @input="changeInputFields($event, 'Feature_maps')")
 
           .settings-layer_section
             .form_row
@@ -118,7 +118,7 @@
                     span VALID
 
           .settings-layer_foot
-            button.btn.btn--primary(type="button" @click="applySettings") Apply
+            button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_apply-button") Apply
 
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
@@ -130,6 +130,7 @@
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
 import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
+import { mapActions } from 'vuex';
 
 export default {
   name: 'SetDeepLearningConv',
@@ -142,10 +143,10 @@ export default {
       tabs: ['Settings', 'Code'],
       settings: {
         Conv_dim: "2D", //Automatic, 1D, 2D, 3D
-        Patch_size: "3",
-        Stride: "2",
+        Patch_size: "", // 3
+        Stride: "",     // 2
         Padding: "'SAME'", //'SAME', 'VALID'
-        Feature_maps: "8",
+        Feature_maps: "",  // 8
         Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
         Dropout: false, //True, False
         PoolBool: false, //True, False
@@ -212,6 +213,39 @@ export default {
           ${addPooling}`
           break;
       }
+    },
+    patch_size() {
+      return this.settings.Patch_size
+    },
+    stride() {
+      return this.settings.Stride
+    },
+    feature_maps() {
+      return this.settings.Feature_maps
+    }
+  },
+  methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
+    changeInputFields(event, settingProperty) {
+      this.settings[settingProperty] = event.target.value
+    },
+    saveSettings() {
+      this.applySettings()
+      this.tutorialPointActivate({way:'next', validation: 'tutorial_apply-button'})
+    }
+  },
+  watch: {
+    // for tutorial
+    patch_size() {
+      this.tutorialPointActivate({way:'next', validation: 'tutorial_patch-size'})
+    },
+    stride() {
+      this.tutorialPointActivate({way:'next', validation: 'tutorial_stride'})
+    },
+    feature_maps() {
+      this.tutorialPointActivate({way:'next', validation: 'tutorial_feature-maps'})
     }
   }
 }

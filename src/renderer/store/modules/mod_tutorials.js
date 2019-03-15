@@ -199,9 +199,7 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Reshape to 28x28x1 > Apply changes...',
-              id: 'tutorial_input-reshape',
-              status: 'disabled'
+              status: 'disabled',
             },
           ],
         },
@@ -238,16 +236,16 @@ const state = {
           type: 'interactive',
           pointStatus:'disabled',
           class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Convolution</div> > Connect input > Operation settings ',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Convolution</div> > Connect input > Operation settings',
           actions: [
             {
               tooltip: 'Deep Learning > Convolution...',
-              id: 'tutorial_deep-learning',
+              id: 'tutorial_deep-learning', 
               status: 'disabled'
             },
             {
               tooltip: 'Deep Learning > Convolution...',
-              id: 'tutorial_fully-connected',
+              id: 'tutorial_convolution',
               schematic: {
                 type: 'square',
                 top: 16.4,
@@ -256,6 +254,106 @@ const state = {
               position_element: {
                 top: 6.5,
                 left: 50
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select to create a connection...',
+              id: 'tutorial_list-arrow',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_convolution',
+              schematic: {
+                type: 'arrow'
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Go back to work with items...',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Open settings...',
+              id: 'tutorial_convolution',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Patch size:</div> This is the size of the filter.</br> E.g. with patch size 3, the </br> filter will be a square of size 3x3.</div>',
+              id: 'tutorial_patch-size',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Stride:</div> This is the step size when </br> we slide the filter over the input </br> data to generate feature maps.</div>',
+              id: 'tutorial_stride',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Feature Maps:</div> The number of </br> feature maps correspond to the </br> number of different features to </br> look for in the input data. i.e. with </br> more complex data, it might be </br> better to increase the number </br> of feature maps.</div>',
+              id: 'tutorial_feature-maps',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Apply settings',
+              id: 'tutorial_apply-button',
+              status: 'disabled'
+            },
+            {
+              status: 'disabled'
+            }
+          ],
+        },
+        {
+          type: 'static',
+          pointStatus:'disabled',
+          content: 'Convolution means to slide several filters over the input data.',
+          actions: [
+            {
+              status: 'disabled',
+              tooltip: ''
+            }
+          ],
+        },
+        {
+          type: 'static',
+          pointStatus:'disabled',
+          content: 'This generates outputs called feature maps, where each feature',
+          actions: [
+            {
+              tooltip: '',
+              status: 'disabled'
+            },
+          ],
+        },
+      ]
+    },
+    fully_connected_layer: {
+      title: 'Step 4. Use a Fully Connected layer',
+      points: [
+        {
+          type: 'interactive',
+          pointStatus:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Fully Connected</div> > Connect input > Set neurons',
+          actions: [
+            {
+              tooltip: 'Deep Learning > Fully Connected...',
+              id: 'tutorial_deep-learning', 
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Deep Learning > Convolution...',
+              id: 'tutorial_fully-connected',
+              schematic: {
+                type: 'square',
+                top: 16.4,
+                left: 74,
+              },
+              position_element: {
+                top: 6.5,
+                left: 66
               },
               status: 'disabled'
             },
@@ -283,16 +381,14 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Reshape to 28x28x1 > Apply changes...',
-              id: 'tutorial_input-reshape',
               status: 'disabled'
-            },
+            }
           ],
         },
         {
           type: 'static',
           pointStatus:'disabled',
-          content: 'We want to build an image classifier by using images as input, not a flattened array',
+          content: 'This operation matches the size of outputs of your network to the number of classes from your label data',
           actions: [
             {
               status: 'disabled',
@@ -303,14 +399,93 @@ const state = {
         {
           type: 'interactive',
           pointStatus:'disabled',
-          class_style: 'list_subtitle',
-          content: 'Reshape the dataset into images of shape 28x28x1. ',
+          content: 'Set the same number of neurons as there are classes, which in this case is 10 since the images represent digits 0-9. ',
           actions: [
             {
-              tooltip: 'Reshape to 28x28x1 > Apply changes...',
-              id: 'tutorial_input-reshape',
+              tooltip: 'Set neurons > Apply changes...',
+              id: 'tutorial_neurons',
+              status: 'disabled'
+            },
+          ],
+        },
+      ]
+    },
+    one_hot_encoding: {
+      title: 'Step 5. One Hot encoding on labels',
+      points: [
+        {
+          type: 'interactive',
+          pointStatus:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">One Hot/div> > Connect input > Set classes',
+          actions: [
+            {
+              tooltip: 'Processing > One Hot...',
+              id: 'tutorial_processing', 
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Processing > One Hot...',
+              id: 'tutorial_one-hot',
+              schematic: {
+                type: 'square',
+                top: 32.4,
+                left: 42,
+              },
+              position_element: {
+                top: 22.5,
+                left: 34
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select to create a connection...',
+              id: 'tutorial_list-arrow',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_one-hot',
+              schematic: {
+                type: 'arrow'
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Go back to work with items...',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Set classes...',
+              id: 'tutorial_one-hot',
+              status: 'disabled'
+            },
+            {
               status: 'disabled'
             }
+          ],
+        },
+        {
+          type: 'static',
+          pointStatus:'disabled',
+          content: 'This operation transforms your label data to one dimension for each digit/ class (i.e. 10, in this case). ',
+          actions: [
+            {
+              status: 'disabled',
+              tooltip: ''
+            }
+          ],
+        },
+        {
+          type: 'static',
+          pointStatus:'disabled',
+          content: 'This makes it easier for the AI to differentiate the digits so it can learn faster. ',
+          actions: [
+            {
+              tooltip: '',
+              status: 'disabled'
+            },
           ],
         },
       ]
@@ -422,11 +597,13 @@ const actions = {
         if(value.makeClass) dispatch('removeIdInWorkspace')
         dispatch('changeElementPosition', getters.getActiveAction.position_element)
         if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
-        dispatch('removeSchematicElement')
-        if(getters.getActiveAction.schematic) dispatch('drawSchematicElement', getters.getActiveAction.schematic)
-        dispatch('checkAndSetActiveStep')
-        dispatch('createTooltip', value.makeClass)
-        commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
+        //dispatch('removeSchematicElement')
+        if(getters.getActiveAction) {
+          if(getters.getActiveAction.schematic) dispatch('drawSchematicElement', getters.getActiveAction.schematic)
+          dispatch('checkAndSetActiveStep')
+          dispatch('createTooltip', value.makeClass)
+          commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
+        }
       }
 
       if(getters.getIsAllActionsDone) {
@@ -438,14 +615,18 @@ const actions = {
           commit('SET_activePointMainTutorial', 0) 
         } else {
           dispatch('checkAndSetActiveStep')
-          dispatch('createTooltip')
-          dispatch('removeIdInWorkspace')
-          commit('SET_activeAction', {
-            step: getters.getActiveStep, 
-            point: getters.getActivePointMainTutorial, 
-            action: getters.getActiveActionMainTutorial, 
-            status: 'done'
-          })
+          if(getters.getActivePoint) {
+            dispatch('createTooltip')
+            dispatch('removeIdInWorkspace')
+            commit('SET_activeAction', {
+              step: getters.getActiveStep, 
+              point: getters.getActivePointMainTutorial, 
+              action: getters.getActiveActionMainTutorial, 
+              status: 'done'
+            })
+          } else {
+            commit('SET_activePointMainTutorial', 0)
+          }
         }
       }
 
@@ -455,7 +636,7 @@ const actions = {
     let activeTooltip = document.querySelector('.tooltip-tutorial')
     if(activeTooltip) activeTooltip.remove()
     if(getters.getActiveAction.tooltip) {
-      console.log(getters.getActiveAction.id)
+      //console.log(getters.getActiveAction.id)
       let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}`)
       let element = makeClass && workspaceElements[workspaceElements.length - 1] ? workspaceElements[workspaceElements.length - 1] : document.getElementById(getters.getActiveAction.id)
       let tooltipBlock = document.createElement('div');
