@@ -17,12 +17,19 @@
       
       p.list-area_title {{interective[activeStep].title}}
       ul.list-area_list
-        .list-element(
+        .list-element.list-element--status(
           v-for="(point, index) in points"
-          v-html="point.content"
           :key="index"
           :class="[point.class_style, {'active': point.pointStatus === 'active', 'done': point.pointStatus === 'done'}]"
         )
+          .element-text(v-html="point.content")
+          .list-element_static
+            .static_info.list-element--status(
+              v-for="(info, index) in point.static_info" 
+              v-html="info.content"
+              :key="index" 
+              :class="[{'done': info.status === 'done'}]"
+            )
           
       footer.list-area_footer
         button.footer_all-tutorials-btn
@@ -86,6 +93,9 @@ export default {
       this.setActiveStep(way)
       this.pointActivate({way: null, validation: 'tutorial_data'})
     }
+  },
+  mounted() {
+    
   }
 }
 </script>
@@ -166,11 +176,8 @@ export default {
     height: 15rem;
     overflow: scroll;
   }
-  .list-element {
-    margin-bottom: 1.5rem;
-    font-size: 1.2rem;
+  .list-element--status {
     position: relative;
-    padding: 0 2.5rem 0 3.5rem;
     &:before {
       position: absolute;
       top: 0;
@@ -186,6 +193,19 @@ export default {
       content: "\e937";
       left: 2rem;
     }
+  }
+  .list-element--status.static_info {
+    position: relative;
+    &.done:before {
+      left: -1.4rem;
+    }
+  }
+  .list-element {
+    margin-bottom: 0.5rem;
+    font-size: 1.2rem;
+    position: relative;
+    padding: 0 2.5rem 0 3.5rem;
+   
     &.list_title{
       font-weight: 700;
       font-size: 1.2rem;
@@ -208,6 +228,19 @@ export default {
     }
     p {
         margin-bottom: 0.2rem;
+    }
+  }
+  .list-element_static {
+    padding: 0 1.5rem
+  }
+  .element-text {
+    display: inline;
+    margin-bottom: 1rem
+  }
+  .static_info {
+    margin-bottom: 0.5rem;
+    &:first-child {
+      margin-top: 1rem
     }
   }
   .list-area_footer {

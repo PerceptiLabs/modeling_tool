@@ -34,7 +34,6 @@ const state = {
       title: 'Step 1. Import your data',
       points: [
         {
-          type: 'interactive',
           pointStatus:'disabled',
           class_style: 'list_subtitle',
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset',
@@ -72,38 +71,21 @@ const state = {
               tooltip: 'Apply loaded MNIST',
               id: 'tutorial_button-apply',
               status: 'disabled'
-            },
-            {
-              status: 'disabled'
             }
           ],
-        },
-        {
-          type: 'static',
-          pointStatus:'disabled',
-          content: 'For this tutorial we will use the MNIST dataset',
-          actions: [
+          static_info: [
             {
-              status: 'disabled',
-              tooltip: ''
-            }
-          ],
-        },
-        {
-          type: 'static',
-          pointStatus:'disabled',
-          content: 'Every input image has been flattened out to a 784x1 array.',
-          actions: [
-            {
-              status: 'disabled',
-              tooltip: ''
+              status:'disabled',
+              content: 'For this tutorial we will use the MNIST dataset'
             },
-          ],
+            {
+              status:'disabled',
+              content: 'Every input image has been flattened out to a 784x1 array.'
+            }
+          ]
         },
         {
-          type: 'interactive',
           pointStatus:'disabled',
-          tooltip: 'Data > Data...',
           content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
           actions: [
             {
@@ -138,9 +120,6 @@ const state = {
             {
               tooltip: 'Apply loaded MNIST',
               id: 'tutorial_button-apply',
-              status: 'disabled'
-            },
-            {
               status: 'disabled'
             }
           ],
@@ -565,7 +544,13 @@ const mutations = {
       state.activePointMainTutorial = value
     } else if(value === 'next') {
       state.activePointMainTutorial++
+      console.log(state.activePointMainTutorial)
     }
+  },
+  SET_staticInfoValue(state, value) {
+    let static_info = state.interective[value.step].points[value.point].static_info;
+    console.log(value.step, value.point, value.status)
+    static_info[value.index].status = value.status
   },
   SET_activeActionMainTutorial(state, value) {
     if(isNumber(value)) {
@@ -592,51 +577,90 @@ const mutations = {
 
 const actions = {
   pointActivate({commit, dispatch, getters}, value) {
-    if(getters.getIstutorialMode && getters.getMainTutorialIsStarted) {
-      if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
-        if(value.makeClass) dispatch('removeIdInWorkspace')
-        dispatch('changeElementPosition', getters.getActiveAction.position_element)
-        if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
-        //dispatch('removeSchematicElement')
-        if(getters.getActiveAction) {
-          if(getters.getActiveAction.schematic) dispatch('drawSchematicElement', getters.getActiveAction.schematic)
-          dispatch('checkAndSetActiveStep')
-          dispatch('createTooltip', value.makeClass)
+   
+    if(getters.getIstutorialMode && 
+      getters.getMainTutorialIsStarted && 
+      getters.getActiveAction && 
+      getters.getActiveAction.id === value.validation) {
+      
+
+        if(value.way === 'next')  {
+
+
+
           commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
-        }
-      }
-
-      if(getters.getIsAllActionsDone) {
-        commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
-        if(getters.getActivePointMainTutorial < getters.getPoints.length - 1) commit('SET_activePointMainTutorial', 'next')
-        commit('SET_activeActionMainTutorial', 0)
-
-        if(getters.getAllPointsIsDone) {
-          commit('SET_activePointMainTutorial', 0) 
-        } else {
-          dispatch('checkAndSetActiveStep')
-          if(getters.getActivePoint) {
-            dispatch('createTooltip')
-            dispatch('removeIdInWorkspace')
-            commit('SET_activeAction', {
-              step: getters.getActiveStep, 
-              point: getters.getActivePointMainTutorial, 
-              action: getters.getActiveActionMainTutorial, 
-              status: 'done'
-            })
-          } else {
-            commit('SET_activePointMainTutorial', 0)
+          commit('SET_activeActionMainTutorial', 'next')
+          if(getters.getActiveAction && getters.getActiveAction.status !== 'done') {
+            dispatch('removeIdInWorkspace', value.makeClass)
+            dispatch('createTooltip', value.makeClass)
+          } 
+          else { // all actions are done
+            commit('SET_activeActionMainTutorial', 0)
+            commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
+            dispatch('nextPoint')
+            console.log(getters.getActivePoint)
+            if(getters.getActivePoint && getters.getActivePoint.pointStatus !=='done') {
+              console.log('not done!')
+              commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'active'});
+              dispatch('createTooltip', value.makeClass)
+            }
+            else { //all points are done
+              console.log(1)
+              commit('SET_activePointMainTutorial', 0)
+              //commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
+            }
           }
         }
-      }
 
+
+        else {
+          dispatch('createTooltip', value.makeClass)
+        }
     }
+
+    // if(getters.getIstutorialMode && getters.getMainTutorialIsStarted) {
+    //   if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
+    //     if(value.makeClass) dispatch('removeIdInWorkspace')
+    //     dispatch('changeElementPosition', getters.getActiveAction.position_element)
+    //     if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
+    //     //dispatch('removeSchematicElement')
+    //     if(getters.getActiveAction) {
+    //       if(getters.getActiveAction.schematic) dispatch('drawSchematicElement', getters.getActiveAction.schematic)
+    //       dispatch('checkAndSetActiveStep')
+    //       dispatch('createTooltip', value.makeClass)
+    //       commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
+    //     }
+    //   }
+
+    //   if(getters.getIsAllActionsDone) {
+    //     commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
+    //     if(getters.getActivePointMainTutorial < getters.getPoints.length - 1) commit('SET_activePointMainTutorial', 'next')
+    //     commit('SET_activeActionMainTutorial', 0)
+
+    //     if(getters.getAllPointsIsDone) {
+    //       commit('SET_activePointMainTutorial', 0) 
+    //     } else {
+    //       dispatch('checkAndSetActiveStep')
+    //       if(getters.getActivePoint) {
+    //         dispatch('createTooltip')
+    //         dispatch('removeIdInWorkspace')
+    //         commit('SET_activeAction', {
+    //           step: getters.getActiveStep, 
+    //           point: getters.getActivePointMainTutorial, 
+    //           action: getters.getActiveActionMainTutorial, 
+    //           status: 'done'
+    //         })
+    //       } else {
+    //         commit('SET_activePointMainTutorial', 0)
+    //       }
+    //     }
+    //   }
+    // }
   },
   createTooltip({getters}, makeClass) {
     let activeTooltip = document.querySelector('.tooltip-tutorial')
     if(activeTooltip) activeTooltip.remove()
     if(getters.getActiveAction.tooltip) {
-      //console.log(getters.getActiveAction.id)
       let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}`)
       let element = makeClass && workspaceElements[workspaceElements.length - 1] ? workspaceElements[workspaceElements.length - 1] : document.getElementById(getters.getActiveAction.id)
       let tooltipBlock = document.createElement('div');
@@ -645,28 +669,43 @@ const actions = {
       element.appendChild(tooltipBlock)
     }
   },
-  checkAndSetActiveStep({commit, getters}) {
-    if(getters.getActivePoint && getters.getActivePoint.type === 'static') {
-      commit('SET_activeActionMainTutorial', 0)
-      for (let i = 0; i < getters.getPoints.length; i++) {
-        if(getters.getPoints[i].type === 'static') {
-          commit('SET_pointActivate', {step: getters.getActiveStep, point: i, pointStatus: 'done'});
-          commit('SET_activePointMainTutorial', 'next')
-        } 
-        else if(getters.getPoints[i].pointStatus === 'done') {
-          continue
-        } 
-        else {
-          commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'active'});
-        }
+  nextPoint({commit, getters}) {
+    
+    let static_info = getters.getActivePoint.static_info;
+    if(static_info) {
+      for(let i = 0; i < static_info.length; i++ ) {
+        commit('SET_staticInfoValue', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, index: i, status: 'done'})
       }
-    } else {
-      commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'active'});
     }
+    
+    //commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'})
+    
+    if(getters.activePointMainTutorial < getters.getIterective[getters.getActiveStep].points.length) commit('SET_activePointMainTutorial', 'next')
+
+
+
+
+    // if(getters.getActivePoint && getters.getActivePoint.type === 'static') {
+    //   commit('SET_activeActionMainTutorial', 0)
+    //   for (let i = 0; i < getters.getPoints.length; i++) {
+    //     if(getters.getPoints[i].type === 'static') {
+    //       commit('SET_pointActivate', {step: getters.getActiveStep, point: i, pointStatus: 'done'});
+    //       commit('SET_activePointMainTutorial', 'next')
+    //     } 
+    //     else if(getters.getPoints[i].pointStatus === 'done') {
+    //       continue
+    //     } 
+    //     else {
+    //       commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'active'});
+    //     }
+    //   }
+    // } else {
+    //   commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'active'});
+    // }
   },
-  removeIdInWorkspace({getters}) {
-    let infoSectionTutorialElem = document.querySelector('.info-section_main').querySelector(`#${getters.getActiveAction.id}`)
-    if(infoSectionTutorialElem) {
+  removeIdInWorkspace({getters}, makeClass) {
+    if(makeClass) {
+      let infoSectionTutorialElem = document.querySelector('.info-section_main').querySelector(`#${getters.getActiveAction.id}`)
       infoSectionTutorialElem.setAttribute('id', '')
       infoSectionTutorialElem.classList.add(getters.getActiveAction.id)
     } 
