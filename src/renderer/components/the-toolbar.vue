@@ -9,8 +9,9 @@
         button.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'edit'}"
+          id="tutorial_pointer"
           v-tooltip:bottom="'Edit'"
-          @click="setNetMode('edit')"
+          @click="setNetMode('edit', 'tutorial_pointer')"
         )
           i.icon.icon-select
 
@@ -21,6 +22,7 @@
         button.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'addArrow'}"
+          id="tutorial_list-arrow"
           @click="setArrowType(arrowList[0].arrowType)"
         )
           i.icon(:class="arrowList[0].iconClass")
@@ -30,7 +32,7 @@
             :key="index"
             )
             button.btn.btn--toolbar(type="button"
-              @click="setArrowType(arrow.arrowType, index)"
+              @click="setArrowType(arrow.arrowType, index, 'tutorial_list-arrow')"
             )
               i.icon(:class="arrow.iconClass")
 
@@ -108,6 +110,7 @@
 //import configApp    from '@/core/globalSettings.js'
 import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 import TutorialInstructions                   from '@/components/tutorial/tutorial-instructions.vue'
+import { mapGetters, mapActions }             from 'vuex';
 
 //const {ipcRenderer} = require('electron')
 export default {
@@ -136,6 +139,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      tutorialActiveAction:    'mod_tutorials/getActiveAction',
+    }),
     statusStartBtn() {
       return {
         'bg-error':   this.statusNetworkCore == 'Training' || this.statusNetworkCore == 'Validation',
@@ -200,6 +206,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
     onOffBtn() {
       if(this.isTraining){
         this.trainStop()
@@ -259,14 +268,16 @@ export default {
     toggleLayers () {
       this.$store.commit('globalView/SET_hideLayers', !this.hideLayers)
     },
-    setArrowType(type, index) {
+    setArrowType(type, index, tutorial_id) {
       this.setNetMode('addArrow');
       this.$store.commit('mod_workspace/SET_arrowType', {type, store: this.$store});
       let selectArray = this.arrowList.splice(index, 1);
       this.arrowList.unshift(selectArray[0]);
+      this.tutorialPointActivate({way:'next', validation: tutorial_id, makeClass: true})
     },
-    setNetMode(type) {
+    setNetMode(type, tutorial_id) {
       this.$store.dispatch('mod_workspace/SET_netMode', type)
+      this.tutorialPointActivate({way:'next', validation: tutorial_id, makeClass: true})
     },
     openStatistics() {
       //this.$store.commit('mod_workspace/SET_openStatistics', true)
@@ -374,5 +385,8 @@ export default {
     > * + * {
       margin-left: 1rem;
     }
+  }
+  #tutorial_pointer {
+    position: relative;
   }
 </style>

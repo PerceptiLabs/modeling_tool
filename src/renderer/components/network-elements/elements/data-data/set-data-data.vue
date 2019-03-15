@@ -28,8 +28,6 @@
             button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_button-apply") Apply
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-cloud
-    .settings-layer_foot
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -103,14 +101,14 @@
         this.openLoadDialog(this.saveLoadFile, opt)
       },
       saveLoadFile(pathArr) {
-        this.tutorialPointActivate('next')
+        this.tutorialPointActivate({way:'next', validation:'tutorial_button-load'})
         this.settings.accessProperties.Path = pathArr[0];
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
       saveSettings() {
         this.applySettings()
-        this.tutorialPointActivate('next')
+        this.tutorialPointActivate({way:'next', validation:'tutorial_button-apply'})
       }
     }
   }

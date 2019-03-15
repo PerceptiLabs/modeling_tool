@@ -4,7 +4,7 @@
     :style="style"
     :class="active ? 'active' : 'inactive'"
     @click="switchClickEvent($event)"
-    @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings()"
+    @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings($event)"
     @contextmenu.stop.prevent="openContext"
     @keyup.46="deleteEl()"
     @keyup.93.8="deleteEl()"
@@ -24,7 +24,7 @@
 import baseNetDrag        from '@/core/mixins/base-net-drag.js';
 import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
 import mousedownOutside   from '@/core/mixins/mousedown-outside.js'
-import {mapActions}       from 'vuex';
+import {mapGetters, mapActions}       from 'vuex';
 
 export default {
   name: 'NetBaseElement',
@@ -68,6 +68,9 @@ export default {
     document.removeEventListener('mousedown', this.mousedownOutside);
   },
   computed: {
+    ...mapGetters({
+      tutorialActiveAction:  'mod_tutorials/getActiveAction'
+    }),
     active() {
       return this.dataEl.el.layerMeta.isSelected
     },
@@ -115,8 +118,13 @@ export default {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
     },
-    openSettings() {
-      setTimeout(()=>{this.tutorialPointActivate('next')}, 0) 
+    openSettings(event) {
+      let tutorial_class = 'not valid'
+      if(event.target.classList.contains(this.tutorialActiveAction.id) || 
+      event.target.offsetParent.classList.contains(this.tutorialActiveAction.id)) {
+        tutorial_class = this.tutorialActiveAction.id
+      }
+      setTimeout(()=>{this.tutorialPointActivate({way:'next', validation: tutorial_class})}, 0)
       this.hideAllWindow();
       if(this.networkMode === 'edit' && !this.isTraining) {
         this.settingsIsOpen = true;

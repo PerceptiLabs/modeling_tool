@@ -16,7 +16,7 @@
           .settings-layer_section
             .form_row
               .form_label Neurons:
-              .form_input
+              .form_input(id="tutorial_neurons")
                 input(type="text" v-model="settings.Neurons")
           .settings-layer_section
             .form_row
@@ -54,6 +54,11 @@
                   span Yes
                 base-radio(groupName="group3")
                   span No
+          .settings-layer_foot
+            button.btn.btn--primary(type="button"
+              @click="saveSettings"
+              id="tutorial_button-apply"
+            ) Apply
 
 
 
@@ -61,14 +66,13 @@
         settings-code(
         :the-code="coreCode"
         )
-    .settings-layer_foot
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
+  import {mapActions}   from 'vuex';
 
   export default {
     name: 'SetDeepLearningFC',
@@ -102,6 +106,15 @@
         node=tf.nn.dropout(node,keep_prob);
         node=node+b
         `
+      }
+    },
+    methods: {
+      ...mapActions({
+        tutorialPointActivate:    'mod_tutorials/pointActivate',
+      }),
+      saveSettings() {
+        this.applySettings()
+        this.tutorialPointActivate({way:'next', validation: 'tutorial_neurons'})
       }
     }
   }

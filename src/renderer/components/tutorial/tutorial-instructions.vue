@@ -10,7 +10,7 @@
       header.list-area_header
         div
           button.header_close-instructions.i.icon.icon-appClose(@click="showInstructions")
-          span.header_title title_q
+          //span.header_title title_q
         .header_arrows-top
           i.icon.icon-shevron
           i.icon.icon-shevron
@@ -30,8 +30,9 @@
           span All tutorials
         .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
         div
-          button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back
-          button.footer_btn(v-if="stepCount < stepsLength" @click="changeStep('next')") Next
+          //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back 
+          button.footer_btn(v-if="isFirstStep" @click="startTutorial('next')") Next
+          button.footer_btn(v-else @click="changeStep('next')" :disabled="!allPointsIsDone") Next
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex';
@@ -45,19 +46,26 @@ export default {
   },
   computed: {
     ...mapGetters({
-      activeStep:     'mod_tutorials/getActiveStep',
-      points:         'mod_tutorials/getPoints',
-      interective:    'mod_tutorials/getIterective',
-      isTutorialMode: 'mod_tutorials/getIstutorialMode',
-      stepCount:      'mod_tutorials/getActiveStepMainTutorial',
+      activeStep:       'mod_tutorials/getActiveStep',
+      points:           'mod_tutorials/getPoints',
+      interective:      'mod_tutorials/getIterective',
+      isTutorialMode:   'mod_tutorials/getIstutorialMode',
+      stepCount:        'mod_tutorials/getActiveStepMainTutorial',
+      allPointsIsDone:  'mod_tutorials/getAllPointsIsDone',
+      activePoint:      'mod_tutorials/getActivePoint'
     }),
     stepsLength() {
       return Object.keys(this.interective).length - 1
+    },
+    isFirstStep() {
+      return this.interective[this.activeStep].points[0].pointStatus === 'first'
     }
   },
   methods: {
     ...mapMutations({
-      setActiveStep:    'mod_tutorials/SET_activeStepMainTutorial',
+      setActiveStep:        'mod_tutorials/SET_activeStepMainTutorial',
+      setTootorialIstarted: 'mod_tutorials/SET_mainTutorialIsStarted',
+      goToFirstStep:        'mod_tutorials/SET_activeActionMainTutorial'
     }),
     ...mapActions({
       pointActivate:    'mod_tutorials/pointActivate',
@@ -69,11 +77,14 @@ export default {
     changeStep(way) {
       if(way === 'next') {
         this.setActiveStep(way)
-        this.pointActivate()
-      } else {
-          this.pointsDeactivate()
-          this.setActiveStep(way)
+        console.log(this.activePoint.actions[0].id)
+        this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
       }
+    },
+    startTutorial(way) {
+      this.setTootorialIstarted(true)
+      this.setActiveStep(way)
+      this.pointActivate({way: null, validation: 'tutorial_data'})
     }
   }
 }
@@ -81,12 +92,13 @@ export default {
 <style lang="scss">
   @import "../../scss/base";
   $color-text-instructions:#AEAEAE;
+  $color-schematic-element: #3185aa;
   $title-padding: 0 2.1rem;
 
 
   .btn--dark-blue-rev {
     position: relative;
-    z-index: 2;
+    z-index: 1;
   }
   .tutorial-instruction-box {
     position: relative;
@@ -158,7 +170,7 @@ export default {
     margin-bottom: 1.5rem;
     font-size: 1.2rem;
     position: relative;
-    padding: 0 2.5rem;
+    padding: 0 2.5rem 0 3.5rem;
     &:before {
       position: absolute;
       top: 0;
@@ -168,7 +180,7 @@ export default {
     }
     &.active:before {
       content: "\e901";
-      left: 1rem;
+      left: 2rem;
     }
     &.done:before {
       content: "\e937";
@@ -213,6 +225,7 @@ export default {
     align-items: center;
     color: $color-text-instructions;
     padding: 0;
+    opacity: 0;
     .icon {
       transform: rotate(-180deg);
       display: inline-block;
@@ -265,11 +278,41 @@ export default {
     border-bottom: 6px solid transparent;
 	}
 }
+.tooltip-tutorial_italic {
+  font-style: italic;
+ 
+}
+.tooltip-tutorial_bold {
+  font-weight: 700;
+  display: inline-block;
+}
 .tutorial-relative{
   position: relative;
   overflow: visible;
 }
-button.btn--primary.tutorial-relative .tooltip-tutorial{
+button.btn--primary .tooltip-tutorial, .form_input .tooltip-tutorial{
   top: 0;
+}
+.tutorial_neurons, #tutorial_patch-size, #tutorial_stride, #tutorial_feature-maps{
+  position: relative;
+}
+.tutorial_input-reshape {
+  position: relative;
+  .tooltip-tutorial {
+    left: 105%
+  }
+}
+.schematic{
+  position: absolute;
+}
+.schematic--square {
+  width: 7.5rem;
+  height: 7.5rem;
+  border-radius: 5px;
+  border: 2px dotted $color-schematic-element;
+}
+.schematic--arrow {
+  width: 12rem;
+  border-bottom: 2px dotted $color-schematic-element;
 }
 </style>
