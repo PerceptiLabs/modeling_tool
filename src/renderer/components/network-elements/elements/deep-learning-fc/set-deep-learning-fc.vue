@@ -16,7 +16,7 @@
           .settings-layer_section
             .form_row
               .form_label Neurons:
-              .form_input(id="tutorial_neurons")
+              .form_input(class="tutorial_neurons")
                 input(type="text" v-model="settings.Neurons")
           .settings-layer_section
             .form_row
@@ -57,7 +57,7 @@
           .settings-layer_foot
             button.btn.btn--primary(type="button"
               @click="saveSettings"
-              id="tutorial_button-apply"
+              class="tutorial_button-apply"
             ) Apply
 
 

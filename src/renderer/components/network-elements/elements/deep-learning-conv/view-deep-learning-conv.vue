@@ -4,7 +4,7 @@
   data-layer="Convolution_1"
   data-type="Other"
   v-tooltip:right="'Convolution'"
-  id="tutorial_convolution"
+  class="tutorial_convolution tutorial_layersbar"
   )
     i.icon.icon-round-out
 

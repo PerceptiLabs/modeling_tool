@@ -25,7 +25,7 @@ const state = {
               actionStatus: 'first'
             },
           ],
-          pointStatus:'first',
+          status:'first',
           content: '<div class="text-block">When working with AI, you can divide the process into 2 overarching steps:</div><p>1) Knowing your data</p> <p>2) Building your model</p>'
         }
       ]
@@ -34,7 +34,7 @@ const state = {
       title: 'Step 1. Import your data',
       points: [
         {
-          pointStatus:'disabled',
+          status:'disabled',
           class_style: 'list_subtitle',
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset',
           actions: [
@@ -85,7 +85,7 @@ const state = {
           ]
         },
         {
-          pointStatus:'disabled',
+          status:'disabled',
           content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
           actions: [
             {
@@ -130,8 +130,7 @@ const state = {
       title: 'Step 2. Reshape the dataset',
       points: [
         {
-          type: 'interactive',
-          pointStatus:'disabled',
+          status:'disabled',
           class_style: 'list_subtitle',
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > Connect input > Operation settings  ',
           actions: [
@@ -176,27 +175,17 @@ const state = {
               tooltip: 'Open settings...',
               id: 'tutorial_process-reshape',
               status: 'disabled'
-            },
-            {
-              status: 'disabled',
-            },
-          ],
-        },
-        {
-          type: 'static',
-          pointStatus:'disabled',
-          content: 'We want to build an image classifier by using images as input, not a flattened array',
-          actions: [
-            {
-              status: 'disabled',
-              tooltip: ''
             }
           ],
+          static_info: [
+            {
+              status:'disabled',
+              content: 'We want to build an image classifier by using images as input, not a flattened array'
+            },
+          ]
         },
         {
-          type: 'interactive',
-          pointStatus:'disabled',
-          class_style: 'list_subtitle',
+          status:'disabled',
           content: 'Reshape the dataset into images of shape 28x28x1. ',
           actions: [
             {
@@ -212,8 +201,7 @@ const state = {
       title: 'Step 3. Use a Convolutional layer',
       points: [
         {
-          type: 'interactive',
-          pointStatus:'disabled',
+          status:'disabled',
           class_style: 'list_subtitle',
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Convolution</div> > Connect input > Operation settings',
           actions: [
@@ -278,33 +266,18 @@ const state = {
               tooltip: 'Apply settings',
               id: 'tutorial_apply-button',
               status: 'disabled'
-            },
-            {
-              status: 'disabled'
             }
           ],
-        },
-        {
-          type: 'static',
-          pointStatus:'disabled',
-          content: 'Convolution means to slide several filters over the input data.',
-          actions: [
+          static_info: [
             {
-              status: 'disabled',
-              tooltip: ''
-            }
-          ],
-        },
-        {
-          type: 'static',
-          pointStatus:'disabled',
-          content: 'This generates outputs called feature maps, where each feature',
-          actions: [
-            {
-              tooltip: '',
-              status: 'disabled'
+              status:'disabled',
+              content: 'Convolution means to slide several filters over the input data.',
             },
-          ],
+            {
+              status:'disabled',
+              content: 'This generates outputs called feature maps, where each feature'
+            }
+          ]
         },
       ]
     },
@@ -312,8 +285,7 @@ const state = {
       title: 'Step 4. Use a Fully Connected layer',
       points: [
         {
-          type: 'interactive',
-          pointStatus:'disabled',
+          status:'disabled',
           class_style: 'list_subtitle',
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Fully Connected</div> > Connect input > Set neurons',
           actions: [
@@ -323,7 +295,7 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Deep Learning > Convolution...',
+              tooltip: 'Deep Learning > Fully Connected...',
               id: 'tutorial_fully-connected',
               schematic: {
                 type: 'square',
@@ -358,26 +330,17 @@ const state = {
               tooltip: 'Open settings...',
               id: 'tutorial_fully-connected',
               status: 'disabled'
-            },
-            {
-              status: 'disabled'
             }
           ],
-        },
-        {
-          type: 'static',
-          pointStatus:'disabled',
-          content: 'This operation matches the size of outputs of your network to the number of classes from your label data',
-          actions: [
+          static_info: [
             {
-              status: 'disabled',
-              tooltip: ''
+              status:'disabled',
+              content: 'This operation matches the size of outputs of your network to the number of classes from your label data',
             }
-          ],
+          ]
         },
         {
-          type: 'interactive',
-          pointStatus:'disabled',
+          status:'disabled',
           content: 'Set the same number of neurons as there are classes, which in this case is 10 since the images represent digits 0-9. ',
           actions: [
             {
@@ -393,10 +356,9 @@ const state = {
       title: 'Step 5. One Hot encoding on labels',
       points: [
         {
-          type: 'interactive',
-          pointStatus:'disabled',
+          status:'disabled',
           class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">One Hot/div> > Connect input > Set classes',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">One Hot</div> > Connect input > Set classes',
           actions: [
             {
               tooltip: 'Processing > One Hot...',
@@ -441,31 +403,21 @@ const state = {
               status: 'disabled'
             },
             {
+              tooltip: 'Set 10 > Apply changes...',
+              id: 'tutorial_number-of-classes',
               status: 'disabled'
             }
           ],
-        },
-        {
-          type: 'static',
-          pointStatus:'disabled',
-          content: 'This operation transforms your label data to one dimension for each digit/ class (i.e. 10, in this case). ',
-          actions: [
+          static_info: [
             {
-              status: 'disabled',
-              tooltip: ''
-            }
-          ],
-        },
-        {
-          type: 'static',
-          pointStatus:'disabled',
-          content: 'This makes it easier for the AI to differentiate the digits so it can learn faster. ',
-          actions: [
-            {
-              tooltip: '',
-              status: 'disabled'
+              status:'disabled',
+              content: 'This operation transforms your label data to one dimension for each digit/ class (i.e. 10, in this case). '
             },
-          ],
+            {
+              status:'disabled',
+              content: 'This makes it easier for the AI to differentiate the digits so it can learn faster. '
+            }
+          ]
         },
       ]
     }
@@ -503,17 +455,10 @@ const getters = {
   getActiveAction(state, getters) {
     return getters.getActivePoint.actions[state.activeActionMainTutorial]
   },
-  getIsAllActionsDone(state, getters) {
-    var count = 0;
-    getters.getActivePoint.actions.forEach(action => {
-      if(action.status === 'done') count++
-    });
-    return count === getters.getActivePoint.actions.length
-  },
   getAllPointsIsDone(state, getters) {
     var count = 0;
     getters.getPoints.forEach(point => {
-      if(point.pointStatus === 'done') count++
+      if(point.status === 'done') count++
     });
     return count === getters.getPoints.length
   }
@@ -544,12 +489,10 @@ const mutations = {
       state.activePointMainTutorial = value
     } else if(value === 'next') {
       state.activePointMainTutorial++
-      console.log(state.activePointMainTutorial)
     }
   },
   SET_staticInfoValue(state, value) {
     let static_info = state.interective[value.step].points[value.point].static_info;
-    console.log(value.step, value.point, value.status)
     static_info[value.index].status = value.status
   },
   SET_activeActionMainTutorial(state, value) {
@@ -566,7 +509,7 @@ const mutations = {
   },
   SET_pointActivate(state, value,) {
     let points = state.interective[value.step].points;
-    points[value.point].pointStatus = value.pointStatus;
+    points[value.point].status = value.status;
 
   },
   SET_activeAction(state, value) {
@@ -577,92 +520,47 @@ const mutations = {
 
 const actions = {
   pointActivate({commit, dispatch, getters}, value) {
-   
+    console.log(getters.getActiveAction.id, value.validation)
     if(getters.getIstutorialMode && 
       getters.getMainTutorialIsStarted && 
       getters.getActiveAction && 
       getters.getActiveAction.id === value.validation) {
       
-
         if(value.way === 'next')  {
-
-
-
-          commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
-          commit('SET_activeActionMainTutorial', 'next')
-          if(getters.getActiveAction && getters.getActiveAction.status !== 'done') {
-            dispatch('removeIdInWorkspace', value.makeClass)
-            dispatch('createTooltip', value.makeClass)
-          } 
-          else { // all actions are done
-            commit('SET_activeActionMainTutorial', 0)
-            commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
-            dispatch('nextPoint')
-            console.log(getters.getActivePoint)
-            if(getters.getActivePoint && getters.getActivePoint.pointStatus !=='done') {
-              console.log('not done!')
-              commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'active'});
-              dispatch('createTooltip', value.makeClass)
-            }
-            else { //all points are done
-              console.log(1)
-              commit('SET_activePointMainTutorial', 0)
-              //commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
-            }
-          }
+          dispatch('checkActiveActionAndPoint', value)
         }
-
-
         else {
-          dispatch('createTooltip', value.makeClass)
+          dispatch('createTooltip', value.searchLayersbar)
+          commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
         }
     }
-
-    // if(getters.getIstutorialMode && getters.getMainTutorialIsStarted) {
-    //   if(getters.getActiveAction && getters.getActiveAction.id === value.validation) {
-    //     if(value.makeClass) dispatch('removeIdInWorkspace')
-    //     dispatch('changeElementPosition', getters.getActiveAction.position_element)
-    //     if(value.way === 'next') commit('SET_activeActionMainTutorial', 'next')
-    //     //dispatch('removeSchematicElement')
-    //     if(getters.getActiveAction) {
-    //       if(getters.getActiveAction.schematic) dispatch('drawSchematicElement', getters.getActiveAction.schematic)
-    //       dispatch('checkAndSetActiveStep')
-    //       dispatch('createTooltip', value.makeClass)
-    //       commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
-    //     }
-    //   }
-
-    //   if(getters.getIsAllActionsDone) {
-    //     commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'});
-    //     if(getters.getActivePointMainTutorial < getters.getPoints.length - 1) commit('SET_activePointMainTutorial', 'next')
-    //     commit('SET_activeActionMainTutorial', 0)
-
-    //     if(getters.getAllPointsIsDone) {
-    //       commit('SET_activePointMainTutorial', 0) 
-    //     } else {
-    //       dispatch('checkAndSetActiveStep')
-    //       if(getters.getActivePoint) {
-    //         dispatch('createTooltip')
-    //         dispatch('removeIdInWorkspace')
-    //         commit('SET_activeAction', {
-    //           step: getters.getActiveStep, 
-    //           point: getters.getActivePointMainTutorial, 
-    //           action: getters.getActiveActionMainTutorial, 
-    //           status: 'done'
-    //         })
-    //       } else {
-    //         commit('SET_activePointMainTutorial', 0)
-    //       }
-    //     }
-    //   }
-    // }
   },
-  createTooltip({getters}, makeClass) {
+  checkActiveActionAndPoint({commit, dispatch, getters}, value) {
+    commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
+    commit('SET_activeActionMainTutorial', 'next')
+    if(getters.getActiveAction) {
+      dispatch('createTooltip', value.searchLayersbar)
+    } 
+    else { // all actions are done
+      dispatch('nextPoint')
+      if(getters.getActivePoint) {
+        commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
+        dispatch('createTooltip', value.searchLayersbar)
+      }
+      else { //all points are done
+        commit('SET_activePointMainTutorial', 0)
+      }
+    }
+  },
+  createTooltip({getters}, searchLayersbar) {
     let activeTooltip = document.querySelector('.tooltip-tutorial')
     if(activeTooltip) activeTooltip.remove()
+    let allElements = document.querySelectorAll(`.${getters.getActiveAction.id}.tutorial_layersbar`)
+    if(allElements.length > 1) allElements[0].classList.remove('tutorial_layersbar')
+    
     if(getters.getActiveAction.tooltip) {
-      let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}`)
-      let element = makeClass && workspaceElements[workspaceElements.length - 1] ? workspaceElements[workspaceElements.length - 1] : document.getElementById(getters.getActiveAction.id)
+      let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}:not(.tutorial_layersbar)`)
+      let element = searchLayersbar ?  document.querySelector(`.${getters.getActiveAction.id}.tutorial_layersbar`) : workspaceElements[workspaceElements.length - 1]
       let tooltipBlock = document.createElement('div');
       tooltipBlock.classList.add('tooltip-tutorial');
       tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
@@ -670,45 +568,15 @@ const actions = {
     }
   },
   nextPoint({commit, getters}) {
-    
+    commit('SET_activeActionMainTutorial', 0)
+    commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'done'});
     let static_info = getters.getActivePoint.static_info;
     if(static_info) {
       for(let i = 0; i < static_info.length; i++ ) {
         commit('SET_staticInfoValue', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, index: i, status: 'done'})
       }
     }
-    
-    //commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'done'})
-    
-    if(getters.activePointMainTutorial < getters.getIterective[getters.getActiveStep].points.length) commit('SET_activePointMainTutorial', 'next')
-
-
-
-
-    // if(getters.getActivePoint && getters.getActivePoint.type === 'static') {
-    //   commit('SET_activeActionMainTutorial', 0)
-    //   for (let i = 0; i < getters.getPoints.length; i++) {
-    //     if(getters.getPoints[i].type === 'static') {
-    //       commit('SET_pointActivate', {step: getters.getActiveStep, point: i, pointStatus: 'done'});
-    //       commit('SET_activePointMainTutorial', 'next')
-    //     } 
-    //     else if(getters.getPoints[i].pointStatus === 'done') {
-    //       continue
-    //     } 
-    //     else {
-    //       commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'active'});
-    //     }
-    //   }
-    // } else {
-    //   commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, pointStatus: 'active'});
-    // }
-  },
-  removeIdInWorkspace({getters}, makeClass) {
-    if(makeClass) {
-      let infoSectionTutorialElem = document.querySelector('.info-section_main').querySelector(`#${getters.getActiveAction.id}`)
-      infoSectionTutorialElem.setAttribute('id', '')
-      infoSectionTutorialElem.classList.add(getters.getActiveAction.id)
-    } 
+    commit('SET_activePointMainTutorial', 'next')
   },
   drawSchematicElement({getters}, schematic) {
     let infoSection = document.querySelector('.info-section_main')

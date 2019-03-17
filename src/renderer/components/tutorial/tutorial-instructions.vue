@@ -20,7 +20,7 @@
         .list-element.list-element--status(
           v-for="(point, index) in points"
           :key="index"
-          :class="[point.class_style, {'active': point.pointStatus === 'active', 'done': point.pointStatus === 'done'}]"
+          :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
         )
           .element-text(v-html="point.content")
           .list-element_static
@@ -65,7 +65,7 @@ export default {
       return Object.keys(this.interective).length - 1
     },
     isFirstStep() {
-      return this.interective[this.activeStep].points[0].pointStatus === 'first'
+      return this.interective[this.activeStep].points[0].status === 'first'
     }
   },
   methods: {
@@ -84,14 +84,13 @@ export default {
     changeStep(way) {
       if(way === 'next') {
         this.setActiveStep(way)
-        console.log(this.activePoint.actions[0].id)
-        this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
+        this.pointActivate({way: null, validation: this.activePoint.actions[0].id, searchPlace: 'layersbar'})
       }
     },
     startTutorial(way) {
       this.setTootorialIstarted(true)
       this.setActiveStep(way)
-      this.pointActivate({way: null, validation: 'tutorial_data'})
+      this.pointActivate({way: null, validation: this.activePoint.actions[0].id, searchPlace: 'layersbar'})
     }
   },
   mounted() {
@@ -326,7 +325,7 @@ export default {
 button.btn--primary .tooltip-tutorial, .form_input .tooltip-tutorial{
   top: 0;
 }
-.tutorial_neurons, #tutorial_patch-size, #tutorial_stride, #tutorial_feature-maps{
+.tutorial_neurons, .tutorial_patch-size, .tutorial_stride, .tutorial_feature-maps, .tutorial_pointer, .tutorial_number-of-classes{
   position: relative;
 }
 .tutorial_input-reshape {

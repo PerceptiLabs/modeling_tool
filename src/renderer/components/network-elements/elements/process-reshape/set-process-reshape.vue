@@ -15,7 +15,7 @@
             .form_row
               .form_label Reshape:
               .form_input
-                triple-input(v-model="settings.Shape" id="tutorial_input-reshape")
+                triple-input(v-model="settings.Shape" class="tutorial_input-reshape")
           //.settings-layer_section
             .form_row
               .form_label Reshape:
@@ -32,7 +32,7 @@
               .form_input
                 triple-input(v-model="settings.Permutation")
           .settings-layer_foot
-            button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_button-apply") Apply
+            button.btn.btn--primary(type="button" @click="saveSettings" class="tutorial_button-apply") Apply
 
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
@@ -76,7 +76,7 @@
     }),
       saveSettings() {
         this.applySettings()
-        this.tutorialPointActivate({way: 'next', validation: ''})
+        this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'})
       }
     }
   }

@@ -1,6 +1,6 @@
 import fs from 'fs';
 import {remote} from 'electron'
-import { mapActions } from 'vuex';
+import { mapGetters ,mapActions } from 'vuex';
 
 import TheToolbar         from '@/components/the-toolbar.vue'
 import TheLayersbar       from '@/components/the-layersbar.vue'
@@ -39,6 +39,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      activeAction:    'mod_tutorials/getActiveAction',
+    }),
     infoText() {
       return this.$store.state.globalView.globalPopup.showInfoPopup
     },
@@ -67,7 +70,7 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
+      tutorialPointActivate:    'mod_tutorials/pointActivate'
     }),
     addDragListener() {
       this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
@@ -95,7 +98,8 @@ export default {
     dragEnd(event) {
       this.offDragListener();
       event.target.style.opacity = "";
-      this.tutorialPointActivate({way: 'next', validation: event.target.id, makeClass: true})
+      let classElement = event.target.classList.contains(this.activeAction.id) ? this.activeAction.id : 'not valid' 
+      this.tutorialPointActivate({way: 'next', validation: classElement})
     },
     dragOver(event) {
       event.preventDefault();

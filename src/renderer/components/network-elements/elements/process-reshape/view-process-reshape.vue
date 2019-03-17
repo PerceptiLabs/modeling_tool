@@ -4,7 +4,7 @@
     data-layer="Reshape"
     data-type="Other"
     v-tooltip:right="'Reshape'"
-    id="tutorial_process-reshape"
+    class="tutorial_process-reshape tutorial_layersbar"
   )
     i.icon.icon-full-screen
 

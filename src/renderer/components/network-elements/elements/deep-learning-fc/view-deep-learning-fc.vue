@@ -4,7 +4,7 @@
   data-layer="FullyConnected_1"
   data-type="Other"
   v-tooltip:right="'Fully Connected'"
-  id="tutorial_fully-connected"
+  class="tutorial_fully-connected tutorial_layersbar"
   )
     i.icon.icon-round
 

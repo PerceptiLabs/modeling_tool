@@ -8,8 +8,7 @@
         button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
           v-tooltip:right="layer.tooltip"
           @click.stop="toggleElList(i, $event, layer.id)"
-          :class="[layer.layerClass, {'active': layer.showEl}]"
-          :id="layer.id"
+          :class="[layer.layerClass, layer.id, {'active': layer.showEl}]"
         )
           i.icon(:class="layer.iconClass")
         ul.layer_child-list(
@@ -159,7 +158,7 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     toggleElList(index, ev, tutorial_id) {
-      this.tutorialPointActivate({way:'next', validation: tutorial_id})
+      this.tutorialPointActivate({way:'next', validation: tutorial_id, searchLayersbar: true})
       if (this.layersbarList[index].showEl) {
         this.layersbarList[index].showEl = false;
         document.removeEventListener('click', this.clickOutside);
