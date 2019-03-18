@@ -15,40 +15,47 @@
       .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
           chart-base(
+            key="1"
             chartLabel="Input"
             :chartData="chartData.Prediction.Input"
             )
       .statistics-box_row
         .statistics-box_col
           chart-base(
+            key="2"
             chartLabel="Prediction vs Ground truth"
             :chartData="chartData.Prediction.PvG"
             :customColor="colorList"
           )
         .statistics-box_col(v-if="!testIsOpen")
           chart-base(
+            key="3"
             chartLabel="Batch Average Prediction vs Ground truth"
             :chartData="chartData.Prediction.AveragePvG"
             :customColor="colorList"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
       chart-base(
+        key="4"
         chartLabel="Accuracy during one epoch"
         :chartData="chartData.Accuracy.Current"
         :customColor="colorListAccuracy"
       )
       chart-base(
+        key="5"
         chartLabel="Accuracy over all epochs"
         :chartData="chartData.Accuracy.Total"
         :customColor="colorListAccuracy"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-base(
+        key="6"
         chartLabel="Loss during one epoch"
         :chartData="chartData.Loss.Current"
         :customColor="colorListAccuracy"
       )
       chart-base(
+        key="7"
         chartLabel="Loss over all epochs"
         :chartData="chartData.Loss.Total"
         :customColor="colorListAccuracy"

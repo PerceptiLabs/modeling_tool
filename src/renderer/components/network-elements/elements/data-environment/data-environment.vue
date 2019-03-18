@@ -6,7 +6,9 @@
     template(slot="context")
       context-menu
     template(slot="settings")
-      settings-el
+      settings-el(
+      :layer-id="elementData.el.layerId"
+      )
 
 </template>
 

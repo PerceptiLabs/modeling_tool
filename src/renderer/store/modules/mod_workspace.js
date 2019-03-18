@@ -278,8 +278,10 @@ const mutations = {
   },
   set_elementBeForEnd(state, {getters, value}) {
     getters.GET_currentNetworkElementList.forEach((el)=>{
-      el.layerMeta.OutputDim = value[el.layerId].OutputDim;
-      el.layerMeta.InputDim = value[el.layerId].InputDim
+      if(el.layerMeta.OutputDim && el.layerMeta.InputDim) {
+        el.layerMeta.OutputDim = value[el.layerId].OutputDim;
+        el.layerMeta.InputDim = value[el.layerId].InputDim
+      }
     });
   },
 

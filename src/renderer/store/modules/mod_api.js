@@ -7,7 +7,8 @@ const {spawn} = require('child_process');
 function prepareNetwork(elementList) {
   let layers = {};
   elementList.forEach((el)=> {
-    if(el.componentName === 'DataData') {
+    let dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
+    if(dataLayers.includes(el.componentName)) {
       layers[el.layerId] = {
         Name: el.layerName,
         Type: el.componentName,
@@ -132,11 +133,11 @@ const actions = {
       action: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.openTest ? 'getTestStatus' :'getStatus',
       value: ''
     };
-    console.log('API_getStatus get', theData);
+    //console.log('API_getStatus get', theData);
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        console.log('API_getStatus answer', data);
+        //console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -159,6 +160,7 @@ const actions = {
       action: "Start",
       value: message
     };
+    console.log(JSON.stringify(theData));
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {

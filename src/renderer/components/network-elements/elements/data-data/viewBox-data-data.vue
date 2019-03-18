@@ -4,7 +4,7 @@
       chart-base(
         chartLabel="Data"
         :chartData="chartData.Data"
-        )
+      )
 </template>
 
 <script>

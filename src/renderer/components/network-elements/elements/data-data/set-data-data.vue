@@ -31,7 +31,7 @@
               span Back
           .form_row
             input.form_input(type="text" v-model="inputPath" readonly="readonly")
-          .form_row
+          //-.form_row
             base-select
           .form_row
             chart-picture(
@@ -94,6 +94,8 @@
         settings: {
           Type: 'Data',
           accessProperties: {
+            Columns: [],
+            Dataset_size: 3000,
             Category:'Local',
             Type: 'Data',
             Path: [],
@@ -167,20 +169,14 @@
             Properties: this.settings
           }
         };
-        console.log('getDataMeta');
         const client = new requestApi();
         client.sendMessage(theData)
           .then((data)=> {
             if(data === 'Null') {
               return
             }
-            console.log('answer getDataMeta', data);
-            //this.dataColumns = data;
-
-            // if(view.length) {
-            //   this.$set(this.chartData, view, data)
-            // }
-            // else this.chartData = data;
+            this.settings.accessProperties.Columns = data.Columns;
+            this.settings.accessProperties.Dataset_size = data.Dataset_size;
           })
           .catch((err)=> {
             console.log('answer err');

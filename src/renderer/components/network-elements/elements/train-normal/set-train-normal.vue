@@ -121,10 +121,10 @@ export default {
     });
   },
   mounted() {
-    if(this.settings.Labels) {
-      this.idSelectElement = this.settings.Labels;
+    if(this.settings.Labels) { this.idSelectElement = this.settings.Labels; }
+    else {
+      if (this.inputLayers.length) this.idSelectElement = this.inputLayers[0].value;
     }
-    else this.idSelectElement = this.inputLayers[0].value;
   },
   data() {
     return {

@@ -33,9 +33,6 @@ export default {
       }
     }
   },
-  mounted() {
-    //
-  },
   data() {
     return {
       isOpenList: false,
@@ -43,11 +40,14 @@ export default {
     }
   },
   watch: {
-    value(newVal) {
-      if(this.selectOptions.length && newVal) {
-        let index = this.selectOptions.findIndex((el)=>el.value === newVal);
-        this.selectedText = this.selectOptions[index].text;
-      }
+    value: {
+      handler(newVal) {
+        if(this.selectOptions.length && newVal) {
+          let index = this.selectOptions.findIndex((el)=>el.value === newVal);
+          this.selectedText = this.selectOptions[index].text;
+        }
+      },
+      immediate: true
     }
   },
   methods: {

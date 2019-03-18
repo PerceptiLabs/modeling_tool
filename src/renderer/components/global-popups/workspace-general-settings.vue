@@ -6,7 +6,7 @@
         .popup_header.active
           h3 General Settings
       .popup_body
-        .settings-layer_section
+        .settings-layer_section(v-if="settingsData")
           .form_row
             .form_label Data partition:
             .form_input
@@ -40,6 +40,16 @@
                     )
                   span &nbsp; %
                   p.text-error(v-show="errors.has('Test')") {{ errors.first('Test') }}
+        .settings-layer_section(v-if="settingsEnvironment")
+          label.form_row
+            .form_label Max Steps:
+            .form_input
+              input(type="number"
+              v-model="settings.MaxSteps"
+              name="Max_steps"
+              v-validate="'min_value:1'"
+              )
+              p.text-error(v-show="errors.has('Max_steps')") {{ errors.first('Max_steps') }}
         .settings-layer_section
           label.form_row
             .form_label Batch size:
@@ -91,13 +101,26 @@
 </template>
 
 <script>
+  import { mapGetters } from 'vuex';
 export default {
   name: "GeneralSettings",
+  mounted() {
+    if(this.networkSettings !== null) {
+      this.settings = JSON.parse(JSON.stringify(this.networkSettings));
+    }
+    this.networkElementList.forEach((el)=>{
+      if(el.componentName === 'DataData') this.settingsData = true;
+      if(el.componentName === 'DataEnvironment') this.settingsEnvironment = true;
+    })
+  },
   data() {
     return {
+      settingsData: false,
+      settingsEnvironment: false,
       settings: {
         Epochs: "1",
         Batch_size: "32",
+        MaxSteps: "1000",
         Data_partition: {
           Training: "70",
           Validation: "20",
@@ -109,15 +132,11 @@ export default {
       }
     }
   },
-  mounted() {
-    if(this.networkSettings !== null) {
-      this.settings = JSON.parse(JSON.stringify(this.networkSettings));
-    }
-  },
   computed: {
-    networkSettings() {
-      return this.$store.getters['mod_workspace/GET_currentNetworkSettings']
-    },
+    ...mapGetters({
+      networkSettings: 'mod_workspace/GET_currentNetworkSettings',
+      networkElementList: 'mod_workspace/GET_currentNetworkElementList',
+    }),
     testValue() {
       return 100 - (+this.settings.Data_partition.Training + +this.settings.Data_partition.Validation)
     }
