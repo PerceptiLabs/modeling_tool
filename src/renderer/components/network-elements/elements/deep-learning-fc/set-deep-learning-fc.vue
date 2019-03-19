@@ -16,7 +16,7 @@
           .settings-layer_section
             .form_row
               .form_label Neurons:
-              .form_input(id="tutorial_neurons")
+              .form_input(id="tutorial_neurons" class="tutorial-relative")
                 input(type="text" v-model="settings.Neurons")
           .settings-layer_section
             .form_row

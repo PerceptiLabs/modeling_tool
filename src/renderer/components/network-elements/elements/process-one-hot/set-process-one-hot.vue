@@ -16,7 +16,7 @@
           .settings-layer_section
             .form_row
               .form_label Number of classes:
-              .form_input.tutorial_number-of-classes
+              .form_input.tutorial-relative(id="tutorial_number-of-classes")
                 input(type="text" v-model="settings.N_class")
 
       .popup_body(:class="{'active': tabSelected == 1}")

@@ -310,9 +310,15 @@ export default {
     border-bottom: 6px solid transparent;
 	}
 }
-.net-element .tooltip-tutorial {
+.net-element > .tooltip-tutorial,  
+button.btn--primary .tooltip-tutorial, 
+.form_input .tooltip-tutorial{
   top: 50%;
   transform: translate(0, -50%);
+}
+.form_input .tooltip-tutorial {
+  top: 0;
+  transform: translate(0);
 }
 .tooltip-tutorial_italic {
   font-style: italic;
@@ -324,9 +330,6 @@ export default {
 }
 .tutorial-relative{
   position: relative;
-}
-button.btn--primary .tooltip-tutorial, .form_input .tooltip-tutorial{
-  top: 50%;
 }
 .tutorial_neurons, .tutorial_patch-size, .tutorial_stride, .tutorial_feature-maps, .tutorial_pointer, .tutorial_number-of-classes{
   position: relative;

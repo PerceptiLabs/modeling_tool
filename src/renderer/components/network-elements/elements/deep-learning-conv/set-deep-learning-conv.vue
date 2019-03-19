@@ -26,17 +26,17 @@
           .settings-layer_section
             .form_row
               .form_label Patch size:
-              .form_input(id="tutorial_patch-size")
+              .form_input(id="tutorial_patch-size" class="tutorial-relative")
                 input(type="text" @input="changeInputFields($event, 'Patch_size')")
           .settings-layer_section
             .form_row
               .form_label Stride:
-              .form_input(id="tutorial_stride")
+              .form_input(id="tutorial_stride" class="tutorial-relative")
                 input(type="text" @input="changeInputFields($event, 'Stride')")
           .settings-layer_section
             .form_row
               .form_label Feature maps:
-              .form_input(id="tutorial_feature-maps")
+              .form_input(id="tutorial_feature-maps" class="tutorial-relative")
                 input(type="text" @input="changeInputFields($event, 'Feature_maps')")
 
           .settings-layer_section

@@ -15,7 +15,7 @@
             .form_row
               .form_label Reshape:
               .form_input
-                triple-input(v-model="settings.Shape" id="tutorial_input-reshape")
+                triple-input(v-model="settings.Shape" id="tutorial_input-reshape" class="tutorial-relative")
           //.settings-layer_section
             .form_row
               .form_label Reshape:

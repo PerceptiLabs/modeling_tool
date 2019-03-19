@@ -109,10 +109,6 @@ const state = {
               tooltip: 'Select MNIST dataset > Load...',
               id: 'tutorial_data-data-2',
               status: 'disabled',
-              position_element: {
-                top: 22.5,
-                left: 18
-              },
             },
             {
               tooltip: 'Select MNIST dataset > Load...',
@@ -144,15 +140,12 @@ const state = {
             {
               tooltip: 'Processing > Reshape...',
               id: 'tutorial_process-reshape',
+              dynamic_id: 'tutorial_process-reshape-1',
               schematic: {
                 type: 'square',
                 top: 16.4,
                 left: 42,
               },
-              // position_element: {
-              //   top: 6.5,
-              //   left: 34
-              // },
               status: 'disabled'
             },
             {
@@ -162,7 +155,7 @@ const state = {
             },
             {
               tooltip: 'Connect input...',
-              id: 'tutorial_process-reshape',
+              id: 'tutorial_process-reshape-1',
               schematic: {
                 type: 'arrow'
               },
@@ -175,7 +168,7 @@ const state = {
             },
             {
               tooltip: 'Open settings...',
-              id: 'tutorial_process-reshape',
+              id: 'tutorial_process-reshape-1',
               status: 'disabled'
             }
           ],
@@ -215,15 +208,12 @@ const state = {
             {
               tooltip: 'Deep Learning > Convolution...',
               id: 'tutorial_convolution',
+              dynamic_id: 'tutorial_convolution-1',
               schematic: {
                 type: 'square',
                 top: 16.4,
                 left: 58,
               },
-              // position_element: {
-              //   top: 6.5,
-              //   left: 50
-              // },
               status: 'disabled'
             },
             {
@@ -233,7 +223,7 @@ const state = {
             },
             {
               tooltip: 'Connect input...',
-              id: 'tutorial_convolution',
+              id: 'tutorial_convolution-1',
               schematic: {
                 type: 'arrow'
               },
@@ -246,7 +236,7 @@ const state = {
             },
             {
               tooltip: 'Open settings...',
-              id: 'tutorial_convolution',
+              id: 'tutorial_convolution-1',
               status: 'disabled'
             },
             {
@@ -299,15 +289,12 @@ const state = {
             {
               tooltip: 'Deep Learning > Fully Connected...',
               id: 'tutorial_fully-connected',
+              dynamic_id: 'tutorial_fully-connected-1',
               schematic: {
                 type: 'square',
                 top: 16.4,
                 left: 74,
               },
-              // position_element: {
-              //   top: 6.5,
-              //   left: 66
-              // },
               status: 'disabled'
             },
             {
@@ -317,7 +304,7 @@ const state = {
             },
             {
               tooltip: 'Connect input...',
-              id: 'tutorial_fully-connected',
+              id: 'tutorial_fully-connected-1',
               schematic: {
                 type: 'arrow'
               },
@@ -330,7 +317,7 @@ const state = {
             },
             {
               tooltip: 'Open settings...',
-              id: 'tutorial_fully-connected',
+              id: 'tutorial_fully-connected-1',
               status: 'disabled'
             }
           ],
@@ -370,15 +357,12 @@ const state = {
             {
               tooltip: 'Processing > One Hot...',
               id: 'tutorial_one-hot',
+              dynamic_id: 'tutorial_one-hot-1',
               schematic: {
                 type: 'square',
                 top: 32.4,
                 left: 42,
               },
-              // position_element: {
-              //   top: 22.5,
-              //   left: 34
-              // },
               status: 'disabled'
             },
             {
@@ -388,7 +372,7 @@ const state = {
             },
             {
               tooltip: 'Connect input...',
-              id: 'tutorial_one-hot',
+              id: 'tutorial_one-hot-1',
               schematic: {
                 type: 'arrow'
               },
@@ -401,7 +385,7 @@ const state = {
             },
             {
               tooltip: 'Set classes...',
-              id: 'tutorial_one-hot',
+              id: 'tutorial_one-hot-1',
               status: 'disabled'
             },
             {
@@ -522,12 +506,11 @@ const mutations = {
 
 const actions = {
   pointActivate({commit, dispatch, getters}, value) {
-    //console.log(getters.getActiveAction.id, value.validation)
     if(getters.getIstutorialMode && 
       getters.getMainTutorialIsStarted && 
       getters.getActiveAction && 
       getters.getActiveAction.id === value.validation) {
-      
+        
         if(value.way === 'next')  {
           dispatch('removeDuplicateId')
           dispatch('checkActiveActionAndPoint', value)
@@ -593,7 +576,7 @@ const actions = {
           break;
         case 'arrow':
           element.classList.add('schematic--arrow');
-          let activeElementPosition =  document.querySelector(`.${getters.getActiveAction.id}`).getBoundingClientRect()
+          let activeElementPosition =  document.getElementById(getters.getActiveAction.id).getBoundingClientRect()
           element.style.top = activeElementPosition.top + (activeElementPosition.height / 2)  + 'px'
           element.style.left = activeElementPosition.left - (activeElementPosition.width + activeElementPosition.width / 2) +  'px'
           break;
@@ -605,9 +588,10 @@ const actions = {
     if(schematicElement) schematicElement.remove()
   },
   removeDuplicateId({getters}) {
-    let workspace = document.querySelector('.workspace_content')
-    let duplucate = workspace.querySelector(`#${getters.getActiveAction.id}`)
-    if(duplucate) duplucate.setAttribute('id', '')
+    let workspaceElement = document.querySelector('.workspace_content').querySelector('.btn--layersbar')
+    if(workspaceElement) {
+      workspaceElement.setAttribute('id', '')
+    }
   }
 };
 
