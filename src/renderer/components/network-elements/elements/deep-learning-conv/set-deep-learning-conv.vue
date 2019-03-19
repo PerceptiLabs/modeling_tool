@@ -26,17 +26,17 @@
           .settings-layer_section
             .form_row
               .form_label Patch size:
-              .form_input(class="tutorial_patch-size")
+              .form_input(id="tutorial_patch-size")
                 input(type="text" @input="changeInputFields($event, 'Patch_size')")
           .settings-layer_section
             .form_row
               .form_label Stride:
-              .form_input(class="tutorial_stride")
+              .form_input(id="tutorial_stride")
                 input(type="text" @input="changeInputFields($event, 'Stride')")
           .settings-layer_section
             .form_row
               .form_label Feature maps:
-              .form_input(class="tutorial_feature-maps")
+              .form_input(id="tutorial_feature-maps")
                 input(type="text" @input="changeInputFields($event, 'Feature_maps')")
 
           .settings-layer_section
@@ -118,7 +118,7 @@
                     span VALID
 
           .settings-layer_foot
-            button.btn.btn--primary(type="button" @click="saveSettings" class="tutorial_apply-button") Apply
+            button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_apply-button") Apply
 
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(

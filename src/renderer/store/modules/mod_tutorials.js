@@ -46,21 +46,22 @@ const state = {
             {
               tooltip: 'Data > Data...',
               id: 'tutorial_data-data',
+              dynamic_id: 'tutorial_data-data-1',
               schematic: {
                 type: 'square',
                 top: 16.4,
                 left: 26
               },
-              position_element: {
-                top: 6.5,
-                left: 18
-              },
               status: 'disabled'
             },
             {
               tooltip: 'Select MNIST dataset > Load...',
-              id: 'tutorial_data-data',
-              status: 'disabled'
+              id: 'tutorial_data-data-1',
+              status: 'disabled',
+              position_element: {
+                top: 6.5,
+                left: 18
+              },
             },
             {
               tooltip: 'Select MNIST dataset > Load...',
@@ -96,21 +97,22 @@ const state = {
             {
               tooltip: 'Data > Data...',
               id: 'tutorial_data-data',
+              dynamic_id: 'tutorial_data-data-2',
               schematic: {
                 type: 'square',
                 top: 32.4,
                 left: 26
               },
-              position_element: {
-                top: 22.5,
-                left: 18
-              },
               status: 'disabled'
             },
             {
               tooltip: 'Select MNIST dataset > Load...',
-              id: 'tutorial_data-data',
-              status: 'disabled'
+              id: 'tutorial_data-data-2',
+              status: 'disabled',
+              position_element: {
+                top: 22.5,
+                left: 18
+              },
             },
             {
               tooltip: 'Select MNIST dataset > Load...',
@@ -147,10 +149,10 @@ const state = {
                 top: 16.4,
                 left: 42,
               },
-              position_element: {
-                top: 6.5,
-                left: 34
-              },
+              // position_element: {
+              //   top: 6.5,
+              //   left: 34
+              // },
               status: 'disabled'
             },
             {
@@ -218,10 +220,10 @@ const state = {
                 top: 16.4,
                 left: 58,
               },
-              position_element: {
-                top: 6.5,
-                left: 50
-              },
+              // position_element: {
+              //   top: 6.5,
+              //   left: 50
+              // },
               status: 'disabled'
             },
             {
@@ -302,10 +304,10 @@ const state = {
                 top: 16.4,
                 left: 74,
               },
-              position_element: {
-                top: 6.5,
-                left: 66
-              },
+              // position_element: {
+              //   top: 6.5,
+              //   left: 66
+              // },
               status: 'disabled'
             },
             {
@@ -373,10 +375,10 @@ const state = {
                 top: 32.4,
                 left: 42,
               },
-              position_element: {
-                top: 22.5,
-                left: 34
-              },
+              // position_element: {
+              //   top: 22.5,
+              //   left: 34
+              // },
               status: 'disabled'
             },
             {
@@ -520,17 +522,18 @@ const mutations = {
 
 const actions = {
   pointActivate({commit, dispatch, getters}, value) {
-    console.log(getters.getActiveAction.id, value.validation)
+    //console.log(getters.getActiveAction.id, value.validation)
     if(getters.getIstutorialMode && 
       getters.getMainTutorialIsStarted && 
       getters.getActiveAction && 
       getters.getActiveAction.id === value.validation) {
       
         if(value.way === 'next')  {
+          dispatch('removeDuplicateId')
           dispatch('checkActiveActionAndPoint', value)
         }
         else {
-          dispatch('createTooltip', value.searchLayersbar)
+          dispatch('createTooltip')
           commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
         }
     }
@@ -539,7 +542,9 @@ const actions = {
     commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
     commit('SET_activeActionMainTutorial', 'next')
     if(getters.getActiveAction) {
-      dispatch('createTooltip', value.searchLayersbar)
+      dispatch('createTooltip')
+      dispatch('removeSchematicElement') 
+      dispatch('drawSchematicElement', getters.getActiveAction.schematic)
     } 
     else { // all actions are done
       dispatch('nextPoint')
@@ -552,15 +557,11 @@ const actions = {
       }
     }
   },
-  createTooltip({getters}, searchLayersbar) {
+  createTooltip({getters}) {
     let activeTooltip = document.querySelector('.tooltip-tutorial')
     if(activeTooltip) activeTooltip.remove()
-    let allElements = document.querySelectorAll(`.${getters.getActiveAction.id}.tutorial_layersbar`)
-    if(allElements.length > 1) allElements[0].classList.remove('tutorial_layersbar')
-    
-    if(getters.getActiveAction.tooltip) {
-      let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}:not(.tutorial_layersbar)`)
-      let element = searchLayersbar ?  document.querySelector(`.${getters.getActiveAction.id}.tutorial_layersbar`) : workspaceElements[workspaceElements.length - 1]
+    let element = document.getElementById(getters.getActiveAction.id)
+    if(getters.getActiveAction.tooltip) { 
       let tooltipBlock = document.createElement('div');
       tooltipBlock.classList.add('tooltip-tutorial');
       tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
@@ -579,37 +580,34 @@ const actions = {
     commit('SET_activePointMainTutorial', 'next')
   },
   drawSchematicElement({getters}, schematic) {
-    let infoSection = document.querySelector('.info-section_main')
-    let element = document.createElement('div');
-    element.classList.add('schematic');
-    infoSection.insertBefore(element, infoSection.firstChild)
-    switch (schematic.type) {
-      case 'square':
-        element.classList.add('schematic--square');
-        element.style.top = schematic.top + 'rem'
-        element.style.left = schematic.left + 'rem'
-        break;
-      case 'arrow':
-        element.classList.add('schematic--arrow');
-        let activeElementPosition =  document.querySelector(`.${getters.getActiveAction.id}`).getBoundingClientRect()
-        element.style.top = activeElementPosition.top + (activeElementPosition.height / 2)  + 'px'
-        element.style.left = activeElementPosition.left - (activeElementPosition.width + activeElementPosition.width / 2) +  'px'
-        break;
+    if(schematic) {
+      let infoSection = document.querySelector('.info-section_main')
+      let element = document.createElement('div');
+      element.classList.add('schematic');
+      infoSection.insertBefore(element, infoSection.firstChild)
+      switch (schematic.type) {
+        case 'square':
+          element.classList.add('schematic--square');
+          element.style.top = schematic.top + 'rem'
+          element.style.left = schematic.left + 'rem'
+          break;
+        case 'arrow':
+          element.classList.add('schematic--arrow');
+          let activeElementPosition =  document.querySelector(`.${getters.getActiveAction.id}`).getBoundingClientRect()
+          element.style.top = activeElementPosition.top + (activeElementPosition.height / 2)  + 'px'
+          element.style.left = activeElementPosition.left - (activeElementPosition.width + activeElementPosition.width / 2) +  'px'
+          break;
+      }
     }
-    
   },
   removeSchematicElement() {
     let schematicElement = document.querySelector('.schematic')
     if(schematicElement) schematicElement.remove()
   },
-  changeElementPosition({getters}, position_element) {
-    if(position_element) {
-      let workspaceElements = document.querySelectorAll(`.${getters.getActiveAction.id}`)
-      let activeElement = workspaceElements[workspaceElements.length - 1]
-      let parent = activeElement.parentElement.parentElement
-      parent.style.top = position_element.top + 'rem'
-      parent.style.left = position_element.left + 'rem'
-    }
+  removeDuplicateId({getters}) {
+    let workspace = document.querySelector('.workspace_content')
+    let duplucate = workspace.querySelector(`#${getters.getActiveAction.id}`)
+    if(duplucate) duplucate.setAttribute('id', '')
   }
 };
 

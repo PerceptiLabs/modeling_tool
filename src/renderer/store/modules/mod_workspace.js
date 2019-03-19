@@ -81,6 +81,9 @@ const getters = {
     }
     else return false
   },
+  GET_tutorialActiveId(state, getters, rootState, rootGetters) {
+    return rootGetters['mod_tutorials/getActiveAction'].dynamic_id
+  }
 };
 
 const mutations = {
@@ -180,7 +183,8 @@ const mutations = {
     let top = state.dragElement.layerMeta.top;
     let left = state.dragElement.layerMeta.left;
     let zoom = getters.GET_currentNetwork.networkMeta.zoom;
-
+    state.dragElement.layerMeta.tutorialId = getters.GET_tutorialActiveId
+    
     state.dragElement.layerMeta.top = (event.offsetY - top)/zoom;
     state.dragElement.layerMeta.left = (event.offsetX - left)/zoom;
     getters.GET_currentNetworkElementList.push(state.dragElement);
@@ -293,7 +297,8 @@ const mutations = {
         isLock: false,
         isSelected: false,
         top: event.target.clientHeight/2,
-        left: event.target.clientWidth/2
+        left: event.target.clientWidth/2,
+        tutorialId: ''
       },
       componentName: event.target.dataset.component,
       connectionOut: [],

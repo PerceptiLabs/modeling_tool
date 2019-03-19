@@ -15,7 +15,7 @@
           .settings-layer_section
             .form_row
               input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
-              button.btn.btn--primary(type="button" @click="loadFile" :disabled="isDisabled" class="tutorial_button-load") Load
+              button.btn.btn--primary(type="button" @click="loadFile" :disabled="isDisabled" id="tutorial_button-load") Load
           .settings-layer_section
             .form_row
               .form_label Data type:
@@ -25,7 +25,7 @@
                 base-radio(groupName="group" valueInput="Labels" v-model="settings.accessProperties.Type")
                   span Labels
           .settings-layer_foot
-            button.btn.btn--primary(type="button" @click="saveSettings" class="tutorial_button-apply") Apply
+            button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_button-apply") Apply
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-cloud
 

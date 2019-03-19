@@ -4,7 +4,7 @@
   data-layer="OneHot_1"
   data-type="Other"
   v-tooltip:right="'One Hot'"
-  class="tutorial_one-hot tutorial_layersbar"
+  id="tutorial_one-hot"
   )
     i.icon.icon-one-hot
 

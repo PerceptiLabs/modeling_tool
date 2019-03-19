@@ -163,7 +163,7 @@ export default {
       this.calcSvgSize()
     },
     eventCalcArrow() {
-      this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id, makeClass: true})
+      this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id})
       this.createArrowList()
     },
     smallViewPort() {

@@ -98,8 +98,7 @@ export default {
     dragEnd(event) {
       this.offDragListener();
       event.target.style.opacity = "";
-      let classElement = event.target.classList.contains(this.activeAction.id) ? this.activeAction.id : 'not valid' 
-      this.tutorialPointActivate({way: 'next', validation: classElement})
+      this.tutorialPointActivate({way: 'next', validation: this.activeAction.id})
     },
     dragOver(event) {
       event.preventDefault();

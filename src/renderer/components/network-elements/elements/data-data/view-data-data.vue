@@ -3,7 +3,7 @@
     data-component="DataData"
     data-layer="Data_1"
     data-type="Data"
-    class="tutorial_data-data tutorial_layersbar"
+    id="tutorial_data-data"
   )
     i.icon.icon-data
 

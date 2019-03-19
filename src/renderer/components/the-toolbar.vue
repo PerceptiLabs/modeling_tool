@@ -9,7 +9,7 @@
         button.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'edit'}"
-          class="tutorial_pointer"
+          id="tutorial_pointer"
           v-tooltip:bottom="'Edit'"
           @click="setNetMode('edit', 'tutorial_pointer')"
         )
@@ -22,7 +22,7 @@
         button.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'addArrow'}"
-          class="tutorial_list-arrow"
+          id="tutorial_list-arrow"
           @click="setArrowType(arrowList[0].arrowType)"
         )
           i.icon(:class="arrowList[0].iconClass")

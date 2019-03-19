@@ -1,5 +1,5 @@
 <template lang="pug">
-  .net-element.js-clickout(tabindex="0"
+  .net-element.js-clickout(tabindex="0" :id="dataEl.el.layerMeta.tutorialId"
     ref="rootBaseElement"
     :style="style"
     :class="active ? 'active' : 'inactive'"
@@ -119,12 +119,9 @@ export default {
       }
     },
     openSettings(event) {
-      let tutorial_class = 'not valid'
-      if(event.target.classList.contains(this.tutorialActiveAction.id) || 
-      event.target.offsetParent.classList.contains(this.tutorialActiveAction.id)) {
-        tutorial_class = this.tutorialActiveAction.id
-      }
-      setTimeout(()=>{this.tutorialPointActivate({way:'next', validation: tutorial_class})}, 0)
+      event.stopPropagation()
+      this.tutorialSearchId(event)
+      setTimeout(()=>{this.tutorialPointActivate({way:'next', validation: this.tutorialSearchId(event)})}, 0)
       this.hideAllWindow();
       if(this.networkMode === 'edit' && !this.isTraining) {
         this.settingsIsOpen = true;
@@ -163,6 +160,9 @@ export default {
       if(!(this.contextIsOpen || this.settingsIsOpen)) {
         this.$store.dispatch('mod_workspace/DELETE_element')
       }
+    },
+    tutorialSearchId(event) {
+       return event.target.tagName === 'I' ? event.target.parentNode.parentNode.parentNode.id : event.target.parentNode.parentNode.id
     }
   }
 }
