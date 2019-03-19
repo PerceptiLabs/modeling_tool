@@ -160,7 +160,7 @@ const actions = {
       action: "Start",
       value: message
     };
-    console.log(JSON.stringify(theData));
+    //console.log(JSON.stringify(theData));
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
@@ -297,10 +297,12 @@ const actions = {
       action: "getNetworkData",
       value: prepareNetwork(elementList)
     };
+    //console.log('API_getBeForEnd', theData);
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        dispatch('mod_workspace/SET_elementBeForEnd', data, {root: true});
+        //console.log('answer API_getBeForEnd', data);
+        if(data) dispatch('mod_workspace/SET_elementBeForEnd', data, {root: true});
       })
       .catch((err) =>{
         console.error(err);

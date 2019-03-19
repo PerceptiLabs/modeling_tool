@@ -534,7 +534,7 @@ export default {
       stroke-width: 4;
     }
   }
-  .arrow--empty-output {
-    stroke: #eb8b22;
-  }
+  /*.arrow--empty-output {*/
+    /*stroke: #eb8b22;*/
+  /*}*/
 </style>

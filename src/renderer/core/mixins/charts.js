@@ -66,6 +66,7 @@ const chartsMixin = {
       }
     },
     chartData(newData) {
+      console.log('chartData ', newData);
       this.sendDataToWWorker(newData)
     }
   },

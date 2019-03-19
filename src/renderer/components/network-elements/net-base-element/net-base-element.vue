@@ -69,6 +69,7 @@ export default {
   },
   computed: {
     beForEnd() {
+      //console.log('NetBaseElement beForEnd', this.dataEl.el.layerMeta);
       return this.dataEl.el.layerMeta.OutputDim
     },
     active() {

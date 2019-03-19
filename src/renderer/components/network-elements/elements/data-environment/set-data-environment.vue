@@ -14,9 +14,26 @@
       )
         .settings-layer
           .settings-layer_section
-            base-select(
-              v-model="settings.Properties.accessProperties.Atari"
-              :selectOptions="selectOptions"
+            .form_row
+              base-select(
+                v-model="settings.accessProperties.Atari"
+                :selectOptions="selectOptions"
+                )
+            .form_row
+              chart-picture(
+                v-if="imgType === 'image' || imgType === 'RGB'"
+                :disable-header="true"
+                :chartData="imgData"
+              )
+              chart-base(
+                v-if="imgType === 'line' || imgType === 'bar' || imgType === 'scatter'"
+                :disable-header="true"
+                :chartData="imgData"
+              )
+              chart-heatmap(
+                v-if="imgType === 'heatmap'"
+                :disable-header="true"
+                :chartData="imgData"
               )
 
       .popup_body(
@@ -34,13 +51,17 @@
 </template>
 
 <script>
-  import mixinSet       from '@/core/mixins/net-element-settings.js';
-  export default {
-    name: 'SetDataData',
-    mixins: [mixinSet],
-    components: {
+  import mixinSet   from '@/core/mixins/net-element-settings.js';
+  import mixinData  from '@/core/mixins/net-element-settings-data.js';
 
-    },
+  import ChartPicture from "../../../charts/chart-picture";
+  import ChartBase    from "../../../charts/chart-base";
+  import ChartHeatmap from "../../../charts/chart-heatmap";
+
+  export default {
+    name: 'SetDataEnvironment',
+    mixins: [mixinSet, mixinData],
+    components: { ChartHeatmap, ChartBase, ChartPicture },
     data() {
       return {
         selectOptions: [
@@ -50,19 +71,25 @@
         ],
         tabs: ['Gym', '<i class="icon icon-search"></i> Unity'],
         settings: {
-          Name: 'Data_1',
-          Type: 'DataEnvironment',
-          Properties: {
-            Type: 'Environment',
-            accessProperties: {
-              EnvType: 'Gym',
-              Atari: 'Breakout', //select
-              Category: 'Local',
-              Type: 'Data',
-            }
+          Type: 'Environment',
+          accessProperties: {
+            EnvType: 'Gym',
+            Atari: 'Breakout', //select
+            Category: 'Local',
+            Type: 'Data',
           }
         }
       }
-    }
+    },
+    watch: {
+      'settings.accessProperties.Atari': {
+        handler(newVal) {
+          if(newVal) {
+            this.getDataImg('DataEnvironment')
+          }
+        },
+        immediate: true
+      }
+    },
   }
 </script>

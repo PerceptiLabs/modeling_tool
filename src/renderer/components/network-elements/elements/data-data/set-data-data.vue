@@ -31,8 +31,11 @@
               span Back
           .form_row
             input.form_input(type="text" v-model="inputPath" readonly="readonly")
-          //-.form_row
-            base-select
+          .form_row(v-if="dataColumns.length")
+            base-select(
+              v-model="dataColumns"
+              :selectOptions="settings.accessProperties.Columns"
+              )
           .form_row
             chart-picture(
               v-if="imgType === 'image'"
@@ -62,24 +65,21 @@
 
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
-  import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
-  import {openLoadDialog} from '@/core/helpers.js'
+  import mixinData      from '@/core/mixins/net-element-settings-data.js';
 
-  import requestApi   from "@/core/api.js";
+  import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
   import ChartPicture from "../../../charts/chart-picture";
   import ChartBase from "../../../charts/chart-base";
   import ChartHeatmap from "../../../charts/chart-heatmap";
 
+  import {openLoadDialog} from '@/core/helpers.js'
+
+  import requestApi   from "@/core/api.js";
+
   export default {
     name: 'SetDataData',
-    mixins: [mixinSet],
+    mixins: [mixinSet, mixinData],
     components: {ChartHeatmap, ChartBase, ChartPicture, SettingsCloud },
-    props: {
-      layerId: {
-        type: String,
-        default: ''
-      }
-    },
     mounted() {
       this.getDataMeta()
     },
@@ -87,8 +87,6 @@
       return {
         tabs: ['Computer', 'Cloud'],
         coreCode: '',
-        imgData: null,
-        imgType: '',
         dataColumns: [],
         disabledBtn: false,
         settings: {
@@ -104,15 +102,13 @@
       }
     },
     computed: {
-      appPath() {
-        return this.$store.getters['globalView/GET_appPath']
-      },
-      isDisabled() {
-        return process.env.NODE_ENV === 'production'
-      },
-      currentNetworkID() {
-        return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
-      },
+      // appPath() {
+      //   return this.$store.getters['globalView/GET_appPath']
+      // },
+      // isDisabled() {
+      //   return process.env.NODE_ENV === 'production'
+      // },
+
       inputPath() {
         return this.settings.accessProperties.Path.join(', ')
       }
@@ -121,7 +117,7 @@
       'settings.accessProperties.Path': {
         handler(newVal) {
           if(newVal) {
-            this.getDataImg()
+            this.getDataImg('DataData')
           }
         },
         immediate: true
@@ -183,36 +179,6 @@
             console.error(err);
           });
       },
-      getDataImg() {
-        let theData = {
-          reciever: this.currentNetworkID,
-          action: 'getDataPlot',
-          value: {
-            Id: this.layerId,
-            Type: 'DataData',
-            Properties: this.settings
-          }
-        };
-        const client = new requestApi();
-        client.sendMessage(theData)
-          .then((data)=> {
-            if(data === 'Null') {
-              return
-            }
-            //console.log('answer getDataImg', data);
-            this.imgType = data.series[0].type;
-            this.imgData = data;
-
-            // if(view.length) {
-            //   this.$set(this.chartData, view, data)
-            // }
-            // else this.chartData = data;
-          })
-          .catch((err)=> {
-            console.log('answer err');
-            console.error(err);
-          });
-      }
     }
   }
 </script>
