@@ -319,6 +319,7 @@ button.btn--primary .tooltip-tutorial,
 .form_input .tooltip-tutorial {
   top: 0;
   transform: translate(0);
+  left: 110%;
 }
 .tooltip-tutorial_italic {
   font-style: italic;
@@ -329,9 +330,6 @@ button.btn--primary .tooltip-tutorial,
   display: inline-block;
 }
 .tutorial-relative{
-  position: relative;
-}
-.tutorial_neurons, .tutorial_patch-size, .tutorial_stride, .tutorial_feature-maps, .tutorial_pointer, .tutorial_number-of-classes{
   position: relative;
 }
 .tutorial_input-reshape {

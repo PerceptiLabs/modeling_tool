@@ -33,7 +33,7 @@
       line.svg-arrow_line.arrow--hidden(
         v-if="preArrow.show"
         marker-end="url(#svg-arrow_triangle)"
-        stroke-dasharray="none"
+        :stroke-dasharray="(preArrow.type === 'dash1' ? '7 6' : 'none')"
         :x1="preArrow.start.x"
         :y1="preArrow.start.y"
         :x2="preArrow.stop.x"

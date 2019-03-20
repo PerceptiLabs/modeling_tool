@@ -4,6 +4,7 @@
     data-layer="Normal"
     data-type="Training"
     v-tooltip:right="'Normal'"
+    id="tutorial_training-normal"
   )
     i.icon.icon-training
 

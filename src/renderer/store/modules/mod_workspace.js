@@ -320,6 +320,7 @@ const mutations = {
     state.preArrow.start = value;
     state.preArrow.stop = value;
     state.preArrow.show = true
+    state.preArrow.type = value.type
   },
   SET_preArrowStop (state, value) {
     state.preArrow.stop = value

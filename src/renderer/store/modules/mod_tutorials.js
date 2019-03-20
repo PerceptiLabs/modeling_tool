@@ -157,7 +157,8 @@ const state = {
               tooltip: 'Connect input...',
               id: 'tutorial_process-reshape-1',
               schematic: {
-                type: 'arrow'
+                type: 'arrow',
+                connection_start: 'tutorial_data-data-1',
               },
               status: 'disabled'
             },
@@ -225,7 +226,8 @@ const state = {
               tooltip: 'Connect input...',
               id: 'tutorial_convolution-1',
               schematic: {
-                type: 'arrow'
+                type: 'arrow',
+                connection_start: 'tutorial_process-reshape-1',
               },
               status: 'disabled'
             },
@@ -240,17 +242,17 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Patch size:</div> This is the size of the filter.</br> E.g. with patch size 3, the </br> filter will be a square of size 3x3.</div>',
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Patch size:</div> This is the size of the filter.</br> E.g. with patch size 3, the </br> filter will be a square of size 3x3. </br> <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div></div>',
               id: 'tutorial_patch-size',
               status: 'disabled'
             },
             {
-              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Stride:</div> This is the step size when </br> we slide the filter over the input </br> data to generate feature maps.</div>',
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Stride:</div> This is the step size when </br> we slide the filter over the input </br> data to generate feature maps. </br> <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div></div>',
               id: 'tutorial_stride',
               status: 'disabled'
             },
             {
-              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Feature Maps:</div> The number of </br> feature maps correspond to the </br> number of different features to </br> look for in the input data. i.e. with </br> more complex data, it might be </br> better to increase the number </br> of feature maps.</div>',
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Feature Maps:</div> The number of </br> feature maps correspond to the </br> number of different features to </br> look for in the input data. i.e. with </br> more complex data, it might be </br> better to increase the number </br> of feature maps. </br> <div class="tooltip-tutorial_bold">Please press "Tab" button to next action</div></div>',
               id: 'tutorial_feature-maps',
               status: 'disabled'
             },
@@ -306,7 +308,8 @@ const state = {
               tooltip: 'Connect input...',
               id: 'tutorial_fully-connected-1',
               schematic: {
-                type: 'arrow'
+                type: 'arrow',
+                connection_start: 'tutorial_convolution-1',
               },
               status: 'disabled'
             },
@@ -374,7 +377,8 @@ const state = {
               tooltip: 'Connect input...',
               id: 'tutorial_one-hot-1',
               schematic: {
-                type: 'arrow'
+                type: 'arrow',
+                connection_start: 'tutorial_data-data-2',
               },
               status: 'disabled'
             },
@@ -402,6 +406,78 @@ const state = {
             {
               status:'disabled',
               content: 'This makes it easier for the AI to differentiate the digits so it can learn faster. '
+            }
+          ]
+        },
+      ]
+    },
+    train_normal: {
+      title: 'Step 6. Train your AI model',
+      points: [
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Training</div> > <div class="marker">Normal</div> > Connect input > Define parameters',
+          actions: [
+            {
+              tooltip: 'Training > Normal ...',
+              id: 'tutorial_training', 
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Training > Normal ...',
+              id: 'tutorial_training-normal',
+              dynamic_id: 'tutorial_training-normal-1',
+              schematic: {
+                type: 'square',
+                top: 32.4,
+                left: 75,
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select to create a connection...',
+              id: 'tutorial_list-arrow',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_training-normal-1',
+              schematic: {
+                type: 'arrow',
+                connection_start: 'tutorial_one-hot-1',
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_training-normal-1',
+              schematic: {
+                type: 'arrow',
+                connection_start: 'tutorial_fully-connected-1',
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Go back to work with items...',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Define parameters...',
+              id: 'tutorial_training-normal-1',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Set 10 > Apply changes...',
+              id: 'tutorial_number-of-classes',
+              status: 'disabled'
+            }
+          ],
+          static_info: [
+            {
+              status:'disabled',
+              content: 'Now that the size of output from the Fully Connected (FC) layer and One Hot layer match, the AI can compare its predictions from the FC layer and answers (GT) from the One Hot. '
             }
           ]
         },
@@ -562,7 +638,7 @@ const actions = {
     }
     commit('SET_activePointMainTutorial', 'next')
   },
-  drawSchematicElement({getters}, schematic) {
+  drawSchematicElement({getters, commit}, schematic) {
     if(schematic) {
       let infoSection = document.querySelector('.info-section_main')
       let element = document.createElement('div');
@@ -574,12 +650,13 @@ const actions = {
           element.style.top = schematic.top + 'rem'
           element.style.left = schematic.left + 'rem'
           break;
-        case 'arrow':
-          element.classList.add('schematic--arrow');
-          let activeElementPosition =  document.getElementById(getters.getActiveAction.id).getBoundingClientRect()
-          element.style.top = activeElementPosition.top + (activeElementPosition.height / 2)  + 'px'
-          element.style.left = activeElementPosition.left - (activeElementPosition.width + activeElementPosition.width / 2) +  'px'
-          break;
+         case 'arrow':
+          let start = document.getElementById(getters.getActiveAction.schematic.connection_start).getBoundingClientRect()
+          let stop = document.getElementById(getters.getActiveAction.id).getBoundingClientRect()
+          commit('mod_workspace/SET_preArrowStart', {x: start.left - start.width, y: start.top - start.height, type: 'dash1'}, {root:true})
+          commit('mod_workspace/SET_preArrowStop', {x: stop.left -stop.width, y: stop.top - stop.height, type: 'dash1'}, {root:true})
+          //console.log({x: start.left, y: start.top})
+          //console.log({x: stop.left, y: stop.top})
       }
     }
   },
@@ -587,7 +664,7 @@ const actions = {
     let schematicElement = document.querySelector('.schematic')
     if(schematicElement) schematicElement.remove()
   },
-  removeDuplicateId({getters}) {
+  removeDuplicateId() {
     let workspaceElement = document.querySelector('.workspace_content').querySelector('.btn--layersbar')
     if(workspaceElement) {
       workspaceElement.setAttribute('id', '')

@@ -27,17 +27,30 @@
             .form_row
               .form_label Patch size:
               .form_input(id="tutorial_patch-size" class="tutorial-relative")
-                input(type="text" @input="changeInputFields($event, 'Patch_size')")
+                input(
+                  type="text" 
+                  v-model="settings.Patch_size"
+                  ref="pathSize"
+                )
           .settings-layer_section
             .form_row
               .form_label Stride:
               .form_input(id="tutorial_stride" class="tutorial-relative")
-                input(type="text" @input="changeInputFields($event, 'Stride')")
+                input(
+                  type="text" 
+                  v-model="settings.Stride"
+                  @focus="onFocus('tutorial_patch-size')"
+                )
           .settings-layer_section
             .form_row
               .form_label Feature maps:
               .form_input(id="tutorial_feature-maps" class="tutorial-relative")
-                input(type="text" @input="changeInputFields($event, 'Feature_maps')")
+                input(
+                  type="text" 
+                  v-model="settings.Feature_maps"
+                  @focus="onFocus('tutorial_stride')"
+                  @blur="onBlur('tutorial_feature-maps')"
+                )
 
           .settings-layer_section
             .form_row
@@ -130,7 +143,7 @@
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
 import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
-import { mapActions } from 'vuex';
+import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'SetDeepLearningConv',
@@ -143,10 +156,10 @@ export default {
       tabs: ['Settings', 'Code'],
       settings: {
         Conv_dim: "2D", //Automatic, 1D, 2D, 3D
-        Patch_size: "", // 3
-        Stride: "",     // 2
+        Patch_size: "3",
+        Stride: "2",
         Padding: "'SAME'", //'SAME', 'VALID'
-        Feature_maps: "",  // 8
+        Feature_maps: "8",
         Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
         Dropout: false, //True, False
         PoolBool: false, //True, False
@@ -157,7 +170,13 @@ export default {
       }
     }
   },
+  mounted() {
+   if(this.isTutorialMode) this.$refs.pathSize.focus()
+  },
   computed: {
+    ...mapGetters({
+      isTutorialMode:   'mod_tutorials/getIstutorialMode',
+    }),
     coreCode() {
       let addPooling = '';
       if(this.settings.Pooling === "Max") {
@@ -214,22 +233,16 @@ export default {
           break;
       }
     },
-    patch_size() {
-      return this.settings.Patch_size
-    },
-    stride() {
-      return this.settings.Stride
-    },
-    feature_maps() {
-      return this.settings.Feature_maps
-    }
   },
   methods: {
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
-    changeInputFields(event, settingProperty) {
-      this.settings[settingProperty] = event.target.value
+    onFocus(inputId) {
+      this.tutorialPointActivate({way:'next', validation: inputId})
+    },
+    onBlur(inputId) {
+      this.tutorialPointActivate({way:'next', validation: inputId})
     },
     saveSettings() {
       this.applySettings()
