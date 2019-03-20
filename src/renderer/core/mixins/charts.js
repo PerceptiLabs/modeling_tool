@@ -62,11 +62,12 @@ const chartsMixin = {
     },
     '$store.state.mod_events.chartResize': {
       handler() {
-        if(this._name !== '<ChartPicture>') this.$refs.chart.resize();
+        if(this._name !== '<ChartPicture>') {
+          this.$nextTick(()=> this.$refs.chart.resize())
+        }
       }
     },
     chartData(newData) {
-      console.log('chartData ', newData);
       this.sendDataToWWorker(newData)
     }
   },

@@ -40,7 +40,8 @@ const netElementSettings = {
         'code': this.coreCode,
         'set': this.settings
       };
-      this.$store.dispatch('mod_workspace/SET_elementSettings', saveSettings)
+      this.$store.dispatch('mod_workspace/SET_elementSettings', saveSettings);
+      this.$store.dispatch('mod_api/API_getBeForEnd');
     }
   }
 };

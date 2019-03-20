@@ -133,11 +133,11 @@ const actions = {
       action: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.openTest ? 'getTestStatus' :'getStatus',
       value: ''
     };
-    //console.log('API_getStatus get', theData);
+    console.log('API_getStatus get', theData);
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        //console.log('API_getStatus answer', data);
+        console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -160,10 +160,11 @@ const actions = {
       action: "Start",
       value: message
     };
-    //console.log(JSON.stringify(theData));
+    console.log(JSON.stringify(theData));
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
+        console.log('API_startTraining ', data);
         dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
       })
       .catch((err) =>{
@@ -301,7 +302,7 @@ const actions = {
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        //console.log('answer API_getBeForEnd', data);
+        console.log('answer API_getBeForEnd');
         if(data) dispatch('mod_workspace/SET_elementBeForEnd', data, {root: true});
       })
       .catch((err) =>{

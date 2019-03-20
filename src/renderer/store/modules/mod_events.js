@@ -78,6 +78,7 @@ const actions = {
     if(isStart) {
       let timer = setInterval(()=> {
         commit('set_charts_doRequest');
+        console.log('EVENT_startDoRequest');
         dispatch('mod_api/API_getStatus', null, {root: true});
       }, state.chartsRequest.timeInterval);
       commit('set_charts_waitGlobalEvent', isStart);

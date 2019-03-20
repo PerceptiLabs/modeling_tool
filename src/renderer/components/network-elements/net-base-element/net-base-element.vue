@@ -4,7 +4,7 @@
     :style="style"
     :class="active ? 'active' : 'inactive'"
     @click="switchClickEvent($event)"
-    @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings()"
+    @dblclick.stop.prevent="switchDblclick"
     @contextmenu.stop.prevent="openContext"
     @keyup.46="deleteEl()"
     @keyup.93.8="deleteEl()"
@@ -87,6 +87,9 @@ export default {
     isTraining() {
       return this.$store.getters['mod_workspace/GET_networkIsTraining']
     },
+    editIsOpen() {
+      return this.$store.getters['mod_workspace/GET_networkCanEditLayers'];
+    }
   },
   watch: {
     statisticsIsOpen(newVal) {
@@ -100,10 +103,10 @@ export default {
       if (this.isLock) {
         return
       }
-      if(this.networkMode === 'addArrow') {
+      else if(this.networkMode === 'addArrow') {
         this.arrowStartPaint(ev)
       }
-      else if(this.networkMode === 'edit') {
+      else if(this.networkMode === 'edit' && this.editIsOpen) {
         this.setFocusEl(ev);
         this.bodyDown(ev)
       }
@@ -116,15 +119,18 @@ export default {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
     },
+    switchDblclick() {
+      this.layerContainer ? this.$emit('dblcl') : this.openSettings()
+    },
     openSettings() {
       this.hideAllWindow();
-      if(this.networkMode === 'edit' && !this.isTraining) {
+      if(this.networkMode === 'edit' && this.editIsOpen) {
         this.settingsIsOpen = true;
       }
     },
     openContext() {
       this.hideAllWindow();
-      if(this.networkMode === 'edit' && !this.isTraining) {
+      if(this.networkMode === 'edit' && this.editIsOpen) {
         this.contextIsOpen = true;
       }
     },

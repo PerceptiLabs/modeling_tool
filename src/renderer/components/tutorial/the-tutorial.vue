@@ -1,35 +1,30 @@
 <template lang="pug">
   .tutorial-box(v-if="statusShowTutorial || isFirstTimetApp")
     .tutorial-box_modal-popup
-      button.close-tutorial.i.icon.icon-appClose(@click="closeTutorial")
-      .modal-popup_step-info(
-        v-for="(step, index) in firstTutorial" 
-        :key="index"
-        v-if="activeStep === index"
-        )
+      button.close-tutorial.icon.icon-appClose(type="button" @click="closeTutorial")
+      .modal-popup_step-info
         .step-info_eyes
           .eyes.eye-one
-            .eye_pupil(:class="step.lookEyesClass")
+            .eye_pupil(:class="currentStepTutorial.lookEyesClass")
           .eyes.eye-two
-            .eye_pupil(:class="step.lookEyesClass")
-        .step-info_title {{step.title}}
-        p.step-info_text(v-html="step.text")
+            .eye_pupil(:class="currentStepTutorial.lookEyesClass")
+        .step-info_title {{currentStepTutorial.title}}
+        p.step-info_text(v-html="currentStepTutorial.text")
         .step-info_after-text
-          img(
-            :src="step.img" 
-            alt="step image" 
-            v-if="step.img"
+          img( alt="step image"
+            v-if="currentStepTutorial.img"
+            :src="currentStepTutorial.img"
           )
-          button.btn--crash-course(
-            v-if="step.button" 
-            @click="step.button.action"
-          ) {{step.button.text}} 
+          button.btn--crash-course(type="button"
+            v-if="currentStepTutorial.button"
+            @click="currentStepTutorial.button.action"
+          ) {{currentStepTutorial.button.text}}
         
-      button.modal-popup_control.prev-button.i.icon.icon-player-play(
+      button.modal-popup_control.prev-button.icon.icon-player-play(type="button"
         @click="set_stepActive('prev')" 
         v-show="activeStep > 0"
       )
-      button.modal-popup_control.next-button.i.icon.icon-player-play(
+      button.modal-popup_control.next-button.icon.icon-player-play(type="button"
         @click="set_stepActive('next')" 
         v-show="activeStep < firstTutorial.length - 1"
       )
@@ -37,8 +32,9 @@
         button.footer_skip-button(@click="skipTutorial") Skip intro
 
         ul.footer_all-slides-controls
-          li.all-slides-controls_control(
+          button.btn.btn--link.all-slides-controls_control( type="button"
             v-for="(control, index) in firstTutorial"
+            :key="index"
             :class="{'active': activeStep === index}"
             @click="dot_stepActive(index)"
           )
@@ -93,6 +89,9 @@ export default {
     }
   },
   computed: {
+    currentStepTutorial() {
+      return this.firstTutorial[this.activeStep]
+    },
     statusShowTutorial() {
       return this.$store.state.mod_tutorials.showTutorial
     },
@@ -103,11 +102,14 @@ export default {
   methods: {
     closeTutorial() {
       this.activeStep = 0;
-      this.$store.commit('mod_tutorials/SET_activeStep', this.activeStep)
-      this.$store.commit('mod_tutorials/SET_showTutorial', false)
+      this.$store.commit('mod_tutorials/SET_activeStep', this.activeStep);
+      this.$store.commit('mod_tutorials/SET_showTutorial', false);
+      localStorage.setItem('showFirstAppTutorial', false)
     },
     set_stepActive(way) {
-      way === 'next' ? this.activeStep++ : this.activeStep--
+      way === 'next'
+        ? this.activeStep++
+        : this.activeStep--;
       this.$store.commit('mod_tutorials/SET_activeStep', this.activeStep)
     },
     dot_stepActive(index) {
@@ -116,7 +118,7 @@ export default {
     },
     skipTutorial() {
       this.closeTutorial()
-      this.$store.commit('mod_tutorials/SET_firstTimeApp', false)
+      //this.$store.commit('mod_tutorials/SET_firstTimeApp', false)
     }
   }
 }
@@ -136,7 +138,7 @@ export default {
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(35, 37, 42, 0.7);
+    background: rgba($bg-workspace, .7);
   }
   .tutorial-box_modal-popup {
     border: 1px solid $col-primary;
@@ -148,16 +150,17 @@ export default {
     min-height: 35rem;
     margin-right: $w-sidebar;
     margin-left: $w-layersbar;
+    display: flex;
+    flex-direction: column;
 
     button.close-tutorial {
       color: $col-primary;
+      border: 1px solid;
       position: absolute;
       top: .4rem;
       left: .4rem;
-      padding: 0;
       background: none;
-      border: 1px solid $col-primary;
-      border-radius: 20rem;
+      border-radius: 50%;
       font-size: 1.6rem;
       padding: 0.1rem;
       z-index: 1;
@@ -180,14 +183,14 @@ export default {
     margin-right: 2rem;
     position: relative;
     &:last-child {
-      margin-right: 0rem;
+      margin-right: 0;
     }
   }
   .eye_pupil {
     border: 1px solid $col-primary;
     width: 2.5rem;
     height: 2.5rem;
-    border-radius: 20rem;
+    border-radius: 50%;
     background: $bg-workspace;
     position: absolute;
     top: 0;
@@ -246,7 +249,6 @@ export default {
     color: $col-primary;
     font-size: 5rem;
     transform: translate(0, -50%);
-    cursor: pointer;
 
     &.prev-button {
       left: -6rem;
@@ -260,20 +262,18 @@ export default {
     text-align: center;
   }
   .modal-popup_footer {
-    display: flex;
-    flex-direction: column;
-    margin: 3rem 0 0 0;
+    margin-top: auto;
+    text-align: right;
   }
   .footer_skip-button {
     color: $col-primary;
-    border-bottom: 1px solid $col-primary;
+    border-bottom: 1px solid;
     font-size: 1.1rem;
-    padding: 0 0 0.3rem 0;
+    padding: 0 0 .3rem 0;
     margin-left: auto;
     background: none;
   }
   .footer_all-slides-controls {
-    display: flex;
     position: absolute;
     left: 50%;
     top: 95%;
@@ -284,10 +284,9 @@ export default {
     height: .7rem;
     background: $col-txt;
     margin-right: 1rem;
-    border-radius: 20rem;
+    border-radius: 50%;
     position: relative;
     top: 4.2rem;
-    cursor: pointer;
     &:last-child {
       margin-right: 0;
     }

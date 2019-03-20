@@ -91,7 +91,7 @@ export default {
         }
         else {
           this.$store.commit('mod_login/SET_showLoader', false);
-          alert("Bed request, please try again");
+          alert("Bad request, please try again");
         }
 
         function parseJwt(token) {

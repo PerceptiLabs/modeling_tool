@@ -7,7 +7,7 @@
         button.btn(type="button"
           :class="{'active': i === tabSelected}"
           @click="selectTab(i)"
-          :disabled="tabSelected != i"
+
         ) {{tab}}
 
     .sidebar_tab(v-show="tabSelected === 0")
@@ -16,20 +16,6 @@
 
       sidebar-training(v-if="showTraining")
       //sidebar-comments(v-else)
-      
-      //- .testing-results(v-if="testIsOpen")
-      //-   h3 Results
-        
-      //-   p.testing-results-title Validation:
-
-      //-   p Validation Acuracy: 70.86%
-      //-   p Validation Loss: 2.35
-
-      //-   p.testing-results-title Training:
-
-      //-   p Training Accuracy: 71.35%
-      //-   p Training Loss: 2.28
-
       sidebar-share
 
     .sidebar_tab(v-show="tabSelected === 1")
@@ -77,8 +63,9 @@ export default {
     isTraining() {
       return this.$store.getters['mod_workspace/GET_networkIsTraining']
     },
-    
     showTraining() {
+      // let editLayer = this.$store.getters['mod_workspace/GET_networkCanEditLayers'];
+      // return editLayer ? false : true;
       if(this.isTraining && this.statisticsIsOpen) {
         return true
       }

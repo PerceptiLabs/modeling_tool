@@ -78,7 +78,7 @@ const viewBoxMixin = {
           view: view
         }
       };
-      console.log('get layer', theData);
+      //console.log('get layer', theData);
       const client = new requestApi();
       client.sendMessage(theData)
         .then((data)=> {

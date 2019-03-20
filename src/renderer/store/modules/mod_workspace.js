@@ -65,7 +65,6 @@ const getters = {
             index,
             el
           });
-
         }
       });
     }
@@ -81,6 +80,11 @@ const getters = {
     }
     else return false
   },
+  GET_networkCanEditLayers(state, getters) {
+    let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
+    let openTest = getters.GET_currentNetwork.networkMeta.openTest;
+    return !(openStatistics || openTest) ? true : false;
+  }
 };
 
 const mutations = {

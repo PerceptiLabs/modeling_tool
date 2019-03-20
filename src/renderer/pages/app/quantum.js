@@ -59,12 +59,6 @@ export default {
         this.offDragListener();
       }
     },
-    currentNetwork: {
-      handler() {
-        this.$store.dispatch('mod_api/API_getBeForEnd');
-      },
-      deep: true
-    }
   },
   methods: {
     addDragListener() {
