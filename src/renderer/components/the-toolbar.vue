@@ -57,6 +57,7 @@
           v-tooltip:bottom="'Run/Stop'"
           @click="onOffBtn()"
           class="run-button"
+          id="tutorial_run-training-button"
         )
           i.icon.icon-on-off
           span(v-html="statusNetworkCore === 'Training' || statusNetworkCore == 'Paused' ? 'Stop' : 'Run'")
@@ -214,6 +215,7 @@ export default {
         this.trainStop()
       }
       else this.trainStart()
+      setTimeout(()=>{this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'})}, 0)
     },
     trainStart() {
       let valid = this.validateNetwork();

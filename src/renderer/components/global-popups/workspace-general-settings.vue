@@ -12,42 +12,46 @@
             .form_input
               label.form_row
                 .form_label Training
-                .form_input
+                .form_input(id="tutorial_partition-training-input" class="tutorial-relative")
                   input(type="number"
                     v-model="settings.Data_partition.Training"
                     name="Training"
                     v-validate="'between:0.001,100|required'"
+                    ref="trainingIinput"
                     )
                   span &nbsp; %
                   p.text-error(v-show="errors.has('Training')") {{ errors.first('Training') }}
               label.form_row
                 .form_label Validation
-                .form_input
+                .form_input(id="tutorial_partition-validation-input" class="tutorial-relative")
                   input(type="number"
                     v-model="settings.Data_partition.Validation"
                     name="Validation"
                     v-validate="'between:0.001,100|required'"
+                    @focus="onFocus('tutorial_partition-training-input')"
                     )
                   span &nbsp; %
                   p.text-error(v-show="errors.has('Validation')") {{ errors.first('Validation') }}
               label.form_row
                 .form_label Test
-                .form_input
+                .form_input(id="tutorial_partition-test-input" class="tutorial-relative")
                   input(type="number"
                     v-model="settings.Data_partition.Test"
                     name="Test"
-                    v-validate="'between:0.001,100|required'"
+                    v-validate="'between:0.001,100|required'" 
+                    @focus="onFocus('tutorial_partition-validation-input')"
                     )
                   span &nbsp; %
                   p.text-error(v-show="errors.has('Test')") {{ errors.first('Test') }}
         .settings-layer_section
           label.form_row
             .form_label Batch size:
-            .form_input
+            .form_input(id="tutorial_butch-size-input" class="tutorial-relative")
               input(type="number"
                 v-model="settings.Batch_size"
                 name="Batch"
                 v-validate="'min_value:1'"
+                @focus="onFocus('tutorial_partition-test-input')"
                 )
               p.text-error(v-show="errors.has('Batch')") {{ errors.first('Batch') }}
         .settings-layer_section
@@ -61,21 +65,24 @@
         .settings-layer_section
           label.form_row
             .form_label Epochs:
-            .form_input
+            .form_input(id="tutorial_epochs-input" class="tutorial-relative")
               input(type="number"
                 v-model="settings.Epochs"
                 name="Epochs"
                 v-validate="'min_value:1'"
+                @focus="onFocus('tutorial_butch-size-input')"
                 )
               p.text-error(v-show="errors.has('Epochs')") {{ errors.first('Epochs') }}
         .settings-layer_section
           .form_row
             .form_label Dropout rate:
-            .form_input
+            .form_input(id="tutorial_drop-rate-input" class="tutorial-relative")
               input(type="number"
                 v-model="settings.Dropout_rate"
                 name="Dropout"
                 v-validate="'between:0.001,100|required'"
+                @focus="onFocus('tutorial_epochs-input')"
+                @blur="onBlur('tutorial_drop-rate-input')"
                 )
               p.text-error(v-show="errors.has('Dropout')") {{ errors.first('Dropout') }}
         .settings-layer_section
@@ -85,12 +92,16 @@
               input(type="number" v-model="settings.Save_model_every" disabled="disabled")
               span &nbsp; epoch
       .popup_foot
-        button.btn.btn--primary(type="button"
-          @click="validateForm()") Apply
+        button.btn.btn--primary(
+          type="button"
+          @click="validateForm()"
+          id="tutorial_apply-button"
+        ) Apply
 
 </template>
 
 <script>
+import { mapGetters, mapActions } from 'vuex';
 export default {
   name: "GeneralSettings",
   data() {
@@ -113,8 +124,12 @@ export default {
     if(this.networkSettings !== null) {
       this.settings = JSON.parse(JSON.stringify(this.networkSettings));
     }
+    if(this.isTutorialMode) this.$refs.trainingIinput.focus()
   },
   computed: {
+    ...mapGetters({
+      isTutorialMode:   'mod_tutorials/getIstutorialMode',
+    }),
     networkSettings() {
       return this.$store.getters['mod_workspace/GET_currentNetworkSettings']
     },
@@ -128,11 +143,15 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
     validateForm() {
       this.$validator.validateAll()
         .then((result) => {
           if (result) {
             this.setGlobalSet();
+            this.tutorialPointActivate({way: 'next', validation:'tutorial_apply-button'})
             return;
           }
           //error func
@@ -145,7 +164,13 @@ export default {
     },
     closeGlobalSet() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
-    }
+    },
+    onFocus(inputId) {
+      this.tutorialPointActivate({way:'next', validation: inputId})
+    },
+    onBlur(inputId) {
+      this.tutorialPointActivate({way:'next', validation: inputId})
+    },
   }
 }
 </script>

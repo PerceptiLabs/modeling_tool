@@ -82,7 +82,10 @@ const getters = {
     else return false
   },
   GET_tutorialActiveId(state, getters, rootState, rootGetters) {
-    return rootGetters['mod_tutorials/getActiveAction'].dynamic_id
+    if( rootGetters['mod_tutorials/getIstutorialMode'] && rootGetters['mod_tutorials/getActiveAction']) {
+      return rootGetters['mod_tutorials/getActiveAction'].dynamic_id
+    }
+    
   }
 };
 

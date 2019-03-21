@@ -482,6 +482,58 @@ const state = {
           ]
         },
       ]
+    },
+    run_training: {
+      title: 'Step 7. Run training data',
+      points: [
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Top Toolbar</div> go to <div class="marker">Run</div>',
+          actions: [
+            {
+              tooltip: 'Run training...',
+              id: 'tutorial_run-training-button', 
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively.</div></div>',
+              id: 'tutorial_partition-training-input',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively.</div></div>',
+              id: 'tutorial_partition-validation-input',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively.</div></div>',
+              id: 'tutorial_partition-test-input',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Batch size:</div> to make the training </br> more efficient, you can train on </br> multiples samples at the same time.</div></div>', 
+              id: 'tutorial_butch-size-input',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Epoch:</div>refers to the number of times </b> you want to run through your entire dataset.</div></div>',
+              id: 'tutorial_epochs-input',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Dropout rate:</div> when training we can </b> deactivate half (0.5) of all the </b> learning neurons in </b> each layer in order for the network to learn in a </b> more general way. </b></b> Note: this has to be activated independently for each deep learning layer.</div></div>',
+              id: 'tutorial_drop-rate-input',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Click Apply',
+              id: 'tutorial_apply-button',
+              status: 'disabled'
+            }
+          ]
+        },
+      ]
     }
   }
 };
@@ -515,7 +567,8 @@ const getters = {
     return getters.getPoints[state.activePointMainTutorial]
   },
   getActiveAction(state, getters) {
-    return getters.getActivePoint.actions[state.activeActionMainTutorial]
+   let action =   getters.getActivePoint ? getters.getActivePoint.actions[state.activeActionMainTutorial] : ''
+   return action
   },
   getAllPointsIsDone(state, getters) {
     var count = 0;
@@ -655,8 +708,6 @@ const actions = {
           let stop = document.getElementById(getters.getActiveAction.id).getBoundingClientRect()
           commit('mod_workspace/SET_preArrowStart', {x: start.left - start.width, y: start.top - start.height, type: 'dash1'}, {root:true})
           commit('mod_workspace/SET_preArrowStop', {x: stop.left -stop.width, y: stop.top - stop.height, type: 'dash1'}, {root:true})
-          //console.log({x: start.left, y: start.top})
-          //console.log({x: stop.left, y: stop.top})
       }
     }
   },
