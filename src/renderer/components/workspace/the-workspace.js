@@ -92,8 +92,8 @@ export default {
     }
   },
   watch: {
-    statusNetworkCore(newStatus, oldStatus) {
-      if(newStatus === 'Finished' && oldStatus === 'Validation') {
+    statusNetworkCore(newStatus) {
+      if(newStatus === 'Finished') {
         this.$store.dispatch('globalView/NET_trainingDone');
         this.$store.dispatch('mod_events/EVENT_startDoRequest', false);
         this.showTestingTab = true;
@@ -107,7 +107,7 @@ export default {
   },
   methods: {
     calcScaleMap() {
-      this.$nextTick(()=>{
+      this.$nextTick(()=> {
         const net = this.$refs.networkField[0].$refs.network;
         const scaleH = net.offsetHeight/net.scrollHeight;
         const scaleW = net.offsetWidth/net.scrollWidth;

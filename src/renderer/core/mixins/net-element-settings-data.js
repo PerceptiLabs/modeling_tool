@@ -11,7 +11,6 @@ const netElementSettingsData = {
   data() {
     return {
       imgData: null,
-      imgType: '',
     }
   },
 
@@ -40,10 +39,7 @@ const netElementSettingsData = {
             return
           }
           //console.log('answer getDataImg', data);
-          let type = data.series[0].type;
-          this.imgType = type;
-          if( type === 'image' || type === 'RGB') this.imgData = data.series;
-          else this.imgData = data;
+          this.imgData = data;
 
           // if(view.length) {
           //   this.$set(this.chartData, view, data)

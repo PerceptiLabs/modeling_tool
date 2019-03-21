@@ -1,6 +1,6 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset
+    ul.statistics-box_tabset(v-if="!testIsOpen")
       li.statistics-box_tab(
         v-for="(tab, i) in tabset"
         :key="i"
@@ -12,7 +12,7 @@
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row
-        .statistics-box_col
+        .statistics-box_col(v-if="!testIsOpen")
           chart-picture(
             key="2"
             chartLabel=""
@@ -92,6 +92,11 @@
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Reward', 'Loss', 'Steps'],
         colorList: ['#ff0', '#0f0']
+      }
+    },
+    watch: {
+      testIsOpen(newVal) {
+        newVal ? this.setTab('Prediction') : null
       }
     },
     methods: {

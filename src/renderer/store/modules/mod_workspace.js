@@ -169,6 +169,11 @@ const mutations = {
   set_statusNetworkCoreStatus(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
   },
+  set_statusNetworkCoreStatusProgressClear(state, {getters}) {
+    if(getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress) {
+      getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress = 0;
+    }
+  },
   set_statusNetworkZoom(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.zoom = value;
   },
@@ -382,6 +387,9 @@ const actions = {
   },
   SET_statusNetworkCoreStatus({commit, getters}, value) {
     commit('set_statusNetworkCoreStatus', {getters, value})
+  },
+  SET_statusNetworkCoreStatusProgressClear({commit, getters}) {
+    commit('set_statusNetworkCoreStatusProgressClear', {getters})
   },
   SET_statusNetworkZoom({commit, getters}, value) {
     commit('set_statusNetworkZoom', {getters, value})

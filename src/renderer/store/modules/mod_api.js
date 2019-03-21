@@ -67,35 +67,35 @@ const actions = {
 
     function startCore() {
       coreIsStarting = true;
-      let openServer;
-      switch (process.platform) {
-        case 'win32':
-          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          break;
-        case 'darwin':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
-        case 'linux':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
-      }
-      openServer.on('error', (err) => {
-        console.log(err);
-        coreOffline()
-      });
-      openServer.on('close', (code) => {
-        coreOffline()
-      });
+      // let openServer;
+      // switch (process.platform) {
+      //   case 'win32':
+      //     openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     break;
+      //   case 'darwin':
+      //     if(process.env.NODE_ENV === 'production') {
+      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     else {
+      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     break;
+      //   case 'linux':
+      //     if(process.env.NODE_ENV === 'production') {
+      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     else {
+      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     break;
+      // }
+      // openServer.on('error', (err) => {
+      //   console.log(err);
+      //   coreOffline()
+      // });
+      // openServer.on('close', (code) => {
+      //   coreOffline()
+      // });
       waitOnlineCore()
     }
     function waitOnlineCore() {
@@ -224,7 +224,23 @@ const actions = {
         console.error(err);
       });
   },
-
+  API_exportData({rootGetters, dispatch}, value) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Export',
+      value: value
+    };
+    console.log(theData);
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {
+        console.log('API_exportData answer', data);
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+    dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+  },
   API_CLOSE_core({getters, dispatch}) {
     const theData = {
       //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,

@@ -20,18 +20,7 @@
                 :selectOptions="selectOptions"
                 )
             .form_row
-              chart-picture(
-                v-if="imgType === 'image' || imgType === 'RGB'"
-                :disable-header="true"
-                :chartData="imgData"
-              )
-              chart-base(
-                v-if="imgType === 'line' || imgType === 'bar' || imgType === 'scatter'"
-                :disable-header="true"
-                :chartData="imgData"
-              )
-              chart-heatmap(
-                v-if="imgType === 'heatmap'"
+              chart-switch(
                 :disable-header="true"
                 :chartData="imgData"
               )
@@ -54,14 +43,12 @@
   import mixinSet   from '@/core/mixins/net-element-settings.js';
   import mixinData  from '@/core/mixins/net-element-settings-data.js';
 
-  import ChartPicture from "../../../charts/chart-picture";
-  import ChartBase    from "../../../charts/chart-base";
-  import ChartHeatmap from "../../../charts/chart-heatmap";
+  import ChartSwitch from "@/components/charts/chart-switch.vue";
 
   export default {
     name: 'SetDataEnvironment',
     mixins: [mixinSet, mixinData],
-    components: { ChartHeatmap, ChartBase, ChartPicture },
+    components: { ChartSwitch },
     data() {
       return {
         selectOptions: [

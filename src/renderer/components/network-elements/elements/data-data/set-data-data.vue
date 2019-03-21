@@ -37,18 +37,7 @@
               :selectOptions="settings.accessProperties.Columns"
               )
           .form_row
-            chart-picture(
-              v-if="imgType === 'image'"
-              :disable-header="true"
-              :chartData="imgData"
-            )
-            chart-base(
-              v-if="imgType === 'line' || imgType === 'bar' || imgType === 'scatter'"
-              :disable-header="true"
-              :chartData="imgData"
-            )
-            chart-heatmap(
-              v-if="imgType === 'heatmap'"
+            chart-switch(
               :disable-header="true"
               :chartData="imgData"
             )
@@ -68,9 +57,7 @@
   import mixinData      from '@/core/mixins/net-element-settings-data.js';
 
   import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
-  import ChartPicture from "../../../charts/chart-picture";
-  import ChartBase from "../../../charts/chart-base";
-  import ChartHeatmap from "../../../charts/chart-heatmap";
+  import ChartSwitch    from "@/components/charts/chart-switch.vue";
 
   import {openLoadDialog} from '@/core/helpers.js'
 
@@ -79,7 +66,7 @@
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
-    components: {ChartHeatmap, ChartBase, ChartPicture, SettingsCloud },
+    components: {ChartSwitch, SettingsCloud },
     mounted() {
       this.getDataMeta()
     },
