@@ -248,18 +248,6 @@ export default {
       this.applySettings()
       this.tutorialPointActivate({way:'next', validation: 'tutorial_apply-button'})
     }
-  },
-  watch: {
-    // for tutorial
-    patch_size() {
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_patch-size'})
-    },
-    stride() {
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_stride'})
-    },
-    feature_maps() {
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_feature-maps'})
-    }
   }
 }
 </script>

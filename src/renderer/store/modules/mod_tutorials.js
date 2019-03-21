@@ -469,8 +469,8 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Set 10 > Apply changes...',
-              id: 'tutorial_number-of-classes',
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Cost function:</div> calculates the error </br> of the prediction, which is required </br> for backpropagation.</div></div>',
+              id: 'tutorial_cost-function',
               status: 'disabled'
             }
           ],
