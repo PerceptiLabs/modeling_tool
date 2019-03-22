@@ -1,4 +1,3 @@
-//import requestApi  from "@/core/api.js";
 import {ipcRenderer} from 'electron'
 
 const namespaced = true;

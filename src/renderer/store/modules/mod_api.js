@@ -1,5 +1,5 @@
-import requestApi  from "@/core/api.js";
-import {pathCore}  from "@/core/constants.js";
+import coreRequest  from "@/core/apiCore.js";
+import {pathCore}   from "@/core/constants.js";
 
 //const net = require('net');
 const {spawn} = require('child_process');
@@ -67,35 +67,35 @@ const actions = {
 
     function startCore() {
       coreIsStarting = true;
-      // let openServer;
-      // switch (process.platform) {
-      //   case 'win32':
-      //     openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-      //     break;
-      //   case 'darwin':
-      //     if(process.env.NODE_ENV === 'production') {
-      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-      //     }
-      //     else {
-      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-      //     }
-      //     break;
-      //   case 'linux':
-      //     if(process.env.NODE_ENV === 'production') {
-      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-      //     }
-      //     else {
-      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-      //     }
-      //     break;
-      // }
-      // openServer.on('error', (err) => {
-      //   console.log(err);
-      //   coreOffline()
-      // });
-      // openServer.on('close', (code) => {
-      //   coreOffline()
-      // });
+      let openServer;
+      switch (process.platform) {
+        case 'win32':
+          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          break;
+        case 'darwin':
+          if(process.env.NODE_ENV === 'production') {
+            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          }
+          else {
+            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          }
+          break;
+        case 'linux':
+          if(process.env.NODE_ENV === 'production') {
+            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          }
+          else {
+            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          }
+          break;
+      }
+      openServer.on('error', (err) => {
+        console.log(err);
+        coreOffline()
+      });
+      openServer.on('close', (code) => {
+        coreOffline()
+      });
       waitOnlineCore()
     }
     function waitOnlineCore() {
@@ -113,8 +113,7 @@ const actions = {
         action: 'getStatus',
         value: ''
       };
-      const client = new requestApi();
-      client.sendMessage(theData)
+      coreRequest(theData)
         .then((data)=> {
           commit('SET_statusLocalCore', 'online')
         })
@@ -134,8 +133,7 @@ const actions = {
       value: ''
     };
     console.log('API_getStatus get', theData);
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
@@ -161,8 +159,7 @@ const actions = {
       value: message
     };
     console.log(JSON.stringify(theData));
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         console.log('API_startTraining ', data);
         dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
@@ -178,8 +175,7 @@ const actions = {
       action: 'Pause',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         dispatch('API_getStatus');
         if(rootState.mod_events.chartsRequest.waitGlobalEvent) {
@@ -200,8 +196,7 @@ const actions = {
       action: 'Stop',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
         dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
@@ -217,8 +212,7 @@ const actions = {
       action: 'SkipToValidation',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {})
       .catch((err) =>{
         console.error(err);
@@ -231,8 +225,7 @@ const actions = {
       value: value
     };
     console.log(theData);
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         console.log('API_exportData answer', data);
       })
@@ -248,8 +241,7 @@ const actions = {
       action: 'Close',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {})
       .catch((err) =>{
         console.error(err);
@@ -263,8 +255,7 @@ const actions = {
       action: 'startTest',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
 
       })
@@ -279,8 +270,7 @@ const actions = {
       action: 'playTest',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         rootState.mod_events.chartsRequest.waitGlobalEvent
           ? dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
@@ -297,8 +287,7 @@ const actions = {
       action: request, //nextStep, previousStep
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         dispatch('mod_api/API_getStatus', null, {root: true});
       })
@@ -315,8 +304,7 @@ const actions = {
       value: prepareNetwork(elementList)
     };
     //console.log('API_getBeForEnd', theData);
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         console.log('answer API_getBeForEnd');
         if(data) dispatch('mod_workspace/SET_elementBeForEnd', data, {root: true});

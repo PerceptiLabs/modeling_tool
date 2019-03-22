@@ -1,7 +1,8 @@
 import VueNonreactive from 'vue-nonreactive/vue-nonreactive.js';
 import Vue from 'vue'
 Vue.use(VueNonreactive);
-import requestApi   from "@/core/api.js";
+
+import coreRequest  from "@/core/apiCore.js";
 
 const viewBoxMixin = {
   data() {
@@ -79,8 +80,7 @@ const viewBoxMixin = {
         }
       };
       //console.log('get layer', theData);
-      const client = new requestApi();
-      client.sendMessage(theData)
+      coreRequest(theData)
         .then((data)=> {
           console.log('answer layer', data);
           if(data === 'Null') {

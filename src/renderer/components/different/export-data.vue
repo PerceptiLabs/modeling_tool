@@ -42,7 +42,7 @@ export default {
       settings: {
         Location: '',
         Type: 'TFModel',
-        Compressed: true
+        Compressed: false
       }
     }
   },

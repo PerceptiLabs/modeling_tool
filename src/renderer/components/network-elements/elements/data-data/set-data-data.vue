@@ -33,8 +33,8 @@
             input.form_input(type="text" v-model="inputPath" readonly="readonly")
           .form_row(v-if="dataColumns.length")
             base-select(
-              v-model="dataColumns"
-              :selectOptions="settings.accessProperties.Columns"
+              v-model="settings.accessProperties.Columns"
+              :selectOptions="dataColumns"
               )
           .form_row
             chart-switch(
@@ -60,8 +60,7 @@
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
 
   import {openLoadDialog} from '@/core/helpers.js'
-
-  import requestApi   from "@/core/api.js";
+  import coreRequest      from "@/core/apiCore.js";
 
   export default {
     name: 'SetDataData',
@@ -79,7 +78,7 @@
         settings: {
           Type: 'Data',
           accessProperties: {
-            Columns: [],
+            Columns: '',
             Dataset_size: 3000,
             Category:'Local',
             Type: 'Data',
@@ -152,14 +151,17 @@
             Properties: this.settings
           }
         };
-        const client = new requestApi();
-        client.sendMessage(theData)
+        coreRequest(theData)
           .then((data)=> {
+            console.log('getDataMeta ', data);
             if(data === 'Null') {
               return
             }
-            this.settings.accessProperties.Columns = data.Columns;
             this.settings.accessProperties.Dataset_size = data.Dataset_size;
+            if(data.Columns.length) {
+              if(!this.settings.accessProperties.Columns) this.settings.accessProperties.Columns = data.Columns[0];
+              data.Columns.forEach((el)=> this.dataColumns.push({text: el, value: el}))
+            }
           })
           .catch((err)=> {
             console.log('answer err');

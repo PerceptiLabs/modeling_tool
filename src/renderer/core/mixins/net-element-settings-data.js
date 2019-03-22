@@ -1,4 +1,4 @@
-import requestApi from "@/core/api.js";
+import coreRequest  from "@/core/apiCore.js";
 
 const netElementSettingsData = {
   props: {
@@ -7,13 +7,11 @@ const netElementSettingsData = {
       default: ''
     }
   },
-
   data() {
     return {
       imgData: null,
     }
   },
-
   computed: {
     currentNetworkID() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
@@ -31,20 +29,13 @@ const netElementSettingsData = {
         }
       };
       //console.log('getDataImg', theData);
-      const client = new requestApi();
-      client.sendMessage(theData)
+      coreRequest(theData)
         .then((data)=> {
           //console.log('answer getDataImg', data);
           if(data === 'Null') {
             return
           }
-          //console.log('answer getDataImg', data);
           this.imgData = data;
-
-          // if(view.length) {
-          //   this.$set(this.chartData, view, data)
-          // }
-          // else this.chartData = data;
         })
         .catch((err)=> {
           console.log('answer err');
@@ -55,4 +46,3 @@ const netElementSettingsData = {
 };
 
 export default netElementSettingsData
-

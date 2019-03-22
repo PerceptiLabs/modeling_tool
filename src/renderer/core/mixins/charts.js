@@ -77,6 +77,7 @@ const chartsMixin = {
       this.$nextTick(() => this.$refs.chart.resize());
     },
     drawChart(ev) {
+      console.log('drawChart ', ev);
       this.isNeedWait
         ? this.chartModelBuffer = ev.data
         : this.chartModel = ev.data;
