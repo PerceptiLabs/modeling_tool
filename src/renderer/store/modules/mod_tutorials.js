@@ -497,32 +497,51 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively.</div></div>',
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
+                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
+                        </div>`,
               id: 'tutorial_partition-training-input',
               status: 'disabled'
             },
             {
-              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively.</div></div>',
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
+                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
+                        </div>`,
               id: 'tutorial_partition-validation-input',
               status: 'disabled'
             },
             {
-              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively.</div></div>',
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
+                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
+                        </div>`,
               id: 'tutorial_partition-test-input',
               status: 'disabled'
             },
             {
-              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Batch size:</div> to make the training </br> more efficient, you can train on </br> multiples samples at the same time.</div></div>', 
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Batch size:</div> to make the training </br> more efficient, you can train on </br> multiples samples at the same time. </br>
+                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
+                        </div>`, 
               id: 'tutorial_butch-size-input',
               status: 'disabled'
             },
             {
-              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Epoch:</div>refers to the number of times </b> you want to run through your entire dataset.</div></div>',
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Epoch:</div> refers to the number of times </br> you want to run through your entire dataset. </br>
+                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
+                        </div>`,
               id: 'tutorial_epochs-input',
               status: 'disabled'
             },
             {
-              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Dropout rate:</div> when training we can </b> deactivate half (0.5) of all the </b> learning neurons in </b> each layer in order for the network to learn in a </b> more general way. </b></b> Note: this has to be activated independently for each deep learning layer.</div></div>',
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Dropout rate:</div> when training we can </br> deactivate half (0.5) of all the </br> learning neurons in each layer in order for </br> the network to learn in a  more general way. 
+                          </br></br> Note: this has to be activated independently </br> for each deep learning layer.</br>
+                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next action</div>
+                        </div>`,
               id: 'tutorial_drop-rate-input',
               status: 'disabled'
             },

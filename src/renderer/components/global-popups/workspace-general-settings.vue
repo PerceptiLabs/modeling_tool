@@ -52,6 +52,7 @@
                 name="Batch"
                 v-validate="'min_value:1'"
                 @focus="onFocus('tutorial_partition-test-input')"
+                @blur="focusEpochsInput"
                 )
               p.text-error(v-show="errors.has('Batch')") {{ errors.first('Batch') }}
         .settings-layer_section
@@ -69,6 +70,7 @@
               input(type="number"
                 v-model="settings.Epochs"
                 name="Epochs"
+                ref="epochsInput"
                 v-validate="'min_value:1'"
                 @focus="onFocus('tutorial_butch-size-input')"
                 )
@@ -171,6 +173,9 @@ export default {
     onBlur(inputId) {
       this.tutorialPointActivate({way:'next', validation: inputId})
     },
+    focusEpochsInput() {
+      this.$refs.epochsInput.focus()
+    }
   }
 }
 </script>
