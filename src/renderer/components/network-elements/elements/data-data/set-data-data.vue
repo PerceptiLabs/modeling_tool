@@ -16,14 +16,14 @@
             button.btn(type="button"
               :disabled="disabledBtn"
               @click="loadFolder"
-              id="tutorial_button-load"
-              class="tutorial-relative"
               )
               i.icon.icon-open-folder
             span.data-select_text or
             button.btn(type="button"
               :disabled="disabledBtn"
               @click="loadFile"
+              id="tutorial_button-load"
+              class="tutorial-relative"
               )
               i.icon.icon-open-file
         .settings-layer_section(v-else)

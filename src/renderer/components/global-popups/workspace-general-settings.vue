@@ -16,8 +16,8 @@
                   input(type="number"
                     v-model="settings.Data_partition.Training"
                     name="Training"
-                    v-validate="'between:0.001,100|required'"
                     ref="trainingIinput"
+                    v-validate="'between:0.001,100|required'"
                     )
                   span &nbsp; %
                   p.text-error(v-show="errors.has('Training')") {{ errors.first('Training') }}
@@ -124,7 +124,8 @@ export default {
       if(el.componentName === 'DataData') this.settingsData = true;
       if(el.componentName === 'DataEnvironment') this.settingsEnvironment = true;
     })
-    if(this.isTutorialMode) this.$refs.trainingIinput.focus()
+    if(this.isTutorialMode) setTimeout(()=>{this.$refs.trainingIinput.focus()}, 0) 
+    
   },
   data() {
     return {
