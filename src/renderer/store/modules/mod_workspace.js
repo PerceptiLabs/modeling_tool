@@ -65,7 +65,6 @@ const getters = {
             index,
             el
           });
-
         }
       });
     }
@@ -85,7 +84,11 @@ const getters = {
     if( rootGetters['mod_tutorials/getIstutorialMode'] && rootGetters['mod_tutorials/getActiveAction']) {
       return rootGetters['mod_tutorials/getActiveAction'].dynamic_id
     }
-    
+  },  
+  GET_networkCanEditLayers(state, getters) {
+    let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
+    let openTest = getters.GET_currentNetwork.networkMeta.openTest;
+    return !(openStatistics || openTest) ? true : false;
   }
 };
 
@@ -112,7 +115,7 @@ const mutations = {
     let defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       openTest: null,
-      canTestStatistics: false,
+      //canTestStatistics: false,
       zoom: 1,
       netMode: 'edit',//'addArrow', showStatistic
       coreStatus: {
@@ -153,9 +156,9 @@ const mutations = {
   //---------------
   //  NETWORK META
   //---------------
-  set_networkCanTesting(state, {getters, value}) {
-    getters.GET_currentNetwork.networkMeta.canTestStatistics = value;
-  },
+  // set_networkCanTesting(state, {getters, value}) {
+  //   getters.GET_currentNetwork.networkMeta.canTestStatistics = value;
+  // },
   set_netMode(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.netMode = value;
   },
@@ -170,6 +173,11 @@ const mutations = {
   },
   set_statusNetworkCoreStatus(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
+  },
+  set_statusNetworkCoreStatusProgressClear(state, {getters}) {
+    if(getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress) {
+      getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress = 0;
+    }
   },
   set_statusNetworkZoom(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.zoom = value;
@@ -252,7 +260,8 @@ const mutations = {
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {getters, settings}) {
     let indexEl = getters.GET_currentSelectedEl[0].index;
-    getters.GET_currentNetworkElementList[indexEl].layerSettings = settings; //TODO NEED CHECK
+    getters.GET_currentNetworkElementList[indexEl].layerSettings = settings.set;  //TODO NEED CHECK
+    getters.GET_currentNetworkElementList[indexEl].layerCode = settings.code;     //TODO NEED CHECK
   },
 
 
@@ -282,6 +291,19 @@ const mutations = {
     net[el].layerMeta.top = value.top;
     net[el].layerMeta.left = value.left;
   },
+  set_elementBeForEnd(state, {getters, value}) {
+    //console.log('set_elementBeForEnd', value);
+    getters.GET_currentNetworkElementList.forEach((el)=>{
+      el.layerMeta.OutputDim = value[el.layerId].OutputDim;
+      el.layerMeta.InputDim = value[el.layerId].InputDim
+      // if(el.layerMeta.OutputDim) {
+      //
+      // }
+      // if(el.layerMeta.InputDim) {
+      //
+      // }
+    });
+  },
 
   //---------------
   //  OTHER
@@ -295,13 +317,16 @@ const mutations = {
       layerName: event.target.dataset.layer,
       layerType: event.target.dataset.type,
       layerSettings: '',
+      layerCode: '',
       layerMeta: {
         isInvisible: false,
         isLock: false,
         isSelected: false,
         top: event.target.clientHeight/2,
         left: event.target.clientWidth/2,
-        tutorialId: ''
+        tutorialId: '',
+        OutputDim: '',
+        InputDim: ''
       },
       componentName: event.target.dataset.component,
       connectionOut: [],
@@ -353,9 +378,9 @@ const actions = {
   SET_networkElementList({commit, getters}, value) {
     commit('set_networkElementList', {getters, value})
   },
-  SET_canTestStatistics({commit, getters}, value) {
-    commit('set_networkCanTesting', {getters, value})
-  },
+  // SET_canTestStatistics({commit, getters}, value) {
+  //   commit('set_networkCanTesting', {getters, value})
+  // },
   SET_netMode({commit, getters}, value) {
     commit('set_netMode', {getters, value})
   },
@@ -370,6 +395,9 @@ const actions = {
   },
   SET_statusNetworkCoreStatus({commit, getters}, value) {
     commit('set_statusNetworkCoreStatus', {getters, value})
+  },
+  SET_statusNetworkCoreStatusProgressClear({commit, getters}) {
+    commit('set_statusNetworkCoreStatusProgressClear', {getters})
   },
   SET_statusNetworkZoom({commit, getters}, value) {
     commit('set_statusNetworkZoom', {getters, value})
@@ -412,9 +440,13 @@ const actions = {
   SET_elementMultiSelect({commit, getters}, value) {
     commit('set_elementMultiSelect', {getters, value})
   },
+  SET_elementBeForEnd({commit, getters}, value) {
+    commit('set_elementBeForEnd', {getters, value})
+  },
   CHANGE_elementPosition({commit, getters}, value) {
     commit('change_elementPosition', {getters, value})
   },
+
 };
 
 export default {

@@ -1,5 +1,8 @@
 const net = require('net');
 
+
+/*GENERAL CORE*/
+
 class Client {
   constructor(port, address) {
     this.socket = new net.Socket();
@@ -60,7 +63,7 @@ class Client {
       let dataPart = '';
       client.socket.on('data', (data) => {
         const dataString = data.toString();
-        //console.log(dataString);
+        //console.log('answer api', dataString);
         if (dataLength) {
           dataPart = dataPart + dataString;
         }

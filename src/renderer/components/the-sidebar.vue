@@ -7,37 +7,19 @@
         button.btn(type="button"
           :class="{'active': i === tabSelected}"
           @click="selectTab(i)"
-          :disabled="tabSelected != i"
+          :disabled="i === 1 || i === 2"
         ) {{tab}}
 
     .sidebar_tab(v-show="tabSelected === 0")
-      //include ./sidebar/blocks/Project.pug
       sidebar-layers
-
       sidebar-training(v-if="showTraining")
-      //sidebar-comments(v-else)
-      
-      //- .testing-results(v-if="testIsOpen")
-      //-   h3 Results
-        
-      //-   p.testing-results-title Validation:
-
-      //-   p Validation Acuracy: 70.86%
-      //-   p Validation Loss: 2.35
-
-      //-   p.testing-results-title Training:
-
-      //-   p Training Accuracy: 71.35%
-      //-   p Training Loss: 2.28
-
       sidebar-share
-
     .sidebar_tab(v-show="tabSelected === 1")
       include ./sidebar/blocks/Save.pug
     .sidebar_tab(v-show="tabSelected === 2")
       include ./sidebar/blocks/Import.pug
     .sidebar_tab(v-show="tabSelected === 3")
-      include ./sidebar/blocks/Code.pug
+      export-data
 
 </template>
 
@@ -46,6 +28,7 @@
   import SidebarComments  from '@/components/sidebar/sidebar-comments.vue'
   import SidebarShare     from '@/components/sidebar/sidebar-share.vue'
   import SidebarTraining  from "@/components/sidebar/sidebar-training";
+  import ExportData     from "@/components/different/export-data.vue";
 
 export default {
   name: 'TheSidebar',
@@ -53,11 +36,12 @@ export default {
     SidebarTraining,
     SidebarLayers,
     SidebarComments,
-    SidebarShare
+    SidebarShare,
+    ExportData
   },
   data() {
     return {
-      tabset: ['Project', 'Save', 'Import', 'Code'],
+      tabset: ['Project', 'Profile', 'Import', 'Export'],
       tabSelected: 0,
     }
   },
@@ -77,8 +61,9 @@ export default {
     isTraining() {
       return this.$store.getters['mod_workspace/GET_networkIsTraining']
     },
-    
     showTraining() {
+      // let editLayer = this.$store.getters['mod_workspace/GET_networkCanEditLayers'];
+      // return editLayer ? false : true;
       if(this.isTraining && this.statisticsIsOpen) {
         return true
       }
@@ -117,7 +102,7 @@ export default {
     list-style: none;
     > li {
       flex: 1 1 50%;
-      min-width: 75px;
+      min-width: 5rem;
       max-width: 50%;
     }
     .btn {

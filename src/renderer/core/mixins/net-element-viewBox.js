@@ -18,10 +18,9 @@ const viewBoxMixin = {
   mounted() {
     this.getData();
   },
-  // beforeDestroy() {
-  //   clearInterval(this.idTimer);
-  //   this.chartData = {};
-  // },
+  beforeDestroy() {
+    this.chartData = {};
+  },
   computed: {
     statElementID() {
       let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType === 'Training');
@@ -79,11 +78,11 @@ const viewBoxMixin = {
           view: view
         }
       };
-      //console.log('send');
+      //console.log('get layer', theData);
       const client = new requestApi();
       client.sendMessage(theData)
         .then((data)=> {
-          //console.log(data);
+          console.log('answer layer', data);
           if(data === 'Null') {
             return
           }

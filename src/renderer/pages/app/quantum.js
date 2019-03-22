@@ -54,7 +54,6 @@ export default {
         : 'edit'
     },
   },
-
   watch: {
     networkMode(newVal) {
       if(newVal == 'edit') {
@@ -66,7 +65,7 @@ export default {
         this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
         this.offDragListener();
       }
-    }
+    },
   },
   methods: {
     ...mapActions({

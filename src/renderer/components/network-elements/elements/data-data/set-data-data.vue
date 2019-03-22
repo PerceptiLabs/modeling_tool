@@ -11,70 +11,107 @@
         h3(v-html="tab")
     .popup_tab-body
       .popup_body(:class="{'active': tabSelected == 0}")
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              input.form_input(type="text" v-model="settings.accessProperties.Path" readonly="readonly")
-              button.btn.btn--primary(type="button" @click="loadFile" :disabled="isDisabled" id="tutorial_button-load") Load
-          .settings-layer_section
-            .form_row
-              .form_label Data type:
-              .form_input
-                base-radio(groupName="group" valueInput="Data" v-model="settings.accessProperties.Type")
-                  span Data
-                base-radio(groupName="group" valueInput="Labels" v-model="settings.accessProperties.Type")
-                  span Labels
-          .settings-layer_foot
-            button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_button-apply") Apply
+        .settings-layer(v-if="!settings.accessProperties.Path.length")
+          .settings-layer_section.section-data-select
+            button.btn(type="button"
+              :disabled="disabledBtn"
+              @click="loadFolder"
+              id="tutorial_button-load"
+              class="tutorial-relative"
+              )
+              i.icon.icon-open-folder
+            span.data-select_text or
+            button.btn(type="button"
+              :disabled="disabledBtn"
+              @click="loadFile"
+              )
+              i.icon.icon-open-file
+        .settings-layer_section(v-else)
+          .form_row
+            button.btn.btn--link(type="button" @click="clearPath")
+              i.icon.icon-backward
+              span Back
+          .form_row
+            input.form_input(type="text" v-model="inputPath" readonly="readonly")
+          .form_row(v-if="dataColumns.length")
+            base-select(
+              v-model="dataColumns"
+              :selectOptions="settings.accessProperties.Columns"
+              )
+          .form_row
+            chart-switch(
+              :disable-header="true"
+              :chartData="imgData"
+            )
+
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-cloud
+    .settings-layer_foot
+      button.btn.btn--primary(type="button"
+        v-show="settings.accessProperties.Path.length"
+        @click="saveSettings"
+        id="tutorial_button-apply"
+        ) Apply
 
 </template>
 
 <script>
-  import mixinSet         from '@/core/mixins/net-element-settings.js';
-  import SettingsCloud    from '@/components/network-elements/elements-settings/setting-clouds.vue';
+  import mixinSet       from '@/core/mixins/net-element-settings.js';
+  import mixinData      from '@/core/mixins/net-element-settings-data.js';
+
+  import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
+  import ChartSwitch    from "@/components/charts/chart-switch.vue";
+
   import {openLoadDialog} from '@/core/helpers.js'
+
+  import requestApi   from "@/core/api.js";
   import {mapActions}     from 'vuex';
+
   export default {
     name: 'SetDataData',
-    mixins: [mixinSet],
-    components: { SettingsCloud },
+    mixins: [mixinSet, mixinData],
+    components: {ChartSwitch, SettingsCloud },
     mounted() {
-      // if(process.env.NODE_ENV === 'production' && !this.settings.accessProperties.Path) {
-      //   switch (process.platform) {
-      //     case 'win32':
-      //       this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
-      //       break;
-      //     case 'darwin':
-      //       this.settings.accessProperties.Path = this.appPath + 'core/mnist';
-      //       break;
-      //     case 'linux':
-      //       this.settings.accessProperties.Path = this.appPath + 'core/mnist';
-      //       break;
-      //   }
-      //   this.applySettings();
-      // }
+      this.getDataMeta()
     },
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
+        coreCode: '',
+        dataColumns: [],
+        disabledBtn: false,
         settings: {
           Type: 'Data',
           accessProperties: {
+            Columns: [],
+            Dataset_size: 3000,
             Category:'Local',
             Type: 'Data',
-            Path: '',
+            Path: [],
           }
         }
       }
     },
     computed: {
-      appPath() {
-        return this.$store.getters['globalView/GET_appPath']
-      },
-      isDisabled() {
-        return process.env.NODE_ENV === 'production'
+      // appPath() {
+      //   return this.$store.getters['globalView/GET_appPath']
+      // },
+      // isDisabled() {
+      //   return process.env.NODE_ENV === 'production'
+      // },
+
+      inputPath() {
+        return this.settings.accessProperties.Path.join(', ')
+      }
+    },
+    watch: {
+      'settings.accessProperties.Path': {
+        handler(newVal) {
+          if(newVal) {
+            this.getDataImg('DataData')
+          }
+        },
+        immediate: true
       }
     },
     methods: {
@@ -82,34 +119,93 @@
         tutorialPointActivate:    'mod_tutorials/pointActivate'
       }),
       openLoadDialog,
-      applySettings() {
-        this.hideAllWindow();
-        this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
-      },
       loadFile() {
+        this.disabledBtn = true;
         let opt = {
-          title:"Load file in Data element",
-          properties: ['openDirectory']
-          // filters: [
-          //   // {name: 'Images', extensions: ['png', 'gif']},
-          //   // {name: 'Python', extensions: ['pickle', 'numpy']},
-          //   // {name: 'Text', extensions: ['txt', 'json', 'csv']},
-          //   // {name: 'Any', extensions: ['png', 'gif', 'pickle', 'numpy', 'txt', 'json', 'csv']},
-          //   {name: 'Folder', extensions: ['gz']}
-          // ]
+          title:"Load file or files",
+          properties: ['openFile', 'multiSelections'],
+          filters: [
+            {name: 'All', extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz']},
+            {name: 'Images', extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff']},
+            {name: 'Text', extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
+          ]
         };
         this.openLoadDialog(this.saveLoadFile, opt)
       },
+      loadFolder() {
+        this.disabledBtn = true;
+        let opt = {
+          title:"Load folder",
+          properties: ['openDirectory']
+        };
+        this.openLoadDialog(this.saveLoadFile, opt)
+       
+      },
       saveLoadFile(pathArr) {
-        this.tutorialPointActivate({way:'next', validation:'tutorial_button-load'})
-        this.settings.accessProperties.Path = pathArr[0];
+        this.disabledBtn = false;
+        this.settings.accessProperties.Path = pathArr;
+        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'})
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
+      clearPath() {
+        this.settings.accessProperties.Path = [];
+      },
+      getDataMeta() {
+        let theData = {
+          reciever: this.currentNetworkID,
+          action: 'getDataMeta',
+          value: {
+            Id: this.layerId,
+            Type: 'DataData',
+            Properties: this.settings
+          }
+        };
+        const client = new requestApi();
+        client.sendMessage(theData)
+          .then((data)=> {
+            if(data === 'Null') {
+              return
+            }
+            this.settings.accessProperties.Columns = data.Columns;
+            this.settings.accessProperties.Dataset_size = data.Dataset_size;
+          })
+          .catch((err)=> {
+            console.log('answer err');
+            console.error(err);
+          });
+      },
       saveSettings() {
         this.applySettings()
-        this.tutorialPointActivate({way:'next', validation:'tutorial_button-apply', layersbarSearch: true})
+        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'})
       }
     }
   }
 </script>
+<style lang="scss" scoped>
+  @import "../../../../scss/base";
+  .settings-layer {
+    justify-content: center;
+  }
+  .section-data-select {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 6.4rem;
+      height: 6.4rem;
+      background-color: $bg-input;
+      font-size: 4rem;
+      &:hover {
+        box-shadow: inset 0 0 1px 1px $color-5;
+      }
+    }
+  }
+  .data-select_text {
+    margin: 0 1.4rem;
+  }
+</style>

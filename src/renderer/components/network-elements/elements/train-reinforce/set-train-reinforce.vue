@@ -74,24 +74,27 @@ import mixinSet       from '@/core/mixins/net-element-settings.js';
 import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
 
 export default {
-  name: 'SetLearnClassKMeans',
+  name: 'SetTrainReinforce',
   mixins: [mixinSet],
-  components: {
-    SettingsCode,
-  },
+  components: { SettingsCode },
   data() {
     return {
       settings: {
         ReinforceType: 'Q_learning',
-        Optimizer: 'SGD',
-        Learning_rate: '0.01',
         Update_freq: '4',
         Gamma: '0.95',
         Loss: 'Quadratic',
         Eps: '1',
         Eps_min: '0.1',
         Eps_decay: '0.2',
+        Learning_rate: '0.01',
+        Optimizer: 'SGD',
       }
+    }
+  },
+  computed: {
+    coreCode() {
+      return `N_class=${this.settings.ReinforceType}[-1][-1];`
     }
   }
 }

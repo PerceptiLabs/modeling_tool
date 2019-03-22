@@ -24,7 +24,7 @@
           @keyup.93.8="deleteArrow($event)"
           @focus="focusArrow()"
           marker-end="url(#svg-arrow_triangle)"
-          :class="{'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
+          :class="{'arrow--empty-output': arrow.l1.layerMeta.OutputDim.length === 0, 'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
           stroke-dasharray="none"
           :x1="arrow.positionArrow.x1"
           :y1="arrow.positionArrow.y1"
@@ -153,7 +153,7 @@ export default {
         width: this.svgWidth,
         height: this.svgHeight,
       }
-    }
+    },
   },
   watch: {
     statisticsIsOpen() {
@@ -544,4 +544,7 @@ export default {
       stroke-width: 4;
     }
   }
+  /*.arrow--empty-output {*/
+    /*stroke: #eb8b22;*/
+  /*}*/
 </style>

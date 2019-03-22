@@ -51,7 +51,7 @@
           i.icon.icon-step-next
     ul.toolbar_list
       li(:class="{'tutorial-active': activeStepStoryboard === 4}")
-        button.btn.btn--toolbar(type="button"
+        button.btn.btn--toolbar.bg-primary(type="button"
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"

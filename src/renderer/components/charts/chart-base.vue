@@ -54,20 +54,6 @@
         }
       }
     },
-    watch: {
-      chartData() {
-        if (this.chartData === null) {
-          this.chartModel = this.defaultModel;
-          return
-        }
-        let model = {...this.defaultModel, ...this.chartData};
-        model.xAxis.data.length = 0;
-        this.wWorker.postMessage({
-          model,
-          xLength: this.chartData.xLength
-        });
-      }
-    },
     methods: {
       applyCustomColor() {
         if (this.customColor.length) {
@@ -77,6 +63,19 @@
       createWWorker() {
         this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
         this.wWorker.addEventListener('message', this.drawChart, false);
+      },
+      sendDataToWWorker(dataWatch) {
+        let data = dataWatch || this.chartData;
+        if (data === null || data === undefined) {
+          this.chartModel = this.defaultModel;
+          return
+        }
+        let model = {...this.defaultModel, ...data};
+        model.xAxis.data.length = 0;
+        this.wWorker.postMessage({
+          model,
+          xLength: data.xLength
+        });
       }
     },
   }
@@ -84,6 +83,6 @@
 
 <style lang="scss" scoped>
   .base-chart_main {
-    height: 300px;
+    height: 200px;
   }
 </style>

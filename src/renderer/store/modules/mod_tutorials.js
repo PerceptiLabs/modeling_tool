@@ -725,8 +725,15 @@ const actions = {
          case 'arrow':
           let start = document.getElementById(getters.getActiveAction.schematic.connection_start).getBoundingClientRect()
           let stop = document.getElementById(getters.getActiveAction.id).getBoundingClientRect()
-          commit('mod_workspace/SET_preArrowStart', {x: start.left - start.width, y: start.top - start.height, type: 'dash1'}, {root:true})
-          commit('mod_workspace/SET_preArrowStop', {x: stop.left -stop.width, y: stop.top - stop.height, type: 'dash1'}, {root:true})
+          //commit('mod_workspace/SET_preArrowStart', {x: start.left - start.width, y: start.top - start.height, type: 'dash1'}, {root:true})
+          //commit('mod_workspace/SET_preArrowStop', {x: stop.left -stop.width, y: stop.top - stop.height, type: 'dash1'}, {root:true})
+
+          let startXpos = (start.left-10);
+          let startYpos = (start.top - start.height);
+          let stopXpos = (stop.left - stop.width-10);
+          let stoptYpos = (stop.top - stop.height);
+          commit('mod_workspace/SET_preArrowStart', {x: startXpos, y: startYpos, type: 'dash1'}, {root:true})
+          commit('mod_workspace/SET_preArrowStop', {x: stopXpos, y: stoptYpos, type: 'dash1'}, {root:true})
       }
     }
   },

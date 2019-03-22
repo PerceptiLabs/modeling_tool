@@ -4,6 +4,34 @@ import {pathCore}  from "@/core/constants.js";
 //const net = require('net');
 const {spawn} = require('child_process');
 
+function prepareNetwork(elementList) {
+  let layers = {};
+  elementList.forEach((el)=> {
+    let dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
+    if(dataLayers.includes(el.componentName)) {
+      layers[el.layerId] = {
+        Name: el.layerName,
+        Type: el.componentName,
+        Properties: el.layerSettings,
+        //Code: el.coreCode,
+        backward_connections: el.connectionIn,
+        forward_connections: el.connectionOut
+      };
+    }
+    else {
+      layers[el.layerId] = {
+        Name: el.layerName,
+        Type: el.componentName,
+        //Properties: el.layerSettings,
+        Code: el.layerCode,
+        backward_connections: el.connectionIn,
+        forward_connections: el.connectionOut
+      };
+    }
+  });
+  return layers
+}
+
 const namespaced = true;
 
 const state = {
@@ -105,10 +133,11 @@ const actions = {
       action: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.openTest ? 'getTestStatus' :'getStatus',
       value: ''
     };
+    console.log('API_getStatus get', theData);
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
-        console.log('API_getStatus ', data);
+        console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -124,38 +153,18 @@ const actions = {
     const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     let message = {
       Hyperparameters: net.networkSettings,
-      Layers: {}
+      Layers: prepareNetwork(elementList)
     };
-    elementList.forEach((el)=> {
-      if(el.componentName === 'DataData') {
-        message.Layers[el.layerId] = {
-          Name: el.layerName,
-          Type: el.componentName,
-          Properties: el.layerSettings,
-          //Code: el.coreCode,
-          backward_connections: el.connectionIn,
-          forward_connections: el.connectionOut
-        };
-      }
-      else {
-        message.Layers[el.layerId] = {
-          Name: el.layerName,
-          Type: el.componentName,
-          //Properties: el.layerSettings,
-          Code: el.layerSettings,
-          backward_connections: el.connectionIn,
-          forward_connections: el.connectionOut
-        };
-      }
-    });
     const theData = {
       reciever: net.networkID,
       action: "Start",
       value: message
     };
+    console.log(JSON.stringify(theData));
     const client = new requestApi();
     client.sendMessage(theData)
       .then((data)=> {
+        console.log('API_startTraining ', data);
         dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
       })
       .catch((err) =>{
@@ -215,7 +224,23 @@ const actions = {
         console.error(err);
       });
   },
-
+  API_exportData({rootGetters, dispatch}, value) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Export',
+      value: value
+    };
+    console.log(theData);
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {
+        console.log('API_exportData answer', data);
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+    dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+  },
   API_CLOSE_core({getters, dispatch}) {
     const theData = {
       //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
@@ -280,6 +305,26 @@ const actions = {
       .catch((err) =>{
         console.error(err);
       });
+  },
+
+  API_getBeForEnd({dispatch, getters, rootGetters}) {
+    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "getNetworkData",
+      value: prepareNetwork(elementList)
+    };
+    //console.log('API_getBeForEnd', theData);
+    const client = new requestApi();
+    client.sendMessage(theData)
+      .then((data)=> {
+        console.log('answer API_getBeForEnd');
+        if(data) dispatch('mod_workspace/SET_elementBeForEnd', data, {root: true});
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+
   },
 };
 

@@ -78,10 +78,11 @@ const actions = {
     dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
   },
   NET_trainingDone({state, commit, dispatch}) {
-    //commit('SET_appMode', 'training-done');
     commit('GP_showNetResult', true);
+    dispatch('mod_workspace/SET_openTest', false, {root: true});
+    //commit('SET_appMode', 'training-done');
     //dispatch('mod_api/API_stopTraining', null, {root: true});
-    dispatch('mod_workspace/SET_canTestStatistics', true, {root: true});
+    //dispatch('mod_workspace/SET_canTestStatistics', true, {root: true});
   },
   SET_userToken({commit, dispatch}, value) {
     commit('set_userToken', value);

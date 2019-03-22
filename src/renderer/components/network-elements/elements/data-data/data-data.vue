@@ -6,7 +6,9 @@
     template(slot="context")
       context-menu
     template(slot="settings")
-      settings-el
+      settings-el(
+        :layer-id="elementData.el.layerId"
+      )
 
 </template>
 
@@ -27,43 +29,43 @@
     props: {
       elementData: Object
     },
-    mounted() {
-      if(process.env.NODE_ENV === 'production' && !this.settings.accessProperties.Path) {
-        switch (process.platform) {
-          case 'win32':
-            this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
-            break;
-          case 'darwin':
-            this.settings.accessProperties.Path = this.appPath + 'core/mnist';
-            break;
-          case 'linux':
-            this.settings.accessProperties.Path = this.appPath + 'core/mnist';
-            break;
-        }
-        this.applySettings();
-      }
-    },
-    data() {
-      return {
-        settings: {
-          Type: 'Data',
-          accessProperties: {
-            Category:'Local',
-            Type: 'Data',
-            Path: '',
-          }
-        }
-      }
-    },
-    computed: {
-      appPath() {
-        return this.$store.getters['globalView/GET_appPath']
-      },
-    },
-    methods: {
-      applySettings() {
-        this.elementData.el.layerSettings.accessProperties.Path = this.settings.accessProperties.Path;
-      }
-    }
+    // mounted() {
+    //   if(process.env.NODE_ENV === 'production' && !this.settings.accessProperties.Path) {
+    //     switch (process.platform) {
+    //       case 'win32':
+    //         this.settings.accessProperties.Path = this.appPath + 'core\\mnist';
+    //         break;
+    //       case 'darwin':
+    //         this.settings.accessProperties.Path = this.appPath + 'core/mnist';
+    //         break;
+    //       case 'linux':
+    //         this.settings.accessProperties.Path = this.appPath + 'core/mnist';
+    //         break;
+    //     }
+    //     this.applySettings();
+    //   }
+    // },
+    // data() {
+    //   return {
+    //     settings: {
+    //       Type: 'Data',
+    //       accessProperties: {
+    //         Category:'Local',
+    //         Type: 'Data',
+    //         Path: '',
+    //       }
+    //     }
+    //   }
+    // },
+    // computed: {
+    //   appPath() {
+    //     return this.$store.getters['globalView/GET_appPath']
+    //   },
+    // },
+    // methods: {
+    //   applySettings() {
+    //     this.elementData.el.layerSettings.accessProperties.Path = this.settings.accessProperties.Path;
+    //   }
+    // }
   }
 </script>

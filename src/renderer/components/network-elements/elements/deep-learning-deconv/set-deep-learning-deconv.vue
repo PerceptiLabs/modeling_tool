@@ -99,62 +99,68 @@ export default {
   },
   computed: {
     coreCode() {
-      let addPooling = '';
-      //       Activation function
-      // • If Sigmoid:
-      //         Y=tf.sigmoid(node)
-      // • If ReLU:
-      //         Y=tf.nn.relu(node)
-      // • If Tanh:
-      //         Y=tf.tanh(node)
-      // • If None:
-      //         Y=node
+      let dim = '';
+      let activeFunc = '';
+      let pooling = '';
+
       switch (this.settings.Deconv_dim) {
         case 'Automatic':
-          return `
-          ${this.settings.Deconv_dim} = str(len(X.get_shape())-1) + "D"
-          ${addPooling}`
+          dim = `${this.settings.Deconv_dim} = str(len(X.get_shape())-1) + "D";`;
           break;
         case '1D':
-          return `
-          shape=[${this.settings.Stride},X.get_shape()[-1].value, ${this.settings.Feature_maps}];
-          initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Stride}**2 *${this.settings.Feature_maps})));
-          W = tf.Variable(initial);
-          initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
-          b=tf.Variable(initial);
-          output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*${this.settings.Stride} for node_shape in X.get_shape().as_list()[1:-1]]+[${this.settings.Feature_maps}]);
-          node = tf.nn.conv1d_transpose(X, W, output_shape, ${this.settings.Stride},padding=${this.settings.Padding});
-          node=tf.nn.dropout(node, keep_prob);
-          node=node+b
-          ${addPooling}`
+          dim = `shape=[${this.settings.Stride},${this.codeInputDim}[-1], ${this.settings.Feature_maps}];
+initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Stride}**2 *${this.settings.Feature_maps})));
+W = tf.Variable(initial);
+initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
+b=tf.Variable(initial);
+output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*${this.settings.Stride} for node_shape in ${this.codeInputDim}]+[${this.settings.Feature_maps}]);
+node = tf.nn.conv1d_transpose(X, W, output_shape, ${this.settings.Stride},padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
+node=node+b;`;
           break;
         case '2D':
-          return `
-          shape=[${this.settings.Stride},${this.settings.Stride},X.get_shape()[-1].value,${this.settings.Feature_maps}];
-          initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Stride}**2 * ${this.settings.Feature_maps})));
-          W = tf.Variable(initial);
-          initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
-          b=tf.Variable(initial);
-          output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*"+${this.settings.Stride}+" for node_shape in X.get_shape().as_list()[1:-1]]+["+${this.settings.Feature_maps}+"]);
-          node = tf.nn.conv2d_transpose(X, W, output_shape, strides=[1, ${this.settings.Stride}, ${this.settings.Stride}, 1], padding=${this.settings.Padding});
-          node=tf.nn.dropout(node, keep_prob);
-          node=node+b
-          ${addPooling}`
+          dim = `shape=[${this.settings.Stride},${this.settings.Stride},${this.codeInputDim}[-1],${this.settings.Feature_maps}];
+initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Stride}**2 * ${this.settings.Feature_maps})));
+W = tf.Variable(initial);
+initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
+b=tf.Variable(initial);
+output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*"+${this.settings.Stride}+" for node_shape in ${this.codeInputDim}]+["+${this.settings.Feature_maps}+"]);
+node = tf.nn.conv2d_transpose(X, W, output_shape, strides=[1, ${this.settings.Stride}, ${this.settings.Stride}, 1], padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
+node=node+b;`;
           break;
         case '3D':
-          return `
-          shape=[${this.settings.Stride},${this.settings.Stride},Stride"],X.get_shape()[-1].value,${this.settings.Feature_maps}];
-          initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Stride}**2 * ${this.settings.Feature_maps})));
-          W = tf.Variable(initial);
-          initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
-          b=tf.Variable(initial);
-          output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*${this.settings.Stride} for node_shape in X.get_shape().as_list()[1:-1]]+[${this.settings.Feature_maps}]);
-          node = tf.nn.conv3d_transpose(X, W, output_shape, strides=[1, ${this.settings.Stride}, ${this.settings.Stride}, ${this.settings.Stride}, 1], padding=${this.settings.Padding});
-          node=tf.nn.dropout(node, keep_prob);
-          node=node+b
-          ${addPooling}`
+          dim = `shape=[${this.settings.Stride},${this.settings.Stride},Stride"],${this.codeInputDim}[-1],${this.settings.Feature_maps}];
+initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Stride}**2 * ${this.settings.Feature_maps})));
+W = tf.Variable(initial);
+initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
+b=tf.Variable(initial);
+output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*${this.settings.Stride} for node_shape in ${this.codeInputDim}]+[${this.settings.Feature_maps}]);
+node = tf.nn.conv3d_transpose(X, W, output_shape, strides=[1, ${this.settings.Stride}, ${this.settings.Stride}, ${this.settings.Stride}, 1], padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
+node=node+b;`;
           break;
       }
+      switch (this.settings.Activation_function) {
+        case 'Sigmoid':
+          activeFunc = `Y=tf.sigmoid(node);`;
+          break;
+        case 'ReLU':
+          activeFunc = `Y=tf.nn.relu(node);`;
+          break;
+        case 'Tanh':
+          activeFunc = `Y=tf.tanh(node);`;
+          break;
+        case 'None':
+          activeFunc = `Y=node;`;
+          break;
+      }
+
+      if(this.settings.PoolBool) {
+        if (this.settings.Pooling === "Max") {
+          pooling = `Y=max_pool(Y, ${this.settings.Pool_area}, ${this.settings.Stride},${this.settings.Padding},${this.settings.Conv_dim});`;
+        } else {
+          pooling = `Y=tf.nn.pool(Y, window_shape=${this.settings.Pool_area},pooling_type='AVG',${this.settings.Padding},strides=${this.settings.Stride});`
+        }
+      }
+      return `${dim}\n${activeFunc}\n${pooling}`
     }
   }
 }

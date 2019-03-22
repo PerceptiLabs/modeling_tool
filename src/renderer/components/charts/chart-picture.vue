@@ -20,6 +20,8 @@ export default {
   mixins: [chartMixin],
   mounted() {
     this.canvas2D = this.$refs.canvas.getContext('2d');
+    this.sendDataToWWorker(this.chartData);
+
   },
   data() {
     return {
@@ -32,11 +34,6 @@ export default {
       handler(newVal) {
         if(newVal % 2 && this.imgDataBuffer !== null) this.drawPicture(this.imgDataBuffer);
       }
-    },
-    chartData(newData) {
-      this.isNeedWait
-        ? this.imgDataBuffer = JSON.parse(JSON.stringify(newData[0]))
-        : this.drawPicture(newData[0])
     }
   },
   methods: {
@@ -46,14 +43,23 @@ export default {
     drawPicture(img) {
       let canvas2d = this.canvas2D;
       let canvas = this.$refs.canvas;
-      let imgH = img.height;
-      let imgW = img.width;
+      // let imgH = img.height;
+      // let imgW = img.width;
+      let imgH = img.width;
+      let imgW = img.height;
       canvas.setAttribute('width', imgW);
       canvas.setAttribute('height', imgH);
-
       let imgData = canvas2d.createImageData(imgW, imgH);
       img.data.forEach((el, index) => imgData.data[index] = el);
       canvas2d.putImageData(imgData,0, 0);
+    },
+    sendDataToWWorker(dataWatch) {
+      let data = dataWatch || this.chartData;
+      if (data === null || data === undefined) return;
+      let dataImg = JSON.parse(JSON.stringify(data[0]));
+      this.isNeedWait
+        ? this.imgDataBuffer = dataImg
+        : this.drawPicture(dataImg)
     }
   }
 }

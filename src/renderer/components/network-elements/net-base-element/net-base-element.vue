@@ -4,15 +4,16 @@
     :style="style"
     :class="active ? 'active' : 'inactive'"
     @click="switchClickEvent($event)"
-    @dblclick.stop.prevent="layerContainer ? $emit('dblcl') : openSettings($event)"
+    @dblclick.stop.prevent="switchDblclick($event)"
     @contextmenu.stop.prevent="openContext"
     @keyup.46="deleteEl()"
     @keyup.93.8="deleteEl()"
     )
+    .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
     .net-element_btn(ref="BaseElement")
       slot
 
-    .net-element_window(v-if="settingsIsOpen ")
+    .net-element_window(v-if="settingsIsOpen")
       slot(name="settings")
 
     .net-element_window.net-element_context-menu(v-if="contextIsOpen")
@@ -71,6 +72,10 @@ export default {
     ...mapGetters({
       tutorialActiveAction:  'mod_tutorials/getActiveAction'
     }),
+    beForEnd() {
+      //console.log('NetBaseElement beForEnd', this.dataEl.el.layerMeta);
+      return this.dataEl.el.layerMeta.OutputDim
+    },
     active() {
       return this.dataEl.el.layerMeta.isSelected
     },
@@ -86,6 +91,9 @@ export default {
     isTraining() {
       return this.$store.getters['mod_workspace/GET_networkIsTraining']
     },
+    editIsOpen() {
+      return this.$store.getters['mod_workspace/GET_networkCanEditLayers'];
+    }
   },
   watch: {
     statisticsIsOpen(newVal) {
@@ -102,10 +110,10 @@ export default {
       if (this.isLock) {
         return
       }
-      if(this.networkMode === 'addArrow') {
+      else if(this.networkMode === 'addArrow') {
         this.arrowStartPaint(ev)
       }
-      else if(this.networkMode === 'edit') {
+      else if(this.networkMode === 'edit' && this.editIsOpen) {
         this.setFocusEl(ev);
         this.bodyDown(ev)
       }
@@ -118,18 +126,19 @@ export default {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
     },
+    switchDblclick(event) {
+      this.layerContainer ? this.$emit('dblcl') : this.openSettings(event)
+    },
     openSettings(event) {
-      event.stopPropagation()
-      this.tutorialSearchId(event)
-      setTimeout(()=>{this.tutorialPointActivate({way:'next', validation: this.tutorialSearchId(event)})}, 0)
       this.hideAllWindow();
-      if(this.networkMode === 'edit' && !this.isTraining) {
+      if(this.networkMode === 'edit' && this.editIsOpen) {
         this.settingsIsOpen = true;
+        setTimeout(()=>{this.tutorialPointActivate({way:'next', validation: this.tutorialSearchId(event)})}, 0)
       }
     },
     openContext() {
       this.hideAllWindow();
-      if(this.networkMode === 'edit' && !this.isTraining) {
+      if(this.networkMode === 'edit' && this.editIsOpen) {
         this.contextIsOpen = true;
       }
     },
@@ -184,5 +193,14 @@ export default {
     .active & .btn {
       box-shadow: 0 0 20px #fff;
     }
+  }
+  .net-element_be-for-end {
+    font-size: 1.2rem;
+    position: absolute;
+    top: -2.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    white-space: nowrap;
+    background-color: rgba($bg-workspace, .5);
   }
 </style>

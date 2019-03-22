@@ -12,20 +12,24 @@
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output'")
       chart-base(
+        key="1"
         chartLabel="Value"
         :chartData="chartData.Output.Output"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias'")
       chart-base(
+        key="2"
         chartLabel="Weights"
         :chartData="chartData['Weights&Bias'].Weights"
       )
       chart-base(
+        key="3"
         chartLabel="Bias"
         :chartData="chartData['Weights&Bias'].Bias"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
       chart-base(
+        key="4"
         chartLabel="Bias"
         :chartData="chartData.Gradients.Gradients"
         :customColor="colorList"

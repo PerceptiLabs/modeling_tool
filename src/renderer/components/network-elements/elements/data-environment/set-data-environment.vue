@@ -2,19 +2,28 @@
   .popup
     ul.popup_tab-set
       button.popup_header(
-      v-for="(tab, i) in tabs"
-      :key="tab.i"
-      @click="setTab(i)"
-      :class="{'disable': tabSelected != i}"
+        v-for="(tab, i) in tabs"
+        :key="tab.i"
+        :class="{'disable': tabSelected != i}"
+        @click="setTab(i)"
       )
         h3(v-html="tab")
     .popup_tab-body
       .popup_body(
-      :class="{'active': tabSelected == 0}"
+        :class="{'active': tabSelected == 0}"
       )
         .settings-layer
           .settings-layer_section
-            base-select(v-model="settings.Properties.accessProperties.Atari" :selectOptions="selectOptions")
+            .form_row
+              base-select(
+                v-model="settings.accessProperties.Atari"
+                :selectOptions="selectOptions"
+                )
+            .form_row
+              chart-switch(
+                :disable-header="true"
+                :chartData="imgData"
+              )
 
       .popup_body(
         :class="{'active': tabSelected == 1}"
@@ -25,38 +34,49 @@
               input.form_input(type="text" placeholder="c:")
               button.btn.btn--primary(type="button") Load
 
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
+
 </template>
 
 <script>
-  import mixinSet       from '@/core/mixins/net-element-settings.js';
-  export default {
-    name: 'SetDataData',
-    mixins: [mixinSet],
-    components: {
+  import mixinSet   from '@/core/mixins/net-element-settings.js';
+  import mixinData  from '@/core/mixins/net-element-settings-data.js';
 
-    },
+  import ChartSwitch from "@/components/charts/chart-switch.vue";
+
+  export default {
+    name: 'SetDataEnvironment',
+    mixins: [mixinSet, mixinData],
+    components: { ChartSwitch },
     data() {
       return {
         selectOptions: [
-          { text: 'Breakout', value: 'Breakout' },
-          { text: '2', value: 'b' },
-          { text: '3', value: 'c' }
+          { text: 'Breakout',     value: 'Breakout' },
+          { text: 'BankHeist',    value: 'BankHeist' },
+          { text: 'DemonAttack',  value: 'DemonAttack' }
         ],
         tabs: ['Gym', '<i class="icon icon-search"></i> Unity'],
         settings: {
-          Name: 'Data_1',
-          Type: 'DataEnvironment',
-          Properties: {
-            Type: 'Environment',
-            accessProperties: {
-              EnvType: 'Gym',
-              Atari: 'Breakout', //select
-              Category: 'Local',
-              Type: 'Data',
-            }
+          Type: 'Environment',
+          accessProperties: {
+            EnvType: 'Gym',
+            Atari: 'Breakout', //select
+            Category: 'Local',
+            Type: 'Data',
           }
         }
       }
-    }
+    },
+    watch: {
+      'settings.accessProperties.Atari': {
+        handler(newVal) {
+          if(newVal) {
+            this.getDataImg('DataEnvironment')
+          }
+        },
+        immediate: true
+      }
+    },
   }
 </script>

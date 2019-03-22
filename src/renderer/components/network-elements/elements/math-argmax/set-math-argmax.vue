@@ -50,7 +50,7 @@ export default {
   },
   computed: {
     coreCode() {
-      return `Y=tf.argmax(X,${this.settings.Dim})`
+      return `Y=tf.argmax(X,${this.settings.Dim});`
     }
   }
 }

@@ -78,35 +78,35 @@ export default {
           for i in range(0,len(list(X.values())),2):
             if not Y:
                Y=list(X.values())[i]
-            Y=tf. add(list(X.values())[i],Y)`
+            Y=tf. add(list(X.values())[i],Y);`
           break;
         case 'Sub':
           return `
           for i in range(0,len(list(X.values())),2):
             if not Y:
                Y=list(X.values())[i]
-            Y=tf. subtract(list(X.values())[i],Y)`
+            Y=tf. subtract(list(X.values())[i],Y);`
           break;
         case 'Multi':
           return `
           for i in range(0,len(list(X.values())),2):
             if not Y:
                Y=list(X.values())[i]
-            Y=tf.multiply(list(X.values())[i],Y)`
+            Y=tf.multiply(list(X.values())[i],Y);`
           break;
         case 'Div':
           return `
           for i in range(0,len(list(X.values())),2):
             if not Y:
                Y=list(X.values())[i]
-            Y=tf.divide(list(X.values())[i],Y)`
+            Y=tf.divide(list(X.values())[i],Y);`
           break;
         case 'Concat':
           return `
           for c in range(0,len(list(X.values())),2):
             if not Y:
                Y=c
-            Y=tf.concat([Y, list(X.values())[c]],${this.settings.Merge_dim})`
+            Y=tf.concat([Y, list(X.values())[c]],${this.settings.Merge_dim});`
           break;
       }
     }

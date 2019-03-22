@@ -26,8 +26,8 @@
           @click="toggleLock(itemIndex)"
         )
           i.icon.icon-lock
-        //button.btn.btn--icon.visible-icon.visible-icon--visiblity( type="button"
-          //:class="{'invisible-icon': itemData.meta.isInvisible}"
+        button.btn.btn--icon.visible-icon.visible-icon--visiblity( type="button"
+          :class="{'invisible-icon': itemData.layerMeta.isInvisible}"
           @click="toggleVisible(itemIndex)"
           )
           i.icon.icon-eye
@@ -91,7 +91,7 @@ export default {
       this.isOpen = !this.isOpen
     },
     setSelect(path, ev) {
-      console.log(ev);
+      //console.log(ev);
       if (this.statisticsIsOpen) {
         console.log('TODO add functions');
         //this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)

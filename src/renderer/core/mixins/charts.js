@@ -15,13 +15,19 @@ const chartsMixin = {
       default: function () {
         return []
       }
-    }
+    },
+    disableHeader: {
+      type: Boolean,
+      default: false
+    },
   },
   mounted() {
     if(this._name !== '<ChartPicture>') {
       this.$refs.chart.showLoading(this.chartSpinner);
       this.createWWorker();
+      this.sendDataToWWorker();
       window.addEventListener("resize", ()=> { this.$refs.chart.resize()}, false);
+      this.$refs.chart.resize();
     }
   },
   beforeDestroy() {
@@ -45,7 +51,7 @@ const chartsMixin = {
       return this.$store.state.mod_events.chartsRequest.waitGlobalEvent
     },
     headerOff() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest || this.disableHeader;
     }
   },
   watch: {
@@ -56,8 +62,13 @@ const chartsMixin = {
     },
     '$store.state.mod_events.chartResize': {
       handler() {
-        if(this._name !== '<ChartPicture>') this.$refs.chart.resize();
+        if(this._name !== '<ChartPicture>') {
+          this.$nextTick(()=> this.$refs.chart.resize())
+        }
       }
+    },
+    chartData(newData) {
+      this.sendDataToWWorker(newData)
     }
   },
   methods: {

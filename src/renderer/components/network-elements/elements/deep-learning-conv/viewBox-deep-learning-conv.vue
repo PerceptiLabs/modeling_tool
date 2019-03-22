@@ -2,34 +2,38 @@
   .statistics-box
     ul.statistics-box_tabset(v-if="!testIsOpen")
       li.statistics-box_tab(
-      v-for="(tab, i) in tabset"
-      :key="i"
+        v-for="(tab, i) in tabset"
+        :key="i"
       )
         button.btn.btn--tabs(
-        type="button"
-        @click="setTab(tab)"
-        :class="{'active': currentTab === tab}"
+          type="button"
+          @click="setTab(tab)"
+          :class="{'active': currentTab === tab}"
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output'")
       .statistics-box_row
         .statistics-box_col(v-if="!testIsOpen")
           chart-heatmap(
+            key="1"
             chartLabel="Weights"
             :chartData="chartData['Weights&Output'].Weights"
             )
         .statistics-box_col
           chart-picture(
+            key="2"
             chartLabel="Output"
             :chartData="chartData['Weights&Output'].Output"
             )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bias'")
       .statistics-box_row
         chart-base(
-        chartLabel="Bias"
-        :chartData="chartData.Bias.Bias"
+          key="3"
+          chartLabel="Bias"
+          :chartData="chartData.Bias.Bias"
         )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
       chart-base(
+        key="4"
         chartLabel="Bias"
         :chartData="chartData.Gradients.Gradients"
         :customColor="colorList"
