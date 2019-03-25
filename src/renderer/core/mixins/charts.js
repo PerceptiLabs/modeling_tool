@@ -26,7 +26,7 @@ const chartsMixin = {
       this.$refs.chart.showLoading(this.chartSpinner);
       this.createWWorker();
       this.sendDataToWWorker();
-      window.addEventListener("resize", ()=> { this.$refs.chart.resize()}, false);
+      window.addEventListener("resize", ()=> { this.$refs.chart.resize() }, false);
       this.$refs.chart.resize();
     }
   },
@@ -35,7 +35,7 @@ const chartsMixin = {
       this.wWorker.postMessage('close');
       this.wWorker.removeEventListener('message', this.drawChart, false);
       this.$refs.chart.dispose();
-      window.removeEventListener("resize", ()=> { this.$refs.chart.resize()}, false);
+      window.removeEventListener("resize", ()=> { this.$refs.chart.resize() }, false);
     }
   },
   data() {
@@ -48,17 +48,18 @@ const chartsMixin = {
   },
   computed: {
     isNeedWait() {
-      return this.$store.state.mod_events.chartsRequest.waitGlobalEvent
+      return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
     },
     headerOff() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest || this.disableHeader;
+    },
+    doRequest() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
     }
   },
   watch: {
-    '$store.state.mod_events.chartsRequest.doRequest': {
-      handler(newVal) {
-        if(newVal % 2) this.chartModel = this.chartModelBuffer;
-      }
+    doRequest(newVal) {
+      if(newVal % 2) this.chartModel = this.chartModelBuffer;
     },
     '$store.state.mod_events.chartResize': {
       handler() {

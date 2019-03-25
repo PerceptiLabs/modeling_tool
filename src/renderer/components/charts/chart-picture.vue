@@ -29,11 +29,14 @@ export default {
       canvas2D: null
     }
   },
+  computed: {
+    doRequest() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
+    }
+  },
   watch: {
-    '$store.state.mod_events.chartsRequest.doRequest': {
-      handler(newVal) {
-        if(newVal % 2 && this.imgDataBuffer !== null) this.drawPicture(this.imgDataBuffer);
-      }
+    doRequest(newVal) {
+      if(newVal % 2 && this.imgDataBuffer !== null) this.drawPicture(this.imgDataBuffer);
     }
   },
   methods: {

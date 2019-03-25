@@ -11,15 +11,26 @@ const findIndexId = function (arr, ID) {
 };
 
 
-const openLoadDialog = function (callback, options) {
-  let dialog = remote.dialog;
-  dialog.showOpenDialog(options, (files)=>{
-    if(files !== undefined) {
-      callback(files)
-    }
+const openLoadDialog = function (options) {
+  return new Promise((success, reject) => {
+    let dialog = remote.dialog;
+    dialog.showOpenDialog(options, (files) => {
+      if (files !== undefined) {
+        success(files)
+      }
+      else reject();
+    })
   })
 };
 
+const loadPathFolder = function (customOptions) {
+  const optionsDefault = {
+    title:"Load folder",
+    properties: ['openDirectory']
+  };
+  let options = optionsDefault || customOptions;
+  return openLoadDialog(options);
+};
 
 // const readFilePromiseNative = function (path) {
 //   return new Promise((success, reject) => {
@@ -32,8 +43,8 @@ const openLoadDialog = function (callback, options) {
 //   });
 // };
 const loadNetwork = function (pathArr) {
-  return readFilePromiseNative(pathArr[0]).then(
-    (data) => {
+  return readFilePromiseNative(pathArr[0])
+    .then((data) => {
       let net = JSON.parse(data.toString());
       this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
     }
@@ -60,4 +71,4 @@ const generateID = function(input) {
   return out
 };
 
-export {findIndexId, openLoadDialog, loadNetwork, generateID}
+export {findIndexId, openLoadDialog, loadNetwork, generateID, loadPathFolder}

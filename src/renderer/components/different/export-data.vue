@@ -6,7 +6,7 @@
           .form_label Path:
           .form_row
             input.form_input(type="text" v-model="settings.Location" readonly)
-            button.btn.btn--dark-blue-rev(type="button" @click="loadFolder") Browse
+            button.btn.btn--dark-blue-rev(type="button" @click="saveLoadFile") Browse
         .form_holder
           .form_label Export as:
           .form_row
@@ -26,7 +26,7 @@
 
 <script>
 import BaseSwitcher     from "@/components/different/switcher.vue";
-import {openLoadDialog} from '@/core/helpers.js'
+import {loadPathFolder} from '@/core/helpers.js'
 
 export default {
   name: "ExportData",
@@ -47,18 +47,19 @@ export default {
     }
   },
   methods: {
-    openLoadDialog,
-    loadFolder() {
+    loadPathFolder,
+    saveLoadFile() {
       this.disabledBtn = true;
-      let opt = {
-        title:"Load folder",
-        properties: ['openDirectory']
-      };
-      this.openLoadDialog(this.saveLoadFile, opt)
-    },
-    saveLoadFile(pathArr) {
-      this.disabledBtn = false;
-      this.settings.Location = pathArr[0];
+      this.loadPathFolder()
+        .then((pathArr)=>{
+          this.disabledBtn = false;
+          this.settings.Location = pathArr[0];
+        })
+        .catch((err)=> {
+          this.disabledBtn = false;А
+          console.error(err)
+        } )
+
     },
     exportData() {
       this.$store.dispatch('mod_api/API_exportData', this.settings)

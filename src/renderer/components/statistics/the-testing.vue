@@ -22,6 +22,9 @@
 <script>
 export default {
   name: "TheTesting",
+  mounted() {
+    this.getStatus();
+  },
   data() {
     return {
       //progress: 30
@@ -29,8 +32,10 @@ export default {
   },
   computed: {
     progress() {
-      let prog = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus.Progress;
-      return Math.round(prog * 100);
+      const progress = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus.Progress;
+      const waitEvent = this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent'];
+      if(waitEvent && progress === 1) this.postTestStart();
+      return (progress * 100).toFixed(1);
     },
   },
   methods: {
@@ -39,10 +44,10 @@ export default {
     },
     postTestMove(request) {
       this.$store.dispatch('mod_api/API_postTestMove', request);
-      this.$store.commit('mod_events/set_charts_doRequest');
-      this.$nextTick(()=>this.$store.commit('mod_events/set_charts_doRequest'));
-
     },
+    getStatus() {
+      this.$store.dispatch('mod_api/API_getStatus');
+    }
   },
 }
 </script>

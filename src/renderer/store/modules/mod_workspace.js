@@ -1,12 +1,5 @@
 import { findIndexId, generateID }  from "@/core/helpers.js";
-// const generateID = function(input) {
-//   let out;
-//   let stringID = input.toString();
-//   let dotIndex = stringID.indexOf('.');
-//   dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
-//   out = +out;
-//   return out
-// };
+
 function createPathNode(path, state) {
   //console.log('createPathNode');
   const network = path.slice();
@@ -84,6 +77,9 @@ const getters = {
     let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
     let openTest = getters.GET_currentNetwork.networkMeta.openTest;
     return !(openStatistics || openTest) ? true : false;
+  },
+  GET_networkWaitGlobalEvent(state, getters) {
+    return getters.GET_currentNetwork.networkMeta.chartsRequest.waitGlobalEvent;
   }
 };
 
@@ -115,6 +111,11 @@ const mutations = {
       netMode: 'edit',//'addArrow', showStatistic
       coreStatus: {
         Status: 'Waiting' //Created, Training, Validation, Paused, Finished
+      },
+      chartsRequest: {
+        timerID: null,
+        waitGlobalEvent: false,
+        doRequest: 0,
       }
     };
 
@@ -176,6 +177,15 @@ const mutations = {
   },
   set_statusNetworkZoom(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.zoom = value;
+  },
+  set_charts_doRequest(state, {getters}) {
+    getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
+  },
+  set_charts_timerID(state, {getters, timerId}) {
+    getters.GET_currentNetwork.networkMeta.chartsRequest.timerID = timerId;
+  },
+  set_statusNetworkWaitGlobalEvent(state, {getters, value}) {
+    getters.GET_currentNetwork.networkMeta.chartsRequest.waitGlobalEvent = value;
   },
   //---------------
   //  NETWORK ELEMENTS
@@ -394,8 +404,28 @@ const actions = {
   SET_statusNetworkZoom({commit, getters}, value) {
     commit('set_statusNetworkZoom', {getters, value})
   },
+  SET_statusNetworkWaitGlobalEvent({commit, getters}, value) {
+    commit('set_statusNetworkWaitGlobalEvent', {getters, value})
+  },
   RESET_network({commit}) {
     commit('RESET_network')
+  },
+  EVENT_startDoRequest({dispatch, commit, state, rootState, getters}, isStart) {
+    let currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
+    const timeInterval = rootState.globalView.timeIntervalDoRequest;
+    dispatch('SET_statusNetworkWaitGlobalEvent', isStart);
+
+    if(isStart) {
+      let timerId = setInterval(()=> {
+        commit('set_charts_doRequest', {getters});
+        //console.log('EVENT_startDoRequest');
+        if(!(currentMeta.doRequest % 2)) dispatch('mod_api/API_getStatus', null, {root: true});
+      }, timeInterval);
+      commit('set_charts_timerID', {getters, timerId});
+    }
+    else {
+      clearInterval(currentMeta.timerID);
+    }
   },
   //---------------
   //  NETWORK ELEMENTS

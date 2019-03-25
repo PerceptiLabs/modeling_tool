@@ -16,6 +16,9 @@ const netElementSettingsData = {
     currentNetworkID() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
     },
+    inputPath() {
+      return this.settings.accessProperties.Path.join(', ')
+    }
   },
   methods: {
     getDataImg(type) {

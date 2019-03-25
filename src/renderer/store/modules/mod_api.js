@@ -162,7 +162,7 @@ const actions = {
     coreRequest(theData)
       .then((data)=> {
         console.log('API_startTraining ', data);
-        dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
+        dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
       })
       .catch((err) =>{
         console.error(err);
@@ -178,12 +178,12 @@ const actions = {
     coreRequest(theData)
       .then((data)=> {
         dispatch('API_getStatus');
-        if(rootState.mod_events.chartsRequest.waitGlobalEvent) {
+        if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
           dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
-          dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+          dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
         }
         else {
-          dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
+          dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
         }
       })
       .catch((err) =>{
@@ -199,7 +199,7 @@ const actions = {
     coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
-        dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+        dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
         dispatch('API_getStatus');
       })
       .catch((err) =>{
@@ -232,7 +232,7 @@ const actions = {
       .catch((err) =>{
         console.error(err);
       });
-    dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+    dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_CLOSE_core({getters, dispatch}) {
     const theData = {
@@ -246,7 +246,7 @@ const actions = {
       .catch((err) =>{
         console.error(err);
       });
-    dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+    dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_postTestStart({rootGetters, rootState, dispatch}) {
     console.log('API_postTestStart');
@@ -272,9 +272,9 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        rootState.mod_events.chartsRequest.waitGlobalEvent
-          ? dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
-          : dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
+        rootGetters['mod_workspace/GET_networkWaitGlobalEvent']
+          ? dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+          : dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
       })
       .catch((err) =>{
         console.error(err);

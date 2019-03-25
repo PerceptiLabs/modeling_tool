@@ -40,6 +40,9 @@ const viewBoxMixin = {
     testIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
     },
+    doRequest() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
+    }
   },
   watch: {
     boxElementID() {
@@ -48,11 +51,9 @@ const viewBoxMixin = {
     statElementID() {
       this.resetViewBox();
     },
-    '$store.state.mod_events.chartsRequest.doRequest': {
-      handler(newVal) {
-        if(!(newVal % 2)) this.getData();
-      }
-    },
+    doRequest(newVal) {
+      if(!(newVal % 2)) this.getData();
+    }
   },
   methods: {
     resetViewBox() {

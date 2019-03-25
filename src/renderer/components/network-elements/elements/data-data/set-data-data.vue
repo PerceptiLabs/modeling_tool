@@ -59,7 +59,7 @@
   import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
 
-  import {openLoadDialog} from '@/core/helpers.js'
+  import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
   import coreRequest      from "@/core/apiCore.js";
 
   export default {
@@ -88,16 +88,7 @@
       }
     },
     computed: {
-      // appPath() {
-      //   return this.$store.getters['globalView/GET_appPath']
-      // },
-      // isDisabled() {
-      //   return process.env.NODE_ENV === 'production'
-      // },
 
-      inputPath() {
-        return this.settings.accessProperties.Path.join(', ')
-      }
     },
     watch: {
       'settings.accessProperties.Path': {
@@ -110,7 +101,9 @@
       }
     },
     methods: {
+      coreRequest,
       openLoadDialog,
+      loadPathFolder,
       loadFile() {
         this.disabledBtn = true;
         let opt = {
@@ -122,15 +115,21 @@
             {name: 'Text', extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
           ]
         };
-        this.openLoadDialog(this.saveLoadFile, opt)
+        this.openLoadDialog(opt)
+          .then((pathArr)=> this.saveLoadFile(pathArr))
+          .catch((err)=> {
+            this.disabledBtn = false;
+            console.error(err)
+          })
       },
       loadFolder() {
         this.disabledBtn = true;
-        let opt = {
-          title:"Load folder",
-          properties: ['openDirectory']
-        };
-        this.openLoadDialog(this.saveLoadFile, opt)
+        this.loadPathFolder()
+          .then((pathArr)=> this.saveLoadFile(pathArr))
+          .catch((err)=> {
+            this.disabledBtn = false;
+            console.error(err)
+          })
       },
       saveLoadFile(pathArr) {
         this.disabledBtn = false;
@@ -151,7 +150,7 @@
             Properties: this.settings
           }
         };
-        coreRequest(theData)
+        this.coreRequest(theData)
           .then((data)=> {
             console.log('getDataMeta ', data);
             if(data === 'Null') {

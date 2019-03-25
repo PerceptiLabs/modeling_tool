@@ -7,14 +7,6 @@ const state = {
   openNetwork: 0,
   saveNetwork: 0,
   chartResize: 0,
-  chartsRequest: {
-    timeInterval: 1000,
-    timerID: null,
-    waitGlobalEvent: false,
-    doRequest: 0,
-    //requestCounter: 0,
-    //showCharts: 0
-  }
 };
 
 const mutations = {
@@ -30,18 +22,12 @@ const mutations = {
   set_chartResize(state) {
     state.chartResize++
   },
-  set_charts_doRequest(state) {
-    state.chartsRequest.doRequest++
-  },
+
   // set_charts_showCharts(state) {
   //   state.chartsRequest.showCharts++
   // },
-  set_charts_timerID(state, id) {
-    state.chartsRequest.timerID = id;
-  },
-  set_charts_waitGlobalEvent(state, isWait) {
-    state.chartsRequest.waitGlobalEvent = isWait
-  },
+
+
   // set_charts_requestCounterAdd(state) {
   //   state.chartsRequest.requestCounter++
   // },
@@ -73,21 +59,7 @@ const actions = {
     dispatch('mod_api/API_CLOSE_core', null, {root: true});
     ipcRenderer.send('appClose');
   },
-  EVENT_startDoRequest({dispatch, commit, state}, isStart) {
-    if(isStart) {
-      let timer = setInterval(()=> {
-        commit('set_charts_doRequest');
-        //console.log('EVENT_startDoRequest');
-        if(!(state.chartsRequest.doRequest % 2)) dispatch('mod_api/API_getStatus', null, {root: true});
-      }, state.chartsRequest.timeInterval);
-      commit('set_charts_waitGlobalEvent', isStart);
-      commit('set_charts_timerID', timer);
-    }
-    else {
-      commit('set_charts_waitGlobalEvent', isStart);
-      clearInterval(state.chartsRequest.timerID);
-    }
-  },
+
   EVENT_chartResize({commit}) {
     commit('set_chartResize')
   }
