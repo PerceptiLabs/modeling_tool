@@ -36,7 +36,7 @@ const coreRequest = function (message, port, address) {
       reject('error core api', err);
     });
     socket.on('close', () => {
-      console.log('Client closed');
+      //console.log('Client closed');
     });
   });
 

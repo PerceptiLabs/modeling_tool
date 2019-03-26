@@ -24,6 +24,7 @@ export default {
   name: "TheTesting",
   mounted() {
     this.getStatus();
+    this.$store.dispatch('mod_api/API_postTestStart')
   },
   data() {
     return {

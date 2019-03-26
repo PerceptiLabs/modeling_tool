@@ -93,7 +93,7 @@ export default {
   },
   watch: {
     statusNetworkCore(newStatus) {
-      if(newStatus === 'Finished') {
+      if(newStatus === 'Finished' && this.showTestingTab === false) {
         this.$store.dispatch('globalView/NET_trainingDone');
         this.$store.dispatch('mod_workspace/EVENT_startDoRequest', false);
         this.showTestingTab = true;
@@ -124,7 +124,7 @@ export default {
     setTabNetwork(index) {
       this.$store.commit('mod_workspace/SET_currentNetwork', index);
       this.$store.dispatch('mod_workspace/SET_elementUnselect');
-      this.$store.dispatch('mod_workspace/EVENT_startDoRequest', false);
+      //this.$store.dispatch('mod_workspace/EVENT_startDoRequest', false);
       if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
       if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
     },

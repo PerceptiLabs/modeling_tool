@@ -46,10 +46,8 @@ export default {
     drawPicture(img) {
       let canvas2d = this.canvas2D;
       let canvas = this.$refs.canvas;
-      // let imgH = img.height;
-      // let imgW = img.width;
-      let imgH = img.width;
-      let imgW = img.height;
+      let imgH = img.height;
+      let imgW = img.width;
       canvas.setAttribute('width', imgW);
       canvas.setAttribute('height', imgH);
       let imgData = canvas2d.createImageData(imgW, imgH);
@@ -58,8 +56,10 @@ export default {
     },
     sendDataToWWorker(dataWatch) {
       let data = dataWatch || this.chartData;
+      //console.log('sendDataToWWorker IMG ', data);
       if (data === null || data === undefined) return;
-      let dataImg = JSON.parse(JSON.stringify(data[0]));
+
+      let dataImg = JSON.parse(JSON.stringify(data.series[0]));
       this.isNeedWait
         ? this.imgDataBuffer = dataImg
         : this.drawPicture(dataImg)

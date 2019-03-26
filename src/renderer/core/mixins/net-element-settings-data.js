@@ -21,6 +21,7 @@ const netElementSettingsData = {
     }
   },
   methods: {
+    coreRequest,
     getDataImg(type) {
       let theData = {
         reciever: this.currentNetworkID,
@@ -32,9 +33,9 @@ const netElementSettingsData = {
         }
       };
       //console.log('getDataImg', theData);
-      coreRequest(theData)
+      this.coreRequest(theData)
         .then((data)=> {
-          //console.log('answer getDataImg', data);
+          console.log('answer getDataImg', data);
           if(data === 'Null') {
             return
           }

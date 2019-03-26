@@ -46,28 +46,23 @@
     computed: {
       componentName() {
         let imgType = this.imgType;
-        if(imgType === 'image' || imgType === 'RGB' || imgType === 'grayscale') return 'ChartPicture';
-        if(imgType === 'line' || imgType === 'bar' || imgType === 'scatter') return 'ChartBase';
-        if(imgType === 'heatmap') return 'ChartHeatmap';
+        if(imgType === 'rgba')                                                return 'ChartPicture';
+        if(imgType === 'line' || imgType === 'bar' || imgType === 'scatter')  return 'ChartBase';
+        if(imgType === 'heatmap')                                             return 'ChartHeatmap';
       }
     },
     watch: {
       chartData(newVal) {
         if(Array.isArray(newVal)) {
-          let type = newVal[0].type;
-          this.imgType = type;
-          if( type === 'image' || type === 'RGB' || type === 'grayscale') this.imgData = newVal;
+          // let type = newVal[0].type;
+          // this.imgType = type;
+          // if( type === 'rgba') this.imgData = newVal;
         }
         else {
-          let type = newVal.series[0].type;
-          this.imgType = type;
-          if( type === 'image' || type === 'RGB' || type === 'grayscale') this.imgData = newVal.series; //TODO привести к единому виду
-          else this.imgData = newVal;
+          this.imgType = newVal.series[0].type;
+          this.imgData = newVal;
         }
       }
-    },
-    methods: {
-
     },
   }
 </script>

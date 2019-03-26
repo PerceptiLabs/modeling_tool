@@ -114,9 +114,8 @@
         };
         this.openLoadDialog(opt)
           .then((pathArr)=> this.saveLoadFile(pathArr))
-          .catch((err)=> {
+          .catch(()=> {
             this.disabledBtn = false;
-            console.error(err)
           })
       }
     }

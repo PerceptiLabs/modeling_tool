@@ -26,7 +26,7 @@ const chartsMixin = {
       this.$refs.chart.showLoading(this.chartSpinner);
       this.createWWorker();
       this.sendDataToWWorker();
-      window.addEventListener("resize", ()=> { this.$refs.chart.resize() }, false);
+      window.addEventListener("resize", this.chartResize, false);
       this.$refs.chart.resize();
     }
   },
@@ -35,7 +35,7 @@ const chartsMixin = {
       this.wWorker.postMessage('close');
       this.wWorker.removeEventListener('message', this.drawChart, false);
       this.$refs.chart.dispose();
-      window.removeEventListener("resize", ()=> { this.$refs.chart.resize() }, false);
+      window.removeEventListener("resize", this.chartResize, false);
     }
   },
   data() {
@@ -59,7 +59,7 @@ const chartsMixin = {
   },
   watch: {
     doRequest(newVal) {
-      if(newVal % 2) this.chartModel = this.chartModelBuffer;
+      if(newVal % 2 && this.isNeedWait) this.chartModel = this.chartModelBuffer;
     },
     '$store.state.mod_events.chartResize': {
       handler() {
@@ -70,6 +70,9 @@ const chartsMixin = {
     },
     chartData(newData) {
       this.sendDataToWWorker(newData)
+    },
+    chartModel(data) {
+      //console.log(this);
     }
   },
   methods: {
@@ -78,11 +81,14 @@ const chartsMixin = {
       this.$nextTick(() => this.$refs.chart.resize());
     },
     drawChart(ev) {
-      console.log('drawChart ', ev);
+      //console.log('drawChart ', ev);
       this.isNeedWait
         ? this.chartModelBuffer = ev.data
         : this.chartModel = ev.data;
       this.$refs.chart.hideLoading()
+    },
+    chartResize() {
+      this.$refs.chart.resize()
     }
   }
 };

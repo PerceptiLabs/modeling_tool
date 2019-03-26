@@ -36,7 +36,7 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
-  getStatusTimer: null,
+  //getStatusTimer: null,
 };
 
 const getters = {
@@ -50,12 +50,12 @@ const mutations = {
   // SET_startWatchGetStatus(state, value) {
   //   state.startWatchGetStatus = value
   // },
-  SET_getStatusTimer(state, value) {
-    state.getStatusTimer = value
-  },
-  RESET_getStatusTimer(state) {
-    clearInterval(state.getStatusTimer);
-  }
+  // SET_getStatusTimer(state, value) {
+  //   state.getStatusTimer = value
+  // },
+  // RESET_getStatusTimer(state) {
+  //   clearInterval(state.getStatusTimer);
+  // }
 };
 
 const actions = {
@@ -132,7 +132,7 @@ const actions = {
       action: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.openTest ? 'getTestStatus' :'getStatus',
       value: ''
     };
-    console.log('API_getStatus get', theData);
+    //console.log('API_getStatus get', theData);
     coreRequest(theData)
       .then((data)=> {
         console.log('API_getStatus answer', data);
@@ -158,7 +158,7 @@ const actions = {
       action: "Start",
       value: message
     };
-    console.log(JSON.stringify(theData));
+    //console.log(JSON.stringify(theData));
     coreRequest(theData)
       .then((data)=> {
         console.log('API_startTraining ', data);
@@ -224,7 +224,7 @@ const actions = {
       action: 'Export',
       value: value
     };
-    console.log(theData);
+    //console.log(theData);
     coreRequest(theData)
       .then((data)=> {
         console.log('API_exportData answer', data);
@@ -234,7 +234,7 @@ const actions = {
       });
     dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
-  API_CLOSE_core({getters, dispatch}) {
+  API_CLOSE_core({getters, dispatch, rootState}) {
     const theData = {
       //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       reciever: 'server',
@@ -246,7 +246,8 @@ const actions = {
       .catch((err) =>{
         console.error(err);
       });
-    dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+    if(rootState.mod_workspace.workspaceContent.length)
+      dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_postTestStart({rootGetters, rootState, dispatch}) {
     console.log('API_postTestStart');
@@ -257,14 +258,14 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-
+        console.log('API_postTestStart ', data);
       })
       .catch((err) =>{
         console.error(err);
       });
   },
   API_postTestPlay({rootGetters, rootState, dispatch}) {
-    console.log('API_postTestPlay');
+    //console.log('API_postTestPlay');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: 'playTest',
@@ -281,7 +282,7 @@ const actions = {
       });
   },
   API_postTestMove({rootGetters, rootState, dispatch}, request) {
-    console.log('API_postTestMove ', request);
+    //console.log('API_postTestMove ', request);
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: request, //nextStep, previousStep
@@ -289,7 +290,7 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        dispatch('mod_api/API_getStatus', null, {root: true});
+        dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true});
       })
       .catch((err) =>{
         console.error(err);
@@ -306,7 +307,7 @@ const actions = {
     //console.log('API_getBeForEnd', theData);
     coreRequest(theData)
       .then((data)=> {
-        console.log('answer API_getBeForEnd');
+        //console.log('answer API_getBeForEnd');
         if(data) dispatch('mod_workspace/SET_elementBeForEnd', data, {root: true});
       })
       .catch((err) =>{

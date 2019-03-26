@@ -66,9 +66,6 @@
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
     components: {ChartSwitch, SettingsCloud },
-    mounted() {
-      this.getDataMeta()
-    },
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
@@ -93,15 +90,12 @@
     watch: {
       'settings.accessProperties.Path': {
         handler(newVal) {
-          if(newVal) {
-            this.getDataImg('DataData')
-          }
+          this.getSettingsInfo()
         },
         immediate: true
       }
     },
     methods: {
-      coreRequest,
       openLoadDialog,
       loadPathFolder,
       loadFile() {
@@ -117,18 +111,16 @@
         };
         this.openLoadDialog(opt)
           .then((pathArr)=> this.saveLoadFile(pathArr))
-          .catch((err)=> {
+          .catch(()=> {
             this.disabledBtn = false;
-            console.error(err)
           })
       },
       loadFolder() {
         this.disabledBtn = true;
         this.loadPathFolder()
           .then((pathArr)=> this.saveLoadFile(pathArr))
-          .catch((err)=> {
+          .catch(()=> {
             this.disabledBtn = false;
-            console.error(err)
           })
       },
       saveLoadFile(pathArr) {
@@ -140,6 +132,13 @@
       clearPath() {
         this.settings.accessProperties.Path = [];
       },
+      getSettingsInfo() {
+        if(this.settings.accessProperties.Path.length == 0) return;
+        this.getDataMeta()
+          .then(()=> {
+            this.getDataImg('DataData')
+          })
+      },
       getDataMeta() {
         let theData = {
           reciever: this.currentNetworkID,
@@ -150,20 +149,20 @@
             Properties: this.settings
           }
         };
-        this.coreRequest(theData)
-          .then((data)=> {
+        console.log(theData);
+        return this.coreRequest(theData)
+          .then((data) => {
             console.log('getDataMeta ', data);
-            if(data === 'Null') {
+            if (data === 'Null') {
               return
             }
             this.settings.accessProperties.Dataset_size = data.Dataset_size;
-            if(data.Columns.length) {
-              if(!this.settings.accessProperties.Columns) this.settings.accessProperties.Columns = data.Columns[0];
-              data.Columns.forEach((el)=> this.dataColumns.push({text: el, value: el}))
+            if (data.Columns.length) {
+              if (!this.settings.accessProperties.Columns) this.settings.accessProperties.Columns = data.Columns[0];
+              data.Columns.forEach((el) => this.dataColumns.push({text: el, value: el}))
             }
           })
-          .catch((err)=> {
-            console.log('answer err');
+          .catch((err) => {
             console.error(err);
           });
       },
