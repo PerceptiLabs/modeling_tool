@@ -83,6 +83,15 @@ export default {
     currentNetwork() {
       return this.$store.getters['mod_workspace/GET_currentNetwork']
     },
+    currentSelectedEl() {
+      return this.$store.getters['mod_workspace/GET_currentSelectedEl']
+    },
+    isTutorialMode() {
+      return this.$store.getters['mod_tutorials/getIstutorialMode']
+    },
+    tutorialActiveStep() {
+      return this.$store.getters['mod_tutorials/getActiveStep']
+    },
     networkClass() {
       this.calcScaleMap();
       return {
@@ -104,6 +113,11 @@ export default {
         this.saveNetwork();
       }
     },
+    currentSelectedEl(newStatus, oldStatus) {
+      if(this.isTutorialMode && this.tutorialActiveStep === 'training') {
+        this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: newStatus[0].el.layerMeta.tutorialId});
+      } 
+    }
   },
   methods: {
     calcScaleMap() {

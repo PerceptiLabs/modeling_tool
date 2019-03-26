@@ -30,6 +30,7 @@
 
 <script>
 //import mixinSet       from '@/core/mixins/net-element-settings.js';
+import { mapGetters, mapMutations, mapActions } from 'vuex';
 export default {
   name: "SelectCoreSide",
   //mixins: [mixinSet],
@@ -43,9 +44,18 @@ export default {
     }
   },
   computed: {
-
+    ...mapGetters({
+      isTutorialMode:   'mod_tutorials/getIstutorialMode',
+      activePoint:      'mod_tutorials/getActivePoint'
+    }),
   },
   methods: {
+    ...mapMutations({
+      setActiveStep:        'mod_tutorials/SET_activeStepMainTutorial'
+    }),
+    ...mapActions({
+      pointActivate:    'mod_tutorials/pointActivate'
+    }),
     setTab(i) {
       this.tabSelected = i;
     },
@@ -54,6 +64,9 @@ export default {
       this.$store.dispatch('mod_api/API_startTraining');
       this.$store.dispatch('mod_statistics/STAT_defaultSelect');
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+      if(this.isTutorialMode) {
+        this.setActiveStep('next')
+      } 
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

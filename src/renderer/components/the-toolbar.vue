@@ -65,6 +65,8 @@
         button.btn.btn--toolbar(type="button"
           :class="{'active': statusNetworkCore === 'Paused'}"
           :disabled="!isTraining"
+          class="tutorial-relative"
+          id="tutorial_pause-training"
           v-tooltip:bottom="'Pause'"
           @click="trainPause()"
         )
@@ -237,6 +239,7 @@ export default {
     },
     trainPause() {
       this.$store.dispatch('mod_api/API_pauseTraining');
+      this.tutorialPointActivate({way:'next', validation: 'tutorial_pause-training'})
     },
     skipValid() {
       this.$store.dispatch('mod_api/API_skipValidTraining');
@@ -275,11 +278,11 @@ export default {
       this.$store.commit('mod_workspace/SET_arrowType', {type, store: this.$store});
       let selectArray = this.arrowList.splice(index, 1);
       this.arrowList.unshift(selectArray[0]);
-      this.tutorialPointActivate({way:'next', validation: tutorial_id, makeClass: true})
+      this.tutorialPointActivate({way:'next', validation: tutorial_id})
     },
     setNetMode(type, tutorial_id) {
       this.$store.dispatch('mod_workspace/SET_netMode', type)
-      this.tutorialPointActivate({way:'next', validation: tutorial_id, makeClass: true})
+      this.tutorialPointActivate({way:'next', validation: tutorial_id})
     },
     openStatistics() {
       //this.$store.commit('mod_workspace/SET_openStatistics', true)

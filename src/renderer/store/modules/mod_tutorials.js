@@ -553,6 +553,124 @@ const state = {
           ]
         },
       ]
+    },
+    training: {
+      title: 'Step 8. Training',
+      points: [
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'The top window shows training <div class="marker">Statistics</div> for the overall network. Please press <div class="marker">"Tab"</div> to continue',
+          actions: [
+            {
+              id: 'tutorial_statistics', 
+              status: 'disabled',
+              schematic: {
+                type: 'border'
+              },
+              next: true
+            }
+          ]
+        },
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'The <div class="marker">ViewBox</div> shows what’s happening in each component. Select any layer on the <div class="marker">Map View</div> to go into more detail.',
+          actions: [
+            {
+              id: 'tutorial_view-box', 
+              status: 'disabled',
+              schematic: {
+                type: 'border',
+              },
+              next: true
+            }
+          ]
+        },
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'The <div class="marker">Pause</div> to learn  further details',
+          actions: [
+            {
+              tooltip: 'Pause...',
+              id: 'tutorial_pause-training',
+              status: 'disabled',
+            }
+          ]
+        },
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'Click <div class="marker">Reshape</div> in the <div class="marker">Map View</div> </br> Notice the corresponding display in the <div class="marker">ViewBox</div>',
+          actions: [
+            { 
+              tooltip: 'Click Reshape...',
+              id: 'tutorial_process-reshape-1',
+              status: 'disabled',
+            }
+          ]
+        },
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'Click <div class="marker">Fully Connected (FC)</div> in the <div class="marker">Map View</div> See that the output line in FC is the same as<div class="marker">ViewBox</div>',
+          actions: [
+            { 
+              tooltip: 'This is the image that <br/> the AI trying to classify. ',
+              id: 'tutorial_view-box',
+              status: 'disabled',
+              next: true
+            },
+            { 
+              tooltip: 'Click Fully Connected...',
+              id: 'tutorial_fully-connected-1',
+              status: 'disabled',
+            },
+            { 
+              id: 'tutorial_prediction-chart',
+              status: 'disabled',
+              schematic: {
+                type: 'border',
+              },
+              next: true
+            }
+          ]
+        },
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'Continue training.',
+          actions: [
+            {
+              tooltip: 'Unpause...',
+              id: 'tutorial_pause-training',
+              status: 'disabled',
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Prediction:</div> Overview of the </br> network perfomance
+                        </div>`,
+              id: 'tutorial_prediction-tab',
+              status: 'disabled',
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Accuracy:</div> Overall </br> performance of a network. </br> The higher the accuracy, </br> the better it is at learning. 
+                        </div>`,
+              id: 'tutorial_accuracy-tab',
+              status: 'disabled',
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">  
+                          <div class="tooltip-tutorial_bold">Loss:</div> How much error there is in your predictions.
+                        </div>`,
+              id: 'tutorial_loss-tab',
+              status: 'disabled',
+            }
+          ]
+        },
+      ]
     }
   }
 };
@@ -654,22 +772,24 @@ const mutations = {
 
 const actions = {
   pointActivate({commit, dispatch, getters}, value) {
+    console.log(getters.getActiveAction.id, value.validation)
     if(getters.getIstutorialMode && 
       getters.getMainTutorialIsStarted && 
       getters.getActiveAction && 
       getters.getActiveAction.id === value.validation) {
-        
         if(value.way === 'next')  {
           dispatch('removeDuplicateId')
           dispatch('checkActiveActionAndPoint', value)
         }
         else {
           dispatch('createTooltip')
+          dispatch('drawSchematicElement', getters.getActiveAction.schematic)
           commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
         }
     }
   },
   checkActiveActionAndPoint({commit, dispatch, getters}, value) {
+    
     commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'})
     commit('SET_activeActionMainTutorial', 'next')
     if(getters.getActiveAction) {
@@ -681,7 +801,7 @@ const actions = {
       dispatch('nextPoint')
       if(getters.getActivePoint) {
         commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
-        dispatch('createTooltip', value.searchLayersbar)
+        dispatch('createTooltip')
       }
       else { //all points are done
         commit('SET_activePointMainTutorial', 0)
@@ -699,7 +819,7 @@ const actions = {
       element.appendChild(tooltipBlock)
     }
   },
-  nextPoint({commit, getters}) {
+  nextPoint({commit, getters, dispatch}) {
     commit('SET_activeActionMainTutorial', 0)
     commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'done'});
     let static_info = getters.getActivePoint.static_info;
@@ -709,15 +829,21 @@ const actions = {
       }
     }
     commit('SET_activePointMainTutorial', 'next')
+    dispatch('drawSchematicElement', getters.getActiveAction.schematic)
+    console.log(getters.getActivePointMainTutorial)
+    console.log(getters.getActiveAction)
   },
-  drawSchematicElement({getters, commit}, schematic) {
+  drawSchematicElement({getters, commit, dispatch}, schematic) {
+    let tutorial_targetBorder = document.querySelector('.tutorial_target-border')
+    if(tutorial_targetBorder) tutorial_targetBorder.classList.remove('tutorial_target-border')
+    console.log(schematic)
     if(schematic) {
-      let infoSection = document.querySelector('.info-section_main')
-      let element = document.createElement('div');
-      element.classList.add('schematic');
-      infoSection.insertBefore(element, infoSection.firstChild)
       switch (schematic.type) {
         case 'square':
+          let infoSection = document.querySelector('.info-section_main')
+          let element = document.createElement('div');
+          element.classList.add('schematic');
+          infoSection.insertBefore(element, infoSection.firstChild)
           element.classList.add('schematic--square');
           element.style.top = schematic.top + 'rem'
           element.style.left = schematic.left + 'rem'
@@ -725,15 +851,26 @@ const actions = {
          case 'arrow':
           let start = document.getElementById(getters.getActiveAction.schematic.connection_start).getBoundingClientRect()
           let stop = document.getElementById(getters.getActiveAction.id).getBoundingClientRect()
-          //commit('mod_workspace/SET_preArrowStart', {x: start.left - start.width, y: start.top - start.height, type: 'dash1'}, {root:true})
-          //commit('mod_workspace/SET_preArrowStop', {x: stop.left -stop.width, y: stop.top - stop.height, type: 'dash1'}, {root:true})
-
-          let startXpos = (start.left-10);
-          let startYpos = (start.top - start.height);
-          let stopXpos = (stop.left - stop.width-10);
-          let stoptYpos = (stop.top - stop.height);
+          let startXpos = start.left - 10;
+          let startYpos = start.top - start.height;
+          let stopXpos = stop.left - stop.width - 10;
+          let stoptYpos = stop.top - stop.height;
           commit('mod_workspace/SET_preArrowStart', {x: startXpos, y: startYpos, type: 'dash1'}, {root:true})
           commit('mod_workspace/SET_preArrowStop', {x: stopXpos, y: stoptYpos, type: 'dash1'}, {root:true})
+          break;
+         case 'border':
+          // let addBorder = (event) => {
+          //   if(event.code === "Tab") {
+          //     dispatch('pointActivate', {way:'next', validation: getters.getActiveAction.id})
+          //     dispatch('drawSchematicElement', getters.getActiveAction.schematic)
+          //     document.removeEventListener('keyup', addBorder)
+          //   }
+          // }
+          // document.addEventListener('keyup', addBorder)
+          let domElement = document.getElementById(getters.getActiveAction.id)
+          console.log(domElement)
+          domElement.classList.add('tutorial_target-border')
+          break;
       }
     }
   },

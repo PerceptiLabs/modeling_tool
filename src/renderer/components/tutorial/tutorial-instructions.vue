@@ -39,6 +39,7 @@
         div
           //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back 
           button.footer_btn(v-if="isFirstStep" @click="startTutorial('next')") Next
+          button.footer_btn(v-else-if="activeAction.next" @click="pointActivate({way: 'next', validation: activeAction.id})") Next111
           button.footer_btn(v-else @click="changeStep('next')" :disabled="!allPointsIsDone") Next
 </template>
 <script>
@@ -59,7 +60,8 @@ export default {
       isTutorialMode:   'mod_tutorials/getIstutorialMode',
       stepCount:        'mod_tutorials/getActiveStepMainTutorial',
       allPointsIsDone:  'mod_tutorials/getAllPointsIsDone',
-      activePoint:      'mod_tutorials/getActivePoint'
+      activePoint:      'mod_tutorials/getActivePoint',
+      activeAction:     'mod_tutorials/getActiveAction'
     }),
     stepsLength() {
       return Object.keys(this.interective).length - 1
@@ -321,9 +323,11 @@ button.btn--primary .tooltip-tutorial,
   transform: translate(0);
   left: 110%;
 }
+#tutorial_view-box .tooltip-tutorial {
+  left: 50%;
+}
 .tooltip-tutorial_italic {
   font-style: italic;
- 
 }
 .tooltip-tutorial_bold {
   font-weight: 700;
@@ -338,17 +342,14 @@ button.btn--primary .tooltip-tutorial,
     left: 105%
   }
 }
-.schematic{
-  position: absolute;
-}
 .schematic--square {
   width: 7.5rem;
   height: 7.5rem;
   border-radius: 5px;
   border: 2px dotted $color-schematic-element;
+  position: absolute;
 }
-.schematic--arrow {
-  width: 12rem;
-  border-bottom: 2px dotted $color-schematic-element;
+.tutorial_target-border {
+  border: 2px solid #3BC5FF;
 }
 </style>

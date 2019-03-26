@@ -1,5 +1,5 @@
 <template lang="pug">
-  section.network_info-section
+  section.network_info-section(id="tutorial_statistics")
     .info-section_head(v-if="!testIsOpen")
       h3 Statistics
     .info-section_main(v-if="elData !== null")
@@ -21,7 +21,7 @@
   import TrainNormal      from '@/components/network-elements/elements/train-normal/viewBox-train-normal.vue'
   import TrainNormalData  from '@/components/network-elements/elements/train-normal-data/viewBox-train-normal-data.vue'
   import TrainReinforce   from '@/components/network-elements/elements/train-reinforce/viewBox-train-reinforce.vue'
-
+  import { mapGetters, mapMutations, mapActions } from 'vuex';
 
 export default {
   name: "TheStatistics",
@@ -42,13 +42,21 @@ export default {
 
     }
   },
+  mounted() {
+    this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
+  },
   methods: {
-
+    ...mapActions({
+      pointActivate:    'mod_tutorials/pointActivate'
+    })
   },
   computed: {
-      testIsOpen() {
-        return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
-      }
+    ...mapGetters({
+      activePoint:   'mod_tutorials/getActivePoint'
+    }),
+    testIsOpen() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+    }
   }
 }
 </script>
