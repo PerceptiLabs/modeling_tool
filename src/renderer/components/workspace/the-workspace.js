@@ -16,14 +16,10 @@ import TheViewBox       from "@/components/statistics/the-view-box";
 export default {
   name: 'WorkspaceContent',
   components: {
-    NetworkField,
-    TextEditable,
-    GeneralSettings,
-    GeneralResult,
+    NetworkField, TextEditable,
+    GeneralSettings, GeneralResult,
     SelectCoreSide,
-    TheStatistics,
-    TheTesting,
-    TheViewBox,
+    TheStatistics, TheTesting, TheViewBox,
   },
   data() {
     return {
@@ -124,7 +120,6 @@ export default {
     setTabNetwork(index) {
       this.$store.commit('mod_workspace/SET_currentNetwork', index);
       this.$store.dispatch('mod_workspace/SET_elementUnselect');
-      //this.$store.dispatch('mod_workspace/EVENT_startDoRequest', false);
       if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
       if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
     },

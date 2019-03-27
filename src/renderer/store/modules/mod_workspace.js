@@ -183,8 +183,14 @@ const mutations = {
   set_statusNetworkZoom(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.zoom = value;
   },
-  set_charts_doRequest(state, {getters}) {
-    getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
+  set_charts_doRequest(state, {getters, networkIndex}) {
+    console.log(networkIndex);
+    if(networkIndex) {
+      state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++
+    }
+    else {
+      getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
+    }
   },
   set_charts_timerID(state, {getters, timerId}) {
     getters.GET_currentNetwork.networkMeta.chartsRequest.timerID = timerId;
@@ -415,15 +421,18 @@ const actions = {
   RESET_network({commit}) {
     commit('RESET_network')
   },
-  EVENT_startDoRequest({dispatch, commit, rootState, getters}, isStart) {
+  EVENT_startDoRequest({dispatch, commit, rootState, getters, state}, isStart) {
     console.log('EVENT_startDoRequest', isStart);
     const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
     if(currentMeta === undefined) return;
     const timeInterval = rootState.globalView.timeIntervalDoRequest;
+    var networkIndex = state.currentNetwork;
+
     dispatch('SET_statusNetworkWaitGlobalEvent', isStart);
+
     if(isStart) {
       let timerId = setInterval(()=> {
-        commit('set_charts_doRequest', {getters});
+        commit('set_charts_doRequest', {getters, networkIndex});
         if(!(currentMeta.doRequest % 2)) dispatch('mod_api/API_getStatus', null, {root: true});
       }, timeInterval);
       commit('set_charts_timerID', {getters, timerId});

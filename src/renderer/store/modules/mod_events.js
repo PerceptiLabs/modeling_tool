@@ -22,21 +22,6 @@ const mutations = {
   set_chartResize(state) {
     state.chartResize++
   },
-
-  // set_charts_showCharts(state) {
-  //   state.chartsRequest.showCharts++
-  // },
-
-
-  // set_charts_requestCounterAdd(state) {
-  //   state.chartsRequest.requestCounter++
-  // },
-  // set_charts_waitGlobalEventReduce(state) {
-  //   state.chartsRequest.requestCounter--;
-  //   if(state.chartsRequest.requestCounter === 0) {
-  //     state.chartsRequest.showCharts++
-  //   }
-  // },
 };
 
 const actions = {
@@ -55,9 +40,15 @@ const actions = {
     dispatch('mod_workspace/RESET_network', null, {root: true});
     ctx.$router.replace({name: 'login'});
   },
-  EVENT_closeApp({dispatch}) {
-    dispatch('mod_api/API_CLOSE_core', null, {root: true});
-    ipcRenderer.send('appClose');
+  EVENT_closeApp({dispatch, rootState}) {
+    if(rootState.mod_api.statusLocalCore === 'online') {
+      dispatch('mod_api/API_stopTraining', null, {root: true})
+        .then(()=> { return dispatch('mod_api/API_CLOSE_core', null, {root: true}) })
+        .then(()=> ipcRenderer.send('appClose'));
+    }
+    else {
+      ipcRenderer.send('appClose')
+    }
   },
 
   EVENT_chartResize({commit}) {

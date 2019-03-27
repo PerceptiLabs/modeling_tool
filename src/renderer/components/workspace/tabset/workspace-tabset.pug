@@ -17,12 +17,12 @@ ul.workspace_tab-list
     button.btn.btn--tabs.tab_statistics(type="button"
       v-if="tab.networkMeta.openStatistics !== null"
       @click.stop="openStatistics(i)"
-      :class="{'active': tab.networkMeta.openStatistics}")
+      :class="{'active': tab.networkMeta.openStatistics && indexCurrentNetwork == i}")
       span Statistics
       i.icon.icon-circle-o
     button.btn.btn--tabs.tab_statistics.tab--testing(type="button"
       v-if="tab.networkMeta.openTest !== null"
-      :class="{'active': tab.networkMeta.openTest}"
+      :class="{'active': tab.networkMeta.openTest && indexCurrentNetwork == i}"
       @click.stop="openTest(i)"
       )
       span Test

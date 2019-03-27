@@ -199,8 +199,9 @@ const actions = {
     coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
-        dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+        dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
         dispatch('API_getStatus');
+        return
       })
       .catch((err) =>{
         console.error(err);
@@ -242,7 +243,9 @@ const actions = {
       value: ''
     };
     coreRequest(theData)
-      .then((data)=> {})
+      .then((data)=> {
+        return
+      })
       .catch((err) =>{
         console.error(err);
       });
