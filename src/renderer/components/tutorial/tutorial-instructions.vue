@@ -39,8 +39,8 @@
         div
           //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back 
           button.footer_btn(v-if="isFirstStep" @click="startTutorial('next')") Next
-          button.footer_btn(v-else-if="activeAction.next" @click="pointActivate({way: 'next', validation: activeAction.id})") Next111
-          button.footer_btn(v-else @click="changeStep('next')" :disabled="!allPointsIsDone") Next
+          button.footer_btn(v-else-if="activeAction.next && !allPointsIsDone" @click="pointActivate({way: 'next', validation: activeAction.id})") Next
+          button.footer_btn(v-else-if="stepCount !== stepsLength" @click="changeStep('next')" :disabled="disabledNext") Next
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex';
@@ -68,6 +68,9 @@ export default {
     },
     isFirstStep() {
       return this.interective[this.activeStep].points[0].status === 'first'
+    },
+    disabledNext() {
+      return this.activeStep === 'run_training' || !this.allPointsIsDone
     }
   },
   methods: {
@@ -299,6 +302,7 @@ export default {
 	background-color: #3BC5FF;
 	box-shadow: $icon-shad;
 	pointer-events: none;
+  font-family: $base-font-sans-serif;
 	left: 120%;
 	text-align: left;
 	&:before {
@@ -325,6 +329,9 @@ button.btn--primary .tooltip-tutorial,
 }
 #tutorial_view-box .tooltip-tutorial {
   left: 50%;
+}
+#tutorial_play-test-button .tooltip-tutorial {
+  top: 0
 }
 .tooltip-tutorial_italic {
   font-style: italic;

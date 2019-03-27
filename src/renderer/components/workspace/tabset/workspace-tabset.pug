@@ -17,7 +17,8 @@ ul.workspace_tab-list
     button.btn.btn--tabs.tab_statistics(type="button"
       v-if="tab.networkMeta.openStatistics !== null"
       @click.stop="openStatistics(i)"
-      :class="{'active': tab.networkMeta.openStatistics}")
+      :class="{'active': tab.networkMeta.openStatistics}"
+      id="tutorial_statistic-tab")
       span Statistics
       i.icon.icon-circle-o
     button.btn.btn--tabs.tab_statistics.tab--testing(type="button"

@@ -46,12 +46,11 @@ export default {
   computed: {
     ...mapGetters({
       isTutorialMode:   'mod_tutorials/getIstutorialMode',
-      activePoint:      'mod_tutorials/getActivePoint'
     }),
   },
   methods: {
     ...mapMutations({
-      setActiveStep:        'mod_tutorials/SET_activeStepMainTutorial'
+      tutorialNextActiveStep:        'mod_tutorials/SET_activeStepMainTutorial'
     }),
     ...mapActions({
       pointActivate:    'mod_tutorials/pointActivate'
@@ -65,7 +64,7 @@ export default {
       this.$store.dispatch('mod_statistics/STAT_defaultSelect');
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
       if(this.isTutorialMode) {
-        this.setActiveStep('next')
+        this.tutorialNextActiveStep('next')
       } 
     },
     closePopup() {

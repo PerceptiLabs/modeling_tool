@@ -10,7 +10,7 @@
         .progress-bar-box_progress(:style="{width: progress + '%'}")
       .testing-head_controls
         //-button.btn.btn--link.icon.icon-player-prev(type="button" @click="postTestMove('previousStep')")
-        button.btn.btn--link.icon.icon-player-play(type="button" @click="postTestStart()")
+        button.btn.btn--link.icon.icon-player-play(type="button" @click="postTestStart()" id="tutorial_play-test-button" class="tutorial-relative")
         button.btn.btn--link.icon.icon-player-next(type="button" @click="postTestMove('nextStep')")
     //-.info-section_main(v-if="elData !== null")
       component(
@@ -20,6 +20,7 @@
 </template>
 
 <script>
+import { mapActions } from 'vuex';
 export default {
   name: "TheTesting",
   data() {
@@ -34,8 +35,12 @@ export default {
     },
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
     postTestStart() {
       this.$store.dispatch('mod_api/API_postTestPlay')
+      this.tutorialPointActivate({way:'next', validation:'tutorial_play-test-button'})
     },
     postTestMove(request) {
       this.$store.dispatch('mod_api/API_postTestMove', request);

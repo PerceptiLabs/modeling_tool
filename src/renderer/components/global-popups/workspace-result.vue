@@ -22,10 +22,12 @@
         button.btn.btn--primary(type="button"
           @click="closePopup()") Cancel
         button.btn.btn--primary(type="button"
+          id="tutorial_run-test-button"
           @click="runTest()") Run test
 </template>
 
 <script>
+import { mapActions } from 'vuex';
 export default {
   name: "GeneralResult",
   data() {
@@ -37,6 +39,9 @@ export default {
 
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
     runTest() {
       this.closePopup();
       this.$store.dispatch('mod_api/API_postTestStart');
@@ -47,6 +52,7 @@ export default {
       this.$store.dispatch('mod_workspace/SET_openStatistics', false );
       this.$store.dispatch('mod_workspace/SET_openTest', true);
       this.$store.dispatch('mod_events/EVENT_chartResize');
+      this.tutorialPointActivate({way: 'next', validation: 'tutorial_run-test-button'})
     },
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

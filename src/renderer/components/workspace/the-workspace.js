@@ -11,7 +11,7 @@ import SelectCoreSide   from "@/components/global-popups/workspace-core-side";
 import TheStatistics    from "@/components/statistics/the-statistics.vue";
 import TheTesting       from "@/components/statistics/the-testing.vue";
 import TheViewBox       from "@/components/statistics/the-view-box";
-
+import { mapActions } from 'vuex';
 
 export default {
   name: 'WorkspaceContent',
@@ -114,12 +114,19 @@ export default {
       }
     },
     currentSelectedEl(newStatus, oldStatus) {
+      console.log(newStatus)
       if(this.isTutorialMode && this.tutorialActiveStep === 'training') {
-        this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: newStatus[0].el.layerMeta.tutorialId});
+        //this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: newStatus[0].el.layerMeta.tutorialId});
       } 
+    },
+    showGlobalResult(newStatus, oldStatus) {
+      if(newStatus) this.tutorialPointActivate({way: 'next', validation:'tutorial_statistic-tab'})
     }
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
     calcScaleMap() {
       this.$nextTick(()=> {
         const net = this.$refs.networkField[0].$refs.network;
