@@ -16,11 +16,9 @@ const baseNetDrag = {
 
   methods: {
     move(ev) {
-      if (!this.bodyDrag) {
-        return
-      }
-      ev.stopPropagation();
-      if (this.bodyDrag) {
+      if (!this.bodyDrag) return;
+      else {
+        ev.stopPropagation();
         this.bodyMove(ev)
       }
     },
@@ -67,9 +65,11 @@ const baseNetDrag = {
         y: (stickStartPos.mouseY - (ev.pageY || ev.touches[0].pageY)) / this.networkScale
       };
 
-      this.top = stickStartPos.top - delta.y;
-      this.left = stickStartPos.left - delta.x;
+      const top = Math.round((stickStartPos.top - delta.y)/10)*10;
+      const left = Math.round((stickStartPos.left - delta.x)/10)*10;
 
+      this.top = (top < 0) ? 0 : top;
+      this.left = (left < 0) ? 0 : left;
       this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
     },
 
