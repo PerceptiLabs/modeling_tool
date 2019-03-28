@@ -35,7 +35,7 @@ const netElementSettingsData = {
       //console.log('getDataImg', theData);
       this.coreRequest(theData)
         .then((data)=> {
-          console.log('answer getDataImg', data);
+          //console.log('answer getDataImg', data);
           if(data === 'Null') {
             return
           }

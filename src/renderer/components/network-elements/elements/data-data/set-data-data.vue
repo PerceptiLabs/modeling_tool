@@ -149,10 +149,10 @@
             Properties: this.settings
           }
         };
-        console.log(theData);
+        //console.log(theData);
         return this.coreRequest(theData)
           .then((data) => {
-            console.log('getDataMeta ', data);
+            //console.log('getDataMeta ', data);
             if (data === 'Null') {
               return
             }

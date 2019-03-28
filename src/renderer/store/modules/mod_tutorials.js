@@ -16,9 +16,9 @@ const mutations = {
   SET_runButtonsActive(state, value) {
     state.runButtonsActive = value;
   },
-  SET_runButtonsActive(state, value) {
-    state.runButtonsActive = value;
-  },
+  // SET_runButtonsActive(state, value) {
+  //   state.runButtonsActive = value;
+  // },
   SET_activeStep(state, value) {
     state.activeStep = value;
   },

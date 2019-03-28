@@ -184,7 +184,7 @@ const mutations = {
     getters.GET_currentNetwork.networkMeta.zoom = value;
   },
   set_charts_doRequest(state, {getters, networkIndex}) {
-    console.log(networkIndex);
+    //console.log(networkIndex);
     if(networkIndex) {
       state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++
     }
@@ -422,7 +422,7 @@ const actions = {
     commit('RESET_network')
   },
   EVENT_startDoRequest({dispatch, commit, rootState, getters, state}, isStart) {
-    console.log('EVENT_startDoRequest', isStart);
+    //console.log('EVENT_startDoRequest', isStart);
     const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
     if(currentMeta === undefined) return;
     const timeInterval = rootState.globalView.timeIntervalDoRequest;

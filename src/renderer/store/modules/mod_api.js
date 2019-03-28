@@ -135,7 +135,7 @@ const actions = {
     //console.log('API_getStatus get', theData);
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_getStatus answer', data);
+        //console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -158,10 +158,10 @@ const actions = {
       action: "Start",
       value: message
     };
-    //console.log(JSON.stringify(theData));
+    //console.log(JSON.parse(JSON.stringify(theData)));
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_startTraining ', data);
+        //console.log('API_startTraining ', data);
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
       })
       .catch((err) =>{
