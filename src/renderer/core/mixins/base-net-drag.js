@@ -16,19 +16,15 @@ const baseNetDrag = {
 
   methods: {
     move(ev) {
-      if (!this.bodyDrag) {
-        return
-      }
-      ev.stopPropagation();
-      if (this.bodyDrag) {
+      if (!this.bodyDrag) return;
+      else {
+        ev.stopPropagation();
         this.bodyMove(ev)
       }
     },
 
     up(ev) {
-      if (this.bodyDrag) {
-        this.bodyUp(ev)
-      }
+      if (this.bodyDrag) this.bodyUp(ev)
     },
 
     bodyDown(ev) {
@@ -37,9 +33,7 @@ const baseNetDrag = {
       //document.documentElement.addEventListener('mousedown', this.deselect);//base-net-functional.js
       //base-net-functional.js
 
-      if (this.contextIsOpen || this.settingsIsOpen) {
-        return
-      }
+      if (this.contextIsOpen || this.settingsIsOpen) return;
 
       this.$parent.$parent.$el.addEventListener('mousemove', this.move);
       this.$parent.$parent.$el.addEventListener('mouseup', this.up);
@@ -60,16 +54,18 @@ const baseNetDrag = {
     },
 
     bodyMove(ev) {
-      const stickStartPos = this.stickStartPos;
+      if(!(ev.pageX % 10 || ev.pageY % 10)) return;
 
-      let delta = {
+      const stickStartPos = this.stickStartPos;
+      const delta = {
         x: (stickStartPos.mouseX - (ev.pageX || ev.touches[0].pageX)) / this.networkScale,
         y: (stickStartPos.mouseY - (ev.pageY || ev.touches[0].pageY)) / this.networkScale
       };
+      const top = Math.round((stickStartPos.top - delta.y)/10)*10;
+      const left = Math.round((stickStartPos.left - delta.x)/10)*10;
 
-      this.top = stickStartPos.top - delta.y;
-      this.left = stickStartPos.left - delta.x;
-
+      this.top = (top < 0) ? 0 : top;
+      this.left = (left < 0) ? 0 : left;
       this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
     },
 
@@ -135,13 +131,8 @@ const baseNetDrag = {
   },
 
   watch: {
-    x() {
-      return
-    },
-
-    y() {
-      return
-    },
+    x() { return },
+    y() { return },
   },
 };
 

@@ -23,7 +23,7 @@ ul.workspace_tab-list
       i.icon.icon-circle-o
     button.btn.btn--tabs.tab_statistics.tab--testing(type="button"
       v-if="tab.networkMeta.openTest !== null"
-      :class="{'active': tab.networkMeta.openTest}"
+      :class="{'active': tab.networkMeta.openTest && indexCurrentNetwork == i}"
       @click.stop="openTest(i)"
       )
       span Test

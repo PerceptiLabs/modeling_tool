@@ -1,5 +1,5 @@
-import requestApi  from "@/core/api.js";
-import {pathCore}  from "@/core/constants.js";
+import coreRequest  from "@/core/apiCore.js";
+import {pathCore}   from "@/core/constants.js";
 
 //const net = require('net');
 const {spawn} = require('child_process');
@@ -36,7 +36,7 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
-  getStatusTimer: null,
+  //getStatusTimer: null,
 };
 
 const getters = {
@@ -50,12 +50,12 @@ const mutations = {
   // SET_startWatchGetStatus(state, value) {
   //   state.startWatchGetStatus = value
   // },
-  SET_getStatusTimer(state, value) {
-    state.getStatusTimer = value
-  },
-  RESET_getStatusTimer(state) {
-    clearInterval(state.getStatusTimer);
-  }
+  // SET_getStatusTimer(state, value) {
+  //   state.getStatusTimer = value
+  // },
+  // RESET_getStatusTimer(state) {
+  //   clearInterval(state.getStatusTimer);
+  // }
 };
 
 const actions = {
@@ -113,8 +113,7 @@ const actions = {
         action: 'getStatus',
         value: ''
       };
-      const client = new requestApi();
-      client.sendMessage(theData)
+      coreRequest(theData)
         .then((data)=> {
           commit('SET_statusLocalCore', 'online')
         })
@@ -134,8 +133,7 @@ const actions = {
       value: ''
     };
     //console.log('API_getStatus get', theData);
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         //console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
@@ -160,12 +158,11 @@ const actions = {
       action: "Start",
       value: message
     };
-    //console.log(JSON.stringify(theData));
-    const client = new requestApi();
-    client.sendMessage(theData)
+    //console.log(JSON.parse(JSON.stringify(theData)));
+    coreRequest(theData)
       .then((data)=> {
         //console.log('API_startTraining ', data);
-        dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
+        dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
       })
       .catch((err) =>{
         console.error(err);
@@ -178,16 +175,15 @@ const actions = {
       action: 'Pause',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         dispatch('API_getStatus');
-        if(rootState.mod_events.chartsRequest.waitGlobalEvent) {
+        if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
           dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
-          dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+          dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
         }
         else {
-          dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
+          dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
         }
       })
       .catch((err) =>{
@@ -200,12 +196,12 @@ const actions = {
       action: 'Stop',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
-        dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+        dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
         dispatch('API_getStatus');
+        return
       })
       .catch((err) =>{
         console.error(err);
@@ -217,8 +213,7 @@ const actions = {
       action: 'SkipToValidation',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {})
       .catch((err) =>{
         console.error(err);
@@ -230,31 +225,32 @@ const actions = {
       action: 'Export',
       value: value
     };
-    console.log(theData);
-    const client = new requestApi();
-    client.sendMessage(theData)
+    //console.log(theData);
+    coreRequest(theData)
       .then((data)=> {
         console.log('API_exportData answer', data);
       })
       .catch((err) =>{
         console.error(err);
       });
-    dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+    dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
-  API_CLOSE_core({getters, dispatch}) {
+  API_CLOSE_core({getters, dispatch, rootState}) {
     const theData = {
       //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       reciever: 'server',
       action: 'Close',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
-      .then((data)=> {})
+    coreRequest(theData)
+      .then((data)=> {
+        return
+      })
       .catch((err) =>{
         console.error(err);
       });
-    dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
+    if(rootState.mod_workspace.workspaceContent.length)
+      dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_postTestStart({rootGetters, rootState, dispatch}) {
     console.log('API_postTestStart');
@@ -263,44 +259,41 @@ const actions = {
       action: 'startTest',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
-
+        console.log('API_postTestStart ', data);
       })
       .catch((err) =>{
         console.error(err);
       });
   },
   API_postTestPlay({rootGetters, rootState, dispatch}) {
-    console.log('API_postTestPlay');
+    //console.log('API_postTestPlay');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: 'playTest',
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
-        rootState.mod_events.chartsRequest.waitGlobalEvent
-          ? dispatch('mod_events/EVENT_startDoRequest', false, {root: true})
-          : dispatch('mod_events/EVENT_startDoRequest', true, {root: true})
+        rootGetters['mod_workspace/GET_networkWaitGlobalEvent']
+          ? dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+          : dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
       })
       .catch((err) =>{
         console.error(err);
       });
   },
   API_postTestMove({rootGetters, rootState, dispatch}, request) {
-    console.log('API_postTestMove ', request);
+    //console.log('API_postTestMove ', request);
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: request, //nextStep, previousStep
       value: ''
     };
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
-        dispatch('mod_api/API_getStatus', null, {root: true});
+        dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true});
       })
       .catch((err) =>{
         console.error(err);
@@ -315,10 +308,9 @@ const actions = {
       value: prepareNetwork(elementList)
     };
     //console.log('API_getBeForEnd', theData);
-    const client = new requestApi();
-    client.sendMessage(theData)
+    coreRequest(theData)
       .then((data)=> {
-        console.log('answer API_getBeForEnd');
+        //console.log('answer API_getBeForEnd');
         if(data) dispatch('mod_workspace/SET_elementBeForEnd', data, {root: true});
       })
       .catch((err) =>{

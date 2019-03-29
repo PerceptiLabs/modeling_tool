@@ -47,7 +47,6 @@ export default {
     }),
     runTest() {
       this.closePopup();
-      this.$store.dispatch('mod_api/API_postTestStart');
       this.$store.dispatch('mod_workspace/SET_statusNetworkCoreStatusProgressClear');
       //this.$store.commit('mod_workspace/SET_currentNetwork', 0);
       this.$store.dispatch('mod_workspace/SET_elementUnselect');

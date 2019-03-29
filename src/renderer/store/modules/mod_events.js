@@ -1,4 +1,3 @@
-//import requestApi  from "@/core/api.js";
 import {ipcRenderer} from 'electron'
 
 const namespaced = true;
@@ -8,14 +7,6 @@ const state = {
   openNetwork: 0,
   saveNetwork: 0,
   chartResize: 0,
-  chartsRequest: {
-    timeInterval: 1000,
-    timerID: null,
-    waitGlobalEvent: false,
-    doRequest: 0,
-    //requestCounter: 0,
-    //showCharts: 0
-  }
 };
 
 const mutations = {
@@ -31,27 +22,6 @@ const mutations = {
   set_chartResize(state) {
     state.chartResize++
   },
-  set_charts_doRequest(state) {
-    state.chartsRequest.doRequest++
-  },
-  // set_charts_showCharts(state) {
-  //   state.chartsRequest.showCharts++
-  // },
-  set_charts_timerID(state, id) {
-    state.chartsRequest.timerID = id;
-  },
-  set_charts_waitGlobalEvent(state, isWait) {
-    state.chartsRequest.waitGlobalEvent = isWait
-  },
-  // set_charts_requestCounterAdd(state) {
-  //   state.chartsRequest.requestCounter++
-  // },
-  // set_charts_waitGlobalEventReduce(state) {
-  //   state.chartsRequest.requestCounter--;
-  //   if(state.chartsRequest.requestCounter === 0) {
-  //     state.chartsRequest.showCharts++
-  //   }
-  // },
 };
 
 const actions = {
@@ -70,25 +40,17 @@ const actions = {
     dispatch('mod_workspace/RESET_network', null, {root: true});
     ctx.$router.replace({name: 'login'});
   },
-  EVENT_closeApp({dispatch}) {
-    dispatch('mod_api/API_CLOSE_core', null, {root: true});
-    ipcRenderer.send('appClose');
-  },
-  EVENT_startDoRequest({dispatch, commit, state}, isStart) {
-    if(isStart) {
-      let timer = setInterval(()=> {
-        commit('set_charts_doRequest');
-        //console.log('EVENT_startDoRequest');
-        if(!(state.chartsRequest.doRequest % 2)) dispatch('mod_api/API_getStatus', null, {root: true});
-      }, state.chartsRequest.timeInterval);
-      commit('set_charts_waitGlobalEvent', isStart);
-      commit('set_charts_timerID', timer);
+  EVENT_closeApp({dispatch, rootState}) {
+    if(rootState.mod_api.statusLocalCore === 'online') {
+      dispatch('mod_api/API_stopTraining', null, {root: true})
+        .then(()=> { return dispatch('mod_api/API_CLOSE_core', null, {root: true}) })
+        .then(()=> ipcRenderer.send('appClose'));
     }
     else {
-      commit('set_charts_waitGlobalEvent', isStart);
-      clearInterval(state.chartsRequest.timerID);
+      ipcRenderer.send('appClose')
     }
   },
+
   EVENT_chartResize({commit}) {
     commit('set_chartResize')
   }

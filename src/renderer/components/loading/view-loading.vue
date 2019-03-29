@@ -21,6 +21,7 @@ export default {
     font-size: 5rem;
     font-weight: 200;
     opacity: 0;
+    margin-bottom: 1rem;
     &.loading {
       opacity: 1;
     }

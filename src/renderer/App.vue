@@ -117,7 +117,9 @@
             {name: 'Text', extensions: ['json']},
           ]
         };
-        this.openLoadDialog(this.loadNetwork, opt)
+        this.openLoadDialog(opt)
+          .then((pathArr)=> this.loadNetwork(pathArr))
+          .catch((err)=> console.error(err))
       },
       '$route': {
         handler(to, from) {

@@ -1,7 +1,8 @@
 import VueNonreactive from 'vue-nonreactive/vue-nonreactive.js';
 import Vue from 'vue'
 Vue.use(VueNonreactive);
-import requestApi   from "@/core/api.js";
+
+import coreRequest  from "@/core/apiCore.js";
 
 const viewBoxMixin = {
   data() {
@@ -39,6 +40,9 @@ const viewBoxMixin = {
     testIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
     },
+    doRequest() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
+    }
   },
   watch: {
     boxElementID() {
@@ -47,11 +51,9 @@ const viewBoxMixin = {
     statElementID() {
       this.resetViewBox();
     },
-    '$store.state.mod_events.chartsRequest.doRequest': {
-      handler(newVal) {
-        if(!(newVal % 2)) this.getData();
-      }
-    },
+    doRequest(newVal) {
+      if(!(newVal % 2)) this.getData();
+    }
   },
   methods: {
     resetViewBox() {
@@ -79,10 +81,9 @@ const viewBoxMixin = {
         }
       };
       //console.log('get layer', theData);
-      const client = new requestApi();
-      client.sendMessage(theData)
+      coreRequest(theData)
         .then((data)=> {
-          console.log('answer layer', data);
+          //console.log('answer layer', data);
           if(data === 'Null') {
             return
           }

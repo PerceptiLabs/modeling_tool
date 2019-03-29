@@ -1,12 +1,5 @@
 import { findIndexId, generateID }  from "@/core/helpers.js";
-// const generateID = function(input) {
-//   let out;
-//   let stringID = input.toString();
-//   let dotIndex = stringID.indexOf('.');
-//   dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
-//   out = +out;
-//   return out
-// };
+
 function createPathNode(path, state) {
   //console.log('createPathNode');
   const network = path.slice();
@@ -32,33 +25,35 @@ const state = {
 };
 
 const getters = {
-  GET_currentNetwork(state)  {
-    if(state.workspaceContent.length) {
-      return state.workspaceContent[state.currentNetwork];
-    }
+  GET_networkIsNotEmpty(state) {
+    return state.workspaceContent.length ? true : false
+  },
+  GET_currentNetwork(state, getters)  {
+    if(getters.GET_networkIsNotEmpty) return state.workspaceContent[state.currentNetwork];
+
     return ['empty app']
   },
   GET_currentNetworkSettings(state, getters) {
-    if(state.workspaceContent.length) {
+    if(getters.GET_networkIsNotEmpty) {
       return state.workspaceContent[state.currentNetwork].networkSettings;
     }
     return {}
   },
   GET_currentNetworkElementList(state, getters) {
-    if(state.workspaceContent.length) {
+    if(getters.GET_networkIsNotEmpty) {
       return state.workspaceContent[state.currentNetwork].networkElementList;
     }
     return ['empty app']
   },
   GET_networkCoreStatus(state, getters) {
-    if(state.workspaceContent.length) {
+    if(getters.GET_networkIsNotEmpty) {
       return getters.GET_currentNetwork.networkMeta.coreStatus.Status
     }
     return 'empty app'
   },
   GET_currentSelectedEl(state, getters) {
     let selectedIndex = [];
-    if(state.workspaceContent.length) {
+    if(getters.GET_networkIsNotEmpty) {
       getters.GET_currentNetworkElementList.forEach(function (el, index, arr) {
         if (el.layerMeta.isSelected) {
           selectedIndex.push({
@@ -86,9 +81,16 @@ const getters = {
     }
   },  
   GET_networkCanEditLayers(state, getters) {
-    let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
-    let openTest = getters.GET_currentNetwork.networkMeta.openTest;
-    return !(openStatistics || openTest) ? true : false;
+    if(getters.GET_networkIsNotEmpty) {
+      let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
+      let openTest = getters.GET_currentNetwork.networkMeta.openTest;
+      return !(openStatistics || openTest) ? true : false;
+    }
+  },
+  GET_networkWaitGlobalEvent(state, getters) {
+    if(getters.GET_networkIsNotEmpty) {
+      return getters.GET_currentNetwork.networkMeta.chartsRequest.waitGlobalEvent;
+    }
   }
 };
 
@@ -107,7 +109,7 @@ const mutations = {
     let newNetwork = {};
     let defaultNetwork = {
       networkName: 'New_Network',
-      networkID: 'net' + generateID(Date.now()),
+      networkID: '',
       networkSettings: null,
       networkMeta: {},
       networkElementList: []
@@ -120,13 +122,19 @@ const mutations = {
       netMode: 'edit',//'addArrow', showStatistic
       coreStatus: {
         Status: 'Waiting' //Created, Training, Validation, Paused, Finished
+      },
+      chartsRequest: {
+        timerID: null,
+        waitGlobalEvent: false,
+        doRequest: 0,
       }
     };
 
     net.network === undefined ? newNetwork = defaultNetwork : newNetwork = net.network;
     newNetwork.networkMeta = defaultMeta;
+    newNetwork.networkID = 'net' + generateID(Date.now());
 
-    state.workspaceContent.push(newNetwork);
+    state.workspaceContent.push(JSON.parse(JSON.stringify(newNetwork)));
     state.currentNetwork = state.workspaceContent.length - 1;
     if(net.ctx.$router.history.current.name !== 'app') {
       net.ctx.$router.replace({name: 'app'});
@@ -181,6 +189,21 @@ const mutations = {
   },
   set_statusNetworkZoom(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.zoom = value;
+  },
+  set_charts_doRequest(state, {getters, networkIndex}) {
+    //console.log(networkIndex);
+    if(networkIndex) {
+      state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++
+    }
+    else {
+      getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
+    }
+  },
+  set_charts_timerID(state, {getters, timerId}) {
+    getters.GET_currentNetwork.networkMeta.chartsRequest.timerID = timerId;
+  },
+  set_statusNetworkWaitGlobalEvent(state, {getters, value}) {
+    getters.GET_currentNetwork.networkMeta.chartsRequest.waitGlobalEvent = value;
   },
   //---------------
   //  NETWORK ELEMENTS
@@ -402,8 +425,38 @@ const actions = {
   SET_statusNetworkZoom({commit, getters}, value) {
     commit('set_statusNetworkZoom', {getters, value})
   },
+  SET_statusNetworkWaitGlobalEvent({commit, getters}, value) {
+    commit('set_statusNetworkWaitGlobalEvent', {getters, value})
+  },
   RESET_network({commit}) {
     commit('RESET_network')
+  },
+  EVENT_startDoRequest({dispatch, commit, rootState, getters, state}, isStart) {
+    //console.log('EVENT_startDoRequest', isStart);
+    const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
+    if(currentMeta === undefined) return;
+    const timeInterval = rootState.globalView.timeIntervalDoRequest;
+    var networkIndex = state.currentNetwork;
+
+    dispatch('SET_statusNetworkWaitGlobalEvent', isStart);
+
+    if(isStart) {
+      let timerId = setInterval(()=> {
+        commit('set_charts_doRequest', {getters, networkIndex});
+        if(!(currentMeta.doRequest % 2)) dispatch('mod_api/API_getStatus', null, {root: true});
+      }, timeInterval);
+      commit('set_charts_timerID', {getters, timerId});
+    }
+    else {
+      clearInterval(currentMeta.timerID);
+    }
+  },
+  EVENT_onceDoRequest({dispatch, commit, rootState, getters}, isStart) {
+    commit('set_charts_doRequest', {getters});
+    setTimeout(()=>{
+      commit('set_charts_doRequest', {getters});
+      dispatch('mod_api/API_getStatus', null, {root: true});
+    }, 0);
   },
   //---------------
   //  NETWORK ELEMENTS

@@ -62,7 +62,6 @@
   import ChartD3      from "@/components/charts/chart-3d.vue";
   import ChartPicture    from "@/components/charts/chart-picture.vue";
 
-  import requestApi   from "@/core/api.js";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
 
   export default {

@@ -15,7 +15,7 @@
         v-for="(arrow, i) in arrowsList"
       )
         //:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
-        line.svg-arrow_line(
+        path.svg-arrow_line(
           data-tabindex="0"
           :data-startid="arrow.l1.layerId"
           :data-stopid="arrow.l2.layerId"
@@ -26,10 +26,9 @@
           marker-end="url(#svg-arrow_triangle)"
           :class="{'arrow--empty-output': arrow.l1.layerMeta.OutputDim.length === 0, 'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
           stroke-dasharray="none"
-          :x1="arrow.positionArrow.x1"
-          :y1="arrow.positionArrow.y1"
-          :x2="arrow.positionArrow.x2"
-          :y2="arrow.positionArrow.y2")
+          :d="arrow.positionArrow.path"
+          )
+
       line.svg-arrow_line.arrow--hidden(
         v-if="preArrow.show"
         marker-end="url(#svg-arrow_triangle)"
@@ -276,51 +275,48 @@ export default {
       }
       function findPerspectiveSide() {
         net.forEach((itemEl, indexEl, arrNet)=> {
-          if(itemEl.connectionOut.length > 0) {
-            for (var numEl in itemEl.connectionOut) {
-              let outEl = itemEl.connectionOut[numEl];
-              let newArrow = {
-                l1: itemEl,
-                //l2: listID[outEl.id],
-                //type: outEl.type,
-                l2: listID[outEl],
-                type: 'solid',
-                correctPosition: {
-                  start: {
-                    x: 0,
-                    y: 0,
-                  },
-                  stop: {
-                    x: 0,
-                    y: 0,
-                  },
-                }
-              };
-              Object.defineProperty(newArrow, 'positionArrow', {
-                get() {
-                  return {
-                    x1: this.l1.layerMeta.left + this.correctPosition.start.x,
-                    y1: this.l1.layerMeta.top + this.correctPosition.start.y,
-                    x2: this.l2.layerMeta.left + this.correctPosition.stop.x,
-                    y2: this.l2.layerMeta.top + this.correctPosition.stop.y,
-                  }
+          if(itemEl.connectionOut.length === 0) return;
+          for (var numEl in itemEl.connectionOut) {
+            let outEl = itemEl.connectionOut[numEl];
+            let newArrow = {
+              l1: itemEl,
+              l2: listID[outEl],
+              correctPosition: {
+                start: {
+                  x: 0,
+                  y: 0,
                 },
-                enumerable: true,
-                configurable: false
-              });
-              findSideMinLength(newArrow.l1, newArrow.l2, newArrow);
-              connectList.push(newArrow);
-            }
+                stop: {
+                  x: 0,
+                  y: 0,
+                },
+              }
+            };
+            Object.defineProperty(newArrow, 'positionArrow', {
+              get() {
+                const x1 = this.l1.layerMeta.left + this.correctPosition.start.x;
+                const y1 = this.l1.layerMeta.top + this.correctPosition.start.y;
+                const x2 = this.l2.layerMeta.left + this.correctPosition.stop.x;
+                const y2 = this.l2.layerMeta.top + this.correctPosition.stop.y;
+                const path = calcArrowPath(x1, y1, x2, y2, this);
+                return {path}
+              },
+              enumerable: true,
+              configurable: false
+            });
+            findSideMinLength(newArrow.l1, newArrow.l2, newArrow);
+            connectList.push(newArrow);
           }
         });
       }
       function findSideMinLength(l1, l2, currentEl) {
         let position = '';
-        (l1.layerMeta.top <= l2.layerMeta.top) ? position = position + 'b' : position = position + 't';
-        (l1.layerMeta.left <= l2.layerMeta.left) ? position = position + 'r' : position = position + 'l';
-
-        // const offsetX = Math.abs(l1.meta.left - l2.meta.left);
-        // const offsetY = Math.abs(l1.meta.top - l2.meta.top);
+        (l1.layerMeta.top <= l2.layerMeta.top)
+          ? position = position + 'b'
+          : position = position + 't';
+        (l1.layerMeta.left <= l2.layerMeta.left)
+          ? position = position + 'r'
+          : position = position + 'l';
 
         function topDot(dot) {
           return {
@@ -407,28 +403,12 @@ export default {
       }
       function calcMinLength(d1, d2, d3, d4) {
         const arrows = [
-          {
-            length: lengthLine(d1, d3),
-            start: d1,
-            end: d3,
-          },
-          {
-            length: lengthLine(d1, d4),
-            start: d1,
-            end: d4,
-          },
-          {
-            length: lengthLine(d2, d3),
-            start: d2,
-            end: d3,
-          },
-          {
-            length: lengthLine(d2, d4),
-            start: d2,
-            end: d4,
-          }
+          { length: lengthLine(d1, d3), start: d1, end: d3 },
+          { length: lengthLine(d1, d4), start: d1, end: d4 },
+          { length: lengthLine(d2, d3), start: d2, end: d3 },
+          { length: lengthLine(d2, d4), start: d2, end: d4 }
         ];
-        return arrows.sort( (a, b) => a.length - b.length )[0];
+        return arrows.sort((a, b)=> a.length - b.length )[0];
       }
       function lengthLine(l1, l2) {
         return Math.round(Math.abs(Math.sqrt(Math.pow((l2.x-l1.x), 2) + Math.pow((l2.y - l1.y), 2))));
@@ -487,32 +467,38 @@ export default {
       function calcValuePosition(side, lengthSide, indexSide) {
         switch(side) {
           case 'top':
-            return {
-              x: (size / (lengthSide + 1)) * (indexSide + 1),
-              y: 0
-            };
+            return { x: (size / (lengthSide + 1)) * (indexSide + 1), y: 0 };
             break;
           case 'right':
-            return {
-              x: size,
-              y: (size / (lengthSide + 1)) * (indexSide + 1),
-            };
+            return { x: size, y: (size / (lengthSide + 1)) * (indexSide + 1) };
             break;
           case 'bottom':
-            return {
-              x: (size / (lengthSide + 1)) * (indexSide + 1),
-              y: size
-            };
+            return { x: (size / (lengthSide + 1)) * (indexSide + 1), y: size };
             break;
           case 'left':
-            return {
-              x: 0,
-              y: (size / (lengthSide + 1)) * (indexSide + 1),
-            };
+            return { x: 0, y: (size / (lengthSide + 1)) * (indexSide + 1) };
             break;
         }
       }
-
+      function calcArrowPath(startX, startY, stopX, stopY, ctx) {
+        const arrow = ctx;
+        const vectorVal = 0.65;
+        const vectorX = Math.round((stopX - startX) * vectorVal);
+        const vectorY = Math.round((stopY - startY) * vectorVal);
+        const pointStartX = arrow.sideStart === 'left' || arrow.sideStart === 'right'
+          ? startX + vectorX
+          : startX;
+        const pointStartY = arrow.sideStart === 'top' || arrow.sideStart === 'bottom'
+          ? startY + vectorY
+          : startY;
+        const pointStopX = arrow.sideEnd === 'left' || arrow.sideEnd === 'right'
+          ? stopX - vectorX
+          : stopX;
+        const pointStopY = arrow.sideEnd === 'top' || arrow.sideEnd === 'bottom'
+          ? stopY - vectorY
+          : stopY;
+        return `M${startX},${startY}C${pointStartX},${pointStartY} ${pointStopX},${pointStopY} ${stopX},${stopY}`
+      }
       this.arrowsList = connectList;
     }
   }
@@ -539,12 +525,13 @@ export default {
   .svg-arrow_line {
     stroke: $col-primary;
     stroke-width: 3;
+    fill: transparent;
     &:focus {
       opacity: .5;
       stroke-width: 4;
     }
   }
-  /*.arrow--empty-output {*/
-    /*stroke: #eb8b22;*/
-  /*}*/
+  .arrow--empty-output {
+    stroke: #eb8b22;
+  }
 </style>

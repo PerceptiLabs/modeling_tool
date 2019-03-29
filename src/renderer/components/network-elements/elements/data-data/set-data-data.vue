@@ -35,8 +35,8 @@
             input.form_input(type="text" v-model="inputPath" readonly="readonly")
           .form_row(v-if="dataColumns.length")
             base-select(
-              v-model="dataColumns"
-              :selectOptions="settings.accessProperties.Columns"
+              v-model="settings.accessProperties.Columns"
+              :selectOptions="dataColumns"
               )
           .form_row
             chart-switch(
@@ -62,18 +62,14 @@
   import SettingsCloud  from '@/components/network-elements/elements-settings/setting-clouds.vue';
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
 
-  import {openLoadDialog} from '@/core/helpers.js'
-
-  import requestApi   from "@/core/api.js";
+  import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
+  import coreRequest      from "@/core/apiCore.js";
   import {mapActions}     from 'vuex';
 
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
     components: {ChartSwitch, SettingsCloud },
-    mounted() {
-      this.getDataMeta()
-    },
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
@@ -83,7 +79,7 @@
         settings: {
           Type: 'Data',
           accessProperties: {
-            Columns: [],
+            Columns: '',
             Dataset_size: 3000,
             Category:'Local',
             Type: 'Data',
@@ -93,23 +89,12 @@
       }
     },
     computed: {
-      // appPath() {
-      //   return this.$store.getters['globalView/GET_appPath']
-      // },
-      // isDisabled() {
-      //   return process.env.NODE_ENV === 'production'
-      // },
 
-      inputPath() {
-        return this.settings.accessProperties.Path.join(', ')
-      }
     },
     watch: {
       'settings.accessProperties.Path': {
         handler(newVal) {
-          if(newVal) {
-            this.getDataImg('DataData')
-          }
+          this.getSettingsInfo()
         },
         immediate: true
       }
@@ -119,6 +104,7 @@
         tutorialPointActivate:    'mod_tutorials/pointActivate'
       }),
       openLoadDialog,
+      loadPathFolder,
       loadFile() {
         this.disabledBtn = true;
         let opt = {
@@ -130,16 +116,19 @@
             {name: 'Text', extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
           ]
         };
-        this.openLoadDialog(this.saveLoadFile, opt)
+        this.openLoadDialog(opt)
+          .then((pathArr)=> this.saveLoadFile(pathArr))
+          .catch(()=> {
+            this.disabledBtn = false;
+          })
       },
       loadFolder() {
         this.disabledBtn = true;
-        let opt = {
-          title:"Load folder",
-          properties: ['openDirectory']
-        };
-        this.openLoadDialog(this.saveLoadFile, opt)
-       
+        this.loadPathFolder()
+          .then((pathArr)=> this.saveLoadFile(pathArr))
+          .catch(()=> {
+            this.disabledBtn = false;
+          })
       },
       saveLoadFile(pathArr) {
         this.disabledBtn = false;
@@ -151,6 +140,13 @@
       clearPath() {
         this.settings.accessProperties.Path = [];
       },
+      getSettingsInfo() {
+        if(this.settings.accessProperties.Path.length == 0) return;
+        this.getDataMeta()
+          .then(()=> {
+            this.getDataImg('DataData')
+          })
+      },
       getDataMeta() {
         let theData = {
           reciever: this.currentNetworkID,
@@ -161,17 +157,20 @@
             Properties: this.settings
           }
         };
-        const client = new requestApi();
-        client.sendMessage(theData)
-          .then((data)=> {
-            if(data === 'Null') {
+        //console.log(theData);
+        return this.coreRequest(theData)
+          .then((data) => {
+            //console.log('getDataMeta ', data);
+            if (data === 'Null') {
               return
             }
-            this.settings.accessProperties.Columns = data.Columns;
             this.settings.accessProperties.Dataset_size = data.Dataset_size;
+            if (data.Columns.length) {
+              if (!this.settings.accessProperties.Columns) this.settings.accessProperties.Columns = data.Columns[0];
+              data.Columns.forEach((el) => this.dataColumns.push({text: el, value: el}))
+            }
           })
-          .catch((err)=> {
-            console.log('answer err');
+          .catch((err) => {
             console.error(err);
           });
       },
