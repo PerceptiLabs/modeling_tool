@@ -333,6 +333,9 @@ button.btn--primary .tooltip-tutorial,
 #tutorial_play-test-button .tooltip-tutorial {
   top: 0
 }
+#tutorial_accuracy-tab .tooltip-tutorial {
+  top: 20%
+}
 .tooltip-tutorial_italic {
   font-style: italic;
 }

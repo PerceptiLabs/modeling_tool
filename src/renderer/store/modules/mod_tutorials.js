@@ -634,18 +634,6 @@ const state = {
                 type: 'border',
               },
               next: true
-            }
-          ]
-        },
-        {
-          status:'disabled',
-          class_style: 'list_subtitle',
-          content: 'Continue training.',
-          actions: [
-            {
-              tooltip: 'Unpause...',
-              id: 'tutorial_pause-training',
-              status: 'disabled',
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -667,7 +655,19 @@ const state = {
                         </div>`,
               id: 'tutorial_loss-tab',
               status: 'disabled',
-            },
+            }
+          ]
+        },
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'Continue training.',
+          actions: [
+            {
+              tooltip: 'Unpause...',
+              id: 'tutorial_pause-training',
+              status: 'disabled',
+            }
           ]
         },
         {
@@ -685,15 +685,15 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'Training is complete for this network. Click "Run test" to continue',
+          content: 'Click to start test',
           actions: [
             {
-              tooltip: 'Click Run test...',
+              tooltip: 'Click to start test...',
               status: 'disabled',
               id:'tutorial_run-test-button'
             }
           ]
-        }
+        },
       ]
     },
     testing: {
@@ -837,19 +837,20 @@ const actions = {
       dispatch('drawSchematicElement', getters.getActiveAction.schematic)
     } 
     else { // all actions are done
+      dispatch('removeTooltip')
       dispatch('nextPoint')
       if(getters.getActivePoint) {
         commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
         dispatch('createTooltip')
       }
       else { //all points are done
+        dispatch('removeTooltip')
         commit('SET_activePointMainTutorial', 0)
       }
     }
   },
-  createTooltip({getters}) {
-    let activeTooltip = document.querySelector('.tooltip-tutorial')
-    if(activeTooltip) activeTooltip.remove()
+  createTooltip({getters, dispatch}) {
+    dispatch('removeTooltip')
     let element = document.getElementById(getters.getActiveAction.id)
     if(getters.getActiveAction.tooltip) { 
       let tooltipBlock = document.createElement('div');
@@ -857,6 +858,10 @@ const actions = {
       tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
       element.appendChild(tooltipBlock)
     }
+  },
+  removeTooltip() {
+    let activeTooltip = document.querySelector('.tooltip-tutorial')
+    if(activeTooltip) activeTooltip.remove()
   },
   nextPoint({commit, getters, dispatch}) {
     commit('SET_activeActionMainTutorial', 0)

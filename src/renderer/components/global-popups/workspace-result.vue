@@ -35,6 +35,9 @@ export default {
 
     }
   },
+  mounted() {
+    this.tutorialPointActivate({way: 'next', validation: 'tutorial_statistic-tab'})
+  },
   computed: {
 
   },

@@ -114,13 +114,9 @@ export default {
       }
     },
     currentSelectedEl(newStatus, oldStatus) {
-      console.log(newStatus)
-      if(this.isTutorialMode && this.tutorialActiveStep === 'training') {
-        //this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: newStatus[0].el.layerMeta.tutorialId});
+      if(newStatus.length > 0 && this.isTutorialMode && this.tutorialActiveStep === 'training') {
+        this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: newStatus[0].el.layerMeta.tutorialId});
       } 
-    },
-    showGlobalResult(newStatus, oldStatus) {
-      if(newStatus) this.tutorialPointActivate({way: 'next', validation:'tutorial_statistic-tab'})
     }
   },
   methods: {
