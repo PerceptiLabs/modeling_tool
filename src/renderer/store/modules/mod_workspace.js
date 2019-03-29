@@ -83,7 +83,9 @@ const getters = {
     }
   },
   GET_networkWaitGlobalEvent(state, getters) {
-    return getters.GET_currentNetwork.networkMeta.chartsRequest.waitGlobalEvent;
+    if(getters.GET_networkIsNotEmpty) {
+      return getters.GET_currentNetwork.networkMeta.chartsRequest.waitGlobalEvent;
+    }
   }
 };
 

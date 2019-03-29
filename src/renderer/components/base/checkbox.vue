@@ -3,8 +3,7 @@
     .checkbox-text(v-if="labelPosition==='left'")
       slot
     input(type="checkbox"
-      v-model="value"
-      data-vv-value-path="value"
+      v-model="valueInput"
       @change="change"
     )
     .checkbox-fake(:class="{'checkbox-fake--icon': iconTheme}")
@@ -18,8 +17,7 @@ export default {
   name: 'BaseCheckbox',
 
   props: {
-    label: String,
-    hasError: Boolean,
+    value: Boolean,
     labelPosition: {
       type: String,
       default: 'right'
@@ -30,22 +28,18 @@ export default {
     }
   },
   mounted () {
-    this.$el.value = this.value;
+    this.valueInput = this.value;
   },
   data() {
     return {
-      checkedProxy: false,
-      value: false
-    }
-  },
-  watch: {
-    value(value) {
-      this.$emit('input', value);
+      valueInput: null
     }
   },
   methods: {
     change (event) {
-      this.value = event.target.checked ? true : false
+      const newValue = event.target.checked;
+      this.valueInput = newValue;
+      this.$emit('input', newValue);
     }
   }
 }

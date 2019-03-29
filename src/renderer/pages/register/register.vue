@@ -51,13 +51,13 @@
         .form_holder
           base-checkbox(
             v-validate="'required'"
-            data-vv-name="checkmeplease"
-            label="checkmeplease"
-            v-model="checkmeplease"
+            data-vv-name="terms"
+            label="terms"
+            v-model="terms"
           )
             span Agree
             router-link(:to="{name: 'policy'}").btn.btn--link  terms and policy
-          p.text-error(v-show="errors.has('checkmeplease')") {{ errors.first('checkmeplease') }}
+          p.text-error(v-show="errors.has('terms')") {{ errors.first('terms') }}
 
         .form_holder
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading") Register
@@ -83,9 +83,7 @@ export default {
         password: '',
         isLoading: false
       },
-      terms: false,
-      checkmeplease: null,
-
+      terms: true
     }
   },
   computed: {
