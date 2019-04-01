@@ -31,7 +31,8 @@
 </template>
 
 <script>
-  import {ipcRenderer} from 'electron'
+  import {ipcRenderer, shell} from 'electron'
+
 export default {
   name: "TheMenu",
   data() {
@@ -173,7 +174,7 @@ export default {
   },
   methods: {
     openLink(url) {
-      window.open(url,'_blank');
+      shell.openExternal(url);
     },
     appClose() {
       this.$store.dispatch('mod_events/EVENT_closeApp');

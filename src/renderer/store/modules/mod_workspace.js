@@ -243,21 +243,15 @@ const mutations = {
 
   add_arrow(state, {getters, dispatch, stopID}) {
     let startID = state.startArrowID;
-    //let stopID = val.stopID;
-    if(stopID == startID) {
-      return
-    }
+    if(stopID == startID) return;
+
     let pathNet = getters.GET_currentNetworkElementList;
     let indexStart = pathNet.findIndex((element, index, array)=> { return element.layerId == startID;});
-    let findArrowType = pathNet[indexStart].connectionOut.findIndex((element, index, array)=> { return element.type == state.arrowType;});
-    if(findArrowType !== -1) {
+    let findArrow = pathNet[indexStart].connectionOut.findIndex((element, index, array)=> element == stopID );
+    if(findArrow !== -1) {
       alert('This type of connection already exists!');
       return
     }
-    // pathNet.network[indexStart].connectionOut.push({
-    //   id: val.stopID,
-    //   type: state.arrowType
-    // });
 
     //TODO start only one type connection
     pathNet[indexStart].connectionOut.push(stopID.toString()); //ID.toString need for the core
