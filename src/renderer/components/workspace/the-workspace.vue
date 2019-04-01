@@ -6,7 +6,7 @@
       .network(
         v-if="indexCurrentNetwork === i"
         v-for="(net, i) in workspace"
-        :key="net.i"
+        :key="net.networkID"
         :class="networkClass"
       )
         the-testing.the-testing(v-if="testIsOpen")

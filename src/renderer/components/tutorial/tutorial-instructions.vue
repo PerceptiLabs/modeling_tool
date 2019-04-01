@@ -19,13 +19,14 @@
       ul.list-area_list
         .list-element.list-element--status(
           v-for="(point, index) in points"
+          v-if="stepCount !== stepsLength"
           :key="index"
           :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
         )
           .element-text(v-html="point.content")
           .list-element_static
             .static_info.list-element--status(
-              v-for="(info, index) in point.static_info" 
+              v-for="(info, index) in point.static_info"
               v-html="info.content"
               :key="index" 
               :class="[{'done': info.status === 'done'}]"
@@ -41,6 +42,7 @@
           button.footer_btn(v-if="isFirstStep" @click="startTutorial('next')") Next
           button.footer_btn(v-else-if="activeAction.next && !allPointsIsDone" @click="pointActivate({way: 'next', validation: activeAction.id})") Next
           button.footer_btn(v-else-if="stepCount !== stepsLength" @click="changeStep('next')" :disabled="disabledNext") Next
+          button.footer_btn(v-else-if="stepCount === stepsLength" @click="endTutorial()") End
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex';
@@ -63,6 +65,9 @@ export default {
       activePoint:      'mod_tutorials/getActivePoint',
       activeAction:     'mod_tutorials/getActiveAction'
     }),
+    currentNetwork() {
+      return this.$store.state.mod_workspace.currentNetwork
+    },
     stepsLength() {
       return Object.keys(this.interective).length - 1
     },
@@ -77,11 +82,14 @@ export default {
     ...mapMutations({
       setActiveStep:        'mod_tutorials/SET_activeStepMainTutorial',
       setTootorialIstarted: 'mod_tutorials/SET_mainTutorialIsStarted',
-      goToFirstStep:        'mod_tutorials/SET_activeActionMainTutorial'
+      goToFirstStep:        'mod_tutorials/SET_activeActionMainTutorial',
+      deleteNetwork:        'mod_workspace/DELETE_network'
     }),
     ...mapActions({
-      pointActivate:    'mod_tutorials/pointActivate',
-      pointsDeactivate: 'mod_tutorials/pointsDeactivate',
+      pointActivate:        'mod_tutorials/pointActivate',
+      pointsDeactivate:     'mod_tutorials/pointsDeactivate',
+      setNetworkCoreStatus: 'mod_workspace/SET_statusNetworkCoreStatus',
+      addNetwork:           'mod_workspace/ADD_network'
     }),
     showInstructions() {
       this.isShowInstructions =  !this.isShowInstructions
@@ -96,10 +104,12 @@ export default {
       this.setTootorialIstarted(true)
       this.setActiveStep(way)
       this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
+    },
+    endTutorial() {
+      this.setNetworkCoreStatus(false)
+      this.deleteNetwork(this.currentNetwork)
+      this.addNetwork({'ctx': this})
     }
-  },
-  mounted() {
-    
   }
 }
 </script>

@@ -57,7 +57,8 @@
     },
     methods: {
       ...mapMutations({
-        setTutorialMode: 'mod_tutorials/SET_isTutorialMode'
+        setTutorialMode: 'mod_tutorials/SET_isTutorialMode',
+        setTutorialStoryBoard: 'mod_tutorials/SET_showTutorialStoryBoard'
       }),
       loadNetwork,
       addNewProject() {
@@ -80,6 +81,7 @@
       },
       beginTutorial() {
         this.setTutorialMode(true)
+        this.setTutorialStoryBoard(true)
         this.goNextPage()
       }
     }

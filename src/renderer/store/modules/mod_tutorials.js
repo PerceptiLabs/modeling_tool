@@ -3,7 +3,7 @@ import { isNumber } from "util";
 const namespaced = true;
 
 const state = {
-  isTutorialMode: true,
+  isTutorialMode: false,
   showTutorialStoryBoard: false,
   mainTutorialIsStarted: false,
   
@@ -30,459 +30,459 @@ const state = {
         }
       ]
     },
-    // import_data: {
-    //   title: 'Step 1. Import your data',
-    //   points: [
-    //     {
-    //       status:'disabled',
-    //       class_style: 'list_subtitle',
-    //       content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset',
-    //       actions: [
-    //         {
-    //           tooltip: 'Data > Data...', 
-    //           id: 'tutorial_data',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Data > Data...',
-    //           id: 'tutorial_data-data',
-    //           dynamic_id: 'tutorial_data-data-1',
-    //           schematic: {
-    //             type: 'square',
-    //             top: 16.4,
-    //             left: 26
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Select MNIST dataset > Load...',
-    //           id: 'tutorial_data-data-1',
-    //           status: 'disabled',
-    //           position_element: {
-    //             top: 6.5,
-    //             left: 18
-    //           },
-    //         },
-    //         {
-    //           tooltip: 'Select MNIST dataset > Load...',
-    //           id: 'tutorial_button-load',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Apply loaded MNIST',
-    //           id: 'tutorial_button-apply',
-    //           status: 'disabled'
-    //         }
-    //       ],
-    //       static_info: [
-    //         {
-    //           status:'disabled',
-    //           content: 'For this tutorial we will use the MNIST dataset'
-    //         },
-    //         {
-    //           status:'disabled',
-    //           content: 'Every input image has been flattened out to a 784x1 array.'
-    //         }
-    //       ]
-    //     },
-    //     {
-    //       status:'disabled',
-    //       content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
-    //       actions: [
-    //         {
-    //           tooltip: 'Data > Data...',
-    //           id: 'tutorial_data',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Data > Data...',
-    //           id: 'tutorial_data-data',
-    //           dynamic_id: 'tutorial_data-data-2',
-    //           schematic: {
-    //             type: 'square',
-    //             top: 32.4,
-    //             left: 26
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Select MNIST dataset > Load...',
-    //           id: 'tutorial_data-data-2',
-    //           status: 'disabled',
-    //         },
-    //         {
-    //           tooltip: 'Select MNIST dataset > Load...',
-    //           id: 'tutorial_button-load',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Apply loaded MNIST',
-    //           id: 'tutorial_button-apply',
-    //           status: 'disabled'
-    //         }
-    //       ],
-    //     }
-    //   ]
-    // },
-    // precessing_reshape: {
-    //   title: 'Step 2. Reshape the dataset',
-    //   points: [
-    //     {
-    //       status:'disabled',
-    //       class_style: 'list_subtitle',
-    //       content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > Connect input > Operation settings  ',
-    //       actions: [
-    //         {
-    //           tooltip: 'Processing > Reshape...',
-    //           id: 'tutorial_processing',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Processing > Reshape...',
-    //           id: 'tutorial_process-reshape',
-    //           dynamic_id: 'tutorial_process-reshape-1',
-    //           schematic: {
-    //             type: 'square',
-    //             top: 16.4,
-    //             left: 42,
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Select to create a connection...',
-    //           id: 'tutorial_list-arrow',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Connect input...',
-    //           id: 'tutorial_process-reshape-1',
-    //           schematic: {
-    //             type: 'arrow',
-    //             connection_start: 'tutorial_data-data-1',
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Go back to work with items...',
-    //           id: 'tutorial_pointer',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Open settings...',
-    //           id: 'tutorial_process-reshape-1',
-    //           status: 'disabled'
-    //         }
-    //       ],
-    //       static_info: [
-    //         {
-    //           status:'disabled',
-    //           content: 'We want to build an image classifier by using images as input, not a flattened array'
-    //         },
-    //       ]
-    //     },
-    //     {
-    //       status:'disabled',
-    //       content: 'Reshape the dataset into images of shape 28x28x1. ',
-    //       actions: [
-    //         {
-    //           tooltip: 'Reshape to 28x28x1 > Apply changes...',
-    //           id: 'tutorial_input-reshape',
-    //           status: 'disabled'
-    //         }
-    //       ],
-    //     },
-    //   ]
-    // },
-    // convolutional_layer: {
-    //   title: 'Step 3. Use a Convolutional layer',
-    //   points: [
-    //     {
-    //       status:'disabled',
-    //       class_style: 'list_subtitle',
-    //       content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Convolution</div> > Connect input > Operation settings',
-    //       actions: [
-    //         {
-    //           tooltip: 'Deep Learning > Convolution...',
-    //           id: 'tutorial_deep-learning', 
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Deep Learning > Convolution...',
-    //           id: 'tutorial_convolution',
-    //           dynamic_id: 'tutorial_convolution-1',
-    //           schematic: {
-    //             type: 'square',
-    //             top: 16.4,
-    //             left: 58,
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Select to create a connection...',
-    //           id: 'tutorial_list-arrow',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Connect input...',
-    //           id: 'tutorial_convolution-1',
-    //           schematic: {
-    //             type: 'arrow',
-    //             connection_start: 'tutorial_process-reshape-1',
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Go back to work with items...',
-    //           id: 'tutorial_pointer',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Open settings...',
-    //           id: 'tutorial_convolution-1',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Patch size:</div> This is the size of the filter.</br> E.g. with patch size 3, the </br> filter will be a square of size 3x3. </br> <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div></div>',
-    //           id: 'tutorial_patch-size',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Stride:</div> This is the step size when </br> we slide the filter over the input </br> data to generate feature maps. </br> <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div></div>',
-    //           id: 'tutorial_stride',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Feature Maps:</div> The number of </br> feature maps correspond to the </br> number of different features to </br> look for in the input data. i.e. with </br> more complex data, it might be </br> better to increase the number </br> of feature maps. </br> <div class="tooltip-tutorial_bold">Please press "Tab" button to next action</div></div>',
-    //           id: 'tutorial_feature-maps',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Apply settings',
-    //           id: 'tutorial_apply-button',
-    //           status: 'disabled'
-    //         }
-    //       ],
-    //       static_info: [
-    //         {
-    //           status:'disabled',
-    //           content: 'Convolution means to slide several filters over the input data.',
-    //         },
-    //         {
-    //           status:'disabled',
-    //           content: 'This generates outputs called feature maps, where each feature'
-    //         }
-    //       ]
-    //     },
-    //   ]
-    // },
-    // fully_connected_layer: {
-    //   title: 'Step 4. Use a Fully Connected layer',
-    //   points: [
-    //     {
-    //       status:'disabled',
-    //       class_style: 'list_subtitle',
-    //       content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Fully Connected</div> > Connect input > Set neurons',
-    //       actions: [
-    //         {
-    //           tooltip: 'Deep Learning > Fully Connected...',
-    //           id: 'tutorial_deep-learning', 
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Deep Learning > Fully Connected...',
-    //           id: 'tutorial_fully-connected',
-    //           dynamic_id: 'tutorial_fully-connected-1',
-    //           schematic: {
-    //             type: 'square',
-    //             top: 16.4,
-    //             left: 74,
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Select to create a connection...',
-    //           id: 'tutorial_list-arrow',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Connect input...',
-    //           id: 'tutorial_fully-connected-1',
-    //           schematic: {
-    //             type: 'arrow',
-    //             connection_start: 'tutorial_convolution-1',
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Go back to work with items...',
-    //           id: 'tutorial_pointer',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Open settings...',
-    //           id: 'tutorial_fully-connected-1',
-    //           status: 'disabled'
-    //         }
-    //       ],
-    //       static_info: [
-    //         {
-    //           status:'disabled',
-    //           content: 'This operation matches the size of outputs of your network to the number of classes from your label data',
-    //         }
-    //       ]
-    //     },
-    //     {
-    //       status:'disabled',
-    //       content: 'Set the same number of neurons as there are classes, which in this case is 10 since the images represent digits 0-9. ',
-    //       actions: [
-    //         {
-    //           tooltip: 'Set neurons > Apply changes...',
-    //           id: 'tutorial_neurons',
-    //           status: 'disabled'
-    //         },
-    //       ],
-    //     },
-    //   ]
-    // },
-    // one_hot_encoding: {
-    //   title: 'Step 5. One Hot encoding on labels',
-    //   points: [
-    //     {
-    //       status:'disabled',
-    //       class_style: 'list_subtitle',
-    //       content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">One Hot</div> > Connect input > Set classes',
-    //       actions: [
-    //         {
-    //           tooltip: 'Processing > One Hot...',
-    //           id: 'tutorial_processing', 
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Processing > One Hot...',
-    //           id: 'tutorial_one-hot',
-    //           dynamic_id: 'tutorial_one-hot-1',
-    //           schematic: {
-    //             type: 'square',
-    //             top: 32.4,
-    //             left: 42,
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Select to create a connection...',
-    //           id: 'tutorial_list-arrow',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Connect input...',
-    //           id: 'tutorial_one-hot-1',
-    //           schematic: {
-    //             type: 'arrow',
-    //             connection_start: 'tutorial_data-data-2',
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Go back to work with items...',
-    //           id: 'tutorial_pointer',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Set classes...',
-    //           id: 'tutorial_one-hot-1',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Set 10 > Apply changes...',
-    //           id: 'tutorial_number-of-classes',
-    //           status: 'disabled'
-    //         }
-    //       ],
-    //       static_info: [
-    //         {
-    //           status:'disabled',
-    //           content: 'This operation transforms your label data to one dimension for each digit/ class (i.e. 10, in this case). '
-    //         },
-    //         {
-    //           status:'disabled',
-    //           content: 'This makes it easier for the AI to differentiate the digits so it can learn faster. '
-    //         }
-    //       ]
-    //     },
-    //   ]
-    // },
-    // train_normal: {
-    //   title: 'Step 6. Train your AI model',
-    //   points: [
-    //     {
-    //       status:'disabled',
-    //       class_style: 'list_subtitle',
-    //       content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Training</div> > <div class="marker">Normal</div> > Connect input > Define parameters',
-    //       actions: [
-    //         {
-    //           tooltip: 'Training > Normal ...',
-    //           id: 'tutorial_training', 
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Training > Normal ...',
-    //           id: 'tutorial_training-normal',
-    //           dynamic_id: 'tutorial_training-normal-1',
-    //           schematic: {
-    //             type: 'square',
-    //             top: 32.4,
-    //             left: 75,
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Select to create a connection...',
-    //           id: 'tutorial_list-arrow',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Connect input...',
-    //           id: 'tutorial_training-normal-1',
-    //           schematic: {
-    //             type: 'arrow',
-    //             connection_start: 'tutorial_one-hot-1',
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Connect input...',
-    //           id: 'tutorial_training-normal-1',
-    //           schematic: {
-    //             type: 'arrow',
-    //             connection_start: 'tutorial_fully-connected-1',
-    //           },
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Go back to work with items...',
-    //           id: 'tutorial_pointer',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: 'Define parameters...',
-    //           id: 'tutorial_training-normal-1',
-    //           status: 'disabled'
-    //         },
-    //         {
-    //           tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Cost function:</div> calculates the error </br> of the prediction, which is required </br> for backpropagation.</div></div>',
-    //           id: 'tutorial_cost-function',
-    //           status: 'disabled'
-    //         }
-    //       ],
-    //       static_info: [
-    //         {
-    //           status:'disabled',
-    //           content: 'Now that the size of output from the Fully Connected (FC) layer and One Hot layer match, the AI can compare its predictions from the FC layer and answers (GT) from the One Hot. '
-    //         }
-    //       ]
-    //     },
-    //   ]
-    // },
+    import_data: {
+      title: 'Step 1. Import your data',
+      points: [
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset',
+          actions: [
+            {
+              tooltip: 'Data > Data...', 
+              id: 'tutorial_data',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Data > Data...',
+              id: 'tutorial_data-data',
+              dynamic_id: 'tutorial_data-data-1',
+              schematic: {
+                type: 'square',
+                top: 16.4,
+                left: 26
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              id: 'tutorial_data-data-1',
+              status: 'disabled',
+              position_element: {
+                top: 6.5,
+                left: 18
+              },
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              id: 'tutorial_button-load',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Apply loaded MNIST',
+              id: 'tutorial_button-apply',
+              status: 'disabled'
+            }
+          ],
+          static_info: [
+            {
+              status:'disabled',
+              content: 'For this tutorial we will use the MNIST dataset'
+            },
+            {
+              status:'disabled',
+              content: 'Every input image has been flattened out to a 784x1 array.'
+            }
+          ]
+        },
+        {
+          status:'disabled',
+          content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
+          actions: [
+            {
+              tooltip: 'Data > Data...',
+              id: 'tutorial_data',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Data > Data...',
+              id: 'tutorial_data-data',
+              dynamic_id: 'tutorial_data-data-2',
+              schematic: {
+                type: 'square',
+                top: 32.4,
+                left: 26
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              id: 'tutorial_data-data-2',
+              status: 'disabled',
+            },
+            {
+              tooltip: 'Select MNIST dataset > Load...',
+              id: 'tutorial_button-load',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Apply loaded MNIST',
+              id: 'tutorial_button-apply',
+              status: 'disabled'
+            }
+          ],
+        }
+      ]
+    },
+    precessing_reshape: {
+      title: 'Step 2. Reshape the dataset',
+      points: [
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > Connect input > Operation settings  ',
+          actions: [
+            {
+              tooltip: 'Processing > Reshape...',
+              id: 'tutorial_processing',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Processing > Reshape...',
+              id: 'tutorial_process-reshape',
+              dynamic_id: 'tutorial_process-reshape-1',
+              schematic: {
+                type: 'square',
+                top: 16.4,
+                left: 42,
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select to create a connection...',
+              id: 'tutorial_list-arrow',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_process-reshape-1',
+              schematic: {
+                type: 'arrow',
+                connection_start: 'tutorial_data-data-1',
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Go back to work with items...',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Open settings...',
+              id: 'tutorial_process-reshape-1',
+              status: 'disabled'
+            }
+          ],
+          static_info: [
+            {
+              status:'disabled',
+              content: 'We want to build an image classifier by using images as input, not a flattened array'
+            },
+          ]
+        },
+        {
+          status:'disabled',
+          content: 'Reshape the dataset into images of shape 28x28x1. ',
+          actions: [
+            {
+              tooltip: 'Reshape to 28x28x1 > Apply changes...',
+              id: 'tutorial_input-reshape',
+              status: 'disabled'
+            }
+          ],
+        },
+      ]
+    },
+    convolutional_layer: {
+      title: 'Step 3. Use a Convolutional layer',
+      points: [
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Convolution</div> > Connect input > Operation settings',
+          actions: [
+            {
+              tooltip: 'Deep Learning > Convolution...',
+              id: 'tutorial_deep-learning', 
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Deep Learning > Convolution...',
+              id: 'tutorial_convolution',
+              dynamic_id: 'tutorial_convolution-1',
+              schematic: {
+                type: 'square',
+                top: 16.4,
+                left: 58,
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select to create a connection...',
+              id: 'tutorial_list-arrow',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_convolution-1',
+              schematic: {
+                type: 'arrow',
+                connection_start: 'tutorial_process-reshape-1',
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Go back to work with items...',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Open settings...',
+              id: 'tutorial_convolution-1',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Patch size:</div> This is the size of the filter.</br> E.g. with patch size 3, the </br> filter will be a square of size 3x3. </br> <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div></div>',
+              id: 'tutorial_patch-size',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Stride:</div> This is the step size when </br> we slide the filter over the input </br> data to generate feature maps. </br> <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div></div>',
+              id: 'tutorial_stride',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Feature Maps:</div> The number of </br> feature maps correspond to the </br> number of different features to </br> look for in the input data. i.e. with </br> more complex data, it might be </br> better to increase the number </br> of feature maps. </br> <div class="tooltip-tutorial_bold">Please press "Tab" button to next action</div></div>',
+              id: 'tutorial_feature-maps',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Apply settings',
+              id: 'tutorial_apply-button',
+              status: 'disabled'
+            }
+          ],
+          static_info: [
+            {
+              status:'disabled',
+              content: 'Convolution means to slide several filters over the input data.',
+            },
+            {
+              status:'disabled',
+              content: 'This generates outputs called feature maps, where each feature'
+            }
+          ]
+        },
+      ]
+    },
+    fully_connected_layer: {
+      title: 'Step 4. Use a Fully Connected layer',
+      points: [
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Fully Connected</div> > Connect input > Set neurons',
+          actions: [
+            {
+              tooltip: 'Deep Learning > Fully Connected...',
+              id: 'tutorial_deep-learning', 
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Deep Learning > Fully Connected...',
+              id: 'tutorial_fully-connected',
+              dynamic_id: 'tutorial_fully-connected-1',
+              schematic: {
+                type: 'square',
+                top: 16.4,
+                left: 74,
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select to create a connection...',
+              id: 'tutorial_list-arrow',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_fully-connected-1',
+              schematic: {
+                type: 'arrow',
+                connection_start: 'tutorial_convolution-1',
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Go back to work with items...',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Open settings...',
+              id: 'tutorial_fully-connected-1',
+              status: 'disabled'
+            }
+          ],
+          static_info: [
+            {
+              status:'disabled',
+              content: 'This operation matches the size of outputs of your network to the number of classes from your label data',
+            }
+          ]
+        },
+        {
+          status:'disabled',
+          content: 'Set the same number of neurons as there are classes, which in this case is 10 since the images represent digits 0-9. ',
+          actions: [
+            {
+              tooltip: 'Set neurons > Apply changes...',
+              id: 'tutorial_neurons',
+              status: 'disabled'
+            },
+          ],
+        },
+      ]
+    },
+    one_hot_encoding: {
+      title: 'Step 5. One Hot encoding on labels',
+      points: [
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">One Hot</div> > Connect input > Set classes',
+          actions: [
+            {
+              tooltip: 'Processing > One Hot...',
+              id: 'tutorial_processing', 
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Processing > One Hot...',
+              id: 'tutorial_one-hot',
+              dynamic_id: 'tutorial_one-hot-1',
+              schematic: {
+                type: 'square',
+                top: 32.4,
+                left: 42,
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select to create a connection...',
+              id: 'tutorial_list-arrow',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_one-hot-1',
+              schematic: {
+                type: 'arrow',
+                connection_start: 'tutorial_data-data-2',
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Go back to work with items...',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Set classes...',
+              id: 'tutorial_one-hot-1',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Set 10 > Apply changes...',
+              id: 'tutorial_number-of-classes',
+              status: 'disabled'
+            }
+          ],
+          static_info: [
+            {
+              status:'disabled',
+              content: 'This operation transforms your label data to one dimension for each digit/ class (i.e. 10, in this case). '
+            },
+            {
+              status:'disabled',
+              content: 'This makes it easier for the AI to differentiate the digits so it can learn faster. '
+            }
+          ]
+        },
+      ]
+    },
+    train_normal: {
+      title: 'Step 6. Train your AI model',
+      points: [
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Training</div> > <div class="marker">Normal</div> > Connect input > Define parameters',
+          actions: [
+            {
+              tooltip: 'Training > Normal ...',
+              id: 'tutorial_training', 
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Training > Normal ...',
+              id: 'tutorial_training-normal',
+              dynamic_id: 'tutorial_training-normal-1',
+              schematic: {
+                type: 'square',
+                top: 32.4,
+                left: 75,
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Select to create a connection...',
+              id: 'tutorial_list-arrow',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_training-normal-1',
+              schematic: {
+                type: 'arrow',
+                connection_start: 'tutorial_one-hot-1',
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Connect input...',
+              id: 'tutorial_training-normal-1',
+              schematic: {
+                type: 'arrow',
+                connection_start: 'tutorial_fully-connected-1',
+              },
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Go back to work with items...',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Define parameters...',
+              id: 'tutorial_training-normal-1',
+              status: 'disabled'
+            },
+            {
+              tooltip: '<div class="tooltip-tutorial_italic"><div class="tooltip-tutorial_bold">Cost function:</div> calculates the error </br> of the prediction, which is required </br> for backpropagation.</div></div>',
+              id: 'tutorial_cost-function',
+              status: 'disabled'
+            }
+          ],
+          static_info: [
+            {
+              status:'disabled',
+              content: 'Now that the size of output from the Fully Connected (FC) layer and One Hot layer match, the AI can compare its predictions from the FC layer and answers (GT) from the One Hot. '
+            }
+          ]
+        },
+      ]
+    },
     run_training: {
       title: 'Step 7. Run training data',
       points: [
@@ -599,18 +599,18 @@ const state = {
             }
           ]
         },
-        // {
-        //   status:'disabled',
-        //   class_style: 'list_subtitle',
-        //   content: 'Click <div class="marker">Reshape</div> in the <div class="marker">Map View</div> </br> Notice the corresponding display in the <div class="marker">ViewBox</div>',
-        //   actions: [
-        //     { 
-        //       tooltip: 'Click Reshape...',
-        //       id: 'tutorial_process-reshape-1',
-        //       status: 'disabled',
-        //     }
-        //   ]
-        // },
+        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'Click <div class="marker">Reshape</div> in the <div class="marker">Map View</div> </br> Notice the corresponding display in the <div class="marker">ViewBox</div>',
+          actions: [
+            { 
+              tooltip: 'Click Reshape...',
+              id: 'tutorial_process-reshape-1',
+              status: 'disabled',
+            }
+          ]
+        },
         {
           status:'disabled',
           class_style: 'list_subtitle',
@@ -622,11 +622,11 @@ const state = {
               status: 'disabled',
               next: true
             },
-            // { 
-            //   tooltip: 'Click Fully Connected...',
-            //   id: 'tutorial_fully-connected-1',
-            //   status: 'disabled',
-            // },
+            { 
+              tooltip: 'Click Fully Connected...',
+              id: 'tutorial_fully-connected-1',
+              status: 'disabled',
+            },
             { 
               id: 'tutorial_prediction-chart',
               status: 'disabled',
@@ -708,6 +708,19 @@ const state = {
               tooltip: 'Explore view controls...',
               status: 'disabled',
               id:'tutorial_play-test-button'
+            }
+          ]
+        }
+      ]
+    },
+    save_and_export: {
+      title: 'Step 10. Save and export',
+      points: [
+        {
+          status:'last step',
+          actions: [
+            {
+              status: 'disabled',
             }
           ]
         }
