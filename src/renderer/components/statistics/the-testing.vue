@@ -10,7 +10,7 @@
         .progress-bar-box_progress(:style="{width: progress + '%'}")
       .testing-head_controls
         //-button.btn.btn--link.icon.icon-player-prev(type="button" @click="postTestMove('previousStep')")
-        button.btn.btn--link.icon.icon-player-play(type="button" @click="postTestStart()" id="tutorial_play-test-button" class="tutorial-relative")
+        button#tutorial_play-test-button.tutorial-relative.btn.btn--link.icon.icon-player-play(type="button" @click="postTestStart()")
         button.btn.btn--link.icon.icon-player-next(type="button" @click="postTestMove('nextStep')")
     //-.info-section_main(v-if="elData !== null")
       component(

@@ -5,11 +5,10 @@
       v-for="(tab, i) in tabset"
       :key="i"
       )
-        button.btn.btn--tabs(
+        button.btn.btn--tabs.tutorial-relative(
         type="button"
         @click="setTab(tab.name, tab.id)"
         :class="{'active': currentTab === tab.name}"
-        class="tutorial-relative"
         :disabled="i > 2"
         :id="tab.id"
         ) {{ tab.name }}
@@ -23,12 +22,11 @@
             )
       .statistics-box_row
         .statistics-box_col
-          chart-base(
+          chart-base#tutorial_prediction-chart(
             key="2"
             chartLabel="Prediction vs Ground truth"
             :chartData="chartData.Prediction.PvG"
             :customColor="colorList"
-            id="tutorial_prediction-chart"
           )
         .statistics-box_col(v-if="!testIsOpen")
           chart-base(

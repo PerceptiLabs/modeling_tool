@@ -26,27 +26,24 @@
           .settings-layer_section
             .form_row
               .form_label Patch size:
-              .form_input(id="tutorial_patch-size" class="tutorial-relative")
-                input(
-                  type="text" 
+              #tutorial_patch-size.form_input.tutorial-relative
+                input( type="text"
                   v-model="settings.Patch_size"
                   ref="pathSize"
                 )
           .settings-layer_section
             .form_row
               .form_label Stride:
-              .form_input(id="tutorial_stride" class="tutorial-relative")
-                input(
-                  type="text" 
+              #tutorial_stride.form_input.tutorial-relative
+                input( type="text"
                   v-model="settings.Stride"
                   @focus="onFocus('tutorial_patch-size')"
                 )
           .settings-layer_section
             .form_row
               .form_label Feature maps:
-              .form_input(id="tutorial_feature-maps" class="tutorial-relative")
-                input(
-                  type="text" 
+              #tutorial_feature-maps.tutorial-relative.form_input
+                input( type="text"
                   v-model="settings.Feature_maps"
                   @focus="onFocus('tutorial_stride')"
                   @blur="onBlur('tutorial_feature-maps')"
@@ -130,13 +127,12 @@
                   base-radio(groupName="Pool_padding" valueInput="'VALID'" v-model="settings.Pool_padding")
                     span VALID
 
-          .settings-layer_foot
-            button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_apply-button") Apply
-
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
           :the-code="coreCode"
         )
+    .settings-layer_foot
+      button#tutorial_apply-button.btn.btn--primary(type="button" @click="saveSettings") Apply
 
 </template>
 

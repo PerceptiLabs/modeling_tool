@@ -1,5 +1,5 @@
 <template lang="pug">
-  section.network_info-section(id="tutorial_statistics")
+  section#tutorial_statistics.network_info-section
     .info-section_head(v-if="!testIsOpen")
       h3 Statistics
     .info-section_main(v-if="elData !== null")

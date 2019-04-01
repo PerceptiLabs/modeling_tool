@@ -6,10 +6,9 @@
 
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(type="button"
+        button#tutorial_pointer.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'edit'}"
-          id="tutorial_pointer"
           v-tooltip:bottom="'Edit'"
           @click="setNetMode('edit', 'tutorial_pointer')"
         )
@@ -19,10 +18,9 @@
         :class="{'disable-hover': statisticsIsOpen}"
         v-tooltip:bottom="'Arrow'"
       )
-        button.btn.btn--toolbar(type="button"
+        button#tutorial_list-arrow.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'addArrow'}"
-          id="tutorial_list-arrow"
           @click="setArrowType(arrowList[0].arrowType)"
         )
           i.icon(:class="arrowList[0].iconClass")
@@ -51,22 +49,19 @@
           i.icon.icon-step-next
     ul.toolbar_list
       li(:class="{'tutorial-active': activeStepStoryboard === 4}")
-        button.btn.btn--toolbar.bg-primary(type="button"
+        button#tutorial_run-training-button.btn.btn--toolbar.bg-primary(type="button"
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
           @click="onOffBtn()"
           class="run-button"
-          id="tutorial_run-training-button"
         )
           i.icon.icon-on-off
           span(v-html="statusNetworkCore === 'Training' || statusNetworkCore == 'Paused' ? 'Stop' : 'Run'")
       li
-        button.btn.btn--toolbar(type="button"
+        button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
           :class="{'active': statusNetworkCore === 'Paused'}"
           :disabled="!isTraining"
-          class="tutorial-relative"
-          id="tutorial_pause-training"
           v-tooltip:bottom="'Pause'"
           @click="trainPause()"
         )
@@ -213,17 +208,13 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     onOffBtn() {
-      if(this.isTraining){
-        this.trainStop()
-      }
-      else this.trainStart()
-      setTimeout(()=>{this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'})}, 0)
+      if(this.isTraining) this.trainStop();
+      else this.trainStart();
+      this.$nextTick(()=> this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'}))
     },
     trainStart() {
       let valid = this.validateNetwork();
-      if (!valid) {
-        return
-      }
+      if (!valid) return;
       this.$store.commit('globalView/GP_showNetGlobalSet', true);
 
       //if show GlobalSet once
@@ -281,7 +272,7 @@ export default {
       this.tutorialPointActivate({way:'next', validation: tutorial_id})
     },
     setNetMode(type, tutorial_id) {
-      this.$store.dispatch('mod_workspace/SET_netMode', type)
+      this.$store.dispatch('mod_workspace/SET_netMode', type);
       this.tutorialPointActivate({way:'next', validation: tutorial_id})
     },
     openStatistics() {

@@ -1,5 +1,5 @@
 <template lang="pug">
-  section.network_info-section(id="tutorial_view-box")
+  section#tutorial_view-box.network_info-section
     .info-section_head(v-if="!testIsOpen")
       h3 ViewBox
     .info-section_main(v-if="elData !== null")
@@ -45,30 +45,10 @@ export default {
       }
     }
   },
-  data() {
-    return {
-
-    }
-  },
-  mounted() {
-
-  },
-  methods: {
-
-  },
   computed: {
     testIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
     }
-    // viewBoxData() {
-    //   return this.elData.find((element, index, array)=>{
-    //     if(element.layerType !== 'Training') {
-    //       return element
-    //     }
-    //     else return false
-    //   });
-    // }
-    
   }
 }
 </script>

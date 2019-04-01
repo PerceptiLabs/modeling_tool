@@ -16,7 +16,7 @@
           .settings-layer_section
             .form_row
               .form_label Number of classes:
-              .form_input.tutorial-relative(id="tutorial_number-of-classes")
+              #tutorial_number-of-classes.form_input.tutorial-relative
                 input(type="text" v-model="settings.N_class")
 
       .popup_body(:class="{'active': tabSelected == 1}")
@@ -57,7 +57,7 @@ export default {
        tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     saveSettings() {
-      this.applySettings()
+      this.applySettings();
       this.tutorialPointActivate({way:'next', validation: 'tutorial_number-of-classes'})
     }
   }

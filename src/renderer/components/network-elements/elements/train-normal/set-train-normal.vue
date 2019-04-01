@@ -24,10 +24,7 @@
           .settings-layer_section
             .form_row
               .form_label Cost function:
-              .form_input(
-                id="tutorial_cost-function" 
-                class="tutorial-relative" 
-              )
+              #tutorial_cost-function.tutorial-relative.form_input
                 base-radio(groupName="group" valueInput="Cross_entropy" v-model="settings.Loss")
                   span Cross-Entropy
                 base-radio(groupName="group" valueInput="Quadratic" v-model="settings.Loss")
@@ -102,7 +99,7 @@
         :the-code="coreCode"
         )
     .settings-layer_foot
-      button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_cost-function") Apply
+      button.btn.btn--primary(type="button" @click="saveSettings") Apply
 
 </template>
 
@@ -235,7 +232,7 @@ ${accuracy}`
       tutorialPointActivate:    'mod_tutorials/pointActivate'
     }),
     saveSettings() {
-      this.applySettings()
+      this.applySettings();
       this.tutorialPointActivate({way:'next', validation: 'tutorial_cost-function'})
     },
   }

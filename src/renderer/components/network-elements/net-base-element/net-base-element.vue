@@ -107,9 +107,7 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     switchMousedownEvent(ev) {
-      if (this.isLock) {
-        return
-      }
+      if (this.isLock) return;
       else if(this.networkMode === 'addArrow') {
         this.arrowStartPaint(ev)
       }
@@ -119,9 +117,7 @@ export default {
       }
     },
     switchClickEvent(ev) {
-      if (this.isLock) {
-        return
-      }
+      if (this.isLock) return;
       else if (this.statisticsIsOpen || this.testingIsOpen) {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
@@ -166,12 +162,12 @@ export default {
       this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.index], setValue: false });
     },
     deleteEl() {
-      if(!(this.contextIsOpen || this.settingsIsOpen)) {
-        this.$store.dispatch('mod_workspace/DELETE_element')
-      }
+      if(!(this.contextIsOpen || this.settingsIsOpen)) this.$store.dispatch('mod_workspace/DELETE_element')
     },
     tutorialSearchId(event) {
-       return event.target.tagName === 'I' ? event.target.parentNode.parentNode.parentNode.id : event.target.parentNode.parentNode.id
+       return event.target.tagName === 'I'
+         ? event.target.parentNode.parentNode.parentNode.id
+         : event.target.parentNode.parentNode.id
     }
   }
 }

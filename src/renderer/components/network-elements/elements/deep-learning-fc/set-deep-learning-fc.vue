@@ -16,7 +16,7 @@
           .settings-layer_section
             .form_row
               .form_label Neurons:
-              .form_input(id="tutorial_neurons" class="tutorial-relative")
+              #tutorial_neurons.tutorial-relative.form_input
                 input(type="text" v-model="settings.Neurons")
           .settings-layer_section
             .form_row
@@ -54,16 +54,13 @@
                   span Yes
                 base-radio(groupName="group3")
                   span No
-          .settings-layer_foot
-            button.btn.btn--primary(type="button"
-              @click="saveSettings"
-              id="tutorial_button-apply"
-            ) Apply
 
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
         :the-code="coreCode"
         )
+    .settings-layer_foot
+      button#tutorial_button-apply.btn.btn--primary(type="button" @click="saveSettings") Apply
 
 </template>
 
@@ -125,7 +122,7 @@ node=node+b;`;
         tutorialPointActivate:    'mod_tutorials/pointActivate',
       }),
       saveSettings() {
-        this.applySettings()
+        this.applySettings();
         this.tutorialPointActivate({way:'next', validation: 'tutorial_neurons'})
       }
     }

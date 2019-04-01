@@ -15,7 +15,7 @@
             .form_row
               .form_label Reshape:
               .form_input
-                triple-input(v-model="settings.Shape" id="tutorial_input-reshape" class="tutorial-relative")
+                triple-input#tutorial_input-reshape.tutorial-relative(v-model="settings.Shape")
           //.settings-layer_section
             .form_row
               .form_label Reshape:
@@ -31,13 +31,13 @@
               .form_label Transpose:
               .form_input
                 triple-input(v-model="settings.Permutation")
-          .settings-layer_foot
-            button.btn.btn--primary(type="button" @click="saveSettings" id="tutorial_button-apply") Apply
 
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
         :the-code="coreCode"
         )
+    .settings-layer_foot
+      button#tutorial_button-apply.btn.btn--primary(type="button" @click="saveSettings") Apply
 
 </template>
 
@@ -73,7 +73,7 @@ Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
       saveSettings() {
-        this.applySettings()
+        this.applySettings();
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'})
       }
     }

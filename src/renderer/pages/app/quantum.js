@@ -1,5 +1,3 @@
-import fs from 'fs';
-import {remote} from 'electron'
 import { mapGetters ,mapActions } from 'vuex';
 
 import TheToolbar         from '@/components/the-toolbar.vue'
