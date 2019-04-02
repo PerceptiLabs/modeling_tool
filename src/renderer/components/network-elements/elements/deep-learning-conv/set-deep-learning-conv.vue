@@ -247,7 +247,7 @@ node=node+b;`;
       this.tutorialPointActivate({way:'next', validation: inputId})
     },
     saveSettings() {
-      this.applySettings()
+      this.applySettings();
       this.tutorialPointActivate({way:'next', validation: 'tutorial_apply-button'})
     }
   }

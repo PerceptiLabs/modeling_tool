@@ -69,9 +69,9 @@ Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
       }
     },
     methods: {
-    ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
-    }),
+      ...mapActions({
+        tutorialPointActivate:    'mod_tutorials/pointActivate',
+      }),
       saveSettings() {
         this.applySettings();
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'})
