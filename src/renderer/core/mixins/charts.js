@@ -29,6 +29,10 @@ const chartsMixin = {
       window.addEventListener("resize", this.chartResize, false);
       this.$refs.chart.resize();
     }
+    else {
+      this.createWWorker();
+      this.sendDataToWWorker();
+    }
   },
   beforeDestroy() {
     if(this._name !== '<ChartPicture>') {
@@ -36,6 +40,10 @@ const chartsMixin = {
       this.wWorker.removeEventListener('message', this.drawChart, false);
       this.$refs.chart.dispose();
       window.removeEventListener("resize", this.chartResize, false);
+    }
+    else {
+      this.wWorker.postMessage('close');
+      this.wWorker.removeEventListener('message', this.drawChart, false);
     }
   },
   data() {
