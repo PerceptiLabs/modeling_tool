@@ -15,6 +15,7 @@ const netElementSettings = {
     if(typeof(this.layerSettings) !== 'string') {
       this.settings = JSON.parse(JSON.stringify(this.layerSettings));
     }
+    this.$store.dispatch('mod_api/API_getInputDim');
   },
   computed: {
     userMode() {
@@ -33,15 +34,14 @@ const netElementSettings = {
     },
     applySettings() {
       this.hideAllWindow();
-      if(this._name === '<SetTrainNormal>') {
-        this.settings.Labels = this.idSelectElement;
-      }
+      if(this._name === '<SetTrainNormal>') this.settings.Labels = this.idSelectElement;
       const saveSettings = {
         'code': this.coreCode,
         'set': this.settings
       };
+
       this.$store.dispatch('mod_workspace/SET_elementSettings', saveSettings);
-      this.$store.dispatch('mod_api/API_getBeForEnd');
+      this.$store.dispatch('mod_api/API_getOutputDim')
     }
   }
 };

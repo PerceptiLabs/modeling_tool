@@ -300,23 +300,36 @@ const actions = {
       });
   },
 
-  API_getBeForEnd({dispatch, getters, rootGetters}) {
+  API_getInputDim({dispatch, getters, rootGetters}) {
     const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: "getNetworkData",
+      action: "getNetworkInputDim",
       value: prepareNetwork(elementList)
     };
-    //console.log('API_getBeForEnd', theData);
-    coreRequest(theData)
+    return coreRequest(theData)
       .then((data)=> {
-        //console.log('answer API_getBeForEnd');
-        if(data) dispatch('mod_workspace/SET_elementBeForEnd', data, {root: true});
+        if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err) =>{
         console.error(err);
       });
 
+  },
+  API_getOutputDim({dispatch, getters, rootGetters}) {
+    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "getNetworkOutputDim",
+      value: prepareNetwork(elementList)
+    };
+    coreRequest(theData)
+      .then((data)=> {
+        if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
   },
 };
 
