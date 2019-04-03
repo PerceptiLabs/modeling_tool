@@ -70,7 +70,9 @@ export default {
   },
   computed: {
     ...mapGetters({
-      tutorialActiveAction:  'mod_tutorials/getActiveAction'
+      tutorialActiveAction: 'mod_tutorials/getActiveAction',
+      isTraining:           'mod_workspace/GET_networkIsTraining',
+      editIsOpen:           'mod_workspace/GET_networkCanEditLayers'
     }),
     beForEnd() {
       //console.log('NetBaseElement beForEnd', this.dataEl.el.layerMeta);
@@ -88,12 +90,12 @@ export default {
     testingIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
     },
-    isTraining() {
-      return this.$store.getters['mod_workspace/GET_networkIsTraining']
-    },
-    editIsOpen() {
-      return this.$store.getters['mod_workspace/GET_networkCanEditLayers'];
-    }
+    // isTraining() {
+    //   return this.$store.getters['mod_workspace/GET_networkIsTraining']
+    // },
+    // editIsOpen() {
+    //   return this.$store.getters['mod_workspace/GET_networkCanEditLayers'];
+    // }
   },
   watch: {
     statisticsIsOpen(newVal) {
@@ -104,7 +106,7 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
+      tutorialPointActivate: 'mod_tutorials/pointActivate',
     }),
     switchMousedownEvent(ev) {
       if (this.isLock) return;
