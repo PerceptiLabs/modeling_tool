@@ -15,7 +15,7 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
-          chart-base(
+          chart-switch(
             key="1"
             chartLabel="Input"
             :chartData="chartData.Prediction.Input"
@@ -84,13 +84,14 @@
   import ChartBase    from "@/components/charts/chart-base";
   import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
   import ChartD3      from "@/components/charts/chart-3d.vue";
+  import ChartSwitch      from "@/components/charts/chart-switch.vue";
 
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   import { mapActions } from 'vuex';
 
   export default {
     name: "ViewBoxTrainNormal",
-    components: {ChartBase, ChartHeatmap, ChartD3},
+    components: {ChartBase, ChartHeatmap, ChartD3, ChartSwitch},
     mixins: [viewBoxMixin],
     data() {
       return {

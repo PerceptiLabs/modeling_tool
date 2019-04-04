@@ -8,7 +8,7 @@
       span {{ selectedText }}
       i.icon.icon-shevron
 
-    ul.custom-select_option-list.action-list(v-if="isOpenList")
+    ul.custom-select_option-list.action-list(v-show="isOpenList")
       button.custom-select_option.action-list_btn(type="button"
         v-for="(option, i) in selectOptions"
         :key="i"
@@ -87,7 +87,7 @@ export default {
   }
   .custom-select_option-list {
     position: absolute;
-    z-index: 1;
+    z-index: 2;
     top: 100%;
     left: 0;
     //overflow: visible;

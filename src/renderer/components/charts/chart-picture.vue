@@ -13,56 +13,59 @@
 </template>
 
 <script>
-import chartMixin from "@/core/mixins/charts.js";
+  import {pathWebWorkers} from '@/core/constants.js'
+  import chartMixin       from "@/core/mixins/charts.js";
 
 export default {
   name: "ChartPicture",
   mixins: [chartMixin],
-  mounted() {
-    this.canvas2D = this.$refs.canvas.getContext('2d');
-    this.sendDataToWWorker(this.chartData);
-
-  },
   data() {
     return {
-      imgDataBuffer: null,
       canvas2D: null
-    }
-  },
-  computed: {
-    doRequest() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
     }
   },
   watch: {
     doRequest(newVal) {
-      if(newVal % 2 && this.imgDataBuffer !== null) this.drawPicture(this.imgDataBuffer);
+      if(newVal % 2 && this.chartModelBuffer !== null) {
+        console.log('update');
+        this.showImage(this.chartModelBuffer);
+      }
     }
   },
   methods: {
     toggleFullView() {
       this.fullView = !this.fullView
     },
-    drawPicture(img) {
-      let canvas2d = this.canvas2D;
-      let canvas = this.$refs.canvas;
-      let imgH = img.height;
-      let imgW = img.width;
-      canvas.setAttribute('width', imgW);
-      canvas.setAttribute('height', imgH);
-      let imgData = canvas2d.createImageData(imgW, imgH);
-      img.data.forEach((el, index) => imgData.data[index] = el);
-      canvas2d.putImageData(imgData,0, 0);
+    createWWorker() {
+      this.wWorker = new Worker(`${pathWebWorkers}/calcChartPic.js`);
+      this.wWorker.addEventListener('message', this.drawChart, false);
+      //alert('createWWorker 39');
+      if(this.canvas2D === null) {
+        //alert('createWWorker 41');
+        this.canvas2D = this.$refs.canvas.getContext('2d');
+      }
     },
     sendDataToWWorker(dataWatch) {
       let data = dataWatch || this.chartData;
-      //console.log('sendDataToWWorker IMG ', data);
-      if (data === null || data === undefined) return;
+      if (!data) return;
 
-      let dataImg = JSON.parse(JSON.stringify(data.series[0]));
+      let dataImg = data.series[0];
+      let imgH = dataImg.height;
+      let imgW = dataImg.width;
+      let canvas2d = this.canvas2D;
+      let canvasImg = canvas2d.createImageData(imgW, imgH);
+      this.wWorker.postMessage({canvasImg, dataImg});
+    },
+    drawChart(ev) {
       this.isNeedWait
-        ? this.imgDataBuffer = dataImg
-        : this.drawPicture(dataImg)
+        ? this.chartModelBuffer = ev.data
+        : this.showImage(ev.data);
+    },
+    showImage(imgData) {
+      let canvasEl = this.$refs.canvas;
+      canvasEl.setAttribute('width', this.chartData.series[0].width);
+      canvasEl.setAttribute('height', this.chartData.series[0].height);
+      this.canvas2D.putImageData(imgData, 0, 0);
     }
   }
 }

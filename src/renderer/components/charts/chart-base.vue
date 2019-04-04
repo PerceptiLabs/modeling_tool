@@ -47,7 +47,7 @@
           legend: {},
           yAxis: {},
           xAxis: {
-            //boundaryGap: true,
+            //boundaryGap: false,
             data: []
           },
           series: []
@@ -72,6 +72,7 @@
         }
         let model = {...this.defaultModel, ...data};
         model.xAxis.data.length = 0;
+        if(model.series[0].type === 'bar') model.xAxis.boundaryGap = true;
         this.wWorker.postMessage({
           model,
           xLength: data.xLength

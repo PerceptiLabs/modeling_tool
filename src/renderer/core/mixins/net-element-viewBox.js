@@ -83,7 +83,8 @@ const viewBoxMixin = {
       //console.log('get layer', theData);
       coreRequest(theData)
         .then((data)=> {
-          //console.log('answer layer', data);
+          let now = new Date();
+          console.log('answer layer', data, now);
           if(data === 'Null') {
             return
           }

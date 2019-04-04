@@ -308,20 +308,16 @@ const mutations = {
     net[el].layerMeta.top = value.top;
     net[el].layerMeta.left = value.left;
   },
-  set_elementBeForEnd(state, {getters, value}) {
-    //console.log('set_elementBeForEnd', value);
+  set_elementInputDim(state, {getters, value}) {
     getters.GET_currentNetworkElementList.forEach((el)=>{
-      el.layerMeta.OutputDim = value[el.layerId].OutputDim;
-      el.layerMeta.InputDim = value[el.layerId].InputDim
-      // if(el.layerMeta.OutputDim) {
-      //
-      // }
-      // if(el.layerMeta.InputDim) {
-      //
-      // }
+      el.layerMeta.InputDim = value[el.layerId]
     });
   },
-
+  set_elementOutputDim(state, {getters, value}) {
+    getters.GET_currentNetworkElementList.forEach((el)=>{
+      el.layerMeta.OutputDim = value[el.layerId];
+    });
+  },
   //---------------
   //  OTHER
   //---------------
@@ -487,8 +483,11 @@ const actions = {
   SET_elementMultiSelect({commit, getters}, value) {
     commit('set_elementMultiSelect', {getters, value})
   },
-  SET_elementBeForEnd({commit, getters}, value) {
-    commit('set_elementBeForEnd', {getters, value})
+  SET_elementInputDim({commit, getters}, value) {
+    commit('set_elementInputDim', {getters, value})
+  },
+  SET_elementOutputDim({commit, getters}, value) {
+    commit('set_elementOutputDim', {getters, value})
   },
   CHANGE_elementPosition({commit, getters}, value) {
     commit('change_elementPosition', {getters, value})
