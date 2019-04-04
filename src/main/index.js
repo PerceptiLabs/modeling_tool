@@ -13,6 +13,7 @@ let mainWindow;
 // const userId      = nodeStorage.getItem('userid') || uuid();
 //const visitor     = ua('UA-114940346-1', {uid: userId});
 let visitor;
+let loginPage = '/';
 
 const mainMenu = [
   {
@@ -157,9 +158,9 @@ function createWindow () {
   /**
    * google analytics
    */
-  ipcMain.on('changeRoute', (event, arg) => {
-    visitor = ua('UA-114940346-1', {uid: arg.token});
-    visitor.pageview(arg.path).send();
+  ipcMain.on('changeRoute', (event, arg) => { 
+    visitor = ua('UA-114940346-1', arg.id, {strictCidFormat: false})
+    if (arg.path !== loginPage) visitor.pageview(arg.path).send();
   });
   /**
    * start auto update

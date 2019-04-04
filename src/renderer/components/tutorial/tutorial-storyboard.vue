@@ -40,6 +40,7 @@
           )
 </template>
 <script>
+import {mapMutations, mapGetters, mapActions} from 'vuex';
 export default {
   name: 'TutorialStoryboard',
   data() {
@@ -81,7 +82,7 @@ export default {
           text: 'Remember, this is a Beta version, if you find any errors or have any suggestions, please let us know on contact@perceptilabs.com. <br>Any feedback is highly appreciated!',
           button: {
             text: `Let's Try It`,
-            action: ()=> {this.closeTutorial()}
+            action: ()=> {this.startMainTutorial()}
           },
           lookEyesClass: 'look-close'
         }
@@ -89,6 +90,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      mainTutorialActivePoint:        'mod_tutorials/getActivePoint',
+    }),
     currentStepTutorial() {
       return this.firstTutorial[this.activeStep]
     },
@@ -100,22 +104,43 @@ export default {
     }
   },
   methods: {
+     ...mapMutations({
+      setActiveStepStoryboard:          'mod_tutorials/SET_activeStepStoryboard',
+      setShowStoryboard:                'mod_tutorials/SET_showTutorialStoryBoard',
+      setShowInstructionsMainTutorial:  'mod_tutorials/SET_showMainTutorialInstruction',
+      setTutorialIstarted:              'mod_tutorials/SET_mainTutorialIsStarted',
+      setActiveStep:                    'mod_tutorials/SET_activeStepMainTutorial',
+    }),
+    ...mapActions({
+      mainTutorialPointActivate:        'mod_tutorials/pointActivate'
+    }),
     closeTutorial() {
       this.activeStep = 0;
-      this.$store.commit('mod_tutorials/SET_activeStepStoryboard', this.activeStep)
-      this.$store.commit('mod_tutorials/SET_showTutorialStoryBoard', false)
+      this.setActiveStepStoryboard(this.activeStep)
+      this.setShowStoryboard(false)
     },
     set_stepActive(way) {
       way === 'next' ? this.activeStep++ : this.activeStep--
-      this.$store.commit('mod_tutorials/SET_activeStepStoryboard', this.activeStep)
+      this.setActiveStepStoryboard(this.activeStep)
     },
     dot_stepActive(index) {
       this.activeStep = index;
-      this.$store.commit('mod_tutorials/SET_activeStepStoryboard', this.activeStep)
+      this.setActiveStepStoryboard(this.activeStep)
     },
     skipTutorial() {
       this.closeTutorial()
       //this.$store.commit('mod_tutorials/SET_firstTimeApp', false)
+    },
+    startMainTutorial() {
+     
+      this.activeStep = 0;
+      this.setActiveStepStoryboard(this.activeStep)
+      this.setShowStoryboard(false)
+      this.setShowInstructionsMainTutorial(true)
+      this.setTutorialIstarted(true)
+      this.setActiveStep('next')
+      let firstActionId = this.mainTutorialActivePoint.actions[0].id
+      this.mainTutorialPointActivate({way: null, validation: firstActionId})
     }
   }
 }
