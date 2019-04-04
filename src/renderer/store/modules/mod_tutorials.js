@@ -5,6 +5,7 @@ const namespaced = true;
 const state = {
   isTutorialMode: false,
   showTutorialStoryBoard: false,
+  showMainTutorialInstruction: false,
   mainTutorialIsStarted: false,
   
   activeStepStoryboard: 0,
@@ -736,6 +737,9 @@ const getters = {
   getIstutorialMode(state) {
     return state.isTutorialMode
   },
+  getShowMainTutorialInstruction(state) {
+    return state.showMainTutorialInstruction
+  },
   getMainTutorialIsStarted(state) {
     return state.mainTutorialIsStarted
   },
@@ -786,6 +790,9 @@ const mutations = {
   SET_showTutorialStoryBoard(state, value) {
     state.showTutorialStoryBoard = value;
     state.firstTimeApp = value;
+  },
+  SET_showMainTutorialInstruction(state, value) {
+    state.showMainTutorialInstruction = value
   },
   SET_activeStepMainTutorial(state, value) {
     value === 'next' ? state.activeStepMainTutorial++ : state.activeStepMainTutorial--

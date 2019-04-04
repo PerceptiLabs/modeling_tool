@@ -1,7 +1,7 @@
 <template lang="pug">
 .tutorial-instruction-box(v-if="isTutorialMode") 
     button.btn.btn--dark-blue-rev.green-status(type="button"
-      @click="showInstructions"
+      @click="setShowInstructions(!isShowInstructions)"
     )
       span Tutorial Mode
       i.icon.icon-ellipse
@@ -9,7 +9,7 @@
     .tutorial-instruction-box_list-area(v-if="isShowInstructions")
       header.list-area_header
         div
-          button.header_close-instructions.i.icon.icon-appClose(@click="showInstructions")
+          button.header_close-instructions.i.icon.icon-appClose(@click="setShowInstructions(false)")
           //span.header_title title_q
         .header_arrows-top
           i.icon.icon-shevron
@@ -50,20 +50,20 @@ export default {
   name: 'TutorialInstructions',
   data() {
     return {
-      isShowInstructions: false,
       count: 0
     }
   },
   computed: {
     ...mapGetters({
-      activeStep:       'mod_tutorials/getActiveStep',
-      points:           'mod_tutorials/getPoints',
-      interective:      'mod_tutorials/getIterective',
-      isTutorialMode:   'mod_tutorials/getIstutorialMode',
-      stepCount:        'mod_tutorials/getActiveStepMainTutorial',
-      allPointsIsDone:  'mod_tutorials/getAllPointsIsDone',
-      activePoint:      'mod_tutorials/getActivePoint',
-      activeAction:     'mod_tutorials/getActiveAction'
+      activeStep:         'mod_tutorials/getActiveStep',
+      points:             'mod_tutorials/getPoints',
+      interective:        'mod_tutorials/getIterective',
+      isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      stepCount:          'mod_tutorials/getActiveStepMainTutorial',
+      allPointsIsDone:    'mod_tutorials/getAllPointsIsDone',
+      activePoint:        'mod_tutorials/getActivePoint',
+      activeAction:       'mod_tutorials/getActiveAction',
+      isShowInstructions: 'mod_tutorials/getShowMainTutorialInstruction'
     }),
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
@@ -81,8 +81,9 @@ export default {
   methods: {
     ...mapMutations({
       setActiveStep:        'mod_tutorials/SET_activeStepMainTutorial',
-      setTootorialIstarted: 'mod_tutorials/SET_mainTutorialIsStarted',
+      setTutorialIstarted:  'mod_tutorials/SET_mainTutorialIsStarted',
       goToFirstStep:        'mod_tutorials/SET_activeActionMainTutorial',
+      setShowInstructions:  'mod_tutorials/SET_showMainTutorialInstruction',
       deleteNetwork:        'mod_workspace/DELETE_network'
     }),
     ...mapActions({
@@ -91,9 +92,6 @@ export default {
       setNetworkCoreStatus: 'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:           'mod_workspace/ADD_network'
     }),
-    showInstructions() {
-      this.isShowInstructions =  !this.isShowInstructions
-    },
     changeStep(way) {
       if(way === 'next') {
         this.setActiveStep(way)
@@ -101,7 +99,7 @@ export default {
       }
     },
     startTutorial(way) {
-      this.setTootorialIstarted(true)
+      this.setTutorialIstarted(true)
       this.setActiveStep(way)
       this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
     },
