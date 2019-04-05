@@ -63,11 +63,14 @@ const chartsMixin = {
     },
     doRequest() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
+    },
+    doShowCharts() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.showCharts
     }
   },
   watch: {
-    doRequest(newVal) {
-      if(newVal % 2 && this.isNeedWait) this.chartModel = this.chartModelBuffer;
+    doShowCharts() {
+      if(this.isNeedWait) this.chartModel = this.chartModelBuffer;
     },
     '$store.state.mod_events.chartResize': {
       handler() {

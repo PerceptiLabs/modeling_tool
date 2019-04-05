@@ -1,5 +1,5 @@
 <template lang="pug">
-  .custom-select
+  .custom-select.js-clickout
     button.custom-select_view.input(type="button"
       :class="{'open-list': isOpenList, 'text-placeholder': !value.length}"
       @click="openList"
@@ -32,18 +32,13 @@
           .action-list_bg
           span.action-list_btn-text {{ option.text }}
 
-
-      //-button(type="button"
-
-        @mousedown="selectedOption(option.value)"
-        )
-
-
 </template>
 
 <script>
+  import clickOutside     from '@/core/mixins/click-outside.js'
 export default {
   name: "BaseSelect",
+  mixins: [clickOutside],
   props: {
     value: {
       type: [String, Array],
@@ -68,7 +63,7 @@ export default {
     this.defaultModel();
   },
   mounted() {
-    this.value.length ? this.checkedOptions = this.value : null
+    if(this.value.length) this.checkedOptions = this.value
   },
   data() {
     return {
@@ -94,23 +89,20 @@ export default {
       else return this.selectPlaceholder;
     },
     selectAllBtn() {
-      let all = this.selectOptions.length;
+      let all = this.selectOptions.length || 0;
       let check = this.checkedOptions.length;
+      console.log(this.selectOptions, this.checkedOptions);
       if(all === check)             return {iconClass: 'icon-appMinimaze',  action: ()=> this.defaultModel()};
       if(all > check && check > 0)  return {iconClass: 'icon-appClose',     action: ()=> this.defaultModel()};
       if(check === 0)               return {iconClass: 'icon-check-mark',   action: ()=> this.enableAll()};
+      return {iconClass: 'icon-check-mark',   action: ()=> this.defaultModel()};
     }
   },
   watch: {
     checkedOptions(val) {
-      this.$emit('input', val)
+      this.$emit('input', val);
+      if(!this.selectMultiple) this.closeList()
     },
-    value: {
-      handler(newVal) {
-
-      },
-      immediate: true
-    }
   },
   methods: {
     defaultModel() {
@@ -124,6 +116,9 @@ export default {
     },
     closeList() {
       this.isOpenList = false;
+    },
+    clickOutsideAction() {
+      this.closeList()
     },
   }
 }
@@ -139,7 +134,6 @@ export default {
   .custom-select_view {
     display: flex;
     align-items: center;
-    //justify-content: space-between;
     cursor: default;
     text-align: left;
     span {
@@ -170,9 +164,6 @@ export default {
     left: 0;
     max-height: 13.5rem;
     overflow: auto;
-    /*&:focus-within {*/
-    /*  display: block !important;*/
-    /*}*/
   }
   .custom-select_separator {
     border-top: 1px solid;

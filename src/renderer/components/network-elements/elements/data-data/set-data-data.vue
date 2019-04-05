@@ -37,6 +37,7 @@
             base-select(
               v-model="settings.accessProperties.Columns"
               :selectOptions="dataColumns"
+              :select-multiple="true"
               )
           .form_row
             chart-switch(
@@ -166,8 +167,8 @@
             }
             this.settings.accessProperties.Dataset_size = data.Dataset_size;
             if (data.Columns.length) {
-              if (!this.settings.accessProperties.Columns) this.settings.accessProperties.Columns = data.Columns[0];
-              data.Columns.forEach((el) => this.dataColumns.push({text: el, value: el}))
+              if (!this.settings.accessProperties.Columns) this.settings.accessProperties.Columns = [0];
+              data.Columns.forEach((el, index) => this.dataColumns.push({text: el, value: index}))
             }
           })
           .catch((err) => {

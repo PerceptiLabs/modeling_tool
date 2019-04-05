@@ -42,7 +42,8 @@ const viewBoxMixin = {
     },
     doRequest() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
-    }
+    },
+
   },
   watch: {
     boxElementID() {
@@ -51,8 +52,8 @@ const viewBoxMixin = {
     statElementID() {
       this.resetViewBox();
     },
-    doRequest(newVal) {
-      if(!(newVal % 2)) this.getData();
+    doRequest() {
+      this.getData();
     }
   },
   methods: {
@@ -83,8 +84,7 @@ const viewBoxMixin = {
       //console.log('get layer', theData);
       coreRequest(theData)
         .then((data)=> {
-          let now = new Date();
-          console.log('answer layer', data, now);
+          console.log('answer layer', this._name);
           if(data === 'Null') {
             return
           }

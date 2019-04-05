@@ -25,9 +25,9 @@ export default {
     }
   },
   watch: {
-    doRequest(newVal) {
-      if(newVal % 2 && this.chartModelBuffer !== null) {
-        console.log('update');
+    doShowCharts() {
+      if(this.chartModelBuffer !== null) {
+        //console.log('update');
         this.showImage(this.chartModelBuffer);
       }
     }

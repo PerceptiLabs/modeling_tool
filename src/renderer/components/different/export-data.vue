@@ -13,16 +13,8 @@
             base-select(
               v-model="settings.Type"
               :select-options="selectOptions"
-              )
-          p {{settings.Type}}
-          .form_row
-            base-select(
-              v-model="selectResult"
-              :select-options="selectOptions1"
-              :select-multiple="true"
               select-placeholder="placeholder text"
-            )
-          p {{selectResult}}
+              )
         .form_holder
           base-checkbox(v-model="settings.Compressed") Compressed
 
@@ -37,45 +29,12 @@
 import BaseSwitcher     from "@/components/different/switcher.vue";
 import {loadPathFolder} from '@/core/helpers.js'
 
+
 export default {
   name: "ExportData",
   components: {BaseSwitcher},
   data() {
     return {
-      selectOptions1: [
-        { text: 'Tensor Flow Model',  value: 'TFModel1' },
-        { text: 'Docker Image',       value: 'Docker1' },
-        { text: 'Raw Parameters',     value: 'Raw1' },
-        { text: 'Tensor Flow Model',  value: 'TFModel1' },
-        { text: 'Docker Image',       value: 'Docker1' },
-        { text: 'Raw Parameters',     value: 'Raw1' },
-        { text: 'Tensor Flow Model',  value: 'TFModel1' },
-        { text: 'Docker Image',       value: 'Docker1' },
-        { text: 'Raw Parameters',     value: 'Raw1' },
-        { text: 'Tensor Flow Model',  value: 'TFModel1' },
-        { text: 'Docker Image',       value: 'Docker1' },
-        { text: 'Raw Parameters',     value: 'Raw1' },
-        { text: 'Tensor Flow Model',  value: 'TFModel1' },
-        { text: 'Docker Image',       value: 'Docker1' },
-        { text: 'Raw Parameters',     value: 'Raw1' },
-        { text: 'Tensor Flow Model',  value: 'TFModel1' },
-        { text: 'Docker Image',       value: 'Docker1' },
-        { text: 'Raw Parameters',     value: 'Raw1' },
-        { text: 'Tensor Flow Model',  value: 'TFModel1' },
-        { text: 'Docker Image',       value: 'Docker1' },
-        { text: 'Raw Parameters',     value: 'Raw1' },
-        { text: 'Tensor Flow Model',  value: 'TFModel1' },
-        { text: 'Docker Image',       value: 'Docker1' },
-        { text: 'Raw Parameters',     value: 'Raw1' },
-        { text: 'Tensor Flow Model',  value: 'TFModel1' },
-        { text: 'Docker Image',       value: 'Docker1' },
-        { text: 'Raw Parameters',     value: 'Raw1' },
-        { text: 'Tensor Flow Model',  value: 'TFModel1' },
-        { text: 'Docker Image',       value: 'Docker1' },
-        { text: 'Raw Parameters',     value: 'Raw1' },
-      ],
-      selectResult: ['TFModel1'],
-
       disabledBtn: false,
       selectOptions: [
         { text: 'Tensor Flow Model',  value: 'TFModel' },
