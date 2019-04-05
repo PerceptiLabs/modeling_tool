@@ -11,6 +11,7 @@ thumbs.db
 !.gitkeep
 .idea
 .idea/*
+.idea/workspace.xml
 core/*
 core_local/*
 .vscode/*
