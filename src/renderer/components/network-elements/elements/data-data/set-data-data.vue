@@ -47,7 +47,7 @@
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-cloud
     .settings-layer_foot
-      button.btn.btn--primary(type="button"
+      button.btn.btn--primary.tutorial-relative(type="button"
         v-show="settings.accessProperties.Path.length"
         @click="saveSettings"
         id="tutorial_button-apply"
