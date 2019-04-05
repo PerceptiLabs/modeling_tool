@@ -127,6 +127,7 @@ const mutations = {
         timerID: null,
         waitGlobalEvent: false,
         doRequest: 0,
+        showCharts: 0
       }
     };
 
@@ -191,12 +192,19 @@ const mutations = {
     getters.GET_currentNetwork.networkMeta.zoom = value;
   },
   set_charts_doRequest(state, {getters, networkIndex}) {
-    //console.log(networkIndex);
     if(networkIndex) {
       state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++
     }
     else {
       getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
+    }
+  },
+  set_charts_showCharts(state, {getters, networkIndex}) {
+    if(networkIndex) {
+      state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts++
+    }
+    else {
+      getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts++
     }
   },
   set_charts_timerID(state, {getters, timerId}) {
@@ -426,14 +434,11 @@ const actions = {
     const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
     if(currentMeta === undefined) return;
     const timeInterval = rootState.globalView.timeIntervalDoRequest;
-    var networkIndex = state.currentNetwork;
 
     dispatch('SET_statusNetworkWaitGlobalEvent', isStart);
-
     if(isStart) {
       let timerId = setInterval(()=> {
-        commit('set_charts_doRequest', {getters, networkIndex});
-        if(!(currentMeta.doRequest % 2)) dispatch('mod_api/API_getStatus', null, {root: true});
+        dispatch('EVENT_chartsRequest')
       }, timeInterval);
       commit('set_charts_timerID', {getters, timerId});
     }
@@ -441,12 +446,23 @@ const actions = {
       clearInterval(currentMeta.timerID);
     }
   },
+  EVENT_chartsRequest({dispatch, commit, rootState, getters, state}) {
+    var networkIndex = state.currentNetwork;
+    commit('set_charts_showCharts', {getters, networkIndex});
+    dispatch('mod_api/API_updateResults', null, {root: true})
+      .then(()=> {
+        console.log('doRequest');
+        commit('set_charts_doRequest', {getters, networkIndex});
+        dispatch('mod_api/API_getStatus', null, {root: true});
+      });
+  },
   EVENT_onceDoRequest({dispatch, commit, rootState, getters}, isStart) {
     commit('set_charts_doRequest', {getters});
-    setTimeout(()=>{
-      commit('set_charts_doRequest', {getters});
-      dispatch('mod_api/API_getStatus', null, {root: true});
-    }, 0);
+    dispatch('mod_api/API_getStatus', null, {root: true});
+    // setTimeout(()=>{
+    //   commit('set_charts_doRequest', {getters});
+    //   dispatch('mod_api/API_getStatus', null, {root: true});
+    // }, 0);
   },
   //---------------
   //  NETWORK ELEMENTS

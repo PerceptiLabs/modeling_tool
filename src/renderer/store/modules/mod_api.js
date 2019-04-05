@@ -109,8 +109,7 @@ const actions = {
     }
     function getCoreRequest() {
       const theData = {
-        reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-        action: 'getStatus',
+        action: 'checkCore',
         value: ''
       };
       coreRequest(theData)
@@ -132,10 +131,9 @@ const actions = {
       action: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.openTest ? 'getTestStatus' :'getStatus',
       value: ''
     };
-    //console.log('API_getStatus get', theData);
     coreRequest(theData)
       .then((data)=> {
-        //console.log('API_getStatus answer', data);
+        console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -162,12 +160,26 @@ const actions = {
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_startTraining ', data);
-        dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
+        dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
+        setTimeout(()=>dispatch('mod_workspace/EVENT_chartsRequest', null, {root: true}), 500)
       })
       .catch((err) =>{
         console.error(err);
       });
-
+  },
+  API_updateResults({dispatch, rootState, rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'updateResults',
+      value: ''
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        return data
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
   },
   API_pauseTraining({dispatch, rootState, rootGetters}) {
     const theData = {

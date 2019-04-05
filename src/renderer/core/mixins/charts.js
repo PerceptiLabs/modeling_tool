@@ -63,11 +63,17 @@ const chartsMixin = {
     },
     doRequest() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
+    },
+    doShowCharts() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.showCharts
     }
   },
   watch: {
-    doRequest(newVal) {
-      if(newVal % 2 && this.isNeedWait) this.chartModel = this.chartModelBuffer;
+    doShowCharts() {
+      if(this.isNeedWait) {
+        if(this._name !== '<ChartPicture>') this.$refs.chart.hideLoading();
+        this.chartModel = this.chartModelBuffer;
+      }
     },
     '$store.state.mod_events.chartResize': {
       handler() {
@@ -90,10 +96,11 @@ const chartsMixin = {
     },
     drawChart(ev) {
       //console.log('drawChart ', ev);
-      this.isNeedWait
-        ? this.chartModelBuffer = ev.data
-        : this.chartModel = ev.data;
-      this.$refs.chart.hideLoading()
+      if(this.isNeedWait) this.chartModelBuffer = ev.data;
+      else {
+        this.$refs.chart.hideLoading();
+        this.chartModel = ev.data;
+      }
     },
     chartResize() {
       this.$refs.chart.resize()

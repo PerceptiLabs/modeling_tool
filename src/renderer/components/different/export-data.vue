@@ -13,7 +13,8 @@
             base-select(
               v-model="settings.Type"
               :select-options="selectOptions"
-            )
+              select-placeholder="placeholder text"
+              )
         .form_holder
           base-checkbox(v-model="settings.Compressed") Compressed
 
@@ -27,6 +28,7 @@
 <script>
 import BaseSwitcher     from "@/components/different/switcher.vue";
 import {loadPathFolder} from '@/core/helpers.js'
+
 
 export default {
   name: "ExportData",

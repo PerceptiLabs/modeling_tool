@@ -26,9 +26,9 @@
           @click="toggleLock(itemIndex)"
         )
           i.icon.icon-lock
-        button.btn.btn--icon.visible-icon.visible-icon--visiblity( type="button"
-          :class="{'invisible-icon': itemData.layerMeta.isInvisible}"
-          @click="toggleVisible(itemIndex)"
+        //-button.btn.btn--icon.visible-icon.visible-icon--visiblity( type="button"
+          /:class="{'invisible-icon': itemData.layerMeta.isInvisible}"
+          /@click="toggleVisible(itemIndex)"
           )
           i.icon.icon-eye
     .layer-item_child-list(

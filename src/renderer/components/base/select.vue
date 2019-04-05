@@ -1,29 +1,47 @@
 <template lang="pug">
-  .custom-select
+  .custom-select.js-clickout
     button.custom-select_view.input(type="button"
-      :class="{'open-list': isOpenList}"
+      :class="{'open-list': isOpenList, 'text-placeholder': !value.length}"
       @click="openList"
-      @blur="closeList"
       )
-      span {{ selectedText }}
+      span {{ labelText }}
       i.icon.icon-shevron
 
     ul.custom-select_option-list.action-list(v-show="isOpenList")
-      button.custom-select_option.action-list_btn(type="button"
+      template(v-if="selectMultiple")
+        li.custom-select_option
+          button.action-list_btn(type="button"
+            @click="selectAllBtn.action"
+            )
+            span.action-list_icon.icon(:class="selectAllBtn.iconClass")
+            span.action-list_btn-text Select All
+        li.custom-select_separator
+
+      li.custom-select_option(
         v-for="(option, i) in selectOptions"
         :key="i"
-        @mousedown="selectedOption(option.value)"
-      )
-        span.action-list_btn-text {{ option.text }}
+        )
+        label.action-list_btn
+          input.action-list_input(
+            :type="typeSelectList"
+            :name="uniqName"
+            :value="option.value"
+            v-model="checkedOptions"
+            )
+          span.action-list_icon.icon.icon-check-mark(v-if="selectMultiple")
+          .action-list_bg
+          span.action-list_btn-text {{ option.text }}
 
 </template>
 
 <script>
+  import clickOutside     from '@/core/mixins/click-outside.js'
 export default {
   name: "BaseSelect",
+  mixins: [clickOutside],
   props: {
     value: {
-      type: String,
+      type: [String, Array],
       default: ''
     },
     selectOptions: {
@@ -31,35 +49,76 @@ export default {
       default: function () {
         return []
       }
-    }
+    },
+    selectMultiple: {
+      type: Boolean,
+      default: false
+    },
+    selectPlaceholder: {
+      type: String,
+      default: ''
+    },
+  },
+  created() {
+    this.defaultModel();
+  },
+  mounted() {
+    if(this.value.length) this.checkedOptions = this.value
   },
   data() {
     return {
+      checkedOptions: null,
       isOpenList: false,
-      selectedText: '',
+    }
+  },
+  computed: {
+    typeSelectList() {
+      return this.selectMultiple ? 'checkbox' : 'radio'
+    },
+    uniqName() {
+      return this._uid + 'selectid'
+    },
+    labelText() {
+      if(this.value.length) {
+        let checkedTextList = [];
+        this.selectOptions.forEach((item)=> {
+          if(this.checkedOptions.includes(item.value)) checkedTextList.push(item.text)
+        });
+        return checkedTextList.join(', ')
+      }
+      else return this.selectPlaceholder;
+    },
+    selectAllBtn() {
+      let all = this.selectOptions.length || 0;
+      let check = this.checkedOptions.length;
+      console.log(this.selectOptions, this.checkedOptions);
+      if(all === check)             return {iconClass: 'icon-appMinimaze',  action: ()=> this.defaultModel()};
+      if(all > check && check > 0)  return {iconClass: 'icon-appClose',     action: ()=> this.defaultModel()};
+      if(check === 0)               return {iconClass: 'icon-check-mark',   action: ()=> this.enableAll()};
+      return {iconClass: 'icon-check-mark',   action: ()=> this.defaultModel()};
     }
   },
   watch: {
-    value: {
-      handler(newVal) {
-        if(this.selectOptions.length && newVal) {
-          let index = this.selectOptions.findIndex((el)=>el.value === newVal);
-          this.selectedText = this.selectOptions[index].text;
-        }
-      },
-      immediate: true
-    }
+    checkedOptions(val) {
+      this.$emit('input', val);
+      if(!this.selectMultiple) this.closeList()
+    },
   },
   methods: {
+    defaultModel() {
+      this.selectMultiple ? this.checkedOptions = [] : this.checkedOptions = ''
+    },
+    enableAll() {
+      this.selectOptions.forEach((item)=> this.checkedOptions.push(item.value));
+    },
     openList() {
       this.isOpenList ? this.closeList() : this.isOpenList = true
     },
     closeList() {
       this.isOpenList = false;
     },
-    selectedOption(opt) {
-      this.closeList();
-      this.$emit('input', opt)
+    clickOutsideAction() {
+      this.closeList()
     },
   }
 }
@@ -70,13 +129,22 @@ export default {
   .custom-select {
     width: 100%;
     position: relative;
+    min-width: 100px;
   }
   .custom-select_view {
     display: flex;
     align-items: center;
-    justify-content: space-between;
     cursor: default;
+    text-align: left;
+    span {
+      flex: 1 1 100%;
+      line-height: 1.25;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
     .icon {
+      flex: 0 0 auto;
       transform: rotate(90deg);
     }
     &.open-list {
@@ -84,21 +152,21 @@ export default {
         transform: rotate(-90deg);
       }
     }
+    &.text-placeholder {
+      font-style: italic;
+      font-weight: 300;
+    }
   }
   .custom-select_option-list {
     position: absolute;
     z-index: 2;
     top: 100%;
     left: 0;
-    //overflow: visible;
-    //&:after {
-    //  content: '';
-    //  position: absolute;
-    //  bottom: 100%;
-    //  right: .7rem;
-    //  border: 1rem solid transparent;
-    //  border-bottom-color: $bg-toolbar;
-    //}
+    max-height: 13.5rem;
+    overflow: auto;
+  }
+  .custom-select_separator {
+    border-top: 1px solid;
   }
   .custom-select_option {
     cursor: default;
@@ -108,5 +176,30 @@ export default {
     &:last-child {
       border-radius: 0 0 $bdrs $bdrs;
     }
+  }
+  .action-list_btn {
+    position: relative;
+    justify-content: flex-start;
+
+  }
+  .action-list_input {
+    position: absolute;
+    left: -9999px;
+    opacity: 0;
+    &:not(:checked) + .action-list_icon {
+      opacity: 0;
+    }
+    &:checked ~ .action-list_bg {
+      position: absolute;
+      z-index: -1;
+      background-color: #6E778C;
+      left: 0;
+      right: 0;
+      top: 0;
+      bottom: 0;
+    }
+  }
+  .action-list_icon {
+    margin-right: 1rem;
   }
 </style>
