@@ -13,7 +13,6 @@
             base-select(
               v-model="settings.Type"
               :select-options="selectOptions"
-              select-placeholder="placeholder text"
               )
         .form_holder
           base-checkbox(v-model="settings.Compressed") Compressed
@@ -58,7 +57,7 @@ export default {
           this.settings.Location = pathArr[0];
         })
         .catch((err)=> {
-          this.disabledBtn = false;А
+          this.disabledBtn = false;
           console.error(err)
         } )
 
