@@ -200,8 +200,9 @@ export default {
       const isLeftBtn = ev.buttons === 1;
       const isEditMode = this.networkMode === 'edit';
       const isOpenNet = this.canEditLayers;
+      const targetEl = ev.target.nodeName === 'svg';
 
-      if(isLeftBtn && isEditMode && isOpenNet) {
+      if(isLeftBtn && isEditMode && isOpenNet && targetEl) {
         this.calcOffset();
         this.multiSelect.show = true;
         this.multiSelect.xStart = this.multiSelect.x = this.findXPosition(ev);
@@ -259,8 +260,8 @@ export default {
     },
     calcOffset() {
       this.offset = {
-       offsetX: this.$refs.network.offsetLeft,
-       offsetY: this.$refs.network.offsetTop
+       offsetX: this.$refs.network.parentElement.offsetLeft,
+       offsetY: this.$refs.network.parentElement.offsetTop
       };
     },
     calcLayerSize() {
@@ -309,7 +310,7 @@ export default {
     arrowMovePaint(ev) {
       ev.preventDefault();
       ev.stopPropagation();
-      this.calcOffset();
+      //this.calcOffset();
       this.$store.commit('mod_workspace/SET_preArrowStop', {
         x: this.findXPosition(ev),
         y: this.findYPosition(ev)
