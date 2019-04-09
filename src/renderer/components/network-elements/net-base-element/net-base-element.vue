@@ -1,8 +1,10 @@
 <template lang="pug">
-  .net-element.js-clickout(tabindex="0" :id="dataEl.el.layerMeta.tutorialId"
+  .net-element.js-clickout(tabindex="0"
     ref="rootBaseElement"
     :style="style"
-    :class="active ? 'active' : 'inactive'"
+    :id="dataEl.el.layerMeta.tutorialId"
+    :class="isSelectedEl ? 'active' : 'inactive'"
+
     @click="switchClickEvent($event)"
     @dblclick.stop.prevent="switchDblclick($event)"
     @contextmenu.stop.prevent="openContext"
@@ -70,13 +72,15 @@ export default {
   },
   computed: {
     ...mapGetters({
-      tutorialActiveAction:  'mod_tutorials/getActiveAction'
+      tutorialActiveAction: 'mod_tutorials/getActiveAction',
+      isTraining:           'mod_workspace/GET_networkIsTraining',
+      editIsOpen:           'mod_workspace/GET_networkCanEditLayers'
     }),
     beForEnd() {
       //console.log('NetBaseElement beForEnd', this.dataEl.el.layerMeta);
       return this.dataEl.el.layerMeta.OutputDim
     },
-    active() {
+    isSelectedEl() {
       return this.dataEl.el.layerMeta.isSelected
     },
     networkMode() {
@@ -88,26 +92,32 @@ export default {
     testingIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
     },
-    isTraining() {
-      return this.$store.getters['mod_workspace/GET_networkIsTraining']
-    },
-    editIsOpen() {
-      return this.$store.getters['mod_workspace/GET_networkCanEditLayers'];
-    }
+    // isTraining() {
+    //   return this.$store.getters['mod_workspace/GET_networkIsTraining']
+    // },
+    // editIsOpen() {
+    //   return this.$store.getters['mod_workspace/GET_networkCanEditLayers'];
+    // }
   },
   watch: {
     statisticsIsOpen(newVal) {
       if(newVal) {
         this.deselect()
       }
+    },
+    isSelectedEl(newVal) {
+      newVal
+        ? this.mousedownOutsideBefore()
+        : null
     }
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
+      tutorialPointActivate: 'mod_tutorials/pointActivate',
     }),
     switchMousedownEvent(ev) {
       if (this.isLock) return;
+
       else if(this.networkMode === 'addArrow') {
         this.arrowStartPaint(ev)
       }
@@ -118,6 +128,7 @@ export default {
     },
     switchClickEvent(ev) {
       if (this.isLock) return;
+
       else if (this.statisticsIsOpen || this.testingIsOpen) {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
@@ -139,23 +150,20 @@ export default {
       }
     },
     setFocusEl(ev) {
-      // if(ev.ctrlKey) {
-      //   this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: [this.dataEl.index], setValue: true });
-      // }
-      // else {
-      this.MousedownElementTracking = ev.target.closest('.js-clickout');
+      ev.ctrlKey
+        ? this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: [this.dataEl.index], setValue: true })
+        : this.$store.dispatch('mod_workspace/SET_elementSelect',      { path: [this.dataEl.index], setValue: true })
+    },
+    mousedownOutsideBefore() {
+      this.MousedownElementTracking = this.$refs.rootBaseElement;
       document.addEventListener('mousedown', this.mousedownOutside);
-      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.index], setValue: true });
-      //}
+    },
+    mousedownOutsideAction() {
+      if (!this.statisticsIsOpen) this.deselect()
     },
     hideAllWindow() {
       this.settingsIsOpen = false;
       this.contextIsOpen = false;
-    },
-    mousedownOutsideAction() {
-      if (!this.statisticsIsOpen) {
-        this.deselect()
-      }
     },
     deselect() {
       this.hideAllWindow();
