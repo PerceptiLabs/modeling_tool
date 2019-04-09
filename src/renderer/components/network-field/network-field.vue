@@ -296,6 +296,7 @@ export default {
         stopID: ev.target.dataset.stopid,
       };
       this.$store.dispatch('mod_workspace/DELETE_arrow', connection);
+      ev.target.blur();
     },
     focusArrow() {},
     drawArrows() {
