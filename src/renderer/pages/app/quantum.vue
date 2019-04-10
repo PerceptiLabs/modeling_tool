@@ -1,5 +1,10 @@
 <template lang="pug">
-  .page(ref="layersbar" v-if="showPage")
+  .page(
+    ref="layersbar"
+    v-if="showPage"
+    v-shortkey="globalKeyEvents"
+    @shortkey="switchKeyPress($event)"
+    )
     the-workspace
     the-toolbar
     the-layersbar

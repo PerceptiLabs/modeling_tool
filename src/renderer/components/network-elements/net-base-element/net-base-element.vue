@@ -8,8 +8,6 @@
     @click="switchClickEvent($event)"
     @dblclick.stop.prevent="switchDblclick($event)"
     @contextmenu.stop.prevent="openContext"
-    @keyup.46="deleteEl()"
-    @keyup.93.8="deleteEl()"
     )
     .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
     .net-element_btn(ref="BaseElement")
@@ -92,12 +90,9 @@ export default {
     testingIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
     },
-    // isTraining() {
-    //   return this.$store.getters['mod_workspace/GET_networkIsTraining']
-    // },
-    // editIsOpen() {
-    //   return this.$store.getters['mod_workspace/GET_networkCanEditLayers'];
-    // }
+    hotKeyPressDelete() {
+      return this.$store.state.mod_events.globalPressKey.del
+    },
   },
   watch: {
     statisticsIsOpen(newVal) {
@@ -109,6 +104,9 @@ export default {
       newVal
         ? this.mousedownOutsideBefore()
         : null
+    },
+    hotKeyPressDelete() {
+      this.deleteEl()
     }
   },
   methods: {
