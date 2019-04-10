@@ -24,7 +24,10 @@ export default {
   },
   mounted() {
     this.showPage = true;
-    this.$nextTick(()=> this.addDragListener())
+    this.$nextTick(()=> this.addListeners())
+  },
+  beforeDestroy() {
+    this.removeListeners()
   },
   data() {
     return {
@@ -33,12 +36,18 @@ export default {
         dragged: null,
         //outClassName: 'network-field'
         outClassName: 'svg-arrow'
+      },
+      globalKeyEvents: {
+        delete: ['del'],
+        deleteMac: ['backspace', 'meta'],
+        selectAll: ['ctrl', 'a'],
       }
     }
   },
   computed: {
     ...mapGetters({
       activeAction:    'mod_tutorials/getActiveAction',
+      selectedElList:  'mod_workspace/GET_currentSelectedEl',
     }),
     infoText() {
       return this.$store.state.globalView.globalPopup.showInfoPopup
@@ -56,21 +65,24 @@ export default {
     networkMode(newVal) {
       if(newVal == 'edit') {
         this.$nextTick(function () {
-          this.addDragListener()
+          this.addListeners()
         })
       }
       else {
-        this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
+        this.removeListeners();
         this.offDragListener();
       }
     },
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate'
+      tutorialPointActivate: 'mod_tutorials/pointActivate'
     }),
-    addDragListener() {
+    addListeners() {
       this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
+    },
+    removeListeners() {
+      this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
     },
     offDragListener() {
       this.$refs.layersbar.removeEventListener("dragend", this.dragEnd, false);
@@ -108,5 +120,13 @@ export default {
         this.$store.dispatch('mod_workspace/ADD_element', event)
       }
     },
+    switchKeyPress(event) {
+      switch (event.srcKey) {
+        case 'delete':
+        case 'deleteMac':
+          this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del');
+          break;
+      }
+    }
   }
 }

@@ -67,35 +67,35 @@ const actions = {
 
     function startCore() {
       coreIsStarting = true;
-      let openServer;
-      switch (process.platform) {
-        case 'win32':
-          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          break;
-        case 'darwin':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
-        case 'linux':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
-      }
-      openServer.on('error', (err) => {
-        console.log(err);
-        coreOffline()
-      });
-      openServer.on('close', (code) => {
-        coreOffline()
-      });
+      // let openServer;
+      // switch (process.platform) {
+      //   case 'win32':
+      //     openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     break;
+      //   case 'darwin':
+      //     if(process.env.NODE_ENV === 'production') {
+      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     else {
+      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     break;
+      //   case 'linux':
+      //     if(process.env.NODE_ENV === 'production') {
+      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     else {
+      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     break;
+      // }
+      // openServer.on('error', (err) => {
+      //   console.log(err);
+      //   coreOffline()
+      // });
+      // openServer.on('close', (code) => {
+      //   coreOffline()
+      // });
       waitOnlineCore()
     }
     function waitOnlineCore() {
@@ -133,7 +133,7 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_getStatus answer', data);
+        //console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -297,16 +297,14 @@ const actions = {
       });
   },
   API_postTestMove({rootGetters, rootState, dispatch}, request) {
-    //console.log('API_postTestMove ', request);
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: request, //nextStep, previousStep
       value: ''
     };
-    coreRequest(theData)
-      .then((data)=> {
-        dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true});
-      })
+    dispatch('API_updateResults')
+      .then(()=> coreRequest(theData))
+      .then(()=> dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true}))
       .catch((err) =>{
         console.error(err);
       });

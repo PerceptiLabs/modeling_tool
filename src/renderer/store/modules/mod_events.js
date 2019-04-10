@@ -7,6 +7,9 @@ const state = {
   openNetwork: 0,
   saveNetwork: 0,
   chartResize: 0,
+  globalPressKey: {
+    del: 0,
+  }
 };
 
 const mutations = {
@@ -21,6 +24,9 @@ const mutations = {
   },
   set_chartResize(state) {
     state.chartResize++
+  },
+  set_globalPressKey(state, path) {
+    state.globalPressKey[path]++
   },
 };
 
@@ -50,10 +56,12 @@ const actions = {
       ipcRenderer.send('appClose')
     }
   },
-
   EVENT_chartResize({commit}) {
     commit('set_chartResize')
-  }
+  },
+  EVENT_pressHotKey({commit}, hotKeyName) {
+    commit('set_globalPressKey', hotKeyName)
+  },
 };
 
 export default {

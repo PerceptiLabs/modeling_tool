@@ -62,11 +62,9 @@ export default {
   created() {
     this.defaultModel();
   },
-  mounted() {
-    if(this.value.length) this.checkedOptions = this.value
-  },
   data() {
     return {
+      isReady: false,
       checkedOptions: null,
       isOpenList: false,
     }
@@ -82,7 +80,7 @@ export default {
       if(this.value.length) {
         let checkedTextList = [];
         this.selectOptions.forEach((item)=> {
-          if(this.checkedOptions.includes(item.value)) checkedTextList.push(item.text)
+          if(this.value.includes(item.value)) checkedTextList.push(item.text)
         });
         return checkedTextList.join(', ')
       }
@@ -91,7 +89,6 @@ export default {
     selectAllBtn() {
       let all = this.selectOptions.length || 0;
       let check = this.checkedOptions.length;
-      console.log(this.selectOptions, this.checkedOptions);
       if(all === check)             return {iconClass: 'icon-appMinimaze',  action: ()=> this.defaultModel()};
       if(all > check && check > 0)  return {iconClass: 'icon-appClose',     action: ()=> this.defaultModel()};
       if(check === 0)               return {iconClass: 'icon-check-mark',   action: ()=> this.enableAll()};
@@ -99,9 +96,11 @@ export default {
     }
   },
   watch: {
-    checkedOptions(val) {
-      this.$emit('input', val);
-      if(!this.selectMultiple) this.closeList()
+    checkedOptions(newVal, oldVal) {
+      if(oldVal === null) return;
+      if(!this.selectMultiple) this.closeList();
+      this.$emit('input', newVal);
+      //console.log('$emit ', newVal);
     },
   },
   methods: {

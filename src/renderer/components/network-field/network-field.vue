@@ -1,6 +1,7 @@
 <template lang="pug">
   .network-field(:id="'network' + netIndex"
     ref="network"
+    @mousedown="refNetworkMouseDown($event)"
   )
     svg.svg-arrow(:style="styleSvgArrow")
       defs
@@ -8,13 +9,15 @@
           refX="3" refY="2.25"
           markerWidth="9"
           markerHeight="9"
-          orient="auto")
+          orient="auto"
+          )
           polyline(points="0,0 0,4 3.5,2")
+      //- arrows list
       template(
         v-if="arrowsList.length"
         v-for="(arrow, i) in arrowsList"
       )
-        //:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
+        //-:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
         path.svg-arrow_line(
           data-tabindex="0"
           :data-startid="arrow.l1.layerId"
@@ -28,7 +31,7 @@
           stroke-dasharray="none"
           :d="arrow.positionArrow.path"
           )
-
+      //- pre arrow
       line.svg-arrow_line.arrow--hidden(
         v-if="preArrow.show"
         marker-end="url(#svg-arrow_triangle)"
@@ -37,6 +40,15 @@
         :y1="preArrow.start.y"
         :x2="preArrow.stop.x"
         :y2="preArrow.stop.y"
+        )
+      //-mouse multy select
+      rect.svg-arrow_multi-select(
+        v-if="multiSelect.show"
+        :x="multiSelect.x"
+        :y="multiSelect.y"
+        :width="multiSelect.width"
+        :height="multiSelect.height"
+        rx="5"
         )
     component(
       v-for="(el, index) in networkElementList"
@@ -115,6 +127,12 @@ export default {
       },
       svgWidth: '100%',
       svgHeight: '100%',
+      multiSelect: {
+        show: false,
+        xStart: 0,  yStart: 0,
+        x: 0,       y: 0,
+        width: 0,   height: 0
+      }
     }
   },
   mounted() {
@@ -127,14 +145,19 @@ export default {
   },
   computed: {
     ...mapGetters({
-      tutorialActiveAction:  'mod_tutorials/getActiveAction'
+      tutorialActiveAction: 'mod_tutorials/getActiveAction',
+      networkElementList: 'mod_workspace/GET_currentNetworkElementList',
+      canEditLayers: 'mod_workspace/GET_networkCanEditLayers'
     }),
     networkScale() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
     },
-    networkElementList() {
-      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
+    networkMode() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
+    // networkElementList() {
+    //   return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
+    // },
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
     },
@@ -162,7 +185,7 @@ export default {
       this.calcSvgSize()
     },
     eventCalcArrow() {
-      this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id})
+      this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
       this.createArrowList()
     },
     smallViewPort() {
@@ -173,36 +196,72 @@ export default {
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
-    deleteArrow(ev) {
-      let connection = {
-        startID: ev.target.dataset.startid,
-        stopID: ev.target.dataset.stopid,
-      };
-      this.$store.dispatch('mod_workspace/DELETE_arrow', connection);
+    refNetworkMouseDown(ev) {
+      const isLeftBtn = ev.buttons === 1;
+      const isEditMode = this.networkMode === 'edit';
+      const isOpenNet = this.canEditLayers;
+      const targetEl = ev.target.nodeName === 'svg';
+
+      if(isLeftBtn && isEditMode && isOpenNet && targetEl) {
+        this.calcOffset();
+        this.multiSelect.show = true;
+        this.multiSelect.xStart = this.multiSelect.x = this.findXPosition(ev);
+        this.multiSelect.yStart = this.multiSelect.y = this.findYPosition(ev);
+        this.$refs.network.addEventListener('mousemove', this.moveMultiSelect);
+        this.$refs.network.addEventListener('mouseup', this.removeMultiSelectListener);
+      }
     },
-    focusArrow() {},
-    drawArrows() {
-      this.calcOffset();
-      this.calcLayerSize();
-      this.createArrowList();
+    moveMultiSelect(ev) {
+      const xPosition = this.findXPosition(ev);
+      const yPosition = this.findYPosition(ev);
+      const xStart = this.multiSelect.xStart;
+      const yStart = this.multiSelect.yStart;
+
+      this.multiSelect.width =  Math.abs(xPosition - xStart);
+      this.multiSelect.height = Math.abs(yPosition - yStart);
+
+      if(xStart > xPosition) this.multiSelect.x = xPosition;
+      if(yStart > yPosition) this.multiSelect.y = yPosition;
+    },
+    removeMultiSelectListener() {
+      const xStart = this.multiSelect.x;
+      const yStart = this.multiSelect.y;
+      const xStop = xStart + this.multiSelect.width - this.layerSize;
+      const yStop = yStart + this.multiSelect.height - this.layerSize;
+
+      this.networkElementList.forEach((element, index)=> {
+        const x = element.layerMeta.left;
+        const y = element.layerMeta.top;
+        if(x > xStart
+          && x < xStop
+          && y > yStart
+          && y < yStop ) {
+          this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: [index], setValue: true });
+        }
+      });
+
+      this.multiSelect = {
+        show: false,
+        xStart: 0,  yStart: 0,
+        x: 0,       y: 0,
+        width: 0,   height: 0,
+      };
+      this.$refs.network.removeEventListener('mousemove', this.moveMultiSelect);
+      this.$refs.network.removeEventListener('mouseup', this.removeMultiSelectListener);
     },
     resizeCalc(ev) {
       let width = ev.srcElement.innerWidth;
       if(this.smallViewPort) {
-        if(width > 1440) {
-          this.smallViewPort = false;
-        }
+        if(width > 1440) this.smallViewPort = false;
       }
       else {
-        if(width <= 1440) {
-          this.smallViewPort = true;
-        }
+        if(width <= 1440) this.smallViewPort = true;
       }
     },
     calcOffset() {
       this.offset = {
-       offsetX: this.$refs.network.offsetLeft,
-       offsetY: this.$refs.network.offsetTop
+       offsetX: this.$refs.network.parentElement.offsetLeft,
+       offsetY: this.$refs.network.parentElement.offsetTop
       };
     },
     calcLayerSize() {
@@ -212,12 +271,8 @@ export default {
     },
     calcViewPort(needCalcArray) {
       window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
-      if(!this.smallViewPort) {
-        this.layerSize = 72;
-      }
-      if(needCalcArray) {
-        this.drawArrows();
-      }
+      if(!this.smallViewPort) this.layerSize = 72;
+      if(needCalcArray) this.drawArrows();
     },
     calcSvgSize() {
       let scrollHeight = this.$refs.network.scrollHeight;
@@ -235,6 +290,20 @@ export default {
     //-------------
     //Arrow methods
     //--------------
+    deleteArrow(ev) {
+      let connection = {
+        startID: ev.target.dataset.startid,
+        stopID: ev.target.dataset.stopid,
+      };
+      this.$store.dispatch('mod_workspace/DELETE_arrow', connection);
+      ev.target.blur();
+    },
+    focusArrow() {},
+    drawArrows() {
+      this.calcOffset();
+      this.calcLayerSize();
+      this.createArrowList();
+    },
     addArrowListener() {
       this.$refs.network.addEventListener('mousemove', this.arrowMovePaint);
       this.$refs.network.addEventListener('mouseup', this.removeArrowListener);
@@ -242,9 +311,10 @@ export default {
     arrowMovePaint(ev) {
       ev.preventDefault();
       ev.stopPropagation();
+      //this.calcOffset();
       this.$store.commit('mod_workspace/SET_preArrowStop', {
-        x: (ev.pageX - this.offset.offsetX) / this.networkScale,
-        y: (ev.pageY - this.offset.offsetY) / this.networkScale
+        x: this.findXPosition(ev),
+        y: this.findYPosition(ev)
       })
     },
     removeArrowListener() {
@@ -253,9 +323,7 @@ export default {
       this.$refs.network.removeEventListener('mouseup', this.removeArrowListener)
     },
     createArrowList() {
-      if(!this.networkElementList.length) {
-        return
-      }
+      if(!this.networkElementList.length) return;
       this.calcSvgSize();
       
       const size = this.layerSize;
@@ -500,6 +568,12 @@ export default {
         return `M${startX},${startY}C${pointStartX},${pointStartY} ${pointStopX},${pointStopY} ${stopX},${stopY}`
       }
       this.arrowsList = connectList;
+    },
+    findXPosition(event) {
+      return (event.pageX - this.offset.offsetX) / this.networkScale
+    },
+    findYPosition(event) {
+      return (event.pageY - this.offset.offsetY) / this.networkScale
     }
   }
 }
@@ -530,6 +604,11 @@ export default {
       opacity: .5;
       stroke-width: 4;
     }
+  }
+  .svg-arrow_multi-select {
+    fill: rgba($col-primary2, .15);
+    stroke-width: 1;
+    stroke: $col-primary2;
   }
   /*.arrow--empty-output {*/
   /*  stroke: #eb8b22;*/

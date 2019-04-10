@@ -22,28 +22,20 @@ const chartsMixin = {
     },
   },
   mounted() {
-    if(this._name !== '<ChartPicture>') {
+    this.createWWorker();
+    this.sendDataToWWorker();
+    if(this.isNotPicture) {
       this.$refs.chart.showLoading(this.chartSpinner);
-      this.createWWorker();
-      this.sendDataToWWorker();
-      window.addEventListener("resize", this.chartResize, false);
       this.$refs.chart.resize();
-    }
-    else {
-      this.createWWorker();
-      this.sendDataToWWorker();
+      window.addEventListener("resize", this.chartResize, false);
     }
   },
   beforeDestroy() {
-    if(this._name !== '<ChartPicture>') {
-      this.wWorker.postMessage('close');
-      this.wWorker.removeEventListener('message', this.drawChart, false);
+    this.wWorker.postMessage('close');
+    this.wWorker.removeEventListener('message', this.drawChart, false);
+    if(this.isNotPicture) {
       this.$refs.chart.dispose();
       window.removeEventListener("resize", this.chartResize, false);
-    }
-    else {
-      this.wWorker.postMessage('close');
-      this.wWorker.removeEventListener('message', this.drawChart, false);
     }
   },
   data() {
@@ -52,6 +44,8 @@ const chartsMixin = {
       chartModelBuffer: {},
       fullView: false,
       wWorker: null,
+
+      startCalDrow: 0
     }
   },
   computed: {
@@ -66,23 +60,29 @@ const chartsMixin = {
     },
     doShowCharts() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.showCharts
+    },
+    isNotPicture() {
+      return (this.$options._componentTag === "ChartPicture" || this.$options._componentTag === "chart-picture")
+        ? false
+        : true
     }
   },
   watch: {
     doShowCharts() {
       if(this.isNeedWait) {
-        if(this._name !== '<ChartPicture>') this.$refs.chart.hideLoading();
+        if(this.isNotPicture) this.$refs.chart.hideLoading();
         this.chartModel = this.chartModelBuffer;
       }
     },
     '$store.state.mod_events.chartResize': {
       handler() {
-        if(this._name !== '<ChartPicture>') {
+        if(this.isNotPicture) {
           this.$nextTick(()=> this.$refs.chart.resize())
         }
       }
     },
     chartData(newData) {
+      this.startCalDrow = new Date();
       this.sendDataToWWorker(newData)
     },
     chartModel(data) {
@@ -101,6 +101,10 @@ const chartsMixin = {
         this.$refs.chart.hideLoading();
         this.chartModel = ev.data;
       }
+
+      // let stopCalDrow = new Date();
+      // let drawDelay = stopCalDrow - this.startCalDrow;
+      // console.log(`calc plots delay`, `${drawDelay}ms`);
     },
     chartResize() {
       this.$refs.chart.resize()

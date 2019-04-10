@@ -451,7 +451,6 @@ const actions = {
     commit('set_charts_showCharts', {getters, networkIndex});
     dispatch('mod_api/API_updateResults', null, {root: true})
       .then(()=> {
-        console.log('doRequest');
         commit('set_charts_doRequest', {getters, networkIndex});
         dispatch('mod_api/API_getStatus', null, {root: true});
       });
