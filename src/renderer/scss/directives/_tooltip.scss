@@ -125,6 +125,7 @@ $triangleWith: 10px;
 }
 .tooltip-tutorial--bottom {
   top: calc(100% + #{$arrow-size});
+	transform: translate(-45%, 0);
   &:before {
     bottom: 100%;
     left: 50%;

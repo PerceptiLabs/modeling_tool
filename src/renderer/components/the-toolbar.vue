@@ -17,6 +17,7 @@
       li.toolbar_list-arrow-wrap(
         :class="{'disable-hover': statisticsIsOpen}"
         v-tooltip:bottom="'Arrow'"
+        v-tooltip-interactive:bottom="interactiveInfo"
       )
         button#tutorial_list-arrow.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
@@ -53,7 +54,6 @@
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
-          v-tooltip-interactive:bottom="interactiveInfo"
           @click="onOffBtn()"
           class="run-button"
         )
