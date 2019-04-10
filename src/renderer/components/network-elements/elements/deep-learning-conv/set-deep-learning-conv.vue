@@ -132,7 +132,7 @@
           :the-code="coreCode"
         )
     .settings-layer_foot
-      button#tutorial_apply-button.btn.btn--primary(type="button" @click="saveSettings") Apply
+      button#tutorial_apply-button.btn.btn--primary.tutorial-relative(type="button" @click="saveSettings") Apply
 
 </template>
 

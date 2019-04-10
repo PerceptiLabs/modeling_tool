@@ -1,6 +1,8 @@
 $popper-background-color: rgba(#4d556a, .9);
-$arrow-size: 1.5rem;
+$tutorial-tooltip-bg: #3BC5FF;
+$arrow-size: 1rem;
 $margin-tooltip: .65rem;
+$triangleWith: 10px;
 
 .tooltip-wrap {
 	position: relative;
@@ -39,7 +41,6 @@ $margin-tooltip: .65rem;
 		height: $arrow-size;
 	}
 }
-
 .tooltip--right {
 	top: 50%;
 	left: 100%;
@@ -65,5 +66,86 @@ $margin-tooltip: .65rem;
 		transform: translate(-50%, 50%) rotate(45deg);
 		background: linear-gradient(135deg, $popper-background-color 50%, rgba($popper-background-color,0) 58%);
 		box-shadow: -1px -1px 1px rgba(#000, .5);
+	}
+}
+
+.tooltip-tutorial {
+  font-size: 1.2rem;
+  font-weight: 400;
+  color: $bg-workspace;
+  position: absolute;
+  z-index: 100;
+  min-width: 3rem;
+  max-width: 30rem;
+  padding: .8rem .6rem;
+  border-radius: 0.2rem;
+  white-space: nowrap;
+  background-color: $tutorial-tooltip-bg;
+  box-shadow: $icon-shad;
+  pointer-events: none;
+  font-family: $base-font-sans-serif;
+  text-align: left;
+  &:before {
+    content: '';
+    position: absolute;
+    width: $arrow-size;
+    height: $arrow-size;
+  }
+}
+.tooltip-tutorial--right {
+  top: 50%;
+  left: calc(100% + #{$arrow-size});
+  transform: translate(0, -50%);
+  &:before {
+    top: 50%;
+    right: 100%;
+    transform: translate(50%,-50%) rotate(45deg);
+    background: $tutorial-tooltip-bg;
+  }
+}
+.tooltip-tutorial--left {
+	top: 50%;
+	right: calc(100% + #{$arrow-size});
+	transform: translate(0, -50%);
+	&:before {
+		top: 50%;
+		left: 100%;
+		transform: translate(-50%,-50%) rotate(45deg);
+		background: $tutorial-tooltip-bg;
+	}
+}
+.tooltip-tutorial--top {
+	bottom: calc(100% + #{$arrow-size});
+	&:before {
+		top: 100%;
+		left: 50%;
+		transform: translate(-50%, -50%) rotate(45deg);
+		background:$tutorial-tooltip-bg;
+	}
+}
+.tooltip-tutorial--bottom {
+  top: calc(100% + #{$arrow-size});
+  &:before {
+    bottom: 100%;
+    left: 50%;
+    transform: translate(-50%, 50%) rotate(45deg);
+    background:$tutorial-tooltip-bg;
+  }
+}
+
+.tooltip-tutorial_italic {
+	font-style: italic;
+}
+.tooltip-tutorial_bold {
+	font-weight: 700;
+	display: inline-block;
+}
+.tutorial-relative{
+	position: relative;
+}
+.tutorial_input-reshape {
+	position: relative;
+	.tooltip-tutorial {
+		left: 105%
 	}
 }

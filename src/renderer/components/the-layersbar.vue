@@ -7,6 +7,7 @@
       )
         button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
           v-tooltip:right="layer.tooltip"
+          v-tooltip-interactive:right="layer.tooltip_interactive"
           @click.stop="toggleElList(i, $event, layer.id, layer.dynamic_id)"
           :class="[layer.layerClass, {'active': layer.showEl}]"
           :id="layer.id"
@@ -92,6 +93,10 @@ export default {
         // },
         {
           tooltip: 'Data',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-data',
           iconClass: 'icon-data',
           showEl: false,
@@ -101,6 +106,10 @@ export default {
         },
         {
           tooltip: 'Processing',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-process',
           iconClass: 'icon-settings',
           showEl: false,
@@ -110,6 +119,10 @@ export default {
         },
         {
           tooltip: 'Deep Learning',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-learn-deep',
           iconClass: 'icon-network',
           showEl: false,
@@ -119,6 +132,10 @@ export default {
         },
         {
           tooltip: 'Mathematics',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-math',
           iconClass: 'icon-calc',
           showEl: false,
@@ -128,6 +145,10 @@ export default {
         },
         {
           tooltip: 'Training',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-train',
           iconClass: 'icon-training',
           showEl: false,
@@ -137,6 +158,10 @@ export default {
         },
         {
           tooltip: 'Classic Machine Learning',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-learn-class',
           iconClass: 'icon-mind',
           showEl: false,
