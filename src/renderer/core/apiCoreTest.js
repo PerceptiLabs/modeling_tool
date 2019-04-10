@@ -32,12 +32,12 @@ const coreRequest = function (message, port, address, name) {
 
 
           let stopAnswTime = new Date();
-          let coreConnect = startRequestTime - coreConnectTime;
+          //let coreConnect = startRequestTime - coreConnectTime;
           let coreDelay = startAnswTime - startRequestTime;
           let answerDelay = stopAnswTime - startAnswTime;
           //console.log(`core connect ${name}`, `${coreConnect}ms`);
           console.log(`core delay ${name}`, `${coreDelay}ms`);
-          //console.log(`transmit delay ${name}`, `${answerDelay}ms`);
+          console.log(`transmit delay ${name}`, `${answerDelay}ms`);
           resolve(obgData);
           console.log(obgData);
         }

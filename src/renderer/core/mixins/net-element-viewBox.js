@@ -98,7 +98,7 @@ const viewBoxMixin = {
 
           // let stopRequest = new Date();
           // let answerDelay = stopRequest - this.startRequest;
-          //console.log(`request -> before show ${this._name}`, `${answerDelay}ms`);
+          // console.log(`request -> before show ${this._name}`, `${answerDelay}ms`);
         })
         .catch((err)=> {
           console.log('answer err');

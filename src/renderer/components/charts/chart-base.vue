@@ -45,11 +45,6 @@
             }
           },
           legend: {},
-          yAxis: {},
-          xAxis: {
-            //boundaryGap: false,
-            data: []
-          },
           series: []
         }
       }
@@ -71,8 +66,18 @@
           return
         }
         let model = {...this.defaultModel, ...data};
-        model.xAxis.data.length = 0;
-        if(model.series[0].type === 'bar') model.xAxis.boundaryGap = true;
+        let typeChart = model.series[0].type;
+
+        if(typeChart === 'pie') {
+          this.drawChart({data: model});
+          return
+        }
+        else {
+          model.xAxis = {data: []};
+          model.yAxis = {};
+          //model.xAxis.data.length = 0;
+          if(typeChart === 'bar') model.xAxis.boundaryGap = true;
+        }
         this.wWorker.postMessage({
           model,
           xLength: data.xLength

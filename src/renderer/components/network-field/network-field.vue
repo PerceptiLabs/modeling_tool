@@ -291,11 +291,13 @@ export default {
     //Arrow methods
     //--------------
     deleteArrow(ev) {
+      console.log(ev);
       let connection = {
         startID: ev.target.dataset.startid,
         stopID: ev.target.dataset.stopid,
       };
       this.$store.dispatch('mod_workspace/DELETE_arrow', connection);
+      this.$store.dispatch('mod_api/API_getOutputDim');
       ev.target.blur();
     },
     focusArrow() {},

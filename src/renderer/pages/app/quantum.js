@@ -124,6 +124,7 @@ export default {
       switch (event.srcKey) {
         case 'delete':
         case 'deleteMac':
+          console.log(event);
           this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del');
           break;
       }

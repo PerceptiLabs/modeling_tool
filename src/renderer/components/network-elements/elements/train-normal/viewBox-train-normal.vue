@@ -20,6 +20,12 @@
             chartLabel="Input"
             :chartData="chartData.Prediction.Input"
             )
+        .statistics-box_col
+          chart-base(
+            key="8"
+            chartLabel="Accuracy"
+            :chartData="chartData.Prediction.Accuracy"
+          )
       .statistics-box_row
         .statistics-box_col
           chart-base#tutorial_prediction-chart(
@@ -100,6 +106,7 @@
             Input: null,
             PvG: null,
             AveragePvG: null,
+            Accuracy: null
           },
           Accuracy: {
             Current: null,

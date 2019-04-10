@@ -41,7 +41,7 @@ const chartsMixin = {
   data() {
     return {
       chartModel: {},
-      chartModelBuffer: {},
+      chartModelBuffer: null,
       fullView: false,
       wWorker: null,
 
@@ -69,7 +69,7 @@ const chartsMixin = {
   },
   watch: {
     doShowCharts() {
-      if(this.isNeedWait) {
+      if(this.isNeedWait && this.chartModelBuffer) {
         if(this.isNotPicture) this.$refs.chart.hideLoading();
         this.chartModel = this.chartModelBuffer;
       }

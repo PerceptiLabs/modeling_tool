@@ -168,7 +168,10 @@ export default {
       this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.index], setValue: false });
     },
     deleteEl() {
-      if(!(this.contextIsOpen || this.settingsIsOpen)) this.$store.dispatch('mod_workspace/DELETE_element')
+      if(!(this.contextIsOpen || this.settingsIsOpen)) {
+        this.$store.dispatch('mod_workspace/DELETE_element');
+        this.$store.dispatch('mod_api/API_getOutputDim');
+      }
     },
     tutorialSearchId(event) {
        return event.target.tagName === 'I'

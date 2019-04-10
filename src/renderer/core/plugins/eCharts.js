@@ -326,8 +326,11 @@ ECharts.registerTheme('quantum', {
       "smooth": true
   },
   "bar": {
-    barWidth: '8px',
-    barGap: '100%',
+    "barWidth": '8px',
+    "barGap": '100%',
+    "xAxis": {
+      'boundaryGap': true
+    },
     "itemStyle": {
       "normal": {
         "barBorderWidth": 0,
@@ -340,6 +343,8 @@ ECharts.registerTheme('quantum', {
     }
   },
   "pie": {
+    "radius": '60%',
+    "center": ['50%', '50%'],
     "itemStyle": {
       "normal": {
         "borderWidth": 0,
