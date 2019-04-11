@@ -1,5 +1,5 @@
 <template lang="pug">
-  .custom-select.js-clickout
+  .custom-select
     button.custom-select_view.input(type="button"
       :class="{'open-list': isOpenList, 'text-placeholder': !value.length}"
       @click="openList"
@@ -35,10 +35,9 @@
 </template>
 
 <script>
-  import clickOutside     from '@/core/mixins/click-outside.js'
+
 export default {
   name: "BaseSelect",
-  mixins: [clickOutside],
   props: {
     value: {
       type: [String, Array],
@@ -115,10 +114,7 @@ export default {
     },
     closeList() {
       this.isOpenList = false;
-    },
-    clickOutsideAction() {
-      this.closeList()
-    },
+    }
   }
 }
 </script>
