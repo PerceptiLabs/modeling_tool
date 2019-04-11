@@ -157,7 +157,7 @@ export default {
       document.addEventListener('mousedown', this.mousedownOutside);
     },
     mousedownOutsideAction() {
-      if (!this.statisticsIsOpen) this.deselect()
+      if (!(this.statisticsIsOpen || this.testingIsOpen)) this.deselect()
     },
     hideAllWindow() {
       this.settingsIsOpen = false;

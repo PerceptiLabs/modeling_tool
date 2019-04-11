@@ -56,9 +56,9 @@ export default {
         ? this.chartModelBuffer = ev.data
         : this.showImage(ev.data);
 
-      let stopCalDrow = new Date();
-      let drawDelay = stopCalDrow - this.startCalDrow;
-      console.log(`calc img delay`, `${drawDelay}ms`);
+      // let stopCalDrow = new Date();
+      // let drawDelay = stopCalDrow - this.startCalDrow;
+      // console.log(`calc img delay`, `${drawDelay}ms`);
     },
     showImage(imgData) {
       

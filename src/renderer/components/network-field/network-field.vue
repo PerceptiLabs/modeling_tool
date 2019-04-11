@@ -210,6 +210,9 @@ export default {
         this.$refs.network.addEventListener('mousemove', this.moveMultiSelect);
         this.$refs.network.addEventListener('mouseup', this.removeMultiSelectListener);
       }
+      if(isLeftBtn && !isEditMode && isOpenNet && targetEl) {
+        this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+      }
     },
     moveMultiSelect(ev) {
       const xPosition = this.findXPosition(ev);
@@ -291,7 +294,6 @@ export default {
     //Arrow methods
     //--------------
     deleteArrow(ev) {
-      console.log(ev);
       let connection = {
         startID: ev.target.dataset.startid,
         stopID: ev.target.dataset.stopid,
@@ -313,7 +315,6 @@ export default {
     arrowMovePaint(ev) {
       ev.preventDefault();
       ev.stopPropagation();
-      //this.calcOffset();
       this.$store.commit('mod_workspace/SET_preArrowStop', {
         x: this.findXPosition(ev),
         y: this.findYPosition(ev)
