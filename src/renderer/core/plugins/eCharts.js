@@ -345,16 +345,6 @@ ECharts.registerTheme('quantum', {
   "pie": {
     "radius": '60%',
     "center": ['50%', '50%'],
-    "itemStyle": {
-      "normal": {
-        "borderWidth": 0,
-          "borderColor": "#e1e1e1"
-      },
-      "emphasis": {
-        "borderWidth": 0,
-          "borderColor": "#e1e1e1"
-      }
-    }
   },
   "scatter": {
     "itemStyle": {

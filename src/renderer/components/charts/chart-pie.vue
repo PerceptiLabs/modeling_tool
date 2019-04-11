@@ -19,6 +19,7 @@
         :options="chartModel"
         theme="quantum"
       )
+      .base-chart_info(v-if="chartInfo.length") {{ chartInfo }}
 </template>
 
 <script>
@@ -26,7 +27,7 @@
   import chartMixin                     from "@/core/mixins/charts.js";
 
   export default {
-    name: "ChartBase",
+    name: "ChartPie",
     mixins: [chartMixin],
     mounted() {
       this.applyCustomColor();
@@ -35,7 +36,7 @@
       return {
         chartSpinner,
         defaultModel: {
-          tooltip: {},
+          //tooltip: {},
           toolbox: {
             feature: {
               saveAsImage: {
@@ -44,11 +45,20 @@
               //magicType: {type: ['line', 'bar']},
             }
           },
-          xAxis: { data: [] },
-          yAxis: {},
-          legend: {},
+
           series: []
+        },
+      }
+    },
+    computed: {
+      chartInfo() {
+        if(this.chartModel.series) {
+          if(this.chartModel.series.length) {
+            const info = this.chartModel.series[0].data[0].value.toFixed(2);
+            return `${info}%`
+          }
         }
+        return ''
       }
     },
     methods: {
@@ -58,22 +68,29 @@
         }
       },
       createWWorker() {
-        this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
-        this.wWorker.addEventListener('message', this.drawChart, false);
+
       },
       sendDataToWWorker(dataWatch) {
         let data = dataWatch || this.chartData;
-        if (data === null || data === undefined) {
+        if (!data) {
           this.chartModel = this.defaultModel;
           return
         }
         let model = {...this.defaultModel, ...data};
-        let typeChart = model.series[0].type;
-        if(typeChart === 'bar') model.xAxis.boundaryGap = true;
-        this.wWorker.postMessage({
-          model,
-          xLength: data.xLength
-        });
+        let currentData = model.series[0];
+        let addOptions = {
+          label: {
+            normal: { show: false },
+            emphasis: { show: false }
+          },
+          lableLine: {
+            normal: { show: false },
+            emphasis: { show: false }
+          },
+        };
+        model.series[0] = {...currentData, ...addOptions};
+        this.drawChart({data: model});
+
       }
     },
   }
@@ -82,5 +99,12 @@
 <style lang="scss" scoped>
   .base-chart_main {
     height: 200px;
+  }
+  .base-chart_info {
+    font-size: 2rem;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 </style>

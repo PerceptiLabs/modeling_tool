@@ -21,10 +21,11 @@
             :chartData="chartData.Prediction.Input"
             )
         .statistics-box_col
-          chart-base(
+          chart-pie(
             key="8"
             chartLabel="Accuracy"
             :chartData="chartData.Prediction.Accuracy"
+            :customColor="colorPie"
           )
       .statistics-box_row
         .statistics-box_col
@@ -88,6 +89,7 @@
 
 <script>
   import ChartBase    from "@/components/charts/chart-base";
+  import ChartPie    from "@/components/charts/chart-pie";
   import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
   import ChartD3      from "@/components/charts/chart-3d.vue";
   import ChartSwitch      from "@/components/charts/chart-switch.vue";
@@ -97,7 +99,7 @@
 
   export default {
     name: "ViewBoxTrainNormal",
-    components: {ChartBase, ChartHeatmap, ChartD3, ChartSwitch},
+    components: {ChartBase, ChartPie, ChartHeatmap, ChartD3, ChartSwitch},
     mixins: [viewBoxMixin],
     data() {
       return {
@@ -128,7 +130,7 @@
         ],
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
-
+        colorPie: ['#6B8FF7', '#383F50']
       }
     },
     watch: {

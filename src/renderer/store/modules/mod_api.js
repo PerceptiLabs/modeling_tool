@@ -181,6 +181,16 @@ const actions = {
         console.error(err);
       });
   },
+  API_deleteData({rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'deleteData',
+      value: ''
+    };
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err) => {console.error(err);});
+  },
   API_pauseTraining({dispatch, rootState, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
