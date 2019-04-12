@@ -177,11 +177,9 @@ export default {
       let dim = '';
       let activeFunc = '';
       let pooling = '';
-
-      switch (this.settings.Conv_dim) {
-        case 'Automatic':
-          dim = `${this.settings.Conv_dim} = str(len(${this.codeInputDim})-1) + "D";`;
-          break;
+      let switcherDim = calcSwitcher(this);
+      console.log('switcherDim ', switcherDim);
+      switch (switcherDim) {
         case '1D':
           dim = `shape=[${this.settings.Patch_size},${this.codeInputDim}[-1],${this.settings.Feature_maps}];
 initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Patch_size}**2 * ${this.settings.Feature_maps})));
@@ -228,12 +226,37 @@ node=node+b;`;
 
       if(this.settings.PoolBool) {
         if (this.settings.Pooling === "Max") {
-          pooling = `Y=max_pool(Y, ${this.settings.Pool_area}, ${this.settings.Stride},${this.settings.Padding},${this.settings.Conv_dim});`;
+          //pooling = `Y=max_pool(Y, ${this.settings.Pool_area}, ${this.settings.Stride},${this.settings.Padding},${this.settings.Conv_dim});`;
+          pooling = '';
+          var switcherPooling = calcSwitcher(this);
+          console.log('switcherPooling ', switcherPooling);
+          switch (switcherPooling) {
+            case '1D':
+              pooling = `tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding})`;
+              break;
+            case '2D':
+              pooling = `tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding})`;
+              break;
+            case '3D':
+              pooling = ` tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, ${this.settings.Pool_area}, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding});`;
+              break;
+          }
         } else {
-          pooling = `Y=tf.nn.pool(Y, window_shape=${this.settings.Pool_area},pooling_type='AVG',${this.settings.Padding},strides=${this.settings.Stride});`
+          pooling = `Y=tf.nn.pool(Y, window_shape=${this.settings.Pool_area},pooling_type='AVG',${this.settings.Pool_padding},strides=${this.settings.Pool_stride});`
         }
       }
       return `${dim}\n${activeFunc}\n${pooling}`
+
+      function calcSwitcher(ctx) {
+        var self = ctx;
+        var switcher = '';
+        var codeInputDim = JSON.parse(self.codeInputDim);
+        if (self.settings.Conv_dim === 'Automatic') {
+          switcher = (codeInputDim.length - 1) + 'D'
+        }
+        else switcher = self.settings.Conv_dim;
+        return switcher
+      }
     }
   },
   methods: {

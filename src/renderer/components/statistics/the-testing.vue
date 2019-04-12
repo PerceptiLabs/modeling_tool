@@ -26,17 +26,23 @@ export default {
   mounted() {
     this.getStatus();
     this.$store.dispatch('mod_api/API_postTestStart')
-  },
-  data() {
-    return {
-      //progress: 30
-    }
+      .then(()=>{
+        this.$nextTick(()=> {
+          if(this.progressStore === 0) {
+            this.postTestMove('nextStep')
+          }
+          else this.$store.dispatch('mod_workspace/EVENT_onceDoRequest')
+        })
+      })
   },
   computed: {
+    progressStore() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus.Progress;
+    },
     progress() {
-      const progress = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus.Progress;
+      const progress = this.progressStore;
       const waitEvent = this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent'];
-      if(waitEvent && progress === 1) this.postTestStart();
+      if(waitEvent && this.progressStore === 1) this.postTestStart();
       return (progress * 100).toFixed(1);
     },
   },
@@ -45,7 +51,7 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     postTestStart() {
-      this.$store.dispatch('mod_api/API_postTestPlay')
+      this.$store.dispatch('mod_api/API_postTestPlay');
       this.tutorialPointActivate({way:'next', validation:'tutorial_play-test-button'})
     },
     postTestMove(request) {

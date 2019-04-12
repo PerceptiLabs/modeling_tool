@@ -181,16 +181,6 @@ const actions = {
         console.error(err);
       });
   },
-  API_deleteData({rootGetters}) {
-    const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: 'deleteData',
-      value: ''
-    };
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err) => {console.error(err);});
-  },
   API_pauseTraining({dispatch, rootState, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
@@ -275,15 +265,15 @@ const actions = {
       dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_postTestStart({rootGetters, rootState, dispatch}) {
-    console.log('API_postTestStart');
+    //console.log('API_postTestStart');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: 'startTest',
       value: ''
     };
-    coreRequest(theData)
+    return coreRequest(theData)
       .then((data)=> {
-        console.log('API_postTestStart ', data);
+        //console.log('API_postTestStart ', data);
       })
       .catch((err) =>{
         console.error(err);

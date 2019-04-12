@@ -35,7 +35,7 @@ const chartsMixin = {
       this.wWorker.postMessage('close');
       this.wWorker.removeEventListener('message', this.drawChart, false);
     }
-    if(this.isNotPicture || this.isNotPie) {
+    if(this.isNotPicture && this.isNotPie) {
       this.$refs.chart.dispose();
       window.removeEventListener("resize", this.chartResize, false);
     }

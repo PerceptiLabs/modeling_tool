@@ -109,7 +109,7 @@
           title:"Load file or files",
           properties: ['openFile', 'multiSelections'],
           filters: [
-            {name: 'All', extensions: ['png']},
+            {name: 'All', extensions: ['exe']},
           ]
         };
         this.openLoadDialog(opt)

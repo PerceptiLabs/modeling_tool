@@ -52,11 +52,9 @@
     },
     computed: {
       chartInfo() {
-        if(this.chartModel.series) {
-          if(this.chartModel.series.length) {
-            const info = this.chartModel.series[0].data[0].value.toFixed(2);
-            return `${info}%`
-          }
+        if(this.chartModel.series && this.chartModel.series.length && typeof this.chartModel.series[0].data[0].value === 'number') {
+          const info = this.chartModel.series[0].data[0].value.toFixed(2);
+          return `${info}%`
         }
         return ''
       }
