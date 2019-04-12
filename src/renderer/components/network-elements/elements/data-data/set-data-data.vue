@@ -139,7 +139,7 @@
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
       clearPath() {
-        this.deleteDataMeta()
+        this.deleteDataMeta('DataData')
           .then(()=> this.settings.accessProperties.Path = [])
           .catch(()=> console.log('set-data-data 144 err'))
       },
@@ -177,22 +177,7 @@
             console.error(err);
           });
       },
-      deleteDataMeta() {
-        let theData = {
-          reciever: this.currentNetworkID,
-          action: 'deleteData',
-          value: {
-            Id: this.layerId,
-            Type: 'DataData',
-            Properties: this.settings
-          }
-        };
-        return this.coreRequest(theData)
-          .then((data) => data)
-          .catch((err) => {
-            console.error(err);
-          });
-      },
+
       saveSettings() {
         this.applySettings()
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'})
