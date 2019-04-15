@@ -90,7 +90,7 @@
       'settings.accessProperties.Atari': {
         handler(newVal) {
           if(newVal) {
-            this.getImage()
+            this.dataSettingsPlot('DataEnvironment')
           }
         },
         immediate: true
@@ -102,17 +102,12 @@
         this.tabSelected = i;
         this.settings.accessProperties.EnvType = this.tabs[i].type;
         this.imgData = null;
-        this.deleteDataMeta('DataEnvironment')
-          .then(()=> this.getImage())
-      },
-      getImage() {
-        //console.log('getImage');
-        this.getDataImg('DataEnvironment')
+        this.dataSettingsPlot('DataEnvironment')
       },
       saveLoadFile(pathArr) {
         this.disabledBtn = false;
         this.settings.accessProperties.Path = pathArr;
-        this.getImage()
+        this.dataSettingsPlot('DataEnvironment')
       },
       loadFile() {
         this.disabledBtn = true;
