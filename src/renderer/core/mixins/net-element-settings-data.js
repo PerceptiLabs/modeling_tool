@@ -45,7 +45,24 @@ const netElementSettingsData = {
           console.log('answer err');
           console.error(err);
         });
-    }
+    },
+    deleteDataMeta(type) {
+      let theData = {
+        reciever: this.currentNetworkID,
+        action: 'deleteData',
+        value: {
+          Id: this.layerId,
+          Type: type,
+          Properties: this.settings
+        }
+      };
+      //console.log('deleteDataMeta');
+      return this.coreRequest(theData)
+        .then((data) => data)
+        .catch((err) => {
+          console.error(err);
+        });
+    },
   }
 };
 

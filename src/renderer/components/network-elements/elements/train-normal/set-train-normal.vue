@@ -126,10 +126,6 @@ export default {
     else {
       if (this.inputLayers.length) this.idSelectElement = this.inputLayers[0].value.toString();
     }
-    console.log('idSelectElement ', this.idSelectElement)
-    this.$nextTick(()=>console.log('idSelectElement ', this.idSelectElement))
-
-    //TODO check the base-select
   },
   data() {
     return {

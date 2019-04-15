@@ -22,7 +22,7 @@ const chartsMixin = {
     },
   },
   mounted() {
-    this.createWWorker();
+    if(this.isNotPie) {this.createWWorker();}
     this.sendDataToWWorker();
     if(this.isNotPicture) {
       this.$refs.chart.showLoading(this.chartSpinner);
@@ -31,9 +31,11 @@ const chartsMixin = {
     }
   },
   beforeDestroy() {
-    this.wWorker.postMessage('close');
-    this.wWorker.removeEventListener('message', this.drawChart, false);
-    if(this.isNotPicture) {
+    if(this.isNotPie) {
+      this.wWorker.postMessage('close');
+      this.wWorker.removeEventListener('message', this.drawChart, false);
+    }
+    if(this.isNotPicture && this.isNotPie) {
       this.$refs.chart.dispose();
       window.removeEventListener("resize", this.chartResize, false);
     }
@@ -41,7 +43,7 @@ const chartsMixin = {
   data() {
     return {
       chartModel: {},
-      chartModelBuffer: {},
+      chartModelBuffer: null,
       fullView: false,
       wWorker: null,
 
@@ -65,11 +67,16 @@ const chartsMixin = {
       return (this.$options._componentTag === "ChartPicture" || this.$options._componentTag === "chart-picture")
         ? false
         : true
+    },
+    isNotPie() {
+      return (this.$options._componentTag === "ChartPie" || this.$options._componentTag === "chart-pie")
+        ? false
+        : true
     }
   },
   watch: {
     doShowCharts() {
-      if(this.isNeedWait) {
+      if(this.isNeedWait && this.chartModelBuffer) {
         if(this.isNotPicture) this.$refs.chart.hideLoading();
         this.chartModel = this.chartModelBuffer;
       }

@@ -96,9 +96,10 @@ const viewBoxMixin = {
           }
           else this.chartData = data;
 
+          //console.log(data);
           // let stopRequest = new Date();
           // let answerDelay = stopRequest - this.startRequest;
-          //console.log(`request -> before show ${this._name}`, `${answerDelay}ms`);
+          // console.log(`request -> before show ${this._name}`, `${answerDelay}ms`);
         })
         .catch((err)=> {
           console.log('answer err');

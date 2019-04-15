@@ -19,7 +19,12 @@
                 v-model="settings.accessProperties.Atari"
                 :selectOptions="selectOptions"
                 )
-
+            .form_row
+              chart-switch(
+                key="1"
+                :disable-header="true"
+                :chartData="imgData"
+              )
       .popup_body(
         :class="{'active': tabSelected == 1}"
       )
@@ -33,11 +38,13 @@
                 @click="loadFile"
                 :disabled="disabledBtn"
                 ) Load
-    .settings-layer_foot
-      chart-switch(
-      :disable-header="true"
-      :chartData="imgData"
-      )
+            .form_row
+              chart-switch(
+                key="2"
+                :disable-header="true"
+                :chartData="imgData"
+              )
+
     .settings-layer_foot
       button.btn.btn--primary(type="button" @click="applySettings") Apply
 
@@ -93,9 +100,13 @@
       openLoadDialog,
       setTab(i) {
         this.tabSelected = i;
-        this.settings.accessProperties.EnvType = this.tabs[i].type
+        this.settings.accessProperties.EnvType = this.tabs[i].type;
+        this.imgData = null;
+        this.deleteDataMeta('DataEnvironment')
+          .then(()=> this.getImage())
       },
       getImage() {
+        //console.log('getImage');
         this.getDataImg('DataEnvironment')
       },
       saveLoadFile(pathArr) {
@@ -109,7 +120,7 @@
           title:"Load file or files",
           properties: ['openFile', 'multiSelections'],
           filters: [
-            {name: 'All', extensions: ['png']},
+            {name: 'All', extensions: ['exe']},
           ]
         };
         this.openLoadDialog(opt)

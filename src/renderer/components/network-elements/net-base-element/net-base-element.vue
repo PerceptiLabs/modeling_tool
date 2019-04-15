@@ -138,7 +138,7 @@ export default {
       this.hideAllWindow();
       if(this.networkMode === 'edit' && this.editIsOpen) {
         this.settingsIsOpen = true;
-        setTimeout(()=>{this.tutorialPointActivate({way:'next', validation: this.tutorialSearchId(event)})}, 0)
+        this.$nextTick(()=>{this.tutorialPointActivate({way:'next', validation: this.tutorialSearchId(event)})})
       }
     },
     openContext() {
@@ -157,7 +157,7 @@ export default {
       document.addEventListener('mousedown', this.mousedownOutside);
     },
     mousedownOutsideAction() {
-      if (!this.statisticsIsOpen) this.deselect()
+      if (!(this.statisticsIsOpen || this.testingIsOpen)) this.deselect()
     },
     hideAllWindow() {
       this.settingsIsOpen = false;
@@ -168,7 +168,10 @@ export default {
       this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.index], setValue: false });
     },
     deleteEl() {
-      if(!(this.contextIsOpen || this.settingsIsOpen)) this.$store.dispatch('mod_workspace/DELETE_element')
+      if(!(this.statisticsIsOpen || this.testingIsOpen)) {
+        this.$store.dispatch('mod_workspace/DELETE_element');
+        this.$store.dispatch('mod_api/API_getOutputDim');
+      }
     },
     tutorialSearchId(event) {
        return event.target.tagName === 'I'

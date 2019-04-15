@@ -139,7 +139,9 @@
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
       clearPath() {
-        this.settings.accessProperties.Path = [];
+        this.deleteDataMeta('DataData')
+          .then(()=> this.settings.accessProperties.Path = [])
+          .catch(()=> console.log('set-data-data 144 err'))
       },
       getSettingsInfo() {
         if(this.settings.accessProperties.Path.length == 0) return;
@@ -175,6 +177,7 @@
             console.error(err);
           });
       },
+
       saveSettings() {
         this.applySettings()
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'})

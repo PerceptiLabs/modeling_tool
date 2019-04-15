@@ -11,7 +11,7 @@ const state = {
   appPath: '',
   updateStatus: 'before update', // ('before update', 'downloading', not update, 'done')
   showPopupUpdates: false,
-  timeIntervalDoRequest: 2000,
+  timeIntervalDoRequest: 4000,
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,

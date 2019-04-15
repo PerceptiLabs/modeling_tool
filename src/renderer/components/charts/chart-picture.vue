@@ -26,7 +26,7 @@ export default {
   },
   watch: {
     doShowCharts() {
-      if(this.chartModelBuffer !== null) this.showImage(this.chartModelBuffer);
+      if(this.chartModelBuffer) this.showImage(this.chartModelBuffer);
     }
   },
   methods: {
