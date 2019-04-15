@@ -14,10 +14,15 @@ ul.project-list
     h3 Add new project
   
   article.project-box(
-    v-for="(project, i) in filteredProjects"
-    :key="project.i"
+    v-if="filteredProjects.length"
+    v-for="(project, index) in filteredProjects"
+    :key="project.index"
     )
-    button.project(@click="openTemplate(project.path)")
+    button.project(
+      @dblclick="openTemplate(project.path)"
+      @click="selectTemplate(project)"
+      :class="{'active': project.isChecked}"
+      )
       .project_content
         .project-content_info
           i.icon(:class="project.isCloud ? 'icon-cloud' : 'icon-computer'")
@@ -25,5 +30,5 @@ ul.project-list
           span.content-info_status.dark-blue(v-else) Not trained
         .project-content_img
           img(:src="project.image")
-    h3 {{project.name}}
+    h3 {{project.name}} {{index}}
     time.text-disable {{project.time}}

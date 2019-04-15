@@ -9,17 +9,18 @@
 
 </template>
 <script>
-  import {loadNetwork}        from '@/core/helpers.js'
-  import {pathBasicTemplate}  from '@/core/constants.js'
-  import basicTemplate1       from '@/core/basic-template/base-template-1.js'
-  import {mapMutations}       from 'vuex';
+  import fs             from 'fs';
+  import {loadNetwork}  from '@/core/helpers.js'
+  import basicTemplate1 from '@/core/basic-template/base-template-1.js'
+  import {mapMutations} from 'vuex';
 
   export default {
     name: 'PageProjects',
     mounted() {
       let localProjectsList = JSON.parse(localStorage.getItem('projectsList'));
       if(Array.isArray(localProjectsList)) {
-        this.projects = localProjectsList
+        localProjectsList.forEach((el)=> el.isChecked = false);
+        this.projects = localProjectsList;
       }
     },
     data() {
@@ -52,7 +53,24 @@
         return this.$store.state.globalView.appVersion
       },
       filteredProjects() {
+        this.selectedProject = null;
         return this.projects.filter((project) => project.name.match(this.search))
+      },
+      hotKeyPressDelete() {
+        return this.$store.state.mod_events.globalPressKey.del
+      },
+    },
+    watch: {
+      hotKeyPressDelete() {
+        let indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
+        if(indexCheckedProj >= 0) {
+          let pathDelete = this.projects[indexCheckedProj].path[0];
+          fs.unlink(pathDelete, ()=> {
+            this.projects.splice(indexCheckedProj, 1);
+            localStorage.setItem('projectsList', JSON.stringify(this.projects));
+            alert("The project has been succesfully deleted")
+          })
+        }
       }
     },
     methods: {
@@ -63,25 +81,25 @@
       loadNetwork,
       addNewProject() {
         this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
-        //this.goNextPage()
       },
       openTemplate(path) {
         this.loadNetwork(path)
-          .then(() => {
-            //this.goNextPage();
-          })
+          .then(() => {})
           .catch((err)=> console.log(err))
+      },
+      selectTemplate(selectEl) {
+        this.projects.forEach((el)=> el.isChecked = false);
+        selectEl.isChecked = true
       },
       openBasicTemplate(net) {
         this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
-        //this.goNextPage();
       },
       goNextPage() {
         this.$router.push({name: 'app'});
       },
       beginTutorial() {
-        this.setTutorialMode(true)
-        this.setTutorialStoryBoard(true)
+        this.setTutorialMode(true);
+        this.setTutorialStoryBoard(true);
         this.goNextPage()
       }
     }
