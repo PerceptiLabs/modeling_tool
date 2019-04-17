@@ -117,7 +117,6 @@ const netElementSettingsData = {
       return this.coreRequest(theData)
         .then((data) => {
           if (data) {
-            console.log(data);
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
             return data;
           }
