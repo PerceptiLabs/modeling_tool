@@ -10,6 +10,7 @@ const netElementSettingsData = {
   data() {
     return {
       imgData: null,
+      actionSpace: ''
     }
   },
   computed: {
@@ -22,58 +23,6 @@ const netElementSettingsData = {
   },
   methods: {
     coreRequest,
-    // getDataPlot(type) {
-    //   let theData = {
-    //     reciever: this.currentNetworkID,
-    //     action: 'getDataPlot',
-    //     value: {
-    //       Id: this.layerId,
-    //       Type: type,
-    //       Properties: this.settings
-    //     }
-    //   };
-    //   //console.log('getDataImg', theData);
-    //   this.coreRequest(theData)
-    //     .then((data)=> {
-    //       //console.log('answer getDataImg', data);
-    //       if(data === 'Null') {
-    //         return
-    //       }
-    //       this.imgData = data;
-    //     })
-    //     .catch((err)=> {
-    //       console.log('answer err');
-    //       console.error(err);
-    //     });
-    // },
-    // getDataMeta(type) {
-    //   let theData = {
-    //     reciever: this.currentNetworkID,
-    //     action: 'getDataMeta',
-    //     value: {
-    //       Id: this.layerId,
-    //       Type: type,
-    //       Properties: this.settings
-    //     }
-    //   };
-    //   //console.log(theData);
-    //   return this.coreRequest(theData)
-    //     .then((data) => {
-    //       //console.log('getDataMeta ', data);
-    //       if (data === 'Null') {
-    //         return
-    //       }
-    //       this.settings.accessProperties.Dataset_size = data.Dataset_size;
-    //       if (data.Columns.length) {
-    //         if (!this.settings.accessProperties.Columns) this.settings.accessProperties.Columns = [0];
-    //         data.Columns.forEach((el, index) => this.dataColumns.push({text: el, value: index}))
-    //       }
-    //     })
-    //     .catch((err) => {
-    //       console.error(err);
-    //     });
-    // },
-
     dataSettingsMeta(layerType) {
       return this.deleteDataMeta(layerType)
         .then(()=> this.getDataMeta(layerType))
@@ -117,6 +66,7 @@ const netElementSettingsData = {
       return this.coreRequest(theData)
         .then((data) => {
           if (data) {
+            if(data.Action_space) this.actionSpace = data.Action_space;
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
             return data;
           }
