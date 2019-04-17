@@ -16,25 +16,27 @@ Vue.directive('tooltipInteractive', {
   bind: function (el, binding, vnode) {
       el.addEventListener('mouseenter', createTooltip);
       el.addEventListener('mouseleave', removeTooltip);
+      el.addEventListener('click', removeTooltip);
       el._binding = binding
   },
   unbind: function (el) {
     el.removeEventListener('mouseenter', createTooltip);
     el.removeEventListener('mouseleave', removeTooltip);
+    el.removeEventListener('click', removeTooltip);
   }
 });
 
 function createTooltip(event) {
   if(store.getters['mod_tutorials/getInteractiveInfo']) {
     let tooltip = document.createElement('div');
-    tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${event.target._binding.arg}`);
-    tooltip.innerHTML = event.target._binding.value;
-    event.target.appendChild(tooltip);
+    tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${event.currentTarget._binding.arg}`);
+    tooltip.innerHTML = event.currentTarget._binding.value;
+    event.currentTarget.appendChild(tooltip);
   }
 }
 function removeTooltip(event) {
-  if(store.getters['mod_tutorials/getInteractiveInfo']) {
-    let tooltip = event.target.querySelector('.tooltip-tutorial');
+  let tooltip = event.currentTarget.querySelector('.tooltip-tutorial');
+  if(store.getters['mod_tutorials/getInteractiveInfo'] && tooltip) {
     tooltip.remove();
   }
 }

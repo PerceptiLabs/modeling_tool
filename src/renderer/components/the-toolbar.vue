@@ -10,6 +10,7 @@
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'edit'}"
           v-tooltip:bottom="'Edit'"
+          v-tooltip-interactive:bottom="interactiveInfo"
           @click="setNetMode('edit', 'tutorial_pointer')"
         )
           i.icon.icon-select
@@ -17,18 +18,19 @@
       li.toolbar_list-arrow-wrap(
         :class="{'disable-hover': statisticsIsOpen}"
         v-tooltip:bottom="'Arrow'"
-        v-tooltip-interactive:bottom="interactiveInfo"
       )
         button#tutorial_list-arrow.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'addArrow'}"
           @click="setArrowType(arrowList[0].arrowType)"
+          v-tooltip-interactive:bottom="interactiveInfo"
         )
           i.icon(:class="arrowList[0].iconClass")
         ul.toolbar_list-arrow
           li(
             v-for="(arrow, index) in arrowList"
             :key="index"
+
             )
             button.btn.btn--toolbar(type="button"
               @click="setArrowType(arrow.arrowType, index, 'tutorial_list-arrow')"
@@ -54,6 +56,7 @@
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
+          v-tooltip-interactive:bottom="interactiveInfo"
           @click="onOffBtn()"
           class="run-button"
         )
@@ -296,7 +299,6 @@ export default {
     },
     toggleInteractiveInfo() {
       this.setInteractiveInfo(!this.interactiveInfoStatus);
-      console.log(this.interactiveInfoStatus)
     }
   }
 }
