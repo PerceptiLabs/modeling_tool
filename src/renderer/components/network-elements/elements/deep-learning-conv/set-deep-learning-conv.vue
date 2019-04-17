@@ -178,7 +178,6 @@ export default {
       let activeFunc = '';
       let pooling = '';
       let switcherDim = calcSwitcher(this);
-      console.log('switcherDim ', switcherDim);
       switch (switcherDim) {
         case '1D':
           dim = `shape=[${this.settings.Patch_size},${this.codeInputDim}[-1],${this.settings.Feature_maps}];
@@ -232,13 +231,13 @@ node=node+b;`;
           console.log('switcherPooling ', switcherPooling);
           switch (switcherPooling) {
             case '1D':
-              pooling = `tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding})`;
+              pooling = `Y=tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding})`;
               break;
             case '2D':
-              pooling = `tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding})`;
+              pooling = `Y=tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding})`;
               break;
             case '3D':
-              pooling = ` tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, ${this.settings.Pool_area}, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding});`;
+              pooling = `Y=tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, ${this.settings.Pool_area}, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding});`;
               break;
           }
         } else {
@@ -249,6 +248,7 @@ node=node+b;`;
 
       function calcSwitcher(ctx) {
         var self = ctx;
+        if(!self.codeInputDim) return 'Empty Input Dim';
         var switcher = '';
         var codeInputDim = JSON.parse(self.codeInputDim);
         if (self.settings.Conv_dim === 'Automatic') {

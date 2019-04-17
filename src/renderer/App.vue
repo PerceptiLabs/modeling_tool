@@ -1,5 +1,8 @@
 <template lang="pug">
-  #app
+  #app(
+    v-shortkey="globalKeyEvents"
+    @shortkey="switchKeyPress($event)"
+  )
     header-win.app-header(
       v-if="platform === 'win32'"
       @appClosed="appClose"
@@ -46,6 +49,11 @@
       return {
         percentProgress: 0,
         updateInfo: {},
+        globalKeyEvents: {
+          delete: ['del'],
+          deleteMac: ['backspace', 'meta'],
+          selectAll: ['ctrl', 'a'],
+        }
       }
     },
     mounted() {
@@ -200,6 +208,14 @@
       },
       logOut() {
         this.$store.dispatch('mod_events/EVENT_logOut', this)
+      },
+      switchKeyPress(event) {
+        switch (event.srcKey) {
+          case 'delete':
+          case 'deleteMac':
+            this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del');
+            break;
+        }
       }
     },
   }

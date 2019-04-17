@@ -37,11 +37,7 @@ export default {
         //outClassName: 'network-field'
         outClassName: 'svg-arrow'
       },
-      globalKeyEvents: {
-        delete: ['del'],
-        deleteMac: ['backspace', 'meta'],
-        selectAll: ['ctrl', 'a'],
-      }
+
     }
   },
   computed: {
@@ -120,13 +116,6 @@ export default {
         this.$store.dispatch('mod_workspace/ADD_element', event)
       }
     },
-    switchKeyPress(event) {
-      switch (event.srcKey) {
-        case 'delete':
-        case 'deleteMac':
-          this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del');
-          break;
-      }
-    }
+
   }
 }

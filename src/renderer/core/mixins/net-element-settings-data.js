@@ -22,7 +22,69 @@ const netElementSettingsData = {
   },
   methods: {
     coreRequest,
-    getDataImg(type) {
+    // getDataPlot(type) {
+    //   let theData = {
+    //     reciever: this.currentNetworkID,
+    //     action: 'getDataPlot',
+    //     value: {
+    //       Id: this.layerId,
+    //       Type: type,
+    //       Properties: this.settings
+    //     }
+    //   };
+    //   //console.log('getDataImg', theData);
+    //   this.coreRequest(theData)
+    //     .then((data)=> {
+    //       //console.log('answer getDataImg', data);
+    //       if(data === 'Null') {
+    //         return
+    //       }
+    //       this.imgData = data;
+    //     })
+    //     .catch((err)=> {
+    //       console.log('answer err');
+    //       console.error(err);
+    //     });
+    // },
+    // getDataMeta(type) {
+    //   let theData = {
+    //     reciever: this.currentNetworkID,
+    //     action: 'getDataMeta',
+    //     value: {
+    //       Id: this.layerId,
+    //       Type: type,
+    //       Properties: this.settings
+    //     }
+    //   };
+    //   //console.log(theData);
+    //   return this.coreRequest(theData)
+    //     .then((data) => {
+    //       //console.log('getDataMeta ', data);
+    //       if (data === 'Null') {
+    //         return
+    //       }
+    //       this.settings.accessProperties.Dataset_size = data.Dataset_size;
+    //       if (data.Columns.length) {
+    //         if (!this.settings.accessProperties.Columns) this.settings.accessProperties.Columns = [0];
+    //         data.Columns.forEach((el, index) => this.dataColumns.push({text: el, value: index}))
+    //       }
+    //     })
+    //     .catch((err) => {
+    //       console.error(err);
+    //     });
+    // },
+
+    dataSettingsMeta(layerType) {
+      return this.deleteDataMeta(layerType)
+        .then(()=> this.getDataMeta(layerType))
+    },
+    dataSettingsPlot(layerType) {
+      this.deleteDataMeta(layerType)
+        .then(()=> this.getDataMeta(layerType))
+        .then(()=> this.getDataPlot(layerType))
+    },
+
+    getDataPlot(type) {
       let theData = {
         reciever: this.currentNetworkID,
         action: 'getDataPlot',
@@ -32,17 +94,36 @@ const netElementSettingsData = {
           Properties: this.settings
         }
       };
-      //console.log('getDataImg', theData);
       this.coreRequest(theData)
-        .then((data)=> {
-          //console.log('answer getDataImg', data);
-          if(data === 'Null') {
-            return
-          }
-          this.imgData = data;
+        .then((data) => {
+          if (data) this.imgData = data;
         })
         .catch((err)=> {
           console.log('answer err');
+          console.error(err);
+        });
+    },
+    getDataMeta(type) {
+      let theData = {
+        reciever: this.currentNetworkID,
+        action: 'getDataMeta',
+        value: {
+          Id: this.layerId,
+          Type: type,
+          Properties: this.settings
+        }
+      };
+      //console.log(theData);
+      return this.coreRequest(theData)
+        .then((data) => {
+          if (data) {
+            console.log(data);
+            this.settings.accessProperties = {...this.settings.accessProperties, ...data};
+            return data;
+          }
+          else throw 'error 115'
+        })
+        .catch((err) => {
           console.error(err);
         });
     },
@@ -56,7 +137,6 @@ const netElementSettingsData = {
           Properties: this.settings
         }
       };
-      //console.log('deleteDataMeta');
       return this.coreRequest(theData)
         .then((data) => data)
         .catch((err) => {
