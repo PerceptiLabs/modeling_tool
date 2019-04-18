@@ -15,6 +15,7 @@ function createNetElement(event) {
     layerSettings: '',
     layerCode: '',
     layerMeta: {
+      displayNone: false,
       isInvisible: false,
       isLock: false,
       isSelected: false,
@@ -529,8 +530,24 @@ const actions = {
       return el.el.layerId
     });
     let newLayer = createNetElement(event);
+
+    addContainerFields(newLayer);
+
+
+
     net.networkContainerList[newLayer.layerId] = newLayer;
-    commit('add_container', {getters, event})
+    commit('add_container', {getters, event});
+
+    function addContainerFields(layer) {
+      layer.layerMeta.isOpenContainer = false;
+      layer.containerLayersList = arrSelect;
+      layer.containerIsOpen = false;
+
+      layer.containerLayersList.forEach((el)=> {
+        layer.connectionOut = [...new Set(el.connectionOut)];
+        layer.connectionIn = [...new Set(el.connectionIn)];
+      })
+    }
   },
 };
 
