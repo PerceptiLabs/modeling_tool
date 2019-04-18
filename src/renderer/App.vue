@@ -216,7 +216,7 @@
             this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del');
             break;
           case 'addLayerContainer':
-            this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del');
+            this.$store.dispatch('mod_workspace/ADD_container', event);
             break;
         }
       }

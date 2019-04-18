@@ -18,6 +18,7 @@
 
     .net-element_window.net-element_context-menu(v-if="contextIsOpen")
       slot(name="context")
+    p {{dataEl.el.layerId}}
 
 </template>
 

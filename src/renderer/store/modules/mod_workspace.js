@@ -353,10 +353,10 @@ const mutations = {
   //---------------
   //  NETWORK CONTAINER
   //---------------
-  add_container(state, {getters, event}) {
-
-
-
+  add_container(state, {getters, dispatch, newContainer}) {
+    //let net = getters.GET_currentNetwork;
+    getters.GET_currentNetwork.networkContainerList[newContainer.layerId] = newContainer;
+    dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
   //---------------
   //  OTHER
@@ -522,30 +522,47 @@ const actions = {
   //---------------
   //  NETWORK CONTAINER
   //---------------
-  ADD_container({commit, getters}, event) {
-    let netList = getters.GET_currentNetworkElementList;
-    let net = getters.GET_currentNetwork;
+  ADD_container({commit, getters, dispatch}, event) {
+    console.log('event ', event);
+    //let netList = getters.GET_currentNetworkElementList;
+
     let arrSelect = getters.GET_currentSelectedEl;
-    let arrSelectId = arrSelect.map((el)=>{
-      return el.el.layerId
-    });
-    let newLayer = createNetElement(event);
+    if(arrSelect.length === 0) return;
+    if(arrSelect.length === 1) {
+      alert('At least 2 elements are needed to create a group');
+      return;
+    }
+    let fakeEvent = {
+      timeStamp: new Date().getTime(),
+      target: {
+        dataset: {
+          layer: 'Data Group',
+          type: 'container',
+          component: 'LayerContainer',
+        },
+        clientHeight: 0,
+        clientWidth: 0
+      }
+    };
+    let newContainer = createNetElement(fakeEvent, arrSelect);
 
-    addContainerFields(newLayer);
+    addContainerFields(newContainer);
+    console.log(newContainer);
+    //commit('add_container', {getters, dispatch, newContainer});
 
+    function addContainerFields(layer, containerElList) {
+      let arrSelectId = containerElList.map((el)=> el.el.layerId);
 
-
-    net.networkContainerList[newLayer.layerId] = newLayer;
-    commit('add_container', {getters, event});
-
-    function addContainerFields(layer) {
       layer.layerMeta.isOpenContainer = false;
-      layer.containerLayersList = arrSelect;
+      layer.containerLayersList = containerElList;
       layer.containerIsOpen = false;
 
-      layer.containerLayersList.forEach((el)=> {
-        layer.connectionOut = [...new Set(el.connectionOut)];
-        layer.connectionIn = [...new Set(el.connectionIn)];
+      layer.containerLayersList.forEach((item)=> {
+        item.el.connectionOut
+
+
+        layer.connectionOut = [...new Set(item.el.connectionOut)];
+        layer.connectionIn = [...new Set(item.el.connectionIn)];
       })
     }
   },

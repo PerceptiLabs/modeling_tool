@@ -66,7 +66,9 @@ const generateID = function(input) {
   let out;
   let stringID = input.toString();
   let dotIndex = stringID.indexOf('.');
-  dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
+  dotIndex > 0
+    ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1)
+    : out = stringID;
   out = +out;
   return out
 };

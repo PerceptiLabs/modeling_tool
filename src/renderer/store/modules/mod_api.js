@@ -63,7 +63,7 @@ const actions = {
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
-    startCore();
+    //startCore();
 
     function startCore() {
       coreIsStarting = true;
