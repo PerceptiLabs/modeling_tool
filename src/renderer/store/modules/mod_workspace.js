@@ -6,7 +6,28 @@ function createPathNode(path, state) {
   const networkId = network.shift();
   const initValue = state.workspaceContent[state.currentNetwork].networkElementList[networkId];
   return network.reduce((acc, id) => acc.child[id], initValue);
-
+}
+function createNetElement(event) {
+  return {
+    layerId: generateID(event.timeStamp).toString(),
+    layerName: event.target.dataset.layer,
+    layerType: event.target.dataset.type,
+    layerSettings: '',
+    layerCode: '',
+    layerMeta: {
+      isInvisible: false,
+      isLock: false,
+      isSelected: false,
+      top: event.target.clientHeight/2,
+      left: event.target.clientWidth/2,
+      tutorialId: '',
+      OutputDim: '',
+      InputDim: ''
+    },
+    componentName: event.target.dataset.component,
+    connectionOut: [],
+    connectionIn: [],
+  };
 }
 
 const namespaced = true;
@@ -112,7 +133,8 @@ const mutations = {
       networkID: '',
       networkSettings: null,
       networkMeta: {},
-      networkElementList: []
+      networkElementList: [],
+      networkContainerList: {},
     };
     let defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
@@ -326,6 +348,15 @@ const mutations = {
       el.layerMeta.OutputDim = value[el.layerId];
     });
   },
+
+  //---------------
+  //  NETWORK CONTAINER
+  //---------------
+  add_container(state, {getters, event}) {
+
+
+
+  },
   //---------------
   //  OTHER
   //---------------
@@ -333,28 +364,7 @@ const mutations = {
     state.currentNetwork = value
   },
   ADD_dragElement(state, event) {
-    let newLayer = {
-      layerId: generateID(event.timeStamp).toString(),
-      layerName: event.target.dataset.layer,
-      layerType: event.target.dataset.type,
-      layerSettings: '',
-      layerCode: '',
-      layerMeta: {
-        isInvisible: false,
-        isLock: false,
-        isSelected: false,
-        top: event.target.clientHeight/2,
-        left: event.target.clientWidth/2,
-        tutorialId: '',
-        OutputDim: '',
-        InputDim: ''
-      },
-      componentName: event.target.dataset.component,
-      connectionOut: [],
-      connectionIn: [],
-      trainingData: null
-    };
-    state.dragElement = newLayer;
+    state.dragElement = createNetElement(event);
   },
   SET_arrowType (state, value) {
     state.arrowType = value.type
@@ -508,7 +518,20 @@ const actions = {
   CHANGE_elementPosition({commit, getters}, value) {
     commit('change_elementPosition', {getters, value})
   },
-
+  //---------------
+  //  NETWORK CONTAINER
+  //---------------
+  ADD_container({commit, getters}, event) {
+    let netList = getters.GET_currentNetworkElementList;
+    let net = getters.GET_currentNetwork;
+    let arrSelect = getters.GET_currentSelectedEl;
+    let arrSelectId = arrSelect.map((el)=>{
+      return el.el.layerId
+    });
+    let newLayer = createNetElement(event);
+    net.networkContainerList[newLayer.layerId] = newLayer;
+    commit('add_container', {getters, event})
+  },
 };
 
 export default {

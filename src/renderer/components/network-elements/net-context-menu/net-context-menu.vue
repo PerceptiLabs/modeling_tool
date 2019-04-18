@@ -12,6 +12,12 @@
       button.action-list_btn(type="button")
         span.action-list_btn-text Transform
         span Y
+    li.action-list_item-line
+    li
+      button.action-list_btn(type="button")
+        span.action-list_btn-text Add group
+        span Ctrl + G
+    li.action-list_item-line
     li
       button.action-list_btn(type="button")
         span.action-list_btn-text F_1

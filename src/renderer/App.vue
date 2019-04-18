@@ -52,7 +52,7 @@
         globalKeyEvents: {
           delete: ['del'],
           deleteMac: ['backspace', 'meta'],
-          selectAll: ['ctrl', 'a'],
+          addLayerContainer: ['ctrl', 'g'],
         }
       }
     },
@@ -213,6 +213,9 @@
         switch (event.srcKey) {
           case 'delete':
           case 'deleteMac':
+            this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del');
+            break;
+          case 'addLayerContainer':
             this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del');
             break;
         }

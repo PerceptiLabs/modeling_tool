@@ -2,7 +2,6 @@
   base-net-el(
     :dataEl="elementData"
     :layerContainer="true"
-    @dblcl="openChild"
   )
     view-el
     template(slot="context")
@@ -25,10 +24,5 @@
     props: {
       elementData: Object
     },
-    methods: {
-      openChild() {
-        this.$store.commit('mod_workspace/SHOW_layerContainer', this.elementData.index);
-      }
-    }
   }
 </script>
