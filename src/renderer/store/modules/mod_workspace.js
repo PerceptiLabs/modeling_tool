@@ -523,7 +523,7 @@ const actions = {
   //  NETWORK CONTAINER
   //---------------
   ADD_container({commit, getters, dispatch}, event) {
-    console.log('event ', event);
+
     //let netList = getters.GET_currentNetworkElementList;
 
     let arrSelect = getters.GET_currentSelectedEl;
@@ -544,26 +544,35 @@ const actions = {
         clientWidth: 0
       }
     };
-    let newContainer = createNetElement(fakeEvent, arrSelect);
+    let newContainer = createNetElement(fakeEvent);
 
-    addContainerFields(newContainer);
+    addContainerFields(newContainer, arrSelect);
     console.log(newContainer);
     //commit('add_container', {getters, dispatch, newContainer});
 
     function addContainerFields(layer, containerElList) {
       let arrSelectId = containerElList.map((el)=> el.el.layerId);
 
+      containerElList.forEach((item)=> {
+        let exeptOut = [arrSelectId, ...item.el.connectionOut];
+        let exeptIn = [arrSelectId, ...item.el.connectionIn];
+
+        let addArr
+        if(exeptOut.includes)
+
+        layer.connectionOut = [...layer.connectionOut, ...item.el.connectionOut];
+        layer.connectionIn = [...layer.connectionIn, ...item.el.connectionIn];
+      });
+
       layer.layerMeta.isOpenContainer = false;
       layer.containerLayersList = containerElList;
       layer.containerIsOpen = false;
-
-      layer.containerLayersList.forEach((item)=> {
-        item.el.connectionOut
+      //layer.connectionOut
 
 
-        layer.connectionOut = [...new Set(item.el.connectionOut)];
-        layer.connectionIn = [...new Set(item.el.connectionIn)];
-      })
+    }
+    function filterArr(inputArr, exceptionArr) {
+
     }
   },
 };
