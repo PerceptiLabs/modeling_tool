@@ -277,7 +277,10 @@ export default {
       this.$refs.network.removeEventListener('mouseup', this.removeArrowListener)
     },
     createArrowList() {
-      if(!this.networkElementList.length) return;
+      if(!this.networkElementList.length) {
+        this.arrowsList = [];
+        return;
+      }
       this.calcSvgSize();
       
       const size = this.layerSize;

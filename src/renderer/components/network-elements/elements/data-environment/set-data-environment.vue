@@ -22,8 +22,8 @@
             .form_row
               chart-switch(
                 key="1"
-                :disable-header="true"
-                :chartData="imgData"
+                :chart-label="chartLabel"
+                :chart-data="imgData"
               )
       .popup_body(
         :class="{'active': tabSelected == 1}"
@@ -84,6 +84,11 @@
             Type: 'Data',
           }
         }
+      }
+    },
+    computed: {
+      chartLabel() {
+        return `Action space: ${this.actionSpace}`
       }
     },
     watch: {
