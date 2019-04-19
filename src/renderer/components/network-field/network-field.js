@@ -120,7 +120,9 @@ export default {
         height: this.svgHeight,
       }
     },
-    network
+    networkDisplay() {
+
+    }
   },
   watch: {
     statisticsIsOpen() {
