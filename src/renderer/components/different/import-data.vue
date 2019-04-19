@@ -3,12 +3,12 @@
     base-switcher.export-data_body
       template(slot="firstTab")
         .form_holder
-          .form_label Path:
+          .form_label Import from:
           .form_row
             input.form_input(type="text" v-model="settings.Location" readonly)
             button.btn.btn--dark-blue-rev(type="button" @click="saveLoadFile") Browse
         .form_holder
-          .form_label Export as:
+          .form_label Template models:
           .form_row
             base-select(
               v-model="settings.Type"
@@ -16,12 +16,12 @@
               select-placeholder="placeholder text"
               )
         .form_holder
-          base-checkbox(v-model="settings.Compressed") Compressed
+          base-checkbox(v-model="settings.git") Git
 
       template(slot="secondTab")
         p secondTab
     .export-data_action
-      button.btn.btn--primary(type="button" @click="exportData") Export
+      button.btn.btn--primary(type="button" @click="importData") Import
 
 </template>
 
@@ -31,7 +31,7 @@ import {loadPathFolder} from '@/core/helpers.js'
 
 
 export default {
-  name: "ExportData",
+  name: "ImportData",
   components: {BaseSwitcher},
   data() {
     return {
@@ -44,7 +44,7 @@ export default {
       settings: {
         Location: '',
         Type: 'TFModel',
-        Compressed: true
+        git: false
       }
     }
   },
@@ -63,7 +63,7 @@ export default {
         } )
 
     },
-    exportData() {
+    importData() {
       this.$store.dispatch('mod_api/API_exportData', this.settings)
     }
   }
