@@ -27,10 +27,11 @@ Vue.directive('tooltipInteractive', {
 });
 
 function createTooltip(event) {
-  if(store.getters['mod_tutorials/getInteractiveInfo']) {
+  let textInfo = event.currentTarget._binding.value;
+  if(store.getters['mod_tutorials/getInteractiveInfo'] && textInfo) {
     let tooltip = document.createElement('div');
     tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${event.currentTarget._binding.arg}`);
-    tooltip.innerHTML = event.currentTarget._binding.value;
+    tooltip.innerHTML = textInfo;
     event.currentTarget.appendChild(tooltip);
   }
 }

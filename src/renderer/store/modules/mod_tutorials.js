@@ -982,7 +982,6 @@ const actions = {
       tooltipBlock.classList.add('tooltip-tutorial', `tooltip-tutorial--${getters.getActiveAction.position}`);
       tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
       element.appendChild(tooltipBlock);
-      console.log(getters.getActiveAction.position)
     }
   },
   removeTooltip() {

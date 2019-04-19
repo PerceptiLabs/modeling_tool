@@ -24,6 +24,7 @@ export default {
   data() {
     return {
       interactiveInfo: `<div class="tooltip-tutorial_italic">
+                          <img src="../../../../../../static/img/logo_small_dark.svg" alt=""></br>
                           <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
                           <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
                         </div>`

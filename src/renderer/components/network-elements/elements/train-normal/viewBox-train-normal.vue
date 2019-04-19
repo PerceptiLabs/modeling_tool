@@ -7,6 +7,7 @@
       )
         button.btn.btn--tabs.tutorial-relative(
         type="button"
+        v-tooltip-interactive:right="tab.interactiveInfo"
         @click="setTab(tab.name, tab.id)"
         :class="{'active': currentTab === tab.name}"
         :disabled="i > 2"
@@ -88,13 +89,13 @@
 </template>
 
 <script>
-  import ChartBase    from "@/components/charts/chart-base";
-  import ChartPie    from "@/components/charts/chart-pie";
-  import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
-  import ChartD3      from "@/components/charts/chart-3d.vue";
-  import ChartSwitch      from "@/components/charts/chart-switch.vue";
+  import ChartBase      from "@/components/charts/chart-base";
+  import ChartPie       from "@/components/charts/chart-pie";
+  import ChartHeatmap   from "@/components/charts/chart-heatmap.vue";
+  import ChartD3        from "@/components/charts/chart-3d.vue";
+  import ChartSwitch    from "@/components/charts/chart-switch.vue";
 
-  import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
+  import viewBoxMixin   from "@/core/mixins/net-element-viewBox.js";
   import { mapActions } from 'vuex';
 
   export default {
@@ -121,12 +122,60 @@
         },
         currentTab: 'Prediction',
         tabset: [
-          {name: 'Prediction',        id: 'tutorial_prediction-tab'}, 
-          {name: 'Accuracy',          id: 'tutorial_accuracy-tab'},
-          {name: 'Loss',              id: 'tutorial_loss-tab'}, 
-          {name: 'F1',                id: 'tutorial_f1-tab'}, 
-          {name: 'Precision & Recall',id: 'tutorial_precision-tab'}, 
-          {name: 'ROC',               id: 'tutorial_roc-tab'}
+          {
+            name: 'Prediction',
+            id: 'tutorial_prediction-tab',
+            interactiveInfo: `<div class="tooltip-tutorial_italic">
+                                <img src="../../../../../../static/img/logo_small_dark.svg" alt=""></br>
+                                <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                                <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                              </div>`
+          },
+          {
+            name: 'Accuracy',
+            id: 'tutorial_accuracy-tab',
+            interactiveInfo: `<div class="tooltip-tutorial_italic">
+                                <img src="../../../../../../static/img/logo_small_dark.svg" alt=""></br>
+                                <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                                <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                              </div>`
+          },
+          {
+            name: 'Loss',
+            id: 'tutorial_loss-tab',
+            interactiveInfo: `<div class="tooltip-tutorial_italic">
+                                <img src="../../../../../../static/img/logo_small_dark.svg" alt=""></br>
+                                <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                                <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                              </div>`
+          },
+          {
+            name: 'F1',
+            id: 'tutorial_f1-tab',
+            interactiveInfo: `<div class="tooltip-tutorial_italic">
+                                <img src="../../../../../../static/img/logo_small_dark.svg" alt=""></br>
+                                <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                                <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                              </div>`
+          },
+          {
+            name: 'Precision & Recall',
+            id: 'tutorial_precision-tab',
+            interactiveInfo: `<div class="tooltip-tutorial_italic">
+                                <img src="../../../../../../static/img/logo_small_dark.svg" alt=""></br>
+                                <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                                <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                              </div>`
+          },
+          {
+            name: 'ROC',
+            id: 'tutorial_roc-tab',
+            interactiveInfo: `<div class="tooltip-tutorial_italic">
+                                <img src="../../../../../../static/img/logo_small_dark.svg" alt=""></br>
+                                <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                                <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                              </div>`
+          }
         ],
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
