@@ -83,8 +83,9 @@ export default {
   computed: {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
-      networkElementList: 'mod_workspace/GET_currentNetworkElementList',
-      canEditLayers: 'mod_workspace/GET_networkCanEditLayers'
+      currentNetwork:       'mod_workspace/GET_currentNetwork',
+      networkElementList:   'mod_workspace/GET_currentNetworkElementList',
+      canEditLayers:        'mod_workspace/GET_networkCanEditLayers',
     }),
     networkScale() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
@@ -98,9 +99,9 @@ export default {
     // networkElementList() {
     //   return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     // },
-    currentNetwork() {
-      return this.$store.state.mod_workspace.currentNetwork
-    },
+    // currentNetwork() {
+    //   return this.$store.state.mod_workspace.currentNetwork
+    // },
     statisticsIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
     },
@@ -119,6 +120,7 @@ export default {
         height: this.svgHeight,
       }
     },
+    network
   },
   watch: {
     statisticsIsOpen() {

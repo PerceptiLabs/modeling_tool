@@ -548,31 +548,39 @@ const actions = {
 
     addContainerFields(newContainer, arrSelect);
     console.log(newContainer);
-    //commit('add_container', {getters, dispatch, newContainer});
+    commit('add_container', {getters, dispatch, newContainer});
 
     function addContainerFields(layer, containerElList) {
-      let arrSelectId = containerElList.map((el)=> el.el.layerId);
+      let allInId = [];
+      let allOutId = [];
+      let allTop = [];
+      let allLeft = [];
 
-      containerElList.forEach((item)=> {
-        let exeptOut = [arrSelectId, ...item.el.connectionOut];
-        let exeptIn = [arrSelectId, ...item.el.connectionIn];
-
-        let addArr
-        if(exeptOut.includes)
-
-        layer.connectionOut = [...layer.connectionOut, ...item.el.connectionOut];
-        layer.connectionIn = [...layer.connectionIn, ...item.el.connectionIn];
+      let arrSelectId = containerElList.map((item)=> {
+        allOutId = [...allOutId, ...new Set(item.el.connectionOut)];
+        allInId  = [...allInId,  ...new Set(item.el.connectionIn)];
+        allTop.push(item.el.layerMeta.top);
+        allLeft.push(item.el.layerMeta.left);
+        return item.el.layerId
       });
 
       layer.layerMeta.isOpenContainer = false;
       layer.containerLayersList = containerElList;
-      layer.containerIsOpen = false;
-      //layer.connectionOut
-
-
+      layer.containerIsOpen = true;
+      layer.layerMeta.top = calcPosition(allTop);
+      layer.layerMeta.left = calcPosition(allLeft);
+      layer.connectionOut = realConnection(allOutId, arrSelectId);
+      layer.connectionIn = realConnection(allInId, arrSelectId)
     }
-    function filterArr(inputArr, exceptionArr) {
-
+    function realConnection(arrIn, arrExcept) {
+      let arrOut = [];
+      arrIn.forEach((item)=> {
+        if(!arrExcept.includes(item)) arrOut.push(item)
+      });
+      return arrOut;
+    }
+    function calcPosition(arrIn) {
+      return (Math.max(...arrIn) + Math.min(...arrIn))/2
     }
   },
 };
