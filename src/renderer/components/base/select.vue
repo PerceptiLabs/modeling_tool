@@ -21,16 +21,34 @@
         v-for="(option, i) in selectOptions"
         :key="i"
         )
-        label.action-list_btn
+
+        label.action-list_sublist-area(v-if="option.sublist")
+          span.action-list_btn-text {{ option.text }}
+          ul.sublist-area_list
+            li.sublist_select(v-for="(sublistOption, i) in option.sublist")
+              label.action-list_btn
+                input.action-list_input(
+                  :type="typeSelectList"
+                  :name="uniqName"
+                  :value="sublistOption.value"
+                  v-model="checkedOptions"
+                )
+                span.action-list_icon.icon.icon-check-mark(v-if="selectMultiple")
+                .action-list_bg
+                span.action-list_btn-text {{ sublistOption.text }}
+
+        label.action-list_btn(v-else)
           input.action-list_input(
             :type="typeSelectList"
             :name="uniqName"
             :value="option.value"
             v-model="checkedOptions"
-            )
+          )
           span.action-list_icon.icon.icon-check-mark(v-if="selectMultiple")
           .action-list_bg
           span.action-list_btn-text {{ option.text }}
+
+
 
 </template>
 
@@ -82,6 +100,11 @@ export default {
       if(this.value.length) {
         let checkedTextList = [];
         this.selectOptions.forEach((item)=> {
+          if(item.sublist) {
+            item.sublist.forEach((subItem) => {
+              if(this.checkedOptions.includes(subItem.value)) checkedTextList.push(subItem.text)
+            })
+          }
           if(this.checkedOptions.includes(item.value)) checkedTextList.push(item.text)
         });
         return checkedTextList.join(', ')
@@ -180,7 +203,6 @@ export default {
   .action-list_btn {
     position: relative;
     justify-content: flex-start;
-
   }
   .action-list_input {
     position: absolute;

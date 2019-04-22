@@ -27,3 +27,16 @@ ul.action-list {
 	margin-right: 3.5rem;
 	white-space: nowrap;
 }
+.action-list_sublist-area {
+	padding: .5em 1em;
+	width: 100%;
+	display: block;
+	&:hover .sublist-area_list{
+		display: block;
+	}
+	.sublist-area_list{
+		padding: .5em 3em;
+		display: none;
+	}
+}
+
