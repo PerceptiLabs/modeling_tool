@@ -28,15 +28,18 @@ ul.action-list {
 	white-space: nowrap;
 }
 .action-list_sublist-area {
-	padding: .5em 1em;
 	width: 100%;
 	display: block;
-	&:hover .sublist-area_list{
-		display: block;
-	}
 	.sublist-area_list{
 		padding: .5em 3em;
-		display: none;
+	}
+}
+.sublist-area_text{
+	white-space: nowrap;
+	padding: .5em 1em;
+	&:hover {
+		background: $bg-grad-blue;
+		box-shadow: $box-shad;
 	}
 }
 

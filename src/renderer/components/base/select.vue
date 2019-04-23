@@ -22,20 +22,21 @@
         :key="i"
         )
 
-        label.action-list_sublist-area(v-if="option.sublist")
-          span.action-list_btn-text {{ option.text }}
-          ul.sublist-area_list
-            li.sublist_select(v-for="(sublistOption, i) in option.sublist")
-              label.action-list_btn
-                input.action-list_input(
-                  :type="typeSelectList"
-                  :name="uniqName"
-                  :value="sublistOption.value"
-                  v-model="checkedOptions"
-                )
-                span.action-list_icon.icon.icon-check-mark(v-if="selectMultiple")
-                .action-list_bg
-                span.action-list_btn-text {{ sublistOption.text }}
+        span.action-list_sublist-area(v-if="option.sublist")
+          span.sublist-area_text(@click.stop="openSubList") {{ option.text }}
+          label.sublist-area-box
+            ul.sublist-area_list(v-show="isOpenSubList")
+              li.sublist_select(v-for="(sublistOption, i) in option.sublist")
+                label.action-list_btn
+                  input.action-list_input(
+                    :type="typeSelectList"
+                    :name="uniqName"
+                    :value="sublistOption.value"
+                    v-model="checkedOptions"
+                  )
+                  span.action-list_icon.icon.icon-check-mark(v-if="selectMultiple")
+                  .action-list_bg
+                  span.action-list_btn-text {{ sublistOption.text }}
 
         label.action-list_btn(v-else)
           input.action-list_input(
@@ -87,6 +88,7 @@ export default {
     return {
       checkedOptions: null,
       isOpenList: false,
+      isOpenSubList: false
     }
   },
   computed: {
@@ -143,6 +145,9 @@ export default {
     clickOutsideAction() {
       this.closeList()
     },
+    openSubList() {
+      this.isOpenSubList = !this.isOpenSubList;
+    }
   }
 }
 </script>
