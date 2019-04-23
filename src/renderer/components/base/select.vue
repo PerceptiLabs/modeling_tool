@@ -141,6 +141,7 @@ export default {
     },
     closeList() {
       this.isOpenList = false;
+      this.isOpenSubList = false;
     },
     clickOutsideAction() {
       this.closeList()

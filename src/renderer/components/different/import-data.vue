@@ -16,8 +16,18 @@
               select-placeholder="placeholder text"
               )
         .form_holder
-          base-checkbox(v-model="settings.git") Git
-
+          .form_row
+            base-checkbox(v-model="settings.git")
+              i.icon.icon-git
+              span.checkbox-info Git
+        .form_holder
+          .form_row
+            input.form_input(
+              type="text"
+              placeholder="insert link"
+              v-model="settings.gitLink"
+              :disabled="!settings.git"
+            )
       template(slot="secondTab")
         p secondTab
     .export-data_action
@@ -66,7 +76,8 @@ export default {
       settings: {
         Location: '',
         Type: 'TFModel',
-        git: false
+        git: false,
+        gitLink: ''
       }
     }
   },
@@ -102,5 +113,8 @@ export default {
   .export-data_action {
     text-align: right;
     padding: 1.5rem 2.2rem 0;
+  }
+  .checkbox-info {
+    margin-left: 0.5rem;
   }
 </style>

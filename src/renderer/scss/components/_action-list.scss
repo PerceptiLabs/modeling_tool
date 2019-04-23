@@ -29,7 +29,6 @@ ul.action-list {
 }
 .action-list_sublist-area {
 	width: 100%;
-	display: block;
 	.sublist-area_list{
 		padding: .5em 3em;
 	}
@@ -37,6 +36,8 @@ ul.action-list {
 .sublist-area_text{
 	white-space: nowrap;
 	padding: .5em 1em;
+	display: block;
+
 	&:hover {
 		background: $bg-grad-blue;
 		box-shadow: $box-shad;
