@@ -13,17 +13,18 @@
       .popup_body(:class="{'active': tabSelected == 0}")
         .settings-layer(v-if="!settings.accessProperties.Path.length")
           .settings-layer_section.section-data-select
-            button.btn(type="button"
+            button.btn.tutorial-relative(type="button"
               :disabled="disabledBtn"
               @click="loadFolder"
+              v-tooltip-interactive:left="folderInteractiveInfo"
               )
               i.icon.icon-open-folder
             span.data-select_text or
-            button.btn(type="button"
+            button.btn.tutorial-relative(type="button"
               :disabled="disabledBtn"
               @click="loadFile"
               id="tutorial_button-load"
-              class="tutorial-relative"
+              v-tooltip-interactive:right="fileInteractiveInfo"
               )
               i.icon.icon-open-file
         .settings-layer_section(v-else)
@@ -35,7 +36,7 @@
             input.form_input(type="text" v-model="inputPath" readonly="readonly")
           .form_row(v-if="dataColumns.length")
             base-select(
-              v-model="settings.accessProperties.Columns"
+              v-model="dataColumnsSelected"
               :selectOptions="dataColumns"
               :select-multiple="true"
               )
@@ -71,16 +72,35 @@
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
     components: {ChartSwitch, SettingsCloud },
+    mounted() {
+      if(this.settings.accessProperties.Columns.length) {
+        this.dataColumnsSelected = this.settings.accessProperties.Columns;
+      }
+      this.getDataMeta('DataData')
+        .then((data)=> {
+          if (data.Columns.length) this.createSelectArr(data.Columns);
+          this.getDataPlot('DataData');
+        })
+    },
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
         coreCode: '',
         dataColumns: [],
+        dataColumnsSelected: [],
         disabledBtn: false,
+        folderInteractiveInfo: `<div class="tooltip-tutorial_italic">
+                                  <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                                  <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                                </div>`,
+        fileInteractiveInfo: `<div class="tooltip-tutorial_italic">
+                                <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                                <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                              </div>`,
         settings: {
           Type: 'Data',
           accessProperties: {
-            Columns: '',
+            Columns: [],
             Dataset_size: 3000,
             Category:'Local',
             Type: 'Data',
@@ -89,20 +109,15 @@
         }
       }
     },
-    computed: {
-
-    },
     watch: {
-      'settings.accessProperties.Path': {
-        handler(newVal) {
-          this.getSettingsInfo()
-        },
-        immediate: true
+      dataColumnsSelected(newVal) {
+        this.settings.accessProperties.Columns = newVal;
+        this.getDataPlot('DataData')
       }
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate:    'mod_tutorials/pointActivate'
+        tutorialPointActivate: 'mod_tutorials/pointActivate'
       }),
       openLoadDialog,
       loadPathFolder,
@@ -134,49 +149,41 @@
       saveLoadFile(pathArr) {
         this.disabledBtn = false;
         this.settings.accessProperties.Path = pathArr;
+        this.getSettingsInfo();
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'})
         //this.applySettings();
         //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
       clearPath() {
-        this.settings.accessProperties.Path = [];
+        this.deleteDataMeta('DataData')
+          .then(()=> {
+            this.settings.accessProperties.Path = [];
+            this.getSettingsInfo()
+          })
+          .catch(()=> console.log('set-data-data 144 err'))
       },
       getSettingsInfo() {
-        if(this.settings.accessProperties.Path.length == 0) return;
-        this.getDataMeta()
-          .then(()=> {
-            this.getDataImg('DataData')
-          })
+        if(this.settings.accessProperties.Path.length) {
+          this.dataSettingsMeta('DataData')
+            .then((data)=>{
+              if (data.Columns.length) {
+                this.createSelectArr(data.Columns);
+                return data
+              }
+            })
+            .then(()=> this.getDataPlot('DataData'))
+        }
+        // this.getDataMeta('DataData')
+        //   .then(()=> {
+        //     this.getDataImg('DataData')
+        //   })
       },
-      getDataMeta() {
-        let theData = {
-          reciever: this.currentNetworkID,
-          action: 'getDataMeta',
-          value: {
-            Id: this.layerId,
-            Type: 'DataData',
-            Properties: this.settings
-          }
-        };
-        //console.log(theData);
-        return this.coreRequest(theData)
-          .then((data) => {
-            //console.log('getDataMeta ', data);
-            if (data === 'Null') {
-              return
-            }
-            this.settings.accessProperties.Dataset_size = data.Dataset_size;
-            if (data.Columns.length) {
-              if (!this.settings.accessProperties.Columns) this.settings.accessProperties.Columns = [0];
-              data.Columns.forEach((el, index) => this.dataColumns.push({text: el, value: index}))
-            }
-          })
-          .catch((err) => {
-            console.error(err);
-          });
+      createSelectArr(data) {
+        data.forEach((el, index) => this.dataColumns.push({text: el, value: index}));
+        this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
       saveSettings() {
-        this.applySettings()
+        this.applySettings();
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'})
       }
     }

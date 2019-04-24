@@ -451,7 +451,6 @@ const actions = {
     commit('set_charts_showCharts', {getters, networkIndex});
     dispatch('mod_api/API_updateResults', null, {root: true})
       .then(()=> {
-        console.log('doRequest');
         commit('set_charts_doRequest', {getters, networkIndex});
         dispatch('mod_api/API_getStatus', null, {root: true});
       });
@@ -459,6 +458,7 @@ const actions = {
   EVENT_onceDoRequest({dispatch, commit, rootState, getters}, isStart) {
     commit('set_charts_doRequest', {getters});
     dispatch('mod_api/API_getStatus', null, {root: true});
+
     // setTimeout(()=>{
     //   commit('set_charts_doRequest', {getters});
     //   dispatch('mod_api/API_getStatus', null, {root: true});

@@ -90,7 +90,7 @@
         },
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Reward', 'Loss', 'Steps'],
-        colorList: ['#ff0', '#0f0']
+        colorList: ['#6B8FF7', '#FECF73'],
       }
     },
     watch: {

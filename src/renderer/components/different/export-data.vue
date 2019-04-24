@@ -13,7 +13,6 @@
             base-select(
               v-model="settings.Type"
               :select-options="selectOptions"
-              select-placeholder="placeholder text"
               )
         .form_holder
           base-checkbox(v-model="settings.Compressed") Compressed

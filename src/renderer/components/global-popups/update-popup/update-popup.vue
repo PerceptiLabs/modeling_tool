@@ -72,7 +72,7 @@ export default {
     cancelUpdate(cencel) {
       this.updateStatus = cencel.status;
       this.progress = 0;
-      this.$emit('closedPopup')
+      this.$emit('closedPopup');
       clearInterval(this.fakeTimer);
     },
     background() {

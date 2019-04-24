@@ -8,7 +8,9 @@ const viewBoxMixin = {
   data() {
     return {
       chartData: {},
-      saveParams: {}
+      saveParams: {},
+
+      startRequest: 0
     }
   },
   // created() {
@@ -65,6 +67,8 @@ const viewBoxMixin = {
       this.getData();
     },
     chartRequest(layerId, layerType, view) {
+      this.startRequest = new Date();
+
       if(layerId === undefined) {
         return
       }
@@ -81,10 +85,8 @@ const viewBoxMixin = {
           view: view
         }
       };
-      //console.log('get layer', theData);
-      coreRequest(theData)
+      coreRequest(theData, null, null, this._name)
         .then((data)=> {
-          console.log('answer layer', this._name);
           if(data === 'Null') {
             return
           }
@@ -93,6 +95,11 @@ const viewBoxMixin = {
             this.$set(this.chartData, view, data)
           }
           else this.chartData = data;
+
+          //console.log(data);
+          // let stopRequest = new Date();
+          // let answerDelay = stopRequest - this.startRequest;
+          // console.log(`request -> before show ${this._name}`, `${answerDelay}ms`);
         })
         .catch((err)=> {
           console.log('answer err');

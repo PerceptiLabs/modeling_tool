@@ -42,7 +42,7 @@ export default {
       }
       else progress = settings.Progress;
       let result = Math.round(progress * 100) + '%';
-      console.log(result);
+      //console.log(result);
       this.isNeedWait
         ? this.buffer = result
         : this.percentData = result

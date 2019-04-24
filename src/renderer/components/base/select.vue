@@ -1,5 +1,5 @@
 <template lang="pug">
-  .custom-select.js-clickout
+  .custom-select
     button.custom-select_view.input(type="button"
       :class="{'open-list': isOpenList, 'text-placeholder': !value.length}"
       @click="openList"
@@ -54,10 +54,9 @@
 </template>
 
 <script>
-  import clickOutside     from '@/core/mixins/click-outside.js'
+
 export default {
   name: "BaseSelect",
-  mixins: [clickOutside],
   props: {
     value: {
       type: [String, Array],
@@ -81,11 +80,9 @@ export default {
   created() {
     this.defaultModel();
   },
-  mounted() {
-    if(this.value.length) this.checkedOptions = this.value
-  },
   data() {
     return {
+      isReady: false,
       checkedOptions: null,
       isOpenList: false,
       isOpenSubList: false
@@ -116,7 +113,6 @@ export default {
     selectAllBtn() {
       let all = this.selectOptions.length || 0;
       let check = this.checkedOptions.length;
-      console.log(this.selectOptions, this.checkedOptions);
       if(all === check)             return {iconClass: 'icon-appMinimaze',  action: ()=> this.defaultModel()};
       if(all > check && check > 0)  return {iconClass: 'icon-appClose',     action: ()=> this.defaultModel()};
       if(check === 0)               return {iconClass: 'icon-check-mark',   action: ()=> this.enableAll()};
@@ -124,9 +120,11 @@ export default {
     }
   },
   watch: {
-    checkedOptions(val) {
-      this.$emit('input', val);
-      if(!this.selectMultiple) this.closeList()
+    checkedOptions(newVal, oldVal) {
+      if(oldVal === null) return;
+      if(!this.selectMultiple) this.closeList();
+      this.$emit('input', newVal);
+      //console.log('$emit ', newVal);
     },
   },
   methods: {

@@ -1,5 +1,8 @@
 <template lang="pug">
-  .page(ref="layersbar" v-if="showPage")
+  .page(
+    ref="layersbar"
+    v-if="showPage"
+    )
     the-workspace
     the-toolbar
     the-layersbar

@@ -133,7 +133,7 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_getStatus answer', data);
+        //console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -265,15 +265,15 @@ const actions = {
       dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_postTestStart({rootGetters, rootState, dispatch}) {
-    console.log('API_postTestStart');
+    //console.log('API_postTestStart');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: 'startTest',
       value: ''
     };
-    coreRequest(theData)
+    return coreRequest(theData)
       .then((data)=> {
-        console.log('API_postTestStart ', data);
+        //console.log('API_postTestStart ', data);
       })
       .catch((err) =>{
         console.error(err);
@@ -297,16 +297,14 @@ const actions = {
       });
   },
   API_postTestMove({rootGetters, rootState, dispatch}, request) {
-    //console.log('API_postTestMove ', request);
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: request, //nextStep, previousStep
       value: ''
     };
-    coreRequest(theData)
-      .then((data)=> {
-        dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true});
-      })
+    dispatch('API_updateResults')
+      .then(()=> coreRequest(theData))
+      .then(()=> dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true}))
       .catch((err) =>{
         console.error(err);
       });

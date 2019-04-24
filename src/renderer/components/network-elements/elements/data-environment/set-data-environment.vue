@@ -19,7 +19,12 @@
                 v-model="settings.accessProperties.Atari"
                 :selectOptions="selectOptions"
                 )
-
+            .form_row
+              chart-switch(
+                key="1"
+                :chart-label="chartLabel"
+                :chart-data="imgData"
+              )
       .popup_body(
         :class="{'active': tabSelected == 1}"
       )
@@ -33,11 +38,13 @@
                 @click="loadFile"
                 :disabled="disabledBtn"
                 ) Load
-    .settings-layer_foot
-      chart-switch(
-      :disable-header="true"
-      :chartData="imgData"
-      )
+            .form_row
+              chart-switch(
+                key="2"
+                :disable-header="true"
+                :chartData="imgData"
+              )
+
     .settings-layer_foot
       button.btn.btn--primary(type="button" @click="applySettings") Apply
 
@@ -79,11 +86,16 @@
         }
       }
     },
+    computed: {
+      chartLabel() {
+        return `Action space: ${this.actionSpace}`
+      }
+    },
     watch: {
       'settings.accessProperties.Atari': {
         handler(newVal) {
           if(newVal) {
-            this.getImage()
+            this.dataSettingsPlot('DataEnvironment')
           }
         },
         immediate: true
@@ -93,15 +105,14 @@
       openLoadDialog,
       setTab(i) {
         this.tabSelected = i;
-        this.settings.accessProperties.EnvType = this.tabs[i].type
-      },
-      getImage() {
-        this.getDataImg('DataEnvironment')
+        this.settings.accessProperties.EnvType = this.tabs[i].type;
+        this.imgData = null;
+        this.dataSettingsPlot('DataEnvironment')
       },
       saveLoadFile(pathArr) {
         this.disabledBtn = false;
         this.settings.accessProperties.Path = pathArr;
-        this.getImage()
+        this.dataSettingsPlot('DataEnvironment')
       },
       loadFile() {
         this.disabledBtn = true;
@@ -109,7 +120,7 @@
           title:"Load file or files",
           properties: ['openFile', 'multiSelections'],
           filters: [
-            {name: 'All', extensions: ['png']},
+            {name: 'All', extensions: ['exe']},
           ]
         };
         this.openLoadDialog(opt)

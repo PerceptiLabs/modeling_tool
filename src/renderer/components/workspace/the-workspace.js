@@ -210,7 +210,7 @@ export default {
               alert("An error ocurred creating the file "+ err.message)
             }
 
-            alert("The file has been succesfully saved");
+            alert("The file has been successfully saved");
             savePathToLocal(JSON.parse(jsonNet).project, fileName)
           });
         });

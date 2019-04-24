@@ -53,15 +53,22 @@
     },
     watch: {
       chartData(newVal) {
-        if(Array.isArray(newVal)) {
-          // let type = newVal[0].type;
-          // this.imgType = type;
-          // if( type === 'rgba') this.imgData = newVal;
-        }
-        else {
+        if(newVal) {
           this.imgType = newVal.series[0].type;
           this.imgData = newVal;
         }
+        else {
+          this.imgType = '';
+          this.imgData = null
+        }
+        // if(Array.isArray(newVal)) {
+        //   // let type = newVal[0].type;
+        //   // this.imgType = type;
+        //   // if( type === 'rgba') this.imgData = newVal;
+        // }
+        // else {
+        //
+        // }
       }
     },
   }

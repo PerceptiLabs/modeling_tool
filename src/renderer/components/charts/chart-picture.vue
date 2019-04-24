@@ -26,10 +26,7 @@ export default {
   },
   watch: {
     doShowCharts() {
-      if(this.chartModelBuffer !== null) {
-        //console.log('update');
-        this.showImage(this.chartModelBuffer);
-      }
+      if(this.chartModelBuffer) this.showImage(this.chartModelBuffer);
     }
   },
   methods: {
@@ -39,29 +36,32 @@ export default {
     createWWorker() {
       this.wWorker = new Worker(`${pathWebWorkers}/calcChartPic.js`);
       this.wWorker.addEventListener('message', this.drawChart, false);
-      //alert('createWWorker 39');
-      if(this.canvas2D === null) {
-        //alert('createWWorker 41');
-        this.canvas2D = this.$refs.canvas.getContext('2d');
-      }
+      if(!this.canvas2D) this.canvas2D = this.$refs.canvas.getContext('2d');
     },
     sendDataToWWorker(dataWatch) {
+
+
+
       let data = dataWatch || this.chartData;
       if (!data) return;
 
       let dataImg = data.series[0];
       let imgH = dataImg.height;
       let imgW = dataImg.width;
-      let canvas2d = this.canvas2D;
-      let canvasImg = canvas2d.createImageData(imgW, imgH);
+      let canvasImg = this.canvas2D.createImageData(imgW, imgH);
       this.wWorker.postMessage({canvasImg, dataImg});
     },
     drawChart(ev) {
       this.isNeedWait
         ? this.chartModelBuffer = ev.data
         : this.showImage(ev.data);
+
+      // let stopCalDrow = new Date();
+      // let drawDelay = stopCalDrow - this.startCalDrow;
+      // console.log(`calc img delay`, `${drawDelay}ms`);
     },
     showImage(imgData) {
+      
       let canvasEl = this.$refs.canvas;
       canvasEl.setAttribute('width', this.chartData.series[0].width);
       canvasEl.setAttribute('height', this.chartData.series[0].height);
