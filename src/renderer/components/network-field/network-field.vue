@@ -50,9 +50,8 @@
       v-for="(el, index) in networkElementList"
       :key="el.index"
       ref="layer"
-      :class="{'element--hidden': el.layerMeta.isInvisible}"
       :is="el.componentName"
-      :elementData="{el, index}"
+      :element-data="{el, index}"
     )
 
 </template>

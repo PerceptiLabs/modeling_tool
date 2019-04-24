@@ -35,8 +35,8 @@ const baseNetPaintArrows = {
       this.$parent.$parent.addArrowListener();
       this.$store.commit('mod_workspace/SET_startArrowID', el.layerId);
       this.$store.commit('mod_workspace/SET_preArrowStart', {
-        y: el.layerMeta.top + layerSize/2,
-        x: el.layerMeta.left + layerSize/2
+        y: el.layerMeta.position.top + layerSize/2,
+        x: el.layerMeta.position.left + layerSize/2
       });
     },
     arrowEndPaint(ev) {

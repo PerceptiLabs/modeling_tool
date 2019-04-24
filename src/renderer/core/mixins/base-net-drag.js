@@ -94,8 +94,9 @@ const baseNetDrag = {
     },
     x() {
       if(this.dataEl.el) {
-        this.left = this.dataEl.el.layerMeta.left;
-        return this.dataEl.el.layerMeta.left
+        let l = this.dataEl.el.layerMeta.position.left + this.dataEl.el.layerMeta.containerDiff.left;
+        this.left = l;
+        return l
       }
       else {
         this.left = 0;
@@ -104,8 +105,9 @@ const baseNetDrag = {
     },
     y() {
       if(this.dataEl.el) {
-        this.top = this.dataEl.el.layerMeta.top;
-        return this.dataEl.el.layerMeta.top
+        let t = this.dataEl.el.layerMeta.position.top + this.dataEl.el.layerMeta.containerDiff.top;
+        this.top = t;
+        return t
       }
       else {
         this.top = 0;

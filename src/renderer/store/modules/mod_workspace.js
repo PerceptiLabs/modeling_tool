@@ -19,11 +19,17 @@ function createNetElement(event) {
       isInvisible: false,
       isLock: false,
       isSelected: false,
-      top: event.target.clientHeight/2,
-      left: event.target.clientWidth/2,
+      position: {
+        top: event.target.clientHeight/2,
+        left: event.target.clientWidth/2,
+      },
       tutorialId: '',
       OutputDim: '',
-      InputDim: ''
+      InputDim: '',
+      containerDiff: {
+        top: 0,
+        left: 0,
+      }
     },
     componentName: event.target.dataset.component,
     connectionOut: [],
@@ -135,7 +141,7 @@ const mutations = {
       networkSettings: null,
       networkMeta: {},
       networkElementList: [],
-      networkContainerList: {},
+      //networkContainerList: [],
     };
     let defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
@@ -245,13 +251,13 @@ const mutations = {
     node.layerName = value.setValue
   },
   add_element(state, {getters, event}) {
-    let top = state.dragElement.layerMeta.top;
-    let left = state.dragElement.layerMeta.left;
+    let top = state.dragElement.layerMeta.position.top;
+    let left = state.dragElement.layerMeta.position.left;
     let zoom = getters.GET_currentNetwork.networkMeta.zoom;
     state.dragElement.layerMeta.tutorialId = getters.GET_tutorialActiveId
     
-    state.dragElement.layerMeta.top = (event.offsetY - top)/zoom;
-    state.dragElement.layerMeta.left = (event.offsetX - left)/zoom;
+    state.dragElement.layerMeta.position.top = (event.offsetY - top)/zoom;
+    state.dragElement.layerMeta.position.left = (event.offsetX - left)/zoom;
     getters.GET_currentNetworkElementList.push(state.dragElement);
     state.dragElement = {};
   },
@@ -336,8 +342,8 @@ const mutations = {
   change_elementPosition(state, {getters, value}) {
     let el = value.index;
     let net = getters.GET_currentNetworkElementList;
-    net[el].layerMeta.top = value.top;
-    net[el].layerMeta.left = value.left;
+    net[el].layerMeta.position.top = value.top;
+    net[el].layerMeta.position.left = value.left;
   },
   set_elementInputDim(state, {getters, value}) {
     getters.GET_currentNetworkElementList.forEach((el)=>{
@@ -353,10 +359,61 @@ const mutations = {
   //---------------
   //  NETWORK CONTAINER
   //---------------
-  add_container(state, {getters, dispatch, newContainer}) {
-    //let net = getters.GET_currentNetwork;
-    getters.GET_currentNetwork.networkContainerList[newContainer.layerId] = newContainer;
-    dispatch('mod_events/EVENT_calcArray', null, {root: true})
+  add_container(state, {getters, dispatch, newContainer, arrSelect}) {
+    let allTop = [];
+    let allLeft = [];
+
+    let arrElID = arrSelect.map((item)=> {
+      // allOutId = [...allOutId, ...new Set(item.el.connectionOut)];
+      // allInId  = [...allInId,  ...new Set(item.el.connectionIn)];
+      allTop.push(item.el.layerMeta.position.top);
+      allLeft.push(item.el.layerMeta.position.left);
+      return item.el.layerId
+    });
+
+    newContainer.containerLayersList = arrSelect;
+    newContainer.layerMeta.position.top = calcPosition(allTop);
+    newContainer.layerMeta.position.left = calcPosition(allLeft);
+
+    let newNetElList = getters.GET_currentNetworkElementList.filter((el)=> {
+      return !arrElID.includes(el.layerId);
+    });
+    newNetElList.push(newContainer);
+    getters.GET_currentNetworkElementList = newNetElList;
+    dispatch('CLOSE_container', newContainer);
+    dispatch('mod_events/EVENT_calcArray', null, {root: true});
+
+    function calcPosition(arrIn) {
+      return (Math.max(...arrIn) + Math.min(...arrIn))/2
+    }
+  },
+  close_container(state, container) {
+    container.containerLayersList.forEach((item)=> {
+      item.el.layerMeta.containerDiff.top = container.layerMeta.position.top - item.el.layerMeta.position.top;
+      item.el.layerMeta.containerDiff.left = container.layerMeta.position.left - item.el.layerMeta.position.left;
+      item.el.layerMeta.displayNone = true;
+      item.el.layerMeta.position = container.layerMeta.position;
+    });
+    container.layerMeta.displayNone = false
+  },
+  open_container(state, container) {
+    container.containerLayersList.forEach((item)=> {
+      let diffTop = item.el.layerMeta.containerDiff.top;
+      let diffLeft = item.el.layerMeta.containerDiff.left;
+      let top = item.el.layerMeta.position.top;
+      let left = item.el.layerMeta.position.left;
+
+      item.el.layerMeta.containerDiff = {
+        top: 0,
+        left: 0
+      };
+      item.el.layerMeta.position = {
+        top: top - diffTop,
+        left: left - diffLeft
+      };
+      item.el.layerMeta.displayNone = false;
+    });
+    container.layerMeta.displayNone = true
   },
   //---------------
   //  OTHER
@@ -523,9 +580,6 @@ const actions = {
   //  NETWORK CONTAINER
   //---------------
   ADD_container({commit, getters, dispatch}, event) {
-
-    //let netList = getters.GET_currentNetworkElementList;
-
     let arrSelect = getters.GET_currentSelectedEl;
     if(arrSelect.length === 0) return;
     if(arrSelect.length === 1) {
@@ -546,43 +600,15 @@ const actions = {
     };
     let newContainer = createNetElement(fakeEvent);
 
-    addContainerFields(newContainer, arrSelect);
-    console.log(newContainer);
-    commit('add_container', {getters, dispatch, newContainer});
-
-    function addContainerFields(layer, containerElList) {
-      let allInId = [];
-      let allOutId = [];
-      let allTop = [];
-      let allLeft = [];
-
-      let arrSelectId = containerElList.map((item)=> {
-        allOutId = [...allOutId, ...new Set(item.el.connectionOut)];
-        allInId  = [...allInId,  ...new Set(item.el.connectionIn)];
-        allTop.push(item.el.layerMeta.top);
-        allLeft.push(item.el.layerMeta.left);
-        return item.el.layerId
-      });
-
-      layer.layerMeta.isOpenContainer = false;
-      layer.containerLayersList = containerElList;
-      layer.containerIsOpen = true;
-      layer.layerMeta.top = calcPosition(allTop);
-      layer.layerMeta.left = calcPosition(allLeft);
-      layer.connectionOut = realConnection(allOutId, arrSelectId);
-      layer.connectionIn = realConnection(allInId, arrSelectId)
-    }
-    function realConnection(arrIn, arrExcept) {
-      let arrOut = [];
-      arrIn.forEach((item)=> {
-        if(!arrExcept.includes(item)) arrOut.push(item)
-      });
-      return arrOut;
-    }
-    function calcPosition(arrIn) {
-      return (Math.max(...arrIn) + Math.min(...arrIn))/2
-    }
+    commit('add_container', {getters, dispatch, newContainer, arrSelect});
   },
+  OPEN_container({commit, getters, dispatch}, container) {
+    commit('open_container', container)
+  },
+  CLOSE_container({commit, getters, dispatch}, container) {
+    commit('close_container', container)
+  },
+
 };
 
 export default {

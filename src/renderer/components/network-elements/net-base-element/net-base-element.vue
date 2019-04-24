@@ -3,7 +3,7 @@
     ref="rootBaseElement"
     :style="style"
     :id="dataEl.el.layerMeta.tutorialId"
-    :class="isSelectedEl ? 'active' : 'inactive'"
+    :class="classEl"
 
     @click="switchClickEvent($event)"
     @dblclick.stop.prevent="switchDblclick($event)"
@@ -18,7 +18,7 @@
 
     .net-element_window.net-element_context-menu(v-if="contextIsOpen")
       slot(name="context")
-    p {{dataEl.el.layerId}}
+    //p {{dataEl.el.layerId}}
 
 </template>
 
@@ -94,6 +94,13 @@ export default {
     hotKeyPressDelete() {
       return this.$store.state.mod_events.globalPressKey.del
     },
+    classEl() {
+      return {
+        'net-element--hide-layer': this.dataEl.el.layerMeta.displayNone,
+        'net-element--active': this.isSelectedEl,
+        'element--hidden': this.dataEl.el.layerMeta.isInvisible
+      }
+    }
   },
   watch: {
     statisticsIsOpen(newVal) {
@@ -133,13 +140,18 @@ export default {
       }
     },
     switchDblclick(event) {
-      this.layerContainer ? this.$emit('dblcl') : this.openSettings(event)
+      this.layerContainer
+        ? this.openLayerContainer()
+        : this.openSettings(event)
+    },
+    openLayerContainer() {
+      this.$store.dispatch('mod_workspace/OPEN_container', this.dataEl.el)
     },
     openSettings(event) {
       this.hideAllWindow();
       if(this.networkMode === 'edit' && this.editIsOpen) {
         this.settingsIsOpen = true;
-        this.$nextTick(()=>{this.tutorialPointActivate({way:'next', validation: this.tutorialSearchId(event)})})
+        this.$nextTick(()=> {this.tutorialPointActivate({way:'next', validation: this.tutorialSearchId(event)})})
       }
     },
     openContext() {
@@ -196,7 +208,7 @@ export default {
     margin: 0;
     padding: 0;
     background-color: transparent;
-    .active & .btn {
+    .net-element--active & .btn {
       box-shadow: 0 0 20px #fff;
     }
   }
@@ -208,5 +220,9 @@ export default {
     transform: translateX(-50%);
     white-space: nowrap;
     background-color: rgba($bg-workspace, .5);
+  }
+  .net-element--hide-layer {
+    opacity: 0;
+    visibility: hidden;
   }
 </style>

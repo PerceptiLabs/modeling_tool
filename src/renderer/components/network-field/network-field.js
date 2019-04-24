@@ -1,41 +1,42 @@
 import IoInput              from '@/components/network-elements/elements/io-input/io-input.vue'
-  import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/io-output-backpropagation.vue'
-  import IoOutputGenetic      from '@/components/network-elements/elements/io-output-genetic-algorithm/io-output-genetic-algorithm.vue'
-  import IoOutputRouting      from '@/components/network-elements/elements/io-output-routing-algorithm/io-output-routing-algorithm.vue'
+import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/io-output-backpropagation.vue'
+import IoOutputGenetic      from '@/components/network-elements/elements/io-output-genetic-algorithm/io-output-genetic-algorithm.vue'
+import IoOutputRouting      from '@/components/network-elements/elements/io-output-routing-algorithm/io-output-routing-algorithm.vue'
 
-  import DataData             from '@/components/network-elements/elements/data-data/data-data.vue'
-  import DataEnvironment      from '@/components/network-elements/elements/data-environment/data-environment.vue'
+import DataData             from '@/components/network-elements/elements/data-data/data-data.vue'
+import DataEnvironment      from '@/components/network-elements/elements/data-environment/data-environment.vue'
 
-  import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/deep-learning-fc.vue'
-  import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/deep-learning-conv.vue'
-  import DeepLearningDeconv   from '@/components/network-elements/elements/deep-learning-deconv/deep-learning-deconv.vue'
-  import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/deep-learning-recurrent.vue'
+import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/deep-learning-fc.vue'
+import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/deep-learning-conv.vue'
+import DeepLearningDeconv   from '@/components/network-elements/elements/deep-learning-deconv/deep-learning-deconv.vue'
+import DeepLearningRecurrent from '@/components/network-elements/elements/deep-learning-recurrent/deep-learning-recurrent.vue'
 
-  import ProcessCrop          from '@/components/network-elements/elements/process-crop/process-crop.vue'
-  import ProcessEmbed         from '@/components/network-elements/elements/process-embed/process-embed.vue'
-  import ProcessGrayscale     from '@/components/network-elements/elements/process-grayscale/process-grayscale.vue'
-  import ProcessOneHot        from '@/components/network-elements/elements/process-one-hot/process-one-hot.vue'
-  import ProcessReshape       from '@/components/network-elements/elements/process-reshape/process-reshape.vue'
+import ProcessCrop          from '@/components/network-elements/elements/process-crop/process-crop.vue'
+import ProcessEmbed         from '@/components/network-elements/elements/process-embed/process-embed.vue'
+import ProcessGrayscale     from '@/components/network-elements/elements/process-grayscale/process-grayscale.vue'
+import ProcessOneHot        from '@/components/network-elements/elements/process-one-hot/process-one-hot.vue'
+import ProcessReshape       from '@/components/network-elements/elements/process-reshape/process-reshape.vue'
 
-  import TrainNormal          from '@/components/network-elements/elements/train-normal/train-normal.vue'
-  import TrainNormalData      from '@/components/network-elements/elements/train-normal-data/train-normal-data.vue'
-  import TrainGenetic         from '@/components/network-elements/elements/train-genetic/train-genetic.vue'
-  import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/train-dynamic.vue'
-  import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/train-reinforce.vue'
+import TrainNormal          from '@/components/network-elements/elements/train-normal/train-normal.vue'
+import TrainNormalData      from '@/components/network-elements/elements/train-normal-data/train-normal-data.vue'
+import TrainGenetic         from '@/components/network-elements/elements/train-genetic/train-genetic.vue'
+import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/train-dynamic.vue'
+import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/train-reinforce.vue'
 
-  import MathArgmax           from '@/components/network-elements/elements/math-argmax/math-argmax.vue'
-  import MathMerge            from '@/components/network-elements/elements/math-merge/math-merge.vue'
-  import MathSoftmax          from '@/components/network-elements/elements/math-softmax/math-softmax.vue'
-  import MathSplit            from '@/components/network-elements/elements/math-split/math-split.vue'
+import MathArgmax           from '@/components/network-elements/elements/math-argmax/math-argmax.vue'
+import MathMerge            from '@/components/network-elements/elements/math-merge/math-merge.vue'
+import MathSoftmax          from '@/components/network-elements/elements/math-softmax/math-softmax.vue'
+import MathSplit            from '@/components/network-elements/elements/math-split/math-split.vue'
 
-  import ClassicMLDbscans     from '@/components/network-elements/elements/classic-ml-dbscans/classic-ml-dbscans.vue'
-  import ClassicMLKMeans      from '@/components/network-elements/elements/classic-ml-k-means/classic-ml-k-means.vue'
-  import ClassicMLKNN         from '@/components/network-elements/elements/classic-ml-k-nearest/classic-ml-k-nearest.vue'
-  import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/classic-ml-random-forest.vue'
-  import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/classic-ml-vector-machine.vue'
+import ClassicMLDbscans     from '@/components/network-elements/elements/classic-ml-dbscans/classic-ml-dbscans.vue'
+import ClassicMLKMeans      from '@/components/network-elements/elements/classic-ml-k-means/classic-ml-k-means.vue'
+import ClassicMLKNN         from '@/components/network-elements/elements/classic-ml-k-nearest/classic-ml-k-nearest.vue'
+import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/classic-ml-random-forest.vue'
+import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/classic-ml-vector-machine.vue'
 
-  import LayerContainer       from '@/components/network-elements/elements/layer-container/view-layer-container.vue'
-  import { mapGetters, mapMutations, mapActions } from 'vuex';
+import LayerContainer       from '@/components/network-elements/elements/layer-container/layer-container.vue'
+
+import { mapGetters, mapMutations, mapActions } from 'vuex';
 
 export default {
   name: 'NetworkField',
@@ -183,8 +184,8 @@ export default {
       const yStop = yStart + this.multiSelect.height - this.layerSize;
 
       this.networkElementList.forEach((element, index)=> {
-        const x = element.layerMeta.left;
-        const y = element.layerMeta.top;
+        const x = element.layerMeta.position.left;
+        const y = element.layerMeta.position.top;
         if(x > xStart
           && x < xStop
           && y > yStart
@@ -323,10 +324,10 @@ export default {
             };
             Object.defineProperty(newArrow, 'positionArrow', {
               get() {
-                const x1 = this.l1.layerMeta.left + this.correctPosition.start.x;
-                const y1 = this.l1.layerMeta.top + this.correctPosition.start.y;
-                const x2 = this.l2.layerMeta.left + this.correctPosition.stop.x;
-                const y2 = this.l2.layerMeta.top + this.correctPosition.stop.y;
+                const x1 = this.l1.layerMeta.position.left + this.correctPosition.start.x;
+                const y1 = this.l1.layerMeta.position.top + this.correctPosition.start.y;
+                const x2 = this.l2.layerMeta.position.left + this.correctPosition.stop.x;
+                const y2 = this.l2.layerMeta.position.top + this.correctPosition.stop.y;
                 const path = calcArrowPath(x1, y1, x2, y2, this);
                 return {path}
               },
@@ -340,39 +341,39 @@ export default {
       }
       function findSideMinLength(l1, l2, currentEl) {
         let position = '';
-        (l1.layerMeta.top <= l2.layerMeta.top)
+        (l1.layerMeta.position.top <= l2.layerMeta.position.top)
           ? position = position + 'b'
           : position = position + 't';
-        (l1.layerMeta.left <= l2.layerMeta.left)
+        (l1.layerMeta.position.left <= l2.layerMeta.position.left)
           ? position = position + 'r'
           : position = position + 'l';
 
         function topDot(dot) {
           return {
             side: 'top',
-            x: dot.layerMeta.left + (size / 2),
-            y: dot.layerMeta.top
+            x: dot.layerMeta.position.left + (size / 2),
+            y: dot.layerMeta.position.top
           }
         }
         function rightDot(dot) {
           return {
             side: 'right',
-            x: dot.layerMeta.left + size,
-            y: dot.layerMeta.top + (size / 2)
+            x: dot.layerMeta.position.left + size,
+            y: dot.layerMeta.position.top + (size / 2)
           }
         }
         function bottomDot(dot) {
           return {
             side: 'bottom',
-            x: dot.layerMeta.left + (size / 2),
-            y: dot.layerMeta.top + size
+            x: dot.layerMeta.position.left + (size / 2),
+            y: dot.layerMeta.position.top + size
           }
         }
         function leftDot(dot) {
           return {
             side: 'left',
-            x: dot.layerMeta.left,
-            y: dot.layerMeta.top + (size / 2)
+            x: dot.layerMeta.position.left,
+            y: dot.layerMeta.position.top + (size / 2)
           }
         }
 
@@ -444,10 +445,10 @@ export default {
       }
       function calcCorrectPosition() {
         connectList.forEach((itemEl, itemIndex, itemArr)=> {
-          let currentLeftStart = itemEl.l2.layerMeta.left;
-          let currentTopStart = itemEl.l2.layerMeta.top;
-          let currentLeftEnd = itemEl.l1.layerMeta.left;
-          let currentTopEnd = itemEl.l1.layerMeta.top;
+          let currentLeftStart = itemEl.l2.layerMeta.position.left;
+          let currentTopStart = itemEl.l2.layerMeta.position.top;
+          let currentLeftEnd = itemEl.l1.layerMeta.position.left;
+          let currentTopEnd = itemEl.l1.layerMeta.position.top;
           let indexSidePositionStart = '';
           let indexSidePositionEnd = '';
           let sideStartLength = itemEl.l1.calcAnchor[itemEl.sideStart].length;
@@ -456,37 +457,37 @@ export default {
           //calc start
           if(itemEl.sideStart === 'left' || itemEl.sideStart === 'right') {
             let sortVertSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
-              return a.layerMeta.top - b.layerMeta.top;
+              return a.layerMeta.position.top - b.layerMeta.position.top;
             });
             indexSidePositionStart = sortVertSideStart.findIndex((element, index, array)=> {
-              return element.layerMeta.top == currentTopStart;
+              return element.layerMeta.position.top == currentTopStart;
             });
           }
           else {
            
             let sortGorSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
-              return a.layerMeta.left - b.layerMeta.left;
+              return a.layerMeta.position.left - b.layerMeta.position.left;
             });
             indexSidePositionStart = sortGorSideStart.findIndex((element, index, array)=> {
-              return element.layerMeta.left == currentLeftStart;
+              return element.layerMeta.position.left == currentLeftStart;
             });
           }
           itemEl.correctPosition.start = calcValuePosition(itemEl.sideStart, sideStartLength, indexSidePositionStart);
           //calc END
           if(itemEl.sideEnd === 'left' || itemEl.sideEnd === 'right') {
             let sortVertSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
-              return a.layerMeta.top - b.layerMeta.top;
+              return a.layerMeta.position.top - b.layerMeta.position.top;
             });
             indexSidePositionEnd = sortVertSideEnd.findIndex((element, index, array)=> {
-              return element.layerMeta.top == currentTopEnd;
+              return element.layerMeta.position.top == currentTopEnd;
             });
           }
           else {
             let sortGorSideEnd = itemEl.l2.calcAnchor[itemEl.sideEnd].sort(function(a, b) {
-              return a.layerMeta.left - b.layerMeta.left;
+              return a.layerMeta.position.left - b.layerMeta.position.left;
             });
             indexSidePositionEnd = sortGorSideEnd.findIndex((element, index, array)=> {
-              return element.layerMeta.left == currentLeftEnd;
+              return element.layerMeta.position.left == currentLeftEnd;
             });
           }
           itemEl.correctPosition.stop = calcValuePosition(itemEl.sideEnd, sideEndLength, indexSidePositionEnd);
