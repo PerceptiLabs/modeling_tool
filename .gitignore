@@ -12,6 +12,7 @@ thumbs.db
 .idea
 .idea/*
 .idea/workspace.xml
+..idea/workspace.xml
 core/*
 core_local/*
 .vscode/*
