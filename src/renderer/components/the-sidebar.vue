@@ -7,7 +7,7 @@
         button.btn(type="button"
           :class="{'active': i === tabSelected}"
           @click="selectTab(i)"
-          :disabled="i === 1 || i === 2"
+          :disabled="i === 1"
         ) {{tab}}
 
     .sidebar_tab(v-show="tabSelected === 0")
@@ -17,7 +17,7 @@
     .sidebar_tab(v-show="tabSelected === 1")
       include ./sidebar/blocks/Save.pug
     .sidebar_tab(v-show="tabSelected === 2")
-      include ./sidebar/blocks/Import.pug
+      import-data
     .sidebar_tab(v-show="tabSelected === 3")
       export-data
 
@@ -28,7 +28,8 @@
   import SidebarComments  from '@/components/sidebar/sidebar-comments.vue'
   import SidebarShare     from '@/components/sidebar/sidebar-share.vue'
   import SidebarTraining  from "@/components/sidebar/sidebar-training";
-  import ExportData     from "@/components/different/export-data.vue";
+  import ExportData       from "@/components/different/export-data.vue";
+  import ImportData       from "@/components/different/import-data.vue";
 
 export default {
   name: 'TheSidebar',
@@ -37,7 +38,8 @@ export default {
     SidebarLayers,
     SidebarComments,
     SidebarShare,
-    ExportData
+    ExportData,
+    ImportData
   },
   data() {
     return {

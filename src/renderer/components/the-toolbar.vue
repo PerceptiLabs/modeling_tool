@@ -10,6 +10,7 @@
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'edit'}"
           v-tooltip:bottom="'Edit'"
+          v-tooltip-interactive:bottom="interactiveInfo"
           @click="setNetMode('edit', 'tutorial_pointer')"
         )
           i.icon.icon-select
@@ -22,12 +23,14 @@
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'addArrow'}"
           @click="setArrowType(arrowList[0].arrowType)"
+          v-tooltip-interactive:bottom="interactiveInfo"
         )
           i.icon(:class="arrowList[0].iconClass")
         ul.toolbar_list-arrow
           li(
             v-for="(arrow, index) in arrowList"
             :key="index"
+
             )
             button.btn.btn--toolbar(type="button"
               @click="setArrowType(arrow.arrowType, index, 'tutorial_list-arrow')"
@@ -53,6 +56,7 @@
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
+          v-tooltip-interactive:bottom="interactiveInfo"
           @click="onOffBtn()"
           class="run-button"
         )
@@ -102,13 +106,20 @@
       //-   i.icon.icon-ellipse
 
       tutorial-instructions
+      button.btn.btn--dark-blue-rev(
+        type="button"
+        :class="{'green-status': interactiveInfoStatus}"
+        @click="toggleInteractiveInfo"
+      )
+        span Interactive Information
+        i.icon.icon-ellipse
 </template>
 
 <script>
 //import configApp    from '@/core/globalSettings.js'
 import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 import TutorialInstructions                   from '@/components/tutorial/tutorial-instructions.vue'
-import { mapGetters, mapActions }             from 'vuex';
+import { mapGetters, mapActions, mapMutations }             from 'vuex';
 
 //const {ipcRenderer} = require('electron')
 export default {
@@ -133,12 +144,17 @@ export default {
         //   iconClass: 'icon-layer-arrow3',
         //   arrowType: 'dash1'
         // }
-      ]
+      ],
+      interactiveInfo: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`
     }
   },
   computed: {
     ...mapGetters({
       tutorialActiveAction:    'mod_tutorials/getActiveAction',
+      interactiveInfoStatus:   'mod_tutorials/getInteractiveInfo'
     }),
     statusStartBtn() {
       return {
@@ -204,6 +220,9 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      setInteractiveInfo:    'mod_tutorials/SET_interactiveInfo',
+    }),
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
@@ -278,6 +297,9 @@ export default {
     openStatistics() {
       //this.$store.commit('mod_workspace/SET_openStatistics', true)
     },
+    toggleInteractiveInfo() {
+      this.setInteractiveInfo(!this.interactiveInfoStatus);
+    }
   }
 }
 </script>

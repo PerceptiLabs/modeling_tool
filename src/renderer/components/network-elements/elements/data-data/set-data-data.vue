@@ -13,17 +13,18 @@
       .popup_body(:class="{'active': tabSelected == 0}")
         .settings-layer(v-if="!settings.accessProperties.Path.length")
           .settings-layer_section.section-data-select
-            button.btn(type="button"
+            button.btn.tutorial-relative(type="button"
               :disabled="disabledBtn"
               @click="loadFolder"
+              v-tooltip-interactive:left="folderInteractiveInfo"
               )
               i.icon.icon-open-folder
             span.data-select_text or
-            button.btn(type="button"
+            button.btn.tutorial-relative(type="button"
               :disabled="disabledBtn"
               @click="loadFile"
               id="tutorial_button-load"
-              class="tutorial-relative"
+              v-tooltip-interactive:right="fileInteractiveInfo"
               )
               i.icon.icon-open-file
         .settings-layer_section(v-else)
@@ -48,7 +49,7 @@
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-cloud
     .settings-layer_foot
-      button.btn.btn--primary(type="button"
+      button.btn.btn--primary.tutorial-relative(type="button"
         v-show="settings.accessProperties.Path.length"
         @click="saveSettings"
         id="tutorial_button-apply"
@@ -88,6 +89,14 @@
         dataColumns: [],
         dataColumnsSelected: [],
         disabledBtn: false,
+        folderInteractiveInfo: `<div class="tooltip-tutorial_italic">
+                                  <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                                  <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                                </div>`,
+        fileInteractiveInfo: `<div class="tooltip-tutorial_italic">
+                                <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                                <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                              </div>`,
         settings: {
           Type: 'Data',
           accessProperties: {

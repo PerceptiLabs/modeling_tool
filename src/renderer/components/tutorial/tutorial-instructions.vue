@@ -94,18 +94,18 @@ export default {
     }),
     changeStep(way) {
       if(way === 'next') {
-        this.setActiveStep(way)
+        this.setActiveStep(way);
         this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
       }
     },
     startTutorial(way) {
-      this.setTutorialIstarted(true)
-      this.setActiveStep(way)
+      this.setTutorialIstarted(true);
+      this.setActiveStep(way);
       this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
     },
     endTutorial() {
-      this.setNetworkCoreStatus(false)
-      this.deleteNetwork(this.currentNetwork)
+      this.setNetworkCoreStatus(false);
+      this.deleteNetwork(this.currentNetwork);
       this.addNetwork({'ctx': this})
     }
   }
@@ -113,10 +113,10 @@ export default {
 </script>
 <style lang="scss">
   @import "../../scss/base";
+  @import "../../scss/directives/tooltip";
   $color-text-instructions:#AEAEAE;
   $color-schematic-element: #3185aa;
   $title-padding: 0 2.1rem;
-
 
   .btn--dark-blue-rev {
     position: relative;
@@ -293,73 +293,9 @@ export default {
     }
   }
   .curent-steps {
-    font-size: 1.2;
+    font-size: 1.2rem;
     color: $color-text-instructions;
   }
-.tooltip-tutorial {
-  font-size: 1.2rem;
-  font-weight: 400;
-	color: $bg-workspace;
-	position: absolute;
-	z-index: 100;
-	min-width: 3rem;
-	max-width: 30rem;
-	padding: .8rem .6rem;
-	border-radius: 0.2rem;
-	white-space: nowrap;
-	background-color: #3BC5FF;
-	box-shadow: $icon-shad;
-	pointer-events: none;
-  font-family: $base-font-sans-serif;
-	left: 120%;
-	text-align: left;
-	&:before {
-		content: '';
-		position: absolute;
-		right: 100%;
-    width: 0;
-    height: 0;
-    border-top: 6px solid transparent;
-    border-right: 10px solid #3BC5FF;
-    border-bottom: 6px solid transparent;
-	}
-}
-.net-element > .tooltip-tutorial,  
-button.btn--primary .tooltip-tutorial, 
-.form_input .tooltip-tutorial{
-  top: 50%;
-  transform: translate(0, -50%);
-}
-.form_input .tooltip-tutorial {
-  top: 0;
-  transform: translate(0);
-  left: 110%;
-}
-#tutorial_view-box .tooltip-tutorial {
-  left: 50%;
-}
-#tutorial_play-test-button .tooltip-tutorial {
-  top: 0
-}
-#tutorial_accuracy-tab .tooltip-tutorial {
-  top: 20%
-}
-.tooltip-tutorial_italic {
-  font-style: italic;
-}
-.tooltip-tutorial_bold {
-  font-weight: 700;
-  display: inline-block;
-}
-.tutorial-relative{
-  position: relative;
-}
-.tutorial_input-reshape {
-  position: relative;
-  .tooltip-tutorial {
-    left: 105%
-  }
-}
 .schematic--square {
   width: 7.5rem;
   height: 7.5rem;

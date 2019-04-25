@@ -1,5 +1,5 @@
 <template lang="pug">
-  section#tutorial_view-box.network_info-section
+  section#tutorial_view-box.network_info-section.tutorial-relative
     .info-section_head(v-if="!testIsOpen")
       h3 ViewBox
     .info-section_main(v-if="elData !== null")
