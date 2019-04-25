@@ -97,11 +97,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-layers-btn);
-  height: var(--size-layers-btn);
+  font-size: var(--size-layers-btn);
+  width: 6em;
+  height: 6em;
 
   .icon {
-    font-size: 3.8rem;
+    font-size: 3.3em;
     text-shadow: $icon-shad;
   }
 

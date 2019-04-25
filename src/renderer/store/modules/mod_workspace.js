@@ -456,9 +456,11 @@ const actions = {
       });
   },
   EVENT_onceDoRequest({dispatch, commit, rootState, getters}, isStart) {
-    commit('set_charts_doRequest', {getters});
-    dispatch('mod_api/API_getStatus', null, {root: true});
-
+    dispatch('mod_api/API_updateResults', null, {root: true})
+      .then(()=> {
+        commit('set_charts_doRequest', {getters});
+        dispatch('mod_api/API_getStatus', null, {root: true});
+      });
     // setTimeout(()=>{
     //   commit('set_charts_doRequest', {getters});
     //   dispatch('mod_api/API_getStatus', null, {root: true});

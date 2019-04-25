@@ -5,14 +5,12 @@
       @click="openList"
       )
       span {{ labelText }}
-      i.icon.icon-shevron
+      i.icon.icon-shevron.icon--open
 
     ul.custom-select_option-list.action-list(v-show="isOpenList")
       template(v-if="selectMultiple")
         li.custom-select_option
-          button.action-list_btn(type="button"
-            @click="selectAllBtn.action"
-            )
+          button.action-list_btn(type="button" @click="selectAllBtn.action")
             span.action-list_icon.icon(:class="selectAllBtn.iconClass")
             span.action-list_btn-text Select All
         li.custom-select_separator
@@ -20,41 +18,44 @@
       li.custom-select_option(
         v-for="(option, i) in selectOptions"
         :key="i"
+        :class="{'custom-select_option-open': openIndexSublist === i}"
         )
-
-        span.action-list_sublist-area(v-if="option.sublist")
-          span.sublist-area_text(@click.stop="openSubList") {{ option.text }}
-          label.sublist-area-box
-            ul.sublist-area_list(v-show="isOpenSubList")
-              li.sublist_select(v-for="(sublistOption, i) in option.sublist")
-                label.action-list_btn
-                  input.action-list_input(
-                    :type="typeSelectList"
-                    :name="uniqName"
-                    :value="sublistOption.value"
-                    v-model="checkedOptions"
-                  )
-                  span.action-list_icon.icon.icon-check-mark(v-if="selectMultiple")
-                  .action-list_bg
-                  span.action-list_btn-text {{ sublistOption.text }}
-
-        label.action-list_btn(v-else)
-          input.action-list_input(
-            :type="typeSelectList"
-            :name="uniqName"
-            :value="option.value"
-            v-model="checkedOptions"
-          )
-          span.action-list_icon.icon.icon-check-mark(v-if="selectMultiple")
-          .action-list_bg
-          span.action-list_btn-text {{ option.text }}
-
-
+        template(v-if="option.sublist")
+          button.action-list_btn(type="button" @click="openSubList(i)" )
+            span.action-list_icon.icon.icon-check-mark(v-if="selectMultiple")
+            .action-list_bg
+            span.action-list_btn-text {{ option.text }}
+            i.icon.icon-shevron.icon--open
+          ul.action-list.action-list--sub-list
+            li.custom-select_option(
+              v-for="(subOption, index) in option.sublist"
+              :key="index"
+            )
+              label.action-list_btn
+                input.action-list_input(
+                  :type="typeSelectList"
+                  :name="uniqName"
+                  :value="subOption.value"
+                  v-model="checkedOptions"
+                )
+                span.action-list_icon.icon.icon-check-mark(v-if="selectMultiple")
+                .action-list_bg
+                span.action-list_btn-text {{ subOption.text }}
+        template(v-else)
+          label.action-list_btn
+            input.action-list_input(
+              :type="typeSelectList"
+              :name="uniqName"
+              :value="option.value"
+              v-model="checkedOptions"
+            )
+            span.action-list_icon.icon.icon-check-mark(v-if="selectMultiple")
+            .action-list_bg
+            span.action-list_btn-text {{ option.text }}
 
 </template>
 
 <script>
-
 export default {
   name: "BaseSelect",
   props: {
@@ -80,12 +81,19 @@ export default {
   created() {
     this.defaultModel();
   },
+  mounted() {
+    if(this.value.length) this.checkedOptions = this.value
+  },
+  beforeDestroy() {
+    this.checkedOptions = null;
+    this.openIndexSublist = null
+  },
   data() {
     return {
       isReady: false,
       checkedOptions: null,
       isOpenList: false,
-      isOpenSubList: false
+      openIndexSublist: null
     }
   },
   computed: {
@@ -98,17 +106,17 @@ export default {
     labelText() {
       if(this.value.length) {
         let checkedTextList = [];
-        this.selectOptions.forEach((item)=> {
-          if(item.sublist) {
-            item.sublist.forEach((subItem) => {
-              if(this.checkedOptions.includes(subItem.value)) checkedTextList.push(subItem.text)
-            })
-          }
-          if(this.checkedOptions.includes(item.value)) checkedTextList.push(item.text)
-        });
+        addSelectedText(this.value, this.selectOptions, checkedTextList);
         return checkedTextList.join(', ')
       }
       else return this.selectPlaceholder;
+
+      function addSelectedText(selectVal, arr, out) {
+        arr.forEach((item)=> {
+          if(selectVal.includes(item.value)) out.push(item.text);
+          if(item.sublist) addSelectedText(selectVal, item.sublist, out);
+        })
+      }
     },
     selectAllBtn() {
       let all = this.selectOptions.length || 0;
@@ -124,7 +132,6 @@ export default {
       if(oldVal === null) return;
       if(!this.selectMultiple) this.closeList();
       this.$emit('input', newVal);
-      //console.log('$emit ', newVal);
     },
   },
   methods: {
@@ -139,13 +146,11 @@ export default {
     },
     closeList() {
       this.isOpenList = false;
-      this.isOpenSubList = false;
     },
-    clickOutsideAction() {
-      this.closeList()
-    },
-    openSubList() {
-      this.isOpenSubList = !this.isOpenSubList;
+    openSubList(index) {
+      this.openIndexSublist === index
+        ? this.openIndexSublist = null
+        : this.openIndexSublist = index
     }
   }
 }
@@ -170,13 +175,12 @@ export default {
       text-overflow: ellipsis;
       overflow: hidden;
     }
-    .icon {
+    .icon--open {
       flex: 0 0 auto;
-      transform: rotate(90deg);
     }
     &.open-list {
-      .icon {
-        transform: rotate(-90deg);
+      .icon--open {
+        transform: rotate(-180deg);
       }
     }
     &.text-placeholder {
@@ -207,6 +211,9 @@ export default {
   .action-list_btn {
     position: relative;
     justify-content: flex-start;
+    .icon--open {
+      margin-left: auto;
+    }
   }
   .action-list_input {
     position: absolute;
@@ -227,5 +234,21 @@ export default {
   }
   .action-list_icon {
     margin-right: 1rem;
+  }
+  .action-list--sub-list {
+    display: none;
+    box-shadow: none;
+    padding-left: 2.5rem;
+
+  }
+  .custom-select_option-open {
+    .action-list--sub-list {
+      display: block;
+    }
+    .action-list_btn {
+      .icon--open {
+        transform: rotate(-180deg);
+      }
+    }
   }
 </style>

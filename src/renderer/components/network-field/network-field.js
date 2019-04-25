@@ -55,8 +55,8 @@ export default {
       settings: 'Data',
       arrowsList: [],
       resizeTimeout: null,
-      layerSize: 52,
-      smallViewPort: true,
+      layerSize: 60,
+      //smallViewPort: true,
       offset: {
         offsetX: 0,
         offsetY: 0,
@@ -73,12 +73,13 @@ export default {
     }
   },
   mounted() {
-    this.calcViewPort(true);
-    window.addEventListener("resize", this.resizeCalc, false);
+    //this.calcViewPort(true);
+    //window.addEventListener("resize", this.resizeCalc, false);
+    this.drawArrows();
   },
   beforeDestroy() {
     this.removeArrowListener();
-    window.removeEventListener("resize", this.resizeCalc, false);
+    //window.removeEventListener("resize", this.resizeCalc, false);
   },
   computed: {
     ...mapGetters({
@@ -154,7 +155,7 @@ export default {
         this.multiSelect.xStart = this.multiSelect.x = this.findXPosition(ev);
         this.multiSelect.yStart = this.multiSelect.y = this.findYPosition(ev);
         this.$refs.network.addEventListener('mousemove', this.moveMultiSelect);
-        this.$refs.network.addEventListener('mouseup', this.removeMultiSelectListener);
+        this.$refs.network.addEventListener('mouseup', this.mouseUpMultiSelect);
       }
       if(isLeftBtn && !isEditMode && isOpenNet && targetEl) {
         this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
@@ -172,7 +173,7 @@ export default {
       if(xStart > xPosition) this.multiSelect.x = xPosition;
       if(yStart > yPosition) this.multiSelect.y = yPosition;
     },
-    removeMultiSelectListener() {
+    mouseUpMultiSelect() {
       const xStart = this.multiSelect.x;
       const yStart = this.multiSelect.y;
       const xStop = xStart + this.multiSelect.width - this.layerSize;
@@ -195,18 +196,23 @@ export default {
         x: 0,       y: 0,
         width: 0,   height: 0,
       };
+
+      this.removeMultiSelectListener();
+      this.$refs.network.click();
+    },
+    removeMultiSelectListener() {
       this.$refs.network.removeEventListener('mousemove', this.moveMultiSelect);
-      this.$refs.network.removeEventListener('mouseup', this.removeMultiSelectListener);
+      this.$refs.network.removeEventListener('mouseup', this.mouseUpMultiSelect);
     },
-    resizeCalc(ev) {
-      let width = ev.srcElement.innerWidth;
-      if(this.smallViewPort) {
-        if(width > 1440) this.smallViewPort = false;
-      }
-      else {
-        if(width <= 1440) this.smallViewPort = true;
-      }
-    },
+    // resizeCalc(ev) {
+    //   let width = ev.srcElement.innerWidth;
+    //   if(this.smallViewPort) {
+    //     if(width > 1440) this.smallViewPort = false;
+    //   }
+    //   else {
+    //     if(width <= 1440) this.smallViewPort = true;
+    //   }
+    // },
     calcOffset() {
       this.offset = {
        offsetX: this.$refs.network.parentElement.offsetLeft,
@@ -218,11 +224,11 @@ export default {
         this.layerSize = this.$refs.layer[0].$el.offsetWidth;
       }
     },
-    calcViewPort(needCalcArray) {
-      window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
-      if(!this.smallViewPort) this.layerSize = 72;
-      if(needCalcArray) this.drawArrows();
-    },
+    // calcViewPort(needCalcArray) {
+    //   window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
+    //   if(!this.smallViewPort) this.layerSize = 72;
+    //   if(needCalcArray) this.drawArrows();
+    // },
     calcSvgSize() {
       let scrollHeight = this.$refs.network.scrollHeight;
       let scrollWidth = this.$refs.network.scrollWidth;

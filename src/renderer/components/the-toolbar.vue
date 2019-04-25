@@ -316,8 +316,12 @@ export default {
     grid-area: toolbar;
   }
   .toggle-wrap {
-    width: $w-layersbar;
+    width: $w-layersbar * .87;
     text-align: center;
+    border-right: 1px solid $toolbar-border;
+    @include media('>=medium') {
+      width: $w-layersbar;
+    }
     .btn--toolbar {
       @include multi-transition(transform);
 
@@ -336,9 +340,11 @@ export default {
     margin: 0;
     padding: 0 .7143rem;
     list-style: none;
-    border-left: 1px solid $toolbar-border;
     > li + li {
       margin-left: .3571rem;
+    }
+    + .toolbar_list {
+      border-left: 1px solid $toolbar-border;
     }
   }
   .run-button {

@@ -184,7 +184,7 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     toggleElList(index, ev, tutorial_id) {
-      this.tutorialPointActivate({way:'next', validation: tutorial_id})
+      this.tutorialPointActivate({way:'next', validation: tutorial_id});
       if (this.layersbarList[index].showEl) {
         this.layersbarList[index].showEl = false;
         document.removeEventListener('click', this.clickOutside);
@@ -202,9 +202,6 @@ export default {
       });
     }
   },
-  mounted() {
-    
-  }
 }
 </script>
 
@@ -215,6 +212,7 @@ export default {
     max-width: $w-layersbar;
     grid-area: layersbar;
     transition: max-width $animation-speed;
+    border-right: 1px solid $bg-workspace;
     &.page_layersbar--hide {
       transition: max-width $animation-speed $animation-speed;
       max-width: 0;
@@ -231,10 +229,14 @@ export default {
     list-style: none;
     transition: transform $animation-speed $animation-speed;
     transform: translateY(0);
+    .btn--layersbar {
+      box-shadow: $box-shad;
+    }
   }
   .layer {
     position: relative;
     padding: $indent;
+    padding-bottom: 0;
   }
   .layer_parent {
     position: relative;
@@ -242,7 +244,7 @@ export default {
     &:after {
       content: '\e922';
       font-family: 'icomoon' !important;
-      font-size: 11px;
+      font-size: 1.1em;
       line-height: 1;
       position: absolute;
       right: 1px;

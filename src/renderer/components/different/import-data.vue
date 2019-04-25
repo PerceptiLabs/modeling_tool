@@ -32,6 +32,7 @@
         p secondTab
     .export-data_action
       button.btn.btn--primary(type="button" @click="importData") Import
+    p {{settings.Type}}
 
 </template>
 
@@ -47,35 +48,31 @@ export default {
     return {
       disabledBtn: false,
       selectOptions: [
-        { text: 'Machine Translation',       value: 'machine_translation' },
-        { text: 'Image Processing',
+        { text: 'Machine Translation',    value: 'machine_translation' },
+        { text: 'Image Processing11',       value: null,
           sublist: [
-            {
-              text: 'Image Processing 1',
-              value: 'processing1'
-            },
-            {
-              text: 'Image Processing 2',
-              value: 'processing2'
-            },
-            {
-              text: 'Image Processing 3',
-              value: 'processing3'
-            },
-            {
-              text: 'Image Processing 4',
-              value: 'processing4'
-            },
+            { text: 'Image Processing 11', value: 'processsing11' },
+            { text: 'Image Processing 12', value: 'processdfsing12' },
+            { text: 'Image Processing 13', value: 'procesasdsing13' },
+            { text: 'Image Processing 14', value: 'processasdasding14' },
+          ],
+        },
+        { text: 'Image Processing',       value: null,
+          sublist: [
+            { text: 'Image Processing 1', value: 'processing1' },
+            { text: 'Image Processing 2', value: 'processing2' },
+            { text: 'Image Processing 3', value: 'processing3' },
+            { text: 'Image Processing 4', value: 'processing4' },
           ],
         },
         { text: 'Anomalie Detection',     value: 'Anomalie' },
         { text: 'Reinforcement Learning', value: 'Reinforcement' },
-        { text: 'NLP', value: 'NLP' },
-        { text: 'Generative Network', value: 'Generative' }
+        { text: 'NLP',                    value: 'NLP' },
+        { text: 'Generative Network',     value: 'Generative' }
       ],
       settings: {
         Location: '',
-        Type: 'TFModel',
+        Type: 'Anomalie',
         git: false,
         gitLink: ''
       }
