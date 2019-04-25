@@ -13,7 +13,7 @@
       ref="layer"
       :is="el.el.componentName"
       :element-data="el"
-    )
+      )
 
 </template>
 

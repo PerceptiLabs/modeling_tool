@@ -378,8 +378,10 @@ const mutations = {
     let newNetElList = getters.GET_currentNetworkElementList.filter((el)=> {
       return !arrElID.includes(el.layerId);
     });
+    console.log(newNetElList);
     newNetElList.push(newContainer);
-    getters.GET_currentNetworkElementList = newNetElList;
+
+    state.workspaceContent[state.currentNetwork].networkElementList = newNetElList;
     dispatch('CLOSE_container', newContainer);
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
 
