@@ -88,6 +88,8 @@
   }
   .the-statistics {
     grid-area: the-statistics;
+    border-top: 1px solid $color-5;
+
   }
   .the-view-box {
     grid-area: view-box;

@@ -1,5 +1,5 @@
 <template lang="pug">
-  .statistics-box
+  .statistics-box.statistics-box--horizontally
     ul.statistics-box_tabset(v-if="!testIsOpen")
       li.statistics-box_tab(
       v-for="(tab, i) in tabset"

@@ -116,7 +116,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 11rem;
+  min-width: 10rem;
   padding: .65rem .5rem;
   background: $bg-grad-disable;
 
@@ -125,6 +125,9 @@
     color: $white;
     background: $bg-grad-blue;
     box-shadow: $icon-shad;
+  }
+  .statistics-box--horizontally & {
+    min-width: 14rem;
   }
 }
 
@@ -175,6 +178,10 @@
   padding: 0.7rem 2.5rem;
   border: 1px solid $login-blue;
   border-radius: 2rem;
+}
+
+.green-color-icon{
+  color: $color-1;
 }
 
 //
