@@ -3,25 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/base/select.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/base/select.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/different/import-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/different/import-data.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/statistics/the-testing.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/statistics/the-testing.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/tabset/workspace-tabset.pug" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/workspace/tabset/workspace-tabset.pug" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/_common.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/_common.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_button.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_button.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_helpers.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_helpers.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_layout.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_layout.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_typography.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_typography.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/components/_action-list.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/components/_action-list.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -34,11 +16,20 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/tabset/workspace-tabset.pug">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="352">
-              <caret line="16" column="53" lean-forward="true" selection-start-line="16" selection-start-column="53" selection-end-line="16" selection-end-column="53" />
+            <state relative-caret-position="814">
+              <caret line="38" column="25" lean-forward="true" selection-start-line="38" selection-start-column="25" selection-end-line="38" selection-end-column="25" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/different/import-data.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="464">
+              <caret line="33" column="71" selection-start-line="33" selection-start-column="71" selection-end-line="33" selection-end-column="71" />
             </state>
           </provider>
         </entry>
@@ -147,10 +138,10 @@
         <option value="$PROJECT_DIR$/src/renderer/core/mixins/click-outside.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" />
         <option value="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/components/different/import-data.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/base/select.vue" />
         <option value="$PROJECT_DIR$/src/renderer/scss/components/_action-list.scss" />
         <option value="$PROJECT_DIR$/src/renderer/components/workspace/tabset/workspace-tabset.pug" />
+        <option value="$PROJECT_DIR$/src/renderer/components/different/import-data.vue" />
       </list>
     </option>
   </component>
@@ -199,31 +190,22 @@
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="workspace" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="different" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="workspace" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="tabset" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="store" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="scss" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
-              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="scss" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="fonts" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="store" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="modules" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
           </expand>
           <select />
@@ -425,7 +407,7 @@
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="363459000" />
+    <option name="totallyTimeSpent" value="364341000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
@@ -704,9 +686,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="89">
           <caret line="26" column="21" lean-forward="true" selection-start-line="26" selection-start-column="21" selection-end-line="26" selection-end-column="21" />
-          <folding>
-            <marker date="1556201417044" expanded="true" signature="1097:1312" ph="..." />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -721,13 +700,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="264">
           <caret line="100" column="13" lean-forward="true" selection-start-line="100" selection-start-column="13" selection-end-line="100" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="315">
-          <caret line="38" column="25" lean-forward="true" selection-start-line="38" selection-start-column="25" selection-end-line="38" selection-end-column="25" />
         </state>
       </provider>
     </entry>
@@ -836,13 +808,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/different/import-data.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="222">
-          <caret line="56" column="64" selection-start-line="56" selection-start-column="64" selection-end-line="56" selection-end-column="64" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_action-list.scss">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="616">
@@ -859,8 +824,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/tabset/workspace-tabset.pug">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="352">
-          <caret line="16" column="53" lean-forward="true" selection-start-line="16" selection-start-column="53" selection-end-line="16" selection-end-column="53" />
+        <state relative-caret-position="748">
+          <caret line="34" selection-start-line="34" selection-end-line="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="814">
+          <caret line="38" column="25" lean-forward="true" selection-start-line="38" selection-start-column="25" selection-end-line="38" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/different/import-data.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="464">
+          <caret line="33" column="71" selection-start-line="33" selection-start-column="71" selection-end-line="33" selection-end-column="71" />
         </state>
       </provider>
     </entry>

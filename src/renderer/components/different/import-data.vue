@@ -32,7 +32,6 @@
         p secondTab
     .export-data_action
       button.btn.btn--primary(type="button" @click="importData") Import
-    p {{settings.Type}}
 
 </template>
 
