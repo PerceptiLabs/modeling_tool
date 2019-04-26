@@ -289,5 +289,16 @@ export default {
         }, ' ');
       }
     },
+    trainingFinished(index) {
+      let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;
+      return networkStatus === 'Finished' || networkStatus === 'Testing';
+    },
+    trainingInProcess(index) {
+      let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;
+      return networkStatus === 'Training' || networkStatus === 'Validation';
+    },
+    trainingWaiting(index) {
+      return this.workspace[index].networkMeta.coreStatus.Status === 'Waiting';
+    }
   }
 }

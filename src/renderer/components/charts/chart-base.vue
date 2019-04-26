@@ -28,7 +28,7 @@
   export default {
     name: "ChartBase",
     mixins: [chartMixin],
-    mounted() {
+    created() {
       this.applyCustomColor();
     },
     data() {

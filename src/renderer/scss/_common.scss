@@ -1,9 +1,9 @@
 @import 'base';
 /*----- CSS VAR -----*/
 :root {
-  --size-layers-btn: 58px;
-  @include media('>=xxlarge') {
-    --size-layers-btn: 72px;
+  --size-layers-btn: .8rem;
+  @include media('>=medium') {
+    --size-layers-btn: 1rem;
   }
 }
 /*----- Common styles -----*/

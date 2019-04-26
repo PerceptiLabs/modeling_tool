@@ -28,11 +28,14 @@ export default {
     this.$store.dispatch('mod_api/API_postTestStart')
       .then(()=>{
         this.$nextTick(()=> {
-          if(this.progressStore === 0) {
-            this.postTestMove('nextStep')
-          }
-          else this.$store.dispatch('mod_workspace/EVENT_onceDoRequest')
+          this.$store.dispatch('mod_workspace/EVENT_onceDoRequest')
         })
+        // this.$nextTick(()=> {
+        //   if(this.progressStore === 0) {
+        //     this.postTestMove('nextStep')
+        //   }
+        //   else this.$store.dispatch('mod_workspace/EVENT_onceDoRequest')
+        // })
       })
   },
   computed: {

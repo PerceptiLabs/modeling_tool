@@ -81,8 +81,8 @@ function createWindow () {
     frame: false,
     height: 768,
     width: 1024,
-    minHeight: 768,
-    minWidth: 1024,
+    minHeight: 600,
+    minWidth: 800,
     useContentSize: true,
     webPreferences: {
       //contextIsolation: true,

@@ -71,9 +71,9 @@
   }
 }
 
-$prevBreakPoint: 'xxlarge';
+$prevBreakPoint: 'large';
 @each $name, $size in $breakpoint {
-  @if $name != xxlarge {
+  @if $name != large {
     .hide-for-#{$name}-only {
       @include media('>=#{$name}', '<#{$prevBreakPoint}') {
         display: none !important;

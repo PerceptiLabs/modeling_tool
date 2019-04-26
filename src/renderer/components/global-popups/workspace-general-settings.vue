@@ -104,7 +104,7 @@
               input(type="number" v-model="settings.Save_model_every" disabled="disabled")
               span &nbsp; epoch
       .popup_foot
-        button.btn.btn--primary(
+        button.btn.btn--primary.tutorial-relative(
           type="button"
           @click="validateForm()"
           id="tutorial_apply-button"

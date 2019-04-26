@@ -97,11 +97,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: var(--size-layers-btn);
-  height: var(--size-layers-btn);
+  font-size: var(--size-layers-btn);
+  width: 6em;
+  height: 6em;
 
   .icon {
-    font-size: 3.8rem;
+    font-size: 3.3em;
     text-shadow: $icon-shad;
   }
 
@@ -116,7 +117,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  min-width: 11rem;
+  min-width: 10rem;
   padding: .65rem .5rem;
   background: $bg-grad-disable;
 
@@ -125,6 +126,9 @@
     color: $white;
     background: $bg-grad-blue;
     box-shadow: $icon-shad;
+  }
+  .statistics-box--horizontally & {
+    min-width: 14rem;
   }
 }
 
@@ -136,25 +140,20 @@
 
 .btn--dark-blue-rev {
   @extend .btn--dark-blue;
-
   color: $white;
   transition: none;
   background: $bg-grad-blue;
-
   &:hover,
   &.active {
     color: $disable-txt;
     background: $bg-window;
   }
-
   &.active {
     box-shadow: none;
   }
-
   &.green-status {
     .icon {
       color: $color-1;
-      padding: 0 0.6rem 0 0;
     }
   }
 }
@@ -180,6 +179,10 @@
   padding: 0.7rem 2.5rem;
   border: 1px solid $login-blue;
   border-radius: 2rem;
+}
+
+.green-color-icon{
+  color: $color-1;
 }
 
 //

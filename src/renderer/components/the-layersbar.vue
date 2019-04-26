@@ -7,6 +7,7 @@
       )
         button.btn.btn--layersbar.layer_parent.js-clickout.tooltip-wrap(type="button"
           v-tooltip:right="layer.tooltip"
+          v-tooltip-interactive:right="layer.tooltip_interactive"
           @click.stop="toggleElList(i, $event, layer.id, layer.dynamic_id)"
           :class="[layer.layerClass, {'active': layer.showEl}]"
           :id="layer.id"
@@ -92,6 +93,10 @@ export default {
         // },
         {
           tooltip: 'Data',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-data',
           iconClass: 'icon-data',
           showEl: false,
@@ -101,6 +106,10 @@ export default {
         },
         {
           tooltip: 'Processing',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-process',
           iconClass: 'icon-settings',
           showEl: false,
@@ -110,6 +119,10 @@ export default {
         },
         {
           tooltip: 'Deep Learning',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-learn-deep',
           iconClass: 'icon-network',
           showEl: false,
@@ -119,6 +132,10 @@ export default {
         },
         {
           tooltip: 'Mathematics',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-math',
           iconClass: 'icon-calc',
           showEl: false,
@@ -128,6 +145,10 @@ export default {
         },
         {
           tooltip: 'Training',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-train',
           iconClass: 'icon-training',
           showEl: false,
@@ -137,6 +158,10 @@ export default {
         },
         {
           tooltip: 'Classic Machine Learning',
+          tooltip_interactive: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+                        </div>`,
           layerClass: 'net-element-learn-class',
           iconClass: 'icon-mind',
           showEl: false,
@@ -159,7 +184,7 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     toggleElList(index, ev, tutorial_id) {
-      this.tutorialPointActivate({way:'next', validation: tutorial_id})
+      this.tutorialPointActivate({way:'next', validation: tutorial_id});
       if (this.layersbarList[index].showEl) {
         this.layersbarList[index].showEl = false;
         document.removeEventListener('click', this.clickOutside);
@@ -177,9 +202,6 @@ export default {
       });
     }
   },
-  mounted() {
-    
-  }
 }
 </script>
 
@@ -190,6 +212,7 @@ export default {
     max-width: $w-layersbar;
     grid-area: layersbar;
     transition: max-width $animation-speed;
+    border-right: 1px solid $bg-workspace;
     &.page_layersbar--hide {
       transition: max-width $animation-speed $animation-speed;
       max-width: 0;
@@ -206,10 +229,14 @@ export default {
     list-style: none;
     transition: transform $animation-speed $animation-speed;
     transform: translateY(0);
+    .btn--layersbar {
+      box-shadow: $box-shad;
+    }
   }
   .layer {
     position: relative;
     padding: $indent;
+    padding-bottom: 0;
   }
   .layer_parent {
     position: relative;
@@ -217,7 +244,7 @@ export default {
     &:after {
       content: '\e922';
       font-family: 'icomoon' !important;
-      font-size: 11px;
+      font-size: 1.1em;
       line-height: 1;
       position: absolute;
       right: 1px;

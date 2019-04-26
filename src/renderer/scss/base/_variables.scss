@@ -1,11 +1,7 @@
 $breakpoint: (
-  'xxlarge': 1440px,
-  'xlarge': 1200px,
-  'large': 1024px,
-  'premedium': 768px,
-  'medium': 640px,
-  'presmall': 480px,
-  'small': 320px
+  'large': 1600px,
+  'medium': 1024px,
+  'small': 800px
 );
 
 // keywords
@@ -87,7 +83,7 @@ $input-holder-margin: .75rem;
 $vert-indent: 20px;
 $form-indent: 1rem;
 $bdrs: .5rem;
-$w-layersbar: 8.2rem; //80px
+$w-layersbar: 7.1rem; //80px
 
 $h-sidebar-layers-item: 3.357rem; //33px
 $h-sidebar-layers-indent: 1rem; //14px
@@ -108,7 +104,8 @@ $line-height-base: 1.2;
 $base-font-family: $base-font-sans-serif ;
 $vertical-rhythm: ($line-height-base * 1em);
 
-$base-min-width: 320px;
+$base-min-width: 800px;
+$base-min-height: 600px;
 
 $animation-speed: .3s; // for mixin
 
