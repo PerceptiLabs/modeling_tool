@@ -30,7 +30,7 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
       chart-base(
         key="4"
-        chartLabel="Bias"
+        chartLabel="Gradients"
         :chartData="chartData.Gradients.Gradients"
         :customColor="colorList"
       )
