@@ -9,17 +9,7 @@
       )
         h3(v-html="tab")
     .popup_tab-body
-      //-.popup_body(
-        /:class="{'active': tabSelected == 0}"
-        )
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              .form_label Number of classes:
-              .form_input
-                input(type="text" v-model="settings.N_class")
-
-      .popup_body(:class="{'active': tabSelected == 1}")
+      .popup_body(:class="{'active': tabSelected == 0}")
         settings-code(
         :the-code="coreCode"
         )
@@ -40,16 +30,13 @@ export default {
   },
   data() {
     return {
-      tabs: ['Settings', 'Code'],
-      settings: {
-        N_class: '10',
-      }
+      tabs: ['Code'],
+      settings: {}
     }
   },
   computed: {
     coreCode() {
-      return `
-      Y=tf.image.rgb_to_grayscale(X);`
+      return `Y=tf.image.rgb_to_grayscale(X);`
     }
   }
 }
