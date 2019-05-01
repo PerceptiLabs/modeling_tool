@@ -255,7 +255,6 @@ export default {
     position: absolute;
     top: 0;
     left: -$indent;
-    visibility: hidden;
     opacity: 0;
     margin: 0;
     padding: $indent;

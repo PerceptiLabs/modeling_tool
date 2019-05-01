@@ -9,13 +9,13 @@
 
 <script>
   import ChartBase from "@/components/charts/chart-base";
-  import dataLine  from "@/components/charts/line.js";
+
   export default {
     name: "ViewBoxProcessEmbed",
     components: {ChartBase},
     data() {
       return {
-        optionLine1: dataLine,
+        optionLine1: null,
       }
     },
   }

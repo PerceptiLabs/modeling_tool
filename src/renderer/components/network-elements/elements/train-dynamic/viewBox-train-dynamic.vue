@@ -73,9 +73,6 @@
   import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
   import ChartD3      from "@/components/charts/chart-3d.vue";
   import data3d       from "@/components/charts/3d.js";
-  import dataHeat     from "@/components/charts/hear.js";
-  import dataBar      from "@/components/charts/bar.js";
-  import dataLine     from "@/components/charts/line.js";
 
   export default {
     name: "ViewBoxTrainDynamic",
@@ -84,10 +81,10 @@
       return {
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
-        optionLine1: dataLine,
+        optionLine1: null,
         option3d: data3d,
-        optionHeat: dataHeat,
-        optionBar: dataBar,
+        optionHeat: null,
+        optionBar: null,
       }
     },
     methods: {

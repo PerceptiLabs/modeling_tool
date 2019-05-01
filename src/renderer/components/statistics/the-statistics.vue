@@ -65,4 +65,7 @@ export default {
   .open-test .the-statistics .info-section_main {
     border-left: 2px solid $bg-window;
   }
+  .info-section_head {
+    border-top: 1px solid $color-5;
+  }
 </style>
