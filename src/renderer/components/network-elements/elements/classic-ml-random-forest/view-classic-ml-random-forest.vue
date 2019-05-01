@@ -3,7 +3,7 @@
   data-component="ClassicMLRandomForest"
   data-layer="Random Forest"
   data-type="Training"
-  v-tooltip:right="'Random Rorest'"
+  v-tooltip:right="'Random Forest'"
   )
     i.icon.icon-trees
 

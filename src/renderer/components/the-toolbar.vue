@@ -78,12 +78,12 @@
     ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
-          v-tooltip:bottom="'Repeat'"
+          v-tooltip:bottom="'Generate Hyperparameters'"
         )
-          i.icon.icon-repeat
+          i.icon.icon-params
       li
         button.btn.btn--toolbar(type="button"
-          v-tooltip:bottom="'Box'"
+          v-tooltip:bottom="'BlackBox'"
         )
           i.icon.icon-box
 
@@ -128,7 +128,7 @@ export default {
       y: null,
       arrowList: [
         {
-          iconClass: 'icon-layer-arrow1',
+          iconClass: 'icon-arrow-left',
           arrowType: 'solid'
         },
         // {
