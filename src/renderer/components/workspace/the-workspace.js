@@ -1,4 +1,5 @@
 import html2canvas  from 'html2canvas';
+import canvg        from 'canvg'
 import {remote}     from 'electron'
 import fs           from 'fs';
 
@@ -219,6 +220,16 @@ export default {
       function doScreenShot(ctx) {
         return new Promise((resolve, reject)=> {
           const el = ctx.$refs.workspaceNet;
+          const svg = document.body.querySelector('.svg-arrow').outerHTML;
+          const canvas = document.createElement('canvas');
+          canvas.style.width = 800 + 'px';
+          canvas.style.height = 600 + 'px';
+          canvas.style.position = "absolute";
+          canvas.id = 'canvas111';
+          console.log(svg, 1111);
+          el.appendChild(canvas);
+          canvg(canvas, svg);
+          //canvg(document.getElementById('canvas'), svg);
           const options = {
             scale: 0.15 //180x135
           };

@@ -26,6 +26,7 @@
           marker-end="url(#svg-arrow_triangle)"
           stroke-dasharray="none"
           :d="arrow.positionArrow.path"
+          style="stroke: #22DDE5; stroke-width: 3;fill: transparent;"
           )
       //- pre arrow
       line.svg-arrow_line.arrow--hidden(
@@ -77,9 +78,9 @@
     }
   }
   .svg-arrow_line {
-    stroke: $col-primary;
+/*    stroke: $col-primary;
     stroke-width: 3;
-    fill: transparent;
+    fill: transparent;*/
     &:focus {
       opacity: .5;
       stroke-width: 4;
