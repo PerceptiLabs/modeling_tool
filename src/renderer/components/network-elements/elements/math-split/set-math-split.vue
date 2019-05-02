@@ -6,7 +6,6 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
-      :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -39,7 +38,7 @@
 
       .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
-        :the-code="coreCode"
+          :the-code="coreCode"
         )
     .settings-layer_foot
       button.btn.btn--primary(type="button" @click="applySettings") Apply

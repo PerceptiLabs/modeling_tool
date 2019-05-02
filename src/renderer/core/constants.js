@@ -1,4 +1,4 @@
-const trainingElements =  ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
+const trainingElements =  ['TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
 const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningDeconv', 'DeepLearningRecurrent'];
 
 const pathWebWorkers = './static/webworkers';

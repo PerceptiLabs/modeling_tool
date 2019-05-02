@@ -40,13 +40,11 @@
     ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
-          disabled="disabled"
           v-tooltip:bottom="'Prev step'"
         )
           i.icon.icon-step-prev
       li
         button.btn.btn--toolbar(type="button"
-          disabled="disabled"
           v-tooltip:bottom="'Next step'"
         )
           i.icon.icon-step-next
@@ -80,14 +78,12 @@
     ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
-          disabled="disabled"
-          v-tooltip:bottom="'Repeat'"
+          v-tooltip:bottom="'Generate Hyperparameters'"
         )
-          i.icon.icon-repeat
+          i.icon.icon-params
       li
         button.btn.btn--toolbar(type="button"
-          disabled="disabled"
-          v-tooltip:bottom="'Box'"
+          v-tooltip:bottom="'BlackBox'"
         )
           i.icon.icon-box
 
@@ -106,13 +102,12 @@
       //-   i.icon.icon-ellipse
 
       tutorial-instructions
-      button.btn.btn--dark-blue-rev(
+      button.btn.btn--tutorial(
         type="button"
-        :class="{'green-status': interactiveInfoStatus}"
+        :class="{'btn--tutorial-active': interactiveInfoStatus}"
         @click="toggleInteractiveInfo"
       )
-        span Interactive Information
-        i.icon.icon-ellipse
+        span ?
 </template>
 
 <script>
@@ -133,7 +128,7 @@ export default {
       y: null,
       arrowList: [
         {
-          iconClass: 'icon-layer-arrow1',
+          iconClass: 'icon-arrow-left',
           arrowType: 'solid'
         },
         // {
@@ -412,5 +407,16 @@ export default {
   }
   #tutorial_pointer {
     position: relative;
+  }
+  .btn--tutorial {
+    font-size: 2.1rem;
+    width: 2.4rem;
+    height: 2.4rem;
+    background: $bg-grad-blue;
+    border-radius: 50%;
+    margin: .4rem;
+  }
+  .btn--tutorial-active {
+    box-shadow: inset 0 0 1px 1px $color-1;
   }
 </style>

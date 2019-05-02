@@ -1,9 +1,9 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-train(:draggable="false"  disabled="disabled"
+  .btn.btn--layersbar.net-element-train(:draggable="draggable"
     data-component="TrainDynamic"
     data-layer="Dynamic Routing"
     data-type="Training"
-    v-tooltip:right="'Training'"
+    v-tooltip:right="'Dynamic Routing'"
   )
     i.icon.icon-learning-dynamic
 

@@ -85,7 +85,6 @@
     data() {
       return {
         tabs: ['Computer', 'Cloud'],
-        coreCode: '',
         dataColumns: [],
         dataColumnsSelected: [],
         disabledBtn: false,

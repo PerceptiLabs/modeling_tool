@@ -24,18 +24,15 @@
 <script>
   import ChartBase    from "@/components/charts/chart-base";
 
-  import dataLine  from "@/components/charts/line.js";
-  import dataBar  from "@/components/charts/bar.js";
-  import dataS  from "@/components/charts/scatter.js";
   export default {
     name: "ViewClassicMLDbscans",
     components: {ChartBase},
     data() {
       return {
         optionS: dataS,
-        optionLine2: dataLine,
-        optionBar3: dataBar,
-        optionBar4: dataBar,
+        optionLine2: null,
+        optionBar3: null,
+        optionBar4: null,
 
       }
     }

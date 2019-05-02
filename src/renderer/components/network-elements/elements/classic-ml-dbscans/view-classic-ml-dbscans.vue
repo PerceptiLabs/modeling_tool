@@ -1,5 +1,5 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-learn-class(:draggable="false"  disabled="disabled"
+  .btn.btn--layersbar.net-element-learn-class(:draggable="draggable"
     data-component="ClassicMLDbscans"
     data-layer="DBSCAN"
     data-type="Training"
