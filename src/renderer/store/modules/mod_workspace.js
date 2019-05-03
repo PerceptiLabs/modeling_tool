@@ -429,6 +429,18 @@ const actions = {
   RESET_network({commit}) {
     commit('RESET_network')
   },
+  CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
+    //console.log(`request -> can show`, `${time}ms`);
+    const timeRequest = time + 500;
+    const isLongRequest = timeRequest > rootState.globalView.timeIntervalDoRequest;
+    if(isLongRequest) {
+      const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
+      clearInterval(currentMeta.timerID);
+      console.log('new time', timeRequest);
+      dispatch('globalView/SET_timeIntervalDoRequest', timeRequest, {root: true});
+      dispatch('EVENT_startDoRequest', true);
+    }
+  },
   EVENT_startDoRequest({dispatch, commit, rootState, getters, state}, isStart) {
     //console.log('EVENT_startDoRequest', isStart);
     const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;

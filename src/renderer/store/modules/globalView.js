@@ -11,7 +11,7 @@ const state = {
   appPath: '',
   updateStatus: 'before update', // ('before update', 'downloading', not update, 'done')
   showPopupUpdates: false,
-  timeIntervalDoRequest: 4000,
+  timeIntervalDoRequest: 2500,
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,
@@ -53,6 +53,9 @@ const mutations = {
   SET_showPopupUpdates (state, value) {
     state.showPopupUpdates = value
   },
+  set_timeIntervalDoRequest (state, value) {
+    state.timeIntervalDoRequest = value
+  },
   GP_showNetResult (state, value) {
     state.globalPopup.showNetResult = value
   },
@@ -92,6 +95,9 @@ const actions = {
        ? dispatch('mod_api/API_runServer', null, {root: true})
        : dispatch('mod_api/API_CLOSE_core', null, {root: true});
     }
+  },
+  SET_timeIntervalDoRequest({commit, dispatch}, value) {
+    commit('set_timeIntervalDoRequest', value);
   }
 };
 
