@@ -111,7 +111,7 @@
         return this.$store.state.mod_events.logOut
       },
       showPopupUpdates() {
-        return this.$store.state.globalView.showPopupUpdates
+        return this.$store.state.globalView.globalPopup.showPopupUpdates
       },
       userToken() {
         return this.$store.state.globalView.userToken

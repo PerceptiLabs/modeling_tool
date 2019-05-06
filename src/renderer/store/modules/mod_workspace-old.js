@@ -9,7 +9,7 @@ function createPathNode(path, state) {
 }
 function createNetElement(event) {
   return {
-    layerId: generateID(),
+    layerId: generateID(event.timeStamp).toString(), //TODO delete .toString()
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: '',
@@ -44,6 +44,7 @@ const state = {
   currentNetwork: 0,
   dragElement: {},
   startArrowID: null,
+  arrowType: 'solid',
   preArrow: {
     show: false,
     start: {x: 0, y: 0},
@@ -78,20 +79,20 @@ const getters = {
     }
     return 'empty app'
   },
-  // GET_currentSelectedEl(state, getters) {
-  //   let selectedIndex = [];
-  //   if(getters.GET_networkIsNotEmpty) {
-  //     getters.GET_currentNetworkElementList.forEach(function (el, index, arr) {
-  //       if (el.layerMeta.isSelected) {
-  //         selectedIndex.push({
-  //           index,
-  //           el
-  //         });
-  //       }
-  //     });
-  //   }
-  //   return selectedIndex;
-  // },
+  GET_currentSelectedEl(state, getters) {
+    let selectedIndex = [];
+    if(getters.GET_networkIsNotEmpty) {
+      getters.GET_currentNetworkElementList.forEach(function (el, index, arr) {
+        if (el.layerMeta.isSelected) {
+          selectedIndex.push({
+            index,
+            el
+          });
+        }
+      });
+    }
+    return selectedIndex;
+  },
   GET_networkIsTraining(state, getters) {
     let coreStatus = getters.GET_networkCoreStatus;
     if(coreStatus === 'Training'
@@ -128,12 +129,13 @@ const mutations = {
   set_networkName(state, {getters, value}) {
     getters.GET_currentNetwork.networkName = value
   },
-  //-- set_networkElementList(state, {getters, value}) {
-  //   getters.GET_currentNetworkElementList = value
-  // },
-  add_network (state, {net, ctx}) {
+
+  set_networkElementList(state, {getters, value}) {
+    getters.GET_currentNetworkElementList = value
+  },
+  add_network (state, {dispatch, net}) {
     let newNetwork = {};
-    const defaultNetwork = {
+    let defaultNetwork = {
       networkName: 'New_Network',
       networkID: '',
       networkSettings: null,
@@ -141,7 +143,7 @@ const mutations = {
       networkElementList: [],
       //networkContainerList: [],
     };
-    const defaultMeta = {
+    let defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       openTest: null,
       //canTestStatistics: false,
@@ -158,16 +160,14 @@ const mutations = {
       }
     };
 
-    net === undefined
-      ? newNetwork = defaultNetwork
-      : newNetwork = net;
+    net.network === undefined ? newNetwork = defaultNetwork : newNetwork = net.network;
     newNetwork.networkMeta = defaultMeta;
-    newNetwork.networkID = 'net' + generateID();
+    newNetwork.networkID = 'net' + generateID(Date.now());
 
     state.workspaceContent.push(JSON.parse(JSON.stringify(newNetwork)));
     state.currentNetwork = state.workspaceContent.length - 1;
-    if(ctx.$router.history.current.name !== 'app') {
-      ctx.$router.replace({name: 'app'});
+    if(net.ctx.$router.history.current.name !== 'app') {
+      net.ctx.$router.replace({name: 'app'});
     }
   },
   DELETE_network(state, index) {
@@ -176,13 +176,14 @@ const mutations = {
     }
     state.workspaceContent.splice(index, 1);
   },
-  //-- RESET_network (state) {
-  //   state.workspaceContent = [];
-  //   state.currentNetwork = 0;
-  //   state.dragElement = {};
-  //   state.startArrowID = null;
-  //   state.preArrow = null;
-  // },
+  RESET_network (state) {
+    state.workspaceContent = [];
+    state.currentNetwork = 0;
+    state.dragElement = {};
+    state.startArrowID = null;
+    state.arrowType = 'solid';
+    state.preArrow = null;
+  },
   //---------------
   //  NETWORK SETTINGS
   //---------------
@@ -221,7 +222,7 @@ const mutations = {
   },
   set_charts_doRequest(state, {getters, networkIndex}) {
     if(networkIndex) {
-      state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++ // TODO add getters
+      state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++
     }
     else {
       getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
@@ -229,7 +230,7 @@ const mutations = {
   },
   set_charts_showCharts(state, {getters, networkIndex}) {
     if(networkIndex) {
-      state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts++ // TODO add getters
+      state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts++
     }
     else {
       getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts++
@@ -263,9 +264,13 @@ const mutations = {
   delete_elementConnection(state, {newNet, arrSelectId, dispatch}) {
     newNet.forEach((el)=>{
       el.connectionOut = el.connectionOut.filter((connect)=>{
+        //TODO return when return arrowType
+        //return !value.arrSelectId.includes(connect.id)
         return !arrSelectId.includes(connect)
       });
       el.connectionIn  = el.connectionIn.filter((connect)=>{
+        //TODO return when return arrowType
+        //return !value.arrSelectId.includes(connect.id)
         return !arrSelectId.includes(connect)
       });
     });
@@ -421,6 +426,12 @@ const mutations = {
   ADD_dragElement(state, event) {
     state.dragElement = createNetElement(event);
   },
+  SET_arrowType (state, value) {
+    state.arrowType = value.type
+  },
+  // SET_dragElement(state, value) {
+  //   state.dragElement = value
+  // },
   SET_startArrowID (state, value) {
     state.startArrowID = value
   },
@@ -446,8 +457,8 @@ const actions = {
   //---------------
   //  NETWORK
   //---------------
-  ADD_network({commit, dispatch}, {network, ctx}) {
-    commit('add_network', {network, ctx})
+  ADD_network({commit, dispatch}, net) {
+    commit('add_network', {dispatch, net})
   },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
@@ -592,7 +603,7 @@ const actions = {
       return;
     }
     let fakeEvent = {
-      timeStamp: generateID(),
+      timeStamp: new Date().getTime(),
       target: {
         dataset: {
           layer: 'Data Group',

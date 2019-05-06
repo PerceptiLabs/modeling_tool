@@ -10,13 +10,13 @@ const state = {
   appVersion: '',
   appPath: '',
   updateStatus: 'before update', // ('before update', 'downloading', not update, 'done')
-  showPopupUpdates: false,
   timeIntervalDoRequest: 2500,
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,
     showCoreSideSettings: false,
-    showInfoPopup: false
+    showInfoPopup: false,
+    showPopupUpdates: false,
   }
 };
 const getters = {
@@ -51,7 +51,7 @@ const mutations = {
     state.updateStatus = value
   },
   SET_showPopupUpdates (state, value) {
-    state.showPopupUpdates = value
+    state.globalPopup.showPopupUpdates = value
   },
   set_timeIntervalDoRequest (state, value) {
     state.timeIntervalDoRequest = value

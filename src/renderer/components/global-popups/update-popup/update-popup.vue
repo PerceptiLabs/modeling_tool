@@ -60,7 +60,7 @@ export default {
       return this.$store.state.globalView.updateStatus
     },
     showPopupUpdates() {
-      return this.$store.state.globalView.showPopupUpdates
+      return this.$store.state.globalView.globalPopup.showPopupUpdates
     }
   },
   methods: {
