@@ -10,6 +10,7 @@
           markerWidth="9"
           markerHeight="9"
           orient="auto"
+          style="stroke: #22DDE5;fill: #22DDE5"
           )
           polyline(points="0,0 0,4 3.5,2")
       //- arrows list

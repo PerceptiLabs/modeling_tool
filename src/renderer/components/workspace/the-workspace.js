@@ -194,6 +194,7 @@ export default {
 
 
       function openSaveDialog(jsonNet) {
+        console.log(jsonNet)
         const option = {
           title:"Save Network",
           defaultPath: `*/${network.networkName}`,
@@ -201,6 +202,8 @@ export default {
             {name: 'Text', extensions: ['json']},
           ]
         };
+
+
         dialog.showSaveDialog(null, option, (fileName) => {
           if (fileName === undefined){
             console.log("You didn't save the file");
@@ -220,18 +223,23 @@ export default {
       function doScreenShot(ctx) {
         return new Promise((resolve, reject)=> {
           const el = ctx.$refs.workspaceNet;
+
+          // const oldCanvas = document.getElementById('canvasScreenShort');
+          // if(oldCanvas) oldCanvas.remove();
           const svg = document.body.querySelector('.svg-arrow').outerHTML;
           const canvas = document.createElement('canvas');
-          canvas.style.width = 800 + 'px';
-          canvas.style.height = 600 + 'px';
+          canvas.style.width = 'auto';
+          canvas.style.height = 'auto';
           canvas.style.position = "absolute";
-          canvas.id = 'canvas111';
-          console.log(svg, 1111);
-          el.appendChild(canvas);
+          canvas.style.zIndex = '1';
+          canvas.id = 'canvasScreenShort';
+          console.log(ctx.$refs.networkField[0].$el);
+          ctx.$refs.networkField[0].$el.appendChild(canvas);
           canvg(canvas, svg);
-          //canvg(document.getElementById('canvas'), svg);
+
           const options = {
-            scale: 0.15 //180x135
+            scale: 1, //180x135
+            removeContainer: true
           };
           return html2canvas(el, options)
             .then((canvas)=> {
