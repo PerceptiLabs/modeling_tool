@@ -97,8 +97,9 @@ const viewBoxMixin = {
           else this.chartData = data;
 
           //console.log(data);
-          // let stopRequest = new Date();
-          // let answerDelay = stopRequest - this.startRequest;
+          let stopRequest = new Date();
+          let answerDelay = stopRequest - this.startRequest;
+          this.$store.dispatch('mod_workspace/CHECK_requestInterval', answerDelay);
           // console.log(`request -> before show ${this._name}`, `${answerDelay}ms`);
         })
         .catch((err)=> {

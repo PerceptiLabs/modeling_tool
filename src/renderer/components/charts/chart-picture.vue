@@ -8,7 +8,7 @@
         :class="{'text-primary': fullView}"
         @click="toggleFullView")
           i.icon.icon-full-screen-graph
-    .base-chart_main
+    .base-chart_main(:class="{'invisible': blinkCanv}")
       canvas.chart-img(ref="canvas")
 </template>
 
@@ -21,7 +21,8 @@ export default {
   mixins: [chartMixin],
   data() {
     return {
-      canvas2D: null
+      canvas2D: null,
+      blinkCanv: false
     }
   },
   watch: {
@@ -61,11 +62,15 @@ export default {
       // console.log(`calc img delay`, `${drawDelay}ms`);
     },
     showImage(imgData) {
-      
       let canvasEl = this.$refs.canvas;
       canvasEl.setAttribute('width', this.chartData.series[0].width);
       canvasEl.setAttribute('height', this.chartData.series[0].height);
       this.canvas2D.putImageData(imgData, 0, 0);
+      // this.blinkCanv = true;
+      // setTimeout(()=>{
+      //
+      //   this.blinkCanv = false
+      // }, 100);
     }
   }
 }
