@@ -210,6 +210,7 @@
         this.$store.dispatch('mod_events/EVENT_logOut', this)
       },
       switchKeyPress(event) {
+        event.preventDefault();
         switch (event.srcKey) {
           case 'delete':
           case 'deleteMac':

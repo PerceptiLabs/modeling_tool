@@ -36,7 +36,7 @@ export default {
     return {
       disabledBtn: false,
       selectOptions: [
-        { text: 'Tensor Flow Model',  value: 'TFModel' },
+        { text: 'TensorFlow Model',  value: 'TFModel' },
         { text: 'Docker Image',       value: 'Docker' },
         { text: 'Raw Parameters',     value: 'Raw' }
       ],

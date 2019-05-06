@@ -47,7 +47,7 @@ const chartsMixin = {
       fullView: false,
       wWorker: null,
 
-      startCalDrow: 0
+      //startCalDrow: 0
     }
   },
   computed: {

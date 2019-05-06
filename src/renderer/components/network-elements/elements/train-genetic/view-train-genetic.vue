@@ -1,5 +1,5 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-train(:draggable="false"  disabled="disabled"
+  .btn.btn--layersbar.net-element-train(:draggable="draggable"
   data-component="TrainGenetic"
   data-layer="Genetic Algorithm"
   data-type="Training"

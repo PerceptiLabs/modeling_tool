@@ -9,6 +9,7 @@ const netElementSettings = {
     return {
       tabSelected: 0,
       tabs: ['Settings', 'Code'],
+      settings: {}
     }
   },
   mounted() {
@@ -26,6 +27,9 @@ const netElementSettings = {
     },
     codeInputDim() {
       return this.currentEl.layerMeta.InputDim
+    },
+    coreCode() {
+      return ''
     }
   },
   methods: {

@@ -3,7 +3,7 @@
     data-component="TrainReinforce"
     data-layer="Reinforcement Learning"
     data-type="Training"
-    v-tooltip:right="'Training Reinforce'"
+    v-tooltip:right="'Reinforcement Learning'"
   )
     i.icon.icon-learning-reinforcement1
 

@@ -9,17 +9,7 @@
       )
         h3(v-html="tab")
     .popup_tab-body
-      //-.popup_body(
-        /:class="{'active': tabSelected == 0}"
-        )
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              .form_label Number of classes:
-              .form_input
-                input(type="text" v-model="settings.N_class")
-
-      .popup_body(:class="{'active': tabSelected == 1}")
+      .popup_body(:class="{'active': tabSelected == 0}")
         settings-code(
         :the-code="coreCode"
         )
@@ -41,19 +31,15 @@ export default {
   data() {
     return {
       tabs: ['Code'],
-      // settings: {
-      //   N_class: '10',
-      // }
     }
   },
   computed: {
     coreCode() {
-      return `
-      words = tf.string_split(X);
-      vocab_size=words.get_shape().as_list()[0];
-      embed_size=10;
-      embedding = tf.Variable(tf.random_uniform((vocab_size, embed_size), -1, 1));
-      Y = tf.nn.embedding_lookup(embedding, X)`
+      return `words = tf.string_split(X);
+vocab_size=words.get_shape().as_list()[0];
+embed_size=10;
+embedding = tf.Variable(tf.random_uniform((vocab_size, embed_size), -1, 1));
+Y = tf.nn.embedding_lookup(embedding, X)`
     }
   }
 }

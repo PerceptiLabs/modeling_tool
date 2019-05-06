@@ -18,7 +18,6 @@ import ProcessOneHot        from '@/components/network-elements/elements/process
 import ProcessReshape       from '@/components/network-elements/elements/process-reshape/process-reshape.vue'
 
 import TrainNormal          from '@/components/network-elements/elements/train-normal/train-normal.vue'
-import TrainNormalData      from '@/components/network-elements/elements/train-normal-data/train-normal-data.vue'
 import TrainGenetic         from '@/components/network-elements/elements/train-genetic/train-genetic.vue'
 import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/train-dynamic.vue'
 import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/train-reinforce.vue'
@@ -45,7 +44,7 @@ export default {
     DataData, DataEnvironment,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
-    TrainNormal, TrainNormalData, TrainGenetic, TrainDynamic, TrainReinforce,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerContainer
@@ -122,9 +121,6 @@ export default {
         height: this.svgHeight,
       }
     },
-    networkDisplay() {
-
-    }
   },
   watch: {
     statisticsIsOpen() {
