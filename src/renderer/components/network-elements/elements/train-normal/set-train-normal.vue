@@ -54,7 +54,7 @@
               .form_row
                 .form_label Beta 1:
                 .form_input
-                  input(type="mod_workspace" v-model="settings.Beta_1")
+                  input(type="number" v-model="settings.Beta_1")
               .form_row
                 .form_label Beta 2:
                 .form_input
