@@ -23,7 +23,7 @@ const netElementSettings = {
       return this.$store.state.globalView.userMode
     },
     layerSettings() {
-      return this.$store.getters['mod_workspace/GET_currentSelectedEl'][0].el.layerSettings;
+      return this.$store.getters['mod_workspace/GET_currentSelectedEl'][0].layerSettings;
     },
     codeInputDim() {
       return this.currentEl.layerMeta.InputDim

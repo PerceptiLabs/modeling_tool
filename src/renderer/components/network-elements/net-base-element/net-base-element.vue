@@ -2,7 +2,7 @@
   .net-element.js-clickout(tabindex="0"
     ref="rootBaseElement"
     :style="style"
-    :id="dataEl.el.layerMeta.tutorialId"
+    :id="dataEl.layerMeta.tutorialId"
     :class="classEl"
 
     @click="switchClickEvent($event)"
@@ -32,7 +32,10 @@ export default {
   name: 'NetBaseElement',
   mixins: [baseNetDrag, baseNetPaintArrows, mousedownOutside],
   props: {
-    layerContainer: {type: Boolean, default: false},
+    layerContainer: {
+      type: Boolean,
+      default: false
+    },
     dataEl: {
       type: Object,
       default: function () {
@@ -77,10 +80,10 @@ export default {
     }),
     beForEnd() {
       //console.log('NetBaseElement beForEnd', this.dataEl.el.layerMeta);
-      return this.dataEl.el.layerMeta.OutputDim
+      return this.dataEl.layerMeta.OutputDim
     },
     isSelectedEl() {
-      return this.dataEl.el.layerMeta.isSelected
+      return this.dataEl.layerMeta.isSelected
     },
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
@@ -96,9 +99,9 @@ export default {
     },
     classEl() {
       return {
-        'net-element--hide-layer': this.dataEl.el.layerMeta.displayNone,
+        'net-element--hide-layer': this.dataEl.layerMeta.displayNone,
         'net-element--active': this.isSelectedEl,
-        'element--hidden': this.dataEl.el.layerMeta.isInvisible
+        'element--hidden': this.dataEl.layerMeta.isInvisible
       }
     }
   },
@@ -145,7 +148,7 @@ export default {
         : this.openSettings(event)
     },
     openLayerContainer() {
-      this.$store.dispatch('mod_workspace/OPEN_container', this.dataEl.el)
+      this.$store.dispatch('mod_workspace/OPEN_container', this.dataEl)
     },
     openSettings(event) {
       this.hideAllWindow();
@@ -162,8 +165,8 @@ export default {
     },
     setFocusEl(ev) {
       ev.ctrlKey
-        ? this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: [this.dataEl.index], setValue: true })
-        : this.$store.dispatch('mod_workspace/SET_elementSelect',      { path: [this.dataEl.index], setValue: true })
+        ? this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: [this.dataEl.layerId], setValue: true })
+        : this.$store.dispatch('mod_workspace/SET_elementSelect',      { path: [this.dataEl.layerId], setValue: true })
     },
     mousedownOutsideBefore() {
       this.MousedownElementTracking = this.$refs.rootBaseElement;
@@ -178,7 +181,7 @@ export default {
     },
     deselect() {
       this.hideAllWindow();
-      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.index], setValue: false });
+      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.layerId], setValue: false });
     },
     deleteEl() {
       if(!(this.statisticsIsOpen || this.testingIsOpen)) {

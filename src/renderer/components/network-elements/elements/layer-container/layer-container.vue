@@ -8,10 +8,10 @@
       template(slot="context")
         context-menu
     component(
-      v-for="(el, index) in elementData.el.containerLayersList"
+      v-for="(el, index) in elementData.containerLayersList"
       :key="el.index"
       ref="layer"
-      :is="el.el.componentName"
+      :is="el.componentName"
       :element-data="el"
       )
 

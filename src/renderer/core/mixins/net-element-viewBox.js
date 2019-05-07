@@ -26,12 +26,12 @@ const viewBoxMixin = {
   },
   computed: {
     statElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType === 'Training');
-      return viewBoxEl === undefined ? undefined : viewBoxEl.el.layerId.toString()
+      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.layerType === 'Training');
+      return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     boxElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType !== 'Training');
-      return viewBoxEl === undefined ? undefined : viewBoxEl.el.layerId.toString()
+      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.layerType !== 'Training');
+      return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     currentNetworkID() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID

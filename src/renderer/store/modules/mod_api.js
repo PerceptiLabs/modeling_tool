@@ -6,8 +6,9 @@ const {spawn} = require('child_process');
 
 function prepareNetwork(elementList) {
   let layers = {};
-  elementList.forEach((el)=> {
-    let dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
+  for(let layer in elementList) {
+    const dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
+    const el = elementList[layer];
     if(dataLayers.includes(el.componentName)) {
       layers[el.layerId] = {
         Name: el.layerName,
@@ -28,7 +29,7 @@ function prepareNetwork(elementList) {
         forward_connections: el.connectionOut
       };
     }
-  });
+  }
   return layers
 }
 

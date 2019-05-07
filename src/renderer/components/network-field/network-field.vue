@@ -1,5 +1,5 @@
 <template lang="pug">
-  .network-field(:id="'network' + netIndex"
+  .network-field(
     ref="network"
     @mousedown="refNetworkMouseDown($event)"
   )
@@ -47,11 +47,11 @@
         rx="5"
         )
     component(
-      v-for="(el, index) in networkElementList"
-      :key="el.index"
+      v-for="el in networkElementList"
+      :key="el.layerId"
       ref="layer"
       :is="el.componentName"
-      :element-data="{el, index}"
+      :element-data="el"
     )
 
 </template>

@@ -50,9 +50,9 @@ export default {
     hideSidebar() {
       return this.$store.state.globalView.hideSidebar
     },
-    statusNetworkCore() {
-      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
-    },
+    // statusNetworkCore() {
+    //   return this.$store.getters['mod_workspace/GET_networkCoreStatus']
+    // },
     statisticsIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
     },

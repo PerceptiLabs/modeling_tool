@@ -29,7 +29,7 @@ const baseNetPaintArrows = {
     arrowStartPaint(ev) {
       ev.preventDefault();
       ev.stopPropagation();
-      let el = this.dataEl.el;
+      let el = this.dataEl;
       let layerSize = this.$parent.$parent.layerSize;
 
       this.$parent.$parent.addArrowListener();
@@ -43,7 +43,7 @@ const baseNetPaintArrows = {
       ev.preventDefault();
       ev.stopPropagation();
       this.$parent.$parent.removeArrowListener();
-      this.$store.dispatch('mod_workspace/ADD_arrow', this.dataEl.el.layerId);
+      this.$store.dispatch('mod_workspace/ADD_arrow', this.dataEl.layerId);
       this.$store.commit('mod_workspace/CLEAR_preArrow')
     }
   }

@@ -6,7 +6,7 @@
     template(slot="context")
       context-menu
     template(slot="settings")
-      settings-el(:current-el="elementData.el")
+      settings-el(:current-el="elementData")
 
 </template>
 

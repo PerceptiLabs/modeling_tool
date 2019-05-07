@@ -1,4 +1,5 @@
 import { findIndexId, generateID }  from "@/core/helpers.js";
+import Vue from 'vue'
 
 function createPathNode(path, state) {
   //console.log('createPathNode');
@@ -53,45 +54,38 @@ const state = {
 
 const getters = {
   GET_networkIsNotEmpty(state) {
-    return state.workspaceContent.length ? true : false
+    return state.workspaceContent ? true : false
   },
   GET_currentNetwork(state, getters)  {
-    if(getters.GET_networkIsNotEmpty) return state.workspaceContent[state.currentNetwork];
-
-    return ['empty app']
+    return getters.GET_networkIsNotEmpty
+      ? state.workspaceContent[state.currentNetwork]
+      : ['empty app']
   },
   GET_currentNetworkSettings(state, getters) {
-    if(getters.GET_networkIsNotEmpty) {
-      return state.workspaceContent[state.currentNetwork].networkSettings;
-    }
-    return {}
+    return getters.GET_networkIsNotEmpty
+      ? state.workspaceContent[state.currentNetwork].networkSettings
+      : {}
   },
   GET_currentNetworkElementList(state, getters) {
-    if(getters.GET_networkIsNotEmpty) {
-      return state.workspaceContent[state.currentNetwork].networkElementList;
-    }
-    return ['empty app']
+    return getters.GET_networkIsNotEmpty
+      ? state.workspaceContent[state.currentNetwork].networkElementList
+      : ['empty app']
   },
   GET_networkCoreStatus(state, getters) {
-    if(getters.GET_networkIsNotEmpty) {
-      return getters.GET_currentNetwork.networkMeta.coreStatus.Status
-    }
-    return 'empty app'
+    return getters.GET_networkIsNotEmpty
+      ? getters.GET_currentNetwork.networkMeta.coreStatus.Status
+      : null
   },
-  // GET_currentSelectedEl(state, getters) {
-  //   let selectedIndex = [];
-  //   if(getters.GET_networkIsNotEmpty) {
-  //     getters.GET_currentNetworkElementList.forEach(function (el, index, arr) {
-  //       if (el.layerMeta.isSelected) {
-  //         selectedIndex.push({
-  //           index,
-  //           el
-  //         });
-  //       }
-  //     });
-  //   }
-  //   return selectedIndex;
-  // },
+  GET_currentSelectedEl(state, getters) {
+    let selectedIndex = [];
+    if(getters.GET_networkIsNotEmpty) {
+      let elList = getters.GET_currentNetworkElementList;
+      for(var el in elList) {
+        if (elList[el].layerMeta.isSelected) selectedIndex.push(elList[el]);
+      }
+    }
+    return selectedIndex;
+  },
   GET_networkIsTraining(state, getters) {
     let coreStatus = getters.GET_networkCoreStatus;
     if(coreStatus === 'Training'
@@ -138,7 +132,7 @@ const mutations = {
       networkID: '',
       networkSettings: null,
       networkMeta: {},
-      networkElementList: [],
+      networkElementList: null,
       //networkContainerList: [],
     };
     const defaultMeta = {
@@ -200,7 +194,7 @@ const mutations = {
     getters.GET_currentNetwork.networkMeta.netMode = value;
   },
   set_openStatistics(state, {getters, value}) {
-    getters.GET_currentNetwork.networkMeta.openStatistics = value;
+    getters.GET_currentNetwork.networkMeta.openStatistics = value; //- TODO openStatistics and openTest обьеденить
   },
   set_openTest(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.openTest = value;
@@ -220,20 +214,14 @@ const mutations = {
     getters.GET_currentNetwork.networkMeta.zoom = value;
   },
   set_charts_doRequest(state, {getters, networkIndex}) {
-    if(networkIndex) {
-      state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++ // TODO add getters
-    }
-    else {
-      getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
-    }
+    networkIndex
+      ? state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++ // TODO add getters
+      : getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
   },
   set_charts_showCharts(state, {getters, networkIndex}) {
-    if(networkIndex) {
-      state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts++ // TODO add getters
-    }
-    else {
-      getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts++
-    }
+    networkIndex
+      ? state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts++ // TODO add getters
+      : getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts++
   },
   set_charts_timerID(state, {getters, timerId}) {
     getters.GET_currentNetwork.networkMeta.chartsRequest.timerID = timerId;
@@ -250,14 +238,17 @@ const mutations = {
     node.layerName = value.setValue
   },
   add_element(state, {getters, event}) {
-    let top = state.dragElement.layerMeta.position.top;
-    let left = state.dragElement.layerMeta.position.left;
+    let newEl = state.dragElement;
+    let top = newEl.layerMeta.position.top;
+    let left = newEl.layerMeta.position.left;
     let zoom = getters.GET_currentNetwork.networkMeta.zoom;
-    state.dragElement.layerMeta.tutorialId = getters.GET_tutorialActiveId
-    
-    state.dragElement.layerMeta.position.top = (event.offsetY - top)/zoom;
-    state.dragElement.layerMeta.position.left = (event.offsetX - left)/zoom;
-    getters.GET_currentNetworkElementList.push(state.dragElement);
+    let elementList = getters.GET_currentNetworkElementList;
+    newEl.layerMeta.tutorialId = getters.GET_tutorialActiveId;
+    newEl.layerMeta.position.top = (event.offsetY - top)/zoom;
+    newEl.layerMeta.position.left = (event.offsetX - left)/zoom;
+
+    if(!elementList) state.workspaceContent[state.currentNetwork].networkElementList = {};
+    Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, state.dragElement.layerId, newEl);
     state.dragElement = {};
   },
   delete_elementConnection(state, {newNet, arrSelectId, dispatch}) {
@@ -308,9 +299,9 @@ const mutations = {
   },
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {getters, settings}) {
-    let indexEl = getters.GET_currentSelectedEl[0].index;
-    getters.GET_currentNetworkElementList[indexEl].layerSettings = settings.set;  //TODO NEED CHECK
-    getters.GET_currentNetworkElementList[indexEl].layerCode = settings.code;     //TODO NEED CHECK
+    let elID = getters.GET_currentSelectedEl[0].layerId;
+    getters.GET_currentNetworkElementList[elID].layerSettings = settings.set;  //TODO NEED CHECK
+    getters.GET_currentNetworkElementList[elID].layerCode = settings.code;     //TODO NEED CHECK
   },
 
 
@@ -373,7 +364,7 @@ const mutations = {
     let newNetElList = getters.GET_currentNetworkElementList.filter((el)=> {
       return !arrElID.includes(el.layerId);
     });
-    console.log(newNetElList);
+
     newNetElList.push(newContainer);
 
     state.workspaceContent[state.currentNetwork].networkElementList = newNetElList;
@@ -386,29 +377,29 @@ const mutations = {
   },
   close_container(state, container) {
     container.containerLayersList.forEach((item)=> {
-      item.el.layerMeta.containerDiff.top = container.layerMeta.position.top - item.el.layerMeta.position.top;
-      item.el.layerMeta.containerDiff.left = container.layerMeta.position.left - item.el.layerMeta.position.left;
-      item.el.layerMeta.displayNone = true;
-      item.el.layerMeta.position = container.layerMeta.position;
+      item.layerMeta.containerDiff.top = container.layerMeta.position.top - item.layerMeta.position.top;
+      item.layerMeta.containerDiff.left = container.layerMeta.position.left - item.layerMeta.position.left;
+      item.layerMeta.displayNone = true;
+      item.layerMeta.position = container.layerMeta.position;
     });
     container.layerMeta.displayNone = false
   },
   open_container(state, container) {
     container.containerLayersList.forEach((item)=> {
-      let diffTop = item.el.layerMeta.containerDiff.top;
-      let diffLeft = item.el.layerMeta.containerDiff.left;
-      let top = item.el.layerMeta.position.top;
-      let left = item.el.layerMeta.position.left;
+      let diffTop = item.layerMeta.containerDiff.top;
+      let diffLeft = item.layerMeta.containerDiff.left;
+      let top = item.layerMeta.position.top;
+      let left = item.layerMeta.position.left;
 
-      item.el.layerMeta.containerDiff = {
+      item.layerMeta.containerDiff = {
         top: 0,
         left: 0
       };
-      item.el.layerMeta.position = {
+      item.layerMeta.position = {
         top: top - diffTop,
         left: left - diffLeft
       };
-      item.el.layerMeta.displayNone = false;
+      item.layerMeta.displayNone = false;
     });
     container.layerMeta.displayNone = true
   },
@@ -427,7 +418,7 @@ const mutations = {
   SET_preArrowStart (state, value) {
     state.preArrow.start = value;
     state.preArrow.stop = value;
-    state.preArrow.show = true
+    state.preArrow.show = true;
     state.preArrow.type = value.type
   },
   SET_preArrowStop (state, value) {
@@ -550,7 +541,7 @@ const actions = {
     let net = getters.GET_currentNetworkElementList;
     let arrSelect = getters.GET_currentSelectedEl;
     let arrSelectId = arrSelect.map((el)=>{
-      return el.el.layerId
+      return el.layerId
     });
     let newNet = net.filter((el)=>{
       return !arrSelectId.includes(el.layerId)

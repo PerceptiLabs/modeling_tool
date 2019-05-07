@@ -12,10 +12,10 @@
               span {{ workspace.networkName }}
 
         sidebar-layers-item(
-          v-for="(item, i) in networkElementList"
-          :key="item.i"
-          :itemData="item"
-          :itemIndex="[i]")
+          v-for="item in networkElementList"
+          :key="item.layerId"
+          :item-data="item"
+          )
 
     .layers_meta.sidebar-content
       .layers_actions

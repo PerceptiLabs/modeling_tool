@@ -7,7 +7,7 @@
       context-menu
     template(slot="settings")
       settings-el(
-      :layer-id="elementData.el.layerId"
+      :layer-id="elementData.layerId"
       )
 
 </template>

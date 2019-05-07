@@ -30,7 +30,6 @@
               ref="networkField"
               :key="i"
               :style="{zoom: scaleNet + '%'}"
-              :netIndex="i"
             )
 
         general-settings(v-if="showGlobalSet")

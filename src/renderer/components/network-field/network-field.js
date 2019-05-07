@@ -49,7 +49,6 @@ export default {
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerContainer
   },
-  props: ['netIndex'],
   data() {
     return {
       settings: 'Data',
@@ -151,16 +150,16 @@ export default {
       const targetEl = ev.target.nodeName === 'svg';
 
       if(isLeftBtn && isEditMode && isOpenNet && targetEl) {
-        this.calcOffset();
-        this.multiSelect.show = true;
-        this.multiSelect.xStart = this.multiSelect.x = this.findXPosition(ev);
-        this.multiSelect.yStart = this.multiSelect.y = this.findYPosition(ev);
+        //this.calcOffset();
+        // this.multiSelect.show = true;
+        // this.multiSelect.xStart = this.multiSelect.x = this.findXPosition(ev);
+        // this.multiSelect.yStart = this.multiSelect.y = this.findYPosition(ev);
         this.$refs.network.addEventListener('mousemove', this.moveMultiSelect);
         this.$refs.network.addEventListener('mouseup', this.mouseUpMultiSelect);
       }
-      if(isLeftBtn && !isEditMode && isOpenNet && targetEl) {
-        this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
-      }
+      // if(isLeftBtn && !isEditMode && isOpenNet && targetEl) {
+      //   this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+      // }
     },
     moveMultiSelect(ev) {
       const xPosition = this.findXPosition(ev);
@@ -180,16 +179,20 @@ export default {
       const xStop = xStart + this.multiSelect.width - this.layerSize;
       const yStop = yStart + this.multiSelect.height - this.layerSize;
 
-      this.networkElementList.forEach((element, index)=> {
+      for (var el in this.networkElementList) {
+        const element = this.networkElementList[el];
         const x = element.layerMeta.position.left;
         const y = element.layerMeta.position.top;
         if(x > xStart
           && x < xStop
           && y > yStart
           && y < yStop ) {
-          this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: [index], setValue: true });
+          this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: element.layerId, setValue: true });
         }
-      });
+      }
+      // this.networkElementList.forEach((element, index)=> {
+      //
+      // });
 
       this.multiSelect = {
         show: false,
@@ -221,7 +224,7 @@ export default {
       };
     },
     calcLayerSize() {
-      if(this.networkElementList.length) {
+      if(this.networkElementList) {
         this.layerSize = this.$refs.layer[0].$el.offsetWidth;
       }
     },
@@ -284,7 +287,7 @@ export default {
       this.$refs.network.removeEventListener('mouseup', this.removeArrowListener)
     },
     createArrowList() {
-      if(!this.networkElementList.length) {
+      if(!this.networkElementList) {
         this.arrowsList = [];
         return;
       }
@@ -294,20 +297,22 @@ export default {
       const listID = {};
       const connectList = [];
       const net = this.networkElementList;
-      findAllID();
+      //findAllID();
       findPerspectiveSide();
       calcCorrectPosition();
 
-      function findAllID() {
-        net.forEach((itemEl, indexEl, arrNet)=> {
-         let itemID = itemEl.layerId;
-         itemEl.calcAnchor = { top: [], right: [], bottom: [], left: []};
-         listID[itemID] = itemEl;
-        });
-      }
+      // function findAllID() {
+      //   net.forEach((itemEl, indexEl, arrNet)=> {
+      //    let itemID = itemEl.layerId;
+      //
+      //    listID[itemID] = itemEl;
+      //   });
+      // }
       function findPerspectiveSide() {
-        net.forEach((itemEl, indexEl, arrNet)=> {
+        for (var item in net) {
+          const itemEl = net[item];
           if(itemEl.connectionOut.length === 0) return;
+          itemEl.calcAnchor = { top: [], right: [], bottom: [], left: []};
           for (var numEl in itemEl.connectionOut) {
             let outEl = itemEl.connectionOut[numEl];
             let newArrow = {
@@ -339,7 +344,7 @@ export default {
             findSideMinLength(newArrow.l1, newArrow.l2, newArrow);
             connectList.push(newArrow);
           }
-        });
+        };
       }
       function findSideMinLength(l1, l2, currentEl) {
         let position = '';

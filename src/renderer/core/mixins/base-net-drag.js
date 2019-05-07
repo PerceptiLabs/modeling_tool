@@ -90,11 +90,11 @@ const baseNetDrag = {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
     },
     isLock() {
-      return this.dataEl.el.layerMeta.isLock
+      return this.dataEl.layerMeta.isLock
     },
     x() {
-      if(this.dataEl.el) {
-        let l = this.dataEl.el.layerMeta.position.left + this.dataEl.el.layerMeta.containerDiff.left;
+      if(this.dataEl) {
+        let l = this.dataEl.layerMeta.position.left + this.dataEl.layerMeta.containerDiff.left;
         this.left = l;
         return l
       }
@@ -104,8 +104,8 @@ const baseNetDrag = {
       }
     },
     y() {
-      if(this.dataEl.el) {
-        let t = this.dataEl.el.layerMeta.position.top + this.dataEl.el.layerMeta.containerDiff.top;
+      if(this.dataEl) {
+        let t = this.dataEl.layerMeta.position.top + this.dataEl.layerMeta.containerDiff.top;
         this.top = t;
         return t
       }
@@ -114,9 +114,9 @@ const baseNetDrag = {
         return 0
       }
     },
-    indexEl() {
-      return (this.dataEl.index >= 0 ) ? this.dataEl.index : null
-    },
+    // indexEl() {
+    //   return (this.dataEl.index >= 0 ) ? this.dataEl.index : null
+    // },
     style() {
       return {
         top: this.top + 'px',
@@ -125,7 +125,7 @@ const baseNetDrag = {
     },
     rect() {
       return {
-        index: this.indexEl,
+        index: this.dataEl.layerId,
         left: this.left,
         top: this.top,
       }

@@ -31,15 +31,15 @@
           /@click="toggleVisible(itemIndex)"
           )
           i.icon.icon-eye
-    .layer-item_child-list(
-      :class="{'open': isOpen}"
+    //-.layer-item_child-list(
+      /:class="{'open': isOpen}"
       v-if="itemData.child"
       )
       sidebar-layers-item(
         v-for="(item, i) in itemData.child"
-        :key="item.i"
-        :itemData="item"
-        :itemIndex="currentNode(i)"
+        /:key="item.i"
+        /:itemData="item"
+        /:itemIndex="currentNode(i)"
         )
 
 
@@ -64,9 +64,9 @@ export default {
         return null
       }
     },
-    itemIndex: {
-      type: Array
-    },
+    // itemIndex: {
+    //   type: Array
+    // },
   },
   mounted() {
 
@@ -82,11 +82,11 @@ export default {
     },
   },
   methods: {
-    currentNode(item) {
-      let childNode = this.itemIndex.slice();
-      childNode.push(item);
-      return childNode
-    },
+    // currentNode(item) {
+    //   let childNode = this.itemIndex.slice();
+    //   childNode.push(item);
+    //   return childNode
+    // },
     toggleOpen() {
       this.isOpen = !this.isOpen
     },
