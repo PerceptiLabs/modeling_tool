@@ -70,7 +70,7 @@ const actions = {
       let openServer;
       switch (process.platform) {
         case 'win32':
-          openServer = spawn('core/appServer/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           break;
         case 'darwin':
           if(process.env.NODE_ENV === 'production') {
