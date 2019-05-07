@@ -1031,6 +1031,10 @@ const actions = {
       }
     }
   },
+  removeAllTutorialElements({dispatch}){
+    dispatch('removeTooltip');
+    dispatch('removeSchematicElement');
+  },
   removeSchematicElement() {
     let schematicElement = document.querySelector('.schematic');
     if(schematicElement) schematicElement.remove()

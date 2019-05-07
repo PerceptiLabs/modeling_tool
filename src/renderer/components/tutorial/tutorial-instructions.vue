@@ -1,7 +1,8 @@
 <template lang="pug">
-.tutorial-instruction-box(v-if="isTutorialMode") 
-    button.btn.btn--dark-blue-rev.green-status(type="button"
-      @click="setShowInstructions(!isShowInstructions)"
+.tutorial-instruction-box
+    button.btn.btn--dark-blue-rev(type="button"
+      @click="switchTutorialMode"
+      :class="{'green-status' : isTutorialMode}"
     )
       span Tutorial Mode
       i.icon.icon-ellipse
@@ -9,7 +10,7 @@
     .tutorial-instruction-box_list-area(v-if="isShowInstructions")
       header.list-area_header
         div
-          button.header_close-instructions.i.icon.icon-appClose(@click="setShowInstructions(false)")
+          button.header_close-instructions.i.icon.icon-appClose(@click="switchTutorialMode")
           //span.header_title title_q
         .header_arrows-top
           i.icon.icon-shevron
@@ -80,17 +81,19 @@ export default {
   },
   methods: {
     ...mapMutations({
-      setActiveStep:        'mod_tutorials/SET_activeStepMainTutorial',
-      setTutorialIstarted:  'mod_tutorials/SET_mainTutorialIsStarted',
-      goToFirstStep:        'mod_tutorials/SET_activeActionMainTutorial',
-      setShowInstructions:  'mod_tutorials/SET_showMainTutorialInstruction',
-      deleteNetwork:        'mod_workspace/DELETE_network'
+      setActiveStep:              'mod_tutorials/SET_activeStepMainTutorial',
+      setTutorialIstarted:        'mod_tutorials/SET_mainTutorialIsStarted',
+      setTutorialMode:            'mod_tutorials/SET_isTutorialMode',
+      goToFirstStep:              'mod_tutorials/SET_activeActionMainTutorial',
+      setShowInstructions:        'mod_tutorials/SET_showMainTutorialInstruction',
+      deleteNetwork:              'mod_workspace/DELETE_network'
     }),
     ...mapActions({
-      pointActivate:        'mod_tutorials/pointActivate',
-      pointsDeactivate:     'mod_tutorials/pointsDeactivate',
-      setNetworkCoreStatus: 'mod_workspace/SET_statusNetworkCoreStatus',
-      addNetwork:           'mod_workspace/ADD_network'
+      pointActivate:              'mod_tutorials/pointActivate',
+      pointsDeactivate:           'mod_tutorials/pointsDeactivate',
+      removeAllTutorialElements:  'mod_tutorials/removeAllTutorialElements',
+      setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
+      addNetwork:                 'mod_workspace/ADD_network',
     }),
     changeStep(way) {
       if(way === 'next') {
@@ -107,6 +110,11 @@ export default {
       this.setNetworkCoreStatus(false);
       this.deleteNetwork(this.currentNetwork);
       this.addNetwork({'ctx': this})
+    },
+    switchTutorialMode() {
+      this.setShowInstructions(!this.isShowInstructions);
+      this.setTutorialMode(!this.isTutorialMode);
+      if(!this.isTutorialMode) this.removeAllTutorialElements();
     }
   }
 }

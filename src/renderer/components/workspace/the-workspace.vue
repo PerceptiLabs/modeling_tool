@@ -32,7 +32,6 @@
               :style="{zoom: scaleNet + '%'}"
               :netIndex="i"
             )
-
         general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")

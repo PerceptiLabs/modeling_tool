@@ -32,6 +32,7 @@
 
 <script>
   import {ipcRenderer, shell} from 'electron'
+  import { mapGetters } from 'vuex';
 
 export default {
   name: "TheMenu",
@@ -41,6 +42,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      isTutorialMode:     'mod_tutorials/getIstutorialMode'
+    }),
     appVersion() {
       return this.$store.state.globalView.appVersion
     },
@@ -208,7 +212,7 @@ export default {
     },
     showTutorial() {
       this.$store.commit('mod_tutorials/SET_showTutorialStoryBoard', true);
-      this.$store.commit('mod_tutorials/SET_isTutorialMode', true);
+      if(!this.isTutorialMode) this.$store.commit('mod_tutorials/SET_isTutorialMode', true);
     }
   }
 }

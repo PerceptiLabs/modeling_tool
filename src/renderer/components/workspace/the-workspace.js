@@ -194,7 +194,6 @@ export default {
 
 
       function openSaveDialog(jsonNet) {
-        console.log(jsonNet)
         const option = {
           title:"Save Network",
           defaultPath: `*/${network.networkName}`,
@@ -232,14 +231,12 @@ export default {
           canvas.style.height = 'auto';
           canvas.style.position = "absolute";
           canvas.style.zIndex = '1';
-          canvas.id = 'canvasScreenShort';
-          console.log(ctx.$refs.networkField[0].$el);
+          canvas.id = 'canvasScreenShot';
           ctx.$refs.networkField[0].$el.appendChild(canvas);
           canvg(canvas, svg);
 
           const options = {
             scale: 1, //180x135
-            removeContainer: true
           };
           return html2canvas(el, options)
             .then((canvas)=> {

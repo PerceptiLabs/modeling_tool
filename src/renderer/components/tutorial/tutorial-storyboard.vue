@@ -91,7 +91,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      mainTutorialActivePoint:        'mod_tutorials/getActivePoint',
+      mainTutorialActivePoint:  'mod_tutorials/getActivePoint',
+      isTutorialMode:           'mod_tutorials/getIstutorialMode',
     }),
     currentStepTutorial() {
       return this.firstTutorial[this.activeStep]
@@ -132,14 +133,13 @@ export default {
       //this.$store.commit('mod_tutorials/SET_firstTimeApp', false)
     },
     startMainTutorial() {
-     
       this.activeStep = 0;
-      this.setActiveStepStoryboard(this.activeStep)
-      this.setShowStoryboard(false)
-      this.setShowInstructionsMainTutorial(true)
-      this.setTutorialIstarted(true)
-      this.setActiveStep('next')
-      let firstActionId = this.mainTutorialActivePoint.actions[0].id
+      this.setActiveStepStoryboard(this.activeStep);
+      this.setShowStoryboard(false);
+      this.setShowInstructionsMainTutorial(true);
+      this.setTutorialIstarted(true);
+      this.setActiveStep('next');
+      let firstActionId = this.mainTutorialActivePoint.actions[0].id;
       this.mainTutorialPointActivate({way: null, validation: firstActionId})
     }
   }
