@@ -25,6 +25,7 @@
             h3 Map
           .info-section_main(
             @wheel.ctrl="scaleScroll($event)"
+            ref="infoSectionName"
             )
             network-field(
               ref="networkField"

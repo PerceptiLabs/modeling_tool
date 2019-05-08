@@ -65,6 +65,7 @@
   .network-field {
     position: relative;
     flex: 1 1 100%;
+    z-index: 1;
   }
   .svg-arrow {
     position: absolute;

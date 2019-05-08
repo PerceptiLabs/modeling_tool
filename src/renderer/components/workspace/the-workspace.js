@@ -227,7 +227,7 @@ export default {
           arrowsCanvas.style.position = "absolute";
           arrowsCanvas.style.zIndex = '0';
           arrowsCanvas.id = 'canvasScreenShort';
-          ctx.$refs.networkField[0].$el.appendChild(arrowsCanvas);
+          ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
           canvg(arrowsCanvas, svg.outerHTML);
           svg.style.display = 'none';
           const options = {

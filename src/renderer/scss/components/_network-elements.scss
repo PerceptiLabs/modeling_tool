@@ -51,7 +51,6 @@ $layers-sidebar-active: (
 	box-sizing: border-box;
 	border-radius: .5rem;
 	background-color: $bg-workspace;
-	z-index: 1;
 	&:hover {
 		will-change: top, left;
 	}
