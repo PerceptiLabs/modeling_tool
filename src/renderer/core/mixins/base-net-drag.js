@@ -125,7 +125,7 @@ const baseNetDrag = {
     },
     rect() {
       return {
-        index: this.dataEl.layerId,
+        id: this.dataEl.layerId,
         left: this.left,
         top: this.top,
       }

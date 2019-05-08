@@ -78,6 +78,9 @@ export default {
       isTraining:           'mod_workspace/GET_networkIsTraining',
       editIsOpen:           'mod_workspace/GET_networkCanEditLayers'
     }),
+    currentId() {
+      return this.dataEl.layerId
+    },
     beForEnd() {
       //console.log('NetBaseElement beForEnd', this.dataEl.el.layerMeta);
       return this.dataEl.layerMeta.OutputDim
@@ -165,8 +168,8 @@ export default {
     },
     setFocusEl(ev) {
       ev.ctrlKey
-        ? this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: [this.dataEl.layerId], setValue: true })
-        : this.$store.dispatch('mod_workspace/SET_elementSelect',      { path: [this.dataEl.layerId], setValue: true })
+        ? this.$store.dispatch('mod_workspace/SET_elementMultiSelect', {id: this.currentId, setValue: true })
+        : this.$store.dispatch('mod_workspace/SET_elementSelect',      {id: this.currentId, setValue: true })
     },
     mousedownOutsideBefore() {
       this.MousedownElementTracking = this.$refs.rootBaseElement;
@@ -181,7 +184,7 @@ export default {
     },
     deselect() {
       this.hideAllWindow();
-      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.layerId], setValue: false });
+      this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: false });
     },
     deleteEl() {
       if(!(this.statisticsIsOpen || this.testingIsOpen)) {

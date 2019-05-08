@@ -2,7 +2,7 @@
   .layer-item-wrap
     .layer-item.js-clickout(
       :class="{'selected': itemData.layerMeta.isSelected}"
-      @click="setSelect(itemIndex, $event)"
+      @click="setSelect($event)"
       )
       .layer-item_left-sidebar()
         button.btn.btn--icon(type="button")
@@ -80,6 +80,9 @@ export default {
     statisticsIsOpen() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
     },
+    currentId() {
+      return this.itemData.layerId
+    }
   },
   methods: {
     // currentNode(item) {
@@ -90,7 +93,7 @@ export default {
     toggleOpen() {
       this.isOpen = !this.isOpen
     },
-    setSelect(path, ev) {
+    setSelect(ev) {
       //console.log(ev);
       if (this.statisticsIsOpen) {
         console.log('TODO add functions');
@@ -99,7 +102,7 @@ export default {
       else {
         this.ClickElementTracking = ev.target.closest('.js-clickout');
         document.addEventListener('click', this.clickOutside);
-        this.$store.dispatch('mod_workspace/SET_elementSelect', {path, setValue: true});
+        this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: true});
       }
     },
     clickOutsideAction() {
@@ -115,10 +118,10 @@ export default {
       this.$store.commit('mod_workspace/SET_elementVisible', path);
     },
     editElName(newName) {
-      this.$store.commit('mod_workspace/SET_elementName', { path: this.itemIndex, setValue: newName });
+      this.$store.commit('mod_workspace/SET_elementName', { id: this.currentId, setValue: newName });
     },
     deselect() {
-      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: this.itemIndex, setValue: false });
+      this.$store.dispatch('mod_workspace/SET_elementSelect', { id: this.currentId, setValue: false });
     },
   }
 }
