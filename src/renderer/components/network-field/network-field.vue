@@ -10,7 +10,6 @@
           markerWidth="9"
           markerHeight="9"
           orient="auto"
-          style="stroke: #22DDE5;fill: #22DDE5"
           )
           polyline(points="0,0 0,4 3.5,2")
       //- arrows list
@@ -79,9 +78,9 @@
     }
   }
   .svg-arrow_line {
-/*    stroke: $col-primary;
+    stroke: $col-primary;
     stroke-width: 3;
-    fill: transparent;*/
+    fill: transparent;
     &:focus {
       opacity: .5;
       stroke-width: 4;
