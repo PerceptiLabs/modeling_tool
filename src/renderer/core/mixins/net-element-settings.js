@@ -17,6 +17,7 @@ const netElementSettings = {
       this.settings = JSON.parse(JSON.stringify(this.layerSettings));
     }
     this.$store.dispatch('mod_api/API_getInputDim');
+    console.log(this.currentEl);
   },
   computed: {
     userMode() {
@@ -40,6 +41,7 @@ const netElementSettings = {
       this.hideAllWindow();
       if(this._name === '<SetTrainNormal>') this.settings.Labels = this.idSelectElement;
       const saveSettings = {
+        'elId': this.currentEl.layerId,
         'code': this.coreCode,
         'set': this.settings
       };

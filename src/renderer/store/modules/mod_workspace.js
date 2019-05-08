@@ -209,7 +209,7 @@ delete_elementConnection(state, {newNet, arrSelectId, dispatch}) {
 
 add_arrow(state, {getters, dispatch, stopID}) {
   let startID = state.startArrowID;
-  if(stopID == startID) return;
+  if(stopID === startID) return;
 
   let pathNet = getters.GET_currentNetworkElementList;
   let indexStart = pathNet.findIndex((element, index, array)=> { return element.layerId == startID;});
@@ -241,22 +241,18 @@ delete_arrow(state,{getters, dispatch, arrow}) {
   dispatch('mod_events/EVENT_calcArray', null, {root: true})
 },
   /*-- NETWORK ELEMENTS SETTINGS --*/
-set_elementSettings(state, {getters, settings}) {
-  console.log('set_elementSettings');
-  let elID = getters.GET_currentSelectedEl[0].layerId;
-  getters.GET_currentNetworkElementList[elID].layerSettings = settings.set;  //TODO NEED CHECK
-  getters.GET_currentNetworkElementList[elID].layerCode = settings.code;     //TODO NEED CHECK
-},
+    set_elementSettings(state, settings) {
+      findElement(settings.elId).layerSettings = settings.set;  //TODO NEED CHECK
+      findElement(settings.elId).layerCode = settings.code;     //TODO NEED CHECK
+    },
 
 
   /*-- NETWORK ELEMENTS META --*/
-  set_elementUnselect(state, {getters}) {
-    console.log('set_elementUnselect');
-    const list = getters.GET_currentNetworkElementList;
-    for(let layer in list) {
-      list[layer].layerMeta.isSelected = false;
-    }
-  },
+    set_elementUnselect(state, {getters}) {
+      for(let layer in getters.GET_currentNetworkElementList) {
+        findElement(layer).layerMeta.isSelected = false;
+      }
+    },
     set_elementSelect(state, value) {
       findElement(value.id).layerMeta.isSelected = value.setValue;
     },
@@ -264,28 +260,24 @@ set_elementSettings(state, {getters, settings}) {
       findElement(value.id).layerMeta.isSelected = value.setValue;
     },
     SET_elementLock(state, id) {
-      console.log('SET_elementLock');
       let elMeta = findElement(id).layerMeta;
       elMeta.isLock = !elMeta.isLock
     },
     SET_elementVisible(state, id) {
-      console.log('SET_elementVisible');
       let elMeta = findElement(id).isInvisible;
       elMeta.isLock = !elMeta.isInvisible
     },
-    change_elementPosition(state, {getters, value}) {
+    change_elementPosition(state, value) {
       let elPosition = findElement(value.id).layerMeta.position;
       elPosition.top = value.top;
       elPosition.left = value.left;
     },
     set_elementInputDim(state, {getters, value}) {
-      console.log('set_elementInputDim');
       for(let element in getters.GET_currentNetworkElementList) {
         findElement(element).layerMeta.InputDim = value[element]
       }
     },
     set_elementOutputDim(state, {getters, value}) {
-      console.log('set_elementOutputDim');
       for(let element in getters.GET_currentNetworkElementList) {
         findElement(element).layerMeta.OutputDim = value[element]
       }
@@ -294,64 +286,64 @@ set_elementSettings(state, {getters, settings}) {
   //---------------
   //  NETWORK CONTAINER
   //---------------
-  add_container(state, {getters, dispatch, newContainer, arrSelect}) {
-    let allTop = [];
-    let allLeft = [];
+add_container(state, {getters, dispatch, newContainer, arrSelect}) {
+  let allTop = [];
+  let allLeft = [];
 
-    let arrElID = arrSelect.map((item)=> {
-      // allOutId = [...allOutId, ...new Set(item.el.connectionOut)];
-      // allInId  = [...allInId,  ...new Set(item.el.connectionIn)];
-      allTop.push(item.el.layerMeta.position.top);
-      allLeft.push(item.el.layerMeta.position.left);
-      return item.el.layerId
-    });
+  let arrElID = arrSelect.map((item)=> {
+    // allOutId = [...allOutId, ...new Set(item.el.connectionOut)];
+    // allInId  = [...allInId,  ...new Set(item.el.connectionIn)];
+    allTop.push(item.el.layerMeta.position.top);
+    allLeft.push(item.el.layerMeta.position.left);
+    return item.el.layerId
+  });
 
-    newContainer.containerLayersList = arrSelect;
-    newContainer.layerMeta.position.top = calcPosition(allTop);
-    newContainer.layerMeta.position.left = calcPosition(allLeft);
+  newContainer.containerLayersList = arrSelect;
+  newContainer.layerMeta.position.top = calcPosition(allTop);
+  newContainer.layerMeta.position.left = calcPosition(allLeft);
 
-    let newNetElList = getters.GET_currentNetworkElementList.filter((el)=> {
-      return !arrElID.includes(el.layerId);
-    });
+  let newNetElList = getters.GET_currentNetworkElementList.filter((el)=> {
+    return !arrElID.includes(el.layerId);
+  });
 
-    newNetElList.push(newContainer);
+  newNetElList.push(newContainer);
 
-    state.workspaceContent[state.currentNetwork].networkElementList = newNetElList;
-    dispatch('CLOSE_container', newContainer);
-    dispatch('mod_events/EVENT_calcArray', null, {root: true});
+  state.workspaceContent[state.currentNetwork].networkElementList = newNetElList;
+  dispatch('CLOSE_container', newContainer);
+  dispatch('mod_events/EVENT_calcArray', null, {root: true});
 
-    function calcPosition(arrIn) {
-      return (Math.max(...arrIn) + Math.min(...arrIn))/2
-    }
-  },
-  close_container(state, container) {
-    container.containerLayersList.forEach((item)=> {
-      item.layerMeta.containerDiff.top = container.layerMeta.position.top - item.layerMeta.position.top;
-      item.layerMeta.containerDiff.left = container.layerMeta.position.left - item.layerMeta.position.left;
-      item.layerMeta.displayNone = true;
-      item.layerMeta.position = container.layerMeta.position;
-    });
-    container.layerMeta.displayNone = false
-  },
-  open_container(state, container) {
-    container.containerLayersList.forEach((item)=> {
-      let diffTop = item.layerMeta.containerDiff.top;
-      let diffLeft = item.layerMeta.containerDiff.left;
-      let top = item.layerMeta.position.top;
-      let left = item.layerMeta.position.left;
+  function calcPosition(arrIn) {
+    return (Math.max(...arrIn) + Math.min(...arrIn))/2
+  }
+},
+close_container(state, container) {
+  container.containerLayersList.forEach((item)=> {
+    item.layerMeta.containerDiff.top = container.layerMeta.position.top - item.layerMeta.position.top;
+    item.layerMeta.containerDiff.left = container.layerMeta.position.left - item.layerMeta.position.left;
+    item.layerMeta.displayNone = true;
+    item.layerMeta.position = container.layerMeta.position;
+  });
+  container.layerMeta.displayNone = false
+},
+open_container(state, container) {
+  container.containerLayersList.forEach((item)=> {
+    let diffTop = item.layerMeta.containerDiff.top;
+    let diffLeft = item.layerMeta.containerDiff.left;
+    let top = item.layerMeta.position.top;
+    let left = item.layerMeta.position.left;
 
-      item.layerMeta.containerDiff = {
-        top: 0,
-        left: 0
-      };
-      item.layerMeta.position = {
-        top: top - diffTop,
-        left: left - diffLeft
-      };
-      item.layerMeta.displayNone = false;
-    });
-    container.layerMeta.displayNone = true
-  },
+    item.layerMeta.containerDiff = {
+      top: 0,
+      left: 0
+    };
+    item.layerMeta.position = {
+      top: top - diffTop,
+      left: left - diffLeft
+    };
+    item.layerMeta.displayNone = false;
+  });
+  container.layerMeta.displayNone = true
+},
   //---------------
   //  OTHER
   //---------------
@@ -368,7 +360,6 @@ set_elementSettings(state, {getters, settings}) {
     state.preArrow.start = value;
     state.preArrow.stop = value;
     state.preArrow.show = true;
-    state.preArrow.type = value.type
   },
   SET_preArrowStop (state, value) {
     state.preArrow.stop = value
@@ -398,9 +389,6 @@ const actions = {
   SET_networkElementList({commit, getters}, value) {
     commit('set_networkElementList', {getters, value})
   },
-  // SET_canTestStatistics({commit, getters}, value) {
-  //   commit('set_networkCanTesting', {getters, value})
-  // },
   SET_netMode({commit, getters}, value) {
     commit('set_netMode', {getters, value})
   },
@@ -480,8 +468,8 @@ const actions = {
   //---------------
   //  NETWORK ELEMENTS
   //---------------
-  SET_elementSettings({commit, getters}, settings) {
-    commit('set_elementSettings', {getters, settings})
+  SET_elementSettings({commit}, settings) {
+    commit('set_elementSettings', settings)
   },
   ADD_element({commit, getters}, event) {
     commit('add_element', {getters, event})
@@ -519,7 +507,7 @@ const actions = {
     commit('set_elementOutputDim', {getters, value})
   },
   CHANGE_elementPosition({commit, getters}, value) {
-    commit('change_elementPosition', {getters, value})
+    commit('change_elementPosition', value)
   },
   //---------------
   //  NETWORK CONTAINER
@@ -564,13 +552,6 @@ export default {
   actions
 }
 
-function createPathNode(path, state) {
-  //console.log('createPathNode');
-  const network = path.slice();
-  const networkId = network.shift();
-  const initValue = state.workspaceContent[state.currentNetwork].networkElementList[networkId];
-  return network.reduce((acc, id) => acc.child[id], initValue);
-}
 function findElement(id) {
   return state.workspaceContent[state.currentNetwork].networkElementList[id];
 }

@@ -1,12 +1,6 @@
 import coreRequest  from "@/core/apiCore.js";
 
 const netElementSettingsData = {
-  props: {
-    layerId: {
-      type: String,
-      default: ''
-    }
-  },
   data() {
     return {
       imgData: null,
@@ -38,7 +32,7 @@ const netElementSettingsData = {
         reciever: this.currentNetworkID,
         action: 'getDataPlot',
         value: {
-          Id: this.layerId,
+          Id: this.currentEl.layerId,
           Type: type,
           Properties: this.settings
         }
@@ -57,7 +51,7 @@ const netElementSettingsData = {
         reciever: this.currentNetworkID,
         action: 'getDataMeta',
         value: {
-          Id: this.layerId,
+          Id: this.currentEl.layerId,
           Type: type,
           Properties: this.settings
         }
@@ -81,7 +75,7 @@ const netElementSettingsData = {
         reciever: this.currentNetworkID,
         action: 'deleteData',
         value: {
-          Id: this.layerId,
+          Id: this.currentEl.layerId,
           Type: type,
           Properties: this.settings
         }
