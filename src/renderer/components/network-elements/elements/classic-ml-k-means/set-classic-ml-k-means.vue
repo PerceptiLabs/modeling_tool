@@ -28,9 +28,9 @@
               .form_row
                 .form_label Method:
                 .form_input
-                  base-radio(groupName="group" valueInput="None" v-model="settings.neurons")
+                  base-radio(group-name="group" value-input="None" v-model="settings.neurons")
                     span Kmeans++
-                  base-radio(groupName="group" valueInput="Sigmoid" v-model="settings.neurons")
+                  base-radio(group-name="group" value-input="Sigmoid" v-model="settings.neurons")
                     span Random
             .settings-layer_section
               .form_row

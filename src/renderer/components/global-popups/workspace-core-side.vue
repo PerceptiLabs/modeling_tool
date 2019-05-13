@@ -29,31 +29,28 @@
 </template>
 
 <script>
-//import mixinSet       from '@/core/mixins/net-element-settings.js';
 import { mapGetters, mapMutations, mapActions } from 'vuex';
 export default {
   name: "SelectCoreSide",
-  //mixins: [mixinSet],
   data() {
     return {
       tabSelected: 0,
       tabs: ['Computer', 'Cloud'],
-      settings: {
-
-      }
+      settings: {}
     }
   },
   computed: {
     ...mapGetters({
-      isTutorialMode:   'mod_tutorials/getIstutorialMode',
+      isTutorialMode: 'mod_tutorials/getIstutorialMode',
     }),
   },
   methods: {
     ...mapMutations({
-      tutorialNextActiveStep:        'mod_tutorials/SET_activeStepMainTutorial'
+      tutorialNextActiveStep: 'mod_tutorials/SET_activeStepMainTutorial',
+      closePopup: 'globalView/HIDE_allGlobalPopups'
     }),
     ...mapActions({
-      pointActivate:    'mod_tutorials/pointActivate'
+      pointActivate: 'mod_tutorials/pointActivate'
     }),
     setTab(i) {
       this.tabSelected = i;
@@ -67,13 +64,6 @@ export default {
         this.tutorialNextActiveStep('next')
       } 
     },
-    closePopup() {
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
-    }
   }
 }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

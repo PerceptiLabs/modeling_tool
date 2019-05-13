@@ -1,7 +1,5 @@
 import coreRequest  from "@/core/apiCore.js";
-import {pathCore}   from "@/core/constants.js";
 
-//const net = require('net');
 const {spawn} = require('child_process');
 
 function prepareNetwork(elementList) {
@@ -37,7 +35,6 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
-  //getStatusTimer: null,
 };
 
 const getters = {
@@ -48,15 +45,6 @@ const mutations = {
   SET_statusLocalCore(state, value) {
     state.statusLocalCore = value
   },
-  // SET_startWatchGetStatus(state, value) {
-  //   state.startWatchGetStatus = value
-  // },
-  // SET_getStatusTimer(state, value) {
-  //   state.getStatusTimer = value
-  // },
-  // RESET_getStatusTimer(state) {
-  //   clearInterval(state.getStatusTimer);
-  // }
 };
 
 const actions = {
@@ -69,34 +57,34 @@ const actions = {
     function startCore() {
       coreIsStarting = true;
       let openServer;
-      switch (process.platform) {
-        case 'win32':
-          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          break;
-        case 'darwin':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
-        case 'linux':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
-      }
-      openServer.on('error', (err) => {
-        console.log(err);
-        coreOffline()
-      });
-      openServer.on('close', (code) => {
-        coreOffline()
-      });
+      // switch (process.platform) {
+      //   case 'win32':
+      //     openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     break;
+      //   case 'darwin':
+      //     if(process.env.NODE_ENV === 'production') {
+      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     else {
+      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     break;
+      //   case 'linux':
+      //     if(process.env.NODE_ENV === 'production') {
+      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     else {
+      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     break;
+      // }
+      // openServer.on('error', (err) => {
+      //   console.log(err);
+      //   coreOffline()
+      // });
+      // openServer.on('close', (code) => {
+      //   coreOffline()
+      // });
       waitOnlineCore()
     }
     function waitOnlineCore() {
@@ -129,7 +117,7 @@ const actions = {
   API_getStatus({rootGetters, dispatch, commit}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.openTest ? 'getTestStatus' :'getStatus',
+      action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
       value: ''
     };
     coreRequest(theData)

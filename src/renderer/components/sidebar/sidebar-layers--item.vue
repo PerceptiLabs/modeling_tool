@@ -17,7 +17,7 @@
           i.icon.icon-folder
       .layer-item_title
         text-editable(
-          :textTitle="itemData.layerName"
+          :text-title="itemData.layerName"
           @changeTitle="editElName"
           )
       .layer-item_right-sidebar
@@ -78,7 +78,7 @@ export default {
   },
   computed: {
     statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
     },
     currentId() {
       return this.itemData.layerId

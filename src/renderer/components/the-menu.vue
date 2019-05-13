@@ -184,9 +184,6 @@ export default {
     },
     addNewNetwork() {
       this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
-      // if(this.$router.history.current.name !== 'app') {
-      //   this.$router.replace({name: 'app'});
-      // }
     },
     openNetwork() {
       this.$store.commit('mod_events/set_openNetwork')

@@ -15,7 +15,7 @@
       //- arrows list
       template(
         v-if="arrowsList.length"
-        v-for="(arrow, i) in arrowsList"
+        v-for="arrow in arrowsList"
       )
         //-:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
         path.svg-arrow_line(
@@ -31,7 +31,6 @@
       line.svg-arrow_line.arrow--hidden(
         v-if="preArrow.show"
         marker-end="url(#svg-arrow_triangle)"
-        :stroke-dasharray="(preArrow.type === 'dash1' ? '7 6' : 'none')"
         :x1="preArrow.start.x"
         :y1="preArrow.start.y"
         :x2="preArrow.stop.x"
@@ -89,7 +88,4 @@
     stroke-width: 1;
     stroke: $col-primary2;
   }
-  /*.arrow--empty-output {*/
-  /*  stroke: #eb8b22;*/
-  /*}*/
 </style>

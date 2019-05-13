@@ -50,25 +50,17 @@ export default {
     hideSidebar() {
       return this.$store.state.globalView.hideSidebar
     },
-    // statusNetworkCore() {
-    //   return this.$store.getters['mod_workspace/GET_networkCoreStatus']
-    // },
     statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
     },
     testIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+      return this.$store.getters['mod_workspace/GET_testIsOpen']
     },
     isTraining() {
       return this.$store.getters['mod_workspace/GET_networkIsTraining']
     },
     showTraining() {
-      // let editLayer = this.$store.getters['mod_workspace/GET_networkCanEditLayers'];
-      // return editLayer ? false : true;
-      if(this.isTraining && this.statisticsIsOpen) {
-        return true
-      }
-      else return false
+      return (this.isTraining && this.statisticsIsOpen) ? true : false
     },
     activeStepStoryboard() {
       return this.$store.state.mod_tutorials.activeStepStoryboard

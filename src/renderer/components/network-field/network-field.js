@@ -55,7 +55,6 @@ export default {
       arrowsList: [],
       resizeTimeout: null,
       layerSize: 60,
-      //smallViewPort: true,
       offset: {
         offsetX: 0,
         offsetY: 0,
@@ -72,20 +71,17 @@ export default {
     }
   },
   mounted() {
-    //this.calcViewPort(true);
-    //window.addEventListener("resize", this.resizeCalc, false);
     this.drawArrows();
   },
   beforeDestroy() {
     this.removeArrowListener();
-    //window.removeEventListener("resize", this.resizeCalc, false);
   },
   computed: {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
       currentNetwork:       'mod_workspace/GET_currentNetwork',
       networkElementList:   'mod_workspace/GET_currentNetworkElementList',
-      canEditLayers:        'mod_workspace/GET_networkCanEditLayers',
+      canEditLayers:        'mod_workspace/GET_networkIsOpen',
     }),
     networkScale() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
@@ -96,17 +92,11 @@ export default {
     hotKeyPressDelete() {
       return this.$store.state.mod_events.globalPressKey.del
     },
-    // networkElementList() {
-    //   return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
-    // },
-    // currentNetwork() {
-    //   return this.$store.state.mod_workspace.currentNetwork
-    // },
     statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
     },
     testingIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+      return this.$store.getters['mod_workspace/GET_testIsOpen']
     },
     eventCalcArrow() {
       return this.$store.state.mod_events.calcArray
@@ -141,7 +131,7 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
+      tutorialPointActivate: 'mod_tutorials/pointActivate',
     }),
     refNetworkMouseDown(ev) {
       const isLeftBtn = ev.buttons === 1;
@@ -150,16 +140,16 @@ export default {
       const targetEl = ev.target.nodeName === 'svg';
 
       if(isLeftBtn && isEditMode && isOpenNet && targetEl) {
-        //this.calcOffset();
-        // this.multiSelect.show = true;
-        // this.multiSelect.xStart = this.multiSelect.x = this.findXPosition(ev);
-        // this.multiSelect.yStart = this.multiSelect.y = this.findYPosition(ev);
+        this.calcOffset();
+        this.multiSelect.show = true;
+        this.multiSelect.xStart = this.multiSelect.x = this.findXPosition(ev);
+        this.multiSelect.yStart = this.multiSelect.y = this.findYPosition(ev);
         this.$refs.network.addEventListener('mousemove', this.moveMultiSelect);
         this.$refs.network.addEventListener('mouseup', this.mouseUpMultiSelect);
       }
-      // if(isLeftBtn && !isEditMode && isOpenNet && targetEl) {
-      //   this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
-      // }
+      if(isLeftBtn && !isEditMode && isOpenNet && targetEl) {
+        this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+      }
     },
     moveMultiSelect(ev) {
       const xPosition = this.findXPosition(ev);
@@ -187,12 +177,9 @@ export default {
           && x < xStop
           && y > yStart
           && y < yStop ) {
-          this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: element.layerId, setValue: true });
+          this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { id: element.layerId, setValue: true });
         }
       }
-      // this.networkElementList.forEach((element, index)=> {
-      //
-      // });
 
       this.multiSelect = {
         show: false,
@@ -293,40 +280,24 @@ export default {
       }
       this.calcSvgSize();
       
-      const size = this.layerSize;
-      const listID = {};
+      const sizeEl = this.layerSize;
       const connectList = [];
       const net = this.networkElementList;
-      //findAllID();
       findPerspectiveSide();
       calcCorrectPosition();
 
-      // function findAllID() {
-      //   net.forEach((itemEl, indexEl, arrNet)=> {
-      //    let itemID = itemEl.layerId;
-      //
-      //    listID[itemID] = itemEl;
-      //   });
-      // }
       function findPerspectiveSide() {
         for (var item in net) {
           const itemEl = net[item];
           if(itemEl.connectionOut.length === 0) return;
-          itemEl.calcAnchor = { top: [], right: [], bottom: [], left: []};
           for (var numEl in itemEl.connectionOut) {
             let outEl = itemEl.connectionOut[numEl];
             let newArrow = {
               l1: itemEl,
-              l2: listID[outEl],
+              l2: net[outEl],
               correctPosition: {
-                start: {
-                  x: 0,
-                  y: 0,
-                },
-                stop: {
-                  x: 0,
-                  y: 0,
-                },
+                start: { x: 0, y: 0 },
+                stop: { x: 0, y: 0 },
               }
             };
             Object.defineProperty(newArrow, 'positionArrow', {
@@ -354,35 +325,6 @@ export default {
         (l1.layerMeta.position.left <= l2.layerMeta.position.left)
           ? position = position + 'r'
           : position = position + 'l';
-
-        function topDot(dot) {
-          return {
-            side: 'top',
-            x: dot.layerMeta.position.left + (size / 2),
-            y: dot.layerMeta.position.top
-          }
-        }
-        function rightDot(dot) {
-          return {
-            side: 'right',
-            x: dot.layerMeta.position.left + size,
-            y: dot.layerMeta.position.top + (size / 2)
-          }
-        }
-        function bottomDot(dot) {
-          return {
-            side: 'bottom',
-            x: dot.layerMeta.position.left + (size / 2),
-            y: dot.layerMeta.position.top + size
-          }
-        }
-        function leftDot(dot) {
-          return {
-            side: 'left',
-            x: dot.layerMeta.position.left,
-            y: dot.layerMeta.position.top + (size / 2)
-          }
-        }
 
         switch(position) {
           case 'tr':
@@ -417,7 +359,6 @@ export default {
             let BRtop = topDot(l2);
             let BRleft = leftDot(l2);
             let BRsides = calcMinLength(BRbottom, BRright, BRtop, BRleft);
-
             currentEl.sideStart = BRsides.start.side;
             currentEl.sideEnd = BRsides.end.side;
             l1.calcAnchor[BRsides.start.side].push(l2);
@@ -437,6 +378,36 @@ export default {
             l2.calcAnchor[BLsides.end.side].push(l1);
             break
         }
+        /* helpers position */
+        function topDot(dot) {
+          return {
+            side: 'top',
+            x: dot.layerMeta.position.left + (sizeEl / 2),
+            y: dot.layerMeta.position.top
+          }
+        }
+        function rightDot(dot) {
+          return {
+            side: 'right',
+            x: dot.layerMeta.position.left + sizeEl,
+            y: dot.layerMeta.position.top + (sizeEl / 2)
+          }
+        }
+        function bottomDot(dot) {
+          return {
+            side: 'bottom',
+            x: dot.layerMeta.position.left + (sizeEl / 2),
+            y: dot.layerMeta.position.top + sizeEl
+          }
+        }
+        function leftDot(dot) {
+          return {
+            side: 'left',
+            x: dot.layerMeta.position.left,
+            y: dot.layerMeta.position.top + (sizeEl / 2)
+          }
+        }
+        /* END helpers position */
       }
       function calcMinLength(d1, d2, d3, d4) {
         const arrows = [
@@ -504,16 +475,16 @@ export default {
       function calcValuePosition(side, lengthSide, indexSide) {
         switch(side) {
           case 'top':
-            return { x: (size / (lengthSide + 1)) * (indexSide + 1), y: 0 };
+            return { x: (sizeEl / (lengthSide + 1)) * (indexSide + 1), y: 0 };
             break;
           case 'right':
-            return { x: size, y: (size / (lengthSide + 1)) * (indexSide + 1) };
+            return { x: sizeEl, y: (sizeEl / (lengthSide + 1)) * (indexSide + 1) };
             break;
           case 'bottom':
-            return { x: (size / (lengthSide + 1)) * (indexSide + 1), y: size };
+            return { x: (sizeEl / (lengthSide + 1)) * (indexSide + 1), y: sizeEl };
             break;
           case 'left':
-            return { x: 0, y: (size / (lengthSide + 1)) * (indexSide + 1) };
+            return { x: 0, y: (sizeEl / (lengthSide + 1)) * (indexSide + 1) };
             break;
         }
       }

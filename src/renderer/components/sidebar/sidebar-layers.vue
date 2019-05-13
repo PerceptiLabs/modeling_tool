@@ -44,14 +44,6 @@ export default {
   components: {
     SidebarLayersItem
   },
-  mounted() {
-
-  },
-  data() {
-    return {
-
-    }
-  },
   computed: {
     workspace() {
       return this.$store.state.mod_workspace.workspaceContent[this.currentNetwork]
@@ -66,10 +58,8 @@ export default {
   methods: {
     deleteElement() {
       let currentSelect =  this.networkElementList.findIndex(function(item) {
-        //console.log(item);
         return item.meta.isSelected === true;
       });
-      //console.log(currentSelect);
     }
   }
 }

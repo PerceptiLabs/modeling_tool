@@ -17,7 +17,7 @@
             .form_row
               base-select(
                 v-model="settings.accessProperties.Atari"
-                :selectOptions="selectOptions"
+                :select-options="selectOptions"
                 )
             .form_row
               chart-switch(
@@ -42,7 +42,7 @@
               chart-switch(
                 key="2"
                 :disable-header="true"
-                :chartData="imgData"
+                :chart-data="imgData"
               )
 
     .settings-layer_foot

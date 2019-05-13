@@ -6,7 +6,7 @@
         h3 Comments
         sup.comments-title_label New
 
-      base-checkbox(labelPosition="left") Show on the workspace
+      base-checkbox(label-position="left") Show on the workspace
     .comments_body
       div
         ul.comments-list

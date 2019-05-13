@@ -28,16 +28,10 @@ const baseNetDrag = {
     },
 
     bodyDown(ev) {
-      //event.stopPropagation();
-
-      //document.documentElement.addEventListener('mousedown', this.deselect);//base-net-functional.js
-      //base-net-functional.js
-
       if (this.contextIsOpen || this.settingsIsOpen) return;
 
       this.$parent.$parent.$el.addEventListener('mousemove', this.move);
       this.$parent.$parent.$el.addEventListener('mouseup', this.up);
-      //this.$parent.$parent.$el.addEventListener('mouseleave', this.up);
 
       this.$parent.$parent.$el.addEventListener('touchmove', this.move, true);
       this.$parent.$parent.$el.addEventListener('touchend touchcancel', this.up, true);
@@ -75,7 +69,6 @@ const baseNetDrag = {
       this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
       this.$parent.$parent.createArrowList();
 
-      //document.documentElement.removeEventListener('mousedown', this.deselect);//base-net-functional.js
       this.$parent.$parent.$el.removeEventListener('mousemove', this.move);
       this.$parent.$parent.$el.removeEventListener('mouseup', this.up);
 
@@ -114,9 +107,6 @@ const baseNetDrag = {
         return 0
       }
     },
-    // indexEl() {
-    //   return (this.dataEl.index >= 0 ) ? this.dataEl.index : null
-    // },
     style() {
       return {
         top: this.top + 'px',

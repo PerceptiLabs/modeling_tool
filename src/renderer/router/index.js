@@ -6,7 +6,7 @@ import Router from 'vue-router'
 // export const PageRegister = () => import(/* webpackChunkName: 'page-register' */ '@/pages/register/register.vue');
 // export const PagePolicy   = () => import(/* webpackChunkName: 'page-policy' */ '@/pages/policy/policy.vue');
 // export const PageProjects = () => import(/* webpackChunkName: 'page-projects' */ '@/pages/projects/projects.vue');
-import PageQuantum  from '@/pages/app/quantum.vue';
+import PageApp  from '@/pages/app/app.vue';
 import PageLogin    from '@/pages/login/login.vue';
 import PageRegister from '@/pages/register/register.vue';
 import PagePolicy   from '@/pages/policy/policy.vue';
@@ -17,7 +17,7 @@ Vue.use(Router);
 export default new Router({
   routes: [
     {path: '/',             name: 'login',    component: PageLogin},
-    {path: '/app',          name: 'app',      component: PageQuantum},
+    {path: '/app',          name: 'app',      component: PageApp},
     {path: '/register',     name: 'register', component: PageRegister},
     {path: '/policy-page',  name: 'policy',   component: PagePolicy},
     {path: '/projects',     name: 'projects', component: PageProjects },

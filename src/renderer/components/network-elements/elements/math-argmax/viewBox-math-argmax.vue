@@ -2,8 +2,8 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-      chartLabel="Accuracy during one epoch"
-      :chartData="chartData.MathArgmax"
+        chart-label="Accuracy during one epoch"
+        :chart-data="chartData.MathArgmax"
       )
 </template>
 
@@ -21,7 +21,3 @@
     },
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

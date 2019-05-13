@@ -1,12 +1,4 @@
 const baseNetPaintArrows = {
-  data() {
-    return {
-
-    }
-  },
-  mounted() {
-
-  },
   computed: {
     startDrawArrow() {
       return this.$store.state.mod_workspace.startArrowID

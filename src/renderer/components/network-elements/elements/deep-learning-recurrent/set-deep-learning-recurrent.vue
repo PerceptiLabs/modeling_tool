@@ -23,13 +23,13 @@
               .form_label Recurrent alternative:
               .form_input
                 div
-                  base-radio(groupName="group" valueInput="LSTM" v-model="settings.Version")
+                  base-radio(group-name="group" value-input="LSTM" v-model="settings.Version")
                     span LSTM
                 div
-                  base-radio(groupName="group" valueInput="GRU" v-model="settings.Version")
+                  base-radio(group-name="group" value-input="GRU" v-model="settings.Version")
                     span GRU
                 div
-                  base-radio(groupName="group" valueInput="RNN" v-model="settings.Version")
+                  base-radio(group-name="group" value-input="RNN" v-model="settings.Version")
                     span RNN
                 //div
                   button.btn.btn--primary(type="button") Custom

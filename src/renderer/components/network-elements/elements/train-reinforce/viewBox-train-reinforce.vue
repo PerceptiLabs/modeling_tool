@@ -15,43 +15,43 @@
         .statistics-box_col(v-if="!testIsOpen")
           chart-picture(
             key="2"
-            chartLabel=""
-            :chartData="chartData.Prediction.Input"
+            chart-label=""
+            :chart-data="chartData.Prediction.Input"
           )
         .statistics-box_col
           chart-base(
             key="3"
-            chartLabel=""
-            :chartData="chartData.Prediction.Prediction"
-            :customColor="colorList"
+            chart-label=""
+            :chart-data="chartData.Prediction.Prediction"
+            :custom-color="colorList"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Reward'")
       chart-base(
         key="4"
-        chartLabel=""
-        :chartData="chartData.Reward.Current"
+        chart-label=""
+        :chart-data="chartData.Reward.Current"
       )
       chart-base(
         key="5"
-        chartLabel=""
-        :chartData="chartData.Reward.Total"
+        chart-label=""
+        :chart-data="chartData.Reward.Total"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-base(
         key="6"
-        chartLabel=""
-        :chartData="chartData.Loss.Current"
+        chart-label=""
+        :chart-data="chartData.Loss.Current"
       )
       chart-base(
         key="7"
-        chartLabel=""
-        :chartData="chartData.Loss.Total"
+        chart-label=""
+        :chart-data="chartData.Loss.Total"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Steps'")
       chart-base(
         key="8"
-        chartLabel=""
-        :chartData="chartData.Steps.Steps"
+        chart-label=""
+        :chart-data="chartData.Steps.Steps"
       )
 
 </template>
@@ -122,7 +122,3 @@
     },
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

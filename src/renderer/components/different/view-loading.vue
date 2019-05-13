@@ -4,11 +4,6 @@
 <script>
 export default {
   name: 'ViewLoading',
-  data(){
-    return {
-
-    }
-  },
   computed: {
     isLoading() {
       return this.$store.state.mod_login.showLoader

@@ -15,12 +15,12 @@
     .clouds-component_body.settings-layer_section(v-if="selectedCloud == 0")
       ul.cloud_account-list
         li
-          base-radio(groupName="cloud")
+          base-radio(group-name="cloud")
             i.icon.icon-cloud
             span  Account: PerceptiLabs net
           button.btn.btn--link(type="button") Log out
         li
-          base-radio(groupName="cloud")
+          base-radio(group-name="cloud")
             i.icon.icon-cloud
             span  Account: PerceptiLabs net
           button.btn.btn--link(type="button") Log out

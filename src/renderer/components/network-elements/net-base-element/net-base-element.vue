@@ -18,7 +18,6 @@
 
     .net-element_window.net-element_context-menu(v-if="contextIsOpen")
       slot(name="context")
-    //p {{dataEl.el.layerId}}
 
 </template>
 
@@ -76,7 +75,7 @@ export default {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
       isTraining:           'mod_workspace/GET_networkIsTraining',
-      editIsOpen:           'mod_workspace/GET_networkCanEditLayers'
+      editIsOpen:           'mod_workspace/GET_networkIsOpen'
     }),
     currentId() {
       return this.dataEl.layerId
@@ -92,13 +91,7 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
-    },
-    testingIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
-    },
-    hotKeyPressDelete() {
-      return this.$store.state.mod_events.globalPressKey.del
+      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
     },
     classEl() {
       return {
@@ -119,9 +112,6 @@ export default {
         ? this.mousedownOutsideBefore()
         : null
     },
-    hotKeyPressDelete() {
-      this.deleteEl()
-    }
   },
   methods: {
     ...mapActions({
@@ -141,7 +131,7 @@ export default {
     switchClickEvent(ev) {
       if (this.isLock) return;
 
-      else if (this.statisticsIsOpen || this.testingIsOpen) {
+      else if (!this.editIsOpen) {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
     },
@@ -176,7 +166,7 @@ export default {
       document.addEventListener('mousedown', this.mousedownOutside);
     },
     mousedownOutsideAction() {
-      if (!(this.statisticsIsOpen || this.testingIsOpen)) this.deselect()
+      if (this.editIsOpen) this.deselect()
     },
     hideAllWindow() {
       this.settingsIsOpen = false;
@@ -187,7 +177,7 @@ export default {
       this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: false });
     },
     deleteEl() {
-      if(!(this.statisticsIsOpen || this.testingIsOpen)) {
+      if(this.editIsOpen) {
         this.$store.dispatch('mod_workspace/DELETE_element');
         this.$store.dispatch('mod_api/API_getOutputDim');
       }

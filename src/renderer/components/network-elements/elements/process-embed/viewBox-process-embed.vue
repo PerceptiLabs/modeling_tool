@@ -2,8 +2,8 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-      chartLabel="Accuracy during one epoch"
-      :chartData="optionLine1"
+        chart-label="Accuracy during one epoch"
+        :chart-data="optionLine1"
       )
 </template>
 
@@ -20,7 +20,3 @@
     },
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

@@ -3,11 +3,11 @@
     .statistics-box_main.statistics-box_col
       .statistics-box_row
         chart-base(
-        :chartData="optionBar"
+          :chart-data="optionBar"
         )
         chart-base(
-        chartLabel="Reward during one epoch"
-        :chartData="optionLine1"
+          chart-label="Reward during one epoch"
+          :chart-data="optionLine1"
         )
 </template>
 
@@ -29,7 +29,3 @@
     },
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

@@ -18,56 +18,56 @@
         .statistics-box_col
           chart-switch(
             key="1"
-            chartLabel="Input"
-            :chartData="chartData.Prediction.Input"
+            chart-label="Input"
+            :chart-data="chartData.Prediction.Input"
             )
         .statistics-box_col
           chart-pie(
             key="8"
-            chartLabel="Accuracy"
-            :chartData="chartData.Prediction.Accuracy"
-            :customColor="colorPie"
+            chart-label="Accuracy"
+            :chart-data="chartData.Prediction.Accuracy"
+            :custom-color="colorPie"
           )
       .statistics-box_row
         .statistics-box_col
           chart-base#tutorial_prediction-chart(
             key="2"
-            chartLabel="Prediction vs Ground truth"
-            :chartData="chartData.Prediction.PvG"
-            :customColor="colorList"
+            chart-label="Prediction vs Ground truth"
+            :chart-data="chartData.Prediction.PvG"
+            :custom-color="colorList"
           )
         .statistics-box_col(v-if="!testIsOpen")
           chart-base(
             key="3"
-            chartLabel="Batch Average Prediction vs Ground truth"
-            :chartData="chartData.Prediction.AveragePvG"
-            :customColor="colorList"
+            chart-label="Batch Average Prediction vs Ground truth"
+            :chart-data="chartData.Prediction.AveragePvG"
+            :custom-color="colorList"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
       chart-base(
         key="4"
-        chartLabel="Accuracy during one epoch"
-        :chartData="chartData.Accuracy.Current"
-        :customColor="colorListAccuracy"
+        chart-label="Accuracy during one epoch"
+        :chart-data="chartData.Accuracy.Current"
+        :custom-color="colorListAccuracy"
       )
       chart-base(
         key="5"
-        chartLabel="Accuracy over all epochs"
-        :chartData="chartData.Accuracy.Total"
-        :customColor="colorListAccuracy"
+        chart-label="Accuracy over all epochs"
+        :chart-data="chartData.Accuracy.Total"
+        :custom-color="colorListAccuracy"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-base(
         key="6"
-        chartLabel="Loss during one epoch"
-        :chartData="chartData.Loss.Current"
-        :customColor="colorListAccuracy"
+        chart-label="Loss during one epoch"
+        :chart-data="chartData.Loss.Current"
+        :custom-color="colorListAccuracy"
       )
       chart-base(
         key="7"
-        chartLabel="Loss over all epochs"
-        :chartData="chartData.Loss.Total"
-        :customColor="colorListAccuracy"
+        chart-label="Loss over all epochs"
+        :chart-data="chartData.Loss.Total"
+        :custom-color="colorListAccuracy"
       )
     //.statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
       chart-base(
@@ -212,7 +212,3 @@
     },
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

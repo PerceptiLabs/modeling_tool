@@ -46,8 +46,6 @@ const chartsMixin = {
       chartModelBuffer: null,
       fullView: false,
       wWorker: null,
-
-      //startCalDrow: 0
     }
   },
   computed: {
@@ -55,7 +53,7 @@ const chartsMixin = {
       return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
     },
     headerOff() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest || this.disableHeader;
+      return this.$store.getters['mod_workspace/GET_testIsOpen'] || this.disableHeader;
     },
     doRequest() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
@@ -91,9 +89,6 @@ const chartsMixin = {
     chartData(newData) {
       this.startCalDrow = new Date();
       this.sendDataToWWorker(newData)
-    },
-    chartModel(data) {
-      //console.log(this);
     }
   },
   methods: {
@@ -102,16 +97,11 @@ const chartsMixin = {
       this.$nextTick(() => this.$refs.chart.resize());
     },
     drawChart(ev) {
-      //console.log('drawChart ', ev);
       if(this.isNeedWait) this.chartModelBuffer = ev.data;
       else {
         this.$refs.chart.hideLoading();
         this.chartModel = ev.data;
       }
-
-      // let stopCalDrow = new Date();
-      // let drawDelay = stopCalDrow - this.startCalDrow;
-      // console.log(`calc plots delay`, `${drawDelay}ms`);
     },
     chartResize() {
       this.$refs.chart.resize()

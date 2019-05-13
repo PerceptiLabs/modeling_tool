@@ -56,7 +56,6 @@ const netElementSettingsData = {
           Properties: this.settings
         }
       };
-      //console.log(theData);
       return this.coreRequest(theData)
         .then((data) => {
           if (data) {

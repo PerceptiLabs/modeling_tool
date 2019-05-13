@@ -17,7 +17,6 @@ const netElementSettings = {
       this.settings = JSON.parse(JSON.stringify(this.layerSettings));
     }
     this.$store.dispatch('mod_api/API_getInputDim');
-    console.log(this.currentEl);
   },
   computed: {
     userMode() {

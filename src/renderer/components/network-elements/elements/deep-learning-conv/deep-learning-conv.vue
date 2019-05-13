@@ -1,7 +1,5 @@
 <template lang="pug">
-  base-net-el(
-    :dataEl="elementData"
-  )
+  base-net-el(:data-el="elementData")
     view-el
     template(slot="context")
       context-menu

@@ -15,7 +15,6 @@
 </template>
 
 <script>
-  import mixinSet       from '@/core/mixins/net-element-settings.js';
   export default {
     name: "TheInfoPopup",
     props: {
@@ -35,7 +34,3 @@
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

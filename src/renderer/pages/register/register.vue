@@ -67,7 +67,7 @@
 
 <script>
   import {requestCloudApi}  from '@/core/apiCloud.js'
-  import ViewLoading        from '@/components/loading/view-loading.vue'
+  import ViewLoading        from '@/components/different/view-loading.vue'
 export default {
   name: 'PageRegister',
   components: {

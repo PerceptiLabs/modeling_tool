@@ -2,16 +2,7 @@
   .settings-layer
     .settings-layer_section
       .form_holder
-        //label.form_label Cost function:
         code-hq( v-model="theCode")
-        //textarea(v-model="theCode" readonly="true")
-      //-.form_holder(v-if="trainingMode")
-        label.form_label Optimizer:
-        textarea
-      //-.form_holder(v-if="trainingMode")
-        label.form_label Learning Rate:
-        textarea
-
 
 </template>
 
@@ -33,7 +24,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

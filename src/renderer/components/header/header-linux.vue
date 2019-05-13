@@ -10,7 +10,6 @@
 </template>
 
 <script>
-  import {ipcRenderer} from 'electron'
   import TheMenu from '@/components/the-menu.vue'
 export default {
   name: "HeaderLinux",

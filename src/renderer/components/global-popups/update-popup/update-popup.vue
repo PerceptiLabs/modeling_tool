@@ -6,7 +6,7 @@
       span.header_update-status(v-if="updateStatus === 'done'") Done
     popup-loading(
       v-if="updateStatus === 'downloading'"
-      :progressStatus="progress"
+      :progress-status="progress"
       @canceledUpdate="cancelUpdate"
       @backgroundMode="background"
     )
@@ -16,8 +16,8 @@
       @closedPopup="cancelUpdate"
       @restartApp="restartApp"
       :message="mainUpdateMessage"
-      :aboutUpdateList="updateList"
-      :updatePopupInfo="updateInfo"
+      :about-update-list="updateList"
+      :update-popup-info="updateInfo"
     )
 </template>
 
@@ -64,13 +64,12 @@ export default {
     }
   },
   methods: {
-    startUpdate(status) {
+    startUpdate() {
       this.$store.commit('globalView/SET_updateStatus', 'downloading')
       this.$emit('startedUpdate');
-      //this.startFakeLoading();
     },
-    cancelUpdate(cencel) {
-      this.updateStatus = cencel.status;
+    cancelUpdate(cancel) {
+      this.updateStatus = cancel.status;
       this.progress = 0;
       this.$emit('closedPopup');
       clearInterval(this.fakeTimer);
@@ -84,16 +83,6 @@ export default {
     restartApp() {
       this.$emit('restartApp')
     },
-    // startFakeLoading() {
-    //   this.fakeTimer = setInterval( () => {
-    //     this.progress = this.progress + 17;
-    //     if (this.progress >= 100) {
-    //       this.progress = 100;
-    //       clearInterval(this.fakeTimer);
-    //       this.updateStatus = 'done';
-    //     }
-    //   }, 700)
-    // }
   }
 }
 </script>

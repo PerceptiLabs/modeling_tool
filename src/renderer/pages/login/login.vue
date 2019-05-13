@@ -33,12 +33,10 @@
 
 <script>
   import {requestCloudApi} from '@/core/apiCloud.js'
-  import ViewLoading from '@/components/loading/view-loading.vue'
+  import ViewLoading from '@/components/different/view-loading.vue'
 export default {
   name: 'PageLogin',
-  components: {
-    ViewLoading
-  },
+  components: { ViewLoading },
   mounted() {
     if(this.userIsLogin) {
       this.loginUser()
@@ -46,8 +44,6 @@ export default {
   },
   data() {
     return {
-      // userEmail: 'test@test.com',
-      // userPass: '123123',
       userEmail: '',
       userPass: '',
       saveToken: true
@@ -108,7 +104,3 @@ export default {
   }
 }
 </script>
-
-<style lang="scss" scoped>
-  @import '../../scss/base';
-</style>

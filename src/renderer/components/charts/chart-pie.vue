@@ -36,16 +36,13 @@
       return {
         chartSpinner,
         defaultModel: {
-          //tooltip: {},
           toolbox: {
             feature: {
               saveAsImage: {
                 title: 'Save'
               },
-              //magicType: {type: ['line', 'bar']},
             }
           },
-
           series: []
         },
       }

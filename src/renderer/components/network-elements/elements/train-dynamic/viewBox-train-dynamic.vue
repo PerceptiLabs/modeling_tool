@@ -14,57 +14,57 @@
       .statistics-box_row
         .statistics-box_col
           chart-base(
-          :chartData="optionLine1"
+            :chart-data="optionLine1"
           )
           chart-base(
-          chartLabel="Accuracy over all epochs"
-          :chartData="optionLine1"
+            chart-label="Accuracy over all epochs"
+            :chart-data="optionLine1"
           )
           chart-base(
-          :chartData="optionLine1"
+            :chart-data="optionLine1"
           )
         .statistics-box_col
           chart-heatmap(
-          :chartData="optionHeat"
+            :chart-data="optionHeat"
           )
         .statistics-box_col
           chart-d3(
-          :chartData="option3d"
+            :chart-data="option3d"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
       chart-base(
-      chartLabel="Accuracy during one epoch"
-      :chartData="optionLine1"
+        chart-label="Accuracy during one epoch"
+        :chart-data="optionLine1"
       )
       chart-base(
-      chartLabel="Accuracy over all epochs"
-      :chartData="optionLine1"
+        chart-label="Accuracy over all epochs"
+        :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-base(
-      chartLabel="Loss during one epoch"
-      :chartData="optionLine1"
+        chart-label="Loss during one epoch"
+        :chart-data="optionLine1"
       )
       chart-base(
-      chartLabel="Loss over all epochs"
-      :chartData="optionLine1"
+        chart-label="Loss over all epochs"
+        :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
       chart-base(
-      chartLabel="F1 during one epoch"
-      :chartData="optionLine1"
+        chart-label="F1 during one epoch"
+        :chart-data="optionLine1"
       )
       chart-base(
-      chartLabel="F1 over all epochs"
-      :chartData="optionLine1"
+        chart-label="F1 over all epochs"
+        :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Precision & Recall'")
       chart-base(
-      :chartData="optionLine1"
+        :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'ROC'")
       chart-base(
-      :chartData="optionLine1"
+        :chart-data="optionLine1"
       )
 </template>
 
@@ -94,7 +94,3 @@
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

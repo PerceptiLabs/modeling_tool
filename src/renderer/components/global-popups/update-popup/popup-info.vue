@@ -27,7 +27,7 @@
 export default {
   name: 'PopupInfo',
   props: {
-  time: {
+    time: {
       type: String,                       // updates time
       default: ''
     },
@@ -51,9 +51,9 @@ export default {
     }
   },
   computed: {
-      updateStatus() {
-        return this.$store.state.globalView.updateStatus
-      }
+    updateStatus() {
+      return this.$store.state.globalView.updateStatus
+    }
   },
   methods: {
     startUpdate() {

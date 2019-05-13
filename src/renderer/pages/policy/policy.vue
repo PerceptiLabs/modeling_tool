@@ -1,7 +1,7 @@
 <template lang="pug">
   main.page_login
     .login_logo
-      img(src="./../../../../static/img/percepti-labs-logo.svg" alt="percepti labs logo")
+      img(src="./../../../../static/img/percepti-labs-logo.svg" alt="perceptilabs logo")
     .page_policy
       router-link(:to="{name: 'register'}").btn.btn--dark-blue-rev Back
       article.policy_main

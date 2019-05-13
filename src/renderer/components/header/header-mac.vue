@@ -8,7 +8,6 @@
 </template>
 
 <script>
-  import {ipcRenderer} from 'electron'
   import TheMenu from '@/components/the-menu.vue'
 export default {
   name: "HeaderMac",
@@ -91,6 +90,4 @@ export default {
     flex-grow: 1;
     text-align: center;
   }
-
-
 </style>

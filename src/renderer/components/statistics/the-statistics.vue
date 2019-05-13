@@ -5,7 +5,7 @@
     .info-section_main(v-if="elData !== null")
       component(
         :is="elData.componentName"
-        :elementData="elData.viewBox"
+        :element-data="elData.viewBox"
       )
 </template>
 
@@ -36,11 +36,6 @@ export default {
       }
     }
   },
-  data() {
-    return {
-
-    }
-  },
   mounted() {
     this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
   },
@@ -51,11 +46,9 @@ export default {
   },
   computed: {
     ...mapGetters({
-      activePoint:   'mod_tutorials/getActivePoint'
+      activePoint:   'mod_tutorials/getActivePoint',
+      activePoint:   'mod_workspace/GET_testIsOpen'
     }),
-    testIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
-    }
   }
 }
 </script>

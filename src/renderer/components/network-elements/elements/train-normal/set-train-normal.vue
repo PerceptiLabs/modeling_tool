@@ -19,19 +19,19 @@
               .form_input
                 base-select(
                   v-model="idSelectElement"
-                  :selectOptions="inputLayers"
+                  :select-options="inputLayers"
                   )
           .settings-layer_section
             .form_row
               .form_label Cost function:
               #tutorial_cost-function.tutorial-relative.form_input
-                base-radio(groupName="group" valueInput="Cross_entropy" v-model="settings.Loss")
+                base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
                   span Cross-Entropy
-                base-radio(groupName="group" valueInput="Quadratic" v-model="settings.Loss")
+                base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
                   span Quadratic
-                base-radio(groupName="group" valueInput="W_cross_entropy" v-model="settings.Loss")
+                base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
                   span Weighted Cross-Entropy
-                base-radio(groupName="group" valueInput="Dice" v-model="settings.Loss")
+                base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
                   span DICE
                   //-Cross-Entropy
             .form_row(v-if="settings.Loss === 'W_cross_entropy'")
@@ -42,13 +42,13 @@
             .form_row
               .form_label Optimizer:
               .form_input
-                base-radio(groupName="group1" valueInput="ADAM" v-model="settings.Optimizer")
+                base-radio(group-name="group1" value-input="ADAM" v-model="settings.Optimizer")
                   span ADAM
-                base-radio(groupName="group1" valueInput="SGD" v-model="settings.Optimizer")
+                base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
                   span SGD
-                base-radio(groupName="group1" valueInput="Momentum" v-model="settings.Optimizer")
+                base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
                   span Momentum
-                base-radio(groupName="group1" valueInput="RMSprop" v-model="settings.Optimizer")
+                base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
                   span RMSprop
             template(v-if="settings.Optimizer === 'ADAM'")
               .form_row

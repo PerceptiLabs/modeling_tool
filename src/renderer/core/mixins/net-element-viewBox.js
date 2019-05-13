@@ -9,15 +9,9 @@ const viewBoxMixin = {
     return {
       chartData: {},
       saveParams: {},
-
       startRequest: 0
     }
   },
-  // created() {
-  //   // if(this.chartDataDefault){
-  //   //   this.chartData = {...this.chartDataDefault}
-  //   // }
-  // },
   mounted() {
     this.getData();
   },
@@ -40,7 +34,7 @@ const viewBoxMixin = {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     testIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+      return this.$store.getters['mod_workspace/GET_testIsOpen']
     },
     doRequest() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
@@ -63,7 +57,6 @@ const viewBoxMixin = {
       this.getData();
     },
     setTabAction() {
-      //this.chartData = {...this.chartDataDefault};
       this.getData();
     },
     chartRequest(layerId, layerType, view) {
@@ -72,11 +65,9 @@ const viewBoxMixin = {
       if(layerId === undefined) {
         return
       }
-      //this.$store.commit('mod_events/set_charts_requestCounterAdd');
       let theData = {
         reciever: this.currentNetworkID,
-        //action: 'getLayerStatistics',
-        action: this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+        action: this.$store.getters['mod_workspace/GET_testIsOpen']
           ? 'getTestingStatistics'
           : 'getTrainingStatistics',
         value: {
@@ -96,11 +87,9 @@ const viewBoxMixin = {
           }
           else this.chartData = data;
 
-          //console.log(data);
           let stopRequest = new Date();
           let answerDelay = stopRequest - this.startRequest;
           this.$store.dispatch('mod_workspace/CHECK_requestInterval', answerDelay);
-          // console.log(`request -> before show ${this._name}`, `${answerDelay}ms`);
         })
         .catch((err)=> {
           console.log('answer err');

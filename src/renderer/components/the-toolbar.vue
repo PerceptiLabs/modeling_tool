@@ -101,7 +101,6 @@
 </template>
 
 <script>
-//import configApp    from '@/core/globalSettings.js'
 import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 import TutorialInstructions                   from '@/components/tutorial/tutorial-instructions.vue'
 import { mapGetters, mapActions, mapMutations } from 'vuex';
@@ -178,7 +177,7 @@ export default {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     statisticsIsOpen() {
-      return this.currentNetMeta.openStatistics
+      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
     },
     tutorialRunButtonActive() {
       return this.$store.state.mod_tutorials.runButtonsActive
@@ -320,9 +319,6 @@ export default {
       position: relative;
     }
     &:hover {
-      /*> .btn {*/
-        /*//background-color: $bg-workspace-2;*/
-      /*}*/
       .toolbar_list-arrow {
         opacity: 1;
         max-height: 7.5rem;

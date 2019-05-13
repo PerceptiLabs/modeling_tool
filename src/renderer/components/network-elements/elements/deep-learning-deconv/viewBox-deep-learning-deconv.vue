@@ -16,28 +16,28 @@
         .statistics-box_col(v-if="!testIsOpen")
           chart-heatmap(
             key="1"
-            chartLabel="Weights"
-            :chartData="chartData['Weights&Output'].Weights"
+            chart-label="Weights"
+            :chart-data="chartData['Weights&Output'].Weights"
           )
         .statistics-box_col
           chart-picture(
             key="2"
-            chartLabel="Output"
-            :chartData="chartData['Weights&Output'].Output"
+            chart-label="Output"
+            :chart-data="chartData['Weights&Output'].Output"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bias'")
       .statistics-box_row
         chart-base(
           key="3"
-          chartLabel="Bias"
-          :chartData="chartData.Bias.Bias"
+          chart-label="Bias"
+          :chart-data="chartData.Bias.Bias"
         )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
       chart-base(
         key="4"
-        chartLabel="Bias"
-        :chartData="chartData.Gradients.Gradients"
-        :customColor="colorList"
+        chart-label="Bias"
+        :chart-data="chartData.Gradients.Gradients"
+        :custom-color="colorList"
       )
 </template>
 
@@ -89,7 +89,3 @@
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

@@ -17,13 +17,13 @@
             .form_row
               .form_label Dimension:
               .form_input
-                base-radio(groupName="group" valueInput="Automatic" v-model="settings.Deconv_dim")
+                base-radio(group-name="group" value-input="Automatic" v-model="settings.Deconv_dim")
                   span Automatic
-                base-radio(groupName="group" valueInput="1D" v-model="settings.Deconv_dim")
+                base-radio(group-name="group" value-input="1D" v-model="settings.Deconv_dim")
                   span 1D
-                base-radio(groupName="group" valueInput="2D" v-model="settings.Deconv_dim")
+                base-radio(group-name="group" value-input="2D" v-model="settings.Deconv_dim")
                   span 2D
-                base-radio(groupName="group" valueInput="3D" v-model="settings.Deconv_dim")
+                base-radio(group-name="group" value-input="3D" v-model="settings.Deconv_dim")
                   span 3D
           .settings-layer_section
             .form_row
@@ -40,29 +40,29 @@
             .form_row
               .form_label Zero-padding:
               .form_input
-                base-radio(groupName="group3" valueInput="'SAME'"  v-model="settings.Padding")
+                base-radio(group-name="group3" value-input="'SAME'"  v-model="settings.Padding")
                   span SAME
-                base-radio(groupName="group3" valueInput="'VALID'"  v-model="settings.Padding")
+                base-radio(group-name="group3" value-input="'VALID'"  v-model="settings.Padding")
                   span VALID
           .settings-layer_section
             .form_row
               .form_label Activation function:
               .form_input
-                base-radio(groupName="group1" valueInput="None"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
                   span None
-                base-radio(groupName="group1" valueInput="Sigmoid"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="Sigmoid"  v-model="settings.Activation_function")
                   span Sigmoid
-                base-radio(groupName="group1" valueInput="ReLU"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="ReLU"  v-model="settings.Activation_function")
                   span ReLU
-                base-radio(groupName="group1" valueInput="Tanh"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
                   span Tanh
           .settings-layer_section
             .form_row
               .form_label Dropout:
               .form_input
-                base-radio(groupName="group5" :valueInput="false"  v-model="settings.Dropout")
+                base-radio(group-name="group5" :value-input="false"  v-model="settings.Dropout")
                   span None
-                base-radio(groupName="group5" :valueInput="true"  v-model="settings.Dropout")
+                base-radio(group-name="group5" :value-input="true"  v-model="settings.Dropout")
                   span Sigmoid
 
       .popup_body(:class="{'active': tabSelected == 1}")

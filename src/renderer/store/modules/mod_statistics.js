@@ -1,5 +1,5 @@
 const namespaced = true;
-
+//TODO разобраться что это
 const state = {
   selectedElArr: {
     statistics: null,

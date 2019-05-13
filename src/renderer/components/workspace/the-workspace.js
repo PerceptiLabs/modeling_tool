@@ -61,13 +61,13 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
     },
     statisticsElSelected() {
       return this.$store.state.mod_statistics.selectedElArr
     },
     testIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+      return this.$store.getters['mod_workspace/GET_testIsOpen']
     },
     statusNetworkCore() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
@@ -155,29 +155,27 @@ export default {
       }
       else this.scaleNet = this.scaleNet + 5
     },
-    resize(newRect, i) {
-      //console.log(newRect);
-      //console.log(i);
-      // this.network[i].meta.top = newRect.top;
-      // this.network[i].meta.left = newRect.left;
-    },
-    onActivated(e) {
-      //console.log(e)
-    },
+    // resize(newRect, i) {
+    //   //console.log(newRect);
+    //   //console.log(i);
+    //   // this.network[i].meta.top = newRect.top;
+    //   // this.network[i].meta.left = newRect.left;
+    // },
+    // onActivated(e) {
+    //   //console.log(e)
+    // },
     editNetName(newName) {
       this.$store.dispatch('mod_workspace/SET_networkName', newName);
     },
     openStatistics(i) {
       this.setTabNetwork(i);
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
-      if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
       this.$store.dispatch('mod_events/EVENT_chartResize');
     },
     openTest(i) {
       this.setTabNetwork(i);
       this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
-      this.$store.dispatch('mod_workspace/SET_openStatistics', false );
       this.$store.dispatch('mod_workspace/SET_openTest', true);
       this.$store.dispatch('mod_events/EVENT_chartResize');
     },

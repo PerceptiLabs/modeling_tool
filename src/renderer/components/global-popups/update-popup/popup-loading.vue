@@ -30,11 +30,6 @@ export default {
       default: false
     }
   },
-  data() {
-    return {
-      
-    }
-  },
   computed: {
     updateStatus() {
       return this.$store.state.globalView.updateStatus

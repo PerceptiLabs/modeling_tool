@@ -12,11 +12,6 @@
         //-button.btn.btn--link.icon.icon-player-prev(type="button" @click="postTestMove('previousStep')")
         button#tutorial_play-test-button.tutorial-relative.btn.btn--link.icon.icon-player-play(type="button" @click="postTestStart()")
         button.btn.btn--link.icon.icon-player-next(type="button" @click="postTestMove('nextStep')")
-    //-.info-section_main(v-if="elData !== null")
-      component(
-      //  :is="elData.componentName"
-      //  :elementData="elData.viewBox"
-      //)
 </template>
 
 <script>
@@ -30,12 +25,6 @@ export default {
         this.$nextTick(()=> {
           this.$store.dispatch('mod_workspace/EVENT_onceDoRequest')
         })
-        // this.$nextTick(()=> {
-        //   if(this.progressStore === 0) {
-        //     this.postTestMove('nextStep')
-        //   }
-        //   else this.$store.dispatch('mod_workspace/EVENT_onceDoRequest')
-        // })
       })
   },
   computed: {
@@ -72,7 +61,6 @@ export default {
 
   .testing-head {
     border-top: 1px solid $color-10;
-    //background: $bg-toolbar;
   }
   .testing-head_progress-bar-box {
     width: 100%;
