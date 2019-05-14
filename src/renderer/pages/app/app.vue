@@ -59,7 +59,7 @@
     computed: {
       ...mapGetters({
         activeAction:   'mod_tutorials/getActiveAction',
-        selectedElList: 'mod_workspace/GET_currentSelectedEl',
+        //selectedElList: 'mod_workspace/GET_currentSelectedEl',
         currentNetwork: 'mod_workspace/GET_currentNetwork'
       }),
       workspaceContent() {

@@ -1,3 +1,5 @@
+import {mapGetters} from "vuex";
+
 const netElementSettings = {
   inject: ['hideAllWindow'],
   props: {
@@ -13,17 +15,14 @@ const netElementSettings = {
     }
   },
   mounted() {
-    if(typeof(this.layerSettings) !== 'string') {
-      this.settings = JSON.parse(JSON.stringify(this.layerSettings));
+    if(typeof(this.currentEl.layerSettings) !== 'string') {
+      this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
     }
     this.$store.dispatch('mod_api/API_getInputDim');
   },
   computed: {
     userMode() {
       return this.$store.state.globalView.userMode
-    },
-    layerSettings() {
-      return this.$store.getters['mod_workspace/GET_currentSelectedEl'][0].layerSettings;
     },
     codeInputDim() {
       return this.currentEl.layerMeta.InputDim

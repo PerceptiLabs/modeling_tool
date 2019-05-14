@@ -25,9 +25,9 @@ const chartsMixin = {
     if(this.isNotPie) {this.createWWorker();}
     this.sendDataToWWorker();
     if(this.isNotPicture) {
-      this.$refs.chart.showLoading(this.chartSpinner);
+      //this.$refs.chart.showLoading(this.chartSpinner);
       this.$refs.chart.resize();
-      window.addEventListener("resize", this.chartResize, false);
+      //window.addEventListener("resize", this.chartResize, false);
     }
   },
   beforeDestroy() {
@@ -37,7 +37,7 @@ const chartsMixin = {
     }
     if(this.isNotPicture && this.isNotPie) {
       this.$refs.chart.dispose();
-      window.removeEventListener("resize", this.chartResize, false);
+      //window.removeEventListener("resize", this.chartResize, false);
     }
   },
   data() {
@@ -79,13 +79,13 @@ const chartsMixin = {
         this.chartModel = this.chartModelBuffer;
       }
     },
-    '$store.state.mod_events.chartResize': {
-      handler() {
-        if(this.isNotPicture) {
-          this.$nextTick(()=> this.$refs.chart.resize())
-        }
-      }
-    },
+    // '$store.state.mod_events.chartResize': {
+    //   handler() {
+    //     if(this.isNotPicture) {
+    //       this.$nextTick(()=> this.chartResize())
+    //     }
+    //   }
+    // },
     chartData(newData) {
       this.startCalDrow = new Date();
       this.sendDataToWWorker(newData)
@@ -94,7 +94,7 @@ const chartsMixin = {
   methods: {
     toggleFullView() {
       this.fullView = !this.fullView;
-      this.$nextTick(() => this.$refs.chart.resize());
+      //this.$nextTick(() => this.$refs.chart.resize());
     },
     drawChart(ev) {
       if(this.isNeedWait) this.chartModelBuffer = ev.data;
@@ -104,6 +104,7 @@ const chartsMixin = {
       }
     },
     chartResize() {
+      console.log(this.chartLabel);
       this.$refs.chart.resize()
     }
   }

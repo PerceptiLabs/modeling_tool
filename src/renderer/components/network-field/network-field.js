@@ -82,6 +82,8 @@ export default {
       currentNetwork:       'mod_workspace/GET_currentNetwork',
       networkElementList:   'mod_workspace/GET_currentNetworkElementList',
       canEditLayers:        'mod_workspace/GET_networkIsOpen',
+      statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
+      testingIsOpen:        'mod_workspace/GET_testIsOpen',
     }),
     networkScale() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
@@ -91,12 +93,6 @@ export default {
     },
     hotKeyPressDelete() {
       return this.$store.state.mod_events.globalPressKey.del
-    },
-    statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
-    },
-    testingIsOpen() {
-      return this.$store.getters['mod_workspace/GET_testIsOpen']
     },
     eventCalcArrow() {
       return this.$store.state.mod_events.calcArray
@@ -121,9 +117,6 @@ export default {
     eventCalcArrow() {
       this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
       this.createArrowList()
-    },
-    smallViewPort() {
-      this.drawArrows();
     },
     hotKeyPressDelete() {
       this.deleteArrow()
@@ -210,11 +203,11 @@ export default {
        offsetY: this.$refs.network.parentElement.offsetTop
       };
     },
-    calcLayerSize() {
-      if(this.networkElementList) {
-        this.layerSize = this.$refs.layer[0].$el.offsetWidth;
-      }
-    },
+    // calcLayerSize() {
+    //   if(this.networkElementList) {
+    //     this.layerSize = this.$refs.layer[0].$el.offsetWidth;
+    //   }
+    // },
     // calcViewPort(needCalcArray) {
     //   window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
     //   if(!this.smallViewPort) this.layerSize = 72;
@@ -237,7 +230,8 @@ export default {
     //Arrow methods
     //--------------
     deleteArrow() {
-      if(this.statisticsIsOpen || this.testingIsOpen || !this.currentFocusedArrow) return;
+      if(!this.canEditLayers || !this.currentFocusedArrow) return;
+
       let focusArray = this.currentFocusedArrow;
       let connection = {
         startID: focusArray.dataset.startid,
@@ -253,7 +247,7 @@ export default {
     },
     drawArrows() {
       this.calcOffset();
-      this.calcLayerSize();
+      //this.calcLayerSize();
       this.createArrowList();
     },
     addArrowListener() {
@@ -278,18 +272,24 @@ export default {
         this.arrowsList = [];
         return;
       }
+
       this.calcSvgSize();
-      
       const sizeEl = this.layerSize;
       const connectList = [];
       const net = this.networkElementList;
+
       findPerspectiveSide();
       calcCorrectPosition();
+      this.arrowsList = connectList;
 
       function findPerspectiveSide() {
-        for (var item in net) {
+        for (let elId in net) {
+          net[elId].calcAnchor = { top: [], right: [], bottom: [], left: []};
+        };
+
+        for (let item in net) {
           const itemEl = net[item];
-          if(itemEl.connectionOut.length === 0) return;
+          if(itemEl.connectionOut.length === 0) continue;
           for (var numEl in itemEl.connectionOut) {
             let outEl = itemEl.connectionOut[numEl];
             let newArrow = {
@@ -507,7 +507,6 @@ export default {
           : stopY;
         return `M${startX},${startY}C${pointStartX},${pointStartY} ${pointStopX},${pointStopY} ${stopX},${stopY}`
       }
-      this.arrowsList = connectList;
     },
     findXPosition(event) {
       return (event.pageX - this.offset.offsetX) / this.networkScale

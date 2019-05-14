@@ -47,7 +47,7 @@ export default {
   computed: {
     ...mapGetters({
       activePoint:   'mod_tutorials/getActivePoint',
-      activePoint:   'mod_workspace/GET_testIsOpen'
+      testIsOpen:   'mod_workspace/GET_testIsOpen'
     }),
   }
 }

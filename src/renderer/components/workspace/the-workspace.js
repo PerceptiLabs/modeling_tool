@@ -2,7 +2,7 @@ import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
 import {remote}     from 'electron'
 import fs           from 'fs';
-
+import {mapActions, mapGetters} from 'vuex';
 
 import TextEditable     from '@/components/base/text-editable.vue'
 import NetworkField     from '@/components/network-field/network-field.vue'
@@ -12,7 +12,6 @@ import SelectCoreSide   from "@/components/global-popups/workspace-core-side";
 import TheStatistics    from "@/components/statistics/the-statistics.vue";
 import TheTesting       from "@/components/statistics/the-testing.vue";
 import TheViewBox       from "@/components/statistics/the-view-box";
-import { mapActions } from 'vuex';
 
 export default {
   name: 'WorkspaceContent',
@@ -28,6 +27,15 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      currentNetwork:     'mod_workspace/GET_currentNetwork',
+      currentSelectedEl:  'mod_workspace/GET_currentSelectedEl',
+      isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      tutorialActiveStep: 'mod_tutorials/getActiveStep',
+      testIsOpen:         'mod_workspace/GET_testIsOpen',
+      statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
+      statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
+    }),
     scaleNet: {
       get: function () {
         let zoom = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom * 100;
@@ -61,33 +69,12 @@ export default {
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
-    statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
-    },
     statisticsElSelected() {
       return this.$store.state.mod_statistics.selectedElArr
-    },
-    testIsOpen() {
-      return this.$store.getters['mod_workspace/GET_testIsOpen']
-    },
-    statusNetworkCore() {
-      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     currentNet() {
       this.scale = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
-    },
-    currentNetwork() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork']
-    },
-    currentSelectedEl() {
-      return this.$store.getters['mod_workspace/GET_currentSelectedEl']
-    },
-    isTutorialMode() {
-      return this.$store.getters['mod_tutorials/getIstutorialMode']
-    },
-    tutorialActiveStep() {
-      return this.$store.getters['mod_tutorials/getActiveStep']
     },
     networkClass() {
       this.calcScaleMap();
@@ -110,9 +97,9 @@ export default {
         this.saveNetwork();
       }
     },
-    currentSelectedEl(newStatus, oldStatus) {
+    currentSelectedEl(newStatus) {
       if(newStatus.length > 0 && this.isTutorialMode && this.tutorialActiveStep === 'training') {
-        this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: newStatus[0].el.layerMeta.tutorialId});
+        this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: newStatus[0].layerMeta.tutorialId});
       } 
     }
   },
@@ -130,7 +117,9 @@ export default {
       })
     },
     scaleScroll(e) {
-      e.wheelDelta > 0 ? this.incScale() : this.decScale();
+      e.wheelDelta > 0
+        ? this.incScale()
+        : this.decScale();
     },
     deleteTabNetwork(index) {
       this.$store.commit('mod_workspace/DELETE_network', index)
@@ -145,15 +134,11 @@ export default {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
     },
     decScale() {
-      if (this.scaleNet <= 30) {
-        this.scaleNet = 30
-      }
+      if (this.scaleNet <= 30) this.scaleNet = 30;
       else this.scaleNet = this.scaleNet - 5
     },
     incScale () {
-      if (this.scaleNet > 95) {
-        this.scaleNet = 100
-      }
+      if (this.scaleNet > 95) this.scaleNet = 100;
       else this.scaleNet = this.scaleNet + 5
     },
     // resize(newRect, i) {
@@ -170,13 +155,13 @@ export default {
     },
     openStatistics(i) {
       this.setTabNetwork(i);
-      this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
+      this.$store.dispatch('mod_statistics/STAT_defaultSelect');
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
       this.$store.dispatch('mod_events/EVENT_chartResize');
     },
     openTest(i) {
       this.setTabNetwork(i);
-      this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
+      this.$store.dispatch('mod_statistics/STAT_defaultSelect');
       this.$store.dispatch('mod_workspace/SET_openTest', true);
       this.$store.dispatch('mod_events/EVENT_chartResize');
     },
@@ -220,21 +205,21 @@ export default {
       function doScreenShot(ctx) {
         return new Promise((resolve, reject)=> {
           const workspace = ctx.$refs.workspaceNet;
-          const svg = workspace.querySelector('.svg-arrow');
-          const arrowsCanvas = document.createElement('canvas');
-          arrowsCanvas.style.position = "absolute";
-          arrowsCanvas.style.zIndex = '0';
-          ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
-          canvg(arrowsCanvas, svg.outerHTML);
-          svg.style.display = 'none';
+          // const svg = workspace.querySelector('.svg-arrow');
+          // const arrowsCanvas = document.createElement('canvas');
+          // arrowsCanvas.style.position = 'absolute';
+          // arrowsCanvas.style.zIndex = '0';
+          // ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
+          // canvg(arrowsCanvas, svg.outerHTML);
+          // svg.style.display = 'none';
           const options = {
             scale: 1, //180x135
           };
           return html2canvas(workspace, options)
             .then((canvas)=> {
               resolve(canvas.toDataURL());
-              svg.style.display = 'block';
-              arrowsCanvas.remove();
+              // svg.style.display = 'block';
+              // arrowsCanvas.remove();
             });
         })
       }

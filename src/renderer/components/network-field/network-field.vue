@@ -17,7 +17,6 @@
         v-if="arrowsList.length"
         v-for="arrow in arrowsList"
       )
-        //-:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
         path.svg-arrow_line(
           :class="{'arrow--empty-output': arrow.l1.layerMeta.OutputDim.length === 0, 'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
           :data-startid="arrow.l1.layerId"

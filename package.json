@@ -71,6 +71,7 @@
   },
   "dependencies": {
     "axios": "^0.18.0",
+    "canvg": "^1.5.3",
     "codemirror": "^5.44.0",
     "echarts-gl": "^1.1.1",
     "electron-updater": "^4.0.6",

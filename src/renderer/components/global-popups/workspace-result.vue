@@ -41,7 +41,7 @@ export default {
       this.closePopup();
       this.$store.dispatch('mod_workspace/SET_statusNetworkCoreStatusProgressClear');
       this.$store.dispatch('mod_workspace/SET_elementUnselect');
-      this.$store.dispatch('mod_statistics/STAT_defaultSelect', null);
+      this.$store.dispatch('mod_statistics/STAT_defaultSelect');
       this.$store.dispatch('mod_workspace/SET_openTest', true);
       this.$store.dispatch('mod_events/EVENT_chartResize');
       this.tutorialPointActivate({way: 'next', validation: 'tutorial_run-test-button'})

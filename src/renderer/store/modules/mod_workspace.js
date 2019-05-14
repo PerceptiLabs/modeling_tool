@@ -68,12 +68,12 @@ const getters = {
   // },
   GET_statisticsIsOpen(state, getters) {
     if(getters.GET_networkIsNotEmpty) {
-      return getters.GET_currentNetwork.networkMeta.openStatistics ? true : false;
+      return getters.GET_currentNetwork.networkMeta.openStatistics;
     }
   },
   GET_testIsOpen(state, getters) {
     if(getters.GET_networkIsNotEmpty) {
-      return getters.GET_currentNetwork.networkMeta.openTest ? true : false;
+      return getters.GET_currentNetwork.networkMeta.openTest;
     }
   },
   GET_networkIsOpen(state, getters) {
@@ -97,7 +97,7 @@ const mutations = {
   set_networkName(state, {getters, value}) {
     getters.GET_currentNetwork.networkName = value
   },
-  add_network (state, {net, ctx}) {
+  add_network (state, {network, ctx}) {
     let newNetwork = {};
     const defaultNetwork = {
       networkName: 'New_Network',
@@ -122,10 +122,9 @@ const mutations = {
         showCharts: 0
       }
     };
-
-    net === undefined
+    network === undefined
       ? newNetwork = defaultNetwork
-      : newNetwork = net;
+      : newNetwork = network;
     newNetwork.networkMeta = defaultMeta;
     newNetwork.networkID = 'net' + generateID();
 
@@ -137,7 +136,8 @@ const mutations = {
   },
   DELETE_network(state, index) {
     if(state.currentNetwork >= index) {
-      state.currentNetwork = state.currentNetwork - 1
+      const index = state.currentNetwork - 1;
+      state.currentNetwork = index < 0 ? 0 : index
     }
     state.workspaceContent.splice(index, 1);
   },
@@ -216,24 +216,27 @@ set_charts_showCharts(state, {getters, networkIndex}) {
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
     state.dragElement = {};
   },
-delete_element(state, {getters, dispatch}) {
-  let net = getters.GET_currentNetworkElementList;
-  let arrSelect = getters.GET_currentSelectedEl;
-  arrSelect.forEach((el)=>{
-    delete net[el.layerId]
-  });
-  for(let el in net) {
-    net[el].connectionOut = net[el].connectionOut.filter((connect)=>{
-      return !arrSelect.includes(connect)
+  delete_element(state, {getters, dispatch}) {
+    let arrSelect = getters.GET_currentSelectedEl;
+    if(!arrSelect.length) return;
+    let arrSelectID = [];
+    let net = getters.GET_currentNetworkElementList;
+    arrSelect.forEach((el)=>{
+      delete net[el.layerId];
+      arrSelectID.push(el.layerId);
     });
-    net[el].connectionIn  = net[el].connectionIn.filter((connect)=>{
-      return !arrSelect.includes(connect)
-    });
-  }
-  //state.workspaceContent[state.currentNetwork].networkElementList = newNet;
-  dispatch('mod_events/EVENT_calcArray', null, {root: true})
-},
-
+    for(let el in net) {
+      net[el].connectionOut = net[el].connectionOut.filter((connect)=>{
+        return !arrSelectID.includes(connect)
+      });
+      net[el].connectionIn  = net[el].connectionIn.filter((connect)=>{
+        return !arrSelectID.includes(connect)
+      });
+    }
+    //state.workspaceContent[state.currentNetwork].networkElementList = net;
+    dispatch('mod_events/EVENT_calcArray', null, {root: true});
+    dispatch('mod_api/API_getOutputDim', null, {root: true});
+  },
   add_arrow(state, {dispatch, stopID}) {
     let startID = state.startArrowID;
     if(stopID === startID) return;
@@ -249,17 +252,17 @@ delete_element(state, {getters, dispatch}) {
     state.startArrowID = null;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
-delete_arrow(state,{dispatch, arrow}) {
-  let startID = arrow.startID;
-  let stopID = arrow.stopID;
+  delete_arrow(state,{dispatch, arrow}) {
+    let startID = arrow.startID;
+    let stopID = arrow.stopID;
 
-  let newConnectionOut = currentElement(startID).connectionOut.filter((item)=> item !== stopID);
-  let newConnectionIn = currentElement(stopID).connectionIn.filter((item)=> item !== startID);
+    let newConnectionOut = currentElement(startID).connectionOut.filter((item)=> item !== stopID);
+    let newConnectionIn = currentElement(stopID).connectionIn.filter((item)=> item !== startID);
 
-  currentElement(startID).connectionOut = newConnectionOut;
-  currentElement(stopID).connectionIn = newConnectionIn;
-  dispatch('mod_events/EVENT_calcArray', null, {root: true})
-},
+    currentElement(startID).connectionOut = newConnectionOut;
+    currentElement(stopID).connectionIn = newConnectionIn;
+    dispatch('mod_events/EVENT_calcArray', null, {root: true})
+  },
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, settings) {
@@ -590,6 +593,6 @@ function createNetElement(event) {
     componentName: event.target.dataset.component,
     connectionOut: [],
     connectionIn: [],
-    calcAnchor: { top: [], right: [], bottom: [], left: []}
+    //calcAnchor: { top: [], right: [], bottom: [], left: []}
   };
 }

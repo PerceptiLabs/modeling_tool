@@ -101,7 +101,7 @@
 </template>
 
 <script>
-import {trainingElements, deepLearnElements}  from '@/core/constants.js'
+//import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 import TutorialInstructions                   from '@/components/tutorial/tutorial-instructions.vue'
 import { mapGetters, mapActions, mapMutations } from 'vuex';
 
@@ -214,28 +214,28 @@ export default {
       this.$store.dispatch('mod_api/API_skipValidTraining');
     },
     validateNetwork() {
-      let net = this.currentElList;
-      let typeData = net.find((element)=> element.layerType === 'Data');
-      if(typeData === undefined) {
-        this.$store.commit('globalView/GP_infoPopup', 'Data element missing');
-        return false
-      }
-
-      let typeTraining = net.find((element)=> element.layerType === 'Training');
-      if(typeTraining === undefined) {
-        this.$store.commit('globalView/GP_infoPopup', 'Classic Machine Learning or Training element missing');
-        return false
-      }
-
-      let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
-      let deepLearnIncluded = true;
-      if (trainingIncluded) {
-        deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
-      }
-      if(deepLearnIncluded === undefined) {
-        this.$store.commit('globalView/GP_infoPopup', 'If you use the Training elements, you must use the Deep Learn elements');
-        return false
-      }
+      // let net = this.currentElList;
+      // let typeData = net.find((element)=> element.layerType === 'Data');
+      // if(typeData === undefined) {
+      //   this.$store.commit('globalView/GP_infoPopup', 'Data element missing');
+      //   return false
+      // }
+      //
+      // let typeTraining = net.find((element)=> element.layerType === 'Training');
+      // if(typeTraining === undefined) {
+      //   this.$store.commit('globalView/GP_infoPopup', 'Classic Machine Learning or Training element missing');
+      //   return false
+      // }
+      //
+      // let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
+      // let deepLearnIncluded = true;
+      // if (trainingIncluded) {
+      //   deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
+      // }
+      // if(deepLearnIncluded === undefined) {
+      //   this.$store.commit('globalView/GP_infoPopup', 'If you use the Training elements, you must use the Deep Learn elements');
+      //   return false
+      // }
 
       return true;
     },

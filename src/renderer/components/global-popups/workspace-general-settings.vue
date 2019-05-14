@@ -16,7 +16,7 @@
                   input(type="number"
                     v-model="settings.Data_partition.Training"
                     name="Training"
-                    ref="trainingIinput"
+                    ref="trainingInput"
                     v-validate="'between:0.001,100|required'"
                     )
                   span &nbsp; %
@@ -117,15 +117,18 @@ import { mapGetters, mapActions } from 'vuex';
 export default {
   name: "GeneralSettings",
   mounted() {
-    if(this.networkSettings !== null) {
-      this.settings = JSON.parse(JSON.stringify(this.networkSettings));
+    const net = this.networkElementList;
+    const settings = this.networkSettings;
+    if(settings !== null) {
+      this.settings = JSON.parse(JSON.stringify(settings));
     }
-    console.log('проверить работу!!!');
-    this.networkElementList.forEach((el)=>{
+
+    for(let elID in net) {
+      const el = net[elID];
       if(el.componentName === 'DataData') this.settingsData = true;
       if(el.componentName === 'DataEnvironment') this.settingsEnvironment = true;
-    });
-    if(this.isTutorialMode) this.$nextTick(()=>{this.$refs.trainingIinput.focus()})
+    }
+    if(this.isTutorialMode) this.$nextTick(()=>{this.$refs.trainingInput.focus()})
   },
   data() {
     return {

@@ -9,15 +9,15 @@
           @click="selectTab(i)"
         ) {{tab}}
 
-    .sidebar_tab(v-show="tabSelected === 0")
+    .sidebar_tab(v-if="tabSelected === 0")
       sidebar-layers
       sidebar-training(v-if="showTraining")
       sidebar-share
-    .sidebar_tab(v-show="tabSelected === 1")
+    .sidebar_tab(v-if="tabSelected === 1")
       include ./sidebar/blocks/Save.pug
-    .sidebar_tab(v-show="tabSelected === 2")
+    .sidebar_tab(v-if="tabSelected === 2")
       import-data
-    .sidebar_tab(v-show="tabSelected === 3")
+    .sidebar_tab(v-if="tabSelected === 3")
       export-data
 
 </template>
@@ -29,6 +29,7 @@
   import SidebarTraining  from "@/components/sidebar/sidebar-training";
   import ExportData       from "@/components/different/export-data.vue";
   import ImportData       from "@/components/different/import-data.vue";
+  import { mapGetters } from 'vuex';
 
 export default {
   name: 'TheSidebar',
@@ -47,17 +48,13 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+      statisticsIsOpen: 'mod_workspace/GET_statisticsIsOpen',
+      testIsOpen:       'mod_workspace/GET_testIsOpen',
+      isTraining:       'mod_workspace/GET_networkIsTraining',
+    }),
     hideSidebar() {
       return this.$store.state.globalView.hideSidebar
-    },
-    statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
-    },
-    testIsOpen() {
-      return this.$store.getters['mod_workspace/GET_testIsOpen']
-    },
-    isTraining() {
-      return this.$store.getters['mod_workspace/GET_networkIsTraining']
     },
     showTraining() {
       return (this.isTraining && this.statisticsIsOpen) ? true : false

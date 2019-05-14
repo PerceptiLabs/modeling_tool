@@ -23,7 +23,7 @@
       .layer-item_right-sidebar
         button.btn.btn--icon.visible-icon.visible-icon--lock( type="button"
           :class="{'invisible-icon': !itemData.layerMeta.isLock}"
-          @click="toggleLock(itemIndex)"
+          @click="toggleLock()"
         )
           i.icon.icon-lock
         //-button.btn.btn--icon.visible-icon.visible-icon--visiblity( type="button"
@@ -64,9 +64,6 @@ export default {
         return null
       }
     },
-    // itemIndex: {
-    //   type: Array
-    // },
   },
   mounted() {
 
@@ -110,12 +107,12 @@ export default {
         this.deselect()
       }
     },
-    toggleLock(path) {
-      this.$store.commit('mod_workspace/SET_elementLock', path);
+    toggleLock() {
+      this.$store.commit('mod_workspace/SET_elementLock', this.itemData.layerId);
       this.deselect();
     },
-    toggleVisible(path) {
-      this.$store.commit('mod_workspace/SET_elementVisible', path);
+    toggleVisible() {
+      this.$store.commit('mod_workspace/SET_elementVisible', this.itemData.layerId);
     },
     editElName(newName) {
       this.$store.commit('mod_workspace/SET_elementName', { id: this.currentId, setValue: newName });

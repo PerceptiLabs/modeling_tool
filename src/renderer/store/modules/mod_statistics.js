@@ -21,27 +21,28 @@ const mutations = {
   },
   CHANGE_selectElArr(state, dataEl) {
     let elArr = state.selectedElArr;
-    if (dataEl.el.layerType === "Training") {
+    if (dataEl.layerType === "Training") {
       elArr.statistics.layerMeta.isSelected = false;
-      elArr.statistics = dataEl.el;
+      elArr.statistics = dataEl;
       elArr.statistics.layerMeta.isSelected = true;
     }
     else {
       elArr.viewBox.layerMeta.isSelected = false;
-      elArr.viewBox = dataEl.el;
+      elArr.viewBox = dataEl;
       elArr.viewBox.layerMeta.isSelected = true;
     }
   },
 };
 
 const actions = {
-  STAT_defaultSelect({dispatch, commit, rootGetters}) {
+  STAT_defaultSelect({commit, rootGetters}) {
     let elArr = {
       statistics: null,
       viewBox: null
     };
     let net = rootGetters['mod_workspace/GET_currentNetworkElementList'];
-    net.forEach(function(item, i, arr) {
+    for(let el in net) {
+      let item = net[el];
       if(elArr.statistics !== null && elArr.viewBox !== null) {
         return
       }
@@ -51,7 +52,7 @@ const actions = {
       if(elArr.viewBox === null && item.layerType !== "Training") {
         elArr.viewBox = item;
       }
-    });
+    }
     /*выполнить после statisticsIsOpen net-base-element.vue*/
     setTimeout(()=> {
       ///console.log('costul');

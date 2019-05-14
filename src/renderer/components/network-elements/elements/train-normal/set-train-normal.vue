@@ -104,20 +104,20 @@
 </template>
 
 <script>
-import mixinSet       from '@/core/mixins/net-element-settings.js';
-import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
-import {mapGetters, mapActions}   from 'vuex';
+import mixinSet     from '@/core/mixins/net-element-settings.js';
+import SettingsCode from '@/components/network-elements/elements-settings/setting-code.vue';
+import { mapGetters, mapActions }   from 'vuex';
 
 export default {
   name: 'SetTrainNormal',
-  mixins: [mixinSet],
+  mixins: [ mixinSet ],
   components: { SettingsCode },
   created() {
-    this.inputId.forEach((id)=>{
-      let el = this.currentNetworkList.filter((element)=> element.layerId === id);
+    this.inputId.forEach((id)=> {
+      let elList = this.currentNetworkList;
       this.inputLayers.push({
-        text: el[0].layerName,
-        value: el[0].layerId
+        text: elList[id].layerName,
+        value: elList[id].layerId
       })
     });
   },
@@ -148,7 +148,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      isTutorialMode:   'mod_tutorials/getIstutorialMode',
+      isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      currentNetworkList: 'mod_workspace/GET_currentNetworkElementList'
     }),
     inputId() {
       return this.currentEl.connectionIn
@@ -160,9 +161,6 @@ export default {
       let lab = [];
       lab.push(this.idSelectElement);
       return lab
-    },
-    currentNetworkList() {
-      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
     coreCode() {
       let loss = '';
