@@ -1,4 +1,5 @@
-import { generateID }  from "@/core/helpers.js";
+import { generateID, calcLayerPosition }  from "@/core/helpers.js";
+import configApp from '@/core/globalSettings.js'
 import Vue from 'vue'
 
 const namespaced = true;
@@ -87,7 +88,17 @@ const getters = {
     if(getters.GET_networkIsNotEmpty) {
       return getters.GET_currentNetwork.networkMeta.chartsRequest.waitGlobalEvent;
     }
-  }
+  },
+  GET_networkShowCharts(state, getters) {
+    if(getters.GET_networkIsNotEmpty) {
+      return getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts;
+    }
+  },
+  GET_networkDoRequest(state, getters) {
+    if(getters.GET_networkIsNotEmpty) {
+      return getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest;
+    }
+  },
 };
 
 const mutations = {
@@ -180,16 +191,16 @@ const mutations = {
   set_statusNetworkZoom(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.zoom = value;
   },
-set_charts_doRequest(state, {getters, networkIndex}) {
-  networkIndex
-    ? state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++ // TODO add getters
-    : getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
-},
-set_charts_showCharts(state, {getters, networkIndex}) {
-  networkIndex
-    ? state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts++ // TODO add getters
-    : getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts++
-},
+  set_charts_doRequest(state, {getters, networkIndex}) {
+    networkIndex
+      ? state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++ //TODO проверить что счетчики идут паралельно в нескольких networks
+      : getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
+  },
+  set_charts_showCharts(state, {getters, networkIndex}) {
+    networkIndex
+      ? state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts++
+      : getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts++
+  },
   set_charts_timerID(state, {getters, timerId}) {
     getters.GET_currentNetwork.networkMeta.chartsRequest.timerID = timerId;
   },
@@ -309,63 +320,103 @@ set_charts_showCharts(state, {getters, networkIndex}) {
   //---------------
   //  NETWORK CONTAINER
   //---------------
-add_container(state, {getters, dispatch, newContainer, arrSelect}) {
-  let allTop = [];
-  let allLeft = [];
+add_container(state, {getters, dispatch}) {
+  let arrSelect = getters.GET_currentSelectedEl;
+  let network = getters.GET_currentNetworkElementList;
+  validations(arrSelect);
+  let newContainer = createClearContainer();
+  let insideIdList = closeContainer(newContainer, arrSelect);
+  injectContainer(newContainer, network, insideIdList);
 
-  let arrElID = arrSelect.map((item)=> {
-    // allOutId = [...allOutId, ...new Set(item.el.connectionOut)];
-    // allInId  = [...allInId,  ...new Set(item.el.connectionIn)];
-    allTop.push(item.el.layerMeta.position.top);
-    allLeft.push(item.el.layerMeta.position.left);
-    return item.el.layerId
-  });
 
-  newContainer.containerLayersList = arrSelect;
-  newContainer.layerMeta.position.top = calcPosition(allTop);
-  newContainer.layerMeta.position.left = calcPosition(allLeft);
 
-  let newNetElList = getters.GET_currentNetworkElementList.filter((el)=> {
-    return !arrElID.includes(el.layerId);
-  });
 
-  newNetElList.push(newContainer);
 
-  state.workspaceContent[state.currentNetwork].networkElementList = newNetElList;
-  dispatch('CLOSE_container', newContainer);
-  dispatch('mod_events/EVENT_calcArray', null, {root: true});
+  // newContainer.containerLayersList = arrSelect;
+  // newContainer.layerMeta.position.top = calcPosition(allTop);
+  // newContainer.layerMeta.position.left = calcPosition(allLeft);
+  //
+  // let newNetElList = getters.GET_currentNetworkElementList.filter((el)=> {
+  //   return !arrElID.includes(el.layerId);
+  // });
+  //
+  // newNetElList.push(newContainer);
+  //
+  // state.workspaceContent[state.currentNetwork].networkElementList = newNetElList;
+  // dispatch('CLOSE_container', newContainer);
+  // dispatch('mod_events/EVENT_calcArray', null, {root: true});
 
-  function calcPosition(arrIn) {
-    return (Math.max(...arrIn) + Math.min(...arrIn))/2
+  function validations(elList) {
+    if(elList.length === 0) return;
+    if(elList.length === 1) {
+      alert('At least 2 elements are needed to create a group');
+      return;
+    }
+  }
+  function createClearContainer() {
+    let fakeEvent = {
+      timeStamp: generateID(),
+      target: {
+        dataset: {
+          layer: 'Data Group',
+          type: 'container',
+          component: 'LayerContainer',
+        },
+        clientHeight: 0,
+        clientWidth: 0
+      }
+    };
+    return createNetElement(fakeEvent);
+  }
+  function closeContainer(el, elList) {
+    let allIdEl = [];
+    let allIdOut = [];
+    let allIdIn = [];
+    let allTop = [];
+    let allLeft = [];
+    el.containerLayersList = {};
+
+    elList.forEach((item)=> {
+      allIdEl.push(item.layerId);
+      allIdOut = [...allIdOut, ...new Set(item.connectionOut)];
+      allIdIn  = [...allIdIn,  ...new Set(item.connectionIn)];
+      allTop.push(item.layerMeta.position.top);
+      allLeft.push(item.layerMeta.position.left);
+      el.containerLayersList[item.layerId] = item
+    });
+    el.layerMeta.position.top = calcPosition(allTop);
+    el.layerMeta.position.left = calcPosition(allLeft);
+    el.connectionOut = calcConnection(allIdOut, allIdEl);
+    el.connectionIn = calcConnection(allIdIn, allIdEl);
+    return allIdEl;
+
+    function calcConnection(arrConnectionId, arrInsideId) {
+      return arrConnectionId.filter((id)=> !arrInsideId.includes(id))
+    }
+    function calcPosition(arrIn) {
+      const num = (Math.max(...arrIn) + Math.min(...arrIn))/2;
+      return calcLayerPosition(num);
+    }
+  }
+  function injectContainer(container, net, arrInsideIds) {
+    arrInsideIds.forEach((id)=>{
+      delete net[id]
+    })
+
+
+    for(let elId in net ) {
+      const el = net[elId]
+      if(arrInsideIds.includes(elId)) {
+        delete net[elId]
+      }
+    }
   }
 },
 close_container(state, container) {
-  container.containerLayersList.forEach((item)=> {
-    item.layerMeta.containerDiff.top = container.layerMeta.position.top - item.layerMeta.position.top;
-    item.layerMeta.containerDiff.left = container.layerMeta.position.left - item.layerMeta.position.left;
-    item.layerMeta.displayNone = true;
-    item.layerMeta.position = container.layerMeta.position;
-  });
-  container.layerMeta.displayNone = false
+
 },
 open_container(state, container) {
-  container.containerLayersList.forEach((item)=> {
-    let diffTop = item.layerMeta.containerDiff.top;
-    let diffLeft = item.layerMeta.containerDiff.left;
-    let top = item.layerMeta.position.top;
-    let left = item.layerMeta.position.left;
 
-    item.layerMeta.containerDiff = {
-      top: 0,
-      left: 0
-    };
-    item.layerMeta.position = {
-      top: top - diffTop,
-      left: left - diffLeft
-    };
-    item.layerMeta.displayNone = false;
-  });
-  container.layerMeta.displayNone = true
 },
   //---------------
   //  OTHER
@@ -524,27 +575,7 @@ const actions = {
   //  NETWORK CONTAINER
   //---------------
   ADD_container({commit, getters, dispatch}, event) {
-    let arrSelect = getters.GET_currentSelectedEl;
-    if(arrSelect.length === 0) return;
-    if(arrSelect.length === 1) {
-      alert('At least 2 elements are needed to create a group');
-      return;
-    }
-    let fakeEvent = {
-      timeStamp: generateID(),
-      target: {
-        dataset: {
-          layer: 'Data Group',
-          type: 'container',
-          component: 'LayerContainer',
-        },
-        clientHeight: 0,
-        clientWidth: 0
-      }
-    };
-    let newContainer = createNetElement(fakeEvent);
-
-    commit('add_container', {getters, dispatch, newContainer, arrSelect});
+    commit('add_container', {getters, dispatch});
   },
   OPEN_container({commit, getters, dispatch}, container) {
     commit('open_container', container)
@@ -574,7 +605,6 @@ function createNetElement(event) {
     layerSettings: '',
     layerCode: '',
     layerMeta: {
-      displayNone: false,
       isInvisible: false,
       isLock: false,
       isSelected: false,

@@ -1,5 +1,6 @@
 import {remote} from "electron";
 import fs from 'fs';
+import configApp from '@/core/globalSettings.js'
 
 // const findIndexId = function (arr, ID) {
 //   return arr.findIndex(function(item) {return item.layerId == ID});
@@ -50,4 +51,9 @@ const generateID = function() {
   return Date.now().toString();
 };
 
-export {openLoadDialog, loadNetwork, generateID, loadPathFolder}
+const calcLayerPosition = function (position) {
+  const grid = configApp.workspaceGrid;
+  return Math.round(position/grid)*grid
+};
+
+export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition}

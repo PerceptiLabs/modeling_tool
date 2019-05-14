@@ -40,7 +40,7 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
     },
     doShowCharts() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.showCharts
+      return this.$store.getters['mod_workspace/GET_networkShowCharts']
     },
     isNeedWait() {
       return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']

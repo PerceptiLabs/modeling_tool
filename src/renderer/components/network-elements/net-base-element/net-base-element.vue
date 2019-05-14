@@ -95,7 +95,6 @@ export default {
     },
     classEl() {
       return {
-        'net-element--hide-layer': this.dataEl.layerMeta.displayNone,
         'net-element--active': this.isSelectedEl,
         'element--hidden': this.dataEl.layerMeta.isInvisible
       }

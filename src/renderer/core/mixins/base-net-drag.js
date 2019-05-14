@@ -1,3 +1,6 @@
+import {calcLayerPosition} from '@/core/helpers.js'
+import configApp from '@/core/globalSettings.js'
+
 const baseNetDrag = {
   props: {
     dataEl: {type: Object},
@@ -48,15 +51,15 @@ const baseNetDrag = {
     },
 
     bodyMove(ev) {
-      if(!(ev.pageX % 10 || ev.pageY % 10)) return;
+      if(!(ev.pageX % configApp.workspaceGrid || ev.pageY % configApp.workspaceGrid)) return;
 
       const stickStartPos = this.stickStartPos;
       const delta = {
         x: (stickStartPos.mouseX - (ev.pageX || ev.touches[0].pageX)) / this.networkScale,
         y: (stickStartPos.mouseY - (ev.pageY || ev.touches[0].pageY)) / this.networkScale
       };
-      const top = Math.round((stickStartPos.top - delta.y)/10)*10;
-      const left = Math.round((stickStartPos.left - delta.x)/10)*10;
+      const top = calcLayerPosition(stickStartPos.top - delta.y);
+      const left = calcLayerPosition(stickStartPos.left - delta.x);
 
       this.top = (top < 0) ? 0 : top;
       this.left = (left < 0) ? 0 : left;

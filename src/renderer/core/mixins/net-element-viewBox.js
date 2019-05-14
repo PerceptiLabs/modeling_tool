@@ -37,7 +37,7 @@ const viewBoxMixin = {
       return this.$store.getters['mod_workspace/GET_testIsOpen']
     },
     doRequest() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
+      return this.$store.getters['mod_workspace/GET_networkDoRequest']
     },
 
   },

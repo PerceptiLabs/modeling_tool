@@ -56,10 +56,10 @@ const chartsMixin = {
       return this.$store.getters['mod_workspace/GET_testIsOpen'] || this.disableHeader;
     },
     doRequest() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
+      return this.$store.getters['mod_workspace/GET_networkDoRequest']
     },
     doShowCharts() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.showCharts
+      return this.$store.getters['mod_workspace/GET_networkShowCharts']
     },
     isNotPicture() {
       return (this.$options._componentTag === "ChartPicture" || this.$options._componentTag === "chart-picture")
