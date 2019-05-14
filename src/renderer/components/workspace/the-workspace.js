@@ -221,26 +221,22 @@ export default {
 
       function doScreenShot(ctx) {
         return new Promise((resolve, reject)=> {
-          const el = ctx.$refs.workspaceNet;
-
-          // const oldCanvas = document.getElementById('canvasScreenShort');
-          // if(oldCanvas) oldCanvas.remove();
-          const svg = document.body.querySelector('.svg-arrow').outerHTML;
-          const canvas = document.createElement('canvas');
-          canvas.style.width = 'auto';
-          canvas.style.height = 'auto';
-          canvas.style.position = "absolute";
-          canvas.style.zIndex = '1';
-          canvas.id = 'canvasScreenShot';
-          ctx.$refs.networkField[0].$el.appendChild(canvas);
-          canvg(canvas, svg);
-
+          const workspace = ctx.$refs.workspaceNet;
+          const svg = workspace.querySelector('.svg-arrow');
+          const arrowsCanvas = document.createElement('canvas');
+          arrowsCanvas.style.position = "absolute";
+          arrowsCanvas.style.zIndex = '0';
+          ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
+          canvg(arrowsCanvas, svg.outerHTML);
+          svg.style.display = 'none';
           const options = {
             scale: 1, //180x135
           };
-          return html2canvas(el, options)
+          return html2canvas(workspace, options)
             .then((canvas)=> {
-              resolve(canvas.toDataURL())
+              resolve(canvas.toDataURL());
+              svg.style.display = 'block';
+              arrowsCanvas.remove();
             });
         })
       }

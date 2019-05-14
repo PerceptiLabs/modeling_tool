@@ -212,6 +212,7 @@ export default {
     grid-area: layersbar;
     transition: max-width $animation-speed;
     border-right: 1px solid $bg-workspace;
+    z-index: 1;
     &.page_layersbar--hide {
       transition: max-width $animation-speed $animation-speed;
       max-width: 0;

@@ -7,16 +7,18 @@
 <script>
 export default {
   name: "SidebarProgress",
+  props: {
+    progressValue: {
+      type: Number,
+      default: 0
+    },
+  },
   data() {
     return {
       percentData: '0%',
-      buffer: '0%'
     }
   },
   computed: {
-    statusNetworkInfo() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
-    },
     statusNetworkCore() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
@@ -25,33 +27,12 @@ export default {
         'animation--paused': this.statusNetworkCore === 'Paused',
         'validation-style': this.statusNetworkCore === 'Validation'
       }
-    },
-    doShowCharts() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.showCharts
-    },
-    isNeedWait() {
-      return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
-    },
+    }
   },
   watch: {
-    statusNetworkInfo(newVal) {
-      let settings = newVal;
-      let progress;
-      if(settings === null) {
-        progress = 0;
-      }
-      else progress = settings.Progress;
-      let result = Math.round(progress * 100) + '%';
-      //console.log(result);
-      this.isNeedWait
-        ? this.buffer = result
-        : this.percentData = result
+    progressValue(newVal) {
+      this.percentData = Math.round(newVal * 100) + '%';
     },
-    doShowCharts() {
-      this.isNeedWait
-        ? this.percentData = this.buffer
-        : null
-    }
   }
 }
 </script>

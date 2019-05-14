@@ -65,6 +65,7 @@
   .network-field {
     position: relative;
     flex: 1 1 100%;
+    z-index: 1;
   }
   .svg-arrow {
     position: absolute;
@@ -78,9 +79,9 @@
     }
   }
   .svg-arrow_line {
-/*    stroke: $col-primary;
+    stroke: $col-primary;
     stroke-width: 3;
-    fill: transparent;*/
+    fill: transparent;
     &:focus {
       opacity: .5;
       stroke-width: 4;
