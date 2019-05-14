@@ -1,4 +1,5 @@
 import html2canvas  from 'html2canvas';
+import canvg        from 'canvg'
 import {remote}     from 'electron'
 import fs           from 'fs';
 
@@ -198,6 +199,8 @@ export default {
             {name: 'Text', extensions: ['json']},
           ]
         };
+
+
         dialog.showSaveDialog(null, option, (fileName) => {
           if (fileName === undefined){
             console.log("You didn't save the file");
@@ -216,13 +219,22 @@ export default {
 
       function doScreenShot(ctx) {
         return new Promise((resolve, reject)=> {
-          const el = ctx.$refs.workspaceNet;
+          const workspace = ctx.$refs.workspaceNet;
+          const svg = workspace.querySelector('.svg-arrow');
+          const arrowsCanvas = document.createElement('canvas');
+          arrowsCanvas.style.position = "absolute";
+          arrowsCanvas.style.zIndex = '0';
+          ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
+          canvg(arrowsCanvas, svg.outerHTML);
+          svg.style.display = 'none';
           const options = {
-            scale: 0.15 //180x135
+            scale: 1, //180x135
           };
-          return html2canvas(el, options)
+          return html2canvas(workspace, options)
             .then((canvas)=> {
-              resolve(canvas.toDataURL())
+              resolve(canvas.toDataURL());
+              svg.style.display = 'block';
+              arrowsCanvas.remove();
             });
         })
       }

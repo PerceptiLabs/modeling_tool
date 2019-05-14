@@ -182,7 +182,7 @@ export default {
     .icon{
       font-size: 1.3rem;
       position: relative;
-      transform: rotate(-90deg);
+      transform: rotate(-180deg);
       &:first-child {
         top: 0.4rem;
       }

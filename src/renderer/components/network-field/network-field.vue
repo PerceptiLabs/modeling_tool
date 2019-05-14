@@ -26,6 +26,7 @@
           marker-end="url(#svg-arrow_triangle)"
           stroke-dasharray="none"
           :d="arrow.positionArrow.path"
+          style="stroke: #22DDE5; stroke-width: 3;fill: transparent;"
           )
       //- pre arrow
       line.svg-arrow_line.arrow--hidden(
@@ -62,6 +63,7 @@
   .network-field {
     position: relative;
     flex: 1 1 100%;
+    z-index: 1;
   }
   .svg-arrow {
     position: absolute;

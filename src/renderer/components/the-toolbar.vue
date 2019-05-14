@@ -357,6 +357,7 @@ export default {
     margin-left: auto;
     > * + * {
       margin-left: 1rem;
+      margin-right: 1rem;
     }
   }
   #tutorial_pointer {
