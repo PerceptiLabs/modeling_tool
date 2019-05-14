@@ -56,15 +56,16 @@ export default {
   },
   computed: {
     ...mapGetters({
-      activeStep:         'mod_tutorials/getActiveStep',
-      points:             'mod_tutorials/getPoints',
-      interective:        'mod_tutorials/getIterective',
-      isTutorialMode:     'mod_tutorials/getIstutorialMode',
-      stepCount:          'mod_tutorials/getActiveStepMainTutorial',
-      allPointsIsDone:    'mod_tutorials/getAllPointsIsDone',
-      activePoint:        'mod_tutorials/getActivePoint',
-      activeAction:       'mod_tutorials/getActiveAction',
-      isShowInstructions: 'mod_tutorials/getShowMainTutorialInstruction'
+      activeStep:                 'mod_tutorials/getActiveStep',
+      points:                     'mod_tutorials/getPoints',
+      interective:                'mod_tutorials/getIterective',
+      isTutorialMode:             'mod_tutorials/getIstutorialMode',
+      stepCount:                  'mod_tutorials/getActiveStepMainTutorial',
+      allPointsIsDone:            'mod_tutorials/getAllPointsIsDone',
+      activePoint:                'mod_tutorials/getActivePoint',
+      activeAction:               'mod_tutorials/getActiveAction',
+      isShowInstructions:         'mod_tutorials/getShowMainTutorialInstruction',
+      currentNetworkElementList:  'mod_workspace/GET_currentNetworkElementList'
     }),
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
@@ -77,6 +78,9 @@ export default {
     },
     disabledNext() {
       return this.activeStep === 'run_training' || !this.allPointsIsDone
+    },
+    workspaceContent() {
+      return this.$store.state.mod_workspace.workspaceContent
     }
   },
   methods: {
@@ -91,7 +95,7 @@ export default {
     ...mapActions({
       pointActivate:              'mod_tutorials/pointActivate',
       pointsDeactivate:           'mod_tutorials/pointsDeactivate',
-      removeAllTutorialElements:  'mod_tutorials/removeAllTutorialElements',
+      resetTutorial:              'mod_tutorials/resetTutorial',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
     }),
@@ -112,9 +116,10 @@ export default {
       this.addNetwork({'ctx': this})
     },
     switchTutorialMode() {
+      if(this.currentNetworkElementList.length > 0 && !this.isTutorialMode) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
       this.setShowInstructions(!this.isShowInstructions);
       this.setTutorialMode(!this.isTutorialMode);
-      if(!this.isTutorialMode) this.removeAllTutorialElements();
+      if(!this.isTutorialMode) this.resetTutorial();
     }
   }
 }

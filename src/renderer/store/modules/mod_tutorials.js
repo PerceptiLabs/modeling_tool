@@ -897,7 +897,11 @@ const mutations = {
     state.showMainTutorialInstruction = value
   },
   SET_activeStepMainTutorial(state, value) {
-    value === 'next' ? state.activeStepMainTutorial++ : state.activeStepMainTutorial--
+    if(isNumber(value)) {
+      state.activeStepMainTutorial = value
+    } else if(value === 'next') {
+      state.activeStepMainTutorial++
+    }
   },
   SET_activePointMainTutorial(state, value) {
     if(isNumber(value)) {
@@ -1031,9 +1035,12 @@ const actions = {
       }
     }
   },
-  removeAllTutorialElements({dispatch}){
+  resetTutorial({dispatch, commit}){
     dispatch('removeTooltip');
     dispatch('removeSchematicElement');
+    commit('SET_activeActionMainTutorial', 0);
+    commit('SET_activePointMainTutorial', 0);
+    commit('SET_activeStepMainTutorial', 0);
   },
   removeSchematicElement() {
     let schematicElement = document.querySelector('.schematic');
