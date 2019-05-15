@@ -58,13 +58,13 @@ export default {
   methods: {
     startUpdate() {
       this.$store.commit('globalView/SET_updateStatus', 'downloading')
-      this.$emit('startedUpdate')
+      this.$emit('started-update')
     },
     closeUpdatePopup() {
       this.$store.commit('globalView/SET_showPopupUpdates', false)
     },
     restartApp () {
-      this.$emit('restartApp')
+      this.$emit('restart-app')
     },
     closeWithoutUpdate () {
       this.$store.commit('globalView/SET_showPopupUpdates', false)

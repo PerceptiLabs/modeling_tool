@@ -140,7 +140,7 @@ export default {
         : this.openSettings(event)
     },
     openLayerContainer() {
-      this.$store.dispatch('mod_workspace/OPEN_container', this.dataEl)
+      this.$emit('open-container')
     },
     openSettings(event) {
       this.hideAllWindow();
@@ -194,12 +194,14 @@ export default {
   @import "../../../scss/base";
   .net-element_window {
     position: absolute;
-    z-index: 2;
+    z-index: 4;
     top: 0;
     left: 100%;
     padding-left: 10px;
   }
   .net-element_btn {
+    position: relative;
+    z-index: 3;
     margin: 0;
     padding: 0;
     background-color: transparent;

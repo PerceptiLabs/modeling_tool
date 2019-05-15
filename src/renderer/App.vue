@@ -5,28 +5,28 @@
   )
     header-win.app-header(
       v-if="platform === 'win32'"
-      @appClosed="appClose"
-      @appMinimized="appMinimize"
-      @appMaximized="appMaximize"
+      @app-closed="appClose"
+      @app-minimized="appMinimize"
+      @app-maximized="appMaximize"
     )
     header-mac.app-header(
       v-if="platform === 'darwin'"
-      @appClosed="appClose"
-      @appMinimized="appMinimize"
-      @appMaximized="appMaximize"
+      @app-closed="appClose"
+      @app-minimized="appMinimize"
+      @app-maximized="appMaximize"
     )
     header-linux.app-header(
       v-if="platform === 'linux'"
-      @appClosed="appClose"
-      @appMinimized="appMinimize"
-      @appMaximized="appMaximize"
+      @app-closed="appClose"
+      @app-minimized="appMinimize"
+      @app-maximized="appMaximize"
     )
     router-view.app-page
     update-popup(
       :progress="percentProgress"
       :update-info="updateInfo"
-      @startedUpdate="updateStart"
-      @restartApp="restartApp"
+      @started-update="updateStart"
+      @restart-app="restartApp"
     )
 </template>
 

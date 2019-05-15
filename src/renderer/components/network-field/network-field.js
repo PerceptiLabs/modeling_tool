@@ -80,11 +80,23 @@ export default {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
       currentNetwork:       'mod_workspace/GET_currentNetwork',
-      networkElementList:   'mod_workspace/GET_currentNetworkElementList',
+      //networkElementList:   '',
       canEditLayers:        'mod_workspace/GET_networkIsOpen',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
       testingIsOpen:        'mod_workspace/GET_testIsOpen',
     }),
+    networkElementList() {
+      let currentNetwork = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
+      let newNet = {};
+      for(let id in currentNetwork) {
+        let el = currentNetwork[id];
+        if(!el.layerNone || el.componentName === 'LayerContainer') {
+          console.log(el.layerName);
+          newNet[id] = el
+        }
+      }
+      return newNet
+    },
     networkScale() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom
     },
@@ -300,6 +312,7 @@ export default {
                 stop: { x: 0, y: 0 },
               }
             };
+            if(!newArrow.l1 || !newArrow.l2) return;
             Object.defineProperty(newArrow, 'positionArrow', {
               get() {
                 const x1 = this.l1.layerMeta.position.left + this.correctPosition.start.x;

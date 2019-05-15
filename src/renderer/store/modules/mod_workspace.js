@@ -298,8 +298,12 @@ const mutations = {
     elMeta.isLock = !elMeta.isLock
   },
   SET_elementVisible(state, id) {
-    let elMeta = currentElement(id).isInvisible;
-    elMeta.isLock = !elMeta.isInvisible
+    let elMeta = currentElement(id).layerMeta;
+    elMeta.isInvisible = !elMeta.isInvisible
+  },
+  SET_elementNone(state, {id, value}) {
+    let el = currentElement(id);
+    el.layerNone = value
   },
   change_elementPosition(state, value) {
     let elPosition = currentElement(value.id).layerMeta.position;
@@ -320,31 +324,13 @@ const mutations = {
   //---------------
   //  NETWORK CONTAINER
   //---------------
-add_container(state, {getters, dispatch}) {
+add_container(state, {getters, commit, dispatch}) {
   let arrSelect = getters.GET_currentSelectedEl;
-  let network = getters.GET_currentNetworkElementList;
   validations(arrSelect);
-  let newContainer = createClearContainer();
-  let insideIdList = closeContainer(newContainer, arrSelect);
-  injectContainer(newContainer, network, insideIdList);
+  let newContainer = createContainer(arrSelect);
+  Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
+  commit('close_container', {container: newContainer, getters, dispatch});
 
-
-
-
-
-  // newContainer.containerLayersList = arrSelect;
-  // newContainer.layerMeta.position.top = calcPosition(allTop);
-  // newContainer.layerMeta.position.left = calcPosition(allLeft);
-  //
-  // let newNetElList = getters.GET_currentNetworkElementList.filter((el)=> {
-  //   return !arrElID.includes(el.layerId);
-  // });
-  //
-  // newNetElList.push(newContainer);
-  //
-  // state.workspaceContent[state.currentNetwork].networkElementList = newNetElList;
-  // dispatch('CLOSE_container', newContainer);
-  // dispatch('mod_events/EVENT_calcArray', null, {root: true});
 
   function validations(elList) {
     if(elList.length === 0) return;
@@ -368,7 +354,8 @@ add_container(state, {getters, dispatch}) {
     };
     return createNetElement(fakeEvent);
   }
-  function closeContainer(el, elList) {
+  function createContainer(elSelectList) {
+    let el = createClearContainer();
     let allIdEl = [];
     let allIdOut = [];
     let allIdIn = [];
@@ -376,7 +363,7 @@ add_container(state, {getters, dispatch}) {
     let allLeft = [];
     el.containerLayersList = {};
 
-    elList.forEach((item)=> {
+    elSelectList.forEach((item)=> {
       allIdEl.push(item.layerId);
       allIdOut = [...allIdOut, ...new Set(item.connectionOut)];
       allIdIn  = [...allIdIn,  ...new Set(item.connectionIn)];
@@ -388,35 +375,32 @@ add_container(state, {getters, dispatch}) {
     el.layerMeta.position.left = calcPosition(allLeft);
     el.connectionOut = calcConnection(allIdOut, allIdEl);
     el.connectionIn = calcConnection(allIdIn, allIdEl);
-    return allIdEl;
-
-    function calcConnection(arrConnectionId, arrInsideId) {
-      return arrConnectionId.filter((id)=> !arrInsideId.includes(id))
-    }
-    function calcPosition(arrIn) {
-      const num = (Math.max(...arrIn) + Math.min(...arrIn))/2;
-      return calcLayerPosition(num);
-    }
+    return el;
   }
-  function injectContainer(container, net, arrInsideIds) {
-    arrInsideIds.forEach((id)=>{
-      delete net[id]
-    })
-
-
-    for(let elId in net ) {
-      const el = net[elId]
-      if(arrInsideIds.includes(elId)) {
-        delete net[elId]
-      }
-    }
+  function calcConnection(arrConnectionId, arrInsideId) {
+    return arrConnectionId.filter((id)=> !arrInsideId.includes(id))
+  }
+  function calcPosition(arrIn) {
+    const num = (Math.max(...arrIn) + Math.min(...arrIn))/2;
+    return calcLayerPosition(num);
   }
 },
-close_container(state, container) {
-
+close_container(state, {container, getters, dispatch}) {
+  console.log(container);
+  let net = getters.GET_currentNetworkElementList;
+  for(let idEl in container.containerLayersList) {
+    net[idEl].layerNone = true;
+  }
+  net[container.layerId].layerNone = false;
+  dispatch('mod_events/EVENT_calcArray', null, {root: true})
 },
-open_container(state, container) {
-
+open_container(state, {container, getters, dispatch}) {
+  let net = getters.GET_currentNetworkElementList;
+  for(let idEl in container.containerLayersList) {
+    net[idEl].layerNone = false;
+  }
+  net[container.layerId].layerNone = true;
+  dispatch('mod_events/EVENT_calcArray', null, {root: true})
 },
   //---------------
   //  OTHER
@@ -575,13 +559,13 @@ const actions = {
   //  NETWORK CONTAINER
   //---------------
   ADD_container({commit, getters, dispatch}, event) {
-    commit('add_container', {getters, dispatch});
+    commit('add_container', {getters, commit, dispatch});
   },
   OPEN_container({commit, getters, dispatch}, container) {
-    commit('open_container', container)
+    commit('open_container', {container, getters, dispatch})
   },
   CLOSE_container({commit, getters, dispatch}, container) {
-    commit('close_container', container)
+    commit('close_container', {container, getters, dispatch})
   },
 
 };
@@ -604,6 +588,7 @@ function createNetElement(event) {
     layerType: event.target.dataset.type,
     layerSettings: '',
     layerCode: '',
+    layerNone: false,
     layerMeta: {
       isInvisible: false,
       isLock: false,

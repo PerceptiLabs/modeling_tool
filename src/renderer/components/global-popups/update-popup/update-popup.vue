@@ -7,14 +7,14 @@
     popup-loading(
       v-if="updateStatus === 'downloading'"
       :progress-status="progress"
-      @canceledUpdate="cancelUpdate"
-      @backgroundMode="background"
+      @canceled-update="cancelUpdate"
+      @background-mode="background"
     )
     popup-info(
       v-else
-      @startedUpdate="startUpdate"
-      @closedPopup="cancelUpdate"
-      @restartApp="restartApp"
+      @started-update="startUpdate"
+      @closed-popup="cancelUpdate"
+      @restart-app="restartApp"
       :message="mainUpdateMessage"
       :about-update-list="updateList"
       :update-popup-info="updateInfo"
@@ -66,22 +66,22 @@ export default {
   methods: {
     startUpdate() {
       this.$store.commit('globalView/SET_updateStatus', 'downloading')
-      this.$emit('startedUpdate');
+      this.$emit('started-update');
     },
     cancelUpdate(cancel) {
       this.updateStatus = cancel.status;
       this.progress = 0;
-      this.$emit('closedPopup');
+      this.$emit('closed-popup');
       clearInterval(this.fakeTimer);
     },
     background() {
       this.bgMode = !this.bgMode;
     },
     closePopup() {
-      this.$emit('closedPopup')
+      this.$emit('closed-popup')
     },
     restartApp() {
-      this.$emit('restartApp')
+      this.$emit('restart-app')
     },
   }
 }

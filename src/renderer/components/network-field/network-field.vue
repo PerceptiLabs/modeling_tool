@@ -70,6 +70,7 @@
     left: 0;
     width: 100%;
     height: 100%;
+    z-index: 2;
     marker#svg-arrow_triangle {
       fill: $col-primary;
       stroke: $col-primary;

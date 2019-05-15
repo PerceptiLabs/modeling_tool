@@ -12,7 +12,7 @@ ul.workspace_tab-list
       i.icon.icon-close
     text-editable.tab_name(
       :text-title="tab.networkName"
-      @changeTitle="editNetName"
+      @change-title="editNetName"
       )
     button.btn.btn--tabs.tab_statistics(type="button"
       v-if="tab.networkMeta.openStatistics !== null"

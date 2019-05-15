@@ -14,13 +14,13 @@ export default {
   components: {TheMenu},
   methods: {
     appClose() {
-      this.$emit('appClosed')
+      this.$emit('app-closed')
     },
     appMinimize() {
-      this.$emit('appMinimized')
+      this.$emit('app-minimized')
     },
     appMaximize() {
-      this.$emit('appMaximized')
+      this.$emit('app-maximized')
     }
   }
 }

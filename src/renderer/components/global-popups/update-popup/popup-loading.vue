@@ -40,7 +40,7 @@ export default {
        this.$store.commit('globalView/SET_showPopupUpdates', false)
     },
     bgMode() {
-      this.$emit('backgroundMode')
+      this.$emit('background-mode')
     }
   }
 }

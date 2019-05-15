@@ -18,7 +18,7 @@
       .layer-item_title
         text-editable(
           :text-title="itemData.layerName"
-          @changeTitle="editElName"
+          @change-title="editElName"
           )
       .layer-item_right-sidebar
         button.btn.btn--icon.visible-icon.visible-icon--lock( type="button"
