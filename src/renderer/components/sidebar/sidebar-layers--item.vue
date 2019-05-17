@@ -4,19 +4,18 @@
       :class="{'selected': itemData.layerMeta.isSelected}"
       @click="setSelect($event)"
       )
-      .layer-item_left-sidebar()
-        button.btn.btn--icon(type="button")
+      .layer-item_left-sidebar
+        button.btn.btn--icon.layer-item--btn-action(type="button")
           i.icon.icon-empty
-      .layer-item_folder-section(:class="{'open': isOpen}")
-        i(v-if="itemData.child").icon.icon-folder
-        //button.btn.btn--icon(type="button"
-          v-if="itemData.child"
+
+      .layer-item_main
+        button.btn.btn--icon.layer-item-left_btn-folder.layer-item--btn-action(type="button"
+          v-if="itemData.componentName === 'LayerContainer'"
+          :class="{'open': openContainer}"
           @click="toggleOpen()"
-          )
-          i.icon.icon-shevron
-          i.icon.icon-folder
-      .layer-item_title
-        text-editable(
+        )
+          i.icon.icon-shevron-right
+        text-editable.layer-item_title(
           :text-title="itemData.layerName"
           @change-title="editElName"
           )
@@ -31,15 +30,14 @@
           /@click="toggleVisible(itemIndex)"
           )
           i.icon.icon-eye
-    //-.layer-item_child-list(
-      /:class="{'open': isOpen}"
-      v-if="itemData.child"
+    .layer-item_child-list(
+      :class="{'open': openContainer}"
+      v-if="itemData.componentName === 'LayerContainer'"
       )
       sidebar-layers-item(
-        v-for="(item, i) in itemData.child"
-        /:key="item.i"
-        /:itemData="item"
-        /:itemIndex="currentNode(i)"
+        v-for="(item, i) in itemData.containerLayersList"
+        :key="item.i"
+        :item-data="item"
         )
 
 
@@ -70,7 +68,7 @@ export default {
   },
   data() {
     return {
-      isOpen: false
+      //isOpen: false
     }
   },
   computed: {
@@ -79,16 +77,14 @@ export default {
     },
     currentId() {
       return this.itemData.layerId
+    },
+    openContainer() {
+      return this.itemData.layerNone
     }
   },
   methods: {
-    // currentNode(item) {
-    //   let childNode = this.itemIndex.slice();
-    //   childNode.push(item);
-    //   return childNode
-    // },
     toggleOpen() {
-      this.isOpen = !this.isOpen
+      this.$store.dispatch('mod_workspace/TOGGLE_container', {val: this.openContainer, container: this.itemData})
     },
     setSelect(ev) {
       //console.log(ev);
@@ -147,44 +143,37 @@ export default {
   }
 
   .layer-item_left-sidebar {
-    .btn {
-      font-size: 1.2em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: .5em;
-    }
-  }
-  .layer-item_folder-section {
-    .btn {
-      display: flex;
-      align-items: center;
-      padding: 0;
-    }
-    &.open {
-      .icon-shevron {
-        transform: rotate(0);
-      }
-    }
-    .icon-shevron {
-      font-size: 1.2em;
-      transform: rotate(-90deg);
-    }
-    .icon-folder {
-      font-size: 1.4286em;
-      margin-left: .6em;
-    }
-  }
-  .layer-item_title {
-    padding-left: .5em;
-    //flex: 1;
-    //height: 100%;
-    //line-height: $h-sidebar-layers-item;
-  }
-  .layer-item_right-sidebar {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
-    margin-left: auto;
+  }
+  .layer-item--btn-action {
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: .5em;
+  }
+  .layer-item-left_btn-folder {
+    .icon-shevron-right {
+      transform: rotate(0);
+    }
+    &.open .icon-shevron-right{
+      transform: rotate(90deg);
+    }
+  }
+  .layer-item_main {
+    flex: 1 1 100%;
+    display: flex;
+    align-items: center;
+  }
+  .layer-item_title {
+    padding-left: .5rem;
+  }
+  .layer-item_right-sidebar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
     .visible-icon--lock {
       font-size: 1.2857em;
     }
@@ -200,22 +189,21 @@ export default {
   }
   .layer-item_child-list {
     display: none;
-    .layer-item_folder-section {
-      padding-left: 2em;
-    }
     &.open {
       display: block;
     }
-  }
-
-  .layer-item_child-list .layer-item_child-list {
-    .layer-item_folder-section {
-      padding-left: 4em;
+    .layer-item_main {
+      padding-left: 3em;
     }
-  }
-  .layer-item_child-list .layer-item_child-list .layer-item_child-list {
-    .layer-item_folder-section {
-      padding-left: 6em;
+    .layer-item_child-list {
+      .layer-item_main {
+        padding-left: 6em;
+      }
+      .layer-item_child-list {
+        .layer-item_main {
+          padding-left: 9em;
+        }
+      }
     }
   }
 </style>

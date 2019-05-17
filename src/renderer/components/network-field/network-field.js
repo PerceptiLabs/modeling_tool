@@ -80,7 +80,6 @@ export default {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
       currentNetwork:       'mod_workspace/GET_currentNetwork',
-      //networkElementList:   '',
       canEditLayers:        'mod_workspace/GET_networkIsOpen',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
       testingIsOpen:        'mod_workspace/GET_testIsOpen',
@@ -90,10 +89,7 @@ export default {
       let newNet = {};
       for(let id in currentNetwork) {
         let el = currentNetwork[id];
-        if(!el.layerNone || el.componentName === 'LayerContainer') {
-          console.log(el.layerName);
-          newNet[id] = el
-        }
+        if(!el.layerNone || el.componentName === 'LayerContainer') newNet[id] = el
       }
       return newNet
     },
@@ -301,18 +297,18 @@ export default {
 
         for (let item in net) {
           const itemEl = net[item];
-          if(itemEl.connectionOut.length === 0) continue;
-          for (var numEl in itemEl.connectionOut) {
-            let outEl = itemEl.connectionOut[numEl];
+          if(itemEl.connectionArrow.length === 0) continue;
+          for (var numEl in itemEl.connectionArrow) {
+            let outEl = itemEl.connectionArrow[numEl];
             let newArrow = {
               l1: itemEl,
               l2: net[outEl],
               correctPosition: {
                 start: { x: 0, y: 0 },
-                stop: { x: 0, y: 0 },
+                stop:  { x: 0, y: 0 },
               }
             };
-            if(!newArrow.l1 || !newArrow.l2) return;
+            if(!newArrow.l1 || !newArrow.l2 || newArrow.l1.layerNone || newArrow.l2.layerNone) continue;
             Object.defineProperty(newArrow, 'positionArrow', {
               get() {
                 const x1 = this.l1.layerMeta.position.left + this.correctPosition.start.x;

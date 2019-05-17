@@ -214,6 +214,7 @@ export default {
     position: absolute;
     top: -2.5rem;
     left: 50%;
+    z-index: 2;
     transform: translateX(-50%);
     white-space: nowrap;
     background-color: rgba($bg-workspace, .5);

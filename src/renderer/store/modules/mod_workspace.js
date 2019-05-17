@@ -231,7 +231,7 @@ const mutations = {
     let arrSelect = getters.GET_currentSelectedEl;
     if(!arrSelect.length) return;
     let arrSelectID = [];
-    let net = getters.GET_currentNetworkElementList;
+    let net = {...getters.GET_currentNetworkElementList};
     arrSelect.forEach((el)=>{
       delete net[el.layerId];
       arrSelectID.push(el.layerId);
@@ -240,13 +240,17 @@ const mutations = {
       net[el].connectionOut = net[el].connectionOut.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
+      net[el].connectionArrow = net[el].connectionArrow.filter((connect)=>{
+        return !arrSelectID.includes(connect)
+      });
       net[el].connectionIn  = net[el].connectionIn.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
     }
-    //state.workspaceContent[state.currentNetwork].networkElementList = net;
+    state.workspaceContent[state.currentNetwork].networkElementList = net;
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
-    dispatch('mod_api/API_getOutputDim', null, {root: true});
+    dispatch('mod_api/API_getOutputDim', null, {root: true})
+
   },
   add_arrow(state, {dispatch, stopID}) {
     let startID = state.startArrowID;
@@ -259,6 +263,7 @@ const mutations = {
     }
 
     currentElement(startID).connectionOut.push(stopID.toString()); //ID.toString need for the core
+    currentElement(startID).connectionArrow.push(stopID.toString());
     currentElement(stopID).connectionIn.push(startID.toString());
     state.startArrowID = null;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
@@ -268,9 +273,11 @@ const mutations = {
     let stopID = arrow.stopID;
 
     let newConnectionOut = currentElement(startID).connectionOut.filter((item)=> item !== stopID);
+    let newConnectionArrow = currentElement(startID).connectionArrow.filter((item)=> item !== stopID);
     let newConnectionIn = currentElement(stopID).connectionIn.filter((item)=> item !== startID);
 
     currentElement(startID).connectionOut = newConnectionOut;
+    currentElement(startID).connectionArrow = newConnectionArrow;
     currentElement(stopID).connectionIn = newConnectionIn;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
@@ -326,19 +333,23 @@ const mutations = {
   //---------------
 add_container(state, {getters, commit, dispatch}) {
   let arrSelect = getters.GET_currentSelectedEl;
-  validations(arrSelect);
+  /* validations */
+  if(arrSelect.length === 0) return;
+  if(arrSelect.length === 1) {
+    alert('At least 2 elements are needed to create a group');
+    return;
+  }
+  /* END validations */
+  let net = getters.GET_currentNetworkElementList;
   let newContainer = createContainer(arrSelect);
+  newContainer.connectionIn.forEach((idEl)=>{
+    net[idEl].connectionArrow.push(newContainer.layerId)
+  });
+
   Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
+  commit('set_elementUnselect', {getters});
   commit('close_container', {container: newContainer, getters, dispatch});
 
-
-  function validations(elList) {
-    if(elList.length === 0) return;
-    if(elList.length === 1) {
-      alert('At least 2 elements are needed to create a group');
-      return;
-    }
-  }
   function createClearContainer() {
     let fakeEvent = {
       timeStamp: generateID(),
@@ -374,6 +385,7 @@ add_container(state, {getters, commit, dispatch}) {
     el.layerMeta.position.top = calcPosition(allTop);
     el.layerMeta.position.left = calcPosition(allLeft);
     el.connectionOut = calcConnection(allIdOut, allIdEl);
+    el.connectionArrow = [...el.connectionOut];
     el.connectionIn = calcConnection(allIdIn, allIdEl);
     return el;
   }
@@ -386,7 +398,6 @@ add_container(state, {getters, commit, dispatch}) {
   }
 },
 close_container(state, {container, getters, dispatch}) {
-  console.log(container);
   let net = getters.GET_currentNetworkElementList;
   for(let idEl in container.containerLayersList) {
     net[idEl].layerNone = true;
@@ -401,6 +412,12 @@ open_container(state, {container, getters, dispatch}) {
   }
   net[container.layerId].layerNone = true;
   dispatch('mod_events/EVENT_calcArray', null, {root: true})
+},
+toggle_container(state, {val, container, dispatch}) {
+  val
+    ? dispatch('CLOSE_container', container)
+    : dispatch('OPEN_container', container);
+  dispatch('SET_elementUnselect');
 },
   //---------------
   //  OTHER
@@ -529,7 +546,7 @@ const actions = {
     commit('add_element', {getters, event})
   },
   DELETE_element({commit, getters, dispatch}) {
-    commit('delete_element', {getters, dispatch})
+    commit('delete_element', {getters, dispatch, commit})
   },
   ADD_arrow({commit, getters, dispatch}, stopID) {
     commit('add_arrow', {dispatch, stopID})
@@ -566,6 +583,9 @@ const actions = {
   },
   CLOSE_container({commit, getters, dispatch}, container) {
     commit('close_container', {container, getters, dispatch})
+  },
+  TOGGLE_container({commit, getters, dispatch}, {val, container}) {
+    commit('toggle_container', {val, container, dispatch})
   },
 
 };
@@ -608,6 +628,7 @@ function createNetElement(event) {
     componentName: event.target.dataset.component,
     connectionOut: [],
     connectionIn: [],
+    connectionArrow: [],
     //calcAnchor: { top: [], right: [], bottom: [], left: []}
   };
 }

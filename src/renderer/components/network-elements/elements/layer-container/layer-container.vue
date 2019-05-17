@@ -31,6 +31,7 @@
   import ContextMenu  from '@/components/network-elements/net-context-menu/net-context-menu.vue';
   import ViewEl       from './view-layer-container.vue';
 
+
   export default {
     name: 'LayerContainer',
     components: {
@@ -74,9 +75,7 @@
     },
     methods: {
       toggleContainer(val) {
-        val
-         ? this.$store.dispatch('mod_workspace/CLOSE_container', this.elementData)
-         : this.$store.dispatch('mod_workspace/OPEN_container', this.elementData)
+        this.$store.dispatch('mod_workspace/TOGGLE_container', {val, container: this.elementData})
       }
     }
   }
@@ -95,7 +94,8 @@
     bottom: 100%;
     right: 1rem;
     margin-bottom: 1rem;
-    //background-color: $col-txt;
+    background-color: rgba($bg-workspace, .5);
+    transform: translate3d(0,0,0);
   }
   .layer-container_btn-open {
     position: absolute;
