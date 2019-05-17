@@ -229,13 +229,16 @@ export default {
           ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
           canvg(arrowsCanvas, svg.outerHTML);
           svg.style.display = 'none';
+          workspace.style.background = 'none';
           const options = {
-            scale: 1, //180x135
+            scale: 1,
+            backgroundColor: null,
           };
           return html2canvas(workspace, options)
             .then((canvas)=> {
               resolve(canvas.toDataURL());
               svg.style.display = 'block';
+              workspace.style.background = '';
               arrowsCanvas.remove();
             });
         })
