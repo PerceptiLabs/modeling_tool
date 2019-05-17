@@ -112,5 +112,4 @@
     justify-content: space-between;
     padding: .5rem;
   }
-
 </style>

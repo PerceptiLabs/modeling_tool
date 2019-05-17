@@ -1,5 +1,5 @@
 <template lang="pug">
-  .tutorial-box(v-if="statusShowTutorial || isFirstTimetApp")
+  .tutorial-box(v-if="statusShowTutorial || isFirstTimeApp")
     .tutorial-box_modal-popup
       button.close-tutorial.icon.icon-appClose(type="button" @click="closeTutorial")
       .modal-popup_step-info
@@ -100,7 +100,7 @@ export default {
     statusShowTutorial() {
       return this.$store.state.mod_tutorials.showTutorialStoryBoard
     },
-    isFirstTimetApp() {
+    isFirstTimeApp() {
       return this.$store.state.mod_tutorials.firstTimeApp
     }
   },
@@ -111,17 +111,18 @@ export default {
       setShowInstructionsMainTutorial:  'mod_tutorials/SET_showMainTutorialInstruction',
       setTutorialIstarted:              'mod_tutorials/SET_mainTutorialIsStarted',
       setActiveStep:                    'mod_tutorials/SET_activeStepMainTutorial',
+      setFirstTimeApp:                  'mod_tutorials/SET_firstTimeApp',
     }),
     ...mapActions({
       mainTutorialPointActivate:        'mod_tutorials/pointActivate'
     }),
     closeTutorial() {
       this.activeStep = 0;
-      this.setActiveStepStoryboard(this.activeStep)
+      this.setActiveStepStoryboard(this.activeStep);
       this.setShowStoryboard(false)
     },
     set_stepActive(way) {
-      way === 'next' ? this.activeStep++ : this.activeStep--
+      way === 'next' ? this.activeStep++ : this.activeStep--;
       this.setActiveStepStoryboard(this.activeStep)
     },
     dot_stepActive(index) {
@@ -129,7 +130,8 @@ export default {
       this.setActiveStepStoryboard(this.activeStep)
     },
     skipTutorial() {
-      this.closeTutorial()
+      this.closeTutorial();
+      this.setFirstTimeApp(false);
     },
     startMainTutorial() {
       this.activeStep = 0;
@@ -139,7 +141,8 @@ export default {
       this.setTutorialIstarted(true);
       this.setActiveStep('next');
       let firstActionId = this.mainTutorialActivePoint.actions[0].id;
-      this.mainTutorialPointActivate({way: null, validation: firstActionId})
+      this.mainTutorialPointActivate({way: null, validation: firstActionId});
+      this.setFirstTimeApp(false)
     }
   }
 }

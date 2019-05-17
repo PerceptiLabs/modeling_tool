@@ -202,21 +202,24 @@ export default {
       function doScreenShot(ctx) {
         return new Promise((resolve, reject)=> {
           const workspace = ctx.$refs.workspaceNet;
-          // const svg = workspace.querySelector('.svg-arrow');
-          // const arrowsCanvas = document.createElement('canvas');
-          // arrowsCanvas.style.position = 'absolute';
-          // arrowsCanvas.style.zIndex = '0';
-          // ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
-          // canvg(arrowsCanvas, svg.outerHTML);
-          // svg.style.display = 'none';
+          const svg = workspace.querySelector('.svg-arrow');
+          const arrowsCanvas = document.createElement('canvas');
+          arrowsCanvas.style.position = 'absolute';
+          arrowsCanvas.style.zIndex = '0';
+          ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
+          canvg(arrowsCanvas, svg.outerHTML, {});
+          svg.style.display = 'none';
+          workspace.style.background = 'none';
           const options = {
-            scale: 1, //180x135
+            scale: 1,
+            backgroundColor: null,
           };
           return html2canvas(workspace, options)
             .then((canvas)=> {
               resolve(canvas.toDataURL());
-              // svg.style.display = 'block';
-              // arrowsCanvas.remove();
+               svg.style.display = 'block';
+               workspace.style.background = '';
+               arrowsCanvas.remove();
             });
         })
       }

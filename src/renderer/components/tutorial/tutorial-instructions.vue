@@ -128,7 +128,7 @@ export default {
       this.addNetwork({'ctx': this})
     },
     switchTutorialMode() {
-      if(this.currentNetworkElementList.length > 0 && !this.isTutorialMode) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+      if(this.currentNetworkElementList !== null && !this.isTutorialMode) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
       this.setShowInstructions(!this.isShowInstructions);
       this.setTutorialMode(!this.isTutorialMode);
       if(!this.isTutorialMode) this.resetTutorial();
