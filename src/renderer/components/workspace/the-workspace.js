@@ -108,7 +108,6 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     calcScaleMap() {
-      console.log('calcScaleMap');
       this.$nextTick(()=> {
         const net = this.$refs.networkField[0].$refs.network;
         const scaleH = net.offsetHeight/net.scrollHeight;
@@ -170,8 +169,7 @@ export default {
           const stringNet = cloneNet(network, img);
           openSaveDialog(stringNet)
         })
-        .catch((err)=> {console.log(err)})
-
+        .catch((err)=> {console.log(err)});
 
       function openSaveDialog(jsonNet) {
         const option = {
@@ -181,7 +179,6 @@ export default {
             {name: 'Text', extensions: ['json']},
           ]
         };
-
 
         dialog.showSaveDialog(null, option, (fileName) => {
           if (fileName === undefined){
@@ -198,7 +195,6 @@ export default {
           });
         });
       }
-
       function doScreenShot(ctx) {
         return new Promise((resolve, reject)=> {
           const workspace = ctx.$refs.workspaceNet;

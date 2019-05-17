@@ -15,7 +15,6 @@ const mutations = {
     state.selectedElArr = value;
   },
   CHANGE_selectElArr(state, dataEl) {
-    console.log('CHANGE_selectElArr');
     let elArr = state.selectedElArr;
     if (dataEl.layerType === "Training") {
       elArr.statistics.layerMeta.isSelected = false;
@@ -32,7 +31,6 @@ const mutations = {
 
 const actions = {
   STAT_defaultSelect({commit, rootGetters}) {
-    console.log('STAT_defaultSelect');
     let elArr = {
       statistics: null,
       viewBox: null
