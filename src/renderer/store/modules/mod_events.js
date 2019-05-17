@@ -22,9 +22,9 @@ const mutations = {
   set_saveNetwork(state) {
     state.saveNetwork++
   },
-  set_chartResize(state) {
-    state.chartResize++
-  },
+  // set_chartResize(state) {
+  //   state.chartResize++
+  // },
   set_globalPressKey(state, path) {
     state.globalPressKey[path]++
   },
@@ -56,9 +56,9 @@ const actions = {
       ipcRenderer.send('appClose')
     }
   },
-  EVENT_chartResize({commit}) {
-    commit('set_chartResize')
-  },
+  // EVENT_chartResize({commit}) {
+  //   commit('set_chartResize')
+  // },
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)
   },

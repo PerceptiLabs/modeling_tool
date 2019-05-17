@@ -76,11 +76,11 @@ const mutations = {
 };
 
 const actions = {
-  NET_trainingStart({dispatch, commit}) {
-    commit('HIDE_allGlobalPopups');
-    //commit('SET_statisticsIsOpen', true);
-    dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
-  },
+  // NET_trainingStart({dispatch, commit}) {
+  //   commit('HIDE_allGlobalPopups');
+  //   //commit('SET_statisticsIsOpen', true);
+  //   dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
+  // },
   NET_trainingDone({state, commit, dispatch}) {
     commit('GP_showNetResult', true);
     dispatch('mod_workspace/SET_openTest', false, {root: true});

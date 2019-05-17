@@ -108,6 +108,7 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
     calcScaleMap() {
+      console.log('calcScaleMap');
       this.$nextTick(()=> {
         const net = this.$refs.networkField[0].$refs.network;
         const scaleH = net.offsetHeight/net.scrollHeight;
@@ -155,15 +156,11 @@ export default {
     },
     openStatistics(i) {
       this.setTabNetwork(i);
-      this.$store.dispatch('mod_statistics/STAT_defaultSelect');
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
-      this.$store.dispatch('mod_events/EVENT_chartResize');
     },
     openTest(i) {
       this.setTabNetwork(i);
-      this.$store.dispatch('mod_statistics/STAT_defaultSelect');
       this.$store.dispatch('mod_workspace/SET_openTest', true);
-      this.$store.dispatch('mod_events/EVENT_chartResize');
     },
     saveNetwork() {
       const dialog = remote.dialog;
