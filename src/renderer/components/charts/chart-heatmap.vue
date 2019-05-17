@@ -67,14 +67,9 @@ export default {
       }
       let model = {...this.defaultModel};
       model.series = data[0];
-      //model.series = dataHeat.series[0];
 
       this.wWorker.postMessage(model);
     }
   }
 }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

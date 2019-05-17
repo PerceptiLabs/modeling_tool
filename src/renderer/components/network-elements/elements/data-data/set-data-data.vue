@@ -37,13 +37,13 @@
           .form_row(v-if="dataColumns.length")
             base-select(
               v-model="dataColumnsSelected"
-              :selectOptions="dataColumns"
+              :select-options="dataColumns"
               :select-multiple="true"
               )
           .form_row
             chart-switch(
               :disable-header="true"
-              :chartData="imgData"
+              :chart-data="imgData"
             )
 
       .popup_body(:class="{'active': tabSelected == 1}")
@@ -150,8 +150,6 @@
         this.settings.accessProperties.Path = pathArr;
         this.getSettingsInfo();
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'})
-        //this.applySettings();
-        //this.$store.dispatch('mod_workspace/SET_elementSettings', this.settings)
       },
       clearPath() {
         this.deleteDataMeta('DataData')
@@ -172,10 +170,6 @@
             })
             .then(()=> this.getDataPlot('DataData'))
         }
-        // this.getDataMeta('DataData')
-        //   .then(()=> {
-        //     this.getDataImg('DataData')
-        //   })
       },
       createSelectArr(data) {
         data.forEach((el, index) => this.dataColumns.push({text: el, value: index}));

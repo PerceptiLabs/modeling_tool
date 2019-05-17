@@ -1,6 +1,6 @@
 const configApp = {
-  //version: 'core_cloud', //'python'
   developMode: true,
+  workspaceGrid: 10
 };
 
 //configApp.version = process.env.BUILD_TARGET === 'core_local' ? 'core_local' : 'core_cloud';

@@ -8,20 +8,19 @@
 </template>
 
 <script>
-  import {ipcRenderer} from 'electron'
   import TheMenu from '@/components/the-menu.vue'
 export default {
   name: "HeaderMac",
   components: {TheMenu},
   methods: {
     appClose() {
-      this.$emit('appClosed')
+      this.$emit('app-closed')
     },
     appMinimize() {
-      this.$emit('appMinimized')
+      this.$emit('app-minimized')
     },
     appMaximize() {
-      this.$emit('appMaximized')
+      this.$emit('app-maximized')
     }
   }
 }
@@ -91,6 +90,4 @@ export default {
     flex-grow: 1;
     text-align: center;
   }
-
-
 </style>

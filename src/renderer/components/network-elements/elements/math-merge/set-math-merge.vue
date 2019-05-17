@@ -18,23 +18,23 @@
               .form_label Operation:
               .form_input
                 div
-                  base-radio(groupName="group" valueInput="Concat" v-model="settings.Type")
+                  base-radio(group-name="group" value-input="Concat" v-model="settings.Type")
                     span Concatenate
                   .form_row(v-if="settings.Type == 'Concat' ")
                     span Merge dimension
                     .form_input
                       input(type="number" v-model="settings.Merge_dim")
                 div
-                  base-radio(groupName="group" valueInput="Sub" v-model="settings.Type")
+                  base-radio(group-name="group" value-input="Sub" v-model="settings.Type")
                     span Subtraction
                 div
-                  base-radio(groupName="group" valueInput="Add" v-model="settings.Type")
+                  base-radio(group-name="group" value-input="Add" v-model="settings.Type")
                     span Addition
                 div
-                  base-radio(groupName="group" valueInput="Multi" v-model="settings.Type")
+                  base-radio(group-name="group" value-input="Multi" v-model="settings.Type")
                     span Multiplication
                 div
-                  base-radio(groupName="group" valueInput="Div" v-model="settings.Type")
+                  base-radio(group-name="group" value-input="Div" v-model="settings.Type")
                     span Division
 
       .popup_body(:class="{'active': tabSelected == 1}")

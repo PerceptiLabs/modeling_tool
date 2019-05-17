@@ -1,13 +1,13 @@
 import coreRequest  from "@/core/apiCore.js";
-import {pathCore}   from "@/core/constants.js";
 
-//const net = require('net');
 const {spawn} = require('child_process');
 
 function prepareNetwork(elementList) {
   let layers = {};
-  elementList.forEach((el)=> {
-    let dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
+  for(let layer in elementList) {
+    const dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
+    const el = elementList[layer];
+    if(el.componentName === 'LayerContainer') continue;
     if(dataLayers.includes(el.componentName)) {
       layers[el.layerId] = {
         Name: el.layerName,
@@ -28,7 +28,7 @@ function prepareNetwork(elementList) {
         forward_connections: el.connectionOut
       };
     }
-  });
+  }
   return layers
 }
 
@@ -36,7 +36,6 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
-  //getStatusTimer: null,
 };
 
 const getters = {
@@ -47,15 +46,6 @@ const mutations = {
   SET_statusLocalCore(state, value) {
     state.statusLocalCore = value
   },
-  // SET_startWatchGetStatus(state, value) {
-  //   state.startWatchGetStatus = value
-  // },
-  // SET_getStatusTimer(state, value) {
-  //   state.getStatusTimer = value
-  // },
-  // RESET_getStatusTimer(state) {
-  //   clearInterval(state.getStatusTimer);
-  // }
 };
 
 const actions = {
@@ -128,7 +118,7 @@ const actions = {
   API_getStatus({rootGetters, dispatch, commit}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.openTest ? 'getTestStatus' :'getStatus',
+      action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
       value: ''
     };
     coreRequest(theData)
@@ -333,11 +323,11 @@ const actions = {
       action: "getNetworkOutputDim",
       value: prepareNetwork(elementList)
     };
-    coreRequest(theData)
+    return coreRequest(theData)
       .then((data)=> {
         if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
       })
-      .catch((err) =>{
+      .catch((err)=> {
         console.error(err);
       });
   },

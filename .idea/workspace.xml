@@ -2,12 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/charts/resource-monitor.vue" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-training-section.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-progress.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-progress.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-training.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-training.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-container/layer-container.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-container/layer-container.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers--item.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers--item.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,162 +21,182 @@
     <favorites_list name="quantumnet" />
   </component>
   <component name="FileEditorManager">
-    <leaf>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
+        <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="728">
-              <caret line="91" column="39" lean-forward="true" selection-start-line="91" selection-start-column="39" selection-end-line="91" selection-end-column="39" />
-            </state>
-          </provider>
-        </entry>
-      </file>
-      <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-training.vue">
-          <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="176">
-              <caret line="8" column="26" lean-forward="true" selection-start-line="8" selection-start-column="8" selection-end-line="8" selection-end-column="26" />
-              <folding>
-                <element signature="e#803#852#0" expanded="true" />
-              </folding>
+            <state relative-caret-position="5708">
+              <caret line="419" column="15" selection-start-line="419" selection-start-column="15" selection-end-line="419" selection-end-column="15" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/resource-monitor.vue">
+        <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="572">
-              <caret line="35" column="6" lean-forward="true" selection-start-line="35" selection-start-column="6" selection-end-line="35" selection-end-column="6" />
+            <state relative-caret-position="660">
+              <caret line="30" column="3" lean-forward="true" selection-start-line="30" selection-start-column="3" selection-end-line="30" selection-end-column="3" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-progress.vue">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="374">
-              <caret line="17" column="24" selection-start-line="17" selection-start-column="24" selection-end-line="17" selection-end-column="24" />
+            <state relative-caret-position="286">
+              <caret line="50" column="7" lean-forward="true" selection-start-line="50" selection-start-column="7" selection-end-line="50" selection-end-column="7" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/App.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="239">
+              <caret line="189" column="16" lean-forward="true" selection-start-line="189" selection-start-column="16" selection-end-line="189" selection-end-column="16" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers--item.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="697">
+              <caret line="81" column="13" selection-start-line="81" selection-start-column="13" selection-end-line="81" selection-end-column="13" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-container/layer-container.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="354">
+              <caret line="74" column="6" lean-forward="true" selection-start-line="74" selection-start-column="6" selection-end-line="74" selection-end-column="6" />
+              <folding>
+                <element signature="e#788#883#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="22">
+              <caret line="6" column="33" selection-start-line="6" selection-start-column="14" selection-end-line="6" selection-end-column="33" />
             </state>
           </provider>
         </entry>
       </file>
     </leaf>
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="JavaScript File" />
-      </list>
-    </option>
-  </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>resizeCalc</find>
-      <find>calcViewPort</find>
-      <find>.page_layersbar</find>
-      <find>.layersbar-list</find>
-      <find>.toggle-wrap</find>
-      <find>w-layersbar</find>
-      <find>.toolbar_lis</find>
-      <find>refNetworkMouseDown</find>
-      <find>removeMultiSelectListener</find>
-      <find>html2canvas</find>
-      <find>.sublist-area_list</find>
-      <find>action-list_sublist-area</find>
-      <find>action-list</find>
-      <find>openSubList</find>
-      <find>checkedOptions</find>
-      <find>icon-shevron</find>
-      <find>Bias</find>
-      <find>(:draggable=&quot;</find>
-      <find>TrainNormalData</find>
-      <find>ul.</find>
-      <find>ul.layers</find>
-      <find>coreCode</find>
-      <find>.the-statistics</find>
-      <find>mnist</find>
-      <find>charts/img.js</find>
-      <find>components/charts/line.js</find>
-      <find>components/charts/</find>
-      <find>Forest</find>
-      <find>statusNetworkCore</find>
-      <find>buffer</find>
+      <find>net-element-data</find>
+      <find>learn-deep</find>
+      <find>Math.min</find>
+      <find>layerMeta</find>
+      <find>add_container</find>
+      <find>.svg-arrow</find>
+      <find>.net-element_window</find>
+      <find>.net-element_btn</find>
+      <find>.net-element</find>
+      <find>SET_elementUnselect</find>
+      <find>.net-element_be-for-end</find>
+      <find>addLayerContainer</find>
+      <find>dispatch</find>
+      <find>set_elementUnselect</find>
+      <find>connectionOut</find>
+      <find>currentNetwork</find>
+      <find>currentNode</find>
+      <find>.layer-item_child-list</find>
+      <find>.layer-item</find>
+      <find>un</find>
+      <find>delete_element</find>
+      <find>networkElementList</find>
+      <find>componentName ===</find>
+      <find>this.$store</find>
+      <find>eventLoadNetwork</find>
+      <find>toggle_container</find>
+      <find>currentId</find>
+      <find>isOpen</find>
+      <find>TOGGLE_container</find>
+      <find>mod_workspace/TOGGLE_container</find>
     </findStrings>
     <dirStrings>
       <dir>G:\progects\quantumnet\src</dir>
-      <dir>G:\progects\quantumnet</dir>
+      <dir>G:\progects\quantumnet\src\renderer</dir>
     </dirStrings>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="web" />
+        <entry key="$PROJECT_DIR$" value="dev" />
       </map>
     </option>
   </component>
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-nearest/view-classic-ml-k-nearest.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-vector-machine/view-classic-ml-vector-machine.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-genetic/view-train-genetic.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-dbscans/view-classic-ml-dbscans.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-means/view-classic-ml-k-means.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal-data/view-train-normal-data.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/core/constants.js" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" />
-        <option value="$PROJECT_DIR$/src/renderer/components/sidebar/blocks/Save.pug" />
-        <option value="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-softmax/set-math-softmax.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-grayscale/set-process-grayscale.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-grayscale/view-process-grayscale.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-embed/set-process-embed.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-split/set-math-split.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/set-train-dunamic.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/statistics/the-statistics.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/viewBox-train-dynamic.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-genetic/viewBox-train-genetic.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-dbscans/viewBox-classic-ml-dbscans.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-split/viewBox-math-split.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-embed/viewBox-process-embed.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-means/viewBox-classic-ml-k-means.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-nearest/viewBox-classic-ml-k-nearest.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-random-forest/viewBox-classic-ml-random-forest.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-vector-machine/viewBox-classic-ml-vector-machine.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-random-forest/view-classic-ml-random-forest.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-embed/view-process-embed.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/different/export-data.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/view-train-dynamic.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-reinforce/view-train-reinforce.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/App.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/core/mixins/charts.js" />
-        <option value="$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" />
-        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" />
-        <option value="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" />
+        <option value="$PROJECT_DIR$/src/renderer/core/apiCloud.js" />
+        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace-old.js" />
+        <option value="$PROJECT_DIR$/src/renderer/pages/app/quantum.js" />
+        <option value="$PROJECT_DIR$/src/renderer/pages/app/quantum.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/router/index.js" />
+        <option value="$PROJECT_DIR$/src/renderer/pages/login/login.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/pages/policy/policy.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/pages/projects/recent-files/_recent-files.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/pages/projects/sidebar/_sidebar.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/components/statistics/the-view-box.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" />
+        <option value="$PROJECT_DIR$/src/renderer/components/global-popups/workspace-result.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_statistics.js" />
+        <option value="$PROJECT_DIR$/src/renderer/pages/app/app.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal/set-train-normal.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" />
-        <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-training-section.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-progress.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/global-popups/workspace-general-settings.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/statistics/the-statistics.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/scss/components/_charts.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/charts/chart-pie.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js" />
+        <option value="$PROJECT_DIR$/../test-info/new-mod.json" />
+        <option value="$PROJECT_DIR$/src/renderer/core/basic-template/base-template-1.js" />
+        <option value="$PROJECT_DIR$/src/renderer/pages/projects/projects.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-training.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/charts/resource-monitor.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" />
+        <option value="$PROJECT_DIR$/src/renderer/core/mixins/charts.js" />
+        <option value="$PROJECT_DIR$/src/renderer/core/globalSettings.js" />
+        <option value="$PROJECT_DIR$/src/renderer/core/helpers.js" />
+        <option value="$PROJECT_DIR$/src/renderer/core/mixins/base-net-drag.js" />
+        <option value="$PROJECT_DIR$/src/renderer/components/base/text-editable.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/header/header-linux.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/global-popups/update-popup/popup-loading.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/header/header-win.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/header/header-mac.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/global-popups/update-popup/popup-info.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/workspace/tabset/workspace-tabset.pug" />
+        <option value="$PROJECT_DIR$/src/renderer/components/global-popups/update-popup/update-popup.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" />
+        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" />
+        <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/App.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-container/layer-container.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" />
+        <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers--item.vue" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="32" />
-    <option name="y" value="13" />
-    <option name="width" value="1661" />
+    <option name="x" value="396" />
+    <option name="y" value="2" />
+    <option name="width" value="1228" />
     <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
@@ -185,6 +207,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="ProjectPane" />
       <pane id="Scope">
         <subPane subId="Scope 'Project Files'; set:Project Files; class com.intellij.psi.search.scope.ProjectFilesScope">
           <expand>
@@ -216,7 +239,7 @@
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="charts" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="global-popups" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
@@ -225,6 +248,14 @@
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="sidebar" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="workspace" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
@@ -245,29 +276,29 @@
           <select />
         </subPane>
       </pane>
-      <pane id="ProjectPane" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="Git.Branch.Popup.ShowAllRemotes" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editor.config.ad.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/components/sidebar" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/store/modules" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="G:\progects\quantumnet\node_modules\prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.HTML" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="G:\progects\quantumnet\src\renderer\components\sidebar" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\charts" />
-      <recent name="G:\progects\quantumnet\src\renderer\core\basic-template" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\different" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\web" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\quantumnet\src\renderer\components\different" />
       <recent name="G:\progects\quantumnet\src\renderer\assets" />
       <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\progects\quantumnet\src\renderer\store\modules" />
+      <recent name="G:\progects\quantumnet\src\renderer\components\charts" />
+      <recent name="G:\progects\quantumnet\src\renderer\components\network-field" />
+      <recent name="G:\progects\quantumnet\src\renderer\core\basic-template" />
+      <recent name="G:\progects\quantumnet\static" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -281,6 +312,18 @@
         </RuleState>
       </list>
     </option>
+  </component>
+  <component name="RunManager">
+    <configuration name="mod_workspace.js" type="NodeJSConfigurationType" temporary="true" nameIsGenerated="true" path-to-js-file="mod_workspace.js" working-dir="$PROJECT_DIR$/src/renderer/store/modules">
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="Node.js.mod_workspace.js" />
+        <item itemvalue="Node.js.mod_workspace.js" />
+        <item itemvalue="Node.js.mod_workspace.js" />
+      </list>
+    </recent_temporary>
   </component>
   <component name="SvnConfiguration">
     <configuration />
@@ -433,35 +476,48 @@
       <workItem from="1555327132425" duration="8679000" />
       <workItem from="1555336254824" duration="5503000" />
       <workItem from="1555341947261" duration="5777000" />
-      <workItem from="1555350633795" duration="3479000" />
-      <workItem from="1555406359769" duration="20952000" />
-      <workItem from="1555575104697" duration="1572000" />
-      <workItem from="1555699937187" duration="2357000" />
-      <workItem from="1556187138702" duration="1859000" />
-      <workItem from="1556206253771" duration="12480000" />
+      <workItem from="1556084981448" duration="14924000" />
+      <workItem from="1556106459986" duration="3837000" />
+      <workItem from="1557140227543" duration="8578000" />
+      <workItem from="1557301900973" duration="10375000" />
+      <workItem from="1557730249517" duration="67000" />
+      <workItem from="1557730458650" duration="23641000" />
+      <workItem from="1557867831284" duration="6905000" />
+      <workItem from="1557903486078" duration="23161000" />
+      <workItem from="1557988196954" duration="18818000" />
+      <workItem from="1558073565081" duration="6800000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="389093000" />
+    <option name="totallyTimeSpent" value="478759000" />
+  </component>
+  <component name="TodoView">
+    <todo-panel id="selected-file">
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
+    <todo-panel id="all">
+      <are-packages-shown value="true" />
+      <is-autoscroll-to-source value="true" />
+    </todo-panel>
   </component>
   <component name="ToolWindowManager">
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49565217" visible="true" weight="0.2088842" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49565217" visible="true" weight="0.2194606" />
       <window_info id="Structure" order="1" sideWeight="0.5043478" side_tool="true" weight="0.23849815" />
       <window_info id="npm" order="2" sideWeight="0.50166667" side_tool="true" weight="0.24960339" />
       <window_info id="Favorites" order="3" sideWeight="0.5043478" side_tool="true" weight="0.23849815" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32998884" />
       <window_info anchor="bottom" id="Run" order="2" weight="0.16648045" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info anchor="bottom" id="Debug" order="3" weight="0.39910814" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info anchor="bottom" id="TODO" order="6" />
+      <window_info anchor="bottom" id="TODO" order="6" weight="0.32998884" />
       <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Version Control" order="8" sideWeight="0.4997356" weight="0.44370124" />
+      <window_info anchor="bottom" id="Version Control" order="8" sideWeight="0.4997356" weight="0.6454849" />
       <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.5002644" side_tool="true" weight="0.6566332" />
       <window_info anchor="bottom" id="Terminal" order="10" weight="0.17948718" />
       <window_info anchor="bottom" id="TypeScript" order="11" weight="0.32960895" />
@@ -516,21 +572,6 @@
             <list>
               <RecentGroup>
                 <option name="FILTER_VALUES">
-                  <option value="dev" />
-                </option>
-              </RecentGroup>
-              <RecentGroup>
-                <option name="FILTER_VALUES">
-                  <option value="web" />
-                </option>
-              </RecentGroup>
-              <RecentGroup>
-                <option name="FILTER_VALUES">
-                  <option value="origin/web" />
-                </option>
-              </RecentGroup>
-              <RecentGroup>
-                <option name="FILTER_VALUES">
                   <option value="beta-testing" />
                 </option>
               </RecentGroup>
@@ -552,334 +593,342 @@
     </option>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/base-net-paint-arrows.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="198">
-          <caret line="9" column="13" selection-start-line="9" selection-start-column="13" selection-end-line="9" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state>
-          <folding>
-            <element signature="e#0#95#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1188">
-          <caret line="54" column="30" selection-start-line="54" selection-start-column="25" selection-end-line="54" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3256">
-          <caret line="151" column="97" selection-start-line="151" selection-start-column="97" selection-end-line="151" selection-end-column="97" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2574">
-          <caret line="117" selection-start-line="117" selection-end-line="117" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-layersbar.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3256">
-          <caret line="186" column="72" selection-start-line="186" selection-start-column="72" selection-end-line="186" selection-end-column="72" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/apiCore.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-352">
-          <caret line="11" column="54" selection-start-line="11" selection-start-column="54" selection-end-line="11" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/blocks/Save.pug">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-sidebar.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="8" column="31" selection-start-line="8" selection-start-column="31" selection-end-line="8" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/different/import-data.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="464">
-          <caret line="33" column="71" selection-start-line="33" selection-start-column="71" selection-end-line="33" selection-end-column="71" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-softmax/math-softmax.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-188" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-softmax/set-math-softmax.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="32" column="21" lean-forward="true" selection-start-line="32" selection-start-column="21" selection-end-line="32" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-grayscale/view-process-grayscale.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-140">
-          <caret line="6" column="49" selection-start-line="6" selection-start-column="49" selection-end-line="6" selection-end-column="49" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-grayscale/set-process-grayscale.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="264">
-          <caret line="34" column="5" lean-forward="true" selection-start-line="34" selection-start-column="5" selection-end-line="34" selection-end-column="5" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-grayscale/viewBox-process-grayscale.vue">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-grayscale/process-grayscale.vue">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings-data.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1914">
-          <caret line="87" column="8" lean-forward="true" selection-start-line="87" selection-start-column="8" selection-end-line="87" selection-end-column="8" />
+        <state relative-caret-position="1254">
+          <caret line="57" column="8" selection-start-line="57" selection-start-column="8" selection-end-line="57" selection-end-column="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/global-popups/workspace-general-settings.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="86" column="36" selection-start-line="86" selection-start-column="36" selection-end-line="86" selection-end-column="36" />
+        <state relative-caret-position="328">
+          <caret line="121" column="27" lean-forward="true" selection-start-line="121" selection-start-column="27" selection-end-line="121" selection-end-column="27" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-embed/set-process-embed.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="618">
-          <caret line="41" selection-start-line="41" selection-end-line="41" />
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/statistics/the-view-box.vue">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="418">
-          <caret line="91" column="177" lean-forward="true" selection-start-line="91" selection-start-column="177" selection-end-line="91" selection-end-column="177" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="638">
-          <caret line="78" column="1" selection-start-line="76" selection-start-column="1" selection-end-line="78" selection-end-column="1" />
-          <caret line="84" selection-start-line="82" selection-end-line="84" />
-          <caret line="90" selection-start-line="88" selection-end-line="90" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="24">
-          <caret line="79" selection-start-line="79" selection-end-line="79" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-split/set-math-split.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="154">
-          <caret line="7" column="46" selection-start-line="7" selection-start-column="46" selection-end-line="7" selection-end-column="46" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/set-train-dunamic.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="726">
-          <caret line="34" column="16" lean-forward="true" selection-start-line="34" selection-start-column="16" selection-end-line="34" selection-end-column="16" />
-        </state>
-      </provider>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/statistics/the-testing.vue">
+      <provider selected="true" editor-type-id="text-editor" />
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/statistics/the-statistics.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="332">
-          <caret line="52" column="19" lean-forward="true" selection-start-line="52" selection-start-column="19" selection-end-line="52" selection-end-column="19" />
+        <state relative-caret-position="418">
+          <caret line="41" column="12" lean-forward="true" selection-start-line="41" selection-start-column="12" selection-end-line="41" selection-end-column="12" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-dbscans/viewBox-classic-ml-dbscans.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_charts.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="396">
-          <caret line="24" column="60" lean-forward="true" selection-start-line="24" selection-start-column="60" selection-end-line="24" selection-end-column="60" />
+        <state relative-caret-position="594">
+          <caret line="27" column="16" selection-start-line="27" selection-start-column="16" selection-end-line="27" selection-end-column="16" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-random-forest/classic-ml-random-forest.vue">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-random-forest/view-classic-ml-random-forest.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/chart-heatmap.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="110">
-          <caret line="5" column="35" lean-forward="true" selection-start-line="5" selection-start-column="35" selection-end-line="5" selection-end-column="35" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-embed/view-process-embed.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="110">
-          <caret line="5" column="23" selection-start-line="5" selection-start-column="23" selection-end-line="5" selection-end-column="23" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/view-train-dynamic.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="110">
-          <caret line="5" column="37" selection-start-line="5" selection-start-column="37" selection-end-line="5" selection-end-column="37" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-reinforce/view-train-reinforce.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="110">
-          <caret line="5" column="44" selection-start-line="5" selection-start-column="44" selection-end-line="5" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/../New/icomoon/style.css" />
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-random-forest/set-classic-ml-random-forest.vue">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6886">
-          <caret line="313" column="12" selection-start-line="313" selection-start-column="1" selection-end-line="313" selection-end-column="12" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-toolbar.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2948">
-          <caret line="136" column="13" selection-start-line="136" selection-start-column="13" selection-end-line="136" selection-end-column="13" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="36" column="20" selection-start-line="36" selection-start-column="8" selection-end-line="36" selection-end-column="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/different/export-data.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="550">
-          <caret line="47" column="5" selection-start-line="47" selection-start-column="5" selection-end-line="47" selection-end-column="5" />
+        <state relative-caret-position="354">
+          <caret line="58" column="61" selection-start-line="58" selection-start-column="61" selection-end-line="58" selection-end-column="61" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="572">
-          <caret line="101" column="10" selection-start-line="101" selection-start-column="10" selection-end-line="101" selection-end-column="10" />
+        <state relative-caret-position="287">
+          <caret line="26" column="78" selection-start-line="26" selection-start-column="57" selection-end-line="26" selection-end-column="78" />
           <folding>
             <element signature="e#0#64#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/globalView.js">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-sidebar.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="110">
-          <caret line="5" column="32" selection-start-line="5" selection-start-column="32" selection-end-line="5" selection-end-column="32" />
+        <state relative-caret-position="198">
+          <caret line="54" column="7" lean-forward="true" selection-start-line="54" selection-start-column="7" selection-end-line="54" selection-end-column="7" />
+          <folding>
+            <element signature="e#719#789#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-toolbar.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="353">
+          <caret line="124" column="7" lean-forward="true" selection-start-line="121" selection-start-column="3" selection-end-line="124" selection-end-column="7" />
+          <folding>
+            <element signature="e#3544#3644#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/chart-pie.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="618">
+          <caret line="102" column="37" selection-start-line="102" selection-start-column="37" selection-end-line="102" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/chart-base.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="66">
+          <caret line="3" column="23" selection-start-line="3" selection-start-column="14" selection-end-line="3" selection-end-column="23" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/charts.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="530">
-          <caret line="75" column="4" selection-start-line="75" selection-start-column="4" selection-end-line="75" selection-end-column="4" />
+        <state relative-caret-position="-399">
+          <caret line="28" column="6" selection-start-line="28" selection-start-column="6" selection-end-line="28" selection-end-column="6" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js">
+    <entry file="file://$PROJECT_DIR$/src/renderer/pages/projects/projects.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="432" column="6" selection-start-line="432" selection-start-column="6" selection-end-line="432" selection-end-column="6" />
+        <state relative-caret-position="330">
+          <caret line="93" column="30" selection-start-line="93" selection-start-column="30" selection-end-line="93" selection-end-column="30" />
+          <folding>
+            <element signature="e#300#332#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/pages/projects/basic-templates/basic-templates.pug">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/../test-info/new-mod.json">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="88">
+          <caret line="4" column="24" lean-forward="true" selection-start-line="4" selection-start-column="2" selection-end-line="4" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/basic-template/base-template-1.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="132">
+          <caret line="6" column="22" lean-forward="true" selection-start-line="6" selection-start-column="22" selection-end-line="6" selection-end-column="22" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/tabset/workspace-tabset.pug">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="157">
+          <caret line="9" column="35" selection-start-line="9" selection-start-column="19" selection-end-line="9" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_events.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="110">
+          <caret line="5" column="11" selection-start-line="5" selection-start-column="2" selection-end-line="5" selection-end-column="11" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="396">
+          <caret line="18" column="7" selection-start-line="18" selection-start-column="7" selection-end-line="18" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/helpers.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1122">
+          <caret line="53" column="47" selection-start-line="53" selection-start-column="47" selection-end-line="53" selection-end-column="47" />
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/globalSettings.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/constants.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/base-net-paint-arrows.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/base-net-drag.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="154">
+          <caret line="7" column="10" selection-start-line="7" selection-start-column="10" selection-end-line="7" selection-end-column="10" />
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/common/_typography.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-264" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/global-popups/update-popup/popup-loading.vue">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/global-popups/update-popup/update-popup.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="308">
+          <caret line="14" column="35" lean-forward="true" selection-start-line="14" selection-start-column="35" selection-end-line="14" selection-end-column="35" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/global-popups/the-info-popup.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-64" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-menu.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="396">
+          <caret line="213" column="25" selection-start-line="213" selection-start-column="19" selection-end-line="213" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-layersbar.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-790">
+          <caret line="207" column="25" lean-forward="true" selection-start-line="206" selection-end-line="207" selection-end-column="25" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/global-popups/workspace-core-side.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-790" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/common/_helpers.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-1736" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/components/_sidebar.scss">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/_common.scss">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/data-data.vue">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/view-data-data.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="22">
+          <caret line="1" column="38" selection-start-line="1" selection-start-column="21" selection-end-line="1" selection-end-column="38" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/common/_button.scss">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/scss/base/_variables.scss">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="638">
+          <caret line="65" column="9" lean-forward="true" selection-start-line="65" selection-end-line="65" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="484">
+          <caret line="22" column="9" lean-forward="true" selection-start-line="22" selection-start-column="9" selection-end-line="22" selection-end-column="9" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-container/view-layer-container.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="44">
+          <caret line="2" column="34" selection-start-line="2" selection-start-column="20" selection-end-line="2" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-2992">
+          <caret line="8" column="13" selection-start-line="8" selection-start-column="5" selection-end-line="8" selection-end-column="13" />
+          <folding>
+            <element signature="e#616#680#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="682">
+          <caret line="309" column="14" selection-start-line="309" selection-start-column="14" selection-end-line="309" selection-end-column="14" />
+          <folding>
+            <element signature="e#0#95#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="330">
+          <caret line="30" column="59" selection-start-line="30" selection-start-column="27" selection-end-line="30" selection-end-column="59" />
+          <folding>
+            <element signature="e#0#39#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/App.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="352">
-          <caret line="212" column="31" selection-start-line="212" selection-start-column="31" selection-end-line="212" selection-end-column="31" />
+        <state relative-caret-position="239">
+          <caret line="189" column="16" lean-forward="true" selection-start-line="189" selection-start-column="16" selection-end-line="189" selection-end-column="16" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="310">
-          <caret line="62" column="6" selection-start-line="62" selection-start-column="6" selection-end-line="62" selection-end-column="6" />
+        <state relative-caret-position="22">
+          <caret line="6" column="33" selection-start-line="6" selection-start-column="14" selection-end-line="6" selection-end-column="33" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal/set-train-normal.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-container/layer-container.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="726">
-          <caret line="51" column="30" lean-forward="true" selection-start-line="51" selection-start-column="30" selection-end-line="51" selection-end-column="30" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-share.vue">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="728">
-          <caret line="91" column="39" lean-forward="true" selection-start-line="91" selection-start-column="39" selection-end-line="91" selection-end-column="39" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-training-section.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="156">
-          <caret line="13" column="15" selection-start-line="13" selection-start-column="4" selection-end-line="13" selection-end-column="15" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-progress.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="374">
-          <caret line="17" column="24" selection-start-line="17" selection-start-column="24" selection-end-line="17" selection-end-column="24" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-training.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="176">
-          <caret line="8" column="26" lean-forward="true" selection-start-line="8" selection-start-column="8" selection-end-line="8" selection-end-column="26" />
+        <state relative-caret-position="354">
+          <caret line="74" column="6" lean-forward="true" selection-start-line="74" selection-start-column="6" selection-end-line="74" selection-end-column="6" />
           <folding>
-            <element signature="e#803#852#0" expanded="true" />
+            <element signature="e#788#883#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/charts/resource-monitor.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="572">
-          <caret line="35" column="6" lean-forward="true" selection-start-line="35" selection-start-column="6" selection-end-line="35" selection-end-column="6" />
+        <state relative-caret-position="286">
+          <caret line="50" column="7" lean-forward="true" selection-start-line="50" selection-start-column="7" selection-end-line="50" selection-end-column="7" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers--item.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="697">
+          <caret line="81" column="13" selection-start-line="81" selection-start-column="13" selection-end-line="81" selection-end-column="13" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="5708">
+          <caret line="419" column="15" selection-start-line="419" selection-start-column="15" selection-end-line="419" selection-end-column="15" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_api.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="660">
+          <caret line="30" column="3" lean-forward="true" selection-start-line="30" selection-start-column="3" selection-end-line="30" selection-end-column="3" />
         </state>
       </provider>
     </entry>

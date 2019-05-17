@@ -90,7 +90,6 @@ export default {
           this.disabledBtn = false;
           console.error(err)
         } )
-
     },
     importData() {
       this.$store.dispatch('mod_api/API_exportData', this.settings)

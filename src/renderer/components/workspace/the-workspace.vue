@@ -12,11 +12,11 @@
         the-testing.the-testing(v-if="testIsOpen")
         the-statistics.the-statistics(
           v-if="statisticsIsOpen || testIsOpen"
-          :elData="statisticsElSelected.statistics"
+          :el-data="statisticsElSelected.statistics"
           )
         the-view-box.the-view-box(
           v-if="statisticsIsOpen  || testIsOpen"
-          :elData="statisticsElSelected.viewBox"
+          :el-data="statisticsElSelected.viewBox"
           )
         section.network_info-section.the-network-field
           .info-section_head(
@@ -31,7 +31,6 @@
               ref="networkField"
               :key="i"
               :style="{zoom: scaleNet + '%'}"
-              :netIndex="i"
             )
         general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")

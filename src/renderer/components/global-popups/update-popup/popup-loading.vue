@@ -30,11 +30,6 @@ export default {
       default: false
     }
   },
-  data() {
-    return {
-      
-    }
-  },
   computed: {
     updateStatus() {
       return this.$store.state.globalView.updateStatus
@@ -45,7 +40,7 @@ export default {
        this.$store.commit('globalView/SET_showPopupUpdates', false)
     },
     bgMode() {
-      this.$emit('backgroundMode')
+      this.$emit('background-mode')
     }
   }
 }

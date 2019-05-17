@@ -6,18 +6,18 @@
       span.header_update-status(v-if="updateStatus === 'done'") Done
     popup-loading(
       v-if="updateStatus === 'downloading'"
-      :progressStatus="progress"
-      @canceledUpdate="cancelUpdate"
-      @backgroundMode="background"
+      :progress-status="progress"
+      @canceled-update="cancelUpdate"
+      @background-mode="background"
     )
     popup-info(
       v-else
-      @startedUpdate="startUpdate"
-      @closedPopup="cancelUpdate"
-      @restartApp="restartApp"
+      @started-update="startUpdate"
+      @closed-popup="cancelUpdate"
+      @restart-app="restartApp"
       :message="mainUpdateMessage"
-      :aboutUpdateList="updateList"
-      :updatePopupInfo="updateInfo"
+      :about-update-list="updateList"
+      :update-popup-info="updateInfo"
     )
 </template>
 
@@ -60,40 +60,29 @@ export default {
       return this.$store.state.globalView.updateStatus
     },
     showPopupUpdates() {
-      return this.$store.state.globalView.showPopupUpdates
+      return this.$store.state.globalView.globalPopup.showPopupUpdates
     }
   },
   methods: {
-    startUpdate(status) {
+    startUpdate() {
       this.$store.commit('globalView/SET_updateStatus', 'downloading')
-      this.$emit('startedUpdate');
-      //this.startFakeLoading();
+      this.$emit('started-update');
     },
-    cancelUpdate(cencel) {
-      this.updateStatus = cencel.status;
+    cancelUpdate(cancel) {
+      this.updateStatus = cancel.status;
       this.progress = 0;
-      this.$emit('closedPopup');
+      this.$emit('closed-popup');
       clearInterval(this.fakeTimer);
     },
     background() {
       this.bgMode = !this.bgMode;
     },
     closePopup() {
-      this.$emit('closedPopup')
+      this.$emit('closed-popup')
     },
     restartApp() {
-      this.$emit('restartApp')
+      this.$emit('restart-app')
     },
-    // startFakeLoading() {
-    //   this.fakeTimer = setInterval( () => {
-    //     this.progress = this.progress + 17;
-    //     if (this.progress >= 100) {
-    //       this.progress = 100;
-    //       clearInterval(this.fakeTimer);
-    //       this.updateStatus = 'done';
-    //     }
-    //   }, 700)
-    // }
   }
 }
 </script>

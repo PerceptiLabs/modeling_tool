@@ -1,15 +1,10 @@
 import {remote} from "electron";
 import fs from 'fs';
-//import util from 'util';
+import configApp from '@/core/globalSettings.js'
 
-//const readFilePromise = util.promisify(fs.readFile);
-
-
-
-const findIndexId = function (arr, ID) {
-  return arr.findIndex(function(item) {return item.layerId == ID});
-};
-
+// const findIndexId = function (arr, ID) {
+//   return arr.findIndex(function(item) {return item.layerId == ID});
+// };
 
 const openLoadDialog = function (options) {
   return new Promise((success, reject) => {
@@ -32,16 +27,6 @@ const loadPathFolder = function (customOptions) {
   return openLoadDialog(options);
 };
 
-// const readFilePromiseNative = function (path) {
-//   return new Promise((success, reject) => {
-//     fs.readFile(path, (err, data) => {
-//       if (err) {
-//         return reject();
-//       }
-//       return success(data);
-//     })
-//   });
-// };
 const loadNetwork = function (pathArr) {
   return readFilePromiseNative(pathArr[0])
     .then((data) => {
@@ -62,13 +47,13 @@ const loadNetwork = function (pathArr) {
   };
 };
 
-const generateID = function(input) {
-  let out;
-  let stringID = input.toString();
-  let dotIndex = stringID.indexOf('.');
-  dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
-  out = +out;
-  return out
+const generateID = function() {
+  return Date.now().toString();
 };
 
-export {findIndexId, openLoadDialog, loadNetwork, generateID, loadPathFolder}
+const calcLayerPosition = function (position) {
+  const grid = configApp.workspaceGrid;
+  return Math.round(position/grid)*grid
+};
+
+export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition}

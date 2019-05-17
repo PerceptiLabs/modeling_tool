@@ -2,8 +2,8 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-switch(
-        chartLabel="Data"
-        :chartData="chartData.Data"
+        chart-label="Data"
+        :chart-data="chartData.Data"
       )
 </template>
 
@@ -21,7 +21,3 @@
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

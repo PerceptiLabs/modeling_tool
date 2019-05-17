@@ -1,6 +1,6 @@
 <template lang="pug">
   base-net-el(
-    :dataEl="elementData"
+    :data-el="elementData"
   )
     view-el
     template(slot="context")

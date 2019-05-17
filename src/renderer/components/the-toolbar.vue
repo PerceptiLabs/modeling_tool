@@ -17,25 +17,15 @@
 
       li.toolbar_list-arrow-wrap(
         :class="{'disable-hover': statisticsIsOpen}"
-        v-tooltip:bottom="'Arrow'"
       )
         button#tutorial_list-arrow.btn.btn--toolbar(type="button"
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'addArrow'}"
-          @click="setArrowType(arrowList[0].arrowType)"
+          @click="setNetMode('addArrow', 'tutorial_list-arrow')"
+          v-tooltip:bottom="'Arrow'"
           v-tooltip-interactive:bottom="interactiveInfo"
         )
-          i.icon(:class="arrowList[0].iconClass")
-        ul.toolbar_list-arrow
-          li(
-            v-for="(arrow, index) in arrowList"
-            :key="index"
-
-            )
-            button.btn.btn--toolbar(type="button"
-              @click="setArrowType(arrow.arrowType, index, 'tutorial_list-arrow')"
-            )
-              i.icon(:class="arrow.iconClass")
+          i.icon.icon-arrow-left
 
     ul.toolbar_list
       li
@@ -111,35 +101,17 @@
 </template>
 
 <script>
-//import configApp    from '@/core/globalSettings.js'
-import {trainingElements, deepLearnElements}  from '@/core/constants.js'
+//import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 import TutorialInstructions                   from '@/components/tutorial/tutorial-instructions.vue'
-import { mapGetters, mapActions, mapMutations }             from 'vuex';
+import { mapGetters, mapActions, mapMutations } from 'vuex';
 
-//const {ipcRenderer} = require('electron')
 export default {
   name: 'TheToolbar',
-  components: {
-    TutorialInstructions
-  },
+  components: { TutorialInstructions },
   data() {
     return {
       x: null,
       y: null,
-      arrowList: [
-        {
-          iconClass: 'icon-arrow-left',
-          arrowType: 'solid'
-        },
-        // {
-        //   iconClass: 'icon-layer-arrow2',
-        //   arrowType: 'dash2'
-        // },
-        // {
-        //   iconClass: 'icon-layer-arrow3',
-        //   arrowType: 'dash1'
-        // }
-      ],
       interactiveInfo: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
                           <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
@@ -205,7 +177,7 @@ export default {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
     statisticsIsOpen() {
-      return this.currentNetMeta.openStatistics
+      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
     },
     tutorialRunButtonActive() {
       return this.$store.state.mod_tutorials.runButtonsActive
@@ -230,14 +202,6 @@ export default {
       let valid = this.validateNetwork();
       if (!valid) return;
       this.$store.commit('globalView/GP_showNetGlobalSet', true);
-
-      //if show GlobalSet once
-      // if(this.networkSettings.isEmpty) {
-      //   this.$store.commit('globalView/SET_showGlobalSet', true);
-      // }
-      // else {
-      //   this.$store.commit('globalView/SET_showCoreSideSettings', true);
-      // }
     },
     trainStop() {
       this.$store.dispatch('mod_api/API_stopTraining');
@@ -250,40 +214,33 @@ export default {
       this.$store.dispatch('mod_api/API_skipValidTraining');
     },
     validateNetwork() {
-      let net = this.currentElList;
-      let typeData = net.find((element)=> element.layerType === 'Data');
-      if(typeData === undefined) {
-        this.$store.commit('globalView/GP_infoPopup', 'Data element missing');
-        return false
-      }
-
-      let typeTraining = net.find((element)=> element.layerType === 'Training');
-      if(typeTraining === undefined) {
-        this.$store.commit('globalView/GP_infoPopup', 'Classic Machine Learning or Training element missing');
-        return false
-      }
-
-      let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
-      let deepLearnIncluded = true;
-      if (trainingIncluded) {
-        deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
-      }
-      if(deepLearnIncluded === undefined) {
-        this.$store.commit('globalView/GP_infoPopup', 'If you use the Training elements, you must use the Deep Learn elements');
-        return false
-      }
+      // let net = this.currentElList;
+      // let typeData = net.find((element)=> element.layerType === 'Data');
+      // if(typeData === undefined) {
+      //   this.$store.commit('globalView/GP_infoPopup', 'Data element missing');
+      //   return false
+      // }
+      //
+      // let typeTraining = net.find((element)=> element.layerType === 'Training');
+      // if(typeTraining === undefined) {
+      //   this.$store.commit('globalView/GP_infoPopup', 'Classic Machine Learning or Training element missing');
+      //   return false
+      // }
+      //
+      // let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
+      // let deepLearnIncluded = true;
+      // if (trainingIncluded) {
+      //   deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
+      // }
+      // if(deepLearnIncluded === undefined) {
+      //   this.$store.commit('globalView/GP_infoPopup', 'If you use the Training elements, you must use the Deep Learn elements');
+      //   return false
+      // }
 
       return true;
     },
     toggleLayers () {
       this.$store.commit('globalView/SET_hideLayers', !this.hideLayers)
-    },
-    setArrowType(type, index, tutorial_id) {
-      this.setNetMode('addArrow');
-      this.$store.commit('mod_workspace/SET_arrowType', {type, store: this.$store});
-      let selectArray = this.arrowList.splice(index, 1);
-      this.arrowList.unshift(selectArray[0]);
-      this.tutorialPointActivate({way:'next', validation: tutorial_id})
     },
     setNetMode(type, tutorial_id) {
       this.$store.dispatch('mod_workspace/SET_netMode', type);
@@ -362,9 +319,6 @@ export default {
       position: relative;
     }
     &:hover {
-      /*> .btn {*/
-        /*//background-color: $bg-workspace-2;*/
-      /*}*/
       .toolbar_list-arrow {
         opacity: 1;
         max-height: 7.5rem;

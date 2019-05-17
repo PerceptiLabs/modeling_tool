@@ -1,12 +1,12 @@
 <template lang="pug">
   base-net-el(
-    :dataEl="elementData"
+    :data-el="elementData"
   )
     view-el
     template(slot="context")
       context-menu
     template(slot="settings")
-      settings-el
+      settings-el(:current-el="elementData")
 
 </template>
 

@@ -12,23 +12,23 @@
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output' && chartData.Output")
       chart-base(
-      chartLabel="Value"
-      :chartData="chartData.Output.Output"
+        chart-label="Value"
+      :chart-data="chartData.Output.Output"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias' && chartData['Weights&Bias']")
       chart-base(
-      chartLabel="Weights"
-      :chartData="chartData['Weights&Bias'].Weights"
+        chart-label="Weights"
+      :chart-data="chartData['Weights&Bias'].Weights"
       )
       chart-base(
-      chartLabel="Bias"
-      :chartData="chartData['Weights&Bias'].Bias"
+        chart-label="Bias"
+      :chart-data="chartData['Weights&Bias'].Bias"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients' && chartData.Gradients")
       chart-base(
-        chartLabel="Bias"
-        :chartData="chartData.Gradients.Gradients"
-        :customColor="colorList"
+        chart-label="Bias"
+        :chart-data="chartData.Gradients.Gradients"
+        :custom-color="colorList"
       )
 </template>
 
@@ -67,7 +67,3 @@
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

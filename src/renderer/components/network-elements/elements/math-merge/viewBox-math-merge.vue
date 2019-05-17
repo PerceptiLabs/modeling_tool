@@ -2,8 +2,8 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-        chartLabel="Data"
-        :chartData="chartData.Output"
+        chart-label="Data"
+        :chart-data="chartData.Output"
       )
 </template>
 
@@ -21,7 +21,3 @@
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

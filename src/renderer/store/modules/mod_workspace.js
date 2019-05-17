@@ -1,13 +1,6 @@
-import { findIndexId, generateID }  from "@/core/helpers.js";
-
-function createPathNode(path, state) {
-  //console.log('createPathNode');
-  const network = path.slice();
-  const networkId = network.shift();
-  const initValue = state.workspaceContent[state.currentNetwork].networkElementList[networkId];
-  return network.reduce((acc, id) => acc.child[id], initValue);
-
-}
+import { generateID, calcLayerPosition }  from "@/core/helpers.js";
+import configApp from '@/core/globalSettings.js'
+import Vue from 'vue'
 
 const namespaced = true;
 
@@ -16,7 +9,6 @@ const state = {
   currentNetwork: 0,
   dragElement: {},
   startArrowID: null,
-  arrowType: 'solid',
   preArrow: {
     show: false,
     start: {x: 0, y: 0},
@@ -29,58 +21,63 @@ const getters = {
     return state.workspaceContent.length ? true : false
   },
   GET_currentNetwork(state, getters)  {
-    if(getters.GET_networkIsNotEmpty) return state.workspaceContent[state.currentNetwork];
-
-    return ['empty app']
+    return getters.GET_networkIsNotEmpty
+      ? state.workspaceContent[state.currentNetwork]
+      : {networkID: '1'} //for the close ap when the empty workspace
   },
   GET_currentNetworkSettings(state, getters) {
-    if(getters.GET_networkIsNotEmpty) {
-      return state.workspaceContent[state.currentNetwork].networkSettings;
-    }
-    return {}
+    return getters.GET_networkIsNotEmpty
+      ? state.workspaceContent[state.currentNetwork].networkSettings
+      : {}
   },
   GET_currentNetworkElementList(state, getters) {
-    if(getters.GET_networkIsNotEmpty) {
-      return state.workspaceContent[state.currentNetwork].networkElementList;
-    }
-    return ['empty app']
+    return getters.GET_networkIsNotEmpty
+      ? state.workspaceContent[state.currentNetwork].networkElementList
+      : null
   },
   GET_networkCoreStatus(state, getters) {
-    if(getters.GET_networkIsNotEmpty) {
-      return getters.GET_currentNetwork.networkMeta.coreStatus.Status
-    }
-    return 'empty app'
+    return getters.GET_networkIsNotEmpty
+      ? getters.GET_currentNetwork.networkMeta.coreStatus.Status
+      : null
   },
   GET_currentSelectedEl(state, getters) {
     let selectedIndex = [];
     if(getters.GET_networkIsNotEmpty) {
-      getters.GET_currentNetworkElementList.forEach(function (el, index, arr) {
-        if (el.layerMeta.isSelected) {
-          selectedIndex.push({
-            index,
-            el
-          });
-        }
-      });
+      let elList = getters.GET_currentNetworkElementList;
+      for(var el in elList) {
+        if (elList[el].layerMeta.isSelected) selectedIndex.push(elList[el]);
+      }
     }
     return selectedIndex;
   },
   GET_networkIsTraining(state, getters) {
-    let coreStatus = getters.GET_networkCoreStatus;
-    if(coreStatus === 'Training'
-      || coreStatus === 'Validation'
-      || coreStatus === 'Paused'
-    ){
-      return true
-    }
-    else return false
+    const coreStatus = getters.GET_networkCoreStatus;
+    const statusList = ['Training', 'Validation', 'Paused'];
+    return statusList.includes(coreStatus) ? true : false
   },
   GET_tutorialActiveId(state, getters, rootState, rootGetters) {
     if( rootGetters['mod_tutorials/getIstutorialMode'] && rootGetters['mod_tutorials/getActiveAction']) {
       return rootGetters['mod_tutorials/getActiveAction'].dynamic_id
     }
-  },  
-  GET_networkCanEditLayers(state, getters) {
+  },
+  // GET_networkCanEditLayers(state, getters) {
+  //   if(getters.GET_networkIsNotEmpty) {
+  //     let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
+  //     let openTest = getters.GET_currentNetwork.networkMeta.openTest;
+  //     return !(openStatistics || openTest) ? true : false;
+  //   }
+  // },
+  GET_statisticsIsOpen(state, getters) {
+    if(getters.GET_networkIsNotEmpty) {
+      return getters.GET_currentNetwork.networkMeta.openStatistics;
+    }
+  },
+  GET_testIsOpen(state, getters) {
+    if(getters.GET_networkIsNotEmpty) {
+      return getters.GET_currentNetwork.networkMeta.openTest;
+    }
+  },
+  GET_networkIsOpen(state, getters) {
     if(getters.GET_networkIsNotEmpty) {
       let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
       let openTest = getters.GET_currentNetwork.networkMeta.openTest;
@@ -91,7 +88,17 @@ const getters = {
     if(getters.GET_networkIsNotEmpty) {
       return getters.GET_currentNetwork.networkMeta.chartsRequest.waitGlobalEvent;
     }
-  }
+  },
+  GET_networkShowCharts(state, getters) {
+    if(getters.GET_networkIsNotEmpty) {
+      return getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts;
+    }
+  },
+  GET_networkDoRequest(state, getters) {
+    if(getters.GET_networkIsNotEmpty) {
+      return getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest;
+    }
+  },
 };
 
 const mutations = {
@@ -101,23 +108,19 @@ const mutations = {
   set_networkName(state, {getters, value}) {
     getters.GET_currentNetwork.networkName = value
   },
-
-  set_networkElementList(state, {getters, value}) {
-    getters.GET_currentNetworkElementList = value
-  },
-  add_network (state, {dispatch, net}) {
+  add_network (state, {network, ctx}) {
     let newNetwork = {};
-    let defaultNetwork = {
+    const defaultNetwork = {
       networkName: 'New_Network',
       networkID: '',
       networkSettings: null,
       networkMeta: {},
-      networkElementList: []
+      networkElementList: null,
+      //networkContainerList: [],
     };
-    let defaultMeta = {
+    const defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       openTest: null,
-      //canTestStatistics: false,
       zoom: 1,
       netMode: 'edit',//'addArrow', showStatistic
       coreStatus: {
@@ -130,30 +133,24 @@ const mutations = {
         showCharts: 0
       }
     };
-
-    net.network === undefined ? newNetwork = defaultNetwork : newNetwork = net.network;
+    network === undefined
+      ? newNetwork = defaultNetwork
+      : newNetwork = network;
     newNetwork.networkMeta = defaultMeta;
-    newNetwork.networkID = 'net' + generateID(Date.now());
+    newNetwork.networkID = 'net' + generateID();
 
     state.workspaceContent.push(JSON.parse(JSON.stringify(newNetwork)));
     state.currentNetwork = state.workspaceContent.length - 1;
-    if(net.ctx.$router.history.current.name !== 'app') {
-      net.ctx.$router.replace({name: 'app'});
+    if(ctx.$router.history.current.name !== 'app') {
+      ctx.$router.replace({name: 'app'});
     }
   },
   DELETE_network(state, index) {
     if(state.currentNetwork >= index) {
-      state.currentNetwork = state.currentNetwork - 1
+      const index = state.currentNetwork - 1;
+      state.currentNetwork = index < 0 ? 0 : index
     }
     state.workspaceContent.splice(index, 1);
-  },
-  RESET_network (state) {
-    state.workspaceContent = [];
-    state.currentNetwork = 0;
-    state.dragElement = {};
-    state.startArrowID = null;
-    state.arrowType = 'solid';
-    state.preArrow = null;
   },
   //---------------
   //  NETWORK SETTINGS
@@ -165,17 +162,20 @@ const mutations = {
   //---------------
   //  NETWORK META
   //---------------
-  // set_networkCanTesting(state, {getters, value}) {
-  //   getters.GET_currentNetwork.networkMeta.canTestStatistics = value;
-  // },
   set_netMode(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.netMode = value;
   },
   set_openStatistics(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
+    if(value && getters.GET_testIsOpen !== null) {
+      getters.GET_currentNetwork.networkMeta.openTest = false;
+    }
   },
   set_openTest(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.openTest = value;
+    if(value && getters.GET_statisticsIsOpen !== null) {
+      getters.GET_currentNetwork.networkMeta.openStatistics = false;
+    }
   },
   set_statusNetworkCore(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.coreStatus = value;
@@ -192,20 +192,14 @@ const mutations = {
     getters.GET_currentNetwork.networkMeta.zoom = value;
   },
   set_charts_doRequest(state, {getters, networkIndex}) {
-    if(networkIndex) {
-      state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++
-    }
-    else {
-      getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
-    }
+    networkIndex
+      ? state.workspaceContent[networkIndex].networkMeta.chartsRequest.doRequest++ //TODO проверить что счетчики идут паралельно в нескольких networks
+      : getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest++
   },
   set_charts_showCharts(state, {getters, networkIndex}) {
-    if(networkIndex) {
-      state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts++
-    }
-    else {
-      getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts++
-    }
+    networkIndex
+      ? state.workspaceContent[networkIndex].networkMeta.chartsRequest.showCharts++
+      : getters.GET_currentNetwork.networkMeta.chartsRequest.showCharts++
   },
   set_charts_timerID(state, {getters, timerId}) {
     getters.GET_currentNetwork.networkMeta.chartsRequest.timerID = timerId;
@@ -216,116 +210,215 @@ const mutations = {
   //---------------
   //  NETWORK ELEMENTS
   //---------------
-  //TODO check SET_elementName can easy
   SET_elementName(state, value) {
-    let node = createPathNode(value.path, state);
-    node.layerName = value.setValue
+    currentElement(value.id).layerName = value.setValue
   },
   add_element(state, {getters, event}) {
-    let top = state.dragElement.layerMeta.top;
-    let left = state.dragElement.layerMeta.left;
+    let newEl = state.dragElement;
+    let top = newEl.layerMeta.position.top;
+    let left = newEl.layerMeta.position.left;
     let zoom = getters.GET_currentNetwork.networkMeta.zoom;
-    state.dragElement.layerMeta.tutorialId = getters.GET_tutorialActiveId
-    
-    state.dragElement.layerMeta.top = (event.offsetY - top)/zoom;
-    state.dragElement.layerMeta.left = (event.offsetX - left)/zoom;
-    getters.GET_currentNetworkElementList.push(state.dragElement);
+    let elementList = getters.GET_currentNetworkElementList;
+    newEl.layerMeta.tutorialId = getters.GET_tutorialActiveId;
+    newEl.layerMeta.position.top = (event.offsetY - top)/zoom;
+    newEl.layerMeta.position.left = (event.offsetX - left)/zoom;
+
+    if(!elementList) state.workspaceContent[state.currentNetwork].networkElementList = {};
+    Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
     state.dragElement = {};
   },
-  delete_elementConnection(state, {newNet, arrSelectId, dispatch}) {
-    newNet.forEach((el)=>{
-      el.connectionOut = el.connectionOut.filter((connect)=>{
-        //TODO return when return arrowType
-        //return !value.arrSelectId.includes(connect.id)
-        return !arrSelectId.includes(connect)
-      });
-      el.connectionIn  = el.connectionIn.filter((connect)=>{
-        //TODO return when return arrowType
-        //return !value.arrSelectId.includes(connect.id)
-        return !arrSelectId.includes(connect)
-      });
+  delete_element(state, {getters, dispatch}) {
+    let arrSelect = getters.GET_currentSelectedEl;
+    if(!arrSelect.length) return;
+    let arrSelectID = [];
+    let net = {...getters.GET_currentNetworkElementList};
+    arrSelect.forEach((el)=>{
+      delete net[el.layerId];
+      arrSelectID.push(el.layerId);
     });
-    state.workspaceContent[state.currentNetwork].networkElementList = newNet;
-    dispatch('mod_events/EVENT_calcArray', null, {root: true})
+    for(let el in net) {
+      net[el].connectionOut = net[el].connectionOut.filter((connect)=>{
+        return !arrSelectID.includes(connect)
+      });
+      net[el].connectionArrow = net[el].connectionArrow.filter((connect)=>{
+        return !arrSelectID.includes(connect)
+      });
+      net[el].connectionIn  = net[el].connectionIn.filter((connect)=>{
+        return !arrSelectID.includes(connect)
+      });
+    }
+    state.workspaceContent[state.currentNetwork].networkElementList = net;
+    dispatch('mod_events/EVENT_calcArray', null, {root: true});
+    dispatch('mod_api/API_getOutputDim', null, {root: true})
+
   },
-
-  add_arrow(state, {getters, dispatch, stopID}) {
+  add_arrow(state, {dispatch, stopID}) {
     let startID = state.startArrowID;
-    if(stopID == startID) return;
+    if(stopID === startID) return;
 
-    let pathNet = getters.GET_currentNetworkElementList;
-    let indexStart = pathNet.findIndex((element, index, array)=> { return element.layerId == startID;});
-    let findArrow = pathNet[indexStart].connectionOut.findIndex((element, index, array)=> element == stopID );
+    let findArrow = currentElement(startID).connectionOut.findIndex((element)=> element === stopID );
     if(findArrow !== -1) {
       alert('This type of connection already exists!');
       return
     }
 
-    //TODO start only one type connection
-    pathNet[indexStart].connectionOut.push(stopID.toString()); //ID.toString need for the core
-
-    let indexStop = pathNet.findIndex((element, index, array)=> { return element.layerId == stopID;});
-    pathNet[indexStop].connectionIn.push(startID.toString());
-    //stop only one type connection
+    currentElement(startID).connectionOut.push(stopID.toString()); //ID.toString need for the core
+    currentElement(startID).connectionArrow.push(stopID.toString());
+    currentElement(stopID).connectionIn.push(startID.toString());
     state.startArrowID = null;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
-  delete_arrow(state,{getters, dispatch, arrow}) {
-    let arrowList = getters.GET_currentNetworkElementList;
+  delete_arrow(state,{dispatch, arrow}) {
     let startID = arrow.startID;
     let stopID = arrow.stopID;
-    let indexStartEl = findIndexId(arrowList, startID);
-    let indexStopEl = findIndexId(arrowList, stopID);
-    let newConnectionOut = arrowList[indexStartEl].connectionOut.filter((item)=> item !== stopID);
-    let newConnectionIn = arrowList[indexStopEl].connectionIn.filter((item)=> item !== startID);
-    state.workspaceContent[state.currentNetwork].networkElementList[indexStartEl].connectionOut = newConnectionOut;
-    state.workspaceContent[state.currentNetwork].networkElementList[indexStopEl].connectionIn = newConnectionIn;
+
+    let newConnectionOut = currentElement(startID).connectionOut.filter((item)=> item !== stopID);
+    let newConnectionArrow = currentElement(startID).connectionArrow.filter((item)=> item !== stopID);
+    let newConnectionIn = currentElement(stopID).connectionIn.filter((item)=> item !== startID);
+
+    currentElement(startID).connectionOut = newConnectionOut;
+    currentElement(startID).connectionArrow = newConnectionArrow;
+    currentElement(stopID).connectionIn = newConnectionIn;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
-  /*-- NETWORK ELEMENTS SETTINGS --*/
-  set_elementSettings(state, {getters, settings}) {
-    let indexEl = getters.GET_currentSelectedEl[0].index;
-    getters.GET_currentNetworkElementList[indexEl].layerSettings = settings.set;  //TODO NEED CHECK
-    getters.GET_currentNetworkElementList[indexEl].layerCode = settings.code;     //TODO NEED CHECK
-  },
 
+  /*-- NETWORK ELEMENTS SETTINGS --*/
+  set_elementSettings(state, settings) {
+    currentElement(settings.elId).layerSettings = settings.set;  //TODO NEED CHECK
+    currentElement(settings.elId).layerCode = settings.code;     //TODO NEED CHECK
+  },
 
   /*-- NETWORK ELEMENTS META --*/
   set_elementUnselect(state, {getters}) {
-    getters.GET_currentNetworkElementList.forEach((el)=>{
-      el.layerMeta.isSelected = false;
-    });
+    for(let layer in getters.GET_currentNetworkElementList) {
+      currentElement(layer).layerMeta.isSelected = false;
+    }
   },
-  set_elementSelect(state, {getters, value}) {
-    getters.GET_currentNetworkElementList[value.path].layerMeta.isSelected = value.setValue;
+  set_elementSelect(state, value) {
+    currentElement(value.id).layerMeta.isSelected = value.setValue;
   },
-  set_elementMultiSelect(state, {getters, value}) {
-    getters.GET_currentNetworkElementList[value.path].layerMeta.isSelected = value.setValue;
+  set_elementMultiSelect(state, value) {
+    currentElement(value.id).layerMeta.isSelected = value.setValue;
   },
-  SET_elementLock(state, value) {
-    let node = createPathNode(value, state);
-    node.layerMeta.isLock = !node.layerMeta.isLock
+  SET_elementLock(state, id) {
+    let elMeta = currentElement(id).layerMeta;
+    elMeta.isLock = !elMeta.isLock
   },
-  SET_elementVisible(state, value) {
-    let node = createPathNode(value, state);
-    node.layerMeta.isInvisible = !node.layerMeta.isInvisible
+  SET_elementVisible(state, id) {
+    let elMeta = currentElement(id).layerMeta;
+    elMeta.isInvisible = !elMeta.isInvisible
   },
-  change_elementPosition(state, {getters, value}) {
-    let el = value.index;
-    let net = getters.GET_currentNetworkElementList;
-    net[el].layerMeta.top = value.top;
-    net[el].layerMeta.left = value.left;
+  SET_elementNone(state, {id, value}) {
+    let el = currentElement(id);
+    el.layerNone = value
+  },
+  change_elementPosition(state, value) {
+    let elPosition = currentElement(value.id).layerMeta.position;
+    elPosition.top = value.top;
+    elPosition.left = value.left;
   },
   set_elementInputDim(state, {getters, value}) {
-    getters.GET_currentNetworkElementList.forEach((el)=>{
-      el.layerMeta.InputDim = value[el.layerId]
-    });
+    for(let element in getters.GET_currentNetworkElementList) {
+      currentElement(element).layerMeta.InputDim = value[element]
+    }
   },
   set_elementOutputDim(state, {getters, value}) {
-    getters.GET_currentNetworkElementList.forEach((el)=>{
-      el.layerMeta.OutputDim = value[el.layerId];
-    });
+    for(let element in getters.GET_currentNetworkElementList) {
+      currentElement(element).layerMeta.OutputDim = value[element]
+    }
   },
+
+  //---------------
+  //  NETWORK CONTAINER
+  //---------------
+add_container(state, {getters, commit, dispatch}) {
+  let arrSelect = getters.GET_currentSelectedEl;
+  /* validations */
+  if(arrSelect.length === 0) return;
+  if(arrSelect.length === 1) {
+    alert('At least 2 elements are needed to create a group');
+    return;
+  }
+  /* END validations */
+  let net = getters.GET_currentNetworkElementList;
+  let newContainer = createContainer(arrSelect);
+  newContainer.connectionIn.forEach((idEl)=>{
+    net[idEl].connectionArrow.push(newContainer.layerId)
+  });
+
+  Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
+  commit('set_elementUnselect', {getters});
+  commit('close_container', {container: newContainer, getters, dispatch});
+
+  function createClearContainer() {
+    let fakeEvent = {
+      timeStamp: generateID(),
+      target: {
+        dataset: {
+          layer: 'Data Group',
+          type: 'container',
+          component: 'LayerContainer',
+        },
+        clientHeight: 0,
+        clientWidth: 0
+      }
+    };
+    return createNetElement(fakeEvent);
+  }
+  function createContainer(elSelectList) {
+    let el = createClearContainer();
+    let allIdEl = [];
+    let allIdOut = [];
+    let allIdIn = [];
+    let allTop = [];
+    let allLeft = [];
+    el.containerLayersList = {};
+
+    elSelectList.forEach((item)=> {
+      allIdEl.push(item.layerId);
+      allIdOut = [...allIdOut, ...new Set(item.connectionOut)];
+      allIdIn  = [...allIdIn,  ...new Set(item.connectionIn)];
+      allTop.push(item.layerMeta.position.top);
+      allLeft.push(item.layerMeta.position.left);
+      el.containerLayersList[item.layerId] = item
+    });
+    el.layerMeta.position.top = calcPosition(allTop);
+    el.layerMeta.position.left = calcPosition(allLeft);
+    el.connectionOut = calcConnection(allIdOut, allIdEl);
+    el.connectionArrow = [...el.connectionOut];
+    el.connectionIn = calcConnection(allIdIn, allIdEl);
+    return el;
+  }
+  function calcConnection(arrConnectionId, arrInsideId) {
+    return arrConnectionId.filter((id)=> !arrInsideId.includes(id))
+  }
+  function calcPosition(arrIn) {
+    const num = (Math.max(...arrIn) + Math.min(...arrIn))/2;
+    return calcLayerPosition(num);
+  }
+},
+close_container(state, {container, getters, dispatch}) {
+  let net = getters.GET_currentNetworkElementList;
+  for(let idEl in container.containerLayersList) {
+    net[idEl].layerNone = true;
+  }
+  net[container.layerId].layerNone = false;
+  dispatch('mod_events/EVENT_calcArray', null, {root: true})
+},
+open_container(state, {container, getters, dispatch}) {
+  let net = getters.GET_currentNetworkElementList;
+  for(let idEl in container.containerLayersList) {
+    net[idEl].layerNone = false;
+  }
+  net[container.layerId].layerNone = true;
+  dispatch('mod_events/EVENT_calcArray', null, {root: true})
+},
+toggle_container(state, {val, container, dispatch}) {
+  val
+    ? dispatch('CLOSE_container', container)
+    : dispatch('OPEN_container', container);
+  dispatch('SET_elementUnselect');
+},
   //---------------
   //  OTHER
   //---------------
@@ -333,43 +426,15 @@ const mutations = {
     state.currentNetwork = value
   },
   ADD_dragElement(state, event) {
-    let newLayer = {
-      layerId: generateID(event.timeStamp).toString(),
-      layerName: event.target.dataset.layer,
-      layerType: event.target.dataset.type,
-      layerSettings: '',
-      layerCode: '',
-      layerMeta: {
-        isInvisible: false,
-        isLock: false,
-        isSelected: false,
-        top: event.target.clientHeight/2,
-        left: event.target.clientWidth/2,
-        tutorialId: '',
-        OutputDim: '',
-        InputDim: ''
-      },
-      componentName: event.target.dataset.component,
-      connectionOut: [],
-      connectionIn: [],
-      trainingData: null
-    };
-    state.dragElement = newLayer;
+    state.dragElement = createNetElement(event);
   },
-  SET_arrowType (state, value) {
-    state.arrowType = value.type
-  },
-  // SET_dragElement(state, value) {
-  //   state.dragElement = value
-  // },
   SET_startArrowID (state, value) {
     state.startArrowID = value
   },
   SET_preArrowStart (state, value) {
     state.preArrow.start = value;
     state.preArrow.stop = value;
-    state.preArrow.show = true
-    state.preArrow.type = value.type
+    state.preArrow.show = true;
   },
   SET_preArrowStop (state, value) {
     state.preArrow.stop = value
@@ -387,8 +452,8 @@ const actions = {
   //---------------
   //  NETWORK
   //---------------
-  ADD_network({commit, dispatch}, net) {
-    commit('add_network', {dispatch, net})
+  ADD_network({commit, dispatch}, {network, ctx}) {
+    commit('add_network', {network, ctx})
   },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
@@ -399,9 +464,6 @@ const actions = {
   SET_networkElementList({commit, getters}, value) {
     commit('set_networkElementList', {getters, value})
   },
-  // SET_canTestStatistics({commit, getters}, value) {
-  //   commit('set_networkCanTesting', {getters, value})
-  // },
   SET_netMode({commit, getters}, value) {
     commit('set_netMode', {getters, value})
   },
@@ -473,45 +535,33 @@ const actions = {
         commit('set_charts_doRequest', {getters});
         dispatch('mod_api/API_getStatus', null, {root: true});
       });
-    // setTimeout(()=>{
-    //   commit('set_charts_doRequest', {getters});
-    //   dispatch('mod_api/API_getStatus', null, {root: true});
-    // }, 0);
   },
   //---------------
   //  NETWORK ELEMENTS
   //---------------
-  SET_elementSettings({commit, getters}, settings) {
-    commit('set_elementSettings', {getters, settings})
+  SET_elementSettings({commit}, settings) {
+    commit('set_elementSettings', settings)
   },
   ADD_element({commit, getters}, event) {
     commit('add_element', {getters, event})
   },
   DELETE_element({commit, getters, dispatch}) {
-    let net = getters.GET_currentNetworkElementList;
-    let arrSelect = getters.GET_currentSelectedEl;
-    let arrSelectId = arrSelect.map((el)=>{
-      return el.el.layerId
-    });
-    let newNet = net.filter((el)=>{
-      return !arrSelectId.includes(el.layerId)
-    });
-    commit('delete_elementConnection', {newNet, arrSelectId, dispatch})
+    commit('delete_element', {getters, dispatch, commit})
   },
   ADD_arrow({commit, getters, dispatch}, stopID) {
-    commit('add_arrow', {getters, dispatch, stopID})
+    commit('add_arrow', {dispatch, stopID})
   },
   DELETE_arrow({commit, getters, dispatch}, arrow) {
-    commit('delete_arrow', {getters, dispatch, arrow})
+    commit('delete_arrow', {dispatch, arrow})
   },
   SET_elementUnselect({commit, getters}) {
     commit('set_elementUnselect', {getters})
   },
-  SET_elementSelect({commit, getters}, value) {
-    commit('set_elementSelect', {getters, value})
+  SET_elementSelect({commit}, value) {
+    commit('set_elementSelect', value)
   },
-  SET_elementMultiSelect({commit, getters}, value) {
-    commit('set_elementMultiSelect', {getters, value})
+  SET_elementMultiSelect({commit}, value) {
+    commit('set_elementMultiSelect', value)
   },
   SET_elementInputDim({commit, getters}, value) {
     commit('set_elementInputDim', {getters, value})
@@ -520,7 +570,22 @@ const actions = {
     commit('set_elementOutputDim', {getters, value})
   },
   CHANGE_elementPosition({commit, getters}, value) {
-    commit('change_elementPosition', {getters, value})
+    commit('change_elementPosition', value)
+  },
+  //---------------
+  //  NETWORK CONTAINER
+  //---------------
+  ADD_container({commit, getters, dispatch}, event) {
+    commit('add_container', {getters, commit, dispatch});
+  },
+  OPEN_container({commit, getters, dispatch}, container) {
+    commit('open_container', {container, getters, dispatch})
+  },
+  CLOSE_container({commit, getters, dispatch}, container) {
+    commit('close_container', {container, getters, dispatch})
+  },
+  TOGGLE_container({commit, getters, dispatch}, {val, container}) {
+    commit('toggle_container', {val, container, dispatch})
   },
 
 };
@@ -531,4 +596,39 @@ export default {
   state,
   mutations,
   actions
+}
+
+function currentElement(id) {
+  return state.workspaceContent[state.currentNetwork].networkElementList[id];
+}
+function createNetElement(event) {
+  return {
+    layerId: generateID(),
+    layerName: event.target.dataset.layer,
+    layerType: event.target.dataset.type,
+    layerSettings: '',
+    layerCode: '',
+    layerNone: false,
+    layerMeta: {
+      isInvisible: false,
+      isLock: false,
+      isSelected: false,
+      position: {
+        top: event.target.clientHeight/2,
+        left: event.target.clientWidth/2,
+      },
+      tutorialId: '',
+      OutputDim: '',
+      InputDim: '',
+      containerDiff: {
+        top: 0,
+        left: 0,
+      }
+    },
+    componentName: event.target.dataset.component,
+    connectionOut: [],
+    connectionIn: [],
+    connectionArrow: [],
+    //calcAnchor: { top: [], right: [], bottom: [], left: []}
+  };
 }

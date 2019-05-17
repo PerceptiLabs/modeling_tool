@@ -25,9 +25,9 @@ const chartsMixin = {
     if(this.isNotPie) {this.createWWorker();}
     this.sendDataToWWorker();
     if(this.isNotPicture) {
-      this.$refs.chart.showLoading(this.chartSpinner);
+      //this.$refs.chart.showLoading(this.chartSpinner);
       this.$refs.chart.resize();
-      window.addEventListener("resize", this.chartResize, false);
+      //window.addEventListener("resize", this.chartResize, false);
     }
   },
   beforeDestroy() {
@@ -37,7 +37,7 @@ const chartsMixin = {
     }
     if(this.isNotPicture && this.isNotPie) {
       this.$refs.chart.dispose();
-      window.removeEventListener("resize", this.chartResize, false);
+      //window.removeEventListener("resize", this.chartResize, false);
     }
   },
   data() {
@@ -46,8 +46,6 @@ const chartsMixin = {
       chartModelBuffer: null,
       fullView: false,
       wWorker: null,
-
-      //startCalDrow: 0
     }
   },
   computed: {
@@ -55,13 +53,13 @@ const chartsMixin = {
       return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
     },
     headerOff() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest || this.disableHeader;
+      return this.$store.getters['mod_workspace/GET_testIsOpen'] || this.disableHeader;
     },
     doRequest() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.doRequest
+      return this.$store.getters['mod_workspace/GET_networkDoRequest']
     },
     doShowCharts() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.showCharts
+      return this.$store.getters['mod_workspace/GET_networkShowCharts']
     },
     isNotPicture() {
       return (this.$options._componentTag === "ChartPicture" || this.$options._componentTag === "chart-picture")
@@ -81,39 +79,32 @@ const chartsMixin = {
         this.chartModel = this.chartModelBuffer;
       }
     },
-    '$store.state.mod_events.chartResize': {
-      handler() {
-        if(this.isNotPicture) {
-          this.$nextTick(()=> this.$refs.chart.resize())
-        }
-      }
-    },
+    // '$store.state.mod_events.chartResize': {
+    //   handler() {
+    //     if(this.isNotPicture) {
+    //       this.$nextTick(()=> this.chartResize())
+    //     }
+    //   }
+    // },
     chartData(newData) {
       this.startCalDrow = new Date();
       this.sendDataToWWorker(newData)
-    },
-    chartModel(data) {
-      //console.log(this);
     }
   },
   methods: {
     toggleFullView() {
       this.fullView = !this.fullView;
-      this.$nextTick(() => this.$refs.chart.resize());
+      //this.$nextTick(() => this.$refs.chart.resize());
     },
     drawChart(ev) {
-      //console.log('drawChart ', ev);
       if(this.isNeedWait) this.chartModelBuffer = ev.data;
       else {
         this.$refs.chart.hideLoading();
         this.chartModel = ev.data;
       }
-
-      // let stopCalDrow = new Date();
-      // let drawDelay = stopCalDrow - this.startCalDrow;
-      // console.log(`calc plots delay`, `${drawDelay}ms`);
     },
     chartResize() {
+      console.log(this.chartLabel);
       this.$refs.chart.resize()
     }
   }

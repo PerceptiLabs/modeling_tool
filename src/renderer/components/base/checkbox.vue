@@ -69,10 +69,10 @@ export default {
           }
         }
       }
-      //&:focus + .checkbox-fake {
-      //  outline: 1px dotted $col-primary;
-      //  box-shadow: 0 0 1px 1px $white;
-      //}
+      &:focus + .checkbox-fake {
+        outline: 1px dotted $col-primary;
+        box-shadow: 0 0 1px 1px $white;
+      }
     }
     .checkbox-text {
       font-size: inherit;

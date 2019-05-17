@@ -40,10 +40,22 @@
         .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
         div
           //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back 
-          button.footer_btn(v-if="isFirstStep" @click="startTutorial('next')") Next
-          button.footer_btn(v-else-if="activeAction.next && !allPointsIsDone" @click="pointActivate({way: 'next', validation: activeAction.id})") Next
-          button.footer_btn(v-else-if="stepCount !== stepsLength" @click="changeStep('next')" :disabled="disabledNext") Next
-          button.footer_btn(v-else-if="stepCount === stepsLength" @click="endTutorial()") End
+          button.footer_btn(
+            v-if="isFirstStep"
+            @click="startTutorial('next')"
+            ) Next
+          button.footer_btn(
+            v-else-if="activeAction.next && !allPointsIsDone"
+            @click="pointActivate({way: 'next', validation: activeAction.id})"
+            ) Next
+          button.footer_btn(
+            v-else-if="stepCount !== stepsLength"
+            @click="changeStep('next')" :disabled="disabledNext"
+            ) Next
+          button.footer_btn(
+            v-else-if="stepCount === stepsLength"
+            @click="endTutorial()"
+            ) End
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex';
@@ -116,7 +128,7 @@ export default {
       this.addNetwork({'ctx': this})
     },
     switchTutorialMode() {
-      if(this.currentNetworkElementList.length > 0 && !this.isTutorialMode) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+      if(this.currentNetworkElementList !== null && !this.isTutorialMode) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
       this.setShowInstructions(!this.isShowInstructions);
       this.setTutorialMode(!this.isTutorialMode);
       if(!this.isTutorialMode) this.resetTutorial();

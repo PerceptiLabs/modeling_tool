@@ -2,8 +2,8 @@
   .net-element.js-clickout(tabindex="0"
     ref="rootBaseElement"
     :style="style"
-    :id="dataEl.el.layerMeta.tutorialId"
-    :class="isSelectedEl ? 'active' : 'inactive'"
+    :id="dataEl.layerMeta.tutorialId"
+    :class="classEl"
 
     @click="switchClickEvent($event)"
     @dblclick.stop.prevent="switchDblclick($event)"
@@ -31,7 +31,10 @@ export default {
   name: 'NetBaseElement',
   mixins: [baseNetDrag, baseNetPaintArrows, mousedownOutside],
   props: {
-    layerContainer: {type: Boolean, default: false},
+    layerContainer: {
+      type: Boolean,
+      default: false
+    },
     dataEl: {
       type: Object,
       default: function () {
@@ -72,27 +75,30 @@ export default {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
       isTraining:           'mod_workspace/GET_networkIsTraining',
-      editIsOpen:           'mod_workspace/GET_networkCanEditLayers'
+      editIsOpen:           'mod_workspace/GET_networkIsOpen'
     }),
+    currentId() {
+      return this.dataEl.layerId
+    },
     beForEnd() {
       //console.log('NetBaseElement beForEnd', this.dataEl.el.layerMeta);
-      return this.dataEl.el.layerMeta.OutputDim
+      return this.dataEl.layerMeta.OutputDim
     },
     isSelectedEl() {
-      return this.dataEl.el.layerMeta.isSelected
+      return this.dataEl.layerMeta.isSelected
     },
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
     },
-    testingIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
-    },
-    hotKeyPressDelete() {
-      return this.$store.state.mod_events.globalPressKey.del
-    },
+    classEl() {
+      return {
+        'net-element--active': this.isSelectedEl,
+        'element--hidden': this.dataEl.layerMeta.isInvisible
+      }
+    }
   },
   watch: {
     statisticsIsOpen(newVal) {
@@ -105,9 +111,6 @@ export default {
         ? this.mousedownOutsideBefore()
         : null
     },
-    hotKeyPressDelete() {
-      this.deleteEl()
-    }
   },
   methods: {
     ...mapActions({
@@ -127,18 +130,23 @@ export default {
     switchClickEvent(ev) {
       if (this.isLock) return;
 
-      else if (this.statisticsIsOpen || this.testingIsOpen) {
+      else if (!this.editIsOpen) {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
     },
     switchDblclick(event) {
-      this.layerContainer ? this.$emit('dblcl') : this.openSettings(event)
+      this.layerContainer
+        ? this.openLayerContainer()
+        : this.openSettings(event)
+    },
+    openLayerContainer() {
+      this.$emit('open-container')
     },
     openSettings(event) {
       this.hideAllWindow();
       if(this.networkMode === 'edit' && this.editIsOpen) {
         this.settingsIsOpen = true;
-        this.$nextTick(()=>{this.tutorialPointActivate({way:'next', validation: this.tutorialSearchId(event)})})
+        this.$nextTick(()=> {this.tutorialPointActivate({way:'next', validation: this.tutorialSearchId(event)})})
       }
     },
     openContext() {
@@ -149,15 +157,15 @@ export default {
     },
     setFocusEl(ev) {
       ev.ctrlKey
-        ? this.$store.dispatch('mod_workspace/SET_elementMultiSelect', { path: [this.dataEl.index], setValue: true })
-        : this.$store.dispatch('mod_workspace/SET_elementSelect',      { path: [this.dataEl.index], setValue: true })
+        ? this.$store.dispatch('mod_workspace/SET_elementMultiSelect', {id: this.currentId, setValue: true })
+        : this.$store.dispatch('mod_workspace/SET_elementSelect',      {id: this.currentId, setValue: true })
     },
     mousedownOutsideBefore() {
       this.MousedownElementTracking = this.$refs.rootBaseElement;
       document.addEventListener('mousedown', this.mousedownOutside);
     },
     mousedownOutsideAction() {
-      if (!(this.statisticsIsOpen || this.testingIsOpen)) this.deselect()
+      if (this.editIsOpen) this.deselect()
     },
     hideAllWindow() {
       this.settingsIsOpen = false;
@@ -165,10 +173,10 @@ export default {
     },
     deselect() {
       this.hideAllWindow();
-      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: [this.dataEl.index], setValue: false });
+      this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: false });
     },
     deleteEl() {
-      if(!(this.statisticsIsOpen || this.testingIsOpen)) {
+      if(this.editIsOpen) {
         this.$store.dispatch('mod_workspace/DELETE_element');
         this.$store.dispatch('mod_api/API_getOutputDim');
       }
@@ -186,16 +194,18 @@ export default {
   @import "../../../scss/base";
   .net-element_window {
     position: absolute;
-    z-index: 2;
+    z-index: 4;
     top: 0;
     left: 100%;
     padding-left: 10px;
   }
   .net-element_btn {
+    position: relative;
+    z-index: 3;
     margin: 0;
     padding: 0;
     background-color: transparent;
-    .active & .btn {
+    .net-element--active & .btn {
       box-shadow: 0 0 20px #fff;
     }
   }
@@ -204,8 +214,13 @@ export default {
     position: absolute;
     top: -2.5rem;
     left: 50%;
+    z-index: 2;
     transform: translateX(-50%);
     white-space: nowrap;
     background-color: rgba($bg-workspace, .5);
+  }
+  .net-element--hide-layer {
+    opacity: 0;
+    visibility: hidden;
   }
 </style>

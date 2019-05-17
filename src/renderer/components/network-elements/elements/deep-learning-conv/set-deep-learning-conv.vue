@@ -15,13 +15,13 @@
             .form_row
               .form_label Dimension:
               .form_input
-                base-radio(groupName="group" valueInput="Automatic" v-model="settings.Conv_dim")
+                base-radio(group-name="group" value-input="Automatic" v-model="settings.Conv_dim")
                   span Automatic
-                base-radio(groupName="group" valueInput="1D" v-model="settings.Conv_dim")
+                base-radio(group-name="group" value-input="1D" v-model="settings.Conv_dim")
                   span 1D
-                base-radio(groupName="group" valueInput="2D" v-model="settings.Conv_dim")
+                base-radio(group-name="group" value-input="2D" v-model="settings.Conv_dim")
                   span 2D
-                base-radio(groupName="group" valueInput="3D" v-model="settings.Conv_dim")
+                base-radio(group-name="group" value-input="3D" v-model="settings.Conv_dim")
                   span 3D
           .settings-layer_section
             .form_row
@@ -53,37 +53,37 @@
             .form_row
               .form_label Zero-padding:
               .form_input
-                base-radio(groupName="group3" valueInput="'SAME'"  v-model="settings.Padding")
+                base-radio(group-name="group3" value-input="'SAME'"  v-model="settings.Padding")
                   span SAME
-                base-radio(groupName="group3" valueInput="'VALID'"  v-model="settings.Padding")
+                base-radio(group-name="group3" value-input="'VALID'"  v-model="settings.Padding")
                   span VALID
           .settings-layer_section
             .form_row
               .form_label Activation function:
               .form_input
-                base-radio(groupName="group1" valueInput="None"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
                   span None
-                base-radio(groupName="group1" valueInput="Sigmoid"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="Sigmoid"  v-model="settings.Activation_function")
                   span Sigmoid
-                base-radio(groupName="group1" valueInput="ReLU"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="ReLU"  v-model="settings.Activation_function")
                   span ReLU
-                base-radio(groupName="group1" valueInput="Tanh"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
                   span Tanh
           .settings-layer_section
             .form_row
               .form_label Dropout:
               .form_input
-                base-radio(groupName="group5" :valueInput="true"  v-model="settings.Dropout")
+                base-radio(group-name="group5" :value-input="true"  v-model="settings.Dropout")
                   span Yes
-                base-radio(groupName="group5" :valueInput="false"  v-model="settings.Dropout")
+                base-radio(group-name="group5" :value-input="false"  v-model="settings.Dropout")
                   span No
           .settings-layer_section
             .form_row
               .form_label Pooling:
               .form_input
-                base-radio(groupName="group6" :valueInput="true"  v-model="settings.PoolBool")
+                base-radio(group-name="group6" :value-input="true"  v-model="settings.PoolBool")
                   span Yes
-                base-radio(groupName="group6" :valueInput="false"  v-model="settings.PoolBool")
+                base-radio(group-name="group6" :value-input="false"  v-model="settings.PoolBool")
                   span No
           //-.settings-layer_section
             .form_row
@@ -104,9 +104,9 @@
               .form_row
                 .form_label Pooling type:
                 .form_input
-                  base-radio(groupName="Pooling" valueInput="Max"  v-model="settings.Pooling")
+                  base-radio(group-name="Pooling" value-input="Max"  v-model="settings.Pooling")
                     span Max pooling
-                  base-radio(groupName="Pooling" valueInput="Mean"  v-model="settings.Pooling")
+                  base-radio(group-name="Pooling" value-input="Mean"  v-model="settings.Pooling")
                     span Mean pooling
             .settings-layer_section
               .form_row
@@ -122,9 +122,9 @@
               .form_row
                 .form_label Zero-padding for pooling:
                 .form_input
-                  base-radio(groupName="Pool_padding" valueInput="'SAME'" v-model="settings.Pool_padding")
+                  base-radio(group-name="Pool_padding" value-input="'SAME'" v-model="settings.Pool_padding")
                     span SAME
-                  base-radio(groupName="Pool_padding" valueInput="'VALID'" v-model="settings.Pool_padding")
+                  base-radio(group-name="Pool_padding" value-input="'VALID'" v-model="settings.Pool_padding")
                     span VALID
 
       .popup_body(:class="{'active': tabSelected == 1}")

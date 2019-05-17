@@ -62,6 +62,12 @@ const actions = {
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)
   },
+  EVENT_hotKeyDeleteElement({commit, rootGetters, dispatch}) {
+    if(rootGetters['mod_workspace/GET_networkIsOpen']) {
+      commit('set_globalPressKey', 'del');
+      dispatch('mod_workspace/DELETE_element', null, {root: true});
+    }
+  },
 };
 
 export default {

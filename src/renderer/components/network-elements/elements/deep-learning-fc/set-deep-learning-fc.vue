@@ -22,21 +22,21 @@
             .form_row
               .form_label Activation function:
               .form_input
-                base-radio(groupName="group1" valueInput="None"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
                   span None
-                base-radio(groupName="group1" valueInput="Sigmoid"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="Sigmoid"  v-model="settings.Activation_function")
                   span Sigmoid
-                base-radio(groupName="group1" valueInput="ReLU"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="ReLU"  v-model="settings.Activation_function")
                   span ReLU
-                base-radio(groupName="group1" valueInput="Tanh"  v-model="settings.Activation_function")
+                base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
                   span Tanh
           .settings-layer_section
             .form_row
               .form_label Dropout:
               .form_input
-                base-radio(groupName="group2" :valueInput="true" v-model="settings.Dropout")
+                base-radio(group-name="group2" :value-input="true" v-model="settings.Dropout")
                   span Yes
-                base-radio(groupName="group2" :valueInput="false" v-model="settings.Dropout")
+                base-radio(group-name="group2" :value-input="false" v-model="settings.Dropout")
                   span No
           //-.settings-layer_section
             .form_row

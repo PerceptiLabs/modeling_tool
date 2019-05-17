@@ -1,5 +1,5 @@
 <template lang="pug">
-  .network-field(:id="'network' + netIndex"
+  .network-field(
     ref="network"
     @mousedown="refNetworkMouseDown($event)"
   )
@@ -15,9 +15,8 @@
       //- arrows list
       template(
         v-if="arrowsList.length"
-        v-for="(arrow, i) in arrowsList"
+        v-for="arrow in arrowsList"
       )
-        //-:stroke-dasharray="(arrow.type === 'solid' ? 'none' : (arrow.type === 'dash1' ? '7 6' : '14 7 3 7'))"
         path.svg-arrow_line(
           :class="{'arrow--empty-output': arrow.l1.layerMeta.OutputDim.length === 0, 'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
           :data-startid="arrow.l1.layerId"
@@ -32,7 +31,6 @@
       line.svg-arrow_line.arrow--hidden(
         v-if="preArrow.show"
         marker-end="url(#svg-arrow_triangle)"
-        :stroke-dasharray="(preArrow.type === 'dash1' ? '7 6' : 'none')"
         :x1="preArrow.start.x"
         :y1="preArrow.start.y"
         :x2="preArrow.stop.x"
@@ -48,12 +46,11 @@
         rx="5"
         )
     component(
-      v-for="(el, index) in networkElementList"
-      :key="el.index"
+      v-for="el in networkElementList"
+      :key="el.layerId"
       ref="layer"
-      :class="{'element--hidden': el.layerMeta.isInvisible}"
       :is="el.componentName"
-      :elementData="{el, index}"
+      :element-data="el"
     )
 
 </template>
@@ -73,6 +70,7 @@
     left: 0;
     width: 100%;
     height: 100%;
+    z-index: 2;
     marker#svg-arrow_triangle {
       fill: $col-primary;
       stroke: $col-primary;
@@ -92,7 +90,4 @@
     stroke-width: 1;
     stroke: $col-primary2;
   }
-  /*.arrow--empty-output {*/
-  /*  stroke: #eb8b22;*/
-  /*}*/
 </style>

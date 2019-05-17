@@ -40,9 +40,6 @@ export default {
       if(!this.canvas2D) this.canvas2D = this.$refs.canvas.getContext('2d');
     },
     sendDataToWWorker(dataWatch) {
-
-
-
       let data = dataWatch || this.chartData;
       if (!data) return;
 
@@ -57,20 +54,13 @@ export default {
         ? this.chartModelBuffer = ev.data
         : this.showImage(ev.data);
 
-      // let stopCalDrow = new Date();
-      // let drawDelay = stopCalDrow - this.startCalDrow;
-      // console.log(`calc img delay`, `${drawDelay}ms`);
     },
     showImage(imgData) {
       let canvasEl = this.$refs.canvas;
       canvasEl.setAttribute('width', this.chartData.series[0].width);
       canvasEl.setAttribute('height', this.chartData.series[0].height);
       this.canvas2D.putImageData(imgData, 0, 0);
-      // this.blinkCanv = true;
-      // setTimeout(()=>{
-      //
-      //   this.blinkCanv = false
-      // }, 100);
+
     }
   }
 }

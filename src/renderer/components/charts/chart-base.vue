@@ -41,7 +41,6 @@
               saveAsImage: {
                 title: 'Save'
               },
-              //magicType: {type: ['line', 'bar']},
             }
           },
           xAxis: { data: [] },
@@ -78,9 +77,3 @@
     },
   }
 </script>
-
-<style lang="scss" scoped>
-  .base-chart_main {
-    height: 200px;
-  }
-</style>

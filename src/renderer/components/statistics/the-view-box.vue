@@ -5,7 +5,7 @@
     .info-section_main(v-if="elData !== null")
       component(
         :is="elData.componentName"
-        :elementData="elData.viewBox"
+        :element-data="elData.viewBox"
         )
 </template>
 
@@ -47,7 +47,7 @@ export default {
   },
   computed: {
     testIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openTest
+      return this.$store.getters['mod_workspace/GET_testIsOpen']
     }
   }
 }

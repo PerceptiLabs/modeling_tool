@@ -12,14 +12,13 @@
               span {{ workspace.networkName }}
 
         sidebar-layers-item(
-          v-for="(item, i) in networkElementList"
-          :key="item.i"
-          :itemData="item"
-          :itemIndex="[i]")
+          v-for="item in networkElementList"
+          :key="item.layerId"
+          :item-data="item"
+          )
 
     .layers_meta.sidebar-content
       .layers_actions
-
         button.btn.btn--icon(type="button" disabled="disabled")
           i.icon.icon-folder
         button.btn.btn--icon(type="button"  disabled="disabled"
@@ -38,38 +37,43 @@
 
 <script>
 import SidebarLayersItem from '@/components/sidebar/sidebar-layers--item.vue'
+import {mapGetters} from 'vuex';
 
 export default {
   name: 'SidebarLayers',
   components: {
     SidebarLayersItem
   },
-  mounted() {
-
-  },
-  data() {
-    return {
-
-    }
-  },
   computed: {
-    workspace() {
-      return this.$store.state.mod_workspace.workspaceContent[this.currentNetwork]
-    },
+    ...mapGetters({
+      workspace: 'mod_workspace/GET_currentNetwork',
+      //networkElementList: 'mod_workspace/GET_currentNetworkElementList',
+    }),
     networkElementList() {
-      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
-    },
-    currentNetwork() {
-      return this.$store.state.mod_workspace.currentNetwork
-    },
+      let currentNet = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
+      var newNet = {...currentNet};
+      clearContainer(currentNet);
+
+      function clearContainer() {
+        for(let idEl in currentNet) {
+          let el = currentNet[idEl];
+          if(el.componentName === 'LayerContainer') {
+            let delKeys = Object.keys(el.containerLayersList);
+            if(!delKeys.length) continue;
+            delKeys.forEach((id)=> {
+              if(newNet[id].componentName !== 'LayerContainer') delete newNet[id]
+            })
+          }
+        }
+      }
+      return newNet
+    }
   },
   methods: {
     deleteElement() {
-      let currentSelect =  this.networkElementList.findIndex(function(item) {
-        //console.log(item);
-        return item.meta.isSelected === true;
-      });
-      //console.log(currentSelect);
+      // let currentSelect =  this.networkElementList.findIndex((item)=> {
+      //   return item.meta.isSelected === true;
+      // });
     }
   }
 }

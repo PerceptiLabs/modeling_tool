@@ -3,21 +3,21 @@
     .statistics-box_main.statistics-box_col
       .statistics-box_row
         chart-base(
-        chartLabel="Accuracy during one epoch"
-        :chartData="optionS"
+          chart-label="Accuracy during one epoch"
+        :chart-data="optionS"
         )
         chart-base(
-        chartLabel="Accuracy during one epoch"
-        :chartData="optionBar3"
+          chart-label="Accuracy during one epoch"
+        :chart-data="optionBar3"
         )
       .statistics-box_row
         chart-base(
-        chartLabel="Accuracy during one epoch"
-        :chartData="optionLine2"
+          chart-label="Accuracy during one epoch"
+        :chart-data="optionLine2"
         )
         chart-base(
-        chartLabel="Accuracy during one epoch"
-        :chartData="optionBar4"
+          chart-label="Accuracy during one epoch"
+        :chart-data="optionBar4"
         )
 </template>
 
@@ -38,7 +38,3 @@
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>
