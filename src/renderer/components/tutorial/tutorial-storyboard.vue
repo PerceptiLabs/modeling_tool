@@ -91,7 +91,8 @@ export default {
   },
   computed: {
     ...mapGetters({
-      mainTutorialActivePoint:        'mod_tutorials/getActivePoint',
+      mainTutorialActivePoint:  'mod_tutorials/getActivePoint',
+      isTutorialMode:           'mod_tutorials/getIstutorialMode',
     }),
     currentStepTutorial() {
       return this.firstTutorial[this.activeStep]
@@ -131,7 +132,6 @@ export default {
       this.closeTutorial()
     },
     startMainTutorial() {
-     
       this.activeStep = 0;
       this.setActiveStepStoryboard(this.activeStep);
       this.setShowStoryboard(false);
