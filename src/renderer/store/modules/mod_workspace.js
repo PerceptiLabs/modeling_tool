@@ -298,7 +298,6 @@ const mutations = {
 
   /*-- NETWORK ELEMENTS META --*/
   set_elementUnselect(state, {getters}) {
-    console.log('set_elementUnselect');
     for(let layer in getters.GET_currentNetworkElementList) {
       currentElement(layer).layerMeta.isSelected = false;
     }

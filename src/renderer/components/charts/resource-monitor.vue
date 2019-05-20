@@ -46,7 +46,6 @@
         const nextVal = newVal[this.monitorValueKey] || 22;
         this.optionChart.series[0].data.push(nextVal);
         this.requestsNum++;
-        console.log(this.optionChart.series[0].data);
       }
     }
   }
