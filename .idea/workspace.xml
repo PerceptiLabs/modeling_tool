@@ -2,10 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/setting-arrow.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/charts/resource-monitor.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/charts/resource-monitor.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -18,11 +18,38 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="484">
-              <caret line="46" column="40" selection-start-line="46" selection-start-column="40" selection-end-line="46" selection-end-column="40" />
+            <state relative-caret-position="814">
+              <caret line="70" column="17" lean-forward="true" selection-start-line="70" selection-start-column="17" selection-end-line="70" selection-end-column="17" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/setting-arrow.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1804">
+              <caret line="115" column="32" selection-start-line="115" selection-start-column="32" selection-end-line="115" selection-end-column="32" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/base/select.vue">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="309">
+              <caret line="22" column="10" lean-forward="true" selection-start-line="22" selection-start-column="10" selection-end-line="22" selection-end-column="10" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="352">
+              <caret line="37" lean-forward="true" selection-start-line="37" selection-end-line="37" />
             </state>
           </provider>
         </entry>
@@ -30,8 +57,8 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/scss/base/_variables.scss">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="572">
-              <caret line="26" lean-forward="true" selection-start-line="26" selection-end-line="26" selection-end-column="8" />
+            <state relative-caret-position="682">
+              <caret line="31" selection-start-line="31" selection-end-line="31" selection-end-column="13" />
             </state>
           </provider>
         </entry>
@@ -40,20 +67,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>SET_openTest</find>
-      <find>switchClickEvent</find>
-      <find>editIsOpen</find>
-      <find>NET_trainingDone</find>
-      <find>NET_trainingStart</find>
-      <find>SET_userToken</find>
-      <find>SET_timeIntervalDoRequest</find>
-      <find>setFocusEl</find>
-      <find>toggle_container</find>
-      <find>getters</find>
-      <find>.net-element_be-for-end</find>
-      <find>LayerContainer</find>
-      <find>unse</find>
-      <find>STAT_defaultSelect</find>
       <find>SET_selectedElArr</find>
       <find>SET_elementUnselect</find>
       <find>setTabNetwork</find>
@@ -70,6 +83,20 @@
       <find>SET_openStatistics</find>
       <find>monitorValueName</find>
       <find>E1E1E1</find>
+      <find>positionArrow</find>
+      <find>base-select</find>
+      <find>calcArrowPath</find>
+      <find>isReady</find>
+      <find>checkedOptions</find>
+      <find>selectAllBtn</find>
+      <find>labelText</find>
+      <find>.custom-select</find>
+      <find>defaultModel</find>
+      <find>action-list_icon</find>
+      <find>.action-list_icon</find>
+      <find>.settings-arrow_option-open</find>
+      <find>action-list_btn</find>
+      <find>icon--open</find>
     </findStrings>
     <dirStrings>
       <dir>G:\progects\quantumnet\src</dir>
@@ -87,7 +114,6 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/src/renderer/pages/projects/recent-files/_recent-files.scss" />
         <option value="$PROJECT_DIR$/src/renderer/pages/projects/sidebar/_sidebar.scss" />
         <option value="$PROJECT_DIR$/src/renderer/components/statistics/the-view-box.vue" />
         <option value="$PROJECT_DIR$/src/renderer/pages/app/app.vue" />
@@ -114,7 +140,6 @@
         <option value="$PROJECT_DIR$/src/renderer/components/global-popups/update-popup/popup-info.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/global-popups/update-popup/update-popup.vue" />
         <option value="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" />
         <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" />
         <option value="$PROJECT_DIR$/src/renderer/App.vue" />
@@ -137,7 +162,9 @@
         <option value="$PROJECT_DIR$/src/renderer/components/charts/resource-monitor.vue" />
         <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" />
         <option value="$USER_HOME$/Desktop/1.svg" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/setting-arrow.vue" />
       </list>
     </option>
   </component>
@@ -187,7 +214,24 @@
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="base" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements-settings" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
@@ -221,23 +265,23 @@
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editor.config.ad.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/store/modules" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="G:\progects\quantumnet\node_modules\prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.HTML" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\progects\quantumnet\src\renderer\components\different" />
-      <recent name="G:\progects\quantumnet\src\renderer\assets" />
-      <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements-settings" />
       <recent name="G:\progects\quantumnet\src\renderer\store\modules" />
       <recent name="G:\progects\quantumnet\src\renderer\components\charts" />
       <recent name="G:\progects\quantumnet\src\renderer\components\network-field" />
       <recent name="G:\progects\quantumnet\src\renderer\core\basic-template" />
-      <recent name="G:\progects\quantumnet\static" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\quantumnet\src\renderer\components\different" />
+      <recent name="G:\progects\quantumnet\src\renderer\assets" />
+      <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -427,12 +471,12 @@
       <workItem from="1558073565081" duration="6800000" />
       <workItem from="1558083387856" duration="16688000" />
       <workItem from="1558333370882" duration="2079000" />
-      <workItem from="1558344505457" duration="9202000" />
+      <workItem from="1558344505457" duration="19331000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="507766000" />
+    <option name="totallyTimeSpent" value="517895000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -540,12 +584,6 @@
     <state width="259" height="796" key="Git.Branch.Popup@1920.1080@120dpi" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/constants.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/base-net-paint-arrows.js">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/base-net-drag.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="154">
@@ -757,16 +795,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-242">
-          <caret line="75" column="19" lean-forward="true" selection-start-line="75" selection-start-column="19" selection-end-line="75" selection-end-column="19" />
-          <folding>
-            <element signature="e#0#95#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/store/modules/mod_events.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="525">
@@ -851,17 +879,38 @@
     <entry file="file://$USER_HOME$/Desktop/arrow.svg">
       <provider selected="true" editor-type-id="images" />
     </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="352">
+          <caret line="37" lean-forward="true" selection-start-line="37" selection-end-line="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/base/select.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="309">
+          <caret line="22" column="10" lean-forward="true" selection-start-line="22" selection-start-column="10" selection-end-line="22" selection-end-column="10" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/scss/base/_variables.scss">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="572">
-          <caret line="26" lean-forward="true" selection-start-line="26" selection-end-line="26" selection-end-column="8" />
+        <state relative-caret-position="682">
+          <caret line="31" selection-start-line="31" selection-end-line="31" selection-end-column="13" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="484">
-          <caret line="46" column="40" selection-start-line="46" selection-start-column="40" selection-end-line="46" selection-end-column="40" />
+        <state relative-caret-position="814">
+          <caret line="70" column="17" lean-forward="true" selection-start-line="70" selection-start-column="17" selection-end-line="70" selection-end-column="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/setting-arrow.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1804">
+          <caret line="115" column="32" selection-start-line="115" selection-start-column="32" selection-end-line="115" selection-end-column="32" />
         </state>
       </provider>
     </entry>

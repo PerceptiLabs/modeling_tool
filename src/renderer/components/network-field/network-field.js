@@ -34,6 +34,7 @@ import ClassicMLRandomForest from '@/components/network-elements/elements/classi
 import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/classic-ml-vector-machine.vue'
 
 import LayerContainer       from '@/components/network-elements/elements/layer-container/layer-container.vue'
+import SettingsArrow        from '@/components/network-elements/elements-settings/setting-arrow.vue'
 
 import { mapGetters, mapMutations, mapActions } from 'vuex';
 
@@ -47,7 +48,13 @@ export default {
     TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
-    LayerContainer
+    LayerContainer, SettingsArrow
+  },
+  mounted() {
+    this.drawArrows();
+  },
+  beforeDestroy() {
+    this.removeArrowListener();
   },
   data() {
     return {
@@ -69,12 +76,6 @@ export default {
       },
       currentFocusedArrow: null
     }
-  },
-  mounted() {
-    this.drawArrows();
-  },
-  beforeDestroy() {
-    this.removeArrowListener();
   },
   computed: {
     ...mapGetters({
@@ -514,7 +515,16 @@ export default {
         const pointStopY = arrow.sideEnd === 'top' || arrow.sideEnd === 'bottom'
           ? stopY - vectorY
           : stopY;
-        return `M${startX},${startY}C${pointStartX},${pointStartY} ${pointStopX},${pointStopY} ${stopX},${stopY}`
+        return {
+          arrow: `M${startX},${startY}C${pointStartX},${pointStartY} ${pointStopX},${pointStopY} ${stopX},${stopY}`,
+          settings: {
+            x: calcHalfLength(startX, pointStartX, pointStopX, stopX),
+            y: calcHalfLength(startY, pointStartY, pointStopY, stopY)
+          }
+        }
+      }
+      function calcHalfLength(dot1, dot2, dot3, dot4) {
+        return 0.125 * dot1 + 0.375 * dot2 + 0.375 * dot3 + 0.125 * dot4;
       }
     },
     findXPosition(event) {
