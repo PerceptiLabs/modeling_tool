@@ -14,10 +14,10 @@ Vue.directive('tooltip', {
 
 Vue.directive('tooltipInteractive', {
   bind: function (el, binding, vnode) {
-      el.addEventListener('mouseenter', createTooltip);
-      el.addEventListener('mouseleave', removeTooltip);
-      el.addEventListener('click', removeTooltip);
-      el._binding = binding
+    el.addEventListener('mouseenter', createTooltip);
+    el.addEventListener('mouseleave', removeTooltip);
+    el.addEventListener('click', removeTooltip);
+    el._binding = binding
   },
   unbind: function (el) {
     el.removeEventListener('mouseenter', createTooltip);

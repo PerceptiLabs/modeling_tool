@@ -126,6 +126,7 @@ export default {
       this.setNetworkCoreStatus(false);
       this.deleteNetwork(this.currentNetwork);
       this.addNetwork({'ctx': this})
+      this.switchTutorialMode();
     },
     switchTutorialMode() {
       if(this.currentNetworkElementList !== null && !this.isTutorialMode) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
