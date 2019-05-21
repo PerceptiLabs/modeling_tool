@@ -72,12 +72,12 @@
       :is="el.componentName"
       :element-data="el"
     )
-    settings-arrow(
+    //-settings-arrow(
       v-if="arrowsList.length"
       v-for="(arrow, i) in arrowsList"
-      :key="arrow.i"
-      :arrow-data="arrow"
-    )
+      /:key="arrow.i"
+      /:arrow-data="arrow"
+      )
 
 </template>
 

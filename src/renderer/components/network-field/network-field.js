@@ -130,6 +130,11 @@ export default {
     hotKeyPressDelete() {
       this.deleteArrow()
     },
+    '$store.state.mod_events.eventResize': {
+      handler() {
+        this.calcSvgSize()
+      }
+    },
   },
   methods: {
     ...mapActions({

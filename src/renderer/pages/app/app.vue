@@ -17,6 +17,7 @@
 
 <script>
   import { mapGetters, mapActions } from 'vuex';
+  import { throttleEv } from '@/core/helpers.js'
 
   import TheToolbar         from '@/components/the-toolbar.vue'
   import TheLayersbar       from '@/components/the-layersbar.vue'
@@ -42,9 +43,12 @@
     },
     mounted() {
       this.showPage = true;
+      window.addEventListener("resize",  this.resizeEv, false);
       this.$nextTick(()=> this.addListeners())
     },
     beforeDestroy() {
+      console.log('beforeDestroy');
+      window.removeEventListener("resize", this.resizeEv, false);
       this.removeListeners()
     },
     data() {
@@ -52,8 +56,9 @@
         showPage: false,
         dragMeta: {
           dragged: null,
-          outClassName: 'svg-arrow'
+          outClassName: 'svg-arrow',
         },
+        resizeEv: this.throttleEv(this.eventResize)
       }
     },
     computed: {
@@ -91,6 +96,10 @@
       ...mapActions({
         tutorialPointActivate: 'mod_tutorials/pointActivate'
       }),
+      throttleEv,
+      eventResize() {
+        this.$store.dispatch('mod_events/EVENT_eventResize')
+      },
       addListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
       },
