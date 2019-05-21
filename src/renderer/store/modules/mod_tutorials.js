@@ -239,7 +239,7 @@ const state = {
                           This is the step size when </br>
                           we slide the filter over the input </br>
                           data to generate feature maps. </br>
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_stride'
@@ -254,7 +254,7 @@ const state = {
                           more complex data, it might be </br>
                           better to increase the number </br>
                           of feature maps. </br>
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next action</div>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_feature-maps',
@@ -608,7 +608,8 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Top Toolbar</div> go to <div class="marker">Run</div>',
+          content: `In the <div class="marker">Top Toolbar</div> go to <div class="marker">Run</div>
+                    Check all inputs in General Settings and click Apply`,
           hoverInfo: [
             {
               tooltip: `<div class="tooltip-tutorial_italic">
