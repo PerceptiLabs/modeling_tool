@@ -165,16 +165,24 @@ const mutations = {
   set_netMode(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.netMode = value;
   },
-  set_openStatistics(state, {getters, value}) {
+  set_openStatistics(state, {dispatch, getters, value}) {
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
     if(value && getters.GET_testIsOpen !== null) {
       getters.GET_currentNetwork.networkMeta.openTest = false;
     }
+    if(value) {
+      dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
+      //dispatch('mod_events/EVENT_chartResize', null, {root: true});
+    }
   },
-  set_openTest(state, {getters, value}) {
+  set_openTest(state, {dispatch, getters, value}) {
     getters.GET_currentNetwork.networkMeta.openTest = value;
     if(value && getters.GET_statisticsIsOpen !== null) {
       getters.GET_currentNetwork.networkMeta.openStatistics = false;
+    }
+    if(value) {
+      dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
+      //dispatch('mod_events/EVENT_chartResize', null, {root: true});
     }
   },
   set_statusNetworkCore(state, {getters, value}) {
@@ -331,94 +339,94 @@ const mutations = {
   //---------------
   //  NETWORK CONTAINER
   //---------------
-add_container(state, {getters, commit, dispatch}) {
-  let arrSelect = getters.GET_currentSelectedEl;
-  /* validations */
-  if(arrSelect.length === 0) return;
-  if(arrSelect.length === 1) {
-    alert('At least 2 elements are needed to create a group');
-    return;
-  }
-  /* END validations */
-  let net = getters.GET_currentNetworkElementList;
-  let newContainer = createContainer(arrSelect);
-  newContainer.connectionIn.forEach((idEl)=>{
-    net[idEl].connectionArrow.push(newContainer.layerId)
-  });
-
-  Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
-  commit('set_elementUnselect', {getters});
-  commit('close_container', {container: newContainer, getters, dispatch});
-
-  function createClearContainer() {
-    let fakeEvent = {
-      timeStamp: generateID(),
-      target: {
-        dataset: {
-          layer: 'Data Group',
-          type: 'container',
-          component: 'LayerContainer',
-        },
-        clientHeight: 0,
-        clientWidth: 0
-      }
-    };
-    return createNetElement(fakeEvent);
-  }
-  function createContainer(elSelectList) {
-    let el = createClearContainer();
-    let allIdEl = [];
-    let allIdOut = [];
-    let allIdIn = [];
-    let allTop = [];
-    let allLeft = [];
-    el.containerLayersList = {};
-
-    elSelectList.forEach((item)=> {
-      allIdEl.push(item.layerId);
-      allIdOut = [...allIdOut, ...new Set(item.connectionOut)];
-      allIdIn  = [...allIdIn,  ...new Set(item.connectionIn)];
-      allTop.push(item.layerMeta.position.top);
-      allLeft.push(item.layerMeta.position.left);
-      el.containerLayersList[item.layerId] = item
+  add_container(state, {getters, commit, dispatch}) {
+    let arrSelect = getters.GET_currentSelectedEl;
+    /* validations */
+    if(arrSelect.length === 0) return;
+    if(arrSelect.length === 1) {
+      alert('At least 2 elements are needed to create a group');
+      return;
+    }
+    /* END validations */
+    let net = getters.GET_currentNetworkElementList;
+    let newContainer = createContainer(arrSelect);
+    newContainer.connectionIn.forEach((idEl)=>{
+      net[idEl].connectionArrow.push(newContainer.layerId)
     });
-    el.layerMeta.position.top = calcPosition(allTop);
-    el.layerMeta.position.left = calcPosition(allLeft);
-    el.connectionOut = calcConnection(allIdOut, allIdEl);
-    el.connectionArrow = [...el.connectionOut];
-    el.connectionIn = calcConnection(allIdIn, allIdEl);
-    return el;
-  }
-  function calcConnection(arrConnectionId, arrInsideId) {
-    return arrConnectionId.filter((id)=> !arrInsideId.includes(id))
-  }
-  function calcPosition(arrIn) {
-    const num = (Math.max(...arrIn) + Math.min(...arrIn))/2;
-    return calcLayerPosition(num);
-  }
-},
-close_container(state, {container, getters, dispatch}) {
-  let net = getters.GET_currentNetworkElementList;
-  for(let idEl in container.containerLayersList) {
-    net[idEl].layerNone = true;
-  }
-  net[container.layerId].layerNone = false;
-  dispatch('mod_events/EVENT_calcArray', null, {root: true})
-},
-open_container(state, {container, getters, dispatch}) {
-  let net = getters.GET_currentNetworkElementList;
-  for(let idEl in container.containerLayersList) {
-    net[idEl].layerNone = false;
-  }
-  net[container.layerId].layerNone = true;
-  dispatch('mod_events/EVENT_calcArray', null, {root: true})
-},
-toggle_container(state, {val, container, dispatch}) {
-  val
-    ? dispatch('CLOSE_container', container)
-    : dispatch('OPEN_container', container);
-  dispatch('SET_elementUnselect');
-},
+
+    Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
+    commit('set_elementUnselect', {getters});
+    commit('close_container', {container: newContainer, getters, dispatch});
+
+    function createClearContainer() {
+      let fakeEvent = {
+        timeStamp: generateID(),
+        target: {
+          dataset: {
+            layer: 'Layer Container',
+            type: 'Сontainer',
+            component: 'LayerContainer',
+          },
+          clientHeight: 0,
+          clientWidth: 0
+        }
+      };
+      return createNetElement(fakeEvent);
+    }
+    function createContainer(elSelectList) {
+      let el = createClearContainer();
+      let allIdEl = [];
+      let allIdOut = [];
+      let allIdIn = [];
+      let allTop = [];
+      let allLeft = [];
+      el.containerLayersList = {};
+
+      elSelectList.forEach((item)=> {
+        allIdEl.push(item.layerId);
+        allIdOut = [...allIdOut, ...new Set(item.connectionOut)];
+        allIdIn  = [...allIdIn,  ...new Set(item.connectionIn)];
+        allTop.push(item.layerMeta.position.top);
+        allLeft.push(item.layerMeta.position.left);
+        el.containerLayersList[item.layerId] = item
+      });
+      el.layerMeta.position.top = calcPosition(allTop);
+      el.layerMeta.position.left = calcPosition(allLeft);
+      el.connectionOut = calcConnection(allIdOut, allIdEl);
+      el.connectionArrow = [...el.connectionOut];
+      el.connectionIn = calcConnection(allIdIn, allIdEl);
+      return el;
+    }
+    function calcConnection(arrConnectionId, arrInsideId) {
+      return arrConnectionId.filter((id)=> !arrInsideId.includes(id))
+    }
+    function calcPosition(arrIn) {
+      const num = (Math.max(...arrIn) + Math.min(...arrIn))/2;
+      return calcLayerPosition(num);
+    }
+  },
+  close_container(state, {container, getters, dispatch}) {
+    let net = getters.GET_currentNetworkElementList;
+    for(let idEl in container.containerLayersList) {
+      net[idEl].layerNone = true;
+    }
+    net[container.layerId].layerNone = false;
+    dispatch('mod_events/EVENT_calcArray', null, {root: true})
+  },
+  open_container(state, {container, getters, dispatch}) {
+    let net = getters.GET_currentNetworkElementList;
+    for(let idEl in container.containerLayersList) {
+      net[idEl].layerNone = false;
+    }
+    net[container.layerId].layerNone = true;
+    dispatch('mod_events/EVENT_calcArray', null, {root: true})
+  },
+  toggle_container(state, {val, container, dispatch, getters}) {
+    val
+      ? dispatch('CLOSE_container', container)
+      : dispatch('OPEN_container', container);
+    if(getters.GET_networkIsOpen) dispatch('SET_elementUnselect');
+  },
   //---------------
   //  OTHER
   //---------------
@@ -467,11 +475,11 @@ const actions = {
   SET_netMode({commit, getters}, value) {
     commit('set_netMode', {getters, value})
   },
-  SET_openStatistics({commit, getters}, value) {
-    commit('set_openStatistics', {getters, value})
+  SET_openStatistics({commit, getters, dispatch}, value) {
+    commit('set_openStatistics', {dispatch, getters, value})
   },
-  SET_openTest({commit, getters}, value) {
-    commit('set_openTest', {getters, value})
+  SET_openTest({commit, getters, dispatch}, value) {
+    commit('set_openTest', {dispatch, getters, value})
   },
   SET_statusNetworkCore({commit, getters}, value) {
     commit('set_statusNetworkCore', {getters, value})
@@ -585,7 +593,7 @@ const actions = {
     commit('close_container', {container, getters, dispatch})
   },
   TOGGLE_container({commit, getters, dispatch}, {val, container}) {
-    commit('toggle_container', {val, container, dispatch})
+    commit('toggle_container', {val, container, dispatch, getters})
   },
 
 };

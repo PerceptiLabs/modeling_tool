@@ -58,7 +58,6 @@ export default {
     startTraining() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
       this.$store.dispatch('mod_api/API_startTraining');
-      this.$store.dispatch('mod_statistics/STAT_defaultSelect');
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
       if(this.isTutorialMode) {
         this.tutorialNextActiveStep('next')

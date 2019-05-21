@@ -155,15 +155,11 @@ export default {
     },
     openStatistics(i) {
       this.setTabNetwork(i);
-      this.$store.dispatch('mod_statistics/STAT_defaultSelect');
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
-      this.$store.dispatch('mod_events/EVENT_chartResize');
     },
     openTest(i) {
       this.setTabNetwork(i);
-      this.$store.dispatch('mod_statistics/STAT_defaultSelect');
       this.$store.dispatch('mod_workspace/SET_openTest', true);
-      this.$store.dispatch('mod_events/EVENT_chartResize');
     },
     saveNetwork() {
       const dialog = remote.dialog;
@@ -173,8 +169,7 @@ export default {
           const stringNet = cloneNet(network, img);
           openSaveDialog(stringNet)
         })
-        .catch((err)=> {console.log(err)})
-
+        .catch((err)=> {console.log(err)});
 
       function openSaveDialog(jsonNet) {
         const option = {
@@ -184,7 +179,6 @@ export default {
             {name: 'Text', extensions: ['json']},
           ]
         };
-
 
         dialog.showSaveDialog(null, option, (fileName) => {
           if (fileName === undefined){
@@ -201,7 +195,6 @@ export default {
           });
         });
       }
-
       function doScreenShot(ctx) {
         return new Promise((resolve, reject)=> {
           const workspace = ctx.$refs.workspaceNet;

@@ -101,11 +101,6 @@ export default {
     }
   },
   watch: {
-    statisticsIsOpen(newVal) {
-      if(newVal) {
-        this.deselect()
-      }
-    },
     isSelectedEl(newVal) {
       newVal
         ? this.mousedownOutsideBefore()
@@ -119,10 +114,9 @@ export default {
     switchMousedownEvent(ev) {
       if (this.isLock) return;
 
-      else if(this.networkMode === 'addArrow') {
-        this.arrowStartPaint(ev)
-      }
-      else if(this.networkMode === 'edit' && this.editIsOpen) {
+      if(this.networkMode === 'addArrow') this.arrowStartPaint(ev);
+
+      if(this.networkMode === 'edit' && this.editIsOpen) {
         this.setFocusEl(ev);
         this.bodyDown(ev)
       }
@@ -130,11 +124,12 @@ export default {
     switchClickEvent(ev) {
       if (this.isLock) return;
 
-      else if (!this.editIsOpen) {
+      if (!this.editIsOpen && !this.layerContainer) {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
     },
     switchDblclick(event) {
+      if (this.isLock) return;
       this.layerContainer
         ? this.openLayerContainer()
         : this.openSettings(event)
@@ -212,7 +207,7 @@ export default {
   .net-element_be-for-end {
     font-size: 1.2rem;
     position: absolute;
-    top: -2.5rem;
+    top: -20px; //zoom need px!
     left: 50%;
     z-index: 2;
     transform: translateX(-50%);

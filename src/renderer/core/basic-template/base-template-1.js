@@ -6,35 +6,23 @@ const basicTemplate1 = {
     "networkSettings": null,
     "networkMeta": {},
     "networkElementList": {
-      "1557863743895": {
-        "layerId": "1557863743895",
+      "1558084944100": {
+        "layerId": "1558084944100",
         "layerName": "Data_1",
         "layerType": "Data",
-        "layerSettings": {
-          "Type": "Data",
-          "accessProperties": {
-            "Columns": [],
-            "Dataset_size": 1,
-            "Category": "Local",
-            "Type": "Data",
-            "Path": [
-              "G:\\progects\\test-info\\mnist_split\\mnist_input.npy"
-            ],
-            "executeTime": 0.07318449020385742
-          }
-        },
+        "layerSettings": "",
         "layerCode": "",
+        "layerNone": false,
         "layerMeta": {
-          "displayNone": false,
           "isInvisible": false,
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 88,
-            "left": 143
+            "top": 130,
+            "left": 290
           },
-          "OutputDim": "784",
-          "InputDim": "[]",
+          "OutputDim": "",
+          "InputDim": "",
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -42,39 +30,30 @@ const basicTemplate1 = {
         },
         "componentName": "DataData",
         "connectionOut": [
-          "1557863747097"
+          "1558084947036"
         ],
-        "connectionIn": []
+        "connectionIn": [],
+        "connectionArrow": [
+          "1558084947036"
+        ]
       },
-      "1557863744661": {
-        "layerId": "1557863744661",
+      "1558084944754": {
+        "layerId": "1558084944754",
         "layerName": "Data_1",
         "layerType": "Data",
-        "layerSettings": {
-          "Type": "Data",
-          "accessProperties": {
-            "Columns": [],
-            "Dataset_size": 1,
-            "Category": "Local",
-            "Type": "Data",
-            "Path": [
-              "G:\\progects\\test-info\\mnist_split\\mnist_labels.npy"
-            ],
-            "executeTime": 0.003995656967163086
-          }
-        },
+        "layerSettings": "",
         "layerCode": "",
+        "layerNone": false,
         "layerMeta": {
-          "displayNone": false,
           "isInvisible": false,
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 278,
-            "left": 176
+            "top": 350,
+            "left": 290
           },
-          "OutputDim": "1",
-          "InputDim": "[]",
+          "OutputDim": "",
+          "InputDim": "",
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -82,38 +61,30 @@ const basicTemplate1 = {
         },
         "componentName": "DataData",
         "connectionOut": [
-          "1557863812968"
+          "1558084948353"
         ],
-        "connectionIn": []
+        "connectionIn": [],
+        "connectionArrow": [
+          "1558084948353"
+        ]
       },
-      "1557863747097": {
-        "layerId": "1557863747097",
+      "1558084947036": {
+        "layerId": "1558084947036",
         "layerName": "Reshape",
         "layerType": "Other",
-        "layerSettings": {
-          "Shape": [
-            28,
-            28,
-            1
-          ],
-          "Permutation": [
-            0,
-            1,
-            2
-          ]
-        },
-        "layerCode": "Y=tf.reshape(X, [-1]+[layer_output for layer_output in [28,28,1]]);\nY=tf.transpose(Y,perm=[0]+[i+1 for i in [0,1,2]]);",
+        "layerSettings": "",
+        "layerCode": "",
+        "layerNone": false,
         "layerMeta": {
-          "displayNone": false,
           "isInvisible": false,
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 89,
-            "left": 314
+            "top": 130,
+            "left": 490
           },
-          "OutputDim": "28x28x1",
-          "InputDim": "[784]",
+          "OutputDim": "",
+          "InputDim": "",
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -121,31 +92,32 @@ const basicTemplate1 = {
         },
         "componentName": "ProcessReshape",
         "connectionOut": [
-          "1557863815036"
+          "1558084952391"
         ],
         "connectionIn": [
-          "1557863743895"
+          "1558084944100"
+        ],
+        "connectionArrow": [
+          "1558084952391"
         ]
       },
-      "1557863812968": {
-        "layerId": "1557863812968",
+      "1558084948353": {
+        "layerId": "1558084948353",
         "layerName": "OneHot_1",
         "layerType": "Other",
-        "layerSettings": {
-          "N_class": "10"
-        },
-        "layerCode": "Y=tf.one_hot(tf.cast(X,dtype=tf.int32),10);",
+        "layerSettings": "",
+        "layerCode": "",
+        "layerNone": false,
         "layerMeta": {
-          "displayNone": false,
           "isInvisible": false,
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 294,
-            "left": 347
+            "top": 350,
+            "left": 580
           },
-          "OutputDim": "10",
-          "InputDim": "[1]",
+          "OutputDim": "",
+          "InputDim": "",
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -153,42 +125,32 @@ const basicTemplate1 = {
         },
         "componentName": "ProcessOneHot",
         "connectionOut": [
-          "1557863819624"
+          "1558084956146"
         ],
         "connectionIn": [
-          "1557863744661"
+          "1558084944754"
+        ],
+        "connectionArrow": [
+          "1558084956146"
         ]
       },
-      "1557863815036": {
-        "layerId": "1557863815036",
+      "1558084952391": {
+        "layerId": "1558084952391",
         "layerName": "Convolution_1",
         "layerType": "Other",
-        "layerSettings": {
-          "Conv_dim": "2D",
-          "Patch_size": "3",
-          "Stride": "2",
-          "Padding": "'SAME'",
-          "Feature_maps": "8",
-          "Activation_function": "Sigmoid",
-          "Dropout": false,
-          "PoolBool": false,
-          "Pooling": "Max",
-          "Pool_area": "2",
-          "Pool_padding": "'SAME'",
-          "Pool_stride": "2"
-        },
-        "layerCode": "shape=[3,3,[28, 28, 1][-1],8];\ninitial = tf.truncated_normal(shape, stddev=np.sqrt(2/(3**2 * 8)));\nW = tf.Variable(initial);\ninitial = tf.constant(0.1, shape=[8]);\nb=tf.Variable(initial);\nnode = tf.nn.conv2d(X, W, strides=[1, 2,2, 1], padding='SAME');\nnode=node+b;\nY=tf.sigmoid(node);\n",
+        "layerSettings": "",
+        "layerCode": "",
+        "layerNone": false,
         "layerMeta": {
-          "displayNone": false,
           "isInvisible": false,
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 70,
-            "left": 470
+            "top": 130,
+            "left": 680
           },
-          "OutputDim": "14x14x8",
-          "InputDim": "[28, 28, 1]",
+          "OutputDim": "",
+          "InputDim": "",
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -196,33 +158,32 @@ const basicTemplate1 = {
         },
         "componentName": "DeepLearningConv",
         "connectionOut": [
-          "1557863815992"
+          "1558084953513"
         ],
         "connectionIn": [
-          "1557863747097"
+          "1558084947036"
+        ],
+        "connectionArrow": [
+          "1558084953513"
         ]
       },
-      "1557863815992": {
-        "layerId": "1557863815992",
+      "1558084953513": {
+        "layerId": "1558084953513",
         "layerName": "FullyConnected_1",
         "layerType": "Other",
-        "layerSettings": {
-          "Neurons": "10",
-          "Activation_function": "Sigmoid",
-          "Dropout": false
-        },
-        "layerCode": "input_size=1\nfor element in [14, 14, 8]:\n  input_size*=element\nshape=[input_size,10];\ninitial = tf.truncated_normal(shape, stddev=0.1);\nW=tf.Variable(initial);\ninitial = tf.constant(0.1, shape=[10]);\nb=tf.Variable(initial);\nflat_node=tf.cast(tf.reshape(X,[-1,input_size]),dtype=tf.float32);\nnode=tf.matmul(flat_node,W);\nnode=node+b;\nY=tf.sigmoid(node);",
+        "layerSettings": "",
+        "layerCode": "",
+        "layerNone": false,
         "layerMeta": {
-          "displayNone": false,
           "isInvisible": false,
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 109,
-            "left": 696
+            "top": 130,
+            "left": 870
           },
-          "OutputDim": "10",
-          "InputDim": "[14, 14, 8]",
+          "OutputDim": "",
+          "InputDim": "",
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -230,41 +191,32 @@ const basicTemplate1 = {
         },
         "componentName": "DeepLearningFC",
         "connectionOut": [
-          "1557863819624"
+          "1558084956146"
         ],
         "connectionIn": [
-          "1557863815036"
+          "1558084952391"
+        ],
+        "connectionArrow": [
+          "1558084956146"
         ]
       },
-      "1557863819624": {
-        "layerId": "1557863819624",
+      "1558084956146": {
+        "layerId": "1558084956146",
         "layerName": "Normal",
         "layerType": "Training",
-        "layerSettings": {
-          "Labels": "1557863812968",
-          "N_class": "1",
-          "Loss": "Cross_entropy",
-          "Class_weights": 1,
-          "Learning_rate": "0.01",
-          "Optimizer": "SGD",
-          "Beta_1": "0.1",
-          "Beta_2": "0.1",
-          "Momentum": "0.1",
-          "Decay": "0.1",
-          "Training_iters": "20000"
-        },
-        "layerCode": "N_class=[[10], [10]][-1][-1];\nflat_logits = tf.reshape(X['1557863815992'], [-1, N_class]);\nflat_labels = tf.reshape(X['1557863812968'], [-1, N_class]);\nloss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_logits));\noptimizer = tf.train.GradientDescentOptimizer(0.01).minimize(loss);\nY=optimizer;\narg_output=tf.argmax(X['1557863815992'],-1);\narg_label=tf.argmax(X['1557863812968'],-1);\ncorrect_prediction = tf.equal(arg_output, arg_label);\naccuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));",
+        "layerSettings": "",
+        "layerCode": "",
+        "layerNone": false,
         "layerMeta": {
-          "displayNone": false,
           "isInvisible": false,
           "isLock": false,
           "isSelected": false,
           "position": {
-            "top": 285,
-            "left": 673
+            "top": 350,
+            "left": 870
           },
           "OutputDim": "",
-          "InputDim": "[[10], [10]]",
+          "InputDim": "",
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -273,9 +225,10 @@ const basicTemplate1 = {
         "componentName": "TrainNormal",
         "connectionOut": [],
         "connectionIn": [
-          "1557863812968",
-          "1557863815992"
-        ]
+          "1558084953513",
+          "1558084948353"
+        ],
+        "connectionArrow": []
       }
     }
   }

@@ -75,6 +75,7 @@ export default {
     text-align: left;
     border: 1px solid $login-blue;
     background: #161719;
+    margin-top: 2rem;
   }
   .policy_main {
     overflow: auto;

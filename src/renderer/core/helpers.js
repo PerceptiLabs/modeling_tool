@@ -56,4 +56,33 @@ const calcLayerPosition = function (position) {
   return Math.round(position/grid)*grid
 };
 
-export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition}
+const throttleEv = function (func, ms) {
+  var isThrottled = false,
+    savedArgs,
+    savedThis;
+  let delay = 33 || ms; //30Hz
+  function wrapper() {
+
+    if (isThrottled) { // (2)
+      savedArgs = arguments;
+      savedThis = this;
+      return;
+    }
+
+    func.apply(this, arguments); // (1)
+
+    isThrottled = true;
+
+    setTimeout(function() {
+      isThrottled = false; // (3)
+      if (savedArgs) {
+        wrapper.apply(savedThis, savedArgs);
+        savedArgs = savedThis = null;
+      }
+    }, delay);
+  }
+
+  return wrapper;
+};
+
+export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition, throttleEv}

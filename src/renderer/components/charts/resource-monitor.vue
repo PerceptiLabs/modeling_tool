@@ -11,7 +11,7 @@
   export default {
     name: "ResourceMonitor",
     props: {
-      monitorValueName: {
+      monitorValueKey: {
         type: String,
         default: ''
       },
@@ -27,7 +27,7 @@
           dataZoom: [{ type: 'slider', show: false, realtime: true, startValue: 0, endValue: xAxisMax }],
           xAxis: {
             data: [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14],
-            axisLabel: { show: false }
+            axisLabel: { show: false },
           },
           yAxis: { type: 'value', min: 0, max: 100 },
           series: [{ type: 'line', data: [], symbolSize: 0 }]
@@ -43,7 +43,8 @@
           this.optionChart.dataZoom[0].endValue = lastX;
           this.optionChart.dataZoom[0].startValue = lastX - xAxisMax;
         };
-        this.optionChart.series[0].data.push(newVal[this.monitorValueName]);
+        const nextVal = newVal[this.monitorValueKey] || 22;
+        this.optionChart.series[0].data.push(nextVal);
         this.requestsNum++;
       }
     }

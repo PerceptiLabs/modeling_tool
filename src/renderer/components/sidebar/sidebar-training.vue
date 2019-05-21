@@ -6,12 +6,12 @@
       )
     sidebar-training-section(section-name="RAM")
       resource-monitor(
-        monitor-value-name="Memory"
+        monitor-value-key="Memory"
         :monitor-value="currentData"
       )
     sidebar-training-section(section-name="CPU")
       resource-monitor(
-        monitor-value-name="CPU"
+        monitor-value-key="CPU"
         :monitor-value="currentData"
       )
 
