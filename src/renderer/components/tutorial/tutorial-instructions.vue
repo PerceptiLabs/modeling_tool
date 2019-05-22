@@ -102,6 +102,7 @@ export default {
       setTutorialMode:            'mod_tutorials/SET_isTutorialMode',
       goToFirstStep:              'mod_tutorials/SET_activeActionMainTutorial',
       setShowInstructions:        'mod_tutorials/SET_showMainTutorialInstruction',
+      setInteractiveInfo:         'mod_tutorials/SET_interactiveInfo',
       deleteNetwork:              'mod_workspace/DELETE_network'
     }),
     ...mapActions({
@@ -125,13 +126,15 @@ export default {
     endTutorial() {
       this.setNetworkCoreStatus(false);
       this.deleteNetwork(this.currentNetwork);
-      this.addNetwork({'ctx': this})
+      this.addNetwork({'ctx': this});
+      this.switchTutorialMode();
     },
     switchTutorialMode() {
       if(this.currentNetworkElementList !== null && !this.isTutorialMode) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
       this.setShowInstructions(!this.isShowInstructions);
       this.setTutorialMode(!this.isTutorialMode);
       if(!this.isTutorialMode) this.resetTutorial();
+      this.setInteractiveInfo(false);
     }
   }
 }

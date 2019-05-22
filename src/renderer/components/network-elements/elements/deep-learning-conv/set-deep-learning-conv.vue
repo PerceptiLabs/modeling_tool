@@ -26,7 +26,7 @@
           .settings-layer_section
             .form_row
               .form_label Patch size:
-              #tutorial_patch-size.form_input.tutorial-relative
+              #tutorial_patch-size.form_input.tutorial-relative(data-tutorial-hover-info)
                 input( type="text"
                   v-model="settings.Patch_size"
                   ref="pathSize"
@@ -34,19 +34,16 @@
           .settings-layer_section
             .form_row
               .form_label Stride:
-              #tutorial_stride.form_input.tutorial-relative
+              #tutorial_stride.form_input.tutorial-relative(data-tutorial-hover-info)
                 input( type="text"
                   v-model="settings.Stride"
-                  @focus="onFocus('tutorial_patch-size')"
                 )
           .settings-layer_section
             .form_row
               .form_label Feature maps:
-              #tutorial_feature-maps.tutorial-relative.form_input
+              #tutorial_feature-maps.tutorial-relative.form_input(data-tutorial-hover-info)
                 input( type="text"
                   v-model="settings.Feature_maps"
-                  @focus="onFocus('tutorial_stride')"
-                  @blur="onBlur('tutorial_feature-maps')"
                 )
 
           .settings-layer_section
@@ -271,7 +268,7 @@ node=node+b;`;
     },
     saveSettings() {
       this.applySettings();
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_apply-button'})
+      this.tutorialPointActivate({way:'next', validation: 'tutorial_patch-size'})
     }
   }
 }

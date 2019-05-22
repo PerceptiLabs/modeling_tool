@@ -221,6 +221,45 @@ const state = {
           status:'disabled',
           class_style: 'list_subtitle',
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Convolution</div> > Connect input > Operation settings',
+          hoverInfo: [
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Patch size:</div> 
+                          This is the size of the filter.</br> 
+                          E.g. with patch size 3, the </br> 
+                          filter will be a square of size 3x3. </br> 
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_patch-size',
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Stride:</div>
+                          This is the step size when </br>
+                          we slide the filter over the input </br>
+                          data to generate feature maps. </br>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                       </div>`,
+              position: 'right',
+              id: 'tutorial_stride'
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Feature Maps:</div>
+                          The number of </br>
+                          feature maps correspond to the </br>
+                          number of different features to </br>
+                          look for in the input data. i.e. with </br>
+                          more complex data, it might be </br>
+                          better to increase the number </br>
+                          of feature maps. </br>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                       </div>`,
+              position: 'right',
+              id: 'tutorial_feature-maps',
+            }
+          ],
           actions: [
             {
               tooltip: 'Deep Learning > Convolution...',
@@ -274,18 +313,18 @@ const state = {
                           This is the size of the filter.</br> 
                           E.g. with patch size 3, the </br> 
                           filter will be a square of size 3x3. </br> 
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
+                         <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_patch-size',
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Stride:</div> 
-                          This is the step size when </br> 
-                          we slide the filter over the input </br> 
-                          data to generate feature maps. </br> 
+                          <div class="tooltip-tutorial_bold">Stride:</div>
+                          This is the step size when </br>
+                          we slide the filter over the input </br>
+                          data to generate feature maps. </br>
                           <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
                        </div>`,
               position: 'right',
@@ -294,14 +333,14 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Feature Maps:</div> 
-                          The number of </br> 
-                          feature maps correspond to the </br> 
-                          number of different features to </br> 
-                          look for in the input data. i.e. with </br> 
-                          more complex data, it might be </br> 
-                          better to increase the number </br> 
-                          of feature maps. </br> 
+                          <div class="tooltip-tutorial_bold">Feature Maps:</div>
+                          The number of </br>
+                          feature maps correspond to the </br>
+                          number of different features to </br>
+                          look for in the input data. i.e. with </br>
+                          more complex data, it might be </br>
+                          better to increase the number </br>
+                          of feature maps. </br>
                           <div class="tooltip-tutorial_bold">Please press "Tab" button to next action</div>
                        </div>`,
               position: 'right',
@@ -313,7 +352,7 @@ const state = {
               position: 'right',
               id: 'tutorial_apply-button',
               status: 'disabled'
-            }
+            }*/
           ],
           static_info: [
             {
@@ -569,7 +608,59 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Top Toolbar</div> go to <div class="marker">Run</div>',
+          content: `In the <div class="marker">Top Toolbar</div> go to <div class="marker">Run</div>
+                    Check all inputs in General Settings and click Apply`,
+          hoverInfo: [
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_partition-training-input',
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_partition-validation-input',
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_partition-test-input',
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Batch size:</div> to make the training </br> more efficient, you can train on </br> multiples samples at the same time. </br>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_butch-size-input',
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Epoch:</div> refers to the number of times </br> you want to run through your entire dataset. </br>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_epochs-input',
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Dropout rate:</div> when training we can </br> deactivate half (0.5) of all the </br> learning neurons in each layer in order for </br> the network to learn in a  more general way. 
+                          </br></br> Note: this has to be activated independently </br> for each deep learning layer.</br>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_drop-rate-input',
+            },
+          ],
           actions: [
             {
               tooltip: 'Run training...',
@@ -580,13 +671,13 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
+                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_partition-training-input',
               status: 'disabled'
             },
-            {
+            /*{
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
                           <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
@@ -637,7 +728,7 @@ const state = {
               position: 'right',
               id: 'tutorial_apply-button',
               status: 'disabled'
-            }
+            }*/
           ]
         },
       ]
@@ -873,8 +964,11 @@ const getters = {
       if(point.status === 'done') count++
     });
     return count === getters.getPoints.length
+  },
+  getHoverInfo(state, getters) {
+    return  getters.getActivePoint.hoverInfo;
   }
-}
+};
 
 const mutations = {
   SET_isTutorialMode(state, value) {
@@ -951,7 +1045,7 @@ const actions = {
           dispatch('checkActiveActionAndPoint', value)
         }
         else {
-          dispatch('createTooltip');
+          dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
           dispatch('drawSchematicElement', getters.getActiveAction.schematic);
           commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
         }
@@ -961,16 +1055,17 @@ const actions = {
     commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'});
     commit('SET_activeActionMainTutorial', 'next');
     if(getters.getActiveAction) {
-      dispatch('createTooltip');
+      dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
       dispatch('removeSchematicElement');
-      dispatch('drawSchematicElement', getters.getActiveAction.schematic)
+      dispatch('drawSchematicElement', getters.getActiveAction.schematic);
+      dispatch('showHoverInfo');
     } 
     else { // all actions are done
       dispatch('removeTooltip');
       dispatch('nextPoint');
       if(getters.getActivePoint) {
         commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
-        dispatch('createTooltip')
+        dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
       }
       else { //all points are done
         dispatch('removeTooltip');
@@ -978,13 +1073,13 @@ const actions = {
       }
     }
   },
-  createTooltip({getters, dispatch}) {
+  createTooltip({getters, dispatch}, info) {
     dispatch('removeTooltip');
-    let element = document.getElementById(getters.getActiveAction.id);
+    let element = document.getElementById(info.id);
     if(getters.getActiveAction.tooltip) { 
       let tooltipBlock = document.createElement('div');
       tooltipBlock.classList.add('tooltip-tutorial', `tooltip-tutorial--${getters.getActiveAction.position}`);
-      tooltipBlock.innerHTML = getters.getActiveAction.tooltip;
+      tooltipBlock.innerHTML = info.tooltip;
       element.appendChild(tooltipBlock);
     }
   },
@@ -1018,21 +1113,24 @@ const actions = {
           element.style.top = schematic.top + 'rem';
           element.style.left = schematic.left + 'rem';
           break;
-         case 'arrow':
-          let start = document.getElementById(getters.getActiveAction.schematic.connection_start).getBoundingClientRect();
-          let stop = document.getElementById(getters.getActiveAction.id).getBoundingClientRect();
-          let startXpos = start.left - 10;
-          let startYpos = start.top - start.height;
-          let stopXpos = stop.left - stop.width - 10;
-          let stoptYpos = stop.top - stop.height;
-          commit('mod_workspace/SET_preArrowStart', {x: startXpos, y: startYpos, type: 'dash1'}, {root:true});
-          commit('mod_workspace/SET_preArrowStop', {x: stopXpos, y: stoptYpos, type: 'dash1'}, {root:true});
-          break;
          case 'border':
           let domElement = document.getElementById(getters.getActiveAction.id);
           domElement.classList.add('tutorial_target-border');
           break;
       }
+    }
+  },
+  showHoverInfo({getters, dispatch}) {
+    const elements = document.querySelectorAll('.form_input[data-tutorial-hover-info]');
+    if(elements.length > 0) {
+      elements.forEach(function (element, index) {
+        element.addEventListener('mouseenter', function (event) {
+          dispatch('createTooltip', {id: getters.getHoverInfo[index].id, tooltip: getters.getHoverInfo[index].tooltip});
+        });
+        element.addEventListener('mouseleave', function (event) {
+          dispatch('removeTooltip');
+        })
+      })
     }
   },
   resetTutorial({dispatch, commit}){

@@ -1,6 +1,6 @@
 <template lang="pug">
-  aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers}")
-    ul.layersbar-list(:class="{'tutorial-active': activeStepStoryboard === 2}")
+  aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers, 'tutorial-active': activeStepStoryboard === 2}")
+    ul.layersbar-list
       li.layer(
         v-for="(layer, i) in layersbarList"
         :key="i"

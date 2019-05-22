@@ -12,7 +12,7 @@
             .form_input
               label.form_row
                 .form_label Training
-                .form_input(id="tutorial_partition-training-input" class="tutorial-relative")
+                .form_input(id="tutorial_partition-training-input" class="tutorial-relative" data-tutorial-hover-info)
                   input(type="number"
                     v-model="settings.Data_partition.Training"
                     name="Training"
@@ -23,7 +23,7 @@
                   p.text-error(v-show="errors.has('Training')") {{ errors.first('Training') }}
               label.form_row
                 .form_label Validation
-                .form_input(id="tutorial_partition-validation-input" class="tutorial-relative")
+                .form_input(id="tutorial_partition-validation-input" class="tutorial-relative" data-tutorial-hover-info)
                   input(type="number"
                     v-model="settings.Data_partition.Validation"
                     name="Validation"
@@ -34,12 +34,11 @@
                   p.text-error(v-show="errors.has('Validation')") {{ errors.first('Validation') }}
               label.form_row
                 .form_label Test
-                .form_input(id="tutorial_partition-test-input" class="tutorial-relative")
+                .form_input(id="tutorial_partition-test-input" class="tutorial-relative" data-tutorial-hover-info)
                   input(type="number"
                     v-model="settings.Data_partition.Test"
                     name="Test"
-                    v-validate="'between:0.001,100|required'" 
-                    @focus="onFocus('tutorial_partition-validation-input')"
+                    v-validate="'between:0.001,100|required'"
                     )
                   span &nbsp; %
                   p.text-error(v-show="errors.has('Test')") {{ errors.first('Test') }}
@@ -56,13 +55,11 @@
         .settings-layer_section
           label.form_row
             .form_label Batch size:
-            .form_input(id="tutorial_butch-size-input" class="tutorial-relative")
+            .form_input(id="tutorial_butch-size-input" class="tutorial-relative" data-tutorial-hover-info)
               input(type="number"
                 v-model="settings.Batch_size"
                 name="Batch"
                 v-validate="'min_value:1'"
-                @focus="onFocus('tutorial_partition-test-input')"
-                @blur="focusEpochsInput"
                 )
               p.text-error(v-show="errors.has('Batch')") {{ errors.first('Batch') }}
         .settings-layer_section
@@ -76,25 +73,22 @@
         .settings-layer_section
           label.form_row
             .form_label Epochs:
-            .form_input(id="tutorial_epochs-input" class="tutorial-relative")
+            .form_input(id="tutorial_epochs-input" class="tutorial-relative" data-tutorial-hover-info)
               input(type="number"
                 v-model="settings.Epochs"
                 name="Epochs"
                 ref="epochsInput"
                 v-validate="'min_value:1'"
-                @focus="onFocus('tutorial_butch-size-input')"
                 )
               p.text-error(v-show="errors.has('Epochs')") {{ errors.first('Epochs') }}
         .settings-layer_section
           .form_row
             .form_label Dropout rate:
-            .form_input(id="tutorial_drop-rate-input" class="tutorial-relative")
+            .form_input(id="tutorial_drop-rate-input" class="tutorial-relative" data-tutorial-hover-info)
               input(type="number"
                 v-model="settings.Dropout_rate"
                 name="Dropout"
                 v-validate="'between:0.001,100|required'"
-                @focus="onFocus('tutorial_epochs-input')"
-                @blur="onBlur('tutorial_drop-rate-input')"
                 )
               p.text-error(v-show="errors.has('Dropout')") {{ errors.first('Dropout') }}
         .settings-layer_section
@@ -173,7 +167,7 @@ export default {
         .then((result) => {
           if (result) {
             this.setGlobalSet();
-            this.tutorialPointActivate({way: 'next', validation:'tutorial_apply-button'})
+            this.tutorialPointActivate({way: 'next', validation:'tutorial_partition-training-input'});
             return;
           }
           //error func

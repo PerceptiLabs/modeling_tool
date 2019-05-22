@@ -221,7 +221,7 @@
   }
   .app-header {
     position: relative;
-    z-index: 2;
+    z-index: 3;
     grid-area: header;
     -webkit-app-region: drag;
     .btn {
