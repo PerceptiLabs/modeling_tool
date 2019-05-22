@@ -114,12 +114,12 @@ export default {
         if (result === 'success') {
           //console.log(response);
           this.$store.commit('mod_login/SET_showLoader', false);
-          alert('authorization success');
+          this.$store.dispatch('globalView/GP_infoPopup', 'Authorization success');
           this.$router.replace('/login');
         }
         else {
           this.$store.commit('mod_login/SET_showLoader', false);
-          alert("Bed request, please try again");
+          this.$store.dispatch('globalView/GP_infoPopup', "Bed request, please try again");
         }
       })
     }

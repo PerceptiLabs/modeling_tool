@@ -7,7 +7,7 @@
 
     @click="switchClickEvent($event)"
     @dblclick.stop.prevent="switchDblclick($event)"
-    @contextmenu.stop.prevent="openContext"
+    @contextmenu.stop.prevent="openContext($event)"
     )
     .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
     .net-element_btn(ref="BaseElement")
@@ -17,11 +17,16 @@
       slot(name="settings")
 
     .net-element_window.net-element_context-menu(v-if="contextIsOpen")
-      slot(name="context")
+      context-menu(
+        :data-el="dataEl"
+        @open-settings.stop="switchDblclick($event)"
+        )
 
 </template>
 
 <script>
+import ContextMenu        from '@/components/network-elements/net-context-menu/net-context-menu.vue';
+
 import baseNetDrag        from '@/core/mixins/base-net-drag.js';
 import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
 import mousedownOutside   from '@/core/mixins/mousedown-outside.js'
@@ -30,6 +35,7 @@ import {mapGetters, mapActions}       from 'vuex';
 export default {
   name: 'NetBaseElement',
   mixins: [baseNetDrag, baseNetPaintArrows, mousedownOutside],
+  components: { ContextMenu },
   props: {
     layerContainer: {
       type: Boolean,
@@ -74,8 +80,10 @@ export default {
   computed: {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
+      isTutorialMode:       'mod_tutorials/getIstutorialMode',
       isTraining:           'mod_workspace/GET_networkIsTraining',
-      editIsOpen:           'mod_workspace/GET_networkIsOpen'
+      editIsOpen:           'mod_workspace/GET_networkIsOpen',
+      currentSelectedEl:    'mod_workspace/GET_currentSelectedEl'
     }),
     currentId() {
       return this.dataEl.layerId
@@ -113,10 +121,10 @@ export default {
     }),
     switchMousedownEvent(ev) {
       if (this.isLock) return;
-
+      //console.log('switchMousedownEvent', ev);
       if(this.networkMode === 'addArrow') this.arrowStartPaint(ev);
 
-      if(this.networkMode === 'edit' && this.editIsOpen) {
+      if(this.networkMode === 'edit' && this.editIsOpen && ev.button === 0) {
         this.setFocusEl(ev);
         this.bodyDown(ev)
       }
@@ -141,11 +149,19 @@ export default {
       this.hideAllWindow();
       if(this.networkMode === 'edit' && this.editIsOpen) {
         this.settingsIsOpen = true;
-        this.$nextTick(()=> {this.tutorialPointActivate({way:'next', validation: this.tutorialSearchId(event)})})
+        this.$nextTick(() => {
+          this.tutorialPointActivate({
+            way: 'next',
+            validation: this.tutorialSearchId(event)
+          })
+        })
       }
     },
-    openContext() {
+    openContext(event) {
       this.hideAllWindow();
+      if(!this.currentSelectedEl.length) {
+        this.setFocusEl(event);
+      }
       if(this.networkMode === 'edit' && this.editIsOpen) {
         this.contextIsOpen = true;
       }

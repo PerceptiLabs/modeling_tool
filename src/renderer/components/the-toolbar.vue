@@ -101,7 +101,7 @@
 </template>
 
 <script>
-//import {trainingElements, deepLearnElements}  from '@/core/constants.js'
+import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 import TutorialInstructions                   from '@/components/tutorial/tutorial-instructions.vue'
 import { mapGetters, mapActions, mapMutations } from 'vuex';
 
@@ -120,8 +120,12 @@ export default {
   },
   computed: {
     ...mapGetters({
-      tutorialActiveAction:    'mod_tutorials/getActiveAction',
-      interactiveInfoStatus:   'mod_tutorials/getInteractiveInfo'
+      tutorialActiveAction:   'mod_tutorials/getActiveAction',
+      interactiveInfoStatus:  'mod_tutorials/getInteractiveInfo',
+      currentElList:          'mod_workspace/GET_currentNetworkElementList',
+      isTraining:             'mod_workspace/GET_networkIsTraining',
+      statusNetworkCore:      'mod_workspace/GET_networkCoreStatus',
+      statisticsIsOpen:       'mod_workspace/GET_statisticsIsOpen',
     }),
     statusStartBtn() {
       return {
@@ -155,14 +159,8 @@ export default {
           break;
       }
     },
-    isTraining() {
-      return this.$store.getters['mod_workspace/GET_networkIsTraining']
-    },
     hideLayers () {
       return this.$store.state.globalView.hideLayers
-    },
-    currentElList() {
-      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
     currentNetMeta() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta
@@ -173,12 +171,7 @@ export default {
     statusLocalCore() {
       return this.$store.state.mod_api.statusLocalCore;
     },
-    statusNetworkCore() {
-      return this.$store.getters['mod_workspace/GET_networkCoreStatus']
-    },
-    statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
-    },
+
     tutorialRunButtonActive() {
       return this.$store.state.mod_tutorials.runButtonsActive
     },
@@ -214,28 +207,34 @@ export default {
       this.$store.dispatch('mod_api/API_skipValidTraining');
     },
     validateNetwork() {
-      // let net = this.currentElList;
-      // let typeData = net.find((element)=> element.layerType === 'Data');
-      // if(typeData === undefined) {
-      //   this.$store.commit('globalView/GP_infoPopup', 'Data element missing');
-      //   return false
-      // }
-      //
-      // let typeTraining = net.find((element)=> element.layerType === 'Training');
-      // if(typeTraining === undefined) {
-      //   this.$store.commit('globalView/GP_infoPopup', 'Classic Machine Learning or Training element missing');
-      //   return false
-      // }
-      //
-      // let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
-      // let deepLearnIncluded = true;
-      // if (trainingIncluded) {
-      //   deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
-      // }
-      // if(deepLearnIncluded === undefined) {
-      //   this.$store.commit('globalView/GP_infoPopup', 'If you use the Training elements, you must use the Deep Learn elements');
-      //   return false
-      // }
+
+      let net;
+      if(this.currentElList) net = Object.values(this.currentElList);
+      else {
+        this.$store.dispatch('globalView/GP_infoPopup', 'You can not training network without Data element and Classic Machine Learning or Training element');
+        return false;
+      }
+
+      let typeData = net.find((element)=> element.layerType === 'Data');
+      if(typeData === undefined) {
+        this.$store.dispatch('globalView/GP_infoPopup', 'Data element missing');
+        return false
+      }
+
+      let typeTraining = net.find((element)=> element.layerType === 'Training');
+      if(typeTraining === undefined) {
+        this.$store.dispatch('globalView/GP_infoPopup', 'Classic Machine Learning or Training element missing');
+        return false
+      }
+      let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
+      let deepLearnIncluded = true;
+      if (trainingIncluded) {
+        deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
+      }
+      if(deepLearnIncluded === undefined) {
+        this.$store.dispatch('globalView/GP_infoPopup', 'If you use the Training elements, you must use the Deep Learn elements');
+        return false
+      }
 
       return true;
     },

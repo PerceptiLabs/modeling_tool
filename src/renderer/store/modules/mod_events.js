@@ -23,7 +23,6 @@ const mutations = {
     state.saveNetwork++
   },
   set_eventResize(state) {
-    console.log('set_eventResize');
     state.eventResize++
   },
   set_globalPressKey(state, path) {

@@ -7,10 +7,6 @@
     the-toolbar
     the-layersbar
     the-sidebar
-    the-info-popup(
-      v-if="infoText"
-      :info-text="infoText"
-    )
     tutorial-storyboard
 
 </template>
@@ -23,7 +19,6 @@
   import TheLayersbar       from '@/components/the-layersbar.vue'
   import TheSidebar         from '@/components/the-sidebar.vue'
   import TheWorkspace       from '@/components/workspace/the-workspace.vue'
-  import TheInfoPopup       from "@/components/global-popups/the-info-popup.vue";
   import TutorialStoryboard from "@/components/tutorial/tutorial-storyboard.vue";
 
   export default {
@@ -33,7 +28,6 @@
       TheLayersbar,
       TheSidebar,
       TheWorkspace,
-      TheInfoPopup,
       TutorialStoryboard
     },
     created() {
@@ -69,9 +63,6 @@
       }),
       workspaceContent() {
         return this.$store.state.mod_workspace.workspaceContent
-      },
-      infoText() {
-        return this.$store.state.globalView.globalPopup.showInfoPopup
       },
       networkMode() {
         return this.currentNetwork.networkMeta

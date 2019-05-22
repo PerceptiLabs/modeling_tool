@@ -275,13 +275,13 @@ $folder: 'icomoon';
 .icon-notification:before {
   content: "\e952";
 }
-.icon-appMinimaze:before {
+.icon-app-minimize:before {
   content: "\e954";
 }
-.icon-appResize:before {
+.icon-app-resize:before {
   content: "\e955";
 }
-.icon-appClose:before {
+.icon-app-close:before {
   content: "\e956";
 }
 .icon-stop2:before {
@@ -290,13 +290,13 @@ $folder: 'icomoon';
 .icon-shevron-right:before {
   content: "\e931";
 }
-.icon-appMinimizeMac:before {
+.icon-app-minimize-mac:before {
   content: "\e958";
 }
-.icon-appFullscreenMac:before {
+.icon-app-fullscreen-mac:before {
   content: "\e959";
 }
-.icon-appCloseMac:before {
+.icon-app-close-mac:before {
   content: "\e95a";
 }
 .icon-open-folder:before {
@@ -313,4 +313,10 @@ $folder: 'icomoon';
 }
 .icon-params:before {
   content: "\e95f";
+}
+.icon-color-picker:before {
+  content: "\e960";
+}
+.icon-layer-settings:before {
+  content: "\e961";
 }

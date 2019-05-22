@@ -1,8 +1,3 @@
-import IoInput              from '@/components/network-elements/elements/io-input/io-input.vue'
-import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/io-output-backpropagation.vue'
-import IoOutputGenetic      from '@/components/network-elements/elements/io-output-genetic-algorithm/io-output-genetic-algorithm.vue'
-import IoOutputRouting      from '@/components/network-elements/elements/io-output-routing-algorithm/io-output-routing-algorithm.vue'
-
 import DataData             from '@/components/network-elements/elements/data-data/data-data.vue'
 import DataEnvironment      from '@/components/network-elements/elements/data-environment/data-environment.vue'
 
@@ -41,7 +36,6 @@ import { mapGetters, mapMutations, mapActions } from 'vuex';
 export default {
   name: 'NetworkField',
   components: {
-    IoInput, IoOutputBackprop, IoOutputGenetic, IoOutputRouting,
     DataData, DataEnvironment,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,

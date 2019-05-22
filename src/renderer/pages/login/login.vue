@@ -87,7 +87,7 @@ export default {
         }
         else {
           this.$store.commit('mod_login/SET_showLoader', false);
-          alert("Bad request, please try again");
+          this.$store.dispatch('globalView/GP_infoPopup', "Bad request, please try again");
         }
 
         function parseJwt(token) {

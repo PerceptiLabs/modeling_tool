@@ -864,7 +864,7 @@ const getters = {
     return getters.getPoints[state.activePointMainTutorial]
   },
   getActiveAction(state, getters) {
-   let action =   getters.getActivePoint ? getters.getActivePoint.actions[state.activeActionMainTutorial] : ''
+   let action = getters.getActivePoint ? getters.getActivePoint.actions[state.activeActionMainTutorial] : ''
    return action
   },
   getAllPointsIsDone(state, getters) {

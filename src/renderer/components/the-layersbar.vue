@@ -30,12 +30,7 @@
 <script>
   import clickOutside from '@/core/mixins/click-outside.js'
   import {trainingElements, deepLearnElements}  from '@/core/constants.js'
-  import { mapGetters, mapActions }       from 'vuex';
-
-  import IoInput              from '@/components/network-elements/elements/io-input/view-io-input.vue'
-  import IoOutputBackprop     from '@/components/network-elements/elements/io-output-backpropagation/view-io-output-backpropagation.vue'
-  import IoOutputGenetic      from '@/components/network-elements/elements/io-output-genetic-algorithm/view-io-output-genetic-algorithm.vue'
-  import IoOutputRouting      from '@/components/network-elements/elements/io-output-routing-algorithm/view-io-output-routing-algorithm.vue'
+  import { mapActions }       from 'vuex';
 
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
@@ -72,7 +67,6 @@ export default {
   name: 'TheLayersbar',
   mixins: [clickOutside],
   components: {
-    IoInput, IoOutputBackprop, IoOutputGenetic, IoOutputRouting,
     DataData, DataEnvironment,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
@@ -83,13 +77,6 @@ export default {
   data() {
     return {
       layersbarList: [
-        // {
-        //   tooltip: 'I/O',
-        //   layerClass: 'net-element-io',
-        //   iconClass: 'icon-data-toggle',
-        //   showEl: false,
-        //   networkElements: ['IoInput', 'IoOutputBackprop', 'IoOutputGenetic', 'IoOutputRouting']
-        // },
         {
           tooltip: 'Data',
           tooltip_interactive: `<div class="tooltip-tutorial_italic">

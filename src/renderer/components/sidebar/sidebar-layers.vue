@@ -54,9 +54,9 @@ export default {
       var newNet = {...currentNet};
       clearContainer(currentNet);
 
-      function clearContainer() {
-        for(let idEl in currentNet) {
-          let el = currentNet[idEl];
+      function clearContainer(net) {
+        for(let idEl in net) {
+          let el = net[idEl];
           if(el.componentName === 'LayerContainer') {
             let delKeys = Object.keys(el.containerLayersList);
             if(!delKeys.length) continue;

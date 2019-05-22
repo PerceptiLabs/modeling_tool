@@ -65,7 +65,7 @@ const mutations = {
   GP_showCoreSideSettings (state, value) {
     state.globalPopup.showCoreSideSettings = value
   },
-  GP_infoPopup(state, value) {
+  gp_infoPopup(state, value) {
     state.globalPopup.showInfoPopup = value
   },
   HIDE_allGlobalPopups (state) {
@@ -76,17 +76,9 @@ const mutations = {
 };
 
 const actions = {
-  // NET_trainingStart({dispatch, commit}) {
-  //   commit('HIDE_allGlobalPopups');
-  //   //commit('SET_statisticsIsOpen', true);
-  //   dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
-  // },
-  NET_trainingDone({state, commit, dispatch}) {
+  NET_trainingDone({commit, dispatch}) {
     commit('GP_showNetResult', true);
     dispatch('mod_workspace/SET_openTest', false, {root: true});
-    //commit('SET_appMode', 'training-done');
-    //dispatch('mod_api/API_stopTraining', null, {root: true});
-    //dispatch('mod_workspace/SET_canTestStatistics', true, {root: true});
   },
   SET_userToken({commit, dispatch}, value) {
     commit('set_userToken', value);
@@ -98,7 +90,10 @@ const actions = {
   },
   SET_timeIntervalDoRequest({commit, dispatch}, value) {
     commit('set_timeIntervalDoRequest', value);
-  }
+  },
+  GP_infoPopup({commit}, value) {
+    commit('gp_infoPopup', value);
+  },
 };
 
 export default {

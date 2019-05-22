@@ -3,8 +3,6 @@
     :data-el="elementData"
   )
     view-el
-    template(slot="context")
-      context-menu
     template(slot="settings")
       settings-el(:current-el="elementData")
 
@@ -12,7 +10,6 @@
 
 <script>
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
-  import ContextMenu  from '@/components/network-elements/net-context-menu/net-context-menu.vue';
   import ViewEl       from './view-classic-ml-random-forest.vue';
   import SettingsEl   from './set-classic-ml-random-forest.vue';
 
@@ -20,7 +17,6 @@
     name: 'ClassicMLRandomForest',
     components: {
       BaseNetEl,
-      ContextMenu,
       ViewEl,
       SettingsEl
     },

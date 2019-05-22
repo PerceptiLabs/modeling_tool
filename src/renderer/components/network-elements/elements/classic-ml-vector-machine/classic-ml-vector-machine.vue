@@ -3,8 +3,6 @@
     :data-el="elementData"
   )
     view-el
-    template(slot="context")
-      context-menu
     template(slot="settings")
       settings-el(:current-el="elementData")
 
@@ -12,18 +10,12 @@
 
 <script>
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
-  import ContextMenu  from '@/components/network-elements/net-context-menu/net-context-menu.vue';
   import ViewEl       from './view-classic-ml-vector-machine.vue';
   import SettingsEl   from './set-classic-ml-vector-machine.vue';
 
   export default {
     name: 'ClassicMLSVM',
-    components: {
-      BaseNetEl,
-      ContextMenu,
-      ViewEl,
-      SettingsEl
-    },
+    components: { BaseNetEl, ViewEl, SettingsEl },
     props: {
       elementData: Object
     },

@@ -164,6 +164,7 @@ export default {
     saveNetwork() {
       const dialog = remote.dialog;
       const network = this.currentNetwork;
+      const ctx = this;
       doScreenShot(this)
         .then((img)=> {
           const stringNet = cloneNet(network, img);
@@ -182,15 +183,15 @@ export default {
 
         dialog.showSaveDialog(null, option, (fileName) => {
           if (fileName === undefined){
-            console.log("You didn't save the file");
+            ctx.$store.dispatch('globalView/GP_infoPopup', "You didn't save the file");
             return;
           }
           fs.writeFile(fileName, jsonNet, (err) => {
             if(err){
-              alert("An error ocurred creating the file "+ err.message)
+              ctx.$store.dispatch('globalView/GP_infoPopup', "An error ocurred creating the file "+ err.message)
             }
 
-            alert("The file has been successfully saved");
+            ctx.$store.dispatch('globalView/GP_infoPopup', "The file has been successfully saved");
             savePathToLocal(JSON.parse(jsonNet).project, fileName)
           });
         });

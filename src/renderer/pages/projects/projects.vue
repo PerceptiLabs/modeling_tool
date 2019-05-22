@@ -68,7 +68,7 @@
           fs.unlink(pathDelete, ()=> {
             this.projects.splice(indexCheckedProj, 1);
             localStorage.setItem('projectsList', JSON.stringify(this.projects));
-            this.$nextTick(()=> alert("The project has been successfully deleted"))
+            this.$nextTick(()=> this.$store.dispatch('globalView/GP_infoPopup', "The project has been successfully deleted"))
           })
         }
       }

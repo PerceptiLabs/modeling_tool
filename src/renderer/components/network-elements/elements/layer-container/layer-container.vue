@@ -7,15 +7,13 @@
       @open-container="toggleContainer(false)"
     )
       view-el
-      template(slot="context")
-        context-menu
     template(v-else)
       .layer-container_box(
         :style="containerStyle"
         )
         h4.layer-container_title {{ elementData.layerName }}
-        button.layer-container_btn-open.btn.btn--link.icon.icon-layer-net-set.net-element-layercontainer(type="button"
-          @dblclick="toggleContainer(true)"
+        button.layer-container_btn-open.btn.btn--link.icon.icon-layer-settings(type="button"
+          @click="toggleContainer(true)"
           )
       //-component(
         v-for="el in elementData.containerLayersList"
@@ -28,15 +26,12 @@
 
 <script>
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
-  import ContextMenu  from '@/components/network-elements/net-context-menu/net-context-menu.vue';
   import ViewEl       from './view-layer-container.vue';
 
 
   export default {
     name: 'LayerContainer',
-    components: {
-      BaseNetEl, ContextMenu, ViewEl,
-    },
+    components: { BaseNetEl, ViewEl },
     props: {
       elementData: Object
     },
@@ -102,5 +97,6 @@
     bottom: 1rem;
     right: 1rem;
     z-index: 3;
+    color: #9af142;
   }
 </style>

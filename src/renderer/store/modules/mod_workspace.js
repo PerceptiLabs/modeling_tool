@@ -240,10 +240,8 @@ const mutations = {
     if(!arrSelect.length) return;
     let arrSelectID = [];
     let net = {...getters.GET_currentNetworkElementList};
-    arrSelect.forEach((el)=>{
-      delete net[el.layerId];
-      arrSelectID.push(el.layerId);
-    });
+    deleteElement(arrSelect);
+
     for(let el in net) {
       net[el].connectionOut = net[el].connectionOut.filter((connect)=>{
         return !arrSelectID.includes(connect)
@@ -257,8 +255,17 @@ const mutations = {
     }
     state.workspaceContent[state.currentNetwork].networkElementList = net;
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
-    dispatch('mod_api/API_getOutputDim', null, {root: true})
+    dispatch('mod_api/API_getOutputDim', null, {root: true});
 
+    function deleteElement(list) {
+      list.forEach((el)=> {
+        if(el.componentName === 'LayerContainer') {
+          deleteElement(Object.values(el.containerLayersList))
+        }
+        delete net[el.layerId];
+        arrSelectID.push(el.layerId);
+      });
+    }
   },
   add_arrow(state, {dispatch, stopID}) {
     let startID = state.startArrowID;
@@ -266,7 +273,11 @@ const mutations = {
 
     let findArrow = currentElement(startID).connectionOut.findIndex((element)=> element === stopID );
     if(findArrow !== -1) {
-      alert('This type of connection already exists!');
+      dispatch('globalView/GP_infoPopup', 'Connection already exists!', {root: true});
+      return
+    }
+    if(currentElement(startID).componentName === 'LayerContainer' || currentElement(stopID).componentName === 'LayerContainer') {
+      dispatch('globalView/GP_infoPopup', 'Cannot create connection to Layer Container!', {root: true});
       return
     }
 
@@ -279,6 +290,13 @@ const mutations = {
   delete_arrow(state,{dispatch, arrow}) {
     let startID = arrow.startID;
     let stopID = arrow.stopID;
+    let elStart = currentElement(startID);
+    let elStop = currentElement(stopID);
+
+    if(elStart.componentName === 'LayerContainer' || elStop.componentName === 'LayerContainer') {
+      dispatch('globalView/GP_infoPopup', 'To remove the connection, please open the Layer Container', {root: true});
+      return
+    }
 
     let newConnectionOut = currentElement(startID).connectionOut.filter((item)=> item !== stopID);
     let newConnectionArrow = currentElement(startID).connectionArrow.filter((item)=> item !== stopID);
@@ -341,24 +359,33 @@ const mutations = {
   //---------------
   add_container(state, {getters, commit, dispatch}) {
     let arrSelect = getters.GET_currentSelectedEl;
+    let isValid = true;
     /* validations */
-    if(arrSelect.length === 0) return;
+    if(arrSelect.length === 0) isValid = false;
     if(arrSelect.length === 1) {
-      alert('At least 2 elements are needed to create a group');
+      dispatch('globalView/GP_infoPopup', 'At least 2 elements are needed to create a group', {root: true});
+      isValid = false;
+    }
+    arrSelect.forEach((item)=> {
+      if(item.componentName === 'LayerContainer') {
+        dispatch('globalView/GP_infoPopup', 'You cannot create a Layer Container inside a Layer Container! Function in development', {root: true});
+        isValid = false;
+      }
+    });
+    if(!isValid) {
+      dispatch('SET_elementUnselect');
       return;
     }
     /* END validations */
-    let net = getters.GET_currentNetworkElementList;
-    let newContainer = createContainer(arrSelect);
-    newContainer.connectionIn.forEach((idEl)=>{
-      net[idEl].connectionArrow.push(newContainer.layerId)
-    });
+    //let net = getters.GET_currentNetworkElementList;
+    let newContainer = createClearContainer(arrSelect);
 
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
-    commit('set_elementUnselect', {getters});
     commit('close_container', {container: newContainer, getters, dispatch});
+    commit('set_elementUnselect', {getters});
 
-    function createClearContainer() {
+
+    function createClearContainer(selectList) {
       let fakeEvent = {
         timeStamp: generateID(),
         target: {
@@ -371,47 +398,86 @@ const mutations = {
           clientWidth: 0
         }
       };
-      return createNetElement(fakeEvent);
+      let container = createNetElement(fakeEvent);
+      container.containerLayersList = {};
+      selectList.forEach((el)=>{
+        container.containerLayersList[el.layerId] = el;
+      });
+      return container
     }
-    function createContainer(elSelectList) {
-      let el = createClearContainer();
+  },
+  close_container(state, {container, getters, dispatch}) {
+    let network = getters.GET_currentNetworkElementList;
+    let layerCont = calcContainer(container, network);
+
+    for(let idEl in layerCont.containerLayersList) {
+      network[idEl].layerNone = true;
+    }
+    network[container.layerId].layerNone = false;
+    dispatch('mod_events/EVENT_calcArray', null, {root: true});
+
+
+    function calcContainer(container, net) {
+      let el = container;
+      let listInside = el.containerLayersList;
       let allIdEl = [];
       let allIdOut = [];
       let allIdIn = [];
       let allTop = [];
       let allLeft = [];
-      el.containerLayersList = {};
 
-      elSelectList.forEach((item)=> {
-        allIdEl.push(item.layerId);
+      for(let elID in listInside) {
+        let item = listInside[elID];
+        allIdEl.push(elID);
         allIdOut = [...allIdOut, ...new Set(item.connectionOut)];
         allIdIn  = [...allIdIn,  ...new Set(item.connectionIn)];
         allTop.push(item.layerMeta.position.top);
         allLeft.push(item.layerMeta.position.left);
-        el.containerLayersList[item.layerId] = item
-      });
+      }
+
       el.layerMeta.position.top = calcPosition(allTop);
       el.layerMeta.position.left = calcPosition(allLeft);
       el.connectionOut = calcConnection(allIdOut, allIdEl);
-      el.connectionArrow = [...el.connectionOut];
+      el.connectionArrow = [...new Set(el.connectionOut)];
       el.connectionIn = calcConnection(allIdIn, allIdEl);
+
+      el.connectionIn.forEach((elNextId)=>{
+        if(!net[elNextId].connectionArrow.includes(el.layerId)) {
+          net[elNextId].connectionArrow.push(el.layerId)
+        }
+        for(let elID in net) {
+          let item = net[elID];
+          if(item.componentName === 'LayerContainer') {
+            let arrKeys = Object.keys(item.containerLayersList);
+            if(arrKeys.includes(elNextId) && !item.connectionArrow.includes(el.layerId)){
+              item.connectionArrow.push(el.layerId)
+            }
+          }
+        }
+      });
+      el.connectionOut.forEach((elNextId)=>{
+        for(let elID in net) {
+          let item = net[elID];
+          if(item.componentName === 'LayerContainer') {
+            let arrKeys = Object.keys(item.containerLayersList);
+            if(arrKeys.includes(elNextId) && !el.connectionArrow.includes(item.layerId)){
+              el.connectionArrow.push(item.layerId)
+            }
+          }
+        }
+      });
+
       return el;
+
+
+      function calcConnection(arrConnectionId, arrInsideId) {
+        return arrConnectionId.filter((id)=> !arrInsideId.includes(id))
+      }
+      function calcPosition(arrIn) {
+        const num = (Math.max(...arrIn) + Math.min(...arrIn))/2;
+        return calcLayerPosition(num);
+      }
     }
-    function calcConnection(arrConnectionId, arrInsideId) {
-      return arrConnectionId.filter((id)=> !arrInsideId.includes(id))
-    }
-    function calcPosition(arrIn) {
-      const num = (Math.max(...arrIn) + Math.min(...arrIn))/2;
-      return calcLayerPosition(num);
-    }
-  },
-  close_container(state, {container, getters, dispatch}) {
-    let net = getters.GET_currentNetworkElementList;
-    for(let idEl in container.containerLayersList) {
-      net[idEl].layerNone = true;
-    }
-    net[container.layerId].layerNone = false;
-    dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
   open_container(state, {container, getters, dispatch}) {
     let net = getters.GET_currentNetworkElementList;
@@ -426,6 +492,17 @@ const mutations = {
       ? dispatch('CLOSE_container', container)
       : dispatch('OPEN_container', container);
     if(getters.GET_networkIsOpen) dispatch('SET_elementUnselect');
+  },
+  ungroup_container(state, {container, dispatch, getters}) {
+    console.log('ungroup_container', container);
+    let net = {...getters.GET_currentNetworkElementList};
+    dispatch('OPEN_container', container);
+    for(let idEl in net) {
+      let el = net[idEl];
+      el.connectionArrow = el.connectionArrow.filter((arrow)=> arrow !== container.layerId)
+    }
+    delete net[container.layerId];
+    state.workspaceContent[state.currentNetwork].networkElementList = net;
   },
   //---------------
   //  OTHER
@@ -595,7 +672,9 @@ const actions = {
   TOGGLE_container({commit, getters, dispatch}, {val, container}) {
     commit('toggle_container', {val, container, dispatch, getters})
   },
-
+  UNGROUP_container({commit, getters, dispatch}, container) {
+    commit('ungroup_container', {container, dispatch, getters})
+  },
 };
 
 export default {

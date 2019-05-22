@@ -28,6 +28,7 @@
       @started-update="updateStart"
       @restart-app="restartApp"
     )
+    the-info-popup
 </template>
 
 <script>
@@ -38,10 +39,11 @@
   import HeaderWin      from '@/components/header/header-win.vue';
   import HeaderMac      from '@/components/header/header-mac.vue';
   import updatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
+  import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
 
   export default {
     name: 'TheApp',
-    components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup },
+    components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup },
     data() {
       return {
         percentProgress: 0,
@@ -198,7 +200,7 @@
             this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement');
             break;
           case 'addLayerContainer':
-            this.$store.dispatch('mod_workspace/ADD_container', event);
+            this.$store.dispatch('mod_workspace/ADD_container');
             break;
         }
       }
