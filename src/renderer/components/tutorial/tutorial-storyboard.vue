@@ -109,9 +109,11 @@ export default {
       setActiveStepStoryboard:          'mod_tutorials/SET_activeStepStoryboard',
       setShowStoryboard:                'mod_tutorials/SET_showTutorialStoryBoard',
       setShowInstructionsMainTutorial:  'mod_tutorials/SET_showMainTutorialInstruction',
-      setTutorialIstarted:              'mod_tutorials/SET_mainTutorialIsStarted',
+      setTutorialIsStarted:             'mod_tutorials/SET_mainTutorialIsStarted',
       setActiveStep:                    'mod_tutorials/SET_activeStepMainTutorial',
       setFirstTimeApp:                  'mod_tutorials/SET_firstTimeApp',
+      setInteractiveInfo:               'mod_tutorials/SET_interactiveInfo',
+      setTutorialMode:                  'mod_tutorials/SET_isTutorialMode',
     }),
     ...mapActions({
       mainTutorialPointActivate:        'mod_tutorials/pointActivate'
@@ -134,15 +136,17 @@ export default {
       this.setFirstTimeApp(false);
     },
     startMainTutorial() {
+      if(!this.isTutorialMode) this.setTutorialMode(true);
       this.activeStep = 0;
       this.setActiveStepStoryboard(this.activeStep);
       this.setShowStoryboard(false);
       this.setShowInstructionsMainTutorial(true);
-      this.setTutorialIstarted(true);
+      this.setTutorialIsStarted(true);
       this.setActiveStep('next');
       let firstActionId = this.mainTutorialActivePoint.actions[0].id;
       this.mainTutorialPointActivate({way: null, validation: firstActionId});
-      this.setFirstTimeApp(false)
+      this.setFirstTimeApp(false);
+      this.setInteractiveInfo(false);
     }
   }
 }
@@ -158,7 +162,7 @@ export default {
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 1;
+    z-index: 2;
     display: flex;
     justify-content: center;
     align-items: center;

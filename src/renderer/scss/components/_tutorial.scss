@@ -1,7 +1,10 @@
 .tutorial-active {
   position: relative;
-  z-index: 3;
+  z-index: 5;
   box-shadow: 0 0 25px $white;
+  &.page_layersbar, &.page_toolbar{
+    z-index: 5;
+  }
   &:after {
     content: '';
     position: absolute;

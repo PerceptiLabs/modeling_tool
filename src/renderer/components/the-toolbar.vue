@@ -259,7 +259,7 @@ export default {
 <style lang="scss" scoped>
   @import "../scss/base";
   .page_toolbar {
-    z-index: 1;
+    z-index: 2;
     display: flex;
     align-items: center;
     padding: 5px .5em 5px 0;
