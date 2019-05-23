@@ -201,7 +201,10 @@
       }
     },
     mounted() {
-      this.initialize()
+      this.initialize();
+      this.$nextTick(() => {
+        this.cminstance.refresh()
+      })
     },
     beforeDestroy() {
       this.destroy()
@@ -213,6 +216,7 @@
   @import "../../../scss/components/vscode-theme-dark_plus";
   .code-hq {
     font-size: 16px;
+    overflow: auto;
   }
   .CodeMirror-sizer {
     margin: 0 !important;
