@@ -38,8 +38,9 @@
         v-if="arrowsList.length"
         v-for="arrow in arrowsList"
       )
+        //-'arrow--empty-output': arrow.l1.layerMeta.OutputDim.length === 0,
         path.svg-arrow_line(
-          :class="{'arrow--empty-output': arrow.l1.layerMeta.OutputDim.length === 0, 'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
+          :class="{'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
           :data-startid="arrow.l1.layerId"
           :data-stopid="arrow.l2.layerId"
           @focus="focusArrow($event)"
