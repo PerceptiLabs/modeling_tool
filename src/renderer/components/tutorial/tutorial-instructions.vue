@@ -10,7 +10,7 @@
     .tutorial-instruction-box_list-area(v-if="isShowInstructions")
       header.list-area_header
         div
-          button.header_close-instructions.i.icon.icon-appClose(@click="switchTutorialMode")
+          button.header_close-instructions.i.icon.icon-app-close(@click="switchTutorialMode")
           //span.header_title title_q
         .header_arrows-top
           i.icon.icon-shevron
@@ -109,6 +109,7 @@ export default {
       pointActivate:              'mod_tutorials/pointActivate',
       pointsDeactivate:           'mod_tutorials/pointsDeactivate',
       resetTutorial:              'mod_tutorials/resetTutorial',
+      createBlockElement:         'mod_tutorials/createBlockElement',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
     }),
@@ -119,6 +120,7 @@ export default {
       }
     },
     startTutorial(way) {
+      if(this.currentNetworkElementList) this.addNetwork({'ctx': this});
       this.setTutorialIstarted(true);
       this.setActiveStep(way);
       this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
@@ -130,11 +132,12 @@ export default {
       this.switchTutorialMode();
     },
     switchTutorialMode() {
-      if(this.currentNetworkElementList !== null && !this.isTutorialMode) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+      if(this.currentNetworkElementList !== null && !this.isTutorialMode) this.addNetwork({'ctx': this});
       this.setShowInstructions(!this.isShowInstructions);
       this.setTutorialMode(!this.isTutorialMode);
       if(!this.isTutorialMode) this.resetTutorial();
       this.setInteractiveInfo(false);
+      this.createBlockElement(document.querySelector('.layersbar-list'));
     }
   }
 }

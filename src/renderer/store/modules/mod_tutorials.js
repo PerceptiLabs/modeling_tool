@@ -319,40 +319,6 @@ const state = {
               id: 'tutorial_patch-size',
               status: 'disabled'
             },
-/*            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Stride:</div>
-                          This is the step size when </br>
-                          we slide the filter over the input </br>
-                          data to generate feature maps. </br>
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_stride',
-              status: 'disabled'
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Feature Maps:</div>
-                          The number of </br>
-                          feature maps correspond to the </br>
-                          number of different features to </br>
-                          look for in the input data. i.e. with </br>
-                          more complex data, it might be </br>
-                          better to increase the number </br>
-                          of feature maps. </br>
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next action</div>
-                       </div>`,
-              position: 'right',
-              id: 'tutorial_feature-maps',
-              status: 'disabled'
-            },
-            {
-              tooltip: 'Apply settings',
-              position: 'right',
-              id: 'tutorial_apply-button',
-              status: 'disabled'
-            }*/
           ],
           static_info: [
             {
@@ -677,58 +643,6 @@ const state = {
               id: 'tutorial_partition-training-input',
               status: 'disabled'
             },
-            /*{
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_partition-validation-input',
-              status: 'disabled'
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_partition-test-input',
-              status: 'disabled'
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Batch size:</div> to make the training </br> more efficient, you can train on </br> multiples samples at the same time. </br>
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_butch-size-input',
-              status: 'disabled'
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Epoch:</div> refers to the number of times </br> you want to run through your entire dataset. </br>
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next input</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_epochs-input',
-              status: 'disabled'
-            },
-            {
-              tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Dropout rate:</div> when training we can </br> deactivate half (0.5) of all the </br> learning neurons in each layer in order for </br> the network to learn in a  more general way. 
-                          </br></br> Note: this has to be activated independently </br> for each deep learning layer.</br>
-                          <div class="tooltip-tutorial_bold">Please press "Tab" button to next action</div>
-                        </div>`,
-              position: 'right',
-              id: 'tutorial_drop-rate-input',
-              status: 'disabled'
-            },
-            {
-              tooltip: 'Click Apply',
-              position: 'right',
-              id: 'tutorial_apply-button',
-              status: 'disabled'
-            }*/
           ]
         },
       ]
