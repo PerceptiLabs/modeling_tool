@@ -90,7 +90,7 @@ const baseNetDrag = {
     },
     x() {
       if(this.dataEl) {
-        let l = this.dataEl.layerMeta.position.left + this.dataEl.layerMeta.containerDiff.left;
+        let l = this.dataEl.layerMeta.position.left;
         this.left = l;
         return l
       }
@@ -101,7 +101,7 @@ const baseNetDrag = {
     },
     y() {
       if(this.dataEl) {
-        let t = this.dataEl.layerMeta.position.top + this.dataEl.layerMeta.containerDiff.top;
+        let t = this.dataEl.layerMeta.position.top;
         this.top = t;
         return t
       }

@@ -34,7 +34,8 @@ export default {
     display: flex;
     align-items: center;
     height: $h-header-win;
-    background: #141419;
+    background: #272727;
+    font-family: sans-serif;
   }
   .app-header_logo {
     margin: 0 12px;

@@ -409,13 +409,14 @@ const mutations = {
   close_container(state, {container, getters, dispatch}) {
     let network = getters.GET_currentNetworkElementList;
     let layerCont = calcContainer(container, network);
+    saveDifferentPosition(layerCont);
 
     for(let idEl in layerCont.containerLayersList) {
       network[idEl].layerNone = true;
     }
     network[container.layerId].layerNone = false;
+    console.log(network);
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
-
 
     function calcContainer(container, net) {
       let el = container;
@@ -466,7 +467,6 @@ const mutations = {
           }
         }
       });
-
       return el;
 
 
@@ -478,14 +478,41 @@ const mutations = {
         return calcLayerPosition(num);
       }
     }
+    function saveDifferentPosition(containerEl) {
+      let listInside = containerEl.containerLayersList;
+      let containerTop = containerEl.layerMeta.position.top;
+      let containerLeft = containerEl.layerMeta.position.left;
+      for(let elID in listInside) {
+        let item = listInside[elID];
+        let itemTop = item.layerMeta.position.top;
+        let itemLeft = item.layerMeta.position.left;
+        item.layerMeta.containerDiff.top = itemTop - containerTop;
+        item.layerMeta.containerDiff.left = itemLeft - containerLeft;
+      }
+    }
   },
   open_container(state, {container, getters, dispatch}) {
     let net = getters.GET_currentNetworkElementList;
+    calcLayerPosition(container);
+
     for(let idEl in container.containerLayersList) {
       net[idEl].layerNone = false;
     }
     net[container.layerId].layerNone = true;
-    dispatch('mod_events/EVENT_calcArray', null, {root: true})
+    dispatch('mod_events/EVENT_calcArray', null, {root: true});
+
+    function calcLayerPosition(containerEl) {
+      let listInside = containerEl.containerLayersList;
+      let containerTop = containerEl.layerMeta.position.top;
+      let containerLeft = containerEl.layerMeta.position.left;
+      for(let elID in listInside) {
+        let item = listInside[elID];
+        let diffTop = item.layerMeta.containerDiff.top;
+        let diffLeft = item.layerMeta.containerDiff.left;
+        item.layerMeta.position.top = diffTop + containerTop;
+        item.layerMeta.position.left = diffLeft + containerLeft;
+      }
+    }
   },
   toggle_container(state, {val, container, dispatch, getters}) {
     val
@@ -494,7 +521,6 @@ const mutations = {
     if(getters.GET_networkIsOpen) dispatch('SET_elementUnselect');
   },
   ungroup_container(state, {container, dispatch, getters}) {
-    console.log('ungroup_container', container);
     let net = {...getters.GET_currentNetworkElementList};
     dispatch('OPEN_container', container);
     for(let idEl in net) {

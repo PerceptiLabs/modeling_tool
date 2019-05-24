@@ -1,22 +1,14 @@
 
-.workspace_tab-list {
-  padding: 0 0 0 2em;
-  margin: 0;
-  list-style: none;
-  display: flex;
-}
+//.workspace_tab-list {
+//  padding: 0 0 0 2em;
+//  margin: 0;
+//  list-style: none;
+//  display: flex;
+//}
 .workspace_tab {
-  height: 2.5rem;
-  background-color: #2A303D;
-  border-radius: 1rem 1rem 0 0;
   min-width: 16.7143em;
-  padding-left: .8em;
-  margin-right: 1em;
   display: flex;
   align-items: center;
-  &.active {
-    background-color: $bg-workspace;
-  }
 }
 .tab_close {
   margin-right: 1.25rem;

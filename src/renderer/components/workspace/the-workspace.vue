@@ -2,7 +2,7 @@
   main.page_workspace
     .workspace_tabset
       include ./tabset/workspace-tabset.pug
-    .workspace_content(ref="workspaceNet")
+    .workspace_content.bookmark_content(ref="workspaceNet")
       .network(
         v-if="indexCurrentNetwork === i"
         v-for="(net, i) in workspace"
@@ -60,7 +60,6 @@
     align-items: flex-end;
   }
   .workspace_content {
-    background-color: $bg-workspace;
     display: flex;
     flex: 1 1 100%;
     overflow: hidden;

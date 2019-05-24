@@ -1,8 +1,8 @@
-ul.workspace_tab-list
-  li.workspace_tab(
+ul.bookmark_tab-list
+  li.bookmark_tab.workspace_tab(
   v-for="(tab, i) in workspace"
   :key="i"
-  :class="{'active': indexCurrentNetwork == i}"
+  :class="{'bookmark_tab--active': indexCurrentNetwork === i}"
   @click="setTabNetwork(i)"
   )
     button.btn.btn--icon.tab_close(type="button"

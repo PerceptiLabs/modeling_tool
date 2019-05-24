@@ -1,0 +1,24 @@
+/* http://prntscr.com/nsalbz */
+//.bookmark_tabset {
+//  display: flex;
+//  align-items: flex-end;
+//}
+ul.bookmark_tab-list {
+  padding: 0 0 0 2em;
+  margin: 0;
+  list-style: none;
+  display: flex;
+}
+.bookmark_tab  {
+  height: 2.5rem;
+  background-color: #2A303D;
+  border-radius: 1rem 1rem 0 0;
+  padding-left: .8em;
+  margin-right: 1em;
+}
+.bookmark_tab--active {
+  background-color: $bg-workspace;
+}
+.bookmark_content {
+  background-color: $bg-workspace;
+}
