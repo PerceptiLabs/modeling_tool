@@ -266,7 +266,9 @@ export default {
             name: outNet.networkName,
             id: outNet.networkID,
             trainedPath: '',
-            isCloud: false
+            isCloud: false,
+            isChecked: false,
+            notExist: false
           },
           network: outNet
         };

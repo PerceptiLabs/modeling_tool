@@ -2,7 +2,7 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-switch(
-        chart-label="Accuracy during one epoch"
+        chart-label="Input during one epoch"
         :chart-data="chartData.Data"
       )
 </template>

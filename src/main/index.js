@@ -15,46 +15,119 @@ let mainWindow;
 let visitor;
 let loginPage = '/';
 
+//accelerator: process.platform === 'darwin' ? 'Alt+Command+I' : 'Ctrl+Shift+I',
 const mainMenu = [
   {
     label: 'File',
     submenu: [
-      {label: 'New',                                    click() {mainWindow.webContents.send('newNetwork')}},
-      {label: 'Open trained model',   enabled: false,   click() {mainWindow.webContents.send('info', 'whoooooooh!');  }},
-      {label: 'Save trained model',   enabled: false,   click() {  }},
-      {label: 'Open untrained model',                   click() {mainWindow.webContents.send('openNetwork')}},
-      {label: 'Save untrained model',                   click() {mainWindow.webContents.send('saveNetwork')}},
+      {label: 'Home',                                     enabled: true,  click() {mainWindow.webContents.send('info', 'whoooooooh!');  }},
+      {label: 'New',        accelerator: 'Ctrl+N',        enabled: true,  click() {mainWindow.webContents.send('newNetwork')}},
+      {label: 'Open',       accelerator: 'Ctrl+O',        enabled: true,  click() {mainWindow.webContents.send('openNetwork')}},
+      {label: 'Save',       accelerator: 'Ctrl+S',        enabled: true,  click() {mainWindow.webContents.send('saveNetwork')}},
+      {label: 'Save as...', accelerator: 'Ctrl+Shift+S',  enabled: true,  click() {mainWindow.webContents.send('saveNetwork')}},
       {type: 'separator'},
-      {label: 'Log out',                                click() {mainWindow.webContents.send('logOut')}},
-      {label: 'Quit PersceptiLabs',                     click() {mainWindow.webContents.send('closeApp')}},
+      {label: 'Log out',    accelerator: 'Ctrl+F4',       enabled: true,  click() {mainWindow.webContents.send('logOut')}},
+      {label: 'Exit',       accelerator: 'ALT+F4',                        click() {mainWindow.webContents.send('closeApp')}},
     ]
   },
   {
     label: 'Edit',
     submenu: [
-      {role: 'undo', enabled: false},
-      {role: 'redo', enabled: false},
-      {type: 'separator', enabled: false},
-      {role: 'cut', enabled: false},
-      {role: 'copy', enabled: false},
-      {role: 'paste', enabled: false},
-      {role: 'delete', accelerator: 'Delete', enabled: false},
-      {role: 'selectall', enabled: false},
+      {label: 'Undo',                         enabled: false},
+      {label: 'Redo',                         enabled: false},
+      {type: 'separator'},
+      {label: 'Cut',                          enabled: false},
+      {label: 'Copy',                         enabled: false},
+      {label: 'Paste',                        enabled: false},
+      {label: 'Delete',                       enabled: false},
+      {label: 'Select all',                   enabled: false},
+    ]
+  },
+  {
+    label: 'Operations ',
+    submenu: [
+      {
+        label: 'Data',
+        submenu: [
+          {label: 'Data',                     enabled: false},
+          {label: 'Data Environment',         enabled: false},
+        ]
+      },
+      {
+        label: 'Process ',
+        submenu: [
+          {label: 'Reshape',                  enabled: false},
+          {label: 'Word embedding',           enabled: false},
+          {label: 'Grayscale',                enabled: false},
+          {label: 'One hot',                  enabled: false},
+          {label: 'Crop',                     enabled: false},
+        ]
+      },
+      {
+        label: 'Deep learning',
+        submenu: [
+          {label: 'Fully connected',          enabled: false},
+          {label: 'Convolution',              enabled: false},
+          {label: 'Deconvolution',            enabled: false},
+          {label: 'Recurrent',                enabled: false}
+        ]
+      },
+      {
+        label: 'Math',
+        submenu: [
+          {label: 'Argmax',                   enabled: false},
+          {label: 'Merge',                    enabled: false},
+          {label: 'Split',                    enabled: false},
+          {label: 'Softmax',                  enabled: false}
+        ]
+      },
+      {
+        label: 'Training',
+        submenu: [
+          {label: 'Normal',                   enabled: false},
+          {label: 'Normal+Data',              enabled: false},
+          {label: 'Reinforcement learning',   enabled: false},
+          {label: 'Genetic algorithm',        enabled: false},
+          {label: 'Dynamic routing',          enabled: false}
+        ]
+      },
+      {
+        label: 'Classic machine learning',
+        submenu: [
+          {label: 'K means clustering',       enabled: false},
+          {label: 'DBSCAN',                   enabled: false},
+          {label: 'kNN',                      enabled: false},
+          {label: 'Random forrest',           enabled: false},
+          {label: 'Support vector machine',   enabled: false}
+        ]
+      },
+      {
+        label: 'Custom'
+      },
+    ]
+  },
+  {
+    label: 'Window',
+    submenu: [
+      {label: 'Edit profile',                 enabled: false},
+      {label: 'History',                      enabled: false}
     ]
   },
   {
     label: 'Settings',
     submenu: [
-      {label: 'Hyperparameters', enabled: false, click() {mainWindow.webContents.send('asynchronous-reply', 'whoooooooh!')}},
+      {label: 'Hyperparameters',              enabled: false}
     ]
   },
   {
     label: 'Help',
     submenu: [
+      {label: 'Help',                                                 click() { require('electron').shell.openExternal('https://www.perceptilabs.com/html/product.html#tutorials')}},
+      {label: 'About',                                                click() { require('electron').shell.openExternal('https://www.perceptilabs.com/')}},
+      {label: 'Tutorial mode',                enabled: true,  },
+      {label: 'Check for updates',                                    click() {mainWindow.checkForUpdates()}},
+      {type: 'separator'},
       {label: 'Version ' + app.getVersion()},
-      {label: 'Help',   click() { require('electron').shell.openExternal('https://www.perceptilabs.com/html/product.html#tutorials')}},
-      {label: 'About',  click() { require('electron').shell.openExternal('https://www.perceptilabs.com/')}},
-      {label: 'Check for updates',  click() {mainWindow.checkForUpdates()}},
     ]
   }
 ];

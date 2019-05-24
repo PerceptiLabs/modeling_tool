@@ -37,13 +37,14 @@
     },
     mounted() {
       this.showPage = true;
+      this.$store.commit('globalView/SET_appIsOpen', true);
       window.addEventListener("resize",  this.resizeEv, false);
       this.$nextTick(()=> this.addListeners())
     },
     beforeDestroy() {
-      console.log('beforeDestroy');
       window.removeEventListener("resize", this.resizeEv, false);
-      this.removeListeners()
+      this.removeListeners();
+      this.$store.commit('globalView/SET_appIsOpen', false);
     },
     data() {
       return {

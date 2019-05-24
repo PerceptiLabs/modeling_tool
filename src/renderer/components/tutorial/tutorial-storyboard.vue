@@ -1,7 +1,7 @@
 <template lang="pug">
   .tutorial-box(v-if="statusShowTutorial || isFirstTimeApp")
     .tutorial-box_modal-popup
-      button.close-tutorial.icon.icon-appClose(type="button" @click="closeTutorial")
+      button.close-tutorial.icon.icon-app-close(type="button" @click="closeTutorial")
       .modal-popup_step-info
         .step-info_eyes
           .eyes.eye-one

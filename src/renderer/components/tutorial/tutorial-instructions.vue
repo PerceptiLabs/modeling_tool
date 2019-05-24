@@ -10,7 +10,7 @@
     .tutorial-instruction-box_list-area(v-if="isShowInstructions")
       header.list-area_header
         div
-          button.header_close-instructions.i.icon.icon-appClose(@click="switchTutorialMode")
+          button.header_close-instructions.i.icon.icon-app-close(@click="switchTutorialMode")
           //span.header_title title_q
         .header_arrows-top
           i.icon.icon-shevron
