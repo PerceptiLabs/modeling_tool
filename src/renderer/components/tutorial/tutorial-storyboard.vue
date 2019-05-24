@@ -91,8 +91,9 @@ export default {
   },
   computed: {
     ...mapGetters({
-      mainTutorialActivePoint:  'mod_tutorials/getActivePoint',
-      isTutorialMode:           'mod_tutorials/getIstutorialMode',
+      mainTutorialActivePoint:    'mod_tutorials/getActivePoint',
+      isTutorialMode:             'mod_tutorials/getIstutorialMode',
+      currentNetworkElementList:  'mod_workspace/GET_currentNetworkElementList'
     }),
     currentStepTutorial() {
       return this.firstTutorial[this.activeStep]
@@ -116,7 +117,8 @@ export default {
       setTutorialMode:                  'mod_tutorials/SET_isTutorialMode',
     }),
     ...mapActions({
-      mainTutorialPointActivate:        'mod_tutorials/pointActivate'
+      mainTutorialPointActivate:        'mod_tutorials/pointActivate',
+      addNetwork:                       'mod_workspace/ADD_network'
     }),
     closeTutorial() {
       this.activeStep = 0;
@@ -136,7 +138,8 @@ export default {
       this.setFirstTimeApp(false);
     },
     startMainTutorial() {
-      if(!this.isTutorialMode) this.setTutorialMode(true);
+      if(this.currentNetworkElementList !== null && !this.isTutorialMode) this.addNetwork({'ctx': this});
+      this.setTutorialMode(true);
       this.activeStep = 0;
       this.setActiveStepStoryboard(this.activeStep);
       this.setShowStoryboard(false);

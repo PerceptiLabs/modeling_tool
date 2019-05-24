@@ -28,7 +28,6 @@
                     v-model="settings.Data_partition.Validation"
                     name="Validation"
                     v-validate="'between:0.001,100|required'"
-                    @focus="onFocus('tutorial_partition-training-input')"
                     )
                   span &nbsp; %
                   p.text-error(v-show="errors.has('Validation')") {{ errors.first('Validation') }}

@@ -45,7 +45,7 @@
 
 <script>
   import {ipcRenderer, shell} from 'electron'
-  import { mapGetters } from 'vuex';
+  import { mapGetters, mapMutations, mapActions } from 'vuex';
 
 export default {
   name: "TheMenu",
@@ -186,6 +186,12 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      setTutorialSB: 'mod_tutorials/SET_showTutorialStoryBoard'
+    }),
+    ...mapActions({
+      infoPopup: 'globalView/GP_infoPopup'
+    }),
     openLink(url) {
       shell.openExternal(url);
     },
@@ -211,7 +217,7 @@ export default {
       this.$store.dispatch('mod_events/EVENT_logOut', this)
     },
     showTutorial() {
-      this.$store.commit('mod_tutorials/SET_showTutorialStoryBoard', true);
+      this.isTutorialMode ? this.infoPopup('Tutorial mode is already enabled') : this.setTutorialSB(true);
     }
   }
 }
