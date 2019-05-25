@@ -2,25 +2,21 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-      chartLabel="Accuracy during one epoch"
-      :chartData="optionLine1"
+        chart-label="Accuracy during one epoch"
+        :chart-data="optionLine1"
       )
 </template>
 
 <script>
   import ChartBase from "@/components/charts/chart-base";
-  import dataLine  from "@/components/charts/line.js";
+
   export default {
     name: "ViewBoxProcessEmbed",
     components: {ChartBase},
     data() {
       return {
-        optionLine1: dataLine,
+        optionLine1: null,
       }
     },
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

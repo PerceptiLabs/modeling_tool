@@ -1,6 +1,6 @@
 <template lang="pug">
-  .statistics-box
-    ul.statistics-box_tabset
+  .statistics-box.statistics-box--horizontally
+    ul.statistics-box_tabset(v-if="!testIsOpen")
       li.statistics-box_tab(
       v-for="(tab, i) in tabset"
       :key="i"
@@ -12,23 +12,27 @@
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output'")
       chart-base(
-        chartLabel="Value"
-        :chartData="chartData.Output.Output"
+        key="1"
+        chart-label="Value"
+        :chart-data="chartData.Output.Output"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias'")
       chart-base(
-        chartLabel="Weights"
-        :chartData="chartData['Weights&Bias'].Weights"
+        key="2"
+        chart-label="Weights"
+        :chart-data="chartData['Weights&Bias'].Weights"
       )
       chart-base(
-        chartLabel="Bias"
-        :chartData="chartData['Weights&Bias'].Bias"
+        key="3"
+        chart-label="Bias"
+        :chart-data="chartData['Weights&Bias'].Bias"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
       chart-base(
-        chartLabel="Bias"
-        :chartData="chartData.Gradients.Gradients"
-        :customColor="colorList"
+        key="4"
+        chart-label="Gradients"
+        :chart-data="chartData.Gradients.Gradients"
+        :custom-color="colorList"
       )
 </template>
 
@@ -41,7 +45,7 @@
     mixins: [viewBoxMixin],
     data() {
       return {
-        chartDataDefault: {
+        chartData: {
           Output: {
             Output: null,
           },
@@ -64,30 +68,18 @@
         this.setTabAction();
       },
       getData() {
-        let name = this.currentTab;
-        if(name === 'Output') {
-          this.getStatistics()
+        switch (this.currentTab) {
+          case 'Output':
+            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Output')
+            break;
+          case 'Weights & Bias':
+            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Weights&Bias')
+            break;
+          case 'Gradients':
+            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Gradients')
+            break;
         }
-        else if (name === 'Weights & Bias') {
-          this.getWeightsStatistics()
-        }
-        else if (name === 'Gradients') {
-          this.getGradientsStatistics()
-        }
-      },
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Output')
-      },
-      getWeightsStatistics() {
-        this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Weights&Bias')
-      },
-      getGradientsStatistics() {
-        this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Gradients')
       }
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

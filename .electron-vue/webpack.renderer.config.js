@@ -181,8 +181,24 @@ if (process.env.NODE_ENV !== 'production') {
  */
 if (process.env.NODE_ENV === 'production') {
   rendererConfig.devtool = ''
-  if(process.env.BUILD_TARGET === 'core_local') {
-    rendererConfig.plugins.push(
+  // if(process.env.BUILD_TARGET === 'core_local') {
+  //   rendererConfig.plugins.push(
+  //     new BabiliWebpackPlugin(),
+  //     new CopyWebpackPlugin([
+  //       {
+  //         from: path.join(__dirname, '../static'),
+  //         to: path.join(__dirname, '../dist/electron/static'),
+  //         ignore: ['.*']
+  //       }
+  //     ]),
+  //     new webpack.DefinePlugin({'process.env.NODE_ENV': '"production"'}),
+  //     new webpack.LoaderOptionsPlugin({
+  //       minimize: true
+  //     })
+  //   )
+  // }
+  // else {
+     rendererConfig.plugins.push(
       new BabiliWebpackPlugin(),
       new CopyWebpackPlugin([
         {
@@ -191,34 +207,12 @@ if (process.env.NODE_ENV === 'production') {
           ignore: ['.*']
         }
       ]),
-      new webpack.DefinePlugin({
-        'process.env.NODE_ENV': '"production"',
-        'process.env.BUILD_TARGET': '"core_local"'
-      }),
+      new webpack.DefinePlugin({'process.env.NODE_ENV': '"production"'}),
       new webpack.LoaderOptionsPlugin({
         minimize: true
       })
     )
-  }
-  else {
-    rendererConfig.plugins.push(
-      new BabiliWebpackPlugin(),
-      new CopyWebpackPlugin([
-        {
-          from: path.join(__dirname, '../static'),
-          to: path.join(__dirname, '../dist/electron/static'),
-          ignore: ['.*']
-        }
-      ]),
-      new webpack.DefinePlugin({
-        'process.env.NODE_ENV': '"production"',
-        'process.env.BUILD_TARGET': '"core_cloud"'
-      }),
-      new webpack.LoaderOptionsPlugin({
-        minimize: true
-      })
-    )
-  }
+  // }
 }
 
 module.exports = rendererConfig

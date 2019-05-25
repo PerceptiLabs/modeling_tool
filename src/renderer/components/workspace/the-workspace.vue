@@ -2,43 +2,42 @@
   main.page_workspace
     .workspace_tabset
       include ./tabset/workspace-tabset.pug
-    .workspace_content
+    .workspace_content.bookmark_content(ref="workspaceNet")
       .network(
         v-if="indexCurrentNetwork === i"
         v-for="(net, i) in workspace"
-        :key="net.i"
-        :class="{'open-statistic': statisticsIsOpen}"
+        :key="net.networkID"
+        :class="networkClass"
       )
+        the-testing.the-testing(v-if="testIsOpen")
         the-statistics.the-statistics(
-          v-if="statisticsIsOpen"
-          :elData="statisticsElSelected.statistics"
+          v-if="statisticsIsOpen || testIsOpen"
+          :el-data="statisticsElSelected.statistics"
           )
         the-view-box.the-view-box(
-          v-if="statisticsIsOpen"
-          :elData="statisticsElSelected.viewBox"
+          v-if="statisticsIsOpen  || testIsOpen"
+          :el-data="statisticsElSelected.viewBox"
           )
         section.network_info-section.the-network-field
           .info-section_head(
-            v-if="statisticsIsOpen"
+            v-if="statisticsIsOpen || testIsOpen"
             )
             h3 Map
           .info-section_main(
             @wheel.ctrl="scaleScroll($event)"
+            ref="infoSectionName"
             )
             network-field(
+              ref="networkField"
               :key="i"
-              :style="{zoom: scale + '%'}"
-              :netIndex="i"
+              :style="{zoom: scaleNet + '%'}"
             )
-
         general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
 
     .workspace_meta
       include ./meta/workspace-meta.pug
-
-
 
 </template>
 
@@ -61,7 +60,6 @@
     align-items: flex-end;
   }
   .workspace_content {
-    background-color: $bg-workspace;
     display: flex;
     flex: 1 1 100%;
     overflow: hidden;
@@ -74,19 +72,29 @@
     grid-template-rows: 1fr 1fr;
     grid-template-columns: 1fr 1fr;
     &.open-statistic {
-      display: grid;
       grid-template-areas:  'the-statistics   the-statistics'
                             'network-field  view-box';
     }
-    .the-statistics {
-      grid-area: the-statistics;
+    &.open-test {
+      grid-template-rows: auto 1fr 1fr;
+      grid-template-columns: 1fr 1fr;
+      grid-template-areas:  'the-testing   the-testing'
+                            'view-box   the-statistics'
+                            'network-field  network-field';
+
     }
-    .the-view-box {
-      grid-area: view-box;
-    }
-    .the-network-field {
-      grid-area: network-field;
-    }
+  }
+  .the-statistics {
+    grid-area: the-statistics;
+  }
+  .the-view-box {
+    grid-area: view-box;
+  }
+  .the-testing {
+    grid-area: the-testing;
+  }
+  .the-network-field {
+    grid-area: network-field;
   }
   .network_info-section {
     display: flex;
@@ -103,5 +111,4 @@
     justify-content: space-between;
     padding: .5rem;
   }
-
 </style>

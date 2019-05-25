@@ -1,8 +1,4 @@
-//ul.action-list
-//  li
-//    button.action-list_btn(type="button")
-//      span.action-list_btn-text Some text
-//      span I
+$action-list-btn-padding: .5em;
 
 ul.action-list {
 	overflow: hidden;
@@ -16,7 +12,7 @@ ul.action-list {
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
-	padding: .5em 1em;
+	padding: $action-list-btn-padding 1em;
 	background-color: transparent;
 	&:hover {
 		background: $bg-grad-blue;
@@ -26,4 +22,9 @@ ul.action-list {
 .action-list_btn-text {
 	margin-right: 3.5rem;
 	white-space: nowrap;
+}
+.action-list_item-line {
+  //margin: 0 -$action-list-btn-padding;
+  height: 1px;
+  background: $bg-input;
 }

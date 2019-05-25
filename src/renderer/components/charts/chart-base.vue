@@ -1,14 +1,16 @@
 <template lang="pug">
   .base-chart(
-  ref="baseChart"
-  :class="{'full-view': fullView}")
+    ref="baseChart"
+    :class="{'full-view': fullView}"
+    )
     .base-chart_head(v-if="!headerOff")
       .chart-head_title
         h5.ellipsis {{ chartLabel }}
       .chart-head_meta
         button.btn.btn--link(type="button"
-        :class="{'text-primary': fullView}"
-        @click="toggleFullView")
+          :class="{'text-primary': fullView}"
+          @click="toggleFullView"
+        )
           i.icon.icon-full-screen-graph
     .base-chart_main
       v-chart(
@@ -21,36 +23,17 @@
 
 <script>
   import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
+  import chartMixin                     from "@/core/mixins/charts.js";
 
   export default {
     name: "ChartBase",
-    props: {
-      headerOff: {
-        type: Boolean,
-        default: false
-      },
-      chartLabel: {
-        type: String,
-        default: ''
-      },
-      chartData: {
-        type: Object,
-        default: function () {
-          return null
-        }
-      },
-      customColor: {
-        type: Array,
-        default: function () {
-          return []
-        }
-      },
+    mixins: [chartMixin],
+    created() {
+      this.applyCustomColor();
     },
     data() {
       return {
-        fullView: false,
-        wWorker: null,
-        chartModel: {},
+        chartSpinner,
         defaultModel: {
           tooltip: {},
           toolbox: {
@@ -58,37 +41,16 @@
               saveAsImage: {
                 title: 'Save'
               },
-              //magicType: {type: ['line', 'bar']},
             }
           },
-          legend: {},
+          xAxis: { data: [] },
           yAxis: {},
-          xAxis: {
-            //boundaryGap: true,
-            data: []
-          },
+          legend: {},
           series: []
         }
       }
     },
-    watch: {
-      chartData() {
-        if (this.chartData === null) {
-          this.chartModel = this.defaultModel;
-          return
-        }
-        let model = {...this.defaultModel, ...this.chartData};
-        model.xAxis.data.length = 0;
-        this.wWorker.postMessage({
-          model,
-          xLength: this.chartData.xLength
-        });
-      }
-    },
     methods: {
-      toggleFullView() {
-        this.fullView = !this.fullView
-      },
       applyCustomColor() {
         if (this.customColor.length) {
           this.defaultModel.color = this.customColor;
@@ -98,26 +60,20 @@
         this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
         this.wWorker.addEventListener('message', this.drawChart, false);
       },
-      drawChart(ev) {
-        this.chartModel = ev.data;
-        this.$refs.chart.hideLoading()
+      sendDataToWWorker(dataWatch) {
+        let data = dataWatch || this.chartData;
+        if (data === null || data === undefined) {
+          this.chartModel = this.defaultModel;
+          return
+        }
+        let model = {...this.defaultModel, ...data};
+        let typeChart = model.series[0].type;
+        if(typeChart === 'bar') model.xAxis.boundaryGap = true;
+        this.wWorker.postMessage({
+          model,
+          xLength: data.xLength
+        });
       }
-    },
-    mounted() {
-      this.applyCustomColor();
-      this.createWWorker();
-      this.$refs.chart.showLoading(chartSpinner)
-    },
-    beforeDestroy() {
-      this.wWorker.postMessage('close');
-      this.wWorker.removeEventListener('message', this.drawChart, false);
-      this.$refs.chart.dispose();
     },
   }
 </script>
-
-<style lang="scss" scoped>
-  .base-chart_main {
-    height: 300px;
-  }
-</style>

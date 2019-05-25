@@ -9,41 +9,37 @@ const state = {
 
 const mutations = {
   SET_selectedElArr (state, value) {
-    // value.statistics.meta.isSelected = true;
-    // value.viewBox.meta.isSelected = true;
-    // console.log(value.viewBox);
-    for (var el in value) {
-      //console.log(value[el]);
-      value[el].layerMeta.isSelected = true;
+    for (var keyId in value) {
+      value[keyId].layerMeta.isSelected = true;
     }
-    // console.log(value);
-    state.selectedElArr = value
+    state.selectedElArr = value;
   },
   CHANGE_selectElArr(state, dataEl) {
     let elArr = state.selectedElArr;
-    if (dataEl.el.layerType === "Training") {
+    if (dataEl.layerType === "Training") {
       elArr.statistics.layerMeta.isSelected = false;
-      elArr.statistics = dataEl.el;
+      elArr.statistics = dataEl;
       elArr.statistics.layerMeta.isSelected = true;
     }
     else {
       elArr.viewBox.layerMeta.isSelected = false;
-      elArr.viewBox = dataEl.el;
+      elArr.viewBox = dataEl;
       elArr.viewBox.layerMeta.isSelected = true;
     }
   },
 };
 
 const actions = {
-  STAT_defaultSelect({dispatch, commit, rootGetters}) {
+  STAT_defaultSelect({commit, rootGetters}) {
     let elArr = {
       statistics: null,
       viewBox: null
     };
     let net = rootGetters['mod_workspace/GET_currentNetworkElementList'];
-    net.forEach(function(item, i, arr) {
-      if(elArr.statistics !== null && elArr.viewBox !== null) {
-        return
+    for(let el in net) {
+      let item = net[el];
+      if(elArr.statistics !== null && elArr.viewBox !== null || elArr.layerType === "Container") {
+        continue
       }
       if(elArr.statistics === null && item.layerType === "Training") {
         elArr.statistics = item;
@@ -51,13 +47,8 @@ const actions = {
       if(elArr.viewBox === null && item.layerType !== "Training") {
         elArr.viewBox = item;
       }
-    });
-    /*выполнить после statisticsIsOpen net-base-element.vue*/
-    setTimeout(()=> {
-      ///console.log('costul');
-      commit('SET_selectedElArr', elArr)
-    }, 500);
-
+    }
+    commit('SET_selectedElArr', elArr)
   },
 };
 

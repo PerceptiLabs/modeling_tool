@@ -21,29 +21,14 @@
 
 <script>
 import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
-import dataHeat     from "@/components/charts/hear.js";
+import chartMixin                     from "@/core/mixins/charts.js";
+
 export default {
   name: "ChartHeatmap",
-  props: {
-    headerOff: {
-      type: Boolean,
-      default: false
-    },
-    chartLabel: {
-      type: String,
-      default: ''
-    },
-    chartData: {
-      type: Array,
-      default: function() {
-        return null
-      }
-    },
-  },
+  mixins: [chartMixin],
   data() {
     return {
-      fullView: false,
-      chartModel: {},
+      chartSpinner,
       defaultModel: {
         tooltip: {},
         grid: {
@@ -69,44 +54,22 @@ export default {
       }
     }
   },
-  watch: {
-    chartData() {
-      if (this.chartData === null) {
-        this.chartModel = this.defaultModel;
-        return
-      }
-      let model = {...this.defaultModel};
-      model.series = this.chartData[0];
-      //model.series = dataHeat.series[0];
-
-      this.wWorker.postMessage(model);
-    }
-  },
   methods: {
-    toggleFullView() {
-      this.fullView = !this.fullView
-    },
     createWWorker() {
       this.wWorker = new Worker(`${pathWebWorkers}/calcChartHeatMap.js`);
       this.wWorker.addEventListener('message', this.drawChart, false);
     },
-    drawChart(ev) {
-      this.chartModel = ev.data;
-      this.$refs.chart.hideLoading()
+    sendDataToWWorker(dataWatch) {
+      let data = dataWatch || this.chartData;
+      if (data === null || data === undefined) {
+        this.chartModel = this.defaultModel;
+        return
+      }
+      let model = {...this.defaultModel};
+      model.series = data[0];
+
+      this.wWorker.postMessage(model);
     }
-  },
-  mounted() {
-    this.createWWorker();
-    this.$refs.chart.showLoading(chartSpinner)
-  },
-  beforeDestroy() {
-    this.wWorker.postMessage('close');
-    this.wWorker.removeEventListener('message', this.drawChart, false);
-    this.$refs.chart.dispose();
   }
 }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

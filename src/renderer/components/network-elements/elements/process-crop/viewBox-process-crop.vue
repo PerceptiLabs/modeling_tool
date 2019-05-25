@@ -3,13 +3,13 @@
     .statistics-box_main.statistics-box_col
       chart-heatmap(
         v-if="true"
-        chartLabel="Output"
-        :chartData="chartData.ProcessCrop"
+        chart-label="Output"
+        :chart-data="chartData.ProcessCrop"
       )
       chart-picture(
         v-else
-        chartLabel="Output"
-        :chartData="chartData.ProcessCrop"
+        chart-label="Output"
+        :chart-data="chartData.ProcessCrop"
       )
 
 </template>
@@ -23,16 +23,9 @@
     components: {ChartHeatmap, ChartPicture},
     mixins: [viewBoxMixin],
     methods: {
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'ProcessCrop', '')
-      },
       getData() {
-        this.getStatistics()
+        this.chartRequest(this.boxElementID, 'ProcessCrop', '')
       }
     },
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

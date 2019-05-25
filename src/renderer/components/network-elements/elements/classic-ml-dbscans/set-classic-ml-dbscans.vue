@@ -28,13 +28,13 @@
               .form_row
                 .form_label Initialization method:
                 .form_input
-                  base-radio(groupName="group" valueInput="None" v-model="settings.neurons")
+                  base-radio(group-name="group" value-input="None" v-model="settings.neurons")
                     span Auto
-                  base-radio(groupName="group" valueInput="Sigmoid" v-model="settings.neurons")
+                  base-radio(group-name="group" value-input="Sigmoid" v-model="settings.neurons")
                     span Ball tree
-                  base-radio(groupName="group" valueInput="None1" v-model="settings.neurons")
+                  base-radio(group-name="group" value-input="None1" v-model="settings.neurons")
                     span KD tree
-                  base-radio(groupName="group" valueInput="Sigmoid2" v-model="settings.neurons")
+                  base-radio(group-name="group" value-input="Sigmoid2" v-model="settings.neurons")
                     span Brute force
             .settings-layer_section
               .form_row
@@ -42,13 +42,12 @@
                 .form_input
                   input(type="text")
 
-          .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
-
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
+      .popup_body(:class="{'active': tabSelected == 1}")
+        settings-code(
+        :the-code="coreCode"
         )
-        settings-code
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -59,9 +58,7 @@ import SettingsCode   from '@/components/network-elements/elements-settings/sett
 export default {
   name: 'SetClassicMLDbscans',
   mixins: [mixinSet],
-  components: {
-    SettingsCode,
-  },
+  components: { SettingsCode },
   data() {
     return {
       settings: {
@@ -72,8 +69,5 @@ export default {
       }
     }
   },
-  methods: {
-
-  }
 }
 </script>

@@ -7,20 +7,18 @@
 <script>
 export default {
   name: "SidebarProgress",
+  props: {
+    progressValue: {
+      type: Number,
+      default: 0
+    },
+  },
+  data() {
+    return {
+      percentData: '0%',
+    }
+  },
   computed: {
-    percentData() {
-      let settings = this.statusNetworkInfo;
-      let progress;
-      if(settings === null) {
-        progress = 0;
-      }
-      else progress = settings.Progress;
-      let result = Math.round(progress * 100) + '%';
-      return result
-    },
-    statusNetworkInfo() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
-    },
     statusNetworkCore() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
@@ -31,6 +29,11 @@ export default {
       }
     }
   },
+  watch: {
+    progressValue(newVal) {
+      this.percentData = Math.round(newVal * 100) + '%';
+    },
+  }
 }
 </script>
 
@@ -50,7 +53,7 @@ export default {
     border-radius: 50%;
     background: linear-gradient(to bottom, $color-6 25%, $bg-window 80%);
     &.validation-style {
-      background: linear-gradient(to bottom, $col-warning 25%, $bg-window 80%);
+      background: linear-gradient(to bottom, #9173FF 25%, $bg-window 80%);
     }
     &:before {
       content: '';

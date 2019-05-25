@@ -1,162 +1,61 @@
 <template lang="pug">
   section.sidebar-content
-    .pc-chart_box
-      span.pc-chart_title.big-text Progressbar
-      .pc-chart_main
-        sidebar-progress
-    .pc-chart_box
-      span.pc-chart_title.big-text RAM
-      .pc-chart_main
-        v-chart.pc-chart_chart(
-          :auto-resize="true"
-          theme="quantum"
-          :options="optionRAM"
-        )
-    .pc-chart_box
-      span.pc-chart_title.big-text CPU
-      .pc-chart_main
-        v-chart.pc-chart_chart(
-          :auto-resize="true"
-          theme="quantum"
-          :options="optionCPU"
-        )
-    .pc-chart_box
-      span.pc-chart_title.big-text GPU
-      .pc-chart_main
-        v-chart.pc-chart_chart(
-          :auto-resize="true"
-          theme="quantum"
-          :options="optionGPU"
-        )
+    sidebar-training-section(section-name="Progressbar")
+      sidebar-progress(
+        :progress-value="currentData.Progress"
+      )
+    sidebar-training-section(section-name="RAM")
+      resource-monitor(
+        monitor-value-key="Memory"
+        :monitor-value="currentData"
+      )
+    sidebar-training-section(section-name="CPU")
+      resource-monitor(
+        monitor-value-key="CPU"
+        :monitor-value="currentData"
+      )
 
 </template>
 
 <script>
-import SidebarProgress from "./sidebar-progress";
-//import ChartBase from "../charts/chart-base";
+import SidebarProgress from "@/components/sidebar/sidebar-progress";
+import SidebarTrainingSection from "@/components/sidebar/sidebar-training-section.vue";
+import ResourceMonitor from "@/components/charts/resource-monitor.vue";
 
 export default {
   name: "SidebarTraining",
-  components: {SidebarProgress},
-  mounted() {
-    //this.setRAM();
-    //this.setCPU();
-    // this.setGPU();
-  },
-  beforeDestroy() {
-    this.deleteTime();
-  },
+  components: {SidebarProgress, ResourceMonitor, SidebarTrainingSection},
   data() {
     return {
-      timer: {
-        timeRam: ''
+      currentData: {
+        Progress: 0,
+        Memory: 0,
+        CPU: 0
       },
-      optionRAM: {
-        grid: {
-          top: '5',
-          bottom: '25',
-          right: '10',
-          left: '30',
-        },
-        xAxis: {
-          data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        },
-        yAxis: {
-          type: 'value',
-          min: 0,
-          max: 100,
-        },
-        series: [
-          {
-            type: 'line',
-            data: [],
-            symbolSize: 0,
-          }
-        ]
-      },
-      optionCPU: {
-        grid: {
-          top: '5',
-          bottom: '25',
-          right: '10',
-          left: '30',
-        },
-        xAxis: {
-          data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        },
-        yAxis: {
-          type: 'value',
-          min: 0,
-          max: 100,
-        },
-        series: [
-          {
-            type: 'line',
-            data: [],
-            symbolSize: 0,
-          }
-        ]
-      },
-      optionGPU: {
-        grid: {
-          top: '5',
-          bottom: '25',
-          right: '10',
-          left: '30',
-        },
-        xAxis: {
-          data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
-        },
-        yAxis: {
-          type: 'value',
-          min: 0,
-          max: 100,
-        },
-        series: [
-          {
-            type: 'line',
-            data: [],
-            symbolSize: 0,
-          }
-        ]
-      }
+      buffer: {}
     }
   },
-  methods: {
-    setRAM() {
-      this.timer.timeRam = setInterval(()=> {
-        // let x = this.optionRAM.xAxis.data.length;
-        // this.optionRAM.xAxis.data.push(x);
-        console.log(process);
-        //let RAMInfo = process.getSystemMemoryInfo();
-        // let valCPU = Math.round(CPUInfo.free/);
-        // this.optionRAM.series[0].data.push(this.random());
-      }, 2000)
+  computed: {
+    statusNetworkInfo() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
     },
-    setCPU() {
-      this.timer.timeCPU = setInterval(()=> {
-        // let x = this.optionCPU.xAxis.data.length;
-        // this.optionCPU.xAxis.data.push(x);
-        let CPUInfo = process.getCPUUsage();
-        let valCPU = Math.round(CPUInfo.percentCPUUsage);
-        console.log(valCPU);
-        this.optionCPU.series[0].data.push(valCPU);
-      }, 2000)
+    doShowCharts() {
+      return this.$store.getters['mod_workspace/GET_networkShowCharts']
     },
-    setGPU() {
-      this.timer.timeGPU = setInterval(()=> {
-        // let x = this.optionGPU.xAxis.data.length;
-        // this.optionGPU.xAxis.data.push(x);
-        this.optionGPU.series[0].data.push();
-      }, 2000)
+    isNeedWait() {
+      return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
     },
-    random() {
-      return Math.round(Math.random()*100)
+  },
+  watch: {
+    statusNetworkInfo(newVal) {
+      this.isNeedWait
+        ? this.buffer = newVal
+        : this.currentData = newVal
     },
-    deleteTime() {
-      clearInterval(this.timer.timeGPU);
-      clearInterval(this.timer.timeCPU);
-      clearInterval(this.timer.timeRam);
+    doShowCharts() {
+      this.isNeedWait
+        ? this.currentData = this.buffer
+        : null
     }
   }
 }
@@ -169,29 +68,5 @@ export default {
     flex: 0 0 auto;
     flex-wrap: wrap;
     padding-top: 1rem;
-  }
-
-  .pc-chart_box {
-    flex: 0 0 100%;
-    width: 100%;
-  }
-
-  .pc-chart_title {
-    display: block;
-    margin: 1rem 0 .5rem;
-  }
-  .pc-chart_main {
-    position: relative;
-    height: 9rem;
-    background-color: $bg-workspace;
-  }
-  .pc-chart_chart {
-    position: absolute !important;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
   }
 </style>

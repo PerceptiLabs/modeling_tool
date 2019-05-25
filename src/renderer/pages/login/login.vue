@@ -1,7 +1,7 @@
 <template lang="pug">
   main.page_login
     .login_logo
-      img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
+      img(src="./../../../../static/img/percepti-labs-logo.svg" alt="percepti labs logo")
     view-loading
     .login_main
       h1 Log In please
@@ -21,37 +21,40 @@
             v-validate="'required|min:6'"
             )
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
-        .form_holder
-          base-checkbox(
 
-          ) Remember me
+        .form_holder
+          base-checkbox(v-model="saveToken") Remember me
         .form_holder
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading") log in
         .form_holder
           router-link.btn.btn--link(:to="{name: 'register'}") Register new account
 
-          //router-link.btn.btn--link(:to="{name: 'projects'}" style="margin-left: 10px") Projects
 </template>
 
 <script>
   import {requestCloudApi} from '@/core/apiCloud.js'
-  import ViewLoading from '@/components/loading/view-loading.vue'
+  import ViewLoading from '@/components/different/view-loading.vue'
 export default {
   name: 'PageLogin',
-  components: {
-    ViewLoading
+  components: { ViewLoading },
+  mounted() {
+    if(this.userIsLogin) {
+      this.loginUser()
+    }
   },
   data() {
     return {
-      // userEmail: 'test@test.com',
-      // userPass: '123123',
       userEmail: '',
-      userPass: ''
+      userPass: '',
+      saveToken: true
     }
   },
   computed: {
     isLoading() {
       return this.$store.state.mod_login.showLoader
+    },
+    userIsLogin() {
+      return this.$store.state.globalView.userToken
     },
   },
   methods: {
@@ -60,13 +63,12 @@ export default {
       this.$validator.validateAll()
         .then((result) => {
           if (result) {
-            this.loginUser();
+            this.requestLoginUser();
             return;
           }
-          //error func
       });
     },
-    loginUser() {
+    requestLoginUser() {
       this.$store.commit('mod_login/SET_showLoader', true);
       let queryParams = {
         "Email": this.userEmail,
@@ -75,16 +77,30 @@ export default {
       this.requestCloudApi('post', 'Customer/Login', queryParams, (result, response) => {
         if (result === 'success') {
           this.$store.commit('mod_login/SET_showLoader', false);
-          this.$store.commit('globalView/SET_userToken', response.headers.authorization);
-          this.$store.dispatch('mod_api/API_runServer');
-          this.$router.replace('/app');
+          let token = parseJwt(response.data.data.token);
+
+          this.$store.dispatch('globalView/SET_userToken', token.unique_name);
+          if(this.saveToken) {
+            localStorage.setItem('userToken', token.unique_name);
+          }
+          this.loginUser()
+        }
+        else {
+          this.$store.commit('mod_login/SET_showLoader', false);
+          this.$store.dispatch('globalView/GP_infoPopup', "Bad request, please try again");
+        }
+
+        function parseJwt(token) {
+          var base64Url = token.split('.')[1];
+          var base64 = base64Url.replace('-', '+').replace('_', '/');
+          return JSON.parse(window.atob(base64));
         }
       })
     },
+
+    loginUser() {
+      this.$router.replace('/projects');
+    }
   }
 }
 </script>
-
-<style lang="scss" scoped>
-  @import '../../scss/base';
-</style>

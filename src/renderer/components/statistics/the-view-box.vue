@@ -1,11 +1,11 @@
 <template lang="pug">
-  section.network_info-section
-    .info-section_head
+  section#tutorial_view-box.network_info-section.tutorial-relative
+    .info-section_head(v-if="!testIsOpen")
       h3 ViewBox
     .info-section_main(v-if="elData !== null")
       component(
         :is="elData.componentName"
-        :elementData="elData.viewBox"
+        :element-data="elData.viewBox"
         )
 </template>
 
@@ -45,33 +45,17 @@ export default {
       }
     }
   },
-  data() {
-    return {
-
-    }
-  },
-  mounted() {
-
-  },
-  methods: {
-
-  },
   computed: {
-    // viewBoxData() {
-    //   return this.elData.find((element, index, array)=>{
-    //     if(element.layerType !== 'Training') {
-    //       return element
-    //     }
-    //     else return false
-    //   });
-    // }
+    testIsOpen() {
+      return this.$store.getters['mod_workspace/GET_testIsOpen']
+    }
   }
 }
 </script>
 
-<style lang="scss" scoped>
+<style lang="scss">
   @import "../../scss/base";
-  .info-section_main {
+  .open-statistic .the-view-box .info-section_main {
     border-left: 2px solid $bg-window;
   }
 </style>

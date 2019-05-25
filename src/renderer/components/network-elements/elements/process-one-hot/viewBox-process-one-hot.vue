@@ -2,14 +2,13 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-        chartLabel="Output"
-        :chartData="chartData.Output"
+        chart-label="Output"
+        :chart-data="chartData.Output"
         )
 </template>
 
 <script>
   import ChartBase    from "@/components/charts/chart-base.vue";
-  import requestApi   from "@/core/api.js";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
 
   export default {
@@ -17,16 +16,9 @@
     components: {ChartBase},
     mixins: [viewBoxMixin],
     methods: {
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'ProcessOneHot', '');
-      },
       getData() {
-        this.getStatistics()
+        this.chartRequest(this.boxElementID, 'ProcessOneHot', '');
       }
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

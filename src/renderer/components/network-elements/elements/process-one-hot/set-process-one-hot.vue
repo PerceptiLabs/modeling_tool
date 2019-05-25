@@ -6,7 +6,6 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
-      :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -17,24 +16,22 @@
           .settings-layer_section
             .form_row
               .form_label Number of classes:
-              .form_input
+              #tutorial_number-of-classes.form_input.tutorial-relative
                 input(type="text" v-model="settings.N_class")
 
-          .settings-layer_foot
-            button.btn.btn--primary(type="button"
-            @click="applySettings"
-            ) Apply
-
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
+      .popup_body(:class="{'active': tabSelected == 1}")
+        settings-code(
+        :the-code="coreCode"
         )
-        settings-code
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="saveSettings") Apply
 
 </template>
 
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
 import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
+import { mapActions } from 'vuex';
 
 export default {
   name: 'SetProcessOneHot',
@@ -50,8 +47,19 @@ export default {
       }
     }
   },
+  computed: {
+    coreCode() {
+      return `Y=tf.one_hot(tf.cast(X,dtype=tf.int32),${this.settings.N_class});`
+    }
+  },
   methods: {
-
+    ...mapActions({
+       tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
+    saveSettings() {
+      this.applySettings();
+      this.tutorialPointActivate({way:'next', validation: 'tutorial_number-of-classes'})
+    }
   }
 }
 </script>

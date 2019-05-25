@@ -3,8 +3,7 @@
     .checkbox-text(v-if="labelPosition==='left'")
       slot
     input(type="checkbox"
-      v-model="value"
-      data-vv-value-path="value"
+      v-model="valueInput"
       @change="change"
     )
     .checkbox-fake(:class="{'checkbox-fake--icon': iconTheme}")
@@ -18,10 +17,7 @@ export default {
   name: 'BaseCheckbox',
 
   props: {
-    // value: {type: [Boolean, Array]},
-    // valueInput: {String},
-    label: String,
-    hasError: Boolean,
+    value: Boolean,
     labelPosition: {
       type: String,
       default: 'right'
@@ -29,46 +25,23 @@ export default {
     iconTheme: {
       type: Boolean,
       default: false
-    },
-    // // validateName: {
-    // //   type: String,
-    // //   default: ''
-    // // },
-    // name: {
-    //   type: String,
-    //   default: ''
-    // },
+    }
   },
   mounted () {
-    this.$el.value = this.value;
+    this.valueInput = this.value;
   },
   data() {
     return {
-      checkedProxy: false,
-      value: null
-    }
-  },
-  watch: {
-    value(value) {
-      this.$emit('input', value);
+      valueInput: null
     }
   },
   methods: {
     change (event) {
-      this.value = event.target.checked ? true : null
+      const newValue = event.target.checked;
+      this.valueInput = newValue;
+      this.$emit('input', newValue);
     }
   }
-  // computed: {
-  //   checked: {
-  //     get() { return this.value },
-  //     set (val) { this.checkedProxy = val }
-  //   }
-  // },
-  // methods: {
-  //   onChange() {
-  //     this.$emit('input', this.checkedProxy)
-  //   }
-  // }
 }
 </script>
 
@@ -96,10 +69,10 @@ export default {
           }
         }
       }
-      //&:focus + .checkbox-fake {
-      //  outline: 1px dotted $col-primary;
-      //  box-shadow: 0 0 1px 1px $white;
-      //}
+      &:focus + .checkbox-fake {
+        outline: 1px dotted $col-primary;
+        box-shadow: 0 0 1px 1px $white;
+      }
     }
     .checkbox-text {
       font-size: inherit;

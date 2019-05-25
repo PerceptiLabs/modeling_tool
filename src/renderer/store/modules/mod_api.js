@@ -1,134 +1,86 @@
-import requestApi  from "@/core/api.js";
+import coreRequest  from "@/core/apiCore.js";
 
-const net = require('net');
 const {spawn} = require('child_process');
+
+function prepareNetwork(elementList) {
+  let layers = {};
+  for(let layer in elementList) {
+    const dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
+    const el = elementList[layer];
+    if(el.componentName === 'LayerContainer') continue;
+    if(dataLayers.includes(el.componentName)) {
+      layers[el.layerId] = {
+        Name: el.layerName,
+        Type: el.componentName,
+        Properties: el.layerSettings,
+        //Code: el.coreCode,
+        backward_connections: el.connectionIn,
+        forward_connections: el.connectionOut
+      };
+    }
+    else {
+      layers[el.layerId] = {
+        Name: el.layerName,
+        Type: el.componentName,
+        //Properties: el.layerSettings,
+        Code: el.layerCode,
+        backward_connections: el.connectionIn,
+        forward_connections: el.connectionOut
+      };
+    }
+  }
+  return layers
+}
 
 const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
-  getStatusTimer: null,
-  startWatchGetStatus: false
 };
 
 const getters = {
-  GET_data_CloseServer(state, getters, rootState, rootGetters) {
-    return {
-      //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      reciever: 'server',
-      action: 'Close',
-      value: ''
-    };
-  },
-  GET_data_PauseTraining(state, getters, rootState, rootGetters) {
-    return {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: 'Pause',
-      value: ''
-    };
-  },
-  GET_data_StopTraining(state, getters, rootState, rootGetters) {
-    return {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: 'Stop',
-      value: ''
-    };
-  },
-  GET_data_SkipValidTraining(state, getters, rootState, rootGetters) {
-    return {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: 'SkipToValidation',
-      value: ''
-    }
-  },
-  GET_data_GetStatus(state, getters, rootState, rootGetters) {
-    return {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
-      action: 'getStatus', //getIter
-      value: ''
-    };
-  },
+
 };
 
 const mutations = {
   SET_statusLocalCore(state, value) {
     state.statusLocalCore = value
   },
-  SET_startWatchGetStatus(state, value) {
-    state.startWatchGetStatus = value
-  },
-  SET_getStatusTimer(state, value) {
-    state.getStatusTimer = value
-  },
-  RESET_getStatusTimer(state) {
-    clearInterval(state.getStatusTimer);
-  }
 };
 
-// Actions(value):
-
-// Start(Json Network)
-// Stop(None)
-// Pause(None)
-// SkipToValidation(None)
-// Save(path)
-// Close(None)
-// getStatistics({“layerId”:string,”variable”:string,”innervariable”:string})    (Send “”, empty string, if not use field)
-// getLayerStatistics({“layerId”:string,”variable”:string,”innervariable”:string})    (Send “”, empty string, if not use field)
-// getStatus(None)
-
-
 const actions = {
-  API_runServer({state, commit, dispatch, getters}) {
+  API_runServer({state, commit, dispatch, getters, rootGetters}) {
     let timer;
     let coreIsStarting = false;
+    var path = rootGetters['globalView/GET_appPath'];
     startCore();
 
-    // function checkCore() {
-    //   const theData = getters.GET_data_GetStatus;
-    //   const client = new requestApi();
-    //   client.sendMessage(theData)
-    //     .then((data)=> {
-    //       commit('SET_statusLocalCore', 'online')
-    //     })
-    //     .catch((err) =>{
-    //       if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
-    //         console.log('core offline');
-    //       }
-    //       coreOffline();
-    //       if(!coreIsStarting) {
-    //         startCore();
-    //         waitOnlineCore();
-    //       }
-    //     });
-    // }
     function startCore() {
       coreIsStarting = true;
       let openServer;
       switch (process.platform) {
         case 'win32':
-          openServer = spawn('core_local/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           break;
         case 'darwin':
-          let resPath = process.resourcesPath;
-          let path = resPath.slice(0, resPath.indexOf('Resources'));
           if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           else {
-            openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           break;
         case 'linux':
           if(process.env.NODE_ENV === 'production') {
-            openServer = spawn('../core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           else {
-            openServer = spawn('core_local/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }
           break;
       }
       openServer.on('error', (err) => {
+        console.log(err);
         coreOffline()
       });
       openServer.on('close', (code) => {
@@ -146,24 +98,32 @@ const actions = {
       }, 5000);
     }
     function getCoreRequest() {
-      const theData = getters.GET_data_GetStatus;
-      const client = new requestApi();
-      client.sendMessage(theData)
+      const theData = {
+        action: 'checkCore',
+        value: ''
+      };
+      coreRequest(theData)
         .then((data)=> {
           commit('SET_statusLocalCore', 'online')
         })
-        .catch((err) =>{});
+        .catch((err) =>{
+         // console.log(err);
+        });
     }
     function coreOffline() {
       commit('SET_statusLocalCore', 'offline');
     }
   },
 
-  API_getStatus({getters, dispatch, commit}) {
-    const theData = getters.GET_data_GetStatus;
-    const client = new requestApi();
-    client.sendMessage(theData)
+  API_getStatus({rootGetters, dispatch, commit}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
+      value: ''
+    };
+    coreRequest(theData)
       .then((data)=> {
+        //console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -174,104 +134,202 @@ const actions = {
       });
   },
 
-  API_startWatchGetStatus({commit, dispatch}, message) {
-    commit('SET_startWatchGetStatus', message);
-    message ? startWatch() : stopWatch();
-
-    function startWatch() {
-      let timer = setInterval(()=>{
-        dispatch('API_getStatus')
-      }, 1000);
-      commit('SET_getStatusTimer', timer);
-    }
-    function stopWatch() {
-      commit('RESET_getStatusTimer');
-    }
-  },
-
   API_startTraining({dispatch, getters, rootGetters}) {
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
     const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     let message = {
       Hyperparameters: net.networkSettings,
-      Layers: {}
+      Layers: prepareNetwork(elementList)
     };
-    elementList.forEach((el)=> {
-      message.Layers[el.layerId] = {
-        Name: el.layerName,
-        Type: el.componentName,
-        Properties: el.layerSettings,
-        backward_connections: el.connectionIn,
-        forward_connections: el.connectionOut
-      };
-    });
     const theData = {
       reciever: net.networkID,
       action: "Start",
       value: message
     };
-
-    const client = new requestApi();
-    client.sendMessage(theData)
+    //console.log(JSON.parse(JSON.stringify(theData)));
+    coreRequest(theData)
       .then((data)=> {
-        dispatch('API_startWatchGetStatus', true)
+        //console.log('API_startTraining ', data);
+        dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
+        setTimeout(()=>dispatch('mod_workspace/EVENT_chartsRequest', null, {root: true}), 500)
       })
       .catch((err) =>{
         console.error(err);
       });
-
   },
-  API_pauseTraining({dispatch, state, getters}) {
-    const theData = getters.GET_data_PauseTraining;
-    const client = new requestApi();
-    client.sendMessage(theData)
+  API_updateResults({dispatch, rootState, rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'updateResults',
+      value: ''
+    };
+    return coreRequest(theData)
       .then((data)=> {
-        dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
+        return data
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+  },
+  API_pauseTraining({dispatch, rootState, rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Pause',
+      value: ''
+    };
+    coreRequest(theData)
+      .then((data)=> {
         dispatch('API_getStatus');
-        state.startWatchGetStatus
-          ? dispatch('API_startWatchGetStatus', false)
-          : dispatch('API_startWatchGetStatus', true)
+        if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
+          dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
+          dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+        }
+        else {
+          dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
+        }
       })
       .catch((err) =>{
         console.error(err);
       });
-
-
-
   },
-  API_stopTraining({dispatch, getters}) {
-    const theData = getters.GET_data_StopTraining;
-    const client = new requestApi();
-    client.sendMessage(theData)
+  API_stopTraining({dispatch, rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Stop',
+      value: ''
+    };
+    coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
+        dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
         dispatch('API_getStatus');
-        dispatch('API_startWatchGetStatus', false);
+        return
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+  },
+  API_skipValidTraining({rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'SkipToValidation',
+      value: ''
+    };
+    coreRequest(theData)
+      .then((data)=> {})
+      .catch((err) =>{
+        console.error(err);
+      });
+  },
+  API_exportData({rootGetters, dispatch}, value) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'Export',
+      value: value
+    };
+    //console.log(theData);
+    coreRequest(theData)
+      .then((data)=> {
+        console.log('API_exportData answer', data);
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+    dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+  },
+  API_CLOSE_core({getters, dispatch, rootState}) {
+    const theData = {
+      //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: 'server',
+      action: 'Close',
+      value: ''
+    };
+    coreRequest(theData)
+      .then((data)=> {
+        return
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+    if(rootState.mod_workspace.workspaceContent.length)
+      dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+  },
+  API_postTestStart({rootGetters, rootState, dispatch}) {
+    //console.log('API_postTestStart');
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'startTest',
+      value: ''
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        //console.log('API_postTestStart ', data);
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+  },
+  API_postTestPlay({rootGetters, rootState, dispatch}) {
+    //console.log('API_postTestPlay');
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'playTest',
+      value: ''
+    };
+    coreRequest(theData)
+      .then((data)=> {
+        rootGetters['mod_workspace/GET_networkWaitGlobalEvent']
+          ? dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+          : dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+  },
+  API_postTestMove({rootGetters, rootState, dispatch}, request) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: request, //nextStep, previousStep
+      value: ''
+    };
+    dispatch('API_updateResults')
+      .then(()=> coreRequest(theData))
+      .then(()=> dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true}))
+      .catch((err) =>{
+        console.error(err);
+      });
+  },
+
+  API_getInputDim({dispatch, getters, rootGetters}) {
+    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "getNetworkInputDim",
+      value: prepareNetwork(elementList)
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err) =>{
         console.error(err);
       });
 
   },
-  API_skipValidTraining({getters}) {
-    const theData = getters.GET_data_SkipValidTraining;
-    const client = new requestApi();
-    client.sendMessage(theData)
-      .then((data)=> {})
-      .catch((err) =>{
+  API_getOutputDim({dispatch, getters, rootGetters}) {
+    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "getNetworkOutputDim",
+      value: prepareNetwork(elementList)
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
+      })
+      .catch((err)=> {
         console.error(err);
       });
-  },
-
-  API_CLOSE_core({getters, dispatch}) {
-    const theData = getters.GET_data_CloseServer;
-    const client = new requestApi();
-    client.sendMessage(theData)
-      .then((data)=> {})
-      .catch((err) =>{
-        console.error(err);
-      });
-    dispatch('API_startWatchGetStatus', false);
   },
 };
 

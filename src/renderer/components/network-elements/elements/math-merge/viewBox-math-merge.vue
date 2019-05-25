@@ -2,8 +2,8 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-        chartLabel="Data"
-        :chartData="chartData.Output"
+        chart-label="Data"
+        :chart-data="chartData.Output"
       )
 </template>
 
@@ -15,16 +15,9 @@
     components: {ChartBase},
     mixins: [viewBoxMixin],
     methods: {
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'MathMerge', '')
-      },
       getData() {
-        this.getStatistics()
+        this.chartRequest(this.boxElementID, 'MathMerge', '')
       }
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

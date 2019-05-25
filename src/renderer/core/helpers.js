@@ -1,141 +1,88 @@
 import {remote} from "electron";
+import fs from 'fs';
+import configApp from '@/core/globalSettings.js'
 
-const findIndexId = function (arr, ID) {
-  return arr.findIndex(function(item) {return item.layerId == ID});
-};
+// const findIndexId = function (arr, ID) {
+//   return arr.findIndex(function(item) {return item.layerId == ID});
+// };
 
-const clickOutside = function (event) {
-  //console.log('clickOutside');
-  if (event.target.closest('.clickout') !== this.currentNode) {
-    document.removeEventListener('click', this.clickOutside);
-    this.clickOutsideAction();
-  }
-};
-
-
-
-const openLoadDialog = function (callback, options) {
-  let dialog = remote.dialog;
-  dialog.showOpenDialog(options, (files)=>{
-    if(files !== undefined) {
-      callback(files)
-    }
+const openLoadDialog = function (options) {
+  return new Promise((success, reject) => {
+    let dialog = remote.dialog;
+    dialog.showOpenDialog(options, (files) => {
+      if (files !== undefined) {
+        success(files)
+      }
+      else reject();
+    })
   })
 };
 
-const debounce = function debounce(func, wait, immediate) {//not used
-  let timeout;
-  return function() {
-    const context = this;
-    const args = arguments;
-    let later = function() {
-      timeout = null;
-      if (!immediate) func.apply(context, args);
-    };
-    let callNow = immediate && !timeout;
-    clearTimeout(timeout);
-    timeout = setTimeout(later, wait);
-    if (callNow) func.apply(context, args);
+const loadPathFolder = function (customOptions) {
+  const optionsDefault = {
+    title:"Load folder",
+    properties: ['openDirectory']
+  };
+  let options = optionsDefault || customOptions;
+  return openLoadDialog(options);
+};
+
+const loadNetwork = function (pathArr) {
+  return readFilePromiseNative(pathArr[0])
+    .then((data) => {
+      let net = JSON.parse(data.toString());
+      this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
+    }
+  );
+  function readFilePromiseNative(path) {
+    return new Promise((success, reject) => {
+      fs.readFile(path, (err, data) => {
+        if (err) {
+          console.log(err);
+          return reject();
+        }
+        return success(data);
+      })
+    });
   };
 };
 
-const generateID = function(input) {
-  let out;
-  let stringID = input.toString();
-  let dotIndex = stringID.indexOf('.');
-  dotIndex > 0 ? out = stringID.slice(0, dotIndex) + stringID.slice(dotIndex + 1) :  out = stringID;
-  out = +out;
-  return out
+const generateID = function() {
+  return Date.now().toString();
 };
 
-export {findIndexId, clickOutside, openLoadDialog, generateID, debounce}
+const calcLayerPosition = function (position) {
+  const grid = configApp.workspaceGrid;
+  return Math.round(position/grid)*grid
+};
 
+const throttleEv = function (func, ms) {
+  var isThrottled = false,
+    savedArgs,
+    savedThis;
+  let delay = 33 || ms; //30Hz
+  function wrapper() {
 
+    if (isThrottled) { // (2)
+      savedArgs = arguments;
+      savedThis = this;
+      return;
+    }
 
+    func.apply(this, arguments); // (1)
 
+    isThrottled = true;
 
+    setTimeout(function() {
+      isThrottled = false; // (3)
+      if (savedArgs) {
+        wrapper.apply(savedThis, savedArgs);
+        savedArgs = savedThis = null;
+      }
+    }, delay);
+  }
 
-//------------триугольники
-//polygon(class="svg-arrow_triangle" :points="arrow.t1.x+','+arrow.t1.y+' '+arrow.t2.x+','+arrow.t2.y+' '+arrow.t3.x+','+arrow.t3.y")
-// arrowsList() {
-//   let connectList = [];
-//   this.workspace.network.forEach((itemEl, indexEl, arrNet)=> {
-//
-//     if(itemEl.layerNext.length > 0) {
-//       itemEl.layerNext.forEach((itemCh, indexCh, arrCh)=> {
-//         let indexNextCh = findIndexId(arrNet, itemCh);
-//         let newArrow = {
-//           l1: {
-//             y: itemEl.meta.top + 35,
-//             x: itemEl.meta.left + 35
-//           },
-//           l2: {
-//             y: arrNet[indexNextCh].meta.top + 35,
-//             x: arrNet[indexNextCh].meta.left + 35
-//           }
-//         };
-//         connectList.push(newArrow);
-//       });
-//     }
-//   });
-//
-//   function findIndexId (arr, ID) {
-//     return arr.findIndex(function(item) {return item.layerId == ID});
-//   }
-//   //console.log(connectList)
-//   return connectList
-// }
-// calcArrow(dot1, dot2) {
-//   let triangleSize = 8;
-//   let radians = Math.atan2((dot2.y - dot1.y), (dot2.x - dot1.x))
-//   let l1 = {x: dot1.x + 35, y: dot1.y + 35};
-//   let l2 = {x: dot2.x + 35, y: dot2.y + 35};
-//   //let lengthArrow = Math.round(Math.abs(Math.sqrt(Math.pow((l2.x-l1.x), 2) + Math.pow((l2.y - l1.y), 2))));
-//   //console.log(lengthArrow)
-//
-//   let t1start = {x: l2.x - triangleSize, y: l2.y - triangleSize/2};
-//   let t2start = {x: l2.x - triangleSize, y: l2.y + triangleSize/2};
-//   let t3start = {x: l2.x, y: l2.y};
-//
-//   let t1 = turnСoordinate(t1start, l2, radians);
-//   let t2 = turnСoordinate(t2start, l2, radians);
-//   let t3 = turnСoordinate(t3start, l2, radians);
-//
-//   // let t1 = correctTriangle(t1x, radians);
-//   // let t2 = correctTriangle(t2x, radians);
-//   // let t3 = correctTriangle(t3x, radians);
-//
-//   //l1 = correctLine(l1, radians);
-//   //l2 = correctLine(l2, radians);
-//
-//   function turnСoordinate(dot, dotZero, rad) {
-//     let relX = dot.x - dotZero.x;
-//     let relY = dot.y - dotZero.y;
-//     let newX = (relX*Math.cos(rad) - relY*Math.sin(rad)) + dotZero.x;
-//     let newY = (relX*Math.sin(rad) + relY*Math.cos(rad)) + dotZero.y;
-//     let newDot = {
-//       x: roundNum(newX),
-//       y: roundNum(newY),
-//     };
-//     return newDot
-//   }
-//   function correctLine(finishDot, rad) {
-//     return {
-//       x: roundNum(finishDot.x - Math.cos(rad) * triangleSize/2),
-//       y: roundNum(finishDot.y - Math.sin(rad) * triangleSize/2),
-//     }
-//   }
-//   function correctTriangle(rt, rad) {
-//     return {
-//       x: roundNum(rt.x - Math.cos(rad) * triangleSize/3),
-//       y: roundNum(rt.y - Math.sin(rad) * triangleSize/3),
-//     }
-//   }
-//   function roundNum (num) {
-//     let accur = 100;
-//     return Math.round(num * accur) / accur;
-//   }
-//
-//   return {l1, l2, t1, t2, t3};
-//
-// },
+  return wrapper;
+};
+
+export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition, throttleEv}

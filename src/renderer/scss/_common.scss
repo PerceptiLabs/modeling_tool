@@ -1,14 +1,14 @@
 @import 'base';
 /*----- CSS VAR -----*/
 :root {
-  --size-layers-btn: 58px;
-  @include media('>=xxlarge') {
-    --size-layers-btn: 72px;
+  --size-layers-btn: .8rem;
+  @include media('>=medium') {
+    --size-layers-btn: 1rem;
   }
 }
 /*----- Common styles -----*/
-@import 'fonts/roboto';
 @import 'fonts/icomoon';
+@import 'fonts/roboto';
 
 @import 'common/normalize';
 @import 'common/layout';
@@ -28,5 +28,8 @@
 @import 'components/charts';
 @import 'components/statistics-box';
 @import 'components/info-section';
+@import 'components/tutorial';
+@import 'components/sidebar';
+@import 'components/bookmark';
 
 @import 'directives/tooltip';

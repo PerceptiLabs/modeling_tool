@@ -31,23 +31,26 @@
 </template>
 
 <script>
-  import {ipcRenderer} from 'electron'
+  import {ipcRenderer, shell} from 'electron'
+  import { mapGetters, mapMutations, mapActions } from 'vuex';
+
 export default {
   name: "TheMenu",
   data() {
     return {
-      appVersion: '',
       menuSet: false,
-
     }
   },
-  mounted() {
-    ipcRenderer.send('appVersion');
-    ipcRenderer.on('getAppVersion', (event, data) => {
-      this.appVersion = data;
-    });
-  },
   computed: {
+    ...mapGetters({
+      isTutorialMode:     'mod_tutorials/getIstutorialMode'
+    }),
+    appVersion() {
+      return this.$store.state.globalView.appVersion
+    },
+    userIsLogin() {
+      return this.$store.getters['globalView/GET_userIsLogin']
+    },
     navMenu() {
       return [
         {
@@ -55,8 +58,8 @@ export default {
           submenu: [
             {label: 'New project',                  enabled: this.menuSet,  active: ()=> {this.addNewNetwork()}},
             {label: 'New workspace',                enabled: false,         active: ()=> {}},
-            {label: 'Open project',                 enabled: false,         active: ()=> {}},
-            {label: 'Save project',                 enabled: false,         active: ()=> {}},
+            {label: 'Open project',                 enabled: this.menuSet,  active: ()=> {this.openProject()}},
+            {label: 'Save project',                 enabled: false,         active: ()=> {this.saveProject()}},
             {label: 'Open model',                   enabled: this.menuSet,  active: ()=> {this.openNetwork()}},
             {label: 'Save model',                   enabled: this.menuSet,  active: ()=> {this.saveNetwork()}},
             {type: 'separator'},
@@ -157,8 +160,8 @@ export default {
           submenu: [
             {label: 'Help',                                                 active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
             {label: 'About',                                                active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
-            {label: 'Tutorial mode',                enabled: this.menuSet,  active: ()=> {}},
-            {label: 'Check for updates',            enabled: this.menuSet,  active: ()=> {this.checkUpdate()}},
+            {label: 'Tutorial mode',                enabled: this.menuSet,  active: ()=> {this.showTutorial()}},
+            {label: 'Check for updates',                                    active: ()=> {this.checkUpdate()}},
             {type: 'separator'},
           ]
         }
@@ -166,36 +169,52 @@ export default {
     }
   },
   watch: {
-    '$route': {
+    userIsLogin: {
       handler(to, from) {
-        to.name === 'app' ? this.menuSet = true : this.menuSet = false
+        to ? this.menuSet = true : this.menuSet = false
       },
       immediate: true
     }
   },
   methods: {
+    ...mapMutations({
+      setTutorialSB: 'mod_tutorials/SET_showTutorialStoryBoard'
+    }),
+    ...mapActions({
+      infoPopup: 'globalView/GP_infoPopup'
+    }),
     openLink(url) {
-      window.open(url,'_blank');
+      shell.openExternal(url);
     },
     appClose() {
-      this.$store.dispatch('mod_events/EVENT_closeCore');
+      this.$store.dispatch('mod_events/EVENT_closeApp');
     },
     checkUpdate() {
-      ipcRenderer.send('checkUpdate')
+      ipcRenderer.send('checkUpdate', 'userCheck');
     },
     addNewNetwork() {
-      this.$store.dispatch('mod_workspace/ADD_network');
+      this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
     },
     openNetwork() {
       this.$store.commit('mod_events/set_openNetwork')
     },
+    openProject() {
+      this.$router.replace({name: 'projects'});
+    },
     saveNetwork() {
-      this.$store.commit('mod_events/set_saveNetwork')
+      if(this.$router.history.current.name !== 'app') {
+        return
+      }
+      this.$store.commit('mod_events/set_saveNetwork');
+    },
+    saveProject() {
+
     },
     logOut() {
-      this.$router.replace({name: 'login'});
-      this.$store.dispatch('mod_api/API_CLOSE_core', null, {root: true});
-      this.$store.commit('mod_workspace/RESET_network');
+      this.$store.dispatch('mod_events/EVENT_logOut', this)
+    },
+    showTutorial() {
+      this.isTutorialMode ? this.infoPopup('Tutorial mode is already enabled') : this.setTutorialSB(true);
     }
   }
 }

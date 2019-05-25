@@ -2,8 +2,8 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-picture(
-        chartLabel="Output"
-        :chartData="chartData.Output"
+        chart-label="Output"
+        :chart-data="chartData.Output"
       )
 </template>
 
@@ -15,16 +15,9 @@
     components: {ChartPicture},
     mixins: [viewBoxMixin],
     methods: {
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'ProcessGrayscale', '')
-      },
       getData() {
-        this.getStatistics()
+        this.chartRequest(this.boxElementID, 'ProcessGrayscale', '')
       }
     },
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

@@ -1,29 +1,28 @@
 <template lang="pug">
   .app-header
     .app-header_logo
-      img(src="~@/assets/logo_small_dark.svg" alt="percepti labs logo")
+      img(src="./../../../../static/img/logo_small_dark.svg" alt="percepti labs logo")
     the-menu
     ul.app-header_actions
-      button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-appMinimaze
-      button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-appResize
-      button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-appClose
+      button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
+      button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-app-resize
+      button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close
 </template>
 
 <script>
-  import {ipcRenderer} from 'electron'
   import TheMenu from '@/components/the-menu.vue'
 export default {
   name: "HeaderWin",
   components: {TheMenu},
   methods: {
     appClose() {
-      this.$emit('appClosed')
+      this.$emit('app-closed')
     },
     appMinimize() {
-      this.$emit('appMinimized')
+      this.$emit('app-minimized')
     },
     appMaximize() {
-      this.$emit('appMaximized')
+      this.$emit('app-maximized')
     }
   }
 }
@@ -35,7 +34,8 @@ export default {
     display: flex;
     align-items: center;
     height: $h-header-win;
-    background: #141419;
+    background: #272727;
+    font-family: sans-serif;
   }
   .app-header_logo {
     margin: 0 12px;

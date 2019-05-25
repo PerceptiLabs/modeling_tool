@@ -2,6 +2,7 @@
   .btn.btn--layersbar.net-element-layercontainer(:draggable="draggable"
     data-component="LayerContainer"
     data-layer="Layer Container"
+    data-type="Container"
   )
     i.icon.icon-layer-net
 

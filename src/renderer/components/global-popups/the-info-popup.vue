@@ -1,5 +1,5 @@
 <template lang="pug">
-  .popup-global
+  .popup-global(v-if="infoText")
     .popup-global_overlay(@click="closePopup()")
     section.popup
       .popup_tab-set
@@ -7,7 +7,7 @@
           h3 Info
       .popup_body
         .settings-layer_section.text-center
-          p {{ infoText }}
+          p.middle-text {{ infoText }}
       .popup_foot
         button.btn.btn--primary(type="button"
         @click="closePopup()") OK
@@ -15,18 +15,16 @@
 </template>
 
 <script>
-  import mixinSet       from '@/core/mixins/net-element-settings.js';
   export default {
     name: "TheInfoPopup",
-    props: {
-      infoText: {
-        type: [Boolean, String],
-        default: ''
-      }
-    },
     data() {
       return {
       }
+    },
+    computed: {
+      infoText() {
+        return this.$store.state.globalView.globalPopup.showInfoPopup
+      },
     },
     methods: {
       closePopup() {
@@ -35,7 +33,3 @@
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

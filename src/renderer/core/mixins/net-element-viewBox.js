@@ -1,37 +1,31 @@
 import VueNonreactive from 'vue-nonreactive/vue-nonreactive.js';
 import Vue from 'vue'
 Vue.use(VueNonreactive);
-import requestApi   from "@/core/api.js";
+
+import coreRequest  from "@/core/apiCore.js";
 
 const viewBoxMixin = {
   data() {
     return {
       chartData: {},
-      idTimer: null,
-      timeInterval: 2000,
-      saveParams: {}
-    }
-  },
-  created() {
-    if(this.chartDataDefault){
-      this.chartData = {...this.chartDataDefault}
+      saveParams: {},
+      startRequest: 0
     }
   },
   mounted() {
-    this.getStatistics();
+    this.getData();
   },
   beforeDestroy() {
-    clearInterval(this.idTimer);
     this.chartData = {};
   },
   computed: {
     statElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType === 'Training');
-      return viewBoxEl === undefined ? undefined : viewBoxEl.el.layerId.toString()
+      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.layerType === 'Training');
+      return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     boxElementID() {
-      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.el.layerType !== 'Training');
-      return viewBoxEl === undefined ? undefined : viewBoxEl.el.layerId.toString()
+      let viewBoxEl = this.$store.getters['mod_workspace/GET_currentSelectedEl'].find((element)=>element.layerType !== 'Training');
+      return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     currentNetworkID() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
@@ -39,9 +33,13 @@ const viewBoxMixin = {
     serverStatus() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']
     },
-    doRequest() {
-      return this.$store.state.mod_api.startWatchGetStatus
+    testIsOpen() {
+      return this.$store.getters['mod_workspace/GET_testIsOpen']
     },
+    doRequest() {
+      return this.$store.getters['mod_workspace/GET_networkDoRequest']
+    },
+
   },
   watch: {
     boxElementID() {
@@ -50,52 +48,53 @@ const viewBoxMixin = {
     statElementID() {
       this.resetViewBox();
     },
-    doRequest(newVal) {
-      newVal ? this.getData() : null;
+    doRequest() {
+      this.getData();
     }
   },
   methods: {
     resetViewBox() {
-      clearInterval(this.idTimer);
       this.getData();
     },
     setTabAction() {
-      clearInterval(this.idTimer);
-      this.chartData = {...this.chartDataDefault};
       this.getData();
     },
     chartRequest(layerId, layerType, view) {
+      this.startRequest = new Date();
+
+      if(layerId === undefined) {
+        return
+      }
       let theData = {
         reciever: this.currentNetworkID,
-        action: 'getLayerStatistics',
+        action: this.$store.getters['mod_workspace/GET_testIsOpen']
+          ? 'getTestingStatistics'
+          : 'getTrainingStatistics',
         value: {
           layerId: layerId,
           layerType: layerType,
           view: view
         }
       };
+      coreRequest(theData, null, null, this._name)
+        .then((data)=> {
+          if(data === 'Null') {
+            return
+          }
+          Vue.nonreactive(data);
+          if(view.length) {
+            this.$set(this.chartData, view, data)
+          }
+          else this.chartData = data;
 
-      this.idTimer = setInterval(()=>{
-        if(layerId === undefined) {
-          return
-        }
-        const client = new requestApi();
-        client.sendMessage(theData)
-          .then((data)=> {
-            Vue.nonreactive(data);
-            if(view.length) {
-              this.$set(this.chartData, view, data)
-            }
-            else this.chartData = data
-          })
-          .catch((err) =>{
-            console.error(err);
-            clearInterval(this.idTimer);
-          });
-        if(!this.doRequest) {
-          clearInterval(this.idTimer)
-        }
-      }, this.timeInterval);
+          let stopRequest = new Date();
+          let answerDelay = stopRequest - this.startRequest;
+          this.$store.dispatch('mod_workspace/CHECK_requestInterval', answerDelay);
+        })
+        .catch((err)=> {
+          console.log('answer err');
+          console.error(err);
+        });
     }
   }
 };

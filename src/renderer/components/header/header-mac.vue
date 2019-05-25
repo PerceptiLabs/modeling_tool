@@ -1,27 +1,26 @@
 <template lang="pug">
   .app-header
     ul.app-header_actions
-      button.btn.btn--app-close(type="button" @click="appClose()")
-      button.btn.btn--app-full(type="button" @click="appMinimize()")
-      button.btn.btn--app-minify(type="button" @click="appMaximize()")
+      button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close-mac
+      button.btn.btn--app-full(type="button" @click="appMinimize()").i.icon.icon-minus
+      button.btn.btn--app-minify(type="button" @click="appMaximize()").i.icon.icon-app-fullscreen-mac
     .app-header_title PerceptiLabs
 </template>
 
 <script>
-  import {ipcRenderer} from 'electron'
   import TheMenu from '@/components/the-menu.vue'
 export default {
   name: "HeaderMac",
   components: {TheMenu},
   methods: {
     appClose() {
-      this.$emit('appClosed')
+      this.$emit('app-closed')
     },
     appMinimize() {
-      this.$emit('appMinimized')
+      this.$emit('app-minimized')
     },
     appMaximize() {
-      this.$emit('appMaximized')
+      this.$emit('app-maximized')
     }
   }
 }
@@ -29,6 +28,10 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
+  $yellowBG: #f6c251;
+  $redBG: #ff6157;
+  $greenBG: #2acb42;
+
   .app-header {
     display: flex;
     align-items: center;
@@ -38,42 +41,53 @@ export default {
   .app-header_actions {
     display: flex;
     margin-left: auto;
+    -webkit-app-region: no-drag;
+    height: 100%;
+    align-items: center;
+
     .btn {
       display: flex;
       align-items: center;
       justify-content: center;
-      width: 10px;
-      height: 10px;
+      width: 13px;
+      height: 13px;
       margin-left: 10px;
       border-radius: 50%;
-      &:hover {
-        background: #545353;
-      }
+      font-size: 7px;
+      font-weight: 900;
     }
     .btn--app-minify {
-      background: #2acb42;
-      &:hover {
-        background: #24af39;
-      }
+      background: $greenBG;
+      color: $greenBG;
+      font-size: 9px;
+      border: 1px solid #24ad38;
     }
     .btn--app-full {
-      background: #f6c251;
-      &:hover {
-        background: #d4a642;
-      }
+      background: $yellowBG;
+      color: $yellowBG;
+      border: 1px solid #d1a545;
     }
     .btn--app-close {
-      background: #ff6157;
-      &:hover {
-        background: #e94040;
-      }
+      background: $redBG;
+      color: $redBG;
+      border: 1px solid #d9524a;
     }
   }
+  .app-header_actions:hover {
+    .btn--app-close {
+      color: #662723;
+    }
+    .btn--app-full {
+      color: #624e20;
+    }
+    .btn--app-minify {
+       color: #11511a;
+    }
+  }
+
   .app-header_title {
     font-size: 12px;
     flex-grow: 1;
     text-align: center;
   }
-
-
 </style>

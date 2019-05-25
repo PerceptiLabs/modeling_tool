@@ -6,7 +6,6 @@
         :key="tab.i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
-        :disabled="tabSelected != i"
       )
         h3(v-html="tab")
     .popup_tab-body
@@ -20,17 +19,12 @@
               .form_input
                 input(type="text" v-model="settings.Dim")
 
-          .settings-layer_section
-          .settings-layer_foot
-            button.btn.btn--primary(type="button"
-              @click="applySettings"
-              ) Apply
-
-
-      .popup_body(
-        :class="{'active': tabSelected == 1}"
+      .popup_body(:class="{'active': tabSelected == 1}")
+        settings-code(
+        :the-code="coreCode"
         )
-        settings-code
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -54,7 +48,10 @@ export default {
       }
     }
   },
-  methods: {
+  computed: {
+    coreCode() {
+      return `Y=tf.argmax(X,${this.settings.Dim});`
+    }
   }
 }
 </script>

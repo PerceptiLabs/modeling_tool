@@ -3,27 +3,26 @@
     .app-header_title
       .title_app-name PerceptiLabs
       ul.title_app-actions
-        button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-appMinimaze
-        button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-appResize
-        button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-appClose
+        button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimaze
+        button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-app-resize
+        button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close
     the-menu.app-header_nav
 </template>
 
 <script>
-  import {ipcRenderer} from 'electron'
   import TheMenu from '@/components/the-menu.vue'
 export default {
   name: "HeaderLinux",
   components: {TheMenu},
   methods: {
     appClose() {
-      this.$emit('appClosed')
+      this.$emit('app-closed')
     },
     appMinimize() {
-      this.$emit('appMinimized')
+      this.$emit('app-minimized')
     },
     appMaximize() {
-      this.$emit('appMaximized')
+      this.$emit('app-maximized')
     }
   }
 }

@@ -1,14 +1,20 @@
 .popup-body {
 	position: fixed;
 	z-index: 100;
-	top: 50%;
-	left: 50%;
+	top: 99%;
+	left: 99%;
 	overflow: hidden;
 	width: 40rem;
 	padding-bottom: 1rem;
-	transform: translate(-50%, -50%);
+	transform: translate(-99%, -99%);
 	border-radius: .5rem;
 	background: $bg-toolbar;
+	&.bg-mode{
+		padding-bottom: 0;
+		.info-box {
+			display: none;
+		}
+	}
 }
 .popup-body_header {
 	font-size: 1.4rem;

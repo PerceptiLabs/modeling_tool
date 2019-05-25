@@ -13,7 +13,7 @@ ECharts.registerTheme('quantum', {
   },
   "color": [
     "#6b8ff7",
-    "#f7e96b",
+    "#FECF73",
     "#46d65d",
     "#fe7373",
     "#e273fe",
@@ -326,8 +326,11 @@ ECharts.registerTheme('quantum', {
       "smooth": true
   },
   "bar": {
-    barWidth: '8px',
-    barGap: '100%',
+    "barWidth": '8px',
+    "barGap": '100%',
+    "xAxis": {
+      'boundaryGap': true
+    },
     "itemStyle": {
       "normal": {
         "barBorderWidth": 0,
@@ -340,16 +343,8 @@ ECharts.registerTheme('quantum', {
     }
   },
   "pie": {
-    "itemStyle": {
-      "normal": {
-        "borderWidth": 0,
-          "borderColor": "#e1e1e1"
-      },
-      "emphasis": {
-        "borderWidth": 0,
-          "borderColor": "#e1e1e1"
-      }
-    }
+    "radius": '60%',
+    "center": ['50%', '50%'],
   },
   "scatter": {
     "itemStyle": {

@@ -14,57 +14,57 @@
       .statistics-box_row
         .statistics-box_col
           chart-base(
-          :chartData="optionLine1"
+            :chart-data="optionLine1"
           )
           chart-base(
-          chartLabel="Accuracy over all epochs"
-          :chartData="optionLine1"
+            chart-label="Accuracy over all epochs"
+            :chart-data="optionLine1"
           )
           chart-base(
-          :chartData="optionLine1"
+            :chart-data="optionLine1"
           )
         .statistics-box_col
           chart-heatmap(
-          :chartData="optionHeat"
+            :chart-data="optionHeat"
           )
         .statistics-box_col
           chart-d3(
-          :chartData="option3d"
+            :chart-data="option3d"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
       chart-base(
-      chartLabel="Accuracy during one epoch"
-      :chartData="optionLine1"
+        chart-label="Accuracy during one epoch"
+        :chart-data="optionLine1"
       )
       chart-base(
-      chartLabel="Accuracy over all epochs"
-      :chartData="optionLine1"
+        chart-label="Accuracy over all epochs"
+        :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
       chart-base(
-      chartLabel="Loss during one epoch"
-      :chartData="optionLine1"
+        chart-label="Loss during one epoch"
+        :chart-data="optionLine1"
       )
       chart-base(
-      chartLabel="Loss over all epochs"
-      :chartData="optionLine1"
+        chart-label="Loss over all epochs"
+        :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
       chart-base(
-      chartLabel="F1 during one epoch"
-      :chartData="optionLine1"
+        chart-label="F1 during one epoch"
+        :chart-data="optionLine1"
       )
       chart-base(
-      chartLabel="F1 over all epochs"
-      :chartData="optionLine1"
+        chart-label="F1 over all epochs"
+        :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Precision & Recall'")
       chart-base(
-      :chartData="optionLine1"
+        :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'ROC'")
       chart-base(
-      :chartData="optionLine1"
+        :chart-data="optionLine1"
       )
 </template>
 
@@ -73,9 +73,6 @@
   import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
   import ChartD3      from "@/components/charts/chart-3d.vue";
   import data3d       from "@/components/charts/3d.js";
-  import dataHeat     from "@/components/charts/hear.js";
-  import dataBar      from "@/components/charts/bar.js";
-  import dataLine     from "@/components/charts/line.js";
 
   export default {
     name: "ViewBoxTrainDynamic",
@@ -84,10 +81,10 @@
       return {
         currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
-        optionLine1: dataLine,
+        optionLine1: null,
         option3d: data3d,
-        optionHeat: dataHeat,
-        optionBar: dataBar,
+        optionHeat: null,
+        optionBar: null,
       }
     },
     methods: {
@@ -97,7 +94,3 @@
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

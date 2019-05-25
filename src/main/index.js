@@ -1,25 +1,32 @@
 'use strict';
 
-import { app, BrowserWindow, Menu, ipcMain, dialog } from 'electron'
-import ua               from 'universal-analytics'
-import { autoUpdater }  from 'electron-updater'
+import { app, BrowserWindow, Menu, ipcMain, dialog }  from 'electron'
+import { autoUpdater }                                from 'electron-updater'
+// import { JSONStorage }                                from 'node-localstorage';
+// import uuid                                           from 'uuid/v4';
+import ua                                             from 'universal-analytics'
+
 autoUpdater.autoDownload = false;
 
 let mainWindow;
-//const visitor = ua('UA-129392553-1');
-const visitor = ua('UA-114940346-1');
+// const nodeStorage = new JSONStorage(app.getPath('userData'));
+// const userId      = nodeStorage.getItem('userid') || uuid();
+//const visitor     = ua('UA-114940346-1', {uid: userId});
+let visitor;
+let loginPage = '/';
 
 const mainMenu = [
   {
     label: 'File',
     submenu: [
-      {label: 'New',                  click() {mainWindow.webContents.send('newNetwork')}},
-      {label: 'Open trained model', enabled: false, click() {mainWindow.webContents.send('info', 'whoooooooh!');  }},
-      {label: 'Save trained model', enabled: false,  click() {  }},
-      {label: 'Open untrained model', click() {mainWindow.webContents.send('openNetwork')}},
-      {label: 'Save untrained model', click() {mainWindow.webContents.send('saveNetwork')}},
+      {label: 'New',                                    click() {mainWindow.webContents.send('newNetwork')}},
+      {label: 'Open trained model',   enabled: false,   click() {mainWindow.webContents.send('info', 'whoooooooh!');  }},
+      {label: 'Save trained model',   enabled: false,   click() {  }},
+      {label: 'Open untrained model',                   click() {mainWindow.webContents.send('openNetwork')}},
+      {label: 'Save untrained model',                   click() {mainWindow.webContents.send('saveNetwork')}},
       {type: 'separator'},
-      {label: 'Quit PersceptiLabs', click() {mainWindow.webContents.send('closeApp')}},
+      {label: 'Log out',                                click() {mainWindow.webContents.send('logOut')}},
+      {label: 'Quit PersceptiLabs',                     click() {mainWindow.webContents.send('closeApp')}},
     ]
   },
   {
@@ -74,9 +81,8 @@ function createWindow () {
     frame: false,
     height: 768,
     width: 1024,
-    minHeight: 768,
-    minWidth: 1024,
-    backgroundColor: '#27292F',
+    minHeight: 600,
+    minWidth: 800,
     useContentSize: true,
     webPreferences: {
       //contextIsolation: true,
@@ -96,8 +102,10 @@ function createWindow () {
   /**
    * add custom menu
    */
-  const menuCustom = Menu.buildFromTemplate(mainMenu);
-  Menu.setApplicationMenu(menuCustom);
+  if(process.platform === 'darwin') {
+    const menuCustom = Menu.buildFromTemplate(mainMenu);
+    Menu.setApplicationMenu(menuCustom);
+  }
 
   /**
    * listeners for the renderer process
@@ -106,37 +114,61 @@ function createWindow () {
     app.quit()
   });
   ipcMain.on('appMinimize', (event, arg) => {
-    mainWindow.isMinimized()
-      ? mainWindow.restore()
-      : mainWindow.minimize()
+    if(process.platform === 'darwin' && mainWindow.isFullScreen()) {
+      mainWindow.setFullScreen(false);
+      setTimeout(()=>{mainWindow.minimize();}, 1000)
+    }
+    else {
+      mainWindow.isMinimized()
+        ? mainWindow.restore()
+        : mainWindow.minimize()
+    }
+
   });
   ipcMain.on('appMaximize', (event, arg) => {
-    mainWindow.isMaximized()
-      ? mainWindow.unmaximize()
-      : mainWindow.maximize()
+    if(process.platform === 'darwin') {
+      mainWindow.isMaximized()
+        ? mainWindow.setFullScreen(false)
+        : mainWindow.setFullScreen(true)
+    }
+    else {
+      mainWindow.isMaximized()
+        ? mainWindow.unmaximize()
+        : mainWindow.maximize()
+    }
   });
-  ipcMain.on('appReady', (event, arg) => {
+  ipcMain.on('appReady', (event) => {
     mainWindow.checkForUpdates();
-  });
-  ipcMain.on('checkUpdate', (event, arg) => {
-    mainWindow.checkForUpdates();
-  });
-  ipcMain.on('appVersion', (event, arg) => {
     mainWindow.webContents.send('getAppVersion', app.getVersion());
   });
+  ipcMain.on('checkUpdate', (event, arg) => {
+    mainWindow.checkForUpdates(arg);
+    autoUpdater.on('update-not-available', (info)=> {
+      mainWindow.webContents.send('update-not-finded', info);
+    });
+  });
+  ipcMain.on('update-start', (info)=> {
+    autoUpdater.downloadUpdate();
+  });
+  ipcMain.on('restart-app-after-update', (info)=> {
+    autoUpdater.quitAndInstall();
+  });
+  
+
   /**
    * google analytics
    */
-  visitor.pageview("/").send();
-
+  ipcMain.on('changeRoute', (event, arg) => { 
+    visitor = ua('UA-114940346-1', arg.id, {strictCidFormat: false})
+    if (arg.path !== loginPage) visitor.pageview(arg.path).send();
+  });
   /**
    * start auto update
    */
   mainWindow.checkForUpdates = function() {
-    //if (process.env.NODE_ENV !== 'development') {
-    if (true) {
+    if (process.env.NODE_ENV !== 'development') {
       mainWindow.webContents.send('info', 'checkForUpdates');
-      const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/'
+      const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/';
       const UpdateOpt = {
         provider: 'generic',
         url: ''
@@ -202,44 +234,21 @@ autoUpdater.on('checking-for-update', (info)=> {
 });
 autoUpdater.on('update-available', (info)=> {
   mainWindow.webContents.send('info', {type: 'Update available.', info});
+  mainWindow.webContents.send('update-finded', info);
+});
 
-  const dialogOpts = {
-    type: 'info',
-    title: 'Start Download Updates',
-    message: info.releaseNotes,
-    buttons: ['OK', 'No']
-  };
-  dialog.showMessageBox(dialogOpts, (buttonIndex) => {
-    if (buttonIndex === 0) {
-      autoUpdater.downloadUpdate()
-    }
-  })
-});
-autoUpdater.on('update-not-available', (info)=> {
-  mainWindow.webContents.send('info', {type: 'Update not available.', info});
-});
 autoUpdater.on('error', (err)=> {
   mainWindow.webContents.send('info', 'Error in auto-updater. ' + err);
 });
 autoUpdater.on('download-progress', (progressObj)=> {
+  mainWindow.webContents.send('percent-progress', progressObj.percent);
   let log_message = `Download speed: ${progressObj.bytesPerSecond}, Downloaded: ${progressObj.percent}%`;
   mainWindow.webContents.send('info', log_message);
   mainWindow.setProgressBar(progressObj.percent / 100);
 });
 autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
   mainWindow.webContents.send('info', 'Update downloaded');
-
-  const dialogOpts = {
-    type: 'info',
-    buttons: ['Restart', 'Later'],
-    title: 'Application Update',
-    message: process.platform === 'win32' ? releaseNotes : releaseName,
-    detail: 'A new version has been downloaded. Restart the application to apply the updates.'
-  };
-
-  dialog.showMessageBox(dialogOpts, (response) => {
-    if (response === 0) autoUpdater.quitAndInstall()
-  })
+  mainWindow.webContents.send('download-completed');
 });
 
 export default mainWindow

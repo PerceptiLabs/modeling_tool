@@ -17,9 +17,9 @@
             .form_row
               .form_label Type:
               .form_input
-                base-radio(groupName="group" valueInput="None" v-model="settings.neurons")
+                base-radio(group-name="group" value-input="None" v-model="settings.neurons")
                   span Classification
-                base-radio(groupName="group" valueInput="Sigmoid" v-model="settings.neurons")
+                base-radio(group-name="group" value-input="Sigmoid" v-model="settings.neurons")
                   span Regression
           .settings-layer_section
             .form_row
@@ -31,21 +31,21 @@
               .form_row
                 .form_label Weights:
                 .form_input
-                  base-radio(groupName="group1" valueInput="None" v-model="settings.neurons1")
+                  base-radio(group-name="group1" value-input="None" v-model="settings.neurons1")
                     span Uniform
-                  base-radio(groupName="group1" valueInput="Sigmoid" v-model="settings.neurons1")
+                  base-radio(group-name="group1" value-input="Sigmoid" v-model="settings.neurons1")
                     span Distance
             .settings-layer_section
               .form_row
                 .form_label Algorithm:
                 .form_input
-                  base-radio(groupName="group2" valueInput="None" v-model="settings.neurons2")
+                  base-radio(group-name="group2" value-input="None" v-model="settings.neurons2")
                     span Auto
-                  base-radio(groupName="group2" valueInput="Sigmoid" v-model="settings.neurons2")
+                  base-radio(group-name="group2" value-input="Sigmoid" v-model="settings.neurons2")
                     span Ball tree
-                  base-radio(groupName="group2" valueInput="None1" v-model="settings.neurons2")
+                  base-radio(group-name="group2" value-input="None1" v-model="settings.neurons2")
                     span KD tree
-                  base-radio(groupName="group2" valueInput="Sigmoid1" v-model="settings.neurons2")
+                  base-radio(group-name="group2" value-input="Sigmoid1" v-model="settings.neurons2")
                     span Brute force
             .settings-layer_section
               .form_row
@@ -56,18 +56,17 @@
               .form_row
                 .form_label Weights:
                 .form_input
-                  base-radio(groupName="group3" valueInput="None" v-model="settings.neurons3")
+                  base-radio(group-name="group3" value-input="None" v-model="settings.neurons3")
                     span Minkowski
-                  base-radio(groupName="group3" valueInput="Sigmoid" v-model="settings.neurons3")
+                  base-radio(group-name="group3" value-input="Sigmoid" v-model="settings.neurons3")
                     span Euclidean
 
-          .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
-
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
+      .popup_body(:class="{'active': tabSelected == 1}")
+        settings-code(
+        :the-code="coreCode"
         )
-        settings-code
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -94,8 +93,5 @@ export default {
       }
     }
   },
-  methods: {
-
-  }
 }
 </script>

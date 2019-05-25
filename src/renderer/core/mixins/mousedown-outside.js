@@ -12,7 +12,7 @@ const mousedownOutside = {
   },
   methods: {
     mousedownOutside(event) {
-      if (event.target.closest('.js-clickout') !== this.MousedownElementTracking) {
+      if (event.target.closest('.js-clickout') !== this.MousedownElementTracking && event.button === 0) {
         document.removeEventListener('mousedown', this.mousedownOutside);
         this.MousedownElementTracking = null;
         this.mousedownOutsideAction();

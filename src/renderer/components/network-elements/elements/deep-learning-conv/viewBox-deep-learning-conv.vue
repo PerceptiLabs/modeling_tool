@@ -1,38 +1,42 @@
 <template lang="pug">
-  .statistics-box
-    ul.statistics-box_tabset
+  .statistics-box.statistics-box--horizontally
+    ul.statistics-box_tabset(v-if="!testIsOpen")
       li.statistics-box_tab(
-      v-for="(tab, i) in tabset"
-      :key="i"
+        v-for="(tab, i) in tabset"
+        :key="i"
       )
         button.btn.btn--tabs(
-        type="button"
-        @click="setTab(tab)"
-        :class="{'active': currentTab === tab}"
+          type="button"
+          @click="setTab(tab)"
+          :class="{'active': currentTab === tab}"
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output'")
       .statistics-box_row
-        .statistics-box_col
+        .statistics-box_col(v-if="!testIsOpen")
           chart-heatmap(
-            chartLabel="Weights"
-            :chartData="chartData['Weights&Output'].Weights"
+            key="1"
+            chart-label="Weights"
+            :chart-data="chartData['Weights&Output'].Weights"
             )
         .statistics-box_col
           chart-picture(
-            chartLabel="Output"
-            :chartData="chartData['Weights&Output'].Output"
+            key="2"
+            chart-label="Output"
+            :chart-data="chartData['Weights&Output'].Output"
             )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bias'")
       .statistics-box_row
         chart-base(
-        chartLabel="Bias"
-        :chartData="chartData.Bias.Bias"
+          key="3"
+          chart-label="Bias"
+          :chart-data="chartData.Bias.Bias"
         )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
       chart-base(
-        chartLabel="Bias"
-        :chartData="chartData.Gradients.Gradients"
-        :customColor="colorList"
+        key="4"
+        chart-label="Bias"
+        :chart-data="chartData.Gradients.Gradients"
+        :custom-color="colorList"
       )
       //-.statistics-box_row
         chart-base(
@@ -61,7 +65,7 @@
     mixins: [viewBoxMixin],
     data() {
       return {
-        chartDataDefault: {
+        chartData: {
           'Weights&Output': {
             Weights: null,
             Output: null,
@@ -83,30 +87,18 @@
         this.setTabAction();
       },
       getData() {
-        let name = this.currentTab;
-        if(name === 'Weights & Output') {
-          this.getStatistics()
+        switch (this.currentTab) {
+          case 'Weights & Output':
+            this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Weights&Output')
+            break;
+          case 'Bias':
+            this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Bias')
+            break;
+          case 'Gradients':
+            this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Gradients')
+            break;
         }
-        else if (name === 'Bias') {
-          this.getWeightsStatistics()
-        }
-        else if (name === 'Gradients') {
-          this.getGradientsStatistics()
-        }
-      },
-      getStatistics() {//not Weights
-        this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Weights&Output')
-      },
-      getWeightsStatistics() {
-        this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Bias')
-      },
-      getGradientsStatistics() {
-        this.chartRequest(this.boxElementID, 'DeepLearningConv', 'Gradients')
       }
     }
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

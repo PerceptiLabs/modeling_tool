@@ -8,70 +8,60 @@
         :class="{'text-primary': fullView}"
         @click="toggleFullView")
           i.icon.icon-full-screen-graph
-    .base-chart_main
+    .base-chart_main(:class="{'invisible': blinkCanv}")
       canvas.chart-img(ref="canvas")
 </template>
 
 <script>
-  import imgDatas    from "@/components/charts/img.js";
+  import {pathWebWorkers} from '@/core/constants.js'
+  import chartMixin       from "@/core/mixins/charts.js";
 
 export default {
   name: "ChartPicture",
-  props: {
-    headerOff: {
-      type: Boolean,
-      default: false
-    },
-    chartLabel: {
-      type: String,
-      default: ''
-    },
-    chartData: {
-      type: Array,
-      default: function() {
-        return null
-      }
-    },
-  },
-  mounted() {
-    this.canvas2D = this.$refs.canvas.getContext('2d');
-  },
+  mixins: [chartMixin],
   data() {
     return {
-      imgDatas: imgDatas,
-      fullView: false,
-      canvas2D: null
+      canvas2D: null,
+      blinkCanv: false
     }
   },
   watch: {
-    chartData(newData) {
-      this.drawPicture(newData[0])
-    },
+    doShowCharts() {
+      if(this.chartModelBuffer) this.showImage(this.chartModelBuffer);
+    }
   },
   methods: {
     toggleFullView() {
       this.fullView = !this.fullView
     },
-    drawPicture(img) {
-      let canvas2d = this.canvas2D;
-      let canvas = this.$refs.canvas;
-      let imgH = img.height;
-      let imgW = img.width;
-      canvas.setAttribute('width', imgW);
-      canvas.setAttribute('height', imgH);
-      if(imgH/imgW >= 1) {
-        this.$refs.canvas.style.minHeight = '100%';
-      }
-      else {
-        this.$refs.canvas.style.width = '100%';
-      }
-      let imgData = canvas2d.createImageData(imgW, imgH);
-      img.data.forEach((el, index) => imgData.data[index] = el);
-      canvas2d.putImageData(imgData,0, 0);
+    createWWorker() {
+      this.wWorker = new Worker(`${pathWebWorkers}/calcChartPic.js`);
+      this.wWorker.addEventListener('message', this.drawChart, false);
+      if(!this.canvas2D) this.canvas2D = this.$refs.canvas.getContext('2d');
+    },
+    sendDataToWWorker(dataWatch) {
+      let data = dataWatch || this.chartData;
+      if (!data) return;
+
+      let dataImg = data.series[0];
+      let imgH = dataImg.height;
+      let imgW = dataImg.width;
+      let canvasImg = this.canvas2D.createImageData(imgW, imgH);
+      this.wWorker.postMessage({canvasImg, dataImg});
+    },
+    drawChart(ev) {
+      this.isNeedWait
+        ? this.chartModelBuffer = ev.data
+        : this.showImage(ev.data);
+
+    },
+    showImage(imgData) {
+      let canvasEl = this.$refs.canvas;
+      canvasEl.setAttribute('width', this.chartData.series[0].width);
+      canvasEl.setAttribute('height', this.chartData.series[0].height);
+      this.canvas2D.putImageData(imgData, 0, 0);
+
     }
-  },
-  beforeDestroy() {
-    //console.log('Destroy chart');
   }
 }
 </script>
@@ -83,5 +73,10 @@ export default {
     align-items: center;
     justify-content: center;
     background-color: $bg-workspace;
+  }
+  .chart-img {
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
   }
 </style>

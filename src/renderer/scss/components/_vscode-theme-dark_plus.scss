@@ -1,0 +1,153 @@
+$theme-comment: #6A9955;
+$theme-color: #d4d4d4;
+//$theme-bg: #1e1e1e;
+$theme-bg: $bg-workspace;;
+$theme-variable: #4ec9b0;
+$theme-keyword: #C586C0;
+$theme-keyword2: #569cd6;
+$theme-builtin: #DCDCAA;
+$theme-string: #CE9178;
+$theme-number: #B5CEA8;
+
+.cm-s-monokai {
+  &.CodeMirror {
+    background: $theme-bg;
+    color: $theme-color;
+  }
+  div.CodeMirror-selected {
+    background: #49483E;
+  }
+
+  .CodeMirror-line::selection,
+  .CodeMirror-line > span::selection,
+  .CodeMirror-line > span > span::selection {
+    background: rgba(73, 72, 62, .99);
+  }
+  .CodeMirror-line::-moz-selection,
+  .CodeMirror-line > span::-moz-selection,
+  .CodeMirror-line > span > span::-moz-selection {
+    background: rgba(73, 72, 62, .99);
+  }
+
+  .CodeMirror-gutters {
+    background: #272822;
+    border-right: 0;
+  }
+
+  .CodeMirror-guttermarker {
+    color: white;
+  }
+
+  .CodeMirror-guttermarker-subtle {
+    color: #d0d0d0;
+  }
+
+  .CodeMirror-linenumber {
+    color: #d0d0d0;
+  }
+
+  .CodeMirror-cursor {
+    border-left: 1px solid #f8f8f0;
+  }
+
+  span.cm-comment {
+    color: $theme-comment;
+  }
+
+  span.cm-atom {
+    color: #ae81ff;
+  }
+
+  span.cm-number {
+    color: $theme-number;
+  }
+
+  span.cm-comment.cm-attribute {
+    color: #97b757;
+  }
+
+  span.cm-comment.cm-def {
+    color: #bc9262;
+  }
+
+  span.cm-comment.cm-tag {
+    color: #bc6283;
+  }
+
+  span.cm-comment.cm-type {
+    color: #5998a6;
+  }
+
+  span.cm-property,
+  span.cm-attribute {
+    //color: #a6e22e;
+  }
+
+  span.cm-keyword {
+    color: $theme-keyword;
+    + .cm-variable {
+      color: $theme-variable;
+    }
+    ~ .cm-keyword {
+      color: $theme-keyword2;
+      + .cm-variable {
+        color: $theme-color;
+      }
+    }
+  }
+
+  span.cm-builtin {
+    color: $theme-builtin;
+  }
+
+  span.cm-string {
+    color: $theme-string;
+  }
+
+  span.cm-variable {
+    //color: $theme-variable;
+  }
+
+  span.cm-variable-2 {
+    color: #9effff;
+  }
+
+  span.cm-variable-3,
+  span.cm-type {
+    color: #66d9ef;
+  }
+
+  span.cm-def {
+    color: #fd971f;
+  }
+
+  span.cm-bracket {
+    color: $theme-color;
+  }
+
+  span.cm-tag {
+    color: #f92672;
+  }
+
+  span.cm-header {
+    color: #ae81ff;
+  }
+
+  span.cm-link {
+    color: #ae81ff;
+  }
+
+  span.cm-error {
+    background: #f92672;
+    color: #f8f8f0;
+  }
+
+  .CodeMirror-activeline-background {
+    background: #373831;
+  }
+
+  .CodeMirror-matchingbracket {
+    text-decoration: underline;
+    color: white !important;
+  }
+}

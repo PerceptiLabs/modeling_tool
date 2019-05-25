@@ -17,9 +17,9 @@
             .form_row
               .form_label Type:
               .form_input
-                base-radio(groupName="group" valueInput="None" v-model="settings.neurons")
+                base-radio(group-name="group" value-input="None" v-model="settings.neurons")
                   span Classification
-                base-radio(groupName="group" valueInput="Sigmoid" v-model="settings.neurons")
+                base-radio(group-name="group" value-input="Sigmoid" v-model="settings.neurons")
                   span Regression
           .settings-layer_section
             .form_row
@@ -31,15 +31,15 @@
               .form_row
                 .form_label Split:
                 .form_input
-                  base-radio(groupName="group1" valueInput="None" v-model="settings.neurons1")
+                  base-radio(group-name="group1" value-input="None" v-model="settings.neurons1")
                     span Gini impurity
-                  base-radio(groupName="group1" valueInput="Sigmoid" v-model="settings.neurons1")
+                  base-radio(group-name="group1" value-input="Sigmoid" v-model="settings.neurons1")
                     span Information gain
             .settings-layer_section
               .form_row
                 .form_label Max depth:
                 .form_input
-                  base-radio(groupName="group2" valueInput="None" v-model="settings.neurons2")
+                  base-radio(group-name="group2" value-input="None" v-model="settings.neurons2")
                     span None
                 input(type="number")
             .settings-layer_section
@@ -56,19 +56,18 @@
               .form_row
                 .form_label Max features to split node:
                 .form_input
-                  base-radio(groupName="group2" valueInput="None" v-model="settings.neurons3")
+                  base-radio(group-name="group2" value-input="None" v-model="settings.neurons3")
                     span Auto
-                  base-radio(groupName="group2" valueInput="None1" v-model="settings.neurons3")
+                  base-radio(group-name="group2" value-input="None1" v-model="settings.neurons3")
                     span Log2
                 input(type="number")
 
-          .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
-
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
+      .popup_body(:class="{'active': tabSelected == 1}")
+        settings-code(
+        :the-code="coreCode"
         )
-        settings-code
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 

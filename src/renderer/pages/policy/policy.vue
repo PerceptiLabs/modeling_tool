@@ -1,7 +1,7 @@
 <template lang="pug">
   main.page_login
     .login_logo
-      img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
+      img(src="./../../../../static/img/percepti-labs-logo.svg" alt="perceptilabs logo")
     .page_policy
       router-link(:to="{name: 'register'}").btn.btn--dark-blue-rev Back
       article.policy_main
@@ -75,6 +75,7 @@ export default {
     text-align: left;
     border: 1px solid $login-blue;
     background: #161719;
+    margin-top: 2rem;
   }
   .policy_main {
     overflow: auto;

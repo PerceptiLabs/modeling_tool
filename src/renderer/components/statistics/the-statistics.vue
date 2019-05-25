@@ -1,11 +1,11 @@
 <template lang="pug">
-  section.network_info-section
-    .info-section_head
+  section#tutorial_statistics.network_info-section
+    .info-section_head(v-if="!testIsOpen")
       h3 Statistics
     .info-section_main(v-if="elData !== null")
       component(
         :is="elData.componentName"
-        :elementData="elData.viewBox"
+        :element-data="elData.viewBox"
       )
 </template>
 
@@ -19,14 +19,13 @@
   import TrainDynamic     from '@/components/network-elements/elements/train-dynamic/viewBox-train-dynamic.vue'
   import TrainGenetic     from '@/components/network-elements/elements/train-genetic/viewBox-train-genetic.vue'
   import TrainNormal      from '@/components/network-elements/elements/train-normal/viewBox-train-normal.vue'
-  import TrainNormalData  from '@/components/network-elements/elements/train-normal-data/viewBox-train-normal-data.vue'
   import TrainReinforce   from '@/components/network-elements/elements/train-reinforce/viewBox-train-reinforce.vue'
-
+  import { mapGetters, mapMutations, mapActions } from 'vuex';
 
 export default {
   name: "TheStatistics",
   components: {
-    TrainNormal, TrainNormalData, TrainGenetic, TrainDynamic, TrainReinforce,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
   },
   props: {
@@ -37,20 +36,29 @@ export default {
       }
     }
   },
-  data() {
-    return {
-
-    }
+  mounted() {
+    this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
   },
   methods: {
-
+    ...mapActions({
+      pointActivate:    'mod_tutorials/pointActivate'
+    })
   },
   computed: {
-
+    ...mapGetters({
+      activePoint:   'mod_tutorials/getActivePoint',
+      testIsOpen:   'mod_workspace/GET_testIsOpen'
+    }),
   }
 }
 </script>
 
 <style lang="scss" scoped>
-
+  @import "../../scss/base";
+  .open-test .the-statistics .info-section_main {
+    border-left: 2px solid $bg-window;
+  }
+  .info-section_head {
+    border-top: 1px solid $color-5;
+  }
 </style>

@@ -2,8 +2,8 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-        chartLabel="Accuracy during one epoch"
-        :chartData="chartData.Output"
+        chart-label="Accuracy during one epoch"
+        :chart-data="chartData.Output"
       )
 </template>
 
@@ -15,16 +15,9 @@
     components: {ChartBase},
     mixins: [viewBoxMixin],
     methods: {
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'MathSoftmax', '')
-      },
       getData() {
-        this.getStatistics()
+        this.chartRequest(this.boxElementID, 'MathSoftmax', '')
       }
     },
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>

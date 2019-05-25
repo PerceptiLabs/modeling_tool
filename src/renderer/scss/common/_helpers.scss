@@ -71,9 +71,9 @@
   }
 }
 
-$prevBreakPoint: 'xxlarge';
+$prevBreakPoint: 'large';
 @each $name, $size in $breakpoint {
-  @if $name != xxlarge {
+  @if $name != large {
     .hide-for-#{$name}-only {
       @include media('>=#{$name}', '<#{$prevBreakPoint}') {
         display: none !important;
@@ -162,7 +162,18 @@ $prevBreakPoint: 'xxlarge';
   text-overflow: ellipsis;
   overflow: hidden;
 }
-
+.bg-primary {
+  background-color: $col-primary;
+}
+.bg-success {
+  background-color: $col-success;
+}
+.bg-warning {
+  background-color: $col-warning;
+}
+.bg-error {
+  background-color: $col-error;
+}
 /* ---------------------------------------------------------
    3. Background decoration
    ---------------------------------------------------------*/
@@ -188,20 +199,18 @@ $soc-list: (
 /* ---------------------------------------------------------
    4. Width
    ---------------------------------------------------------*/
-//$Width: 100, 50, 25;
-//
-//@each $w-grid in $Width {
-//  .w-#{$w-grid} {
-//    width: $w-grid + %;
-//  }
-//}
-//
-//.w-33 {
-//  width: calc(100% / 3)
-//}
-//.w-66 {
-//  width: calc((100% * 2)/3 );
-//}
+.w-25 {
+  width: calc(100% / 4)
+}
+.w-33 {
+  width: calc(100% / 3)
+}
+.w-50 {
+  width: calc(100% / 2)
+}
+.w-66 {
+  width: calc((100% * 2)/3 );
+}
 
 
 // clearfix

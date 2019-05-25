@@ -1,11 +1,7 @@
 $breakpoint: (
-  'xxlarge': 1440px,
-  'xlarge': 1200px,
-  'large': 1024px,
-  'premedium': 768px,
-  'medium': 640px,
-  'presmall': 480px,
-  'small': 320px
+  'large': 1600px,
+  'medium': 1024px,
+  'small': 800px
 );
 
 // keywords
@@ -27,6 +23,7 @@ $white: #fff;
 $black: #000;
 
 $col-primary: #22DDE5;
+$col-primary2: #6E92FA;
 $col-txt: #E1E1E1;
 $col-txt2: #383F50;
 $disable-txt: #8B8B9C;
@@ -52,6 +49,7 @@ $color-6: #6185EE;
 $color-7:  #727EA6;
 $color-8:  #5D698D;
 $color-9:  #515972;
+$color-10: #6CF4D1;
 
 $bg-grad-cyan: linear-gradient($color-1, $color-2);
 $bg-grad-blue: linear-gradient($color-5, $color-6);
@@ -68,7 +66,7 @@ $bg-grad-disable: linear-gradient($color-9, $color-8);
 $box-shad: 0 2px 7px 0px rgba(#000, .3);
 $icon-shad: 0 4px 4px rgba(#000, .25);
 
-$font-path: './assets/fonts';
+$font-path: './../../static/fonts';
 
 /*----- Form var -----*/
 $col-border: #d9d9d9;
@@ -85,10 +83,7 @@ $input-holder-margin: .75rem;
 $vert-indent: 20px;
 $form-indent: 1rem;
 $bdrs: .5rem;
-//$w-layersbar: 5.7143rem; //80px
-//$size-layers-btn: 5rem; //70px
-$w-layersbar: 8.2rem; //80px
-//$size-layers-btn: 72px; //72px
+$w-layersbar: 7.1rem; //80px
 
 $h-sidebar-layers-item: 3.357rem; //33px
 $h-sidebar-layers-indent: 1rem; //14px
@@ -109,7 +104,8 @@ $line-height-base: 1.2;
 $base-font-family: $base-font-sans-serif ;
 $vertical-rhythm: ($line-height-base * 1em);
 
-$base-min-width: 320px;
+$base-min-width: 800px;
+$base-min-height: 600px;
 
 $animation-speed: .3s; // for mixin
 

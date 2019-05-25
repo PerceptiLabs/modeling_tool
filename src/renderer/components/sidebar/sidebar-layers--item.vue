@@ -2,44 +2,42 @@
   .layer-item-wrap
     .layer-item.js-clickout(
       :class="{'selected': itemData.layerMeta.isSelected}"
-      @click="setSelect(itemIndex, $event)"
+      @click="setSelect($event)"
       )
-      .layer-item_left-sidebar()
-        button.btn.btn--icon(type="button")
+      .layer-item_left-sidebar
+        button.btn.btn--icon.layer-item--btn-action(type="button")
           i.icon.icon-empty
-      .layer-item_folder-section(:class="{'open': isOpen}")
-        i(v-if="itemData.child").icon.icon-folder
-        //button.btn.btn--icon(type="button"
-          v-if="itemData.child"
+
+      .layer-item_main
+        button.btn.btn--icon.layer-item-left_btn-folder.layer-item--btn-action(type="button"
+          v-if="itemData.componentName === 'LayerContainer'"
+          :class="{'open': openContainer}"
           @click="toggleOpen()"
-          )
-          i.icon.icon-shevron
-          i.icon.icon-folder
-      .layer-item_title
-        text-editable(
-          :textTitle="itemData.layerName"
-          @changeTitle="editElName"
+        )
+          i.icon.icon-shevron-right
+        text-editable.layer-item_title(
+          :text-title="itemData.layerName"
+          @change-title="editElName"
           )
       .layer-item_right-sidebar
         button.btn.btn--icon.visible-icon.visible-icon--lock( type="button"
           :class="{'invisible-icon': !itemData.layerMeta.isLock}"
-          @click="toggleLock(itemIndex)"
+          @click="toggleLock()"
         )
           i.icon.icon-lock
-        //button.btn.btn--icon.visible-icon.visible-icon--visiblity( type="button"
-          //:class="{'invisible-icon': itemData.meta.isInvisible}"
-          @click="toggleVisible(itemIndex)"
+        //-button.btn.btn--icon.visible-icon.visible-icon--visiblity( type="button"
+          /:class="{'invisible-icon': itemData.layerMeta.isInvisible}"
+          /@click="toggleVisible(itemIndex)"
           )
           i.icon.icon-eye
     .layer-item_child-list(
-      :class="{'open': isOpen}"
-      v-if="itemData.child"
+      :class="{'open': openContainer}"
+      v-if="itemData.componentName === 'LayerContainer'"
       )
       sidebar-layers-item(
-        v-for="(item, i) in itemData.child"
+        v-for="(item, i) in itemData.containerLayersList"
         :key="item.i"
-        :itemData="item"
-        :itemIndex="currentNode(i)"
+        :item-data="item"
         )
 
 
@@ -64,34 +62,32 @@ export default {
         return null
       }
     },
-    itemIndex: {
-      type: Array
-    },
   },
   mounted() {
 
   },
   data() {
     return {
-      isOpen: false
+      //isOpen: false
     }
   },
   computed: {
     statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.openStatistics
+      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
     },
+    currentId() {
+      return this.itemData.layerId
+    },
+    openContainer() {
+      return this.itemData.layerNone
+    }
   },
   methods: {
-    currentNode(item) {
-      let childNode = this.itemIndex.slice();
-      childNode.push(item);
-      return childNode
-    },
     toggleOpen() {
-      this.isOpen = !this.isOpen
+      this.$store.dispatch('mod_workspace/TOGGLE_container', {val: this.openContainer, container: this.itemData})
     },
-    setSelect(path, ev) {
-      console.log(ev);
+    setSelect(ev) {
+      //console.log(ev);
       if (this.statisticsIsOpen) {
         console.log('TODO add functions');
         //this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
@@ -99,7 +95,7 @@ export default {
       else {
         this.ClickElementTracking = ev.target.closest('.js-clickout');
         document.addEventListener('click', this.clickOutside);
-        this.$store.dispatch('mod_workspace/SET_elementSelect', {path, setValue: true});
+        this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: true});
       }
     },
     clickOutsideAction() {
@@ -107,18 +103,18 @@ export default {
         this.deselect()
       }
     },
-    toggleLock(path) {
-      this.$store.commit('mod_workspace/SET_elementLock', path);
+    toggleLock() {
+      this.$store.commit('mod_workspace/SET_elementLock', this.itemData.layerId);
       this.deselect();
     },
-    toggleVisible(path) {
-      this.$store.commit('mod_workspace/SET_elementVisible', path);
+    toggleVisible() {
+      this.$store.commit('mod_workspace/SET_elementVisible', this.itemData.layerId);
     },
     editElName(newName) {
-      this.$store.commit('mod_workspace/SET_elementName', { path: this.itemIndex, setValue: newName });
+      this.$store.commit('mod_workspace/SET_elementName', { id: this.currentId, setValue: newName });
     },
     deselect() {
-      this.$store.dispatch('mod_workspace/SET_elementSelect', { path: this.itemIndex, setValue: false });
+      this.$store.dispatch('mod_workspace/SET_elementSelect', { id: this.currentId, setValue: false });
     },
   }
 }
@@ -147,44 +143,37 @@ export default {
   }
 
   .layer-item_left-sidebar {
-    .btn {
-      font-size: 1.2em;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: .5em;
-    }
-  }
-  .layer-item_folder-section {
-    .btn {
-      display: flex;
-      align-items: center;
-      padding: 0;
-    }
-    &.open {
-      .icon-shevron {
-        transform: rotate(0);
-      }
-    }
-    .icon-shevron {
-      font-size: 1.2em;
-      transform: rotate(-90deg);
-    }
-    .icon-folder {
-      font-size: 1.4286em;
-      margin-left: .6em;
-    }
-  }
-  .layer-item_title {
-    padding-left: .5em;
-    //flex: 1;
-    //height: 100%;
-    //line-height: $h-sidebar-layers-item;
-  }
-  .layer-item_right-sidebar {
+    flex: 0 0 auto;
     display: flex;
     align-items: center;
-    margin-left: auto;
+  }
+  .layer-item--btn-action {
+    font-size: 1.2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: .5em;
+  }
+  .layer-item-left_btn-folder {
+    .icon-shevron-right {
+      transform: rotate(0);
+    }
+    &.open .icon-shevron-right{
+      transform: rotate(90deg);
+    }
+  }
+  .layer-item_main {
+    flex: 1 1 100%;
+    display: flex;
+    align-items: center;
+  }
+  .layer-item_title {
+    padding-left: .5rem;
+  }
+  .layer-item_right-sidebar {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
     .visible-icon--lock {
       font-size: 1.2857em;
     }
@@ -200,22 +189,21 @@ export default {
   }
   .layer-item_child-list {
     display: none;
-    .layer-item_folder-section {
-      padding-left: 2em;
-    }
     &.open {
       display: block;
     }
-  }
-
-  .layer-item_child-list .layer-item_child-list {
-    .layer-item_folder-section {
-      padding-left: 4em;
+    .layer-item_main {
+      padding-left: 3em;
     }
-  }
-  .layer-item_child-list .layer-item_child-list .layer-item_child-list {
-    .layer-item_folder-section {
-      padding-left: 6em;
+    .layer-item_child-list {
+      .layer-item_main {
+        padding-left: 6em;
+      }
+      .layer-item_child-list {
+        .layer-item_main {
+          padding-left: 9em;
+        }
+      }
     }
   }
 </style>

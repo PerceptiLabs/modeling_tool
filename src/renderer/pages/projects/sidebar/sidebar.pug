@@ -1,11 +1,18 @@
+.copyryght
+  img(src="../../../../static/img/percepti-labs-logo.svg" alt="percepti labs logo").copyryght_logo
+  .copyryght_text
+    p Version: {{appVersion}}
+    p Copyright ©2019
+
+
 ul.switcher.d-flex
   li
     label
       input(type="radio" value="computer" v-model="source")
       span Computer
   li
-    label
-      input(type="radio" value="cloud" v-model="source")
+    label()
+      input(type="radio" value="cloud" v-model="source" disabled="disabled")
       span Cloud
     
 h3 Import as:

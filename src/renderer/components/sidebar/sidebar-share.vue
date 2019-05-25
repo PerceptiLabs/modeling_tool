@@ -12,11 +12,6 @@
 <script>
 export default {
   name: 'SidebarShare',
-  data() {
-    return {
-
-    }
-  }
 }
 </script>
 

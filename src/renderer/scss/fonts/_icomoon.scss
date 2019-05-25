@@ -5,6 +5,7 @@ $folder: 'icomoon';
   src:  url('#{$font-path}/#{$folder}/icomoon.woff?zddcqb') format('woff');
   font-weight: normal;
   font-style: normal;
+  font-display: block;
 }
 
 .icon {
@@ -185,7 +186,7 @@ $folder: 'icomoon';
   content: "\e910";
 }
 .icon-shevron:before {
-  content: "\e931";
+  content: "\e957";
 }
 .icon-folder:before {
   content: "\e913";
@@ -274,13 +275,13 @@ $folder: 'icomoon';
 .icon-notification:before {
   content: "\e952";
 }
-.icon-appMinimaze:before {
+.icon-app-minimize:before {
   content: "\e954";
 }
-.icon-appResize:before {
+.icon-app-resize:before {
   content: "\e955";
 }
-.icon-appClose:before {
+.icon-app-close:before {
   content: "\e956";
 }
 .icon-stop2:before {
@@ -288,4 +289,34 @@ $folder: 'icomoon';
 }
 .icon-shevron-right:before {
   content: "\e931";
+}
+.icon-app-minimize-mac:before {
+  content: "\e958";
+}
+.icon-app-fullscreen-mac:before {
+  content: "\e959";
+}
+.icon-app-close-mac:before {
+  content: "\e95a";
+}
+.icon-open-folder:before {
+  content: "\e95b";
+}
+.icon-open-file:before {
+  content: "\e95c";
+}
+.icon-backward:before {
+  content: "\e95d";
+}
+.icon-git:before {
+  content: "\e95e";
+}
+.icon-params:before {
+  content: "\e95f";
+}
+.icon-color-picker:before {
+  content: "\e960";
+}
+.icon-layer-settings:before {
+  content: "\e961";
 }

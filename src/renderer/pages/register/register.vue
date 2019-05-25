@@ -1,7 +1,7 @@
 <template lang="pug">
   main.page_login
     .login_logo
-      img(src="~@/assets/percepti-labs-logo.svg" alt="percepti labs logo")
+      img(src="./../../../../static/img/percepti-labs-logo.svg" alt="percepti labs logo")
     view-loading
     .login_main
       h1 Get Started
@@ -21,27 +21,27 @@
             v-validate="'alpha_spaces'"
             )
           p.text-error(v-show="errors.has('First Name')") {{ errors.first('First Name') }}
-        .form_holder
+        //-.form_holder
           input(type="tel" placeholder="Phone"
             v-model="user.phone"
             name="Phone"
             v-mask="'+## (###) ###-##-##'"
             )
-        //.form_holder
+        .form_holder
           input(type="email" placeholder="Email"
             v-model="user.email"
             name="Email"
             v-validate="'required|email'"
             )
           p.text-error(v-show="errors.has('Email')") {{ errors.first('Email') }}
-        //.form_holder
+        .form_holder
           input(type="password" placeholder="Password"
             v-model="user.password"
             name="Password"
             v-validate="'required|min:6'"
             ref="userPass")
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
-        //.form_holder
+        .form_holder
           input(type="password" placeholder="Confirm password"
             name="Confirm password"
             v-validate="'required|confirmed:userPass'"
@@ -51,13 +51,13 @@
         .form_holder
           base-checkbox(
             v-validate="'required'"
-            data-vv-name="checkmeplease"
-            label="checkmeplease"
-            v-model="checkmeplease"
+            data-vv-name="terms"
+            label="terms"
+            v-model="terms"
           )
             span Agree
             router-link(:to="{name: 'policy'}").btn.btn--link  terms and policy
-          p.text-error(v-show="errors.has('checkmeplease')") {{ errors.first('checkmeplease') }}
+          p.text-error(v-show="errors.has('terms')") {{ errors.first('terms') }}
 
         .form_holder
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading") Register
@@ -67,7 +67,7 @@
 
 <script>
   import {requestCloudApi}  from '@/core/apiCloud.js'
-  import ViewLoading        from '@/components/loading/view-loading.vue'
+  import ViewLoading        from '@/components/different/view-loading.vue'
 export default {
   name: 'PageRegister',
   components: {
@@ -79,13 +79,11 @@ export default {
         firstName: '',
         lastName: '',
         email: '',
-        phone: '',
+        phone: '+00 (000) 000-00-00',
         password: '',
         isLoading: false
       },
-      terms: false,
-      checkmeplease: null,
-
+      terms: true
     }
   },
   computed: {
@@ -116,12 +114,12 @@ export default {
         if (result === 'success') {
           //console.log(response);
           this.$store.commit('mod_login/SET_showLoader', false);
-          alert('authorization success');
+          this.$store.dispatch('globalView/GP_infoPopup', 'Authorization success');
           this.$router.replace('/login');
         }
         else {
-          console.log(error);
-          alert(error.Message);
+          this.$store.commit('mod_login/SET_showLoader', false);
+          this.$store.dispatch('globalView/GP_infoPopup', "Bed request, please try again");
         }
       })
     }

@@ -17,59 +17,55 @@
             .form_row
               .form_label Method:
               .form_input
-                base-radio(groupName="group" valueInput="None" v-model="settings.neurons")
+                base-radio(group-name="group" value-input="Q_learning" v-model="settings.ReinforceType")
                   span Q-learning
-                base-radio(groupName="group" valueInput="Sigmoid" v-model="settings.neurons")
+                base-radio(group-name="group" value-input="Policy_learning" v-model="settings.ReinforceType")
                   span Policy-learning
-                base-radio(groupName="group" valueInput="ReLu" v-model="settings.neurons")
+                base-radio(group-name="group" value-input="A3C" v-model="settings.ReinforceType")
                   span A3C
-                base-radio(groupName="group" valueInput="tanh" v-model="settings.neurons")
+                base-radio(group-name="group" value-input="A2C" v-model="settings.ReinforceType")
                   span A2C
-                base-radio(groupName="group" valueInput="tanh1" v-model="settings.neurons")
+                base-radio(group-name="group" value-input="PPO" v-model="settings.ReinforceType")
                   span PPO
           .settings-layer_section
             .form_row
               .form_label Optimizer:
               .form_input
-                base-radio(groupName="group1" valueInput="None" v-model="settings.opt")
+                base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
                   span SGD
-                base-radio(groupName="group1" valueInput="Sigmoid" v-model="settings.opt")
+                base-radio(group-name="group1" value-input="Adam" v-model="settings.Optimizer")
                   span Adam
-                base-radio(groupName="group1" valueInput="ReLu" v-model="settings.opt")
+                base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
                   span Momentum
-                base-radio(groupName="group1" valueInput="tanh" v-model="settings.opt")
+                base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
                   span RMSprop
           .settings-layer_section
             .form_row
               .form_label Learning rate:
               .form_input
-                input(type="text")
-          .settings-layer_section
+                input(type="text" v-model="settings.Learning_rate")
+          //-.settings-layer_section
             .form_row
               .form_label Regularization:
               .form_input
-                input(type="text")
-          .settings-layer_section
+                input(type="text" disabled="disabled")
+          //-.settings-layer_section
             .form_row
               .form_label Gradient clipping:
               .form_input
                 base-checkbox(valueInput="Pooling" v-model="settings.pooling")
-          .settings-layer_section
+          //-.settings-layer_section
             .form_row
               .form_label Clip at:
               .form_input
-                input(type="number")
+                input(type="number" disabled="disabled")
 
-
-          .settings-layer_foot
-            button.btn.btn--primary(type="button") Apply
-
-      .popup_body(
-          :class="{'active': tabSelected == 1}"
-        )
+      .popup_body(:class="{'active': tabSelected == 1}")
         settings-code(
-        :trainingMode="true"
+        :the-code="coreCode"
         )
+    .settings-layer_foot
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
@@ -78,24 +74,28 @@ import mixinSet       from '@/core/mixins/net-element-settings.js';
 import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
 
 export default {
-  name: 'SetLearnClassKMeans',
+  name: 'SetTrainReinforce',
   mixins: [mixinSet],
-  components: {
-    SettingsCode,
-  },
+  components: { SettingsCode },
   data() {
     return {
       settings: {
-        pooling: false,
-        neurons: 'None',
-        opt: 'None',
-        items: ['Data_1', 'Data_2', 'Data_3', 'Data_4', 'Data_5',]
+        ReinforceType: 'Q_learning',
+        Update_freq: '4',
+        Gamma: '0.95',
+        Loss: 'Quadratic',
+        Eps: '1',
+        Eps_min: '0.1',
+        Eps_decay: '0.2',
+        Learning_rate: '0.01',
+        Optimizer: 'SGD',
       }
     }
   },
-
-  methods: {
-
+  computed: {
+    coreCode() {
+      return `N_class=${this.settings.ReinforceType}[-1][-1];`
+    }
   }
 }
 </script>

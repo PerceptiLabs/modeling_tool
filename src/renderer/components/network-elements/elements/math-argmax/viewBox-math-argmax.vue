@@ -2,8 +2,8 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-      chartLabel="Accuracy during one epoch"
-      :chartData="chartData.MathArgmax"
+        chart-label="Accuracy during one epoch"
+        :chart-data="chartData.MathArgmax"
       )
 </template>
 
@@ -15,16 +15,9 @@
     components: {ChartBase},
     mixins: [viewBoxMixin],
     methods: {
-      getStatistics() {
-        this.chartRequest(this.boxElementID, 'MathArgmax', '')
-      },
       getData() {
-        this.getStatistics()
+        this.chartRequest(this.boxElementID, 'MathArgmax', '')
       }
     },
   }
 </script>
-
-<style lang="scss" scoped>
-
-</style>
