@@ -188,7 +188,7 @@ export default {
           }
           fs.writeFile(fileName, jsonNet, (err) => {
             if(err){
-              ctx.$store.dispatch('globalView/GP_infoPopup', "An error ocurred creating the file "+ err.message)
+              ctx.$store.dispatch('globalView/GP_infoPopup', "An error occurred creating the file "+ err.message)
             }
 
             ctx.$store.dispatch('globalView/GP_infoPopup', "The file has been successfully saved");
@@ -225,17 +225,24 @@ export default {
         let projectsList = [];
         if(localProjectsList) {
           projectsList = JSON.parse(localProjectsList);
-          let indexIdProj = projectsList.findIndex((proj)=> proj.id === project.id);
-          if(indexIdProj >= 0) {
-            project.path = [];
-            project.path.push(path);
-            projectsList[indexIdProj] = project;
-          }
+          let indexPathProj = projectsList.findIndex((proj)=> {
+            console.log(proj);
+            console.log(project);
+            proj.path === project.id
+          });
+
+
+          //let indexIdProj = projectsList.findIndex((proj)=> proj.id === project.id);
+          // if(indexIdProj >= 0) {
+          //   project.path = [];
+          //   project.path.push(path);
+          //   projectsList[indexIdProj] = project;
+          // }
         }
-        project.path = [];
-        project.path.push(path);
-        projectsList.push(project);
-        localStorage.setItem('projectsList', JSON.stringify(projectsList))
+        // project.path = [];
+        // project.path.push(path);
+        // projectsList.push(project);
+        // localStorage.setItem('projectsList', JSON.stringify(projectsList))
       }
       function cloneNet(net, imgPath) {
         //clone network
@@ -266,7 +273,9 @@ export default {
             name: outNet.networkName,
             id: outNet.networkID,
             trainedPath: '',
-            isCloud: false
+            isCloud: false,
+            isChecked: false,
+            notExist: false
           },
           network: outNet
         };

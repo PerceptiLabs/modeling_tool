@@ -9,6 +9,7 @@ const state = {
   platform: process.platform,
   appVersion: '',
   appPath: '',
+  appIsOpen: false,
   updateStatus: 'before update', // ('before update', 'downloading', not update, 'done')
   timeIntervalDoRequest: 2500,
   globalPopup: {
@@ -43,6 +44,9 @@ const mutations = {
   },
   SET_appVersion (state, value) {
     state.appVersion = value
+  },
+  SET_appIsOpen (state, value) {
+    state.appIsOpen = value
   },
   SET_appPath (state, value) {
     state.appPath = value

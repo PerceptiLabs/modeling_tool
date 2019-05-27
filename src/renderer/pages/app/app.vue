@@ -37,13 +37,14 @@
     },
     mounted() {
       this.showPage = true;
+      this.$store.commit('globalView/SET_appIsOpen', true);
       window.addEventListener("resize",  this.resizeEv, false);
       this.$nextTick(()=> this.addListeners())
     },
     beforeDestroy() {
-      console.log('beforeDestroy');
       window.removeEventListener("resize", this.resizeEv, false);
-      this.removeListeners()
+      this.removeListeners();
+      this.$store.commit('globalView/SET_appIsOpen', false);
     },
     data() {
       return {
@@ -85,12 +86,10 @@
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate: 'mod_tutorials/pointActivate'
+        tutorialPointActivate:  'mod_tutorials/pointActivate',
+        eventResize:            'mod_events/EVENT_eventResize'
       }),
       throttleEv,
-      eventResize() {
-        this.$store.dispatch('mod_events/EVENT_eventResize')
-      },
       addListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
       },

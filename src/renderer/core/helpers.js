@@ -34,17 +34,18 @@ const loadNetwork = function (pathArr) {
       this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
     }
   );
-  function readFilePromiseNative(path) {
-    return new Promise((success, reject) => {
-      fs.readFile(path, (err, data) => {
-        if (err) {
-          console.log(err);
-          return reject();
-        }
-        return success(data);
-      })
-    });
-  };
+};
+
+const readFilePromiseNative = function (path) {
+  return new Promise((success, reject) => {
+    fs.readFile(path, (err, data) => {
+      if (err) {
+        console.log(err);
+        return reject();
+      }
+      return success(data);
+    })
+  });
 };
 
 const generateID = function() {
@@ -85,4 +86,4 @@ const throttleEv = function (func, ms) {
   return wrapper;
 };
 
-export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition, throttleEv}
+export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition, throttleEv, readFilePromiseNative}
