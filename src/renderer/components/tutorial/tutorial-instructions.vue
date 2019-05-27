@@ -109,7 +109,6 @@ export default {
       pointActivate:              'mod_tutorials/pointActivate',
       pointsDeactivate:           'mod_tutorials/pointsDeactivate',
       resetTutorial:              'mod_tutorials/resetTutorial',
-      createBlockElement:         'mod_tutorials/createBlockElement',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
     }),
@@ -137,7 +136,6 @@ export default {
       this.setTutorialMode(!this.isTutorialMode);
       if(!this.isTutorialMode) this.resetTutorial();
       this.setInteractiveInfo(false);
-      this.createBlockElement(document.querySelector('.layersbar-list'));
     }
   }
 }
