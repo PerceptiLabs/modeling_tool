@@ -27,7 +27,7 @@ ul.project-list
         .project-content_info
           i.icon(:class="project.isCloud ? 'icon-cloud' : 'icon-computer'")
           template(v-if="project.notExist")
-            span.content-info_status.bg-error Not Exist
+            span.content-info_status.bg-error Doesn’t exist
           template(v-else)
             span.content-info_status.primary(v-if="project.trainedPath") Trained
             span.content-info_status.dark-blue(v-else) Not trained

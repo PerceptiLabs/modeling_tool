@@ -86,12 +86,10 @@
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate: 'mod_tutorials/pointActivate'
+        tutorialPointActivate:  'mod_tutorials/pointActivate',
+        eventResize:            'mod_events/EVENT_eventResize'
       }),
       throttleEv,
-      eventResize() {
-        this.$store.dispatch('mod_events/EVENT_eventResize')
-      },
       addListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
       },

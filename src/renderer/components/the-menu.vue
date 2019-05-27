@@ -77,7 +77,7 @@ export default {
             {label: 'New',        accelerator: 'Ctrl+N',        enabled: this.isLogin,  active: ()=> {this.addNewNetwork()}},
             {label: 'Open',       accelerator: 'Ctrl+O',        enabled: this.isLogin,  active: ()=> {this.openNetwork()}},
             {label: 'Save',       accelerator: 'Ctrl+S',        enabled: this.openApp,  active: ()=> {this.saveNetwork()}},
-            {label: 'Save as...', accelerator: 'Ctrl+Shift+S',  enabled: this.openApp,  active: ()=> {this.saveNetwork()}},
+            {label: 'Save as...', accelerator: 'Ctrl+Shift+S',  enabled: this.openApp,  active: ()=> {this.saveNetworkAs()}},
             {type: 'separator'},
             {label: 'Log out',    accelerator: 'Ctrl+F4',       enabled: this.isLogin,  active: ()=> {this.logOut()}},
             {label: 'Exit',       accelerator: 'ALT+F4',        enabled: true,          active: ()=> {this.appClose()}}
@@ -187,16 +187,17 @@ export default {
   },
   methods: {
     ...mapMutations({
-      setTutorialSB: 'mod_tutorials/SET_showTutorialStoryBoard'
+      setTutorialSB: 'mod_tutorials/SET_showTutorialStoryBoard',
+      openNetwork:   'mod_events/set_openNetwork',
+      saveNetwork:   'mod_events/set_saveNetwork',
+      saveNetworkAs: 'mod_events/set_saveNetworkAs',
     }),
     ...mapActions({
-      infoPopup: 'globalView/GP_infoPopup'
+      infoPopup:     'globalView/GP_infoPopup',
+      appClose:      'mod_events/EVENT_closeApp',
     }),
     openLink(url) {
       shell.openExternal(url);
-    },
-    appClose() {
-      this.$store.dispatch('mod_events/EVENT_closeApp');
     },
     checkUpdate() {
       ipcRenderer.send('checkUpdate', 'userCheck');
@@ -204,14 +205,8 @@ export default {
     addNewNetwork() {
       this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
     },
-    openNetwork() {
-      this.$store.commit('mod_events/set_openNetwork')
-    },
     openProject() {
       this.$router.replace({name: 'projects'});
-    },
-    saveNetwork() {
-      this.$store.commit('mod_events/set_saveNetwork');
     },
     logOut() {
       this.$store.dispatch('mod_events/EVENT_logOut', this)
