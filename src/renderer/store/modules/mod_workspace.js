@@ -109,6 +109,7 @@ const mutations = {
     getters.GET_currentNetwork.networkName = value
   },
   add_network (state, {network, ctx}) {
+    let workspace = state.workspaceContent;
     let newNetwork = {};
     const defaultNetwork = {
       networkName: 'New_Network',
@@ -136,13 +137,20 @@ const mutations = {
     network === undefined
       ? newNetwork = defaultNetwork
       : newNetwork = network;
-    newNetwork.networkMeta = defaultMeta;
-    newNetwork.networkID = 'net' + generateID();
 
-    state.workspaceContent.push(JSON.parse(JSON.stringify(newNetwork)));
-    state.currentNetwork = state.workspaceContent.length - 1;
+    newNetwork.networkMeta = defaultMeta;
+    if(findNetId(newNetwork, workspace) || !newNetwork.networkID) {
+      newNetwork.networkID = generateID();
+    }
+
+    workspace.push(JSON.parse(JSON.stringify(newNetwork)));
+    state.currentNetwork = workspace.length - 1;
     if(ctx.$router.history.current.name !== 'app') {
       ctx.$router.replace({name: 'app'});
+    }
+    function findNetId(newNet, netList) {
+      let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
+      return (indexId < 0) ? false : true
     }
   },
   DELETE_network(state, index) {
@@ -167,6 +175,12 @@ const mutations = {
   },
   set_openStatistics(state, {dispatch, getters, value}) {
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
+    let isTraining = getters.GET_networkIsTraining;
+    if(isTraining) {
+      value
+        ? dispatch('mod_api/API_setHeadless', false, {root: true})
+        : dispatch('mod_api/API_setHeadless', true, {root: true})
+    }
     if(value && getters.GET_testIsOpen !== null) {
       getters.GET_currentNetwork.networkMeta.openTest = false;
     }

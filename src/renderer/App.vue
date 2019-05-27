@@ -228,7 +228,7 @@
             if(this.openApp) this.$store.commit('mod_events/set_saveNetwork');
             break;
           case 'netSaveAs':
-
+            if(this.openApp) this.$store.commit('mod_events/set_saveNetworkAs');
             break;
           case 'logOut':
             if(this.isLogin) this.$store.dispatch('mod_events/EVENT_logOut', this);

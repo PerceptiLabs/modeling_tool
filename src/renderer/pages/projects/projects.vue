@@ -68,6 +68,7 @@
     },
     watch: {
       hotKeyPressDelete() {
+        console.log('hotKeyPressDelete');
         let indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
         if(indexCheckedProj >= 0) {
           let pathDelete = this.projects[indexCheckedProj].path[0];
@@ -150,8 +151,11 @@
 
   .page-projects_recent-files {
     grid-area: recent-files;
-    padding: $section-indent;
-    overflow: auto;
+    padding: $section-indent $section-indent $section-indent/2 $section-indent;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
   }
 
   .page-projects_title {
@@ -174,5 +178,9 @@
       margin-left: 1rem;
     }
   }
-
+  .page-projects_project-list {
+    flex: 1 1 100%;
+    overflow: auto;
+    margin-right: -1.4rem;
+  }
 </style>

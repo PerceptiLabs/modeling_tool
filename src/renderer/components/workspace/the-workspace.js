@@ -4,6 +4,8 @@ import {remote}     from 'electron'
 import fs           from 'fs';
 import {mapActions, mapGetters} from 'vuex';
 
+import { generateID }  from "@/core/helpers.js";
+
 import TextEditable     from '@/components/base/text-editable.vue'
 import NetworkField     from '@/components/network-field/network-field.vue'
 import GeneralSettings  from "@/components/global-popups/workspace-general-settings.vue";
@@ -97,6 +99,11 @@ export default {
         this.saveNetwork();
       }
     },
+    '$store.state.mod_events.saveNetworkAs': {
+      handler() {
+        this.saveNetworkAs();
+      }
+    },
     currentSelectedEl(newStatus) {
       if(newStatus.length > 0 && this.isTutorialMode && this.tutorialActiveStep === 'training') {
         this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: newStatus[0].layerMeta.tutorialId});
@@ -161,7 +168,16 @@ export default {
       this.setTabNetwork(i);
       this.$store.dispatch('mod_workspace/SET_openTest', true);
     },
-    saveNetwork() {
+    saveNetwork(){
+      let projectsList = JSON.parse(localStorage.getItem('projectsList'));
+      if(projectsList) {
+        let idIndex = projectsList.findIndex((proj) => proj.id === this.currentNetwork.networkID);
+        let idExist = idIndex >= 0 ? true : false;
+        if(idExist) console.log('save');
+        else this.saveNetworkAs();
+      }
+    },
+    saveNetworkAs() {
       const dialog = remote.dialog;
       const network = this.currentNetwork;
       const ctx = this;
@@ -221,28 +237,34 @@ export default {
         })
       }
       function savePathToLocal(project, path) {
-        let localProjectsList = localStorage.getItem('projectsList');
-        let projectsList = [];
-        if(localProjectsList) {
-          projectsList = JSON.parse(localProjectsList);
-          let indexPathProj = projectsList.findIndex((proj)=> {
-            console.log(proj);
-            console.log(project);
-            proj.path === project.id
-          });
+        let projectsList = JSON.parse(localStorage.getItem('projectsList'));
+        project.path = [];
+        project.path.push(path);
+        if(projectsList) {
+          let idIndex = projectsList.findIndex((proj)=> proj.id === project.id);
+          let pathIndex = projectsList.findIndex((proj)=> proj.path[0] === path);
+          let idExist = idIndex >= 0 ? true : false;
+          let pathExist = pathIndex >= 0 ? true : false;
+          //to him self
+          if(idExist && pathExist && idIndex === pathIndex) {
+            projectsList[idIndex] = project
+          }
+          // затираем существующий
+          if(pathExist && idIndex !== pathIndex) {
+            project.id = generateID();
+            projectsList[pathIndex] = project
+          }
+          //to add new
+          if(!pathExist) {
+            project.id = generateID();
+            projectsList.push(project);
+          }
 
-
-          //let indexIdProj = projectsList.findIndex((proj)=> proj.id === project.id);
-          // if(indexIdProj >= 0) {
-          //   project.path = [];
-          //   project.path.push(path);
-          //   projectsList[indexIdProj] = project;
-          // }
         }
-        // project.path = [];
-        // project.path.push(path);
-        // projectsList.push(project);
-        // localStorage.setItem('projectsList', JSON.stringify(projectsList))
+        else {
+          projectsList.push(project)
+        }
+        localStorage.setItem('projectsList', JSON.stringify(projectsList))
       }
       function cloneNet(net, imgPath) {
         //clone network
@@ -255,7 +277,7 @@ export default {
             outNet[key] = net[key];
           }
         }
-        outNet.networkMeta = {};
+
         //create project
         let time = new Date();
         var timeOptions = {
@@ -279,6 +301,9 @@ export default {
           },
           network: outNet
         };
+        toJson.network.networkMeta = {};
+        toJson.network.networkID = '';
+
         return JSON.stringify(toJson, null, ' ');
       }
       function cloneEl(el) {

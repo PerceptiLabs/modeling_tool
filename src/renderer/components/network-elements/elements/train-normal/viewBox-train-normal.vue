@@ -5,12 +5,13 @@
       v-for="(tab, i) in tabset"
       :key="i"
       )
+        //:disabled="i > 2"
         button.btn.btn--tabs.tutorial-relative(
         type="button"
         v-tooltip-interactive:right="tab.interactiveInfo"
         @click="setTab(tab.name, tab.id)"
         :class="{'active': currentTab === tab.name}"
-        :disabled="i > 2"
+        
         :id="tab.id"
         ) {{ tab.name }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")

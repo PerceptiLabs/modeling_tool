@@ -28,9 +28,17 @@ const loadPathFolder = function (customOptions) {
 };
 
 const loadNetwork = function (pathArr) {
+  let localProjectsList = localStorage.getItem('projectsList');
+  let projectsList, pathIndex;
+  if(localProjectsList) {
+    projectsList = JSON.parse(localProjectsList);
+    pathIndex = projectsList.findIndex((proj)=> proj.path[0] === pathArr[0]);
+  }
   return readFilePromiseNative(pathArr[0])
     .then((data) => {
       let net = JSON.parse(data.toString());
+      console.log(projectsList);
+      if(pathIndex > -1 && projectsList) net.network.networkID = projectsList[pathIndex].id;
       this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
     }
   );

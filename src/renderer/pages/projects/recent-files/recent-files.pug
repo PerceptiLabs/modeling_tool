@@ -4,35 +4,34 @@
   .filter-recent-files
     .i.icon.icon-filter 
     input(type="text" placeholder="Filter recent files" v-model="search")
-    
-ul.project-list
+
+ul.project-list.page-projects_project-list
   article.project-box
     button.project.add-new(@click="addNewProject")
       .project_ration
       .project_content
         i.icon.icon-zoom-plus
     h3 Add new project
-  
   article.project-box(
     v-if="filteredProjects.length"
     v-for="(project, index) in filteredProjects"
     :key="project.index"
     )
-    button.project(
-      @dblclick="openTemplate(project.path)"
-      @click="selectTemplate(project)"
-      :class="{'active': project.isChecked}"
-      )
-      .project_content
-        .project-content_info
-          i.icon(:class="project.isCloud ? 'icon-cloud' : 'icon-computer'")
-          template(v-if="project.notExist")
-            span.content-info_status.bg-error Doesn’t exist
-          template(v-else)
-            span.content-info_status.primary(v-if="project.trainedPath") Trained
-            span.content-info_status.dark-blue(v-else) Not trained
+      button.project(
+        @dblclick="openTemplate(project.path)"
+        @click="selectTemplate(project)"
+        :class="{'active': project.isChecked}"
+        )
+        .project_content
+          .project-content_info
+            i.icon(:class="project.isCloud ? 'icon-cloud' : 'icon-computer'")
+            template(v-if="project.notExist")
+              span.content-info_status.bg-error Doesn’t exist
+            template(v-else)
+              span.content-info_status.primary(v-if="project.trainedPath") Trained
+              span.content-info_status.dark-blue(v-else) Not trained
 
-        .project-content_img
-          img(:src="project.image")
-    h3 {{project.name}} {{index}}
-    time.text-disable {{project.time}}
+          .project-content_img
+            img(:src="project.image")
+      h3 {{project.name}}
+      time.text-disable {{project.time}}
