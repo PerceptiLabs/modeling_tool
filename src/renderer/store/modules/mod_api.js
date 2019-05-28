@@ -146,7 +146,7 @@ const actions = {
       action: "Start",
       value: message
     };
-    console.log(JSON.stringify(theData));
+    //console.log(JSON.stringify(theData));
     //console.log(theData);
     coreRequest(theData)
       .then((data)=> {
