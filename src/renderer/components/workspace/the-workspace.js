@@ -173,147 +173,30 @@ export default {
       if(projectsList) {
         let idIndex = projectsList.findIndex((proj) => proj.id === this.currentNetwork.networkID);
         let idExist = idIndex >= 0 ? true : false;
-        if(idExist) console.log('save');
+        if(idExist) {
+          const network = this.currentNetwork;
+          doScreenShot(this)
+            .then((img)=> {
+              const currentPath = projectsList[idIndex].path[0];
+              const stringNet = cloneNet(network, img, currentPath);
+              projectsList[idIndex] = JSON.parse(stringNet).project  ;
+              saveFileToDisk(currentPath, stringNet, this, setLocalProjectsList(projectsList))
+            })
+            .catch((err)=> {console.log(err)});
+        }
         else this.saveNetworkAs();
       }
+      else this.saveNetworkAs();
     },
     saveNetworkAs() {
       const dialog = remote.dialog;
       const network = this.currentNetwork;
-      const ctx = this;
       doScreenShot(this)
         .then((img)=> {
           const stringNet = cloneNet(network, img);
-          openSaveDialog(stringNet)
+          openSaveDialog(stringNet, dialog, network, this)
         })
         .catch((err)=> {console.log(err)});
-
-      function openSaveDialog(jsonNet) {
-        const option = {
-          title:"Save Network",
-          defaultPath: `*/${network.networkName}`,
-          filters: [
-            {name: 'Text', extensions: ['json']},
-          ]
-        };
-
-        dialog.showSaveDialog(null, option, (fileName) => {
-          if (fileName === undefined){
-            ctx.$store.dispatch('globalView/GP_infoPopup', "You didn't save the file");
-            return;
-          }
-          fs.writeFile(fileName, jsonNet, (err) => {
-            if(err){
-              ctx.$store.dispatch('globalView/GP_infoPopup', "An error occurred creating the file "+ err.message)
-            }
-
-            ctx.$store.dispatch('globalView/GP_infoPopup', "The file has been successfully saved");
-            savePathToLocal(JSON.parse(jsonNet).project, fileName)
-          });
-        });
-      }
-      function doScreenShot(ctx) {
-        return new Promise((resolve, reject)=> {
-          const workspace = ctx.$refs.workspaceNet;
-          const svg = workspace.querySelector('.svg-arrow');
-          const arrowsCanvas = document.createElement('canvas');
-          arrowsCanvas.style.position = 'absolute';
-          arrowsCanvas.style.zIndex = '0';
-          ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
-          canvg(arrowsCanvas, svg.outerHTML, {});
-          svg.style.display = 'none';
-          workspace.style.background = 'none';
-          const options = {
-            scale: 1,
-            backgroundColor: null,
-          };
-          return html2canvas(workspace, options)
-            .then((canvas)=> {
-              resolve(canvas.toDataURL());
-               svg.style.display = 'block';
-               workspace.style.background = '';
-               arrowsCanvas.remove();
-            });
-        })
-      }
-      function savePathToLocal(project, path) {
-        let projectsList = JSON.parse(localStorage.getItem('projectsList'));
-        project.path = [];
-        project.path.push(path);
-        if(projectsList) {
-          let idIndex = projectsList.findIndex((proj)=> proj.id === project.id);
-          let pathIndex = projectsList.findIndex((proj)=> proj.path[0] === path);
-          let idExist = idIndex >= 0 ? true : false;
-          let pathExist = pathIndex >= 0 ? true : false;
-          //to him self
-          if(idExist && pathExist && idIndex === pathIndex) {
-            projectsList[idIndex] = project
-          }
-          // затираем существующий
-          if(pathExist && idIndex !== pathIndex) {
-            project.id = generateID();
-            projectsList[pathIndex] = project
-          }
-          //to add new
-          if(!pathExist) {
-            project.id = generateID();
-            projectsList.push(project);
-          }
-
-        }
-        else {
-          projectsList.push(project)
-        }
-        localStorage.setItem('projectsList', JSON.stringify(projectsList))
-      }
-      function cloneNet(net, imgPath) {
-        //clone network
-        var outNet = {};
-        for (var key in net) {
-          if(key === 'networkElementList') {
-            outNet[key] = JSON.parse(cloneEl(net[key]))
-          }
-          else {
-            outNet[key] = net[key];
-          }
-        }
-
-        //create project
-        let time = new Date();
-        var timeOptions = {
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-          timezone: 'UTC',
-          hour: 'numeric',
-          minute: 'numeric',
-        };
-        let toJson = {
-          project: {
-            time: time.toLocaleString("ru", timeOptions),
-            image: imgPath,
-            name: outNet.networkName,
-            id: outNet.networkID,
-            trainedPath: '',
-            isCloud: false,
-            isChecked: false,
-            notExist: false
-          },
-          network: outNet
-        };
-        toJson.network.networkMeta = {};
-        toJson.network.networkID = '';
-
-        return JSON.stringify(toJson, null, ' ');
-      }
-      function cloneEl(el) {
-        return JSON.stringify(el, (key, val)=> {
-          if (key === 'calcAnchor') {
-            return undefined;
-          }
-          return val;
-        }, ' ');
-      }
     },
     trainingFinished(index) {
       let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;
@@ -327,4 +210,140 @@ export default {
       return this.workspace[index].networkMeta.coreStatus.Status === 'Waiting';
     }
   }
+}
+
+//SAVE NETWORK
+function openSaveDialog(jsonNet, dialogWin, network, ctx) {
+  const option = {
+    title:"Save Network",
+    defaultPath: `*/${network.networkName}`,
+    filters: [
+      {name: 'Text', extensions: ['json']},
+    ]
+  };
+
+  dialogWin.showSaveDialog(null, option, (fileName) => {
+    if (fileName === undefined){
+      ctx.$store.dispatch('globalView/GP_infoPopup', "You didn't save the file");
+      return;
+    }
+    saveFileToDisk(fileName, jsonNet, ctx, savePathToLocal(JSON.parse(jsonNet).project, fileName))
+  });
+}
+function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
+  fs.writeFile(fileName, jsonNet, (err) => {
+    if(err){
+      ctx.$store.dispatch('globalView/GP_infoPopup', "An error occurred creating the file "+ err.message)
+    }
+
+    ctx.$store.dispatch('globalView/GP_infoPopup', "The file has been successfully saved");
+    successCallBack;
+  });
+}
+function doScreenShot(ctx) {
+  return new Promise((resolve, reject)=> {
+    const workspace = ctx.$refs.workspaceNet;
+    const svg = workspace.querySelector('.svg-arrow');
+    const arrowsCanvas = document.createElement('canvas');
+    arrowsCanvas.style.position = 'absolute';
+    arrowsCanvas.style.zIndex = '0';
+    ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
+    canvg(arrowsCanvas, svg.outerHTML, {});
+    svg.style.display = 'none';
+    workspace.style.background = 'none';
+    const options = {
+      scale: 1,
+      backgroundColor: null,
+    };
+    return html2canvas(workspace, options)
+      .then((canvas)=> {
+        resolve(canvas.toDataURL());
+        svg.style.display = 'block';
+        workspace.style.background = '';
+        arrowsCanvas.remove();
+      });
+  })
+}
+function savePathToLocal(project, path) {
+  let projectsList = JSON.parse(localStorage.getItem('projectsList'));
+  project.path.push(path);
+  if(projectsList) {
+    let idIndex = projectsList.findIndex((proj)=> proj.id === project.id);
+    let pathIndex = projectsList.findIndex((proj)=> proj.path[0] === path);
+    let idExist = idIndex >= 0 ? true : false;
+    let pathExist = pathIndex >= 0 ? true : false;
+    //to him self
+    if(idExist && pathExist && idIndex === pathIndex) {
+      projectsList[idIndex] = project
+    }
+    // затираем существующий
+    if(pathExist && idIndex !== pathIndex) {
+      project.id = generateID();
+      projectsList[pathIndex] = project
+    }
+    //to add new
+    if(!pathExist) {
+      project.id = generateID();
+      projectsList.push(project);
+    }
+  }
+  else {
+    projectsList = [];
+    projectsList.push(project)
+  }
+  setLocalProjectsList(projectsList);
+}
+function setLocalProjectsList(list) {
+  localStorage.setItem('projectsList', JSON.stringify(list))
+}
+function cloneNet(net, imgPath, filePath) {
+  //clone network
+  var outNet = {};
+  for (var key in net) {
+    if(key === 'networkElementList') {
+      outNet[key] = JSON.parse(cloneEl(net[key]))
+    }
+    else {
+      outNet[key] = net[key];
+    }
+  }
+
+  //create project
+  let time = new Date();
+  var timeOptions = {
+    year: 'numeric',
+    month: 'numeric',
+    day: 'numeric',
+    timezone: 'UTC',
+    hour: 'numeric',
+    minute: 'numeric',
+  };
+  let toJson = {
+    project: {
+      time: time.toLocaleString("ru", timeOptions),
+      image: imgPath,
+      name: outNet.networkName,
+      id: outNet.networkID,
+      path: [],
+      trainedPath: '',
+      isCloud: false,
+      isChecked: false,
+      notExist: false
+    },
+    network: outNet
+  };
+  toJson.network.networkMeta = {};
+  toJson.network.networkID = '';
+  if(filePath) {
+    toJson.project.path.push(filePath);
+  }
+  return JSON.stringify(toJson, null, ' ');
+}
+function cloneEl(el) {
+  return JSON.stringify(el, (key, val)=> {
+    if (key === 'calcAnchor') {
+      return undefined;
+    }
+    return val;
+  }, ' ');
 }
