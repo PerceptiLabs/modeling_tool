@@ -258,7 +258,7 @@ function doScreenShot(ctx) {
     return html2canvas(workspace, options)
       .then((canvas)=> {
         resolve(canvas.toDataURL());
-        svg.style.display = 'block';
+        svg.style.display = '';
         workspace.style.background = '';
         arrowsCanvas.remove();
       });
