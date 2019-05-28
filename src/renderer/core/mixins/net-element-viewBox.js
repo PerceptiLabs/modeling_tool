@@ -81,6 +81,7 @@ const viewBoxMixin = {
             return
           }
           Vue.nonreactive(data);
+          console.log(data);
           if(view.length) {
             this.$set(this.chartData, view, data)
           }

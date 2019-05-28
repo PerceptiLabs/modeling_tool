@@ -147,6 +147,7 @@ const actions = {
       value: message
     };
     console.log(JSON.stringify(theData));
+    //console.log(theData);
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_startTraining ', data);
