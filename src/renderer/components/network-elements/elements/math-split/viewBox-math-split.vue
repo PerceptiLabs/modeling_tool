@@ -2,8 +2,8 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-        chart-label="Accuracy during one epoch"
-      :chart-data="optionLine1"
+        chart-label="Output"
+        :chart-data="optionLine1"
       )
 </template>
 
