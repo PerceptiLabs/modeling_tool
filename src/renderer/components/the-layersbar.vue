@@ -242,11 +242,11 @@ export default {
     @include multi-transition (transform, opacity, visibility);
     position: absolute;
     top: 0;
-    left: -$indent;
+    //left: -$indent;
+    left: -70px;
     opacity: 0;
     margin: 0;
     padding: $indent;
-    list-style: none;
     @media (max-height: 1000px) {
       .layer:nth-child(n+5) & {
         top: auto;
@@ -255,8 +255,10 @@ export default {
     }
     .active + & {
       visibility: visible;
+      display: block;
       opacity: 1;
-      transform: translateX(100%);
+      //transform: translateX(100%);
+      transform: translateX(135px);
     }
     > li + li {
       padding-top: $indent;

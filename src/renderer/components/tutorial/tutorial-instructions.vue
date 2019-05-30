@@ -109,6 +109,8 @@ export default {
       pointActivate:              'mod_tutorials/pointActivate',
       pointsDeactivate:           'mod_tutorials/pointsDeactivate',
       resetTutorial:              'mod_tutorials/resetTutorial',
+      lockElement:                'mod_tutorials/lockElement',
+      unlockAllElements:          'mod_tutorials/unlockAllElements',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
     }),
@@ -134,7 +136,12 @@ export default {
       if(this.currentNetworkElementList !== null && !this.isTutorialMode) this.addNetwork({'ctx': this});
       this.setShowInstructions(!this.isShowInstructions);
       this.setTutorialMode(!this.isTutorialMode);
-      if(!this.isTutorialMode) this.resetTutorial();
+      if(this.isTutorialMode) {
+        this.lockElement('.layersbar-list')
+      } else {
+        this.resetTutorial();
+        this.unlockAllElements();
+      }
       this.setInteractiveInfo(false);
     }
   }
@@ -334,5 +341,16 @@ export default {
 }
 .tutorial_target-border {
   border: 2px solid #3BC5FF;
+}
+.lock-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 5;
+  width: 100%;
+  height: 100%;
+}
+.unlock-element {
+  z-index: 6;
 }
 </style>
