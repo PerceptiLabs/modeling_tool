@@ -50,14 +50,17 @@ const mutations = {
 
 const actions = {
   API_runServer({state, commit, dispatch, getters, rootGetters}) {
+    console.log('API_runServer');
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
     startCore();
 
     function startCore() {
+      console.log('startCore');
       coreIsStarting = true;
       let openServer;
+      console.log(process.platform);
       switch (process.platform) {
         case 'win32':
           openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });

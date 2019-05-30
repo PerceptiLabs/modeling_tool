@@ -85,6 +85,7 @@ const actions = {
     dispatch('mod_workspace/SET_openTest', false, {root: true});
   },
   SET_userToken({commit, dispatch}, value) {
+    console.log('SET_userToken', value);
     commit('set_userToken', value);
     if(process.env.BUILD_TARGET !== 'web') {
      value
