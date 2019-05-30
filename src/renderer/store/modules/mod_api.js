@@ -50,12 +50,14 @@ const mutations = {
 
 const actions = {
   API_runServer({state, commit, dispatch, getters, rootGetters}) {
+    console.log('API_runServer');
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
     startCore();
 
     function startCore() {
+      console.log('startCore');
       coreIsStarting = true;
       let openServer;
       switch (process.platform) {

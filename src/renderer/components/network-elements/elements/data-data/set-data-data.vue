@@ -41,7 +41,7 @@
               :select-multiple="true"
               )
           .form_row
-            chart-switch(
+            chart-switch.data-charts(
               :disable-header="true"
               :chart-data="imgData"
             )

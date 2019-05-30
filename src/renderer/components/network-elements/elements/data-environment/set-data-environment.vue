@@ -20,7 +20,7 @@
                 :select-options="selectOptions"
                 )
             .form_row
-              chart-switch(
+              chart-switch.data-charts(
                 key="1"
                 :chart-label="chartLabel"
                 :chart-data="imgData"
@@ -39,7 +39,7 @@
                 :disabled="disabledBtn"
                 ) Load
             .form_row
-              chart-switch(
+              chart-switch.data-charts(
                 key="2"
                 :disable-header="true"
                 :chart-data="imgData"

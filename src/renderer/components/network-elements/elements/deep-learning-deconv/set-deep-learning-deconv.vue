@@ -113,7 +113,7 @@ initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Stride}**
 W = tf.Variable(initial);
 initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
 b=tf.Variable(initial);
-output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*${this.settings.Stride} for node_shape in ${this.codeInputDim}]+[${this.settings.Feature_maps}]);
+output_shape=tf.stack([tf.shape(X)[0]]+[node_shape*${+this.settings.Stride} for node_shape in ${this.codeInputDim}]+[${this.settings.Feature_maps}]);
 node = tf.nn.conv1d_transpose(X, W, output_shape, ${this.settings.Stride},padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
 node=node+b;`;
           break;
