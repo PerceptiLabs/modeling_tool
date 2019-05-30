@@ -1,5 +1,5 @@
 <template lang="pug">
-  section.sidebar_share.sidebar-content
+  section.sidebar_share
     .sidebar-share_icon.big-text
       i.icon.icon-user
       span Users
@@ -25,6 +25,8 @@ export default {
     padding-top: .5rem;
     padding-bottom: .5rem;
     background: #4b4b5c;
+    padding-right: 1.5rem;
+    padding-left: 1.5rem;
   }
   .sidebar-share_icon {
     .icon {

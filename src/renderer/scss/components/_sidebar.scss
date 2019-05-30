@@ -1,4 +1,19 @@
-.sidebar_indent {
-  padding: 2.5rem 2.2rem 1.5rem;
+$sidebar-indent: 2.2rem;
+$sidebar-bottom: 1.5rem;
+
+.sidebar_section {
+  padding: 2.5rem $sidebar-indent $sidebar-bottom;
   border-bottom: 1px solid $bg-toolbar;
+}
+.sidebar_content-padding {
+  padding-right: $sidebar-indent;
+  padding-left: $sidebar-indent;
+}
+.sidebar_line {
+  margin: 0 (-$sidebar-indent) $sidebar-bottom;
+  border-bottom: 1px solid $bg-toolbar;
+}
+.sidebar_action {
+  text-align: right;
+  padding: 1.5rem 2.2rem 0;
 }

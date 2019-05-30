@@ -1,5 +1,7 @@
 <template lang="pug">
-  .settings-layer
+  .settings-layer(
+    :class="{'settings-layer--full-view': fullView}"
+  )
     .settings-layer_section
       ul.bookmark_tab-list(v-if="isMultiTabs")
         button.bookmark_tab(type="button"
@@ -13,6 +15,7 @@
           code-hq( v-model="theCode[currentTab]" )
         .form_holder(v-else)
           code-hq( v-model="theCode" )
+        button.btn.btn--code-view.icon.icon-shevron-right(type="button" @click="toggleFullView")
 
 </template>
 
@@ -41,11 +44,17 @@ export default {
   data() {
     return {
       currentTab: '',
+      fullView: false
     }
   },
   computed: {
     isMultiTabs() {
       return typeof this.theCode === 'string' ? false : true
+    }
+  },
+  methods: {
+    toggleFullView() {
+      this.fullView = !this.fullView
     }
   }
 }
@@ -56,6 +65,13 @@ export default {
     max-width: 29rem;
     overflow: hidden;
   }
+  .settings-layer--full-view {
+    max-width: none;
+    .btn--code-view:before {
+      transform: rotate(180deg);
+      display: inline-block;
+    }
+  }
   .bookmark_tab-list {
     padding: 0;
   }
@@ -64,5 +80,20 @@ export default {
     text-align: left;
     height: 2rem;
     margin-right: 1px;
+  }
+  .bookmark_content {
+    position: relative;
+  }
+  .btn--code-view {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 100%;
+    width: 1rem;
+    background: linear-gradient(to left, rgba(#fff, 0), rgba(#fff, .35), rgba(#fff, 0));
+    color: $col-primary;
+    &:hover {
+      background: linear-gradient(to left, rgba(#fff, 0), rgba(#fff, .2), rgba(#fff, 0));
+    }
   }
 </style>

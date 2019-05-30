@@ -66,6 +66,7 @@ const actions = {
           openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           break;
         case 'darwin':
+          console.log(process.env.NODE_ENV === 'production');
           if(process.env.NODE_ENV === 'production') {
             openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
           }

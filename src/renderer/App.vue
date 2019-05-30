@@ -58,7 +58,7 @@
           netSave: ['ctrl', 's'],
           netSaveAs: ['ctrl', 'shift', 's'],
           logOut: ['ctrl', 'f4'],
-          closeApp: ['alt', 'f4'],
+          closeApp: ['ctrl', 'q'],
         }
       }
     },
@@ -218,7 +218,7 @@
             if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');
             break;
           case 'unGroupLayerContainer':
-
+            this.$store.dispatch('mod_workspace/UNGROUP_container');
             break;
           case 'netNew':
             if(this.isLogin) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});

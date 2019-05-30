@@ -80,7 +80,7 @@ export default {
             {label: 'Save as...', accelerator: 'Ctrl+Shift+S',  enabled: this.openApp,  active: ()=> {this.saveNetworkAs()}},
             {type: 'separator'},
             {label: 'Log out',    accelerator: 'Ctrl+F4',       enabled: this.isLogin,  active: ()=> {this.logOut()}},
-            {label: 'Exit',       accelerator: 'ALT+F4',        enabled: true,          active: ()=> {this.appClose()}}
+            {label: 'Exit',       accelerator: 'Ctrl+Q',        enabled: true,          active: ()=> {this.appClose()}}
           ]
         },
         {
@@ -169,7 +169,7 @@ export default {
         {
           label: 'Settings',
           submenu: [
-            {label: 'Hyperparameters',              enabled: false, active: ()=> {}},
+            {label: 'Hyperparameters',              enabled: this.openApp, active: ()=> {this.openHyperparameters()}},
           ]
         },
         {
@@ -213,6 +213,9 @@ export default {
     },
     showTutorial() {
       this.isTutorialMode ? this.infoPopup('Tutorial mode is already enabled') : this.setTutorialSB(true);
+    },
+    openHyperparameters() {
+      this.$store.commit('globalView/GP_showNetGlobalSet', true);
     }
   }
 }

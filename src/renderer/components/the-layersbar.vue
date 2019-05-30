@@ -142,18 +142,18 @@ export default {
           networkElements: trainingElements,
           id:'tutorial_training'
         },
-        {
-          tooltip: 'Classic Machine Learning',
-          tooltip_interactive: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-                        </div>`,
-          layerClass: 'net-element-learn-class',
-          iconClass: 'icon-mind',
-          showEl: false,
-          networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
-          id:'tutorial_classic-machine-learning'
-        }
+        // {
+        //   tooltip: 'Classic Machine Learning',
+        //   tooltip_interactive: `<div class="tooltip-tutorial_italic">
+        //                   <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
+        //                   <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
+        //                 </div>`,
+        //   layerClass: 'net-element-learn-class',
+        //   iconClass: 'icon-mind',
+        //   showEl: false,
+        //   networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
+        //   id:'tutorial_classic-machine-learning'
+        // }
       ],
     }
   },

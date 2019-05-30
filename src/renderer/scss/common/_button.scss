@@ -112,7 +112,7 @@
 }
 
 .btn--tabs {
-  font-size: 1.2em;
+  font-size: 1.2rem;
   color: $disable-txt;
   display: flex;
   align-items: center;
@@ -159,7 +159,7 @@
 }
 
 .btn--color {
-  font-size: 1.2em;
+  font-size: 1.2rem;
   color: $white;
   display: flex;
   align-items: center;
@@ -179,6 +179,7 @@
   padding: 0.7rem 2.5rem;
   border: 1px solid $login-blue;
   border-radius: 2rem;
+  color: inherit;
 }
 
 .green-color-icon{
