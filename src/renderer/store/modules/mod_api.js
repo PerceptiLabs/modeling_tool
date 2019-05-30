@@ -60,6 +60,7 @@ const actions = {
       console.log('startCore');
       coreIsStarting = true;
       let openServer;
+      console.log(process.platform);
       switch (process.platform) {
         case 'win32':
           openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
