@@ -967,9 +967,11 @@ const actions = {
       getters.getActiveAction.id === value.validation) {
         if(value.way === 'next')  {
           dispatch('removeDuplicateId');
-          dispatch('checkActiveActionAndPoint', value)
+          dispatch('checkActiveActionAndPoint', value);
+          dispatch('unlockElement', getters.getActiveAction.id);
         }
         else {
+          dispatch('unlockElement', getters.getActiveAction.id);
           dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
           dispatch('drawSchematicElement', getters.getActiveAction.schematic);
           commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
@@ -1061,6 +1063,26 @@ const actions = {
         element.addEventListener('mouseleave', function (event) {
           dispatch('removeTooltip');
         })
+      })
+    }
+  },
+  lockElement({getters, dispatch}, cssClass) {
+    let element = document.querySelector(cssClass);
+    let blockingArea = document.createElement('div');
+    blockingArea.classList.add('lock-area');
+    element.appendChild(blockingArea);
+  },
+  unlockElement({getters, dispatch}, id) {
+    let prevUnlockElement = document.querySelector('.unlock-element');
+    if(prevUnlockElement) prevUnlockElement.classList.remove('unlock-element');
+    let element = document.getElementById(id).parentNode;
+    if(element.classList.contains('layer')) element.classList.add('unlock-element')
+  },
+  unlockAllElements() {
+    let lockElements = document.querySelectorAll('.lock-area');
+    if(lockElements.length > 0) {
+      lockElements.forEach(function (element) {
+        element.remove();
       })
     }
   },
