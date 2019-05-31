@@ -138,9 +138,10 @@ export default {
     },
     switchDblclick(event) {
       if (this.isLock) return;
+      console.log(this.networkMode);
       if(this.networkMode !== 'edit') {
         this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
-        this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
+        this.setFocusEl(event);
       }
       this.layerContainer
         ? this.openLayerContainer()

@@ -59,7 +59,7 @@
     computed: {
       ...mapGetters({
         activeAction:   'mod_tutorials/getActiveAction',
-        //selectedElList: 'mod_workspace/GET_currentSelectedEl',
+        editIsOpen:           'mod_workspace/GET_networkIsOpen',
         currentNetwork: 'mod_workspace/GET_currentNetwork'
       }),
       workspaceContent() {
@@ -72,8 +72,8 @@
       },
     },
     watch: {
-      networkMode(newVal) {
-        if(newVal == 'edit') {
+      editIsOpen(newVal) {
+        if(newVal) {
           this.$nextTick(function () {
             this.addListeners()
           })
@@ -104,7 +104,7 @@
         this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
       },
       dragStart(event) {
-        if ( event.target.draggable && this.networkMode === 'edit' && event.target.className.includes('btn--layersbar')) {
+        if ( event.target.draggable && this.editIsOpen && event.target.className.includes('btn--layersbar')) {
           this.$refs.layersbar.addEventListener("dragend", this.dragEnd, false);
           this.$refs.layersbar.addEventListener("dragover", this.dragOver, false);
           this.$refs.layersbar.addEventListener("dragenter", this.dragEnter, false);
