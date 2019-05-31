@@ -113,6 +113,7 @@ export default {
   methods: {
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
+      infoPopup:                'globalView/GP_infoPopup',
     }),
     calcScaleMap() {
       this.$nextTick(()=> {
@@ -132,10 +133,15 @@ export default {
       this.$store.commit('mod_workspace/DELETE_network', index)
     },
     setTabNetwork(index) {
-      this.$store.commit('mod_workspace/SET_currentNetwork', index);
-      this.$store.dispatch('mod_workspace/SET_elementUnselect');
-      if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
-      if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
+      if(this.isTutorialMode) {
+        this.infoPopup("Turn off tutorial mode to change network tab");
+      }
+      else {
+        this.$store.commit('mod_workspace/SET_currentNetwork', index);
+        this.$store.dispatch('mod_workspace/SET_elementUnselect');
+        if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
+        if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
+      }
     },
     toggleSidebar() {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
@@ -224,7 +230,7 @@ function openSaveDialog(jsonNet, dialogWin, network, ctx) {
 
   dialogWin.showSaveDialog(null, option, (fileName) => {
     if (fileName === undefined){
-      ctx.$store.dispatch('globalView/GP_infoPopup', "You didn't save the file");
+      ctx.infoPopup("You didn't save the file");
       return;
     }
     saveFileToDisk(fileName, jsonNet, ctx, savePathToLocal(JSON.parse(jsonNet).project, fileName))
@@ -233,10 +239,9 @@ function openSaveDialog(jsonNet, dialogWin, network, ctx) {
 function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
   fs.writeFile(fileName, jsonNet, (err) => {
     if(err){
-      ctx.$store.dispatch('globalView/GP_infoPopup', "An error occurred creating the file "+ err.message)
+      ctx.infoPopup(`An error occurred creating the file ${err.message}`);
     }
-
-    ctx.$store.dispatch('globalView/GP_infoPopup', "The file has been successfully saved");
+    ctx.infoPopup("The file has been successfully saved");
     successCallBack;
   });
 }

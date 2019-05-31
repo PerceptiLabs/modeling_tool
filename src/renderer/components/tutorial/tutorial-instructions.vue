@@ -109,7 +109,7 @@ export default {
       pointActivate:              'mod_tutorials/pointActivate',
       pointsDeactivate:           'mod_tutorials/pointsDeactivate',
       resetTutorial:              'mod_tutorials/resetTutorial',
-      lockElement:                'mod_tutorials/lockElement',
+      lockElements:               'mod_tutorials/lockElements',
       unlockAllElements:          'mod_tutorials/unlockAllElements',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
@@ -137,7 +137,8 @@ export default {
       this.setShowInstructions(!this.isShowInstructions);
       this.setTutorialMode(!this.isTutorialMode);
       if(this.isTutorialMode) {
-        this.lockElement('.layersbar-list')
+        this.lockElements('.layersbar-list');
+        this.lockElements('.layer_child-list');
       } else {
         this.resetTutorial();
         this.unlockAllElements();
@@ -352,5 +353,6 @@ export default {
 }
 .unlock-element {
   z-index: 6;
+  position: relative;
 }
 </style>
