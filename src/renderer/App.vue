@@ -195,9 +195,7 @@
       },
       checkToken() {
         let localUserToken = localStorage.getItem('userToken');
-        console.log('checkToken', localUserToken);
         if(localUserToken) {
-          console.log('checkToken', 'globalView/SET_userToken');
           this.$store.dispatch('globalView/SET_userToken', localUserToken);
           if(this.$router.history.current.name === 'login') {
             this.$router.replace({name: 'projects'});

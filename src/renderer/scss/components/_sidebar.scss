@@ -1,4 +1,5 @@
 $sidebar-indent: 2.2rem;
+$sidebar-indent--small: 1.5rem;
 $sidebar-bottom: 1.5rem;
 
 .sidebar_section {
@@ -8,6 +9,10 @@ $sidebar-bottom: 1.5rem;
 .sidebar_content-padding {
   padding-right: $sidebar-indent;
   padding-left: $sidebar-indent;
+}
+.sidebar_content-padding--small {
+  padding-right: $sidebar-indent--small;
+  padding-left: $sidebar-indent--small;
 }
 .sidebar_line {
   margin: 0 (-$sidebar-indent) $sidebar-bottom;

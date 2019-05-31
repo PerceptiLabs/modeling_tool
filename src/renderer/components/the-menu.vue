@@ -96,69 +96,69 @@ export default {
             {label: 'Select all',                   enabled: false},
           ]
         },
-        {
-          label: 'Operations ',
-          submenu: [
-            {
-              label: 'Data',
-              submenu: [
-                {label: 'Data',                     enabled: false,    active: ()=> {}},
-                {label: 'Data Environment',         enabled: false,    active: ()=> {}},
-              ]
-            },
-            {
-              label: 'Process ',
-              submenu: [
-                {label: 'Reshape',                  enabled: false,    active: ()=> {}},
-                {label: 'Word embedding',           enabled: false,    active: ()=> {}},
-                {label: 'Grayscale',                enabled: false,    active: ()=> {}},
-                {label: 'One hot',                  enabled: false,    active: ()=> {}},
-                {label: 'Crop',                     enabled: false,    active: ()=> {}},
-              ]
-            },
-            {
-              label: 'Deep learning',
-              submenu: [
-                {label: 'Fully connected',          enabled: false,    active: ()=> {}},
-                {label: 'Convolution',              enabled: false,    active: ()=> {}},
-                {label: 'Deconvolution',            enabled: false,    active: ()=> {}},
-                {label: 'Recurrent',                enabled: false,    active: ()=> {}}
-              ]
-            },
-            {
-              label: 'Math',
-              submenu: [
-                {label: 'Argmax',                   enabled: false,    active: ()=> {}},
-                {label: 'Merge',                    enabled: false,    active: ()=> {}},
-                {label: 'Split',                    enabled: false,    active: ()=> {}},
-                {label: 'Softmax',                  enabled: false,    active: ()=> {}}
-              ]
-            },
-            {
-              label: 'Training',
-              submenu: [
-                {label: 'Normal',                   enabled: false,    active: ()=> {}},
-                {label: 'Normal+Data',              enabled: false,    active: ()=> {}},
-                {label: 'Reinforcement learning',   enabled: false,    active: ()=> {}},
-                {label: 'Genetic algorithm',        enabled: false,    active: ()=> {}},
-                {label: 'Dynamic routing',          enabled: false,    active: ()=> {}}
-              ]
-            },
-            {
-              label: 'Classic machine learning',
-              submenu: [
-                {label: 'K means clustering',       enabled: false,    active: ()=> {}},
-                {label: 'DBSCAN',                   enabled: false,    active: ()=> {}},
-                {label: 'kNN',                      enabled: false,    active: ()=> {}},
-                {label: 'Random forrest',           enabled: false,    active: ()=> {}},
-                {label: 'Support vector machine',   enabled: false,    active: ()=> {}}
-              ]
-            },
-            {
-              label: 'Custom'
-            },
-          ]
-        },
+        // {
+        //   label: 'Operations ',
+        //   submenu: [
+        //     {
+        //       label: 'Data',
+        //       submenu: [
+        //         {label: 'Data',                     enabled: false,    active: ()=> {}},
+        //         {label: 'Data Environment',         enabled: false,    active: ()=> {}},
+        //       ]
+        //     },
+        //     {
+        //       label: 'Process ',
+        //       submenu: [
+        //         {label: 'Reshape',                  enabled: false,    active: ()=> {}},
+        //         {label: 'Word embedding',           enabled: false,    active: ()=> {}},
+        //         {label: 'Grayscale',                enabled: false,    active: ()=> {}},
+        //         {label: 'One hot',                  enabled: false,    active: ()=> {}},
+        //         {label: 'Crop',                     enabled: false,    active: ()=> {}},
+        //       ]
+        //     },
+        //     {
+        //       label: 'Deep learning',
+        //       submenu: [
+        //         {label: 'Fully connected',          enabled: false,    active: ()=> {}},
+        //         {label: 'Convolution',              enabled: false,    active: ()=> {}},
+        //         {label: 'Deconvolution',            enabled: false,    active: ()=> {}},
+        //         {label: 'Recurrent',                enabled: false,    active: ()=> {}}
+        //       ]
+        //     },
+        //     {
+        //       label: 'Math',
+        //       submenu: [
+        //         {label: 'Argmax',                   enabled: false,    active: ()=> {}},
+        //         {label: 'Merge',                    enabled: false,    active: ()=> {}},
+        //         {label: 'Split',                    enabled: false,    active: ()=> {}},
+        //         {label: 'Softmax',                  enabled: false,    active: ()=> {}}
+        //       ]
+        //     },
+        //     {
+        //       label: 'Training',
+        //       submenu: [
+        //         {label: 'Normal',                   enabled: false,    active: ()=> {}},
+        //         {label: 'Normal+Data',              enabled: false,    active: ()=> {}},
+        //         {label: 'Reinforcement learning',   enabled: false,    active: ()=> {}},
+        //         {label: 'Genetic algorithm',        enabled: false,    active: ()=> {}},
+        //         {label: 'Dynamic routing',          enabled: false,    active: ()=> {}}
+        //       ]
+        //     },
+        //     {
+        //       label: 'Classic machine learning',
+        //       submenu: [
+        //         {label: 'K means clustering',       enabled: false,    active: ()=> {}},
+        //         {label: 'DBSCAN',                   enabled: false,    active: ()=> {}},
+        //         {label: 'kNN',                      enabled: false,    active: ()=> {}},
+        //         {label: 'Random forrest',           enabled: false,    active: ()=> {}},
+        //         {label: 'Support vector machine',   enabled: false,    active: ()=> {}}
+        //       ]
+        //     },
+        //     {
+        //       label: 'Custom'
+        //     },
+        //   ]
+        // },
         {
           label: 'Window',
           submenu: [

@@ -1,6 +1,6 @@
 <template lang="pug">
   section.sidebar_layers
-    .layers_title.d-flex
+    .layers_title.d-flex.sidebar_content-padding--small
       i.icon.icon-burger.middle-text
       h3 Layers
     //-.layers_meta.sidebar-content
@@ -84,8 +84,6 @@ export default {
     align-items: center;
     flex: 0 0 auto;
     height: $h-sidebar-layers-item;
-    padding-right: 1.5rem;
-    padding-left: 1.5rem;
     h3 {
       margin: 0 0 0 .5em;
     }

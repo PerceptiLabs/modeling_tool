@@ -23,7 +23,7 @@
       template(slot="secondTab")
         p secondTab
     .sidebar_action
-      //button.btn.btn--primary(type="button" @click="exportData") Edit
+      button.btn.btn--primary(type="button") Save
 
 </template>
 

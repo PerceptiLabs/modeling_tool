@@ -123,7 +123,7 @@ const mutations = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       openTest: null,
       zoom: 1,
-      netMode: 'edit',//'addArrow', showStatistic
+      netMode: 'edit',//'addArrow'
       coreStatus: {
         Status: 'Waiting' //Created, Training, Validation, Paused, Finished
       },

@@ -11,7 +11,7 @@
 
     .sidebar_tab(v-if="tabSelected === 0")
       sidebar-layers
-      sidebar-training(v-if="showTraining")
+      sidebar-training(v-if="ifTraining" v-show="showTraining")
       sidebar-share
     .sidebar_tab(v-if="tabSelected === 1")
       user-profile
@@ -53,8 +53,11 @@ export default {
     hideSidebar() {
       return this.$store.state.globalView.hideSidebar
     },
+    ifTraining() {
+      return this.isTraining ? true : false
+    },
     showTraining() {
-      return (this.isTraining && this.statisticsIsOpen) ? true : false
+      return this.statisticsIsOpen ? true : false
     },
     activeStepStoryboard() {
       return this.$store.state.mod_tutorials.activeStepStoryboard
