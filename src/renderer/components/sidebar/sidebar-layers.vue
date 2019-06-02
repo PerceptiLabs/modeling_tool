@@ -1,36 +1,28 @@
 <template lang="pug">
   section.sidebar_layers
-    .layers_title.sidebar-content.d-flex
+    .layers_title.d-flex.sidebar_content-padding--small
       i.icon.icon-burger.middle-text
       h3 Layers
-    //
-    .layers_body
-      div
-        .layer-item-wrap
-          .layer-item
-            .layer-item_title
-              span {{ workspace.networkName }}
-
-        sidebar-layers-item(
-          v-for="item in networkElementList"
-          :key="item.layerId"
-          :item-data="item"
-          )
-
-    .layers_meta.sidebar-content
-      .layers_actions
+    //-.layers_meta.sidebar-content
+      .form_row
+        .input-wrap_icon
+          input(type="text" placeholder="Enter the name of layer" disabled="disabled")
+          i.icon.icon-search
         button.btn.btn--icon(type="button" disabled="disabled")
           i.icon.icon-folder
         button.btn.btn--icon(type="button"  disabled="disabled"
           @click="deleteElement"
-          )
+        )
           i.icon.icon-delete
 
-      .layers_search.d-flex
-        i.icon.icon-filter
-        .input-wrap_icon
-          input(type="text" placeholder="Enter the name of layer" disabled="disabled")
-          i.icon.icon-search
+    .layers_body
+      sidebar-layers-item(
+        v-for="item in networkElementList"
+        :key="item.layerId"
+        :item-data="item"
+        )
+
+
 
 
 </template>
@@ -79,41 +71,26 @@ export default {
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   @import "../../scss/base";
   .sidebar_layers {
     display: flex;
     flex-direction: column;
     flex-grow: 1;
     max-height: 50vh;
-  }
-  .sidebar-content {
-    padding-right: $h-sidebar-layers-indent;
-    padding-left: $h-sidebar-layers-indent;
+    border-bottom: 1px solid $bg-toolbar;
   }
   .layers_title {
     align-items: center;
     flex: 0 0 auto;
     height: $h-sidebar-layers-item;
-    border-bottom: 1px solid $bg-toolbar;
     h3 {
       margin: 0 0 0 .5em;
     }
   }
-  .layers_body {
-    display: flex;
-    flex: 1 1 100%;
-    flex-direction: column;
-    > div {
-      overflow: auto;
-      flex: 1 1 100%;
-    }
-  }
   .layers_meta {
     flex: 0 0 auto;
-    padding-top: .6429em;
-    padding-bottom: 2em;
-    border-top: 1px solid $bg-toolbar;
+    height: $h-sidebar-layers-item;
     border-bottom: 1px solid $bg-toolbar;
   }
   .layers_actions {

@@ -52,6 +52,13 @@
           delete: ['del'],
           deleteMac: ['backspace', 'meta'],
           addLayerContainer: ['ctrl', 'g'],
+          unGroupLayerContainer: ['ctrl', 'shift', 'g'],
+          netNew: ['ctrl', 'n'],
+          netOpen: ['ctrl', 'o'],
+          netSave: ['ctrl', 's'],
+          netSaveAs: ['ctrl', 'shift', 's'],
+          logOut: ['ctrl', 'f4'],
+          closeApp: ['ctrl', 'q'],
         }
       }
     },
@@ -113,7 +120,13 @@
       },
       userToken() {
         return this.$store.state.globalView.userToken
-      }
+      },
+      openApp() {
+        return this.$store.state.globalView.appIsOpen
+      },
+      isLogin() {
+        return this.$store.state.globalView.userToken ? true : false
+      },
     },
     watch: {
       eventLoadNetwork() {
@@ -200,7 +213,28 @@
             this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement');
             break;
           case 'addLayerContainer':
-            this.$store.dispatch('mod_workspace/ADD_container');
+            if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');
+            break;
+          case 'unGroupLayerContainer':
+            this.$store.dispatch('mod_workspace/UNGROUP_container');
+            break;
+          case 'netNew':
+            if(this.isLogin) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+            break;
+          case 'netOpen':
+            if(this.isLogin) this.$store.commit('mod_events/set_openNetwork');
+            break;
+          case 'netSave':
+            if(this.openApp) this.$store.commit('mod_events/set_saveNetwork');
+            break;
+          case 'netSaveAs':
+            if(this.openApp) this.$store.commit('mod_events/set_saveNetworkAs');
+            break;
+          case 'logOut':
+            if(this.isLogin) this.$store.dispatch('mod_events/EVENT_logOut', this);
+            break;
+          case 'closeApp':
+            this.$store.dispatch('mod_events/EVENT_closeApp');
             break;
         }
       }

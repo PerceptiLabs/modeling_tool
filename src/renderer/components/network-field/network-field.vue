@@ -46,7 +46,9 @@
           @focus="focusArrow($event)"
           marker-end="url(#svg-arrow_triangle)"
           :d="arrow.positionArrow.path.arrow"
+          style="stroke: #22DDE5; strokeWidth: 3; fill: transparent"
           )
+          //inline styles need for sreenshot
 
       //- pre arrow
       line.svg-arrow_line.arrow--hidden(

@@ -121,8 +121,8 @@ export default {
     selectAllBtn() {
       let all = this.selectOptions.length || 0;
       let check = this.checkedOptions.length;
-      if(all === check)             return {iconClass: 'icon-appMinimaze',  action: ()=> this.defaultModel()};
-      if(all > check && check > 0)  return {iconClass: 'icon-appClose',     action: ()=> this.defaultModel()};
+      if(all === check)             return {iconClass: 'icon-app-minimaze',  action: ()=> this.defaultModel()};
+      if(all > check && check > 0)  return {iconClass: 'icon-app-close',     action: ()=> this.defaultModel()};
       if(check === 0)               return {iconClass: 'icon-check-mark',   action: ()=> this.enableAll()};
       return {iconClass: 'icon-check-mark',   action: ()=> this.defaultModel()};
     }

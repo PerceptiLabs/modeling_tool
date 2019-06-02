@@ -10,7 +10,6 @@
         v-tooltip-interactive:right="tab.interactiveInfo"
         @click="setTab(tab.name, tab.id)"
         :class="{'active': currentTab === tab.name}"
-        :disabled="i > 2"
         :id="tab.id"
         ) {{ tab.name }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
@@ -69,22 +68,27 @@
         :chart-data="chartData.Loss.Total"
         :custom-color="colorListAccuracy"
       )
-    //.statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
       chart-base(
-      chartLabel="F1 during one epoch"
-      /:chartData="optionLine1"
+        chart-label="F1 during one epoch"
+        :chart-data="chartData.F1.Current"
+        :custom-color="colorListAccuracy"
       )
       chart-base(
-      chartLabel="F1 over all epochs"
-      /:chartData="optionLine1"
+        chart-label="F1 over all epochs"
+        :chart-data="chartData.F1.Total"
+        :custom-color="colorListAccuracy"
       )
-    //.statistics-box_main.statistics-box_col(v-if="currentTab === 'Precision & Recall'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'AUC'")
       chart-base(
-      /:chartData="optionLine1"
+        chart-label="AUC during one epoch"
+        :chart-data="chartData.AUC.Current"
+        :custom-color="colorListAccuracy"
       )
-    //.statistics-box_main.statistics-box_col(v-if="currentTab === 'ROC'")
       chart-base(
-      /:chartData="optionLine1"
+        chart-label="AUC over all epochs"
+        :chart-data="chartData.AUC.Total"
+        :custom-color="colorListAccuracy"
       )
 </template>
 
@@ -116,6 +120,14 @@
             Total: null,
           },
           Loss: {
+            Current: null,
+            Total: null,
+          },
+          F1: {
+            Current: null,
+            Total: null,
+          },
+          AUC: {
             Current: null,
             Total: null,
           }
@@ -159,23 +171,14 @@
                               </div>`
           },
           {
-            name: 'Precision & Recall',
-            id: 'tutorial_precision-tab',
+            name: 'AUC',
+            id: 'tutorial_auc-tab',
             interactiveInfo: `<div class="tooltip-tutorial_italic">
                                 <img src="../../../../../../static/img/logo_small_dark.svg" alt=""></br>
                                 <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
                                 <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
                               </div>`
           },
-          {
-            name: 'ROC',
-            id: 'tutorial_roc-tab',
-            interactiveInfo: `<div class="tooltip-tutorial_italic">
-                                <img src="../../../../../../static/img/logo_small_dark.svg" alt=""></br>
-                                <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-                                <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-                              </div>`
-          }
         ],
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
@@ -206,6 +209,12 @@
             break;
           case 'Loss':
             this.chartRequest(this.statElementID, 'TrainNormal', 'Loss');
+            break;
+          case 'F1':
+            this.chartRequest(this.statElementID, 'TrainNormal', 'F1');
+            break;
+          case 'AUC':
+            this.chartRequest(this.statElementID, 'TrainNormal', 'AUC');
             break;
         }
       }

@@ -2,7 +2,7 @@
   .switcher
     ul.switcher_tab-set
       button.btn.switcher_tab(type="button"
-        v-for="(tab, i) in tabs"
+        v-for="(tab, i) in tabSetData"
         :key="i"
         @click="setTab(i)"
         :class="{'text-disable': tabSelected !== i}"
@@ -18,10 +18,17 @@
 <script>
 export default {
   name: "BaseSwitcher",
+  props: {
+    tabSetData: {
+      type: Array,
+      default: function () {
+        return ['Computer', 'Cloud']
+      }
+    }
+  },
   data() {
     return {
       tabSelected: 0,
-      tabs: ['Computer', 'Cloud']
     }
   },
   methods: {

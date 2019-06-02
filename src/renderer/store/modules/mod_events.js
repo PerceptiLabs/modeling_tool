@@ -6,7 +6,9 @@ const state = {
   calcArray: 0,
   openNetwork: 0,
   saveNetwork: 0,
+  saveNetworkAs: 0,
   eventResize: 0,
+  runNetwork: false,
   globalPressKey: {
     del: 0,
   }
@@ -22,8 +24,14 @@ const mutations = {
   set_saveNetwork(state) {
     state.saveNetwork++
   },
+  set_saveNetworkAs(state) {
+    state.saveNetworkAs++
+  },
   set_eventResize(state) {
     state.eventResize++
+  },
+  set_runNetwork(state, value) {
+    state.runNetwork = value
   },
   set_globalPressKey(state, path) {
     state.globalPressKey[path]++
@@ -39,6 +47,9 @@ const actions = {
   },
   EVENT_saveNetwork({commit}) {
     commit('set_saveNetwork');
+  },
+  EVENT_saveNetworkAs({commit}) {
+    commit('set_saveNetworkAs');
   },
   EVENT_logOut({dispatch}, ctx) {
     localStorage.removeItem('userToken');
@@ -63,8 +74,8 @@ const actions = {
     commit('set_globalPressKey', hotKeyName)
   },
   EVENT_hotKeyDeleteElement({commit, rootGetters, dispatch}) {
+    commit('set_globalPressKey', 'del');
     if(rootGetters['mod_workspace/GET_networkIsOpen']) {
-      commit('set_globalPressKey', 'del');
       dispatch('mod_workspace/DELETE_element', null, {root: true});
     }
   },

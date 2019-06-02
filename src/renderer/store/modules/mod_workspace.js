@@ -109,6 +109,7 @@ const mutations = {
     getters.GET_currentNetwork.networkName = value
   },
   add_network (state, {network, ctx}) {
+    let workspace = state.workspaceContent;
     let newNetwork = {};
     const defaultNetwork = {
       networkName: 'New_Network',
@@ -122,7 +123,7 @@ const mutations = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       openTest: null,
       zoom: 1,
-      netMode: 'edit',//'addArrow', showStatistic
+      netMode: 'edit',//'addArrow'
       coreStatus: {
         Status: 'Waiting' //Created, Training, Validation, Paused, Finished
       },
@@ -136,13 +137,20 @@ const mutations = {
     network === undefined
       ? newNetwork = defaultNetwork
       : newNetwork = network;
-    newNetwork.networkMeta = defaultMeta;
-    newNetwork.networkID = 'net' + generateID();
 
-    state.workspaceContent.push(JSON.parse(JSON.stringify(newNetwork)));
-    state.currentNetwork = state.workspaceContent.length - 1;
+    newNetwork.networkMeta = defaultMeta;
+    if(findNetId(newNetwork, workspace) || !newNetwork.networkID) {
+      newNetwork.networkID = generateID();
+    }
+
+    workspace.push(JSON.parse(JSON.stringify(newNetwork)));
+    state.currentNetwork = workspace.length - 1;
     if(ctx.$router.history.current.name !== 'app') {
       ctx.$router.replace({name: 'app'});
+    }
+    function findNetId(newNet, netList) {
+      let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
+      return (indexId < 0) ? false : true
     }
   },
   DELETE_network(state, index) {
@@ -167,6 +175,12 @@ const mutations = {
   },
   set_openStatistics(state, {dispatch, getters, value}) {
     getters.GET_currentNetwork.networkMeta.openStatistics = value;
+    let isTraining = getters.GET_networkIsTraining;
+    if(isTraining) {
+      value
+        ? dispatch('mod_api/API_setHeadless', false, {root: true})
+        : dispatch('mod_api/API_setHeadless', true, {root: true})
+    }
     if(value && getters.GET_testIsOpen !== null) {
       getters.GET_currentNetwork.networkMeta.openTest = false;
     }
@@ -520,8 +534,9 @@ const mutations = {
       : dispatch('OPEN_container', container);
     if(getters.GET_networkIsOpen) dispatch('SET_elementUnselect');
   },
-  ungroup_container(state, {container, dispatch, getters}) {
+  ungroup_container(state, {dispatch, getters}) {
     let net = {...getters.GET_currentNetworkElementList};
+    let container = getters.GET_currentSelectedEl[0];
     dispatch('OPEN_container', container);
     for(let idEl in net) {
       let el = net[idEl];
@@ -687,7 +702,7 @@ const actions = {
   //  NETWORK CONTAINER
   //---------------
   ADD_container({commit, getters, dispatch}, event) {
-    commit('add_container', {getters, commit, dispatch});
+    if(getters.GET_networkIsOpen) commit('add_container', {getters, commit, dispatch});
   },
   OPEN_container({commit, getters, dispatch}, container) {
     commit('open_container', {container, getters, dispatch})
@@ -699,7 +714,7 @@ const actions = {
     commit('toggle_container', {val, container, dispatch, getters})
   },
   UNGROUP_container({commit, getters, dispatch}, container) {
-    commit('ungroup_container', {container, dispatch, getters})
+    if(getters.GET_networkIsOpen) commit('ungroup_container', {container, dispatch, getters})
   },
 };
 

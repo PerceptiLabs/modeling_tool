@@ -189,7 +189,8 @@ cost_clip = tf.clip_by_value(cost_tmp, eps, 1.0-eps);
 loss = 1 - cost_clip;`
           break;
       }
-      return loss
+      return `N_class=${this.codeInputDim}[-1][-1];
+${loss}`
     },
     codeOptimizer() {
       let optimizer = '';
@@ -232,6 +233,7 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
         "Accuracy": this.codeAccuracy
       }
     }
+
 //     coreCode() {
 //       let loss = '';
 //       let optimizer = '';

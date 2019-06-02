@@ -10,7 +10,7 @@
 </template>
 <script>
   import fs             from 'fs';
-  import {loadNetwork}  from '@/core/helpers.js'
+  import {loadNetwork, readFilePromiseNative}  from '@/core/helpers.js'
   import basicTemplate1 from '@/core/basic-template/base-template-1.js'
   import {mapMutations} from 'vuex';
 
@@ -19,7 +19,13 @@
     mounted() {
       let localProjectsList = JSON.parse(localStorage.getItem('projectsList'));
       if(Array.isArray(localProjectsList)) {
-        localProjectsList.forEach((el)=> el.isChecked = false);
+        localProjectsList.forEach((el)=> {
+          this.readFilePromiseNative(el.path[0])
+            .then(() => {})
+            .catch((err)=> {
+              el.notExist = true
+            })
+        });
         this.projects = localProjectsList;
       }
     },
@@ -62,6 +68,7 @@
     },
     watch: {
       hotKeyPressDelete() {
+        console.log('hotKeyPressDelete');
         let indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
         if(indexCheckedProj >= 0) {
           let pathDelete = this.projects[indexCheckedProj].path[0];
@@ -79,6 +86,7 @@
         setTutorialStoryBoard: 'mod_tutorials/SET_showTutorialStoryBoard'
       }),
       loadNetwork,
+      readFilePromiseNative,
       addNewProject() {
         this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
       },
@@ -132,7 +140,17 @@
       margin: 2rem 0;
     }
   }
-
+  .projects-sidebar_link {
+    font-size: 1.6rem;
+    display: block;
+    width: 100%;
+    margin-bottom: 4rem;
+    text-align: center;
+    font-weight: normal;
+    > * {
+      vertical-align: middle;
+    }
+  }
   .page-projects_basic-templates {
     grid-area: basic-templates;
     display: flex;
@@ -143,8 +161,11 @@
 
   .page-projects_recent-files {
     grid-area: recent-files;
-    padding: $section-indent;
-    overflow: auto;
+    padding: $section-indent $section-indent $section-indent/2 $section-indent;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
   }
 
   .page-projects_title {
@@ -167,5 +188,9 @@
       margin-left: 1rem;
     }
   }
-
+  .page-projects_project-list {
+    flex: 1 1 100%;
+    overflow: auto;
+    margin-right: -1.4rem;
+  }
 </style>

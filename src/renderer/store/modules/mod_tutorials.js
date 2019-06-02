@@ -168,7 +168,8 @@ const state = {
               tooltip: 'Select to create a connection...',
               position: 'right',
               id: 'tutorial_list-arrow',
-              status: 'disabled'
+              status: 'disabled',
+              check_prev_id: true
             },
             {
               tooltip: 'Connect input...',
@@ -228,7 +229,7 @@ const state = {
                           This is the size of the filter.</br> 
                           E.g. with patch size 3, the </br> 
                           filter will be a square of size 3x3. </br> 
-                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_patch-size',
@@ -239,7 +240,7 @@ const state = {
                           This is the step size when </br>
                           we slide the filter over the input </br>
                           data to generate feature maps. </br>
-                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_stride'
@@ -254,7 +255,7 @@ const state = {
                           more complex data, it might be </br>
                           better to increase the number </br>
                           of feature maps. </br>
-                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_feature-maps',
@@ -283,7 +284,8 @@ const state = {
               tooltip: 'Select to create a connection...',
               position: 'right',
               id: 'tutorial_list-arrow',
-              status: 'disabled'
+              status: 'disabled',
+              check_prev_id: true
             },
             {
               tooltip: 'Connect input...',
@@ -313,7 +315,7 @@ const state = {
                           This is the size of the filter.</br> 
                           E.g. with patch size 3, the </br> 
                           filter will be a square of size 3x3. </br> 
-                         <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                         <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_patch-size',
@@ -363,7 +365,8 @@ const state = {
               tooltip: 'Select to create a connection...',
               position: 'right',
               id: 'tutorial_list-arrow',
-              status: 'disabled'
+              status: 'disabled',
+              check_prev_id: true
             },
             {
               tooltip: 'Connect input...',
@@ -439,7 +442,8 @@ const state = {
               tooltip: 'Select to create a connection...',
               position: 'right',
               id: 'tutorial_list-arrow',
-              status: 'disabled'
+              status: 'disabled',
+              check_prev_id: true
             },
             {
               tooltip: 'Connect input...',
@@ -513,7 +517,8 @@ const state = {
               tooltip: 'Select to create a connection...',
               position: 'right',
               id: 'tutorial_list-arrow',
-              status: 'disabled'
+              status: 'disabled',
+              check_prev_id: true
             },
             {
               tooltip: 'Connect input...',
@@ -580,7 +585,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
-                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_partition-training-input',
@@ -588,7 +593,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
-                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_partition-validation-input',
@@ -596,7 +601,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
-                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_partition-test-input',
@@ -604,7 +609,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Batch size:</div> to make the training </br> more efficient, you can train on </br> multiples samples at the same time. </br>
-                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_butch-size-input',
@@ -612,7 +617,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Epoch:</div> refers to the number of times </br> you want to run through your entire dataset. </br>
-                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_epochs-input',
@@ -621,7 +626,7 @@ const state = {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Dropout rate:</div> when training we can </br> deactivate half (0.5) of all the </br> learning neurons in each layer in order for </br> the network to learn in a  more general way. 
                           </br></br> Note: this has to be activated independently </br> for each deep learning layer.</br>
-                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_drop-rate-input',
@@ -637,7 +642,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
-                          <div class="tooltip-tutorial_bold">Hover on input to see more information</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_partition-training-input',
@@ -869,8 +874,10 @@ const getters = {
     return getters.getPoints[state.activePointMainTutorial]
   },
   getActiveAction(state, getters) {
-   let action = getters.getActivePoint ? getters.getActivePoint.actions[state.activeActionMainTutorial] : ''
-   return action
+    return getters.getActivePoint ? getters.getActivePoint.actions[state.activeActionMainTutorial] : '';
+  },
+  getPrevActiveAction(state, getters) {
+    return getters.getActivePoint ? getters.getActivePoint.actions[state.activeActionMainTutorial - 1] : '';
   },
   getAllPointsIsDone(state, getters) {
     var count = 0;
@@ -928,8 +935,12 @@ const mutations = {
   SET_activeActionMainTutorial(state, value) {
     if(isNumber(value)) {
       state.activeActionMainTutorial = value
-    } else if(value === 'next') {
+    }
+    else if(value === 'next') {
       state.activeActionMainTutorial++
+    }
+    else if(value === 'prev') {
+      state.activeActionMainTutorial--
     }
   },
   SET_firstTimeApp(state, value) {
@@ -956,9 +967,11 @@ const actions = {
       getters.getActiveAction.id === value.validation) {
         if(value.way === 'next')  {
           dispatch('removeDuplicateId');
-          dispatch('checkActiveActionAndPoint', value)
+          dispatch('checkActiveActionAndPoint', value);
+          dispatch('unlockElement', getters.getActiveAction.id);
         }
         else {
+          dispatch('unlockElement', getters.getActiveAction.id);
           dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
           dispatch('drawSchematicElement', getters.getActiveAction.schematic);
           commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
@@ -969,6 +982,12 @@ const actions = {
     commit('SET_activeAction', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, action: getters.getActiveActionMainTutorial, status: 'done'});
     commit('SET_activeActionMainTutorial', 'next');
     if(getters.getActiveAction) {
+      let checkId = document.getElementById(getters.getActiveAction.id);
+      let prevId = getters.getActiveAction.check_prev_id;
+      if(prevId) checkId = document.getElementById(getters.getPrevActiveAction.dynamic_id);
+      if(!checkId) {
+        commit('SET_activeActionMainTutorial', 'prev');
+      }
       dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
       dispatch('removeSchematicElement');
       dispatch('drawSchematicElement', getters.getActiveAction.schematic);
@@ -990,7 +1009,7 @@ const actions = {
   createTooltip({getters, dispatch}, info) {
     dispatch('removeTooltip');
     let element = document.getElementById(info.id);
-    if(getters.getActiveAction.tooltip) { 
+    if(getters.getActiveAction.tooltip && element) {
       let tooltipBlock = document.createElement('div');
       tooltipBlock.classList.add('tooltip-tutorial', `tooltip-tutorial--${getters.getActiveAction.position}`);
       tooltipBlock.innerHTML = info.tooltip;
@@ -1044,6 +1063,26 @@ const actions = {
         element.addEventListener('mouseleave', function (event) {
           dispatch('removeTooltip');
         })
+      })
+    }
+  },
+  lockElement({getters, dispatch}, cssClass) {
+    let element = document.querySelector(cssClass);
+    let blockingArea = document.createElement('div');
+    blockingArea.classList.add('lock-area');
+    element.appendChild(blockingArea);
+  },
+  unlockElement({getters, dispatch}, id) {
+    let prevUnlockElement = document.querySelector('.unlock-element');
+    if(prevUnlockElement) prevUnlockElement.classList.remove('unlock-element');
+    let element = document.getElementById(id).parentNode;
+    if(element.classList.contains('layer')) element.classList.add('unlock-element')
+  },
+  unlockAllElements() {
+    let lockElements = document.querySelectorAll('.lock-area');
+    if(lockElements.length > 0) {
+      lockElements.forEach(function (element) {
+        element.remove();
       })
     }
   },

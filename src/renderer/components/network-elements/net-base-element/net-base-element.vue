@@ -138,6 +138,11 @@ export default {
     },
     switchDblclick(event) {
       if (this.isLock) return;
+      console.log(this.networkMode);
+      if(this.networkMode !== 'edit') {
+        this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+        this.setFocusEl(event);
+      }
       this.layerContainer
         ? this.openLayerContainer()
         : this.openSettings(event)
@@ -147,15 +152,15 @@ export default {
     },
     openSettings(event) {
       this.hideAllWindow();
-      if(this.networkMode === 'edit' && this.editIsOpen) {
-        this.settingsIsOpen = true;
-        this.$nextTick(() => {
-          this.tutorialPointActivate({
-            way: 'next',
-            validation: this.tutorialSearchId(event)
-          })
+      if(!this.editIsOpen) return;
+
+      this.settingsIsOpen = true;
+      this.$nextTick(() => {
+        this.tutorialPointActivate({
+          way: 'next',
+          validation: this.tutorialSearchId(event)
         })
-      }
+      })
     },
     openContext(event) {
       this.hideAllWindow();

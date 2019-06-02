@@ -37,13 +37,14 @@
     },
     mounted() {
       this.showPage = true;
+      this.$store.commit('globalView/SET_appIsOpen', true);
       window.addEventListener("resize",  this.resizeEv, false);
       this.$nextTick(()=> this.addListeners())
     },
     beforeDestroy() {
-      console.log('beforeDestroy');
       window.removeEventListener("resize", this.resizeEv, false);
-      this.removeListeners()
+      this.removeListeners();
+      this.$store.commit('globalView/SET_appIsOpen', false);
     },
     data() {
       return {
@@ -58,7 +59,7 @@
     computed: {
       ...mapGetters({
         activeAction:   'mod_tutorials/getActiveAction',
-        //selectedElList: 'mod_workspace/GET_currentSelectedEl',
+        editIsOpen:           'mod_workspace/GET_networkIsOpen',
         currentNetwork: 'mod_workspace/GET_currentNetwork'
       }),
       workspaceContent() {
@@ -71,8 +72,8 @@
       },
     },
     watch: {
-      networkMode(newVal) {
-        if(newVal == 'edit') {
+      editIsOpen(newVal) {
+        if(newVal) {
           this.$nextTick(function () {
             this.addListeners()
           })
@@ -85,12 +86,10 @@
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate: 'mod_tutorials/pointActivate'
+        tutorialPointActivate:  'mod_tutorials/pointActivate',
+        eventResize:            'mod_events/EVENT_eventResize'
       }),
       throttleEv,
-      eventResize() {
-        this.$store.dispatch('mod_events/EVENT_eventResize')
-      },
       addListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
       },
@@ -105,7 +104,7 @@
         this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
       },
       dragStart(event) {
-        if ( event.target.draggable && this.networkMode === 'edit' && event.target.className.includes('btn--layersbar')) {
+        if ( event.target.draggable && this.editIsOpen && event.target.className.includes('btn--layersbar')) {
           this.$refs.layersbar.addEventListener("dragend", this.dragEnd, false);
           this.$refs.layersbar.addEventListener("dragover", this.dragOver, false);
           this.$refs.layersbar.addEventListener("dragenter", this.dragEnter, false);

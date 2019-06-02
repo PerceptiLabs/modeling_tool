@@ -62,9 +62,8 @@ const viewBoxMixin = {
     chartRequest(layerId, layerType, view) {
       this.startRequest = new Date();
 
-      if(layerId === undefined) {
-        return
-      }
+      if(!layerId || !layerType) return;
+      //console.log(layerType);
       let theData = {
         reciever: this.currentNetworkID,
         action: this.$store.getters['mod_workspace/GET_testIsOpen']
@@ -76,12 +75,13 @@ const viewBoxMixin = {
           view: view
         }
       };
-      coreRequest(theData, null, null, this._name)
+      coreRequest(theData)
         .then((data)=> {
           if(data === 'Null') {
             return
           }
           Vue.nonreactive(data);
+          //console.log(data);
           if(view.length) {
             this.$set(this.chartData, view, data)
           }

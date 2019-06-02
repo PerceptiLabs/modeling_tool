@@ -28,23 +28,32 @@ const loadPathFolder = function (customOptions) {
 };
 
 const loadNetwork = function (pathArr) {
+  let localProjectsList = localStorage.getItem('projectsList');
+  let projectsList, pathIndex;
+  if(localProjectsList) {
+    projectsList = JSON.parse(localProjectsList);
+    pathIndex = projectsList.findIndex((proj)=> proj.path[0] === pathArr[0]);
+  }
   return readFilePromiseNative(pathArr[0])
     .then((data) => {
       let net = JSON.parse(data.toString());
+      console.log(projectsList);
+      if(pathIndex > -1 && projectsList) net.network.networkID = projectsList[pathIndex].id;
       this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
     }
   );
-  function readFilePromiseNative(path) {
-    return new Promise((success, reject) => {
-      fs.readFile(path, (err, data) => {
-        if (err) {
-          console.log(err);
-          return reject();
-        }
-        return success(data);
-      })
-    });
-  };
+};
+
+const readFilePromiseNative = function (path) {
+  return new Promise((success, reject) => {
+    fs.readFile(path, (err, data) => {
+      if (err) {
+        console.log(err);
+        return reject();
+      }
+      return success(data);
+    })
+  });
 };
 
 const generateID = function() {
@@ -85,4 +94,4 @@ const throttleEv = function (func, ms) {
   return wrapper;
 };
 
-export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition, throttleEv}
+export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition, throttleEv, readFilePromiseNative}

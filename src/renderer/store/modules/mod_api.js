@@ -146,12 +146,29 @@ const actions = {
       action: "Start",
       value: message
     };
-    //console.log(JSON.parse(JSON.stringify(theData)));
+    //console.log(JSON.stringify(theData));
+    //console.log(theData);
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_startTraining ', data);
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
         setTimeout(()=>dispatch('mod_workspace/EVENT_chartsRequest', null, {root: true}), 500)
+      })
+      .catch((err) =>{
+        console.error(err);
+      });
+  },
+  API_setHeadless({dispatch, rootState, rootGetters}, value) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: 'headless',
+      value: value
+    };
+    //console.log('API_setHeadless send');
+    return coreRequest(theData)
+      .then((data)=> {
+        //console.log('API_setHeadless data', data);
+        return data
       })
       .catch((err) =>{
         console.error(err);
@@ -309,6 +326,7 @@ const actions = {
     };
     return coreRequest(theData)
       .then((data)=> {
+        //console.log('API_getInputDim', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err) =>{
@@ -323,8 +341,10 @@ const actions = {
       action: "getNetworkOutputDim",
       value: prepareNetwork(elementList)
     };
+    //console.log(JSON.stringify(theData));
     return coreRequest(theData)
       .then((data)=> {
+        //console.log('API_getOutputDim', data);
         if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
       })
       .catch((err)=> {

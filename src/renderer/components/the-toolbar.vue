@@ -49,7 +49,7 @@
           class="run-button"
         )
           i.icon.icon-on-off
-          span(v-html="statusNetworkCore === 'Training' || statusNetworkCore == 'Paused' ? 'Stop' : 'Run'")
+          span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
       li
         button#tutorial_pause-training.btn.btn--toolbar.tutorial-relative(type="button"
           :class="{'active': statusNetworkCore === 'Paused'}"
@@ -129,32 +129,44 @@ export default {
     }),
     statusStartBtn() {
       return {
-        'bg-error':   this.statusNetworkCore == 'Training' || this.statusNetworkCore == 'Validation',
-        'bg-warning': this.statusNetworkCore == 'Paused',
-        'bg-success': this.statusNetworkCore == 'Finished',
+        'bg-error':   this.statusTraining === 'training',
+        'bg-warning': this.statusTraining === 'pause',
+        'bg-success': this.statusTraining === 'finish',
       }
     },
-    statusTrainingText() {
+    statusTraining() {
       switch (this.statusNetworkCore) {
         case 'Training':
         case 'Validation':
-          return '<i class="icon icon-repeat animation-loader"></i> Training';
+          return 'training';
           break;
         case 'Paused':
-          return 'Training paused';
+          return 'pause';
           break;
         case 'Finished':
+          return 'finish';
+          break;
+      }
+    },
+    statusTrainingText() {
+      switch (this.statusTraining) {
+        case 'training':
+          return '<i class="icon icon-repeat animation-loader"></i> Training';
+          break;
+        case 'pause':
+          return 'Training paused';
+          break;
+        case 'finish':
           return 'Training completed';
           break;
       }
     },
     statusTestText() {
-      switch (this.statusNetworkCore) {
-        case 'Training':
-        case 'Validation':
+      switch (this.statusTraining) {
+        case 'training':
           return '<i class="icon icon-repeat animation-loader"></i> Test running';
           break;
-        case 'Paused':
+        case 'pause':
           return '<i class="icon icon-notification"></i> Test completed';
           break;
       }
@@ -194,6 +206,7 @@ export default {
     trainStart() {
       let valid = this.validateNetwork();
       if (!valid) return;
+      this.$store.commit('mod_events/set_runNetwork', true);
       this.$store.commit('globalView/GP_showNetGlobalSet', true);
     },
     trainStop() {
