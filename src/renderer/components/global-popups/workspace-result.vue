@@ -21,7 +21,7 @@
       .popup_foot
         button.btn.btn--primary(type="button"
           @click="closePopup()") Cancel
-        button.btn.btn--primary(type="button"
+        button.btn.btn--primary.tutorial-relative(type="button"
           id="tutorial_run-test-button"
           @click="runTest()") Run test
 </template>

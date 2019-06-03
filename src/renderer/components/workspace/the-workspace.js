@@ -113,6 +113,7 @@ export default {
   methods: {
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
+      infoPopup:                'globalView/GP_infoPopup',
     }),
     calcScaleMap() {
       this.$nextTick(()=> {
@@ -132,10 +133,15 @@ export default {
       this.$store.commit('mod_workspace/DELETE_network', index)
     },
     setTabNetwork(index) {
-      this.$store.commit('mod_workspace/SET_currentNetwork', index);
-      this.$store.dispatch('mod_workspace/SET_elementUnselect');
-      if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
-      if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
+      if(this.isTutorialMode) {
+        this.infoPopup("Turn off tutorial mode to change network tab");
+      }
+      else {
+        this.$store.commit('mod_workspace/SET_currentNetwork', index);
+        this.$store.dispatch('mod_workspace/SET_elementUnselect');
+        if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
+        if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
+      }
     },
     toggleSidebar() {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
@@ -224,7 +230,7 @@ function openSaveDialog(jsonNet, dialogWin, network, ctx) {
 
   dialogWin.showSaveDialog(null, option, (fileName) => {
     if (fileName === undefined){
-      ctx.$store.dispatch('globalView/GP_infoPopup', "You didn't save the file");
+      ctx.infoPopup("You didn't save the file");
       return;
     }
     saveFileToDisk(fileName, jsonNet, ctx, savePathToLocal(JSON.parse(jsonNet).project, fileName))
@@ -233,34 +239,33 @@ function openSaveDialog(jsonNet, dialogWin, network, ctx) {
 function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
   fs.writeFile(fileName, jsonNet, (err) => {
     if(err){
-      ctx.$store.dispatch('globalView/GP_infoPopup', "An error occurred creating the file "+ err.message)
+      ctx.infoPopup(`An error occurred creating the file ${err.message}`);
     }
-
-    ctx.$store.dispatch('globalView/GP_infoPopup', "The file has been successfully saved");
+    ctx.infoPopup("The file has been successfully saved");
     successCallBack;
   });
 }
 function doScreenShot(ctx) {
   return new Promise((resolve, reject)=> {
-    const workspace = ctx.$refs.workspaceNet;
-    const svg = workspace.querySelector('.svg-arrow');
+    const networkField = ctx.$refs.networkField[0].$refs.network;
+    const svg = document.querySelector('.svg-arrow');
     const arrowsCanvas = document.createElement('canvas');
     arrowsCanvas.style.position = 'absolute';
     arrowsCanvas.style.zIndex = '0';
-    ctx.$refs.infoSectionName[0].appendChild(arrowsCanvas);
+    networkField.appendChild(arrowsCanvas);
     canvg(arrowsCanvas, svg.outerHTML, {});
     svg.style.display = 'none';
-    workspace.style.background = 'none';
+    networkField.style.filter = 'blur(5px)';
     const options = {
       scale: 1,
       backgroundColor: null,
     };
-    return html2canvas(workspace, options)
+    return html2canvas(networkField, options)
       .then((canvas)=> {
         resolve(canvas.toDataURL());
         svg.style.display = '';
-        workspace.style.background = '';
         arrowsCanvas.remove();
+        networkField.style.filter = '';
       });
   })
 }

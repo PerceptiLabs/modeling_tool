@@ -6,7 +6,7 @@
 
   span + .icon,
   .icon + span {
-    margin-left: 1rem;
+    margin-left: 0.5rem;
   }
 
   &:disabled {
@@ -143,6 +143,7 @@
   color: $white;
   transition: none;
   background: $bg-grad-blue;
+  min-width: 7rem;
   &:hover,
   &.active {
     color: $disable-txt;
