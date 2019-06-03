@@ -49,16 +49,21 @@
         percentProgress: 0,
         updateInfo: {},
         globalKeyEvents: {
-          delete: ['del'],
-          deleteMac: ['backspace', 'meta'],
-          addLayerContainer: ['ctrl', 'g'],
-          unGroupLayerContainer: ['ctrl', 'shift', 'g'],
-          netNew: ['ctrl', 'n'],
-          netOpen: ['ctrl', 'o'],
-          netSave: ['ctrl', 's'],
-          netSaveAs: ['ctrl', 'shift', 's'],
-          logOut: ['ctrl', 'f4'],
-          closeApp: ['ctrl', 'q'],
+          delete:     ['del'],
+          deleteMac:  ['backspace', 'meta'],
+          addLayerContainer:      ['ctrl', 'g'],
+          unGroupLayerContainer:  ['ctrl', 'shift', 'g'],
+          netNew:     ['ctrl', 'n'],
+          netOpen:    ['ctrl', 'o'],
+          netSave:    ['ctrl', 's'],
+          netSaveAs:  ['ctrl', 'shift', 's'],
+          logOut:     ['ctrl', 'f4'],
+          closeApp:   ['ctrl', 'q'],
+          copy:       ['ctrl', 'c'],
+          paste:      ['ctrl', 'v'],
+          cut:        ['ctrl', 'x'],
+          selectAll:  ['ctrl', 'a'],
+          unselectAll:['ctrl', 'shift', 'a'],
         }
       }
     },
@@ -235,6 +240,21 @@
             break;
           case 'closeApp':
             this.$store.dispatch('mod_events/EVENT_closeApp');
+            break;
+          case 'selectAll':
+            this.$store.dispatch('mod_workspace/SET_elementSelectAll');
+            break;
+          case 'unselectAll':
+            this.$store.dispatch('mod_workspace/SET_elementUnselect');
+            break;
+          case 'copy':
+            this.$store.dispatch('mod_events/EVENT_hotKeyCopy');
+            break;
+          case 'paste':
+            this.$store.dispatch('mod_events/EVENT_hotKeyPaste');
+            break;
+          case 'cut':
+            //this.$store.dispatch('mod_events/EVENT_hotKeyCopy');
             break;
         }
       }

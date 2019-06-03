@@ -86,14 +86,15 @@ export default {
         {
           label: 'Edit',
           submenu: [
-            {label: 'Undo',                         enabled: false},
-            {label: 'Redo',                         enabled: false},
+            {label: 'Undo',         accelerator: 'Ctrl+Z',      enabled: false,         active: ()=> {}},
+            {label: 'Redo',         accelerator: 'Ctrl+Shift+Z',enabled: false,         active: ()=> {}},
             {type: 'separator'},
-            {label: 'Cut',                          enabled: false},
-            {label: 'Copy',                         enabled: false},
-            {label: 'Paste',                        enabled: false},
-            {label: 'Delete',                       enabled: false},
-            {label: 'Select all',                   enabled: false},
+            {label: 'Cut',          accelerator: 'Ctrl+X',      enabled: false,  active: ()=> {}},
+            {label: 'Copy',         accelerator: 'Ctrl+C',      enabled: this.openApp,  active: ()=> {}},
+            {label: 'Paste',        accelerator: 'Ctrl+V',      enabled: this.openApp,  active: ()=> {this.HCPaste()}},
+            {type: 'separator'},
+            {label: 'Select all',   accelerator: 'Ctrl+A',      enabled: this.openApp,  active: ()=> {this.HCSelectAll()}},
+            {label: 'Deselect all', accelerator: 'Ctrl+Shift+A',enabled: this.openApp,  active: ()=> {this.HCDeselectAll()}},
           ]
         },
         // {
@@ -162,23 +163,25 @@ export default {
         {
           label: 'Window',
           submenu: [
-            {label: 'Edit profile',                 enabled: false, active: ()=> {}},
-            {label: 'History',                      enabled: false, active: ()=> {}},
+            {label: 'Minimize',         enabled: true,          active: ()=> {this.appMinimize()}},
+            {label: 'Zoom',             enabled: true,          active: ()=> {this.appMaximize()}},
           ]
         },
         {
           label: 'Settings',
           submenu: [
-            {label: 'Hyperparameters',              enabled: this.openApp, active: ()=> {this.openHyperparameters()}},
+            {label: 'Hyperparameters',  enabled: this.openApp,  active: ()=> {this.openHyperparameters()}},
+            {label: 'Edit profile',     enabled: false,         active: ()=> {}},
+            {label: 'History',          enabled: false,         active: ()=> {}},
           ]
         },
         {
           label: 'Help',
           submenu: [
-            {label: 'Help',                                                 active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
-            {label: 'About',                                                active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
-            {label: 'Tutorial mode',                enabled: this.openApp,  active: ()=> {this.showTutorial()}},
-            {label: 'Check for updates',                                    active: ()=> {this.checkUpdate()}},
+            {label: 'Help',                                     active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
+            {label: 'About',                                    active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
+            {label: 'Tutorial mode',    enabled: this.openApp,  active: ()=> {this.showTutorial()}},
+            {label: 'Check for updates',                        active: ()=> {this.checkUpdate()}},
             {type: 'separator'},
           ]
         }
@@ -216,7 +219,22 @@ export default {
     },
     openHyperparameters() {
       this.$store.commit('globalView/GP_showNetGlobalSet', true);
-    }
+    },
+    HCPaste() {
+      this.$store.dispatch('mod_events/EVENT_hotKeyPaste')
+    },
+    HCSelectAll() {
+      this.$store.dispatch('mod_workspace/SET_elementSelectAll');
+    },
+    HCDeselectAll() {
+      this.$store.dispatch('mod_workspace/SET_elementUnselect');
+    },
+    appMinimize() {
+      ipcRenderer.send('appMinimize')
+    },
+    appMaximize() {
+      ipcRenderer.send('appMaximize')
+    },
   }
 }
 </script>

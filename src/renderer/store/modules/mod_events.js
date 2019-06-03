@@ -1,4 +1,5 @@
 import {ipcRenderer} from 'electron'
+import { createNetElement }  from "@/store/modules/mod_workspace.js";
 
 const namespaced = true;
 
@@ -77,6 +78,40 @@ const actions = {
     commit('set_globalPressKey', 'del');
     if(rootGetters['mod_workspace/GET_networkIsOpen']) {
       dispatch('mod_workspace/DELETE_element', null, {root: true});
+    }
+  },
+  EVENT_hotKeyCopy({rootGetters, dispatch}) {
+    if(rootGetters['mod_workspace/GET_networkIsOpen']) {
+      let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
+      let arrBuf = [];
+      arrSelect.forEach((el) => {
+        let newEl = {
+          target: {
+            dataset: {
+              layer: el.layerName,
+              type: el.layerType,
+              component: el.componentName
+            },
+            clientHeight: el.layerMeta.position.top * 2,
+            clientWidth: el.layerMeta.position.left * 2,
+          },
+          layerSettings: el.layerSettings,
+          offsetY: el.layerMeta.position.top * 2,
+          offsetX: el.layerMeta.position.left * 2
+        };
+        arrBuf.push(newEl)
+      });
+
+      dispatch('mod_buffer/SET_buffer', arrBuf, {root: true});
+    }
+  },
+  EVENT_hotKeyPaste({rootState, rootGetters, dispatch}) {
+    let buffer = rootState.mod_buffer.buffer;
+    if(rootGetters['mod_workspace/GET_networkIsOpen'] && buffer) {
+      buffer.forEach((el) => {
+        dispatch('mod_workspace/ADD_element', el, {root: true});
+      });
+      dispatch('mod_buffer/CLEAR_buffer', null, {root: true});
     }
   },
 };
