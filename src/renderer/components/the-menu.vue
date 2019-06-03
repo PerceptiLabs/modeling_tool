@@ -198,6 +198,9 @@ export default {
     ...mapActions({
       infoPopup:     'globalView/GP_infoPopup',
       appClose:      'mod_events/EVENT_closeApp',
+      HCPaste:       'mod_events/EVENT_hotKeyPaste',
+      HCSelectAll:   'mod_workspace/SET_elementSelectAll',
+      HCDeselectAll: 'mod_workspace/SET_elementUnselect',
     }),
     openLink(url) {
       shell.openExternal(url);
@@ -219,15 +222,6 @@ export default {
     },
     openHyperparameters() {
       this.$store.commit('globalView/GP_showNetGlobalSet', true);
-    },
-    HCPaste() {
-      this.$store.dispatch('mod_events/EVENT_hotKeyPaste')
-    },
-    HCSelectAll() {
-      this.$store.dispatch('mod_workspace/SET_elementSelectAll');
-    },
-    HCDeselectAll() {
-      this.$store.dispatch('mod_workspace/SET_elementUnselect');
     },
     appMinimize() {
       ipcRenderer.send('appMinimize')
