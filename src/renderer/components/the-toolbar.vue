@@ -90,14 +90,13 @@
       //-   )
       //-   span Layer Mode
       //-   i.icon.icon-ellipse
-
-      tutorial-instructions
       button.btn.btn--tutorial(
         type="button"
         :class="{'btn--tutorial-active': interactiveInfoStatus}"
         @click="toggleInteractiveInfo"
       )
         span ?
+      tutorial-instructions
 </template>
 
 <script>

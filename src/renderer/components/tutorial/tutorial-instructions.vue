@@ -4,7 +4,7 @@
       @click="switchTutorialMode"
       :class="{'green-status' : isTutorialMode}"
     )
-      span Tutorial Mode
+      span Tutorial
       i.icon.icon-ellipse
     
     .tutorial-instruction-box_list-area(v-if="isShowInstructions")
