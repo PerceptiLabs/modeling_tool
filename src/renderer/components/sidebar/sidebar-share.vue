@@ -1,5 +1,5 @@
 <template lang="pug">
-  section.sidebar_share.sidebar-content
+  section.sidebar_share.sidebar_content-padding--small
     .sidebar-share_icon.big-text
       i.icon.icon-user
       span Users

@@ -140,7 +140,17 @@
       margin: 2rem 0;
     }
   }
-
+  .projects-sidebar_link {
+    font-size: 1.6rem;
+    display: block;
+    width: 100%;
+    margin-bottom: 4rem;
+    text-align: center;
+    font-weight: normal;
+    > * {
+      vertical-align: middle;
+    }
+  }
   .page-projects_basic-templates {
     grid-area: basic-templates;
     display: flex;

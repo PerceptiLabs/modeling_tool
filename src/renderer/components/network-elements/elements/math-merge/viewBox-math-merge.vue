@@ -2,7 +2,7 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       chart-base(
-        chart-label="Data"
+        chart-label="Output"
         :chart-data="chartData.Output"
       )
 </template>

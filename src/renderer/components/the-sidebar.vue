@@ -11,10 +11,10 @@
 
     .sidebar_tab(v-if="tabSelected === 0")
       sidebar-layers
-      sidebar-training(v-if="showTraining")
+      sidebar-training(v-if="ifTraining" v-show="showTraining")
       sidebar-share
     .sidebar_tab(v-if="tabSelected === 1")
-      include ./sidebar/blocks/Save.pug
+      user-profile
     .sidebar_tab(v-if="tabSelected === 2")
       import-data
     .sidebar_tab(v-if="tabSelected === 3")
@@ -29,17 +29,14 @@
   import SidebarTraining  from "@/components/sidebar/sidebar-training";
   import ExportData       from "@/components/different/export-data.vue";
   import ImportData       from "@/components/different/import-data.vue";
+  import UserProfile       from "@/components/different/user-profile.vue";
   import { mapGetters } from 'vuex';
 
 export default {
   name: 'TheSidebar',
   components: {
-    SidebarTraining,
-    SidebarLayers,
-    SidebarComments,
-    SidebarShare,
-    ExportData,
-    ImportData
+    SidebarTraining, SidebarLayers, SidebarComments, SidebarShare,
+    ExportData, ImportData, UserProfile
   },
   data() {
     return {
@@ -56,8 +53,11 @@ export default {
     hideSidebar() {
       return this.$store.state.globalView.hideSidebar
     },
+    ifTraining() {
+      return this.isTraining ? true : false
+    },
     showTraining() {
-      return (this.isTraining && this.statisticsIsOpen) ? true : false
+      return this.statisticsIsOpen ? true : false
     },
     activeStepStoryboard() {
       return this.$store.state.mod_tutorials.activeStepStoryboard

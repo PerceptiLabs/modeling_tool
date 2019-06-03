@@ -150,6 +150,9 @@ export default {
     }),
     testValue() {
       return 100 - (+this.settings.Data_partition.Training + +this.settings.Data_partition.Validation)
+    },
+    isContinueRun() {
+      return this.$store.state.mod_events.runNetwork
     }
   },
   watch: {
@@ -175,7 +178,8 @@ export default {
     setGlobalSet() {
       this.$store.dispatch('mod_workspace/SET_networkSettings', this.settings);
       this.closeGlobalSet();
-      this.$store.commit('globalView/GP_showCoreSideSettings', true);
+      if(this.isContinueRun) this.$store.commit('globalView/GP_showCoreSideSettings', true);
+      this.$store.commit('mod_events/set_runNetwork', false);
     },
     closeGlobalSet() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');

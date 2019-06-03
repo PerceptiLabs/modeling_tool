@@ -1,5 +1,5 @@
 <template lang="pug">
-  section.sidebar-content
+  section.sidebar_content-padding--small
     sidebar-training-section(section-name="Progressbar")
       sidebar-progress(
         :progress-value="currentData.Progress"
@@ -63,10 +63,5 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
-  .sidebar-content {
-    display: flex;
-    flex: 0 0 auto;
-    flex-wrap: wrap;
-    padding-top: 1rem;
-  }
+
 </style>

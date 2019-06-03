@@ -50,17 +50,14 @@ const mutations = {
 
 const actions = {
   API_runServer({state, commit, dispatch, getters, rootGetters}) {
-    console.log('API_runServer');
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
     startCore();
 
     function startCore() {
-      console.log('startCore');
       coreIsStarting = true;
       let openServer;
-      console.log(process.platform);
       switch (process.platform) {
         case 'win32':
           openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
@@ -167,10 +164,10 @@ const actions = {
       action: 'headless',
       value: value
     };
-    console.log('API_setHeadless send');
+    //console.log('API_setHeadless send');
     return coreRequest(theData)
       .then((data)=> {
-        console.log('API_setHeadless data', data);
+        //console.log('API_setHeadless data', data);
         return data
       })
       .catch((err) =>{
@@ -329,6 +326,7 @@ const actions = {
     };
     return coreRequest(theData)
       .then((data)=> {
+        //console.log('API_getInputDim', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err) =>{
@@ -343,8 +341,10 @@ const actions = {
       action: "getNetworkOutputDim",
       value: prepareNetwork(elementList)
     };
+    //console.log(JSON.stringify(theData));
     return coreRequest(theData)
       .then((data)=> {
+        //console.log('API_getOutputDim', data);
         if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
       })
       .catch((err)=> {

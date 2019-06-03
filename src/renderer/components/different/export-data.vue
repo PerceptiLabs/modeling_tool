@@ -1,6 +1,6 @@
 <template lang="pug">
   .export-data
-    base-switcher.export-data_body
+    base-switcher.sidebar_section
       template(slot="firstTab")
         .form_holder
           .form_label Path:
@@ -16,10 +16,24 @@
               )
         .form_holder
           base-checkbox(v-model="settings.Compressed") Compressed
-
+        .sidebar_line
+        .form_holder
+          base-checkbox(v-model="settings.git")
+            i.icon.icon-git
+            span.checkbox-info  Git
+        .form_holder
+          .form_row
+            input.form_input(
+              type="text"
+              placeholder="insert link"
+              v-model="settings.gitLink"
+              :disabled="!settings.git"
+            )
+            span &nbsp;&nbsp;or&nbsp;&nbsp;
+            button.btn.btn--dark-blue-rev(type="button") Create
       template(slot="secondTab")
         p secondTab
-    .export-data_action
+    .sidebar_action
       button.btn.btn--primary(type="button" @click="exportData") Export
 
 </template>
@@ -70,13 +84,7 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
-  .export-data_body {
-    padding: 2.5rem 2.2rem 0;
-    border-bottom: 1px solid $bg-toolbar;
+  .export-data {
     font-size: 1.2rem;
-  }
-  .export-data_action {
-    text-align: right;
-    padding: 1.5rem 2.2rem 0;
   }
 </style>

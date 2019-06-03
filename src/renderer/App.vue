@@ -58,7 +58,7 @@
           netSave: ['ctrl', 's'],
           netSaveAs: ['ctrl', 'shift', 's'],
           logOut: ['ctrl', 'f4'],
-          closeApp: ['alt', 'f4'],
+          closeApp: ['ctrl', 'q'],
         }
       }
     },
@@ -195,9 +195,7 @@
       },
       checkToken() {
         let localUserToken = localStorage.getItem('userToken');
-        console.log('checkToken', localUserToken);
         if(localUserToken) {
-          console.log('checkToken', 'globalView/SET_userToken');
           this.$store.dispatch('globalView/SET_userToken', localUserToken);
           if(this.$router.history.current.name === 'login') {
             this.$router.replace({name: 'projects'});
@@ -218,7 +216,7 @@
             if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');
             break;
           case 'unGroupLayerContainer':
-
+            this.$store.dispatch('mod_workspace/UNGROUP_container');
             break;
           case 'netNew':
             if(this.isLogin) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});

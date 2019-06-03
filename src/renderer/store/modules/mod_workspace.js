@@ -123,7 +123,7 @@ const mutations = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
       openTest: null,
       zoom: 1,
-      netMode: 'edit',//'addArrow', showStatistic
+      netMode: 'edit',//'addArrow'
       coreStatus: {
         Status: 'Waiting' //Created, Training, Validation, Paused, Finished
       },
@@ -534,8 +534,9 @@ const mutations = {
       : dispatch('OPEN_container', container);
     if(getters.GET_networkIsOpen) dispatch('SET_elementUnselect');
   },
-  ungroup_container(state, {container, dispatch, getters}) {
+  ungroup_container(state, {dispatch, getters}) {
     let net = {...getters.GET_currentNetworkElementList};
+    let container = getters.GET_currentSelectedEl[0];
     dispatch('OPEN_container', container);
     for(let idEl in net) {
       let el = net[idEl];
@@ -701,7 +702,7 @@ const actions = {
   //  NETWORK CONTAINER
   //---------------
   ADD_container({commit, getters, dispatch}, event) {
-    commit('add_container', {getters, commit, dispatch});
+    if(getters.GET_networkIsOpen) commit('add_container', {getters, commit, dispatch});
   },
   OPEN_container({commit, getters, dispatch}, container) {
     commit('open_container', {container, getters, dispatch})
@@ -713,7 +714,7 @@ const actions = {
     commit('toggle_container', {val, container, dispatch, getters})
   },
   UNGROUP_container({commit, getters, dispatch}, container) {
-    commit('ungroup_container', {container, dispatch, getters})
+    if(getters.GET_networkIsOpen) commit('ungroup_container', {container, dispatch, getters})
   },
 };
 

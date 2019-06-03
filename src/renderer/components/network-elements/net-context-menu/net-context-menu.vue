@@ -46,7 +46,7 @@ export default {
       this.$store.dispatch('mod_workspace/ADD_container');
     },
     unGroupLayerContainer() {
-      this.$store.dispatch('mod_workspace/UNGROUP_container', this.dataEl);
+      this.$store.dispatch('mod_workspace/UNGROUP_container');
     },
   }
 }
