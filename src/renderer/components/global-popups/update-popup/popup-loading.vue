@@ -1,15 +1,14 @@
 <template lang="pug">
-  div.info-box
-    section.popup-body_info
-      span.info_process-name {{processName}}
-      div.info_message Update status: {{progressStatus}}%
+  .info-box
+    .popup-body_info
+      span.info_process-name Updating Quantum Net software:
+      .info_message Update status: {{progressStatus}}%
       
-      div.info_progress-bar
-        div.progress-bar_loading-line-box
-          div(:style="{width:`${progressStatus}%`}").progress-bar_loading-line
+      .info_progress-bar
+        .progress-bar_loading-line(:style="{width:`${progressStatus}%`}")
     
     footer.popup-body_footer
-        button(type="button" @click="bgMode" ).btn.btn--primary  Background mode
+        button.btn.btn--primary(type="button" @click="bgMode" ) Background mode
         //button(type="button" @click="cancelUpdate" ).btn.btn--dark-blue-rev  Cancel update
 </template>
 
@@ -17,23 +16,10 @@
 export default {
   name: 'PopupLoading',
   props: {
-    processName: {                                // name loading process
-      type: String,
-      default: 'Updating Quantum Net software:'
-    },
     progressStatus: {                             // updates progress (%)
       type: Number,
       default: 0
     },
-    backgroundMode: {                            // hide update popup (stay only header)
-      type: Boolean,
-      default: false
-    }
-  },
-  computed: {
-    updateStatus() {
-      return this.$store.state.globalView.updateStatus
-    }
   },
   methods: {
     cancelUpdate() {

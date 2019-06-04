@@ -102,6 +102,9 @@ const getters = {
 };
 
 const mutations = {
+  reset_network(state) {
+    state.workspaceContent = []
+  },
   //---------------
   //  NETWORK
   //---------------
@@ -653,7 +656,7 @@ const actions = {
     commit('set_statusNetworkWaitGlobalEvent', {getters, value})
   },
   RESET_network({commit}) {
-    commit('RESET_network')
+    commit('reset_network')
   },
   CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
     //console.log(`request -> can show`, `${time}ms`);

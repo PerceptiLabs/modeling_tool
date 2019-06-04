@@ -207,7 +207,8 @@ export default {
       shell.openExternal(url);
     },
     checkUpdate() {
-      ipcRenderer.send('checkUpdate', 'userCheck');
+      this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
+      ipcRenderer.send('checkUpdate');
     },
     addNewNetwork() {
       this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});

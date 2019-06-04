@@ -138,7 +138,6 @@ export default {
     },
     switchDblclick(event) {
       if (this.isLock) return;
-      console.log(this.networkMode);
       if(this.networkMode !== 'edit') {
         this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
         this.setFocusEl(event);

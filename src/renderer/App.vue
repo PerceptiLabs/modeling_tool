@@ -22,12 +22,7 @@
       @app-maximized="appMaximize"
     )
     router-view.app-page
-    update-popup(
-      :progress="percentProgress"
-      :update-info="updateInfo"
-      @started-update="updateStart"
-      @restart-app="restartApp"
-    )
+    update-popup
     the-info-popup
 </template>
 
@@ -46,8 +41,6 @@
     components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup },
     data() {
       return {
-        percentProgress: 0,
-        updateInfo: {},
         globalKeyEvents: {
           delete:     ['del'],
           deleteMac:  ['backspace', 'meta'],
@@ -70,7 +63,7 @@
     mounted() {
       this.calcAppPath();
       this.checkToken();
-
+      /*Menu*/
       ipcRenderer.on('newNetwork', (event) => {
         this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
       });
@@ -86,29 +79,53 @@
       ipcRenderer.on('closeApp', (event) => {
         this.appClose();
       });
-      ipcRenderer.on('update-finded', (event, update) => {
-        this.updateInfo = update;
-        this.$store.commit('globalView/SET_showPopupUpdates', true)
-      });
-      ipcRenderer.on('update-not-finded', (event, update) => {
-        this.$store.commit('globalView/SET_showPopupUpdates', true)
-        this.$store.commit('globalView/SET_updateStatus', 'not update')
-      });
-      ipcRenderer.on('percent-progress', (event, percent) => {
-        this.percentProgress = Math.round(percent);
-      });
-      ipcRenderer.on('download-completed', (event, percent) => {
-        this.$store.commit('globalView/SET_updateStatus', 'done')
-      });
-      ipcRenderer.on('info', (event, data) => {
-        console.log(data);
-      });
       ipcRenderer.on('getAppVersion', (event, data) => {
         this.$store.commit('globalView/SET_appVersion', data)
       });
 
-      this.appReady();
-      this.sendPathToAnalist(this.$route.fullPath);
+      /*Auto update*/
+      ipcRenderer.on('checking-for-update', (event, updateInfo) => {
+        console.log('checking-for-update', updateInfo);
+        // this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
+        // this.$store.commit('mod_autoUpdate/SET_updateInfo', update)
+      });
+      ipcRenderer.on('update-available', (event, updateInfo) => {
+        console.log('update-available', updateInfo);
+        this.$nextTick(()=>{
+          this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
+          this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo);
+        })
+      });
+      ipcRenderer.on('update-not-available', (event, update) => {
+        console.log('update-not-available', update);
+        if(this.showNotAvailable) {
+          this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
+          this.$store.commit('mod_autoUpdate/SET_updateStatus', 'not update')
+        }
+      });
+      ipcRenderer.on('update-downloading', (event, percent) => {
+        console.log('update-downloading', percent);
+        this.$store.commit('mod_autoUpdate/SET_updateProgress', Math.round(percent));
+      });
+      ipcRenderer.on('update-completed', (event, percent) => {
+        console.log('update-completed', percent);
+        this.$store.commit('mod_autoUpdate/SET_updateStatus', 'done')
+      });
+      ipcRenderer.on('update-error', (event, error) => {
+        console.log('update-error', error);
+        this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', false);
+        if(error.code) this.$store.dispatch('globalView/GP_infoPopup', error.code);
+      });
+
+
+      ipcRenderer.on('info', (event, data) => {
+        console.log(data);
+      });
+
+      this.$nextTick(()=>{
+        this.appReady();
+        this.sendPathToAnalist(this.$route.fullPath);
+      })
     },
     computed: {
       platform() {
@@ -117,11 +134,14 @@
       eventLoadNetwork() {
         return this.$store.state.mod_events.openNetwork
       },
-      eventLogout() {
-        return this.$store.state.mod_events.logOut
-      },
-      showPopupUpdates() {
-        return this.$store.state.globalView.globalPopup.showPopupUpdates
+      // eventLogout() {
+      //   return this.$store.state.mod_events.logOut
+      // },
+      // showPopupUpdates() {
+      //   return this.$store.state.globalView.globalPopup.showPopupUpdates
+      // },
+      showNotAvailable() {
+        return this.$store.state.mod_autoUpdate.showNotAvailable
       },
       userToken() {
         return this.$store.state.globalView.userToken
@@ -167,6 +187,7 @@
           document.body.className = "";
         }, 1000)
       },
+      /*Header actions*/
       appClose() {
         this.$store.dispatch('mod_events/EVENT_closeApp');
       },
@@ -176,12 +197,9 @@
       appMaximize() {
         ipcRenderer.send('appMaximize')
       },
-      updateStart() {
-        ipcRenderer.send('update-start')
-      },
-      restartApp() {
-        ipcRenderer.send('restart-app-after-update')
-      },
+      /*Auto update actions*/
+
+
       calcAppPath() {
         let resPath = process.resourcesPath;
         var path = '';
@@ -208,7 +226,7 @@
         }
       },
       logOut() {
-        this.$store.dispatch('mod_events/EVENT_logOut', this)
+        if(this.isLogin) this.$store.dispatch('mod_events/EVENT_logOut', this)
       },
       switchKeyPress(event) {
         event.preventDefault();
@@ -236,10 +254,10 @@
             if(this.openApp) this.$store.commit('mod_events/set_saveNetworkAs');
             break;
           case 'logOut':
-            if(this.isLogin) this.$store.dispatch('mod_events/EVENT_logOut', this);
+            if(this.isLogin) this.logOut;
             break;
           case 'closeApp':
-            this.$store.dispatch('mod_events/EVENT_closeApp');
+            this.appClose;
             break;
           case 'selectAll':
             this.$store.dispatch('mod_workspace/SET_elementSelectAll');

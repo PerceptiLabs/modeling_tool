@@ -3,19 +3,21 @@
     :class="{'settings-layer--full-view': fullView}"
   )
     .settings-layer_section
-      ul.bookmark_tab-list(v-if="isMultiTabs")
-        button.bookmark_tab(type="button"
-          v-for="(data, key) in theCode"
-          :key="data.key"
-          :class="{'bookmark_tab--active': currentTab === key}"
-          @click="currentTab = key"
-          ) {{ key }}
+      .bookmark_head
+        ul.bookmark_tab-list(v-if="isMultiTabs")
+          button.bookmark_tab(type="button"
+            v-for="(data, key) in theCode"
+            :key="data.key"
+            :class="{'bookmark_tab--active': currentTab === key}"
+            @click="currentTab = key"
+            ) {{ key }}
+        .bookmark_tab.bookmark_tab--active(v-else) Output
+        button.btn.btn--link.icon.icon-full-screen-code(type="button" @click="toggleFullView")
       .bookmark_content
         .form_holder(v-if="isMultiTabs && theCode")
           code-hq( v-model="theCode[currentTab]" )
         .form_holder(v-else)
           code-hq( v-model="theCode" )
-        button.btn.btn--code-view.icon.icon-shevron-right(type="button" @click="toggleFullView")
 
 </template>
 
@@ -67,15 +69,21 @@ export default {
   }
   .settings-layer--full-view {
     max-width: none;
-    .btn--code-view:before {
-      transform: rotate(180deg);
-      display: inline-block;
-    }
   }
+
+  .bookmark_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
   .bookmark_tab-list {
     padding: 0;
   }
   .bookmark_tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 7em;
     text-align: left;
     height: 2rem;

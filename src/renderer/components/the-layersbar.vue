@@ -211,8 +211,7 @@ export default {
   }
   .layersbar-list {
     margin: 0;
-    padding: 0;
-    padding-bottom: 30px;
+    padding: 0 0 30px 0;
     list-style: none;
     transition: transform $animation-speed $animation-speed;
     transform: translateY(0);
@@ -222,8 +221,7 @@ export default {
   }
   .layer {
     position: relative;
-    padding: $indent;
-    padding-bottom: 0;
+    padding: $indent $indent 0 $indent;
   }
   .layer_parent {
     position: relative;

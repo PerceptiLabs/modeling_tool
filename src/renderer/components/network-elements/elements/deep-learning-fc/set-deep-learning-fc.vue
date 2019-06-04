@@ -113,6 +113,27 @@ initial = tf.constant(0.1, shape=[${this.settings.Neurons}]);
 b=tf.Variable(initial);
 flat_node=tf.cast(tf.reshape(X,[-1,input_size]),dtype=tf.float32);
 node=tf.matmul(flat_node,W)${this.settings.Dropout ? ';\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
+
+for element in ${this.codeInputDim}:
+  input_size*=element
+shape=[input_size,${this.settings.Neurons}];
+initial = tf.truncated_normal(shape, stddev=0.1);
+W=tf.Variable(initial);
+initial = tf.constant(0.1, shape=[${this.settings.Neurons}]);
+b=tf.Variable(initial);
+flat_node=tf.cast(tf.reshape(X,[-1,input_size]),dtype=tf.float32);
+node=tf.matmul(flat_node,W)${this.settings.Dropout ? ';\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
+
+for element in ${this.codeInputDim}:
+  input_size*=element
+shape=[input_size,${this.settings.Neurons}];
+initial = tf.truncated_normal(shape, stddev=0.1);
+W=tf.Variable(initial);
+initial = tf.constant(0.1, shape=[${this.settings.Neurons}]);
+b=tf.Variable(initial);
+flat_node=tf.cast(tf.reshape(X,[-1,input_size]),dtype=tf.float32);
+node=tf.matmul(flat_node,W)${this.settings.Dropout ? ';\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
+
 node=node+b;`;
         return `${fc}\n${activeFunc}`
       }

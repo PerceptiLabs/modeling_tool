@@ -1,5 +1,4 @@
 import {ipcRenderer} from 'electron'
-import { createNetElement }  from "@/store/modules/mod_workspace.js";
 
 const namespaced = true;
 

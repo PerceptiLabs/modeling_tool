@@ -173,7 +173,6 @@
   }
 }
 
-//.btn--crash-course {
 .btn--outline-blue {
   font-size: 1.5rem;
   //font-weight: 500;
@@ -186,6 +185,7 @@
     background: $bg-grad-blue;
   }
 }
+
 .btn--outline-blue-rev {
   @extend .btn--outline-blue;
   background: $bg-grad-blue;
