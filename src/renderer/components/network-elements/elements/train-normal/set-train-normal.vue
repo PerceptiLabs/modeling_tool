@@ -223,7 +223,9 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
       else accuracy = `arg_output=tf.argmax(X['${this.network_output}'],-1);
 arg_label=tf.argmax(X['${this.labels}'],-1);
 correct_prediction = tf.equal(arg_output, arg_label);
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));
+f1=tf.contrib.metrics.f1_score(X['${this.labels}'],X['${this.network_output}'])[0];
+auc=tf.metrics.auc(labels=X['${this.labels}'],predictions=X['${this.network_output}'],curve='ROC')[0];`
       return accuracy
     },
     coreCode() {

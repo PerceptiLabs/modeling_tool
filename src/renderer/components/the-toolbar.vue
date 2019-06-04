@@ -125,6 +125,7 @@ export default {
       isTraining:             'mod_workspace/GET_networkIsTraining',
       statusNetworkCore:      'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:       'mod_workspace/GET_statisticsIsOpen',
+      networkIsOpen:       'mod_workspace/GET_networkIsOpen',
     }),
     statusStartBtn() {
       return {
@@ -188,6 +189,13 @@ export default {
     },
     activeStepStoryboard() {
       return this.$store.state.mod_tutorials.activeStepStoryboard
+    }
+  },
+  watch: {
+    networkIsOpen(newVal) {
+      if(!newVal) {
+        this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+      }
     }
   },
   methods: {

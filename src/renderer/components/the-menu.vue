@@ -15,7 +15,7 @@
             button.btn.btn--link.header-nav_sublist-btn(type="button"
               v-else
               :disabled="subItem.enabled === false"
-              @click="subItem.active()"
+              @mousedown="subItem.active()"
             )
               span.header-nav_btn-text {{ subItem.label }}
               span.text-disable(
@@ -89,8 +89,8 @@ export default {
             {label: 'Undo',         accelerator: 'Ctrl+Z',      enabled: false,         active: ()=> {}},
             {label: 'Redo',         accelerator: 'Ctrl+Shift+Z',enabled: false,         active: ()=> {}},
             {type: 'separator'},
-            {label: 'Cut',          accelerator: 'Ctrl+X',      enabled: false,  active: ()=> {}},
-            {label: 'Copy',         accelerator: 'Ctrl+C',      enabled: this.openApp,  active: ()=> {}},
+            {label: 'Cut',          accelerator: 'Ctrl+X',      enabled: false,         active: ()=> {}},
+            {label: 'Copy',         accelerator: 'Ctrl+C',      enabled: this.openApp,  active: ()=> {this.HCCopy()}},
             {label: 'Paste',        accelerator: 'Ctrl+V',      enabled: this.openApp,  active: ()=> {this.HCPaste()}},
             {type: 'separator'},
             {label: 'Select all',   accelerator: 'Ctrl+A',      enabled: this.openApp,  active: ()=> {this.HCSelectAll()}},
@@ -198,6 +198,7 @@ export default {
     ...mapActions({
       infoPopup:     'globalView/GP_infoPopup',
       appClose:      'mod_events/EVENT_closeApp',
+      HCCopy:        'mod_events/EVENT_hotKeyCopy',
       HCPaste:       'mod_events/EVENT_hotKeyPaste',
       HCSelectAll:   'mod_workspace/SET_elementSelectAll',
       HCDeselectAll: 'mod_workspace/SET_elementUnselect',
