@@ -77,7 +77,7 @@
       globalEvents: {
         type: Array,
         default: () => ([])
-      }
+      },
     },
     watch: {
       // options: {
@@ -217,6 +217,9 @@
   .code-hq {
     font-size: 16px;
     overflow: auto;
+  }
+  .code_full-view .CodeMirror {
+    height: 100%;
   }
   .CodeMirror-sizer {
     margin: 0 !important;

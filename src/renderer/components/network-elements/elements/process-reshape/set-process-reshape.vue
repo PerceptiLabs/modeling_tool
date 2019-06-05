@@ -1,59 +1,44 @@
 <template lang="pug">
-  .popup
-    ul.popup_tab-set
-      button.popup_header(
-        v-for="(tab, i) in tabs"
-        :key="tab.i"
-        @click="setTab(i)"
-        :class="{'disable': tabSelected != i}"
-      )
-        h3(v-html="tab")
-    .popup_tab-body
-      .popup_body(:class="{'active': tabSelected == 0}")
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              .form_label Reshape:
-              .form_input
-                triple-input#tutorial_input-reshape.tutorial-relative(v-model="settings.Shape")
-          //.settings-layer_section
-            .form_row
-              .form_label Reshape:
-              .form_input
-                input(type="text")
-          //.settings-layer_section
-            .form_row
-              .form_label Transpose:
-              .form_input
-                input(type="text")
-          .settings-layer_section
-            .form_row
-              .form_label Transpose:
-              .form_input
-                triple-input(v-model="settings.Permutation")
+  net-base-settings
+    template(slot="Settings-content")
+      .settings-layer_section
+        .form_row
+          .form_label Reshape:
+          .form_input
+            triple-input#tutorial_input-reshape.tutorial-relative(v-model="settings.Shape")
+      //.settings-layer_section
+        .form_row
+          .form_label Reshape:
+          .form_input
+            input(type="text")
+      //.settings-layer_section
+        .form_row
+          .form_label Transpose:
+          .form_input
+            input(type="text")
+      .settings-layer_section
+        .form_row
+          .form_label Transpose:
+          .form_input
+            triple-input(v-model="settings.Permutation")
 
-      .popup_body(:class="{'active': tabSelected == 1}")
-        settings-code(
-        :the-code="coreCode"
-        )
-    .settings-layer_foot
+    template(slot="Code-content")
+      settings-code(:the-code="coreCode")
+
+    template(slot="action")
       button#tutorial_button-apply.btn.btn--primary(type="button" @click="saveSettings") Apply
-
 </template>
 
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
-  import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
+ // import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
   import TripleInput    from "@/components/base/triple-input";
   import { mapActions } from 'vuex';
 
   export default {
     name: 'SetProcessReshape',
     mixins: [mixinSet],
-    components: {
-      TripleInput,
-      SettingsCode
-    },
+    components: { TripleInput },
     data() {
       return {
         settings: {

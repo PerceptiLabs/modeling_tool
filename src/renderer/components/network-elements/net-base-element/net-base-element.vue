@@ -13,10 +13,18 @@
     .net-element_btn(ref="BaseElement")
       slot
 
-    .net-element_window(v-if="settingsIsOpen")
+    .net-element_window(
+      v-if="settingsIsOpen"
+      :class="classElWindow"
+      :style="styleElWindow"
+      )
       slot(name="settings")
 
-    .net-element_window.net-element_context-menu(v-if="contextIsOpen")
+    .net-element_window.net-element_context-menu(
+      v-if="contextIsOpen"
+      :class="classElWindow"
+      :style="styleElWindow"
+      )
       context-menu(
         :data-el="dataEl"
         @open-settings.stop="switchDblclick($event)"
@@ -53,12 +61,6 @@ export default {
       hideAllWindow: this.hideAllWindow
     }
   },
-  data() {
-    return {
-      contextIsOpen: false,
-      settingsIsOpen: false,
-    }
-  },
   mounted() {
     this.$refs.rootBaseElement.addEventListener('mousedown', this.switchMousedownEvent);
     this.$refs.rootBaseElement.addEventListener('touchstart', this.switchMousedownEvent);
@@ -77,13 +79,24 @@ export default {
     /*clickOutsideAction*/
     document.removeEventListener('mousedown', this.mousedownOutside);
   },
+  data() {
+    return {
+      contextIsOpen: false,
+      settingsIsOpen: false,
+      openWinPosition: {
+        left: false,
+        top: false
+      }
+    }
+  },
   computed: {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
       isTutorialMode:       'mod_tutorials/getIstutorialMode',
       isTraining:           'mod_workspace/GET_networkIsTraining',
       editIsOpen:           'mod_workspace/GET_networkIsOpen',
-      currentSelectedEl:    'mod_workspace/GET_currentSelectedEl'
+      currentSelectedEl:    'mod_workspace/GET_currentSelectedEl',
+      statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
     }),
     currentId() {
       return this.dataEl.layerId
@@ -98,15 +111,24 @@ export default {
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
-    statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
+    wsZoom() {
+      return  this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
     },
     classEl() {
       return {
         'net-element--active': this.isSelectedEl,
         'element--hidden': this.dataEl.layerMeta.isInvisible
       }
-    }
+    },
+    classElWindow() {
+      return {
+        'net-element_window--left': this.openWinPosition.left,
+        'net-element_window--top': this.openWinPosition.top
+      }
+    },
+    styleElWindow() {
+      return {zoom: `${(100 / (this.wsZoom * 100)) * 100}%`}
+    },
   },
   watch: {
     isSelectedEl(newVal) {
@@ -152,7 +174,7 @@ export default {
     openSettings(event) {
       this.hideAllWindow();
       if(!this.editIsOpen) return;
-
+      this.calcWindowPosition();
       this.settingsIsOpen = true;
       this.$nextTick(() => {
         this.tutorialPointActivate({
@@ -166,9 +188,22 @@ export default {
       if(!this.currentSelectedEl.length) {
         this.setFocusEl(event);
       }
+      this.calcWindowPosition();
       if(this.networkMode === 'edit' && this.editIsOpen) {
         this.contextIsOpen = true;
       }
+    },
+    calcWindowPosition() {
+      let windowWs = document.querySelector('.js-info-section_main');
+      let winCenterWidth = windowWs.scrollLeft + (windowWs.clientWidth/this.wsZoom)/2;
+      let winCenterHeight = windowWs.scrollTop + (windowWs.clientHeight/this.wsZoom)/2;
+
+      winCenterWidth < this.dataEl.layerMeta.position.left
+        ? this.openWinPosition.left = true
+        : this.openWinPosition.left = false;
+      winCenterHeight < this.dataEl.layerMeta.position.top
+        ? this.openWinPosition.top = true
+        : this.openWinPosition.top = false
     },
     setFocusEl(ev) {
       ev.ctrlKey
@@ -213,6 +248,15 @@ export default {
     top: 0;
     left: 100%;
     padding-left: 10px;
+    padding-right: 10px;
+    &.net-element_window--left {
+      left: auto;
+      right: 100%;
+    }
+    &.net-element_window--top {
+      top: auto;
+      bottom: 0;
+    }
   }
   .net-element_btn {
     position: relative;

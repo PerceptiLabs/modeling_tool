@@ -1,86 +1,68 @@
 <template lang="pug">
-  .popup
-    ul.popup_tab-set
-      button.popup_header(
-        v-for="(tab, i) in tabs"
-        :key="tab.i"
-        @click="setTab(i)"
-        :class="{'disable': tabSelected != i}"
-      )
-        h3(v-html="tab")
-    .popup_tab-body
-      .popup_body(
-        :class="{'active': tabSelected == 0}"
-      )
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              .form_label Type:
-              .form_input
-                base-radio(group-name="group" value-input="None" v-model="settings.neurons")
-                  span Classification
-                base-radio(group-name="group" value-input="Sigmoid" v-model="settings.neurons")
-                  span Regression
-                base-radio(group-name="group" value-input="Sigmoid1" v-model="settings.neurons")
-                  span Anomalie detection
-          template(v-if="userMode === 'advanced'")
-            .settings-layer_section
-              .form_row
-                .form_label Split:
-                .form_input
-                  base-radio(group-name="group1" value-input="None" v-model="settings.neurons1")
-                    span RBF
-                  base-radio(group-name="group1" value-input="Sigmoid" v-model="settings.neurons1")
-                    span Precomputed
-                  base-radio(group-name="group1" value-input="None1" v-model="settings.neurons1")
-                    span Linear
-                  base-radio(group-name="group1" value-input="Sigmoid1" v-model="settings.neurons1")
-                    span Sigmoid
-                  base-radio(group-name="group1" value-input="Sigmoid11" v-model="settings.neurons1")
-                    span Poly
-            .settings-layer_section
-              .form_row
-                .form_label Kernel degree:
-                .form_input
-                  input(type="text")
-            .settings-layer_section
-              .form_row
-                .form_label Kernel coefficent:
-                .form_input
-                  base-radio(group-name="group2" value-input="None" v-model="settings.neurons2")
-                    span Auto
-                  base-radio(group-name="group2" value-input="None1" v-model="settings.neurons2")
-                    span Scale
-            .settings-layer_section
-              .form_row
-                .form_label Tolerance:
-                .form_input
-                  input(type="text")
-            .settings-layer_section
-              .form_row
-                .form_label Tolerance:
-                .form_input
-                  input(type="text")
+  net-base-settings
+    template(slot="Settings-content")
+      .settings-layer_section
+        .form_row
+          .form_label Type:
+          .form_input
+            base-radio(group-name="group" value-input="None" v-model="settings.neurons")
+              span Classification
+            base-radio(group-name="group" value-input="Sigmoid" v-model="settings.neurons")
+              span Regression
+            base-radio(group-name="group" value-input="Sigmoid1" v-model="settings.neurons")
+              span Anomalie detection
+      template(v-if="userMode === 'advanced'")
+        .settings-layer_section
+          .form_row
+            .form_label Split:
+            .form_input
+              base-radio(group-name="group1" value-input="None" v-model="settings.neurons1")
+                span RBF
+              base-radio(group-name="group1" value-input="Sigmoid" v-model="settings.neurons1")
+                span Precomputed
+              base-radio(group-name="group1" value-input="None1" v-model="settings.neurons1")
+                span Linear
+              base-radio(group-name="group1" value-input="Sigmoid1" v-model="settings.neurons1")
+                span Sigmoid
+              base-radio(group-name="group1" value-input="Sigmoid11" v-model="settings.neurons1")
+                span Poly
+        .settings-layer_section
+          .form_row
+            .form_label Kernel degree:
+            .form_input
+              input(type="text")
+        .settings-layer_section
+          .form_row
+            .form_label Kernel coefficient:
+            .form_input
+              base-radio(group-name="group2" value-input="None" v-model="settings.neurons2")
+                span Auto
+              base-radio(group-name="group2" value-input="None1" v-model="settings.neurons2")
+                span Scale
+        .settings-layer_section
+          .form_row
+            .form_label Tolerance:
+            .form_input
+              input(type="text")
+        .settings-layer_section
+          .form_row
+            .form_label Tolerance:
+            .form_input
+              input(type="text")
 
-      .popup_body(:class="{'active': tabSelected == 1}")
-        settings-code(
-        :the-code="coreCode"
-        )
-    .settings-layer_foot
+    template(slot="Code-content")
+      settings-code(:the-code="coreCode")
+
+    template(slot="action")
       button.btn.btn--primary(type="button" @click="applySettings") Apply
-
 </template>
 
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
-import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
 
 export default {
   name: 'SetClassicMLSVM',
   mixins: [mixinSet],
-  components: {
-    SettingsCode,
-  },
   data() {
     return {
       settings: {

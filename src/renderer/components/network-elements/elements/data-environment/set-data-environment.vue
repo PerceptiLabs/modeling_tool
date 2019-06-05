@@ -1,53 +1,38 @@
 <template lang="pug">
-  .popup
-    ul.popup_tab-set
-      button.popup_header(
-        v-for="(tab, i) in tabs"
-        :key="tab.i"
-        :class="{'disable': tabSelected != i}"
-        @click="setTab(i)"
-      )
-        h3(v-html="tab.html")
-    .popup_tab-body
-      .popup_body(
-        :class="{'active': tabSelected == 0}"
-      )
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              base-select(
-                v-model="settings.accessProperties.Atari"
-                :select-options="selectOptions"
-                )
-            .form_row
-              chart-switch.data-charts(
-                key="1"
-                :chart-label="chartLabel"
-                :chart-data="imgData"
-              )
-      .popup_body(
-        :class="{'active': tabSelected == 1}"
-      )
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              input.form_input(type="text" placeholder="c:" readonly
-                v-model="inputPath"
-                )
-              button.btn.btn--primary(type="button"
-                @click="loadFile"
-                :disabled="disabledBtn"
-                ) Load
-            .form_row
-              chart-switch.data-charts(
-                key="2"
-                :disable-header="true"
-                :chart-data="imgData"
-              )
+  net-base-settings(:tab-set="tabs")
+    template(slot="Gym-content")
+      .settings-layer_section
+        .form_row
+          base-select(
+            v-model="settings.accessProperties.Atari"
+            :select-options="selectOptions"
+          )
+        .form_row
+          chart-switch.data-charts(
+            key="1"
+            :chart-label="chartLabel"
+            :chart-data="imgData"
+          )
 
-    .settings-layer_foot
+    template(slot="<i class='icon icon-search'></i> Unity-content")
+      .settings-layer_section
+        .form_row
+          input.form_input(type="text" placeholder="c:" readonly
+          v-model="inputPath"
+          )
+          button.btn.btn--primary(type="button"
+            @click="loadFile"
+            :disabled="disabledBtn"
+          ) Load
+        .form_row
+          chart-switch.data-charts(
+            key="2"
+            :disable-header="true"
+            :chart-data="imgData"
+          )
+
+    template(slot="action")
       button.btn.btn--primary(type="button" @click="applySettings") Apply
-
 </template>
 
 <script>
@@ -64,16 +49,14 @@
     components: { ChartSwitch },
     data() {
       return {
+        tabs: ['Gym', `<i class='icon icon-search'></i> Unity`],
         disabledBtn: false,
         selectOptions: [
           { text: 'Breakout',     value: 'Breakout' },
           { text: 'BankHeist',    value: 'BankHeist' },
           { text: 'DemonAttack',  value: 'DemonAttack' }
         ],
-        tabs: [
-          {html: 'Gym',                                     type: 'Gym'},
-          {html: '<i class="icon icon-search"></i> Unity',  type: 'Unity'}
-          ],
+
         settings: {
           Type: 'Environment',
           accessProperties: {

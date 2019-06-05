@@ -7,7 +7,7 @@
     ul.toolbar_list
       li
         button#tutorial_pointer.btn.btn--toolbar(type="button"
-          :disabled="statisticsIsOpen"
+          :disabled="!networkIsOpen"
           :class="{'active': networkMode === 'edit'}"
           v-tooltip:bottom="'Edit'"
           v-tooltip-interactive:bottom="interactiveInfo"
@@ -19,7 +19,7 @@
         :class="{'disable-hover': statisticsIsOpen}"
       )
         button#tutorial_list-arrow.btn.btn--toolbar(type="button"
-          :disabled="statisticsIsOpen"
+          :disabled="!networkIsOpen"
           :class="{'active': networkMode === 'addArrow'}"
           @click="setNetMode('addArrow', 'tutorial_list-arrow')"
           v-tooltip:bottom="'Arrow'"

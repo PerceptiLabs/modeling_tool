@@ -1,67 +1,47 @@
 <template lang="pug">
-  .popup
-    ul.popup_tab-set
-      button.popup_header(
-        v-for="(tab, i) in tabs"
-        :key="tab.i"
-        @click="setTab(i)"
-        :class="{'disable': tabSelected != i}"
-      )
-        h3(v-html="tab")
-    .popup_tab-body
-      .popup_body(
-        :class="{'active': tabSelected == 0}"
-      )
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              .form_label Neurons:
-              .form_input
-                input(type="number" v-model="settings.Neurons")
-          .settings-layer_section
-            .form_row
-              .form_label Recurrent alternative:
-              .form_input
-                div
-                  base-radio(group-name="group" value-input="LSTM" v-model="settings.Version")
-                    span LSTM
-                div
-                  base-radio(group-name="group" value-input="GRU" v-model="settings.Version")
-                    span GRU
-                div
-                  base-radio(group-name="group" value-input="RNN" v-model="settings.Version")
-                    span RNN
-                //div
-                  button.btn.btn--primary(type="button") Custom
+  net-base-settings
+    template(slot="Settings-content")
+      .settings-layer_section
+        .form_row
+          .form_label Neurons:
+          .form_input
+            input(type="number" v-model="settings.Neurons")
+      .settings-layer_section
+        .form_row
+          .form_label Recurrent alternative:
+          .form_input
+            div
+              base-radio(group-name="group" value-input="LSTM" v-model="settings.Version")
+                span LSTM
+            div
+              base-radio(group-name="group" value-input="GRU" v-model="settings.Version")
+                span GRU
+            div
+              base-radio(group-name="group" value-input="RNN" v-model="settings.Version")
+                span RNN
+            //div
+              button.btn.btn--primary(type="button") Custom
 
-          .settings-layer_section
-            .form_row
-              .form_label Time steps:
-              .form_input
-                input(type="number" v-model="settings.Time_steps")
+      .settings-layer_section
+        .form_row
+          .form_label Time steps:
+          .form_input
+            input(type="number" v-model="settings.Time_steps")
+    template(slot="Code-content")
+      settings-code(:the-code="coreCode")
 
-      .popup_body(:class="{'active': tabSelected == 1}")
-        settings-code(
-        :the-code="coreCode"
-        )
-    .settings-layer_foot
+    template(slot="action")
       button.btn.btn--primary(type="button" @click="applySettings") Apply
-
 </template>
 
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
-import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
 
 export default {
   name: 'SetDeepLearningRecurrent',
   mixins: [mixinSet],
-  components: {
-    SettingsCode
-  },
   data() {
     return {
-      tabs: ['Settings', 'Code'],
       settings: {
         Neurons: "10",
         Version: "LSTM", //#LSTM, GRU, RNN
