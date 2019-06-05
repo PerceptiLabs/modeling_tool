@@ -4,6 +4,7 @@
     data-layer="Dynamic Routing"
     data-type="Training"
     v-tooltip:right="'Dynamic Routing'"
+    v-tooltip-interactive:right="interactiveInfo"
   )
     i.icon.icon-learning-dynamic
 
@@ -16,6 +17,14 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        title: 'Train Dynamic',
+        text: 'Dynamic routing layer'
+      }
     }
   }
 }

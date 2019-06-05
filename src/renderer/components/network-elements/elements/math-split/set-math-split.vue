@@ -14,7 +14,7 @@
       )
         .settings-layer
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.chooseAxis")
               .form_label Choose dimension:
               .form_input
                 triple-input(
@@ -27,7 +27,7 @@
 
                 )
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.splitOn")
               .form_label Split on:
               .form_input
                 .form_holder
@@ -64,6 +64,16 @@ export default {
         pooling: false,
         neurons: 'None',
         val: 50
+      },
+      interactiveInfo: {
+        chooseAxis: {
+          title: 'Choose axis',
+          text: 'Choose which axis to split on.'
+        },
+        splitOn: {
+          title: 'Split on',
+          text: 'Choose in which position to split on at the chosen axis'
+        },
       }
     }
   },

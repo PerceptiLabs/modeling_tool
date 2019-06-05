@@ -14,12 +14,12 @@
       )
         .settings-layer
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.neurons")
               .form_label Neurons:
               #tutorial_neurons.tutorial-relative.form_input
                 input(type="text" v-model="settings.Neurons")
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
               .form_label Activation function:
               .form_input
                 base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
@@ -31,7 +31,7 @@
                 base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
                   span Tanh
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
               .form_label Dropout:
               .form_input
                 base-radio(group-name="group2" :value-input="true" v-model="settings.Dropout")
@@ -82,7 +82,21 @@
           Neurons :"10",
           Activation_function: "Sigmoid",
           Dropout: false,
-        }
+        },
+        interactiveInfo: {
+          neurons: {
+            title: 'Neurons',
+            text: 'Set how many neurons to use'
+          },
+          activationFunction: {
+            title: 'Activation function',
+            text: 'Choose activation function for each neuron'
+          },
+          dropout: {
+            title: 'Dropout',
+            text: 'Choose if dropout should be used or not'
+          }
+        },
       }
     },
     computed: {

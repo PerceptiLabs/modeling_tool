@@ -4,6 +4,7 @@
   data-layer="Genetic Algorithm"
   data-type="Training"
   v-tooltip:right="'Genetic Algorithm'"
+  v-tooltip-interactive:right="interactiveInfo"
   )
     i.icon.icon-learning-genetic
 
@@ -16,6 +17,14 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        title: 'Train GA',
+        text: 'Genetic algorithm layer'
+      }
     }
   }
 }

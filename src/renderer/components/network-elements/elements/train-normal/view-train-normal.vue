@@ -4,6 +4,7 @@
     data-layer="Normal"
     data-type="Training"
     v-tooltip:right="'Normal'"
+    v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_training-normal"
   )
     i.icon.icon-training
@@ -17,6 +18,14 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        title: 'Train Normal',
+        text: 'Normal supervised learning layer'
+      }
     }
   }
 }

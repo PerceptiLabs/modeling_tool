@@ -4,6 +4,7 @@
   data-layer="FullyConnected_1"
   data-type="Other"
   v-tooltip:right="'Fully Connected'"
+  v-tooltip-interactive:right="interactiveInfo"
   id="tutorial_fully-connected"
   )
     i.icon.icon-round
@@ -17,6 +18,14 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        title: 'Deep Learning FC',
+        text: 'Fully Connected layer'
+      }
     }
   }
 }

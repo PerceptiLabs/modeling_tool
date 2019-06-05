@@ -4,6 +4,7 @@
   data-layer="Split"
   data-type="Other"
   v-tooltip:right="'Split'"
+  v-tooltip-interactive:right="interactiveInfo"
   )
     i.icon.icon-road-split
 
@@ -16,6 +17,14 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        title: 'Math Split',
+        text: 'Split layer'
+      }
     }
   }
 }

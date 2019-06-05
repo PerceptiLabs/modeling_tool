@@ -14,7 +14,7 @@
       )
         .settings-layer
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo")
               .form_label Number of classes:
               #tutorial_number-of-classes.form_input.tutorial-relative
                 input(type="text" v-model="settings.N_class")
@@ -44,6 +44,10 @@ export default {
       tabs: ['Settings', 'Code'],
       settings: {
         N_class: '10',
+      },
+      interactiveInfo: {
+        title: 'Number of classes',
+        text: 'Set the number of classes in the data'
       }
     }
   },

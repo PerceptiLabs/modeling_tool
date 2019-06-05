@@ -4,6 +4,7 @@
   data-layer="Argmax_1"
   data-type="Other"
   v-tooltip:right="'Argmax'"
+  v-tooltip-interactive:right="interactiveInfo"
   )
     i.icon.icon-l-calc-argmax
 
@@ -16,6 +17,14 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        title: 'Math Argmax',
+        text: 'Argmax layer'
+      }
     }
   }
 }

@@ -16,7 +16,7 @@
             button.btn.tutorial-relative(type="button"
               :disabled="disabledBtn"
               @click="loadFolder"
-              v-tooltip-interactive:left="folderInteractiveInfo"
+              v-tooltip-interactive:left="interactiveInfo.folder"
               )
               i.icon.icon-open-folder
             span.data-select_text or
@@ -24,7 +24,7 @@
               :disabled="disabledBtn"
               @click="loadFile"
               id="tutorial_button-load"
-              v-tooltip-interactive:right="fileInteractiveInfo"
+              v-tooltip-interactive:right="interactiveInfo.file"
               )
               i.icon.icon-open-file
         .settings-layer_section(v-else)
@@ -88,14 +88,16 @@
         dataColumns: [],
         dataColumnsSelected: [],
         disabledBtn: false,
-        folderInteractiveInfo: `<div class="tooltip-tutorial_italic">
-                                  <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-                                  <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-                                </div>`,
-        fileInteractiveInfo: `<div class="tooltip-tutorial_italic">
-                                <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-                                <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-                              </div>`,
+        interactiveInfo: {
+          folder: {
+            title: 'Select Folder',
+            text: 'Select a folder where the data is stored'
+          },
+          file: {
+            title: 'Select File',
+            text: 'Select a file that is the data'
+          }
+        },
         settings: {
           Type: 'Data',
           accessProperties: {

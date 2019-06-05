@@ -14,7 +14,7 @@
       )
         .settings-layer
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
               .form_label Dimension:
               .form_input
                 input(type="text" v-model="settings.Dim")
@@ -45,6 +45,12 @@ export default {
       tabs: ['Settings', 'Code'],
       settings: {
         Dim: -1,
+      },
+      interactiveInfo: {
+        dimension: {
+          title: 'Dimension',
+          text: 'Choose which axis to do the operation on'
+        }
       }
     }
   },

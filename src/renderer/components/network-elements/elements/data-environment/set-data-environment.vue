@@ -18,8 +18,9 @@
               base-select(
                 v-model="settings.accessProperties.Atari"
                 :select-options="selectOptions"
+                v-tooltip-interactive:right="interactiveInfo.selectGame"
                 )
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.actionSpace")
               chart-switch.data-charts(
                 key="1"
                 :chart-label="chartLabel"
@@ -82,6 +83,16 @@
             Atari: 'Breakout', //select
             Category: 'Local',
             Type: 'Data',
+          }
+        },
+        interactiveInfo: {
+          selectGame: {
+            title: 'Select',
+            text: 'Choose game environment'
+          },
+          actionSpace: {
+            title: 'Action Space',
+            text: 'Number of different actions </br> you can take in the game'
           }
         }
       }

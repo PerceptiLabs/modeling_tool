@@ -10,7 +10,7 @@
           :disabled="statisticsIsOpen"
           :class="{'active': networkMode === 'edit'}"
           v-tooltip:bottom="'Edit'"
-          v-tooltip-interactive:bottom="interactiveInfo"
+          v-tooltip-interactive:bottom="interactiveInfo.edit"
           @click="setNetMode('edit', 'tutorial_pointer')"
         )
           i.icon.icon-select
@@ -23,7 +23,7 @@
           :class="{'active': networkMode === 'addArrow'}"
           @click="setNetMode('addArrow', 'tutorial_list-arrow')"
           v-tooltip:bottom="'Arrow'"
-          v-tooltip-interactive:bottom="interactiveInfo"
+          v-tooltip-interactive:bottom="interactiveInfo.arrow"
         )
           i.icon.icon-arrow-left
 
@@ -31,11 +31,13 @@
       li
         button.btn.btn--toolbar(type="button"
           v-tooltip:bottom="'Prev step'"
+          v-tooltip-interactive:bottom="interactiveInfo.undo"
         )
           i.icon.icon-step-prev
       li
         button.btn.btn--toolbar(type="button"
           v-tooltip:bottom="'Next step'"
+          v-tooltip-interactive:bottom="interactiveInfo.redo"
         )
           i.icon.icon-step-next
     ul.toolbar_list
@@ -44,7 +46,7 @@
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
-          v-tooltip-interactive:bottom="interactiveInfo"
+          v-tooltip-interactive:bottom="interactiveInfo.runButton"
           @click="onOffBtn()"
           class="run-button"
         )
@@ -55,6 +57,7 @@
           :class="{'active': statusNetworkCore === 'Paused'}"
           :disabled="!isTraining"
           v-tooltip:bottom="'Pause'"
+          v-tooltip-interactive:bottom="interactiveInfo.pause"
           @click="trainPause()"
         )
           i.icon.icon-pause
@@ -62,6 +65,7 @@
         button.btn.btn--toolbar(type="button"
           :disabled="statusNetworkCore !== 'Validation'"
           v-tooltip:bottom="'Skip'"
+          v-tooltip-interactive:bottom="interactiveInfo.skip"
           @click="skipValid()"
         )
           i.icon.icon-next
@@ -69,11 +73,13 @@
       li
         button.btn.btn--toolbar(type="button"
           v-tooltip:bottom="'Generate Hyperparameters'"
+          v-tooltip-interactive:bottom="interactiveInfo.hyperparameters"
         )
           i.icon.icon-params
       li
         button.btn.btn--toolbar(type="button"
           v-tooltip:bottom="'BlackBox'"
+          v-tooltip-interactive:bottom="interactiveInfo.blackBox"
         )
           i.icon.icon-box
 
@@ -111,10 +117,44 @@ export default {
     return {
       x: null,
       y: null,
-      interactiveInfo: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-                        </div>`
+      interactiveInfo: {
+        edit: {
+          title: 'Edit',
+          text: `Use this to being able to drag & ,<br/> drop, select, edit, etc`
+        },
+        arrow: {
+          title: 'Arrow',
+          text: `Use this to connect the <br/>layers and define the dataflow`
+        },
+        undo: {
+          title: 'Undo',
+          text: `Use this to connect the <br/>Undo`
+        },
+        redo: {
+          title: 'Redo',
+          text: `Redo`
+        },
+        runButton: {
+          title: 'Run/Stop',
+          text: `Start training/Stop training`
+        },
+        pause: {
+          title: 'Pause',
+          text: `Pause training/Unpause training`
+        },
+        skip: {
+          title: 'Skip',
+          text: `Skip validation`
+        },
+        hyperparameters: {
+          title: 'Generate Hyperparameters',
+          text: `Auto-generate the hyperparameters`
+        },
+        blackBox: {
+          title: 'BlackBox',
+          text: `Load the data and let our algorithm </br> build a model for you and train it`
+        },
+      },
     }
   },
   computed: {

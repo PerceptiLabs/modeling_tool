@@ -14,7 +14,7 @@
       )
         .settings-layer
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.operation")
               .form_label Operation:
               .form_input
                 div
@@ -62,6 +62,12 @@ export default {
       settings: {
         Type:"Add", //#Add, Sub, Multi, Div, Concat
         Merge_dim: ''
+      },
+      interactiveInfo: {
+        operation: {
+          title: 'Operation',
+          text: 'Choose which operation to use'
+        }
       }
     }
   },

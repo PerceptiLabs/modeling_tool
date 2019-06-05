@@ -79,10 +79,10 @@ export default {
       layersbarList: [
         {
           tooltip: 'Data',
-          tooltip_interactive: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-                        </div>`,
+          tooltip_interactive: {
+            title: 'Data',
+            text: 'Choose between reading from </br> a source or an environment'
+          },
           layerClass: 'net-element-data',
           iconClass: 'icon-data',
           showEl: false,
@@ -92,10 +92,10 @@ export default {
         },
         {
           tooltip: 'Processing',
-          tooltip_interactive: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-                        </div>`,
+          tooltip_interactive: {
+            title: 'Processing',
+            text: 'Process and transform the data.'
+          },
           layerClass: 'net-element-process',
           iconClass: 'icon-settings',
           showEl: false,
@@ -105,10 +105,10 @@ export default {
         },
         {
           tooltip: 'Deep Learning',
-          tooltip_interactive: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-                        </div>`,
+          tooltip_interactive: {
+            title: 'Deep Learning',
+            text: 'Deep learning components'
+          },
           layerClass: 'net-element-learn-deep',
           iconClass: 'icon-network',
           showEl: false,
@@ -118,10 +118,10 @@ export default {
         },
         {
           tooltip: 'Mathematics',
-          tooltip_interactive: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-                        </div>`,
+          tooltip_interactive: {
+            title: 'Mathematics',
+            text: 'Mathematical components'
+          },
           layerClass: 'net-element-math',
           iconClass: 'icon-calc',
           showEl: false,
@@ -131,10 +131,10 @@ export default {
         },
         {
           tooltip: 'Training',
-          tooltip_interactive: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-                          <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-                        </div>`,
+          tooltip_interactive: {
+            title: 'Training',
+            text: 'Training components'
+          },
           layerClass: 'net-element-train',
           iconClass: 'icon-training',
           showEl: false,

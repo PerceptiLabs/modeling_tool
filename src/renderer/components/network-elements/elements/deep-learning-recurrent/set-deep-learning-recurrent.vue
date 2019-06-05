@@ -14,12 +14,12 @@
       )
         .settings-layer
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.neurons")
               .form_label Neurons:
               .form_input
                 input(type="number" v-model="settings.Neurons")
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.recurrentAlternative")
               .form_label Recurrent alternative:
               .form_input
                 div
@@ -35,7 +35,7 @@
                   button.btn.btn--primary(type="button") Custom
 
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.timeSteps")
               .form_label Time steps:
               .form_input
                 input(type="number" v-model="settings.Time_steps")
@@ -66,7 +66,21 @@ export default {
         Neurons: "10",
         Version: "LSTM", //#LSTM, GRU, RNN
         Time_steps: "2",
-      }
+      },
+      interactiveInfo: {
+        neurons: {
+          title: 'Neurons',
+          text: 'Set how many neurons to use.'
+        },
+        recurrentAlternative: {
+          title: 'Recurrent alternative',
+          text: 'Choose which recurrent alternative to use'
+        },
+        timeSteps: {
+          title: 'Time steps',
+          text: 'Choose how many time steps to use'
+        }
+      },
     }
   },
   computed: {

@@ -7,7 +7,8 @@
         button.btn(type="button"
           :class="{'active': i === tabSelected}"
           @click="selectTab(i)"
-        ) {{tab}}
+          v-tooltip-interactive:bottom="tab.tooltipInfo"
+        ) {{tab.name}}
 
     .sidebar_tab(v-if="tabSelected === 0")
       sidebar-layers
@@ -40,7 +41,36 @@ export default {
   },
   data() {
     return {
-      tabset: ['Project', 'Profile', 'Import', 'Export'],
+      tabset: [
+        {
+          name: 'Project',
+          tooltipInfo: {
+            title: 'Project',
+            text: 'Get an overview of the project'
+          }
+        },
+        {
+          name: 'Profile',
+          tooltipInfo: {
+            title: 'Profile',
+            text: 'View your profile'
+          }
+        },
+        {
+          name: 'Import',
+          tooltipInfo: {
+            title: 'Import',
+            text: 'Import templates or pre-trained models'
+          }
+        },
+        {
+          name: 'Export',
+          tooltipInfo: {
+            title: 'Export',
+            text: 'Export trained model or code.'
+          }
+        }
+      ],
       tabSelected: 0,
     }
   },

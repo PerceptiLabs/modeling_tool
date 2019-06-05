@@ -4,6 +4,7 @@
     data-layer="Recurrent"
     data-type="Other"
     v-tooltip:right="'Recurrent'"
+    v-tooltip-interactive:right="interactiveInfo"
   )
     i.icon.icon-round-left
 
@@ -16,6 +17,14 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        title: 'Deep Learning Recurrent',
+        text: 'Recurrent layer'
+      }
     }
   }
 }

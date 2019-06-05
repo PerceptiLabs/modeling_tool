@@ -4,6 +4,7 @@
     data-layer="Reinforcement Learning"
     data-type="Training"
     v-tooltip:right="'Reinforcement Learning'"
+    v-tooltip-interactive:right="interactiveInfo"
   )
     i.icon.icon-learning-reinforcement1
 
@@ -16,6 +17,14 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        title: 'Train Reinforce',
+        text: 'Reinforcement learning layer.'
+      }
     }
   }
 }

@@ -14,7 +14,7 @@
       )
         .settings-layer
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.routingIterations")
               .form_label Routing iterations:
               .form_input
                 input(type="text")
@@ -45,6 +45,12 @@ export default {
         neurons: 'None',
         opt: 'None',
         items: ['Data_1', 'Data_2', 'Data_3', 'Data_4', 'Data_5',]
+      },
+      interactiveInfo: {
+        routingIterations: {
+          title: 'Routing iterations',
+          text: ''
+        }
       }
     }
   },

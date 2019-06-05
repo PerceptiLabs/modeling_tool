@@ -7,7 +7,6 @@ $triangleWith: 10px;
 .tooltip-wrap {
 	position: relative;
 	&:hover .tooltip {
-		transition: transform 0s .5s;
 		.workspace_content & {
 			display: none;
 		}
@@ -74,7 +73,7 @@ $triangleWith: 10px;
   font-weight: 400;
   color: $bg-workspace;
   position: absolute;
-  z-index: 2;
+  z-index: 10;
   min-width: 3rem;
   max-width: 30rem;
   padding: .8rem .6rem;
@@ -139,7 +138,6 @@ $triangleWith: 10px;
 }
 .tooltip-tutorial_bold {
 	font-weight: 700;
-	display: inline-block;
 }
 .tutorial-relative{
 	position: relative;
@@ -151,6 +149,6 @@ $triangleWith: 10px;
 	}
 }
 
-.tooltip-interactive {
+.js-tooltip-interactive {
 	z-index: 22;
 }

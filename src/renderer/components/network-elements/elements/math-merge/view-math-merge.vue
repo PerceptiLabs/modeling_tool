@@ -4,6 +4,7 @@
   data-layer="Merge"
   data-type="Other"
   v-tooltip:right="'Merge'"
+  v-tooltip-interactive:right="interactiveInfo"
   )
     i.icon.icon-road-concat
 
@@ -16,6 +17,14 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        title: 'Math Merge',
+        text: 'Merge layer.'
+      }
     }
   }
 }

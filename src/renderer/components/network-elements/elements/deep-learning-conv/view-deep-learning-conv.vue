@@ -4,6 +4,7 @@
     data-layer="Convolution_1"
     data-type="Other"
     v-tooltip:right="'Convolution'"
+    v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_convolution"
   )
     i.icon.icon-round-out
@@ -17,6 +18,14 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        title: 'Deep Learning Conv',
+        text: 'Convolutional layer'
+      }
     }
   }
 }

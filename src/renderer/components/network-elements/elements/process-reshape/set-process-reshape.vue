@@ -12,7 +12,7 @@
       .popup_body(:class="{'active': tabSelected == 0}")
         .settings-layer
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
               .form_label Reshape:
               .form_input
                 triple-input#tutorial_input-reshape.tutorial-relative(v-model="settings.Shape")
@@ -27,7 +27,7 @@
               .form_input
                 input(type="text")
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
               .form_label Transpose:
               .form_input
                 triple-input(v-model="settings.Permutation")
@@ -59,7 +59,17 @@
         settings: {
           Shape: [28,28,1],
           Permutation: [0,1,2],
-        }
+        },
+        interactiveInfo: {
+          reshape: {
+            title: 'Reshape',
+            text: 'Set the new shape of the data'
+          },
+          transpose: {
+            title: 'Transpose',
+            text: 'Change the axis positions of the data'
+          }
+        },
       }
     },
     computed: {

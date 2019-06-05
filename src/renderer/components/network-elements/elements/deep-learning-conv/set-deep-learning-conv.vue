@@ -12,7 +12,7 @@
       .popup_body(:class="{'active': tabSelected == 0}")
         .settings-layer
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
               .form_label Dimension:
               .form_input
                 base-radio(group-name="group" value-input="Automatic" v-model="settings.Conv_dim")
@@ -24,7 +24,7 @@
                 base-radio(group-name="group" value-input="3D" v-model="settings.Conv_dim")
                   span 3D
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.patchSize")
               .form_label Patch size:
               #tutorial_patch-size.form_input.tutorial-relative(data-tutorial-hover-info)
                 input( type="text"
@@ -32,14 +32,14 @@
                   ref="pathSize"
                 )
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.stride")
               .form_label Stride:
               #tutorial_stride.form_input.tutorial-relative(data-tutorial-hover-info)
                 input( type="text"
                   v-model="settings.Stride"
                 )
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.featureMaps")
               .form_label Feature maps:
               #tutorial_feature-maps.tutorial-relative.form_input(data-tutorial-hover-info)
                 input( type="text"
@@ -47,7 +47,7 @@
                 )
 
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.zeroPadding")
               .form_label Zero-padding:
               .form_input
                 base-radio(group-name="group3" value-input="'SAME'"  v-model="settings.Padding")
@@ -55,7 +55,7 @@
                 base-radio(group-name="group3" value-input="'VALID'"  v-model="settings.Padding")
                   span VALID
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
               .form_label Activation function:
               .form_input
                 base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
@@ -67,7 +67,7 @@
                 base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
                   span Tanh
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
               .form_label Dropout:
               .form_input
                 base-radio(group-name="group5" :value-input="true"  v-model="settings.Dropout")
@@ -75,7 +75,7 @@
                 base-radio(group-name="group5" :value-input="false"  v-model="settings.Dropout")
                   span No
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
               .form_label Pooling:
               .form_input
                 base-radio(group-name="group6" :value-input="true"  v-model="settings.PoolBool")
@@ -98,7 +98,7 @@
                 //input(type="checkbox" :value="settings.pooling" @change="changeCheckbox($event)")
           template(v-if="settings.PoolBool")
             .settings-layer_section
-              .form_row
+              .form_row(v-tooltip-interactive:right="interactiveInfo.poolingType")
                 .form_label Pooling type:
                 .form_input
                   base-radio(group-name="Pooling" value-input="Max"  v-model="settings.Pooling")
@@ -106,17 +106,17 @@
                   base-radio(group-name="Pooling" value-input="Mean"  v-model="settings.Pooling")
                     span Mean pooling
             .settings-layer_section
-              .form_row
+              .form_row(v-tooltip-interactive:right="interactiveInfo.poolingArea")
                 .form_label Pooling area:
                 .form_input
                   input(type="text" v-model="settings.Pool_area")
             .settings-layer_section
-              .form_row
+              .form_row(v-tooltip-interactive:right="interactiveInfo.poolingStride")
                 .form_label Pooling stride:
                 .form_input
                   input(type="text" v-model="settings.Pool_stride")
             .settings-layer_section
-              .form_row
+              .form_row(v-tooltip-interactive:right="interactiveInfo.ZeroPaddingPooling")
                 .form_label Zero-padding for pooling:
                 .form_input
                   base-radio(group-name="Pool_padding" value-input="'SAME'" v-model="settings.Pool_padding")
@@ -160,7 +160,53 @@ export default {
         Pool_area: "2",
         Pool_padding: "'SAME'", //'SAME', 'VALID'
         Pool_stride: "2",
-      }
+      },
+      interactiveInfo: {
+        dimension: {
+          title: 'Dimension',
+          text: 'Choose which type of convolutional operation to use'
+        },
+        stride: {
+          title: 'Stride',
+          text: 'Set the stride'
+        },
+        featureMaps: {
+          title: 'Feature maps',
+          text: 'Set the number of feature maps.'
+        },
+        zeroPadding: {
+          title: 'Zero-padding',
+          text: 'Choose to use zero-padding or not.'
+        },
+        activationFunction: {
+          title: 'Activation function',
+          text: 'Choose which activation function to use'
+        },
+        dropout: {
+          title: 'Dropout',
+          text: 'Choose if dropout should be used or not'
+        },
+        pooling: {
+          title: 'Pooling',
+          text: 'Choose if dropout should be used or not'
+        },
+        poolingType: {
+          title: 'Pooling type',
+          text: 'Choose if pooling should be used or not'
+        },
+        poolingArea: {
+          title: 'Pooling area',
+          text: 'Choose pooling area'
+        },
+        poolingStride: {
+          title: 'Pooling stride',
+          text: 'Choose pooling stride'
+        },
+        ZeroPaddingPooling: {
+          title: 'Zero-padding',
+          text: 'Zero-padding for pooling'
+        },
+      },
     }
   },
   mounted() {

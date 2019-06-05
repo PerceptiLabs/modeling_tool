@@ -14,7 +14,7 @@
       )
         .settings-layer
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
               .form_label Labels:
               .form_input
                 base-select(
@@ -22,7 +22,7 @@
                   :select-options="inputLayers"
                   )
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
               .form_label Cost function:
               #tutorial_cost-function.tutorial-relative.form_input
                 base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
@@ -39,7 +39,7 @@
               .form_input
                 input(type="number" v-model="settings.Class_weights")
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
               .form_label Optimizer:
               .form_input
                 base-radio(group-name="group1" value-input="ADAM" v-model="settings.Optimizer")
@@ -69,7 +69,7 @@
                 .form_input
                   input(type="number" v-model="settings.Decay")
           .settings-layer_section
-            .form_row
+            .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
               .form_label Learning rate:
               .form_input
                 input(type="number" v-model="settings.Learning_rate")
@@ -144,6 +144,24 @@ export default {
         Decay: '0.1',
         Training_iters: "20000"
       },
+      interactiveInfo: {
+        labels: {
+          title: 'Labels',
+          text: 'Choose which input connection is represent the labels'
+        },
+        costFunction: {
+          title: 'Split on',
+          text: 'Choose in which position to split on at the chosen axis'
+        },
+        optimizer: {
+          title: 'Optimizer',
+          text: 'Choose which optimizer to use'
+        },
+        learningRate: {
+          title: 'Learning Rate',
+          text: 'Set the learning rate'
+        }
+      }
     }
   },
   computed: {
