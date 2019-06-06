@@ -20,7 +20,7 @@
             name="Last Name"
             v-validate="'alpha_spaces'"
             )
-          p.text-error(v-show="errors.has('First Name')") {{ errors.first('First Name') }}
+          p.text-error(v-show="errors.has('Last Name')") {{ errors.first('Last Name') }}
         //-.form_holder
           input(type="tel" placeholder="Phone"
             v-model="user.phone"
@@ -96,7 +96,7 @@ export default {
     validateForm() {
       this.$validator.validateAll()
         .then((result) => {
-          console.log('result', result);
+          //console.log('result', result);
           if (result) {
             this.registryUser();
             return;
@@ -108,11 +108,11 @@ export default {
         })
     },
     registryUser() {
-      console.log('registryUser');
+      //console.log('registryUser');
       this.requestCloudApi('post', 'Customer/CreateGuest', this.user, (result, response, error) => {
         this.$store.commit('mod_login/SET_showLoader', true);
+        console.log(result, response, error);
         if (result === 'success') {
-          //console.log(response);
           this.$store.commit('mod_login/SET_showLoader', false);
           this.$store.dispatch('globalView/GP_infoPopup', 'Authorization success');
           this.$router.replace('/login');
