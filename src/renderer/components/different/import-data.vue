@@ -1,7 +1,7 @@
 <template lang="pug">
   base-accordion(:accordion-title="accordionData")
     template(slot="tensorFlow")
-      .tf-wrap
+      .tf-wrap.text-center
         button.btn.btn--outline-blue(type="button" @click="clickQ") Open
 
     template(slot="builtIn")
@@ -78,7 +78,6 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .tf-wrap {
-    text-align: center;
     .btn {
       min-width: 15rem;
     }
