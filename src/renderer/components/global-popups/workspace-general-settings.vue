@@ -7,7 +7,7 @@
           h3 General Settings
       .popup_body
         .settings-layer_section(v-if="settingsData")
-          .form_row
+          .form_row(v-tooltip-interactive:right="interactiveInfo.dataPartition")
             .form_label Data partition:
             .form_input
               label.form_row
@@ -42,7 +42,7 @@
                   span &nbsp; %
                   p.text-error(v-show="errors.has('Test')") {{ errors.first('Test') }}
         .settings-layer_section(v-if="settingsEnvironment")
-          label.form_row
+          label.form_row(v-tooltip-interactive:right="interactiveInfo.maxSteps")
             .form_label Max Steps:
             .form_input
               input(type="number"
@@ -52,7 +52,7 @@
               )
               p.text-error(v-show="errors.has('Max_steps')") {{ errors.first('Max_steps') }}
         .settings-layer_section
-          label.form_row
+          label.form_row(v-tooltip-interactive:right="interactiveInfo.batchSize")
             .form_label Batch size:
             .form_input(id="tutorial_butch-size-input" class="tutorial-relative" data-tutorial-hover-info)
               input(type="number"
@@ -62,7 +62,7 @@
                 )
               p.text-error(v-show="errors.has('Batch')") {{ errors.first('Batch') }}
         .settings-layer_section
-          .form_row
+          .form_row(v-tooltip-interactive:right="interactiveInfo.shuffleData")
             .form_label Shuffle data:
             .form_input
               base-radio(group-name="group2" :value-input="true" v-model="settings.Shuffle_data")
@@ -70,7 +70,7 @@
               base-radio(group-name="group2" :value-input="false" v-model="settings.Shuffle_data")
                 span No
         .settings-layer_section
-          label.form_row
+          label.form_row(v-tooltip-interactive:right="interactiveInfo.epochs")
             .form_label Epochs:
             .form_input(id="tutorial_epochs-input" class="tutorial-relative" data-tutorial-hover-info)
               input(type="number"
@@ -81,7 +81,7 @@
                 )
               p.text-error(v-show="errors.has('Epochs')") {{ errors.first('Epochs') }}
         .settings-layer_section
-          .form_row
+          .form_row(v-tooltip-interactive:right="interactiveInfo.dropoutRate")
             .form_label Dropout rate:
             .form_input(id="tutorial_drop-rate-input" class="tutorial-relative" data-tutorial-hover-info)
               input(type="number"
@@ -91,7 +91,7 @@
                 )
               p.text-error(v-show="errors.has('Dropout')") {{ errors.first('Dropout') }}
         .settings-layer_section
-          label.form_row
+          label.form_row(v-tooltip-interactive:right="interactiveInfo.saveModel")
             .form_label Save model every:
             .form_input
               input(type="number" v-model="settings.Save_model_every" disabled="disabled")
@@ -112,6 +112,7 @@ export default {
   mounted() {
     const net = this.networkElementList;
     const settings = this.networkSettings;
+    console.log(this.settingsData);
     if(settings !== null) {
       this.settings = JSON.parse(JSON.stringify(settings));
     }
@@ -138,10 +139,42 @@ export default {
         },
         Dropout_rate: "0.5",
         Shuffle_data: true,
-        Save_model_every: "0"
+        Save_model_every: "0",
+      },
+      interactiveInfo: {
+        dataPartition: {
+          title: 'Data partition',
+          text: 'Partition the data'
+        },
+        maxSteps: {
+          title: 'Max steps',
+          text: 'Choose which optimiser to use'
+        },
+        batchSize: {
+          title: 'Learning rate',
+          text: 'Set the number of max steps'
+        },
+        shuffleData: {
+          title: 'Shuffle data',
+          text: 'Choose to shuffle the data or not'
+        },
+        epochs: {
+          title: 'Epochs',
+          text: 'Set the number of epochs'
+        },
+        dropoutRate: {
+          title: 'Dropout rate',
+          text: 'Set the dropout rate'
+        },
+        saveModel: {
+          title: 'Save model every epoch',
+          text: 'Set how often to save a trained model'
+        }
       }
     }
   },
+
+
   computed: {
     ...mapGetters({
       isTutorialMode:     'mod_tutorials/getIstutorialMode',

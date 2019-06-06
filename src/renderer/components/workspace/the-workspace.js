@@ -229,6 +229,7 @@ function openSaveDialog(jsonNet, dialogWin, network, ctx) {
   };
 
   dialogWin.showSaveDialog(null, option, (fileName) => {
+    ctx.$refs.networkField[0].$refs.network.style.filter = '';
     if (fileName === undefined){
       ctx.infoPopup("You didn't save the file");
       return;
@@ -265,7 +266,6 @@ function doScreenShot(ctx) {
         resolve(canvas.toDataURL());
         svg.style.display = '';
         arrowsCanvas.remove();
-        networkField.style.filter = '';
       });
   })
 }

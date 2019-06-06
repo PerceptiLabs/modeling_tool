@@ -100,9 +100,10 @@
         type="button"
         :class="{'btn--tutorial-active': interactiveInfoStatus}"
         @click="toggleInteractiveInfo"
+        v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
         span ?
-      tutorial-instructions
+      tutorial-instructions(v-tooltip-interactive:bottom="interactiveInfo.tutorial")
 </template>
 
 <script>
@@ -154,6 +155,14 @@ export default {
           title: 'BlackBox',
           text: `Load the data and let our algorithm </br> build a model for you and train it`
         },
+        interactiveDoc: {
+          title: 'Interactive documentation',
+          text: `Use this to find out what all </br> different operations and functions do`
+        },
+        tutorial: {
+          title: 'Tutorial',
+          text: `Choose an interactive tutorial`
+        }
       },
     }
   },

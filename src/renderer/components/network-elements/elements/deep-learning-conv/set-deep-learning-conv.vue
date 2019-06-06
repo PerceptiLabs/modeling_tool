@@ -166,6 +166,10 @@ export default {
           title: 'Dimension',
           text: 'Choose which type of convolutional operation to use'
         },
+        patchSize: {
+          title: 'Patch size',
+          text: 'Set the patch size'
+        },
         stride: {
           title: 'Stride',
           text: 'Set the stride'

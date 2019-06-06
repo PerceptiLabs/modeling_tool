@@ -19,7 +19,7 @@
             p.big-text Start training
           .settings-layer_foot
             button.btn.btn--dark-blue(type="button" @click="closePopup()") Cancel
-            button.btn.btn--dark-blue(type="button" @click="startTraining()") Start
+            button.btn.btn--dark-blue(type="button" @click="startTraining()" v-tooltip-interactive:right="interactiveInfo.start") Start
         .popup_body(
           :class="{'active': tabSelected == 1}"
         )
@@ -36,7 +36,13 @@ export default {
     return {
       tabSelected: 0,
       tabs: ['Computer', 'Cloud'],
-      settings: {}
+      settings: {},
+      interactiveInfo: {
+        start: {
+          title: 'Start Training',
+          text: ''
+        }
+      }
     }
   },
   computed: {
