@@ -1,117 +1,83 @@
 <template lang="pug">
-  .popup
-    ul.popup_tab-set
-      button.popup_header(
-        v-for="(tab, i) in tabs"
-        :key="tab.i"
-        @click="setTab(i)"
-        :class="{'disable': tabSelected != i}"
-      )
-        h3(v-html="tab")
-    .popup_tab-body
-      .popup_body(
-        :class="{'active': tabSelected == 0}"
-      )
-        .settings-layer
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
-              .form_label Labels:
-              .form_input
-                base-select(
-                  v-model="idSelectElement"
-                  :select-options="inputLayers"
-                  )
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
-              .form_label Cost function:
-              #tutorial_cost-function.tutorial-relative.form_input
-                base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
-                  span Cross-Entropy
-                base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
-                  span Quadratic
-                base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
-                  span Weighted Cross-Entropy
-                base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
-                  span DICE
-                  //-Cross-Entropy
-            .form_row(v-if="settings.Loss === 'W_cross_entropy'")
-              .form_label Class weights:
-              .form_input
-                input(type="number" v-model="settings.Class_weights")
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
-              .form_label Optimizer:
-              .form_input
-                base-radio(group-name="group1" value-input="ADAM" v-model="settings.Optimizer")
-                  span ADAM
-                base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
-                  span SGD
-                base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
-                  span Momentum
-                base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
-                  span RMSprop
-            template(v-if="settings.Optimizer === 'ADAM'")
-              .form_row
-                .form_label Beta 1:
-                .form_input
-                  input(type="number" v-model="settings.Beta_1")
-              .form_row
-                .form_label Beta 2:
-                .form_input
-                  input(type="number" v-model="settings.Beta_2")
-            template(v-if="settings.Optimizer === 'Momentum'")
-              .form_row
-                .form_label Momentum:
-                .form_input
-                  input(type="number" v-model="settings.Momentum")
-              .form_row
-                .form_label Decay:
-                .form_input
-                  input(type="number" v-model="settings.Decay")
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
-              .form_label Learning rate:
-              .form_input
-                input(type="number" v-model="settings.Learning_rate")
-          //.settings-layer_section
-            .form_row
-              .form_label Regularization:
-              .form_input
-                input(type="text")
-          //.settings-layer_section
-            .form_row
-              .form_label N_class:
-              .form_input
-                input(type="text" v-model="settings.N_class")
-          //.settings-layer_section
-            .form_row
-              .form_label Pooling:
-              .form_input
-                base-checkbox(valueInput="Pooling" v-model="settings.pooling")
-          //.settings-layer_section
-            .form_row
-              .form_label Learning rate:
-              .form_input
-                input(type="number")
+  net-base-settings
+    template(slot="Settings-content")
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
+          .form_label Labels:
+          .form_input
+            base-select(
+              v-model="idSelectElement"
+              :select-options="inputLayers"
+            )
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
+          .form_label Cost function:
+          #tutorial_cost-function.tutorial-relative.form_input
+            base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
+              span Cross-Entropy
+            base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
+              span Quadratic
+            base-radio(group-name="group" value-input="W_cross_entropy" v-model="settings.Loss")
+              span Weighted Cross-Entropy
+            base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
+              span DICE
+              //-Cross-Entropy
+        .form_row(v-if="settings.Loss === 'W_cross_entropy'")
+          .form_label Class weights:
+          .form_input
+            input(type="number" v-model="settings.Class_weights")
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
+          .form_label Optimizer:
+          .form_input
+            base-radio(group-name="group1" value-input="ADAM" v-model="settings.Optimizer")
+              span ADAM
+            base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
+              span SGD
+            base-radio(group-name="group1" value-input="Momentum" v-model="settings.Optimizer")
+              span Momentum
+            base-radio(group-name="group1" value-input="RMSprop" v-model="settings.Optimizer")
+              span RMSprop
 
-      .popup_body(:class="{'active': tabSelected == 1}")
-        settings-code(
-        :the-code="coreCode"
-        )
-    .settings-layer_foot
+        template(v-if="settings.Optimizer === 'ADAM'")
+          .form_row
+            .form_label Beta 1:
+            .form_input
+              input(type="number" v-model="settings.Beta_1")
+          .form_row
+            .form_label Beta 2:
+            .form_input
+              input(type="number" v-model="settings.Beta_2")
+        template(v-if="settings.Optimizer === 'Momentum'")
+          .form_row
+            .form_label Momentum:
+            .form_input
+              input(type="number" v-model="settings.Momentum")
+          .form_row
+            .form_label Decay:
+            .form_input
+              input(type="number" v-model="settings.Decay")
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
+          .form_label Learning rate:
+          .form_input
+            input(type="number" v-model="settings.Learning_rate")
+
+    template(slot="Code-content")
+      settings-code(:the-code="coreCode")
+
+    template(slot="action")
       button.btn.btn--primary(type="button" @click="saveSettings") Apply
 
 </template>
 
 <script>
-import mixinSet     from '@/core/mixins/net-element-settings.js';
-import SettingsCode from '@/components/network-elements/elements-settings/setting-code.vue';
+import mixinSet         from '@/core/mixins/net-element-settings.js';
 import { mapGetters, mapActions }   from 'vuex';
 
 export default {
   name: 'SetTrainNormal',
   mixins: [ mixinSet ],
-  components: { SettingsCode },
   created() {
     this.inputId.forEach((id)=> {
       let elList = this.currentNetworkList;
@@ -241,7 +207,9 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
       else accuracy = `arg_output=tf.argmax(X['${this.network_output}'],-1);
 arg_label=tf.argmax(X['${this.labels}'],-1);
 correct_prediction = tf.equal(arg_output, arg_label);
-accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
+accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));
+f1=tf.contrib.metrics.f1_score(X['${this.labels}'],X['${this.network_output}'])[0];
+auc=tf.metrics.auc(labels=X['${this.labels}'],predictions=X['${this.network_output}'],curve='ROC')[0];`
       return accuracy
     },
     coreCode() {

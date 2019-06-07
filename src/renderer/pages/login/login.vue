@@ -76,7 +76,6 @@ export default {
       };
       this.requestCloudApi('post', 'Customer/Login', queryParams, (result, response) => {
         if (result === 'success') {
-          console.log(response);
           this.$store.commit('mod_login/SET_showLoader', false);
           let token = parseJwt(response.data.data.token);
 

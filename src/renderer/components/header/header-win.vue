@@ -1,8 +1,8 @@
 <template lang="pug">
   .app-header
     .app-header_logo
-      router-link(:to="{name: 'projects'}")
-        img(src="./../../../../static/img/logo_small_dark.svg" alt="percepti labs logo")
+      a(@click="toProjectPage")
+        img(src="./../../../../static/img/logo_small_dark.svg" alt="PerceptiLabs logo")
     the-menu
     ul.app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
@@ -24,6 +24,11 @@ export default {
     },
     appMaximize() {
       this.$emit('app-maximized')
+    },
+    toProjectPage() {
+      if(this.$route.name === 'app') {
+        this.$router.push({name: 'projects'})
+      }
     }
   }
 }

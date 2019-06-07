@@ -4,6 +4,7 @@
   data-layer="Random Forest"
   data-type="Training"
   v-tooltip:right="'Random Forest'"
+  v-tooltip-interactive:right="interactiveInfo.MLRandomForest"
   )
     i.icon.icon-trees
 
@@ -16,6 +17,16 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        MLRandomForest: {
+          title: 'ML Random Forest',
+          text: 'Random forest layer'
+        }
+      }
     }
   }
 }

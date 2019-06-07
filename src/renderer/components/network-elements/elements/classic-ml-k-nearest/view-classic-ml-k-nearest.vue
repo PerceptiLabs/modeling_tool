@@ -4,6 +4,7 @@
     data-layer="K Nearest Neighbor"
     data-type="Training"
     v-tooltip:right="'K Nearest Neighbor'"
+    v-tooltip-interactive:right="interactiveInfo.MLKnn"
   )
     i.icon.icon-round-figur
 
@@ -16,6 +17,17 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        MLKnn: {
+          title: 'MLKnn',
+          text: 'K Nearest neighbors layer'
+        }
+      }
     }
   }
 }

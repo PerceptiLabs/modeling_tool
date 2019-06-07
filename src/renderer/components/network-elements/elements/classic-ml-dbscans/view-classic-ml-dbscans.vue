@@ -4,6 +4,7 @@
     data-layer="DBSCAN"
     data-type="Training"
     v-tooltip:right="'DBSCAN'"
+    v-tooltip-interactive:right="interactiveInfo.MLDbscan"
   )
     i.icon.icon-round-three
 
@@ -16,6 +17,16 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        MLDbscan: {
+          title: 'MLDbscan',
+          text: 'Choose which method to use'
+        }
+      }
     }
   }
 }

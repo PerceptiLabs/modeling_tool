@@ -15,7 +15,7 @@
             button.btn.btn--link.header-nav_sublist-btn(type="button"
               v-else
               :disabled="subItem.enabled === false"
-              @click="subItem.active()"
+              @mousedown="subItem.active()"
             )
               span.header-nav_btn-text {{ subItem.label }}
               span.text-disable(
@@ -86,14 +86,15 @@ export default {
         {
           label: 'Edit',
           submenu: [
-            {label: 'Undo',                         enabled: false},
-            {label: 'Redo',                         enabled: false},
+            {label: 'Undo',         accelerator: 'Ctrl+Z',      enabled: false,         active: ()=> {}},
+            {label: 'Redo',         accelerator: 'Ctrl+Shift+Z',enabled: false,         active: ()=> {}},
             {type: 'separator'},
-            {label: 'Cut',                          enabled: false},
-            {label: 'Copy',                         enabled: false},
-            {label: 'Paste',                        enabled: false},
-            {label: 'Delete',                       enabled: false},
-            {label: 'Select all',                   enabled: false},
+            {label: 'Cut',          accelerator: 'Ctrl+X',      enabled: false,         active: ()=> {}},
+            {label: 'Copy',         accelerator: 'Ctrl+C',      enabled: this.openApp,  active: ()=> {this.HCCopy()}},
+            {label: 'Paste',        accelerator: 'Ctrl+V',      enabled: this.openApp,  active: ()=> {this.HCPaste()}},
+            {type: 'separator'},
+            {label: 'Select all',   accelerator: 'Ctrl+A',      enabled: this.openApp,  active: ()=> {this.HCSelectAll()}},
+            {label: 'Deselect all', accelerator: 'Ctrl+Shift+A',enabled: this.openApp,  active: ()=> {this.HCDeselectAll()}},
           ]
         },
         // {
@@ -162,23 +163,25 @@ export default {
         {
           label: 'Window',
           submenu: [
-            {label: 'Edit profile',                 enabled: false, active: ()=> {}},
-            {label: 'History',                      enabled: false, active: ()=> {}},
+            {label: 'Minimize',         enabled: true,          active: ()=> {this.appMinimize()}},
+            {label: 'Zoom',             enabled: true,          active: ()=> {this.appMaximize()}},
           ]
         },
         {
           label: 'Settings',
           submenu: [
-            {label: 'Hyperparameters',              enabled: this.openApp, active: ()=> {this.openHyperparameters()}},
+            {label: 'Hyperparameters',  enabled: this.openApp,  active: ()=> {this.openHyperparameters()}},
+            {label: 'Edit profile',     enabled: false,         active: ()=> {}},
+            {label: 'History',          enabled: false,         active: ()=> {}},
           ]
         },
         {
           label: 'Help',
           submenu: [
-            {label: 'Help',                                                 active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
-            {label: 'About',                                                active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
-            {label: 'Tutorial mode',                enabled: this.openApp,  active: ()=> {this.showTutorial()}},
-            {label: 'Check for updates',                                    active: ()=> {this.checkUpdate()}},
+            {label: 'Help',                                     active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
+            {label: 'About',                                    active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
+            {label: 'Tutorial mode',    enabled: this.openApp,  active: ()=> {this.showTutorial()}},
+            {label: 'Check for updates',                        active: ()=> {this.checkUpdate()}},
             {type: 'separator'},
           ]
         }
@@ -195,12 +198,17 @@ export default {
     ...mapActions({
       infoPopup:     'globalView/GP_infoPopup',
       appClose:      'mod_events/EVENT_closeApp',
+      HCCopy:        'mod_events/EVENT_hotKeyCopy',
+      HCPaste:       'mod_events/EVENT_hotKeyPaste',
+      HCSelectAll:   'mod_workspace/SET_elementSelectAll',
+      HCDeselectAll: 'mod_workspace/SET_elementUnselect',
     }),
     openLink(url) {
       shell.openExternal(url);
     },
     checkUpdate() {
-      ipcRenderer.send('checkUpdate', 'userCheck');
+      this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
+      ipcRenderer.send('checkUpdate');
     },
     addNewNetwork() {
       this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
@@ -216,7 +224,13 @@ export default {
     },
     openHyperparameters() {
       this.$store.commit('globalView/GP_showNetGlobalSet', true);
-    }
+    },
+    appMinimize() {
+      ipcRenderer.send('appMinimize')
+    },
+    appMaximize() {
+      ipcRenderer.send('appMaximize')
+    },
   }
 }
 </script>

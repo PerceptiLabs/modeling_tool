@@ -15,7 +15,7 @@
             v-if="currentStepTutorial.img"
             :src="currentStepTutorial.img"
           )
-          button.btn--crash-course(type="button"
+          button.btn--outline-blue(type="button"
             v-if="currentStepTutorial.button"
             @click="currentStepTutorial.button.action"
           ) {{currentStepTutorial.button.text}}

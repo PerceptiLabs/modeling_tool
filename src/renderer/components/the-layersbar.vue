@@ -142,18 +142,18 @@ export default {
           networkElements: trainingElements,
           id:'tutorial_training'
         },
-        // {
-        //   tooltip: 'Classic Machine Learning',
-        //   tooltip_interactive: `<div class="tooltip-tutorial_italic">
-        //                   <div class="tooltip-tutorial_bold">Lorem Ipsum:</div> is simply dummy text</br> the printing and typesetting  </br> industry. Lorem Ipsum </br>
-        //                   <div class="tooltip-tutorial_bold">Has been the industry's standard</div>
-        //                 </div>`,
-        //   layerClass: 'net-element-learn-class',
-        //   iconClass: 'icon-mind',
-        //   showEl: false,
-        //   networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
-        //   id:'tutorial_classic-machine-learning'
-        // }
+        {
+          tooltip: 'Classic Machine Learning',
+          tooltip_interactive: {
+            title: 'Classic Machine Learning',
+            text: 'Classic machine learning components'
+          },
+          layerClass: 'net-element-learn-class',
+          iconClass: 'icon-mind',
+          showEl: false,
+          networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
+          id:'tutorial_classic-machine-learning'
+        }
       ],
     }
   },
@@ -211,8 +211,7 @@ export default {
   }
   .layersbar-list {
     margin: 0;
-    padding: 0;
-    padding-bottom: 30px;
+    padding: 0 0 30px 0;
     list-style: none;
     transition: transform $animation-speed $animation-speed;
     transform: translateY(0);
@@ -222,8 +221,7 @@ export default {
   }
   .layer {
     position: relative;
-    padding: $indent;
-    padding-bottom: 0;
+    padding: $indent $indent 0 $indent;
   }
   .layer_parent {
     position: relative;

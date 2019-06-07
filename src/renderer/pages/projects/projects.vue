@@ -4,6 +4,11 @@
       include ./sidebar/sidebar.pug
     .page-projects_basic-templates
       include ./basic-templates/basic-templates.pug
+      router-link.btn.btn--outline-blue-rev.projects-templates_link(
+        v-if="networkIsNotEmpty"
+        :to="{name: 'app'}")
+        span Back to Workspace
+        i.icon.icon-shevron-right
     main.page-projects_recent-files
       include ./recent-files/recent-files.pug
 
@@ -62,6 +67,9 @@
         this.selectedProject = null;
         return this.projects.filter((project) => project.name.match(this.search))
       },
+      networkIsNotEmpty(){
+        return this.$store.getters['mod_workspace/GET_networkIsNotEmpty'];
+      },
       hotKeyPressDelete() {
         return this.$store.state.mod_events.globalPressKey.del
       },
@@ -82,8 +90,9 @@
     },
     methods: {
       ...mapMutations({
-        setTutorialMode: 'mod_tutorials/SET_isTutorialMode',
-        setTutorialStoryBoard: 'mod_tutorials/SET_showTutorialStoryBoard'
+        setTutorialMode:        'mod_tutorials/SET_isTutorialMode',
+        setTutorialStoryBoard:  'mod_tutorials/SET_showTutorialStoryBoard',
+        openNetwork:            'mod_events/set_openNetwork'
       }),
       loadNetwork,
       readFilePromiseNative,
@@ -157,8 +166,13 @@
     border-bottom: 1px solid $colorGrey;
     margin: 0 $section-indent;
     padding: $section-indent 0;
+    position: relative;
   }
-
+  .projects-templates_link {
+    position: absolute;
+    right: 0;
+    top: 1rem;
+  }
   .page-projects_recent-files {
     grid-area: recent-files;
     padding: $section-indent $section-indent $section-indent/2 $section-indent;

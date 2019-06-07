@@ -4,6 +4,7 @@
     data-layer="K-Means Clustering"
     data-type="Training"
     v-tooltip:right="'K-Means Clustering'"
+    v-tooltip-interactive:right="interactiveInfo.MLKmeans"
   )
     i.icon.icon-round-sieve
 
@@ -16,6 +17,16 @@ export default {
     draggable: {
       type: Boolean,
       default: false
+    }
+  },
+  data() {
+    return {
+      interactiveInfo: {
+        MLKmeans: {
+          title: 'MLKmeans',
+          text: 'K means clustering layer.'
+        }
+      }
     }
   }
 }

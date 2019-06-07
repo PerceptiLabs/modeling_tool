@@ -1,59 +1,49 @@
 <template lang="pug">
-  .popup
-    ul.popup_tab-set
-      button.popup_header(
-        v-for="(tab, i) in tabs"
-        :key="tab.i"
-        :class="{'disable': tabSelected != i}"
-        :disabled="tabSelected != i"
-        @click="setTab(i)"
-      )
-        h3(v-html="tab")
-    .popup_tab-body
-      .popup_body(:class="{'active': tabSelected == 0}")
-        .settings-layer(v-if="!settings.accessProperties.Path.length")
-          .settings-layer_section.section-data-select
-            button.btn.tutorial-relative(type="button"
-              :disabled="disabledBtn"
-              @click="loadFolder"
-              v-tooltip-interactive:left="interactiveInfo.folder"
-              )
-              i.icon.icon-open-folder
-            span.data-select_text or
-            button.btn.tutorial-relative(type="button"
-              :disabled="disabledBtn"
-              @click="loadFile"
-              id="tutorial_button-load"
-              v-tooltip-interactive:right="interactiveInfo.file"
-              )
-              i.icon.icon-open-file
-        .settings-layer_section(v-else)
-          .form_row
-            button.btn.btn--link(type="button" @click="clearPath")
-              i.icon.icon-backward
-              span Back
-          .form_row
-            input.form_input(type="text" v-model="inputPath" readonly="readonly")
-          .form_row(v-if="dataColumns.length")
-            base-select(
-              v-model="dataColumnsSelected"
-              :select-options="dataColumns"
-              :select-multiple="true"
-              )
-          .form_row
-            chart-switch.data-charts(
-              :disable-header="true"
-              :chart-data="imgData"
-            )
+  net-base-settings(:tab-set="tabs")
+    template(slot="Computer-content")
+      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Path.length")
+        button.btn.tutorial-relative(type="button"
+          :disabled="disabledBtn"
+          @click="loadFolder"
+          v-tooltip-interactive:left="interactiveInfo.folder"
+        )
+          i.icon.icon-open-folder
+        span.data-select_text or
+        button.btn.tutorial-relative(type="button"
+          :disabled="disabledBtn"
+          @click="loadFile"
+          id="tutorial_button-load"
+          v-tooltip-interactive:right="interactiveInfo.file"
+        )
+          i.icon.icon-open-file
+      .settings-layer_section(v-else)
+        .form_row
+          button.btn.btn--link(type="button" @click="clearPath")
+            i.icon.icon-backward
+            span Back
+        .form_row
+          input.form_input(type="text" v-model="inputPath" readonly="readonly")
+        .form_row(v-if="dataColumns.length")
+          base-select(
+            v-model="dataColumnsSelected"
+            :select-options="dataColumns"
+            :select-multiple="true"
+          )
+        .form_row
+          chart-switch.data-charts(
+            :disable-header="true"
+            :chart-data="imgData"
+          )
 
-      .popup_body(:class="{'active': tabSelected == 1}")
-        settings-cloud
-    .settings-layer_foot
+    template(slot="Cloud-content")
+      settings-cloud
+
+    template(slot="action")
       button.btn.btn--primary.tutorial-relative(type="button"
         v-show="settings.accessProperties.Path.length"
         @click="saveSettings"
         id="tutorial_button-apply"
-        ) Apply
+      ) Apply
 
 </template>
 
@@ -65,7 +55,7 @@
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
 
   import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
-  import coreRequest      from "@/core/apiCore.js";
+  //import coreRequest      from "@/core/apiCore.js";
   import {mapActions}     from 'vuex';
 
   export default {
@@ -194,6 +184,7 @@
     align-items: center;
     justify-content: center;
     font-size: 1.4rem;
+    padding-bottom: 0;
     .btn {
       display: flex;
       align-items: center;

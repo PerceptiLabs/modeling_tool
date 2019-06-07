@@ -28,7 +28,6 @@
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
   import ViewEl       from './view-layer-container.vue';
 
-
   export default {
     name: 'LayerContainer',
     components: { BaseNetEl, ViewEl },

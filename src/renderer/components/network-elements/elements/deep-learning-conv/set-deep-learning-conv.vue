@@ -1,152 +1,134 @@
 <template lang="pug">
-  .popup
-    ul.popup_tab-set
-      button.popup_header(
-        v-for="(tab, i) in tabs"
-        :key="tab.i"
-        @click="setTab(i)"
-        :class="{'disable': tabSelected != i}"
-      )
-        h3(v-html="tab")
-    .popup_tab-body
-      .popup_body(:class="{'active': tabSelected == 0}")
-        .settings-layer
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
-              .form_label Dimension:
-              .form_input
-                base-radio(group-name="group" value-input="Automatic" v-model="settings.Conv_dim")
-                  span Automatic
-                base-radio(group-name="group" value-input="1D" v-model="settings.Conv_dim")
-                  span 1D
-                base-radio(group-name="group" value-input="2D" v-model="settings.Conv_dim")
-                  span 2D
-                base-radio(group-name="group" value-input="3D" v-model="settings.Conv_dim")
-                  span 3D
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.patchSize")
-              .form_label Patch size:
-              #tutorial_patch-size.form_input.tutorial-relative(data-tutorial-hover-info)
-                input( type="text"
-                  v-model="settings.Patch_size"
-                  ref="pathSize"
-                )
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.stride")
-              .form_label Stride:
-              #tutorial_stride.form_input.tutorial-relative(data-tutorial-hover-info)
-                input( type="text"
-                  v-model="settings.Stride"
-                )
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.featureMaps")
-              .form_label Feature maps:
-              #tutorial_feature-maps.tutorial-relative.form_input(data-tutorial-hover-info)
-                input( type="text"
-                  v-model="settings.Feature_maps"
-                )
+  net-base-settings
+    template(slot="Settings-content")
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
+          .form_label Dimension:
+          .form_input
+            base-radio(group-name="group" value-input="Automatic" v-model="settings.Conv_dim")
+              span Automatic
+            base-radio(group-name="group" value-input="1D" v-model="settings.Conv_dim")
+              span 1D
+            base-radio(group-name="group" value-input="2D" v-model="settings.Conv_dim")
+              span 2D
+            base-radio(group-name="group" value-input="3D" v-model="settings.Conv_dim")
+              span 3D
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.patchSize")
+          .form_label Patch size:
+          #tutorial_patch-size.form_input.tutorial-relative(data-tutorial-hover-info)
+            input( type="text"
+              v-model="settings.Patch_size"
+              ref="pathSize"
+            )
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.stride")
+          .form_label Stride:
+          #tutorial_stride.form_input.tutorial-relative(data-tutorial-hover-info)
+            input( type="text"
+              v-model="settings.Stride"
+            )
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.featureMaps")
+          .form_label Feature maps:
+          #tutorial_feature-maps.tutorial-relative.form_input(data-tutorial-hover-info)
+            input( type="text"
+              v-model="settings.Feature_maps"
+            )
 
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.zeroPadding")
-              .form_label Zero-padding:
-              .form_input
-                base-radio(group-name="group3" value-input="'SAME'"  v-model="settings.Padding")
-                  span SAME
-                base-radio(group-name="group3" value-input="'VALID'"  v-model="settings.Padding")
-                  span VALID
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
-              .form_label Activation function:
-              .form_input
-                base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
-                  span None
-                base-radio(group-name="group1" value-input="Sigmoid"  v-model="settings.Activation_function")
-                  span Sigmoid
-                base-radio(group-name="group1" value-input="ReLU"  v-model="settings.Activation_function")
-                  span ReLU
-                base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
-                  span Tanh
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
-              .form_label Dropout:
-              .form_input
-                base-radio(group-name="group5" :value-input="true"  v-model="settings.Dropout")
-                  span Yes
-                base-radio(group-name="group5" :value-input="false"  v-model="settings.Dropout")
-                  span No
-          .settings-layer_section
-            .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
-              .form_label Pooling:
-              .form_input
-                base-radio(group-name="group6" :value-input="true"  v-model="settings.PoolBool")
-                  span Yes
-                base-radio(group-name="group6" :value-input="false"  v-model="settings.PoolBool")
-                  span No
-          //-.settings-layer_section
-            .form_row
-              .form_label Batch Normalization:
-              .form_input
-                base-radio(groupName="group6")
-                  span Yes
-                base-radio(groupName="group6")
-                  span No
-          //-.settings-layer_section
-            .form_row
-              .form_label Pooling:
-              .form_input
-                base-checkbox(valueInput="Pooling" v-model="settings.pooling")
-                //input(type="checkbox" :value="settings.pooling" @change="changeCheckbox($event)")
-          template(v-if="settings.PoolBool")
-            .settings-layer_section
-              .form_row(v-tooltip-interactive:right="interactiveInfo.poolingType")
-                .form_label Pooling type:
-                .form_input
-                  base-radio(group-name="Pooling" value-input="Max"  v-model="settings.Pooling")
-                    span Max pooling
-                  base-radio(group-name="Pooling" value-input="Mean"  v-model="settings.Pooling")
-                    span Mean pooling
-            .settings-layer_section
-              .form_row(v-tooltip-interactive:right="interactiveInfo.poolingArea")
-                .form_label Pooling area:
-                .form_input
-                  input(type="text" v-model="settings.Pool_area")
-            .settings-layer_section
-              .form_row(v-tooltip-interactive:right="interactiveInfo.poolingStride")
-                .form_label Pooling stride:
-                .form_input
-                  input(type="text" v-model="settings.Pool_stride")
-            .settings-layer_section
-              .form_row(v-tooltip-interactive:right="interactiveInfo.ZeroPaddingPooling")
-                .form_label Zero-padding for pooling:
-                .form_input
-                  base-radio(group-name="Pool_padding" value-input="'SAME'" v-model="settings.Pool_padding")
-                    span SAME
-                  base-radio(group-name="Pool_padding" value-input="'VALID'" v-model="settings.Pool_padding")
-                    span VALID
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.zeroPadding")
+          .form_label Zero-padding:
+          .form_input
+            base-radio(group-name="group3" value-input="'SAME'"  v-model="settings.Padding")
+              span SAME
+            base-radio(group-name="group3" value-input="'VALID'"  v-model="settings.Padding")
+              span VALID
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
+          .form_label Activation function:
+          .form_input
+            base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
+              span None
+            base-radio(group-name="group1" value-input="Sigmoid"  v-model="settings.Activation_function")
+              span Sigmoid
+            base-radio(group-name="group1" value-input="ReLU"  v-model="settings.Activation_function")
+              span ReLU
+            base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
+              span Tanh
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
+          .form_label Dropout:
+          .form_input
+            base-radio(group-name="group5" :value-input="true"  v-model="settings.Dropout")
+              span Yes
+            base-radio(group-name="group5" :value-input="false"  v-model="settings.Dropout")
+              span No
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
+          .form_label Pooling:
+          .form_input
+            base-radio(group-name="group6" :value-input="true"  v-model="settings.PoolBool")
+              span Yes
+            base-radio(group-name="group6" :value-input="false"  v-model="settings.PoolBool")
+              span No
+      //-.settings-layer_section
+        .form_row
+          .form_label Batch Normalization:
+          .form_input
+            base-radio(groupName="group6")
+              span Yes
+            base-radio(groupName="group6")
+              span No
+      //-.settings-layer_section
+        .form_row
+          .form_label Pooling:
+          .form_input
+            base-checkbox(valueInput="Pooling" v-model="settings.pooling")
+            //input(type="checkbox" :value="settings.pooling" @change="changeCheckbox($event)")
+      template(v-if="settings.PoolBool")
+        .settings-layer_section
+          .form_row(v-tooltip-interactive:right="interactiveInfo.poolingType")
+            .form_label Pooling type:
+            .form_input
+              base-radio(group-name="Pooling" value-input="Max"  v-model="settings.Pooling")
+                span Max pooling
+              base-radio(group-name="Pooling" value-input="Mean"  v-model="settings.Pooling")
+                span Mean pooling
+        .settings-layer_section
+          .form_row(v-tooltip-interactive:right="interactiveInfo.poolingArea")
+            .form_label Pooling area:
+            .form_input
+              input(type="text" v-model="settings.Pool_area")
+        .settings-layer_section
+          .form_row(v-tooltip-interactive:right="interactiveInfo.poolingStride")
+            .form_label Pooling stride:
+            .form_input
+              input(type="text" v-model="settings.Pool_stride")
+        .settings-layer_section
+          .form_row(v-tooltip-interactive:right="interactiveInfo.ZeroPaddingPooling")
+            .form_label Zero-padding for pooling:
+            .form_input
+              base-radio(group-name="Pool_padding" value-input="'SAME'" v-model="settings.Pool_padding")
+                span SAME
+              base-radio(group-name="Pool_padding" value-input="'VALID'" v-model="settings.Pool_padding")
+                span VALID
+    template(slot="Code-content")
+      settings-code(:the-code="coreCode")
 
-      .popup_body(:class="{'active': tabSelected == 1}")
-        settings-code(
-          :the-code="coreCode"
-        )
-    .settings-layer_foot
+    template(slot="action")
       button#tutorial_apply-button.btn.btn--primary.tutorial-relative(type="button" @click="saveSettings") Apply
-
 </template>
 
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
-import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
 import { mapGetters, mapActions } from 'vuex';
 
 export default {
   name: 'SetDeepLearningConv',
   mixins: [mixinSet],
-  components: {
-    SettingsCode
-  },
   data() {
     return {
-      tabs: ['Settings', 'Code'],
       settings: {
         Conv_dim: "2D", //Automatic, 1D, 2D, 3D
         Patch_size: "3",

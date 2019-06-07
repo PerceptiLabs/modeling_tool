@@ -1,55 +1,41 @@
 <template lang="pug">
-  .import-data
-    base-switcher.sidebar_section
-      template(slot="firstTab")
-        .form_holder
-          .form_label Browse:
-          .form_row
-            input.form_input(type="text" v-model="settings.Location" readonly)
-            button.btn.btn--dark-blue-rev(type="button" @click="saveLoadFile") Search
+  base-accordion(:accordion-title="accordionData")
+    template(slot="tensorFlow")
+      .tf-wrap
+        button.btn.btn--outline-blue(type="button" @click="clickQ") Open
 
-      template(slot="secondTab")
-        p secondTab
-    .sidebar_section
-      .form_holder
-        .form_label Built-in Templates:
-        .form_row
-          base-select(
-            v-model="settings.Type"
-            :select-options="selectOptions"
-            select-placeholder="placeholder text"
-          )
-    .sidebar_section
-      //-.form_holder
-        .form_row
-          base-checkbox(v-model="settings.git")
-            i.icon.icon-git
-            span.checkbox-info Git
-      .form_holder
-        .form_label Git:
-        .form_row
-          input.form_input(
-            type="text"
-            placeholder="insert link"
-            v-model="settings.gitLink"
-            :disabled="!settings.git"
-          )
-    .sidebar_action
-      button.btn.btn--primary(type="button" @click="importData") Import
+    template(slot="builtIn")
+      .form_row
+        base-select.form_input(
+          v-model="settings.Type"
+          :select-options="selectOptions"
+          select-placeholder="placeholder text"
+        )
+        button.btn.btn--dark-blue-rev(type="button" @click="clickQ") Load
+
+    template(slot="git")
+      .form_row
+        input.form_input(type="text" v-model="settings.Location" placeholder="insert link")
+        button.btn.btn--dark-blue-rev(type="button" @click="clickQ") Load
 
 </template>
 
 <script>
 import BaseSwitcher     from "@/components/different/switcher.vue";
+import BaseAccordion    from "@/components/base/accordion.vue";
 import {loadPathFolder} from '@/core/helpers.js'
 
 
 export default {
   name: "ImportData",
-  components: {BaseSwitcher},
+  components: {BaseSwitcher, BaseAccordion},
   data() {
     return {
-      disabledBtn: false,
+      accordionData: [
+        {name: 'tensorFlow' , html: 'TensorFlow Model'},
+        {name: 'builtIn' , html: 'Built-in Templates'},
+        {name: 'git' , html: '<i class="icon icon-git"></i> Git'},
+      ],
       selectOptions: [
         { text: 'Machine Translation',    value: 'machine_translation' },
         { text: 'Image Processing11',       value: null,
@@ -82,21 +68,8 @@ export default {
     }
   },
   methods: {
-    loadPathFolder,
-    saveLoadFile() {
-      this.disabledBtn = true;
-      this.loadPathFolder()
-        .then((pathArr)=>{
-          this.disabledBtn = false;
-          this.settings.Location = pathArr[0];
-        })
-        .catch((err)=> {
-          this.disabledBtn = false;
-          console.error(err)
-        } )
-    },
-    importData() {
-      this.$store.dispatch('mod_api/API_exportData', this.settings)
+    clickQ() {
+
     }
   }
 }
@@ -104,7 +77,10 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
-  .import-data {
-    font-size: 1.2rem;
+  .tf-wrap {
+    text-align: center;
+    .btn {
+      min-width: 15rem;
+    }
   }
 </style>

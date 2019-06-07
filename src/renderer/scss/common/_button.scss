@@ -173,16 +173,26 @@
   }
 }
 
-.btn--crash-course {
+.btn--outline-blue {
   font-size: 1.5rem;
-  font-weight: 500;
+  //font-weight: 500;
   background: $col-txt2;
-  padding: 0.7rem 2.5rem;
+  padding: .7rem 2.5rem;
   border: 1px solid $login-blue;
   border-radius: 2rem;
   color: inherit;
+  &:hover {
+    background: $bg-grad-blue;
+  }
 }
 
+.btn--outline-blue-rev {
+  @extend .btn--outline-blue;
+  background: $bg-grad-blue;
+  &:hover {
+    background: $col-txt2;
+  }
+}
 .green-color-icon{
   color: $color-1;
 }
