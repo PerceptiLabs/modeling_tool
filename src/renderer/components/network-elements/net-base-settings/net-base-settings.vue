@@ -47,6 +47,10 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../../scss/base";
+  .popup {
+    min-width: 29rem;
+    box-shadow: $layer-shad;
+  }
   .popup_body {
     max-width: calc(50vw - #{$w-sidebar});
     min-width: 29rem;
@@ -62,8 +66,7 @@ export default {
     background-color: $bg-toolbar;
   }
   .settings-layer {
-    max-height: calc(50vh - 19rem);
-    min-height: 11rem;
+    max-height: calc(100vh - 26rem);
     overflow: auto;
   }
 </style>

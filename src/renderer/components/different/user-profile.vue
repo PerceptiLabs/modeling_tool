@@ -83,4 +83,7 @@ export default {
     margin: 0;
     margin-bottom: 1rem;
   }
+  .sidebar_action {
+    text-align: center;
+  }
 </style>

@@ -12,11 +12,12 @@
     .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
     .net-element_btn(ref="BaseElement")
       slot
-
+    //-
     .net-element_window(
       v-if="settingsIsOpen"
       :class="classElWindow"
       :style="styleElWindow"
+      ref="elementSettings"
       )
       slot(name="settings")
 
@@ -85,7 +86,8 @@ export default {
       settingsIsOpen: false,
       openWinPosition: {
         left: false,
-        top: false
+        top: false,
+        offset: 0
       }
     }
   },
@@ -127,7 +129,14 @@ export default {
       }
     },
     styleElWindow() {
-      return {zoom: `${(100 / (this.wsZoom * 100)) * 100}%`}
+      let style = {zoom: `${(100 / (this.wsZoom * 100)) * 100}%`};
+      let offsetWin = this.openWinPosition.offset;
+      if(offsetWin !== 0) {
+        this.openWinPosition.top
+          ? style.bottom = `-${offsetWin}px`
+          : style.top = `-${offsetWin}px`
+      }
+      return style
     },
   },
   watch: {
@@ -174,9 +183,10 @@ export default {
     openSettings(event) {
       this.hideAllWindow();
       if(!this.editIsOpen) return;
-      this.calcWindowPosition();
       this.settingsIsOpen = true;
+
       this.$nextTick(() => {
+        this.calcWindowPosition();
         this.tutorialPointActivate({
           way: 'next',
           validation: this.tutorialSearchId(event)
@@ -188,22 +198,38 @@ export default {
       if(!this.currentSelectedEl.length) {
         this.setFocusEl(event);
       }
-      this.calcWindowPosition();
+      //this.calcWindowPosition();
       if(this.networkMode === 'edit' && this.editIsOpen) {
         this.contextIsOpen = true;
       }
     },
-    calcWindowPosition() {
+    calcWindowPosition(el) {
       let windowWs = document.querySelector('.js-info-section_main');
-      let winCenterWidth = windowWs.scrollLeft + (windowWs.clientWidth/this.wsZoom)/2;
-      let winCenterHeight = windowWs.scrollTop + (windowWs.clientHeight/this.wsZoom)/2;
+      let windowWsWidth = windowWs.clientWidth/this.wsZoom;
+      let windowWsHeight = windowWs.clientHeight/this.wsZoom;
+      let elementSettingsHeight = this.$refs.elementSettings.clientHeight/this.wsZoom;
+      let layerHeight = this.$refs.rootBaseElement.clientHeight;
+      let layerTop = this.dataEl.layerMeta.position.top;
+      let winCenterWidth = windowWs.scrollLeft + (windowWsWidth - layerHeight)/2;
+      let winCenterHeight = windowWs.scrollTop + (windowWsHeight - layerHeight)/2;
 
       winCenterWidth < this.dataEl.layerMeta.position.left
         ? this.openWinPosition.left = true
         : this.openWinPosition.left = false;
-      winCenterHeight < this.dataEl.layerMeta.position.top
+      winCenterHeight < layerTop
         ? this.openWinPosition.top = true
-        : this.openWinPosition.top = false
+        : this.openWinPosition.top = false;
+
+      if(this.openWinPosition.top) {
+        if(layerTop < elementSettingsHeight) {
+          this.openWinPosition.offset = (elementSettingsHeight - layerTop - layerHeight + 10)*this.wsZoom
+        }
+      }
+      else {
+        if((windowWsHeight - layerTop) < elementSettingsHeight) {
+          this.openWinPosition.offset = (elementSettingsHeight - (windowWsHeight - layerTop) + 10)*this.wsZoom
+        }
+      }
     },
     setFocusEl(ev) {
       ev.ctrlKey
@@ -220,6 +246,11 @@ export default {
     hideAllWindow() {
       this.settingsIsOpen = false;
       this.contextIsOpen = false;
+      this.openWinPosition = {
+        left: false,
+        top: false,
+        offset: 0
+      }
     },
     deselect() {
       this.hideAllWindow();
@@ -242,6 +273,7 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../../scss/base";
+
   .net-element_window {
     position: absolute;
     z-index: 4;
@@ -264,6 +296,7 @@ export default {
     margin: 0;
     padding: 0;
     background-color: transparent;
+    box-shadow: $layer-shad;
     .net-element--active & .btn {
       box-shadow: 0 0 20px #fff;
     }
