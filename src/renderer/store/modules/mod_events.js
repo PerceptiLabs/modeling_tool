@@ -68,7 +68,8 @@ const actions = {
     }
   },
   EVENT_eventResize({commit}) {
-    commit('set_eventResize')
+    commit('set_eventResize');
+
   },
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)

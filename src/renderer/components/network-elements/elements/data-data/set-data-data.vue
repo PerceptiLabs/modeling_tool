@@ -5,7 +5,7 @@
         button.btn.tutorial-relative(type="button"
           :disabled="disabledBtn"
           @click="loadFolder"
-          v-tooltip-interactive:left="interactiveInfo.folder"
+          v-tooltip-interactive:bottom="interactiveInfo.folder"
         )
           i.icon.icon-open-folder
         span.data-select_text or

@@ -20,7 +20,7 @@ Vue.directive('tooltipInteractive', {
     el.tooltipTutorialBinding = binding;
     el.addEventListener('mouseenter', insertTooltipInfo);
     el.addEventListener('mouseleave', removeTooltipInfo);
-    el.addEventListener('click', removeTooltipInfo);
+    el.addEventListener('mousedown', removeTooltipInfo);
   },
   unbind: function (el) {
     el.removeEventListener('mouseenter', insertTooltipInfo);
@@ -33,9 +33,7 @@ let delayTimer;
 
 function insertTooltipInfo(event) {
   if(store.getters['mod_tutorials/getInteractiveInfo'] && event.currentTarget.tooltipTutorialBinding.value) {
-    event.currentTarget.appendChild(createTooltipInfo(event.currentTarget, event.currentTarget.tooltipTutorialBinding));
-    event.currentTarget.style.position = 'relative';
-    if(event.currentTarget.classList.contains('btn--layersbar')) event.currentTarget.parentNode.parentNode.style.zIndex = 7;
+    document.body.appendChild(createTooltipInfo(event.currentTarget, event.currentTarget.tooltipTutorialBinding));
   }
 }
 function insertStandardTooltip(event) {
@@ -49,6 +47,7 @@ function insertStandardTooltip(event) {
 function createTooltipInfo(el, info) {
   let tooltip = document.createElement('section');
   tooltip.classList.add('tooltip-tutorial',`tooltip-tutorial--${info.arg}`, 'js-tooltip-interactive');
+  sideCalculate(el, tooltip, info);
   if(typeof info.value === 'string') {
     tooltip.innerHTML = info.value;
   } else {
@@ -72,13 +71,35 @@ function removeStandardTooltip(event) {
   clearTimeout(delayTimer);
 }
 
-function removeTooltipInfo(event) {
-  let tooltip = event.currentTarget.querySelector('.js-tooltip-interactive');
-  event.currentTarget.parentNode.parentNode.style.zIndex = '';
+function removeTooltipInfo() {
+  let tooltip = document.body.querySelector('.js-tooltip-interactive');
   if(store.getters['mod_tutorials/getInteractiveInfo'] && tooltip) {
     tooltip.remove();
   }
 }
 
+
+function sideCalculate(element, tooltip, side) {
+  let elCoord = element.getBoundingClientRect();
+  let tooltipArrow = 10;
+  switch (side.arg) {
+    case 'right':
+      tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';
+      tooltip.style.left = elCoord.left + elCoord.width + tooltipArrow + 'px';
+      break;
+    case 'left':
+      tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';
+      tooltip.style.left = elCoord.left - tooltipArrow + 'px';
+      break;
+    case 'top':
+      tooltip.style.top = elCoord.top - tooltipArrow +'px';
+      tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
+      break;
+    case 'bottom':
+      tooltip.style.top = elCoord.top + elCoord.height + tooltipArrow +'px';
+      tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
+      break;
+  }
+}
 
 

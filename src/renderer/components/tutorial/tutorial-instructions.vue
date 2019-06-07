@@ -66,6 +66,11 @@ export default {
       count: 0
     }
   },
+  watch: {
+    eventResize() {
+      this.tooltipReposition();
+    }
+  },
   computed: {
     ...mapGetters({
       activeStep:                 'mod_tutorials/getActiveStep',
@@ -81,6 +86,9 @@ export default {
     }),
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
+    },
+    eventResize() {
+      return this.$store.state.mod_events.eventResize
     },
     stepsLength() {
       return Object.keys(this.interective).length - 1
@@ -111,6 +119,7 @@ export default {
       resetTutorial:              'mod_tutorials/resetTutorial',
       lockElements:               'mod_tutorials/lockElements',
       unlockAllElements:          'mod_tutorials/unlockAllElements',
+      tooltipReposition:          'mod_tutorials/tooltipReposition',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
     }),
@@ -147,6 +156,7 @@ export default {
     }
   }
 }
+//
 </script>
 <style lang="scss">
   @import "../../scss/base";

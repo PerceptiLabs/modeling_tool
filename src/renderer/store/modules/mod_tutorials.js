@@ -1,6 +1,8 @@
 import { isNumber } from "util";
+import store from "../index";
 
 const namespaced = true;
+let delayTimer;
 
 const state = {
   isTutorialMode: false,
@@ -1011,15 +1013,32 @@ const actions = {
     dispatch('removeTooltip');
     let element = document.getElementById(info.id);
     if(getters.getActiveAction.tooltip && element) {
-      let tooltipBlock = document.createElement('div');
-      tooltipBlock.classList.add('tooltip-tutorial', `tooltip-tutorial--${getters.getActiveAction.position}`);
-      tooltipBlock.innerHTML = info.tooltip;
-      element.appendChild(tooltipBlock);
+      var tooltip = document.createElement('div');
+      delayTimer = setTimeout(()=>{
+        dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
+        tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${getters.getActiveAction.position}`);
+        tooltip.innerHTML = info.tooltip;
+        document.body.appendChild(tooltip);
+        element.addEventListener('mousedown', hideElement);
+        element.addEventListener('mouseup', repositionElement);
+      }, 250);
+    }
+    function hideElement() {
+      tooltip.style.display = 'none'
+    }
+    function repositionElement() {
+      dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
+      tooltip.style.display = '';
     }
   },
   removeTooltip() {
-    let activeTooltip = document.querySelector('.tooltip-tutorial');
-    if(activeTooltip) activeTooltip.remove()
+    let activeTooltips = document.querySelectorAll('.tooltip-tutorial');
+    clearTimeout(delayTimer);
+    if(activeTooltips.length > 0){
+      activeTooltips.forEach((tooltip)=> {
+        tooltip.remove();
+      })
+    }
   },
   nextPoint({commit, getters, dispatch}) {
     commit('SET_activeActionMainTutorial', 0);
@@ -1076,10 +1095,10 @@ const actions = {
     });
   },
   unlockElement({getters, dispatch}, id) {
-    let element = document.getElementById(id).parentNode;
-    if(element.parentNode.classList.contains('layersbar-list') ||
-      element.parentNode.classList.contains('layer_child-list')) {
-        element.classList.add('unlock-element')
+    let element = document.getElementById(id);
+    if(element && element.parentNode.parentNode.classList.contains('layersbar-list') ||
+      element && element.parentNode.parentNode.classList.contains('layer_child-list')) {
+        element.parentNode.classList.add('unlock-element')
     }
   },
   unlockAllElements() {
@@ -1096,6 +1115,35 @@ const actions = {
       prevUnlockElements.forEach(function (element) {
         element.classList.remove('unlock-element');
       })
+    }
+  },
+  sideCalculate({}, info) {
+  let elCoord = info.element.getBoundingClientRect();
+  let tooltipArrow = 10;
+    switch (info.side) {
+      case 'right':
+        info.tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';
+        info.tooltip.style.left = elCoord.left + elCoord.width + tooltipArrow + 'px';
+        break;
+      case 'left':
+        info.tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';
+        info.tooltip.style.left = elCoord.left - tooltipArrow + 'px';
+        break;
+      case 'top':
+        info.tooltip.style.top = elCoord.top - tooltipArrow +'px';
+        info.tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
+        break;
+      case 'bottom':
+        info.tooltip.style.top = elCoord.top + elCoord.height + tooltipArrow +'px';
+        info.tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
+        break;
+    }
+  },
+  tooltipReposition({dispatch, getters}) {
+    if(getters.getIstutorialMode) {
+      let element = document.getElementById(getters.getActiveAction.id);
+      let tooltip = document.querySelector('.tooltip-tutorial');
+      dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
     }
   },
   resetTutorial({dispatch, commit}){
