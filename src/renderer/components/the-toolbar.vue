@@ -7,7 +7,7 @@
     ul.toolbar_list
       li
         button#tutorial_pointer.btn.btn--toolbar(type="button"
-          :disabled="statisticsIsOpen"
+          :disabled="!networkIsOpen"
           :class="{'active': networkMode === 'edit'}"
           v-tooltip:bottom="'Edit'"
           v-tooltip-interactive:bottom="interactiveInfo"
@@ -19,7 +19,7 @@
         :class="{'disable-hover': statisticsIsOpen}"
       )
         button#tutorial_list-arrow.btn.btn--toolbar(type="button"
-          :disabled="statisticsIsOpen"
+          :disabled="!networkIsOpen"
           :class="{'active': networkMode === 'addArrow'}"
           @click="setNetMode('addArrow', 'tutorial_list-arrow')"
           v-tooltip:bottom="'Arrow'"
@@ -90,14 +90,13 @@
       //-   )
       //-   span Layer Mode
       //-   i.icon.icon-ellipse
-
-      tutorial-instructions
       button.btn.btn--tutorial(
         type="button"
         :class="{'btn--tutorial-active': interactiveInfoStatus}"
         @click="toggleInteractiveInfo"
       )
         span ?
+      tutorial-instructions
 </template>
 
 <script>
@@ -126,6 +125,7 @@ export default {
       isTraining:             'mod_workspace/GET_networkIsTraining',
       statusNetworkCore:      'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:       'mod_workspace/GET_statisticsIsOpen',
+      networkIsOpen:       'mod_workspace/GET_networkIsOpen',
     }),
     statusStartBtn() {
       return {
@@ -189,6 +189,13 @@ export default {
     },
     activeStepStoryboard() {
       return this.$store.state.mod_tutorials.activeStepStoryboard
+    }
+  },
+  watch: {
+    networkIsOpen(newVal) {
+      if(!newVal) {
+        this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+      }
     }
   },
   methods: {

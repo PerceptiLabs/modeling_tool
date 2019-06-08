@@ -971,6 +971,7 @@ const actions = {
           dispatch('unlockElement', getters.getActiveAction.id);
         }
         else {
+          dispatch('removePrevUnlock');
           dispatch('unlockElement', getters.getActiveAction.id);
           dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
           dispatch('drawSchematicElement', getters.getActiveAction.schematic);
@@ -1066,23 +1067,34 @@ const actions = {
       })
     }
   },
-  lockElement({getters, dispatch}, cssClass) {
-    let element = document.querySelector(cssClass);
+  lockElements({getters, dispatch}, cssClass) {
+    let elements = document.querySelectorAll(cssClass);
     let blockingArea = document.createElement('div');
     blockingArea.classList.add('lock-area');
-    element.appendChild(blockingArea);
+    elements.forEach(function (element) {
+      element.appendChild(blockingArea.cloneNode(true));
+    });
   },
   unlockElement({getters, dispatch}, id) {
-    let prevUnlockElement = document.querySelector('.unlock-element');
-    if(prevUnlockElement) prevUnlockElement.classList.remove('unlock-element');
     let element = document.getElementById(id).parentNode;
-    if(element.classList.contains('layer')) element.classList.add('unlock-element')
+    if(element.parentNode.classList.contains('layersbar-list') ||
+      element.parentNode.classList.contains('layer_child-list')) {
+        element.classList.add('unlock-element')
+    }
   },
   unlockAllElements() {
     let lockElements = document.querySelectorAll('.lock-area');
     if(lockElements.length > 0) {
       lockElements.forEach(function (element) {
         element.remove();
+      })
+    }
+  },
+  removePrevUnlock() {
+    let prevUnlockElements = document.querySelectorAll('.unlock-element');
+    if(prevUnlockElements.length > 0) {
+      prevUnlockElements.forEach(function (element) {
+        element.classList.remove('unlock-element');
       })
     }
   },

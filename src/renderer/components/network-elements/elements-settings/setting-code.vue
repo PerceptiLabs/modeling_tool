@@ -1,8 +1,8 @@
 <template lang="pug">
-  .settings-layer(
-    :class="{'settings-layer--full-view': fullView}"
+  .settings-layer_section(
+    :class="{'code_full-view': fullView}"
   )
-    .settings-layer_section
+    .bookmark_head
       ul.bookmark_tab-list(v-if="isMultiTabs")
         button.bookmark_tab(type="button"
           v-for="(data, key) in theCode"
@@ -10,12 +10,17 @@
           :class="{'bookmark_tab--active': currentTab === key}"
           @click="currentTab = key"
           ) {{ key }}
-      .bookmark_content
-        .form_holder(v-if="isMultiTabs && theCode")
-          code-hq( v-model="theCode[currentTab]" )
-        .form_holder(v-else)
-          code-hq( v-model="theCode" )
-        button.btn.btn--code-view.icon.icon-shevron-right(type="button" @click="toggleFullView")
+      .bookmark_tab.bookmark_tab--active(v-else) Output
+      button.btn.btn--link.icon.icon-full-screen-code(type="button" @click="toggleFullView")
+    .bookmark_content
+      code-hq.code-wrap(
+        v-if="isMultiTabs && theCode"
+        v-model="theCode[currentTab]"
+        )
+      code-hq.code-wrap(
+        v-else
+        v-model="theCode"
+        )
 
 </template>
 
@@ -54,28 +59,28 @@ export default {
   },
   methods: {
     toggleFullView() {
-      this.fullView = !this.fullView
+      this.fullView = !this.fullView;
+      document.querySelector('.popup_body').classList.toggle("popup_body--show-code");
+      document.querySelector('.network-field').classList.toggle("network-field--show-code");
     }
   }
 }
 </script>
 <style lang="scss" scoped>
   @import "../../../scss/base";
-  .settings-layer {
-    max-width: 29rem;
-    overflow: hidden;
+  .bookmark_head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
   }
-  .settings-layer--full-view {
-    max-width: none;
-    .btn--code-view:before {
-      transform: rotate(180deg);
-      display: inline-block;
-    }
-  }
+
   .bookmark_tab-list {
     padding: 0;
   }
   .bookmark_tab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     min-width: 7em;
     text-align: left;
     height: 2rem;
@@ -94,6 +99,16 @@ export default {
     color: $col-primary;
     &:hover {
       background: linear-gradient(to left, rgba(#fff, 0), rgba(#fff, .2), rgba(#fff, 0));
+    }
+  }
+  .code_full-view {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    width: 100%;
+    .code-wrap,
+    .bookmark_content {
+      height: 100%;
     }
   }
 </style>

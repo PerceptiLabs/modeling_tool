@@ -7,7 +7,7 @@ const namespaced = true;
 const state = {
   workspaceContent: [],
   currentNetwork: 0,
-  dragElement: {},
+  dragElement: null,
   startArrowID: null,
   preArrow: {
     show: false,
@@ -102,6 +102,9 @@ const getters = {
 };
 
 const mutations = {
+  reset_network(state) {
+    state.workspaceContent = []
+  },
   //---------------
   //  NETWORK
   //---------------
@@ -236,18 +239,51 @@ const mutations = {
     currentElement(value.id).layerName = value.setValue
   },
   add_element(state, {getters, event}) {
-    let newEl = state.dragElement;
+    let duplicatePositionIndent = 30;
+    let newEl = state.dragElement
+      ? state.dragElement
+      : createNetElement(event);
+    
     let top = newEl.layerMeta.position.top;
     let left = newEl.layerMeta.position.left;
     let zoom = getters.GET_currentNetwork.networkMeta.zoom;
     let elementList = getters.GET_currentNetworkElementList;
+
     newEl.layerMeta.tutorialId = getters.GET_tutorialActiveId;
     newEl.layerMeta.position.top = (event.offsetY - top)/zoom;
     newEl.layerMeta.position.left = (event.offsetX - left)/zoom;
+    let depth = checkPosition(newEl, elementList);
+    if(depth > 0) {
+      newEl.layerMeta.position.top = newEl.layerMeta.position.top + (duplicatePositionIndent * depth);
+      newEl.layerMeta.position.left = newEl.layerMeta.position.left + (duplicatePositionIndent * depth);
+    }
+    depth = 0;
 
     if(!elementList) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
-    state.dragElement = {};
+    state.dragElement = null;
+
+    function checkPosition(el, list) {
+      let depth = 0;
+
+      runChecking(el, list);
+      return depth;
+
+      function runChecking(el, list) {
+        let top = el.layerMeta.position.top + (duplicatePositionIndent * depth);
+        let left = el.layerMeta.position.left + (duplicatePositionIndent * depth);
+        for(let existID in list) {
+          let existEl = list[existID];
+          let elTop = existEl.layerMeta.position.top;
+          let elLeft = existEl.layerMeta.position.left;
+          if(top === elTop && left === elLeft) {
+            ++depth;
+            runChecking(el, list);
+            return
+          }
+        }
+      }
+    }
   },
   delete_element(state, {getters, dispatch}) {
     let arrSelect = getters.GET_currentSelectedEl;
@@ -336,6 +372,11 @@ const mutations = {
   },
   set_elementSelect(state, value) {
     currentElement(value.id).layerMeta.isSelected = value.setValue;
+  },
+  set_elementSelectAll(state, {getters}) {
+    for(let layer in getters.GET_currentNetworkElementList) {
+      currentElement(layer).layerMeta.isSelected = true;
+    }
   },
   set_elementMultiSelect(state, value) {
     currentElement(value.id).layerMeta.isSelected = value.setValue;
@@ -615,7 +656,7 @@ const actions = {
     commit('set_statusNetworkWaitGlobalEvent', {getters, value})
   },
   RESET_network({commit}) {
-    commit('RESET_network')
+    commit('reset_network')
   },
   CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
     //console.log(`request -> can show`, `${time}ms`);
@@ -686,6 +727,9 @@ const actions = {
   SET_elementSelect({commit}, value) {
     commit('set_elementSelect', value)
   },
+  SET_elementSelectAll({commit, getters}) {
+    commit('set_elementSelectAll', {getters})
+  },
   SET_elementMultiSelect({commit}, value) {
     commit('set_elementMultiSelect', value)
   },
@@ -723,18 +767,19 @@ export default {
   getters,
   state,
   mutations,
-  actions
+  actions,
+  createNetElement
 }
 
 function currentElement(id) {
   return state.workspaceContent[state.currentNetwork].networkElementList[id];
 }
-function createNetElement(event) {
+const createNetElement = function (event) {
   return {
     layerId: generateID(),
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
-    layerSettings: '',
+    layerSettings: event.layerSettings ? event.layerSettings : '',
     layerCode: '',
     layerNone: false,
     layerMeta: {

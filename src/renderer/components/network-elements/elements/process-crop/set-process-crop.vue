@@ -1,59 +1,45 @@
 <template lang="pug">
-  .popup
-    ul.popup_tab-set
-      button.popup_header(
-        v-for="(tab, i) in tabs"
-        :key="tab.i"
-        @click="setTab(i)"
-        :class="{'disable': tabSelected != i}"
-      )
-        h3(v-html="tab")
-    .popup_tab-body
-      .popup_body(
-        :class="{'active': tabSelected == 0}"
-      )
-        .settings-layer
-          //.settings-layer_section
-            .form_row
-              .form_label Data Input:
-              .form_input
-                triple-input(
-                  /:value1="50"
-                  /:value2="60"
-                  /:value3="10"
-                )
-          .settings-layer_section.text-center.crop-box
-            vue-cropper(
-              ref="cropper"
-              :img="crop"
-              :outputSize="1"
-              outputType="png"
-              :autoCrop="true"
-              :info="true"
-              :full="false"
-              :canMove="true"
-              :canMoveBox="true"
-              :fixedBox="false"
-              :original="false"
-              )
-          //.settings-layer_section
-            .form_row
-              .form_label Reshape data:
-              .form_input
-                input(type="text")
-
-      .popup_body(:class="{'active': tabSelected == 1}")
-        settings-code(
-        :the-code="coreCode"
+  net-base-settings
+    template(slot="Settings-content")
+      //.settings-layer_section
+                  .form_row
+                    .form_label Data Input:
+                    .form_input
+                      triple-input(
+                        /:value1="50"
+                        /:value2="60"
+                        /:value3="10"
+                      )
+      .settings-layer_section.text-center.crop-box
+        vue-cropper(
+          ref="cropper"
+          :img="crop"
+          :outputSize="1"
+          outputType="png"
+          :autoCrop="true"
+          :info="true"
+          :full="false"
+          :canMove="true"
+          :canMoveBox="true"
+          :fixedBox="false"
+          :original="false"
         )
-    .settings-layer_foot
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
+      //.settings-layer_section
+        .form_row
+          .form_label Reshape data:
+          .form_input
+            input(type="text")
 
+    template(slot="Code-content")
+      settings-code(:the-code="coreCode")
+
+    template(slot="action")
+      button.btn.btn--primary(type="button" @click="applySettings") Apply
 </template>
 
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
-  import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
+  //import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
   import TripleInput    from '@/components/base/triple-input';
   import { VueCropper } from 'vue-cropper';
 
@@ -62,12 +48,11 @@
     mixins: [mixinSet],
     components: {
       TripleInput,
-      SettingsCode,
+      //SettingsCode,
       VueCropper
     },
     data() {
       return {
-        tabs: ['Settings', 'Code'],
         crop: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/36/Hopetoun_falls.jpg/220px-Hopetoun_falls.jpg",
         option: {
           img: '',

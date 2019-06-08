@@ -1,4 +1,5 @@
-import {mapGetters} from "vuex";
+import SettingsCode     from '@/components/network-elements/elements-settings/setting-code.vue';
+import NetBaseSettings  from '@/components/network-elements/net-base-settings/net-base-settings.vue';
 
 const netElementSettings = {
   inject: ['hideAllWindow'],
@@ -7,10 +8,11 @@ const netElementSettings = {
       type: Object,
     }
   },
+  components: { SettingsCode, NetBaseSettings },
   data() {
     return {
-      tabSelected: 0,
-      tabs: ['Settings', 'Code'],
+      //tabSelected: 0,//
+      //tabs: ['Settings', 'Code'],//
       settings: {}
     }
   },
@@ -32,9 +34,9 @@ const netElementSettings = {
     }
   },
   methods: {
-    setTab(i) {
-      this.tabSelected = i;
-    },
+    // setTab(i) {//
+    //   this.tabSelected = i;
+    // },
     applySettings() {
       this.hideAllWindow();
       if(this._name === '<SetTrainNormal>') this.settings.Labels = this.idSelectElement;

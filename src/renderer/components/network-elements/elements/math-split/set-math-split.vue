@@ -1,66 +1,41 @@
 <template lang="pug">
-  .popup
-    ul.popup_tab-set
-      button.popup_header(
-        v-for="(tab, i) in tabs"
-        :key="tab.i"
-        @click="setTab(i)"
-        :class="{'disable': tabSelected != i}"
-      )
-        h3(v-html="tab")
-    .popup_tab-body
-      .popup_body(
-        :class="{'active': tabSelected == 0}"
-      )
-        .settings-layer
-          .settings-layer_section
-            .form_row
-              .form_label Choose dimension:
-              .form_input
-                triple-input(
-                  :value1="50"
-                  :value2="60"
-                  :value3="10"
-                  @setValue1="showVal"
-                  @setValue2="showVal"
-                  @setValue3="showVal"
+  net-base-settings
+    template(slot="Settings-content")
+      .settings-layer_section
+        .form_row
+          .form_label Choose dimension:
+          .form_input
+            triple-input(v-model="settings.dimension")
+      .settings-layer_section
+        .form_row
+          .form_label Split on:
+          .form_input
+            .form_holder
+              base-range(
+                v-model="settings.val"
+              )
+            input(type="number" v-model="settings.val")
+    template(slot="Code-content")
+      settings-code(:the-code="coreCode")
 
-                )
-          .settings-layer_section
-            .form_row
-              .form_label Split on:
-              .form_input
-                .form_holder
-                  base-range(
-                    v-model="settings.val"
-                    )
-                input(type="number" v-model="settings.val")
-
-      .popup_body(:class="{'active': tabSelected == 1}")
-        settings-code(
-          :the-code="coreCode"
-        )
-    .settings-layer_foot
+    template(slot="action")
       button.btn.btn--primary(type="button" @click="applySettings") Apply
 
 </template>
 
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
-import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
+//import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
 import TripleInput    from "@/components/base/triple-input";
 
 export default {
   name: 'SetMathSplit',
   mixins: [mixinSet],
-  components: {
-    TripleInput,
-    SettingsCode,
-  },
+  components: { TripleInput },
   data() {
     return {
-      tabs: ['Settings', 'Code'],
       settings: {
+        dimension: [0,1,2],
         pooling: false,
         neurons: 'None',
         val: 50

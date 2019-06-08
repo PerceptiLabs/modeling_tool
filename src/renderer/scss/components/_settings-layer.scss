@@ -1,3 +1,12 @@
+//.settings-layer_code {
+//  max-width: calc(50vw - #{$w-sidebar});
+//  min-width: 29rem;
+//  overflow: hidden;
+//}
+//.settings-layer_code--full-view {
+//
+//}
+
 .settings-layer {
 	display: flex;
 	flex: 1;
@@ -32,5 +41,5 @@
 .settings-layer_foot {
 	@extend .popup_foot;
 
-	margin-top: auto;
+	margin-top: 1rem;
 }

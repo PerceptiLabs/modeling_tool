@@ -15,6 +15,7 @@
             button.btn.btn--link.header-nav_sublist-btn(type="button"
               v-else
               :disabled="subItem.enabled === false"
+              @mousedown="subItem.mousedown()"
               @click="subItem.active()"
             )
               span.header-nav_btn-text {{ subItem.label }}
@@ -44,7 +45,7 @@
 </template>
 
 <script>
-  import {ipcRenderer, shell} from 'electron'
+  import { ipcRenderer, shell } from 'electron'
   import { mapGetters, mapMutations, mapActions } from 'vuex';
 
 export default {
@@ -73,27 +74,28 @@ export default {
         {
           label: 'File',
           submenu: [
-            {label: 'Home',                                     enabled: this.openApp,  active: ()=> {this.openProject()}},
-            {label: 'New',        accelerator: 'Ctrl+N',        enabled: this.isLogin,  active: ()=> {this.addNewNetwork()}},
-            {label: 'Open',       accelerator: 'Ctrl+O',        enabled: this.isLogin,  active: ()=> {this.openNetwork()}},
-            {label: 'Save',       accelerator: 'Ctrl+S',        enabled: this.openApp,  active: ()=> {this.saveNetwork()}},
-            {label: 'Save as...', accelerator: 'Ctrl+Shift+S',  enabled: this.openApp,  active: ()=> {this.saveNetworkAs()}},
+            {label: 'Home',                                     enabled: this.openApp,  active: ()=> {this.openProject()},  mousedown: ()=> {}},
+            {label: 'New',        accelerator: 'Ctrl+N',        enabled: this.isLogin,  active: ()=> {this.addNewNetwork()},mousedown: ()=> {}},
+            {label: 'Open',       accelerator: 'Ctrl+O',        enabled: this.isLogin,  active: ()=> {this.openNetwork()},  mousedown: ()=> {}},
+            {label: 'Save',       accelerator: 'Ctrl+S',        enabled: this.openApp,  active: ()=> {this.saveNetwork()},  mousedown: ()=> {}},
+            {label: 'Save as...', accelerator: 'Ctrl+Shift+S',  enabled: this.openApp,  active: ()=> {this.saveNetworkAs()},mousedown: ()=> {}},
             {type: 'separator'},
-            {label: 'Log out',    accelerator: 'Ctrl+F4',       enabled: this.isLogin,  active: ()=> {this.logOut()}},
-            {label: 'Exit',       accelerator: 'Ctrl+Q',        enabled: true,          active: ()=> {this.appClose()}}
+            {label: 'Log out',    accelerator: 'Ctrl+F4',       enabled: this.isLogin,  active: ()=> {this.logOut()},       mousedown: ()=> {}},
+            {label: 'Exit',       accelerator: 'Ctrl+Q',        enabled: true,          active: ()=> {this.appClose()},     mousedown: ()=> {}}
           ]
         },
         {
           label: 'Edit',
           submenu: [
-            {label: 'Undo',                         enabled: false},
-            {label: 'Redo',                         enabled: false},
+            {label: 'Undo',         accelerator: 'Ctrl+Z',      enabled: false,         active: ()=> {},  mousedown: ()=> {}},
+            {label: 'Redo',         accelerator: 'Ctrl+Shift+Z',enabled: false,         active: ()=> {},  mousedown: ()=> {}},
             {type: 'separator'},
-            {label: 'Cut',                          enabled: false},
-            {label: 'Copy',                         enabled: false},
-            {label: 'Paste',                        enabled: false},
-            {label: 'Delete',                       enabled: false},
-            {label: 'Select all',                   enabled: false},
+            {label: 'Cut',          accelerator: 'Ctrl+X',      enabled: false,         active: ()=> {},  mousedown: ()=> {}},
+            {label: 'Copy',         accelerator: 'Ctrl+C',      enabled: this.openApp,  active: ()=> {},                    mousedown: ()=> {this.HCCopy()}},
+            {label: 'Paste',        accelerator: 'Ctrl+V',      enabled: this.openApp,  active: ()=> {this.HCPaste()},      mousedown: ()=> {}},
+            {type: 'separator'},
+            {label: 'Select all',   accelerator: 'Ctrl+A',      enabled: this.openApp,  active: ()=> {this.HCSelectAll()},  mousedown: ()=> {}},
+            {label: 'Deselect all', accelerator: 'Ctrl+Shift+A',enabled: this.openApp,  active: ()=> {this.HCDeselectAll()},mousedown: ()=> {}},
           ]
         },
         // {
@@ -162,23 +164,25 @@ export default {
         {
           label: 'Window',
           submenu: [
-            {label: 'Edit profile',                 enabled: false, active: ()=> {}},
-            {label: 'History',                      enabled: false, active: ()=> {}},
+            {label: 'Minimize',         enabled: true,          active: ()=> {this.appMinimize()},  mousedown: ()=> {}},
+            {label: 'Zoom',             enabled: true,          active: ()=> {this.appMaximize()},  mousedown: ()=> {}},
           ]
         },
         {
           label: 'Settings',
           submenu: [
-            {label: 'Hyperparameters',              enabled: this.openApp, active: ()=> {this.openHyperparameters()}},
+            {label: 'Hyperparameters',  enabled: this.openApp,  active: ()=> {this.openHyperparameters()},  mousedown: ()=> {}},
+            {label: 'Edit profile',     enabled: false,         active: ()=> {},  mousedown: ()=> {}},
+            {label: 'History',          enabled: false,         active: ()=> {},  mousedown: ()=> {}},
           ]
         },
         {
           label: 'Help',
           submenu: [
-            {label: 'Help',                                                 active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')}},
-            {label: 'About',                                                active: ()=> {this.openLink('https://www.perceptilabs.com/')}},
-            {label: 'Tutorial mode',                enabled: this.openApp,  active: ()=> {this.showTutorial()}},
-            {label: 'Check for updates',                                    active: ()=> {this.checkUpdate()}},
+            {label: 'Help',                                     active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')},  mousedown: ()=> {}},
+            {label: 'About',                                    active: ()=> {this.openLink('https://www.perceptilabs.com/')},  mousedown: ()=> {}},
+            {label: 'Tutorial mode',    enabled: this.openApp,  active: ()=> {this.showTutorial()},   mousedown: ()=> {}},
+            {label: 'Check for updates',                        active: ()=> {this.checkUpdate()},    mousedown: ()=> {}},
             {type: 'separator'},
           ]
         }
@@ -195,12 +199,17 @@ export default {
     ...mapActions({
       infoPopup:     'globalView/GP_infoPopup',
       appClose:      'mod_events/EVENT_closeApp',
+      HCCopy:        'mod_events/EVENT_hotKeyCopy',
+      HCPaste:       'mod_events/EVENT_hotKeyPaste',
+      HCSelectAll:   'mod_workspace/SET_elementSelectAll',
+      HCDeselectAll: 'mod_workspace/SET_elementUnselect',
     }),
     openLink(url) {
       shell.openExternal(url);
     },
     checkUpdate() {
-      ipcRenderer.send('checkUpdate', 'userCheck');
+      this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
+      ipcRenderer.send('checkUpdate');
     },
     addNewNetwork() {
       this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
@@ -216,7 +225,13 @@ export default {
     },
     openHyperparameters() {
       this.$store.commit('globalView/GP_showNetGlobalSet', true);
-    }
+    },
+    appMinimize() {
+      ipcRenderer.send('appMinimize')
+    },
+    appMaximize() {
+      ipcRenderer.send('appMaximize')
+    },
   }
 }
 </script>

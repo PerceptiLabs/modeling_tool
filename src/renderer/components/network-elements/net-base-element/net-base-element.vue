@@ -12,11 +12,20 @@
     .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
     .net-element_btn(ref="BaseElement")
       slot
-
-    .net-element_window(v-if="settingsIsOpen")
+    //-
+    .net-element_window(
+      v-if="settingsIsOpen"
+      :class="classElWindow"
+      :style="styleElWindow"
+      ref="elementSettings"
+      )
       slot(name="settings")
 
-    .net-element_window.net-element_context-menu(v-if="contextIsOpen")
+    .net-element_window.net-element_context-menu(
+      v-if="contextIsOpen"
+      :class="classElWindow"
+      :style="styleElWindow"
+      )
       context-menu(
         :data-el="dataEl"
         @open-settings.stop="switchDblclick($event)"
@@ -53,12 +62,6 @@ export default {
       hideAllWindow: this.hideAllWindow
     }
   },
-  data() {
-    return {
-      contextIsOpen: false,
-      settingsIsOpen: false,
-    }
-  },
   mounted() {
     this.$refs.rootBaseElement.addEventListener('mousedown', this.switchMousedownEvent);
     this.$refs.rootBaseElement.addEventListener('touchstart', this.switchMousedownEvent);
@@ -77,13 +80,25 @@ export default {
     /*clickOutsideAction*/
     document.removeEventListener('mousedown', this.mousedownOutside);
   },
+  data() {
+    return {
+      contextIsOpen: false,
+      settingsIsOpen: false,
+      openWinPosition: {
+        left: false,
+        top: false,
+        offset: 0
+      }
+    }
+  },
   computed: {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
       isTutorialMode:       'mod_tutorials/getIstutorialMode',
       isTraining:           'mod_workspace/GET_networkIsTraining',
       editIsOpen:           'mod_workspace/GET_networkIsOpen',
-      currentSelectedEl:    'mod_workspace/GET_currentSelectedEl'
+      currentSelectedEl:    'mod_workspace/GET_currentSelectedEl',
+      statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
     }),
     currentId() {
       return this.dataEl.layerId
@@ -98,15 +113,31 @@ export default {
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
-    statisticsIsOpen() {
-      return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
+    wsZoom() {
+      return  this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
     },
     classEl() {
       return {
         'net-element--active': this.isSelectedEl,
         'element--hidden': this.dataEl.layerMeta.isInvisible
       }
-    }
+    },
+    classElWindow() {
+      return {
+        'net-element_window--left': this.openWinPosition.left,
+        'net-element_window--top': this.openWinPosition.top
+      }
+    },
+    styleElWindow() {
+      let style = {zoom: `${(100 / (this.wsZoom * 100)) * 100}%`};
+      let offsetWin = this.openWinPosition.offset;
+      if(offsetWin !== 0) {
+        this.openWinPosition.top
+          ? style.bottom = `-${offsetWin}px`
+          : style.top = `-${offsetWin}px`
+      }
+      return style
+    },
   },
   watch: {
     isSelectedEl(newVal) {
@@ -138,7 +169,6 @@ export default {
     },
     switchDblclick(event) {
       if (this.isLock) return;
-      console.log(this.networkMode);
       if(this.networkMode !== 'edit') {
         this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
         this.setFocusEl(event);
@@ -153,9 +183,10 @@ export default {
     openSettings(event) {
       this.hideAllWindow();
       if(!this.editIsOpen) return;
-
       this.settingsIsOpen = true;
+
       this.$nextTick(() => {
+        this.calcWindowPosition();
         this.tutorialPointActivate({
           way: 'next',
           validation: this.tutorialSearchId(event)
@@ -167,8 +198,37 @@ export default {
       if(!this.currentSelectedEl.length) {
         this.setFocusEl(event);
       }
+      //this.calcWindowPosition();
       if(this.networkMode === 'edit' && this.editIsOpen) {
         this.contextIsOpen = true;
+      }
+    },
+    calcWindowPosition(el) {
+      let windowWs = document.querySelector('.js-info-section_main');
+      let windowWsWidth = windowWs.clientWidth/this.wsZoom;
+      let windowWsHeight = windowWs.clientHeight/this.wsZoom;
+      let elementSettingsHeight = this.$refs.elementSettings.clientHeight/this.wsZoom;
+      let layerHeight = this.$refs.rootBaseElement.clientHeight;
+      let layerTop = this.dataEl.layerMeta.position.top;
+      let winCenterWidth = windowWs.scrollLeft + (windowWsWidth - layerHeight)/2;
+      let winCenterHeight = windowWs.scrollTop + (windowWsHeight - layerHeight)/2;
+
+      winCenterWidth < this.dataEl.layerMeta.position.left
+        ? this.openWinPosition.left = true
+        : this.openWinPosition.left = false;
+      winCenterHeight < layerTop
+        ? this.openWinPosition.top = true
+        : this.openWinPosition.top = false;
+
+      if(this.openWinPosition.top) {
+        if(layerTop < elementSettingsHeight) {
+          this.openWinPosition.offset = (elementSettingsHeight - layerTop - layerHeight + 10)*this.wsZoom
+        }
+      }
+      else {
+        if((windowWsHeight - layerTop) < elementSettingsHeight) {
+          this.openWinPosition.offset = (elementSettingsHeight - (windowWsHeight - layerTop) + 10)*this.wsZoom
+        }
       }
     },
     setFocusEl(ev) {
@@ -186,6 +246,11 @@ export default {
     hideAllWindow() {
       this.settingsIsOpen = false;
       this.contextIsOpen = false;
+      this.openWinPosition = {
+        left: false,
+        top: false,
+        offset: 0
+      }
     },
     deselect() {
       this.hideAllWindow();
@@ -208,12 +273,22 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../../scss/base";
+
   .net-element_window {
     position: absolute;
     z-index: 4;
     top: 0;
     left: 100%;
     padding-left: 10px;
+    padding-right: 10px;
+    &.net-element_window--left {
+      left: auto;
+      right: 100%;
+    }
+    &.net-element_window--top {
+      top: auto;
+      bottom: 0;
+    }
   }
   .net-element_btn {
     position: relative;
@@ -221,6 +296,7 @@ export default {
     margin: 0;
     padding: 0;
     background-color: transparent;
+    box-shadow: $layer-shad;
     .net-element--active & .btn {
       box-shadow: 0 0 20px #fff;
     }

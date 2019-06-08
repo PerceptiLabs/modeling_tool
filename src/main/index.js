@@ -214,11 +214,8 @@ function createWindow () {
     mainWindow.checkForUpdates();
     mainWindow.webContents.send('getAppVersion', app.getVersion());
   });
-  ipcMain.on('checkUpdate', (event, arg) => {
-    mainWindow.checkForUpdates(arg);
-    autoUpdater.on('update-not-available', (info)=> {
-      mainWindow.webContents.send('update-not-finded', info);
-    });
+  ipcMain.on('checkUpdate', (event) => {
+    mainWindow.checkForUpdates();
   });
   ipcMain.on('update-start', (info)=> {
     autoUpdater.downloadUpdate();
@@ -239,8 +236,8 @@ function createWindow () {
    * start auto update
    */
   mainWindow.checkForUpdates = function() {
-    if (process.env.NODE_ENV !== 'development') {
-      mainWindow.webContents.send('info', 'checkForUpdates');
+    if(process.env.NODE_ENV !== 'development') {
+      //mainWindow.webContents.send('info', 'checkForUpdates');
       const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/';
       const UpdateOpt = {
         provider: 'generic',
@@ -248,13 +245,13 @@ function createWindow () {
       };
       switch (process.platform) {
         case 'win32':
-          UpdateOpt.url = UpdateUrl + 'win/';
+          UpdateOpt.url = UpdateUrl + 'winDev/';
           break;
         case 'darwin':
-          UpdateOpt.url = UpdateUrl + 'ios/';
+          UpdateOpt.url = UpdateUrl + 'iosDev/';
           break;
         case 'linux':
-          UpdateOpt.url = UpdateUrl + 'linux/';
+          UpdateOpt.url = UpdateUrl + 'linuxDev/';
           break;
       }
       autoUpdater.setFeedURL(UpdateOpt);
@@ -302,26 +299,23 @@ app.on('activate', () => {
  */
 
 autoUpdater.on('checking-for-update', (info)=> {
-  //console.log('Checking for update...');
-  mainWindow.webContents.send('info', {type: 'Checking for update...!', info});
+  mainWindow.webContents.send('checking-for-update', info);
+});
+autoUpdater.on('update-not-available', (info)=> {
+  mainWindow.webContents.send('update-not-available', info);
 });
 autoUpdater.on('update-available', (info)=> {
-  mainWindow.webContents.send('info', {type: 'Update available.', info});
-  mainWindow.webContents.send('update-finded', info);
+  mainWindow.webContents.send('update-available', info);
 });
-
 autoUpdater.on('error', (err)=> {
-  mainWindow.webContents.send('info', 'Error in auto-updater. ' + err);
+  mainWindow.webContents.send('update-error', err);
 });
 autoUpdater.on('download-progress', (progressObj)=> {
-  mainWindow.webContents.send('percent-progress', progressObj.percent);
-  let log_message = `Download speed: ${progressObj.bytesPerSecond}, Downloaded: ${progressObj.percent}%`;
-  mainWindow.webContents.send('info', log_message);
+  mainWindow.webContents.send('update-downloading', progressObj.percent);
   mainWindow.setProgressBar(progressObj.percent / 100);
 });
-autoUpdater.on('update-downloaded', (event, releaseNotes, releaseName) => {
-  mainWindow.webContents.send('info', 'Update downloaded');
-  mainWindow.webContents.send('download-completed');
+autoUpdater.on('update-downloaded', (event, info) => {
+  mainWindow.webContents.send('update-completed', info);
 });
 
 export default mainWindow

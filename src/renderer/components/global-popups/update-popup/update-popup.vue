@@ -1,24 +1,15 @@
 <template lang="pug">
-  div(v-if="showPopupUpdates" :class="{'bg-mode' :  bgMode}").popup-body
-    header.popup-body_header(@click="background")
-      h3.header_title {{title}}
-      span.header_update-status(v-if="updateStatus === 'downloading'") {{progress}}%
+  section.popup-body(v-if="showPopupUpdates" :class="{'bg-mode': bgMode}")
+    header.popup-body_header(@click="toggleBgMode")
+      h3.header_title Software update
+      span.header_update-status(v-if="updateStatus === 'downloading'") {{updateProgress}}%
       span.header_update-status(v-if="updateStatus === 'done'") Done
     popup-loading(
       v-if="updateStatus === 'downloading'"
-      :progress-status="progress"
-      @canceled-update="cancelUpdate"
-      @background-mode="background"
+      :progress-status="updateProgress"
+      @background-mode="toggleBgMode"
     )
-    popup-info(
-      v-else
-      @started-update="startUpdate"
-      @closed-popup="cancelUpdate"
-      @restart-app="restartApp"
-      :message="mainUpdateMessage"
-      :about-update-list="updateList"
-      :update-popup-info="updateInfo"
-    )
+    popup-info(v-else)
 </template>
 
 <script>
@@ -28,60 +19,26 @@ import PopupLoading   from '@/components/global-popups/update-popup/popup-loadin
 export default {
   name: 'PopupUpdate',
   components: {PopupInfo, PopupLoading},
-  props: {
-    isShowPopup: {                  // show update popup
-      type: Boolean,
-      default: true
-    },
-    progress: {                     // progress (%)
-      type: Number,
-      default: 0
-    },
-    updateInfo: {                   // info about update (property from App.vue)
-      type: Object,
-      default: {}
-    }
-  },
   data() {
     return {
-      title: 'Software update',
       updatesLoading: false,
       bgMode: false,
-      mainUpdateMessage: 'Availible 5 new update',
-      updateList: [
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
-        'Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.'
-      ]
     }
   },
   computed: {
     updateStatus() {
-      return this.$store.state.globalView.updateStatus
+      return this.$store.state.mod_autoUpdate.updateStatus
     },
     showPopupUpdates() {
-      return this.$store.state.globalView.globalPopup.showPopupUpdates
-    }
+      return this.$store.state.mod_autoUpdate.showPopupUpdates
+    },
+    updateProgress() {
+      return this.$store.state.mod_autoUpdate.updateProgress
+    },
   },
   methods: {
-    startUpdate() {
-      this.$store.commit('globalView/SET_updateStatus', 'downloading')
-      this.$emit('started-update');
-    },
-    cancelUpdate(cancel) {
-      this.updateStatus = cancel.status;
-      this.progress = 0;
-      this.$emit('closed-popup');
-      clearInterval(this.fakeTimer);
-    },
-    background() {
+    toggleBgMode() {
       this.bgMode = !this.bgMode;
-    },
-    closePopup() {
-      this.$emit('closed-popup')
-    },
-    restartApp() {
-      this.$emit('restart-app')
     },
   }
 }
