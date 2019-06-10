@@ -11,6 +11,7 @@ const state = {
   appPath: '',
   appIsOpen: false,
   timeIntervalDoRequest: 2500,
+  requestCounter: 0,
   globalPopup: {
     showNetSettings: false,
     showNetResult: false,
@@ -70,6 +71,14 @@ const mutations = {
       state.globalPopup[popup] = false
     }
   },
+  set_requestCounter(state, value) {
+    value
+      ? state.requestCounter++
+      : state.requestCounter--
+  },
+  clear_requestCounter(state) {
+    state.requestCounter = 0
+  },
 };
 
 const actions = {
@@ -91,6 +100,15 @@ const actions = {
   GP_infoPopup({commit}, value) {
     commit('gp_infoPopup', value);
   },
+  ADD_requestCounter({commit}) {
+    commit('set_requestCounter', true);
+  },
+  REM_requestCounter({commit}) {
+    commit('set_requestCounter', false);
+  },
+  CLEAR_requestCounter({commit}) {
+    commit('clear_requestCounter');
+  }
 };
 
 export default {

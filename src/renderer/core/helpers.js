@@ -36,9 +36,28 @@ const loadNetwork = function (pathArr) {
   }
   return readFilePromiseNative(pathArr[0])
     .then((data) => {
-      let net = JSON.parse(data.toString());
-      console.log(projectsList);
-      if(pathIndex > -1 && projectsList) net.network.networkID = projectsList[pathIndex].id;
+      //validate JSON
+      let net = {};
+      try {
+        net = JSON.parse(data.toString());
+      }
+      catch(e) {
+        this.$store.dispatch('globalView/GP_infoPopup', 'JSON file is not valid');
+        return
+      }
+      //validate model
+      try {
+        if(!(net.network.networkName && net.network.networkID && net.network.networkMeta && net.network.networkElementList)) {
+          throw ('err')
+        }
+      }
+      catch(e) {
+        this.$store.dispatch('globalView/GP_infoPopup', 'The model is not valid');
+        return;
+      }
+      if(pathIndex > -1 && projectsList) {
+        net.network.networkID = projectsList[pathIndex].id;
+      }
       this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
     }
   );

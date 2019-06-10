@@ -1,9 +1,10 @@
 <template lang="pug">
-  .app-header
+  header.app-header
     .app-header_logo
       a(@click="toProjectPage")
         img(src="./../../../../static/img/logo_small_dark.svg" alt="PerceptiLabs logo")
     the-menu
+    request-spinner
     ul.app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
       button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-app-resize
@@ -12,9 +13,10 @@
 
 <script>
   import TheMenu from '@/components/the-menu.vue'
+  import RequestSpinner from '@/components/different/request-spinner.vue'
 export default {
   name: "HeaderWin",
-  components: {TheMenu},
+  components: {TheMenu, RequestSpinner},
   methods: {
     appClose() {
       this.$emit('app-closed')
