@@ -1019,16 +1019,11 @@ const actions = {
         tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${getters.getActiveAction.position}`);
         tooltip.innerHTML = info.tooltip;
         document.body.appendChild(tooltip);
-        element.addEventListener('mousedown', hideElement);
         element.addEventListener('mouseup', repositionElement);
       }, 250);
     }
-    function hideElement() {
-      tooltip.style.display = 'none'
-    }
     function repositionElement() {
       dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
-      tooltip.style.display = '';
     }
   },
   removeTooltip() {
@@ -1037,6 +1032,16 @@ const actions = {
     if(activeTooltips.length > 0){
       activeTooltips.forEach((tooltip)=> {
         tooltip.remove();
+      })
+    }
+  },
+  showHideTooltip({getters}) {
+    if(getters.getIstutorialMode) {
+      let activeTooltips = document.querySelectorAll('.tooltip-tutorial');
+      activeTooltips.forEach((tooltip)=> {
+        tooltip.classList.contains('tooltip-hide') ?
+          tooltip.classList.remove('tooltip-hide') : tooltip.classList.add('tooltip-hide')
+
       })
     }
   },

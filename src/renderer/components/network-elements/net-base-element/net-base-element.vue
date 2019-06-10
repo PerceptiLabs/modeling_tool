@@ -149,6 +149,7 @@ export default {
   methods: {
     ...mapActions({
       tutorialPointActivate: 'mod_tutorials/pointActivate',
+      tutorialShowHideTooltip: 'mod_tutorials/showHideTooltip',
     }),
     switchMousedownEvent(ev) {
       if (this.isLock) return;
@@ -181,6 +182,7 @@ export default {
       this.$emit('open-container')
     },
     openSettings(event) {
+      this.tutorialShowHideTooltip();
       this.hideAllWindow();
       if(!this.editIsOpen) return;
       this.settingsIsOpen = true;
@@ -194,6 +196,7 @@ export default {
       })
     },
     openContext(event) {
+
       this.hideAllWindow();
       if(!this.currentSelectedEl.length) {
         this.setFocusEl(event);
@@ -255,6 +258,7 @@ export default {
     deselect() {
       this.hideAllWindow();
       this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: false });
+      this.tutorialShowHideTooltip();
     },
     deleteEl() {
       if(this.editIsOpen) {
