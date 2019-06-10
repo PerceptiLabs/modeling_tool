@@ -1,7 +1,6 @@
 <template lang="pug">
   #app(
-    v-shortkey="globalKeyEvents"
-    @shortkey="switchKeyPress($event)"
+    v-hotkey="keymap"
   )
     header-win.app-header(
       v-if="platform === 'win32'"
@@ -41,23 +40,7 @@
     components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup },
     data() {
       return {
-        globalKeyEvents: {
-          delete:     ['del'],
-          deleteMac:  ['backspace', 'meta'],
-          addLayerContainer:      ['ctrl', 'g'],
-          unGroupLayerContainer:  ['ctrl', 'shift', 'g'],
-          netNew:     ['ctrl', 'n'],
-          netOpen:    ['ctrl', 'o'],
-          netSave:    ['ctrl', 's'],
-          netSaveAs:  ['ctrl', 'shift', 's'],
-          logOut:     ['ctrl', 'f4'],
-          closeApp:   ['ctrl', 'q'],
-          copy:       ['ctrl', 'c'],
-          paste:      ['ctrl', 'v'],
-          cut:        ['ctrl', 'x'],
-          selectAll:  ['ctrl', 'a'],
-          unselectAll:['ctrl', 'shift', 'a'],
-        }
+        
       }
     },
     mounted() {
@@ -128,6 +111,24 @@
       })
     },
     computed: {
+      keymap () {
+        return {
+          'del': this.HC_delete,
+          'backspace+meta': this.HC_delete,
+          'ctrl+g': this.HC_addLayerContainer,
+          'ctrl+shift+g': this.HC_unGroupLayerContainer,
+          'ctrl+n': this.HC_netNew,
+          'ctrl+o': this.HC_netOpen,
+          'ctrl+s': this.HC_netSave,
+          'ctrl+shift+s': this.HC_netSaveAs,
+          'ctrl+f4': this.HC_logOut,
+          'ctrl+q': this.HC_closeApp,
+          'ctrl+c': this.HC_copy,
+          'ctrl+v': this.HC_paste,
+          'ctrl+a': this.HC_selectAll,
+          'ctrl+shift+a': this.HC_unselectAll,
+        }
+      },
       platform() {
         return this.$store.state.globalView.platform
       },
@@ -174,6 +175,13 @@
     methods: {
       openLoadDialog,
       loadNetwork,
+      info() {
+        console.log('press')
+      },
+      infoq(ev) {
+        ev.preventDefault();
+        console.log('press1')
+      },
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {
           ipcRenderer.send('changeRoute', {path, id: this.userToken})
@@ -228,54 +236,46 @@
       logOut() {
         if(this.isLogin) this.$store.dispatch('mod_events/EVENT_logOut', this)
       },
-      switchKeyPress(event) {
-        event.preventDefault();
-        switch (event.srcKey) {
-          case 'delete':
-          case 'deleteMac':
-            this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement');
-            break;
-          case 'addLayerContainer':
-            if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');
-            break;
-          case 'unGroupLayerContainer':
-            this.$store.dispatch('mod_workspace/UNGROUP_container');
-            break;
-          case 'netNew':
-            if(this.isLogin) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
-            break;
-          case 'netOpen':
-            if(this.isLogin) this.$store.commit('mod_events/set_openNetwork');
-            break;
-          case 'netSave':
-            if(this.openApp) this.$store.commit('mod_events/set_saveNetwork');
-            break;
-          case 'netSaveAs':
-            if(this.openApp) this.$store.commit('mod_events/set_saveNetworkAs');
-            break;
-          case 'logOut':
-            if(this.isLogin) this.logOut;
-            break;
-          case 'closeApp':
-            this.appClose;
-            break;
-          case 'selectAll':
-            this.$store.dispatch('mod_workspace/SET_elementSelectAll');
-            break;
-          case 'unselectAll':
-            this.$store.dispatch('mod_workspace/SET_elementUnselect');
-            break;
-          case 'copy':
-            this.$store.dispatch('mod_events/EVENT_hotKeyCopy');
-            break;
-          case 'paste':
-            this.$store.dispatch('mod_events/EVENT_hotKeyPaste');
-            break;
-          case 'cut':
-            //this.$store.dispatch('mod_events/EVENT_hotKeyCopy');
-            break;
-        }
-      }
+      HC_delete() {
+        this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement')
+      },
+      HC_addLayerContainer() {
+        if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');
+      },
+      HC_unGroupLayerContainer() {
+        this.$store.dispatch('mod_workspace/UNGROUP_container');
+      },
+      HC_netNew() {
+        if(this.isLogin) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+      },
+      HC_netOpen() {
+        if(this.isLogin) this.$store.commit('mod_events/set_openNetwork');
+      },
+      HC_netSave() {
+        if(this.openApp) this.$store.commit('mod_events/set_saveNetwork');
+      },
+      HC_netSaveAs() {
+        if(this.openApp) this.$store.commit('mod_events/set_saveNetworkAs');
+      },
+      HC_logOut() {
+        if(this.isLogin) this.logOut;
+      },
+      HC_closeApp() {
+        this.appClose;
+      },
+      HC_selectAll() {
+        console.log('HC_selectAll')
+        this.$store.dispatch('mod_workspace/SET_elementSelectAll');
+      },
+      HC_unselectAll() {
+        this.$store.dispatch('mod_workspace/SET_elementUnselect');
+      },
+      HC_copy() {
+        this.$store.dispatch('mod_events/EVENT_hotKeyCopy');
+      },
+      HC_paste() {
+        this.$store.dispatch('mod_events/EVENT_hotKeyPaste');
+      },
     },
   }
 </script>

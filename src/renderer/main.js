@@ -31,6 +31,9 @@ Vue.config.performance = configApp.developMode;
 //- Use plugin
 Vue.use(VeeValidate);
 Vue.use(VueShortKey);
+import VueHotkey from 'v-hotkey'
+
+Vue.use(VueHotkey)
 
 //- Use directives
 import './core/directives'

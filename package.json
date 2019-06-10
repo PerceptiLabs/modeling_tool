@@ -78,6 +78,7 @@
     "html2canvas": "^1.0.0-rc.3",
     "universal-analytics": "^0.4.20",
     "uuid": "^3.3.2",
+    "v-hotkey": "^0.4.0",
     "vee-validate": "^2.2.10",
     "vue": "^2.6.10",
     "vue-cropper": "^0.4.9",
