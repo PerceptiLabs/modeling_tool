@@ -1,7 +1,7 @@
 const baseURL = 'https://quantumnet.azurewebsites.net/api/';
 
-const requestCloudApi = function (method, path, dataRequest, callback) {
-  this.$http({
+const requestCloudApi = function (method, path, dataRequest) {
+  return this.$http({
     method: method,
     url: baseURL + path,
     //headers: {'X-Requested-With': 'XMLHttpRequest'},
@@ -9,13 +9,11 @@ const requestCloudApi = function (method, path, dataRequest, callback) {
     //...queryParams // data: {request body}, params: {query params}
   })
     .then((response)=>{
-      //this.$store.dispatch('remCounterRequest');
-      callback('success', response);
+      //console.log(response);
+      return response
     })
     .catch((error)=>{
-      console.log(error);
-      ///this.$store.dispatch('remCounterRequest');
-      callback('error');
+      throw (error.response.data);
     });
 };
 

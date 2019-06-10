@@ -63,6 +63,9 @@ export default {
     appVersion() {
       return this.$store.state.globalView.appVersion
     },
+    isOpenStoryBoard() {
+      return this.$store.state.mod_tutorials.showTutorialStoryBoard
+    },
     openApp() {
       return this.$store.state.globalView.appIsOpen
     },
@@ -181,7 +184,7 @@ export default {
           submenu: [
             {label: 'Help',                                     active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')},  mousedown: ()=> {}},
             {label: 'About',                                    active: ()=> {this.openLink('https://www.perceptilabs.com/')},  mousedown: ()=> {}},
-            {label: 'Tutorial mode',    enabled: this.openApp,  active: ()=> {this.showTutorial()},   mousedown: ()=> {}},
+            {label: 'Tutorial mode',    enabled: !this.isOpenStoryBoard,  active: ()=> {this.showTutorial()},   mousedown: ()=> {}},
             {label: 'Check for updates',                        active: ()=> {this.checkUpdate()},    mousedown: ()=> {}},
             {type: 'separator'},
           ]
@@ -221,7 +224,7 @@ export default {
       this.$store.dispatch('mod_events/EVENT_logOut', this)
     },
     showTutorial() {
-      this.isTutorialMode ? this.infoPopup('Tutorial mode is already enabled') : this.setTutorialSB(true);
+      this.$store.dispatch('mod_tutorials/START_storyboard');
     },
     openHyperparameters() {
       this.$store.commit('globalView/GP_showNetGlobalSet', true);

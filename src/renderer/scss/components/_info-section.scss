@@ -22,8 +22,9 @@
 }
 
 .info-section_main {
-	display: flex;
-	flex: 1 1 100%;
+  display: flex;
+  flex: 1 1 100%;
+  overflow: hidden;
 }
 .info-section_tab-set {
 	display: flex;

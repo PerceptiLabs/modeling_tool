@@ -51,7 +51,8 @@ export default {
         arrItems.forEach((el)=> {
           el.style = `max-height: 0px`;
         });
-        arrItems[i].style = `max-height: ${wrapHeight}px`;
+        arrItems[i].style = `max-height: ${wrapHeight}px;`;
+        setTimeout(()=>{arrItems[i].style=`max-height: ${wrapHeight}px; overflow: visible;`}, 300)
       }
     },
   }

@@ -115,9 +115,7 @@
         this.$router.push({name: 'app'});
       },
       beginTutorial() {
-        this.setTutorialMode(true);
-        this.setTutorialStoryBoard(true);
-        this.goNextPage()
+        this.$store.dispatch('mod_tutorials/START_storyboard');
       }
     }
   }

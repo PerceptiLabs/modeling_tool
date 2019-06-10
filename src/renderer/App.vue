@@ -127,6 +127,7 @@
           'ctrl+v': this.HC_paste,
           'ctrl+a': this.HC_selectAll,
           'ctrl+shift+a': this.HC_unselectAll,
+          'ctrl+w': this.HC_stopExe,
         }
       },
       platform() {
@@ -175,13 +176,6 @@
     methods: {
       openLoadDialog,
       loadNetwork,
-      info() {
-        console.log('press')
-      },
-      infoq(ev) {
-        ev.preventDefault();
-        console.log('press1')
-      },
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {
           ipcRenderer.send('changeRoute', {path, id: this.userToken})
@@ -260,11 +254,11 @@
       HC_logOut() {
         if(this.isLogin) this.logOut;
       },
-      HC_closeApp() {
+      HC_closeApp(e) {
+        e.preventDefault();
         this.appClose;
       },
       HC_selectAll() {
-        console.log('HC_selectAll')
         this.$store.dispatch('mod_workspace/SET_elementSelectAll');
       },
       HC_unselectAll() {
@@ -276,6 +270,9 @@
       HC_paste() {
         this.$store.dispatch('mod_events/EVENT_hotKeyPaste');
       },
+      HC_stopExe(e) {
+        e.preventDefault();
+      }
     },
   }
 </script>
