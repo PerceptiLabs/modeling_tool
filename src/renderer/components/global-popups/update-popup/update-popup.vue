@@ -2,11 +2,11 @@
   section.popup-body(v-if="showPopupUpdates" :class="{'bg-mode': bgMode}")
     header.popup-body_header(@click="toggleBgMode")
       h3.header_title Software update
-      span.header_update-status(v-if="updateStatus === 'downloading'") {{progress}}%
+      span.header_update-status(v-if="updateStatus === 'downloading'") {{updateProgress}}%
       span.header_update-status(v-if="updateStatus === 'done'") Done
     popup-loading(
       v-if="updateStatus === 'downloading'"
-      :progress-status="progress"
+      :progress-status="updateProgress"
       @background-mode="toggleBgMode"
     )
     popup-info(v-else)

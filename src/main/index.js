@@ -159,7 +159,7 @@ function createWindow () {
     useContentSize: true,
     webPreferences: {
       //contextIsolation: true,
-      //nodeIntegration: false,
+      nodeIntegration: true,
       webSecurity: false,
       //plugins: true,
     }
@@ -236,7 +236,7 @@ function createWindow () {
    * start auto update
    */
   mainWindow.checkForUpdates = function() {
-    if (process.env.NODE_ENV !== 'development') {
+    if(process.env.NODE_ENV !== 'development') {
       //mainWindow.webContents.send('info', 'checkForUpdates');
       const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/';
       const UpdateOpt = {
