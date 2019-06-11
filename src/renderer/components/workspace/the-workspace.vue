@@ -14,6 +14,7 @@
           v-if="statisticsIsOpen || testIsOpen"
           :el-data="statisticsElSelected.statistics"
           )
+        loader
         the-view-box.the-view-box(
           v-if="statisticsIsOpen  || testIsOpen"
           :el-data="statisticsElSelected.viewBox"
@@ -34,6 +35,7 @@
         general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
+
 
     .workspace_meta
       include ./meta/workspace-meta.pug

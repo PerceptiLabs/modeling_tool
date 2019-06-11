@@ -14,6 +14,7 @@ import SelectCoreSide   from "@/components/global-popups/workspace-core-side";
 import TheStatistics    from "@/components/statistics/the-statistics.vue";
 import TheTesting       from "@/components/statistics/the-testing.vue";
 import TheViewBox       from "@/components/statistics/the-view-box";
+import Loader           from "@/components/loader/loader";
 
 export default {
   name: 'WorkspaceContent',
@@ -21,7 +22,7 @@ export default {
     NetworkField, TextEditable,
     GeneralSettings, GeneralResult,
     SelectCoreSide,
-    TheStatistics, TheTesting, TheViewBox,
+    TheStatistics, TheTesting, TheViewBox, Loader
   },
   data() {
     return {
@@ -259,7 +260,7 @@ function doScreenShot(ctx) {
     networkField.style.filter = 'blur(5px)';
     const options = {
       scale: 1,
-      backgroundColor: null,
+      backgroundColor: 'null',
     };
     return html2canvas(networkField, options)
       .then((canvas)=> {
