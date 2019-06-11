@@ -109,19 +109,18 @@ export default {
     },
     registryUser() {
       //console.log('registryUser');
-      this.requestCloudApi('post', 'Customer/CreateGuest', this.user, (result, response, error) => {
-        this.$store.commit('mod_login/SET_showLoader', true);
-        console.log(result, response, error);
-        if (result === 'success') {
-          this.$store.commit('mod_login/SET_showLoader', false);
+      this.$store.commit('mod_login/SET_showLoader', true);
+      this.requestCloudApi('post', 'Customer/CreateGuest', this.user)
+        .then((response)=>{
           this.$store.dispatch('globalView/GP_infoPopup', 'Authorization success');
           this.$router.replace('/login');
-        }
-        else {
+        })
+        .catch((error)=>{
+          this.$store.dispatch('globalView/GP_infoPopup', error);
+        })
+        .finally(()=>{
           this.$store.commit('mod_login/SET_showLoader', false);
-          this.$store.dispatch('globalView/GP_infoPopup', "Bed request, please try again");
-        }
-      })
+        });
     }
   }
 }

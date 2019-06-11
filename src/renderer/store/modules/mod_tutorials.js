@@ -1,5 +1,6 @@
 import { isNumber } from "util";
-import store from "../index";
+import router from "@/router";
+//import store from "../index";
 
 const namespaced = true;
 let delayTimer;
@@ -1167,6 +1168,10 @@ const actions = {
     if(workspaceElement) {
       workspaceElement.setAttribute('id', '');
     }
+  },
+  START_storyboard({commit}) {
+    commit('SET_showTutorialStoryBoard', true);
+    if(router.name !== 'app') router.push({name: 'app'});
   }
 };
 

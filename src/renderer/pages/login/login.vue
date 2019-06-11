@@ -74,28 +74,27 @@ export default {
         "Email": this.userEmail,
         "Password": this.userPass
       };
-      this.requestCloudApi('post', 'Customer/Login', queryParams, (result, response) => {
-        if (result === 'success') {
-          this.$store.commit('mod_login/SET_showLoader', false);
+      this.requestCloudApi('post', 'Customer/Login', queryParams)
+        .then((response)=>{
           let token = parseJwt(response.data.data.token);
-
           this.$store.dispatch('globalView/SET_userToken', token.unique_name);
           if(this.saveToken) {
             localStorage.setItem('userToken', token.unique_name);
           }
           this.loginUser()
-        }
-        else {
+        })
+        .catch((error)=>{
+          this.$store.dispatch('globalView/GP_infoPopup', error);
+        })
+        .finally(()=>{
           this.$store.commit('mod_login/SET_showLoader', false);
-          this.$store.dispatch('globalView/GP_infoPopup', "Bad request, please try again");
-        }
+        });
 
-        function parseJwt(token) {
-          var base64Url = token.split('.')[1];
-          var base64 = base64Url.replace('-', '+').replace('_', '/');
-          return JSON.parse(window.atob(base64));
-        }
-      })
+      function parseJwt(token) {
+        var base64Url = token.split('.')[1];
+        var base64 = base64Url.replace('-', '+').replace('_', '/');
+        return JSON.parse(window.atob(base64));
+      }
     },
 
     loginUser() {
