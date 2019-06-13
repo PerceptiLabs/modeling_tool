@@ -2,13 +2,13 @@
 
 import Vue from 'vue'
 //- Global plugins
-import axios from 'axios'
-import VeeValidate from 'vee-validate';
-import VueShortKey from 'vue-shortkey';
+import axios        from 'axios'
+import VeeValidate  from 'vee-validate';
+import VueHotkey    from 'v-hotkey'
 
-import App from './App'
+import App    from './App'
 import router from './router'
-import store from './store'
+import store  from './store'
 
 import configApp from '@/core/globalSettings.js'
 
@@ -30,10 +30,7 @@ Vue.config.performance = configApp.developMode;
 
 //- Use plugin
 Vue.use(VeeValidate);
-Vue.use(VueShortKey);
-import VueHotkey from 'v-hotkey'
-
-Vue.use(VueHotkey)
+Vue.use(VueHotkey);
 
 //- Use directives
 import './core/directives'

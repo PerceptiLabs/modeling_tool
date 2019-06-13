@@ -49,6 +49,11 @@ export default {
     testIsOpen() {
       return this.$store.getters['mod_workspace/GET_testIsOpen']
     }
+  },
+  watch: {
+    elData(newVal) {
+      if(newVal) this.showRequestSpinner = false
+    }
   }
 }
 </script>

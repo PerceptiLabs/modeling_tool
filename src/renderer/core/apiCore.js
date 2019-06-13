@@ -8,10 +8,7 @@ const coreRequest = function (message, port, address) {
     let socketPort = port || 5000;
 
     socket.connect(socketPort, socketAddress, ()=> {
-
       const messageBuff = prepareCoreMessage(message);
-
-      //store.dispatch('globalView/ADD_requestCounter');
       socket.write(messageBuff);
 
       let dataLength = '';
@@ -27,18 +24,15 @@ const coreRequest = function (message, port, address) {
         }
         if(dataPart.length === dataLength + 1) {
           let obgData = JSON.parse(dataPart.slice(0, -1));
-          //store.dispatch('globalView/REM_requestCounter');
           //console.log('then', obgData);
           resolve(obgData);
         }
         if (data.toString().endsWith('exit')) {
-          //store.dispatch('globalView/REM_requestCounter');
           socket.destroy();
         }
       });
     });
     socket.on('error', (err) => {
-      //store.dispatch('globalView/CLEAR_requestCounter');
       reject('error core api', err);
     });
     socket.on('close', () => {

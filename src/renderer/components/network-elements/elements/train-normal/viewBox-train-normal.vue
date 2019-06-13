@@ -15,33 +15,37 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
-          chart-switch.data-charts(
-            key="1"
-            chart-label="Input"
-            :chart-data="chartData.Prediction.Input"
-            )
+          request-spinner(:showSpinner="showRequestSpinner.Input")
+            chart-switch.data-charts(
+              key="1"
+              chart-label="Input"
+              :chart-data="chartData.Prediction.Input"
+              )
         .statistics-box_col
-          chart-pie(
-            key="8"
-            chart-label="Accuracy"
-            :chart-data="chartData.Prediction.Accuracy"
-            :custom-color="colorPie"
-          )
+          request-spinner(:showSpinner="showRequestSpinner.Accuracy")
+            chart-pie(
+              key="8"
+              chart-label="Accuracy"
+              :chart-data="chartData.Prediction.Accuracy"
+              :custom-color="colorPie"
+            )
       .statistics-box_row
         .statistics-box_col
-          chart-base#tutorial_prediction-chart(
-            key="2"
-            chart-label="Prediction vs Ground truth"
-            :chart-data="chartData.Prediction.PvG"
-            :custom-color="colorList"
-          )
+          request-spinner(:showSpinner="showRequestSpinner.PvG")
+            chart-base#tutorial_prediction-chart.data-charts(
+              key="2"
+              chart-label="Prediction vs Ground truth"
+              :chart-data="chartData.Prediction.PvG"
+              :custom-color="colorList"
+            )
         .statistics-box_col(v-if="!testIsOpen")
-          chart-base(
-            key="3"
-            chart-label="Batch Average Prediction vs Ground truth"
-            :chart-data="chartData.Prediction.AveragePvG"
-            :custom-color="colorList"
-          )
+          request-spinner(:showSpinner="showRequestSpinner.AveragePvG")
+            chart-base.data-charts(
+              key="3"
+              chart-label="Batch Average Prediction vs Ground truth"
+              :chart-data="chartData.Prediction.AveragePvG"
+              :custom-color="colorList"
+            )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
       chart-base(
         key="4"
@@ -115,7 +119,6 @@
             PvG: null,
             AveragePvG: null,
             Accuracy: null,
-            showRequestSpinner: true
           },
           Accuracy: {
             Current: null,
@@ -180,6 +183,12 @@
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
         colorPie: ['#6B8FF7', '#383F50'],
+        showRequestSpinner: {
+          Input: true,
+          PvG: true,
+          AveragePvG: true,
+          Accuracy: true
+        }
       }
     },
     watch: {
@@ -187,16 +196,34 @@
         newVal ? this.setTab('Prediction') : null
       },
       'chartData.Prediction.Input': {
-        handler(newVal, oldVal) {
+        handler(newVal) {
           if(newVal) {
-            this.chartData.Prediction.showRequestSpinner = false;
+            this.showRequestSpinner.Input = false;
+          }
+        },
+        immediate: true
+      },
+      'chartData.Prediction.PvG': {
+        handler(newVal) {
+          if(newVal) {
+            this.showRequestSpinner.PvG = false;
+          }
+        },
+        immediate: true
+      },
+      'chartData.Prediction.AveragePvG': {
+        handler(newVal) {
+          if(newVal) {
+            this.showRequestSpinner.AveragePvG = false;
           }
         },
         immediate: true
       },
       'chartData.Prediction.Accuracy': {
-        handler(newVal, oldVal) {
-
+        handler(newVal) {
+          if(newVal) {
+            this.showRequestSpinner.Accuracy = false;
+          }
         },
         immediate: true
       },
