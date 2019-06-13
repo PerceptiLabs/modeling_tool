@@ -15,7 +15,7 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
-          chart-switch(
+          chart-switch.data-charts(
             key="1"
             chart-label="Input"
             :chart-data="chartData.Prediction.Input"
@@ -101,10 +101,11 @@
 
   import viewBoxMixin   from "@/core/mixins/net-element-viewBox.js";
   import { mapActions } from 'vuex';
+  import RequestSpinner from '@/components/different/request-spinner.vue'
 
   export default {
     name: "ViewBoxTrainNormal",
-    components: {ChartBase, ChartPie, ChartHeatmap, ChartD3, ChartSwitch},
+    components: {ChartBase, ChartPie, ChartHeatmap, ChartD3, ChartSwitch, RequestSpinner},
     mixins: [viewBoxMixin],
     data() {
       return {
@@ -113,7 +114,8 @@
             Input: null,
             PvG: null,
             AveragePvG: null,
-            Accuracy: null
+            Accuracy: null,
+            showRequestSpinner: true
           },
           Accuracy: {
             Current: null,
@@ -177,13 +179,27 @@
         ],
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
-        colorPie: ['#6B8FF7', '#383F50']
+        colorPie: ['#6B8FF7', '#383F50'],
       }
     },
     watch: {
       testIsOpen(newVal) {
         newVal ? this.setTab('Prediction') : null
-      }
+      },
+      'chartData.Prediction.Input': {
+        handler(newVal, oldVal) {
+          if(newVal) {
+            this.chartData.Prediction.showRequestSpinner = false;
+          }
+        },
+        immediate: true
+      },
+      'chartData.Prediction.Accuracy': {
+        handler(newVal, oldVal) {
+
+        },
+        immediate: true
+      },
     },
     methods: {
       ...mapActions({

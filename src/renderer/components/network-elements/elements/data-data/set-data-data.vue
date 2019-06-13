@@ -30,6 +30,7 @@
             :select-multiple="true"
           )
         .form_row
+        request-spinner(:showSpinner="showRequestSpinner")
           chart-switch.data-charts(
             :disable-header="true"
             :chart-data="imgData"
@@ -57,11 +58,12 @@
   import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
   //import coreRequest      from "@/core/apiCore.js";
   import {mapActions}     from 'vuex';
+  import RequestSpinner from '@/components/different/request-spinner.vue'
 
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
-    components: {ChartSwitch, SettingsCloud },
+    components: {ChartSwitch, SettingsCloud, RequestSpinner },
     mounted() {
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
@@ -97,18 +99,22 @@
             Type: 'Data',
             Path: [],
           }
-        }
+        },
+        showRequestSpinner: true
       }
     },
     watch: {
       dataColumnsSelected(newVal) {
         this.settings.accessProperties.Columns = newVal;
         this.getDataPlot('DataData')
+      },
+      imgData(newVal, oldVal) {
+        if(newVal !== oldVal) this.showRequestSpinner = false;
       }
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate: 'mod_tutorials/pointActivate'
+        tutorialPointActivate: 'mod_tutorials/pointActivate',
       }),
       openLoadDialog,
       loadPathFolder,

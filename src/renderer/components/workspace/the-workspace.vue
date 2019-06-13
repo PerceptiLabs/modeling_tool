@@ -14,7 +14,6 @@
           v-if="statisticsIsOpen || testIsOpen"
           :el-data="statisticsElSelected.statistics"
           )
-        loader
         the-view-box.the-view-box(
           v-if="statisticsIsOpen  || testIsOpen"
           :el-data="statisticsElSelected.viewBox"

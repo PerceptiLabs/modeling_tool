@@ -1,18 +1,19 @@
 <template lang="pug">
   net-base-settings(:tab-set="tabs")
     template(slot="Gym-content")
-      .settings-layer_section
+      .settings-layer_section(style="position:relative")
         .form_row
           base-select(
             v-model="settings.accessProperties.Atari"
             :select-options="selectOptions"
             v-tooltip-interactive:right="interactiveInfo.selectGame"
           )
-        .form_row(v-tooltip-interactive:right="interactiveInfo.actionSpace")
-          chart-switch.data-charts(
-            key="1"
-            :chart-label="chartLabel"
-            :chart-data="imgData"
+        request-spinner(:showSpinner="showRequestSpinner")
+          .form_row(v-tooltip-interactive:right="interactiveInfo.actionSpace")
+            chart-switch.data-charts(
+              key="1"
+              :chart-label="chartLabel"
+              :chart-data="imgData"
           )
 
     template(slot="<i class='icon icon-search'></i> Unity-content")
@@ -43,11 +44,12 @@
   import {openLoadDialog} from '@/core/helpers.js'
 
   import ChartSwitch from "@/components/charts/chart-switch.vue";
+  import RequestSpinner from '@/components/different/request-spinner.vue'
 
   export default {
     name: 'SetDataEnvironment',
     mixins: [mixinSet, mixinData],
-    components: { ChartSwitch },
+    components: { ChartSwitch,  RequestSpinner},
     data() {
       return {
         tabs: ['Gym', `<i class='icon icon-search'></i> Unity`],
@@ -77,7 +79,8 @@
             title: 'Action Space',
             text: 'Number of different actions </br> you can take in the game'
           }
-        }
+        },
+        showRequestSpinner: true
       }
     },
     computed: {
@@ -89,10 +92,14 @@
       'settings.accessProperties.Atari': {
         handler(newVal) {
           if(newVal) {
-            this.dataSettingsPlot('DataEnvironment')
+            this.dataSettingsPlot('DataEnvironment');
+            this.showRequestSpinner = true;
           }
         },
         immediate: true
+      },
+      imgData(newVal, oldVal) {
+        if(newVal !== oldVal) this.showRequestSpinner = false;
       }
     },
     methods: {
@@ -123,6 +130,6 @@
             this.disabledBtn = false;
           })
       }
-    }
+    },
   }
 </script>

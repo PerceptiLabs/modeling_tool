@@ -112,7 +112,6 @@ export default {
   mounted() {
     const net = this.networkElementList;
     const settings = this.networkSettings;
-    console.log(this.settingsData);
     if(settings !== null) {
       this.settings = JSON.parse(JSON.stringify(settings));
     }

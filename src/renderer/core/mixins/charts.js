@@ -46,6 +46,7 @@ const chartsMixin = {
       chartModelBuffer: null,
       fullView: false,
       wWorker: null,
+      showRequestSpinner: true
     }
   },
   computed: {
@@ -86,9 +87,10 @@ const chartsMixin = {
     //     }
     //   }
     // },
-    chartData(newData) {
+    chartData(newData, oldData) {
       this.startCalDrow = new Date();
-      this.sendDataToWWorker(newData)
+      this.sendDataToWWorker(newData);
+      if(newData !== oldData) this.showRequestSpinner = false;
     }
   },
   methods: {

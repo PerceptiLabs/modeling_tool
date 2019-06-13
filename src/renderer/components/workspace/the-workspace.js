@@ -14,7 +14,6 @@ import SelectCoreSide   from "@/components/global-popups/workspace-core-side";
 import TheStatistics    from "@/components/statistics/the-statistics.vue";
 import TheTesting       from "@/components/statistics/the-testing.vue";
 import TheViewBox       from "@/components/statistics/the-view-box";
-import Loader           from "@/components/loader/loader";
 
 export default {
   name: 'WorkspaceContent',
@@ -22,7 +21,7 @@ export default {
     NetworkField, TextEditable,
     GeneralSettings, GeneralResult,
     SelectCoreSide,
-    TheStatistics, TheTesting, TheViewBox, Loader
+    TheStatistics, TheTesting, TheViewBox
   },
   data() {
     return {
