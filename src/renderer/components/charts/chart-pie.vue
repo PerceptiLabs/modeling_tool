@@ -13,22 +13,25 @@
         )
           i.icon.icon-full-screen-graph
     .base-chart_main
-      v-chart(
-        ref="chart"
-        :auto-resize="true"
-        :options="chartModel"
-        theme="quantum"
-      )
-      .base-chart_info(v-if="chartInfo.length") {{ chartInfo }}
+      request-spinner(:showSpinner="showRequestSpinner")
+        v-chart(
+          ref="chart"
+          :auto-resize="true"
+          :options="chartModel"
+          theme="quantum"
+        )
+        .base-chart_info(v-if="chartInfo.length") {{ chartInfo }}
 </template>
 
 <script>
   import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
   import chartMixin                     from "@/core/mixins/charts.js";
+  import RequestSpinner                 from '@/components/different/request-spinner.vue'
 
   export default {
     name: "ChartPie",
     mixins: [chartMixin],
+    components: {RequestSpinner},
     mounted() {
       this.applyCustomColor();
     },

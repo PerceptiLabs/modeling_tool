@@ -1,5 +1,5 @@
 <template lang="pug">
-  .base-chart(
+  .base-chart.data-charts(
     ref="baseChart"
     :class="{'full-view': fullView}"
     )
@@ -25,7 +25,7 @@
 <script>
   import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
   import chartMixin                     from "@/core/mixins/charts.js";
-  import RequestSpinner from '@/components/different/request-spinner.vue'
+  import RequestSpinner                 from '@/components/different/request-spinner.vue'
 
   export default {
     name: "ChartBase",

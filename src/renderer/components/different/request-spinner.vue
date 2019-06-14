@@ -30,7 +30,7 @@ export default {
   @import "../../scss/base";
   .request-loader-wrapper{
     position: relative;
-    min-height: 9rem;
+    min-height: 20rem;
     width: 100%;
     height: 100%;
   }
