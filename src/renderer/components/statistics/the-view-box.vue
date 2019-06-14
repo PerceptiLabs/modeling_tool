@@ -35,7 +35,7 @@ export default {
     DataData, DataEnvironment,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
-    MathArgmax, MathMerge, MathSoftmax, MathSplit,
+    MathArgmax, MathMerge, MathSoftmax, MathSplit
   },
   props: {
     elData: {

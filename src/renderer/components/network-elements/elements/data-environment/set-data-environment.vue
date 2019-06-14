@@ -43,12 +43,11 @@
   import {openLoadDialog} from '@/core/helpers.js'
 
   import ChartSwitch from "@/components/charts/chart-switch.vue";
-  import RequestSpinner from '@/components/different/request-spinner.vue'
 
   export default {
     name: 'SetDataEnvironment',
     mixins: [mixinSet, mixinData],
-    components: { ChartSwitch,  RequestSpinner},
+    components: { ChartSwitch},
     data() {
       return {
         tabs: ['Gym', `<i class='icon icon-search'></i> Unity`],
@@ -78,8 +77,7 @@
             title: 'Action Space',
             text: 'Number of different actions </br> you can take in the game'
           }
-        },
-        showRequestSpinner: true
+        }
       }
     },
     computed: {
@@ -92,14 +90,10 @@
         handler(newVal) {
           if(newVal) {
             this.dataSettingsPlot('DataEnvironment');
-            this.showRequestSpinner = true;
           }
         },
         immediate: true
       },
-      imgData(newVal, oldVal) {
-        if(newVal !== oldVal) this.showRequestSpinner = false;
-      }
     },
     methods: {
       openLoadDialog,

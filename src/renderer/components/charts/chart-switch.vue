@@ -1,4 +1,5 @@
 <template lang="pug">
+  request-spinner(:showSpinner="showRequestSpinner")
     component(
       v-if="imgType.length"
       :is="componentName"
@@ -9,12 +10,14 @@
 </template>
 
 <script>
-  import ChartPicture from "@/components/charts/chart-picture";
-  import ChartBase    from "@/components/charts/chart-base";
-  import ChartHeatmap from "@/components/charts/chart-heatmap";
+  import ChartPicture     from "@/components/charts/chart-picture";
+  import ChartBase        from "@/components/charts/chart-base";
+  import ChartHeatmap     from "@/components/charts/chart-heatmap";
+  import RequestSpinner   from '@/components/different/request-spinner.vue'
+
   export default {
     name: "ChartSwitch",
-    components: { ChartHeatmap, ChartBase, ChartPicture },
+    components: { ChartHeatmap, ChartBase, ChartPicture, RequestSpinner },
     props: {
       chartLabel: {
         type: String,
@@ -40,7 +43,8 @@
     data() {
       return {
         imgType: '',
-        imgData: null
+        imgData: null,
+        showRequestSpinner: true
       }
     },
     computed: {
@@ -56,6 +60,7 @@
         if(newVal) {
           this.imgType = newVal.series[0].type;
           this.imgData = newVal;
+          this.showRequestSpinner = false;
         }
         else {
           this.imgType = '';

@@ -89,7 +89,7 @@ const chartsMixin = {
     // },
     chartData(newData, oldData) {
       this.sendDataToWWorker(newData);
-      this.showRequestSpinner = false;
+      if(newData) this.showRequestSpinner = false;
     }
   },
   methods: {
