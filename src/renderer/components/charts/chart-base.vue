@@ -3,7 +3,7 @@
     ref="baseChart"
     :class="{'full-view': fullView}"
     )
-    .base-chart_head(v-if="!headerOff")
+    .base-chart_head
       .chart-head_title
         h5.ellipsis {{ chartLabel }}
       .chart-head_meta
@@ -13,21 +13,24 @@
         )
           i.icon.icon-full-screen-graph
     .base-chart_main
-      v-chart(
-        ref="chart"
-        :auto-resize="true"
-        :options="chartModel"
-        theme="quantum"
-      )
+      request-spinner(:showSpinner="showRequestSpinner")
+        v-chart(
+          ref="chart"
+          :auto-resize="true"
+          :options="chartModel"
+          theme="quantum"
+        )
 </template>
 
 <script>
   import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
   import chartMixin                     from "@/core/mixins/charts.js";
+  import RequestSpinner from '@/components/different/request-spinner.vue'
 
   export default {
     name: "ChartBase",
     mixins: [chartMixin],
+    components: {RequestSpinner},
     created() {
       this.applyCustomColor();
     },
@@ -75,5 +78,8 @@
         });
       }
     },
+    watch: {
+
+    }
   }
 </script>

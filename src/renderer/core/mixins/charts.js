@@ -88,9 +88,8 @@ const chartsMixin = {
     //   }
     // },
     chartData(newData, oldData) {
-      this.startCalDrow = new Date();
       this.sendDataToWWorker(newData);
-      if(newData !== oldData) this.showRequestSpinner = false;
+      this.showRequestSpinner = false;
     }
   },
   methods: {

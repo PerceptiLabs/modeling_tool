@@ -30,7 +30,6 @@
             :select-multiple="true"
           )
         .form_row
-        request-spinner(:showSpinner="showRequestSpinner")
           chart-switch.data-charts(
             :disable-header="true"
             :chart-data="imgData"
@@ -99,8 +98,7 @@
             Type: 'Data',
             Path: [],
           }
-        },
-        showRequestSpinner: true
+        }
       }
     },
     watch: {
@@ -108,9 +106,7 @@
         this.settings.accessProperties.Columns = newVal;
         this.getDataPlot('DataData')
       },
-      imgData(newVal, oldVal) {
-        if(newVal !== oldVal) this.showRequestSpinner = false;
-      }
+
     },
     methods: {
       ...mapActions({

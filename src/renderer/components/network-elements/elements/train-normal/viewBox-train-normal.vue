@@ -15,14 +15,12 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
-          request-spinner(:showSpinner="showRequestSpinner.Input")
-            chart-switch.data-charts(
-              key="1"
-              chart-label="Input"
-              :chart-data="chartData.Prediction.Input"
-              )
+          chart-switch.data-charts(
+            key="1"
+            chart-label="Input"
+            :chart-data="chartData.Prediction.Input"
+            )
         .statistics-box_col
-          request-spinner(:showSpinner="showRequestSpinner.Accuracy")
             chart-pie(
               key="8"
               chart-label="Accuracy"
@@ -31,7 +29,6 @@
             )
       .statistics-box_row
         .statistics-box_col
-          request-spinner(:showSpinner="showRequestSpinner.PvG")
             chart-base#tutorial_prediction-chart.data-charts(
               key="2"
               chart-label="Prediction vs Ground truth"
@@ -39,7 +36,6 @@
               :custom-color="colorList"
             )
         .statistics-box_col(v-if="!testIsOpen")
-          request-spinner(:showSpinner="showRequestSpinner.AveragePvG")
             chart-base.data-charts(
               key="3"
               chart-label="Batch Average Prediction vs Ground truth"
@@ -105,11 +101,10 @@
 
   import viewBoxMixin   from "@/core/mixins/net-element-viewBox.js";
   import { mapActions } from 'vuex';
-  import RequestSpinner from '@/components/different/request-spinner.vue'
 
   export default {
     name: "ViewBoxTrainNormal",
-    components: {ChartBase, ChartPie, ChartHeatmap, ChartD3, ChartSwitch, RequestSpinner},
+    components: {ChartBase, ChartPie, ChartHeatmap, ChartD3, ChartSwitch},
     mixins: [viewBoxMixin],
     data() {
       return {
@@ -194,39 +189,7 @@
     watch: {
       testIsOpen(newVal) {
         newVal ? this.setTab('Prediction') : null
-      },
-      'chartData.Prediction.Input': {
-        handler(newVal) {
-          if(newVal) {
-            this.showRequestSpinner.Input = false;
-          }
-        },
-        immediate: true
-      },
-      'chartData.Prediction.PvG': {
-        handler(newVal) {
-          if(newVal) {
-            this.showRequestSpinner.PvG = false;
-          }
-        },
-        immediate: true
-      },
-      'chartData.Prediction.AveragePvG': {
-        handler(newVal) {
-          if(newVal) {
-            this.showRequestSpinner.AveragePvG = false;
-          }
-        },
-        immediate: true
-      },
-      'chartData.Prediction.Accuracy': {
-        handler(newVal) {
-          if(newVal) {
-            this.showRequestSpinner.Accuracy = false;
-          }
-        },
-        immediate: true
-      },
+      }
     },
     methods: {
       ...mapActions({

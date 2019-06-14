@@ -8,13 +8,12 @@
             :select-options="selectOptions"
             v-tooltip-interactive:right="interactiveInfo.selectGame"
           )
-        request-spinner(:showSpinner="showRequestSpinner")
-          .form_row(v-tooltip-interactive:right="interactiveInfo.actionSpace")
-            chart-switch.data-charts(
-              key="1"
-              :chart-label="chartLabel"
-              :chart-data="imgData"
-          )
+        .form_row(v-tooltip-interactive:right="interactiveInfo.actionSpace")
+          chart-switch.data-charts(
+            key="1"
+            :chart-label="chartLabel"
+            :chart-data="imgData"
+        )
 
     template(slot="<i class='icon icon-search'></i> Unity-content")
       .settings-layer_section
