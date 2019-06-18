@@ -3,6 +3,7 @@
     .workspace_tabset
       include ./tabset/workspace-tabset.pug
     .workspace_content.bookmark_content(ref="workspaceNet")
+      start-training-spinner(:showSpinner="showTrainingSpinner")
       .network(
         v-if="indexCurrentNetwork === i"
         v-for="(net, i) in workspace"
@@ -31,6 +32,7 @@
               :key="i"
               :style="{zoom: scaleNet + '%'}"
             )
+
         general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
@@ -63,6 +65,7 @@
     display: flex;
     flex: 1 1 100%;
     overflow: hidden;
+    position: relative;
   }
   .network {
     width: 100%;

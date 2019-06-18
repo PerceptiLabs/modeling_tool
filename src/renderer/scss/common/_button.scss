@@ -200,6 +200,15 @@
   color: $color-1;
 }
 
+.btn-info-popup {
+  background: $bg-workspace;
+  border: 1px solid #495163;
+  box-shadow: 0 0 3px #7195FC;
+  font-size: 1.5rem;
+  border-radius: 5px;
+  padding: 0.4rem 1rem;
+}
+
 //
 //.btn--social-login {
 //  @include multi-transition (color, background-color, border-color);

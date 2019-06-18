@@ -13,7 +13,8 @@ const state = {
     show: false,
     start: {x: 0, y: 0},
     stop: {x: 0, y: 0},
-  }
+  },
+  showStartTrainingSpinner: false,
 };
 
 const getters = {
@@ -99,6 +100,9 @@ const getters = {
       return getters.GET_currentNetwork.networkMeta.chartsRequest.doRequest;
     }
   },
+  GET_showStartTrainingSpinner(state) {
+    return state.showStartTrainingSpinner
+  },
 };
 
 const mutations = {
@@ -169,7 +173,12 @@ const mutations = {
   set_networkSettings(state, {getters, value}) {
     getters.GET_currentNetwork.networkSettings = value
   },
-
+  //---------------
+  //  LOADER FOR TRAINING
+  //---------------
+  SET_showStartTrainingSpinner(state, value) {
+    state.showStartTrainingSpinner = value;
+  },
   //---------------
   //  NETWORK META
   //---------------

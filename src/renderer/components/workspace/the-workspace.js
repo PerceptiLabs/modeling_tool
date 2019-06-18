@@ -2,18 +2,19 @@ import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
 import {remote}     from 'electron'
 import fs           from 'fs';
-import {mapActions, mapGetters} from 'vuex';
+import {mapActions, mapGetters, mapMutations} from 'vuex';
 
 import { generateID }  from "@/core/helpers.js";
 
-import TextEditable     from '@/components/base/text-editable.vue'
-import NetworkField     from '@/components/network-field/network-field.vue'
-import GeneralSettings  from "@/components/global-popups/workspace-general-settings.vue";
-import GeneralResult    from "@/components/global-popups/workspace-result";
-import SelectCoreSide   from "@/components/global-popups/workspace-core-side";
-import TheStatistics    from "@/components/statistics/the-statistics.vue";
-import TheTesting       from "@/components/statistics/the-testing.vue";
-import TheViewBox       from "@/components/statistics/the-view-box";
+import TextEditable           from '@/components/base/text-editable.vue'
+import NetworkField           from '@/components/network-field/network-field.vue'
+import GeneralSettings        from "@/components/global-popups/workspace-general-settings.vue";
+import GeneralResult          from "@/components/global-popups/workspace-result";
+import SelectCoreSide         from "@/components/global-popups/workspace-core-side";
+import TheStatistics          from "@/components/statistics/the-statistics.vue";
+import TheTesting             from "@/components/statistics/the-testing.vue";
+import TheViewBox             from "@/components/statistics/the-view-box";
+import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
 
 export default {
   name: 'WorkspaceContent',
@@ -21,11 +22,11 @@ export default {
     NetworkField, TextEditable,
     GeneralSettings, GeneralResult,
     SelectCoreSide,
-    TheStatistics, TheTesting, TheViewBox
+    TheStatistics, TheTesting, TheViewBox, StartTrainingSpinner
   },
   data() {
     return {
-      showTestingTab: false,
+      showTestingTab: false
     }
   },
   computed: {
@@ -37,6 +38,7 @@ export default {
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
+      showTrainingSpinner:'mod_workspace/GET_showStartTrainingSpinner'
     }),
     scaleNet: {
       get: function () {
@@ -71,6 +73,9 @@ export default {
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
+    coreStatus() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
+    },
     statisticsElSelected() {
       return this.$store.state.mod_statistics.selectedElArr
     },
@@ -94,6 +99,11 @@ export default {
         this.showTestingTab = true;
       }
     },
+    coreStatus(newStatus, oldStatus) {
+      if(newStatus.Status === 'Training' &&
+         oldStatus.Status === 'Training' &&
+         this.showTrainingSpinner) this.set_showTrainingSpinner(false);
+    },
     '$store.state.mod_events.saveNetwork': {
       handler() {
         this.saveNetwork();
@@ -111,6 +121,9 @@ export default {
     }
   },
   methods: {
+    ...mapMutations({
+      set_showTrainingSpinner:    'mod_workspace/SET_showStartTrainingSpinner'
+    }),
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
       infoPopup:                'globalView/GP_infoPopup',

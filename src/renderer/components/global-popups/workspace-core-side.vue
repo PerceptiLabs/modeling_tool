@@ -52,8 +52,9 @@ export default {
   },
   methods: {
     ...mapMutations({
-      tutorialNextActiveStep: 'mod_tutorials/SET_activeStepMainTutorial',
-      closePopup: 'globalView/HIDE_allGlobalPopups'
+      tutorialNextActiveStep:   'mod_tutorials/SET_activeStepMainTutorial',
+      closePopup:               'globalView/HIDE_allGlobalPopups',
+      set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner'
     }),
     ...mapActions({
       pointActivate: 'mod_tutorials/pointActivate'
@@ -67,7 +68,8 @@ export default {
       this.$store.dispatch('mod_workspace/SET_openStatistics', true);
       if(this.isTutorialMode) {
         this.tutorialNextActiveStep('next')
-      } 
+      }
+      this.set_showTrainingSpinner(true);
     },
   }
 }

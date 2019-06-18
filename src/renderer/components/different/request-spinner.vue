@@ -30,7 +30,7 @@ export default {
   @import "../../scss/base";
   .request-loader-wrapper{
     position: relative;
-    min-height: 20rem;
+    min-height: 15rem;
     width: 100%;
     height: 100%;
   }
@@ -44,7 +44,7 @@ export default {
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 5;
+    z-index: 2;
   }
   .background-box_spinner {
     margin: 0 auto;
