@@ -10,7 +10,7 @@
           :disabled="!networkIsOpen"
           :class="{'active': networkMode === 'edit'}"
           v-tooltip:bottom="'Edit'"
-          v-tooltip-interactive:bottom="interactiveInfo.edit"
+          v-tooltip-interactive:right="interactiveInfo.edit"
           @click="setNetMode('edit', 'tutorial_pointer')"
         )
           i.icon.icon-select

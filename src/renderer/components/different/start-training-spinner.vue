@@ -11,7 +11,7 @@
     props: {
       showSpinner: {
         type: Boolean,
-        default: true
+        default: false
       }
     },
     data() {
