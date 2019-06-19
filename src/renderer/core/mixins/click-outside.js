@@ -1,3 +1,4 @@
+import store from '../../store'
 /*
   ADD TO EVENT
 * this.ClickElementTracking = ev.target.closest('.js-clickout');
@@ -16,6 +17,7 @@ const clickOutside = {
         document.removeEventListener('click', this.clickOutside);
         this.ClickElementTracking = null;
         this.clickOutsideAction();
+        store.dispatch('mod_tutorials/showHideTooltip');
       }
     },
     clickOutsideAction() {

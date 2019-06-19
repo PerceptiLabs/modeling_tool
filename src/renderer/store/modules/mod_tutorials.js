@@ -1055,7 +1055,6 @@ const actions = {
       activeTooltips.forEach((tooltip)=> {
         tooltip.classList.contains('tooltip-hide') ?
           tooltip.classList.remove('tooltip-hide') : tooltip.classList.add('tooltip-hide')
-
       })
     }
   },
@@ -1177,12 +1176,14 @@ const actions = {
     commit('SET_showTutorialStoryBoard', false);
     commit('SET_interactiveInfo', false);
   },
-  offTutorial({dispatch, commit}) {
-    commit('SET_isTutorialMode', false);
-    commit('SET_showMainTutorialInstruction', false);
-    commit('SET_interactiveInfo', false);
-    dispatch('resetTutorial');
-    dispatch('unlockAllElements');
+  offTutorial({dispatch, commit, getters}) {
+    if(getters.getIstutorialMode) {
+      commit('SET_isTutorialMode', false);
+      commit('SET_showMainTutorialInstruction', false);
+      commit('SET_interactiveInfo', false);
+      dispatch('resetTutorial');
+      dispatch('unlockAllElements');
+    }
   },
   onTutorial({dispatch, commit, getters, rootGetters}, context) {
     commit('SET_isTutorialMode', true);
