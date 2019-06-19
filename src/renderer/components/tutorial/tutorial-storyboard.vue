@@ -22,11 +22,11 @@
         
       button.modal-popup_control.prev-button.icon.icon-player-play(type="button"
         @click="set_stepActive('prev')" 
-        v-show="activeStep > 0"
+        v-show="activeStepStoryBoard > 0"
       )
       button.modal-popup_control.next-button.icon.icon-player-play(type="button"
         @click="set_stepActive('next')" 
-        v-show="activeStep < firstTutorial.length - 1"
+        v-show="activeStepStoryBoard < firstTutorial.length - 1"
       )
       footer.modal-popup_footer
         button.footer_skip-button(@click="skipTutorial") Skip intro
@@ -35,7 +35,7 @@
           button.btn.btn--link.all-slides-controls_control( type="button"
             v-for="(control, index) in firstTutorial"
             :key="index"
-            :class="{'active': activeStep === index}"
+            :class="{'active': activeStepStoryBoard === index}"
             @click="dot_stepActive(index)"
           )
 </template>
@@ -45,7 +45,6 @@ export default {
   name: 'TutorialStoryboard',
   data() {
     return {
-      activeStep: 0,
       firstTutorial: [
         {
           title: 'What is AI?',
@@ -93,10 +92,11 @@ export default {
     ...mapGetters({
       mainTutorialActivePoint:    'mod_tutorials/getActivePoint',
       isTutorialMode:             'mod_tutorials/getIstutorialMode',
+      activeStepStoryBoard:       'mod_tutorials/getActiveStepStoryboard',
       currentNetworkElementList:  'mod_workspace/GET_currentNetworkElementList'
     }),
     currentStepTutorial() {
-      return this.firstTutorial[this.activeStep]
+      return this.firstTutorial[this.activeStepStoryBoard]
     },
     statusShowTutorial() {
       return this.$store.state.mod_tutorials.showTutorialStoryBoard
@@ -114,42 +114,31 @@ export default {
       setActiveStep:                    'mod_tutorials/SET_activeStepMainTutorial',
       setFirstTimeApp:                  'mod_tutorials/SET_firstTimeApp',
       setInteractiveInfo:               'mod_tutorials/SET_interactiveInfo',
-      setTutorialMode:                  'mod_tutorials/SET_isTutorialMode',
+      setTutorialMode:                  'mod_tutorials/SET_isTutorialMode'
     }),
     ...mapActions({
       mainTutorialPointActivate:        'mod_tutorials/pointActivate',
+      onMainTutorial:                   'mod_tutorials/onTutorial',
+      resetStoryBoard:                  'mod_tutorials/resetStoryBoard',
       addNetwork:                       'mod_workspace/ADD_network'
     }),
     closeTutorial() {
-      this.activeStep = 0;
-      this.setActiveStepStoryboard(this.activeStep);
+      this.setActiveStepStoryboard(0);
       this.setShowStoryboard(false)
     },
     set_stepActive(way) {
-      way === 'next' ? this.activeStep++ : this.activeStep--;
-      this.setActiveStepStoryboard(this.activeStep)
+      this.setActiveStepStoryboard(way)
     },
     dot_stepActive(index) {
-      this.activeStep = index;
-      this.setActiveStepStoryboard(this.activeStep)
+      this.setActiveStepStoryboard(index)
     },
     skipTutorial() {
       this.closeTutorial();
       this.setFirstTimeApp(false);
     },
     startMainTutorial() {
-      if(this.currentNetworkElementList !== null && !this.isTutorialMode) this.addNetwork({'ctx': this});
-      this.setTutorialMode(true);
-      this.activeStep = 0;
-      this.setActiveStepStoryboard(this.activeStep);
-      this.setShowStoryboard(false);
-      this.setShowInstructionsMainTutorial(true);
-      this.setTutorialIsStarted(true);
-      this.setActiveStep('next');
-      let firstActionId = this.mainTutorialActivePoint.actions[0].id;
-      this.mainTutorialPointActivate({way: null, validation: firstActionId});
-      this.setFirstTimeApp(false);
-      this.setInteractiveInfo(false);
+      if(!this.isTutorialMode) this.onMainTutorial(this);
+      this.resetStoryBoard();
     }
   }
 }

@@ -843,6 +843,9 @@ const state = {
 };
 
 const getters = {
+  getActiveStepStoryboard(state) {
+    return state.activeStepStoryboard;
+  },
   getIterective(state) {
     return state.interective
   },
@@ -905,7 +908,17 @@ const mutations = {
     state.runButtonsActive = value;
   },
   SET_activeStepStoryboard(state, value) {
-    state.activeStepStoryboard = value;
+    switch(value) {
+      case 'next':
+        state.activeStepStoryboard++;
+        break;
+      case 'prev':
+        state.activeStepStoryboard--;
+        break;
+      default:
+        state.activeStepStoryboard = value;
+        break;
+    }
   },
   SET_showTutorialStoryBoard(state, value) {
     state.showTutorialStoryBoard = value;
@@ -1092,8 +1105,8 @@ const actions = {
       })
     }
   },
-  lockElements({getters, dispatch}, cssClass) {
-    let elements = document.querySelectorAll(cssClass);
+  lockElements({getters, dispatch}, cssSelector) {
+    let elements = document.querySelectorAll(cssSelector);
     let blockingArea = document.createElement('div');
     blockingArea.classList.add('lock-area');
     elements.forEach(function (element) {
@@ -1158,6 +1171,27 @@ const actions = {
     commit('SET_activeActionMainTutorial', 0);
     commit('SET_activePointMainTutorial', 0);
     commit('SET_activeStepMainTutorial', 0);
+  },
+  resetStoryBoard({commit}) {
+    commit('SET_activeStepStoryboard', 0);
+    commit('SET_showTutorialStoryBoard', false);
+    commit('SET_interactiveInfo', false);
+  },
+  offTutorial({dispatch, commit}) {
+    commit('SET_isTutorialMode', false);
+    commit('SET_showMainTutorialInstruction', false);
+    commit('SET_interactiveInfo', false);
+    dispatch('resetTutorial');
+    dispatch('unlockAllElements');
+  },
+  onTutorial({dispatch, commit, getters, rootGetters}, context) {
+    commit('SET_isTutorialMode', true);
+    commit('SET_showMainTutorialInstruction', true);
+    commit('SET_interactiveInfo', false);
+    dispatch('lockElements', '#tutorial_layersbar-list');
+    dispatch('lockElements', '#tutorial_layer_child-list');
+    if(rootGetters['mod_workspace/GET_currentNetworkElementList'] !== null &&
+      !getters.getIstutorialMode)  dispatch('mod_workspace/ADD_network', {'ctx': context})
   },
   removeSchematicElement() {
     let schematicElement = document.querySelector('.schematic');
