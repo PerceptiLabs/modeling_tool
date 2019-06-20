@@ -2,7 +2,9 @@
   main.page_workspace
     .workspace_tabset
       include ./tabset/workspace-tabset.pug
-    .workspace_content.bookmark_content(ref="workspaceNet")
+    .workspace_content.bookmark_content.js-workspace(
+      ref="workspaceNet" :class="{'workspace-relative' : showTrainingSpinner}"
+      )
       start-training-spinner(:showSpinner="showTrainingSpinner")
       .network(
         v-if="indexCurrentNetwork === i"
@@ -49,6 +51,7 @@
   @import "../../scss/base";
   @import "./tabset/workspace-tabset";
   @import "./meta/workspace-meta";
+
   .page_workspace {
     display: flex;
     flex-direction: column;
@@ -65,7 +68,6 @@
     display: flex;
     flex: 1 1 100%;
     overflow: hidden;
-    position: relative;
   }
   .network {
     width: 100%;
@@ -113,5 +115,8 @@
     display: flex;
     justify-content: space-between;
     padding: .5rem;
+  }
+  .workspace-relative {
+    position: relative;
   }
 </style>

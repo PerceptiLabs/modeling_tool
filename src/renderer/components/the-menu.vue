@@ -79,9 +79,9 @@ export default {
           submenu: [
             {label: 'Home',                                     enabled: this.openApp,  active: ()=> {this.openProject()},  mousedown: ()=> {}},
             {label: 'New',        accelerator: 'Ctrl+N',        enabled: this.isLogin,  active: ()=> {this.addNewNetwork()},mousedown: ()=> {}},
-            {label: 'Open',       accelerator: 'Ctrl+O',        enabled: this.isLogin,  active: ()=> {this.openNetwork()},  mousedown: ()=> {}},
-            {label: 'Save',       accelerator: 'Ctrl+S',        enabled: this.openApp,  active: ()=> {this.saveNetwork()},  mousedown: ()=> {}},
-            {label: 'Save as...', accelerator: 'Ctrl+Shift+S',  enabled: this.openApp,  active: ()=> {this.saveNetworkAs()},mousedown: ()=> {}},
+            {label: 'Open',       accelerator: 'Ctrl+O',        enabled: this.isLogin,  active: ()=> {this.openModel()},  mousedown: ()=> {}},
+            {label: 'Save',       accelerator: 'Ctrl+S',        enabled: this.openApp,  active: ()=> {this.saveModel()},  mousedown: ()=> {}},
+            {label: 'Save as...', accelerator: 'Ctrl+Shift+S',  enabled: this.openApp,  active: ()=> {this.saveModelAs()},mousedown: ()=> {}},
             {type: 'separator'},
             {label: 'Log out',    accelerator: 'Ctrl+F4',       enabled: this.isLogin,  active: ()=> {this.logOut()},       mousedown: ()=> {}},
             {label: 'Exit',       accelerator: 'Ctrl+Q',        enabled: true,          active: ()=> {this.appClose()},     mousedown: ()=> {}}
@@ -194,18 +194,20 @@ export default {
   },
   methods: {
     ...mapMutations({
-      setTutorialSB: 'mod_tutorials/SET_showTutorialStoryBoard',
-      openNetwork:   'mod_events/set_openNetwork',
-      saveNetwork:   'mod_events/set_saveNetwork',
-      saveNetworkAs: 'mod_events/set_saveNetworkAs',
+      setTutorialSB:    'mod_tutorials/SET_showTutorialStoryBoard',
+      openNetwork:      'mod_events/set_openNetwork',
+      saveNetwork:      'mod_events/set_saveNetwork',
+      saveNetworkAs:    'mod_events/set_saveNetworkAs',
+      setTutorialMode:  'mod_tutorials/SET_isTutorialMode',
     }),
     ...mapActions({
-      infoPopup:     'globalView/GP_infoPopup',
-      appClose:      'mod_events/EVENT_closeApp',
-      HCCopy:        'mod_events/EVENT_hotKeyCopy',
-      HCPaste:       'mod_events/EVENT_hotKeyPaste',
-      HCSelectAll:   'mod_workspace/SET_elementSelectAll',
-      HCDeselectAll: 'mod_workspace/SET_elementUnselect',
+      infoPopup:        'globalView/GP_infoPopup',
+      offMainTutorial:  'mod_tutorials/offTutorial',
+      appClose:         'mod_events/EVENT_closeApp',
+      HCCopy:           'mod_events/EVENT_hotKeyCopy',
+      HCPaste:          'mod_events/EVENT_hotKeyPaste',
+      HCSelectAll:      'mod_workspace/SET_elementSelectAll',
+      HCDeselectAll:    'mod_workspace/SET_elementUnselect'
     }),
     openLink(url) {
       shell.openExternal(url);
@@ -216,12 +218,15 @@ export default {
     },
     addNewNetwork() {
       this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+      this.offMainTutorial();
     },
     openProject() {
       this.$router.replace({name: 'projects'});
+      this.offMainTutorial();
     },
     logOut() {
-      this.$store.dispatch('mod_events/EVENT_logOut', this)
+      this.$store.dispatch('mod_events/EVENT_logOut', this);
+      this.offMainTutorial();
     },
     showTutorial() {
       this.$store.dispatch('mod_tutorials/START_storyboard');
@@ -235,6 +240,18 @@ export default {
     appMaximize() {
       ipcRenderer.send('appMaximize')
     },
+    openModel() {
+      this.openNetwork();
+      this.offMainTutorial();
+    },
+    saveModel() {
+      this.saveNetwork();
+      this.offMainTutorial();
+    },
+    saveModelAs() {
+      this.saveNetworkAs();
+      this.offMainTutorial();
+    }
   }
 }
 </script>

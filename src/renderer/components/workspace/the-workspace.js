@@ -100,9 +100,9 @@ export default {
       }
     },
     coreStatus(newStatus, oldStatus) {
-      if(newStatus.Status === 'Training' &&
-         oldStatus.Status === 'Training' &&
-         this.showTrainingSpinner) this.set_showTrainingSpinner(false);
+      if(newStatus.Status === 'Training' && oldStatus.Status === 'Training' && this.showTrainingSpinner)  {
+        this.set_showTrainingSpinner(false);
+      }
     },
     '$store.state.mod_events.saveNetwork': {
       handler() {

@@ -1,6 +1,6 @@
 <template lang="pug">
   aside.page_layersbar(:class="{'page_layersbar--hide': !hideLayers, 'tutorial-active': activeStepStoryboard === 2}")
-    ul.layersbar-list
+    ul.layersbar-list#tutorial_layersbar-list
       li.layer(
         v-for="(layer, i) in layersbarList"
         :key="i"
@@ -13,7 +13,7 @@
           :id="layer.id"
         )
           i.icon(:class="layer.iconClass")
-        ul.layer_child-list(
+        ul.layer_child-list#tutorial_layer_child-list(
           v-if="layer.networkElements"
         )
           li(
@@ -180,6 +180,7 @@ export default {
         this.layersbarList[index].showEl = true;
         this.ClickElementTracking = ev.target.closest('.js-clickout');
         document.addEventListener('click', this.clickOutside);
+        this.$store.dispatch('mod_tutorials/showHideTooltip');
       }
     },
     clickOutsideAction() {

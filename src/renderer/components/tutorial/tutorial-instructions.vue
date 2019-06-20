@@ -120,6 +120,8 @@ export default {
       lockElements:               'mod_tutorials/lockElements',
       unlockAllElements:          'mod_tutorials/unlockAllElements',
       tooltipReposition:          'mod_tutorials/tooltipReposition',
+      offTutorial:                'mod_tutorials/offTutorial',
+      onTutorial:                'mod_tutorials/onTutorial',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
     }),
@@ -142,17 +144,7 @@ export default {
       this.switchTutorialMode();
     },
     switchTutorialMode() {
-      if(this.currentNetworkElementList !== null && !this.isTutorialMode) this.addNetwork({'ctx': this});
-      this.setShowInstructions(!this.isShowInstructions);
-      this.setTutorialMode(!this.isTutorialMode);
-      if(this.isTutorialMode) {
-        this.lockElements('.layersbar-list');
-        this.lockElements('.layer_child-list');
-      } else {
-        this.resetTutorial();
-        this.unlockAllElements();
-      }
-      this.setInteractiveInfo(false);
+      this.isTutorialMode ? this.offTutorial() : this.onTutorial(this);
     }
   }
 }

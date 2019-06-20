@@ -1,5 +1,5 @@
 <template lang="pug">
-  aside.page_toolbar
+  aside.page_toolbar(:class="{'tutorial-active': activeStepStoryboard === 4}")
     .toggle-wrap(:class="{'hide-layers': !hideLayers}")
       button.btn.btn--toolbar(type="button" @click="toggleLayers()")
         i.icon.icon-hide-top
@@ -10,7 +10,7 @@
           :disabled="!networkIsOpen"
           :class="{'active': networkMode === 'edit'}"
           v-tooltip:bottom="'Edit'"
-          v-tooltip-interactive:bottom="interactiveInfo.edit"
+          v-tooltip-interactive:right="interactiveInfo.edit"
           @click="setNetMode('edit', 'tutorial_pointer')"
         )
           i.icon.icon-select
@@ -329,7 +329,6 @@ export default {
 <style lang="scss" scoped>
   @import "../scss/base";
   .page_toolbar {
-    z-index: 2;
     display: flex;
     align-items: center;
     padding: 5px .5em 5px 0;
