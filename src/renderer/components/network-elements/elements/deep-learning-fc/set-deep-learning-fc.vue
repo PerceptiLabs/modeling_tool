@@ -1,5 +1,9 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+  )
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.neurons")
@@ -28,9 +32,7 @@
               span No
 
     template(slot="Code-content")
-      settings-code(
-        :the-code="coreCode"
-      )
+      settings-code(v-model="coreCode")
 
     template(slot="action")
       button#tutorial_button-apply.btn.btn--primary(type="button" @click="saveSettings") Apply
@@ -71,7 +73,7 @@
       }
     },
     computed: {
-      coreCode() {
+      settingsCode() {
         let activeFunc = '';
         switch (this.settings.Activation_function) {
           case 'Sigmoid':

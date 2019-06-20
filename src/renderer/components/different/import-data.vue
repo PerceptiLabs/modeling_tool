@@ -2,7 +2,7 @@
   base-accordion(:accordion-title="accordionData")
     template(slot="tensorFlow")
       .tf-wrap.text-center
-        button.btn.btn--outline-blue(type="button" @click="clickQ") Open
+        button.btn.btn--outline-blue(type="button" @click="loadTFFiles") Open
 
     template(slot="builtIn")
       .form_row
@@ -23,7 +23,7 @@
 <script>
 import BaseSwitcher     from "@/components/different/switcher.vue";
 import BaseAccordion    from "@/components/base/accordion.vue";
-import {loadPathFolder} from '@/core/helpers.js'
+import {openLoadDialog} from '@/core/helpers.js'
 
 
 export default {
@@ -68,6 +68,20 @@ export default {
     }
   },
   methods: {
+    openLoadDialog,
+    loadTFFiles() {
+      this.disabledBtn = true;
+      let opt = {
+        title:"Load TensorFlow Model",
+        properties: ['openFile', 'multiSelections'],
+        // filters: [
+        //   {name: 'All', extensions: ['pb', 'pbtxt', 'ckpt']},
+        // ]
+      };
+      this.openLoadDialog(opt)
+        .then((pathArr)=> this.$store.dispatch('mod_api/API_parse', {path: pathArr, ctx: this}))
+        .catch(()=> this.disabledBtn = false)
+    },
     clickQ() {
 
     }

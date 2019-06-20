@@ -11,15 +11,21 @@ const netElementSettings = {
   components: { SettingsCode, NetBaseSettings },
   data() {
     return {
-      //tabSelected: 0,//
-      //tabs: ['Settings', 'Code'],//
-      settings: {}
+      settings: {},
+      coreCode: '',
     }
   },
   mounted() {
-    if(typeof(this.currentEl.layerSettings) !== 'string') {
-      this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
+    if(!this.currentEl.layerSettingsTabName) {
+      this.updateCode();
     }
+    else {
+      this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
+      this.coreCode = this.currentEl.layerCode
+    }
+    // if(typeof(this.currentEl.layerSettings) !== 'string') {
+    //   this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
+    // }
     this.$store.dispatch('mod_api/API_getInputDim');
   },
   computed: {
@@ -29,25 +35,25 @@ const netElementSettings = {
     codeInputDim() {
       return this.currentEl.layerMeta.InputDim
     },
-    coreCode() {
-      return ''
-    }
   },
   methods: {
-    // setTab(i) {//
-    //   this.tabSelected = i;
-    // },
-    applySettings() {
-      this.hideAllWindow();
+    updateCode() {
+      this.coreCode = this.settingsCode
+    },
+    saveSettings(tabName) {
+      this.applySettings(tabName);
+    },
+    applySettings(tabName) {
       if(this._name === '<SetTrainNormal>') this.settings.Labels = this.idSelectElement;
       const saveSettings = {
         'elId': this.currentEl.layerId,
         'code': this.coreCode,
-        'set': this.settings
+        'set': this.settings,
+        tabName
       };
-
       this.$store.dispatch('mod_workspace/SET_elementSettings', saveSettings);
-      this.$store.dispatch('mod_api/API_getOutputDim')
+      this.$store.dispatch('mod_api/API_getOutputDim');
+      this.hideAllWindow();
     }
   }
 };

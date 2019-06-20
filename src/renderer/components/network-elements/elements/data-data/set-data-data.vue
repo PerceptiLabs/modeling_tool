@@ -1,5 +1,8 @@
 <template lang="pug">
-  net-base-settings(:tab-set="tabs")
+  net-base-settings(
+    :tab-set="tabs"
+    @press-apply="saveSettings($event)"
+  )
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Path.length")
         button.btn.tutorial-relative(type="button"

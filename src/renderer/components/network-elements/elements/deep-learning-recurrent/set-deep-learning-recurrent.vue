@@ -1,5 +1,9 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+  )
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.neurons")
@@ -27,11 +31,10 @@
           .form_label Time steps:
           .form_input
             input(type="number" v-model="settings.Time_steps")
-    template(slot="Code-content")
-      settings-code(:the-code="coreCode")
 
-    template(slot="action")
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
+    template(slot="Code-content")
+      settings-code(v-model="coreCode")
+
 </template>
 
 <script>
@@ -64,7 +67,7 @@ export default {
     }
   },
   computed: {
-    coreCode() {
+    settingsCode() {
       switch (this.settings.Version) {
         case 'LSTM':
           return `node=tf.reshape(X,[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);

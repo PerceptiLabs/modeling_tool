@@ -79,6 +79,7 @@ export default {
     flex-grow: 1;
     max-height: 50vh;
     border-bottom: 1px solid $bg-toolbar;
+    overflow: auto;
   }
   .layers_title {
     align-items: center;

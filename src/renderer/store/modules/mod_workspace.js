@@ -369,8 +369,9 @@ const mutations = {
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, settings) {
-    currentElement(settings.elId).layerSettings = settings.set;  //TODO NEED CHECK
-    currentElement(settings.elId).layerCode = settings.code;     //TODO NEED CHECK
+    currentElement(settings.elId).layerSettings = settings.set;
+    currentElement(settings.elId).layerCode = settings.code;
+    currentElement(settings.elId).layerSettingsTabName = settings.tabName;
   },
 
   /*-- NETWORK ELEMENTS META --*/
@@ -788,7 +789,8 @@ const createNetElement = function (event) {
     layerId: generateID(),
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
-    layerSettings: event.layerSettings ? event.layerSettings : '',
+    layerSettings: event.layerSettings ? event.layerSettings : null,
+    layerSettingsTabName: undefined,
     layerCode: '',
     layerNone: false,
     layerMeta: {

@@ -35,7 +35,11 @@ export default {
       type: Boolean,
       default: false
     },
-    theCode: {
+    // theCode: {
+    //   type: [String, Object],
+    //   default: ''
+    // },
+    value: {
       type: [String, Object],
       default: ''
     },
@@ -46,15 +50,28 @@ export default {
       this.currentTab = keys[0];
     }
   },
+  // mounted() {
+  //   console.log(this.theCode);
+  //   this.$nextTick(()=> {console.log(this.theCode)})
+  // },
   data() {
     return {
       currentTab: '',
-      fullView: false
+      fullView: false,
+      //theCode: ''
     }
   },
   computed: {
     isMultiTabs() {
       return typeof this.theCode === 'string' ? false : true
+    },
+    theCode: {
+      get: function() {
+        return this.value
+      },
+      set: function(newValue) {
+        this.$emit('input', newValue);
+      }
     }
   },
   methods: {

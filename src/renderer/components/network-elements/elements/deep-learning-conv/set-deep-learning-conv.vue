@@ -1,5 +1,9 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+  )
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
@@ -114,7 +118,7 @@
               base-radio(group-name="Pool_padding" value-input="'VALID'" v-model="settings.Pool_padding")
                 span VALID
     template(slot="Code-content")
-      settings-code(:the-code="coreCode")
+      settings-code(v-model="coreCode")
 
     template(slot="action")
       button#tutorial_apply-button.btn.btn--primary.tutorial-relative(type="button" @click="saveSettings") Apply
@@ -202,7 +206,7 @@ export default {
     ...mapGetters({
       isTutorialMode:   'mod_tutorials/getIstutorialMode',
     }),
-    coreCode() {
+    settingsCode() {
       let dim = '';
       let activeFunc = '';
       let pooling = '';

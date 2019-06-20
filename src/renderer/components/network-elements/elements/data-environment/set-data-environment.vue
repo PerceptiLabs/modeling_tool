@@ -1,5 +1,8 @@
 <template lang="pug">
-  net-base-settings(:tab-set="tabs")
+  net-base-settings(
+    :tab-set="tabs"
+    @press-apply="saveSettings($event)"
+  )
     template(slot="Gym-content")
       .settings-layer_section(style="position:relative")
         .form_row

@@ -351,6 +351,23 @@ const actions = {
         console.error(err);
       });
   },
+  API_parse({dispatch, getters, rootGetters}, {path, ctx}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "Parse",
+      value: path
+    };
+    console.log('Parse send', JSON.stringify(theData));
+    return coreRequest(theData)
+      .then((data)=> {
+        console.log('Parse answer', data);
+        dispatch('mod_workspace/ADD_network', {data, ctx}, {root: true});
+
+      })
+      .catch((err)=> {
+        console.error('Parse answer', err);
+      });
+  },
 };
 
 export default {

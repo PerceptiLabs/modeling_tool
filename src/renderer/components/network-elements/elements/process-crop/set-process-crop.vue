@@ -1,5 +1,9 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+  )
     template(slot="Settings-content")
       //.settings-layer_section
                   .form_row
@@ -31,15 +35,12 @@
             input(type="text")
 
     template(slot="Code-content")
-      settings-code(:the-code="coreCode")
+      settings-code(v-model="coreCode")
 
-    template(slot="action")
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
 </template>
 
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
-  //import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
   import TripleInput    from '@/components/base/triple-input';
   import { VueCropper } from 'vue-cropper';
 
@@ -73,7 +74,7 @@
       }
     },
     computed: {
-      coreCode() {
+      settingsCode() {
         return `Y=tf.image.crop_to_bounding_box(X, ${this.settings.Offset_height}, ${this.settings.Offset_width}, ${this.settings.Target_height}, ${this.settings.Target_width})`
       }
     }

@@ -38,23 +38,25 @@ const loadNetwork = function (pathArr) {
     .then((data) => {
       //validate JSON
       let net = {};
-      try {
-        net = JSON.parse(data.toString());
-      }
-      catch(e) {
-        this.$store.dispatch('globalView/GP_infoPopup', 'JSON file is not valid');
-        return
-      }
+      net = JSON.parse(data.toString());
+      // try {
+      //   net = JSON.parse(data.toString());
+      //
+      // }
+      // catch(e) {
+      //   this.$store.dispatch('globalView/GP_infoPopup', 'JSON file is not valid');
+      //   return
+      // }
       //validate model
-      try {
-        if(!(net.network.networkName && net.network.networkID && net.network.networkMeta && net.network.networkElementList)) {
-          throw ('err')
-        }
-      }
-      catch(e) {
-        this.$store.dispatch('globalView/GP_infoPopup', 'The model is not valid');
-        return;
-      }
+      // try {
+      //   if(!(net.network.networkName && net.network.networkID && net.network.networkMeta && net.network.networkElementList)) {
+      //     throw ('err')
+      //   }
+      // }
+      // catch(e) {
+      //   this.$store.dispatch('globalView/GP_infoPopup', 'The model is not valid');
+      //   return;
+      // }
       if(pathIndex > -1 && projectsList) {
         net.network.networkID = projectsList[pathIndex].id;
       }

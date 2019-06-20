@@ -1,16 +1,19 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+  )
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo")
           .form_label Number of classes:
           #tutorial_number-of-classes.form_input.tutorial-relative
             input(type="text" v-model="settings.N_class")
-    template(slot="Code-content")
-      settings-code(:the-code="coreCode")
 
-    template(slot="action")
-      button.btn.btn--primary(type="button" @click="saveSettings") Apply
+    template(slot="Code-content")
+      settings-code(v-model="coreCode")
+
 </template>
 
 <script>
@@ -32,7 +35,7 @@ export default {
     }
   },
   computed: {
-    coreCode() {
+    settingsCode() {
       return `Y=tf.one_hot(tf.cast(X,dtype=tf.int32),${this.settings.N_class});`
     }
   },
