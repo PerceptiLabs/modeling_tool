@@ -4,20 +4,25 @@
       button.popup_header(
         v-for="(tab, i) in tabSet"
         :key="tab.i"
-        :class="{'disable': tabSelected != i}"
-        @click="setTab(i)"
+        :class="{'disable': tabSelected != tab}"
+        @click="setTab(tab)"
       )
         h3(v-html="tab")
     .popup_tab-body
       .popup_body.active(
         v-for="(tabContent, i) in tabSet"
         :key="tabContent.i"
-        v-if="tabSelected === i"
+        v-if="tabSelected === tabContent"
         )
         .settings-layer
           slot(:name="tabContent+'-content'")
         .settings-layer_foot
-          slot(name="action")
+          slot(:name="tabContent+'-action'")
+            button.btn.btn--primary(type="button" @click="applySettings(tabContent)") Apply
+            button.btn.btn--dark-blue-rev(type="button"
+              v-if="tabContent === 'Settings'"
+              @click="updateCode"
+              ) Update code
 
 </template>
 
@@ -30,17 +35,31 @@ export default {
       default: function() {
         return ['Settings', 'Code']
       }
+    },
+    firstTab: {
+      type: String,
+      default: ''
     }
+  },
+  mounted() {
+    let tab = this.firstTab || this.tabSet[0];
+    this.setTab(tab)
   },
   data() {
     return {
-      tabSelected: 0,
+      tabSelected: '',
     }
   },
   methods: {
-    setTab(i) {
-      this.tabSelected = i;
+    setTab(name) {
+      this.tabSelected = name;
     },
+    applySettings(name) {
+      this.$emit('press-apply', name)
+    },
+    updateCode(name) {
+      this.$emit('press-update')
+    }
   }
 }
 </script>

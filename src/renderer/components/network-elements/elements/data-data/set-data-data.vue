@@ -1,5 +1,8 @@
 <template lang="pug">
-  net-base-settings(:tab-set="tabs")
+  net-base-settings(
+    :tab-set="tabs"
+    @press-apply="saveSettings($event)"
+  )
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Path.length")
         button.btn.tutorial-relative(type="button"
@@ -38,12 +41,14 @@
     template(slot="Cloud-content")
       settings-cloud
 
-    template(slot="action")
+    template(slot="Computer-action")
       button.btn.btn--primary.tutorial-relative(type="button"
         v-show="settings.accessProperties.Path.length"
         @click="saveSettings"
         id="tutorial_button-apply"
       ) Apply
+    template(slot="Cloud-action")
+      span
 
 </template>
 

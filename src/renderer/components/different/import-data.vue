@@ -2,7 +2,10 @@
   base-accordion(:accordion-title="accordionData")
     template(slot="tensorFlow")
       .tf-wrap.text-center
-        button.btn.btn--outline-blue(type="button" @click="clickQ") Open
+        button.btn.btn--outline-blue(type="button"
+          :disabled="disabledBtn"
+          @click="loadTFFiles"
+          ) Open
 
     template(slot="builtIn")
       .form_row
@@ -11,19 +14,25 @@
           :select-options="selectOptions"
           select-placeholder="placeholder text"
         )
-        button.btn.btn--dark-blue-rev(type="button" @click="clickQ") Load
+        button.btn.btn--dark-blue-rev(type="button"
+          :disabled="disabledBtn"
+          @click="clickQ"
+          ) Load
 
     template(slot="git")
       .form_row
         input.form_input(type="text" v-model="settings.Location" placeholder="insert link")
-        button.btn.btn--dark-blue-rev(type="button" @click="clickQ") Load
+        button.btn.btn--dark-blue-rev(type="button"
+          :disabled="disabledBtn"
+          @click="clickQ"
+          ) Load
 
 </template>
 
 <script>
 import BaseSwitcher     from "@/components/different/switcher.vue";
 import BaseAccordion    from "@/components/base/accordion.vue";
-import {loadPathFolder} from '@/core/helpers.js'
+import {openLoadDialog} from '@/core/helpers.js'
 
 
 export default {
@@ -31,6 +40,7 @@ export default {
   components: {BaseSwitcher, BaseAccordion},
   data() {
     return {
+      disabledBtn: false,
       accordionData: [
         {name: 'tensorFlow' , html: 'TensorFlow Model'},
         {name: 'builtIn' , html: 'Built-in Templates'},
@@ -68,6 +78,27 @@ export default {
     }
   },
   methods: {
+    openLoadDialog,
+    loadTFFiles() {
+      this.disabledBtn = true;
+      let opt = {
+        title:"Load TensorFlow Model",
+        properties: ['openFile', 'multiSelections'],
+        filters: [
+          {name: 'All', extensions: ['pb', 'pbtxt', 'ckpt', 'pb.*', 'pbtxt.*', 'ckpt.*']},
+        ]
+      };
+      this.openLoadDialog(opt)
+        .then((pathArr)=>{
+          this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
+          return this.$store.dispatch('mod_api/API_parse', {path: pathArr, ctx: this});
+        })
+        .then(()=>{
+          this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
+          this.disabledBtn = false
+        })
+        .catch(()=> this.disabledBtn = false)
+    },
     clickQ() {
 
     }

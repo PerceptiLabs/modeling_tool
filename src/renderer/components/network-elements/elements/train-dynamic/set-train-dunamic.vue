@@ -1,5 +1,9 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+  )
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.routingIterations")
@@ -7,10 +11,8 @@
           .form_input
             input(type="text")
     template(slot="Code-content")
-      settings-code(:the-code="coreCode")
+      settings-code(v-model="coreCode")
 
-    template(slot="action")
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
 </template>
 
 <script>
@@ -34,9 +36,6 @@ export default {
         }
       }
     }
-  },
-  methods: {
-
   }
 }
 </script>

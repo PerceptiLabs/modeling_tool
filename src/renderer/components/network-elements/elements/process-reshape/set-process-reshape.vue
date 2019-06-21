@@ -1,21 +1,16 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+    )
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
           .form_label Reshape:
           .form_input
             triple-input#tutorial_input-reshape.tutorial-relative(v-model="settings.Shape")
-      //.settings-layer_section
-        .form_row
-          .form_label Reshape:
-          .form_input
-            input(type="text")
-      //.settings-layer_section
-        .form_row
-          .form_label Transpose:
-          .form_input
-            input(type="text")
+
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
           .form_label Transpose:
@@ -23,15 +18,17 @@
             triple-input(v-model="settings.Permutation")
 
     template(slot="Code-content")
-      settings-code(:the-code="coreCode")
+      settings-code(v-model="coreCode")
 
-    template(slot="action")
-      button#tutorial_button-apply.btn.btn--primary(type="button" @click="saveSettings") Apply
+    template(slot="Settings-action")
+      button#tutorial_button-apply.btn.btn--primary(type="button" @click="saveSettings('Settings')") Apply
+      button.btn.btn--dark-blue-rev(type="button" @click="updateCode") Update code
+
+
 </template>
 
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
- // import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
   import TripleInput    from "@/components/base/triple-input";
   import { mapActions } from 'vuex';
 
@@ -58,7 +55,7 @@
       }
     },
     computed: {
-      coreCode() {
+      settingsCode() {
         return `Y=tf.reshape(X, [-1]+[layer_output for layer_output in [${this.settings.Shape}]]);
 Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
       }
@@ -67,8 +64,8 @@ Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
       ...mapActions({
         tutorialPointActivate:    'mod_tutorials/pointActivate',
       }),
-      saveSettings() {
-        this.applySettings();
+      saveSettings(tabName) {
+        this.applySettings(tabName);
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'})
       }
     }

@@ -324,7 +324,7 @@ const actions = {
       action: "getNetworkInputDim",
       value: prepareNetwork(elementList)
     };
-    return coreRequest(theData)
+    coreRequest(theData)
       .then((data)=> {
         //console.log('API_getInputDim', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
@@ -342,13 +342,29 @@ const actions = {
       value: prepareNetwork(elementList)
     };
     //console.log(JSON.stringify(theData));
-    return coreRequest(theData)
+    coreRequest(theData)
       .then((data)=> {
         //console.log('API_getOutputDim', data);
         if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
       })
       .catch((err)=> {
         console.error(err);
+      });
+  },
+  API_parse({dispatch, getters, rootGetters}, {path, ctx}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "Parse",
+      value: path
+    };
+    console.log('Parse send', JSON.stringify(theData));
+    return coreRequest(theData)
+      .then((data)=> {
+        console.log('Parse answer', data);
+        dispatch('mod_workspace/ADD_network', {network: data.network, ctx}, {root: true});
+      })
+      .catch((err)=> {
+        console.error('Parse answer', err);
       });
   },
 };

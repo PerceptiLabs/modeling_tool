@@ -1,5 +1,9 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+  )
     template(slot="Settings-content")
       .settings-layer_section
         .form_row
@@ -51,10 +55,7 @@
             input(type="number")
 
     template(slot="Code-content")
-      settings-code(:the-code="coreCode")
-
-    template(slot="action")
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
+      settings-code(v-model="coreCode")
 
 </template>
 
@@ -76,9 +77,6 @@ export default {
         items: ['Data_1', 'Data_2', 'Data_3', 'Data_4', 'Data_5',]
       }
     }
-  },
-  methods: {
-
   }
 }
 </script>

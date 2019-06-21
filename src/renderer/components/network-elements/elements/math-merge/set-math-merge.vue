@@ -1,5 +1,9 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+  )
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.operation")
@@ -25,10 +29,8 @@
               base-radio(group-name="group" value-input="Div" v-model="settings.Type")
                 span Division
     template(slot="Code-content")
-      settings-code(:the-code="coreCode")
+      settings-code(v-model="coreCode")
 
-    template(slot="action")
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
 </template>
 
 <script>
@@ -51,13 +53,8 @@ export default {
       }
     }
   },
-  methods: {
-    // showVal(v) {
-    //   console.log(v);
-    // }
-  },
   computed: {
-    coreCode() {
+    settingsCode() {
       switch (this.settings.Type) {
         case 'Add':
           return `for i in range(0,len(list(X.values())),2):

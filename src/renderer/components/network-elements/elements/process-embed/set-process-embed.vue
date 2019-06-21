@@ -1,10 +1,11 @@
 <template lang="pug">
-  net-base-settings(:tab-set="tabs")
+  net-base-settings(
+    :tab-set="tabs"
+    @press-apply="saveSettings($event)"
+  )
     template(slot="Code-content")
-      settings-code(:the-code="coreCode")
+      settings-code(v-model="coreCode")
 
-    template(slot="action")
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
 </template>
 
 <script>
@@ -19,7 +20,7 @@ export default {
     }
   },
   computed: {
-    coreCode() {
+    settingsCode() {
       return `words = tf.string_split(X);
 vocab_size=words.get_shape().as_list()[0];
 embed_size=10;

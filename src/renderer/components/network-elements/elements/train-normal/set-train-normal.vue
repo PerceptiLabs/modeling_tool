@@ -1,5 +1,9 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+  )
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
@@ -64,10 +68,7 @@
             input(type="number" v-model="settings.Learning_rate")
 
     template(slot="Code-content")
-      settings-code(:the-code="coreCode")
-
-    template(slot="action")
-      button.btn.btn--primary(type="button" @click="saveSettings") Apply
+      settings-code(v-model="coreCode")
 
 </template>
 
@@ -212,7 +213,7 @@ f1=tf.contrib.metrics.f1_score(X['${this.labels}'],X['${this.network_output}'])[
 auc=tf.metrics.auc(labels=X['${this.labels}'],predictions=X['${this.network_output}'],curve='ROC')[0];`
       return accuracy
     },
-    coreCode() {
+    settingsCode() {
       return {
         "Loss": this.codeLoss,
         "Optimizer": this.codeOptimizer,

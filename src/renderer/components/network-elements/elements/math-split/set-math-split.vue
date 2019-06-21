@@ -1,5 +1,9 @@
 <template lang="pug">
-  net-base-settings
+  net-base-settings(
+    :first-tab="currentEl.layerSettingsTabName"
+    @press-apply="saveSettings($event)"
+    @press-update="updateCode"
+  )
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.chooseAxis")
@@ -16,16 +20,12 @@
               )
             input(type="number" v-model="settings.val")
     template(slot="Code-content")
-      settings-code(:the-code="coreCode")
-
-    template(slot="action")
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
+      settings-code(v-model="coreCode")
 
 </template>
 
 <script>
 import mixinSet       from '@/core/mixins/net-element-settings.js';
-//import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
 import TripleInput    from "@/components/base/triple-input";
 
 export default {
