@@ -28,13 +28,17 @@
 </template>
 
 <script>
-import BaseSwitcher     from "@/components/different/switcher.vue";
-import TextEditable       from '@/components/base/text-editable.vue'
+import BaseSwitcher      from "@/components/different/switcher.vue";
+import TextEditable      from '@/components/base/text-editable.vue'
+import {requestCloudApi} from '@/core/apiCloud.js'
 
 
 export default {
   name: "UserProfile",
   components: {BaseSwitcher, TextEditable},
+  mounted() {
+    //this.requestGetUserInfo();
+  },
   data() {
     return {
       switcherData: ['User', 'History'],
@@ -53,6 +57,7 @@ export default {
     // }
   },
   methods: {
+    requestCloudApi,
     editfirstName(newVal) {
       this.user.firstName = newVal
     },
@@ -61,6 +66,15 @@ export default {
     },
     editemail(newVal) {
       this.user.email = newVal
+    },
+    requestGetUserInfo() {
+      this.requestCloudApi('get', 'Customer/Profile')
+        .then((response)=>{
+          console.log(response)
+        })
+        .catch((error)=>{
+          this.$store.dispatch('globalView/GP_infoPopup', error);
+        })
     },
   }
 }
