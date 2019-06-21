@@ -191,6 +191,7 @@
       },
       /*Header actions*/
       appClose() {
+        console.log('appClose');
         this.$store.dispatch('mod_events/EVENT_closeApp');
       },
       appMinimize() {
@@ -252,11 +253,11 @@
         if(this.openApp) this.$store.commit('mod_events/set_saveNetworkAs');
       },
       HC_logOut() {
-        if(this.isLogin) this.logOut;
+        if(this.isLogin) this.logOut();
       },
       HC_closeApp(e) {
         e.preventDefault();
-        this.appClose;
+        this.appClose();
       },
       HC_selectAll() {
         this.$store.dispatch('mod_workspace/SET_elementSelectAll');

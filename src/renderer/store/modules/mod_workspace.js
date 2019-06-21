@@ -116,6 +116,7 @@ const mutations = {
     getters.GET_currentNetwork.networkName = value
   },
   add_network (state, {network, ctx}) {
+    //console.log(JSON.stringify(network));
     let workspace = state.workspaceContent;
     let newNetwork = {};
     const defaultNetwork = {

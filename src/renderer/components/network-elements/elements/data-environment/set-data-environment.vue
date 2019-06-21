@@ -35,8 +35,6 @@
             :chart-data="imgData"
           )
 
-    template(slot="action")
-      button.btn.btn--primary(type="button" @click="applySettings") Apply
 </template>
 
 <script>

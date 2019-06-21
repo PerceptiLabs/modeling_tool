@@ -41,12 +41,14 @@
     template(slot="Cloud-content")
       settings-cloud
 
-    template(slot="action")
+    template(slot="Computer-action")
       button.btn.btn--primary.tutorial-relative(type="button"
         v-show="settings.accessProperties.Path.length"
         @click="saveSettings"
         id="tutorial_button-apply"
       ) Apply
+    template(slot="Cloud-action")
+      span
 
 </template>
 
