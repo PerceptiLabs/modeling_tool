@@ -4,7 +4,7 @@
       :tab-set-data="switcherData"
     )
       template(slot="firstTab")
-        dl.user-info_list
+        dl.user-info_list(v-if="user")
           dt.user-info_name First name
           dd.user-info_data
             text-editable(
@@ -18,12 +18,30 @@
               @change-title="editlastName"
             )
           dt.user-info_name Email
-          dd.user-info_data {{ user.email }}
+          dd.user-info_data(@dblclick="editEmail") {{ user.email }}
+
+          form.user-info_edit-email(v-show="showEmailEditFields")
+            .form_holder
+              input(type="email" placeholder="New email"
+                v-model="newEmail"
+                name="new email"
+                v-validate="'required|email'"
+                ref="newEmail"
+              )
+              p.text-error(v-show="errors.has('new email') && newEmail") {{ errors.first('new email') }}
+
+            .form_holder
+              input(type="email" placeholder="Confirm new email"
+                v-model="confirmNewEmail"
+                name="confirm new email"
+                v-validate="'required|confirmed:newEmail'"
+              )
+              p.text-error(v-show="errors.has('confirm new email') && confirmNewEmail") {{ errors.first('confirm new email') }}
 
       template(slot="secondTab")
         p secondTab
     .sidebar_action
-      button.btn.btn--primary(type="button") Save
+      button.btn.btn--primary(type="button" @click="requestChangeUserInfo") Save
 
 </template>
 
@@ -37,16 +55,15 @@ export default {
   name: "UserProfile",
   components: {BaseSwitcher, TextEditable},
   mounted() {
-    //this.requestGetUserInfo();
+    if(!this.user) this.requestGetUserInfo();
   },
   data() {
     return {
       switcherData: ['User', 'History'],
-      user: {
-        firstName: 'John',
-        lastName: 'Doe',
-        email: 'email@mail.com',
-      }
+      user: JSON.parse(localStorage.getItem('user')),
+      newEmail: '',
+      confirmNewEmail: '',
+      showEmailEditFields: false
     }
   },
   computed: {
@@ -64,16 +81,70 @@ export default {
     editlastName(newVal) {
       this.user.lastName = newVal
     },
-    editemail(newVal) {
-      this.user.email = newVal
+    editEmail() {
+      this.showEmailEditFields = !this.showEmailEditFields;
+      this.newEmail = '';
+      this.confirmNewEmail = '';
     },
     requestGetUserInfo() {
       this.requestCloudApi('get', 'Customer/Profile')
-        .then((response)=>{
-          console.log(response)
+        .then((response) => {
+          this.user = {
+            firstName: response.data.data.firstName,
+            lastName: response.data.data.lastName,
+            email: response.data.data.email,
+          };
+          localStorage.setItem('user', JSON.stringify(this.user));
         })
         .catch((error)=>{
           this.$store.dispatch('globalView/GP_infoPopup', error);
+        })
+    },
+    requestChangeUserInfo() {
+      let oldUserDate = JSON.parse(localStorage.getItem('user'));
+
+      if(oldUserDate.firstName !== this.user.firstName || oldUserDate.lastName !== this.user.lastName) {
+        localStorage.setItem('user', JSON.stringify(this.user));
+        this.requestCloudApi('post', 'Customer/Profile', this.user)
+          .then((response) => {
+            this.$store.dispatch('globalView/GP_infoPopup', 'Your information has been changed');
+          })
+          .catch((error) => {
+            this.$store.dispatch('globalView/GP_infoPopup', error);
+          })
+      }
+      else {
+        this.validateNewEmail()
+      }
+    },
+    requestChangeUserEmail(newEmailInfo) {
+      this.requestCloudApi('post', 'Customer/ChangeEmail', newEmailInfo)
+        .then((response) => {
+          console.log(response)
+        })
+        .catch((error) => {
+          this.$store.dispatch('globalView/GP_infoPopup', error);
+        })
+    },
+    validateNewEmail() {
+      let newEmailInfo = {
+        oldEmail: this.user.email,
+        newEmail: this.newEmail,
+        newEmailConfirmation: this.confirmNewEmail
+      };
+      this.$validator.validateAll()
+        .then((result) => {
+          if (result) {
+            this.requestChangeUserEmail(newEmailInfo);
+            this.showEmailEditFields = false;
+            this.$store.dispatch('globalView/GP_infoPopup', `A confirmation has been sent to your old mail ${this.user.email}. Please follow the link and your mail will be changed. Otherwise, your old mail will act`);
+            this.$store.dispatch('mod_events/EVENT_logOut', this);
+            return;
+          }
+          //error func
+        })
+        .catch((error)=>{
+          console.log('error', error);
         })
     },
   }
@@ -99,5 +170,8 @@ export default {
   }
   .sidebar_action {
     text-align: center;
+  }
+  .user-info_edit-email {
+    width: 100%;
   }
 </style>

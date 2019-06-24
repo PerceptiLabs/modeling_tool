@@ -220,7 +220,7 @@
         this.$store.commit('globalView/SET_appPath', path);
       },
       checkToken() {
-        let localUserToken = localStorage.getItem('userToken');
+        let localUserToken = localStorage.getItem('userId');
         if(localUserToken) {
           this.$store.dispatch('globalView/SET_userToken', localUserToken);
           if(this.$router.history.current.name === 'login') {

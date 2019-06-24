@@ -44,6 +44,7 @@ export default {
     },
     closeEditMode() {
       this.editMode = false;
+      if(!this.inputText) this.inputText = this.textTitle;
       this.$emit('change-title', this.inputText)
     }
   }

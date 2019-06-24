@@ -79,7 +79,8 @@ export default {
           let token = parseJwt(response.data.data.token);
           this.$store.dispatch('globalView/SET_userToken', token.unique_name);
           if(this.saveToken) {
-            localStorage.setItem('userToken', token.unique_name);
+            localStorage.setItem('userId', token.unique_name);
+            localStorage.setItem('userToken', response.data.data.token);
           }
           this.loginUser()
         })

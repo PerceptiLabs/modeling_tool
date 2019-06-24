@@ -53,6 +53,8 @@ const actions = {
   },
   EVENT_logOut({dispatch}, ctx) {
     localStorage.removeItem('userToken');
+    localStorage.removeItem('userId');
+    localStorage.removeItem('user');
     dispatch('globalView/SET_userToken', '', {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
     ctx.$router.replace({name: 'login'});
