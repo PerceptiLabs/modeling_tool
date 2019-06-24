@@ -13,6 +13,7 @@ function prepareNetwork(elementList) {
         Name: el.layerName,
         Type: el.componentName,
         Properties: el.layerSettings,
+        checkpoint: el.checkpoint,
         //Code: el.coreCode,
         backward_connections: el.connectionIn,
         forward_connections: el.connectionOut
@@ -22,6 +23,7 @@ function prepareNetwork(elementList) {
       layers[el.layerId] = {
         Name: el.layerName,
         Type: el.componentName,
+        checkpoint: el.checkpoint,
         //Properties: el.layerSettings,
         Code: el.layerCode,
         backward_connections: el.connectionIn,
@@ -324,6 +326,7 @@ const actions = {
       action: "getNetworkInputDim",
       value: prepareNetwork(elementList)
     };
+    console.log('SEND getNetworkInputDim', theData);
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_getInputDim', data);
@@ -341,7 +344,7 @@ const actions = {
       action: "getNetworkOutputDim",
       value: prepareNetwork(elementList)
     };
-    //console.log(JSON.stringify(theData));
+    console.log('SEND getNetworkInputDim', theData);
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_getOutputDim', data);
@@ -357,10 +360,10 @@ const actions = {
       action: "Parse",
       value: path
     };
-    console.log('Parse send', JSON.stringify(theData));
+    //console.log('Parse send', JSON.stringify(theData));
     return coreRequest(theData)
       .then((data)=> {
-        console.log('Parse answer', data);
+        //console.log('Parse answer', data);
         dispatch('mod_workspace/ADD_network', {network: data.network, ctx}, {root: true});
       })
       .catch((err)=> {

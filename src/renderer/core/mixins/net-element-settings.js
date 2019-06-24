@@ -16,16 +16,13 @@ const netElementSettings = {
     }
   },
   mounted() {
-    if(!this.currentEl.layerSettingsTabName) {
+    if(!this.currentEl.layerCode) {
       this.updateCode();
     }
     else {
       this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
       this.coreCode = this.currentEl.layerCode
     }
-    // if(typeof(this.currentEl.layerSettings) !== 'string') {
-    //   this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
-    // }
     this.$store.dispatch('mod_api/API_getInputDim');
   },
   computed: {
