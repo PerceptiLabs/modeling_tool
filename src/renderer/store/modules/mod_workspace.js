@@ -119,6 +119,7 @@ const mutations = {
     //console.log(JSON.stringify(network));
     let workspace = state.workspaceContent;
     let newNetwork = {};
+    //-- DEFAULT DATA
     const defaultNetwork = {
       networkName: 'New_Network',
       networkID: '',
@@ -142,23 +143,33 @@ const mutations = {
         showCharts: 0
       }
     };
+    //--
     network === undefined
       ? newNetwork = defaultNetwork
       : newNetwork = network;
 
     newNetwork.networkMeta = defaultMeta;
+    //-- Create unic ID
     if(findNetId(newNetwork, workspace) || !newNetwork.networkID) {
       newNetwork.networkID = generateID();
     }
-
+    //-- Check and create the position
+    createPositionElements(newNetwork.networkElementList);
+    //-- Add to workspace
     workspace.push(JSON.parse(JSON.stringify(newNetwork)));
+    //-- Open last Network
     state.currentNetwork = workspace.length - 1;
+    //-- Go to app page
     if(ctx.$router.history.current.name !== 'app') {
       ctx.$router.replace({name: 'app'});
     }
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
       return (indexId < 0) ? false : true
+    }
+    function createPositionElements(list) {
+      //if(list[0].layerMeta.position.top) return;
+
     }
   },
   DELETE_network(state, index) {
@@ -810,6 +821,7 @@ const createNetElement = function (event) {
         left: 0,
       }
     },
+    checkpoint: [],
     componentName: event.target.dataset.component,
     connectionOut: [],
     connectionIn: [],
