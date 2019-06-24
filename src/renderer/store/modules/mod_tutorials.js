@@ -32,7 +32,7 @@ const state = {
           ],
           status:'first',
           content: `<div class="text-block">When working with AI, you can divide the process into 2 overarching steps:</div>
-                    <p>1) Knowing your data</p> 
+                    <p>1) Knowing your data</p>
                     <p>2) Building your model</p>`
         }
       ]
@@ -46,13 +46,13 @@ const state = {
           content: `In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset`,
           actions: [
             {
-              tooltip: 'Data > Data...',
+              tooltip: 'Click to Data...',
               position: 'right',
               id: 'tutorial_data',
               status: 'disabled'
             },
             {
-              tooltip: 'Data > Data...',
+              tooltip: 'Drag & drop Data...',
               position: 'right',
               id: 'tutorial_data-data',
               dynamic_id: 'tutorial_data-data-1',
@@ -93,7 +93,7 @@ const state = {
             },
             {
               status:'disabled',
-              content: 'Every input image has been flattened out to a 784x1 array.'
+              content: 'Every input image inside the mnist_input.npy file...'
             }
           ]
         },
@@ -102,13 +102,13 @@ const state = {
           content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
           actions: [
             {
-              tooltip: 'Data > Data...',
+              tooltip: 'Click to Data...',
               position: 'right',
               id: 'tutorial_data',
               status: 'disabled'
             },
             {
-              tooltip: 'Data > Data...',
+              tooltip: 'Drag & drop Data...',
               position: 'right',
               id: 'tutorial_data-data',
               dynamic_id: 'tutorial_data-data-2',
@@ -150,13 +150,13 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > Connect input > Operation settings  ',
           actions: [
             {
-              tooltip: 'Processing > Reshape...',
+              tooltip: 'Click to Processing...',
               position: 'right',
               id: 'tutorial_processing',
               status: 'disabled'
             },
             {
-              tooltip: 'Processing > Reshape...',
+              tooltip: 'Drag & drop Reshape...',
               position: 'right',
               id: 'tutorial_process-reshape',
               dynamic_id: 'tutorial_process-reshape-1',
@@ -266,13 +266,13 @@ const state = {
           ],
           actions: [
             {
-              tooltip: 'Deep Learning > Convolution...',
+              tooltip: 'Click to Deep Learning...',
               position: 'right',
               id: 'tutorial_deep-learning', 
               status: 'disabled'
             },
             {
-              tooltip: 'Deep Learning > Convolution...',
+              tooltip: 'Drag & drop Convolution...',
               position: 'right',
               id: 'tutorial_convolution',
               dynamic_id: 'tutorial_convolution-1',
@@ -347,13 +347,13 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Fully Connected</div> > Connect input > Set neurons',
           actions: [
             {
-              tooltip: 'Deep Learning > Fully Connected...',
+              tooltip: 'Click to Deep Learning...',
               position: 'right',
               id: 'tutorial_deep-learning', 
               status: 'disabled'
             },
             {
-              tooltip: 'Deep Learning > Fully Connected...',
+              tooltip: 'Drag & drop Fully Connected...',
               position: 'right',
               id: 'tutorial_fully-connected',
               dynamic_id: 'tutorial_fully-connected-1',
@@ -424,13 +424,13 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">One Hot</div> > Connect input > Set classes',
           actions: [
             {
-              tooltip: 'Processing > One Hot...',
+              tooltip: 'Click to Processing...',
               position: 'right',
               id: 'tutorial_processing', 
               status: 'disabled'
             },
             {
-              tooltip: 'Processing > One Hot...',
+              tooltip: 'Drag & drop One Hot...',
               position: 'right',
               id: 'tutorial_one-hot',
               dynamic_id: 'tutorial_one-hot-1',
@@ -499,13 +499,13 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Training</div> > <div class="marker">Normal</div> > Connect input > Define parameters',
           actions: [
             {
-              tooltip: 'Training > Normal ...',
+              tooltip: 'Click to Training...',
               position: 'right',
               id: 'tutorial_training', 
               status: 'disabled'
             },
             {
-              tooltip: 'Training > Normal ...',
+              tooltip: 'Drag & drop Normal...',
               position: 'right',
               id: 'tutorial_training-normal',
               dynamic_id: 'tutorial_training-normal-1',

@@ -60,7 +60,7 @@
           p.text-error(v-show="errors.has('terms')") {{ errors.first('terms') }}
 
         .form_holder
-          button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading") Register
+          button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading || !terms") Register
         .form_holder
           router-link(:to="{name: 'login'}").btn.btn--link Already Have Account
 </template>
@@ -112,7 +112,7 @@ export default {
       this.$store.commit('mod_login/SET_showLoader', true);
       this.requestCloudApi('post', 'Customer/CreateGuest', this.user)
         .then((response)=>{
-          this.$store.dispatch('globalView/GP_infoPopup', 'Authorization success');
+          this.$store.dispatch('globalView/GP_infoPopup', 'A confirmation email has been sent to your email. Follow the link to complete the registration.');
           this.$router.replace('/login');
         })
         .catch((error)=>{
