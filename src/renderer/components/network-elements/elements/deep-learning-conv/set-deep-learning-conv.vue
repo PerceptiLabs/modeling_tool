@@ -200,7 +200,7 @@ export default {
     }
   },
   mounted() {
-   if(this.isTutorialMode) this.$refs.pathSize.focus()
+    this.focusFirstTutorialField();
   },
   computed: {
     ...mapGetters({
@@ -305,6 +305,11 @@ node=node+b;`;
     saveSettings() {
       this.applySettings();
       this.tutorialPointActivate({way:'next', validation: 'tutorial_patch-size'})
+    },
+    focusFirstTutorialField() {
+      setTimeout(()=> {
+        if (this.isTutorialMode) this.$refs.pathSize.focus()
+      }, 100)
     }
   }
 }
