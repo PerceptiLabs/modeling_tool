@@ -20,15 +20,14 @@
 </template>
 
 <script>
-import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
-import chartMixin                     from "@/core/mixins/charts.js";
+import {pathWebWorkers} from '@/core/constants.js'
+import chartMixin       from "@/core/mixins/charts.js";
 
 export default {
   name: "ChartHeatmap",
   mixins: [chartMixin],
   data() {
     return {
-      chartSpinner,
       defaultModel: {
         tooltip: {},
         grid: {

@@ -23,9 +23,9 @@
 </template>
 
 <script>
-  import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
-  import chartMixin                     from "@/core/mixins/charts.js";
-  import RequestSpinner                 from '@/components/different/request-spinner.vue'
+  import {pathWebWorkers}     from '@/core/constants.js'
+  import chartMixin           from "@/core/mixins/charts.js";
+  import RequestSpinner       from '@/components/different/request-spinner.vue'
   import StartTrainingSpinner from "../different/start-training-spinner";
 
   export default {
@@ -37,7 +37,6 @@
     },
     data() {
       return {
-        chartSpinner,
         defaultModel: {
           tooltip: {},
           toolbox: {
