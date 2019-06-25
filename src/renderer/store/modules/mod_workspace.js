@@ -168,8 +168,58 @@ const mutations = {
       return (indexId < 0) ? false : true
     }
     function createPositionElements(list) {
-      //if(list[0].layerMeta.position.top) return;
+      if(!list || Object.values(list)[0].layerMeta.position.top !== null) {
+        return;
+      }
+      else {
+        console.log('else');
+        //let elList = JSON.parse(JSON.stringify(Object.values(list)));
+        let elList = Object.values(list);
+        const elGap = 60;
+        const widthEl = 60;
+        let arrLeft = [];
+        let arrTop = [];
+        elList[0].layerMeta.position = {
+          top: 1,
+          left: 1,
+        };
+        elList.forEach((el)=> {
+          if(el.connectionOut.length) {
+            let outLength = el.connectionOut.length;
+            el.connectionOut.forEach((elId, i)=> {
+              if(!list[elId].layerMeta.position.top) {
+                const top = el.layerMeta.position.top + (elGap - ((outLength / 2) * (elGap + widthEl)) + ((elGap + widthEl) * i));
+                const left = el.layerMeta.position.left + elGap + widthEl;
 
+
+
+                list[elId].layerMeta.position.top = top;
+                arrTop.push(top);
+                list[elId].layerMeta.position.left = left;
+                arrLeft.push(left);
+              }
+            })
+          };
+        });
+        const netHeight = (Math.max(...arrTop) - Math.min(...arrTop));
+        const netWidth = (Math.max(...arrLeft) - Math.min(...arrLeft));
+        const correctionTop = (document.body.clientHeight /2) - (netHeight/2);
+        const correctionLeft = (document.body.clientWidth /2) - (netWidth/2) - 300;
+
+        elList.forEach((el)=> {
+          el.layerMeta.position.top = el.layerMeta.position.top + correctionTop;
+          el.layerMeta.position.left = el.layerMeta.position.left + correctionLeft;
+        })
+      }
+    };
+    function checkingPositionExist(currentPos, checkingList, indent) {
+      checkingList.forEach((el)=> {
+
+      })
+      // if() {
+      //
+      // }
+      // else return currentPos
     }
   },
   DELETE_network(state, index) {
