@@ -213,8 +213,10 @@ const mutations = {
 
         const netHeight = (Math.max(...arrTop) - Math.min(...arrTop));
         const netWidth = (Math.max(...arrLeft) - Math.min(...arrLeft));
-        const correctionTop = (document.body.clientHeight /2) - (netHeight/2);
-        const correctionLeft = (document.body.clientWidth /2) - (netWidth/2) - 300;
+        const corrTop = (document.body.clientHeight /2) - (netHeight/2);
+        const corrLeft = (document.body.clientWidth /2) - (netWidth/2) - 300;
+        const correctionTop = corrTop > 0 ? corrTop : elGap;
+        const correctionLeft = corrLeft > 0 ? corrLeft : elGap;
 
         elList.forEach((el)=> {
           el.layerMeta.position.top = el.layerMeta.position.top + correctionTop;

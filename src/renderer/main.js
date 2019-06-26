@@ -19,7 +19,7 @@ import BaseSelect       from '@/components/base/select.vue'
 import BaseRange        from '@/components/base/range.vue'
 
 //- Global directives
-import {mask} from 'vue-the-mask'
+import {mask} from 'vue-the-mask' // page registration dont use now
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
