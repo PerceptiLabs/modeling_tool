@@ -17,6 +17,7 @@ const state = {
     showNetResult: false,
     showCoreSideSettings: false,
     showInfoPopup: false,
+    showWorkspaceBeforeImport: false,
   }
 };
 const getters = {
@@ -62,6 +63,9 @@ const mutations = {
   },
   GP_showCoreSideSettings (state, value) {
     state.globalPopup.showCoreSideSettings = value
+  },
+  GP_showWorkspaceBeforeImport (state, value) {
+    state.globalPopup.showWorkspaceBeforeImport = value
   },
   gp_infoPopup(state, value) {
     state.globalPopup.showInfoPopup = value

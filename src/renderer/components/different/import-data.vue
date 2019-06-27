@@ -32,8 +32,6 @@
 <script>
 import BaseSwitcher     from "@/components/different/switcher.vue";
 import BaseAccordion    from "@/components/base/accordion.vue";
-import {openLoadDialog} from '@/core/helpers.js'
-
 
 export default {
   name: "ImportData",
@@ -78,26 +76,26 @@ export default {
     }
   },
   methods: {
-    openLoadDialog,
     loadTFFiles() {
-      this.disabledBtn = true;
-      let opt = {
-        title:"Load TensorFlow Model",
-        properties: ['openFile', 'multiSelections'],
-        filters: [
-          {name: 'All', extensions: ['pb', 'pbtxt', 'ckpt', 'pb.*', 'pbtxt.*', 'ckpt.*']},
-        ]
-      };
-      this.openLoadDialog(opt)
-        .then((pathArr)=>{
-          this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
-          return this.$store.dispatch('mod_api/API_parse', {path: pathArr, ctx: this});
-        })
-        .then(()=>{
-          this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
-          this.disabledBtn = false
-        })
-        .catch(()=> this.disabledBtn = false)
+      this.$store.commit('globalView/GP_showWorkspaceBeforeImport', true);
+      // this.disabledBtn = true;
+      // let opt = {
+      //   title:"Load TensorFlow Model",
+      //   properties: ['openFile', 'multiSelections'],
+      //   filters: [
+      //     {name: 'All', extensions: ['pb', 'pbtxt', 'ckpt', 'pb.*', 'pbtxt.*', 'ckpt.*']},
+      //   ]
+      // };
+      // this.openLoadDialog(opt)
+      //   .then((pathArr)=>{
+      //     this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
+      //     return this.$store.dispatch('mod_api/API_parse', {path: pathArr, ctx: this});
+      //   })
+      //   .then(()=>{
+      //     this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
+      //     this.disabledBtn = false
+      //   })
+      //   .catch(()=> this.disabledBtn = false)
     },
     clickQ() {
 

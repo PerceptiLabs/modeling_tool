@@ -38,6 +38,7 @@
         general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
+        workspace-before-import(v-if="showWorkspaceBeforeImport")
 
 
     .workspace_meta
