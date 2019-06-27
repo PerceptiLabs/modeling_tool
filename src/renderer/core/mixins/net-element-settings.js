@@ -16,6 +16,7 @@ const netElementSettings = {
     }
   },
   mounted() {
+    //console.log(this.currentEl.layerCode);
     if(!this.currentEl.layerCode) {
       this.updateCode();
     }

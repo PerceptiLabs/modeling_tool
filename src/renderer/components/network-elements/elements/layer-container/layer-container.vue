@@ -27,6 +27,7 @@
 <script>
   import BaseNetEl    from '@/components/network-elements/net-base-element/net-base-element.vue';
   import ViewEl       from './view-layer-container.vue';
+  import { widthElement } from '@/core/constants.js'
 
   export default {
     name: 'LayerContainer',
@@ -55,7 +56,7 @@
         const minLeft = Math.min(...arrLeft);
         const minTop = Math.min(...arrTop);
         const padding = 30;
-        const widthEl = 60;
+        const widthEl = widthElement;
         return {
           left: minLeft - padding + 'px',
           width: Math.max(...arrLeft) - minLeft + widthEl + padding*2 + 'px',

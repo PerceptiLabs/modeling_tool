@@ -249,7 +249,7 @@ const actions = {
     //console.log(theData);
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_exportData answer', data);
+        //console.log('API_exportData answer', data);
       })
       .catch((err) =>{
         console.error(err);
@@ -326,7 +326,7 @@ const actions = {
       action: "getNetworkInputDim",
       value: prepareNetwork(elementList)
     };
-    console.log('SEND getNetworkInputDim', theData);
+    //console.log('SEND getNetworkInputDim', theData);
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_getInputDim', data);
@@ -344,7 +344,7 @@ const actions = {
       action: "getNetworkOutputDim",
       value: prepareNetwork(elementList)
     };
-    console.log('SEND getNetworkInputDim', theData);
+    //console.log('SEND getNetworkInputDim', theData);
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_getOutputDim', data);
@@ -363,7 +363,7 @@ const actions = {
     //console.log('Parse send', JSON.stringify(theData));
     return coreRequest(theData)
       .then((data)=> {
-        //console.log('Parse answer', data);
+        console.log('Parse answer', data);
         dispatch('mod_workspace/ADD_network', {network: data.network, ctx}, {root: true});
       })
       .catch((err)=> {

@@ -1,7 +1,10 @@
 const baseURL = 'https://quantumnet.azurewebsites.net/api/';
 
 const requestCloudApi = function (method, path, dataRequest) {
-  let headers = localStorage.getItem('userToken') ? {'authorization': 'Bearer ' + localStorage.getItem('userToken')} : '';
+  let headers = localStorage.getItem('userToken')
+    ? {'authorization': 'Bearer ' + localStorage.getItem('userToken')}
+    : '';
+
   return this.$http({
     method: method,
     url: baseURL + path,

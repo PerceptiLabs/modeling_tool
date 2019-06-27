@@ -10,6 +10,7 @@
     @contextmenu.stop.prevent="openContext($event)"
     )
     .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
+    .net-element_checkpoint-icon(v-if="showCheckpoint") t
     .net-element_btn(ref="BaseElement")
       slot
     //-
@@ -100,6 +101,9 @@ export default {
       currentSelectedEl:    'mod_workspace/GET_currentSelectedEl',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
     }),
+    showCheckpoint() {
+      return this.dataEl.checkpoint && this.dataEl.checkpoint.length ? true : false
+    },
     currentId() {
       return this.dataEl.layerId
     },
@@ -314,6 +318,13 @@ export default {
     transform: translateX(-50%);
     white-space: nowrap;
     background-color: rgba($bg-workspace, .5);
+  }
+  .net-element_checkpoint-icon {
+    position: absolute;
+    font-size: 1.4rem;
+    top: 2px;
+    right: 7px;
+    z-index: 4;
   }
   .net-element--hide-layer {
     opacity: 0;
