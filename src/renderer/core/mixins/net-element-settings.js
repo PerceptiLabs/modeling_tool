@@ -16,15 +16,16 @@ const netElementSettings = {
     }
   },
   mounted() {
-    //console.log(this.currentEl.layerCode);
-    if(!this.currentEl.layerCode) {
-      this.updateCode();
-    }
-    else {
-      this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
-      this.coreCode = this.currentEl.layerCode
-    }
-    this.$store.dispatch('mod_api/API_getInputDim');
+    this.$store.dispatch('mod_api/API_getInputDim')
+      .then(()=>{
+        if(!this.currentEl.layerCode) {
+          this.updateCode();
+        }
+        else {
+          this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
+          this.coreCode = this.currentEl.layerCode
+        }
+      })
   },
   computed: {
     userMode() {

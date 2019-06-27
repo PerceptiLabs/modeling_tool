@@ -1,6 +1,8 @@
 <template lang="pug">
   net-base-settings(
+    :layer-code="currentEl.layerCode.length"
     :first-tab="currentEl.layerSettingsTabName"
+    id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
     )
@@ -19,11 +21,6 @@
 
     template(slot="Code-content")
       settings-code(v-model="coreCode")
-
-    template(slot="Settings-action")
-      button#tutorial_button-apply.btn.btn--primary(type="button" @click="saveSettings('Settings')") Apply
-      button.btn.btn--dark-blue-rev(type="button" @click="updateCode") Update code
-
 
 </template>
 

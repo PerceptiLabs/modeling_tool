@@ -1,5 +1,6 @@
 <template lang="pug">
   net-base-settings(
+    :layer-code="currentEl.layerCode.length"
     :first-tab="currentEl.layerSettingsTabName"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
@@ -131,6 +132,9 @@ import { mapGetters, mapActions } from 'vuex';
 export default {
   name: 'SetDeepLearningConv',
   mixins: [mixinSet],
+  mounted() {
+    if(this.isTutorialMode) this.$refs.pathSize.focus()
+  },
   data() {
     return {
       settings: {
@@ -199,9 +203,6 @@ export default {
       },
     }
   },
-  mounted() {
-   if(this.isTutorialMode) this.$refs.pathSize.focus()
-  },
   computed: {
     ...mapGetters({
       isTutorialMode:   'mod_tutorials/getIstutorialMode',
@@ -211,6 +212,7 @@ export default {
       let activeFunc = '';
       let pooling = '';
       let switcherDim = calcSwitcher(this);
+      console.log(switcherDim);
       switch (switcherDim) {
         case '1D':
           dim = `shape=[${this.settings.Patch_size},${this.codeInputDim}[-1],${this.settings.Feature_maps}];
