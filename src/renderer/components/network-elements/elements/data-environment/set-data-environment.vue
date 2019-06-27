@@ -29,7 +29,7 @@
             :disabled="disabledBtn"
           ) Load
         .form_row
-          chart-switch.data-charts(
+          chart-switch.data-settings_chart(
             key="2"
             :disable-header="true"
             :chart-data="imgData"

@@ -1,9 +1,5 @@
 const chartsMixin = {
   props: {
-    chartLabel: {
-      type: String,
-      default: ''
-    },
     chartData: {
       type: [Object, Array],
       default: function () {
@@ -16,17 +12,13 @@ const chartsMixin = {
         return []
       }
     },
-    disableHeader: {
-      type: Boolean,
-      default: false
-    },
   },
   mounted() {
     if(this.isNotPie) {this.createWWorker();}
     this.sendDataToWWorker();
     if(this.isNotPicture) {
-      //this.$refs.chart.showLoading(this.chartSpinner);
       this.$refs.chart.resize();
+      if(this.customColor.length) this.applyCustomColor();
       //window.addEventListener("resize", this.chartResize, false);
     }
   },
@@ -44,18 +36,14 @@ const chartsMixin = {
     return {
       chartModel: {},
       chartModelBuffer: null,
-      fullView: false,
       wWorker: null,
-      showRequestSpinner: true
     }
   },
   computed: {
     isNeedWait() {
       return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
     },
-    headerOff() {
-      return this.$store.getters['mod_workspace/GET_testIsOpen'] || this.disableHeader;
-    },
+
     doRequest() {
       return this.$store.getters['mod_workspace/GET_networkDoRequest']
     },
@@ -93,9 +81,10 @@ const chartsMixin = {
     }
   },
   methods: {
-    toggleFullView() {
-      this.fullView = !this.fullView;
-      //this.$nextTick(() => this.$refs.chart.resize());
+    applyCustomColor() {
+      if (this.customColor.length) {
+        this.defaultModel.color = this.customColor;
+      }
     },
     drawChart(ev) {
       if(this.isNeedWait) this.chartModelBuffer = ev.data;

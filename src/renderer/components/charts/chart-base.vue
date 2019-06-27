@@ -1,40 +1,19 @@
 <template lang="pug">
-  .base-chart.data-charts(
-    ref="baseChart"
-    :class="{'full-view': fullView}"
-    )
-    .base-chart_head
-      .chart-head_title
-        h5.ellipsis {{ chartLabel }}
-      .chart-head_meta
-        button.btn.btn--link(type="button"
-          :class="{'text-primary': fullView}"
-          @click="toggleFullView"
-        )
-          i.icon.icon-full-screen-graph
-    .base-chart_main
-      request-spinner(:showSpinner="showRequestSpinner")
-        v-chart(
-          ref="chart"
-          :auto-resize="true"
-          :options="chartModel"
-          theme="quantum"
-        )
+  v-chart(
+    ref="chart"
+    :auto-resize="true"
+    :options="chartModel"
+    theme="quantum"
+  )
 </template>
 
 <script>
   import {pathWebWorkers}     from '@/core/constants.js'
   import chartMixin           from "@/core/mixins/charts.js";
-  import RequestSpinner       from '@/components/different/request-spinner.vue'
-  import StartTrainingSpinner from "../different/start-training-spinner";
 
   export default {
     name: "ChartBase",
     mixins: [chartMixin],
-    components: {StartTrainingSpinner, RequestSpinner},
-    created() {
-      this.applyCustomColor();
-    },
     data() {
       return {
         defaultModel: {
@@ -54,11 +33,6 @@
       }
     },
     methods: {
-      applyCustomColor() {
-        if (this.customColor.length) {
-          this.defaultModel.color = this.customColor;
-        }
-      },
       createWWorker() {
         this.wWorker = new Worker(`${pathWebWorkers}/calcChartBase.js`);
         this.wWorker.addEventListener('message', this.drawChart, false);
@@ -78,8 +52,5 @@
         });
       }
     },
-    watch: {
-
-    }
   }
 </script>
