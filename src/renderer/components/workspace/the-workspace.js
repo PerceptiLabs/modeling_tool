@@ -11,6 +11,7 @@ import NetworkField           from '@/components/network-field/network-field.vue
 import GeneralSettings        from "@/components/global-popups/workspace-general-settings.vue";
 import GeneralResult          from "@/components/global-popups/workspace-result";
 import SelectCoreSide         from "@/components/global-popups/workspace-core-side";
+import WorkspaceBeforeImport  from "@/components/global-popups/workspace-before-import";
 import TheStatistics          from "@/components/statistics/the-statistics.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
@@ -20,8 +21,7 @@ export default {
   name: 'WorkspaceContent',
   components: {
     NetworkField, TextEditable,
-    GeneralSettings, GeneralResult,
-    SelectCoreSide,
+    GeneralSettings, GeneralResult, SelectCoreSide, WorkspaceBeforeImport,
     TheStatistics, TheTesting, TheViewBox, StartTrainingSpinner
   },
   data() {
@@ -63,6 +63,9 @@ export default {
     },
     showGlobalResult() {
       return this.$store.state.globalView.globalPopup.showNetResult
+    },
+    showWorkspaceBeforeImport() {
+      return this.$store.state.globalView.globalPopup.showWorkspaceBeforeImport
     },
     hasStatistics() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkStatistics;
