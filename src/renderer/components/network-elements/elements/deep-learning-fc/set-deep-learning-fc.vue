@@ -43,7 +43,7 @@
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
   import NetBaseSettings  from '@/components/network-elements/net-base-settings/net-base-settings.vue';
-  import {mapActions}   from 'vuex';
+  import {mapGetters, mapMutations, mapActions}   from 'vuex';
 
   export default {
     name: 'SetDeepLearningFC',
@@ -73,6 +73,9 @@
       }
     },
     computed: {
+      ...mapGetters({
+        isTutorialMode: 'mod_tutorials/getIstutorialMode'
+      }),
       settingsCode() {
         let activeFunc = '';
         switch (this.settings.Activation_function) {
@@ -104,9 +107,24 @@ node=node+b;`;
         return `${fc}\n${activeFunc}`
       }
     },
+    watch: {
+      'settings.Neurons': {
+        handler() {
+          if(this.isTutorialMode) {
+            this.settings.Neurons = 10;
+            this.popupInfo("Please don't change this input when you are in the tutorial mode");
+          }
+        }
+      },
+    },
     methods: {
+      ...mapMutations({
+
+      }),
       ...mapActions({
-        tutorialPointActivate:    'mod_tutorials/pointActivate',
+        tutorialPointActivate:   'mod_tutorials/pointActivate',
+        popupInfo:               'globalView/GP_infoPopup',
+        setActiveTutorialPoint: 'mod_tutorials/prevPoint'
       }),
       saveSettings() {
         this.applySettings();
