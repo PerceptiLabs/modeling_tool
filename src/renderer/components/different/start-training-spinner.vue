@@ -5,6 +5,10 @@
 </template>
 
 <script>
+  import {mapMutations} from 'vuex';
+
+  let timer;
+  let serverTimeOut = 30000;
 
   export default {
     name: "StartTrainingSpinner",
@@ -14,11 +18,22 @@
         default: false
       }
     },
-    data() {
-      return {
-
-      }
+    methods: {
+      ...mapMutations({
+        set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner'
+      }),
     },
+    watch: {
+      showSpinner(newVal) {
+        clearTimeout(timer);
+        if(newVal) {
+          timer = setTimeout(()=> {
+            this.set_showTrainingSpinner(false);
+            clearTimeout(timer);
+          }, serverTimeOut)
+        }
+      }
+    }
   }
 </script>
 
