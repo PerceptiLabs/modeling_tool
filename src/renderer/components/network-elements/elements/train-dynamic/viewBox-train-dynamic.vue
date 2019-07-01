@@ -13,14 +13,14 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row
         .statistics-box_col
-          chart-base(
+          chart-switch(
             :chart-data="optionLine1"
           )
-          chart-base(
+          chart-switch(
             chart-label="Accuracy over all epochs"
             :chart-data="optionLine1"
           )
-          chart-base(
+          chart-switch(
             :chart-data="optionLine1"
           )
         .statistics-box_col
@@ -32,51 +32,48 @@
             :chart-data="option3d"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
-      chart-base(
+      chart-switch(
         chart-label="Accuracy during one epoch"
         :chart-data="optionLine1"
       )
-      chart-base(
+      chart-switch(
         chart-label="Accuracy over all epochs"
         :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
-      chart-base(
+      chart-switch(
         chart-label="Loss during one epoch"
         :chart-data="optionLine1"
       )
-      chart-base(
+      chart-switch(
         chart-label="Loss over all epochs"
         :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
-      chart-base(
+      chart-switch(
         chart-label="F1 during one epoch"
         :chart-data="optionLine1"
       )
-      chart-base(
+      chart-switch(
         chart-label="F1 over all epochs"
         :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Precision & Recall'")
-      chart-base(
+      chart-switch(
         :chart-data="optionLine1"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'ROC'")
-      chart-base(
+      chart-switch(
         :chart-data="optionLine1"
       )
 </template>
 
 <script>
-  import ChartBase    from "@/components/charts/chart-base";
-  import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
-  import ChartD3      from "@/components/charts/chart-3d.vue";
-  import data3d       from "@/components/charts/3d.js";
+  import ChartSwitch    from "@/components/charts/chart-switch";
 
   export default {
     name: "ViewBoxTrainDynamic",
-    components: {ChartBase, ChartHeatmap, ChartD3},
+    components: {ChartSwitch},
     data() {
       return {
         currentTab: 'Prediction',

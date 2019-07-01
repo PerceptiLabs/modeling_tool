@@ -1,15 +1,5 @@
 <template lang="pug">
-  .base-chart(:class="{'full-view': fullView}")
-    .base-chart_head(v-if="!headerOff")
-      .chart-head_title
-        h5.ellipsis {{ chartLabel }}
-      .chart-head_meta
-        button.btn.btn--link(type="button"
-        :class="{'text-primary': fullView}"
-        @click="toggleFullView")
-          i.icon.icon-full-screen-graph
-    .base-chart_main(:class="{'invisible': blinkCanv}")
-      canvas.chart-img(ref="canvas")
+  canvas.chart-img(ref="canvas")
 </template>
 
 <script>
@@ -68,12 +58,6 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
-  .base-chart_main {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background-color: $bg-workspace;
-  }
   .chart-img {
     object-fit: contain;
     width: 100%;

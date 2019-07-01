@@ -1242,7 +1242,6 @@ const actions = {
       if(elements.length > 0) {
         elements.forEach(function (element, index) {
           element.addEventListener('mouseenter', function (event) {
-            console.log(getters.getHoverInfo[index].id);
             dispatch('createTooltip', {id: getters.getHoverInfo[index].id, tooltip: getters.getHoverInfo[index].tooltip});
           });
           element.addEventListener('mouseleave', function (event) {

@@ -14,26 +14,26 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output'")
       .statistics-box_row
         .statistics-box_col(v-if="!testIsOpen")
-          chart-heatmap(
+          chart-switch(
             key="1"
             chart-label="Weights"
             :chart-data="chartData['Weights&Output'].Weights"
           )
         .statistics-box_col
-          chart-picture(
+          chart-switch(
             key="2"
             chart-label="Output"
             :chart-data="chartData['Weights&Output'].Output"
           )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bias'")
       .statistics-box_row
-        chart-base(
+        chart-switch(
           key="3"
           chart-label="Bias"
           :chart-data="chartData.Bias.Bias"
         )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
-      chart-base(
+      chart-switch(
         key="4"
         chart-label="Bias"
         :chart-data="chartData.Gradients.Gradients"
@@ -42,13 +42,11 @@
 </template>
 
 <script>
-  import ChartBase    from "@/components/charts/chart-base";
-  import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
-  import ChartPicture from "@/components/charts/chart-picture.vue";
+  import ChartSwitch    from "@/components/charts/chart-switch";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxDeepLearningDeconv",
-    components: {ChartBase, ChartHeatmap, ChartPicture},
+    components: {ChartSwitch},
     mixins: [viewBoxMixin],
     data() {
       return {

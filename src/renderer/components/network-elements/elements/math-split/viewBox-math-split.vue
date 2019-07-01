@@ -1,18 +1,18 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col
-      chart-base(
+      chart-switch(
         chart-label="Output"
         :chart-data="optionLine1"
       )
 </template>
 
 <script>
-  import ChartBase from "@/components/charts/chart-base";
+  import ChartSwitch from "@/components/charts/chart-switch";
 
   export default {
     name: "ViewBoxMathSplit",
-    components: {ChartBase},
+    components: {ChartSwitch},
     data() {
       return {
         optionLine1: null,

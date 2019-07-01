@@ -1,50 +1,28 @@
 <template lang="pug">
-  .request-loader-wrapper
-    .request-loader-wrapper_background-box(v-if="showSpinner")
-      .background-box_spinner
-    slot
+  .request-loader-wrapper_background-box
+    .background-box_spinner
 </template>
 
 <script>
 
 export default {
   name: "RequestSpinner",
-  props: {
-    showSpinner: {
-      type: Boolean,
-      default: true
-    }
-  },
-  data() {
-    return {
-
-    }
-  },
-  methods: {
-
-  }
 }
 </script>
 
 <style lang="scss" scoped>
   @import "../../scss/base";
-  .request-loader-wrapper{
-    position: relative;
-    min-height: 15rem;
-    width: 100%;
-    height: 100%;
-  }
   .request-loader-wrapper_background-box {
     position: absolute;
-    width: 100%;
-    height: 100%;
-    min-height: 2rem;
     top: 0;
+    bottom: 0;
     left: 0;
+    right: 0;
     display: flex;
     align-items: center;
     justify-content: center;
     z-index: 2;
+    background-color: rgba(#23252A, .5);;
   }
   .background-box_spinner {
     margin: 0 auto;

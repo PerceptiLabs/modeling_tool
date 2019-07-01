@@ -29,63 +29,63 @@
             )
       .statistics-box_row
         .statistics-box_col
-            chart-base#tutorial_prediction-chart.data-charts(
-              key="2"
-              chart-label="Prediction vs Ground truth"
-              :chart-data="chartData.Prediction.PvG"
-              :custom-color="colorList"
+          chart-switch#tutorial_prediction-chart.data-charts(
+            key="2"
+            chart-label="Prediction vs Ground truth"
+            :chart-data="chartData.Prediction.PvG"
+            :custom-color="colorList"
             )
         .statistics-box_col(v-if="!testIsOpen")
-            chart-base.data-charts(
-              key="3"
-              chart-label="Batch Average Prediction vs Ground truth"
-              :chart-data="chartData.Prediction.AveragePvG"
-              :custom-color="colorList"
+          chart-switch.data-charts(
+            key="3"
+            chart-label="Batch Average Prediction vs Ground truth"
+            :chart-data="chartData.Prediction.AveragePvG"
+            :custom-color="colorList"
             )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
-      chart-base(
+      chart-switch(
         key="4"
         chart-label="Accuracy during one epoch"
         :chart-data="chartData.Accuracy.Current"
         :custom-color="colorListAccuracy"
       )
-      chart-base(
+      chart-switch(
         key="5"
         chart-label="Accuracy over all epochs"
         :chart-data="chartData.Accuracy.Total"
         :custom-color="colorListAccuracy"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Loss'")
-      chart-base(
+      chart-switch(
         key="6"
         chart-label="Loss during one epoch"
         :chart-data="chartData.Loss.Current"
         :custom-color="colorListAccuracy"
       )
-      chart-base(
+      chart-switch(
         key="7"
         chart-label="Loss over all epochs"
         :chart-data="chartData.Loss.Total"
         :custom-color="colorListAccuracy"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
-      chart-base(
+      chart-switch(
         chart-label="F1 during one epoch"
         :chart-data="chartData.F1.Current"
         :custom-color="colorListAccuracy"
       )
-      chart-base(
+      chart-switch(
         chart-label="F1 over all epochs"
         :chart-data="chartData.F1.Total"
         :custom-color="colorListAccuracy"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'AUC'")
-      chart-base(
+      chart-switch(
         chart-label="AUC during one epoch"
         :chart-data="chartData.AUC.Current"
         :custom-color="colorListAccuracy"
       )
-      chart-base(
+      chart-switch(
         chart-label="AUC over all epochs"
         :chart-data="chartData.AUC.Total"
         :custom-color="colorListAccuracy"
@@ -93,18 +93,13 @@
 </template>
 
 <script>
-  import ChartBase      from "@/components/charts/chart-base";
-  import ChartPie       from "@/components/charts/chart-pie";
-  import ChartHeatmap   from "@/components/charts/chart-heatmap.vue";
-  import ChartD3        from "@/components/charts/chart-3d.vue";
-  import ChartSwitch    from "@/components/charts/chart-switch.vue";
-
+  import ChartSwitch      from "@/components/charts/chart-switch";
   import viewBoxMixin   from "@/core/mixins/net-element-viewBox.js";
   import { mapActions } from 'vuex';
 
   export default {
     name: "ViewBoxTrainNormal",
-    components: {ChartBase, ChartPie, ChartHeatmap, ChartD3, ChartSwitch},
+    components: {ChartSwitch},
     mixins: [viewBoxMixin],
     data() {
       return {
