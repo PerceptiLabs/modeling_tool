@@ -24,8 +24,17 @@ const coreRequest = function (message, port, address) {
         }
         if(dataPart.length === dataLength + 1) {
           let obgData = JSON.parse(dataPart.slice(0, -1));
-          //console.log('then', obgData);
-          resolve(obgData);
+          if(obgData.errorMessage && obgData.errorMessage.length) {
+            store.dispatch('mod_workspace/EVENT_startDoRequest', false);
+            store.dispatch('mod_workspace/SET_openStatistics', null);
+            store.dispatch('mod_workspace/SET_openTest', null);
+            store.dispatch('globalView/GP_infoPopup', obgData.errorMessage.join('; '));
+            store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
+          }
+          if(obgData.warningMessage && obgData.warningMessage.length) {
+            console.warn('core warning', obgData.warningMessage);
+          }
+          resolve(obgData.content);
         }
         if (data.toString().endsWith('exit')) {
           socket.destroy();

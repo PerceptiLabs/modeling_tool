@@ -1,24 +1,12 @@
 <template lang="pug">
-  .wrapper-training-loader(v-if="showSpinner")
+  .wrapper-training-loader
     .wrapper-training-loader_spinner
       .round
 </template>
 
 <script>
-
   export default {
     name: "StartTrainingSpinner",
-    props: {
-      showSpinner: {
-        type: Boolean,
-        default: false
-      }
-    },
-    data() {
-      return {
-
-      }
-    },
   }
 </script>
 
@@ -34,7 +22,7 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 10;
+    z-index: 2;
   }
 
   .wrapper-training-loader_spinner  {
@@ -56,47 +44,49 @@
   }
 
   .wrapper-training-loader_spinner:before{
-    border-radius: 50%;
     content: '';
+    border-radius: 50%;
     display: block;
     height: 12px;
     width: 12px;
     z-index: 1;
   }
+
+  $spinner1: #7397FE;
+  $spinner2: #FE7373;
+  $spinner3: #61E6EE;
+  $spinner4: #FECF73;
   .wrapper-training-loader_spinner:before {
     animation: ball 2s infinite;
     //background-color: greenyellow;
-    box-shadow: 0px -34px 0 #7397FE, 34px 0 0 #FE7373, -34px 0 0 #FE7373, 0px 34px 0 #61E6EE,
-                24px -24px 0 #FECF73, 24px 24px 0 #FE7373, -24px -24px 0 #7397FE, -24px 24px 0 #7397FE,
+    box-shadow: 0px -34px 0 $spinner1,    34px 0 0 $spinner2,     -34px 0 0 $spinner2,      0px 34px 0 $spinner3,
+                24px -24px 0 $spinner4,   24px 24px 0 $spinner2,  -24px -24px 0 $spinner1,  -24px 24px 0 $spinner1;
   }
 
   @keyframes rotate {
     0% {
-      -webkit-transform: rotate(0deg) scale(0.8);
-      -moz-transform: rotate(0deg) scale(0.8);
+      transform: rotate(0deg) scale(.8);
     }
     50% {
-      -webkit-transform: rotate(360deg) scale(1.2);
-      -moz-transform: rotate(360deg) scale(1.2);
+      transform: rotate(360deg) scale(1.2);
     }
     100% {
-      -webkit-transform: rotate(720deg) scale(0.8);
-      -moz-transform: rotate(720deg) scale(0.8);
+      transform: rotate(720deg) scale(.8);
     }
   }
 
   @keyframes ball {
     0% {
-      box-shadow: 0px -34px 0 #7397FE, 34px 0 0 #FE7373, -34px 0 0 #FE7373, 0px 34px 0 #61E6EE,
-                  24px -24px 0 #FECF73, 24px 24px 0 #FE7373, -24px -24px 0 #7397FE, -24px 24px 0 #7397FE,
+      box-shadow: 0px -34px 0 $spinner1,  34px 0 0 $spinner2,     -34px 0 0 $spinner2,      0px 34px 0 $spinner3,
+                  24px -24px 0 $spinner4, 24px 24px 0 $spinner2,  -24px -24px 0 $spinner1,  -24px 24px 0 $spinner1;
     }
     50% {
-      box-shadow: 0 0 0 #7397FE, 0 0 0 #FE7373, 0 0 0 #FE7373, 0 0 0 #61E6EE,
-                  0 0 0 #FECF73, 0 0 0 #FE7373, 0 0 0 #7397FE, 0 0 0 #7397FE
+      box-shadow: 0 0 0 $spinner1, 0 0 0 $spinner2, 0 0 0 $spinner2, 0 0 0 $spinner3,
+                  0 0 0 $spinner4, 0 0 0 $spinner2, 0 0 0 $spinner1, 0 0 0 $spinner1;
     }
     100% {
-      box-shadow: 0px -34px 0 #7397FE, 34px 0 0 #FE7373, -34px 0 0 #FE7373, 0px 34px 0 #61E6EE,
-                  24px -24px 0 #FECF73, 24px 24px 0 #FE7373, -24px -24px 0 #7397FE, -24px 24px 0 #7397FE,
+      box-shadow: 0px -34px 0 $spinner1,  34px 0 0 $spinner2,     -34px 0 0 $spinner2,      0px 34px 0 $spinner3,
+                  24px -24px 0 $spinner4, 24px 24px 0 $spinner2,  -24px -24px 0 $spinner1,  -24px 24px 0 $spinner1;
     }
   }
 
