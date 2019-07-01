@@ -1,6 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :layer-code="currentEl.layerCode.length"
+    :layer-code="currentEl.layerCode"
     :first-tab="currentEl.layerSettingsTabName"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
@@ -11,7 +11,7 @@
           .form_label Labels:
           .form_input
             base-select(
-              v-model="idSelectElement"
+              v-model="settings.Labels"
               :select-options="inputLayers"
             )
       .settings-layer_section
@@ -80,7 +80,7 @@ import { mapGetters, mapActions }   from 'vuex';
 export default {
   name: 'SetTrainNormal',
   mixins: [ mixinSet ],
-  created() {
+  beforeMount() {
     this.inputId.forEach((id)=> {
       let elList = this.currentNetworkList;
       this.inputLayers.push({
@@ -88,17 +88,11 @@ export default {
         value: elList[id].layerId
       })
     });
-  },
-  mounted() {
-    if(this.settings.Labels) this.idSelectElement = this.settings.Labels;
-    else {
-      if (this.inputLayers.length) this.idSelectElement = this.inputLayers[0].value.toString();
-    }
+    if(!this.settings.Labels && this.inputLayers.length) this.settings.Labels = this.inputLayers[0].value.toString();
   },
   data() {
     return {
       inputLayers: [],
-      idSelectElement: '',
       settings: {
         Labels: '',
         N_class: '1',
@@ -140,36 +134,31 @@ export default {
     inputId() {
       return this.currentEl.connectionIn
     },
-    network_output() {
-      return this.inputId.filter((id)=>id !== this.idSelectElement)
-    },
-    labels() {
-      let lab = [];
-      lab.push(this.idSelectElement);
-      return lab
+    notLabelsInput() {
+      return this.inputId.filter((id)=>id !== this.settings.Labels)
     },
     codeLoss() {
       let loss = '';
       switch (this.settings.Loss) {
         case 'Cross_entropy':
-          loss = `flat_logits = tf.reshape(X['${this.network_output}'], [-1, N_class]);
-flat_labels = tf.reshape(X['${this.labels}'], [-1, N_class]);
+          loss = `flat_logits = tf.reshape(X['${this.notLabelsInput}'], [-1, N_class]);
+flat_labels = tf.reshape(X['${this.settings.Labels}'], [-1, N_class]);
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_logits));`
           break;
         case 'Quadratic':
-          loss = `loss=tf.losses.mean_squared_error(X['${this.labels}'],X['${this.network_output}']);`
+          loss = `loss=tf.losses.mean_squared_error(X['${this.settings.Labels}'],X['${this.notLabelsInput}']);`
           break;
         case 'W_cross_entropy':
-          loss = `flat_logits = tf.reshape(X['${this.network_output}'], [-1, N_class]);
-flat_labels = tf.reshape(X['${this.labels}'], [-1, N_class]);
+          loss = `flat_logits = tf.reshape(X['${this.notLabelsInput}'], [-1, N_class]);
+flat_labels = tf.reshape(X['${this.settings.Labels}'], [-1, N_class]);
 class_weights = tf.constant(${this.settings.Class_weights},dtype=tf.float32);
 loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels,flat_logits, ${this.settings.Class_weights}));`
           break;
         case 'Dice':
           loss = `eps = 1e-5;
-prediction = X['${this.network_output}'];
-intersection = tf.reduce_sum(tf.multiply(prediction, X['${this.labels}']));
-union = eps + tf.reduce_sum(tf.multiply(prediction, prediction)) + tf.reduce_sum(tf.multiply(X['${this.labels}'], X['${this.labels}']));
+prediction = X['${this.notLabelsInput}'];
+intersection = tf.reduce_sum(tf.multiply(prediction, X['${this.settings.Labels}']));
+union = eps + tf.reduce_sum(tf.multiply(prediction, prediction)) + tf.reduce_sum(tf.multiply(X['${this.settings.Labels}'], X['${this.settings.Labels}']));
 cost_tmp = (2 * intersection/ (union));
 cost_clip = tf.clip_by_value(cost_tmp, eps, 1.0-eps);
 loss = 1 - cost_clip;`
@@ -203,15 +192,15 @@ Y=tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum,momentum=${thi
     codeAccuracy() {
       let accuracy = '';
       if(this.settings.N_Class < 1) {
-        accuracy = `correct_prediction = tf.equal(X['${this.network_output}'], X['${this.labels}']);
+        accuracy = `correct_prediction = tf.equal(X['${this.notLabelsInput}'], X['${this.settings.Labels}']);
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
       }
-      else accuracy = `arg_output=tf.argmax(X['${this.network_output}'],-1);
-arg_label=tf.argmax(X['${this.labels}'],-1);
+      else accuracy = `arg_output=tf.argmax(X['${this.notLabelsInput}'],-1);
+arg_label=tf.argmax(X['${this.settings.Labels}'],-1);
 correct_prediction = tf.equal(arg_output, arg_label);
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));
-f1=tf.contrib.metrics.f1_score(X['${this.labels}'],X['${this.network_output}'])[0];
-auc=tf.metrics.auc(labels=X['${this.labels}'],predictions=X['${this.network_output}'],curve='ROC')[0];`
+f1=tf.contrib.metrics.f1_score(X['${this.settings.Labels}'],X['${this.notLabelsInput}'])[0];
+auc=tf.metrics.auc(labels=X['${this.settings.Labels}'],predictions=X['${this.notLabelsInput}'],curve='ROC')[0];`
       return accuracy
     },
     settingsCode() {
@@ -221,72 +210,9 @@ auc=tf.metrics.auc(labels=X['${this.labels}'],predictions=X['${this.network_outp
         "Accuracy": this.codeAccuracy
       }
     }
-
-//     coreCode() {
-//       let loss = '';
-//       let optimizer = '';
-//       let accuracy = '';
-//       switch (this.settings.Loss) {
-//         case 'Cross_entropy':
-//           loss = `flat_logits = tf.reshape(X['${this.network_output}'], [-1, N_class]);
-// flat_labels = tf.reshape(X['${this.labels}'], [-1, N_class]);
-// loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_logits));`
-//           break;
-//         case 'Quadratic':
-//           loss = `loss=tf.losses.mean_squared_error(X['${this.labels}'],X['${this.network_output}']);`
-//           break;
-//         case 'W_cross_entropy':
-//           loss = `flat_logits = tf.reshape(X['${this.network_output}'], [-1, N_class]);
-// flat_labels = tf.reshape(X['${this.labels}'], [-1, N_class]);
-// class_weights = tf.constant(${this.settings.Class_weights},dtype=tf.float32);
-// loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels,flat_logits, ${this.settings.Class_weights}));`
-//           break;
-//         case 'Dice':
-//           loss = `eps = 1e-5;
-// prediction = X['${this.network_output}'];
-// intersection = tf.reduce_sum(tf.multiply(prediction, X['${this.labels}']));
-// union = eps + tf.reduce_sum(tf.multiply(prediction, prediction)) + tf.reduce_sum(tf.multiply(X['${this.labels}'], X['${this.labels}']));
-// cost_tmp = (2 * intersection/ (union));
-// cost_clip = tf.clip_by_value(cost_tmp, eps, 1.0-eps);
-// loss = 1 - cost_clip;`
-//           break;
-//       }
-//       switch (this.settings.Optimizer) {
-//         case 'SGD':
-//           optimizer = `optimizer = tf.train.GradientDescentOptimizer(${this.settings.Learning_rate}).minimize(loss);
-// Y=optimizer;`
-//           break;
-//         case 'Momentum':
-//           optimizer = `global_step = tf.Variable(0);
-// start_learning_rate = ${this.settings.Learning_rate};
-// learning_rate_momentum = tf.train.exponential_decay(learning_rate=start_learning_rate,global_step=global_step, decay_steps=${this.settings.Training_iters},decay_rate=${this.settings.Decay}, staircase=True);
-// Y=tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum,momentum=${this.settings.Momentum}).minimize(loss,global_step=global_step);`
-//           break;
-//         case 'ADAM':
-//           optimizer = `Y=tf.train.AdamOptimizer(${this.settings.Learning_rate},beta1=${this.settings.Beta_1},beta2=${this.settings.Beta_2}).minimize(loss);`
-//           break;
-//         case 'RMSprop':
-//           optimizer = `Y=tf.train.RMSPropOptimizer(${this.settings.Learning_rate},decay=${this.settings.Decay},momentum=${this.settings.Momentum}).minimize(loss);`
-//           break;
-//       }
-//       if(this.settings.N_Class < 1) {
-//         accuracy = `correct_prediction = tf.equal(X['${this.network_output}'], X['${this.labels}']);
-// accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
-//       }
-//       else accuracy = `arg_output=tf.argmax(X['${this.network_output}'],-1);
-// arg_label=tf.argmax(X['${this.labels}'],-1);
-// correct_prediction = tf.equal(arg_output, arg_label);
-// accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
-//
-//       //return `N_class=list(X.values())[-1].get_shape().as_list()[-1];
-//       return `N_class=${this.codeInputDim}[-1][-1];
-// ${loss}
-// ${optimizer}
-// ${accuracy}`
-//     }
   },
   methods: {
-        ...mapActions({
+    ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate'
     }),
     saveSettings() {

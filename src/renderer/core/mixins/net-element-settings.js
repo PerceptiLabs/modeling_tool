@@ -43,7 +43,7 @@ const netElementSettings = {
       this.applySettings(tabName);
     },
     applySettings(tabName) {
-      if(this._name === '<SetTrainNormal>') this.settings.Labels = this.idSelectElement;
+      this.updateCode();
       const saveSettings = {
         'elId': this.currentEl.layerId,
         'code': this.coreCode,
