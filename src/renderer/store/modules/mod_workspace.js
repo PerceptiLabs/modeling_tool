@@ -892,6 +892,7 @@ const createNetElement = function (event) {
       tutorialId: '',
       OutputDim: '',
       InputDim: '',
+      layerContainerName: '',
       containerDiff: {
         top: 0,
         left: 0,

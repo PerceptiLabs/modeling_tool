@@ -1,5 +1,6 @@
 <template lang="pug">
   net-base-settings(
+    :layer-code="currentEl.layerCode.length"
     :first-tab="currentEl.layerSettingsTabName"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"

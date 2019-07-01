@@ -1,6 +1,8 @@
 <template lang="pug">
   net-base-settings(
+    :layer-code="currentEl.layerCode.length"
     :first-tab="currentEl.layerSettingsTabName"
+    id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
     )
@@ -8,22 +10,17 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
           .form_label Reshape:
-          .form_input
-            triple-input#tutorial_input-reshape.tutorial-relative(v-model="settings.Shape")
+          #tutorial_input-reshape.form_input(data-tutorial-hover-info)
+            triple-input.tutorial-relative(v-model="settings.Shape")
 
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
           .form_label Transpose:
-          .form_input
+          #tutorial_input-transpose.form_input(data-tutorial-hover-info)
             triple-input(v-model="settings.Permutation")
 
     template(slot="Code-content")
       settings-code(v-model="coreCode")
-
-    template(slot="Settings-action")
-      button#tutorial_button-apply.btn.btn--primary(type="button" @click="saveSettings('Settings')") Apply
-      button.btn.btn--dark-blue-rev(type="button" @click="updateCode") Update code
-
 
 </template>
 

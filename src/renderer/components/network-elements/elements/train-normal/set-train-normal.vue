@@ -1,5 +1,6 @@
 <template lang="pug">
   net-base-settings(
+    :layer-code="currentEl.layerCode.length"
     :first-tab="currentEl.layerSettingsTabName"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
@@ -8,7 +9,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
           .form_label Labels:
-          .form_input
+          #tutorial_labels.form_input(data-tutorial-hover-info)
             base-select(
               v-model="idSelectElement"
               :select-options="inputLayers"
@@ -16,7 +17,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
           .form_label Cost function:
-          #tutorial_cost-function.tutorial-relative.form_input
+          #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
             base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
               span Cross-Entropy
             base-radio(group-name="group" value-input="Quadratic" v-model="settings.Loss")
@@ -33,7 +34,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
           .form_label Optimizer:
-          .form_input
+          #tutorial_optimizer.form_input(data-tutorial-hover-info)
             base-radio(group-name="group1" value-input="ADAM" v-model="settings.Optimizer")
               span ADAM
             base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
@@ -64,7 +65,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
           .form_label Learning rate:
-          .form_input
+          #tutorial_learning_rate.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.Learning_rate")
 
     template(slot="Code-content")
@@ -286,12 +287,21 @@ auc=tf.metrics.auc(labels=X['${this.labels}'],predictions=X['${this.network_outp
   },
   methods: {
         ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate'
+      tutorialPointActivate:   'mod_tutorials/pointActivate',
+      popupInfo:               'globalView/GP_infoPopup'
     }),
     saveSettings() {
       this.applySettings();
       this.tutorialPointActivate({way:'next', validation: 'tutorial_cost-function'})
     },
-  }
+  },
+  watch: {
+    idSelectElement(newValue) {
+      if(this.isTutorialMode && newValue !== this.inputLayers[0].value.toString()) {
+        this.idSelectElement = this.inputLayers[0].value.toString();
+        this.popupInfo("The value of this field should be One Hot");
+      }
+    },
+  },
 }
 </script>

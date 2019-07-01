@@ -64,7 +64,7 @@
         .settings-layer_section
           .form_row(v-tooltip-interactive:right="interactiveInfo.shuffleData")
             .form_label Shuffle data:
-            .form_input
+            #tutorial_shuffle_data.form_input(data-tutorial-hover-info)
               base-radio(group-name="group2" :value-input="true" v-model="settings.Shuffle_data")
                 span Yes
               base-radio(group-name="group2" :value-input="false" v-model="settings.Shuffle_data")
@@ -93,7 +93,7 @@
         .settings-layer_section
           label.form_row(v-tooltip-interactive:right="interactiveInfo.saveModel")
             .form_label Save model every:
-            .form_input
+            #tutorial_save_model_every.form_input(data-tutorial-hover-info)
               input(type="number" v-model="settings.Save_model_every" disabled="disabled")
               span &nbsp; epoch
       .popup_foot

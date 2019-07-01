@@ -60,34 +60,34 @@ const actions = {
     function startCore() {
       coreIsStarting = true;
       let openServer;
-      switch (process.platform) {
-        case 'win32':
-          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          break;
-        case 'darwin':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
-        case 'linux':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
-      }
-      openServer.on('error', (err) => {
-        console.log(err);
-        coreOffline()
-      });
-      openServer.on('close', (code) => {
-        coreOffline()
-      });
+      // switch (process.platform) {
+      //   case 'win32':
+      //     openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     break;
+      //   case 'darwin':
+      //     if(process.env.NODE_ENV === 'production') {
+      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     else {
+      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     break;
+      //   case 'linux':
+      //     if(process.env.NODE_ENV === 'production') {
+      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     else {
+      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     break;
+      // }
+      // openServer.on('error', (err) => {
+      //   console.log(err);
+      //   coreOffline()
+      // });
+      // openServer.on('close', (code) => {
+      //   coreOffline()
+      // });
       waitOnlineCore()
     }
     function waitOnlineCore() {
@@ -148,8 +148,8 @@ const actions = {
       action: "Start",
       value: message
     };
-    //console.log(JSON.stringify(theData));
-    //console.log(theData);
+    console.log(JSON.stringify(theData));
+    console.log(theData);
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_startTraining ', data);
@@ -327,7 +327,7 @@ const actions = {
       value: prepareNetwork(elementList)
     };
     //console.log('SEND getNetworkInputDim', theData);
-    coreRequest(theData)
+    return coreRequest(theData)
       .then((data)=> {
         //console.log('API_getInputDim', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
