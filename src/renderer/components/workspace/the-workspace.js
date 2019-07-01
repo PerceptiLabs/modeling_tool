@@ -184,11 +184,15 @@ export default {
     },
     openStatistics(i) {
       this.setTabNetwork(i);
-      this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+      this.$nextTick(()=>{
+        this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+      })
     },
     openTest(i) {
       this.setTabNetwork(i);
-      this.$store.dispatch('mod_workspace/SET_openTest', true);
+      this.$nextTick(()=>{
+        this.$store.dispatch('mod_workspace/SET_openTest', true);
+      })
     },
     saveNetwork(){
       let projectsList = JSON.parse(localStorage.getItem('projectsList'));

@@ -7,27 +7,28 @@ const chartsMixin = {
       }
     },
     customColor: {
-      type: Array,
-      default: function () {
-        return []
-      }
+      type: Array
     },
   },
-  mounted() {
-    if(this.isNotPie) {this.createWWorker();}
-    this.sendDataToWWorker();
+  beforeMount() {
     if(this.isNotPicture) {
-      this.$refs.chart.resize();
-      if(this.customColor.length) this.applyCustomColor();
+      this.applyCustomColor();
+    }
+  },
+  mounted() {
+    if(this.isNotPie) this.createWWorker();
+    if(this.isNotPicture) {
+      this.chartResize();
       //window.addEventListener("resize", this.chartResize, false);
     }
+    this.sendDataToWWorker();
   },
   beforeDestroy() {
     if(this.isNotPie) {
       this.wWorker.postMessage('close');
       this.wWorker.removeEventListener('message', this.drawChart, false);
     }
-    if(this.isNotPicture && this.isNotPie) {
+    if(this.isNotPicture) {
       this.$refs.chart.dispose();
       //window.removeEventListener("resize", this.chartResize, false);
     }
@@ -43,7 +44,6 @@ const chartsMixin = {
     isNeedWait() {
       return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
     },
-
     doRequest() {
       return this.$store.getters['mod_workspace/GET_networkDoRequest']
     },
@@ -51,14 +51,14 @@ const chartsMixin = {
       return this.$store.getters['mod_workspace/GET_networkShowCharts']
     },
     isNotPicture() {
-      return (this.$options._componentTag === "ChartPicture" || this.$options._componentTag === "chart-picture")
-        ? false
-        : true
+      return !(this.$options._componentTag === "ChartPicture" || this.$options._componentTag === "chart-picture")
+        // ? false
+        // : true
     },
     isNotPie() {
-      return (this.$options._componentTag === "ChartPie" || this.$options._componentTag === "chart-pie")
-        ? false
-        : true
+      return !(this.$options._componentTag === "ChartPie" || this.$options._componentTag === "chart-pie")
+        // ? false
+        // : true
     }
   },
   watch: {
@@ -77,7 +77,6 @@ const chartsMixin = {
     // },
     chartData(newData, oldData) {
       this.sendDataToWWorker(newData);
-      if(newData) this.showRequestSpinner = false;
     }
   },
   methods: {
@@ -94,7 +93,7 @@ const chartsMixin = {
       }
     },
     chartResize() {
-      console.log(this.chartLabel);
+      //console.log(this.chartLabel);
       this.$refs.chart.resize()
     }
   }

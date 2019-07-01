@@ -3,19 +3,23 @@
     .statistics-box_main.statistics-box_col
       .statistics-box_row
         chart-switch(
+          key="1"
           chart-label="Accuracy during one epoch"
           :chart-data="optionS"
         )
         chart-switch(
+          key="2"
           chart-label="Accuracy during one epoch"
           :chart-data="optionBar3"
         )
       .statistics-box_row
         chart-switch(
+          key="3"
           chart-label="Accuracy during one epoch"
           :chart-data="optionLine2"
         )
         chart-switch(
+          key="4"
           chart-label="Accuracy during one epoch"
           :chart-data="optionBar4"
         )

@@ -12,7 +12,7 @@
             v-tooltip-interactive:right="interactiveInfo.selectGame"
           )
         .form_row(v-tooltip-interactive:right="interactiveInfo.actionSpace")
-          chart-switch.data-charts(
+          chart-switch(
             key="1"
             :chart-label="chartLabel"
             :chart-data="imgData"

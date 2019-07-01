@@ -20,8 +20,9 @@
         :chart-label="chartLabel"
         :disable-header="disableHeader"
         :chart-data="imgData"
+        :custom-color="customColor"
       )
-      .base-chart_info(v-if="chartPieInfo.length") {{ chartInfo }}
+      .base-chart_info(v-if="chartPieInfo.length") {{ chartPieInfo }}
 
 </template>
 
@@ -36,7 +37,8 @@
     name: "ChartSwitch",
     components: {
       ChartHeatmap, ChartBase, ChartPicture, ChartPie,
-      RequestSpinner },
+      RequestSpinner
+    },
     props: {
       chartLabel: {
         type: String,
@@ -89,13 +91,10 @@
         return this.$store.getters['mod_workspace/GET_testIsOpen'] || this.disableHeader;
       },
       chartPieInfo() {
-        if(this.imgType === 'ChartPie'
-          && this.chartModel.series
-          && this.chartModel.series.length
-          && typeof this.chartModel.series[0].data[0].value === 'number'
-
+        if(this.imgType === 'pie'
+          && typeof this.chartData.series[0].data[0].value === 'number'
         ) {
-          const info = this.chartModel.series[0].data[0].value.toFixed(2);
+          const info = this.chartData.series[0].data[0].value.toFixed(2);
           return `${info}%`
         }
         return ''
@@ -132,6 +131,14 @@
     display: flex;
     overflow: hidden;
     flex-direction: column;
+    &.full-view {
+      position: absolute;
+      top: 0;
+      right: 0;
+      bottom: 0;
+      left: 0;
+      z-index: 3;
+    }
   }
   .base-chart_head {
     display: flex;
@@ -143,7 +150,11 @@
     padding: 0 1rem 0 2rem;
     background: $bg-window;
   }
-
+  .base-chart_main {
+    position: relative;
+    flex: 1 1 100%;
+    min-height: 9rem;
+  }
   .chart-head_title {
     overflow: hidden;
     h5 {

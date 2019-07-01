@@ -15,28 +15,28 @@
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
-          chart-switch.data-charts(
+          chart-switch(
             key="1"
             chart-label="Input"
             :chart-data="chartData.Prediction.Input"
             )
         .statistics-box_col
-            chart-pie(
-              key="8"
-              chart-label="Accuracy"
-              :chart-data="chartData.Prediction.Accuracy"
-              :custom-color="colorPie"
+          chart-switch(
+            key="8"
+            chart-label="Accuracy"
+            :chart-data="chartData.Prediction.Accuracy"
+            :custom-color="colorPie"
             )
       .statistics-box_row
         .statistics-box_col
-          chart-switch#tutorial_prediction-chart.data-charts(
+          chart-switch#tutorial_prediction-chart(
             key="2"
             chart-label="Prediction vs Ground truth"
             :chart-data="chartData.Prediction.PvG"
             :custom-color="colorList"
             )
         .statistics-box_col(v-if="!testIsOpen")
-          chart-switch.data-charts(
+          chart-switch(
             key="3"
             chart-label="Batch Average Prediction vs Ground truth"
             :chart-data="chartData.Prediction.AveragePvG"
@@ -70,22 +70,26 @@
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
       chart-switch(
+        key="9"
         chart-label="F1 during one epoch"
         :chart-data="chartData.F1.Current"
         :custom-color="colorListAccuracy"
       )
       chart-switch(
+        key="10"
         chart-label="F1 over all epochs"
         :chart-data="chartData.F1.Total"
         :custom-color="colorListAccuracy"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'AUC'")
       chart-switch(
+        key="11"
         chart-label="AUC during one epoch"
         :chart-data="chartData.AUC.Current"
         :custom-color="colorListAccuracy"
       )
       chart-switch(
+        key="12"
         chart-label="AUC over all epochs"
         :chart-data="chartData.AUC.Total"
         :custom-color="colorListAccuracy"

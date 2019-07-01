@@ -212,7 +212,7 @@ export default {
       let activeFunc = '';
       let pooling = '';
       let switcherDim = calcSwitcher(this);
-      console.log(switcherDim);
+      //console.log(switcherDim);
       switch (switcherDim) {
         case '1D':
           dim = `shape=[${this.settings.Patch_size},${this.codeInputDim}[-1],${this.settings.Feature_maps}];
