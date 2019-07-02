@@ -36,6 +36,9 @@
 
 <style scoped lang="scss">
   @import "../../scss/base";
+  .popup-global{
+    z-index: 13;
+  }
 
   .popup-global .popup{
     background: $bg-workspace;

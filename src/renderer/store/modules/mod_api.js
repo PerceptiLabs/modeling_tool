@@ -60,34 +60,34 @@ const actions = {
     function startCore() {
       coreIsStarting = true;
       let openServer;
-      switch (process.platform) {
-        case 'win32':
-          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          break;
-        case 'darwin':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
-        case 'linux':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
-      }
-      openServer.on('error', (err) => {
-        console.log(err);
-        coreOffline()
-      });
-      openServer.on('close', (code) => {
-        coreOffline()
-      });
+      // switch (process.platform) {
+      //   case 'win32':
+      //     openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     break;
+      //   case 'darwin':
+      //     if(process.env.NODE_ENV === 'production') {
+      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     else {
+      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     break;
+      //   case 'linux':
+      //     if(process.env.NODE_ENV === 'production') {
+      //       openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     else {
+      //       openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      //     }
+      //     break;
+      // }
+      // openServer.on('error', (err) => {
+      //   console.log(err);
+      //   coreOffline()
+      // });
+      // openServer.on('close', (code) => {
+      //   coreOffline()
+      // });
       waitOnlineCore()
     }
     function waitOnlineCore() {

@@ -82,10 +82,11 @@ function removeTooltipInfo() {
 function sideCalculate(element, tooltip, side) {
   let elCoord = element.getBoundingClientRect();
   let tooltipArrow = 10;
+  let zoom = store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
   switch (side.arg) {
     case 'right':
-      tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';
-      tooltip.style.left = elCoord.left + elCoord.width + tooltipArrow + 'px';
+      tooltip.style.top = (elCoord.top + elCoord.height / 2) +'px';
+      tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow)+ 'px';
       break;
     case 'left':
       tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';

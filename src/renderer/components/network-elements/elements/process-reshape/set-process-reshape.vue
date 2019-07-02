@@ -10,13 +10,13 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
           .form_label Reshape:
-          .form_input
-            triple-input#tutorial_input-reshape.tutorial-relative(v-model="settings.Shape")
+          #tutorial_input-reshape.form_input(data-tutorial-hover-info)
+            triple-input.tutorial-relative(v-model="settings.Shape")
 
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
           .form_label Transpose:
-          .form_input
+          #tutorial_input-transpose.form_input(data-tutorial-hover-info)
             triple-input(v-model="settings.Permutation")
 
     template(slot="Code-content")

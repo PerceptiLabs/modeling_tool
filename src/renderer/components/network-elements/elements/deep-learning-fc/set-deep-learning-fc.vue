@@ -9,12 +9,12 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.neurons")
           .form_label Neurons:
-          #tutorial_neurons.tutorial-relative.form_input
+          #tutorial_neurons.tutorial-relative.form_input(data-tutorial-hover-info)
             input(type="text" v-model="settings.Neurons")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
           .form_label Activation function:
-          .form_input
+          #tutorial_activation_function.form_input(data-tutorial-hover-info)
             base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
               span None
             base-radio(group-name="group1" value-input="Sigmoid"  v-model="settings.Activation_function")
@@ -26,7 +26,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
           .form_label Dropout:
-          .form_input
+          #tutorial_dropout.form_input(data-tutorial-hover-info)
             base-radio(group-name="group2" :value-input="true" v-model="settings.Dropout")
               span Yes
             base-radio(group-name="group2" :value-input="false" v-model="settings.Dropout")
@@ -44,7 +44,7 @@
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import SettingsCode   from '@/components/network-elements/elements-settings/setting-code.vue';
   import NetBaseSettings  from '@/components/network-elements/net-base-settings/net-base-settings.vue';
-  import {mapActions}   from 'vuex';
+  import {mapGetters, mapActions}   from 'vuex';
 
   export default {
     name: 'SetDeepLearningFC',
@@ -74,6 +74,9 @@
       }
     },
     computed: {
+      ...mapGetters({
+        isTutorialMode: 'mod_tutorials/getIstutorialMode'
+      }),
       settingsCode() {
         let activeFunc = '';
         switch (this.settings.Activation_function) {
@@ -105,9 +108,20 @@ node=node+b;`;
         return `${fc}\n${activeFunc}`
       }
     },
+    watch: {
+      'settings.Neurons': {
+        handler() {
+          if(this.isTutorialMode) {
+            this.settings.Neurons = 10;
+            this.popupInfo("While the value of this field should be 10. But soon you will be able to set a different number of neurons. We are working on it");
+          }
+        }
+      },
+    },
     methods: {
       ...mapActions({
-        tutorialPointActivate:    'mod_tutorials/pointActivate',
+        tutorialPointActivate:   'mod_tutorials/pointActivate',
+        popupInfo:               'globalView/GP_infoPopup'
       }),
       saveSettings() {
         this.applySettings();

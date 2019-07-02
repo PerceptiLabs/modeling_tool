@@ -4,7 +4,8 @@
       button.popup_header(
         v-for="(tab, i) in tabSet"
         :key="tab.i"
-        :class="{'disable': tabSelected != tab}"
+        :class="{'disable': tabSelected != tab }"
+        :disabled='isTutorial'
         @click="setTab(tab)"
       )
         h3(v-html="tab")
@@ -62,6 +63,9 @@ export default {
   computed: {
     showUpdateCode() {
       return this.tabSelected === 'Settings' && !!this.layerCode
+    },
+    isTutorial() {
+      return this.$store.getters['mod_tutorials/getIstutorialMode']
     }
   },
   methods: {

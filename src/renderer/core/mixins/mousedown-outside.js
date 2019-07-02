@@ -3,7 +3,7 @@
 * this.ClickElementTracking = ev.target.closest('.js-clickout');
   document.addEventListener('click', this.clickOutside);
 * */
-
+import store from '../../store'
 const mousedownOutside = {
   data() {
     return {
@@ -12,7 +12,9 @@ const mousedownOutside = {
   },
   methods: {
     mousedownOutside(event) {
-      if (event.target.closest('.js-clickout') !== this.MousedownElementTracking && event.button === 0) {
+      if (event.target.closest('.js-clickout') !== this.MousedownElementTracking && event.button === 0
+          && !store.getters['mod_tutorials/getIstutorialMode'])
+      {
         document.removeEventListener('mousedown', this.mousedownOutside);
         this.MousedownElementTracking = null;
         this.mousedownOutsideAction();
