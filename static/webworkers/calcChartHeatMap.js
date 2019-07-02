@@ -8,9 +8,9 @@ self.addEventListener('message', function(message) {
     default:
       let model = message.data;
       var nFilter;
-      let arrValue = model.series.data.map((num)=> num[2]);
-      let arrX = model.series.data.map((num)=> num[0]);
-      let arrY = model.series.data.map((num)=> num[1]);
+      let arrValue = model.series[0].data.map((num)=> num[2]);
+      let arrX = model.series[0].data.map((num)=> num[0]);
+      let arrY = model.series[0].data.map((num)=> num[1]);
       let sizeX = Math.max(...arrX);
       let sizeY = Math.max(...arrY);
 

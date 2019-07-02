@@ -53,8 +53,7 @@ export default {
         return
       }
       let model = {...this.defaultModel};
-      model.series = data[0];
-
+      model.series = data.series;
       this.wWorker.postMessage(model);
     }
   }
