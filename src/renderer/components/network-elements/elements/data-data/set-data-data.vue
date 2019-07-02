@@ -62,12 +62,12 @@
   import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
   //import coreRequest      from "@/core/apiCore.js";
   import {mapActions}     from 'vuex';
-  import RequestSpinner from '@/components/different/request-spinner.vue'
+  //import RequestSpinner from '@/components/different/request-spinner.vue'
 
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
-    components: {ChartSwitch, SettingsCloud, RequestSpinner },
+    components: {ChartSwitch, SettingsCloud },
     mounted() {
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;

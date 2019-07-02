@@ -5,7 +5,6 @@
     .workspace_content.bookmark_content.js-workspace(
       ref="workspaceNet" :class="{'workspace-relative' : showTrainingSpinner}"
       )
-      start-training-spinner(:showSpinner="showTrainingSpinner")
       .network(
         v-if="indexCurrentNetwork === i"
         v-for="(net, i) in workspace"
@@ -39,6 +38,8 @@
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
         workspace-before-import(v-if="showWorkspaceBeforeImport")
+
+      start-training-spinner(v-if="showTrainingSpinner")
 
 
     .workspace_meta

@@ -13,7 +13,7 @@
         )
           i.icon.icon-full-screen-graph
     .base-chart_main
-      request-spinner(v-if="showRequestSpinner")
+      chart-spinner(v-if="showRequestSpinner")
       component(
         v-if="imgType.length"
         :is="componentName"
@@ -31,13 +31,13 @@
   import ChartBase        from "@/components/charts/chart-base";
   import ChartHeatmap     from "@/components/charts/chart-heatmap";
   import ChartPie         from "@/components/charts/chart-pie";
-  import RequestSpinner   from '@/components/different/request-spinner.vue'
+  import ChartSpinner     from '@/components/charts/chart-spinner'
 
   export default {
     name: "ChartSwitch",
     components: {
       ChartHeatmap, ChartBase, ChartPicture, ChartPie,
-      RequestSpinner
+      ChartSpinner
     },
     props: {
       chartLabel: {
