@@ -12,8 +12,9 @@ const mousedownOutside = {
   },
   methods: {
     mousedownOutside(event) {
-      if (event.target.closest('.js-clickout') !== this.MousedownElementTracking && event.button === 0
-          && !store.getters['mod_tutorials/getIstutorialMode'])
+      if (event.target.closest('.js-clickout') !== this.MousedownElementTracking
+          && event.button === 0
+          && !store.getters['mod_tutorials/getIstutorialMode']) // don`t hide all settings if tutorial mode is enable
       {
         document.removeEventListener('mousedown', this.mousedownOutside);
         this.MousedownElementTracking = null;
