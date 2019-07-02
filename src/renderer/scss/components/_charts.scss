@@ -1,7 +1,4 @@
 .base-chart_main {
-  position: relative;
-  flex: 1 1 100%;
-  min-height: 9rem;
   .echarts {
     position: absolute;
     top: 0;
@@ -16,27 +13,13 @@
       height: 100% !important;
       object-fit: cover;
     }
-    canvas {
+    .chart-img {
       width: 100% !important;
       height: 100% !important;
     }
   }
 }
 
-/*Full view*/
-.full-view {
-  &.base-chart {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-  .echarts {
-    z-index: 2;
-
-  }
-}
 /*DataData + DatEnv*/
 .data-settings_chart {
   min-height: 20rem;

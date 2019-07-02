@@ -42,7 +42,7 @@ export default {
       default: ''
     },
     layerCode: {
-      type: Number,
+      type: [Number, Object, String],
       default: 0
     },
     idSetBtn: {
@@ -53,7 +53,7 @@ export default {
   mounted() {
     let tab = this.firstTab || this.tabSet[0];
     this.setTab(tab)
-    console.log(!!this.layerCode);
+    //console.log(!!this.layerCode);
   },
   data() {
     return {

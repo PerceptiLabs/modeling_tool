@@ -22,7 +22,7 @@ export default {
     align-items: center;
     justify-content: center;
     z-index: 2;
-    background-color: rgba(#23252A, .5);;
+    background-color: rgba($bg-workspace, .5);;
   }
   .background-box_spinner {
     margin: 0 auto;

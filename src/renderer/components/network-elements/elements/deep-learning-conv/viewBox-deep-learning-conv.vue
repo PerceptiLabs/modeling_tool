@@ -38,20 +38,6 @@
         :chart-data="chartData.Gradients.Gradients"
         :custom-color="colorList"
       )
-      //-.statistics-box_row
-        chart-switch(
-        chartLabel="Min"
-        /:chartData="chartData.Gradients.Min"
-        )
-        chart-switch(
-        chartLabel="Max"
-        /:chartData="chartData.Gradients.Max"
-        )
-      //-.statistics-box_row
-        chart-switch(
-        chartLabel="Average"
-        -:chartData="chartData.Gradients.Average"
-        )
 </template>
 
 <script>

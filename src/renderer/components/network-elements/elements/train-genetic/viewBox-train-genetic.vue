@@ -3,9 +3,11 @@
     .statistics-box_main.statistics-box_col
       .statistics-box_row
         chart-switch(
+          key="1"
           :chart-data="optionBar"
         )
         chart-switch(
+          key="2"
           chart-label="Reward during one epoch"
           :chart-data="optionLine1"
         )
