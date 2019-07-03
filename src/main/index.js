@@ -148,13 +148,15 @@ function createWindow () {
    * Initial window options
    */
   mainWindow = new BrowserWindow({
-    frame: true,
+    frame: !!(process.platform === 'darwin'),
     height: 768,
     width: 1024,
     minHeight: 600,
     minWidth: 800,
     useContentSize: true,
+    titleBarStyle: "hidden",
     webPreferences: {
+      devTools: true, // false close devtool
       //contextIsolation: true,
       nodeIntegration: true,
       webSecurity: false,
@@ -191,6 +193,7 @@ function createWindow () {
   });
   ipcMain.on('app-minimize', (event, arg) => {
     if(process.platform === 'darwin' && mainWindow.isFullScreen()) {
+      //mainWindow.frame = false;
       mainWindow.setFullScreen(false);
       setTimeout(()=>{mainWindow.minimize();}, 1000)
     }
@@ -203,6 +206,7 @@ function createWindow () {
   });
   ipcMain.on('app-maximize', (event, arg) => {
     if(process.platform === 'darwin') {
+      //mainWindow.frame = true;
       mainWindow.isMaximized()
         ? mainWindow.setFullScreen(false)
         : mainWindow.setFullScreen(true)
