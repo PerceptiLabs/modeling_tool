@@ -52,7 +52,7 @@ export default {
       justify-content: center;
       width: 13px;
       height: 13px;
-      margin-left: 10px;
+      margin-left: 7px;
       border-radius: 50%;
       font-size: 7px;
       font-weight: 900;

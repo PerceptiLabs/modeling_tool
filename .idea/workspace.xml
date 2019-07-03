@@ -3,15 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/global-popups/update-popup/popup-loading.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/global-popups/update-popup/popup-loading.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/header/header-mac.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/header/header-mac.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-menu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-menu.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -27,17 +20,17 @@
       <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/components/the-menu.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="220">
-              <caret line="53" column="12" selection-start-line="53" selection-start-column="4" selection-end-line="53" selection-end-column="12" />
+            <state relative-caret-position="944">
+              <caret line="262" lean-forward="true" selection-start-line="262" selection-end-line="262" />
             </state>
           </provider>
         </entry>
       </file>
-      <file pinned="false" current-in-tab="true">
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/components/header/header-mac.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="132">
-              <caret line="6" column="34" lean-forward="true" selection-start-line="6" selection-start-column="34" selection-end-line="6" selection-end-column="34" />
+            <state relative-caret-position="506">
+              <caret line="23" column="33" lean-forward="true" selection-start-line="23" selection-start-column="33" selection-end-line="23" selection-end-column="33" />
             </state>
           </provider>
         </entry>
@@ -52,10 +45,53 @@
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-6666">
+              <caret line="23" column="74" selection-start-line="23" selection-start-column="74" selection-end-line="23" selection-end-column="74" />
+              <folding>
+                <element signature="e#0#39#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/base-net-drag.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="1012">
+              <caret line="46" lean-forward="true" selection-start-line="46" selection-end-line="46" />
+              <folding>
+                <element signature="e#0#51#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/base-net-paint-arrows.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="-262" />
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/src/renderer/App.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="4933">
-              <caret line="289" column="31" lean-forward="true" selection-start-line="289" selection-start-column="31" selection-end-line="289" selection-end-column="31" />
+            <state relative-caret-position="330">
+              <caret line="103" column="37" selection-start-line="103" selection-start-column="22" selection-end-line="103" selection-end-column="37" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/main/index.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="550">
+              <caret line="207" column="46" lean-forward="true" selection-start-line="207" selection-start-column="46" selection-end-line="207" selection-end-column="46" />
+              <folding>
+                <element signature="e#15#84#0" expanded="true" />
+              </folding>
             </state>
           </provider>
         </entry>
@@ -71,9 +107,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>pathWebWorkers</find>
-      <find>chartSpinner</find>
-      <find>console.log('</find>
       <find>mask</find>
       <find>GP_showCoreSideSettings</find>
       <find>idSelectElement</find>
@@ -101,12 +134,15 @@
       <find>isLogin</find>
       <find>calcAppPath</find>
       <find>appClose</find>
+      <find>getLayerStatistics</find>
+      <find>getNetworkInputDim</find>
+      <find>offMainTutorial</find>
     </findStrings>
     <dirStrings>
-      <dir>G:\progects\quantumnet\src</dir>
       <dir>D:\PROJECTS\quantumnet\src</dir>
       <dir>D:\PROJECTS\quantumnet\src\renderer</dir>
       <dir>G:\progects\quantumnet\src\renderer</dir>
+      <dir>G:\progects\quantumnet\src</dir>
     </dirStrings>
   </component>
   <component name="Git.Settings">
@@ -166,11 +202,11 @@
         <option value="$PROJECT_DIR$/src/renderer/core/apiCloud.js" />
         <option value="$PROJECT_DIR$/package.json" />
         <option value="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" />
-        <option value="$PROJECT_DIR$/src/main/index.js" />
         <option value="$PROJECT_DIR$/src/renderer/store/index.js" />
-        <option value="$PROJECT_DIR$/src/renderer/App.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/the-menu.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/header/header-mac.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/the-menu.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/App.vue" />
+        <option value="$PROJECT_DIR$/src/main/index.js" />
       </list>
     </option>
   </component>
@@ -205,6 +241,12 @@
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="main" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
@@ -220,36 +262,16 @@
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="header" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
               <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="core" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
-              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="router" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
-              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="store" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-            </path>
-            <path>
-              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
-              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
-              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="store" type="9f88c78c:ScopeViewTreeModel$FileNode" />
-              <item name="modules" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="net-base-element" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
           </expand>
           <select />
@@ -498,12 +520,12 @@
       <workItem from="1561534989569" duration="17869000" />
       <workItem from="1561620391324" duration="13139000" />
       <workItem from="1562056538172" duration="20490000" />
-      <workItem from="1562142254847" duration="4634000" />
+      <workItem from="1562142254847" duration="9232000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="971686000" />
+    <option name="totallyTimeSpent" value="976284000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -611,26 +633,6 @@
     <state width="261" height="798" key="Git.Branch.Popup@1920.1080@120dpi" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-container/layer-container.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="576">
-          <caret line="29" column="52" selection-start-line="29" selection-start-column="52" selection-end-line="29" selection-end-column="52" />
-          <folding>
-            <element signature="e#707#802#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/helpers.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="22">
-          <caret line="29" column="17" selection-start-line="29" selection-start-column="6" selection-end-line="29" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/pages/login/login.vue">
       <provider selected="true" editor-type-id="text-editor" />
     </entry>
@@ -649,13 +651,6 @@
             <element signature="e#56#88#0" expanded="true" />
             <element signature="e#326#387#0" expanded="true" />
           </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="530">
-          <caret line="325" column="14" selection-start-line="325" selection-start-column="14" selection-end-line="325" selection-end-column="14" />
         </state>
       </provider>
     </entry>
@@ -685,16 +680,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="792">
           <caret line="36" column="27" lean-forward="true" selection-start-line="36" selection-start-column="4" selection-end-line="36" selection-end-column="27" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="506">
-          <caret line="23" column="74" selection-start-line="23" selection-start-column="74" selection-end-line="23" selection-end-column="74" />
-          <folding>
-            <element signature="e#0#39#0" expanded="true" />
-          </folding>
         </state>
       </provider>
     </entry>
@@ -801,16 +786,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="244">
-          <caret line="34" column="46" selection-start-line="34" selection-start-column="46" selection-end-line="34" selection-end-column="46" />
-          <folding>
-            <element signature="e#0#96#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/mousedown-outside.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
@@ -857,13 +832,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="440">
           <caret line="20" lean-forward="true" selection-start-line="20" selection-end-line="20" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/package.json">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="22">
-          <caret line="2" column="19" selection-start-line="2" selection-start-column="19" selection-end-line="2" selection-end-column="19" />
         </state>
       </provider>
     </entry>
@@ -928,20 +896,59 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/main/index.js">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="286">
-          <caret line="13" column="80" lean-forward="true" selection-start-line="13" selection-start-column="2" selection-end-line="13" selection-end-column="80" />
+        <state relative-caret-position="-6666">
+          <caret line="23" column="74" selection-start-line="23" selection-start-column="74" selection-end-line="23" selection-end-column="74" />
           <folding>
-            <element signature="e#15#84#0" expanded="true" />
+            <element signature="e#0#39#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/App.vue">
+    <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="4933">
-          <caret line="289" column="31" lean-forward="true" selection-start-line="289" selection-start-column="31" selection-end-line="289" selection-end-column="31" />
+        <state relative-caret-position="66">
+          <caret line="3" column="51" lean-forward="true" selection-start-line="3" selection-start-column="35" selection-end-line="3" selection-end-column="51" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/base-net-drag.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1012">
+          <caret line="46" lean-forward="true" selection-start-line="46" selection-end-line="46" />
+          <folding>
+            <element signature="e#0#51#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/base-net-paint-arrows.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-262" />
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="684">
+          <caret line="54" column="24" selection-start-line="54" selection-start-column="11" selection-end-line="54" selection-end-column="24" />
+          <folding>
+            <element signature="e#0#96#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="95">
+          <caret line="250" column="42" lean-forward="true" selection-start-line="250" selection-start-column="42" selection-end-line="250" selection-end-column="42" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-menu.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="944">
+          <caret line="262" lean-forward="true" selection-start-line="262" selection-end-line="262" />
         </state>
       </provider>
     </entry>
@@ -952,17 +959,27 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/the-menu.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/header/header-mac.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="220">
-          <caret line="53" column="12" selection-start-line="53" selection-start-column="4" selection-end-line="53" selection-end-column="12" />
+        <state relative-caret-position="506">
+          <caret line="23" column="33" lean-forward="true" selection-start-line="23" selection-start-column="33" selection-end-line="23" selection-end-column="33" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/header/header-mac.vue">
+    <entry file="file://$PROJECT_DIR$/src/renderer/App.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="132">
-          <caret line="6" column="34" lean-forward="true" selection-start-line="6" selection-start-column="34" selection-end-line="6" selection-end-column="34" />
+        <state relative-caret-position="330">
+          <caret line="103" column="37" selection-start-line="103" selection-start-column="22" selection-end-line="103" selection-end-column="37" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/main/index.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="550">
+          <caret line="207" column="46" lean-forward="true" selection-start-line="207" selection-start-column="46" selection-end-line="207" selection-end-column="46" />
+          <folding>
+            <element signature="e#15#84#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
