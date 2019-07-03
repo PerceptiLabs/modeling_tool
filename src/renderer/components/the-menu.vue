@@ -1,5 +1,5 @@
 <template lang="pug">
-  nav.app-header_nav
+  nav.app-header_nav(v-if="showMenu")
     ul.header-nav
       li.header-nav_item(
       v-for="(item, i) in navMenu"
@@ -25,7 +25,7 @@
               i.icon.icon-shevron-right(
                 v-if="subItem.submenu"
                 )
-            div.header-nav_sublist-btn(
+            //-div.header-nav_sublist-btn(
               v-if="i === navMenu.length - 1 && index === item.submenu.length - 1"
               ) Version: {{appVersion}}
             ul.header-nav_sublist.sublist--right(v-if="subItem.submenu")
@@ -50,12 +50,20 @@
 
 export default {
   name: "TheMenu",
-  data() {
-    return {
-      menuSet: false,
-
+  props: {
+    showMenu: {
+      type: Boolean,
+      default: true
     }
   },
+  mounted() {
+    this.electronMenuListener();
+  },
+  // data() {
+  //   return {
+  //     menuSet: false,
+  //   }
+  // },
   computed: {
     ...mapGetters({
       isTutorialMode:     'mod_tutorials/getIstutorialMode'
@@ -70,126 +78,86 @@ export default {
       return this.$store.state.globalView.appIsOpen
     },
     isLogin() {
-      return this.$store.state.globalView.userToken ? true : false
+      return !!this.$store.state.globalView.userToken
+    },
+    isMac() {
+      return process.platform === 'darwin'
     },
     navMenu() {
+      const ctx = this;
       return [
         {
           label: 'File',
           submenu: [
-            {label: 'Home',                                     enabled: this.openApp,  active: ()=> {this.openProject()},  mousedown: ()=> {}},
-            {label: 'New',        accelerator: 'Ctrl+N',        enabled: this.isLogin,  active: ()=> {this.addNewNetwork()},mousedown: ()=> {}},
-            {label: 'Open',       accelerator: 'Ctrl+O',        enabled: this.isLogin,  active: ()=> {this.openModel()},  mousedown: ()=> {}},
-            {label: 'Save',       accelerator: 'Ctrl+S',        enabled: this.openApp,  active: ()=> {this.saveModel()},  mousedown: ()=> {}},
-            {label: 'Save as...', accelerator: 'Ctrl+Shift+S',  enabled: this.openApp,  active: ()=> {this.saveModelAs()},mousedown: ()=> {}},
+            {label: 'Home',                                     enabled: this.openApp,  id: "to-home",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'New',        accelerator: 'Ctrl+N',        enabled: this.isLogin,  id: "net-new",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Open',       accelerator: 'Ctrl+O',        enabled: this.isLogin,  id: "net-open",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Save',       accelerator: 'Ctrl+S',        enabled: this.openApp,  id: "save",             active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Save as...', accelerator: 'Ctrl+Shift+S',  enabled: this.openApp,  id: "save-as",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {type: 'separator'},
-            {label: 'Log out',    accelerator: 'Ctrl+F4',       enabled: this.isLogin,  active: ()=> {this.logOut()},       mousedown: ()=> {}},
-            {label: 'Exit',       accelerator: 'Ctrl+Q',        enabled: true,          active: ()=> {this.appClose()},     mousedown: ()=> {}}
+            {label: 'Log out',    accelerator: 'Ctrl+F4',       enabled: this.isLogin,  id: "log-out",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Exit',       accelerator: 'Ctrl+Q',        enabled: true,          id: "exit-app",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}}
           ]
         },
         {
           label: 'Edit',
           submenu: [
-            {label: 'Undo',         accelerator: 'Ctrl+Z',      enabled: false,         active: ()=> {},  mousedown: ()=> {}},
-            {label: 'Redo',         accelerator: 'Ctrl+Shift+Z',enabled: false,         active: ()=> {},  mousedown: ()=> {}},
+            {label: 'Undo',         accelerator: 'Ctrl+Z',      enabled: false,         id: "undo",             active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Redo',         accelerator: 'Ctrl+Shift+Z',enabled: false,         id: "redo",             active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {type: 'separator'},
-            {label: 'Cut',          accelerator: 'Ctrl+X',      enabled: false,         active: ()=> {},  mousedown: ()=> {}},
-            {label: 'Copy',         accelerator: 'Ctrl+C',      enabled: this.openApp,  active: ()=> {},                    mousedown: ()=> {this.HCCopy()}},
-            {label: 'Paste',        accelerator: 'Ctrl+V',      enabled: this.openApp,  active: ()=> {this.HCPaste()},      mousedown: ()=> {}},
+            {label: 'Copy',         accelerator: 'Ctrl+C',      enabled: this.openApp,  id: "copy",             active: function() {},                                mousedown: function() {ctx.menuEventSwitcher(this.id)}},
+            {label: 'Paste',        accelerator: 'Ctrl+V',      enabled: this.openApp,  id: "paste",            active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {type: 'separator'},
-            {label: 'Select all',   accelerator: 'Ctrl+A',      enabled: this.openApp,  active: ()=> {this.HCSelectAll()},  mousedown: ()=> {}},
-            {label: 'Deselect all', accelerator: 'Ctrl+Shift+A',enabled: this.openApp,  active: ()=> {this.HCDeselectAll()},mousedown: ()=> {}},
+            {label: 'Select all',   accelerator: 'Ctrl+A',      enabled: this.openApp,  id: "select-all",       active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Deselect all', accelerator: 'Ctrl+Shift+A',enabled: this.openApp,  id: "deselect-all",     active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
           ]
         },
-        // {
-        //   label: 'Operations ',
-        //   submenu: [
-        //     {
-        //       label: 'Data',
-        //       submenu: [
-        //         {label: 'Data',                     enabled: false,    active: ()=> {}},
-        //         {label: 'Data Environment',         enabled: false,    active: ()=> {}},
-        //       ]
-        //     },
-        //     {
-        //       label: 'Process ',
-        //       submenu: [
-        //         {label: 'Reshape',                  enabled: false,    active: ()=> {}},
-        //         {label: 'Word embedding',           enabled: false,    active: ()=> {}},
-        //         {label: 'Grayscale',                enabled: false,    active: ()=> {}},
-        //         {label: 'One hot',                  enabled: false,    active: ()=> {}},
-        //         {label: 'Crop',                     enabled: false,    active: ()=> {}},
-        //       ]
-        //     },
-        //     {
-        //       label: 'Deep learning',
-        //       submenu: [
-        //         {label: 'Fully connected',          enabled: false,    active: ()=> {}},
-        //         {label: 'Convolution',              enabled: false,    active: ()=> {}},
-        //         {label: 'Deconvolution',            enabled: false,    active: ()=> {}},
-        //         {label: 'Recurrent',                enabled: false,    active: ()=> {}}
-        //       ]
-        //     },
-        //     {
-        //       label: 'Math',
-        //       submenu: [
-        //         {label: 'Argmax',                   enabled: false,    active: ()=> {}},
-        //         {label: 'Merge',                    enabled: false,    active: ()=> {}},
-        //         {label: 'Split',                    enabled: false,    active: ()=> {}},
-        //         {label: 'Softmax',                  enabled: false,    active: ()=> {}}
-        //       ]
-        //     },
-        //     {
-        //       label: 'Training',
-        //       submenu: [
-        //         {label: 'Normal',                   enabled: false,    active: ()=> {}},
-        //         {label: 'Normal+Data',              enabled: false,    active: ()=> {}},
-        //         {label: 'Reinforcement learning',   enabled: false,    active: ()=> {}},
-        //         {label: 'Genetic algorithm',        enabled: false,    active: ()=> {}},
-        //         {label: 'Dynamic routing',          enabled: false,    active: ()=> {}}
-        //       ]
-        //     },
-        //     {
-        //       label: 'Classic machine learning',
-        //       submenu: [
-        //         {label: 'K means clustering',       enabled: false,    active: ()=> {}},
-        //         {label: 'DBSCAN',                   enabled: false,    active: ()=> {}},
-        //         {label: 'kNN',                      enabled: false,    active: ()=> {}},
-        //         {label: 'Random forrest',           enabled: false,    active: ()=> {}},
-        //         {label: 'Support vector machine',   enabled: false,    active: ()=> {}}
-        //       ]
-        //     },
-        //     {
-        //       label: 'Custom'
-        //     },
-        //   ]
-        // },
         {
           label: 'Window',
           submenu: [
-            {label: 'Minimize',         enabled: true,          active: ()=> {this.appMinimize()},  mousedown: ()=> {}},
-            {label: 'Zoom',             enabled: true,          active: ()=> {this.appMaximize()},  mousedown: ()=> {}},
+              {label: 'Minimize',                               enabled: true,          id: "win-minimize",     active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+              {label: 'Zoom',                                   enabled: true,          id: "win-zoom",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
           ]
         },
         {
           label: 'Settings',
           submenu: [
-            {label: 'Hyperparameters',  enabled: this.openApp,  active: ()=> {this.openHyperparameters()},  mousedown: ()=> {}},
-            {label: 'Edit profile',     enabled: false,         active: ()=> {},  mousedown: ()=> {}},
-            {label: 'History',          enabled: false,         active: ()=> {},  mousedown: ()=> {}},
+            {label: 'Hyperparameters',                          enabled: this.openApp,  id: "open-net-param",   active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Edit profile',                             enabled: false,         id: "edit-profile",     active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'History',                                  enabled: false,         id: "history",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
           ]
         },
         {
           label: 'Help',
           submenu: [
-            {label: 'Help',                                     active: ()=> {this.openLink('https://www.perceptilabs.com/html/product.html#tutorials')},  mousedown: ()=> {}},
-            {label: 'About',                                    active: ()=> {this.openLink('https://www.perceptilabs.com/')},  mousedown: ()=> {}},
-            {label: 'Tutorial mode',    enabled: !this.isOpenStoryBoard,  active: ()=> {this.showTutorial()},   mousedown: ()=> {}},
-            {label: 'Check for updates',                        active: ()=> {this.checkUpdate()},    mousedown: ()=> {}},
+            {label: 'Help',                                                             id: "to-help",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'About',                                                            id: "to-about",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Tutorial mode',                   enabled: !this.isOpenStoryBoard, id: "enable-tutorial",  active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Check for updates',                                                id: "check-updates",    active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {type: 'separator'},
+            {label: `Version: ${this.appVersion}`,               enabled: false,}
+          ]
+        },
+        {
+          label: '',
+          visible: false,
+          submenu: [
+            {visible: false, label: 'Delete', accelerator: this.isMac ? 'backspace+meta' : 'delete',    id: "hc-delete", active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {visible: false, label: 'addLayerContainer', accelerator: 'Ctrl+G', enabled: this.openApp,  id: "hc-add-layer-container",    active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {visible: false, label: 'unGroupLayerContainer', accelerator: 'Ctrl+Shift+G', enabled: this.openApp, id: "hc-ungroup-container", active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
           ]
         }
       ]
+    }
+  },
+  watch: {
+    navMenu(newMenu) {
+      ipcRenderer.send('app-menu', newMenu)
+      //ipcRenderer.send('app-menu', JSON.parse(JSON.stringify(newMenu)))
+
+
+      // if(process.platform === 'darwin') {
+      // }
     }
   },
   methods: {
@@ -209,12 +177,102 @@ export default {
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
       HCDeselectAll:    'mod_workspace/SET_elementUnselect'
     }),
+    electronMenuListener() {
+      ipcRenderer.on('menu-event', (event, menuId) => {
+        this.menuEventSwitcher(menuId)
+      });
+    },
+    menuEventSwitcher(menuId) {
+      switch (menuId) {
+        //File
+        case 'to-home':
+          this.openProject();
+          break;
+        case 'net-new':
+          this.addNewNetwork();
+          break;
+        case 'net-open':
+          this.openModel();
+          break;
+        case 'save':
+          this.saveModel();
+          break;
+        case 'save-as':
+          this.saveModelAs();
+          break;
+        case 'log-out':
+          this.logOut();
+          break;
+        case 'exit-app':
+          this.appClose();
+          break;
+        //Edit
+        case 'undo':
+
+          break;
+        case 'redo':
+
+          break;
+        case 'copy':
+          this.HCCopy();
+          break;
+        case 'paste':
+          this.HCPaste();
+          break;
+        case 'select-all':
+          this.HCSelectAll();
+          break;
+        case 'deselect-all':
+          this.HCDeselectAll();
+          break;
+        //Window
+        case 'win-minimize':
+          this.appMinimize();
+          break;
+        case 'win-zoom':
+          this.appMaximize();
+          break;
+        //Settings
+        case 'open-net-param':
+          this.openHyperparameters();
+          break;
+        case 'edit-profile':
+
+          break;
+        case 'history':
+
+          break;
+        //Help
+        case 'to-help':
+          this.openLink('https://www.perceptilabs.com/html/product.html#tutorials');
+          break;
+        case 'to-about':
+          this.openLink('https://www.perceptilabs.com/');
+          break;
+        case 'enable-tutorial':
+          this.showTutorial();
+          break;
+        case 'check-updates':
+          this.checkUpdate();
+          break;
+        //Hot keys
+        case 'hc-delete':
+
+          break;
+        case 'hc-add-layer-container':
+
+          break;
+        case 'hc-ungroup-container':
+
+          break;
+      }
+    },
     openLink(url) {
       shell.openExternal(url);
     },
     checkUpdate() {
       this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
-      ipcRenderer.send('checkUpdate');
+      ipcRenderer.send('check-update');
     },
     addNewNetwork() {
       this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
@@ -235,10 +293,10 @@ export default {
       this.$store.commit('globalView/GP_showNetGlobalSet', true);
     },
     appMinimize() {
-      ipcRenderer.send('appMinimize')
+      ipcRenderer.send('app-minimize')
     },
     appMaximize() {
-      ipcRenderer.send('appMaximize')
+      ipcRenderer.send('app-maximize')
     },
     openModel() {
       this.openNetwork();

@@ -1,7 +1,8 @@
 <template lang="pug">
-  #app(
+  //-#app(
     v-hotkey="keymap"
-  )
+    )
+  #app
     header-win.app-header(
       v-if="platform === 'win32'"
       @app-closed="appClose"
@@ -38,33 +39,33 @@
   export default {
     name: 'TheApp',
     components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup },
-    data() {
-      return {
-        
-      }
-    },
+    // data() {
+    //   return {
+    //
+    //   }
+    // },
     mounted() {
       this.calcAppPath();
       this.checkToken();
       /*Menu*/
-      ipcRenderer.on('newNetwork', (event) => {
-        this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
-      });
-      ipcRenderer.on('openNetwork', (event) => {
-        this.$store.commit('mod_events/set_openNetwork')
-      });
-      ipcRenderer.on('saveNetwork', (event) => {
-        this.$store.commit('mod_events/set_saveNetwork')
-      });
-      ipcRenderer.on('logOut', (event) => {
-        this.logOut();
-      });
-      ipcRenderer.on('closeApp', (event) => {
-        this.appClose();
-      });
-      ipcRenderer.on('getAppVersion', (event, data) => {
-        this.$store.commit('globalView/SET_appVersion', data)
-      });
+      // ipcRenderer.on('new-network', (event) => {
+      //   this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+      // });
+      // ipcRenderer.on('open-network', (event) => {
+      //   this.$store.commit('mod_events/set_openNetwork')
+      // });
+      // ipcRenderer.on('save-network', (event) => {
+      //   this.$store.commit('mod_events/set_saveNetwork')
+      // });
+      // ipcRenderer.on('log-out', (event) => {
+      //   this.logOut();
+      // });
+      // ipcRenderer.on('close-app', (event) => {
+      //   this.appClose();
+      // });
+      // ipcRenderer.on('get-app-version', (event, data) => {
+      //   this.$store.commit('globalView/SET_appVersion', data)
+      // });
 
       /*Auto update*/
       ipcRenderer.on('checking-for-update', (event, updateInfo) => {
@@ -111,25 +112,26 @@
       })
     },
     computed: {
-      keymap () {
-        return {
-          'del': this.HC_delete,
-          'backspace+meta': this.HC_delete,
-          'ctrl+g': this.HC_addLayerContainer,
-          'ctrl+shift+g': this.HC_unGroupLayerContainer,
-          'ctrl+n': this.HC_netNew,
-          'ctrl+o': this.HC_netOpen,
-          'ctrl+s': this.HC_netSave,
-          'ctrl+shift+s': this.HC_netSaveAs,
-          'ctrl+f4': this.HC_logOut,
-          'ctrl+q': this.HC_closeApp,
-          'ctrl+c': this.HC_copy,
-          'ctrl+v': this.HC_paste,
-          'ctrl+a': this.HC_selectAll,
-          'ctrl+shift+a': this.HC_unselectAll,
-          'ctrl+w': this.HC_stopExe,
-        }
-      },
+      // keymap () {
+      //   return {
+      //     'del': this.HC_delete,
+      //     'backspace+meta': this.HC_delete,
+      //     'ctrl+g': this.HC_addLayerContainer,
+      //     'ctrl+shift+g': this.HC_unGroupLayerContainer,
+      //
+      //     'ctrl+n': this.HC_netNew,
+      //     'ctrl+o': this.HC_netOpen,
+      //     'ctrl+s': this.HC_netSave,
+      //     'ctrl+shift+s': this.HC_netSaveAs,
+      //     'ctrl+f4': this.HC_logOut,
+      //     'ctrl+q': this.HC_closeApp,
+      //     'ctrl+c': this.HC_copy,
+      //     'ctrl+v': this.HC_paste,
+      //     'ctrl+a': this.HC_selectAll,
+      //     'ctrl+shift+a': this.HC_unselectAll,
+      //     'ctrl+w': this.HC_stopExe,
+      //   }
+      // },
       platform() {
         return this.$store.state.globalView.platform
       },
@@ -148,12 +150,12 @@
       userToken() {
         return this.$store.state.globalView.userToken
       },
-      openApp() {
-        return this.$store.state.globalView.appIsOpen
-      },
-      isLogin() {
-        return this.$store.state.globalView.userToken ? true : false
-      },
+      // openApp() {
+      //   return this.$store.state.globalView.appIsOpen
+      // },
+      // isLogin() {
+      //   return this.$store.state.globalView.userToken ? true : false
+      // },
     },
     watch: {
       eventLoadNetwork() {
@@ -178,11 +180,11 @@
       loadNetwork,
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {
-          ipcRenderer.send('changeRoute', {path, id: this.userToken})
+          ipcRenderer.send('change-route', {path, id: this.userToken})
         }
       },
       appReady() {
-        ipcRenderer.send('appReady');
+        ipcRenderer.send('app-ready');
         const splash = document.getElementById('splashscreen');
         setTimeout(()=>{
           splash.remove();
@@ -191,14 +193,14 @@
       },
       /*Header actions*/
       appClose() {
-        console.log('appClose');
+        console.log('app-close');
         this.$store.dispatch('mod_events/EVENT_closeApp');
       },
       appMinimize() {
-        ipcRenderer.send('appMinimize')
+        ipcRenderer.send('app-minimize')
       },
       appMaximize() {
-        ipcRenderer.send('appMaximize')
+        ipcRenderer.send('app-maximize')
       },
       /*Auto update actions*/
 
@@ -228,52 +230,52 @@
           }
         }
       },
-      logOut() {
-        if(this.isLogin) this.$store.dispatch('mod_events/EVENT_logOut', this)
-      },
-      HC_delete() {
-        this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement')
-      },
-      HC_addLayerContainer() {
-        if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');
-      },
-      HC_unGroupLayerContainer() {
-        this.$store.dispatch('mod_workspace/UNGROUP_container');
-      },
-      HC_netNew() {
-        if(this.isLogin) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
-      },
-      HC_netOpen() {
-        if(this.isLogin) this.$store.commit('mod_events/set_openNetwork');
-      },
-      HC_netSave() {
-        if(this.openApp) this.$store.commit('mod_events/set_saveNetwork');
-      },
-      HC_netSaveAs() {
-        if(this.openApp) this.$store.commit('mod_events/set_saveNetworkAs');
-      },
-      HC_logOut() {
-        if(this.isLogin) this.logOut();
-      },
-      HC_closeApp(e) {
-        e.preventDefault();
-        this.appClose();
-      },
-      HC_selectAll() {
-        this.$store.dispatch('mod_workspace/SET_elementSelectAll');
-      },
-      HC_unselectAll() {
-        this.$store.dispatch('mod_workspace/SET_elementUnselect');
-      },
-      HC_copy() {
-        this.$store.dispatch('mod_events/EVENT_hotKeyCopy');
-      },
-      HC_paste() {
-        this.$store.dispatch('mod_events/EVENT_hotKeyPaste');
-      },
-      HC_stopExe(e) {
-        e.preventDefault();
-      }
+      // logOut() {
+      //   if(this.isLogin) this.$store.dispatch('mod_events/EVENT_logOut', this)
+      // },
+      // HC_delete() {
+      //   this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement')
+      // },
+      // HC_addLayerContainer() {
+      //   if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');
+      // },
+      // HC_unGroupLayerContainer() {
+      //   this.$store.dispatch('mod_workspace/UNGROUP_container');
+      // },
+      // HC_netNew() {
+      //   if(this.isLogin) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+      // },
+      // HC_netOpen() {
+      //   if(this.isLogin) this.$store.commit('mod_events/set_openNetwork');
+      // },
+      // HC_netSave() {
+      //   if(this.openApp) this.$store.commit('mod_events/set_saveNetwork');
+      // },
+      // HC_netSaveAs() {
+      //   if(this.openApp) this.$store.commit('mod_events/set_saveNetworkAs');
+      // },
+      // HC_logOut() {
+      //   if(this.isLogin) this.logOut();
+      // },
+      // HC_closeApp(e) {
+      //   e.preventDefault();
+      //   this.appClose();
+      // },
+      // HC_selectAll() {
+      //   this.$store.dispatch('mod_workspace/SET_elementSelectAll');
+      // },
+      // HC_unselectAll() {
+      //   this.$store.dispatch('mod_workspace/SET_elementUnselect');
+      // },
+      // HC_copy() {
+      //   this.$store.dispatch('mod_events/EVENT_hotKeyCopy');
+      // },
+      // HC_paste() {
+      //   this.$store.dispatch('mod_events/EVENT_hotKeyPaste');
+      // },
+      // HC_stopExe(e) {
+      //   e.preventDefault();
+      // }
     },
   }
 </script>
