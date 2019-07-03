@@ -102,6 +102,7 @@
       });
 
       ipcRenderer.on('show-mac-header', (event, value) => {
+        console.log('show-mac-header', value)
         this.showMacHeader = value
       });
 

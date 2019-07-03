@@ -1,6 +1,6 @@
 <template lang="pug">
   .app-header
-    ul.app-header_actions
+    //-ul.app-header_actions
       button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close-mac
       button.btn.btn--app-full(type="button" @click="appMinimize()").i.icon.icon-minus
       button.btn.btn--app-minify(type="button" @click="appMaximize()").i.icon.icon-app-fullscreen-mac

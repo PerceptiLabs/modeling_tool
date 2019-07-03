@@ -170,7 +170,15 @@ function createWindow () {
   mainWindow.on('closed', () => {
     mainWindow = null
   });
-
+  /**
+   * listeners for the action button
+   */
+  mainWindow.on('enter-full-screen', () => {
+    mainWindow.webContents.send('show-mac-header', false);
+  });
+  mainWindow.on('leave-full-screen', () => {
+    mainWindow.webContents.send('show-mac-header', true);
+  });
   /**
    * add custom menu
    */
@@ -185,6 +193,8 @@ function createWindow () {
     const menuCustom = Menu.buildFromTemplate(menuJson);
     Menu.setApplicationMenu(menuCustom);
   });
+  
+
   /**
    * listeners for the renderer process
    */
@@ -193,10 +203,10 @@ function createWindow () {
   });
   ipcMain.on('app-minimize', (event, arg) => {
     if(process.platform === 'darwin' && mainWindow.isFullScreen()) {
-      mainWindow.webContents.send('show-mac-header', true);
-      //mainWindow.frame = false;
-      mainWindow.setFullScreen(false);
-      setTimeout(()=>{mainWindow.minimize();}, 1000)
+      // mainWindow.webContents.send('show-mac-header', true);
+      // //mainWindow.frame = false;
+      // mainWindow.setFullScreen(false);
+      // setTimeout(()=>{mainWindow.minimize();}, 1000)
     }
     else {
       mainWindow.isMinimized()
@@ -207,10 +217,10 @@ function createWindow () {
   });
   ipcMain.on('app-maximize', (event, arg) => {
     if(process.platform === 'darwin') {
-      mainWindow.webContents.send('show-mac-header', false);
-      mainWindow.isMaximized()
-        ? mainWindow.setFullScreen(false)
-        : mainWindow.setFullScreen(true)
+      // mainWindow.webContents.send('show-mac-header', false);
+      // mainWindow.isMaximized()
+      //   ? mainWindow.setFullScreen(false)
+      //   : mainWindow.setFullScreen(true)
     }
     else {
       mainWindow.isMaximized()
