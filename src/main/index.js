@@ -193,6 +193,7 @@ function createWindow () {
   });
   ipcMain.on('app-minimize', (event, arg) => {
     if(process.platform === 'darwin' && mainWindow.isFullScreen()) {
+      mainWindow.webContents.send('show-mac-header', true);
       //mainWindow.frame = false;
       mainWindow.setFullScreen(false);
       setTimeout(()=>{mainWindow.minimize();}, 1000)
@@ -206,7 +207,7 @@ function createWindow () {
   });
   ipcMain.on('app-maximize', (event, arg) => {
     if(process.platform === 'darwin') {
-      //mainWindow.frame = true;
+      mainWindow.webContents.send('show-mac-header', false);
       mainWindow.isMaximized()
         ? mainWindow.setFullScreen(false)
         : mainWindow.setFullScreen(true)

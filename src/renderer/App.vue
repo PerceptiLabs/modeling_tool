@@ -10,7 +10,7 @@
       @app-maximized="appMaximize"
     )
     header-mac.app-header(
-      v-if="platform === 'darwin'"
+      v-if="platform === 'darwin' && showMacHeader"
       @app-closed="appClose"
       @app-minimized="appMinimize"
       @app-maximized="appMaximize"
@@ -39,11 +39,11 @@
   export default {
     name: 'TheApp',
     components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup },
-    // data() {
-    //   return {
-    //
-    //   }
-    // },
+    data() {
+      return {
+        showMacHeader: true
+      }
+    },
     mounted() {
       this.calcAppPath();
       this.checkToken();
@@ -101,6 +101,9 @@
         if(error.code) this.$store.dispatch('globalView/GP_infoPopup', error.code);
       });
 
+      ipcRenderer.on('show-mac-header', (event, value) => {
+        this.showMacHeader = value
+      });
 
       ipcRenderer.on('info', (event, data) => {
         console.log(data);
