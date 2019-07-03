@@ -888,7 +888,7 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Prediction:</div> Overview of the </br> network perfomance
+                          <div class="tooltip-tutorial_bold">Click to Prediction:</div> Overview of the </br> network perfomance
                         </div>`,
               position: 'right',
               id: 'tutorial_prediction-tab',
@@ -896,7 +896,7 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Accuracy:</div> Overall </br> performance of a network. </br> The higher the accuracy, </br> the better it is at learning. 
+                          <div class="tooltip-tutorial_bold">Click to Accuracy:</div> Overall </br> performance of a network. </br> The higher the accuracy, </br> the better it is at learning. 
                         </div>`,
               position: 'right',
               id: 'tutorial_accuracy-tab',
@@ -904,7 +904,7 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Loss:</div> How much error there is in your predictions.
+                          <div class="tooltip-tutorial_bold">Click to Loss:</div> How much error there is in your predictions.
                         </div>`,
               position: 'right',
               id: 'tutorial_loss-tab',
@@ -918,7 +918,7 @@ const state = {
           content: 'Continue training.',
           actions: [
             {
-              tooltip: 'Unpause...',
+              tooltip: 'Click to unpause...',
               position: 'bottom',
               id: 'tutorial_pause-training',
               status: 'disabled',
@@ -931,7 +931,6 @@ const state = {
           content: 'Weight when training is complete for this network.',
           actions: [
             {
-              tooltip: 'Training is complete for this network...',
               position: 'right',
               status: 'disabled',
               id:'tutorial_statistic-tab'
@@ -962,7 +961,7 @@ const state = {
           content: 'Testing shows how general your model is, i.e. to what extent can it classify things it has never seen before',
           actions: [
             {
-              tooltip: 'Explore view controls...',
+              tooltip: 'Click to explore view controls...',
               position: 'right',
               status: 'disabled',
               id:'tutorial_play-test-button'
@@ -1130,7 +1129,6 @@ const actions = {
           dispatch('removeDuplicateId');
           dispatch('checkActiveActionAndPoint', value);
           dispatch('unlockElement', getters.getActiveAction.id);
-          console.log(getters.getActiveAction.id);
         }
         else {
           dispatch('removePrevUnlock');
