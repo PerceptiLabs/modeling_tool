@@ -174,6 +174,7 @@ export default {
     color: $white;
     border-radius: 5px;
     overflow: hidden;
+    box-shadow: $box-shad;
   }
   .list-area_header {
     background: $bg-workspace;

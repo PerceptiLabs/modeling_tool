@@ -260,7 +260,7 @@ export default {
       }
     },
     deselect() {
-      this.hideAllWindow();
+      if(!this.isTutorialMode) this.hideAllWindow();
       this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: false });
       this.tutorialShowHideTooltip();
     },

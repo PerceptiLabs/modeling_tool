@@ -47,6 +47,7 @@ export default {
   }
   .app-header_logo {
     margin: 0 12px;
+    cursor: pointer;
     a {
       display: block;
       -webkit-app-region: no-drag;
