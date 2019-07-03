@@ -164,12 +164,14 @@ export default {
           text: `Choose an interactive tutorial`
         }
       },
+      trainingWasPaused: false
     }
   },
   computed: {
     ...mapGetters({
       tutorialActiveAction:   'mod_tutorials/getActiveAction',
       interactiveInfoStatus:  'mod_tutorials/getInteractiveInfo',
+      isTutorialMode:         'mod_tutorials/getIstutorialMode',
       currentElList:          'mod_workspace/GET_currentNetworkElementList',
       isTraining:             'mod_workspace/GET_networkIsTraining',
       statusNetworkCore:      'mod_workspace/GET_networkCoreStatus',
@@ -245,15 +247,24 @@ export default {
       if(!newVal) {
         this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
       }
+    },
+    statusTraining(newVal) {
+      if(this.isTutorialMode && newVal === 'training' && !this.trainingWasPaused) {
+        this.pauseTraining();
+        this.set_showTrainingSpinner(false);
+        this.trainingWasPaused = true;
+      }
     }
   },
   methods: {
     ...mapMutations({
-      setInteractiveInfo:    'mod_tutorials/SET_interactiveInfo',
+      setInteractiveInfo:        'mod_tutorials/SET_interactiveInfo',
+      set_showTrainingSpinner:   'mod_workspace/SET_showStartTrainingSpinner'
     }),
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
-      removeTooltip:            'mod_tutorials/removeTooltip'
+      removeTooltip:            'mod_tutorials/removeTooltip',
+      pauseTraining:            'mod_api/API_pauseTraining'
     }),
     onOffBtn() {
       if(this.isTraining) this.trainStop();

@@ -833,7 +833,7 @@ const state = {
             }
           ]
         },
-        {
+/*        {
           status:'disabled',
           class_style: 'list_subtitle',
           content: 'The <div class="marker">Pause</div> to learn  further details',
@@ -845,7 +845,7 @@ const state = {
               status: 'disabled',
             }
           ]
-        },
+        },*/
         {
           status:'disabled',
           class_style: 'list_subtitle',
@@ -1130,6 +1130,7 @@ const actions = {
           dispatch('removeDuplicateId');
           dispatch('checkActiveActionAndPoint', value);
           dispatch('unlockElement', getters.getActiveAction.id);
+          console.log(getters.getActiveAction.id);
         }
         else {
           dispatch('removePrevUnlock');
