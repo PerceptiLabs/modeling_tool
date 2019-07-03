@@ -1,6 +1,6 @@
 {
   "name": "PerceptiLabs",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "author": "PerceptiLabs <contact@perceptilabs.com>",
   "description": "PerceptiLabs is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.",
   "license": null,
@@ -77,7 +77,6 @@
     "electron-updater": "^4.0.6",
     "html2canvas": "^1.0.0-rc.3",
     "universal-analytics": "^0.4.20",
-    "uuid": "^3.3.2",
     "v-hotkey": "^0.4.0",
     "vee-validate": "^2.2.10",
     "vue": "^2.6.10",

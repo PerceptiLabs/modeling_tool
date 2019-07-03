@@ -1,4 +1,4 @@
-const baseURL = 'https://quantumnet.azurewebsites.net/api/';
+const baseURL = 'https://quantumnet-cont.azurewebsites.net/api/';
 
 const requestCloudApi = function (method, path, dataRequest) {
   let headers = localStorage.getItem('userToken')

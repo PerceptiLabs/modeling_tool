@@ -63,10 +63,10 @@ const actions = {
     if(rootState.mod_api.statusLocalCore === 'online') {
       dispatch('mod_api/API_stopTraining', null, {root: true})
         .then(()=> { return dispatch('mod_api/API_CLOSE_core', null, {root: true}) })
-        .then(()=> ipcRenderer.send('appClose'));
+        .then(()=> ipcRenderer.send('app-close'));
     }
     else {
-      ipcRenderer.send('appClose')
+      ipcRenderer.send('app-close')
     }
   },
   EVENT_eventResize({commit}) {
