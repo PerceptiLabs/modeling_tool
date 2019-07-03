@@ -11,9 +11,6 @@
     )
     header-mac.app-header(
       v-if="platform === 'darwin' && showMacHeader"
-      @app-closed="appClose"
-      @app-minimized="appMinimize"
-      @app-maximized="appMaximize"
     )
     header-linux.app-header(
       v-if="platform === 'linux'"
@@ -45,33 +42,17 @@
       }
     },
     mounted() {
-      this.calcAppPath();
-      this.checkToken();
+
       /*Menu*/
-      // ipcRenderer.on('new-network', (event) => {
-      //   this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
-      // });
-      // ipcRenderer.on('open-network', (event) => {
-      //   this.$store.commit('mod_events/set_openNetwork')
-      // });
-      // ipcRenderer.on('save-network', (event) => {
-      //   this.$store.commit('mod_events/set_saveNetwork')
-      // });
-      // ipcRenderer.on('log-out', (event) => {
-      //   this.logOut();
-      // });
-      // ipcRenderer.on('close-app', (event) => {
-      //   this.appClose();
-      // });
-      // ipcRenderer.on('get-app-version', (event, data) => {
-      //   this.$store.commit('globalView/SET_appVersion', data)
-      // });
+      ipcRenderer.on('get-app-version', (event, data) => {
+        this.$store.commit('globalView/SET_appVersion', data)
+      });
 
       /*Auto update*/
       ipcRenderer.on('checking-for-update', (event, updateInfo) => {
         console.log('checking-for-update', updateInfo);
-        // this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
-        // this.$store.commit('mod_autoUpdate/SET_updateInfo', update)
+        this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
+        this.$store.commit('mod_autoUpdate/SET_updateInfo', update)
       });
       ipcRenderer.on('update-available', (event, updateInfo) => {
         console.log('update-available', updateInfo);
@@ -101,15 +82,11 @@
         if(error.code) this.$store.dispatch('globalView/GP_infoPopup', error.code);
       });
 
-      ipcRenderer.on('show-mac-header', (event, value) => {
-        console.log('show-mac-header', value)
-        this.showMacHeader = value
-      });
+      ipcRenderer.on('show-mac-header', (event, value) => { this.showMacHeader = value });
+      ipcRenderer.on('info',            (event, data) => { console.log(data); });
 
-      ipcRenderer.on('info', (event, data) => {
-        console.log(data);
-      });
-
+      this.calcAppPath();
+      this.checkToken();
       this.$nextTick(()=>{
         this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
@@ -142,24 +119,12 @@
       eventLoadNetwork() {
         return this.$store.state.mod_events.openNetwork
       },
-      // eventLogout() {
-      //   return this.$store.state.mod_events.logOut
-      // },
-      // showPopupUpdates() {
-      //   return this.$store.state.globalView.globalPopup.showPopupUpdates
-      // },
       showNotAvailable() {
         return this.$store.state.mod_autoUpdate.showNotAvailable
       },
       userToken() {
         return this.$store.state.globalView.userToken
       },
-      // openApp() {
-      //   return this.$store.state.globalView.appIsOpen
-      // },
-      // isLogin() {
-      //   return this.$store.state.globalView.userToken ? true : false
-      // },
     },
     watch: {
       eventLoadNetwork() {
@@ -195,20 +160,6 @@
           document.body.className = "";
         }, 1000)
       },
-      /*Header actions*/
-      appClose() {
-        console.log('app-close');
-        this.$store.dispatch('mod_events/EVENT_closeApp');
-      },
-      appMinimize() {
-        ipcRenderer.send('app-minimize')
-      },
-      appMaximize() {
-        ipcRenderer.send('app-maximize')
-      },
-      /*Auto update actions*/
-
-
       calcAppPath() {
         let resPath = process.resourcesPath;
         var path = '';
@@ -234,52 +185,16 @@
           }
         }
       },
-      // logOut() {
-      //   if(this.isLogin) this.$store.dispatch('mod_events/EVENT_logOut', this)
-      // },
-      // HC_delete() {
-      //   this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement')
-      // },
-      // HC_addLayerContainer() {
-      //   if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');
-      // },
-      // HC_unGroupLayerContainer() {
-      //   this.$store.dispatch('mod_workspace/UNGROUP_container');
-      // },
-      // HC_netNew() {
-      //   if(this.isLogin) this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
-      // },
-      // HC_netOpen() {
-      //   if(this.isLogin) this.$store.commit('mod_events/set_openNetwork');
-      // },
-      // HC_netSave() {
-      //   if(this.openApp) this.$store.commit('mod_events/set_saveNetwork');
-      // },
-      // HC_netSaveAs() {
-      //   if(this.openApp) this.$store.commit('mod_events/set_saveNetworkAs');
-      // },
-      // HC_logOut() {
-      //   if(this.isLogin) this.logOut();
-      // },
-      // HC_closeApp(e) {
-      //   e.preventDefault();
-      //   this.appClose();
-      // },
-      // HC_selectAll() {
-      //   this.$store.dispatch('mod_workspace/SET_elementSelectAll');
-      // },
-      // HC_unselectAll() {
-      //   this.$store.dispatch('mod_workspace/SET_elementUnselect');
-      // },
-      // HC_copy() {
-      //   this.$store.dispatch('mod_events/EVENT_hotKeyCopy');
-      // },
-      // HC_paste() {
-      //   this.$store.dispatch('mod_events/EVENT_hotKeyPaste');
-      // },
-      // HC_stopExe(e) {
-      //   e.preventDefault();
-      // }
+      /*Header actions*/
+      appClose() {
+        this.$store.dispatch('mod_events/EVENT_appClose');
+      },
+      appMinimize() {
+        this.$store.dispatch('mod_events/EVENT_appMinimize');
+      },
+      appMaximize() {
+        this.$store.dispatch('mod_events/EVENT_appMaximize');
+      },
     },
   }
 </script>
