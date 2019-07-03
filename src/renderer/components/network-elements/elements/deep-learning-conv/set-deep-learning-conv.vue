@@ -309,9 +309,9 @@ node=node+b;`;
       this.tutorialPointActivate({way:'next', validation: 'tutorial_patch-size'})
     },
     focusFirstTutorialField() {
-      setTimeout(()=> {
+      this.$nextTick(()=> {
         if (this.isTutorialMode) this.$refs.pathSize.focus()
-      }, 100)
+      })
     }
   }
 }
