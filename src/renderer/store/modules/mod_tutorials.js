@@ -993,6 +993,9 @@ const getters = {
   getIterective(state) {
     return state.interective
   },
+  getIsTutorialStoryBoard(state) {
+    return state.showTutorialStoryBoard
+  },
   getIstutorialMode(state) {
     return state.isTutorialMode
   },

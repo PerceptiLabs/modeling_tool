@@ -68,13 +68,14 @@ export default {
   // },
   computed: {
     ...mapGetters({
-      isTutorialMode:     'mod_tutorials/getIstutorialMode'
+      isTutorialMode: 'mod_tutorials/getIstutorialMode',
+      isStoryBoard:   'mod_tutorials/getIsTutorialStoryBoard'
     }),
     appVersion() {
       return this.$store.state.globalView.appVersion
     },
-    isOpenStoryBoard() {
-      return this.$store.state.mod_tutorials.showTutorialStoryBoard
+    isTutorialActive() {
+      return this.isTutorialMode || this.isStoryBoard;
     },
     openApp() {
       return this.$store.state.globalView.appIsOpen
@@ -134,7 +135,7 @@ export default {
           submenu: [
             {label: 'Help',                                                                                               id: "to-help",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {label: 'About',                                                                                              id: "to-about",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Tutorial mode',                                                     enabled: !this.isOpenStoryBoard, id: "enable-tutorial",  active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Tutorial mode',                                                     enabled: !this.isTutorialActive, id: "enable-tutorial",  active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {label: 'Check for updates',                                                                                  id: "check-updates",    active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {type: 'separator'},
             {label: `Version: ${this.appVersion}`,                                                enabled: false,}
