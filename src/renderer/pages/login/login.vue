@@ -6,7 +6,7 @@
     .login_main
       h1 Log In please
       h3 Enter your Email & Password
-      form.login_form
+      form.login_form(@keyup.enter="validateForm")
         .form_holder
           input(type="email" placeholder="Email"
             v-model="userEmail"
@@ -21,6 +21,8 @@
             v-validate="'required|min:6'"
             )
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
+          .forgot-password-box
+            a.btn.btn--link-without-underline(href="#" @click.prevent="openLink('https://www.perceptilabs.com')") Forgot email or password?
 
         .form_holder
           base-checkbox(v-model="saveToken") Remember me
@@ -33,6 +35,7 @@
 
 <script>
   import {requestCloudApi} from '@/core/apiCloud.js'
+  import {shell} from 'electron'
   import ViewLoading from '@/components/different/view-loading.vue'
 export default {
   name: 'PageLogin',
@@ -100,7 +103,10 @@ export default {
 
     loginUser() {
       this.$router.replace('/projects');
-    }
+    },
+    openLink(url) {
+      shell.openExternal(url);
+    },
   }
 }
 </script>

@@ -149,15 +149,11 @@ export default {
       this.$store.commit('mod_workspace/DELETE_network', index)
     },
     setTabNetwork(index) {
-      if(this.isTutorialMode) {
-        this.infoPopup("Turn off tutorial mode to change network tab");
-      }
-      else {
-        this.$store.commit('mod_workspace/SET_currentNetwork', index);
-        this.$store.dispatch('mod_workspace/SET_elementUnselect');
-        if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
-        if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
-      }
+      if(this.isTutorialMode) return;
+      this.$store.commit('mod_workspace/SET_currentNetwork', index);
+      this.$store.dispatch('mod_workspace/SET_elementUnselect');
+      if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
+      if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
     },
     toggleSidebar() {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)

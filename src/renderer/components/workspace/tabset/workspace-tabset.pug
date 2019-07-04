@@ -14,11 +14,10 @@ ul.bookmark_tab-list
       :text-title="tab.networkName"
       @change-title="editNetName"
       )
-    button.btn.btn--tabs.tab_statistics(type="button"
+    button.btn.btn--tabs.tab_statistics#tutorial_statistic-tab(type="button"
       v-if="tab.networkMeta.openStatistics !== null"
       @click.stop="openStatistics(i)"
-      :class="{'active': tab.networkMeta.openStatistics && indexCurrentNetwork === i}"
-      id="tutorial_statistic-tab")
+      :class="{'active': tab.networkMeta.openStatistics && indexCurrentNetwork === i}")
       span Statistics
       i.icon(:class="{'icon-circle-o': trainingWaiting(i), 'icon-circle-o green-color-icon': trainingInProcess(i), 'icon-ellipse green-color-icon': trainingFinished(i) }")
     button.btn.btn--tabs.tab_statistics.tab--testing(type="button"
