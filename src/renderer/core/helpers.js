@@ -9,7 +9,7 @@ import configApp from '@/core/globalSettings.js'
 const openLoadDialog = function (options) {
   return new Promise((success, reject) => {
     let dialog = remote.dialog;
-    dialog.showOpenDialog(options, (files) => {
+    dialog.showOpenDialog(remote.getCurrentWindow(), options, (files) => {
       if (files !== undefined) {
         success(files)
       }
