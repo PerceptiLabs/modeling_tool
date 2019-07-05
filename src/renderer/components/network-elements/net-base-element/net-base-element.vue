@@ -120,6 +120,9 @@ export default {
     wsZoom() {
       return  this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
     },
+    EscButton() {
+      return  this.$store.state.mod_events.globalPressKey.esc;
+    },
     classEl() {
       return {
         'net-element--active': this.isSelectedEl,
@@ -149,6 +152,9 @@ export default {
         ? this.mousedownOutsideBefore()
         : null
     },
+    EscButton() {
+      if(!this.isTutorialMode) this.hideAllWindow();
+    }
   },
   methods: {
     ...mapActions({

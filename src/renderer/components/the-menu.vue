@@ -145,6 +145,7 @@ export default {
           label: '', visible: false,
           submenu: [
             {label: 'Delete',                accelerator: this.isMac ? 'backspace+meta' : 'delete',                                 id: "hc-delete",              active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
+            {label: 'Esc',                   accelerator: 'esc',                                                                    id: "hc-esc",              active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
             {label: 'addLayerContainer',     accelerator: this.isMac ? 'Command+G' : 'Ctrl+G',              enabled: this.openApp,  id: "hc-add-layer-container", active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
             {label: 'unGroupLayerContainer', accelerator: this.isMac ? 'Command+Shift+G' : 'Ctrl+Shift+G',  enabled: this.openApp,  id: "hc-ungroup-container",   active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
           ]
@@ -258,6 +259,9 @@ export default {
         case 'hc-delete':
           this.HC_delete();
           break;
+        case 'hc-esc':
+          this.HC_esc();
+          break;
         case 'hc-add-layer-container':
           this.HC_addLayerContainer();
           break;
@@ -305,6 +309,9 @@ export default {
     },
     HC_delete() {
       this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement')
+    },
+    HC_esc() {
+      this.$store.dispatch('mod_events/EVENT_hotKeyEsc')
     },
     HC_addLayerContainer() {
       if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');

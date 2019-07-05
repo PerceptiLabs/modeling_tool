@@ -11,6 +11,7 @@ const state = {
   runNetwork: false,
   globalPressKey: {
     del: 0,
+    esc: 0
   }
 };
 
@@ -87,6 +88,9 @@ const actions = {
     if(rootGetters['mod_workspace/GET_networkIsOpen']) {
       dispatch('mod_workspace/DELETE_element', null, {root: true});
     }
+  },
+  EVENT_hotKeyEsc({commit, rootGetters, dispatch}) {
+    commit('set_globalPressKey', 'esc');
   },
   EVENT_hotKeyCopy({rootGetters, dispatch}) {
     if(rootGetters['mod_workspace/GET_networkIsOpen']) {
