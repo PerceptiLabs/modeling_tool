@@ -100,6 +100,10 @@ function sideCalculate(element, tooltip, side) {
       tooltip.style.top = elCoord.top + elCoord.height + tooltipArrow +'px';
       tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
       break;
+    case 'bottom-right':
+      tooltip.style.top = elCoord.top + elCoord.height + tooltipArrow +'px';
+      tooltip.style.left = elCoord.left - tooltipArrow + 'px';
+      break;
   }
 }
 

@@ -1238,7 +1238,7 @@ const actions = {
       }
     }
   },
-  showHoverInfo({getters, dispatch}) {
+  showHoverInfo({getters, dispatch}) { //main tutorial hover tooltips
     setTimeout(()=> {
       const elements = document.querySelectorAll('[data-tutorial-hover-info]');
       if(elements.length > 0) {

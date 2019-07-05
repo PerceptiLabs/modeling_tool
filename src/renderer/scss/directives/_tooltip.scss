@@ -127,6 +127,14 @@ $triangleWith: 10px;
     background:$tutorial-tooltip-bg;
   }
 }
+.tooltip-tutorial--bottom-right {
+	&:before {
+		left: 10%;
+		transform: translate(-50%, 50%) rotate(45deg);
+		background:$tutorial-tooltip-bg;
+		bottom: 100%;
+	}
+}
 
 .tooltip-tutorial_italic {
 	font-style: italic;
