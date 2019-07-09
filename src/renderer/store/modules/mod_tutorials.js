@@ -1131,11 +1131,11 @@ const actions = {
         if(value.way === 'next')  {
           dispatch('removeDuplicateId');
           dispatch('checkActiveActionAndPoint', value);
-          dispatch('unlockElement', getters.getActiveAction.id);
+          if(getters.getActivePoint) dispatch('unlockElement', getters.getActiveAction.id);
         }
         else {
           dispatch('removePrevUnlock');
-          dispatch('unlockElement', getters.getActiveAction.id);
+          if(getters.getActivePoint) dispatch('unlockElement', getters.getActiveAction.id);
           dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
           dispatch('drawSchematicElement', getters.getActiveAction.schematic);
           commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
@@ -1166,7 +1166,8 @@ const actions = {
       }
       else { //all points are done
         dispatch('removeTooltip');
-        commit('SET_activePointMainTutorial', 0)
+        commit('SET_activePointMainTutorial', 0);
+        dispatch('lockOneElement');
       }
     }
   },
@@ -1283,6 +1284,12 @@ const actions = {
         element.classList.remove('unlock-element');
       })
     }
+  },
+  lockOneElement() {
+    setTimeout(()=> {
+      let element = document.querySelector('.unlock-element');
+      if(element) element.classList.remove('unlock-element');
+    }, 100);
   },
   sideCalculate({rootGetters}, info) {
     let elCoord = info.element.getBoundingClientRect();
