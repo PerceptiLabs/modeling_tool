@@ -14,6 +14,7 @@ function prepareNetwork(elementList) {
         Type: el.componentName,
         Properties: el.layerSettings,
         checkpoint: el.checkpoint,
+        endPoints: el.endPoints,
         //Code: el.coreCode,
         backward_connections: el.connectionIn,
         forward_connections: el.connectionOut
@@ -24,6 +25,7 @@ function prepareNetwork(elementList) {
         Name: el.layerName,
         Type: el.componentName,
         checkpoint: el.checkpoint,
+        endPoints: el.endPoints,
         //Properties: el.layerSettings,
         Code: el.layerCode,
         backward_connections: el.connectionIn,
@@ -360,10 +362,11 @@ const actions = {
       action: "Parse",
       value: path
     };
-    //console.log('Parse send', JSON.stringify(theData));
+    // console.log('Parse send', JSON.stringify(theData));
+    // console.log('Parse send', theData);
     return coreRequest(theData)
       .then((data)=> {
-        console.log('Parse answer', data);
+        //console.log('Parse answer', data);
         dispatch('mod_workspace/ADD_network', {network: data.network, ctx}, {root: true});
       })
       .catch((err)=> {

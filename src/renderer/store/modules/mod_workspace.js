@@ -19,7 +19,7 @@ const state = {
 
 const getters = {
   GET_networkIsNotEmpty(state) {
-    return state.workspaceContent.length ? true : false
+    return !!state.workspaceContent.length
   },
   GET_currentNetwork(state, getters)  {
     return getters.GET_networkIsNotEmpty
@@ -866,7 +866,6 @@ export default {
   state,
   mutations,
   actions,
-  createNetElement
 }
 
 function currentElement(id) {
@@ -899,6 +898,7 @@ const createNetElement = function (event) {
       }
     },
     checkpoint: [],
+    endPoints: [],
     componentName: event.target.dataset.component,
     connectionOut: [],
     connectionIn: [],
