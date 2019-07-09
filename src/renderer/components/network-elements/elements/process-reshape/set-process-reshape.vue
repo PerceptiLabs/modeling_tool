@@ -27,7 +27,7 @@
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import TripleInput    from "@/components/base/triple-input";
-  import { mapActions } from 'vuex';
+  import { mapActions, mapGetters } from 'vuex';
 
   export default {
     name: 'SetProcessReshape',
@@ -52,19 +52,49 @@
       }
     },
     computed: {
+      ...mapGetters({
+        isTutorialMode: 'mod_tutorials/getIstutorialMode'
+      }),
       settingsCode() {
         return `Y=tf.reshape(X, [-1]+[layer_output for layer_output in [${this.settings.Shape}]]);
 Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
       }
     },
+    watch: {
+      'settings.Shape': {
+        handler(newValue, oldVal) {
+          let correctVal = oldVal.every((item, index)=> {
+            return item === newValue[index]
+          });
+
+          if(this.isTutorialMode && !correctVal) {
+            this.infoPopup("Please don't change value of Reshape field when you in tutorial mode.");
+            this.settings.Shape = [28,28,1];
+          }
+        }
+      },
+      'settings.Permutation': {
+        handler(newValue, oldVal) {
+          let correctVal = oldVal.every((item, index)=> {
+            return item === newValue[index]
+          });
+
+          if(this.isTutorialMode && !correctVal) {
+            this.infoPopup("Please don't change value of Transpose field when you in tutorial mode.");
+            this.settings.Permutation = [0,1,2];
+          }
+        }
+      },
+    },
     methods: {
       ...mapActions({
         tutorialPointActivate:    'mod_tutorials/pointActivate',
+        infoPopup:                'globalView/GP_infoPopup',
       }),
       saveSettings(tabName) {
         this.applySettings(tabName);
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'})
-      }
+      },
     }
   }
 </script>
