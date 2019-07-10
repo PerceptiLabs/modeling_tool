@@ -91,7 +91,8 @@ export default {
   .popup_body {
     max-width: calc(50vw - #{$w-sidebar});
     min-width: 29rem;
-    overflow: hidden;
+    max-height: 41vh;
+    overflow-y: auto;
   }
   .settings-layer {
     max-height: calc(100vh - 26rem);
@@ -105,6 +106,7 @@ export default {
     top: 0;
     max-width: none;
     background-color: $bg-toolbar;
+    max-height: none;
     .settings-layer {
       max-height: none;
     }
