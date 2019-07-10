@@ -862,7 +862,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'Click <div class="marker">Fully Connected (FC)</div> in the <div class="marker">Map View</div> See that the output line in FC is the same as<div class="marker">ViewBox</div> Press <div class="marker">"Next"</div> to continue',
+          content: 'Click <div class="marker">Fully Connected (FC)</div> in the <div class="marker">Map View</div> See that the output line in FC is the same as <div class="marker">ViewBox</div> Press <div class="marker">"Next"</div> to continue',
           actions: [
             { 
               tooltip: 'This is the image that <br/> the AI trying to classify. </br> Press"Next" to continue',

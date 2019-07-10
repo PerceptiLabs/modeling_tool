@@ -77,6 +77,10 @@ export default {
     isTutorialActive() {
       return this.isTutorialMode || this.isStoryBoard;
     },
+    userIsLoggedIn() {
+
+    },
+
     openApp() {
       return this.$store.state.globalView.appIsOpen
     },
@@ -135,7 +139,7 @@ export default {
           submenu: [
             {label: 'Help',                                                                                               id: "to-help",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {label: 'About',                                                                                              id: "to-about",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Tutorial mode',                                                     enabled: !this.isTutorialActive, id: "enable-tutorial",  active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Tutorial mode',                                                     enabled: !this.isTutorialActive && this.isLogin, id: "enable-tutorial",  active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {label: 'Check for updates',                                                                                  id: "check-updates",    active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {type: 'separator'},
             {label: `Version: ${this.appVersion}`,                                                enabled: false,}

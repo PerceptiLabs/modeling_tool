@@ -185,11 +185,17 @@ export default {
     },
     isContinueRun() {
       return this.$store.state.mod_events.runNetwork
-    }
+    },
+    escButton() {
+      return this.$store.state.mod_events.globalPressKey.esc;
+    },
   },
   watch: {
     testValue(newVal) {
       this.settings.Data_partition.Test = newVal.toString()
+    },
+    escButton() {
+      this.closeGlobalSet();
     }
   },
   methods: {
