@@ -1,8 +1,8 @@
 import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
-import {remote}     from 'electron'
+const {dialog, BrowserWindow} =   require('electron').remote;
 import fs           from 'fs';
-import {mapActions, mapGetters, mapMutations} from 'vuex';
+import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 
 import { generateID }  from "@/core/helpers.js";
 
@@ -40,6 +40,16 @@ export default {
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
       showTrainingSpinner:'mod_workspace/GET_showStartTrainingSpinner'
     }),
+    ...mapState({
+      workspace:                  state => state.mod_workspace.workspaceContent,
+      indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
+      statisticsElSelected:       state => state.mod_statistics.selectedElArr,
+      hideSidebar:                state => state.globalView.hideSidebar,
+      showGlobalSet:              state => state.globalView.globalPopup.showNetSettings,
+      showGlobalResult:           state => state.globalView.globalPopup.showNetResult,
+      showWorkspaceBeforeImport:  state => state.globalView.globalPopup.showWorkspaceBeforeImport,
+      showCoreSide:               state => state.globalView.globalPopup.showCoreSideSettings,
+    }),
     scaleNet: {
       get: function () {
         let zoom = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom * 100;
@@ -49,39 +59,39 @@ export default {
         this.$store.dispatch('mod_workspace/SET_statusNetworkZoom', newValue/100);
       }
     },
-    workspace() {
-      return this.$store.state.mod_workspace.workspaceContent
-    },
-    indexCurrentNetwork() {
-      return this.$store.state.mod_workspace.currentNetwork
-    },
-    hideSidebar() {
-      return this.$store.state.globalView.hideSidebar
-    },
-    showGlobalSet() {
-      return this.$store.state.globalView.globalPopup.showNetSettings
-    },
-    showGlobalResult() {
-      return this.$store.state.globalView.globalPopup.showNetResult
-    },
-    showWorkspaceBeforeImport() {
-      return this.$store.state.globalView.globalPopup.showWorkspaceBeforeImport
-    },
+    // workspace() {
+    //   return this.$store.state.mod_workspace.workspaceContent
+    // },
+    // indexCurrentNetwork() {
+    //   return this.$store.state.mod_workspace.currentNetwork
+    // },
+    // hideSidebar() {
+    //   return this.$store.state.globalView.hideSidebar
+    // },
+    // showGlobalSet() {
+    //   return this.$store.state.globalView.globalPopup.showNetSettings
+    // },
+    // showGlobalResult() {
+    //   return this.$store.state.globalView.globalPopup.showNetResult
+    // },
+    // showWorkspaceBeforeImport() {
+    //   return this.$store.state.globalView.globalPopup.showWorkspaceBeforeImport
+    // },
     hasStatistics() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkStatistics;
     },
-    showCoreSide() {
-      return this.$store.state.globalView.globalPopup.showCoreSideSettings
-    },
+    // showCoreSide() {
+    //   return this.$store.state.globalView.globalPopup.showCoreSideSettings
+    // },
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     coreStatus() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
     },
-    statisticsElSelected() {
-      return this.$store.state.mod_statistics.selectedElArr
-    },
+    // statisticsElSelected() {
+    //   return this.$store.state.mod_statistics.selectedElArr
+    // },
     currentNet() {
       this.scale = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
@@ -211,7 +221,6 @@ export default {
       else this.saveNetworkAs();
     },
     saveNetworkAs() {
-      const dialog = remote.dialog;
       const network = this.currentNetwork;
       doScreenShot(this)
         .then((img)=> {
@@ -244,7 +253,8 @@ function openSaveDialog(jsonNet, dialogWin, network, ctx) {
     ]
   };
 
-  dialogWin.showSaveDialog(null, option, (fileName) => {
+
+  dialogWin.showSaveDialog(BrowserWindow, option, (fileName) => {
     ctx.$refs.networkField[0].$refs.network.style.filter = '';
     if (fileName === undefined){
       ctx.infoPopup("You didn't save the file");
