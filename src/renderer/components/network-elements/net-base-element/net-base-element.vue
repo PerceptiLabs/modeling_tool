@@ -120,7 +120,7 @@ export default {
     wsZoom() {
       return  this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
     },
-    EscButton() {
+    escButton() {
       return  this.$store.state.mod_events.globalPressKey.esc;
     },
     classEl() {
@@ -152,7 +152,7 @@ export default {
         ? this.mousedownOutsideBefore()
         : null
     },
-    EscButton() {
+    escButton() {
       if(!this.isTutorialMode) this.hideAllWindow();
     }
   },

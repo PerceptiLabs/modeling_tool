@@ -85,7 +85,8 @@ export default {
       let elList = this.currentNetworkList;
       this.inputLayers.push({
         text: elList[id].layerName,
-        value: elList[id].layerId
+        value: elList[id].layerId,
+        tutorialId: elList[id].tutorialId
       })
     });
     if(!this.settings.Labels && this.inputLayers.length) this.settings.Labels = this.inputLayers[0].value.toString();
@@ -224,9 +225,15 @@ auc=tf.metrics.auc(labels=X['${this.settings.Labels}'],predictions=X['${this.not
   watch: {
     'settings.Labels': {
       handler(newValue) {
-        if (this.isTutorialMode && newValue !== this.inputLayers[0].value.toString()) {
-          this.settings.Labels = this.inputLayers[0].value.toString();
-          this.popupInfo("The value of this field should be One Hot");
+        let label = this.inputLayers.filter((item)=> {
+          return item.value.toString() === newValue;
+        });
+        if(this.isTutorialMode && label[0].text !== 'OneHot_1') {
+          label = this.inputLayers.filter((item)=> {
+            return item.text === 'OneHot_1';
+          });
+            this.settings.Labels = label[0].value.toString();
+            this.popupInfo("Please set One Hot for Labels field when you in tutorial mode");
         }
       }
     },
