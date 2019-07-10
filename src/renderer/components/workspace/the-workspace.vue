@@ -91,6 +91,9 @@
 
     }
   }
+  .network--show-code {
+    transform: translate(0);
+  }
   .the-statistics {
     grid-area: the-statistics;
   }

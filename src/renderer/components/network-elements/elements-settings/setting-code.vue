@@ -35,10 +35,6 @@ export default {
       type: Boolean,
       default: false
     },
-    // theCode: {
-    //   type: [String, Object],
-    //   default: ''
-    // },
     value: {
       type: [String, Object],
       default: ''
@@ -50,15 +46,13 @@ export default {
       this.currentTab = keys[0];
     }
   },
-  // mounted() {
-  //   console.log(this.theCode);
-  //   this.$nextTick(()=> {console.log(this.theCode)})
-  // },
+  beforeDestroy() {
+    this.closeFullView()
+  },
   data() {
     return {
       currentTab: '',
       fullView: false,
-      //theCode: ''
     }
   },
   computed: {
@@ -78,7 +72,11 @@ export default {
     toggleFullView() {
       this.fullView = !this.fullView;
       document.querySelector('.popup_body').classList.toggle("popup_body--show-code");
-      document.querySelector('.network-field').classList.toggle("network-field--show-code");
+      document.querySelector('.network').classList.toggle("network--show-code");
+    },
+    closeFullView() {
+      this.fullView = false;
+      document.querySelector('.network').classList.remove("network--show-code");
     }
   }
 }

@@ -15,7 +15,7 @@
           @click="toggleOpen()"
         )
           i.icon.icon-shevron-right
-        text-editable.layer-item_title(
+        text-editable.layer-item_title.ellipsis(
           :text-title="itemData.layerName"
           @change-title="editElName"
           )
@@ -166,6 +166,7 @@ export default {
     flex: 1 1 100%;
     display: flex;
     align-items: center;
+    overflow: hidden;
   }
   .layer-item_title {
     padding-left: .5rem;

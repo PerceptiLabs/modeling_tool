@@ -290,7 +290,7 @@ export default {
 
   .net-element_window {
     position: absolute;
-    z-index: 4;
+    z-index: 10;
     top: 0;
     left: 100%;
     padding-left: 10px;
