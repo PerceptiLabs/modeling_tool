@@ -166,7 +166,7 @@ export default {
   }
   .tutorial-instruction-box_list-area {
     position: absolute;
-    z-index: 11;
+    z-index: 13;
     background: $col-txt2;
     width: 24rem;
     top: 90%;
