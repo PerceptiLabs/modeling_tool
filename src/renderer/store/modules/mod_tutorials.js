@@ -46,13 +46,13 @@ const state = {
           content: `In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset`,
           actions: [
             {
-              tooltip: 'Click to Data...',
+              tooltip: 'Click to Data',
               position: 'right',
               id: 'tutorial_data',
               status: 'disabled'
             },
             {
-              tooltip: 'Drag & drop Data...',
+              tooltip: 'Drag & drop Data',
               position: 'right',
               id: 'tutorial_data-data',
               dynamic_id: 'tutorial_data-data-1',
@@ -93,7 +93,7 @@ const state = {
             },
             {
               status:'disabled',
-              content: 'Every input image inside the mnist_input.npy file...'
+              content: 'Every input image inside the mnist_input.npy file'
             }
           ]
         },
@@ -102,13 +102,13 @@ const state = {
           content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
           actions: [
             {
-              tooltip: 'Click to Data...',
+              tooltip: 'Click to Data',
               position: 'right',
               id: 'tutorial_data',
               status: 'disabled'
             },
             {
-              tooltip: 'Drag & drop Data...',
+              tooltip: 'Drag & drop Data',
               position: 'right',
               id: 'tutorial_data-data',
               dynamic_id: 'tutorial_data-data-2',
@@ -150,13 +150,13 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > Connect input > Operation settings  ',
           actions: [
             {
-              tooltip: 'Click to Processing...',
+              tooltip: 'Click to Processing',
               position: 'right',
               id: 'tutorial_processing',
               status: 'disabled'
             },
             {
-              tooltip: 'Drag & drop Reshape...',
+              tooltip: 'Drag & drop Reshape',
               position: 'right',
               id: 'tutorial_process-reshape',
               dynamic_id: 'tutorial_process-reshape-1',
@@ -168,7 +168,7 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Click to create a connection...',
+              tooltip: 'Click to create a connection',
               position: 'right',
               id: 'tutorial_list-arrow',
               status: 'disabled',
@@ -185,13 +185,13 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Click to go back to work with items...',
+              tooltip: 'Click to go back to work with items',
               position: 'right',
               id: 'tutorial_pointer',
               status: 'disabled'
             },
             {
-              tooltip: 'Double click to open settings...',
+              tooltip: 'Double click to open settings',
               position: 'right',
               id: 'tutorial_process-reshape-1',
               status: 'disabled'
@@ -332,13 +332,13 @@ const state = {
           ],
           actions: [
             {
-              tooltip: 'Click to Deep Learning...',
+              tooltip: 'Click to Deep Learning',
               position: 'right',
               id: 'tutorial_deep-learning', 
               status: 'disabled'
             },
             {
-              tooltip: 'Drag & drop Convolution...',
+              tooltip: 'Drag & drop Convolution',
               position: 'right',
               id: 'tutorial_convolution',
               dynamic_id: 'tutorial_convolution-1',
@@ -350,14 +350,14 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Click to create a connection...',
+              tooltip: 'Click to create a connection',
               position: 'right',
               id: 'tutorial_list-arrow',
               status: 'disabled',
               check_prev_id: true
             },
             {
-              tooltip: 'Connect Process Reshape <br> with Deep learning conv...',
+              tooltip: 'Connect Process Reshape <br> with Deep learning convolution',
               position: 'right',
               id: 'tutorial_convolution-1',
               schematic: {
@@ -367,13 +367,13 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Click to go back to work with items...',
+              tooltip: 'Click to go back to work with items',
               position: 'right',
               id: 'tutorial_pointer',
               status: 'disabled'
             },
             {
-              tooltip: 'Double click to open settings...',
+              tooltip: 'Double click to open settings',
               position: 'right',
               id: 'tutorial_convolution-1',
               status: 'disabled'
@@ -413,13 +413,13 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Fully Connected</div> > Connect input > Set neurons',
           actions: [
             {
-              tooltip: 'Click to Deep Learning...',
+              tooltip: 'Click to Deep Learning',
               position: 'right',
               id: 'tutorial_deep-learning', 
               status: 'disabled'
             },
             {
-              tooltip: 'Drag & drop Fully Connected...',
+              tooltip: 'Drag & drop Fully Connected',
               position: 'right',
               id: 'tutorial_fully-connected',
               dynamic_id: 'tutorial_fully-connected-1',
@@ -431,14 +431,14 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Click to create a connection...',
+              tooltip: 'Click to create a connection',
               position: 'right',
               id: 'tutorial_list-arrow',
               status: 'disabled',
               check_prev_id: true
             },
             {
-              tooltip: 'Connect Deep Learning Conv <br> with Deep learning FC...',
+              tooltip: 'Connect Deep Learning Conv <br> with Deep learning FC',
               position: 'right',
               id: 'tutorial_fully-connected-1',
               schematic: {
@@ -448,13 +448,13 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Click to go back to work with items...',
+              tooltip: 'Click to go back to work with items',
               position: 'right',
               id: 'tutorial_pointer',
               status: 'disabled'
             },
             {
-              tooltip: 'Double click to open settings...',
+              tooltip: 'Double click to open settings',
               position: 'right',
               id: 'tutorial_fully-connected-1',
               status: 'disabled'
@@ -519,13 +519,13 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">One Hot</div> > Connect input > Set classes',
           actions: [
             {
-              tooltip: 'Click to Processing...',
+              tooltip: 'Click to Processing',
               position: 'right',
               id: 'tutorial_processing', 
               status: 'disabled'
             },
             {
-              tooltip: 'Drag & drop One Hot...',
+              tooltip: 'Drag & drop One Hot',
               position: 'right',
               id: 'tutorial_one-hot',
               dynamic_id: 'tutorial_one-hot-1',
@@ -537,14 +537,14 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Click to create a connection...',
+              tooltip: 'Click to create a connection',
               position: 'right',
               id: 'tutorial_list-arrow',
               status: 'disabled',
               check_prev_id: true
             },
             {
-              tooltip: 'Connect Data with Process One Hot...',
+              tooltip: 'Connect Data with Process One Hot',
               position: 'right',
               id: 'tutorial_one-hot-1',
               schematic: {
@@ -554,19 +554,19 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Click to go back to work with items...',
+              tooltip: 'Click to go back to work with items',
               position: 'right',
               id: 'tutorial_pointer',
               status: 'disabled'
             },
             {
-              tooltip: 'Double click to set classes...',
+              tooltip: 'Double click to set classes',
               position: 'right',
               id: 'tutorial_one-hot-1',
               status: 'disabled'
             },
             {
-              tooltip: 'Set 10 and click Apply changes...',
+              tooltip: 'Set 10 and click Apply changes',
               position: 'right',
               id: 'tutorial_number-of-classes',
               status: 'disabled'
@@ -628,13 +628,13 @@ const state = {
           ],
           actions: [
             {
-              tooltip: 'Click to Training...',
+              tooltip: 'Click to Training',
               position: 'right',
               id: 'tutorial_training', 
               status: 'disabled'
             },
             {
-              tooltip: 'Drag & drop Normal...',
+              tooltip: 'Drag & drop Normal',
               position: 'right',
               id: 'tutorial_training-normal',
               dynamic_id: 'tutorial_training-normal-1',
@@ -646,14 +646,14 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Click to create a connection...',
+              tooltip: 'Click to create a connection',
               position: 'right',
               id: 'tutorial_list-arrow',
               status: 'disabled',
               check_prev_id: true
             },
             {
-              tooltip: 'Connect Process one Hot with Train Normal...',
+              tooltip: 'Connect Process one Hot with Train Normal',
               position: 'right',
               id: 'tutorial_training-normal-1',
               schematic: {
@@ -673,13 +673,13 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Click to go back to work with items...',
+              tooltip: 'Click to go back to work with items',
               position: 'right',
               id: 'tutorial_pointer',
               status: 'disabled'
             },
             {
-              tooltip: 'Double click to define parameters...',
+              tooltip: 'Double click to define parameters',
               position: 'right',
               id: 'tutorial_training-normal-1',
               status: 'disabled'
@@ -782,7 +782,7 @@ const state = {
           ],
           actions: [
             {
-              tooltip: 'Click to run training...',
+              tooltip: 'Click to run training',
               position: 'bottom',
               id: 'tutorial_run-training-button', 
               status: 'disabled'
@@ -839,7 +839,7 @@ const state = {
           content: 'The <div class="marker">Pause</div> to learn  further details',
           actions: [
             {
-              tooltip: 'Click to pause...',
+              tooltip: 'Click to pause',
               position: 'bottom',
               id: 'tutorial_pause-training',
               status: 'disabled',
@@ -852,7 +852,7 @@ const state = {
           content: 'Click <div class="marker">Reshape</div> in the <div class="marker">Map View</div> </br> Notice the corresponding display in the <div class="marker">ViewBox</div>',
           actions: [
             { 
-              tooltip: 'Click Reshape...',
+              tooltip: 'Click Reshape',
               position: 'right',
               id: 'tutorial_process-reshape-1',
               status: 'disabled',
@@ -872,7 +872,7 @@ const state = {
               next: true
             },
             { 
-              tooltip: 'Click Fully Connected...',
+              tooltip: 'Click Fully Connected',
               position: 'right',
               id: 'tutorial_fully-connected-1',
               status: 'disabled',
@@ -918,7 +918,7 @@ const state = {
           content: 'Continue training.',
           actions: [
             {
-              tooltip: 'Click to unpause...',
+              tooltip: 'Click to unpause',
               position: 'bottom',
               id: 'tutorial_pause-training',
               status: 'disabled',
@@ -943,7 +943,7 @@ const state = {
           content: 'Click to start test',
           actions: [
             {
-              tooltip: 'Click to start test...',
+              tooltip: 'Click to start test',
               position: 'right',
               status: 'disabled',
               id:'tutorial_run-test-button'
@@ -961,7 +961,7 @@ const state = {
           content: 'Testing shows how general your model is, i.e. to what extent can it classify things it has never seen before',
           actions: [
             {
-              tooltip: 'Click to explore view controls...',
+              tooltip: 'Click to explore view controls',
               position: 'right',
               status: 'disabled',
               id:'tutorial_play-test-button'
@@ -971,7 +971,9 @@ const state = {
       ]
     },
     save_and_export: {
-      title: 'Step 10. Save and export',
+      title: `Step 10. You have now finished training a network and the tutorial is done. <br> 
+              If you wish to save the network you can do so from the File menu in the top left. <br>
+              Or you can export it by clicking on the tab "Export" in the right menu.`,
       points: [
         {
           status:'last step',
