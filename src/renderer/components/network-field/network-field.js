@@ -527,10 +527,12 @@ export default {
       }
     },
     findXPosition(event) {
-      return (event.pageX - this.offset.offsetX) / this.networkScale
+      const scrollPosition = document.querySelector('.js-info-section_main').scrollLeft;
+      return (event.pageX - this.offset.offsetX + scrollPosition) / this.networkScale
     },
     findYPosition(event) {
-      return (event.pageY - this.offset.offsetY) / this.networkScale
+      const scrollPosition = document.querySelector('.js-info-section_main').scrollTop;
+      return (event.pageY - this.offset.offsetY + scrollPosition) / this.networkScale
     }
   }
 }
