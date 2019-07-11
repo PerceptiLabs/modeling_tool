@@ -15,10 +15,11 @@
         )
           i.icon.icon-delete
 
-    .layers_body
+    ul.layers_body(ref="layersItemList")
       sidebar-layers-item(
         v-for="item in networkElementList"
         :key="item.layerId"
+        ref="sidebarLayersItem"
         :item-data="item"
         )
 
@@ -39,7 +40,7 @@ export default {
   computed: {
     ...mapGetters({
       workspace: 'mod_workspace/GET_currentNetwork',
-      //networkElementList: 'mod_workspace/GET_currentNetworkElementList',
+      currentSelectedList: 'mod_workspace/GET_currentSelectedEl',
     }),
     networkElementList() {
       let currentNet = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
@@ -59,6 +60,21 @@ export default {
         }
       }
       return newNet
+    },
+  },
+  watch: {
+    currentSelectedList(newList) {
+      if(!newList.length) return;
+      const layersItemList = this.$refs.layersItemList;
+      const layersItemListHeight = layersItemList.clientHeight;
+      const layersItemListHeightScroll = layersItemList.scrollHeight;
+      if(layersItemListHeight === layersItemListHeightScroll) return;
+      const layersItemListOffset = layersItemList.offsetTop;
+      const listTop = layersItemList.scrollTop;
+      const listBottom = listTop + layersItemListHeight;
+      const domEl = this.$refs.sidebarLayersItem.find((el)=>el.currentId === newList[0].layerId);
+      const domTop = domEl.$el.offsetTop - layersItemListOffset;
+      if(!(domTop > listTop && domTop < listBottom)) layersItemList.scroll(0, domTop);
     }
   },
   methods: {
@@ -79,7 +95,7 @@ export default {
     flex-grow: 1;
     max-height: 50vh;
     border-bottom: 1px solid $bg-toolbar;
-    overflow: auto;
+    overflow: hidden;
   }
   .layers_title {
     align-items: center;
@@ -88,6 +104,9 @@ export default {
     h3 {
       margin: 0 0 0 .5em;
     }
+  }
+  .layers_body {
+    overflow: auto;
   }
   .layers_meta {
     flex: 0 0 auto;

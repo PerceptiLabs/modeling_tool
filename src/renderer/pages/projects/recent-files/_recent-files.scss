@@ -24,6 +24,7 @@ $iconsGroupColor: #5c6680;
 .project-list {
   display: flex;
   flex-wrap: wrap;
+  align-content: flex-start;
   margin: 0 -$indentProjects;
   text-align: center;
 }
