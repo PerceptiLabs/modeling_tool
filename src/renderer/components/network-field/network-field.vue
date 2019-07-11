@@ -93,9 +93,6 @@
     flex: 1 1 100%;
     z-index: 1;
   }
-  .network-field--show-code {
-    transform: translate(0);
-  }
   .svg-arrow {
     position: absolute;
     top: 0;

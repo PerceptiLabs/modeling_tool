@@ -15,7 +15,7 @@
 </template>
 <script>
   import fs             from 'fs';
-  import {loadNetwork, readFilePromiseNative}  from '@/core/helpers.js'
+  import {loadNetwork, readLocalFile}  from '@/core/helpers.js'
   import basicTemplate1 from '@/core/basic-template/base-template-1.js'
   import {mapMutations} from 'vuex';
 
@@ -25,7 +25,7 @@
       let localProjectsList = JSON.parse(localStorage.getItem('projectsList'));
       if(Array.isArray(localProjectsList)) {
         localProjectsList.forEach((el)=> {
-          this.readFilePromiseNative(el.path[0])
+          this.readLocalFile(el.path[0])
             .then(() => {})
             .catch((err)=> {
               el.notExist = true
@@ -95,7 +95,7 @@
         openNetwork:            'mod_events/set_openNetwork'
       }),
       loadNetwork,
-      readFilePromiseNative,
+      readLocalFile,
       addNewProject() {
         this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
       },
