@@ -1,4 +1,4 @@
-const {dialog, BrowserWindow} = require('electron').remote;
+const { dialog } = require('electron').remote;
 import fs from 'fs';
 import configApp from '@/core/globalSettings.js'
 
@@ -8,12 +8,11 @@ import configApp from '@/core/globalSettings.js'
 
 const openLoadDialog = function (options) {
   return new Promise((success, reject) => {
-    dialog.showOpenDialog(BrowserWindow, options, (files) => {
-      if (files !== undefined) {
-        success(files)
-      }
-      else reject();
-    })
+    const pathArr = dialog.showOpenDialog(null, options);
+    if (pathArr !== undefined) {
+      success(pathArr)
+    }
+    else reject();
   })
 };
 
