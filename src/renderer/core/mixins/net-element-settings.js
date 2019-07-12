@@ -43,7 +43,11 @@ const netElementSettings = {
       this.applySettings(tabName);
     },
     applySettings(tabName) {
-      this.updateCode();
+      console.log(tabName);
+      if(tabName === 'Settings') {
+        this.updateCode();
+      }
+
       const saveSettings = {
         'elId': this.currentEl.layerId,
         'code': this.coreCode,

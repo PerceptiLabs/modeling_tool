@@ -5,7 +5,7 @@
         v-for="(tab, i) in tabSet"
         :key="tab.i"
         :class="{'disable': tabSelected != tab }"
-        :disabled='isTutorial'
+        :disabled='isTutorial || disableSettings'
         @click="setTab(tab)"
       )
         h3(v-html="tab")
@@ -20,7 +20,7 @@
         .settings-layer_foot
           slot(:name="tabContent+'-action'")
             button.btn.btn--primary(type="button" @click="applySettings(tabContent)" :id="idSetBtn") Apply
-            button.btn.btn--dark-blue-rev(type="button"
+            //-button.btn.btn--dark-blue-rev(type="button"
               v-if="showUpdateCode"
               @click="updateCode"
               ) Update code
@@ -52,18 +52,22 @@ export default {
   },
   mounted() {
     let tab = this.firstTab || this.tabSet[0];
-    this.setTab(tab)
-    //console.log(!!this.layerCode);
+    if(tab === 'Code') this.disableSettings = true;
+    this.setTab(tab);
   },
   data() {
     return {
       tabSelected: '',
+      disableSettings: false
     }
   },
   computed: {
-    showUpdateCode() {
-      return this.tabSelected === 'Settings' && !!this.layerCode
-    },
+    // showUpdateCode() {
+    //   return this.tabSelected === 'Settings' && !!this.layerCode
+    // },
+    // disableSettings() {
+    //   return !!this.layerCode
+    // },
     isTutorial() {
       return this.$store.getters['mod_tutorials/getIstutorialMode']
     }

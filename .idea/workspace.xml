@@ -2,7 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -15,22 +18,31 @@
   </component>
   <component name="FileEditorManager">
     <leaf SIDE_TABS_SIZE_LIMIT_KEY="375">
-      <file pinned="false" current-in-tab="true">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue">
+      <file pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="398">
-              <caret line="115" column="32" selection-start-line="115" selection-start-column="32" selection-end-line="115" selection-end-column="32" />
+            <state relative-caret-position="134">
+              <caret line="56" column="4" lean-forward="true" selection-start-line="56" selection-start-column="4" selection-end-line="56" selection-end-column="4" />
             </state>
           </provider>
         </entry>
       </file>
       <file pinned="false" current-in-tab="false">
-        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.js">
+        <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="551">
-              <caret line="253" column="30" selection-start-line="253" selection-start-column="11" selection-end-line="253" selection-end-column="30" />
+            <state relative-caret-position="556">
+              <caret line="126" column="34" selection-start-line="126" selection-start-column="34" selection-end-line="126" selection-end-column="34" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="244">
+              <caret line="43" column="6" lean-forward="true" selection-start-line="43" selection-start-column="6" selection-end-line="43" selection-end-column="6" />
               <folding>
-                <element signature="e#0#97#0" expanded="true" />
+                <element signature="e#0#96#0" expanded="true" />
               </folding>
             </state>
           </provider>
@@ -105,7 +117,6 @@
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-one-hot/set-process-one-hot.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-reinforce/set-train-reinforce.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-nearest/set-classic-ml-k-nearest.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-deconv/set-deep-learning-deconv.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue" />
@@ -113,7 +124,6 @@
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-vector-machine/set-classic-ml-vector-machine.vue" />
         <option value="$PROJECT_DIR$/../test-info/mnist_split/container.json" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" />
         <option value="$PROJECT_DIR$/src/renderer/core/mixins/mousedown-outside.js" />
         <option value="$PROJECT_DIR$/build/ADD-NOTATE.txt" />
         <option value="$PROJECT_DIR$/build/latest.yml" />
@@ -135,7 +145,6 @@
         <option value="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/setting-code.vue" />
-        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" />
         <option value="$PROJECT_DIR$/src/renderer/pages/projects/recent-files/_recent-files.scss" />
         <option value="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers.vue" />
@@ -147,6 +156,9 @@
         <option value="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js" />
         <option value="$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" />
+        <option value="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" />
       </list>
     </option>
   </component>
@@ -204,6 +216,42 @@
               <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="deep-learning-fc" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="network-elements" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="net-base-settings" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="network-field" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
@@ -213,6 +261,21 @@
               <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="components" type="9f88c78c:ScopeViewTreeModel$FileNode" />
               <item name="workspace" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="core" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+            </path>
+            <path>
+              <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
+              <item name="G:\progects\quantumnet" type="442cc68d:ScopeViewTreeModel$RootNode" />
+              <item name="src" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="renderer" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="core" type="9f88c78c:ScopeViewTreeModel$FileNode" />
+              <item name="mixins" type="9f88c78c:ScopeViewTreeModel$FileNode" />
             </path>
             <path>
               <item name="quantumnet" type="3d21c010:ScopeViewTreeModel$ProjectNode" />
@@ -495,12 +558,12 @@
       <workItem from="1562665490684" duration="408000" />
       <workItem from="1562751750585" duration="15165000" />
       <workItem from="1562834143468" duration="14670000" />
-      <workItem from="1562918317011" duration="15019000" />
+      <workItem from="1562918317011" duration="19133000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="1038336000" />
+    <option name="totallyTimeSpent" value="1042450000" />
   </component>
   <component name="TodoView">
     <todo-panel id="selected-file">
@@ -515,7 +578,7 @@
     <frame x="-8" y="-8" width="1936" height="1056" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49565217" visible="true" weight="0.23691168" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49565217" visible="true" weight="0.23691168" />
       <window_info id="Structure" order="1" sideWeight="0.5043478" side_tool="true" weight="0.23849815" />
       <window_info id="npm" order="2" sideWeight="0.50166667" side_tool="true" weight="0.24960339" />
       <window_info id="Favorites" order="3" sideWeight="0.5043478" side_tool="true" weight="0.23849815" />
@@ -608,21 +671,6 @@
     <state width="261" height="798" key="Git.Branch.Popup@1920.1080@120dpi" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/../test-info/mnist_split/container.json" />
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="66">
-          <caret line="3" column="14" selection-start-line="1" selection-start-column="2" selection-end-line="3" selection-end-column="14" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="6248">
-          <caret line="285" column="54" selection-start-line="285" selection-start-column="39" selection-end-line="285" selection-end-column="54" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/mousedown-outside.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="176">
@@ -697,16 +745,6 @@
     <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/base-net-paint-arrows.js">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="-262" />
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="684">
-          <caret line="54" column="24" selection-start-line="54" selection-start-column="11" selection-end-line="54" selection-end-column="24" />
-          <folding>
-            <element signature="e#0#96#0" expanded="true" />
-          </folding>
-        </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/header/header-win.vue">
@@ -827,13 +865,6 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1848">
           <caret line="84" column="31" selection-start-line="84" selection-start-column="31" selection-end-line="84" selection-end-column="31" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1892">
-          <caret line="86" column="10" selection-start-line="86" selection-start-column="10" selection-end-line="86" selection-end-column="10" />
         </state>
       </provider>
     </entry>
@@ -965,8 +996,42 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="398">
-          <caret line="115" column="32" selection-start-line="115" selection-start-column="32" selection-end-line="115" selection-end-column="32" />
+        <state relative-caret-position="1547">
+          <caret line="109" column="3" lean-forward="true" selection-start-line="109" selection-start-column="3" selection-end-line="109" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/files apnet wifi/aquarium.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="88">
+          <caret line="4" column="3" lean-forward="true" selection-start-line="4" selection-start-column="3" selection-end-line="4" selection-end-column="3" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$USER_HOME$/AppData/Local/Temp/files apnet wifi/aquarium.js">
+      <provider selected="true" editor-type-id="text-editor" />
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="134">
+          <caret line="56" column="4" lean-forward="true" selection-start-line="56" selection-start-column="4" selection-end-line="56" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="556">
+          <caret line="126" column="34" selection-start-line="126" selection-start-column="34" selection-end-line="126" selection-end-column="34" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="244">
+          <caret line="43" column="6" lean-forward="true" selection-start-line="43" selection-start-column="6" selection-end-line="43" selection-end-column="6" />
+          <folding>
+            <element signature="e#0#96#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>

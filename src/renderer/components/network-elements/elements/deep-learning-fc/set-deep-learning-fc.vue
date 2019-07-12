@@ -123,8 +123,8 @@ node=node+b;`;
         tutorialPointActivate:   'mod_tutorials/pointActivate',
         popupInfo:               'globalView/GP_infoPopup'
       }),
-      saveSettings() {
-        this.applySettings();
+      saveSettings(tabName) {
+        this.applySettings(tabName);
         this.tutorialPointActivate({way:'next', validation: 'tutorial_neurons'})
       }
     }
