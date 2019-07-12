@@ -26,7 +26,7 @@ export default {
   },
   data() {
     return {
-      showTestingTab: false
+      //showTestingTab: false
     }
   },
   computed: {
@@ -102,14 +102,17 @@ export default {
         'open-statistic': this.statisticsIsOpen,
         'open-test': this.testIsOpen
       }
+    },
+    tabSetClass() {
+      return {'bookmark_tab--active': indexCurrentNetwork === i}
     }
   },
   watch: {
     statusNetworkCore(newStatus) {
-      if(newStatus === 'Finished' && this.showTestingTab === false) {
+      if(newStatus === 'Finished' && this.testIsOpen === null) {
         this.$store.dispatch('globalView/NET_trainingDone');
         this.$store.dispatch('mod_workspace/EVENT_startDoRequest', false);
-        this.showTestingTab = true;
+        //this.showTestingTab = true;
       }
     },
     coreStatus(newStatus, oldStatus) {
@@ -159,11 +162,11 @@ export default {
       this.$store.commit('mod_workspace/DELETE_network', index)
     },
     setTabNetwork(index) {
-      if(this.isTutorialMode) return;
-      this.$store.commit('mod_workspace/SET_currentNetwork', index);
-      this.$store.dispatch('mod_workspace/SET_elementUnselect');
       if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
       if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
+      //if(this.isTutorialMode) return;
+      this.$store.commit('mod_workspace/SET_currentNetwork', index);
+      this.$store.dispatch('mod_workspace/SET_elementUnselect');
     },
     toggleSidebar() {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
