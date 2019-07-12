@@ -113,7 +113,7 @@
     stroke-width: 3;
     fill: transparent;
     &:focus {
-      stroke-width: 5;
+      stroke-width: 5 !important;
     }
   }
   .svg-arrow_multi-select {
