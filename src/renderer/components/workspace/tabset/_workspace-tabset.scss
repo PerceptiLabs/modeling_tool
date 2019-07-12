@@ -10,6 +10,9 @@
   display: flex;
   align-items: center;
   padding-right: 0;
+  &.workspace_tab--disable {
+    pointer-events: none;
+  }
 }
 .tab_close {
   margin-right: 1.25rem;
