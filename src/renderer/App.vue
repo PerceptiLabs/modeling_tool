@@ -51,8 +51,7 @@
       /*Auto update*/
       ipcRenderer.on('checking-for-update', (event, updateInfo) => {
         console.log('checking-for-update', updateInfo);
-        this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
-        this.$store.commit('mod_autoUpdate/SET_updateInfo', update)
+        this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo)
       });
       ipcRenderer.on('update-available', (event, updateInfo) => {
         console.log('update-available', updateInfo);
