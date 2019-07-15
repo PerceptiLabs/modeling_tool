@@ -75,11 +75,16 @@
   .header_attention {
     color: #fff;
     background: $color-6;
-    padding: 0.3rem 1.1rem;
+    padding: .3rem 1.1rem;
     font-weight: bold;
     font-size: 1.6rem;
+    height: 1.7em;
+    width: 1.7em;
     text-align: center;
     border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
   .header_attention--error {
     background: $col-warning;

@@ -256,15 +256,13 @@ function openSaveDialog(jsonNet, dialogWin, network, ctx) {
     ]
   };
 
-
-  dialogWin.showSaveDialog(BrowserWindow, option, (fileName) => {
-    ctx.$refs.networkField[0].$refs.network.style.filter = '';
-    if (fileName === undefined){
-      ctx.infoPopup("You didn't save the file");
-      return;
-    }
-    saveFileToDisk(fileName, jsonNet, ctx, savePathToLocal(JSON.parse(jsonNet).project, fileName))
-  });
+  const fileName = dialogWin.showSaveDialog(null, option);
+  ctx.$refs.networkField[0].$refs.network.style.filter = '';
+  if (fileName === undefined){
+    ctx.infoPopup("You didn't save the file");
+    return;
+  }
+  saveFileToDisk(fileName, jsonNet, ctx, savePathToLocal(JSON.parse(jsonNet).project, fileName))
 }
 function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
   fs.writeFile(fileName, jsonNet, (err) => {
