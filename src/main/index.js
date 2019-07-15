@@ -11,6 +11,24 @@ let mainWindow;
 let visitor;
 let loginPage = '/';
 
+const theFirstInstance = app.requestSingleInstanceLock();
+
+if (!theFirstInstance) app.quit();
+else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // Кто-то пытался запустить второй экземпляр, мы должны сфокусировать наше окно.
+    if (mainWindow) {
+      if (mainWindow.isMinimized()) mainWindow.restore();
+      mainWindow.focus()
+    }
+  });
+
+  // // Создать myWindow, загрузить остальную часть приложения, и т.д.
+  // app.on('ready', () => {
+  // })
+}
+
+
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
