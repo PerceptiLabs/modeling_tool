@@ -109,9 +109,9 @@
     }
   }
   .svg-arrow_line {
-    //stroke: $col-primary; inline styles for the canvas plagin
-    //stroke-width: 3;
-    //fill: transparent;
+    stroke: $col-primary; //inline styles for the canvas plagin
+    stroke-width: 3;
+    fill: transparent;
     &:focus {
       stroke-width: 5 !important;
     }
@@ -121,10 +121,10 @@
     stroke-width: 1;
     stroke: $col-primary2;
   }
-  .test {
-    position: absolute;
-    height: 20px;
-    width: 20px;
-    background-color: #fff;
-  }
+  /*.test {*/
+  /*  position: absolute;*/
+  /*  height: 20px;*/
+  /*  width: 20px;*/
+  /*  background-color: #fff;*/
+  /*}*/
 </style>
