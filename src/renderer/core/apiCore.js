@@ -28,7 +28,7 @@ const coreRequest = function (message, port, address) {
             store.dispatch('mod_workspace/EVENT_startDoRequest', false);
             store.dispatch('mod_workspace/SET_openStatistics', null);
             store.dispatch('mod_workspace/SET_openTest', null);
-            store.dispatch('globalView/GP_infoPopup', obgData.errorMessage.join('; '));
+            store.dispatch('globalView/GP_errorPopup', obgData.errorMessage);
             store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
           }
           if(obgData.warningMessage && obgData.warningMessage.length) {

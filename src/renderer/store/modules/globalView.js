@@ -17,6 +17,7 @@ const state = {
     showNetResult: false,
     showCoreSideSettings: false,
     showInfoPopup: false,
+    showErrorPopup: false,
     showWorkspaceBeforeImport: false,
   }
 };
@@ -70,6 +71,9 @@ const mutations = {
   gp_infoPopup(state, value) {
     state.globalPopup.showInfoPopup = value
   },
+  gp_errorPopup(state, value) {
+    state.globalPopup.showErrorPopup = value
+  },
   HIDE_allGlobalPopups (state) {
     for (var popup in state.globalPopup) {
       state.globalPopup[popup] = false
@@ -104,6 +108,9 @@ const actions = {
   },
   GP_infoPopup({commit}, value) {
     commit('gp_infoPopup', value);
+  },
+  GP_errorPopup({commit}, value) {
+    commit('gp_errorPopup', value);
   },
   ADD_requestCounter({commit}) {
     commit('set_requestCounter', true);

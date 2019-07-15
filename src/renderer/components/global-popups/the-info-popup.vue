@@ -1,13 +1,18 @@
 <template lang="pug">
-  .popup-global(v-if="infoText")
+  .popup-global(v-if="isShowPopup")
     .popup-global_overlay(@click="closePopup()")
     section.popup
       .popup_tab-set
         .popup_header.active
-          .header_attention !
+          .header_attention(:class="{'header_attention--error': !isInfo}") !
       .popup_body
-        .settings-layer_section.text-center
-          p.middle-text {{ infoText }}
+        .settings-layer_section
+          p.middle-text.text-center(v-if="isText") {{ popupText }}
+          ul(v-else)
+            li(
+              v-for="(text, i) in popupText"
+              :key="i"
+              ) {{ text }}
       .popup_foot
         button.btn-info-popup(type="button"
         @click="closePopup()") OK
@@ -22,9 +27,26 @@
       }
     },
     computed: {
-      infoText() {
+      infoPopup() {
         return this.$store.state.globalView.globalPopup.showInfoPopup
       },
+      errorPopup() {
+        return this.$store.state.globalView.globalPopup.showErrorPopup
+      },
+      isShowPopup() {
+        return this.errorPopup.length || this.infoPopup.length
+      },
+      isText() {
+        return typeof this.popupText === 'string'
+      },
+      isInfo() {
+        return !!(this.isShowPopup && this.infoPopup.length);
+      },
+      popupText() {
+        return this.isInfo
+          ? this.infoPopup
+          : this.errorPopup;
+      }
     },
     methods: {
       closePopup() {
@@ -58,6 +80,9 @@
     font-size: 1.6rem;
     text-align: center;
     border-radius: 50%;
+  }
+  .header_attention--error {
+    background: $col-warning;
   }
   .popup_body p{
     font-size: 1.5rem;
