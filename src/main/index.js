@@ -16,16 +16,11 @@ const theFirstInstance = app.requestSingleInstanceLock();
 if (!theFirstInstance) app.quit();
 else {
   app.on('second-instance', (event, commandLine, workingDirectory) => {
-    // Кто-то пытался запустить второй экземпляр, мы должны сфокусировать наше окно.
     if (mainWindow) {
       if (mainWindow.isMinimized()) mainWindow.restore();
       mainWindow.focus()
     }
   });
-
-  // // Создать myWindow, загрузить остальную часть приложения, и т.д.
-  // app.on('ready', () => {
-  // })
 }
 
 
