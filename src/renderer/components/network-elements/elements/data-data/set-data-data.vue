@@ -130,7 +130,6 @@
             {name: 'Text', extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
           ]
         };
-        console.log(this.appPath);
         let optionTutorial = {
           title:"Load file",
           defaultPath: `${this.appPath}basic-data`,
@@ -180,8 +179,8 @@
         data.forEach((el, index) => this.dataColumns.push({text: el, value: index}));
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
-      saveSettings() {
-        this.applySettings();
+      saveSettings(tabName) {
+        this.applySettings(tabName);
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'})
       }
     }
