@@ -217,8 +217,8 @@ auc=tf.metrics.auc(labels=X['${this.settings.Labels}'],predictions=X['${this.not
       tutorialPointActivate:    'mod_tutorials/pointActivate',
       popupInfo:               'globalView/GP_infoPopup'
     }),
-    saveSettings() {
-      this.applySettings();
+    saveSettings(tabName) {
+      this.applySettings(tabName);
       this.tutorialPointActivate({way:'next', validation: 'tutorial_cost-function'})
     },
   },

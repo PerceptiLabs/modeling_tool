@@ -46,16 +46,16 @@
             imgPath: './static/img/imageClassification.svg',
             template: basicTemplate1
           },
-          {
-            title: 'Timeseries Regression',
-            imgPath: './static/img/timeSeriesRegression.svg',
-            template: basicTemplate1
-          },
-          {
-            title: 'Reinforcement Learning',
-            imgPath: './static/img/reinforcementLearning.svg',
-            template: basicTemplate1
-          },
+          // {
+          //   title: 'Timeseries Regression',
+          //   imgPath: './static/img/timeSeriesRegression.svg',
+          //   template: basicTemplate1
+          // },
+          // {
+          //   title: 'Reinforcement Learning',
+          //   imgPath: './static/img/reinforcementLearning.svg',
+          //   template: basicTemplate1
+          // },
         ]
       }
     },

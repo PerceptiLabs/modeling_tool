@@ -89,7 +89,8 @@
 	.popup {
 		position: relative;
 		z-index: 1;
-        width: 29rem;
+        min-width: 29rem;
+        max-width: 50vw;
 		//width: 34rem;
 		box-shadow: $box-shad;
 	}

@@ -13,7 +13,7 @@
     .sidebar_tab(v-if="tabSelected === 0")
       sidebar-layers
       sidebar-training(v-if="ifTraining" v-show="showTraining")
-      sidebar-share
+      //-sidebar-share
     .sidebar_tab(v-if="tabSelected === 1")
       user-profile
     .sidebar_tab(v-if="tabSelected === 2")

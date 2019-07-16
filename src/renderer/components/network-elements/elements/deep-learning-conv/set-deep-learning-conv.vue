@@ -304,8 +304,8 @@ node=node+b;`;
     onBlur(inputId) {
       this.tutorialPointActivate({way:'next', validation: inputId})
     },
-    saveSettings() {
-      this.applySettings();
+    saveSettings(tabName) {
+      this.applySettings(tabName);
       this.tutorialPointActivate({way:'next', validation: 'tutorial_patch-size'})
     },
     focusFirstTutorialField() {
