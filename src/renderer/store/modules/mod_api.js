@@ -241,15 +241,15 @@ const actions = {
       action: 'Export',
       value: value
     };
-    //console.log(theData);
+    console.log(theData);
     coreRequest(theData)
       .then((data)=> {
-        //console.log('API_exportData answer', data);
+        console.log('API_exportData answer', data);
       })
       .catch((err) =>{
         console.error(err);
       });
-    dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+    //dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_CLOSE_core({getters, dispatch, rootState}) {
     const theData = {

@@ -48,7 +48,6 @@ export default {
   components: {BaseSwitcher},
   data() {
     return {
-      disabledBtn: false,
       selectOptions: [
         { text: 'TensorFlow Model',  value: 'TFModel' },
         { text: 'Docker Image',       value: 'Docker' },
@@ -64,14 +63,11 @@ export default {
   methods: {
     loadPathFolder,
     saveLoadFile() {
-      this.disabledBtn = true;
       this.loadPathFolder()
         .then((pathArr)=>{
-          this.disabledBtn = false;
           this.settings.Location = pathArr[0];
         })
         .catch((err)=> {
-          this.disabledBtn = false;
           console.error(err)
         } )
     },
