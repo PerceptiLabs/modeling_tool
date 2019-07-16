@@ -62,27 +62,20 @@ const actions = {
     function startCore() {
       coreIsStarting = true;
       let openServer;
+      let platformPath = '';
       switch (process.platform) {
         case 'win32':
-          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          platformPath = 'core/appServer.exe';
           break;
         case 'darwin':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
         case 'linux':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
+          process.env.NODE_ENV === 'production'
+            ? platformPath = path + 'core/appServer'
+            : platformPath = 'core/appServer';
           break;
       }
+      openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe'] });
+
       openServer.on('error', (err) => {
         console.log(err);
         coreOffline()

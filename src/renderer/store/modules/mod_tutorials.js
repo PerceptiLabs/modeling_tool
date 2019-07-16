@@ -74,7 +74,7 @@ const state = {
               },
             },
             {
-              tooltip: `Click for select and <br> load MNIST dataset`,
+              tooltip: `Click for select and <br> load mnist_input.npy`,
               position: 'right',
               id: 'tutorial_button-load',
               status: 'disabled'
@@ -126,7 +126,7 @@ const state = {
               status: 'disabled',
             },
             {
-              tooltip: `Click for select and <br> load MNIST dataset`,
+              tooltip: `Click for select and <br> load mnist_labels.npy`,
               position: 'right',
               id: 'tutorial_button-load',
               status: 'disabled'
