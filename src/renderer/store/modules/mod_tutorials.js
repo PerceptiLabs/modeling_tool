@@ -1,6 +1,6 @@
 import { isNumber } from "util";
 import router from "@/router";
-//import store from "../index";
+import store from '../../store'
 
 const namespaced = true;
 let delayTimer;
@@ -11,6 +11,7 @@ const state = {
   showMainTutorialInstruction: false,
   mainTutorialIsStarted: false,
   interactiveInfo: false,
+  isDottedArrow: false,
   
   activeStepStoryboard: 0,
   
@@ -668,6 +669,7 @@ const state = {
               id: 'tutorial_training-normal-1',
               schematic: {
                 type: 'arrow',
+                position: 'bottom',
                 connection_start: 'tutorial_fully-connected-1',
               },
               status: 'disabled'
@@ -971,8 +973,8 @@ const state = {
       ]
     },
     save_and_export: {
-      title: `Step 10. You have now finished training a network and the tutorial is done. <br> 
-              If you wish to save the network you can do so from the File menu in the top left. <br>
+      title: `Step 10. You have now finished training a network and the tutorial is done.
+              If you wish to save the network you can do so from the File menu in the top left.
               Or you can export it by clicking on the tab "Export" in the right menu.`,
       points: [
         {
@@ -1043,6 +1045,9 @@ const getters = {
   },
   getHoverInfo(state, getters) {
     return  getters.getActivePoint.hoverInfo;
+  },
+  getIsDottedArrow(state) {
+    return  state.isDottedArrow;
   }
 };
 
@@ -1121,7 +1126,10 @@ const mutations = {
   SET_activeAction(state, value) {
     let actions = state.interective[value.step].points[value.point].actions;
     actions[value.action].status = value.status
-  }
+  },
+  SET_isDottedArrow(state, value) {
+    state.isDottedArrow = value;
+}
 };
 
 const actions = {
@@ -1234,10 +1242,27 @@ const actions = {
           element.style.top = schematic.top + 'rem';
           element.style.left = schematic.left + 'rem';
           break;
-         case 'border':
-          let domElement = document.getElementById(getters.getActiveAction.id);
-          domElement.classList.add('tutorial_target-border');
-          break;
+        case 'border':
+         let domElement = document.getElementById(getters.getActiveAction.id);
+         domElement.classList.add('tutorial_target-border');
+         break;
+        case 'arrow':
+          commit('SET_isDottedArrow', true);
+          let arrowSize = 10;
+          let firstElement = document.getElementById(getters.getActiveAction.schematic.connection_start);
+          let secondElement = document.getElementById(getters.getActiveAction.id);
+
+          let start = firstElement.getBoundingClientRect();
+          let stop = secondElement.getBoundingClientRect();
+
+          if(getters.getActiveAction.schematic.position === 'bottom') {
+            store.commit('mod_workspace/SET_preArrowStart', {x: start.right - start.width - start.width / 2 - arrowSize, y: start.top - start.width});
+            store.commit('mod_workspace/SET_preArrowStop', {x: stop.right - start.width - start.width / 2 - arrowSize, y: stop.top - start.width*2 + arrowSize});
+          }
+          else {
+            store.commit('mod_workspace/SET_preArrowStart', {x: start.right - start.width - arrowSize, y: start.top - start.height - arrowSize});
+            store.commit('mod_workspace/SET_preArrowStop', {x: stop.right -  stop.width*2 - arrowSize, y: stop.top - stop.height - arrowSize});
+          }
       }
     }
   },
