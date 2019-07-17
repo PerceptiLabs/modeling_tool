@@ -292,7 +292,7 @@ export default {
       let net;
       if(this.currentElList) net = Object.values(this.currentElList);
       else {
-        this.$store.dispatch('globalView/GP_infoPopup', 'You can not training network without Data element and Classic Machine Learning or Training element');
+        this.$store.dispatch('globalView/GP_infoPopup', 'You can not train model without Data element and Training element');
         return false;
       }
 
