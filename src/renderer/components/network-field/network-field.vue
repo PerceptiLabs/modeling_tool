@@ -40,7 +40,7 @@
       )
         //-'arrow--empty-output': arrow.l1.layerMeta.OutputDim.length === 0,
         path.svg-arrow_line(
-          :class="{'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
+          :class="arrowClassStyle(arrow)"
           :data-startid="arrow.l1.layerId"
           :data-stopid="arrow.l2.layerId"
           @focus="focusArrow($event)"
@@ -117,15 +117,12 @@
       stroke-width: 5 !important;
     }
   }
+  .svg-arrow_line--empty {
+    stroke: $col-warning !important;
+  }
   .svg-arrow_multi-select {
     fill: rgba($col-primary2, .15);
     stroke-width: 1;
     stroke: $col-primary2;
   }
-  /*.test {*/
-  /*  position: absolute;*/
-  /*  height: 20px;*/
-  /*  width: 20px;*/
-  /*  background-color: #fff;*/
-  /*}*/
 </style>

@@ -535,6 +535,16 @@ export default {
     findYPosition(event) {
       const scrollPosition = document.querySelector('.js-info-section_main').scrollTop;
       return (event.pageY - this.offset.offsetY + scrollPosition) / this.networkScale
+    },
+    arrowClassStyle(arrow) {
+      let result = [];
+      if (arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible) {
+        result.push('arrow--hidden');
+      }
+      if (!arrow.l1.layerMeta.OutputDim) {
+        result.push('svg-arrow_line--empty');
+      }
+      return result;
     }
   }
 }
