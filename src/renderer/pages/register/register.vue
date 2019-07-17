@@ -56,7 +56,7 @@
             v-model="terms"
           )
             span Agree
-            router-link(:to="{name: 'policy'}").btn.btn--link  terms and policy
+            button.btn.btn--link.policy-btn(@click="goToPolicyPage") terms and policy
           p.text-error(v-show="errors.has('terms')") {{ errors.first('terms') }}
 
         .form_holder
@@ -72,6 +72,10 @@ export default {
   name: 'PageRegister',
   components: {
     ViewLoading
+  },
+  mounted() {
+    let preRegistrationData = JSON.parse(localStorage.getItem('registrationData'));
+    if(preRegistrationData) this.user = preRegistrationData
   },
   data() {
     return {
@@ -108,12 +112,12 @@ export default {
         })
     },
     registryUser() {
-      //console.log('registryUser');
       this.$store.commit('mod_login/SET_showLoader', true);
       this.requestCloudApi('post', 'Customer/CreateGuest', this.user)
         .then((response)=>{
           this.$store.dispatch('globalView/GP_infoPopup', 'A confirmation email has been sent to your email. Follow the link to complete the registration.');
           this.$router.replace('/login');
+          localStorage.removeItem('registrationData')
         })
         .catch((error)=>{
           this.$store.dispatch('globalView/GP_infoPopup', error);
@@ -121,6 +125,19 @@ export default {
         .finally(()=>{
           this.$store.commit('mod_login/SET_showLoader', false);
         });
+    },
+    goToPolicyPage() {
+      let registerInfo = {
+        firstName: this.user.firstName,
+        lastName: this.user.lastName,
+        email: this.user.email,
+        phone: this.user.phone,
+        password: '',
+        isLoading: false
+      };
+      localStorage.setItem('registrationData', JSON.stringify(registerInfo));
+      this.$router.push({name: 'policy'});
+
     }
   }
 }
@@ -128,5 +145,7 @@ export default {
 
 <style lang="scss" scoped>
   @import '../../scss/base';
-
+  .policy-btn{
+    margin-left: 1rem;
+  }
 </style>
