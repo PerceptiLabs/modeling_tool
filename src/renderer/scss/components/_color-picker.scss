@@ -1,0 +1,12 @@
+$color-picker-indent: 1rem;
+
+.layer-colorpicker_wrap {
+  .vc-slider {
+    margin-top: $color-picker-indent;
+    max-width: 19rem;
+  }
+
+  .vc-slider-swatches {
+    margin-top: $color-picker-indent;
+  }
+}

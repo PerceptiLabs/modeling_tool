@@ -6,7 +6,7 @@
       :layer-container="true"
       @open-container="toggleContainer(false)"
     )
-      view-el
+      view-el(:current-el="elementData")
     template(v-else)
       .layer-container_box(
         :style="containerStyle"

@@ -107,6 +107,7 @@ export default {
   }
   .layers_body {
     overflow: auto;
+    flex: 1;
   }
   .layers_meta {
     flex: 0 0 auto;

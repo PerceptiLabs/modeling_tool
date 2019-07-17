@@ -5,20 +5,17 @@
   data-type="Training"
   v-tooltip:right="'Genetic Algorithm'"
   v-tooltip-interactive:right="interactiveInfo"
+    :style="layerStyles"
   )
     i.icon.icon-learning-genetic
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewTrainGenetic',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

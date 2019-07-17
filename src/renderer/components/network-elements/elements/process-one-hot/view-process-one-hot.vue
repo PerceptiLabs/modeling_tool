@@ -6,20 +6,17 @@
   v-tooltip:right="'One Hot'"
   v-tooltip-interactive:right="interactiveInfo"
   id="tutorial_one-hot"
+    :style="layerStyles"
   )
     i.icon.icon-one-hot
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewProcessOneHot',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {
