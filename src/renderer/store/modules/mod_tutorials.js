@@ -1,6 +1,6 @@
 import { isNumber } from "util";
 import router from "@/router";
-//import store from "../index";
+import store from '../../store'
 
 const namespaced = true;
 let delayTimer;
@@ -11,6 +11,7 @@ const state = {
   showMainTutorialInstruction: false,
   mainTutorialIsStarted: false,
   interactiveInfo: false,
+  isDottedArrow: false,
   
   activeStepStoryboard: 0,
   
@@ -175,7 +176,7 @@ const state = {
               check_prev_id: true
             },
             {
-              tooltip: `Connect Data with <br> Process Reshape...`,
+              tooltip: `Connect Data with <br> Process Reshape`,
               position: 'right',
               id: 'tutorial_process-reshape-1',
               schematic: {
@@ -463,7 +464,7 @@ const state = {
           static_info: [
             {
               status:'disabled',
-              content: 'This operation matches the size of outputs of your network to the number of classes from your label data',
+              content: 'This operation matches the size of outputs of your model to the number of classes from your label data',
             }
           ]
         },
@@ -668,6 +669,7 @@ const state = {
               id: 'tutorial_training-normal-1',
               schematic: {
                 type: 'arrow',
+                position: 'bottom',
                 connection_start: 'tutorial_fully-connected-1',
               },
               status: 'disabled'
@@ -764,7 +766,7 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Dropout rate:</div> when training we can </br> deactivate half (0.5) of all the </br> learning neurons in each layer in order for </br> the network to learn in a  more general way. 
+                          <div class="tooltip-tutorial_bold">Dropout rate:</div> when training we can </br> deactivate half (0.5) of all the </br> learning neurons in each layer in order for </br> the model to learn in a  more general way. 
                           </br></br> Note: this has to be activated independently </br> for each deep learning layer.</br>
                           <div class="tooltip-tutorial_bold">click Apply</div>
                         </div>`,
@@ -806,7 +808,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'The top window shows training <div class="marker">Statistics</div> for the overall network. Press <div class="marker">"Next"</div> to continue',
+          content: 'The top window shows training <div class="marker">Statistics</div> for the overall model. Press <div class="marker">"Next"</div> to continue',
           actions: [
             {
               id: 'tutorial_statistics', 
@@ -888,7 +890,7 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Click to Prediction:</div> Overview of the </br> network perfomance
+                          <div class="tooltip-tutorial_bold">Click to Prediction:</div> Overview of the </br> model perfomance
                         </div>`,
               position: 'right',
               id: 'tutorial_prediction-tab',
@@ -896,7 +898,7 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Click to Accuracy:</div> Overall </br> performance of a network. </br> The higher the accuracy, </br> the better it is at learning. 
+                          <div class="tooltip-tutorial_bold">Click to Accuracy:</div> Overall </br> performance of a model. </br> The higher the accuracy, </br> the better it is at learning. 
                         </div>`,
               position: 'right',
               id: 'tutorial_accuracy-tab',
@@ -928,7 +930,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'Weight when training is complete for this network.',
+          content: 'Wait until training is complete for this model.',
           actions: [
             {
               position: 'right',
@@ -971,8 +973,8 @@ const state = {
       ]
     },
     save_and_export: {
-      title: `Step 10. You have now finished training a network and the tutorial is done. <br> 
-              If you wish to save the network you can do so from the File menu in the top left. <br>
+      title: `Step 10. You have now finished training a model and the tutorial is done.
+              If you wish to save the model you can do so from the File menu in the top left.
               Or you can export it by clicking on the tab "Export" in the right menu.`,
       points: [
         {
@@ -1043,6 +1045,9 @@ const getters = {
   },
   getHoverInfo(state, getters) {
     return  getters.getActivePoint.hoverInfo;
+  },
+  getIsDottedArrow(state) {
+    return  state.isDottedArrow;
   }
 };
 
@@ -1121,7 +1126,10 @@ const mutations = {
   SET_activeAction(state, value) {
     let actions = state.interective[value.step].points[value.point].actions;
     actions[value.action].status = value.status
-  }
+  },
+  SET_isDottedArrow(state, value) {
+    state.isDottedArrow = value;
+}
 };
 
 const actions = {
@@ -1201,11 +1209,18 @@ const actions = {
   },
   showHideTooltip({getters}) {
     if(getters.getIstutorialMode) {
-      let activeTooltips = document.querySelectorAll('.tooltip-tutorial');
-      activeTooltips.forEach((tooltip)=> {
-        tooltip.classList.contains('tooltip-hide') ?
-          tooltip.classList.remove('tooltip-hide') : tooltip.classList.add('tooltip-hide')
-      })
+      let element = document.getElementById(getters.getActiveAction.id);
+      if(element.parentNode.classList.contains('unlock-element')) {
+        let activeTooltip = document.querySelector('.tooltip-tutorial');
+        activeTooltip.classList.contains('tooltip-hide') ?
+          activeTooltip.classList.remove('tooltip-hide') : activeTooltip.classList.add('tooltip-hide')
+      }
+    }
+  },
+  hideTooltip({getters}) {
+    let element = document.getElementById(getters.getActiveAction.id);
+    if(element.parentNode.classList.contains('unlock-element')) {
+      document.querySelector('.tooltip-tutorial').classList.add('tooltip-hide');
     }
   },
   nextPoint({commit, getters, dispatch}) {
@@ -1234,10 +1249,27 @@ const actions = {
           element.style.top = schematic.top + 'rem';
           element.style.left = schematic.left + 'rem';
           break;
-         case 'border':
-          let domElement = document.getElementById(getters.getActiveAction.id);
-          domElement.classList.add('tutorial_target-border');
-          break;
+        case 'border':
+         let domElement = document.getElementById(getters.getActiveAction.id);
+         domElement.classList.add('tutorial_target-border');
+         break;
+        case 'arrow':
+          commit('SET_isDottedArrow', true);
+          let arrowSize = 10;
+          let firstElement = document.getElementById(getters.getActiveAction.schematic.connection_start);
+          let secondElement = document.getElementById(getters.getActiveAction.id);
+
+          let start = firstElement.getBoundingClientRect();
+          let stop = secondElement.getBoundingClientRect();
+
+          if(getters.getActiveAction.schematic.position === 'bottom') {
+            store.commit('mod_workspace/SET_preArrowStart', {x: start.right - start.width - start.width / 2 - arrowSize, y: start.top - start.width});
+            store.commit('mod_workspace/SET_preArrowStop', {x: stop.right - start.width - start.width / 2 - arrowSize, y: stop.top - start.width*2 + arrowSize});
+          }
+          else {
+            store.commit('mod_workspace/SET_preArrowStart', {x: start.right - start.width - arrowSize, y: start.top - start.height - arrowSize});
+            store.commit('mod_workspace/SET_preArrowStop', {x: stop.right -  stop.width*2 - arrowSize, y: stop.top - stop.height - arrowSize});
+          }
       }
     }
   },

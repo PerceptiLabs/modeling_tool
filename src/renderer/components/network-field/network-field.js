@@ -74,6 +74,7 @@ export default {
   computed: {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
+      tutorialDottedArrow:  'mod_tutorials/getIsDottedArrow',
       currentNetwork:       'mod_workspace/GET_currentNetwork',
       canEditLayers:        'mod_workspace/GET_networkIsOpen',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
@@ -263,12 +264,13 @@ export default {
       this.$refs.network.addEventListener('mouseup', this.removeArrowListener);
     },
     arrowMovePaint(ev) {
+      this.$store.commit('mod_tutorials/SET_isDottedArrow', false);
       ev.preventDefault();
       ev.stopPropagation();
       this.$store.commit('mod_workspace/SET_preArrowStop', {
         x: this.findXPosition(ev),
         y: this.findYPosition(ev)
-      })
+      });
     },
     removeArrowListener() {
       this.$store.commit('mod_workspace/CLEAR_preArrow');
