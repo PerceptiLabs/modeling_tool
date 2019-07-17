@@ -21,7 +21,7 @@
             :key="i"
           )
             component(:is="element" :draggable='true')
-      //-li.layer
+      li.layer
         button.btn.btn--layersbar.net-element-add(type="button")
           i.icon.icon-add
 
