@@ -180,9 +180,10 @@ export default {
         this.layersbarList[index].showEl = true;
         this.ClickElementTracking = ev.target.closest('.js-clickout');
         document.addEventListener('click', this.clickOutside);
-        this.$store.dispatch('mod_tutorials/showHideTooltip');
       }
     },
+    //btn btn--layersbar layer_parent js-clickout tooltip-wrap net-element-data
+    //btn btn--layersbar                          tooltip-wrap net-element-data
     clickOutsideAction() {
       this.layersbarList.forEach((item)=> {
         item.showEl = false

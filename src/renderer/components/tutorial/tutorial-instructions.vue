@@ -69,6 +69,18 @@ export default {
   watch: {
     eventResize() {
       this.tooltipReposition();
+    },
+    isTutorialMode(isTutorialMode) {
+      let layersbar = document.querySelector('.page_layersbar');
+      let svg = document.querySelector('.svg-arrow');
+      if(isTutorialMode) {                                              //hide tooltip for elements from toolbar when these elements are hidden
+        svg.addEventListener('click', this.hideTooltip);
+        layersbar.addEventListener('click', this.showHideTooltip, true);
+      }
+      else {
+        svg.removeEventListener('click', this.hideTooltip);
+        layersbar.removeEventListener('click', this.showHideTooltip);
+      }
     }
   },
   computed: {
@@ -121,7 +133,9 @@ export default {
       unlockAllElements:          'mod_tutorials/unlockAllElements',
       tooltipReposition:          'mod_tutorials/tooltipReposition',
       offTutorial:                'mod_tutorials/offTutorial',
-      onTutorial:                'mod_tutorials/onTutorial',
+      showHideTooltip:           'mod_tutorials/showHideTooltip',
+      hideTooltip:                'mod_tutorials/hideTooltip',
+      onTutorial:                 'mod_tutorials/onTutorial',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
     }),
@@ -145,7 +159,8 @@ export default {
     },
     switchTutorialMode() {
       this.isTutorialMode ? this.offTutorial() : this.onTutorial(this);
-    }
+    },
+
   }
 }
 //

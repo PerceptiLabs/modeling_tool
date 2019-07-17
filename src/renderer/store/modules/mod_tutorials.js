@@ -1209,11 +1209,18 @@ const actions = {
   },
   showHideTooltip({getters}) {
     if(getters.getIstutorialMode) {
-      let activeTooltips = document.querySelectorAll('.tooltip-tutorial');
-      activeTooltips.forEach((tooltip)=> {
-        tooltip.classList.contains('tooltip-hide') ?
-          tooltip.classList.remove('tooltip-hide') : tooltip.classList.add('tooltip-hide')
-      })
+      let element = document.getElementById(getters.getActiveAction.id);
+      if(element.parentNode.classList.contains('unlock-element')) {
+        let activeTooltip = document.querySelector('.tooltip-tutorial');
+        activeTooltip.classList.contains('tooltip-hide') ?
+          activeTooltip.classList.remove('tooltip-hide') : activeTooltip.classList.add('tooltip-hide')
+      }
+    }
+  },
+  hideTooltip({getters}) {
+    let element = document.getElementById(getters.getActiveAction.id);
+    if(element.parentNode.classList.contains('unlock-element')) {
+      document.querySelector('.tooltip-tutorial').classList.add('tooltip-hide');
     }
   },
   nextPoint({commit, getters, dispatch}) {
