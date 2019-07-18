@@ -187,7 +187,7 @@ export default {
     position: absolute;
     z-index: 13;
     background: $col-txt2;
-    width: 24rem;
+    width: 30rem;
     top: 90%;
     right: 0;
     color: $white;
@@ -239,12 +239,12 @@ export default {
     }
   }
   .list-area_title {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     padding: 0 2.5rem;
     font-weight: 500;
   }
   .list-area_list {
-    height: 15rem;
+    height: 18rem;
     overflow: scroll;
   }
   .list-element--status {
@@ -273,13 +273,13 @@ export default {
   }
   .list-element {
     margin-bottom: 0.5rem;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     position: relative;
     padding: 0 2.5rem 0 3.5rem;
    
     &.list_title{
       font-weight: 700;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       padding: $title-padding;
     }
     &.list_subtitle {
