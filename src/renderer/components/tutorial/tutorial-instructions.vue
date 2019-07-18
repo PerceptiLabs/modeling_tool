@@ -133,11 +133,12 @@ export default {
       unlockAllElements:          'mod_tutorials/unlockAllElements',
       tooltipReposition:          'mod_tutorials/tooltipReposition',
       offTutorial:                'mod_tutorials/offTutorial',
-      showHideTooltip:           'mod_tutorials/showHideTooltip',
+      showHideTooltip:            'mod_tutorials/showHideTooltip',
       hideTooltip:                'mod_tutorials/hideTooltip',
       onTutorial:                 'mod_tutorials/onTutorial',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
+      popupInfo:                  'globalView/GP_infoPopup'
     }),
     changeStep(way) {
       if(way === 'next') {
@@ -153,8 +154,11 @@ export default {
     },
     endTutorial() {
       this.setNetworkCoreStatus(false);
-      this.deleteNetwork(this.currentNetwork);
-      this.addNetwork({'ctx': this});
+      //this.deleteNetwork(this.currentNetwork);
+      //this.addNetwork({'ctx': this});
+      this.popupInfo(`Congratulations, you have successfully completed the Tutorial!
+                      If you wish to save the model you created, can do so from the File menu in the top left.
+                      Or you can export it by clicking on the tab "Export" in the right menu.`);
       this.switchTutorialMode();
     },
     switchTutorialMode() {
@@ -183,7 +187,7 @@ export default {
     position: absolute;
     z-index: 13;
     background: $col-txt2;
-    width: 24rem;
+    width: 30rem;
     top: 90%;
     right: 0;
     color: $white;
@@ -235,12 +239,12 @@ export default {
     }
   }
   .list-area_title {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     padding: 0 2.5rem;
     font-weight: 500;
   }
   .list-area_list {
-    height: 15rem;
+    height: 18rem;
     overflow: scroll;
   }
   .list-element--status {
@@ -269,13 +273,13 @@ export default {
   }
   .list-element {
     margin-bottom: 0.5rem;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     position: relative;
     padding: 0 2.5rem 0 3.5rem;
    
     &.list_title{
       font-weight: 700;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       padding: $title-padding;
     }
     &.list_subtitle {

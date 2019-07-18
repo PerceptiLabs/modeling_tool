@@ -206,14 +206,15 @@ export default {
       })
     },
     openContext(event) {
-
-      this.hideAllWindow();
-      if(!this.currentSelectedEl.length) {
-        this.setFocusEl(event);
-      }
-      //this.calcWindowPosition();
-      if(this.networkMode === 'edit' && this.editIsOpen) {
-        this.contextIsOpen = true;
+      if(!this.isTutorialMode) {
+        this.hideAllWindow();
+        if(!this.currentSelectedEl.length) {
+          this.setFocusEl(event);
+        }
+        //this.calcWindowPosition();
+        if(this.networkMode === 'edit' && this.editIsOpen) {
+          this.contextIsOpen = true;
+        }
       }
     },
     calcWindowPosition(el) {

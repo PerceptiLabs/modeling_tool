@@ -127,17 +127,8 @@ export default {
         });
     },
     goToPolicyPage() {
-      let registerInfo = {
-        firstName: this.user.firstName,
-        lastName: this.user.lastName,
-        email: this.user.email,
-        phone: this.user.phone,
-        password: '',
-        isLoading: false
-      };
-      localStorage.setItem('registrationData', JSON.stringify(registerInfo));
+      localStorage.setItem('registrationData', JSON.stringify(this.user));
       this.$router.push({name: 'policy'});
-
     }
   }
 }

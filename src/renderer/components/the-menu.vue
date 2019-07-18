@@ -313,7 +313,9 @@ export default {
       this.offMainTutorial();
     },
     HC_delete() {
-      this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement')
+      if(!this.isTutorialMode) {
+        this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement')
+      }
     },
     HC_esc() {
       this.$store.dispatch('mod_events/EVENT_hotKeyEsc')
