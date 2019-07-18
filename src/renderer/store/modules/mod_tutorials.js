@@ -399,7 +399,7 @@ const state = {
             },
             {
               status:'disabled',
-              content: 'This generates outputs called feature maps, where each feature'
+              content: 'This generates outputs called feature maps, where each feature map corresponds to an extracted feature.'
             }
           ]
         },
@@ -955,10 +955,10 @@ const state = {
       ]
     },
     testing: {
-      title: 'Step 9. Testing',
+      title: 'Step 9. Testing shows how general your model is, i.e. to what extent can it classify things it has never seen before',
       points: [
         {
-          status:'disabled',
+          status:'last step',
           class_style: 'list_subtitle',
           content: 'Testing shows how general your model is, i.e. to what extent can it classify things it has never seen before',
           actions: [
@@ -972,12 +972,13 @@ const state = {
         }
       ]
     },
-    save_and_export: {
-      title: `Step 10. You have now finished training a model and the tutorial is done.
-              If you wish to save the model you can do so from the File menu in the top left.
-              Or you can export it by clicking on the tab "Export" in the right menu.`,
+/*    save_and_export: {
+      title: `Step 10.`,
       points: [
         {
+          content:`You have now finished training a model and the tutorial is done. 
+                  If you wish to save the model you can do so from the File menu in the top left. 
+                  Or you can export it by clicking on the tab "Export" in the right menu.`,
           status:'last step',
           actions: [
             {
@@ -986,7 +987,7 @@ const state = {
           ]
         }
       ]
-    }
+    }*/
   }
 };
 
