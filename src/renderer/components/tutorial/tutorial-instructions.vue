@@ -133,11 +133,12 @@ export default {
       unlockAllElements:          'mod_tutorials/unlockAllElements',
       tooltipReposition:          'mod_tutorials/tooltipReposition',
       offTutorial:                'mod_tutorials/offTutorial',
-      showHideTooltip:           'mod_tutorials/showHideTooltip',
+      showHideTooltip:            'mod_tutorials/showHideTooltip',
       hideTooltip:                'mod_tutorials/hideTooltip',
       onTutorial:                 'mod_tutorials/onTutorial',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
+      popupInfo:                  'globalView/GP_infoPopup'
     }),
     changeStep(way) {
       if(way === 'next') {
@@ -153,8 +154,9 @@ export default {
     },
     endTutorial() {
       this.setNetworkCoreStatus(false);
-      this.deleteNetwork(this.currentNetwork);
-      this.addNetwork({'ctx': this});
+      //this.deleteNetwork(this.currentNetwork);
+      //this.addNetwork({'ctx': this});
+      this.popupInfo('You have successfully completed the tutorial!');
       this.switchTutorialMode();
     },
     switchTutorialMode() {
