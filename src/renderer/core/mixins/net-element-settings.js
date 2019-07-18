@@ -43,7 +43,6 @@ const netElementSettings = {
       this.applySettings(tabName);
     },
     applySettings(tabName) {
-      console.log(tabName);
       if(tabName === 'Settings') {
         this.updateCode();
       }

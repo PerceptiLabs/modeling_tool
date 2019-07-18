@@ -1,10 +1,11 @@
 <template lang="pug">
   .layer-colorpicker
-    button.btn.btn--icon.layer-item--btn-action(type="button" @click="toggleColorpicker")
-      i.icon(
-        :class="applyColor ? 'icon-ellipse' : 'icon-empty' "
-        :style="iconColor"
-        )
+    button.btn.btn--icon.layer-item--btn-action(type="button"
+      :class="layerItemColor"
+      :style="iconColor"
+      @click="toggleColorpicker"
+      )
+      i.icon.icon-ellipse
     .layer-colorpicker_wrap(v-if="showColorpicker")
       .form_row
         base-checkbox(v-model="applyColor")
@@ -49,8 +50,55 @@ export default {
   },
   computed: {
     iconColor() {
-      return this.applyColor ? {'color': this.layerColor.hex} : null
+      return this.applyColor
+        ? {'color': this.layerColor.hex}
+        : null
     },
+    layerItemColor() {
+      let className = '';
+      switch (this.currentLayer.componentName) {
+        case 'DataData,':
+        case 'DataEnvironment':
+          className = 'net-color-data';
+          break;
+        case 'DeepLearningFC':
+        case 'DeepLearningConv':
+        case 'DeepLearningDeconv':
+        case 'DeepLearningRecurrent':
+          className = 'net-color-learn-deep';
+          break;
+        case 'ProcessCrop':
+        case 'ProcessEmbed':
+        case 'ProcessGrayscale':
+        case 'ProcessOneHot':
+        case 'ProcessReshape':
+          className = 'net-color-process';
+          break;
+        case 'TrainNormal':
+        case 'TrainGenetic':
+        case 'TrainDynamic':
+        case 'TrainReinforce':
+          className = 'net-color-train';
+          break;
+        case 'MathArgmax':
+        case 'MathMerge':
+        case 'MathSplit':
+        case 'MathSoftmax':
+          className = 'net-color-math';
+          break;
+        case 'ClassicMLDbscans':
+        case 'ClassicMLKMeans':
+        case 'ClassicMLKNN':
+        case 'ClassicMLRandomForest':
+        case 'ClassicMLSVM':
+          className = 'net-color-learn-class';
+          break;
+        case 'LayerContainer':
+          className = 'net-color-layercontainer';
+          break;
+      }
+      return [className];
+    }
   },
   watch: {
     iconColor(newVal) {

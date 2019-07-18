@@ -1,7 +1,7 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-learn-deep(:draggable="draggable"
     data-component="DeepLearningConv"
-    data-layer="Convolution_1"
+    data-layer="Convolution"
     data-type="Other"
     v-tooltip:right="'Convolution'"
     v-tooltip-interactive:right="interactiveInfo"

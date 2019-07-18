@@ -26,7 +26,7 @@ const getters = {
     return state.appPath
   },
   GET_userIsLogin(state) {
-    return state.userToken ? true : false
+    return !!state.userToken.length
   }
 };
 

@@ -149,9 +149,10 @@ export default {
           label: '', visible: false,
           submenu: [
             {label: 'Delete',                accelerator: this.isMac ? 'backspace+meta' : 'delete',                                 id: "hc-delete",              active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
-            {label: 'Esc',                   accelerator: 'esc',                                                                    id: "hc-esc",              active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
+            {label: 'Esc',                   accelerator: 'esc',                                                                    id: "hc-esc",                 active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
             {label: 'addLayerContainer',     accelerator: this.isMac ? 'Command+G' : 'Ctrl+G',              enabled: this.openApp,  id: "hc-add-layer-container", active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
             {label: 'unGroupLayerContainer', accelerator: this.isMac ? 'Command+Shift+G' : 'Ctrl+Shift+G',  enabled: this.openApp,  id: "hc-ungroup-container",   active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
+            {label: 'preventClose',          accelerator: 'Alt+F4',                                         enabled: true,          id: "hc-prevent-close",       active: function(e) {e.preventDefault()},             mousedown: ()=> {}, visible: false},
           ]
         }
       ]

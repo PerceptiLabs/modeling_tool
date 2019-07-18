@@ -95,8 +95,8 @@ export default {
   .popup_body {
     max-width: calc(50vw - #{$w-sidebar});
     min-width: 29rem;
-    max-height: 41vh;
-    overflow-y: auto;
+    /*max-height: 41vh;*/
+    /*overflow-y: auto;*/
   }
   .settings-layer {
     max-height: calc(100vh - 26rem);
