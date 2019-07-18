@@ -487,6 +487,10 @@ const mutations = {
     let elMeta = currentElement(id).layerMeta;
     elMeta.isInvisible = !elMeta.isInvisible
   },
+  SET_elementBgColor(state, value) {
+    let elMeta = currentElement(value.id).layerMeta;
+    elMeta.layerBgColor = value.color
+  },
   SET_elementNone(state, {id, value}) {
     let el = currentElement(id);
     el.layerNone = value
@@ -892,6 +896,7 @@ const createNetElement = function (event) {
       OutputDim: '',
       InputDim: '',
       layerContainerName: '',
+      layerBgColor: '',
       containerDiff: {
         top: 0,
         left: 0,

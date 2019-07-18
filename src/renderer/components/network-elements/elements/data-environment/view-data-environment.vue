@@ -5,20 +5,17 @@
     data-type="Data"
     v-tooltip:right="'Environment'"
     v-tooltip-interactive:right="interactiveInfo"
+    :style="layerStyles"
   )
     i.icon.icon-map
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewDataEnvironment',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

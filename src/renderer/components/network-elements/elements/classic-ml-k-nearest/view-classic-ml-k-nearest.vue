@@ -5,21 +5,17 @@
     data-type="Training"
     v-tooltip:right="'K Nearest Neighbor'"
     v-tooltip-interactive:right="interactiveInfo.MLKnn"
+    :style="layerStyles"
   )
     i.icon.icon-round-figur
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewClassicMLKNN',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

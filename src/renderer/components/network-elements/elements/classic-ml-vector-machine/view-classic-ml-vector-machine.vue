@@ -5,20 +5,17 @@
     data-type="Training"
     v-tooltip:right="'Support Vector Machine'"
     v-tooltip-interactive:right="interactiveInfo.MLSvm"
+    :style="layerStyles"
   )
     i.icon.icon-round-figur2
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewClassicMLSVM',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

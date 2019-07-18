@@ -5,20 +5,17 @@
     data-type="Other"
     v-tooltip:right="'Recurrent'"
     v-tooltip-interactive:right="interactiveInfo"
+    :style="layerStyles"
   )
     i.icon.icon-round-left
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewDeepLearningRecurrent',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

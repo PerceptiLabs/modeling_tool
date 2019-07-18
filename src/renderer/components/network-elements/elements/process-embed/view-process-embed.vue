@@ -5,20 +5,17 @@
   data-type="Other"
   v-tooltip:right="'Word Embedding'"
   v-tooltip-interactive:right="interactiveInfo"
+    :style="layerStyles"
   )
     i.icon.icon-put-in-button
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewProcessEmbed',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

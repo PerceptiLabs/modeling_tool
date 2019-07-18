@@ -2,7 +2,7 @@
   base-net-el(
     :data-el="elementData"
   )
-    view-el
+    view-el(:current-el="elementData")
     template(slot="settings")
       settings-el(:current-el="elementData")
 

@@ -6,20 +6,17 @@
     v-tooltip:right="'Data'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_data-data"
+    :style="layerStyles"
   )
     i.icon.icon-data
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewDataData',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

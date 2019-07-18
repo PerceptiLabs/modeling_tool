@@ -5,8 +5,7 @@
       @click="setSelect($event)"
       )
       .layer-item_left-sidebar
-        button.btn.btn--icon.layer-item--btn-action(type="button")
-          i.icon.icon-empty
+        sidebar-layers-color-picker(:current-layer="itemData")
 
       .layer-item_main
         button.btn.btn--icon.layer-item-left_btn-folder.layer-item--btn-action(type="button"
@@ -45,6 +44,7 @@
 
 <script>
   import SidebarLayersItem  from '@/components/sidebar/sidebar-layers--item.vue'
+  import SidebarLayersColorPicker  from '@/components/sidebar/sidebar-layers--colorpicker.vue'
   import TextEditable       from '@/components/base/text-editable.vue'
   import clickOutside       from '@/core/mixins/click-outside.js'
 
@@ -53,7 +53,8 @@ export default {
   mixins: [clickOutside],
   components: {
     SidebarLayersItem,
-    TextEditable
+    SidebarLayersColorPicker,
+    TextEditable,
   },
   props: {
     itemData: {
@@ -122,6 +123,7 @@ export default {
 
 <style lang="scss">
   @import "../../scss/base";
+  @import "../../scss/components/color-picker";
   .layer-item {
     position: relative;
     display: flex;
