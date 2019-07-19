@@ -56,8 +56,9 @@ export default {
     },
     layerItemColor() {
       let className = '';
+      console.log(this.currentLayer.componentName);
       switch (this.currentLayer.componentName) {
-        case 'DataData,':
+        case 'DataData':
         case 'DataEnvironment':
           className = 'net-color-data';
           break;
@@ -124,6 +125,7 @@ export default {
     padding: 1rem;
     box-shadow: $icon-shad;
     position: absolute;
+    z-index: 2;
     top: 100%;
   }
 </style>
