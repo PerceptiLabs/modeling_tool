@@ -48,7 +48,7 @@
 
 <script>
   import { ipcRenderer, shell } from 'electron'
-  import { mapGetters, mapMutations, mapActions } from 'vuex';
+  import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
 
 export default {
   name: "TheMenu",
@@ -67,6 +67,9 @@ export default {
   //   }
   // },
   computed: {
+    ...mapState({
+      siteBaseUrl: state => state.mod_api.siteBaseUrl,
+    }),
     ...mapGetters({
       isTutorialMode: 'mod_tutorials/getIstutorialMode',
       isStoryBoard:   'mod_tutorials/getIsTutorialStoryBoard'
@@ -249,10 +252,10 @@ export default {
           break;
         //Help
         case 'to-help':
-          this.openLink('https://www.perceptilabs.com/html/product.html#tutorials');
+          this.openLink(`${this.siteBaseUrl}/i_docs`);
           break;
         case 'to-about':
-          this.openLink('https://www.perceptilabs.com/');
+          this.openLink(`${this.siteBaseUrl}/about`);
           break;
         case 'enable-tutorial':
           this.showTutorial();
