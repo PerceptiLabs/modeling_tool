@@ -18,13 +18,10 @@ const netElementSettings = {
   mounted() {
     this.$store.dispatch('mod_api/API_getInputDim')
       .then(()=>{
-        if(!this.currentEl.layerCode) {
-          this.updateCode();
-        }
-        else {
-          this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
-          this.coreCode = this.currentEl.layerCode
-        }
+        if(!this.currentEl.layerCode) this.updateCode();
+        else this.coreCode = this.currentEl.layerCode;
+
+        if (this.currentEl.layerSettings) this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
       })
   },
   computed: {
