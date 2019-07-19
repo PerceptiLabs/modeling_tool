@@ -269,7 +269,7 @@ const actions = {
       dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_postTestStart({rootGetters, rootState, dispatch}) {
-    //console.log('API_postTestStart');
+    console.log('API_postTestStart');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: 'startTest',
@@ -284,7 +284,7 @@ const actions = {
       });
   },
   API_postTestPlay({rootGetters, rootState, dispatch}) {
-    //console.log('API_postTestPlay');
+    console.log('API_postTestPlay');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: 'playTest',

@@ -91,7 +91,6 @@ const mutations = {
 
 const actions = {
   NET_trainingDone({commit, dispatch}) {
-    console.log('NET_trainingDone');
     commit('GP_showNetResult', true);
     dispatch('mod_workspace/SET_openTest', false, {root: true});
   },
