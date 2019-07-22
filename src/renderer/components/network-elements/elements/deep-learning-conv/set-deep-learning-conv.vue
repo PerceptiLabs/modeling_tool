@@ -1,5 +1,6 @@
 <template lang="pug">
   net-base-settings(
+    :layer-code="currentEl.layerCode.length"
     :first-tab="currentEl.layerSettingsTabName"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
@@ -8,7 +9,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.dimension")
           .form_label Dimension:
-          .form_input
+          #tutorial_dimension.form_input(data-tutorial-hover-info)
             base-radio(group-name="group" value-input="Automatic" v-model="settings.Conv_dim")
               span Automatic
             base-radio(group-name="group" value-input="1D" v-model="settings.Conv_dim")
@@ -43,7 +44,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.zeroPadding")
           .form_label Zero-padding:
-          .form_input
+          #tutorial_zero-padding.form_input(data-tutorial-hover-info)
             base-radio(group-name="group3" value-input="'SAME'"  v-model="settings.Padding")
               span SAME
             base-radio(group-name="group3" value-input="'VALID'"  v-model="settings.Padding")
@@ -51,7 +52,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.activationFunction")
           .form_label Activation function:
-          .form_input
+          #tutorial_activeFunc.form_input(data-tutorial-hover-info)
             base-radio(group-name="group1" value-input="None"  v-model="settings.Activation_function")
               span None
             base-radio(group-name="group1" value-input="Sigmoid"  v-model="settings.Activation_function")
@@ -63,7 +64,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
           .form_label Dropout:
-          .form_input
+          #tutorial_dropout.form_input(data-tutorial-hover-info)
             base-radio(group-name="group5" :value-input="true"  v-model="settings.Dropout")
               span Yes
             base-radio(group-name="group5" :value-input="false"  v-model="settings.Dropout")
@@ -71,7 +72,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
           .form_label Pooling:
-          .form_input
+          #tutorial_pooling.form_input(data-tutorial-hover-info)
             base-radio(group-name="group6" :value-input="true"  v-model="settings.PoolBool")
               span Yes
             base-radio(group-name="group6" :value-input="false"  v-model="settings.PoolBool")
@@ -131,6 +132,9 @@ import { mapGetters, mapActions } from 'vuex';
 export default {
   name: 'SetDeepLearningConv',
   mixins: [mixinSet],
+  mounted() {
+    this.focusFirstTutorialField();
+  },
   data() {
     return {
       settings: {
@@ -199,9 +203,6 @@ export default {
       },
     }
   },
-  mounted() {
-   if(this.isTutorialMode) this.$refs.pathSize.focus()
-  },
   computed: {
     ...mapGetters({
       isTutorialMode:   'mod_tutorials/getIstutorialMode',
@@ -211,6 +212,7 @@ export default {
       let activeFunc = '';
       let pooling = '';
       let switcherDim = calcSwitcher(this);
+      //console.log(switcherDim);
       switch (switcherDim) {
         case '1D':
           dim = `shape=[${this.settings.Patch_size},${this.codeInputDim}[-1],${this.settings.Feature_maps}];
@@ -302,9 +304,14 @@ node=node+b;`;
     onBlur(inputId) {
       this.tutorialPointActivate({way:'next', validation: inputId})
     },
-    saveSettings() {
-      this.applySettings();
+    saveSettings(tabName) {
+      this.applySettings(tabName);
       this.tutorialPointActivate({way:'next', validation: 'tutorial_patch-size'})
+    },
+    focusFirstTutorialField() {
+      this.$nextTick(()=> {
+        if (this.isTutorialMode) this.$refs.pathSize.focus()
+      })
     }
   }
 }

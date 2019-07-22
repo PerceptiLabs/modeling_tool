@@ -1,18 +1,18 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col
-      chart-picture(
+      chart-switch(
         chart-label="Output"
         :chart-data="chartData.Output"
       )
 </template>
 
 <script>
-  import ChartPicture from "@/components/charts/chart-picture.vue";
+  import ChartSwitch    from "@/components/charts/chart-switch.vue";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxProcessGrayscale",
-    components: {ChartPicture},
+    components: {ChartSwitch},
     mixins: [viewBoxMixin],
     methods: {
       getData() {

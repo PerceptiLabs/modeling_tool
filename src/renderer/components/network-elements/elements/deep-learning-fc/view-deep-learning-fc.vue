@@ -1,25 +1,22 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-learn-deep(:draggable="draggable"
   data-component="DeepLearningFC"
-  data-layer="FullyConnected_1"
+  data-layer="Fully Connected"
   data-type="Other"
   v-tooltip:right="'Fully Connected'"
   v-tooltip-interactive:right="interactiveInfo"
   id="tutorial_fully-connected"
+    :style="layerStyles"
   )
     i.icon.icon-round
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewDeepLearningFC',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

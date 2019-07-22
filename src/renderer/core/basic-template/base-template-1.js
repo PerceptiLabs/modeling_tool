@@ -23,6 +23,7 @@ const basicTemplate1 = {
           },
           "OutputDim": "",
           "InputDim": "",
+          "layerBgColor": '',
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -54,6 +55,7 @@ const basicTemplate1 = {
           },
           "OutputDim": "",
           "InputDim": "",
+          "layerBgColor": '',
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -85,6 +87,7 @@ const basicTemplate1 = {
           },
           "OutputDim": "",
           "InputDim": "",
+          "layerBgColor": '',
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -118,6 +121,7 @@ const basicTemplate1 = {
           },
           "OutputDim": "",
           "InputDim": "",
+          "layerBgColor": '',
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -151,6 +155,7 @@ const basicTemplate1 = {
           },
           "OutputDim": "",
           "InputDim": "",
+          "layerBgColor": '',
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -184,6 +189,7 @@ const basicTemplate1 = {
           },
           "OutputDim": "",
           "InputDim": "",
+          "layerBgColor": '',
           "containerDiff": {
             "top": 0,
             "left": 0
@@ -217,6 +223,7 @@ const basicTemplate1 = {
           },
           "OutputDim": "",
           "InputDim": "",
+          "layerBgColor": '',
           "containerDiff": {
             "top": 0,
             "left": 0

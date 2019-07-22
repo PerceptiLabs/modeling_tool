@@ -14,6 +14,7 @@ function prepareNetwork(elementList) {
         Type: el.componentName,
         Properties: el.layerSettings,
         checkpoint: el.checkpoint,
+        endPoints: el.endPoints,
         //Code: el.coreCode,
         backward_connections: el.connectionIn,
         forward_connections: el.connectionOut
@@ -24,6 +25,7 @@ function prepareNetwork(elementList) {
         Name: el.layerName,
         Type: el.componentName,
         checkpoint: el.checkpoint,
+        endPoints: el.endPoints,
         //Properties: el.layerSettings,
         Code: el.layerCode,
         backward_connections: el.connectionIn,
@@ -38,6 +40,7 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
+  siteBaseUrl: 'https://perceptilabs-website-dev.azurewebsites.net'
 };
 
 const getters = {
@@ -60,27 +63,20 @@ const actions = {
     function startCore() {
       coreIsStarting = true;
       let openServer;
+      let platformPath = '';
       switch (process.platform) {
         case 'win32':
-          openServer = spawn('core/appServer.exe', [], {stdio: ['ignore', 'ignore', 'pipe'] });
+          platformPath = 'core/appServer.exe';
           break;
         case 'darwin':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          break;
         case 'linux':
-          if(process.env.NODE_ENV === 'production') {
-            openServer = spawn(path + 'core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
-          else {
-            openServer = spawn('core/appServer', [], {stdio: ['ignore', 'ignore', 'pipe'] });
-          }
+          process.env.NODE_ENV === 'production'
+            ? platformPath = path + 'core/appServer'
+            : platformPath = 'core/appServer';
           break;
       }
+      openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe'] });
+
       openServer.on('error', (err) => {
         console.log(err);
         coreOffline()
@@ -148,8 +144,8 @@ const actions = {
       action: "Start",
       value: message
     };
-    //console.log(JSON.stringify(theData));
-    //console.log(theData);
+    // console.log(JSON.stringify(theData));
+    // console.log(theData);
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_startTraining ', data);
@@ -246,7 +242,7 @@ const actions = {
       action: 'Export',
       value: value
     };
-    //console.log(theData);
+    console.log(theData);
     coreRequest(theData)
       .then((data)=> {
         console.log('API_exportData answer', data);
@@ -254,7 +250,7 @@ const actions = {
       .catch((err) =>{
         console.error(err);
       });
-    dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+    //dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_CLOSE_core({getters, dispatch, rootState}) {
     const theData = {
@@ -326,8 +322,8 @@ const actions = {
       action: "getNetworkInputDim",
       value: prepareNetwork(elementList)
     };
-    console.log('SEND getNetworkInputDim', theData);
-    coreRequest(theData)
+    //console.log('SEND getNetworkInputDim', theData);
+    return coreRequest(theData)
       .then((data)=> {
         //console.log('API_getInputDim', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
@@ -344,7 +340,7 @@ const actions = {
       action: "getNetworkOutputDim",
       value: prepareNetwork(elementList)
     };
-    console.log('SEND getNetworkInputDim', theData);
+    //console.log('SEND getNetworkInputDim', theData);
     coreRequest(theData)
       .then((data)=> {
         //console.log('API_getOutputDim', data);
@@ -360,7 +356,8 @@ const actions = {
       action: "Parse",
       value: path
     };
-    //console.log('Parse send', JSON.stringify(theData));
+    // console.log('Parse send', JSON.stringify(theData));
+    // console.log('Parse send', theData);
     return coreRequest(theData)
       .then((data)=> {
         //console.log('Parse answer', data);

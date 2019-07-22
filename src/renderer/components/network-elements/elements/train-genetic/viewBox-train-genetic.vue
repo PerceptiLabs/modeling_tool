@@ -2,23 +2,23 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       .statistics-box_row
-        chart-base(
+        chart-switch(
+          key="1"
           :chart-data="optionBar"
         )
-        chart-base(
+        chart-switch(
+          key="2"
           chart-label="Reward during one epoch"
           :chart-data="optionLine1"
         )
 </template>
 
 <script>
-  import ChartBase    from "@/components/charts/chart-base.vue";
-  import ChartHeatmap from "@/components/charts/chart-heatmap.vue";
-  import ChartD3      from "@/components/charts/chart-3d.vue";
+  import ChartSwitch    from "@/components/charts/chart-switch.vue";
 
   export default {
     name: "ViewBoxTrainGenetic",
-    components: {ChartBase, ChartHeatmap, ChartD3},
+    components: {ChartSwitch},
     data() {
       return {
         optionLine1: null,

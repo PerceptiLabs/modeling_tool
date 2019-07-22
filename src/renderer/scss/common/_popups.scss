@@ -78,7 +78,7 @@
 /*--- GLOBAL ---*/
 .popup-global {
 	position: fixed;
-	z-index: 10;
+	z-index: 11;
 	top: 0;
 	right: 0;
 	bottom: 0;
@@ -89,7 +89,8 @@
 	.popup {
 		position: relative;
 		z-index: 1;
-        width: 29rem;
+        min-width: 29rem;
+        max-width: 50vw;
 		//width: 34rem;
 		box-shadow: $box-shad;
 	}

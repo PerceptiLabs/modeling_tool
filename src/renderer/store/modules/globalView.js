@@ -17,6 +17,8 @@ const state = {
     showNetResult: false,
     showCoreSideSettings: false,
     showInfoPopup: false,
+    showErrorPopup: false,
+    showWorkspaceBeforeImport: false,
   }
 };
 const getters = {
@@ -24,7 +26,7 @@ const getters = {
     return state.appPath
   },
   GET_userIsLogin(state) {
-    return state.userToken ? true : false
+    return !!state.userToken.length
   }
 };
 
@@ -63,8 +65,14 @@ const mutations = {
   GP_showCoreSideSettings (state, value) {
     state.globalPopup.showCoreSideSettings = value
   },
+  GP_showWorkspaceBeforeImport (state, value) {
+    state.globalPopup.showWorkspaceBeforeImport = value
+  },
   gp_infoPopup(state, value) {
     state.globalPopup.showInfoPopup = value
+  },
+  gp_errorPopup(state, value) {
+    state.globalPopup.showErrorPopup = value
   },
   HIDE_allGlobalPopups (state) {
     for (var popup in state.globalPopup) {
@@ -83,6 +91,7 @@ const mutations = {
 
 const actions = {
   NET_trainingDone({commit, dispatch}) {
+    console.log('NET_trainingDone');
     commit('GP_showNetResult', true);
     dispatch('mod_workspace/SET_openTest', false, {root: true});
   },
@@ -99,6 +108,9 @@ const actions = {
   },
   GP_infoPopup({commit}, value) {
     commit('gp_infoPopup', value);
+  },
+  GP_errorPopup({commit}, value) {
+    commit('gp_errorPopup', value);
   },
   ADD_requestCounter({commit}) {
     commit('set_requestCounter', true);

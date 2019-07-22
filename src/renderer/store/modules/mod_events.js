@@ -11,6 +11,7 @@ const state = {
   runNetwork: false,
   globalPressKey: {
     del: 0,
+    esc: 0
   }
 };
 
@@ -59,15 +60,21 @@ const actions = {
     dispatch('mod_workspace/RESET_network', null, {root: true});
     ctx.$router.replace({name: 'login'});
   },
-  EVENT_closeApp({dispatch, rootState}) {
+  EVENT_appClose({dispatch, rootState}) {
     if(rootState.mod_api.statusLocalCore === 'online') {
       dispatch('mod_api/API_stopTraining', null, {root: true})
         .then(()=> { return dispatch('mod_api/API_CLOSE_core', null, {root: true}) })
-        .then(()=> ipcRenderer.send('appClose'));
+        .then(()=> ipcRenderer.send('app-close'));
     }
     else {
-      ipcRenderer.send('appClose')
+      ipcRenderer.send('app-close')
     }
+  },
+  EVENT_appMinimize() {
+    ipcRenderer.send('app-minimize')
+  },
+  EVENT_appMaximize() {
+    ipcRenderer.send('app-maximize')
   },
   EVENT_eventResize({commit}) {
     commit('set_eventResize');
@@ -81,6 +88,9 @@ const actions = {
     if(rootGetters['mod_workspace/GET_networkIsOpen']) {
       dispatch('mod_workspace/DELETE_element', null, {root: true});
     }
+  },
+  EVENT_hotKeyEsc({commit, rootGetters, dispatch}) {
+    commit('set_globalPressKey', 'esc');
   },
   EVENT_hotKeyCopy({rootGetters, dispatch}) {
     if(rootGetters['mod_workspace/GET_networkIsOpen']) {

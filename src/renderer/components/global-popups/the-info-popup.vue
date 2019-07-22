@@ -1,13 +1,18 @@
 <template lang="pug">
-  .popup-global(v-if="infoText")
+  .popup-global(v-if="isShowPopup")
     .popup-global_overlay(@click="closePopup()")
     section.popup
       .popup_tab-set
         .popup_header.active
-          .header_attention !
+          .header_attention(:class="{'header_attention--error': !isInfo}") !
       .popup_body
-        .settings-layer_section.text-center
-          p.middle-text {{ infoText }}
+        .settings-layer_section
+          p.middle-text.text-center(v-if="isText") {{ popupText }}
+          ul(v-else)
+            li(
+              v-for="(text, i) in popupText"
+              :key="i"
+              ) {{ text }}
       .popup_foot
         button.btn-info-popup(type="button"
         @click="closePopup()") OK
@@ -22,9 +27,26 @@
       }
     },
     computed: {
-      infoText() {
+      infoPopup() {
         return this.$store.state.globalView.globalPopup.showInfoPopup
       },
+      errorPopup() {
+        return this.$store.state.globalView.globalPopup.showErrorPopup
+      },
+      isShowPopup() {
+        return this.errorPopup.length || this.infoPopup.length
+      },
+      isText() {
+        return typeof this.popupText === 'string'
+      },
+      isInfo() {
+        return !!(this.isShowPopup && this.infoPopup.length);
+      },
+      popupText() {
+        return this.isInfo
+          ? this.infoPopup
+          : this.errorPopup;
+      }
     },
     methods: {
       closePopup() {
@@ -36,6 +58,9 @@
 
 <style scoped lang="scss">
   @import "../../scss/base";
+  .popup-global{
+    z-index: 13;
+  }
 
   .popup-global .popup{
     background: $bg-workspace;
@@ -50,11 +75,19 @@
   .header_attention {
     color: #fff;
     background: $color-6;
-    padding: 0.3rem 1.1rem;
+    padding: .3rem 1.1rem;
     font-weight: bold;
     font-size: 1.6rem;
+    height: 1.7em;
+    width: 1.7em;
     text-align: center;
     border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .header_attention--error {
+    background: $col-warning;
   }
   .popup_body p{
     font-size: 1.5rem;

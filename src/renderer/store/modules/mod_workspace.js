@@ -1,5 +1,5 @@
 import { generateID, calcLayerPosition }  from "@/core/helpers.js";
-import configApp from '@/core/globalSettings.js'
+import { widthElement } from '@/core/constants.js'
 import Vue from 'vue'
 
 const namespaced = true;
@@ -19,7 +19,7 @@ const state = {
 
 const getters = {
   GET_networkIsNotEmpty(state) {
-    return state.workspaceContent.length ? true : false
+    return !!state.workspaceContent.length
   },
   GET_currentNetwork(state, getters)  {
     return getters.GET_networkIsNotEmpty
@@ -172,39 +172,51 @@ const mutations = {
         return;
       }
       else {
-        console.log('else');
         //let elList = JSON.parse(JSON.stringify(Object.values(list)));
         let elList = Object.values(list);
         const elGap = 60;
-        const widthEl = 60;
+        const widthEl = widthElement;
+        const defaultPosition = { top: 0, left: 0 };
         let arrLeft = [];
         let arrTop = [];
-        elList[0].layerMeta.position = {
-          top: 1,
-          left: 1,
-        };
+
+        elList[0].layerMeta.position = {...defaultPosition};
         elList.forEach((el)=> {
+          if(el.layerMeta.position.top === null) {
+            el.layerMeta.position = {...defaultPosition};
+
+            let newElPosition = findFreePosition(el.layerMeta.position, elList, elGap, widthEl, el.layerId);
+            //console.log(newElPosition);
+            //el.layerMeta.position.top = newElPosition.top;
+            arrTop.push(newElPosition.top);
+            //el.layerMeta.position.left = newElPosition.left;
+            arrLeft.push(newElPosition.left);
+          }
+
           if(el.connectionOut.length) {
             let outLength = el.connectionOut.length;
             el.connectionOut.forEach((elId, i)=> {
-              if(!list[elId].layerMeta.position.top) {
+              if(list[elId].layerMeta.position.top === null) {
                 const top = el.layerMeta.position.top + (elGap - ((outLength / 2) * (elGap + widthEl)) + ((elGap + widthEl) * i));
                 const left = el.layerMeta.position.left + elGap + widthEl;
 
+                let newPosition = findFreePosition({top, left}, elList, elGap, widthEl, list[elId].layerId);
 
-
-                list[elId].layerMeta.position.top = top;
-                arrTop.push(top);
-                list[elId].layerMeta.position.left = left;
-                arrLeft.push(left);
+                list[elId].layerMeta.position.top = newPosition.top;
+                arrTop.push(newPosition.top);
+                list[elId].layerMeta.position.left = newPosition.left;
+                arrLeft.push(newPosition.left);
               }
             })
           };
         });
+
         const netHeight = (Math.max(...arrTop) - Math.min(...arrTop));
         const netWidth = (Math.max(...arrLeft) - Math.min(...arrLeft));
-        const correctionTop = (document.body.clientHeight /2) - (netHeight/2);
-        const correctionLeft = (document.body.clientWidth /2) - (netWidth/2) - 300;
+        const corrTop = (document.body.clientHeight /2) - (netHeight/2);
+        const corrLeft = (document.body.clientWidth /2) - (netWidth/2) - 300;
+        const correctionTop = corrTop > 0 ? corrTop : elGap;
+        const correctionLeft = corrLeft > 0 ? corrLeft : elGap;
 
         elList.forEach((el)=> {
           el.layerMeta.position.top = el.layerMeta.position.top + correctionTop;
@@ -212,14 +224,28 @@ const mutations = {
         })
       }
     };
-    function checkingPositionExist(currentPos, checkingList, indent) {
-      checkingList.forEach((el)=> {
+    function findFreePosition(currentPos, checkingList, indent, widthEl, currentId) {
+      let checkPosition = currentPos;
+      checkingPosition();
 
-      })
-      // if() {
-      //
-      // }
-      // else return currentPos
+      return checkPosition;
+
+      function checkingPosition() {
+        return checkingList.forEach((el)=> {
+          if(currentId === el.layerId ) return;
+          if(
+              checkPosition.top > (el.layerMeta.position.top - indent/2)
+              && checkPosition.top < (el.layerMeta.position.top + indent/2 + widthEl)
+              && checkPosition.left > (el.layerMeta.position.left - indent/2)
+              && checkPosition.left < (el.layerMeta.position.left + indent/2 + widthEl)
+            ) {
+                checkPosition.top = checkPosition.top + indent;
+                checkingPosition();
+                return
+              }
+          else return checkPosition
+        })
+      }
     }
   },
   DELETE_network(state, index) {
@@ -460,6 +486,10 @@ const mutations = {
   SET_elementVisible(state, id) {
     let elMeta = currentElement(id).layerMeta;
     elMeta.isInvisible = !elMeta.isInvisible
+  },
+  SET_elementBgColor(state, value) {
+    let elMeta = currentElement(value.id).layerMeta;
+    elMeta.layerBgColor = value.color
   },
   SET_elementNone(state, {id, value}) {
     let el = currentElement(id);
@@ -840,7 +870,6 @@ export default {
   state,
   mutations,
   actions,
-  createNetElement
 }
 
 function currentElement(id) {
@@ -866,12 +895,15 @@ const createNetElement = function (event) {
       tutorialId: '',
       OutputDim: '',
       InputDim: '',
+      layerContainerName: '',
+      layerBgColor: '',
       containerDiff: {
         top: 0,
         left: 0,
       }
     },
     checkpoint: [],
+    endPoints: [],
     componentName: event.target.dataset.component,
     connectionOut: [],
     connectionIn: [],

@@ -1,7 +1,7 @@
 <template lang="pug">
   .info-box
     .popup-body_info
-      span.info_process-name Updating Quantum Net software:
+      span.info_process-name Updating PerceptiLabs software:
       .info_message Update status: {{progressStatus}}%
       
       .info_progress-bar

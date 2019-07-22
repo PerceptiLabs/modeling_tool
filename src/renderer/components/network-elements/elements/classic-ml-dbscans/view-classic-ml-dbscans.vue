@@ -5,20 +5,17 @@
     data-type="Training"
     v-tooltip:right="'DBSCAN'"
     v-tooltip-interactive:right="interactiveInfo.MLDbscan"
+    :style="layerStyles"
   )
     i.icon.icon-round-three
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewClassicMLDbscans',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

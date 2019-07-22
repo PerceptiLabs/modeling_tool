@@ -47,6 +47,7 @@ export default {
   }
   .app-header_logo {
     margin: 0 12px;
+    cursor: pointer;
     a {
       display: block;
       -webkit-app-region: no-drag;
@@ -57,11 +58,11 @@ export default {
     display: flex;
     margin-left: auto;
     .btn {
-      font-size: 15px;
+      font-size: 10px;
       display: flex;
       align-items: center;
       justify-content: center;
-      width: $h-header-win * 2;
+      width: 46px;
       height: $h-header-win;
       border-radius: 0;
       &:hover {

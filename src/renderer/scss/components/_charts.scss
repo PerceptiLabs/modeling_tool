@@ -1,31 +1,4 @@
-.base-chart {
-    width: 100%;
-	display: flex;
-	overflow: hidden;
-	flex-direction: column;
-}
-.base-chart_head {
-	display: flex;
-	align-items: center;
-	flex: 0 0 auto;
-	justify-content: space-between;
-	width: 100%;
-	height: 3rem;
-	padding: 0 1rem 0 2rem;
-	background: $bg-window;
-}
-
-.chart-head_title {
-	overflow: hidden;
-	h5 {
-		margin: 0;
-	}
-}
-
 .base-chart_main {
-  position: relative;
-  flex: 1 1 100%;
-  min-height: 50px;
   .echarts {
     position: absolute;
     top: 0;
@@ -40,28 +13,14 @@
       height: 100% !important;
       object-fit: cover;
     }
-    canvas {
+    .chart-img {
       width: 100% !important;
       height: 100% !important;
     }
   }
 }
-.data-charts {
-  min-height: 200px;
-  height: 100%;
-}
 
-/*Full view*/
-.full-view {
-  &.base-chart {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
-  }
-  .echarts {
-    z-index: 2;
-
-  }
+/*DataData + DatEnv*/
+.data-settings_chart {
+  min-height: 20rem;
 }

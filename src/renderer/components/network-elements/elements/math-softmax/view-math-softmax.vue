@@ -1,24 +1,21 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-math(:draggable="draggable"
   data-component="MathSoftmax"
-  data-layer="Softmax_1"
+  data-layer="Softmax"
   data-type="Other"
   v-tooltip:right="'Softmax'"
   v-tooltip-interactive:right="interactiveInfo"
+    :style="layerStyles"
   )
     i.icon.icon-calc-softmax
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewMathSoftmax',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

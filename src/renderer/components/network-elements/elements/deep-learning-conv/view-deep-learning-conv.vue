@@ -1,25 +1,22 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-learn-deep(:draggable="draggable"
     data-component="DeepLearningConv"
-    data-layer="Convolution_1"
+    data-layer="Convolution"
     data-type="Other"
     v-tooltip:right="'Convolution'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_convolution"
+    :style="layerStyles"
   )
     i.icon.icon-round-out
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewDeepLearningConv',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

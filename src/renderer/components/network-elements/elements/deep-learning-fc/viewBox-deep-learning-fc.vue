@@ -11,24 +11,24 @@
         :class="{'active': currentTab === tab}"
         ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output'")
-      chart-base(
+      chart-switch(
         key="1"
         chart-label="Value"
         :chart-data="chartData.Output.Output"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Bias'")
-      chart-base(
+      chart-switch(
         key="2"
         chart-label="Weights"
         :chart-data="chartData['Weights&Bias'].Weights"
       )
-      chart-base(
+      chart-switch(
         key="3"
         chart-label="Bias"
         :chart-data="chartData['Weights&Bias'].Bias"
       )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Gradients'")
-      chart-base(
+      chart-switch(
         key="4"
         chart-label="Gradients"
         :chart-data="chartData.Gradients.Gradients"
@@ -37,11 +37,11 @@
 </template>
 
 <script>
-  import ChartBase    from "@/components/charts/chart-base.vue";
+  import ChartSwitch    from "@/components/charts/chart-switch.vue";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxDeepLearningFC",
-    components: {ChartBase},
+    components: {ChartSwitch},
     mixins: [viewBoxMixin],
     data() {
       return {

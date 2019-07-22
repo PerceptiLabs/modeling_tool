@@ -1,43 +1,20 @@
 <template lang="pug">
-  .base-chart(
-    ref="baseChart"
-    :class="{'full-view': fullView}"
-    )
-    .base-chart_head(v-if="!headerOff")
-      .chart-head_title
-        h5.ellipsis {{ chartLabel }}
-      .chart-head_meta
-        button.btn.btn--link(type="button"
-          :class="{'text-primary': fullView}"
-          @click="toggleFullView"
-        )
-          i.icon.icon-full-screen-graph
-    .base-chart_main
-      request-spinner(:showSpinner="showRequestSpinner")
-        v-chart(
-          ref="chart"
-          :auto-resize="true"
-          :options="chartModel"
-          theme="quantum"
-        )
-        .base-chart_info(v-if="chartInfo.length") {{ chartInfo }}
+  v-chart(
+    ref="chart"
+    :auto-resize="true"
+    :options="chartModel"
+    theme="quantum"
+  )
 </template>
 
 <script>
-  import {pathWebWorkers, chartSpinner} from '@/core/constants.js'
-  import chartMixin                     from "@/core/mixins/charts.js";
-  import RequestSpinner                 from '@/components/different/request-spinner.vue'
+  import chartMixin       from "@/core/mixins/charts.js";
 
   export default {
     name: "ChartPie",
     mixins: [chartMixin],
-    components: {RequestSpinner},
-    mounted() {
-      this.applyCustomColor();
-    },
     data() {
       return {
-        chartSpinner,
         defaultModel: {
           toolbox: {
             feature: {
@@ -50,21 +27,7 @@
         },
       }
     },
-    computed: {
-      chartInfo() {
-        if(this.chartModel.series && this.chartModel.series.length && typeof this.chartModel.series[0].data[0].value === 'number') {
-          const info = this.chartModel.series[0].data[0].value.toFixed(2);
-          return `${info}%`
-        }
-        return ''
-      }
-    },
     methods: {
-      applyCustomColor() {
-        if (this.customColor.length) {
-          this.defaultModel.color = this.customColor;
-        }
-      },
       createWWorker() {
 
       },
@@ -94,18 +57,4 @@
   }
 </script>
 
-<style lang="scss" scoped>
-  .base-chart_main {
-    height: 200px;
-  }
-  .base-chart_info {
-    font-size: 2rem;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    .full-view & {
-      z-index: 3;
-    }
-  }
-</style>
+

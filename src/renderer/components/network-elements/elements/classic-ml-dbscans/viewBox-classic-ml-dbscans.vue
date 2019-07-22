@@ -2,31 +2,35 @@
   .statistics-box
     .statistics-box_main.statistics-box_col
       .statistics-box_row
-        chart-base(
+        chart-switch(
+          key="1"
           chart-label="Accuracy during one epoch"
           :chart-data="optionS"
         )
-        chart-base(
+        chart-switch(
+          key="2"
           chart-label="Accuracy during one epoch"
           :chart-data="optionBar3"
         )
       .statistics-box_row
-        chart-base(
+        chart-switch(
+          key="3"
           chart-label="Accuracy during one epoch"
           :chart-data="optionLine2"
         )
-        chart-base(
+        chart-switch(
+          key="4"
           chart-label="Accuracy during one epoch"
           :chart-data="optionBar4"
         )
 </template>
 
 <script>
-  import ChartBase    from "@/components/charts/chart-base";
+  import ChartSwitch    from "@/components/charts/chart-switch";
 
   export default {
     name: "ViewClassicMLDbscans",
-    components: {ChartBase},
+    components: {ChartSwitch},
     data() {
       return {
         optionS: null,

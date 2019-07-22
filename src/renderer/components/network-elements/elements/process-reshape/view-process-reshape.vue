@@ -6,20 +6,17 @@
     v-tooltip:right="'Reshape'"
     v-tooltip-interactive:right="interactiveInfo"
     id="tutorial_process-reshape"
+    :style="layerStyles"
   )
     i.icon.icon-full-screen
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewProcessReshape',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

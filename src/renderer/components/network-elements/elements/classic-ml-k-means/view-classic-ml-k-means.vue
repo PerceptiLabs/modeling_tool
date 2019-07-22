@@ -5,20 +5,17 @@
     data-type="Training"
     v-tooltip:right="'K-Means Clustering'"
     v-tooltip-interactive:right="interactiveInfo.MLKmeans"
+    :style="layerStyles"
   )
     i.icon.icon-round-sieve
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewClassicMLKMeans',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

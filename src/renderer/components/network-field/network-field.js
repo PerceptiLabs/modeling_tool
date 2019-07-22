@@ -74,6 +74,7 @@ export default {
   computed: {
     ...mapGetters({
       tutorialActiveAction: 'mod_tutorials/getActiveAction',
+      tutorialDottedArrow:  'mod_tutorials/getIsDottedArrow',
       currentNetwork:       'mod_workspace/GET_currentNetwork',
       canEditLayers:        'mod_workspace/GET_networkIsOpen',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
@@ -263,12 +264,13 @@ export default {
       this.$refs.network.addEventListener('mouseup', this.removeArrowListener);
     },
     arrowMovePaint(ev) {
+      this.$store.commit('mod_tutorials/SET_isDottedArrow', false);
       ev.preventDefault();
       ev.stopPropagation();
       this.$store.commit('mod_workspace/SET_preArrowStop', {
         x: this.findXPosition(ev),
         y: this.findYPosition(ev)
-      })
+      });
     },
     removeArrowListener() {
       this.$store.commit('mod_workspace/CLEAR_preArrow');
@@ -527,10 +529,22 @@ export default {
       }
     },
     findXPosition(event) {
-      return (event.pageX - this.offset.offsetX) / this.networkScale
+      const scrollPosition = document.querySelector('.js-info-section_main').scrollLeft;
+      return (event.pageX - this.offset.offsetX + scrollPosition) / this.networkScale
     },
     findYPosition(event) {
-      return (event.pageY - this.offset.offsetY) / this.networkScale
+      const scrollPosition = document.querySelector('.js-info-section_main').scrollTop;
+      return (event.pageY - this.offset.offsetY + scrollPosition) / this.networkScale
+    },
+    arrowClassStyle(arrow) {
+      let result = [];
+      if (arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible) {
+        result.push('arrow--hidden');
+      }
+      if (!arrow.l1.layerMeta.OutputDim) {
+        result.push('svg-arrow_line--empty');
+      }
+      return result;
     }
   }
 }

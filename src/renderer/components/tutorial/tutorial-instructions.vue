@@ -69,6 +69,18 @@ export default {
   watch: {
     eventResize() {
       this.tooltipReposition();
+    },
+    isTutorialMode(isTutorialMode) {
+      let layersbar = document.querySelector('.page_layersbar');
+      let svg = document.querySelector('.svg-arrow');
+      if(isTutorialMode) {                                              //hide tooltip for elements from toolbar when these elements are hidden
+        svg.addEventListener('click', this.hideTooltip);
+        layersbar.addEventListener('click', this.showHideTooltip, true);
+      }
+      else {
+        svg.removeEventListener('click', this.hideTooltip);
+        layersbar.removeEventListener('click', this.showHideTooltip);
+      }
     }
   },
   computed: {
@@ -121,9 +133,12 @@ export default {
       unlockAllElements:          'mod_tutorials/unlockAllElements',
       tooltipReposition:          'mod_tutorials/tooltipReposition',
       offTutorial:                'mod_tutorials/offTutorial',
-      onTutorial:                'mod_tutorials/onTutorial',
+      showHideTooltip:            'mod_tutorials/showHideTooltip',
+      hideTooltip:                'mod_tutorials/hideTooltip',
+      onTutorial:                 'mod_tutorials/onTutorial',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
+      popupInfo:                  'globalView/GP_infoPopup'
     }),
     changeStep(way) {
       if(way === 'next') {
@@ -139,13 +154,17 @@ export default {
     },
     endTutorial() {
       this.setNetworkCoreStatus(false);
-      this.deleteNetwork(this.currentNetwork);
-      this.addNetwork({'ctx': this});
+      //this.deleteNetwork(this.currentNetwork);
+      //this.addNetwork({'ctx': this});
+      this.popupInfo(`Congratulations, you have successfully completed the Tutorial!
+                      If you wish to save the model you created, can do so from the File menu in the top left.
+                      Or you can export it by clicking on the tab "Export" in the right menu.`);
       this.switchTutorialMode();
     },
     switchTutorialMode() {
       this.isTutorialMode ? this.offTutorial() : this.onTutorial(this);
-    }
+    },
+
   }
 }
 //
@@ -166,14 +185,15 @@ export default {
   }
   .tutorial-instruction-box_list-area {
     position: absolute;
-    z-index: 1;
+    z-index: 13;
     background: $col-txt2;
-    width: 24rem;
+    width: 30rem;
     top: 90%;
     right: 0;
     color: $white;
     border-radius: 5px;
     overflow: hidden;
+    box-shadow: $box-shad;
   }
   .list-area_header {
     background: $bg-workspace;
@@ -219,12 +239,12 @@ export default {
     }
   }
   .list-area_title {
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     padding: 0 2.5rem;
     font-weight: 500;
   }
   .list-area_list {
-    height: 15rem;
+    height: 18rem;
     overflow: scroll;
   }
   .list-element--status {
@@ -253,13 +273,13 @@ export default {
   }
   .list-element {
     margin-bottom: 0.5rem;
-    font-size: 1.2rem;
+    font-size: 1.4rem;
     position: relative;
     padding: 0 2.5rem 0 3.5rem;
    
     &.list_title{
       font-weight: 700;
-      font-size: 1.2rem;
+      font-size: 1.4rem;
       padding: $title-padding;
     }
     &.list_subtitle {
@@ -343,7 +363,17 @@ export default {
   position: absolute;
 }
 .tutorial_target-border {
-  border: 2px solid #3BC5FF;
+  position: relative;
+  &:after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    border: 2px solid #3BC5FF;
+    pointer-events: none;
+  }
 }
 .lock-area {
   position: absolute;

@@ -4,7 +4,8 @@
       button.popup_header(
         v-for="(tab, i) in tabSet"
         :key="tab.i"
-        :class="{'disable': tabSelected != tab}"
+        :class="{'disable': tabSelected != tab }"
+        :disabled='isTutorial || disableSettings'
         @click="setTab(tab)"
       )
         h3(v-html="tab")
@@ -18,9 +19,9 @@
           slot(:name="tabContent+'-content'")
         .settings-layer_foot
           slot(:name="tabContent+'-action'")
-            button.btn.btn--primary(type="button" @click="applySettings(tabContent)") Apply
-            button.btn.btn--dark-blue-rev(type="button"
-              v-if="tabContent === 'Settings'"
+            button.btn.btn--primary(type="button" @click="applySettings(tabContent)" :id="idSetBtn") Apply
+            //-button.btn.btn--dark-blue-rev(type="button"
+              v-if="showUpdateCode"
               @click="updateCode"
               ) Update code
 
@@ -39,15 +40,36 @@ export default {
     firstTab: {
       type: String,
       default: ''
-    }
+    },
+    layerCode: {
+      type: [Number, Object, String],
+      default: 0
+    },
+    idSetBtn: {
+      type: String,
+      default: ''
+    },
   },
   mounted() {
     let tab = this.firstTab || this.tabSet[0];
-    this.setTab(tab)
+    if(tab === 'Code') this.disableSettings = true;
+    this.setTab(tab);
   },
   data() {
     return {
       tabSelected: '',
+      disableSettings: false
+    }
+  },
+  computed: {
+    // showUpdateCode() {
+    //   return this.tabSelected === 'Settings' && !!this.layerCode
+    // },
+    // disableSettings() {
+    //   return !!this.layerCode
+    // },
+    isTutorial() {
+      return this.$store.getters['mod_tutorials/getIstutorialMode']
     }
   },
   methods: {
@@ -73,7 +95,8 @@ export default {
   .popup_body {
     max-width: calc(50vw - #{$w-sidebar});
     min-width: 29rem;
-    overflow: hidden;
+    /*max-height: 41vh;*/
+    /*overflow-y: auto;*/
   }
   .settings-layer {
     max-height: calc(100vh - 26rem);
@@ -87,6 +110,7 @@ export default {
     top: 0;
     max-width: none;
     background-color: $bg-toolbar;
+    max-height: none;
     .settings-layer {
       max-height: none;
     }

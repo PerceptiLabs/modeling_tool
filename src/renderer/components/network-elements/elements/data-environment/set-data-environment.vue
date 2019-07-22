@@ -12,7 +12,7 @@
             v-tooltip-interactive:right="interactiveInfo.selectGame"
           )
         .form_row(v-tooltip-interactive:right="interactiveInfo.actionSpace")
-          chart-switch.data-charts(
+          chart-switch(
             key="1"
             :chart-label="chartLabel"
             :chart-data="imgData"
@@ -29,7 +29,7 @@
             :disabled="disabledBtn"
           ) Load
         .form_row
-          chart-switch.data-charts(
+          chart-switch.data-settings_chart(
             key="2"
             :disable-header="true"
             :chart-data="imgData"

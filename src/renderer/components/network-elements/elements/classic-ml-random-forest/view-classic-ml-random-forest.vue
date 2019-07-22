@@ -5,20 +5,17 @@
   data-type="Training"
   v-tooltip:right="'Random Forest'"
   v-tooltip-interactive:right="interactiveInfo.MLRandomForest"
+    :style="layerStyles"
   )
     i.icon.icon-trees
 
 </template>
 
 <script>
+  import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
   name: 'ViewClassicMLRandomForest',
-  props: {
-    draggable: {
-      type: Boolean,
-      default: false
-    }
-  },
+  mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {

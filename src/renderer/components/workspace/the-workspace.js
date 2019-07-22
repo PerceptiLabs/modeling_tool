@@ -1,8 +1,8 @@
 import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
-import {remote}     from 'electron'
+const {dialog, BrowserWindow} =   require('electron').remote;
 import fs           from 'fs';
-import {mapActions, mapGetters, mapMutations} from 'vuex';
+import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 
 import { generateID }  from "@/core/helpers.js";
 
@@ -11,6 +11,7 @@ import NetworkField           from '@/components/network-field/network-field.vue
 import GeneralSettings        from "@/components/global-popups/workspace-general-settings.vue";
 import GeneralResult          from "@/components/global-popups/workspace-result";
 import SelectCoreSide         from "@/components/global-popups/workspace-core-side";
+import WorkspaceBeforeImport  from "@/components/global-popups/workspace-before-import";
 import TheStatistics          from "@/components/statistics/the-statistics.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
@@ -20,13 +21,12 @@ export default {
   name: 'WorkspaceContent',
   components: {
     NetworkField, TextEditable,
-    GeneralSettings, GeneralResult,
-    SelectCoreSide,
+    GeneralSettings, GeneralResult, SelectCoreSide, WorkspaceBeforeImport,
     TheStatistics, TheTesting, TheViewBox, StartTrainingSpinner
   },
   data() {
     return {
-      showTestingTab: false
+      //showTestingTab: false
     }
   },
   computed: {
@@ -40,6 +40,16 @@ export default {
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
       showTrainingSpinner:'mod_workspace/GET_showStartTrainingSpinner'
     }),
+    ...mapState({
+      workspace:                  state => state.mod_workspace.workspaceContent,
+      indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
+      statisticsElSelected:       state => state.mod_statistics.selectedElArr,
+      hideSidebar:                state => state.globalView.hideSidebar,
+      showGlobalSet:              state => state.globalView.globalPopup.showNetSettings,
+      showGlobalResult:           state => state.globalView.globalPopup.showNetResult,
+      showWorkspaceBeforeImport:  state => state.globalView.globalPopup.showWorkspaceBeforeImport,
+      showCoreSide:               state => state.globalView.globalPopup.showCoreSideSettings,
+    }),
     scaleNet: {
       get: function () {
         let zoom = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom * 100;
@@ -49,36 +59,39 @@ export default {
         this.$store.dispatch('mod_workspace/SET_statusNetworkZoom', newValue/100);
       }
     },
-    workspace() {
-      return this.$store.state.mod_workspace.workspaceContent
-    },
-    indexCurrentNetwork() {
-      return this.$store.state.mod_workspace.currentNetwork
-    },
-    hideSidebar() {
-      return this.$store.state.globalView.hideSidebar
-    },
-    showGlobalSet() {
-      return this.$store.state.globalView.globalPopup.showNetSettings
-    },
-    showGlobalResult() {
-      return this.$store.state.globalView.globalPopup.showNetResult
-    },
+    // workspace() {
+    //   return this.$store.state.mod_workspace.workspaceContent
+    // },
+    // indexCurrentNetwork() {
+    //   return this.$store.state.mod_workspace.currentNetwork
+    // },
+    // hideSidebar() {
+    //   return this.$store.state.globalView.hideSidebar
+    // },
+    // showGlobalSet() {
+    //   return this.$store.state.globalView.globalPopup.showNetSettings
+    // },
+    // showGlobalResult() {
+    //   return this.$store.state.globalView.globalPopup.showNetResult
+    // },
+    // showWorkspaceBeforeImport() {
+    //   return this.$store.state.globalView.globalPopup.showWorkspaceBeforeImport
+    // },
     hasStatistics() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkStatistics;
     },
-    showCoreSide() {
-      return this.$store.state.globalView.globalPopup.showCoreSideSettings
-    },
+    // showCoreSide() {
+    //   return this.$store.state.globalView.globalPopup.showCoreSideSettings
+    // },
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     coreStatus() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
     },
-    statisticsElSelected() {
-      return this.$store.state.mod_statistics.selectedElArr
-    },
+    // statisticsElSelected() {
+    //   return this.$store.state.mod_statistics.selectedElArr
+    // },
     currentNet() {
       this.scale = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
@@ -89,14 +102,17 @@ export default {
         'open-statistic': this.statisticsIsOpen,
         'open-test': this.testIsOpen
       }
+    },
+    tabSetClass() {
+      return {'bookmark_tab--active': indexCurrentNetwork === i}
     }
   },
   watch: {
     statusNetworkCore(newStatus) {
-      if(newStatus === 'Finished' && this.showTestingTab === false) {
+      if(newStatus === 'Finished' && this.testIsOpen === null) {
         this.$store.dispatch('globalView/NET_trainingDone');
         this.$store.dispatch('mod_workspace/EVENT_startDoRequest', false);
-        this.showTestingTab = true;
+        //this.showTestingTab = true;
       }
     },
     coreStatus(newStatus, oldStatus) {
@@ -146,15 +162,11 @@ export default {
       this.$store.commit('mod_workspace/DELETE_network', index)
     },
     setTabNetwork(index) {
-      if(this.isTutorialMode) {
-        this.infoPopup("Turn off tutorial mode to change network tab");
-      }
-      else {
-        this.$store.commit('mod_workspace/SET_currentNetwork', index);
-        this.$store.dispatch('mod_workspace/SET_elementUnselect');
-        if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
-        if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
-      }
+      if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
+      if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
+      //if(this.isTutorialMode) return;
+      this.$store.commit('mod_workspace/SET_currentNetwork', index);
+      this.$store.dispatch('mod_workspace/SET_elementUnselect');
     },
     toggleSidebar() {
       this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
@@ -181,11 +193,15 @@ export default {
     },
     openStatistics(i) {
       this.setTabNetwork(i);
-      this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+      this.$nextTick(()=>{
+        this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+      })
     },
     openTest(i) {
       this.setTabNetwork(i);
-      this.$store.dispatch('mod_workspace/SET_openTest', true);
+      this.$nextTick(()=>{
+        this.$store.dispatch('mod_workspace/SET_openTest', true);
+      })
     },
     saveNetwork(){
       let projectsList = JSON.parse(localStorage.getItem('projectsList'));
@@ -208,7 +224,6 @@ export default {
       else this.saveNetworkAs();
     },
     saveNetworkAs() {
-      const dialog = remote.dialog;
       const network = this.currentNetwork;
       doScreenShot(this)
         .then((img)=> {
@@ -241,14 +256,13 @@ function openSaveDialog(jsonNet, dialogWin, network, ctx) {
     ]
   };
 
-  dialogWin.showSaveDialog(null, option, (fileName) => {
-    ctx.$refs.networkField[0].$refs.network.style.filter = '';
-    if (fileName === undefined){
-      ctx.infoPopup("You didn't save the file");
-      return;
-    }
-    saveFileToDisk(fileName, jsonNet, ctx, savePathToLocal(JSON.parse(jsonNet).project, fileName))
-  });
+  const fileName = dialogWin.showSaveDialog(null, option);
+  ctx.$refs.networkField[0].$refs.network.style.filter = '';
+  if (fileName === undefined){
+    ctx.infoPopup("You didn't save the file");
+    return;
+  }
+  saveFileToDisk(fileName, jsonNet, ctx, savePathToLocal(JSON.parse(jsonNet).project, fileName))
 }
 function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
   fs.writeFile(fileName, jsonNet, (err) => {

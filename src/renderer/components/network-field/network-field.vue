@@ -40,7 +40,7 @@
       )
         //-'arrow--empty-output': arrow.l1.layerMeta.OutputDim.length === 0,
         path.svg-arrow_line(
-          :class="{'arrow--hidden': arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible}"
+          :class="arrowClassStyle(arrow)"
           :data-startid="arrow.l1.layerId"
           :data-stopid="arrow.l2.layerId"
           @focus="focusArrow($event)"
@@ -54,6 +54,7 @@
       line.svg-arrow_line.arrow--hidden(
         v-if="preArrow.show"
         marker-end="url(#svg-arrow_triangle)"
+        :stroke-dasharray="(tutorialDottedArrow ? '7 6' : 'none')"
         :x1="preArrow.start.x"
         :y1="preArrow.start.y"
         :x2="preArrow.stop.x"
@@ -93,9 +94,6 @@
     flex: 1 1 100%;
     z-index: 1;
   }
-  .network-field--show-code {
-    transform: translate(0);
-  }
   .svg-arrow {
     position: absolute;
     top: 0;
@@ -112,22 +110,19 @@
     }
   }
   .svg-arrow_line {
-    stroke: $col-primary;
+    stroke: $col-primary; //inline styles for the canvas plagin
     stroke-width: 3;
     fill: transparent;
     &:focus {
-      stroke-width: 5;
+      stroke-width: 5 !important;
     }
+  }
+  .svg-arrow_line--empty {
+    stroke: $col-warning !important;
   }
   .svg-arrow_multi-select {
     fill: rgba($col-primary2, .15);
     stroke-width: 1;
     stroke: $col-primary2;
-  }
-  .test {
-    position: absolute;
-    height: 20px;
-    width: 20px;
-    background-color: #fff;
   }
 </style>

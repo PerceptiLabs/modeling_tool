@@ -1,4 +1,4 @@
-import {remote} from "electron";
+const { dialog } = require('electron').remote;
 import fs from 'fs';
 import configApp from '@/core/globalSettings.js'
 
@@ -8,13 +8,11 @@ import configApp from '@/core/globalSettings.js'
 
 const openLoadDialog = function (options) {
   return new Promise((success, reject) => {
-    let dialog = remote.dialog;
-    dialog.showOpenDialog(options, (files) => {
-      if (files !== undefined) {
-        success(files)
-      }
-      else reject();
-    })
+    const pathArr = dialog.showOpenDialog(null, options);
+    if (pathArr !== undefined) {
+      success(pathArr)
+    }
+    else reject();
   })
 };
 
@@ -34,7 +32,7 @@ const loadNetwork = function (pathArr) {
     projectsList = JSON.parse(localProjectsList);
     pathIndex = projectsList.findIndex((proj)=> proj.path[0] === pathArr[0]);
   }
-  return readFilePromiseNative(pathArr[0])
+  return readLocalFile(pathArr[0])
     .then((data) => {
       //validate JSON
       let net = {};
@@ -65,7 +63,7 @@ const loadNetwork = function (pathArr) {
   );
 };
 
-const readFilePromiseNative = function (path) {
+const readLocalFile = function (path) {
   return new Promise((success, reject) => {
     fs.readFile(path, (err, data) => {
       if (err) {
@@ -115,4 +113,4 @@ const throttleEv = function (func, ms) {
   return wrapper;
 };
 
-export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition, throttleEv, readFilePromiseNative}
+export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition, throttleEv, readLocalFile}

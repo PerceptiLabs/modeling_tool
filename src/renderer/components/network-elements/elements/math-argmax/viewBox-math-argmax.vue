@@ -1,18 +1,18 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col
-      chart-base(
+      chart-switch(
         chart-label="Output"
         :chart-data="chartData.MathArgmax"
       )
 </template>
 
 <script>
-  import ChartBase from "@/components/charts/chart-base";
+  import ChartSwitch from "@/components/charts/chart-switch";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxMathArgmax",
-    components: {ChartBase},
+    components: {ChartSwitch},
     mixins: [viewBoxMixin],
     methods: {
       getData() {

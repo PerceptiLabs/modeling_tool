@@ -1,9 +1,5 @@
 const chartsMixin = {
   props: {
-    chartLabel: {
-      type: String,
-      default: ''
-    },
     chartData: {
       type: [Object, Array],
       default: function () {
@@ -11,31 +7,28 @@ const chartsMixin = {
       }
     },
     customColor: {
-      type: Array,
-      default: function () {
-        return []
-      }
-    },
-    disableHeader: {
-      type: Boolean,
-      default: false
+      type: Array
     },
   },
-  mounted() {
-    if(this.isNotPie) {this.createWWorker();}
-    this.sendDataToWWorker();
+  beforeMount() {
     if(this.isNotPicture) {
-      //this.$refs.chart.showLoading(this.chartSpinner);
-      this.$refs.chart.resize();
+      this.applyCustomColor();
+    }
+  },
+  mounted() {
+    if(this.isNotPie) this.createWWorker();
+    if(this.isNotPicture) {
+      this.chartResize();
       //window.addEventListener("resize", this.chartResize, false);
     }
+    this.sendDataToWWorker();
   },
   beforeDestroy() {
     if(this.isNotPie) {
       this.wWorker.postMessage('close');
       this.wWorker.removeEventListener('message', this.drawChart, false);
     }
-    if(this.isNotPicture && this.isNotPie) {
+    if(this.isNotPicture) {
       this.$refs.chart.dispose();
       //window.removeEventListener("resize", this.chartResize, false);
     }
@@ -44,17 +37,12 @@ const chartsMixin = {
     return {
       chartModel: {},
       chartModelBuffer: null,
-      fullView: false,
       wWorker: null,
-      showRequestSpinner: true
     }
   },
   computed: {
     isNeedWait() {
       return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
-    },
-    headerOff() {
-      return this.$store.getters['mod_workspace/GET_testIsOpen'] || this.disableHeader;
     },
     doRequest() {
       return this.$store.getters['mod_workspace/GET_networkDoRequest']
@@ -63,14 +51,14 @@ const chartsMixin = {
       return this.$store.getters['mod_workspace/GET_networkShowCharts']
     },
     isNotPicture() {
-      return (this.$options._componentTag === "ChartPicture" || this.$options._componentTag === "chart-picture")
-        ? false
-        : true
+      return !(this.$options._componentTag === "ChartPicture" || this.$options._componentTag === "chart-picture")
+        // ? false
+        // : true
     },
     isNotPie() {
-      return (this.$options._componentTag === "ChartPie" || this.$options._componentTag === "chart-pie")
-        ? false
-        : true
+      return !(this.$options._componentTag === "ChartPie" || this.$options._componentTag === "chart-pie")
+        // ? false
+        // : true
     }
   },
   watch: {
@@ -89,13 +77,13 @@ const chartsMixin = {
     // },
     chartData(newData, oldData) {
       this.sendDataToWWorker(newData);
-      if(newData) this.showRequestSpinner = false;
     }
   },
   methods: {
-    toggleFullView() {
-      this.fullView = !this.fullView;
-      //this.$nextTick(() => this.$refs.chart.resize());
+    applyCustomColor() {
+      if (this.customColor.length) {
+        this.defaultModel.color = this.customColor;
+      }
     },
     drawChart(ev) {
       if(this.isNeedWait) this.chartModelBuffer = ev.data;
@@ -105,7 +93,7 @@ const chartsMixin = {
       }
     },
     chartResize() {
-      console.log(this.chartLabel);
+      //console.log(this.chartLabel);
       this.$refs.chart.resize()
     }
   }

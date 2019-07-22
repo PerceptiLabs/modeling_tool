@@ -6,14 +6,12 @@
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Path.length")
         button.btn.tutorial-relative(type="button"
-          :disabled="disabledBtn"
           @click="loadFolder"
           v-tooltip-interactive:bottom="interactiveInfo.folder"
         )
           i.icon.icon-open-folder
         span.data-select_text or
         button.btn.tutorial-relative(type="button"
-          :disabled="disabledBtn"
           @click="loadFile"
           id="tutorial_button-load"
           v-tooltip-interactive:right="interactiveInfo.file"
@@ -33,7 +31,7 @@
             :select-multiple="true"
           )
         .form_row
-          chart-switch.data-charts(
+          chart-switch.data-settings_chart(
             :disable-header="true"
             :chart-data="imgData"
           )
@@ -60,14 +58,12 @@
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
 
   import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
-  //import coreRequest      from "@/core/apiCore.js";
-  import {mapActions}     from 'vuex';
-  import RequestSpinner from '@/components/different/request-spinner.vue'
+  import {mapActions, mapGetters}     from 'vuex';
 
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
-    components: {ChartSwitch, SettingsCloud, RequestSpinner },
+    components: {ChartSwitch, SettingsCloud },
     mounted() {
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
@@ -83,7 +79,6 @@
         tabs: ['Computer', 'Cloud'],
         dataColumns: [],
         dataColumnsSelected: [],
-        disabledBtn: false,
         interactiveInfo: {
           folder: {
             title: 'Select Folder',
@@ -106,6 +101,12 @@
         }
       }
     },
+    computed: {
+      ...mapGetters({
+        appPath:        'globalView/GET_appPath',
+        isTutorialMode: 'mod_tutorials/getIstutorialMode',
+      })
+    },
     watch: {
       dataColumnsSelected(newVal) {
         this.settings.accessProperties.Columns = newVal;
@@ -120,8 +121,7 @@
       openLoadDialog,
       loadPathFolder,
       loadFile() {
-        this.disabledBtn = true;
-        let opt = {
+        let optionBasic = {
           title:"Load file or files",
           properties: ['openFile', 'multiSelections'],
           filters: [
@@ -130,22 +130,27 @@
             {name: 'Text', extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
           ]
         };
-        this.openLoadDialog(opt)
+        let optionTutorial = {
+          title:"Load file",
+          defaultPath: `${this.appPath}basic-data`,
+          properties: ['openFile'],
+          filters: [
+            {name: 'All', extensions: ['npy']},
+          ]
+        };
+        let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
+        this.openLoadDialog(optionDialog)
           .then((pathArr)=> this.saveLoadFile(pathArr))
           .catch(()=> {
-            this.disabledBtn = false;
           })
       },
       loadFolder() {
-        this.disabledBtn = true;
         this.loadPathFolder()
           .then((pathArr)=> this.saveLoadFile(pathArr))
           .catch(()=> {
-            this.disabledBtn = false;
           })
       },
       saveLoadFile(pathArr) {
-        this.disabledBtn = false;
         this.settings.accessProperties.Path = pathArr;
         this.getSettingsInfo();
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'})
@@ -174,8 +179,8 @@
         data.forEach((el, index) => this.dataColumns.push({text: el, value: index}));
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
-      saveSettings() {
-        this.applySettings();
+      saveSettings(tabName) {
+        this.applySettings(tabName);
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'})
       }
     }
