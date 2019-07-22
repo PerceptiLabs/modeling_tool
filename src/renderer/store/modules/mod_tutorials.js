@@ -1329,11 +1329,12 @@ const actions = {
   sideCalculate({rootGetters}, info) {
     let elCoord = info.element.getBoundingClientRect();
     let tooltipArrow = 10;
-    let zoom = rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+    let isDraggable = info.element.getAttribute('draggable');
+    let zoom = isDraggable !== 'false' ? 1 : store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
     switch (info.side) {
       case 'right':
-        info.tooltip.style.top = elCoord.top + (elCoord.height / 2)  +'px';
-        info.tooltip.style.left = elCoord.left + elCoord.width + tooltipArrow + 'px';
+        info.tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom  +'px';
+        info.tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
         break;
       case 'left':
         info.tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';
