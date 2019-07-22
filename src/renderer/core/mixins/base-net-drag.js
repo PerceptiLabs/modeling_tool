@@ -1,5 +1,5 @@
 import {calcLayerPosition} from '@/core/helpers.js'
-import configApp from '@/core/globalSettings.js'
+import { workspaceGrid }   from '@/core/constants.js'
 
 const baseNetDrag = {
   props: {
@@ -51,7 +51,7 @@ const baseNetDrag = {
     },
 
     bodyMove(ev) {
-      if(!(ev.pageX % configApp.workspaceGrid || ev.pageY % configApp.workspaceGrid)) return;
+      if(!(ev.pageX % workspaceGrid || ev.pageY % workspaceGrid)) return;
 
       const stickStartPos = this.stickStartPos;
       const delta = {

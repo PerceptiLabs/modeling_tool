@@ -6,7 +6,7 @@
     //.sidebar-share_btn
       button.btn.btn--primary(type="button"  disabled="disabled") Share
     .sidebar-share_bug-report-btn
-      button.btn.btn--primary(type="button" @click="openLink(`${siteBaseUrl}`)")
+      button.btn.btn--primary(type="button" @click="goToLink(`${baseUrlSite}`)")
         span Report
         i.icon.icon-bug-report
 
@@ -14,20 +14,18 @@
 </template>
 
 <script>
-import {shell} from 'electron'
-import { mapState } from 'vuex';
+import { baseUrlSite }    from '@/core/constants.js'
+import { goToLink }       from '@/core/helpers.js'
 
 export default {
   name: 'SidebarShare',
-  computed: {
-    ...mapState({
-      siteBaseUrl: state => state.mod_api.siteBaseUrl
-    })
+  data() {
+    return {
+      baseUrlSite
+    }
   },
   methods: {
-    openLink(url) {
-      shell.openExternal(url);
-    }
+    goToLink
   }
 }
 </script>

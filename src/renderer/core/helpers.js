@@ -1,6 +1,8 @@
 const { dialog } = require('electron').remote;
-import fs from 'fs';
-import configApp from '@/core/globalSettings.js'
+import {shell}   from 'electron'
+import fs        from 'fs';
+
+import { workspaceGrid }   from '@/core/constants.js'
 
 // const findIndexId = function (arr, ID) {
 //   return arr.findIndex(function(item) {return item.layerId == ID});
@@ -80,7 +82,7 @@ const generateID = function() {
 };
 
 const calcLayerPosition = function (position) {
-  const grid = configApp.workspaceGrid;
+  const grid = workspaceGrid;
   return Math.round(position/grid)*grid
 };
 
@@ -113,4 +115,17 @@ const throttleEv = function (func, ms) {
   return wrapper;
 };
 
-export {openLoadDialog, loadNetwork, generateID, loadPathFolder, calcLayerPosition, throttleEv, readLocalFile}
+const goToLink = function (url) {
+  shell.openExternal(url);
+};
+
+export {
+  openLoadDialog,
+  loadNetwork,
+  generateID,
+  loadPathFolder,
+  calcLayerPosition,
+  throttleEv,
+  readLocalFile,
+  goToLink
+}

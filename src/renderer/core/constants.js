@@ -1,8 +1,23 @@
-const trainingElements =  ['TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
+const isDevelopMode = process.env.NODE_ENV !== 'production' ? true : false;
+
+const trainingElements  = ['TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
 const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningDeconv', 'DeepLearningRecurrent'];
 
 const pathWebWorkers = './static/webworkers';
 
-const widthElement = 60;
+const baseUrlCloud  = 'https://perceptilabs-dev.azurewebsites.net/api/';
+const baseUrlSite   = 'https://perceptilabs-website-dev.azurewebsites.net';
 
-export {trainingElements, deepLearnElements, pathWebWorkers, widthElement}
+const widthElement = 60;
+const workspaceGrid = 10;
+
+export {
+  isDevelopMode,
+  trainingElements,
+  deepLearnElements,
+  pathWebWorkers,
+  widthElement,
+  workspaceGrid,
+  baseUrlCloud,
+  baseUrlSite
+}

@@ -22,7 +22,10 @@
             )
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
           .forgot-password-box
-            a.btn.btn--link-without-underline(href="#" @click.prevent="openLink(`${siteBaseUrl}/restore-account`)") Forgot email or password?
+            a.btn.btn--link-without-underline(
+              :href="`${baseUrlSite}/restore-account`"
+              @click.prevent="goToLink(`${baseUrlSite}/restore-account`)"
+              ) Forgot email or password?
 
         .form_holder
           base-checkbox(v-model="saveToken") Remember me
@@ -34,10 +37,13 @@
 </template>
 
 <script>
-  import {requestCloudApi} from '@/core/apiCloud.js'
-  import {shell} from 'electron'
+
+  import {requestCloudApi}  from '@/core/apiCloud.js'
+  import { baseUrlSite }    from '@/core/constants.js'
+  import { goToLink }       from '@/core/helpers.js'
+
   import ViewLoading from '@/components/different/view-loading.vue'
-  import { mapState } from 'vuex';
+
 export default {
   name: 'PageLogin',
   components: { ViewLoading },
@@ -50,13 +56,11 @@ export default {
     return {
       userEmail: '',
       userPass: '',
-      saveToken: true
+      saveToken: true,
+      baseUrlSite
     }
   },
   computed: {
-    ...mapState({
-      siteBaseUrl: state => state.mod_api.siteBaseUrl,
-    }),
     isLoading() {
       return this.$store.state.mod_login.showLoader
     },
@@ -66,6 +70,7 @@ export default {
   },
   methods: {
     requestCloudApi,
+    goToLink,
     validateForm() {
       this.$validator.validateAll()
         .then((result) => {
@@ -107,9 +112,6 @@ export default {
 
     loginUser() {
       this.$router.replace('/projects');
-    },
-    openLink(url) {
-      shell.openExternal(url);
     },
   }
 }

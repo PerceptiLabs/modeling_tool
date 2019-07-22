@@ -40,7 +40,6 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
-  siteBaseUrl: 'https://perceptilabs-website-dev.azurewebsites.net'
 };
 
 const getters = {

@@ -10,7 +10,7 @@ import App    from './App'
 import router from './router'
 import store  from './store'
 
-import configApp from '@/core/globalSettings.js'
+import { isDevelopMode } from '@/core/constants.js'
 
 //- Global components
 import BaseCheckbox     from '@/components/base/checkbox.vue'
@@ -25,8 +25,8 @@ if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
 Vue.http = Vue.prototype.$http = axios;
 
-Vue.config.productionTip = configApp.developMode;
-Vue.config.performance = configApp.developMode;
+Vue.config.productionTip = isDevelopMode;
+Vue.config.performance = isDevelopMode;
 
 //- Use plugin
 Vue.use(VeeValidate);

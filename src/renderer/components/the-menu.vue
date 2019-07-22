@@ -47,8 +47,10 @@
 </template>
 
 <script>
-  import { ipcRenderer, shell } from 'electron'
-  import { mapGetters, mapMutations, mapActions, mapState } from 'vuex';
+  import { ipcRenderer } from 'electron'
+  import { mapGetters, mapMutations, mapActions } from 'vuex';
+  import { baseUrlSite } from '@/core/constants.js';
+  import { goToLink }    from '@/core/helpers.js'
 
 export default {
   name: "TheMenu",
@@ -61,15 +63,7 @@ export default {
   mounted() {
     this.electronMenuListener();
   },
-  // data() {
-  //   return {
-  //     menuSet: false,
-  //   }
-  // },
   computed: {
-    ...mapState({
-      siteBaseUrl: state => state.mod_api.siteBaseUrl,
-    }),
     ...mapGetters({
       isTutorialMode: 'mod_tutorials/getIstutorialMode',
       isStoryBoard:   'mod_tutorials/getIsTutorialStoryBoard'
@@ -80,10 +74,6 @@ export default {
     isTutorialActive() {
       return this.isTutorialMode || this.isStoryBoard;
     },
-    userIsLoggedIn() {
-
-    },
-
     openApp() {
       return this.$store.state.globalView.appIsOpen
     },
@@ -185,6 +175,7 @@ export default {
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
       HCDeselectAll:    'mod_workspace/SET_elementUnselect'
     }),
+    goToLink,
     electronMenuListener() {
       ipcRenderer.on('menu-event', (event, menuId) => {
         this.menuEventSwitcher(menuId)
@@ -252,10 +243,10 @@ export default {
           break;
         //Help
         case 'to-help':
-          this.openLink(`${this.siteBaseUrl}/i_docs`);
+          this.goToLink(`${baseUrlSite}/i_docs`);
           break;
         case 'to-about':
-          this.openLink(`${this.siteBaseUrl}/about`);
+          this.goToLink(`${baseUrlSite}/about`);
           break;
         case 'enable-tutorial':
           this.showTutorial();
@@ -277,9 +268,6 @@ export default {
           this.HC_unGroupLayerContainer();
           break;
       }
-    },
-    openLink(url) {
-      shell.openExternal(url);
     },
     checkUpdate() {
       this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
