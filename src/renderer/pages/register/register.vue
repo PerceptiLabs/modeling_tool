@@ -67,6 +67,7 @@
 
 <script>
   import {requestCloudApi}  from '@/core/apiCloud.js'
+  import { baseUrlSite }    from '@/core/constants.js'
   import ViewLoading        from '@/components/different/view-loading.vue'
 export default {
   name: 'PageRegister',
@@ -75,7 +76,7 @@ export default {
   },
   mounted() {
     let preRegistrationData = JSON.parse(localStorage.getItem('registrationData'));
-    if(preRegistrationData) this.user = preRegistrationData
+    if(preRegistrationData) this.user = preRegistrationData;
   },
   data() {
     return {
@@ -85,7 +86,7 @@ export default {
         email: '',
         phone: '+00 (000) 000-00-00',
         password: '',
-        isLoading: false
+        callbackUrl: baseUrlSite
       },
       terms: true
     }
