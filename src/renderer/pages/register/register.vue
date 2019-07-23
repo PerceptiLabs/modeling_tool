@@ -43,6 +43,7 @@
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
         .form_holder
           input(type="password" placeholder="Confirm password"
+            v-model="user.confirmPassword"
             name="Confirm password"
             v-validate="'required|confirmed:userPass'"
             data-vv-as="Password"
@@ -87,6 +88,8 @@ export default {
         phone: '+00 (000) 000-00-00',
         password: '',
         callbackUrl: baseUrlSite
+        confirmPassword:'',
+        isLoading: false
       },
       terms: true
     }

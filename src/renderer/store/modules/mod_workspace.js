@@ -878,6 +878,7 @@ const createNetElement = function (event) {
   return {
     layerId: generateID(),
     layerName: event.target.dataset.layer,
+    defaultLayerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: event.layerSettings ? event.layerSettings : null,
     layerSettingsTabName: undefined,
