@@ -61,7 +61,7 @@ export default {
         }
       }
 
-      function updateLayersNames(net, context){console.log(net);
+      function updateLayersNames(net, context){
         let layersCount = {};
         for(let idEl in net) {
           let el = net[idEl];
