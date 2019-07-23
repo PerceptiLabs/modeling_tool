@@ -59,39 +59,15 @@ export default {
         this.$store.dispatch('mod_workspace/SET_statusNetworkZoom', newValue/100);
       }
     },
-    // workspace() {
-    //   return this.$store.state.mod_workspace.workspaceContent
-    // },
-    // indexCurrentNetwork() {
-    //   return this.$store.state.mod_workspace.currentNetwork
-    // },
-    // hideSidebar() {
-    //   return this.$store.state.globalView.hideSidebar
-    // },
-    // showGlobalSet() {
-    //   return this.$store.state.globalView.globalPopup.showNetSettings
-    // },
-    // showGlobalResult() {
-    //   return this.$store.state.globalView.globalPopup.showNetResult
-    // },
-    // showWorkspaceBeforeImport() {
-    //   return this.$store.state.globalView.globalPopup.showWorkspaceBeforeImport
-    // },
     hasStatistics() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkStatistics;
     },
-    // showCoreSide() {
-    //   return this.$store.state.globalView.globalPopup.showCoreSideSettings
-    // },
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     coreStatus() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
     },
-    // statisticsElSelected() {
-    //   return this.$store.state.mod_statistics.selectedElArr
-    // },
     currentNet() {
       this.scale = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
@@ -257,7 +233,7 @@ function openSaveDialog(jsonNet, dialogWin, network, ctx) {
   };
 
   const fileName = dialogWin.showSaveDialog(null, option);
-  ctx.$refs.networkField[0].$refs.network.style.filter = '';
+
   if (fileName === undefined){
     ctx.infoPopup("You didn't save the file");
     return;
@@ -272,6 +248,7 @@ function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
     ctx.infoPopup("The file has been successfully saved");
     successCallBack;
   });
+  ctx.$refs.networkField[0].$refs.network.style.filter = '';
 }
 function doScreenShot(ctx) {
   return new Promise((resolve, reject)=> {

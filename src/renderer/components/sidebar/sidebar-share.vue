@@ -6,7 +6,7 @@
     //.sidebar-share_btn
       button.btn.btn--primary(type="button"  disabled="disabled") Share
     .sidebar-share_bug-report-btn
-      button.btn.btn--primary(type="button" @click="goToLink(`${baseUrlSite}`)")
+      button.btn.btn--primary(type="button" @click="goToLink(reportLink)")
         span Report
         i.icon.icon-bug-report
 
@@ -14,14 +14,13 @@
 </template>
 
 <script>
-import { baseUrlSite }    from '@/core/constants.js'
-import { goToLink }       from '@/core/helpers.js'
+import { goToLink } from '@/core/helpers.js'
 
 export default {
   name: 'SidebarShare',
   data() {
     return {
-      baseUrlSite
+      reportLink: 'https://gitter.im/PerceptiLabs/PerceptiLabs?utm_source=share-link&utm_medium=link&utm_campaign=share-link',
     }
   },
   methods: {
