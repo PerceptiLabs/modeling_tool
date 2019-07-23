@@ -87,9 +87,8 @@ export default {
         email: '',
         phone: '+00 (000) 000-00-00',
         password: '',
-        callbackUrl: baseUrlSite
+        callbackUrl: baseUrlSite,
         confirmPassword:'',
-        isLoading: false
       },
       terms: true
     }
