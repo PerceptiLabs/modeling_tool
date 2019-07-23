@@ -178,6 +178,7 @@ export default {
     goToLink,
     electronMenuListener() {
       ipcRenderer.on('menu-event', (event, menuId) => {
+        console.log('menu-event', menuId);
         this.menuEventSwitcher(menuId)
       });
     },
@@ -213,6 +214,7 @@ export default {
 
           break;
         case 'copy':
+          console.log('copy');
           this.HCCopy();
           break;
         case 'paste':

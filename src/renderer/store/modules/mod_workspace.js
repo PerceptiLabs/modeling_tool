@@ -572,7 +572,6 @@ const mutations = {
       network[idEl].layerNone = true;
     }
     network[container.layerId].layerNone = false;
-    console.log(network);
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
 
     function calcContainer(container, net) {

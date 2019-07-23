@@ -56,7 +56,6 @@ export default {
     },
     layerItemColor() {
       let className = '';
-      console.log(this.currentLayer.componentName);
       switch (this.currentLayer.componentName) {
         case 'DataData':
         case 'DataEnvironment':
