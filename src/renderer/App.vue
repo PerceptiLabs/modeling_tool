@@ -186,6 +186,7 @@
       },
       /*Header actions*/
       appClose() {
+        localStorage.removeItem('registrationData');
         this.$store.dispatch('mod_events/EVENT_appClose');
       },
       appMinimize() {
