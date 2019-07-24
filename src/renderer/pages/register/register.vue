@@ -123,6 +123,7 @@
 
 <script>
   import {requestCloudApi}  from '@/core/apiCloud.js'
+  import { baseUrlSite }    from '@/core/constants.js'
   import ViewLoading        from '@/components/different/view-loading.vue'
 export default {
   name: 'PageRegister',
@@ -137,8 +138,8 @@ export default {
         email: '',
         phone: '+00 (000) 000-00-00',
         password: '',
+        callbackUrl: baseUrlSite,
         confirmPassword:'',
-        isLoading: false
       },
       terms: true,
       isShowPolicy: false

@@ -26,7 +26,7 @@ function prepareNetwork(elementList) {
         Type: el.componentName,
         checkpoint: el.checkpoint,
         endPoints: el.endPoints,
-        Properties: el.layerSettings,
+        //Properties: el.layerSettings,
         Code: el.layerCode,
         backward_connections: el.connectionIn,
         forward_connections: el.connectionOut
