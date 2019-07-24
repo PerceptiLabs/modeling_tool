@@ -89,7 +89,6 @@ export default {
         {
           label: 'File', visible: true,
           submenu: [
-            {label: 'Home',                                                                       enabled: this.openApp,  id: "to-home",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {label: 'New',          accelerator: this.isMac ? 'Command+N' : 'Ctrl+N',             enabled: this.isLogin,  id: "net-new",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {label: 'Open',         accelerator: this.isMac ? 'Command+O' : 'Ctrl+O',             enabled: this.isLogin,  id: "net-open",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
             {label: 'Save',         accelerator: this.isMac ? 'Command+S' : 'Ctrl+S',             enabled: this.openApp,  id: "save",             active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
@@ -159,7 +158,6 @@ export default {
   methods: {
     ...mapMutations({
       setTutorialSB:    'mod_tutorials/SET_showTutorialStoryBoard',
-      openNetwork:      'mod_events/set_openNetwork',
       saveNetwork:      'mod_events/set_saveNetwork',
       saveNetworkAs:    'mod_events/set_saveNetworkAs',
       setTutorialMode:  'mod_tutorials/SET_isTutorialMode',
@@ -170,6 +168,7 @@ export default {
       appClose:         'mod_events/EVENT_appClose',
       appMinimize:      'mod_events/EVENT_appMinimize',
       appMaximize:      'mod_events/EVENT_appMaximize',
+      openNetwork:      'mod_events/EVENT_openNetwork',
       HCCopy:           'mod_events/EVENT_hotKeyCopy',
       HCPaste:          'mod_events/EVENT_hotKeyPaste',
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
@@ -185,9 +184,6 @@ export default {
     menuEventSwitcher(menuId) {
       switch (menuId) {
         //File
-        case 'to-home':
-          this.openProject();
-          break;
         case 'net-new':
           this.addNewNetwork();
           break;
@@ -276,11 +272,7 @@ export default {
       ipcRenderer.send('check-update');
     },
     addNewNetwork() {
-      this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
-      this.offMainTutorial();
-    },
-    openProject() {
-      this.$router.replace({name: 'projects'});
+      this.$store.dispatch('mod_workspace/ADD_network');
       this.offMainTutorial();
     },
     logOut() {

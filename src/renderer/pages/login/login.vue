@@ -24,8 +24,8 @@
           .forgot-password-box
             a.btn.btn--link-without-underline(
               :href="`${baseUrlSite}/restore-account`"
-              @click.prevent="goToLink(`${baseUrlSite}/restore-account`)"
-              ) Forgot email or password?
+              @click.prevent="toLink(`${baseUrlSite}/restore-account`)"
+              ) Forgot password?
 
         .form_holder
           base-checkbox(v-model="saveToken") Remember me
@@ -70,7 +70,9 @@ export default {
   },
   methods: {
     requestCloudApi,
-    goToLink,
+    toLink(url) {
+      goToLink(url)
+    },
     validateForm() {
       this.$validator.validateAll()
         .then((result) => {

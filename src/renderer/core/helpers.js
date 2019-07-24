@@ -1,21 +1,29 @@
-const { dialog } = require('electron').remote;
-import {shell}   from 'electron'
-import fs        from 'fs';
+import {shell, ipcRenderer }   from 'electron'
+import fs    from 'fs';
+import store from '@/store'
 
 import { workspaceGrid }   from '@/core/constants.js'
 
-// const findIndexId = function (arr, ID) {
-//   return arr.findIndex(function(item) {return item.layerId == ID});
-// };
-
+/*modal window*/
 const openLoadDialog = function (options) {
   return new Promise((success, reject) => {
-    const pathArr = dialog.showOpenDialog(null, options);
-    if (pathArr !== undefined) {
-      success(pathArr)
-    }
-    else reject();
-  })
+    ipcRenderer.on('open-dialog_path', (event, path) => {
+      ipcRenderer.removeAllListeners('open-dialog_path');
+      !!(path && path.length) ? success(path) : reject();
+    });
+    ipcRenderer.send('open-dialog', options);
+  });
+};
+
+const openSaveDialog = function (options) {
+  console.log('openSaveDialog', options);
+  return new Promise((success, reject) => {
+    ipcRenderer.on('open-save-dialog_path', (event, path) => {
+      ipcRenderer.removeAllListeners('open-save-dialog_path');
+      !!(path && path.length) ? success(path) : reject();
+    });
+    ipcRenderer.send('open-save-dialog', options);
+  });
 };
 
 const loadPathFolder = function (customOptions) {
@@ -24,59 +32,36 @@ const loadPathFolder = function (customOptions) {
     properties: ['openDirectory']
   };
   let options = optionsDefault || customOptions;
+  console.log(options);
   return openLoadDialog(options);
 };
 
-const loadNetwork = function (pathArr) {
-  let localProjectsList = localStorage.getItem('projectsList');
-  let projectsList, pathIndex;
-  if(localProjectsList) {
-    projectsList = JSON.parse(localProjectsList);
-    pathIndex = projectsList.findIndex((proj)=> proj.path[0] === pathArr[0]);
-  }
-  return readLocalFile(pathArr[0])
-    .then((data) => {
-      //validate JSON
-      let net = {};
-      net = JSON.parse(data.toString());
-      // try {
-      //   net = JSON.parse(data.toString());
-      //
-      // }
-      // catch(e) {
-      //   this.$store.dispatch('globalView/GP_infoPopup', 'JSON file is not valid');
-      //   return
-      // }
-      //validate model
-      // try {
-      //   if(!(net.network.networkName && net.network.networkID && net.network.networkMeta && net.network.networkElementList)) {
-      //     throw ('err')
-      //   }
-      // }
-      // catch(e) {
-      //   this.$store.dispatch('globalView/GP_infoPopup', 'The model is not valid');
-      //   return;
-      // }
-      if(pathIndex > -1 && projectsList) {
-        net.network.networkID = projectsList[pathIndex].id;
-      }
-      this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
-    }
-  );
-};
 
-const readLocalFile = function (path) {
+/*file actions*/
+const fileLocalRead = function (path) {
   return new Promise((success, reject) => {
     fs.readFile(path, (err, data) => {
-      if (err) {
-        console.log(err);
-        return reject();
-      }
-      return success(data);
+      return !!err ? reject(err) : success(data);
     })
   });
 };
+const fileLocalSave = function (fileName, fileContent) {
+  console.log('fileLocal_Save', fileName);
+  return new Promise((success, reject) => {
+    fs.writeFile(fileName, fileContent, (err, data) => {
+      if(err) {
+        store.dispatch('globalView/GP_errorPopup', `An error occurred creating the file ${err.message}`);
+        return reject(err);
+      }
+      else {
+        store.dispatch('globalView/GP_errorPopup', 'The file has been successfully saved');
+        return success(data)
+      }
+    });
+  });
+};
 
+/*other*/
 const generateID = function() {
   return Date.now().toString();
 };
@@ -93,18 +78,18 @@ const throttleEv = function (func, ms) {
   let delay = 33 || ms; //30Hz
   function wrapper() {
 
-    if (isThrottled) { // (2)
+    if (isThrottled) {
       savedArgs = arguments;
       savedThis = this;
       return;
     }
 
-    func.apply(this, arguments); // (1)
+    func.apply(this, arguments);
 
     isThrottled = true;
 
     setTimeout(function() {
-      isThrottled = false; // (3)
+      isThrottled = false;
       if (savedArgs) {
         wrapper.apply(savedThis, savedArgs);
         savedArgs = savedThis = null;
@@ -116,16 +101,18 @@ const throttleEv = function (func, ms) {
 };
 
 const goToLink = function (url) {
+  console.log(url);
   shell.openExternal(url);
 };
 
 export {
   openLoadDialog,
-  loadNetwork,
-  generateID,
+  openSaveDialog,
   loadPathFolder,
+  fileLocalRead,
+  fileLocalSave,
+  generateID,
   calcLayerPosition,
   throttleEv,
-  readLocalFile,
   goToLink
 }

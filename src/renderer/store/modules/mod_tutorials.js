@@ -1,6 +1,6 @@
 import { isNumber } from "util";
 import router from "@/router";
-import store from '../../store'
+import store from '@/store'
 
 const namespaced = true;
 let delayTimer;

@@ -1,6 +1,6 @@
 'use strict';
 
-import { app, BrowserWindow, Menu, ipcMain }  from 'electron'
+import { app, BrowserWindow, Menu, ipcMain, dialog }  from 'electron'
 import { autoUpdater }                        from 'electron-updater'
 import ua                                     from 'universal-analytics'
 
@@ -100,6 +100,16 @@ function createWindow () {
   /**
    * listeners for the renderer process
    */
+  ipcMain.on('open-dialog', (event, options) => {
+    dialog.showOpenDialog(mainWindow, options, (files) => {
+      mainWindow.webContents.send('open-dialog_path', files);
+    })
+  });
+  ipcMain.on('open-save-dialog', (event, options) => {
+    dialog.showSaveDialog(mainWindow, options, (files) => {
+      mainWindow.webContents.send('open-save-dialog_path', files);
+    })
+  });
   ipcMain.on('app-close', (event, arg) => {
     app.quit()
   });
@@ -135,6 +145,7 @@ function createWindow () {
     visitor = ua('UA-114940346-1', arg.id, {strictCidFormat: false})
     if (arg.path !== loginPage) visitor.pageview(arg.path).send();
   });
+
   /**
    * start auto update
    */
@@ -163,21 +174,11 @@ function createWindow () {
   }
 }
 
+
+/**
+ * APP listeners
+ */
 app.on('ready', createWindow);
-
-app.on('before-quit', (event) => {
-  //event.preventDefault();
-  //mainWindow.webContents.send('closeApp', 'before-quit');
-});
-// app.on('will-quit', (event) => {
-//   //event.preventDefault();
-//   mainWindow.webContents.send('closeApp', 'will-quit');
-// });
-// app.on('quit', (event) => {
-//   //event.preventDefault();
-//   mainWindow.webContents.send('closeApp', 'quit');
-// });
-
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

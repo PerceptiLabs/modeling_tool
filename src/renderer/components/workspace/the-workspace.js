@@ -1,10 +1,10 @@
 import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
-const {dialog, BrowserWindow} =   require('electron').remote;
-import fs           from 'fs';
+//const {dialog, } =   require('electron').remote;
+//import fs           from 'fs';
 import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 
-import { generateID }  from "@/core/helpers.js";
+import { openSaveDialog, fileLocalSave, generateID }  from "@/core/helpers.js";
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -179,34 +179,60 @@ export default {
         this.$store.dispatch('mod_workspace/SET_openTest', true);
       })
     },
-    saveNetwork(){
+    saveNetwork() {
       let projectsList = JSON.parse(localStorage.getItem('projectsList'));
-      if(projectsList) {
-        let idIndex = projectsList.findIndex((proj) => proj.id === this.currentNetwork.networkID);
-        let idExist = idIndex >= 0 ? true : false;
-        if(idExist) {
-          const network = this.currentNetwork;
-          doScreenShot(this)
-            .then((img)=> {
-              const currentPath = projectsList[idIndex].path[0];
-              const stringNet = cloneNet(network, img, currentPath);
-              projectsList[idIndex] = JSON.parse(stringNet).project  ;
-              saveFileToDisk(currentPath, stringNet, this, setLocalProjectsList(projectsList))
-            })
-            .catch((err)=> {console.log(err)});
-        }
-        else this.saveNetworkAs();
+      if(!projectsList) {
+        this.saveNetworkAs();
+        return
       }
-      else this.saveNetworkAs();
-    },
-    saveNetworkAs() {
+      let idIndex = projectsList.findIndex((proj) => proj.id === this.currentNetwork.networkID);
+      if(idIndex < 0) {
+        this.saveNetworkAs();
+        return
+      }
+
       const network = this.currentNetwork;
       doScreenShot(this)
         .then((img)=> {
-          const stringNet = cloneNet(network, img);
-          openSaveDialog(stringNet, dialog, network, this)
+          const currentPath = projectsList[idIndex].path[0];
+          const stringNet = cloneNet(network, img, currentPath);
+          projectsList[idIndex] = JSON.parse(stringNet).project  ;
+          fileLocalSave(currentPath, stringNet)
+        })
+        .then(()=> {
+          this.$refs.networkField[0].$refs.network.style.filter = '';
+          setLocalProjectsList(projectsList)
         })
         .catch((err)=> {console.log(err)});
+    },
+    saveNetworkAs() {
+      const network = this.currentNetwork;
+      let stringNetwork;
+      doScreenShot(this)
+        .then((img)=> {
+          stringNetwork = cloneNet(network, img);
+          const option = {
+            title:"Save Network",
+            defaultPath: `*/${network.networkName}`,
+            filters: [
+              {name: 'Text', extensions: ['json']},
+            ]
+          };
+          return openSaveDialog(option);
+        })
+        .then((path)=> {
+          return fileLocalSave(path, stringNetwork)
+        })
+        .then((t)=> {
+          console.log(t);
+          savePathToLocalStorage(JSON.parse(stringNetwork).project)
+        })
+        .catch((err)=> {
+          console.log(err)
+        })
+        .finally(()=>{
+          this.$refs.networkField[0].$refs.network.style.filter = '';
+        });
     },
     trainingFinished(index) {
       let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;
@@ -223,33 +249,33 @@ export default {
 }
 
 //SAVE NETWORK
-function openSaveDialog(jsonNet, dialogWin, network, ctx) {
-  const option = {
-    title:"Save Network",
-    defaultPath: `*/${network.networkName}`,
-    filters: [
-      {name: 'Text', extensions: ['json']},
-    ]
-  };
-
-  const fileName = dialogWin.showSaveDialog(null, option);
-
-  if (fileName === undefined){
-    ctx.infoPopup("You didn't save the file");
-    return;
-  }
-  saveFileToDisk(fileName, jsonNet, ctx, savePathToLocal(JSON.parse(jsonNet).project, fileName))
-}
-function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
-  fs.writeFile(fileName, jsonNet, (err) => {
-    if(err){
-      ctx.infoPopup(`An error occurred creating the file ${err.message}`);
-    }
-    ctx.infoPopup("The file has been successfully saved");
-    successCallBack;
-  });
-  ctx.$refs.networkField[0].$refs.network.style.filter = '';
-}
+// function openSaveDialog(jsonNet, dialogWin, network, ctx) {
+//   const option = {
+//     title:"Save Network",
+//     defaultPath: `*/${network.networkName}`,
+//     filters: [
+//       {name: 'Text', extensions: ['json']},
+//     ]
+//   };
+//
+//   const fileName = dialogWin.showSaveDialog(null, option);
+//
+//   if (fileName === undefined){
+//     ctx.infoPopup("You didn't save the file");
+//     return;
+//   }
+//   saveFileToDisk(fileName, jsonNet, ctx, savePathToLocalStorage(JSON.parse(jsonNet).project))
+// }
+// function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
+//   fs.writeFile(fileName, jsonNet, (err) => {
+//     if(err){
+//       ctx.infoPopup(`An error occurred creating the file ${err.message}`);
+//     }
+//     ctx.infoPopup("The file has been successfully saved");
+//     successCallBack;
+//   });
+//
+// }
 function doScreenShot(ctx) {
   return new Promise((resolve, reject)=> {
     const networkField = ctx.$refs.networkField[0].$refs.network;
@@ -273,7 +299,7 @@ function doScreenShot(ctx) {
       });
   })
 }
-function savePathToLocal(project, path) {
+function savePathToLocalStorage(project, path) {
   let projectsList = JSON.parse(localStorage.getItem('projectsList'));
   project.path.push(path);
   if(projectsList) {
