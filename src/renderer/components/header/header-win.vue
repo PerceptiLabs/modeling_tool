@@ -7,6 +7,7 @@
 
     ul.app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
+      //button.btn.btn--app-full(type="button" @click="appMaximize()" :class="{'icon-full-screen-code': showRestoreIcon, 'icon-app-resize': !showRestoreIcon}").i.icon
       button.btn.btn--app-full(type="button" @click="appMaximize()").i.icon.icon-app-resize
       button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close
 </template>
@@ -17,6 +18,11 @@
 export default {
   name: "HeaderWin",
   components: {TheMenu},
+  computed: {
+    showRestoreIcon() {
+      return this.$store.state.globalView.restoreDownIcon
+    }
+  },
   methods: {
     appClose() {
       this.$emit('app-closed')

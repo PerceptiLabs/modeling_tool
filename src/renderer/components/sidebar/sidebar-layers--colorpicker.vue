@@ -52,7 +52,7 @@ export default {
     iconColor() {
       return this.applyColor
         ? {'color': this.layerColor.hex}
-        : null
+        : {'color': this.currentLayer.layerMeta.layerBgColor}
     },
     layerItemColor() {
       let className = '';

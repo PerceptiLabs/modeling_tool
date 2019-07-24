@@ -76,6 +76,9 @@
 
       ipcRenderer.on('show-mac-header', (event, value) => { this.showMacHeader = value });
       ipcRenderer.on('info',            (event, data) => { console.log(data); });
+      ipcRenderer.on('show-restore-down-icon', (event, value) => {
+        this.$store.commit('globalView/SET_restoreDownIcon', value);
+      });
 
       this.calcAppPath();
       this.checkToken();
@@ -148,7 +151,6 @@
       },
       /*Header actions*/
       appClose() {
-        localStorage.removeItem('registrationData');
         this.$store.dispatch('mod_events/EVENT_appClose');
       },
       appMinimize() {
