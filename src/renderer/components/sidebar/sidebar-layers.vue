@@ -46,7 +46,6 @@ export default {
       let currentNet = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
       var newNet = {...currentNet};
       clearContainer(currentNet);
-      updateLayersNames(newNet, this);
 
       function clearContainer(net) {
         for(let idEl in net) {
@@ -60,21 +59,6 @@ export default {
           }
         }
       }
-
-      function updateLayersNames(net, context){
-        let layersCount = {};
-        for(let idEl in net) {
-          let el = net[idEl];
-          if (typeof layersCount[el.componentName] !== 'undefined') {
-            layersCount[el.componentName]++;
-          } else {
-            layersCount[el.componentName] = 1;
-          } 
-          if(el.layerName === el.defaultLayerName){
-            context.editElName(idEl, el.layerName+'_'+layersCount[el.componentName]);
-          }                 
-        }           
-      } 
       return newNet
     },
   },
@@ -98,10 +82,7 @@ export default {
       // let currentSelect =  this.networkElementList.findIndex((item)=> {
       //   return item.meta.isSelected === true;
       // });
-    },
-    editElName(elId, newName) {
-      this.$store.commit('mod_workspace/SET_elementName', { id: elId, setValue: newName });
-    },
+    }
   }
 }
 </script>
