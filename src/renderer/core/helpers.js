@@ -1,5 +1,4 @@
-const { dialog } = require('electron').remote;
-import {shell}   from 'electron'
+import {shell, ipcRenderer, }   from 'electron'
 import fs        from 'fs';
 
 import { workspaceGrid }   from '@/core/constants.js'
@@ -10,12 +9,12 @@ import { workspaceGrid }   from '@/core/constants.js'
 
 const openLoadDialog = function (options) {
   return new Promise((success, reject) => {
-    const pathArr = dialog.showOpenDialog(null, options);
-    if (pathArr !== undefined) {
-      success(pathArr)
-    }
-    else reject();
-  })
+    ipcRenderer.on('open-dialog_path', (event, path) => {
+      ipcRenderer.removeAllListeners('open-dialog_path');
+      !!(path && path.length) ? success(path) : reject();
+    });
+    ipcRenderer.send('open-dialog', options);
+  });
 };
 
 const loadPathFolder = function (customOptions) {
@@ -27,52 +26,12 @@ const loadPathFolder = function (customOptions) {
   return openLoadDialog(options);
 };
 
-const loadNetwork = function (pathArr) {
-  let localProjectsList = localStorage.getItem('projectsList');
-  let projectsList, pathIndex;
-  if(localProjectsList) {
-    projectsList = JSON.parse(localProjectsList);
-    pathIndex = projectsList.findIndex((proj)=> proj.path[0] === pathArr[0]);
-  }
-  return readLocalFile(pathArr[0])
-    .then((data) => {
-      //validate JSON
-      let net = {};
-      net = JSON.parse(data.toString());
-      // try {
-      //   net = JSON.parse(data.toString());
-      //
-      // }
-      // catch(e) {
-      //   this.$store.dispatch('globalView/GP_infoPopup', 'JSON file is not valid');
-      //   return
-      // }
-      //validate model
-      // try {
-      //   if(!(net.network.networkName && net.network.networkID && net.network.networkMeta && net.network.networkElementList)) {
-      //     throw ('err')
-      //   }
-      // }
-      // catch(e) {
-      //   this.$store.dispatch('globalView/GP_infoPopup', 'The model is not valid');
-      //   return;
-      // }
-      if(pathIndex > -1 && projectsList) {
-        net.network.networkID = projectsList[pathIndex].id;
-      }
-      this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
-    }
-  );
-};
+
 
 const readLocalFile = function (path) {
   return new Promise((success, reject) => {
     fs.readFile(path, (err, data) => {
-      if (err) {
-        console.log(err);
-        return reject();
-      }
-      return success(data);
+      return !!err ? reject(err) : success(data);
     })
   });
 };
@@ -121,7 +80,6 @@ const goToLink = function (url) {
 
 export {
   openLoadDialog,
-  loadNetwork,
   generateID,
   loadPathFolder,
   calcLayerPosition,

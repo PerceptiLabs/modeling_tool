@@ -1,6 +1,7 @@
 import { generateID, calcLayerPosition }  from "@/core/helpers.js";
 import { widthElement } from '@/core/constants.js'
-import Vue from 'vue'
+import Vue    from 'vue'
+import router from '@/router'
 
 const namespaced = true;
 
@@ -115,8 +116,9 @@ const mutations = {
   set_networkName(state, {getters, value}) {
     getters.GET_currentNetwork.networkName = value
   },
-  add_network (state, {network, ctx}) {
+  add_network (state, network) {
     //console.log(JSON.stringify(network));
+    //console.log('add_network', network);
     let workspace = state.workspaceContent;
     let newNetwork = {};
     //-- DEFAULT DATA
@@ -153,6 +155,7 @@ const mutations = {
     if(findNetId(newNetwork, workspace) || !newNetwork.networkID) {
       newNetwork.networkID = generateID();
     }
+    console.log(newNetwork);
     //-- Check and create the position
     createPositionElements(newNetwork.networkElementList);
     //-- Add to workspace
@@ -160,8 +163,8 @@ const mutations = {
     //-- Open last Network
     state.currentNetwork = workspace.length - 1;
     //-- Go to app page
-    if(ctx.$router.history.current.name !== 'app') {
-      ctx.$router.replace({name: 'app'});
+    if(router.history.current.name !== 'app') {
+      router.replace({name: 'app'});
     }
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
@@ -720,8 +723,8 @@ const actions = {
   //---------------
   //  NETWORK
   //---------------
-  ADD_network({commit, dispatch}, {network, ctx}) {
-    commit('add_network', {network, ctx})
+  ADD_network({commit, dispatch}, network) {
+    commit('add_network', network)
   },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})

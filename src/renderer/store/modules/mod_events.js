@@ -1,4 +1,5 @@
 import {ipcRenderer} from 'electron'
+import {readLocalFile, openLoadDialog} from "../../core/helpers";
 
 const namespaced = true;
 
@@ -19,9 +20,9 @@ const mutations = {
   set_calcArray(state) {
     state.calcArray++
   },
-  set_openNetwork(state) {
-    state.openNetwork++
-  },
+  // set_openNetwork(state) {
+  //   state.openNetwork++
+  // },
   set_saveNetwork(state) {
     state.saveNetwork++
   },
@@ -43,8 +44,57 @@ const actions = {
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },
-  EVENT_openNetwork({commit}) {
-    commit('set_openNetwork');
+  EVENT_loadNetwork({dispatch}, pathArr) {
+    //console.log('EVENT_openNetwork', pathArr);
+    let localProjectsList = localStorage.getItem('projectsList');
+    let projectsList, pathIndex;
+    if(localProjectsList) {
+      projectsList = JSON.parse(localProjectsList);
+      pathIndex = projectsList.findIndex((proj)=> proj.path[0] === pathArr[0]);
+    }
+    return readLocalFile(pathArr[0])
+      .then((data) => {
+        //validate JSON
+        let net = {};
+        net = JSON.parse(data.toString());
+        //console.log('net', net);
+        // try {
+        //   net = JSON.parse(data.toString());
+        //
+        // }
+        // catch(e) {
+        //   this.$store.dispatch('globalView/GP_infoPopup', 'JSON file is not valid');
+        //   return
+        // }
+        //validate model
+        // try {
+        //   if(!(net.network.networkName && net.network.networkID && net.network.networkMeta && net.network.networkElementList)) {
+        //     throw ('err')
+        //   }
+        // }
+        // catch(e) {
+        //   this.$store.dispatch('globalView/GP_infoPopup', 'The model is not valid');
+        //   return;
+        // }
+        if(pathIndex > -1 && projectsList) {
+          net.network.networkID = projectsList[pathIndex].id;
+        }
+        dispatch('mod_workspace/ADD_network', net.network, {root: true});
+      }
+    );
+  },
+  EVENT_openNetwork({dispatch}) {
+    const opt = {
+      title:"Load Network",
+      filters: [
+        {name: 'Text', extensions: ['json']},
+      ]
+    };
+    openLoadDialog(opt)
+      .then((pathArr)=> {
+        dispatch('EVENT_loadNetwork', pathArr)
+      })
+      .catch((err)=> {});
   },
   EVENT_saveNetwork({commit}) {
     commit('set_saveNetwork');

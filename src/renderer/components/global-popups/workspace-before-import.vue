@@ -67,6 +67,7 @@ export default {
     openLoadDialog,
     loadTFFiles() {
       this.$store.commit('globalView/GP_showWorkspaceBeforeImport', false);
+      this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
       let opt = {
         title:"Load TensorFlow Model",
         properties: ['openFile', 'multiSelections'],
@@ -76,7 +77,8 @@ export default {
       };
       this.openLoadDialog(opt)
         .then((pathArr)=>{
-          this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
+          console.log(pathArr);
+
           let requestValue = {
             ...this.settings,
             Paths: pathArr

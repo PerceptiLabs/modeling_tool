@@ -32,7 +32,7 @@
     },
     created() {
       if(!this.workspaceContent.length) {
-        this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
+        this.$store.dispatch('mod_workspace/ADD_network');
       }
     },
     mounted() {

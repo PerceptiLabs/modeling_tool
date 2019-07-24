@@ -78,24 +78,6 @@ export default {
   methods: {
     loadTFFiles() {
       this.$store.commit('globalView/GP_showWorkspaceBeforeImport', true);
-      // this.disabledBtn = true;
-      // let opt = {
-      //   title:"Load TensorFlow Model",
-      //   properties: ['openFile', 'multiSelections'],
-      //   filters: [
-      //     {name: 'All', extensions: ['pb', 'pbtxt', 'ckpt', 'pb.*', 'pbtxt.*', 'ckpt.*']},
-      //   ]
-      // };
-      // this.openLoadDialog(opt)
-      //   .then((pathArr)=>{
-      //     this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
-      //     return this.$store.dispatch('mod_api/API_parse', {path: pathArr, ctx: this});
-      //   })
-      //   .then(()=>{
-      //     this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
-      //     this.disabledBtn = false
-      //   })
-      //   .catch(()=> this.disabledBtn = false)
     },
     clickQ() {
 

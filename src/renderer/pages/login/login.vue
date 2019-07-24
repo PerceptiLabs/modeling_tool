@@ -25,7 +25,7 @@
             a.btn.btn--link-without-underline(
               :href="`${baseUrlSite}/restore-account`"
               @click.prevent="goToLink(`${baseUrlSite}/restore-account`)"
-              ) Forgot email or password?
+              ) Forgot password?
 
         .form_holder
           base-checkbox(v-model="saveToken") Remember me
