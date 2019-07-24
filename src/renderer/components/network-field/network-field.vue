@@ -5,38 +5,49 @@
   )
     svg.svg-arrow(:style="styleSvgArrow")
       defs
-        marker#svg-arrow_triangle.svg-arrow_marker(
-          refX="3" refY="2"
-          markerWidth="9"
-          markerHeight="9"
-          orient="auto"
+        template(
+          v-if="arrowsList.length"
+          v-for="(arrow, index) in arrowsList"
           )
+          marker.svg-arrow_marker(id="svg-arrow_triangle" :class="arrowTriangleClass(arrow)")(
+            refX="3" refY="2"
+            markerWidth="9"
+            markerHeight="9"
+            orient="auto"
+            )
+            polyline(points="0,0 0,4 3.5,2")
+        marker#svg-arrow_triangle-temp(
+            refX="3" refY="2"
+            markerWidth="9"
+            markerHeight="9"
+            orient="auto"
+            )
           polyline(points="0,0 0,4 3.5,2")
 
-        //-marker#svg-arrow_start.svg-arrow_marker(
-          viewBox="0 0 28 16"
-          refX="0" refY="7"
-          markerWidth="8"
-          markerHeight="14"
-          orient="auto"
-          markerUnits="strokeWidth"
-          )
-          ellipse(ry="7" rx="8" cy="7" cx="0")
+          //-marker#svg-arrow_start.svg-arrow_marker(
+            viewBox="0 0 28 16"
+            refX="0" refY="7"
+            markerWidth="8"
+            markerHeight="14"
+            orient="auto"
+            markerUnits="strokeWidth"
+            )
+            ellipse(ry="7" rx="8" cy="7" cx="0")
 
-        //-marker#svg-arrow_end.svg-arrow_marker(
-          viewBox="0 0 28 16"
-          refX="8" refY="7"
-          markerWidth="8"
-          markerHeight="14"
-          orient="auto"
-          markerUnits="strokeWidth"
-          )
-          ellipse(ry="7" rx="8" cy="7" cx="8")
-          polyline(points="1.9566014856100082,3.9975550174713135 1.9566014856100082,10.002445220947266 7.119192227721214,7")
+          //-marker#svg-arrow_end.svg-arrow_marker(
+            viewBox="0 0 28 16"
+            refX="8" refY="7"
+            markerWidth="8"
+            markerHeight="14"
+            orient="auto"
+            markerUnits="strokeWidth"
+            )
+            ellipse(ry="7" rx="8" cy="7" cx="8")
+            polyline(points="1.9566014856100082,3.9975550174713135 1.9566014856100082,10.002445220947266 7.119192227721214,7")
       //- arrows list
       template(
         v-if="arrowsList.length"
-        v-for="arrow in arrowsList"
+        v-for="(arrow, index) in arrowsList"
       )
         //-'arrow--empty-output': arrow.l1.layerMeta.OutputDim.length === 0,
         path.svg-arrow_line(
@@ -53,7 +64,7 @@
       //- pre arrow
       line.svg-arrow_line.arrow--hidden(
         v-if="preArrow.show"
-        marker-end="url(#svg-arrow_triangle)"
+        marker-end="url(#svg-arrow_triangle-temp)"
         :stroke-dasharray="(tutorialDottedArrow ? '7 6' : 'none')"
         :x1="preArrow.start.x"
         :y1="preArrow.start.y"
@@ -101,8 +112,20 @@
     width: 100%;
     height: 100%;
     z-index: 2;
-    marker.svg-arrow_marker {
+    marker {
       fill: $col-primary;
+      stroke-width: 0;
+    }
+    marker#svg-arrow_triangle-temp {
+      fill: $col-primary;
+      stroke-width: 0;
+    }
+    marker.svg-arrow_marker_line--empty {
+      fill: $col-warning;
+      stroke-width: 0;
+    }
+    marker.svg-arrow_marker_multi-select {
+      fill: $col-primary2;
       stroke-width: 0
     }
     marker#svg-arrow_end polyline {

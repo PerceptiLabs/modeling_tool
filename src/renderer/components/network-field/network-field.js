@@ -109,7 +109,7 @@ export default {
         width: this.svgWidth,
         height: this.svgHeight,
       }
-    },
+    },    
   },
   watch: {
     statisticsIsOpen() {
@@ -543,6 +543,18 @@ export default {
       }
       if (!arrow.l1.layerMeta.OutputDim) {
         result.push('svg-arrow_line--empty');
+      }
+      return result;
+    },
+    arrowTriangleClass(arrow){
+      let result = [];
+      if (arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible) {
+        result.push('svg-arrow_marker_arrow--hidden');
+      }
+      if (!arrow.l1.layerMeta.OutputDim) {
+        result.push('svg-arrow_marker_line--empty');
+      }else{
+        result.push('svg-arrow_marker_multi-select');
       }
       return result;
     }
