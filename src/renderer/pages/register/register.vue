@@ -6,7 +6,7 @@
     .login_main(v-if="!isShowPolicy")
       h1 Get Started
       h3 Register in 1 minute
-      form.login_form
+      form.login_form(@keyup.enter="validateForm")
         .form_holder
           input(type="text" placeholder="First Name"
             v-model="user.firstName"
@@ -57,7 +57,7 @@
             v-model="terms"
           )
             span Agree
-            button.btn.btn--link.policy-btn(@click="showHidePolicy") terms and policy
+            button.btn.btn--link.policy-btn(@click="showHidePolicy" type="button") terms and policy
           p.text-error(v-show="errors.has('terms')") {{ errors.first('terms') }}
 
         .form_holder
@@ -66,7 +66,7 @@
           router-link(:to="{name: 'login'}").btn.btn--link Already Have Account
 
     .policy(v-else)
-      .btn.btn--dark-blue-rev(@click="showHidePolicy") Back
+      .btn.btn--dark-blue-rev.back(@click="showHidePolicy") Back
       article.policy_main
         header
           h2 End-User License Agreement ("Agreement")
@@ -174,6 +174,7 @@ export default {
           this.$router.replace('/login');
         })
         .catch((error)=>{
+          console.log(error);
           this.$store.dispatch('globalView/GP_infoPopup', error);
         })
         .finally(()=>{
@@ -203,7 +204,7 @@ export default {
     max-height: 55vh;
     padding: 9rem 7.5rem 7.5rem;
   }
-  .btn--dark-blue-rev {
+  .btn--dark-blue-rev.back {
     font-size: 1em;
     position: absolute;
     top: 0;
