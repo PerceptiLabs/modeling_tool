@@ -6,6 +6,12 @@
 
     ul.toolbar_list
       li
+        router-link(:to="{name: 'projects'}").btn.btn--toolbar(type="button"
+          v-tooltip:bottom="'Home page'"
+        )
+          i.icon.icon-home
+    ul.toolbar_list
+      li
         button#tutorial_pointer.btn.btn--toolbar(type="button"
           :disabled="!networkIsOpen"
           :class="{'active': networkMode === 'edit'}"
@@ -69,7 +75,7 @@
           @click="skipValid()"
         )
           i.icon.icon-next
-    ul.toolbar_list
+    //ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
           v-tooltip:bottom="'Generate Hyperparameters'"

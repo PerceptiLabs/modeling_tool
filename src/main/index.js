@@ -73,6 +73,12 @@ function createWindow () {
   mainWindow.on('leave-full-screen', () => {
     mainWindow.webContents.send('show-mac-header', true);
   });
+  mainWindow.on('maximize', () => {
+    mainWindow.webContents.send('show-restore-down-icon', true);
+  });
+  mainWindow.on('unmaximize', () => {
+    mainWindow.webContents.send('show-restore-down-icon', false);
+  });
   /**
    * add custom menu
    */
