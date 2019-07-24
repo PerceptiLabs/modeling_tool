@@ -100,9 +100,14 @@ function createWindow () {
   /**
    * listeners for the renderer process
    */
-  ipcMain.on('open-dialog', (event, arg) => {
-    dialog.showOpenDialog(mainWindow, null, (files) => {
+  ipcMain.on('open-dialog', (event, options) => {
+    dialog.showOpenDialog(mainWindow, options, (files) => {
       mainWindow.webContents.send('open-dialog_path', files);
+    })
+  });
+  ipcMain.on('open-save-dialog', (event, options) => {
+    dialog.showSaveDialog(mainWindow, options, (files) => {
+      mainWindow.webContents.send('open-save-dialog_path', files);
     })
   });
   ipcMain.on('app-close', (event, arg) => {

@@ -155,7 +155,7 @@ const mutations = {
     if(findNetId(newNetwork, workspace) || !newNetwork.networkID) {
       newNetwork.networkID = generateID();
     }
-    console.log(newNetwork);
+    //console.log(newNetwork);
     //-- Check and create the position
     createPositionElements(newNetwork.networkElementList);
     //-- Add to workspace

@@ -164,7 +164,7 @@
 </script>
 
 <style lang="scss">
-  @import "scss/common";
+  @import "scss/global";
   #app {
     height: 100vh;
     display: grid;

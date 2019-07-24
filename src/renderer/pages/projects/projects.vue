@@ -15,7 +15,7 @@
 </template>
 <script>
   import fs               from 'fs';
-  import {readLocalFile}  from '@/core/helpers.js'
+  import {fileLocalRead}  from '@/core/helpers.js'
   import {mapMutations, mapActions} from 'vuex';
 
   import basicTemplate1 from '@/core/basic-template/base-template-1.js'
@@ -26,12 +26,13 @@
       let localProjectsList = JSON.parse(localStorage.getItem('projectsList'));
       if(Array.isArray(localProjectsList)) {
         localProjectsList.forEach((el)=> {
-          this.readLocalFile(el.path[0])
+          fileLocalRead(el.path[0])
             .then(() => {})
             .catch((err)=> {
               el.notExist = true
             })
         });
+        console.log(localProjectsList);
         this.projects = localProjectsList;
       }
     },
@@ -100,7 +101,7 @@
         beginTutorial: 'mod_tutorials/START_storyboard',
         addNetwork: 'mod_workspace/ADD_network'
       }),
-      readLocalFile,
+      //fileLocalRead,
       openTemplate(path) {
         this.loadNetwork(path)
       },

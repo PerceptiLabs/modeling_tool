@@ -53,7 +53,7 @@
           dragged: null,
           outClassName: 'svg-arrow',
         },
-        resizeEv: this.throttleEv(this.eventResize)
+        resizeEv: throttleEv(this.eventResize)
       }
     },
     computed: {
@@ -89,7 +89,7 @@
         tutorialPointActivate:  'mod_tutorials/pointActivate',
         eventResize:            'mod_events/EVENT_eventResize'
       }),
-      throttleEv,
+      //throttleEv,
       addListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
       },

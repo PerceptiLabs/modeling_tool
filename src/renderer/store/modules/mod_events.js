@@ -1,5 +1,5 @@
 import {ipcRenderer} from 'electron'
-import {readLocalFile, openLoadDialog} from "../../core/helpers";
+import {fileLocalRead, openLoadDialog} from "../../core/helpers";
 
 const namespaced = true;
 
@@ -52,7 +52,7 @@ const actions = {
       projectsList = JSON.parse(localProjectsList);
       pathIndex = projectsList.findIndex((proj)=> proj.path[0] === pathArr[0]);
     }
-    return readLocalFile(pathArr[0])
+    return fileLocalRead(pathArr[0])
       .then((data) => {
         //validate JSON
         let net = {};
@@ -85,7 +85,7 @@ const actions = {
   },
   EVENT_openNetwork({dispatch}) {
     const opt = {
-      title:"Load Network",
+      title:"Load Model",
       filters: [
         {name: 'Text', extensions: ['json']},
       ]

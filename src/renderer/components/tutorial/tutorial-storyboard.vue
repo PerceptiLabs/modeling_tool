@@ -145,7 +145,7 @@ export default {
   }
 }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
   @import "../../scss/base";
   $distance-control-btn: -6rem;
   $popup-bg-gradient:linear-gradient(to top, #212328, #252931);
@@ -307,7 +307,7 @@ export default {
     background: $col-txt;
     margin-right: 1rem;
     border-radius: 50%;
-    position: relative;
+    //position: relative;
     top: 4.2rem;
     &:last-child {
       margin-right: 0;

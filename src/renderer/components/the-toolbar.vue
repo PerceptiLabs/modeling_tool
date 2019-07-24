@@ -6,7 +6,8 @@
 
     ul.toolbar_list
       li
-        router-link(:to="{name: 'projects'}").btn.btn--toolbar(type="button"
+        router-link.btn.btn--toolbar(
+          :to="{name: 'projects'}"
           v-tooltip:bottom="'Home page'"
         )
           i.icon.icon-home
