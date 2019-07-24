@@ -359,6 +359,8 @@ const mutations = {
     }
     depth = 0;
 
+    updateLayerName(newEl, elementList);
+
     if(!elementList) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
     state.dragElement = null;
@@ -520,6 +522,7 @@ const mutations = {
   add_container(state, {getters, commit, dispatch}) {
     let arrSelect = getters.GET_currentSelectedEl;
     let isValid = true;
+    let elementList = getters.GET_currentNetworkElementList;
     /* validations */
     if(arrSelect.length === 0) isValid = false;
     if(arrSelect.length === 1) {
@@ -540,10 +543,11 @@ const mutations = {
     //let net = getters.GET_currentNetworkElementList;
     let newContainer = createClearContainer(arrSelect);
 
+    updateLayerName(newContainer, elementList);
+
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
     commit('close_container', {container: newContainer, getters, dispatch});
     commit('set_elementUnselect', {getters});
-
 
     function createClearContainer(selectList) {
       let fakeEvent = {
@@ -874,6 +878,36 @@ export default {
   actions,
 }
 
+function updateLayerName(el, net){
+  let n = 1;
+  let existingNumbers = [];
+  for(let idEl in net) {
+    let netEl = net[idEl];        
+    const arrNetElementFullName = netEl.layerName.split('_');
+    let netElementName = arrNetElementFullName.slice(0, arrNetElementFullName.length).join('_');
+    if (arrNetElementFullName.length > 1) {
+      netElementName = arrNetElementFullName.slice(0, arrNetElementFullName.length-1).join('_');
+    }
+    if (arrNetElementFullName.length > 1){
+      let num = arrNetElementFullName.slice(-1)[0]*1;
+      if(Number.isInteger(num)){
+        if(netElementName === el.layerName){
+          existingNumbers.push(num);
+        }
+      }            
+    }     
+  }
+  existingNumbers.sort(function(a, b) {
+    return a - b;
+  });
+  for(let i = 0; i<existingNumbers.length; i++) {
+    if(n === existingNumbers[i]){
+      n++;
+    }
+  }          
+  el.layerName = el.layerName+'_'+n;
+}
+
 function currentElement(id) {
   return state.workspaceContent[state.currentNetwork].networkElementList[id];
 }
@@ -881,7 +915,6 @@ const createNetElement = function (event) {
   return {
     layerId: generateID(),
     layerName: event.target.dataset.layer,
-    defaultLayerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: event.layerSettings ? event.layerSettings : null,
     layerSettingsTabName: undefined,
