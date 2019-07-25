@@ -1,6 +1,7 @@
 <template lang="pug">
   net-base-settings(
     :tab-set="tabs"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
   )
     template(slot="Code-content")

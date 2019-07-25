@@ -547,7 +547,9 @@ export default {
       return result;
     },
     arrowMarkerStyle(arrow) {
-      return !arrow.l1.layerMeta.OutputDim ? 'url(#svg-arrow_triangle-empty)' : 'url(#svg-arrow_triangle)';
+      return (!arrow.l1.layerMeta.OutputDim || arrow.l1.layerCodeError)
+        ? 'url(#svg-arrow_triangle-empty)'
+        : 'url(#svg-arrow_triangle)';
     },
   }
 }
