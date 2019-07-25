@@ -3,10 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/helpers.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/helpers.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/projects/recent-files/_recent-files.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/projects/recent-files/_recent-files.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/projects/recent-files/recent-files.pug" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/projects/recent-files/recent-files.pug" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -287,7 +284,7 @@
       <workItem from="1563972750302" duration="11036000" />
       <workItem from="1563984225899" duration="4890000" />
       <workItem from="1564044184560" duration="65000" />
-      <workItem from="1564044306207" duration="5022000" />
+      <workItem from="1564044306207" duration="9438000" />
     </task>
     <servers />
   </component>
