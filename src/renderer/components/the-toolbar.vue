@@ -6,7 +6,7 @@
 
     ul.toolbar_list
       li
-        .btn.btn--toolbar(
+        button.btn.btn--toolbar(
           type="button"
           @click="toHomePage"
           v-tooltip:bottom="'Home page'"
