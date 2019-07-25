@@ -5,25 +5,21 @@
   )
     svg.svg-arrow(:style="styleSvgArrow")
       defs
-        template(
-          v-if="arrowsList.length"
-          v-for="(arrow, index) in arrowsList"
+        marker#svg-arrow_triangle(
+            refX="3" refY="2"
+            markerWidth="9"
+            markerHeight="9"
+            orient="auto"
           )
-          marker.svg-arrow_marker(id="svg-arrow_triangle" :class="arrowTriangleClass(arrow)")(
-            refX="3" refY="2"
-            markerWidth="9"
-            markerHeight="9"
-            orient="auto"
-            )
-            polyline(points="0,0 0,4 3.5,2")
-        marker#svg-arrow_triangle-temp(
-            refX="3" refY="2"
-            markerWidth="9"
-            markerHeight="9"
-            orient="auto"
-            )
           polyline(points="0,0 0,4 3.5,2")
-
+        marker#svg-arrow_triangle-empty(
+            refX="3" refY="2"
+            markerWidth="9"
+            markerHeight="9"
+            orient="auto"
+          )
+          polyline(points="0,0 0,4 3.5,2")
+          
           //-marker#svg-arrow_start.svg-arrow_marker(
             viewBox="0 0 28 16"
             refX="0" refY="7"
@@ -55,7 +51,7 @@
           :data-startid="arrow.l1.layerId"
           :data-stopid="arrow.l2.layerId"
           @focus="focusArrow($event)"
-          marker-end="url(#svg-arrow_triangle)"
+          :marker-end="arrowMarkerStyle(arrow)"
           :d="arrow.positionArrow.path.arrow"
           style="stroke: #22DDE5; strokeWidth: 3; fill: transparent"
           )
@@ -64,7 +60,7 @@
       //- pre arrow
       line.svg-arrow_line.arrow--hidden(
         v-if="preArrow.show"
-        marker-end="url(#svg-arrow_triangle-temp)"
+        marker-end="url(#svg-arrow_triangle)"
         :stroke-dasharray="(tutorialDottedArrow ? '7 6' : 'none')"
         :x1="preArrow.start.x"
         :y1="preArrow.start.y"
@@ -116,7 +112,11 @@
       fill: $col-primary;
       stroke-width: 0;
     }
-    marker#svg-arrow_triangle-temp {
+    marker#svg-arrow_triangle-empty {
+      fill: $col-warning;
+      stroke-width: 0;
+    }
+    marker#svg-arrow_triangle {
       fill: $col-primary;
       stroke-width: 0;
     }

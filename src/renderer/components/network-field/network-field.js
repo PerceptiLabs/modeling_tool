@@ -546,17 +546,8 @@ export default {
       }
       return result;
     },
-    arrowTriangleClass(arrow){
-      let result = [];
-      if (arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible) {
-        result.push('svg-arrow_marker_arrow--hidden');
-      }
-      if (!arrow.l1.layerMeta.OutputDim) {
-        result.push('svg-arrow_marker_line--empty');
-      }else{
-        result.push('svg-arrow_marker_multi-select');
-      }
-      return result;
-    }
+    arrowMarkerStyle(arrow) {
+      return !arrow.l1.layerMeta.OutputDim ? 'url(#svg-arrow_triangle-empty)' : 'url(#svg-arrow_triangle)';
+    },
   }
 }
