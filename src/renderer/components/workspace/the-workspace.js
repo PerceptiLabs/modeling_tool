@@ -231,9 +231,8 @@ export default {
         .then((path)=> {
           return fileLocalSave(path, stringNetwork)
         })
-        .then((t)=> {
-          console.log(t);
-          savePathToLocalStorage(JSON.parse(stringNetwork).project)
+        .then((filePath)=> {
+          savePathToLocalStorage(stringNetwork, filePath)
         })
         .catch((err)=> {
           console.log(err)
@@ -307,8 +306,9 @@ function doScreenShot(ctx) {
       });
   })
 }
-function savePathToLocalStorage(project, path) {
+function savePathToLocalStorage(stringProject, path) {
   let projectsList = JSON.parse(localStorage.getItem('projectsList'));
+  let project = JSON.parse(stringProject).project;
   project.path.push(path);
   if(projectsList) {
     let idIndex = projectsList.findIndex((proj)=> proj.id === project.id);

@@ -46,7 +46,6 @@ const fileLocalRead = function (path) {
   });
 };
 const fileLocalSave = function (fileName, fileContent) {
-  console.log('fileLocal_Save', fileName);
   return new Promise((success, reject) => {
     fs.writeFile(fileName, fileContent, (err, data) => {
       if(err) {
@@ -54,8 +53,8 @@ const fileLocalSave = function (fileName, fileContent) {
         return reject(err);
       }
       else {
-        store.dispatch('globalView/GP_errorPopup', 'The file has been successfully saved');
-        return success(data)
+        store.dispatch('globalView/GP_infoPopup', 'The file has been successfully saved');
+        return success(fileName)
       }
     });
   });

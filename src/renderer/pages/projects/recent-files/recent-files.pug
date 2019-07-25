@@ -33,6 +33,6 @@ ul.project-list.page-projects_project-list
 
           .project-content_img
             img(:src="project.image")
-      h3 {{project.name}}
-      p {{project.name}}
-      time.text-disable {{project.time}}
+      h3 {{ project.name }}
+      p {{ project.path[0] }}
+      time.text-disable {{ project.time }}
