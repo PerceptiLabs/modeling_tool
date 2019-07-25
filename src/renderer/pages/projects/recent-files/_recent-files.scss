@@ -31,7 +31,8 @@ $iconsGroupColor: #5c6680;
 
 .project-box {
   margin: $indentProjects;
-
+  width: 20rem;
+  word-wrap: break-word;
   &.add-new .project_content {
     display: flex;
   }
@@ -47,8 +48,8 @@ $iconsGroupColor: #5c6680;
 
 .project {
   position: relative;
-  width: 20rem;
   margin-bottom: 1rem;
+  width: 100%;
   background: $col-txt2;
   &:after {
     content: '';
