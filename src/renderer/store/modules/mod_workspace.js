@@ -359,7 +359,7 @@ const mutations = {
     }
     depth = 0;
 
-    updateLayerName(newEl, elementList);
+    updateLayerName(newEl, elementList, 1);
 
     if(!elementList) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
@@ -543,7 +543,7 @@ const mutations = {
     //let net = getters.GET_currentNetworkElementList;
     let newContainer = createClearContainer(arrSelect);
 
-    updateLayerName(newContainer, elementList);
+    updateLayerName(newContainer, elementList, 1);
 
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
     commit('close_container', {container: newContainer, getters, dispatch});
@@ -878,34 +878,22 @@ export default {
   actions,
 }
 
-function updateLayerName(el, net){
-  let n = 1;
-  let existingNumbers = [];
-  for(let idEl in net) {
-    let netEl = net[idEl];        
-    const arrNetElementFullName = netEl.layerName.split('_');
-    let netElementName = arrNetElementFullName.slice(0, arrNetElementFullName.length).join('_');
-    if (arrNetElementFullName.length > 1) {
-      netElementName = arrNetElementFullName.slice(0, arrNetElementFullName.length-1).join('_');
-    }
-    if (arrNetElementFullName.length > 1){
-      let num = arrNetElementFullName.slice(-1)[0]*1;
-      if(Number.isInteger(num)){
-        if(netElementName === el.layerName){
-          existingNumbers.push(num);
-        }
-      }            
-    }     
-  }
-  existingNumbers.sort(function(a, b) {
-    return a - b;
-  });
-  for(let i = 0; i<existingNumbers.length; i++) {
-    if(n === existingNumbers[i]){
+function updateLayerName(el, net, n){
+  const layerName = el.layerName;
+  if (net !== null) {
+    let netArr = Object.values(net);    
+    if (findValue(netArr, layerName+'_'+n).length) {
       n++;
+      updateLayerName(el, net, n);
+    } else {
+      el.layerName = layerName+'_'+n;
     }
-  }          
-  el.layerName = el.layerName+'_'+n;
+    function findValue(arr, value) {
+      return arr.filter(object => object.layerName.toLowerCase() === value.toLowerCase());
+    }   
+  }else{
+    el.layerName = layerName+'_'+n;
+  } 
 }
 
 function currentElement(id) {
