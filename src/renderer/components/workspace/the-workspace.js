@@ -26,6 +26,7 @@ export default {
   },
   data() {
     return {
+      trainingWasPaused: false
       //showTestingTab: false
     }
   },
@@ -95,6 +96,12 @@ export default {
       if(newStatus.Status === 'Training' && oldStatus.Status === 'Training' && this.showTrainingSpinner)  {
         this.set_showTrainingSpinner(false);
       }
+      else if(this.isTutorialMode && newStatus.Status === 'Training' && oldStatus.Status === 'Training' && !this.trainingWasPaused) {
+        this.set_showTrainingSpinner(false);
+        this.pauseTraining();
+        this.trainingWasPaused = true;
+      }
+
     },
     '$store.state.mod_events.saveNetwork': {
       handler() {
@@ -119,6 +126,7 @@ export default {
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
       infoPopup:                'globalView/GP_infoPopup',
+      pauseTraining:            'mod_api/API_pauseTraining'
     }),
     calcScaleMap() {
       this.$nextTick(()=> {

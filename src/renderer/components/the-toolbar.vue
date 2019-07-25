@@ -6,8 +6,9 @@
 
     ul.toolbar_list
       li
-        router-link.btn.btn--toolbar(
-          :to="{name: 'projects'}"
+        .btn.btn--toolbar(
+          type="button"
+          @click="toHomePage"
           v-tooltip:bottom="'Home page'"
         )
           i.icon.icon-home
@@ -170,8 +171,7 @@ export default {
           title: 'Tutorial',
           text: `Choose an interactive tutorial`
         }
-      },
-      trainingWasPaused: false
+      }
     }
   },
   computed: {
@@ -254,24 +254,18 @@ export default {
       if(!newVal) {
         this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
       }
-    },
-    statusTraining(newVal) {
-      if(this.isTutorialMode && newVal === 'training' && !this.trainingWasPaused) {
-        this.pauseTraining();
-        this.set_showTrainingSpinner(false);
-        this.trainingWasPaused = true;
-      }
     }
   },
   methods: {
     ...mapMutations({
       setInteractiveInfo:        'mod_tutorials/SET_interactiveInfo',
-      set_showTrainingSpinner:   'mod_workspace/SET_showStartTrainingSpinner'
+      set_showTrainingSpinner:   'mod_workspace/SET_showStartTrainingSpinner',
     }),
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
       removeTooltip:            'mod_tutorials/removeTooltip',
-      pauseTraining:            'mod_api/API_pauseTraining'
+      pauseTraining:            'mod_api/API_pauseTraining',
+      offMainTutorial:          'mod_tutorials/offTutorial',
     }),
     onOffBtn() {
       if(this.isTraining) this.trainStop();
@@ -339,6 +333,10 @@ export default {
     toggleInteractiveInfo() {
       this.removeTooltip();
       this.setInteractiveInfo(!this.interactiveInfoStatus);
+    },
+    toHomePage() {
+      this.offMainTutorial();
+      this.$router.push({name: 'projects'});
     }
   }
 }
