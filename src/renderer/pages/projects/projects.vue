@@ -32,7 +32,7 @@
               el.notExist = true
             })
         });
-        console.log(localProjectsList);
+        //console.log(localProjectsList);
         this.projects = localProjectsList;
       }
     },

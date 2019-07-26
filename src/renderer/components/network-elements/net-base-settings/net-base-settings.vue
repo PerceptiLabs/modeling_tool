@@ -110,8 +110,8 @@ export default {
     }
   }
   .settings-layer {
-    max-height: calc(100vh - 26rem);
-    overflow: auto;
+    /*max-height: calc(100vh - 26rem);*/
+    /*overflow: auto;*/
   }
   .popup_body--show-code {
     position: fixed;

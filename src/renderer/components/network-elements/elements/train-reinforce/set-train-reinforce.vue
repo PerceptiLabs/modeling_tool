@@ -52,7 +52,10 @@
           .form_input
             input(type="number" disabled="disabled")
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 
@@ -92,8 +95,10 @@ export default {
     }
   },
   computed: {
-    settingsCode() {
-      return `N_class=${this.settings.ReinforceType}[-1][-1];`
+    codeDefault() {
+      return {
+        Output: `N_class=${this.settings.ReinforceType}[-1][-1];`
+      }
     }
   }
 }
