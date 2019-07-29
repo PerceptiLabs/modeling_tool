@@ -513,7 +513,7 @@ const mutations = {
   set_elementOutputDim(state, {getters, value}) {
     for(let element in getters.GET_currentNetworkElementList) {
       currentElement(element).layerMeta.OutputDim = value[element].Dim;
-      if(value[element].Error) currentElement(element).layerCodeError = value[element].Error
+      currentElement(element).layerCodeError = value[element].Error
     }
   },
 

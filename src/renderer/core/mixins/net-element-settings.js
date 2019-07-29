@@ -19,7 +19,7 @@ const netElementSettings = {
     this.$store.dispatch('mod_api/API_getInputDim')
       .then(()=>{
         if(!this.currentEl.layerCode) this.updateCode();
-        else this.coreCode = this.currentEl.layerCode;
+        else this.coreCode = JSON.parse(JSON.stringify(this.currentEl.layerCode));
 
         if (this.currentEl.layerSettings) this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
       })
@@ -49,7 +49,7 @@ const netElementSettings = {
 
       const saveSettings = {
         'elId': this.currentEl.layerId,
-        'code': this.coreCode,
+        'code': JSON.parse(JSON.stringify(this.coreCode)),
         'set': this.settings,
         tabName
       };

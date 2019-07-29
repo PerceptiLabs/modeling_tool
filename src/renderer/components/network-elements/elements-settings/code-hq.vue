@@ -40,7 +40,7 @@
       name:         {type: String,   default: 'code-hq'},
       placeholder:  {type: String,   default: ''},
       merge:        {type: Boolean,  default: false },
-      // options:   {type: Object,   default: () => ({}) },
+      // options:   {type: Object,   default: () => ({})},
       events:       {type: Array,    default: () => ([])},
       globalOptions:{type: Object,   default: () => ({})},
       globalEvents: {type: Array,    default: () => ([])},
@@ -51,10 +51,11 @@
       this.initialize();
       this.$nextTick(() => {
         this.cminstance.refresh();
+
         if(this.errorRow) {
           this.cminstance.markText(
+            { line: this.errorRow - 1,  ch: 0 },
             { line: this.errorRow,      ch: 0 },
-            { line: this.errorRow + 1,  ch: 0},
             { className: "code-row_error" }
           );
         }
@@ -96,7 +97,6 @@
         this.handerCodeChange(newVal)
       },
       value(newVal) {
-        console.log(newVal);
         this.handerCodeChange(newVal)
       },
     },

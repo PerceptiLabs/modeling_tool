@@ -342,7 +342,7 @@ const actions = {
     //console.log('SEND getNetworkInputDim', theData);
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_getOutputDim', data);
+        //console.log('API_getOutputDim', data);
         if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
       })
       .catch((err)=> {

@@ -52,9 +52,6 @@ export default {
     const keys = Object.keys(code);
     this.currentTab = keys[0];
   },
-  mounted() {
-    console.log(this.currentTab);
-  },
   beforeDestroy() {
     this.closeFullView()
   },
