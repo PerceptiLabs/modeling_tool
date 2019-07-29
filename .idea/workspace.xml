@@ -3,7 +3,15 @@
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/dist/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/App.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/pages/register/register.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/register/register.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -22,12 +30,12 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="web-interactive-tutorial" />
+        <entry key="$PROJECT_DIR$" value="dev" />
       </map>
     </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="ProjectId" id="1OgEoKlXcFDXRNxCEqTtwlox4HU" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
@@ -37,24 +45,24 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editor.config.ad.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/core/mixins" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/core/plugins" />
     <property name="list.type.of.created.stylesheet" value="SCSS" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="G:\progects\quantumnet\node_modules\prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.HTML" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="G:\progects\quantumnet\src\renderer\core\mixins" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\sidebar" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\global-popups" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\different" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\base" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="G:\progects\quantumnet\src\renderer\components\different" />
       <recent name="G:\progects\quantumnet\src\renderer\assets" />
       <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\progects\quantumnet\src\renderer\core\plugins" />
+      <recent name="G:\progects\quantumnet\src\renderer\core\mixins" />
+      <recent name="G:\progects\quantumnet\src\renderer\components\sidebar" />
+      <recent name="G:\progects\quantumnet\src\renderer\components\global-popups" />
+      <recent name="G:\progects\quantumnet\src\renderer\components\different" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -301,7 +309,7 @@
       <workItem from="1563369061385" duration="13805000" />
       <workItem from="1563438959542" duration="10168000" />
       <workItem from="1563526929504" duration="6919000" />
-      <workItem from="1564391013832" duration="10303000" />
+      <workItem from="1564391013832" duration="23171000" />
     </task>
     <servers />
   </component>
@@ -367,9 +375,9 @@
     </option>
   </component>
   <component name="WindowStateProjectService">
-    <state width="261" height="798" key="Git.Branch.Popup" />
-    <state width="261" height="798" key="Git.Branch.Popup/1920.1080/1920.1080" />
-    <state width="261" height="798" key="Git.Branch.Popup@1920.1080@120dpi" />
+    <state width="265" height="802" key="Git.Branch.Popup" />
+    <state width="265" height="802" key="Git.Branch.Popup/1920.1080/1920.1080" />
+    <state width="265" height="802" key="Git.Branch.Popup@1920.1080@120dpi" />
   </component>
   <component name="masterDetails">
     <states>

@@ -1,9 +1,11 @@
+import store from '@/store'
 import { baseUrlCloud }  from '@/core/constants.js'
 
 
 const requestCloudApi = function (method, path, dataRequest) {
-  let headers = localStorage.getItem('userToken')
-    ? {'authorization': 'Bearer ' + localStorage.getItem('userToken')}
+  const userToken = store.state.globalView.userToken;
+  const headers = userToken.length
+    ? {'authorization': `Bearer ${userToken}`}
     : '';
 
   return this.$http({

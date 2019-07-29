@@ -63,16 +63,23 @@
         .form_holder
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading || !terms") Register
         .form_holder
-          router-link(:to="{name: 'login'}").btn.btn--link Already Have Account
-    policy(:isShow="isShowPolicy" @backToRegister="toRegister" v-else)
+          router-link.btn.btn--link(:to="{name: 'login'}") Already Have Account
+
+    policy(
+      v-else
+      :isShow="isShowPolicy"
+      @backToRegister="toRegister"
+      )
 
 </template>
 
 <script>
   import {requestCloudApi}  from '@/core/apiCloud.js'
   import { baseUrlSite }    from '@/core/constants.js'
+
   import ViewLoading        from '@/components/different/view-loading.vue'
-  import Policy from '@/pages/register/policy.vue'
+  import Policy             from '@/pages/register/policy.vue'
+
 export default {
   name: 'PageRegister',
   components: {
@@ -116,6 +123,7 @@ export default {
     },
     registryUser() {
       this.$store.commit('mod_login/SET_showLoader', true);
+
       this.requestCloudApi('post', 'Customer/CreateGuest', this.user)
         .then((response)=>{
           this.$store.dispatch('globalView/GP_infoPopup', 'A confirmation email has been sent to your email. Follow the link to complete the registration.');
@@ -133,7 +141,7 @@ export default {
     },
     toRegister() {
       this.isShowPolicy = false;
-    }
+    },
   }
 }
 </script>
