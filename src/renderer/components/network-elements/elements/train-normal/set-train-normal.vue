@@ -1,7 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :layer-code="currentEl.layerCode"
-    :first-tab="currentEl.layerSettingsTabName"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
   )
@@ -69,7 +68,10 @@
             input(type="number" v-model="settings.Learning_rate")
 
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 
@@ -204,7 +206,7 @@ f1=tf.contrib.metrics.f1_score(X['${this.settings.Labels}'],X['${this.notLabelsI
 auc=tf.metrics.auc(labels=X['${this.settings.Labels}'],predictions=X['${this.notLabelsInput}'],curve='ROC')[0];`
       return accuracy
     },
-    settingsCode() {
+    codeDefault() {
       return {
         "Loss": this.codeLoss,
         "Optimizer": this.codeOptimizer,

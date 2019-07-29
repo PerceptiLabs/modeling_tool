@@ -1,7 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :layer-code="currentEl.layerCode.length"
-    :first-tab="currentEl.layerSettingsTabName"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
   )
@@ -34,7 +33,10 @@
             input(type="number" v-model="settings.Time_steps")
 
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 
@@ -68,26 +70,30 @@ export default {
     }
   },
   computed: {
-    settingsCode() {
+    codeDefault() {
+      let versionCode;
       switch (this.settings.Version) {
         case 'LSTM':
-          return `node=tf.reshape(X,[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
+          versionCode = `node=tf.reshape(X,[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
 cell = tf.nn.rnn_cell.LSTMCell(${this.settings.Neurons}, state_is_tuple=True);
 rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
 Y=tf.reshape(rnn_outputs,[-1,cell.output_size]);`
           break;
         case 'GRU':
-          return `node=tf.reshape(X,[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
+          versionCode = `node=tf.reshape(X,[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
 cell = tf.nn.rnn_cell.GRUCell(${this.settings.Neurons});
 rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
 Y=tf.reshape(rnn_outputs,[-1,cell.output_size]);`
           break;
         case 'RNN':
-          return `node=tf.reshape(X,[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
+          versionCode = `node=tf.reshape(X,[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
 cell = tf.nn.rnn_cell.BasicRNNCell(${this.settings.Neurons});
 rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
 Y=tf.reshape(rnn_outputs,[-1,cell.output_size]);`
           break;
+      }
+      return {
+        Output: versionCode
       }
     }
   }

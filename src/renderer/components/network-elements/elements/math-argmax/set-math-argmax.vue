@@ -1,7 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :layer-code="currentEl.layerCode.length"
-    :first-tab="currentEl.layerSettingsTabName"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
   )
@@ -12,7 +11,10 @@
           .form_input
             input(type="text" v-model="settings.Dim")
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 
@@ -38,8 +40,10 @@ export default {
     }
   },
   computed: {
-    settingsCode() {
-      return `Y=tf.argmax(X,${this.settings.Dim});`
+    codeDefault() {
+      return {
+        Output: `Y=tf.argmax(X,${this.settings.Dim});`
+      }
     }
   }
 }

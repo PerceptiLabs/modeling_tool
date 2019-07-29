@@ -3,7 +3,7 @@
 process.env.NODE_ENV = 'production'
 console.log(process.env.BUILD_TARGET);
 
-const { say } = require('cfonts')
+//const { say } = require('cfonts')
 const chalk = require('chalk')
 const del = require('del')
 const { spawn } = require('child_process')
@@ -123,11 +123,12 @@ function greeting () {
   else text = false
 
   if (text && !isCI) {
-    say(text, {
-      colors: ['yellow'],
-      font: 'simple3d',
-      space: false
-    })
+    console.log(text)
+    // say(text, {
+    //   colors: ['yellow'],
+    //   font: 'simple3d',
+    //   space: false
+    // })
   } else console.log(chalk.yellow.bold('\n  lets-build'))
   console.log()
 }

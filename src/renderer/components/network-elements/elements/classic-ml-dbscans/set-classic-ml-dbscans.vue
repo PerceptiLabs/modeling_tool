@@ -1,7 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :layer-code="currentEl.layerCode.length"
-    :first-tab="currentEl.layerSettingsTabName"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
   )
@@ -36,7 +35,10 @@
               input(type="text")
 
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 

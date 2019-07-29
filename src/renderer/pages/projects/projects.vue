@@ -14,10 +14,11 @@
 
 </template>
 <script>
-  import fs             from 'fs';
-  import {loadNetwork, readLocalFile}  from '@/core/helpers.js'
+  import fs               from 'fs';
+  import {fileLocalRead}  from '@/core/helpers.js'
+  import {mapMutations, mapActions} from 'vuex';
+
   import basicTemplate1 from '@/core/basic-template/base-template-1.js'
-  import {mapMutations} from 'vuex';
 
   export default {
     name: 'PageProjects',
@@ -25,12 +26,13 @@
       let localProjectsList = JSON.parse(localStorage.getItem('projectsList'));
       if(Array.isArray(localProjectsList)) {
         localProjectsList.forEach((el)=> {
-          this.readLocalFile(el.path[0])
+          fileLocalRead(el.path[0])
             .then(() => {})
             .catch((err)=> {
               el.notExist = true
             })
         });
+        //console.log(localProjectsList);
         this.projects = localProjectsList;
       }
     },
@@ -76,7 +78,7 @@
     },
     watch: {
       hotKeyPressDelete() {
-        console.log('hotKeyPressDelete');
+        //console.log('hotKeyPressDelete');
         let indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
         if(indexCheckedProj >= 0) {
           let pathDelete = this.projects[indexCheckedProj].path[0];
@@ -92,31 +94,30 @@
       ...mapMutations({
         setTutorialMode:        'mod_tutorials/SET_isTutorialMode',
         setTutorialStoryBoard:  'mod_tutorials/SET_showTutorialStoryBoard',
-        openNetwork:            'mod_events/set_openNetwork'
       }),
-      loadNetwork,
-      readLocalFile,
-      addNewProject() {
-        this.$store.dispatch('mod_workspace/ADD_network', {'ctx': this});
-      },
+      ...mapActions({
+        openNetwork: 'mod_events/EVENT_openNetwork',
+        loadNetwork: 'mod_events/EVENT_loadNetwork',
+        beginTutorial: 'mod_tutorials/START_storyboard',
+        addNetwork: 'mod_workspace/ADD_network'
+      }),
+      //fileLocalRead,
       openTemplate(path) {
         this.loadNetwork(path)
-          .then(() => {})
-          .catch((err)=> console.log(err))
       },
       selectTemplate(selectEl) {
         this.projects.forEach((el)=> el.isChecked = false);
         selectEl.isChecked = true
       },
+      addNewProject() {
+        this.addNetwork()
+      },
       openBasicTemplate(net) {
-        this.$store.dispatch('mod_workspace/ADD_network', {'network': net.network, 'ctx': this});
+        this.addNetwork(net.network)
       },
       goNextPage() {
         this.$router.push({name: 'app'});
       },
-      beginTutorial() {
-        this.$store.dispatch('mod_tutorials/START_storyboard');
-      }
     }
   }
 </script>

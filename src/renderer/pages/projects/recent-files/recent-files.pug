@@ -1,5 +1,5 @@
 .page-projects_title
-  h2 Recent files
+  h2 Recent models
     span.title-box_projectscount ({{projects.length}})
   .filter-recent-files
     .i.icon.icon-filter 
@@ -33,5 +33,6 @@ ul.project-list.page-projects_project-list
 
           .project-content_img
             img(:src="project.image")
-      h3 {{project.name}}
-      time.text-disable {{project.time}}
+      h3 {{ project.name }}
+      p {{ project.path[0] }}
+      time.text-disable {{ project.time }}

@@ -1,6 +1,7 @@
 <template lang="pug">
   net-base-settings(
     :tab-set="tabs"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
   )
     template(slot="Computer-content")
@@ -118,8 +119,8 @@
       ...mapActions({
         tutorialPointActivate: 'mod_tutorials/pointActivate',
       }),
-      openLoadDialog,
-      loadPathFolder,
+      //openLoadDialog,
+      //loadPathFolder,
       loadFile() {
         let optionBasic = {
           title:"Load file or files",
@@ -139,13 +140,13 @@
           ]
         };
         let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
-        this.openLoadDialog(optionDialog)
+        openLoadDialog(optionDialog)
           .then((pathArr)=> this.saveLoadFile(pathArr))
           .catch(()=> {
           })
       },
       loadFolder() {
-        this.loadPathFolder()
+        loadPathFolder()
           .then((pathArr)=> this.saveLoadFile(pathArr))
           .catch(()=> {
           })

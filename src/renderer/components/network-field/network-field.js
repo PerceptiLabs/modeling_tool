@@ -109,7 +109,7 @@ export default {
         width: this.svgWidth,
         height: this.svgHeight,
       }
-    },
+    },    
   },
   watch: {
     statisticsIsOpen() {
@@ -541,10 +541,15 @@ export default {
       if (arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible) {
         result.push('arrow--hidden');
       }
-      if (!arrow.l1.layerMeta.OutputDim) {
+      if (!arrow.l1.layerMeta.OutputDim || arrow.l1.layerCodeError) {
         result.push('svg-arrow_line--empty');
       }
       return result;
-    }
+    },
+    arrowMarkerStyle(arrow) {
+      return (!arrow.l1.layerMeta.OutputDim || arrow.l1.layerCodeError)
+        ? 'url(#svg-arrow_triangle-empty)'
+        : 'url(#svg-arrow_triangle)';
+    },
   }
 }

@@ -3,7 +3,7 @@
 * this.ClickElementTracking = ev.target.closest('.js-clickout');
   document.addEventListener('click', this.clickOutside);
 * */
-import store from '../../store'
+
 const mousedownOutside = {
   data() {
     return {

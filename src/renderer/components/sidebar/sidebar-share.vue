@@ -1,18 +1,34 @@
 <template lang="pug">
   section.sidebar_share.sidebar_content-padding--small
     .sidebar-share_icon.big-text
-      i.icon.icon-user
-      span Users
-    .sidebar-share_btn
+      //i.icon.icon-user
+      //span Users
+    //.sidebar-share_btn
       button.btn.btn--primary(type="button"  disabled="disabled") Share
+    .sidebar-share_bug-report-btn
+      button.btn.btn--primary(type="button" @click="goToReport")
+        span Report
+        i.icon.icon-bug-report
 
 
 </template>
 
 <script>
-export default {
-  name: 'SidebarShare',
-}
+  import { goToLink }    from '@/core/helpers.js'
+
+  export default {
+    name: 'SidebarShare',
+    data() {
+      return {
+        reportLink: 'https://gitter.im/PerceptiLabs/PerceptiLabs?utm_source=share-link&utm_medium=link&utm_campaign=share-link'
+      }
+    },
+    methods: {
+      goToReport() {
+        goToLink(this.reportLink)
+      }
+    }
+  }
 </script>
 
 <style lang="scss" scoped>
@@ -29,6 +45,12 @@ export default {
   .sidebar-share_icon {
     .icon {
       margin-right: .3rem;
+    }
+  }
+  .sidebar-share_bug-report-btn{
+    font-weight: bold;
+    .icon {
+      font-size: 1.3rem;
     }
   }
 

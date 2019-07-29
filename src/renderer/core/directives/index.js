@@ -1,5 +1,5 @@
 import Vue from 'vue'
-import store from '../../store'
+import store from '@/store'
 
 
 Vue.directive('tooltip', {
@@ -82,27 +82,29 @@ function removeTooltipInfo() {
 function sideCalculate(element, tooltip, side) {
   let elCoord = element.getBoundingClientRect();
   let tooltipArrow = 10;
-  let zoom = store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+  let isDraggable = event.currentTarget.getAttribute('draggable');
+  let zoom = isDraggable !== 'false' ? 1 : store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+
   switch (side.arg) {
     case 'right':
-      tooltip.style.top = (elCoord.top + elCoord.height / 2) +'px';
-      tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow)+ 'px';
+      tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom +'px';
+      tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
       break;
     case 'left':
-      tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';
-      tooltip.style.left = elCoord.left - tooltipArrow + 'px';
+      tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom +'px';
+      tooltip.style.left = (elCoord.left - tooltipArrow) * zoom + 'px';
       break;
     case 'top':
-      tooltip.style.top = elCoord.top - tooltipArrow +'px';
-      tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
+      tooltip.style.top = (elCoord.top - tooltipArrow) * zoom +'px';
+      tooltip.style.left = (elCoord.left + elCoord.width / 2) * zoom + 'px';
       break;
     case 'bottom':
-      tooltip.style.top = elCoord.top + elCoord.height + tooltipArrow +'px';
-      tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
+      tooltip.style.top = (elCoord.top + elCoord.height + tooltipArrow) * zoom +'px';
+      tooltip.style.left = (elCoord.left + elCoord.width / 2) * zoom + 'px';
       break;
     case 'bottom-right':
-      tooltip.style.top = elCoord.top + elCoord.height + tooltipArrow +'px';
-      tooltip.style.left = elCoord.left - tooltipArrow + 'px';
+      tooltip.style.top = (elCoord.top + elCoord.height + tooltipArrow) * zoom +'px';
+      tooltip.style.left = (elCoord.left - tooltipArrow) * zoom + 'px';
       break;
   }
 }

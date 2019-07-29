@@ -31,10 +31,13 @@ const netElementSettings = {
     codeInputDim() {
       return this.currentEl.layerMeta.InputDim
     },
+    // codeDefault
+    // codeSettings
+
   },
   methods: {
     updateCode() {
-      this.coreCode = this.settingsCode
+      this.coreCode = this.codeDefault
     },
     saveSettings(tabName) {
       this.applySettings(tabName);
@@ -50,7 +53,7 @@ const netElementSettings = {
         'set': this.settings,
         tabName
       };
-      this.$store.dispatch('mod_workspace/SET_elementSettings', saveSettings);
+      this.$store.dispatch('mod_workspace/SET_elementSettings', JSON.parse(JSON.stringify(saveSettings)));
       this.$store.dispatch('mod_api/API_getOutputDim');
       this.hideAllWindow();
     }

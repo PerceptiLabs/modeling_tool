@@ -1,7 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :layer-code="currentEl.layerCode.length"
-    :first-tab="currentEl.layerSettingsTabName"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
   )
@@ -58,7 +57,10 @@
             base-radio(group-name="group5" :value-input="true"  v-model="settings.Dropout")
               span Sigmoid
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 
@@ -107,7 +109,7 @@ export default {
     }
   },
   computed: {
-    settingsCode() {
+    codeDefault() {
       let dim = '';
       let activeFunc = '';
       let pooling = '';
@@ -169,7 +171,9 @@ node=node+b;`;
           pooling = `Y=tf.nn.pool(Y, window_shape=${this.settings.Pool_area},pooling_type='AVG',${this.settings.Padding},strides=${this.settings.Stride});`
         }
       }
-      return `${dim}\n${activeFunc}\n${pooling}`
+      return {
+        Output: `${dim}\n${activeFunc}\n${pooling}`
+      }
     }
   }
 }

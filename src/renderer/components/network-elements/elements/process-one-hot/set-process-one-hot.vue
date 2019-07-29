@@ -1,7 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :layer-code="currentEl.layerCode.length"
-    :first-tab="currentEl.layerSettingsTabName"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
   )
@@ -13,7 +12,10 @@
             input(type="text" v-model="settings.N_class")
 
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 
@@ -49,8 +51,10 @@ export default {
     ...mapGetters({
       isTutorialMode: 'mod_tutorials/getIstutorialMode'
     }),
-    settingsCode() {
-      return `Y=tf.one_hot(tf.cast(X,dtype=tf.int32),${this.settings.N_class});`
+    codeDefault() {
+      return {
+        Output: `Y=tf.one_hot(tf.cast(X,dtype=tf.int32),${this.settings.N_class});`
+      }
     }
   },
   methods: {

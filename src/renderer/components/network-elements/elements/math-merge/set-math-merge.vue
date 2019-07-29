@@ -1,7 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :layer-code="currentEl.layerCode.length"
-    :first-tab="currentEl.layerSettingsTabName"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
   )
@@ -30,7 +29,10 @@
               base-radio(group-name="group" value-input="Div" v-model="settings.Type")
                 span Division
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+        )
 
 </template>
 
@@ -55,38 +57,42 @@ export default {
     }
   },
   computed: {
-    settingsCode() {
+    codeDefault() {
+      let typeCode;
       switch (this.settings.Type) {
         case 'Add':
-          return `for i in range(0,len(list(X.values())),2):
+          typeCode = `for i in range(0,len(list(X.values())),2):
 if not Y:
    Y=list(X.values())[i]
 Y=tf. add(list(X.values())[i],Y);`
           break;
         case 'Sub':
-          return `for i in range(0,len(list(X.values())),2):
+          typeCode = `for i in range(0,len(list(X.values())),2):
 if not Y:
    Y=list(X.values())[i]
 Y=tf. subtract(list(X.values())[i],Y);`
           break;
         case 'Multi':
-          return `for i in range(0,len(list(X.values())),2):
+          typeCode = `for i in range(0,len(list(X.values())),2):
 if not Y:
    Y=list(X.values())[i]
 Y=tf.multiply(list(X.values())[i],Y);`
           break;
         case 'Div':
-          return `for i in range(0,len(list(X.values())),2):
+          typeCode = `for i in range(0,len(list(X.values())),2):
 if not Y:
    Y=list(X.values())[i]
 Y=tf.divide(list(X.values())[i],Y);`
           break;
         case 'Concat':
-          return `for c in range(0,len(list(X.values())),2):
+          typeCode = `for c in range(0,len(list(X.values())),2):
 if not Y:
    Y=c
 Y=tf.concat([Y, list(X.values())[c]],${this.settings.Merge_dim});`
           break;
+      }
+      return {
+        Output: typeCode
       }
     }
   }

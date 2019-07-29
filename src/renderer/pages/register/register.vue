@@ -3,10 +3,10 @@
     .login_logo
       img(src="./../../../../static/img/percepti-labs-logo.svg" alt="percepti labs logo")
     view-loading
-    .login_main
+    .login_main(v-if="!isShowPolicy")
       h1 Get Started
       h3 Register in 1 minute
-      form.login_form
+      form.login_form(@keyup.enter="validateForm")
         .form_holder
           input(type="text" placeholder="First Name"
             v-model="user.firstName"
@@ -43,6 +43,7 @@
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
         .form_holder
           input(type="password" placeholder="Confirm password"
+            v-model="user.confirmPassword"
             name="Confirm password"
             v-validate="'required|confirmed:userPass'"
             data-vv-as="Password"
@@ -56,26 +57,26 @@
             v-model="terms"
           )
             span Agree
-            button.btn.btn--link.policy-btn(@click="goToPolicyPage") terms and policy
+            button.btn.btn--link.policy-btn(@click="toPolicy" type="button") terms and policy
           p.text-error(v-show="errors.has('terms')") {{ errors.first('terms') }}
 
         .form_holder
           button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading || !terms") Register
         .form_holder
           router-link(:to="{name: 'login'}").btn.btn--link Already Have Account
+    policy(:isShow="isShowPolicy" @backToRegister="toRegister" v-else)
+
 </template>
 
 <script>
   import {requestCloudApi}  from '@/core/apiCloud.js'
+  import { baseUrlSite }    from '@/core/constants.js'
   import ViewLoading        from '@/components/different/view-loading.vue'
+  import Policy from '@/pages/register/policy.vue'
 export default {
   name: 'PageRegister',
   components: {
-    ViewLoading
-  },
-  mounted() {
-    let preRegistrationData = JSON.parse(localStorage.getItem('registrationData'));
-    if(preRegistrationData) this.user = preRegistrationData
+    ViewLoading, Policy
   },
   data() {
     return {
@@ -85,9 +86,11 @@ export default {
         email: '',
         phone: '+00 (000) 000-00-00',
         password: '',
-        isLoading: false
+        callbackUrl: baseUrlSite,
+        confirmPassword:'',
       },
-      terms: true
+      terms: true,
+      isShowPolicy: false
     }
   },
   computed: {
@@ -117,7 +120,6 @@ export default {
         .then((response)=>{
           this.$store.dispatch('globalView/GP_infoPopup', 'A confirmation email has been sent to your email. Follow the link to complete the registration.');
           this.$router.replace('/login');
-          localStorage.removeItem('registrationData')
         })
         .catch((error)=>{
           this.$store.dispatch('globalView/GP_infoPopup', error);
@@ -126,9 +128,11 @@ export default {
           this.$store.commit('mod_login/SET_showLoader', false);
         });
     },
-    goToPolicyPage() {
-      localStorage.setItem('registrationData', JSON.stringify(this.user));
-      this.$router.push({name: 'policy'});
+    toPolicy() {
+      this.isShowPolicy = true;
+    },
+    toRegister() {
+      this.isShowPolicy = false;
     }
   }
 }

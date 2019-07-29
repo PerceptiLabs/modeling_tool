@@ -1,4 +1,4 @@
-import store from '../../store'
+
 /*
   ADD TO EVENT
 * this.ClickElementTracking = ev.target.closest('.js-clickout');

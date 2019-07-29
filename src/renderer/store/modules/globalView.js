@@ -19,7 +19,8 @@ const state = {
     showInfoPopup: false,
     showErrorPopup: false,
     showWorkspaceBeforeImport: false,
-  }
+  },
+  restoreDownIcon: false
 };
 const getters = {
   GET_appPath(state) {
@@ -52,7 +53,9 @@ const mutations = {
   SET_appPath (state, value) {
     state.appPath = value
   },
-
+  SET_restoreDownIcon(state, value) {
+    state.restoreDownIcon = value
+  },
   set_timeIntervalDoRequest (state, value) {
     state.timeIntervalDoRequest = value
   },

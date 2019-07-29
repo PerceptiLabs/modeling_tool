@@ -52,7 +52,7 @@ export default {
     iconColor() {
       return this.applyColor
         ? {'color': this.layerColor.hex}
-        : null
+        : ''
     },
     layerItemColor() {
       let className = '';

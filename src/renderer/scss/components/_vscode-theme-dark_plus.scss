@@ -9,10 +9,31 @@ $theme-builtin: #DCDCAA;
 $theme-string: #CE9178;
 $theme-number: #B5CEA8;
 
+
+$mainbg: #1E1E1E;
+$bg2: #303030;
+$bg3: #424242;
+$bg4: #a1a1a1;
+$fg3: #b2b2b2;
+$fg2: #c3c3c3;
+$mainfg: #d4d4d4;
+
+$comment: #608B4E;
+$builtin: #569CD6;
+$keyword: #C586C0;
+$type: #4EC9B0;
+$const: #9CDCFE;
+$func: #DCDCAA;
+$string: #CE9178;
+$var: #9CDCFE;
+$warning: #F44747;
+$warning2: #D16969;
+
+
 .cm-s-monokai {
   &.CodeMirror {
-    background: $theme-bg;
-    color: $theme-color;
+    background: $mainbg;
+    color: $mainfg;
   }
   div.CodeMirror-selected {
     background: #49483E;
@@ -30,7 +51,7 @@ $theme-number: #B5CEA8;
   }
 
   .CodeMirror-gutters {
-    background: #272822;
+    background: $mainbg;
     border-right: 0;
   }
 
@@ -51,7 +72,7 @@ $theme-number: #B5CEA8;
   }
 
   span.cm-comment {
-    color: $theme-comment;
+    color: $comment;
   }
 
   span.cm-atom {
@@ -59,7 +80,7 @@ $theme-number: #B5CEA8;
   }
 
   span.cm-number {
-    color: $theme-number;
+    color: $type;
   }
 
   span.cm-comment.cm-attribute {
@@ -84,9 +105,9 @@ $theme-number: #B5CEA8;
   }
 
   span.cm-keyword {
-    color: $theme-keyword;
+    color: $keyword;
     + .cm-variable {
-      color: $theme-variable;
+      color: $var;
     }
     ~ .cm-keyword {
       color: $theme-keyword2;
@@ -97,11 +118,11 @@ $theme-number: #B5CEA8;
   }
 
   span.cm-builtin {
-    color: $theme-builtin;
+    color: $builtin;
   }
 
   span.cm-string {
-    color: $theme-string;
+    color: $string;
   }
 
   span.cm-variable {
@@ -140,6 +161,7 @@ $theme-number: #B5CEA8;
   span.cm-error {
     background: #f92672;
     color: #f8f8f0;
+    border: 1px solid $col-warning;
   }
 
   .CodeMirror-activeline-background {
@@ -149,5 +171,14 @@ $theme-number: #B5CEA8;
   .CodeMirror-matchingbracket {
     text-decoration: underline;
     color: white !important;
+  }
+  .CodeMirror-merge-r-chunk-start {
+    border: 1px solid $col-warning;
+  }
+  .CodeMirror-merge-r-chunk {
+    background: rgba($col-warning, .5);
+  }
+  .CodeMirror-merge-r-chunk-end {
+    border-bottom: 1px solid $col-warning;
   }
 }

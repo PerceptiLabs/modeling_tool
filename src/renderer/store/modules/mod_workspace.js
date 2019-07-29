@@ -1,6 +1,7 @@
 import { generateID, calcLayerPosition }  from "@/core/helpers.js";
 import { widthElement } from '@/core/constants.js'
-import Vue from 'vue'
+import Vue    from 'vue'
+import router from '@/router'
 
 const namespaced = true;
 
@@ -115,8 +116,9 @@ const mutations = {
   set_networkName(state, {getters, value}) {
     getters.GET_currentNetwork.networkName = value
   },
-  add_network (state, {network, ctx}) {
+  add_network (state, network) {
     //console.log(JSON.stringify(network));
+    //console.log('add_network', network);
     let workspace = state.workspaceContent;
     let newNetwork = {};
     //-- DEFAULT DATA
@@ -153,6 +155,7 @@ const mutations = {
     if(findNetId(newNetwork, workspace) || !newNetwork.networkID) {
       newNetwork.networkID = generateID();
     }
+    //console.log(newNetwork);
     //-- Check and create the position
     createPositionElements(newNetwork.networkElementList);
     //-- Add to workspace
@@ -160,8 +163,8 @@ const mutations = {
     //-- Open last Network
     state.currentNetwork = workspace.length - 1;
     //-- Go to app page
-    if(ctx.$router.history.current.name !== 'app') {
-      ctx.$router.replace({name: 'app'});
+    if(router.history.current.name !== 'app') {
+      router.replace({name: 'app'});
     }
     function findNetId(newNet, netList) {
       let indexId = netList.findIndex((el)=> el.networkID === newNet.networkID);
@@ -356,6 +359,8 @@ const mutations = {
     }
     depth = 0;
 
+    updateLayerName(newEl, elementList, 1);
+
     if(!elementList) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
     state.dragElement = null;
@@ -507,7 +512,8 @@ const mutations = {
   },
   set_elementOutputDim(state, {getters, value}) {
     for(let element in getters.GET_currentNetworkElementList) {
-      currentElement(element).layerMeta.OutputDim = value[element]
+      currentElement(element).layerMeta.OutputDim = value[element].Dim;
+      if(value[element].Error) currentElement(element).layerCodeError = value[element].Error
     }
   },
 
@@ -517,6 +523,7 @@ const mutations = {
   add_container(state, {getters, commit, dispatch}) {
     let arrSelect = getters.GET_currentSelectedEl;
     let isValid = true;
+    let elementList = getters.GET_currentNetworkElementList;
     /* validations */
     if(arrSelect.length === 0) isValid = false;
     if(arrSelect.length === 1) {
@@ -537,10 +544,11 @@ const mutations = {
     //let net = getters.GET_currentNetworkElementList;
     let newContainer = createClearContainer(arrSelect);
 
+    updateLayerName(newContainer, elementList, 1);
+
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
     commit('close_container', {container: newContainer, getters, dispatch});
     commit('set_elementUnselect', {getters});
-
 
     function createClearContainer(selectList) {
       let fakeEvent = {
@@ -572,7 +580,6 @@ const mutations = {
       network[idEl].layerNone = true;
     }
     network[container.layerId].layerNone = false;
-    console.log(network);
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
 
     function calcContainer(container, net) {
@@ -721,8 +728,8 @@ const actions = {
   //---------------
   //  NETWORK
   //---------------
-  ADD_network({commit, dispatch}, {network, ctx}) {
-    commit('add_network', {network, ctx})
+  ADD_network({commit, dispatch}, network) {
+    commit('add_network', network)
   },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
@@ -872,6 +879,24 @@ export default {
   actions,
 }
 
+function updateLayerName(el, net, n){
+  const layerName = el.layerName;
+  if (net !== null) {
+    let netArr = Object.values(net);    
+    if (findValue(netArr, layerName+'_'+n).length) {
+      n++;
+      updateLayerName(el, net, n);
+    } else {
+      el.layerName = layerName+'_'+n;
+    }
+    function findValue(arr, value) {
+      return arr.filter(object => object.layerName.toLowerCase() === value.toLowerCase());
+    }   
+  }else{
+    el.layerName = layerName+'_'+n;
+  } 
+}
+
 function currentElement(id) {
   return state.workspaceContent[state.currentNetwork].networkElementList[id];
 }
@@ -883,6 +908,7 @@ const createNetElement = function (event) {
     layerSettings: event.layerSettings ? event.layerSettings : null,
     layerSettingsTabName: undefined,
     layerCode: '',
+    layerCodeError: null,
     layerNone: false,
     layerMeta: {
       isInvisible: false,

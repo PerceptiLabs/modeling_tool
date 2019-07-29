@@ -1,10 +1,10 @@
 import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
-const {dialog, BrowserWindow} =   require('electron').remote;
-import fs           from 'fs';
+//const {dialog, } =   require('electron').remote;
+//import fs           from 'fs';
 import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 
-import { generateID }  from "@/core/helpers.js";
+import { openSaveDialog, fileLocalSave, generateID }  from "@/core/helpers.js";
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -26,6 +26,7 @@ export default {
   },
   data() {
     return {
+      trainingWasPaused: false
       //showTestingTab: false
     }
   },
@@ -59,39 +60,15 @@ export default {
         this.$store.dispatch('mod_workspace/SET_statusNetworkZoom', newValue/100);
       }
     },
-    // workspace() {
-    //   return this.$store.state.mod_workspace.workspaceContent
-    // },
-    // indexCurrentNetwork() {
-    //   return this.$store.state.mod_workspace.currentNetwork
-    // },
-    // hideSidebar() {
-    //   return this.$store.state.globalView.hideSidebar
-    // },
-    // showGlobalSet() {
-    //   return this.$store.state.globalView.globalPopup.showNetSettings
-    // },
-    // showGlobalResult() {
-    //   return this.$store.state.globalView.globalPopup.showNetResult
-    // },
-    // showWorkspaceBeforeImport() {
-    //   return this.$store.state.globalView.globalPopup.showWorkspaceBeforeImport
-    // },
     hasStatistics() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkStatistics;
     },
-    // showCoreSide() {
-    //   return this.$store.state.globalView.globalPopup.showCoreSideSettings
-    // },
     networkMode() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     coreStatus() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus
     },
-    // statisticsElSelected() {
-    //   return this.$store.state.mod_statistics.selectedElArr
-    // },
     currentNet() {
       this.scale = this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
@@ -119,6 +96,12 @@ export default {
       if(newStatus.Status === 'Training' && oldStatus.Status === 'Training' && this.showTrainingSpinner)  {
         this.set_showTrainingSpinner(false);
       }
+      else if(this.isTutorialMode && newStatus.Status === 'Training' && oldStatus.Status === 'Training' && !this.trainingWasPaused) {
+        this.set_showTrainingSpinner(false);
+        this.pauseTraining();
+        this.trainingWasPaused = true;
+      }
+
     },
     '$store.state.mod_events.saveNetwork': {
       handler() {
@@ -143,6 +126,7 @@ export default {
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
       infoPopup:                'globalView/GP_infoPopup',
+      pauseTraining:            'mod_api/API_pauseTraining'
     }),
     calcScaleMap() {
       this.$nextTick(()=> {
@@ -203,34 +187,59 @@ export default {
         this.$store.dispatch('mod_workspace/SET_openTest', true);
       })
     },
-    saveNetwork(){
+    saveNetwork() {
       let projectsList = JSON.parse(localStorage.getItem('projectsList'));
-      if(projectsList) {
-        let idIndex = projectsList.findIndex((proj) => proj.id === this.currentNetwork.networkID);
-        let idExist = idIndex >= 0 ? true : false;
-        if(idExist) {
-          const network = this.currentNetwork;
-          doScreenShot(this)
-            .then((img)=> {
-              const currentPath = projectsList[idIndex].path[0];
-              const stringNet = cloneNet(network, img, currentPath);
-              projectsList[idIndex] = JSON.parse(stringNet).project  ;
-              saveFileToDisk(currentPath, stringNet, this, setLocalProjectsList(projectsList))
-            })
-            .catch((err)=> {console.log(err)});
-        }
-        else this.saveNetworkAs();
+      if(!projectsList) {
+        this.saveNetworkAs();
+        return
       }
-      else this.saveNetworkAs();
-    },
-    saveNetworkAs() {
+      let idIndex = projectsList.findIndex((proj) => proj.id === this.currentNetwork.networkID);
+      if(idIndex < 0) {
+        this.saveNetworkAs();
+        return
+      }
+
       const network = this.currentNetwork;
       doScreenShot(this)
         .then((img)=> {
-          const stringNet = cloneNet(network, img);
-          openSaveDialog(stringNet, dialog, network, this)
+          const currentPath = projectsList[idIndex].path[0];
+          const stringNet = cloneNet(network, img, currentPath);
+          projectsList[idIndex] = JSON.parse(stringNet).project  ;
+          fileLocalSave(currentPath, stringNet)
+        })
+        .then(()=> {
+          this.$refs.networkField[0].$refs.network.style.filter = '';
+          setLocalProjectsList(projectsList)
         })
         .catch((err)=> {console.log(err)});
+    },
+    saveNetworkAs() {
+      const network = this.currentNetwork;
+      let stringNetwork;
+      doScreenShot(this)
+        .then((img)=> {
+          stringNetwork = cloneNet(network, img);
+          const option = {
+            title:"Save Network",
+            defaultPath: `*/${network.networkName}`,
+            filters: [
+              {name: 'Text', extensions: ['json']},
+            ]
+          };
+          return openSaveDialog(option);
+        })
+        .then((path)=> {
+          return fileLocalSave(path, stringNetwork)
+        })
+        .then((filePath)=> {
+          savePathToLocalStorage(stringNetwork, filePath)
+        })
+        .catch((err)=> {
+          console.log(err)
+        })
+        .finally(()=>{
+          this.$refs.networkField[0].$refs.network.style.filter = '';
+        });
     },
     trainingFinished(index) {
       let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;
@@ -247,32 +256,33 @@ export default {
 }
 
 //SAVE NETWORK
-function openSaveDialog(jsonNet, dialogWin, network, ctx) {
-  const option = {
-    title:"Save Network",
-    defaultPath: `*/${network.networkName}`,
-    filters: [
-      {name: 'Text', extensions: ['json']},
-    ]
-  };
-
-  const fileName = dialogWin.showSaveDialog(null, option);
-  ctx.$refs.networkField[0].$refs.network.style.filter = '';
-  if (fileName === undefined){
-    ctx.infoPopup("You didn't save the file");
-    return;
-  }
-  saveFileToDisk(fileName, jsonNet, ctx, savePathToLocal(JSON.parse(jsonNet).project, fileName))
-}
-function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
-  fs.writeFile(fileName, jsonNet, (err) => {
-    if(err){
-      ctx.infoPopup(`An error occurred creating the file ${err.message}`);
-    }
-    ctx.infoPopup("The file has been successfully saved");
-    successCallBack;
-  });
-}
+// function openSaveDialog(jsonNet, dialogWin, network, ctx) {
+//   const option = {
+//     title:"Save Network",
+//     defaultPath: `*/${network.networkName}`,
+//     filters: [
+//       {name: 'Text', extensions: ['json']},
+//     ]
+//   };
+//
+//   const fileName = dialogWin.showSaveDialog(null, option);
+//
+//   if (fileName === undefined){
+//     ctx.infoPopup("You didn't save the file");
+//     return;
+//   }
+//   saveFileToDisk(fileName, jsonNet, ctx, savePathToLocalStorage(JSON.parse(jsonNet).project))
+// }
+// function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
+//   fs.writeFile(fileName, jsonNet, (err) => {
+//     if(err){
+//       ctx.infoPopup(`An error occurred creating the file ${err.message}`);
+//     }
+//     ctx.infoPopup("The file has been successfully saved");
+//     successCallBack;
+//   });
+//
+// }
 function doScreenShot(ctx) {
   return new Promise((resolve, reject)=> {
     const networkField = ctx.$refs.networkField[0].$refs.network;
@@ -296,8 +306,9 @@ function doScreenShot(ctx) {
       });
   })
 }
-function savePathToLocal(project, path) {
+function savePathToLocalStorage(stringProject, path) {
   let projectsList = JSON.parse(localStorage.getItem('projectsList'));
+  let project = JSON.parse(stringProject).project;
   project.path.push(path);
   if(projectsList) {
     let idIndex = projectsList.findIndex((proj)=> proj.id === project.id);

@@ -1,10 +1,14 @@
 <template lang="pug">
   net-base-settings(
     :tab-set="tabs"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
   )
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 
@@ -20,8 +24,10 @@ export default {
     }
   },
   computed: {
-    settingsCode() {
-      return `Y=tf.image.rgb_to_grayscale(X);`
+    codeDefault() {
+      return {
+        Output: `Y=tf.image.rgb_to_grayscale(X);`
+      }
     }
   }
 }

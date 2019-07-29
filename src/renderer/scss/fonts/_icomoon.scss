@@ -323,3 +323,25 @@ $folder: 'icomoon';
 .icon-full-screen-code:before {
   content: "\e962";
 }
+.icon-bug-report:before {
+  content: "\e963";
+}
+.icon-home:before {
+  content: "\e964";
+}
+.icon-app-restore-down:before {
+  content: "\e965";
+}
+.icon-code-error:before {
+  content: "!";
+  font-size: 1.4rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.1em;
+  height: 1.1em;
+  background: $col-warning;
+  border-radius: 50%;
+  font-weight: bold;
+  color: #fff;
+}

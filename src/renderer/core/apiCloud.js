@@ -1,5 +1,5 @@
-//const baseURL = 'https://quantumnet-cont.azurewebsites.net/api/';
-const baseURL = 'https://perceptilabs-dev.azurewebsites.net/api/';
+import { baseUrlCloud }  from '@/core/constants.js'
+
 
 const requestCloudApi = function (method, path, dataRequest) {
   let headers = localStorage.getItem('userToken')
@@ -8,7 +8,7 @@ const requestCloudApi = function (method, path, dataRequest) {
 
   return this.$http({
     method: method,
-    url: baseURL + path,
+    url: baseUrlCloud + path,
     headers: headers,
     data: dataRequest
     //...queryParams // data: {request body}, params: {query params}
@@ -22,4 +22,4 @@ const requestCloudApi = function (method, path, dataRequest) {
     });
 };
 
-export { baseURL, requestCloudApi};
+export { requestCloudApi };

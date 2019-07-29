@@ -9,6 +9,9 @@
         @click="setTab(tab)"
       )
         h3(v-html="tab")
+        i.icon.icon-code-error(
+          v-if="tab === 'Code' && currentEl.layerCodeError"
+        )
     .popup_tab-body
       .popup_body.active(
         v-for="(tabContent, i) in tabSet"
@@ -37,21 +40,24 @@ export default {
         return ['Settings', 'Code']
       }
     },
-    firstTab: {
-      type: String,
-      default: ''
+    currentEl: {
+      type: Object,
     },
-    layerCode: {
-      type: [Number, Object, String],
-      default: 0
-    },
+    // firstTab: {
+    //   type: String,
+    //   default: ''
+    // },
+    // layerCode: {
+    //   type: [Number, Object, String],
+    //   default: 0
+    // },
     idSetBtn: {
       type: String,
       default: ''
     },
   },
   mounted() {
-    let tab = this.firstTab || this.tabSet[0];
+    let tab = this.currentEl.layerSettingsTabName || this.tabSet[0];
     if(tab === 'Code') this.disableSettings = true;
     this.setTab(tab);
   },
@@ -98,9 +104,14 @@ export default {
     /*max-height: 41vh;*/
     /*overflow-y: auto;*/
   }
+  .popup_header {
+    .icon {
+      margin-left: 1em;
+    }
+  }
   .settings-layer {
-    max-height: calc(100vh - 26rem);
-    overflow: auto;
+    /*max-height: calc(100vh - 26rem);*/
+    /*overflow: auto;*/
   }
   .popup_body--show-code {
     position: fixed;

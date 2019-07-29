@@ -11,6 +11,8 @@
     )
     .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
     .net-element_checkpoint-icon(v-if="showCheckpoint") t
+    .net-element_checkpoint-icon.net-element_code-error(v-if="dataEl.layerCodeError")
+      i.icon.icon-code-error
     .net-element_btn(ref="BaseElement")
       slot
     //-
@@ -332,6 +334,10 @@ export default {
     top: 2px;
     right: 7px;
     z-index: 4;
+  }
+  .net-element_code-error {
+
+    right: 2px;
   }
   .net-element--hide-layer {
     opacity: 0;

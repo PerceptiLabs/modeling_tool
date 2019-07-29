@@ -1,7 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :layer-code="currentEl.layerCode.length"
-    :first-tab="currentEl.layerSettingsTabName"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
   )
@@ -33,7 +32,10 @@
               span No
 
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
     template(slot="action")
       button#tutorial_button-apply.btn.btn--primary(type="button" @click="saveSettings") Apply
@@ -77,7 +79,7 @@
       ...mapGetters({
         isTutorialMode: 'mod_tutorials/getIstutorialMode'
       }),
-      settingsCode() {
+      codeDefault() {
         let activeFunc = '';
         switch (this.settings.Activation_function) {
           case 'Sigmoid':
@@ -105,7 +107,9 @@ b=tf.Variable(initial);
 flat_node=tf.cast(tf.reshape(X,[-1,input_size]),dtype=tf.float32);
 node=tf.matmul(flat_node,W)${this.settings.Dropout ? ';\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
 node=node+b;`;
-        return `${fc}\n${activeFunc}`
+        return {
+          Output: `${fc}\n${activeFunc}`
+        }
       }
     },
     watch: {

@@ -1,7 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :layer-code="currentEl.layerCode.length"
-    :first-tab="currentEl.layerSettingsTabName"
+    :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
   )
@@ -119,7 +118,10 @@
               base-radio(group-name="Pool_padding" value-input="'VALID'" v-model="settings.Pool_padding")
                 span VALID
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+        )
 
     template(slot="action")
       button#tutorial_apply-button.btn.btn--primary.tutorial-relative(type="button" @click="saveSettings") Apply
@@ -207,7 +209,7 @@ export default {
     ...mapGetters({
       isTutorialMode:   'mod_tutorials/getIstutorialMode',
     }),
-    settingsCode() {
+    codeDefault() {
       let dim = '';
       let activeFunc = '';
       let pooling = '';
@@ -279,7 +281,9 @@ node=node+b;`;
           pooling = `Y=tf.nn.pool(Y, window_shape=${this.settings.Pool_area},pooling_type='AVG',${this.settings.Pool_padding},strides=${this.settings.Pool_stride});`
         }
       }
-      return `${dim}\n${activeFunc}\n${pooling}`
+      return {
+        Output: `${dim}\n${activeFunc}\n${pooling}`
+      };
 
       function calcSwitcher(ctx) {
         var self = ctx;

@@ -1,6 +1,6 @@
 'use strict';
 
-import { app, BrowserWindow, Menu, ipcMain }  from 'electron'
+import { app, BrowserWindow, Menu, ipcMain, dialog }  from 'electron'
 import { autoUpdater }                        from 'electron-updater'
 import ua                                     from 'universal-analytics'
 
@@ -58,7 +58,7 @@ function createWindow () {
     }
   });
 
-  mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
@@ -73,6 +73,12 @@ function createWindow () {
   mainWindow.on('leave-full-screen', () => {
     mainWindow.webContents.send('show-mac-header', true);
   });
+  mainWindow.on('maximize', () => {
+    mainWindow.webContents.send('show-restore-down-icon', true);
+  });
+  mainWindow.on('unmaximize', () => {
+    mainWindow.webContents.send('show-restore-down-icon', false);
+  });
   /**
    * add custom menu
    */
@@ -80,7 +86,9 @@ function createWindow () {
     menuJson.forEach((menuItem)=> {
       if(menuItem.submenu.length) {
         menuItem.submenu.forEach((subMenuItem)=> {
-          subMenuItem.click = ()=> {mainWindow.webContents.send('menu-event', subMenuItem.id);  }
+          subMenuItem.click = ()=> {
+            mainWindow.webContents.send('menu-event', subMenuItem.id);
+          }
         })
       }
     });
@@ -92,6 +100,16 @@ function createWindow () {
   /**
    * listeners for the renderer process
    */
+  ipcMain.on('open-dialog', (event, options) => {
+    dialog.showOpenDialog(mainWindow, options, (files) => {
+      mainWindow.webContents.send('open-dialog_path', files);
+    })
+  });
+  ipcMain.on('open-save-dialog', (event, options) => {
+    dialog.showSaveDialog(mainWindow, options, (files) => {
+      mainWindow.webContents.send('open-save-dialog_path', files);
+    })
+  });
   ipcMain.on('app-close', (event, arg) => {
     app.quit()
   });
@@ -127,6 +145,7 @@ function createWindow () {
     visitor = ua('UA-114940346-1', arg.id, {strictCidFormat: false})
     if (arg.path !== loginPage) visitor.pageview(arg.path).send();
   });
+
   /**
    * start auto update
    */
@@ -155,21 +174,11 @@ function createWindow () {
   }
 }
 
+
+/**
+ * APP listeners
+ */
 app.on('ready', createWindow);
-
-app.on('before-quit', (event) => {
-  //event.preventDefault();
-  //mainWindow.webContents.send('closeApp', 'before-quit');
-});
-// app.on('will-quit', (event) => {
-//   //event.preventDefault();
-//   mainWindow.webContents.send('closeApp', 'will-quit');
-// });
-// app.on('quit', (event) => {
-//   //event.preventDefault();
-//   mainWindow.webContents.send('closeApp', 'quit');
-// });
-
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {

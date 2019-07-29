@@ -55,7 +55,7 @@ export default {
             if(!delKeys.length) continue;
             delKeys.forEach((id)=> {
               if(newNet[id].componentName !== 'LayerContainer') delete newNet[id]
-            })
+            });
           }
         }
       }

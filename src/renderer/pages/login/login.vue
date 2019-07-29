@@ -22,7 +22,10 @@
             )
           p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
           .forgot-password-box
-            a.btn.btn--link-without-underline(href="#" @click.prevent="openLink('https://www.perceptilabs.com')") Forgot email or password?
+            a.btn.btn--link-without-underline(
+              :href="`${baseUrlSite}/restore-account`"
+              @click.prevent="toLink(`${baseUrlSite}/restore-account`)"
+              ) Forgot password?
 
         .form_holder
           base-checkbox(v-model="saveToken") Remember me
@@ -34,9 +37,13 @@
 </template>
 
 <script>
-  import {requestCloudApi} from '@/core/apiCloud.js'
-  import {shell} from 'electron'
+
+  import {requestCloudApi}  from '@/core/apiCloud.js'
+  import { baseUrlSite }    from '@/core/constants.js'
+  import { goToLink }       from '@/core/helpers.js'
+
   import ViewLoading from '@/components/different/view-loading.vue'
+
 export default {
   name: 'PageLogin',
   components: { ViewLoading },
@@ -49,7 +56,8 @@ export default {
     return {
       userEmail: '',
       userPass: '',
-      saveToken: true
+      saveToken: true,
+      baseUrlSite
     }
   },
   computed: {
@@ -62,6 +70,9 @@ export default {
   },
   methods: {
     requestCloudApi,
+    toLink(url) {
+      goToLink(url)
+    },
     validateForm() {
       this.$validator.validateAll()
         .then((result) => {
@@ -103,9 +114,6 @@ export default {
 
     loginUser() {
       this.$router.replace('/projects');
-    },
-    openLink(url) {
-      shell.openExternal(url);
     },
   }
 }
