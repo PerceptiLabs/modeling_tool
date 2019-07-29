@@ -46,10 +46,10 @@ const netElementSettings = {
       if(tabName === 'Settings') {
         this.updateCode();
       }
-
+      console.log(this.coreCode);
       const saveSettings = {
         'elId': this.currentEl.layerId,
-        'code': JSON.parse(JSON.stringify(this.coreCode)),
+        'code': this.coreCode ? JSON.parse(JSON.stringify(this.coreCode)) : null,
         'set': this.settings,
         tabName
       };
