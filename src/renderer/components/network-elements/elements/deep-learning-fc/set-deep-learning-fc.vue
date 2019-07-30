@@ -1,6 +1,7 @@
 <template lang="pug">
   net-base-settings(
     :current-el="currentEl"
+    id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
     @press-update="updateCode"
   )
@@ -36,9 +37,6 @@
         :current-el="currentEl"
         v-model="coreCode"
       )
-
-    template(slot="action")
-      button#tutorial_button-apply.btn.btn--primary(type="button" @click="saveSettings") Apply
 
 </template>
 

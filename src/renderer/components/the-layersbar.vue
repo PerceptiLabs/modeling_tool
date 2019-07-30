@@ -22,8 +22,7 @@
           )
             component(:is="element" :draggable='true')
       li.layer
-        button.btn.btn--layersbar.net-element-custom(type="button")
-          i.icon.icon-add
+        layer-custom(:draggable='true')
 
 </template>
 
@@ -62,6 +61,8 @@
   import ClassicMLRandomForest from '@/components/network-elements/elements/classic-ml-random-forest/view-classic-ml-random-forest.vue'
   import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/view-classic-ml-vector-machine.vue'
 
+  import LayerCustom         from '@/components/network-elements/elements/layer-custom/view-layer-custom.vue'
+
 
 export default {
   name: 'TheLayersbar',
@@ -73,6 +74,7 @@ export default {
     TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
+    LayerCustom
   },
   data() {
     return {

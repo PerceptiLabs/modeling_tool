@@ -22,7 +22,10 @@
           slot(:name="tabContent+'-content'")
         .settings-layer_foot
           slot(:name="tabContent+'-action'")
-            button.btn.btn--primary(type="button" @click="applySettings(tabContent)" :id="idSetBtn") Apply
+            button.btn.btn--primary(type="button"
+              @click="applySettings(tabContent)"
+              :id="idSetBtn"
+              ) Apply
             //-button.btn.btn--dark-blue-rev(type="button"
               v-if="showUpdateCode"
               @click="updateCode"

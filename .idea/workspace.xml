@@ -2,15 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-custom/layer-custom.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-custom/set-layer-custom.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-custom/view-layer-custom.vue" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/layer-custom/viewBox-layer-custom.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-layersbar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/fonts/icomoon/icomoon.woff" beforeDir="false" afterPath="$PROJECT_DIR$/static/fonts/icomoon/icomoon.woff" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/static/fonts/icomoon/selection.json" beforeDir="false" afterPath="$PROJECT_DIR$/static/fonts/icomoon/selection.json" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -44,24 +48,24 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editor.config.ad.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/core/plugins" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/components/network-elements/elements" />
     <property name="list.type.of.created.stylesheet" value="SCSS" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="G:\progects\quantumnet\node_modules\prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.HTML" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\progects\quantumnet\src\renderer\components\different" />
-      <recent name="G:\progects\quantumnet\src\renderer\assets" />
-      <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements" />
       <recent name="G:\progects\quantumnet\src\renderer\core\plugins" />
       <recent name="G:\progects\quantumnet\src\renderer\core\mixins" />
       <recent name="G:\progects\quantumnet\src\renderer\components\sidebar" />
       <recent name="G:\progects\quantumnet\src\renderer\components\global-popups" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
       <recent name="G:\progects\quantumnet\src\renderer\components\different" />
+      <recent name="G:\progects\quantumnet\src\renderer\assets" />
+      <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -310,7 +314,7 @@
       <workItem from="1563438959542" duration="10168000" />
       <workItem from="1563526929504" duration="6919000" />
       <workItem from="1564391013832" duration="23586000" />
-      <workItem from="1564471592186" duration="11717000" />
+      <workItem from="1564471592186" duration="15096000" />
     </task>
     <servers />
   </component>

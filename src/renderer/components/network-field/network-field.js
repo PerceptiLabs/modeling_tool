@@ -29,6 +29,8 @@ import ClassicMLRandomForest from '@/components/network-elements/elements/classi
 import ClassicMLSVM         from '@/components/network-elements/elements/classic-ml-vector-machine/classic-ml-vector-machine.vue'
 
 import LayerContainer       from '@/components/network-elements/elements/layer-container/layer-container.vue'
+import LayerCustom          from '@/components/network-elements/elements/layer-custom/layer-custom.vue'
+
 import SettingsArrow        from '@/components/network-elements/elements-settings/setting-arrow.vue'
 
 import { mapGetters, mapMutations, mapActions } from 'vuex';
@@ -42,7 +44,8 @@ export default {
     TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
-    LayerContainer, SettingsArrow
+    LayerContainer, LayerCustom,
+    SettingsArrow
   },
   mounted() {
     this.drawArrows();
