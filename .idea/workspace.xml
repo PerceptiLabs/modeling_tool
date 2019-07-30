@@ -3,15 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/dist/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/src/dist/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/register/register.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/register/register.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCore.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCore.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -32,7 +25,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="dev" />
+        <entry key="$PROJECT_DIR$" value="traker-mixinpanel" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -83,6 +76,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Node.js.mod_workspace.js" />
         <item itemvalue="Node.js.mod_workspace.js" />
         <item itemvalue="Node.js.mod_workspace.js" />
         <item itemvalue="Node.js.mod_workspace.js" />
@@ -309,7 +303,8 @@
       <workItem from="1563369061385" duration="13805000" />
       <workItem from="1563438959542" duration="10168000" />
       <workItem from="1563526929504" duration="6919000" />
-      <workItem from="1564391013832" duration="23171000" />
+      <workItem from="1564391013832" duration="23586000" />
+      <workItem from="1564471592186" duration="6376000" />
     </task>
     <servers />
   </component>
@@ -375,9 +370,9 @@
     </option>
   </component>
   <component name="WindowStateProjectService">
-    <state width="265" height="802" key="Git.Branch.Popup" />
-    <state width="265" height="802" key="Git.Branch.Popup/1920.1080/1920.1080" />
-    <state width="265" height="802" key="Git.Branch.Popup@1920.1080@120dpi" />
+    <state width="279" height="816" key="Git.Branch.Popup" />
+    <state width="279" height="816" key="Git.Branch.Popup/1920.1080/1920.1080" />
+    <state width="279" height="816" key="Git.Branch.Popup@1920.1080@120dpi" />
   </component>
   <component name="masterDetails">
     <states>

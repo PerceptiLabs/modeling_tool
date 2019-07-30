@@ -89,12 +89,11 @@
       this.calcAppPath();
       this.checkToken();
       this.$nextTick(() =>{
-
         if(this.userId === 'Guest') {
           mixpanel.identify(this.userId);
         }
         this.appReady();
-        //this.sendPathToAnalist(this.$route.fullPath);
+        this.sendPathToAnalist(this.$route.fullPath);
       })
     },
     data() {
@@ -117,22 +116,22 @@
       }
     },
     watch: {
-      // '$route': {
-      //   handler(to, from) {
-      //     this.sendPathToAnalist(to.fullPath)
-      //   }
-      // }
+      '$route': {
+        handler(to, from) {
+          this.sendPathToAnalist(to.fullPath)
+        }
+      },
       userId(newVal) {
         console.log('mixpanel.identify', newVal);
         mixpanel.identify(newVal);
       }
     },
     methods: {
-      // sendPathToAnalist(path) {
-      //   if(process.env.NODE_ENV === 'production') {
-      //     ipcRenderer.send('change-route', {path, id: this.userToken})
-      //   }
-      // },
+      sendPathToAnalist(path) {
+        if(process.env.NODE_ENV === 'production') {
+          ipcRenderer.send('change-route', {path, id: this.userId})
+        }
+      },
       trackStartApp() {
         mixpanel.track('Start app');
       },
