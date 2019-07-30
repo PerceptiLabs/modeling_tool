@@ -314,8 +314,11 @@ export default {
     padding: 0;
     background-color: transparent;
     box-shadow: $layer-shad;
+    .btn:hover {
+      box-shadow: inset 0 0 0 2px $col-primary;
+    }
     .net-element--active & .btn {
-      box-shadow: 0 0 20px #fff;
+      box-shadow: inset 0 0 0 1px $col-primary;
     }
   }
   .net-element_be-for-end {

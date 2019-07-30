@@ -22,7 +22,7 @@
           )
             component(:is="element" :draggable='true')
       li.layer
-        button.btn.btn--layersbar.net-element-add(type="button")
+        button.btn.btn--layersbar.net-element-custom(type="button")
           i.icon.icon-add
 
 </template>

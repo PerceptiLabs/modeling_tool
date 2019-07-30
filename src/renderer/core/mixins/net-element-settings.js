@@ -40,6 +40,7 @@ const netElementSettings = {
       this.coreCode = this.codeDefault
     },
     saveSettings(tabName) {
+      console.log('tabName mixin ', tabName);
       this.applySettings(tabName);
     },
     applySettings(tabName) {

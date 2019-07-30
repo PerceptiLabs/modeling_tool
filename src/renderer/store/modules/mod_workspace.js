@@ -464,6 +464,7 @@ const mutations = {
   set_elementSettings(state, settings) {
     currentElement(settings.elId).layerSettings = settings.set;
     currentElement(settings.elId).layerCode = settings.code;
+    console.log(settings);
     currentElement(settings.elId).layerSettingsTabName = settings.tabName;
   },
 

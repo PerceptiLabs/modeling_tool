@@ -2,7 +2,6 @@
   net-base-settings(
     :tab-set="tabs"
     :current-el="currentEl"
-    @press-apply="saveSettings($event)"
   )
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Path.length")
@@ -43,7 +42,7 @@
     template(slot="Computer-action")
       button.btn.btn--primary.tutorial-relative(type="button"
         v-show="settings.accessProperties.Path.length"
-        @click="saveSettings"
+        @click="saveSettings('Computer')"
         id="tutorial_button-apply"
       ) Apply
     template(slot="Cloud-action")
@@ -181,6 +180,7 @@
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
       saveSettings(tabName) {
+        console.log(tabName);
         this.applySettings(tabName);
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'})
       }

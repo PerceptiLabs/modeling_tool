@@ -6,7 +6,7 @@ $layers-sidebar: (
   'train': $bg-grad-cyan,
   'math': linear-gradient(#7389fe, #6167ee),
   'learn-class': linear-gradient(#e273fe, #b061ee),
-  'add': #4a5367,
+  'custom': linear-gradient(#697592, #4D556A),
   'layercontainer': linear-gradient(#e8f551, #9af142),
 );
 
@@ -25,7 +25,7 @@ $layers-sidebar: (
   'train': $color-2,
   'math': #6167ee,
   'learn-class': #b061ee,
-  'add': #4a5367,
+  'custom': #4a5367,
   'layercontainer': #9af142,
 );
 @each $name, $color in $layers-sidebar {
@@ -43,21 +43,21 @@ $layers-sidebar-active: (
   'train': linear-gradient(#58c28f, #44a1a7),
   'math': linear-gradient(#5866b1, #474bb4),
   'learn-class': linear-gradient(#af58c5, #76449d),
-  'add': #4a5367,
+  'custom': #4a5367,
   'layercontainer': linear-gradient(#a0a839, #6aa32d),
 );
 
 @each $name, $color in $layers-sidebar-active {
-	.net-element-#{$name} {
-		&:hover,
-		&.active {
-			background: $color;
-		}
-	}
+	//.net-element-#{$name} {
+	//	&:hover,
+	//	&.active {
+	//		background: $color;
+	//	}
+	//}
 }
 
-.net-element-add {
-	color: #5c6680;
+.net-element-custom {
+	//color: #5c6680;
 	&:after {
 		display: none;
 	}

@@ -142,8 +142,8 @@ function createWindow () {
    * google analytics
    */
   ipcMain.on('change-route', (event, arg) => {
-    // visitor = ua('UA-114940346-1', arg.id, {strictCidFormat: false})
-    // if (arg.path !== loginPage) visitor.pageview(arg.path).send();
+    visitor = ua('UA-114940346-1', arg.id, {strictCidFormat: false})
+    if (arg.path !== loginPage) visitor.pageview(arg.path).send();
   });
 
   /**
