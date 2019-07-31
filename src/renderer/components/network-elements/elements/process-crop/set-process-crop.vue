@@ -5,15 +5,6 @@
     @press-update="updateCode"
   )
     template(slot="Settings-content")
-      //.settings-layer_section
-                  .form_row
-                    .form_label Data Input:
-                    .form_input
-                      triple-input(
-                        /:value1="50"
-                        /:value2="60"
-                        /:value3="10"
-                      )
       .settings-layer_section.text-center.crop-box
         vue-cropper(
           ref="cropper"
@@ -28,11 +19,6 @@
           :fixedBox="false"
           :original="false"
         )
-      //.settings-layer_section
-        .form_row
-          .form_label Reshape data:
-          .form_input
-            input(type="text")
 
     template(slot="Code-content")
       settings-code(
@@ -52,7 +38,6 @@
     mixins: [mixinSet],
     components: {
       TripleInput,
-      //SettingsCode,
       VueCropper
     },
     data() {

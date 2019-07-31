@@ -117,8 +117,6 @@ const mutations = {
     getters.GET_currentNetwork.networkName = value
   },
   add_network (state, network) {
-    //console.log(JSON.stringify(network));
-    //console.log('add_network', network);
     let workspace = state.workspaceContent;
     let newNetwork = {};
     //-- DEFAULT DATA
@@ -128,7 +126,6 @@ const mutations = {
       networkSettings: null,
       networkMeta: {},
       networkElementList: null,
-      //networkContainerList: [],
     };
     const defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
@@ -155,7 +152,6 @@ const mutations = {
     if(findNetId(newNetwork, workspace) || !newNetwork.networkID) {
       newNetwork.networkID = generateID();
     }
-    //console.log(newNetwork);
     //-- Check and create the position
     createPositionElements(newNetwork.networkElementList);
     //-- Add to workspace
@@ -175,7 +171,6 @@ const mutations = {
         return;
       }
       else {
-        //let elList = JSON.parse(JSON.stringify(Object.values(list)));
         let elList = Object.values(list);
         const elGap = 60;
         const widthEl = widthElement;
@@ -189,10 +184,7 @@ const mutations = {
             el.layerMeta.position = {...defaultPosition};
 
             let newElPosition = findFreePosition(el.layerMeta.position, elList, elGap, widthEl, el.layerId);
-            //console.log(newElPosition);
-            //el.layerMeta.position.top = newElPosition.top;
             arrTop.push(newElPosition.top);
-            //el.layerMeta.position.left = newElPosition.left;
             arrLeft.push(newElPosition.left);
           }
 
@@ -464,7 +456,6 @@ const mutations = {
   set_elementSettings(state, settings) {
     currentElement(settings.elId).layerSettings = settings.set;
     currentElement(settings.elId).layerCode = settings.code;
-    //console.log(settings);
     currentElement(settings.elId).layerSettingsTabName = settings.tabName;
   },
 
@@ -542,7 +533,6 @@ const mutations = {
       return;
     }
     /* END validations */
-    //let net = getters.GET_currentNetworkElementList;
     let newContainer = createClearContainer(arrSelect);
 
     updateLayerName(newContainer, elementList, 1);
@@ -769,19 +759,16 @@ const actions = {
     commit('reset_network')
   },
   CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
-    //console.log(`request -> can show`, `${time}ms`);
     const timeRequest = time + 500;
     const isLongRequest = timeRequest > rootState.globalView.timeIntervalDoRequest;
     if(isLongRequest) {
       const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
       clearInterval(currentMeta.timerID);
-      //console.log('new time', timeRequest);
       dispatch('globalView/SET_timeIntervalDoRequest', timeRequest, {root: true});
       dispatch('EVENT_startDoRequest', true);
     }
   },
   EVENT_startDoRequest({dispatch, commit, rootState, getters, state}, isStart) {
-    //console.log('EVENT_startDoRequest', isStart);
     const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
     if(currentMeta === undefined) return;
     const timeInterval = rootState.globalView.timeIntervalDoRequest;
@@ -935,6 +922,5 @@ const createNetElement = function (event) {
     connectionOut: [],
     connectionIn: [],
     connectionArrow: [],
-    //calcAnchor: { top: [], right: [], bottom: [], left: []}
   };
 }

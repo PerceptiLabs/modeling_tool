@@ -104,7 +104,6 @@ const actions = {
           commit('SET_statusLocalCore', 'online')
         })
         .catch((err) =>{
-         // console.log(err);
         });
     }
     function coreOffline() {
@@ -120,7 +119,6 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        //console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -143,11 +141,8 @@ const actions = {
       action: "Start",
       value: message
     };
-    // console.log(JSON.stringify(theData));
-    //console.log(theData);
     coreRequest(theData)
       .then((data)=> {
-        //console.log('API_startTraining ', data);
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
         setTimeout(()=>dispatch('mod_workspace/EVENT_chartsRequest', null, {root: true}), 500)
       })
@@ -161,10 +156,8 @@ const actions = {
       action: 'headless',
       value: value
     };
-    //console.log('API_setHeadless send');
     return coreRequest(theData)
       .then((data)=> {
-        //console.log('API_setHeadless data', data);
         return data
       })
       .catch((err) =>{
@@ -253,7 +246,6 @@ const actions = {
   },
   API_CLOSE_core({getters, dispatch, rootState}) {
     const theData = {
-      //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       reciever: 'server',
       action: 'Close',
       value: ''
@@ -276,9 +268,7 @@ const actions = {
       value: ''
     };
     return coreRequest(theData)
-      .then((data)=> {
-        //console.log('API_postTestStart ', data);
-      })
+      .then((data)=> {})
       .catch((err) =>{
         console.error(err);
       });
@@ -321,10 +311,8 @@ const actions = {
       action: "getNetworkInputDim",
       value: prepareNetwork(elementList)
     };
-    //console.log('SEND getNetworkInputDim', theData);
     return coreRequest(theData)
       .then((data)=> {
-        //console.log('API_getInputDim', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err) =>{
@@ -339,10 +327,8 @@ const actions = {
       action: "getNetworkOutputDim",
       value: prepareNetwork(elementList)
     };
-    //console.log('SEND getNetworkInputDim', theData);
     coreRequest(theData)
       .then((data)=> {
-        //console.log('API_getOutputDim', data);
         if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
       })
       .catch((err)=> {
@@ -355,11 +341,8 @@ const actions = {
       action: "Parse",
       value: path
     };
-    // console.log('Parse send', JSON.stringify(theData));
-    // console.log('Parse send', theData);
     return coreRequest(theData)
       .then((data)=> {
-        //console.log('Parse answer', data);
         dispatch('mod_workspace/ADD_network', {network: data.network, ctx}, {root: true});
       })
       .catch((err)=> {
@@ -376,11 +359,8 @@ const actions = {
         Network: prepareNetwork(elementList)
       }
     };
-    //console.log(theData);
-    //console.log('SEND getNetworkInputDim', theData);
     return coreRequest(theData)
       .then((data)=> {
-        //console.log('getPreviewSample api answer', data);
         return data
       })
       .catch((err)=> {

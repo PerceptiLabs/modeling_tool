@@ -52,13 +52,9 @@ const chartsMixin = {
     },
     isNotPicture() {
       return !(this.$options._componentTag === "ChartPicture" || this.$options._componentTag === "chart-picture")
-        // ? false
-        // : true
     },
     isNotPie() {
       return !(this.$options._componentTag === "ChartPie" || this.$options._componentTag === "chart-pie")
-        // ? false
-        // : true
     }
   },
   watch: {
@@ -93,7 +89,6 @@ const chartsMixin = {
       }
     },
     chartResize() {
-      //console.log(this.chartLabel);
       this.$refs.chart.resize()
     }
   }

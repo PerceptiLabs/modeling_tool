@@ -20,9 +20,6 @@ const mutations = {
   set_calcArray(state) {
     state.calcArray++
   },
-  // set_openNetwork(state) {
-  //   state.openNetwork++
-  // },
   set_saveNetwork(state) {
     state.saveNetwork++
   },
@@ -45,7 +42,6 @@ const actions = {
     commit('set_calcArray')
   },
   EVENT_loadNetwork({dispatch}, pathArr) {
-    //console.log('EVENT_openNetwork', pathArr);
     let localProjectsList = localStorage.getItem('projectsList');
     let projectsList, pathIndex;
     if(localProjectsList) {

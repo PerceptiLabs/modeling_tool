@@ -16,7 +16,6 @@ const requestCloudApi = function (method, path, dataRequest) {
     //...queryParams // data: {request body}, params: {query params}
   })
     .then((response)=>{
-      //console.log(response);
       return response
     })
     .catch((error)=>{

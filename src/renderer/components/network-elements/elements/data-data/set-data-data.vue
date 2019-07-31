@@ -119,8 +119,6 @@
       ...mapActions({
         tutorialPointActivate: 'mod_tutorials/pointActivate',
       }),
-      //openLoadDialog,
-      //loadPathFolder,
       loadFile() {
         let optionBasic = {
           title:"Load file or files",
@@ -181,9 +179,9 @@
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
       saveSettings(tabName) {
-        //console.log(tabName);
-        this.applySettings(tabName);
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'})
+        this.applySettings(tabName);
+        this.confirmSettings();
       }
     }
   }

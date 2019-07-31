@@ -66,13 +66,6 @@ export default {
       showEmailEditFields: false
     }
   },
-  computed: {
-    // userInfo() {
-    //   return [
-    //     {dt: 'First name' ,dd:}
-    //   ]
-    // }
-  },
   methods: {
     requestCloudApi,
     editfirstName(newVal) {

@@ -21,12 +21,6 @@
             v-validate="'alpha_spaces'"
             )
           p.text-error(v-show="errors.has('Last Name')") {{ errors.first('Last Name') }}
-        //-.form_holder
-          input(type="tel" placeholder="Phone"
-            v-model="user.phone"
-            name="Phone"
-            v-mask="'+## (###) ###-##-##'"
-            )
         .form_holder
           input(type="email" placeholder="Email"
             v-model="user.email"
@@ -110,12 +104,10 @@ export default {
     validateForm() {
       this.$validator.validateAll()
         .then((result) => {
-          //console.log('result', result);
           if (result) {
             this.registryUser();
             return;
           }
-          //error func
         })
         .catch((error)=>{
           console.log('error', error);

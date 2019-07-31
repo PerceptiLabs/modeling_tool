@@ -1173,7 +1173,6 @@
   }
   .custom-range-component .custom-range-process {
     position: absolute;
-    //transition: all 0s;
     z-index: 1;
     border-radius: 15px;
     background-color: $color-6;
@@ -1211,7 +1210,6 @@
   .custom-range-component .custom-range-dot {
     position: absolute;
     z-index: 5;
-    //transition: all 0s;
     /*will-change: transform;*/
     cursor: pointer;
   }
@@ -1368,7 +1366,6 @@
     transform: translate(-50%, -50%);
     border-radius: 50%;
     background-color: rgba(0, 0, 0, .16);
-    //transition: all .3s;
   }
   .custom-range-component .custom-range-piecewise-item:first-child .custom-range-piecewise-dot,
   .custom-range-component .custom-range-piecewise-item:last-child .custom-range-piecewise-dot {

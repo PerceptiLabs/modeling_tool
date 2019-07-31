@@ -89,7 +89,6 @@
         tutorialPointActivate:  'mod_tutorials/pointActivate',
         eventResize:            'mod_events/EVENT_eventResize'
       }),
-      //throttleEv,
       addListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
       },

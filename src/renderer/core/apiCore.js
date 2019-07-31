@@ -18,7 +18,6 @@ const coreRequest = function (message, port, address) {
 
       socket.on('data', (data) => {
         const dataString = data.toString();
-        //console.log(dataString);
         if (dataLength) dataPart = dataPart + dataString;
         if (!dataLength) {
           dataLength = +dataString.slice(dataString.indexOf('length') + 9, dataString.indexOf(','));
@@ -50,7 +49,7 @@ const coreRequest = function (message, port, address) {
       reject('error core api', err);
     });
     socket.on('close', () => {
-      //console.log('Client closed');
+
     });
   });
 
@@ -62,7 +61,6 @@ const coreRequest = function (message, port, address) {
       "content-length": 0,
     };
     let dataJSON = JSON.stringify(dataSend);
-    //console.log(dataJSON);
     let dataByte = (new TextEncoder('utf-8').encode(dataJSON));
     let dataByteLength = dataByte.length;
 

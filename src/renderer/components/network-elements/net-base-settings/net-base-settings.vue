@@ -68,14 +68,6 @@ export default {
     currentEl: {
       type: Object,
     },
-    // firstTab: {
-    //   type: String,
-    //   default: ''
-    // },
-    // layerCode: {
-    //   type: [Number, Object, String],
-    //   default: 0
-    // },
     idSetBtn: {
       type: String,
       default: ''
@@ -94,12 +86,6 @@ export default {
     }
   },
   computed: {
-    // showUpdateCode() {
-    //   return this.tabSelected === 'Settings' && !!this.layerCode
-    // },
-    // disableSettings() {
-    //   return !!this.layerCode
-    // },
     currentNetworkID() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
     },
@@ -115,9 +101,9 @@ export default {
     applySettings(name) {
       this.$emit('press-apply', name);
       this.tabSelected = 'Preview';
-      setTimeout(()=> {
+      this.$nextTick(()=> {
         this.getPreviewSample()
-      }, 500)
+      })
     },
     updateCode(name) {
       this.$emit('press-update')
@@ -126,7 +112,6 @@ export default {
       this.$emit('press-confirm')
     },
     getPreviewSample() {
-      console.log('getPreviewSample');
       this.$store.dispatch('mod_api/API_getPreviewSample', this.currentEl.layerId)
         .then((data)=>{
           this.imgData = data;
@@ -145,17 +130,11 @@ export default {
   .popup_body {
     max-width: calc(50vw - #{$w-sidebar});
     min-width: 29rem;
-    /*max-height: 41vh;*/
-    /*overflow-y: auto;*/
   }
   .popup_header {
     .icon {
       margin-left: 1em;
     }
-  }
-  .settings-layer {
-    /*max-height: calc(100vh - 26rem);*/
-    /*overflow: auto;*/
   }
   .popup_body--show-code {
     position: fixed;

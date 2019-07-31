@@ -58,7 +58,6 @@
   $spinner4: #FECF73;
   .wrapper-training-loader_spinner:before {
     animation: ball 2s infinite;
-    //background-color: greenyellow;
     box-shadow: 0px -34px 0 $spinner1,    34px 0 0 $spinner2,     -34px 0 0 $spinner2,      0px 34px 0 $spinner3,
                 24px -24px 0 $spinner4,   24px 24px 0 $spinner2,  -24px -24px 0 $spinner1,  -24px 24px 0 $spinner1;
   }

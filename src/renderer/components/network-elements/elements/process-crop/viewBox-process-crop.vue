@@ -1,16 +1,10 @@
 <template lang="pug">
   .statistics-box
     .statistics-box_main.statistics-box_col
-      //- TODO v-if="true"
       chart-switch(
         chart-label="Output"
         :chart-data="chartData.ProcessCrop"
       )
-      //-chart-switch(
-        /v-else
-        /chart-label="Output"
-        /:chart-data="chartData.ProcessCrop"
-        )
 
 </template>
 

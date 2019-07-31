@@ -63,7 +63,6 @@ const viewBoxMixin = {
       this.startRequest = new Date();
 
       if(!layerId || !layerType) return;
-      //console.log(layerType);
       let theData = {
         reciever: this.currentNetworkID,
         action: this.$store.getters['mod_workspace/GET_testIsOpen']
@@ -81,7 +80,6 @@ const viewBoxMixin = {
             return
           }
           Vue.nonreactive(data);
-          //console.log(data);
           if(view.length) {
             this.$set(this.chartData, view, data)
           }

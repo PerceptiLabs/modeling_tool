@@ -154,8 +154,6 @@ export default {
     },
     endTutorial() {
       this.setNetworkCoreStatus(false);
-      //this.deleteNetwork(this.currentNetwork);
-      //this.addNetwork({'ctx': this});
       this.popupInfo(`Congratulations, you have successfully completed the Tutorial!
                       If you wish to save the model you created, can do so from the File menu in the top left.
                       Or you can export it by clicking on the tab "Export" in the right menu.`);
@@ -167,7 +165,7 @@ export default {
 
   }
 }
-//
+
 </script>
 <style lang="scss">
   @import "../../scss/base";

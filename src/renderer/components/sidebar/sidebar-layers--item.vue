@@ -64,14 +64,6 @@ export default {
       }
     },
   },
-  mounted() {
-
-  },
-  data() {
-    return {
-      //isOpen: false
-    }
-  },
   computed: {
     statisticsIsOpen() {
       return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
@@ -88,7 +80,6 @@ export default {
       this.$store.dispatch('mod_workspace/TOGGLE_container', {val: this.openContainer, container: this.itemData})
     },
     setSelect(ev) {
-      //console.log(ev);
       if (this.statisticsIsOpen) {
         console.log('TODO add functions');
         //this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)

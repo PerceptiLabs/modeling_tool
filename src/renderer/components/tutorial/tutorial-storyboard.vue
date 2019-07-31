@@ -307,7 +307,6 @@ export default {
     background: $col-txt;
     margin-right: 1rem;
     border-radius: 50%;
-    //position: relative;
     top: 4.2rem;
     &:last-child {
       margin-right: 0;

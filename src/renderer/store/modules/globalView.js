@@ -4,7 +4,6 @@ const state = {
   hideLayers: true,
   hideSidebar: true,
   userMode: 'advanced', //simple
-  //userID: '',
   userToken: '',
   platform: process.platform,
   appVersion: '',

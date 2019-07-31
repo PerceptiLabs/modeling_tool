@@ -32,7 +32,6 @@
               el.notExist = true
             })
         });
-        //console.log(localProjectsList);
         this.projects = localProjectsList;
       }
     },
@@ -78,7 +77,6 @@
     },
     watch: {
       hotKeyPressDelete() {
-        //console.log('hotKeyPressDelete');
         let indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
         if(indexCheckedProj >= 0) {
           let pathDelete = this.projects[indexCheckedProj].path[0];
@@ -101,7 +99,6 @@
         beginTutorial: 'mod_tutorials/START_storyboard',
         addNetwork: 'mod_workspace/ADD_network'
       }),
-      //fileLocalRead,
       openTemplate(path) {
         this.loadNetwork(path)
       },
