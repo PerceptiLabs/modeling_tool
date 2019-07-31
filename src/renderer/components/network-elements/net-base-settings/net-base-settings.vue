@@ -37,7 +37,7 @@
         .settings-layer_section
           .settings-layer
             .form_row
-              button.btn.btn--link(type="button")
+              button.btn.btn--link(type="button" @click="toSettings")
                 i.icon.icon-backward
                 span Back
             .form_row
@@ -74,9 +74,7 @@ export default {
     },
   },
   mounted() {
-    let tab = this.currentEl.layerSettingsTabName || this.tabSet[0];
-    if(tab === 'Code') this.disableSettings = true;
-    this.setTab(tab);
+    this.toSettings();
   },
   data() {
     return {
@@ -95,6 +93,11 @@ export default {
   },
   methods: {
     coreRequest,
+    toSettings() {
+      let tab = this.currentEl.layerSettingsTabName || this.tabSet[0];
+      if(tab === 'Code') this.disableSettings = true;
+      this.setTab(tab);
+    },
     setTab(name) {
       this.tabSelected = name;
     },
@@ -114,7 +117,6 @@ export default {
     getPreviewSample() {
       this.$store.dispatch('mod_api/API_getPreviewSample', this.currentEl.layerId)
         .then((data)=> {
-          console.log(data);
           this.imgData = data;
         })
     },
