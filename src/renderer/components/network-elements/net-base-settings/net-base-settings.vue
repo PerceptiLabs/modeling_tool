@@ -113,7 +113,8 @@ export default {
     },
     getPreviewSample() {
       this.$store.dispatch('mod_api/API_getPreviewSample', this.currentEl.layerId)
-        .then((data)=>{
+        .then((data)=> {
+          console.log(data);
           this.imgData = data;
         })
     },
