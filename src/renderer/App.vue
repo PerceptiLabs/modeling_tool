@@ -25,6 +25,7 @@
 
 <script>
   import {ipcRenderer}  from 'electron'
+  import mixpanel       from 'mixpanel-browser'
 
   import HeaderLinux    from '@/components/header/header-linux.vue';
   import HeaderWin      from '@/components/header/header-win.vue';
@@ -35,6 +36,11 @@
   export default {
     name: 'TheApp',
     components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup },
+    created() {
+      const mixpanelToken = 'ff98c9e22047d4a1eef9146339e038ee';
+      mixpanel.init(mixpanelToken);
+
+    },
     mounted() {
       /*Menu*/
       ipcRenderer.on('get-app-version', (event, data) => {
@@ -82,7 +88,10 @@
 
       this.calcAppPath();
       this.checkToken();
-      this.$nextTick(()=>{
+      this.$nextTick(() =>{
+        if(this.userId === 'Guest') {
+          mixpanel.identify(this.userId);
+        }
         this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
       })
@@ -99,25 +108,36 @@
       showNotAvailable() {
         return this.$store.state.mod_autoUpdate.showNotAvailable
       },
-      userToken() {
-        return this.$store.state.globalView.userToken
-      },
+      // userToken() {
+      //   return this.$store.state.globalView.userToken
+      // },
+      userId() {
+        return this.$store.getters['globalView/GET_userID']
+      }
     },
     watch: {
       '$route': {
         handler(to, from) {
           this.sendPathToAnalist(to.fullPath)
         }
+      },
+      userId(newVal) {
+        console.log('mixpanel.identify', newVal);
+        mixpanel.identify(newVal);
       }
     },
     methods: {
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {
-          ipcRenderer.send('change-route', {path, id: this.userToken})
+          ipcRenderer.send('change-route', {path, id: this.userId})
         }
+      },
+      trackStartApp() {
+        mixpanel.track('Start app');
       },
       appReady() {
         ipcRenderer.send('app-ready');
+        this.trackStartApp();
         const splash = document.getElementById('splashscreen');
         setTimeout(()=>{
           splash.remove();
@@ -141,7 +161,7 @@
         this.$store.commit('globalView/SET_appPath', path);
       },
       checkToken() {
-        let localUserToken = localStorage.getItem('userId');
+        let localUserToken = localStorage.getItem('userToken');
         if(localUserToken) {
           this.$store.dispatch('globalView/SET_userToken', localUserToken);
           if(this.$router.history.current.name === 'login') {

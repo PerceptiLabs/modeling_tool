@@ -37,6 +37,7 @@
 </template>
 
 <script>
+  import mixpanel           from 'mixpanel-browser'
 
   import {requestCloudApi}  from '@/core/apiCloud.js'
   import { baseUrlSite }    from '@/core/constants.js'
@@ -84,18 +85,20 @@ export default {
     },
     requestLoginUser() {
       this.$store.commit('mod_login/SET_showLoader', true);
-      let queryParams = {
+      let dataParams = {
         "Email": this.userEmail,
         "Password": this.userPass
       };
-      this.requestCloudApi('post', 'Customer/Login', queryParams)
+      this.requestCloudApi('post', 'Customer/Login', dataParams)
         .then((response)=>{
-          let token = parseJwt(response.data.data.token);
-          this.$store.dispatch('globalView/SET_userToken', token.unique_name);
+          const token = response.data.data.token;
+          this.$store.dispatch('globalView/SET_userToken', token);
           if(this.saveToken) {
-            localStorage.setItem('userId', token.unique_name);
-            localStorage.setItem('userToken', response.data.data.token);
+            localStorage.setItem('userToken', token);
           }
+          this.$nextTick(()=>{
+            this.TRACKER_createUser();
+          });
           this.loginUser()
         })
         .catch((error)=>{
@@ -104,14 +107,15 @@ export default {
         .finally(()=>{
           this.$store.commit('mod_login/SET_showLoader', false);
         });
-
-      function parseJwt(token) {
-        var base64Url = token.split('.')[1];
-        var base64 = base64Url.replace('-', '+').replace('_', '/');
-        return JSON.parse(window.atob(base64));
-      }
     },
-
+    TRACKER_createUser() {
+      console.log('TRACKER_createUser');
+      mixpanel.people.set_once({
+        "$email": this.userEmail,
+        "$created": new Date(),
+        "$last_login": new Date(),
+      });
+    },
     loginUser() {
       this.$router.replace('/projects');
     },

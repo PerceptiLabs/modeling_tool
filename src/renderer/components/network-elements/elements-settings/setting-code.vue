@@ -3,24 +3,28 @@
     :class="{'code_full-view': fullView}"
   )
     .bookmark_head
-      ul.bookmark_tab-list(v-if="isMultiTabs")
+      ul.bookmark_tab-list
         button.bookmark_tab(type="button"
           v-for="(data, key) in theCode"
           :key="data.key"
           :class="{'bookmark_tab--active': currentTab === key}"
           @click="currentTab = key"
           ) {{ key }}
-      .bookmark_tab.bookmark_tab--active(v-else) Output
+        button.bookmark_tab.bookmark_tab--error(type="button"
+          v-if="errorData"
+          :class="{'bookmark_tab--active': currentTab === 'error'}"
+          @click="currentTab = 'error'"
+        ) Error
+      //.bookmark_tab.bookmark_tab--active(v-else) Output
       button.btn.btn--link.icon.icon-full-screen-code(type="button" @click="toggleFullView")
     .bookmark_content
       code-hq.code-wrap(
-        v-if="isMultiTabs && theCode"
+        v-if="theCode && currentTab !== 'error'"
         v-model="theCode[currentTab]"
+        :error-row="errorRow"
         )
-      code-hq.code-wrap(
-        v-else
-        v-model="theCode"
-        )
+      .code-wrap(v-if="currentTab === 'error'")
+        p.text-warning {{ errorData.Message }}
 
 </template>
 
@@ -31,9 +35,12 @@ export default {
   name: "SettingsCode",
   components: {codeHq},
   props: {
-    trainingMode: {
-      type: Boolean,
-      default: false
+    // trainingMode: {
+    //   type: Boolean,
+    //   default: false
+    // },
+    currentEl: {
+      type: Object,
     },
     value: {
       type: [String, Object],
@@ -41,10 +48,9 @@ export default {
     },
   },
   created () {
-    if(this.isMultiTabs) {
-      let keys = Object.keys(this.theCode);
-      this.currentTab = keys[0];
-    }
+    const code = this.currentEl.layerCode || this.theCode;
+    const keys = Object.keys(code);
+    this.currentTab = keys[0];
   },
   beforeDestroy() {
     this.closeFullView()
@@ -56,9 +62,9 @@ export default {
     }
   },
   computed: {
-    isMultiTabs() {
-      return typeof this.theCode === 'string' ? false : true
-    },
+    // isMultiTabs() {
+    //   return typeof this.theCode === 'string' ? false : true
+    // },
     theCode: {
       get: function() {
         return this.value
@@ -66,6 +72,12 @@ export default {
       set: function(newValue) {
         this.$emit('input', newValue);
       }
+    },
+    errorData() {
+      return this.currentEl.layerCodeError
+    },
+    errorRow() {
+      return !!this.errorData ? this.errorData.Row : 0
     }
   },
   methods: {
@@ -100,6 +112,15 @@ export default {
     text-align: left;
     height: 2rem;
     margin-right: 1px;
+    z-index: 1;
+  }
+  .bookmark_tab--error {
+    background: $col-warning;
+    margin-left: -1em;
+    z-index: 0;
+    &.bookmark_tab--active {
+      z-index: 2;
+    }
   }
   .bookmark_content {
     position: relative;
@@ -125,5 +146,9 @@ export default {
     .bookmark_content {
       height: 100%;
     }
+  }
+  .code-wrap {
+    height: 30rem;
+    font-size: 1.6rem;
   }
 </style>

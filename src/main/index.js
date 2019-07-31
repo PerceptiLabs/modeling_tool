@@ -2,7 +2,7 @@
 
 import { app, BrowserWindow, Menu, ipcMain, dialog }  from 'electron'
 import { autoUpdater }                        from 'electron-updater'
-import ua                                     from 'universal-analytics'
+//import ua                                     from 'universal-analytics'
 
 autoUpdater.autoDownload = false;
 

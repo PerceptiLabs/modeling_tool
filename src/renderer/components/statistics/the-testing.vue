@@ -10,7 +10,10 @@
         .progress-bar-box_progress(:style="{width: progress + '%'}")
       .testing-head_controls
         //-button.btn.btn--link.icon.icon-player-prev(type="button" @click="postTestMove('previousStep')")
-        button#tutorial_play-test-button.tutorial-relative.btn.btn--link.icon.icon-player-play(type="button" @click="postTestStart()")
+        button#tutorial_play-test-button.tutorial-relative.btn.btn--link.icon.icon-player-play(type="button"
+          :class="doGlobalEvent ? 'icon-player-pause' : 'icon-player-play'"
+          @click="postTestStart()"
+          )
         button.btn.btn--link.icon.icon-player-next(type="button" @click="postTestMove('nextStep')")
 </template>
 
@@ -28,13 +31,18 @@ export default {
       })
   },
   computed: {
+    doGlobalEvent() {
+      return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent'];
+    },
     progressStore() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.coreStatus.Progress;
     },
     progress() {
       const progress = this.progressStore;
       const waitEvent = this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent'];
-      if(waitEvent && this.progressStore === 1) this.postTestStart();
+      if(waitEvent && this.progressStore === 1) {
+        this.$store.dispatch('mod_workspace/EVENT_startDoRequest', false)
+      }
       return (progress * 100).toFixed(1);
     },
   },

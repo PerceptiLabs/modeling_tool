@@ -20,7 +20,10 @@
               )
             input(type="number" v-model="settings.val")
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 

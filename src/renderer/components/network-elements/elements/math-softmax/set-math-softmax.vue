@@ -5,7 +5,10 @@
     @press-apply="saveSettings($event)"
   )
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 
@@ -21,8 +24,10 @@ export default {
     }
   },
   computed: {
-    settingsCode() {
-      return `Y=tf.nn.softmax(X);`
+    codeDefault() {
+      return {
+        Output: `Y=tf.nn.softmax(X);`
+      }
     }
   }
 }

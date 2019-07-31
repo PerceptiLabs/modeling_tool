@@ -4,7 +4,6 @@ const state = {
   hideLayers: true,
   hideSidebar: true,
   userMode: 'advanced', //simple
-  userID: '',
   userToken: '',
   platform: process.platform,
   appVersion: '',
@@ -28,6 +27,19 @@ const getters = {
   },
   GET_userIsLogin(state) {
     return !!state.userToken.length
+  },
+  GET_userID(state) {
+    if(state.userToken.length) {
+      const parseToken = parseJwt(state.userToken);
+      return parseToken.unique_name;
+    }
+    else return 'Guest'
+
+    function parseJwt(token) {
+      var base64Url = token.split('.')[1];
+      var base64 = base64Url.replace('-', '+').replace('_', '/');
+      return JSON.parse(window.atob(base64));
+    }
   }
 };
 
@@ -94,7 +106,6 @@ const mutations = {
 
 const actions = {
   NET_trainingDone({commit, dispatch}) {
-    console.log('NET_trainingDone');
     commit('GP_showNetResult', true);
     dispatch('mod_workspace/SET_openTest', false, {root: true});
   },

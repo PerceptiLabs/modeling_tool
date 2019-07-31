@@ -26,7 +26,7 @@ function prepareNetwork(elementList) {
         Type: el.componentName,
         checkpoint: el.checkpoint,
         endPoints: el.endPoints,
-        //Properties: el.layerSettings,
+        Properties: el.layerSettings,
         Code: el.layerCode,
         backward_connections: el.connectionIn,
         forward_connections: el.connectionOut
@@ -104,7 +104,6 @@ const actions = {
           commit('SET_statusLocalCore', 'online')
         })
         .catch((err) =>{
-         // console.log(err);
         });
     }
     function coreOffline() {
@@ -120,7 +119,6 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        //console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err) =>{
@@ -143,11 +141,8 @@ const actions = {
       action: "Start",
       value: message
     };
-    // console.log(JSON.stringify(theData));
-    // console.log(theData);
     coreRequest(theData)
       .then((data)=> {
-        //console.log('API_startTraining ', data);
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
         setTimeout(()=>dispatch('mod_workspace/EVENT_chartsRequest', null, {root: true}), 500)
       })
@@ -161,10 +156,8 @@ const actions = {
       action: 'headless',
       value: value
     };
-    //console.log('API_setHeadless send');
     return coreRequest(theData)
       .then((data)=> {
-        //console.log('API_setHeadless data', data);
         return data
       })
       .catch((err) =>{
@@ -253,7 +246,6 @@ const actions = {
   },
   API_CLOSE_core({getters, dispatch, rootState}) {
     const theData = {
-      //reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       reciever: 'server',
       action: 'Close',
       value: ''
@@ -269,22 +261,20 @@ const actions = {
       dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_postTestStart({rootGetters, rootState, dispatch}) {
-    //console.log('API_postTestStart');
+    console.log('API_postTestStart');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: 'startTest',
       value: ''
     };
     return coreRequest(theData)
-      .then((data)=> {
-        //console.log('API_postTestStart ', data);
-      })
+      .then((data)=> {})
       .catch((err) =>{
         console.error(err);
       });
   },
   API_postTestPlay({rootGetters, rootState, dispatch}) {
-    //console.log('API_postTestPlay');
+    console.log('API_postTestPlay');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: 'playTest',
@@ -321,10 +311,8 @@ const actions = {
       action: "getNetworkInputDim",
       value: prepareNetwork(elementList)
     };
-    //console.log('SEND getNetworkInputDim', theData);
     return coreRequest(theData)
       .then((data)=> {
-        console.log('API_getInputDim', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err) =>{
@@ -339,10 +327,8 @@ const actions = {
       action: "getNetworkOutputDim",
       value: prepareNetwork(elementList)
     };
-    //console.log('SEND getNetworkInputDim', theData);
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_getOutputDim', data);
         if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
       })
       .catch((err)=> {
@@ -355,15 +341,30 @@ const actions = {
       action: "Parse",
       value: path
     };
-    // console.log('Parse send', JSON.stringify(theData));
-    // console.log('Parse send', theData);
     return coreRequest(theData)
       .then((data)=> {
-        //console.log('Parse answer', data);
         dispatch('mod_workspace/ADD_network', {network: data.network, ctx}, {root: true});
       })
       .catch((err)=> {
         console.error('Parse answer', err);
+      });
+  },
+  API_getPreviewSample({dispatch, rootGetters}, layerId) {
+    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "getPreviewSample",
+      value: {
+        Id: layerId,
+        Network: prepareNetwork(elementList)
+      }
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        return data
+      })
+      .catch((err)=> {
+        console.error(err);
       });
   },
 };

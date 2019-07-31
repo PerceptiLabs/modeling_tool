@@ -19,7 +19,7 @@ const netElementSettings = {
     this.$store.dispatch('mod_api/API_getInputDim')
       .then(()=>{
         if(!this.currentEl.layerCode) this.updateCode();
-        else this.coreCode = this.currentEl.layerCode;
+        else this.coreCode = JSON.parse(JSON.stringify(this.currentEl.layerCode));
 
         if (this.currentEl.layerSettings) this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
       })
@@ -34,7 +34,7 @@ const netElementSettings = {
   },
   methods: {
     updateCode() {
-      this.coreCode = this.settingsCode
+      this.coreCode = this.codeDefault
     },
     saveSettings(tabName) {
       this.applySettings(tabName);
@@ -43,14 +43,15 @@ const netElementSettings = {
       if(tabName === 'Settings') {
         this.updateCode();
       }
-
       const saveSettings = {
         'elId': this.currentEl.layerId,
-        'code': this.coreCode,
+        'code': this.coreCode ? JSON.parse(JSON.stringify(this.coreCode)) : null,
         'set': this.settings,
         tabName
       };
-      this.$store.dispatch('mod_workspace/SET_elementSettings', saveSettings);
+      this.$store.dispatch('mod_workspace/SET_elementSettings', JSON.parse(JSON.stringify(saveSettings)));
+    },
+    confirmSettings() {
       this.$store.dispatch('mod_api/API_getOutputDim');
       this.hideAllWindow();
     }

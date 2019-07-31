@@ -1,17 +1,20 @@
 <template lang="pug">
   .popup
     ul.popup_tab-set
-      button.popup_header(
-        v-for="(tab, i) in tabSet"
-        :key="tab.i"
-        :class="{'disable': tabSelected != tab }"
-        :disabled='isTutorial || disableSettings'
-        @click="setTab(tab)"
-      )
-        h3(v-html="tab")
-        i.icon.icon-code-error(
-          v-if="tab === 'Code' && currentEl.layerCodeError"
+      template(v-if="tabSelected !== 'Preview'")
+        button.popup_header(
+          v-for="(tab, i) in tabSet"
+          :key="tab.i"
+          :class="{'disable': tabSelected != tab }"
+          :disabled='isTutorial || disableSettings'
+          @click="setTab(tab)"
         )
+          h3(v-html="tab")
+          i.icon.icon-code-error(
+            v-if="tab === 'Code' && currentEl.layerCodeError"
+          )
+      .popup_header.disable(v-else)
+        h3 Preview
     .popup_tab-body
       .popup_body.active(
         v-for="(tabContent, i) in tabSet"
@@ -22,17 +25,39 @@
           slot(:name="tabContent+'-content'")
         .settings-layer_foot
           slot(:name="tabContent+'-action'")
-            button.btn.btn--primary(type="button" @click="applySettings(tabContent)" :id="idSetBtn") Apply
+            button.btn.btn--primary(type="button"
+              @click="applySettings(tabContent)"
+              :id="idSetBtn"
+              ) Apply
             //-button.btn.btn--dark-blue-rev(type="button"
               v-if="showUpdateCode"
               @click="updateCode"
               ) Update code
+      .popup_body.active(v-if="tabSelected === 'Preview'")
+        .settings-layer_section
+          .settings-layer
+            .form_row
+              button.btn.btn--link(type="button")
+                i.icon.icon-backward
+                span Back
+            .form_row
+              chart-switch.data-settings_chart(
+                :disable-header="true"
+                :chart-data="imgData"
+              )
+        .settings-layer_foot
+          button.btn.btn--primary(type="button"
+            @click="confirmSettings"
+          ) Confirm
 
 </template>
 
 <script>
+  import coreRequest  from "@/core/apiCore.js";
+  import ChartSwitch    from "@/components/charts/chart-switch.vue";
 export default {
   name: 'NetBaseSettings',
+  components: {ChartSwitch },
   props: {
     tabSet: {
       type: Array,
@@ -43,14 +68,6 @@ export default {
     currentEl: {
       type: Object,
     },
-    // firstTab: {
-    //   type: String,
-    //   default: ''
-    // },
-    // layerCode: {
-    //   type: [Number, Object, String],
-    //   default: 0
-    // },
     idSetBtn: {
       type: String,
       default: ''
@@ -64,30 +81,42 @@ export default {
   data() {
     return {
       tabSelected: '',
-      disableSettings: false
+      disableSettings: false,
+      imgData: null
     }
   },
   computed: {
-    // showUpdateCode() {
-    //   return this.tabSelected === 'Settings' && !!this.layerCode
-    // },
-    // disableSettings() {
-    //   return !!this.layerCode
-    // },
+    currentNetworkID() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
+    },
     isTutorial() {
       return this.$store.getters['mod_tutorials/getIstutorialMode']
     }
   },
   methods: {
+    coreRequest,
     setTab(name) {
       this.tabSelected = name;
     },
     applySettings(name) {
-      this.$emit('press-apply', name)
+      this.$emit('press-apply', name);
+      this.tabSelected = 'Preview';
+      this.$nextTick(()=> {
+        this.getPreviewSample()
+      })
     },
     updateCode(name) {
       this.$emit('press-update')
-    }
+    },
+    confirmSettings() {
+      this.$emit('press-confirm')
+    },
+    getPreviewSample() {
+      this.$store.dispatch('mod_api/API_getPreviewSample', this.currentEl.layerId)
+        .then((data)=>{
+          this.imgData = data;
+        })
+    },
   }
 }
 </script>
@@ -101,17 +130,11 @@ export default {
   .popup_body {
     max-width: calc(50vw - #{$w-sidebar});
     min-width: 29rem;
-    /*max-height: 41vh;*/
-    /*overflow-y: auto;*/
   }
   .popup_header {
     .icon {
       margin-left: 1em;
     }
-  }
-  .settings-layer {
-    max-height: calc(100vh - 26rem);
-    overflow: auto;
   }
   .popup_body--show-code {
     position: fixed;

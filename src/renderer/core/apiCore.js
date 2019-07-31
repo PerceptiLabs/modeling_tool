@@ -1,4 +1,5 @@
 const net = require('net');
+import mixpanel       from 'mixpanel-browser'
 import store from '@/store'
 
 /*GENERAL CORE*/
@@ -17,7 +18,6 @@ const coreRequest = function (message, port, address) {
 
       socket.on('data', (data) => {
         const dataString = data.toString();
-        //console.log(dataString);
         if (dataLength) dataPart = dataPart + dataString;
         if (!dataLength) {
           dataLength = +dataString.slice(dataString.indexOf('length') + 9, dataString.indexOf(','));
@@ -30,9 +30,12 @@ const coreRequest = function (message, port, address) {
             store.dispatch('mod_workspace/SET_openStatistics', null);
             store.dispatch('mod_workspace/SET_openTest', null);
             store.dispatch('globalView/GP_errorPopup', obgData.errorMessage);
+            console.log(obgData.errorMessage);
+            mixpanel.track('Core error', {'errorList': obgData.errorMessage});
             store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
           }
           if(obgData.warningMessage && obgData.warningMessage.length) {
+            mixpanel.track('Core warning', obgData.warningMessage);
             console.warn('core warning', obgData.warningMessage);
           }
           resolve(obgData.content);
@@ -46,7 +49,7 @@ const coreRequest = function (message, port, address) {
       reject('error core api', err);
     });
     socket.on('close', () => {
-      //console.log('Client closed');
+
     });
   });
 
@@ -58,7 +61,6 @@ const coreRequest = function (message, port, address) {
       "content-length": 0,
     };
     let dataJSON = JSON.stringify(dataSend);
-    //console.log(dataJSON);
     let dataByte = (new TextEncoder('utf-8').encode(dataJSON));
     let dataByteLength = dataByte.length;
 

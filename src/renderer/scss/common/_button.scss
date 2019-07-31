@@ -41,10 +41,6 @@
 .btn--icon {
   padding: 3px;
   background-color: transparent;
-
-  &:hover {
-    //text-shadow: hoff voff blur #000;
-  }
 }
 
 .btn--toolbar {
@@ -61,7 +57,6 @@
   &:hover,
   &.active {
     background-color: $bg-workspace-2;
-    //text-shadow: $icon-shad;
   }
 
   &:active {
@@ -73,26 +68,6 @@
     cursor: default;
   }
 }
-
-//.btn--settings {
-//  background: $bg-window;
-//  color: $white;
-//  font-size: 1.2em;
-//  padding: .65em .8em;
-//  display: flex;
-//  align-items: center;
-//  justify-content: center;
-//  min-width: 11rem;
-//  &:hover,
-//  &.active {
-//    background: $bg-grad-blue;
-//    box-shadow: $icon-shad;
-//  }
-//  &.disable {
-//    background: linear-gradient(#515972 , #5D698D );
-//    color: #727EA6;
-//  }
-//}
 
 .btn--layersbar {
   color: $white;
@@ -178,7 +153,6 @@
 
 .btn--outline-blue {
   font-size: 1.5rem;
-  //font-weight: 500;
   background: $col-txt2;
   padding: .7rem 2.5rem;
   border: 1px solid $login-blue;
@@ -208,67 +182,3 @@
   border-radius: 5px;
   padding: 0.4rem 1rem;
 }
-
-//
-//.btn--social-login {
-//  @include multi-transition (color, background-color, border-color);
-//  height: $input-height;
-//  border: $default-border;
-//  color: inherit;
-//  text-transform: capitalize;
-//  padding: 4px 0;
-//  margin: 0 0 $input-holder-margin;
-//  display: inline-block;
-//  vertical-align: middle;
-//  width: 100%;
-//  min-width: 180px;
-//  background: transparent;
-//  .fa {
-//    display: inline-block;
-//    vertical-align: middle;
-//    position: relative;
-//    height: 100%;
-//    width: 38px;
-//    border-right: 1px solid rgba(#000, .25);
-//    &:before {
-//      position: absolute;
-//      left: 50%;
-//      top: 50%;
-//      transform: translate(-50%, -50%);
-//    }
-//  }
-//  span {
-//    display: inline-block;
-//    vertical-align: middle;
-//    text-align: center;
-//    white-space: nowrap;
-//    width: calc(100% - 38px);
-//    padding: 0 8px;
-//  }
-//  &:hover {
-//    background: $col-primary;
-//    color: $white;
-//    border-color: $col-primary;
-//  }
-//  &.facebook-bg {
-//    color: $white;
-//  }
-//.reg-social-inner & {
-//  width: calc(50% - 5px);
-//  margin-left: 2.5px;
-//  margin-right: 2.5px;
-//  //color: $white;
-//  //color: $txt-registry;
-//  color: $orange;
-//  background-color: #fff;
-//  border-color: currentColor;
-//  .fa {
-//    border-color: currentColor;
-//  }
-//  &:hover {
-//    background: $orange;
-//    color: $white;
-//    border-color: $orange;;
-//  }
-//}
-//}

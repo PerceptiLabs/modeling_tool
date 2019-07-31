@@ -5,15 +5,6 @@
     @press-update="updateCode"
   )
     template(slot="Settings-content")
-      //.settings-layer_section
-                  .form_row
-                    .form_label Data Input:
-                    .form_input
-                      triple-input(
-                        /:value1="50"
-                        /:value2="60"
-                        /:value3="10"
-                      )
       .settings-layer_section.text-center.crop-box
         vue-cropper(
           ref="cropper"
@@ -28,14 +19,12 @@
           :fixedBox="false"
           :original="false"
         )
-      //.settings-layer_section
-        .form_row
-          .form_label Reshape data:
-          .form_input
-            input(type="text")
 
     template(slot="Code-content")
-      settings-code(v-model="coreCode")
+      settings-code(
+        :current-el="currentEl"
+        v-model="coreCode"
+      )
 
 </template>
 
@@ -49,7 +38,6 @@
     mixins: [mixinSet],
     components: {
       TripleInput,
-      //SettingsCode,
       VueCropper
     },
     data() {
@@ -74,8 +62,10 @@
       }
     },
     computed: {
-      settingsCode() {
-        return `Y=tf.image.crop_to_bounding_box(X, ${this.settings.Offset_height}, ${this.settings.Offset_width}, ${this.settings.Target_height}, ${this.settings.Target_width})`
+      codeDefault() {
+        return {
+          Output: `Y=tf.image.crop_to_bounding_box(X, ${this.settings.Offset_height}, ${this.settings.Offset_width}, ${this.settings.Target_height}, ${this.settings.Target_width})`
+        }
       }
     }
   }

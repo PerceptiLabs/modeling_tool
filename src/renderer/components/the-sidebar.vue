@@ -13,13 +13,14 @@
     .sidebar_tab(v-if="tabSelected === 0")
       sidebar-layers
       sidebar-training(v-if="ifTraining" v-show="showTraining")
-      sidebar-share
     .sidebar_tab(v-if="tabSelected === 1")
       user-profile
     .sidebar_tab(v-if="tabSelected === 2")
       import-data
     .sidebar_tab(v-if="tabSelected === 3")
       export-data
+
+    sidebar-share
 
 </template>
 
@@ -105,7 +106,6 @@ export default {
   @import "../scss/base";
   .page_sidebar {
     display: flex;
-    //overflow: hidden;
     flex-direction: column;
     max-width: $w-sidebar;
     grid-area: sidebar;

@@ -1,7 +1,5 @@
 import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
-//const {dialog, } =   require('electron').remote;
-//import fs           from 'fs';
 import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 
 import { openSaveDialog, fileLocalSave, generateID }  from "@/core/helpers.js";
@@ -27,7 +25,6 @@ export default {
   data() {
     return {
       trainingWasPaused: false
-      //showTestingTab: false
     }
   },
   computed: {
@@ -89,7 +86,6 @@ export default {
       if(newStatus === 'Finished' && this.testIsOpen === null) {
         this.$store.dispatch('globalView/NET_trainingDone');
         this.$store.dispatch('mod_workspace/EVENT_startDoRequest', false);
-        //this.showTestingTab = true;
       }
     },
     coreStatus(newStatus, oldStatus) {
@@ -168,9 +164,6 @@ export default {
     //   //console.log(i);
     //   // this.network[i].meta.top = newRect.top;
     //   // this.network[i].meta.left = newRect.left;
-    // },
-    // onActivated(e) {
-    //   //console.log(e)
     // },
     editNetName(newName) {
       this.$store.dispatch('mod_workspace/SET_networkName', newName);
@@ -255,34 +248,6 @@ export default {
   }
 }
 
-//SAVE NETWORK
-// function openSaveDialog(jsonNet, dialogWin, network, ctx) {
-//   const option = {
-//     title:"Save Network",
-//     defaultPath: `*/${network.networkName}`,
-//     filters: [
-//       {name: 'Text', extensions: ['json']},
-//     ]
-//   };
-//
-//   const fileName = dialogWin.showSaveDialog(null, option);
-//
-//   if (fileName === undefined){
-//     ctx.infoPopup("You didn't save the file");
-//     return;
-//   }
-//   saveFileToDisk(fileName, jsonNet, ctx, savePathToLocalStorage(JSON.parse(jsonNet).project))
-// }
-// function saveFileToDisk(fileName, jsonNet, ctx, successCallBack) {
-//   fs.writeFile(fileName, jsonNet, (err) => {
-//     if(err){
-//       ctx.infoPopup(`An error occurred creating the file ${err.message}`);
-//     }
-//     ctx.infoPopup("The file has been successfully saved");
-//     successCallBack;
-//   });
-//
-// }
 function doScreenShot(ctx) {
   return new Promise((resolve, reject)=> {
     const networkField = ctx.$refs.networkField[0].$refs.network;

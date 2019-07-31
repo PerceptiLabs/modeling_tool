@@ -13,10 +13,10 @@
 </template>
 
 <script>
-import mixinSet       from '@/core/mixins/net-element-settings.js';
+import mixinSet from '@/core/mixins/net-element-settings.js';
 
 export default {
-  name: 'SetProcessGrayscale',
+  name: 'SetLayerCustom',
   mixins: [mixinSet],
   data() {
     return {
@@ -26,7 +26,7 @@ export default {
   computed: {
     codeDefault() {
       return {
-        Output: `Y=tf.image.rgb_to_grayscale(X);`
+        Output: ''
       }
     }
   }

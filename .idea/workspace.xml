@@ -3,35 +3,41 @@
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-dbscans/set-classic-ml-dbscans.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-dbscans/set-classic-ml-dbscans.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-means/set-classic-ml-k-means.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-means/set-classic-ml-k-means.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-nearest/set-classic-ml-k-nearest.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-nearest/set-classic-ml-k-nearest.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-random-forest/set-classic-ml-random-forest.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-random-forest/set-classic-ml-random-forest.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-vector-machine/set-classic-ml-vector-machine.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-vector-machine/set-classic-ml-vector-machine.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/base/range.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/base/range.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/different/start-training-spinner.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/different/start-training-spinner.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/different/user-profile.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/different/user-profile.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-environment/set-data-environment.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-environment/set-data-environment.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-conv/set-deep-learning-conv.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-deconv/set-deep-learning-deconv.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-deconv/set-deep-learning-deconv.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/set-deep-learning-fc.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-recurrent/set-deep-learning-recurrent.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-argmax/set-math-argmax.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-argmax/set-math-argmax.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-merge/set-math-merge.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-softmax/set-math-softmax.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-softmax/set-math-softmax.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-split/set-math-split.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/math-split/set-math-split.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/set-process-crop.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-embed/set-process-embed.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-embed/set-process-embed.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-grayscale/set-process-grayscale.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-grayscale/set-process-grayscale.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-one-hot/set-process-one-hot.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-one-hot/set-process-one-hot.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/viewBox-process-crop.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-crop/viewBox-process-crop.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/process-reshape/set-process-reshape.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/set-train-dunamic.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-dynamic/set-train-dunamic.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-genetic/set-train-genetic.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-genetic/set-train-genetic.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal/set-train-normal.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-normal/set-train-normal.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-reinforce/set-train-reinforce.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/train-reinforce/set-train-reinforce.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-field/network-field.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers--item.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/sidebar/sidebar-layers--item.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-sidebar.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/tutorial/tutorial-instructions.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/tutorial/tutorial-instructions.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/tutorial/tutorial-storyboard.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/tutorial/tutorial-storyboard.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/tabset/_workspace-tabset.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/workspace/tabset/_workspace-tabset.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCore.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCore.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/charts.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/charts.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/pages/app/app.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/app/app.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/pages/projects/projects.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/projects/projects.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/pages/register/register.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/register/register.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/router/index.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/base/_variables.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_button.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_button.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_forms.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_forms.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/scss/common/_popups.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/common/_popups.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/scss/components/_action-list.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/components/_action-list.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/scss/components/_settings-layer.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/components/_settings-layer.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/scss/components/_statistics-box.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/components/_statistics-box.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -51,14 +57,14 @@
     </option>
   </component>
   <component name="Git.Settings">
-    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="web-interactive-tutorial" />
+        <entry key="$PROJECT_DIR$" value="traker-mixinpanel" />
       </map>
     </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="ProjectId" id="1OUu3XfMp7KuSFmN5UgMmItwaoe" />
+  <component name="ProjectId" id="1OgEoKlXcFDXRNxCEqTtwlox4HU" />
   <component name="ProjectLevelVcsManager" settingsEditedManually="true">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
@@ -66,24 +72,24 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editor.config.ad.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../perceptilabswebsite" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/components/network-elements/elements" />
     <property name="list.type.of.created.stylesheet" value="SCSS" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="G:\progects\quantumnet\node_modules\prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.HTML" />
   </component>
   <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements" />
+      <recent name="G:\progects\quantumnet\src\renderer\core\plugins" />
+      <recent name="G:\progects\quantumnet\src\renderer\core\mixins" />
+      <recent name="G:\progects\quantumnet\src\renderer\components\sidebar" />
+      <recent name="G:\progects\quantumnet\src\renderer\components\global-popups" />
+    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="G:\progects\quantumnet\src\renderer\components\different" />
       <recent name="G:\progects\quantumnet\src\renderer\assets" />
       <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
-    </key>
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="G:\progects\quantumnet\src\renderer\components\different" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\base" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\network-elements" />
-      <recent name="G:\progects\quantumnet\src\renderer\store\modules" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements-settings" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -104,6 +110,7 @@
     </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="Node.js.mod_workspace.js" />
         <item itemvalue="Node.js.mod_workspace.js" />
         <item itemvalue="Node.js.mod_workspace.js" />
         <item itemvalue="Node.js.mod_workspace.js" />
@@ -300,20 +307,39 @@
       <workItem from="1561355825041" duration="4114000" />
       <workItem from="1561362328870" duration="17632000" />
       <workItem from="1561393695819" duration="3174000" />
-      <workItem from="1561454129360" duration="144000" />
-      <workItem from="1561907763153" duration="77000" />
-      <workItem from="1563785047550" duration="598000" />
-      <workItem from="1563789461180" duration="1008000" />
-      <workItem from="1563803097132" duration="1788000" />
-      <workItem from="1563808120590" duration="4831000" />
-      <workItem from="1563867849374" duration="6589000" />
-      <workItem from="1563880388687" duration="7924000" />
-      <workItem from="1563950371522" duration="3080000" />
-      <workItem from="1563955759267" duration="11825000" />
-      <workItem from="1563972750302" duration="11036000" />
-      <workItem from="1563984225899" duration="4890000" />
-      <workItem from="1564044184560" duration="65000" />
-      <workItem from="1564044306207" duration="16373000" />
+      <workItem from="1561534989569" duration="17869000" />
+      <workItem from="1561620391324" duration="13139000" />
+      <workItem from="1562056538172" duration="20490000" />
+      <workItem from="1562142254847" duration="14676000" />
+      <workItem from="1562175515265" duration="597000" />
+      <workItem from="1562217683140" duration="1221000" />
+      <workItem from="1562220656771" duration="2605000" />
+      <workItem from="1562234717283" duration="642000" />
+      <workItem from="1562243882579" duration="613000" />
+      <workItem from="1562251262559" duration="510000" />
+      <workItem from="1562256186106" duration="32000" />
+      <workItem from="1562331161618" duration="337000" />
+      <workItem from="1562336979105" duration="1439000" />
+      <workItem from="1562340136367" duration="1086000" />
+      <workItem from="1562578951559" duration="910000" />
+      <workItem from="1562592664199" duration="29000" />
+      <workItem from="1562593853228" duration="613000" />
+      <workItem from="1562596713245" duration="18000" />
+      <workItem from="1562663223609" duration="694000" />
+      <workItem from="1562665490684" duration="408000" />
+      <workItem from="1562751750585" duration="15165000" />
+      <workItem from="1562834143468" duration="14670000" />
+      <workItem from="1562918317011" duration="19780000" />
+      <workItem from="1563177813129" duration="7881000" />
+      <workItem from="1563191126351" duration="10534000" />
+      <workItem from="1563263797803" duration="16062000" />
+      <workItem from="1563291666852" duration="44000" />
+      <workItem from="1563369061385" duration="13805000" />
+      <workItem from="1563438959542" duration="10168000" />
+      <workItem from="1563526929504" duration="6919000" />
+      <workItem from="1564391013832" duration="23586000" />
+      <workItem from="1564471592186" duration="18663000" />
+      <workItem from="1564562534545" duration="7775000" />
     </task>
     <servers />
   </component>
@@ -379,9 +405,9 @@
     </option>
   </component>
   <component name="WindowStateProjectService">
-    <state width="261" height="798" key="Git.Branch.Popup" />
-    <state width="261" height="798" key="Git.Branch.Popup/1920.1080/1920.1080" />
-    <state width="261" height="798" key="Git.Branch.Popup@1920.1080@120dpi" />
+    <state width="279" height="816" key="Git.Branch.Popup" />
+    <state width="279" height="816" key="Git.Branch.Popup/1920.1080/1920.1080" />
+    <state width="279" height="816" key="Git.Branch.Popup@1920.1080@120dpi" />
   </component>
   <component name="masterDetails">
     <states>

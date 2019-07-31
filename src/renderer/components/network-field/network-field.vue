@@ -30,16 +30,6 @@
             )
             ellipse(ry="7" rx="8" cy="7" cx="0")
 
-          //-marker#svg-arrow_end.svg-arrow_marker(
-            viewBox="0 0 28 16"
-            refX="8" refY="7"
-            markerWidth="8"
-            markerHeight="14"
-            orient="auto"
-            markerUnits="strokeWidth"
-            )
-            ellipse(ry="7" rx="8" cy="7" cx="8")
-            polyline(points="1.9566014856100082,3.9975550174713135 1.9566014856100082,10.002445220947266 7.119192227721214,7")
       //- arrows list
       template(
         v-if="arrowsList.length"
@@ -83,12 +73,6 @@
       :is="el.componentName"
       :element-data="el"
     )
-    //-settings-arrow(
-      v-if="arrowsList.length"
-      v-for="(arrow, i) in arrowsList"
-      /:key="arrow.i"
-      /:arrow-data="arrow"
-      )
 
 </template>
 
