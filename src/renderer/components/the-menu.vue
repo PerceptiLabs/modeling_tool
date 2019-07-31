@@ -1,5 +1,5 @@
 <template lang="pug">
-  nav.app-header_nav(v-if="showMenu")
+  nav.app-header_nav(v-if="showMenu" v-hotkey="keymap")
     ul.header-nav
       li.header-nav_item(
       v-for="(item, i) in navMenu"
@@ -17,11 +17,11 @@
             button.btn.btn--link.header-nav_sublist-btn(type="button"
               v-else
               :disabled="subItem.enabled === false"
-              @mousedown="subItem.mousedown()"
-              @click="subItem.active()"
+              @mousedown="subItem.mousedown ? subItem.mousedown() : ()=>{}"
+              @click="subItem.active ? subItem.active() : ()=>{}"
             )
               span.header-nav_btn-text {{ subItem.label }}
-              span.text-disable(
+              span.text-disable.hotkey(
                 v-if="subItem.accelerator"
                 ) {{ subItem.accelerator }}
               i.icon.icon-shevron-right(
@@ -37,10 +37,10 @@
               )
                 button.btn.btn--link.header-nav_sublist-btn(type="button"
                   :disabled="subSubItem.enabled === false"
-                  @click="subSubItem.active()"
+                  @click="subItem.active ? subItem.active() : ()=>{}"
                 )
                   span {{subSubItem.label}}
-                  span.text-disable(
+                  span.text-disable.hotkey(
                     v-if="subSubItem.accelerator"
                   ) {{ subSubItem.accelerator }}
 
@@ -57,11 +57,13 @@ export default {
   props: {
     showMenu: {
       type: Boolean,
-      default: true
+      default: true,
     }
   },
-  mounted() {
-    this.electronMenuListener();
+  data() {
+    return {
+      dataKeymap: {}
+    }
   },
   computed: {
     ...mapGetters({
@@ -83,72 +85,83 @@ export default {
     isMac() {
       return process.platform === 'darwin'
     },
+
     navMenu() {
-      const ctx = this;
       return [
         {
           label: 'File', visible: true,
           submenu: [
-            {label: 'New',          accelerator: this.isMac ? 'Command+N' : 'Ctrl+N',             enabled: this.isLogin,  id: "net-new",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Open',         accelerator: this.isMac ? 'Command+O' : 'Ctrl+O',             enabled: this.isLogin,  id: "net-open",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Save',         accelerator: this.isMac ? 'Command+S' : 'Ctrl+S',             enabled: this.openApp,  id: "save",             active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Save as...',   accelerator: this.isMac ? 'Command+Shift+S' : 'Ctrl+Shift+S', enabled: this.openApp,  id: "save-as",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',                        enabled: this.isLogin,                               active: this.addNewNetwork,                                  mousedown: ()=> {}},
+            {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',                        enabled: this.isLogin,                               active: this.openModel,                                      mousedown: ()=> {}},
+            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',                        enabled: this.openApp,                               active: this.saveModel,                                      mousedown: ()=> {}},
+            {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+S' : 'ctrl+shift+s',            enabled: this.openApp,                               active: this.saveModelAs,                                    mousedown: ()=> {}},
             {type: 'separator'},
-            {label: 'Log out',                                                                    enabled: this.isLogin,  id: "log-out",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Exit',         accelerator: this.isMac ? 'Command+N' : 'Ctrl+Q',             enabled: true,          id: "exit-app",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}}
+            {label: 'Log out',                                                                            enabled: this.isLogin,                               active: function() {},                                       mousedown: ()=> {}},
+            {label: 'Exit',         accelerator: this.isMac ? 'meta+q' : 'ctrl+q',                        enabled: true,                                       active: this.appClose,                                       mousedown: ()=> {}}
           ]
         },
         {
           label: 'Edit', visible: true,
           submenu: [
-            {label: 'Undo',         accelerator: this.isMac ? 'Command+Z' : 'Ctrl+Z',             enabled: false,         id: "undo",             active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Redo',         accelerator: this.isMac ? 'Command+Shift+Z' : 'Ctrl+Shift+Z', enabled: false,         id: "redo",             active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',                        enabled: false,                                      active: function() {},                                       mousedown: ()=> {}},
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',            enabled: false,                                      active: function() {},                                       mousedown: ()=> {}},
             {type: 'separator'},
-            {label: 'Copy',         accelerator: this.isMac ? 'Command+C' : 'Ctrl+C',             enabled: this.openApp,  id: "copy",             active: function() {},                                mousedown: function() {ctx.menuEventSwitcher(this.id)}},
-            {label: 'Paste',        accelerator: this.isMac ? 'Command+V' : 'Ctrl+V',             enabled: this.openApp,  id: "paste",            active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',                        enabled: this.openApp,                                                                                            mousedown: this.HCCopy},
+            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',                        enabled: this.openApp,                               active: this.HCPaste,                                        mousedown: ()=> {}},
             {type: 'separator'},
-            {label: 'Select all',   accelerator: this.isMac ? 'Command+A' : 'Ctrl+A',             enabled: this.openApp,  id: "select-all",       active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Deselect all', accelerator: this.isMac ? 'Command+Shift+A' : 'Ctrl+Shift+A', enabled: this.openApp,  id: "deselect-all",     active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',                        enabled: this.openApp,                               active: this.HCSelectAll,                                    mousedown: ()=> {}},
+            {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',            enabled: this.openApp,                               active: this.HCDeselectAll,                                  mousedown: ()=> {}},
           ]
         },
         {
           label: 'Window', visible: true,
           submenu: [
-              {label: 'Minimize',                                                                 enabled: true,          id: "win-minimize",     active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-              {label: 'Zoom',                                                                     enabled: true,          id: "win-zoom",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Minimize',                                                                           enabled: true,                                       active: this.appMinimize,                                    mousedown: ()=> {}},
+            {label: 'Zoom',                                                                               enabled: true,                                       active: this.appMaximize,                                    mousedown: ()=> {}},
           ]
         },
         {
           label: 'Settings', visible: true,
           submenu: [
-            {label: 'Hyperparameters',                                                            enabled: this.openApp,  id: "open-net-param",   active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Edit profile',                                                               enabled: false,         id: "edit-profile",     active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'History',                                                                    enabled: false,         id: "history",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Hyperparameters',                                                                    enabled: this.openApp,                               active: this.openHyperparameters,                            mousedown: ()=> {}},
+            {label: 'Edit profile',                                                                       enabled: false,                                      active: function() {},                                       mousedown: ()=> {}},
+            {label: 'History',                                                                            enabled: false,                                      active: function() {},                                       mousedown: ()=> {}},
           ]
         },
         {
           label: 'Help', visible: true,
           submenu: [
-            {label: 'Help',                                                                                               id: "to-help",          active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'About',                                                                                              id: "to-about",         active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Tutorial mode',                                                     enabled: !this.isTutorialActive && this.isLogin, id: "enable-tutorial",  active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
-            {label: 'Check for updates',                                                                                  id: "check-updates",    active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}},
+            {label: 'Help',                                                                                                                                    active: () => {this.goToLink(`${baseUrlSite}/i_docs`)},      mousedown: ()=> {}},
+            {label: 'About',                                                                                                                                   active: () => {this.goToLink(`${baseUrlSite}/about`);},      mousedown: ()=> {}},
+            {label: 'Tutorial mode',                                                                      enabled: !this.isTutorialActive && this.isLogin,     active: this.showTutorial,                                   mousedown: ()=> {}},
+            {label: 'Check for updates',                                                                                                                       active: this.checkUpdate,                                    mousedown: ()=> {}},
             {type: 'separator'},
-            {label: `Version: ${this.appVersion}`,                                                enabled: false,}
+            {label: `Version: ${this.appVersion}`,                                                        enabled: false,}
           ]
         },
         {
           label: '', visible: false,
           submenu: [
-            {label: 'Delete',                accelerator: this.isMac ? 'backspace+meta' : 'delete',                                 id: "hc-delete",              active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
-            {label: 'Esc',                   accelerator: 'esc',                                                                    id: "hc-esc",                 active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
-            {label: 'addLayerContainer',     accelerator: this.isMac ? 'Command+G' : 'Ctrl+G',              enabled: this.openApp,  id: "hc-add-layer-container", active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
-            {label: 'unGroupLayerContainer', accelerator: this.isMac ? 'Command+Shift+G' : 'Ctrl+Shift+G',  enabled: this.openApp,  id: "hc-ungroup-container",   active: function() {ctx.menuEventSwitcher(this.id)},  mousedown: ()=> {}, visible: false},
-            {label: 'preventClose',          accelerator: 'Alt+F4',                                         enabled: true,          id: "hc-prevent-close",       active: function(e) {e.preventDefault()},             mousedown: ()=> {}, visible: false},
+            {label: 'Delete',                accelerator: this.isMac ? 'backspace+meta' : 'delete',                                                             active: this.HC_delete,                                     mousedown: ()=> {}, visible: false},
+            {label: 'Esc',                   accelerator: 'esc',                                                                                                active: this.HC_esc,                                        mousedown: ()=> {}, visible: false},
+            {label: 'addLayerContainer',     accelerator: this.isMac ? 'meta+g' : 'ctrl+g',               enabled: this.openApp,                                active: this.HC_addLayerContainer,                          mousedown: ()=> {}, visible: false},
+            {label: 'unGroupLayerContainer', accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',   enabled: this.openApp,                                active: this.HC_unGroupLayerContainer,                      mousedown: ()=> {}, visible: false},
+            {label: 'preventClose',                                                                       enabled: true,                                        active: function(e) {e.preventDefault()},                   mousedown: ()=> {}, visible: false},
           ]
         }
       ]
-    }
+    },
+
+    keymap () {
+      this.navMenu.forEach((item) => {
+        item.submenu.forEach((subItem) => {
+          if(subItem.accelerator) {
+            this.dataKeymap[subItem.accelerator] = subItem.active ? subItem.active : subItem.mousedown
+          }
+        })
+      });
+      return this.dataKeymap;
+    },
   },
   watch: {
     navMenu(newMenu) {
@@ -175,98 +188,6 @@ export default {
       HCDeselectAll:    'mod_workspace/SET_elementUnselect'
     }),
     goToLink,
-    electronMenuListener() {
-      ipcRenderer.on('menu-event', (event, menuId) => {
-        console.log('menu-event', menuId);
-        this.menuEventSwitcher(menuId)
-      });
-    },
-    menuEventSwitcher(menuId) {
-      switch (menuId) {
-        //File
-        case 'net-new':
-          this.addNewNetwork();
-          break;
-        case 'net-open':
-          this.openModel();
-          break;
-        case 'save':
-          this.saveModel();
-          break;
-        case 'save-as':
-          this.saveModelAs();
-          break;
-        case 'log-out':
-          this.logOut();
-          break;
-        case 'exit-app':
-          this.appClose();
-          break;
-        //Edit
-        case 'undo':
-
-          break;
-        case 'redo':
-
-          break;
-        case 'copy':
-          console.log('copy');
-          this.HCCopy();
-          break;
-        case 'paste':
-          this.HCPaste();
-          break;
-        case 'select-all':
-          this.HCSelectAll();
-          break;
-        case 'deselect-all':
-          this.HCDeselectAll();
-          break;
-        //Window
-        case 'win-minimize':
-          this.appMinimize();
-          break;
-        case 'win-zoom':
-          this.appMaximize();
-          break;
-        //Settings
-        case 'open-net-param':
-          this.openHyperparameters();
-          break;
-        case 'edit-profile':
-
-          break;
-        case 'history':
-
-          break;
-        //Help
-        case 'to-help':
-          this.goToLink(`${baseUrlSite}/i_docs`);
-          break;
-        case 'to-about':
-          this.goToLink(`${baseUrlSite}/about`);
-          break;
-        case 'enable-tutorial':
-          this.showTutorial();
-          break;
-        case 'check-updates':
-          this.checkUpdate();
-          break;
-        //Hot keys
-        case 'hc-delete':
-          this.HC_delete();
-          break;
-        case 'hc-esc':
-          this.HC_esc();
-          break;
-        case 'hc-add-layer-container':
-          this.HC_addLayerContainer();
-          break;
-        case 'hc-ungroup-container':
-          this.HC_unGroupLayerContainer();
-          break;
-      }
-    },
     checkUpdate() {
       this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
       ipcRenderer.send('check-update');
@@ -386,5 +307,8 @@ export default {
   .header-nav_btn-text {
     padding-right: 1rem;
     flex: 1 1 100%;
+  }
+  .hotkey{
+    text-transform: capitalize;
   }
 </style>
