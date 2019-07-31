@@ -464,7 +464,7 @@ const mutations = {
   set_elementSettings(state, settings) {
     currentElement(settings.elId).layerSettings = settings.set;
     currentElement(settings.elId).layerCode = settings.code;
-    console.log(settings);
+    //console.log(settings);
     currentElement(settings.elId).layerSettingsTabName = settings.tabName;
   },
 
@@ -775,7 +775,7 @@ const actions = {
     if(isLongRequest) {
       const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
       clearInterval(currentMeta.timerID);
-      console.log('new time', timeRequest);
+      //console.log('new time', timeRequest);
       dispatch('globalView/SET_timeIntervalDoRequest', timeRequest, {root: true});
       dispatch('EVENT_startDoRequest', true);
     }

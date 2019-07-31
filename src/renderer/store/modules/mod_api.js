@@ -366,6 +366,27 @@ const actions = {
         console.error('Parse answer', err);
       });
   },
+  API_getPreviewSample({dispatch, rootGetters}, layerId) {
+    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "getPreviewSample",
+      value: {
+        Id: layerId,
+        Network: prepareNetwork(elementList)
+      }
+    };
+    //console.log(theData);
+    //console.log('SEND getNetworkInputDim', theData);
+    return coreRequest(theData)
+      .then((data)=> {
+        //console.log('getPreviewSample api answer', data);
+        return data
+      })
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
 };
 
 export default {

@@ -40,14 +40,14 @@ const netElementSettings = {
       this.coreCode = this.codeDefault
     },
     saveSettings(tabName) {
-      console.log('tabName mixin ', tabName);
+      //console.log('tabName mixin ', tabName);
       this.applySettings(tabName);
     },
     applySettings(tabName) {
       if(tabName === 'Settings') {
         this.updateCode();
       }
-      console.log(this.coreCode);
+      //console.log(this.coreCode);
       const saveSettings = {
         'elId': this.currentEl.layerId,
         'code': this.coreCode ? JSON.parse(JSON.stringify(this.coreCode)) : null,
@@ -56,7 +56,7 @@ const netElementSettings = {
       };
       this.$store.dispatch('mod_workspace/SET_elementSettings', JSON.parse(JSON.stringify(saveSettings)));
       this.$store.dispatch('mod_api/API_getOutputDim');
-      this.hideAllWindow();
+      //this.hideAllWindow();
     }
   }
 };

@@ -79,7 +79,7 @@ export default {
         {
           title: 'Now you know the basics of the program. Feel free to start building your first AI!',
           text: `Remember, this is a Beta version, if you find any errors or have any suggestions,
-                 please let us know on <a class="storyboard-link" href="mailto:contact@perceptilabs.com">contact@perceptilabs.com</a>
+                 please let us know on <a class="text-primary" href="mailto:contact@perceptilabs.com">contact@perceptilabs.com</a>
                  <br>Any feedback is highly appreciated!`,
           button: {
             text: `Let's Try It`,

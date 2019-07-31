@@ -37,7 +37,7 @@
           )
 
     template(slot="Cloud-content")
-      settings-cloud
+      //-settings-cloud
 
     template(slot="Computer-action")
       button.btn.btn--primary.tutorial-relative(type="button"
@@ -76,7 +76,8 @@
     },
     data() {
       return {
-        tabs: ['Computer', 'Cloud'],
+        //tabs: ['Computer', 'Cloud'],
+        tabs: ['Computer'],
         dataColumns: [],
         dataColumnsSelected: [],
         interactiveInfo: {
@@ -180,7 +181,7 @@
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
       saveSettings(tabName) {
-        console.log(tabName);
+        //console.log(tabName);
         this.applySettings(tabName);
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'})
       }
