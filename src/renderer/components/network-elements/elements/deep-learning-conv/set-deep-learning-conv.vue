@@ -3,6 +3,7 @@
     :current-el="currentEl"
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
+    @press-confirm="confirmSettings"
     @press-update="updateCode"
   )
     template(slot="Settings-content")

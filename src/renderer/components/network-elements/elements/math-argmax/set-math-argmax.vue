@@ -2,6 +2,7 @@
   net-base-settings(
     :current-el="currentEl"
     @press-apply="saveSettings($event)"
+    @press-confirm="confirmSettings"
     @press-update="updateCode"
   )
     template(slot="Settings-content")

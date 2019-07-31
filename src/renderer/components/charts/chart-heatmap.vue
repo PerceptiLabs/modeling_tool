@@ -47,6 +47,7 @@ export default {
       this.wWorker.addEventListener('message', this.drawChart, false);
     },
     sendDataToWWorker(dataWatch) {
+      console.log(JSON.parse(JSON.stringify(dataWatch)));
       let data = dataWatch || this.chartData;
       if (data === null || data === undefined) {
         this.chartModel = this.defaultModel;

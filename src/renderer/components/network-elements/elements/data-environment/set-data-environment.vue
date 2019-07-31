@@ -3,6 +3,7 @@
     :tab-set="tabs"
     :current-el="currentEl"
     @press-apply="saveSettings($event)"
+    @press-confirm="confirmSettings"
   )
     template(slot="Gym-content")
       .settings-layer_section(style="position:relative")
