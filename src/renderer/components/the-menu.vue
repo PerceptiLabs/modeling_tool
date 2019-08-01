@@ -96,7 +96,7 @@ export default {
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',                        enabled: this.openApp,                               active: this.saveModel,                                      mousedown: ()=> {}},
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+S' : 'ctrl+shift+s',            enabled: this.openApp,                               active: this.saveModelAs,                                    mousedown: ()=> {}},
             {type: 'separator'},
-            {label: 'Log out',                                                                            enabled: this.isLogin,                               active: function() {},                                       mousedown: ()=> {}},
+            {label: 'Log out',                                                                            enabled: this.isLogin,                               active: this.logOut,                                         mousedown: ()=> {}},
             {label: 'Exit',         accelerator: this.isMac ? 'meta+q' : 'ctrl+q',                        enabled: true,                                       active: this.appClose,                                       mousedown: ()=> {}}
           ]
         },
