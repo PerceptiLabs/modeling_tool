@@ -6,7 +6,7 @@
     //.sidebar-share_btn
       button.btn.btn--primary(type="button"  disabled="disabled") Share
     .sidebar-share_bug-report-btn
-      button.btn.btn--primary(type="button" @click="goToReport")
+      button.btn.btn--primary(type="button" @click="goToReport" :class="{'tutorial-active': activeStepStoryboard === 5}")
         span Report
         i.icon.icon-bug-report
 
@@ -26,6 +26,11 @@
     methods: {
       goToReport() {
         goToLink(this.reportLink)
+      }
+    },
+    computed: {
+      activeStepStoryboard() {
+        return this.$store.state.mod_tutorials.activeStepStoryboard
       }
     }
   }
