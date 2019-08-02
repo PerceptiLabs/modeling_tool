@@ -112,7 +112,7 @@
       //   return this.$store.state.mod_user.userToken
       // },
       userId() {
-        return this.$store.state.mod_user.userID
+        return this.$store.getters['mod_user/GET_userID']
       }
     },
     watch: {
