@@ -3,12 +3,11 @@ const namespaced = true;
 const state = {
   hideLayers: true,
   hideSidebar: true,
-  userMode: 'advanced', //simple
-  userToken: '',
   platform: process.platform,
   appVersion: '',
   appPath: '',
   appIsOpen: false,
+  appIsFullView: false,
   timeIntervalDoRequest: 2500,
   requestCounter: 0,
   globalPopup: {
@@ -19,28 +18,12 @@ const state = {
     showErrorPopup: false,
     showWorkspaceBeforeImport: false,
   },
-  restoreDownIcon: false
 };
 const getters = {
   GET_appPath(state) {
     return state.appPath
   },
-  GET_userIsLogin(state) {
-    return !!state.userToken.length
-  },
-  GET_userID(state) {
-    if(state.userToken.length) {
-      const parseToken = parseJwt(state.userToken);
-      return parseToken.unique_name;
-    }
-    else return 'Guest'
 
-    function parseJwt(token) {
-      var base64Url = token.split('.')[1];
-      var base64 = base64Url.replace('-', '+').replace('_', '/');
-      return JSON.parse(window.atob(base64));
-    }
-  }
 };
 
 const mutations = {
@@ -49,12 +32,6 @@ const mutations = {
   },
   SET_hideSidebar (state, value) {
     state.hideSidebar = value
-  },
-  set_userToken (state, value) {
-    state.userToken = value
-  },
-  SET_userID (state, value) {
-    state.userID = value
   },
   SET_appVersion (state, value) {
     state.appVersion = value
@@ -65,8 +42,8 @@ const mutations = {
   SET_appPath (state, value) {
     state.appPath = value
   },
-  SET_restoreDownIcon(state, value) {
-    state.restoreDownIcon = value
+  SET_appIsFullView(state, value) {
+    state.appIsFullView = value
   },
   set_timeIntervalDoRequest (state, value) {
     state.timeIntervalDoRequest = value
@@ -108,14 +85,6 @@ const actions = {
   NET_trainingDone({commit, dispatch}) {
     commit('GP_showNetResult', true);
     dispatch('mod_workspace/SET_openTest', false, {root: true});
-  },
-  SET_userToken({commit, dispatch}, value) {
-    commit('set_userToken', value);
-    if(process.env.BUILD_TARGET !== 'web') {
-     value
-       ? dispatch('mod_api/API_runServer', null, {root: true})
-       : dispatch('mod_api/API_CLOSE_core', null, {root: true});
-    }
   },
   SET_timeIntervalDoRequest({commit, dispatch}, value) {
     commit('set_timeIntervalDoRequest', value);

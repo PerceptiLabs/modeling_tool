@@ -19,7 +19,7 @@ export default {
   components: {TheMenu},
   computed: {
     showRestoreIcon() {
-      return this.$store.state.globalView.restoreDownIcon
+      return this.$store.state.globalView.appIsFullView
     }
   },
   methods: {

@@ -16,7 +16,7 @@
           .form_label Min samples in neighborhood:
           .form_input
             input(type="text")
-      template(v-if="userMode === 'advanced'")
+      template(v-if="userMode === 'Advanced'")
         .settings-layer_section
           .form_row(v-tooltip-interactive:right="interactiveInfo.initializationMethod")
             .form_label Initialization method:

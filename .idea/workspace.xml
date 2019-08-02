@@ -2,9 +2,23 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_user.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/App.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/base/text-editable.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/base/text-editable.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/different/user-profile.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/different/user-profile.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/header/header-win.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/header/header-win.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-dbscans/set-classic-ml-dbscans.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-dbscans/set-classic-ml-dbscans.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-means/set-classic-ml-k-means.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-means/set-classic-ml-k-means.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-nearest/set-classic-ml-k-nearest.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-k-nearest/set-classic-ml-k-nearest.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-random-forest/set-classic-ml-random-forest.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-random-forest/set-classic-ml-random-forest.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-vector-machine/set-classic-ml-vector-machine.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/classic-ml-vector-machine/set-classic-ml-vector-machine.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-menu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-menu.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/globalView.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -38,24 +52,24 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editor.config.ad.shown" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/components/network-elements/elements" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/store/modules" />
     <property name="list.type.of.created.stylesheet" value="SCSS" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="G:\progects\quantumnet\node_modules\prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.HTML" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements" />
-      <recent name="G:\progects\quantumnet\src\renderer\core\plugins" />
-      <recent name="G:\progects\quantumnet\src\renderer\core\mixins" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\sidebar" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\global-popups" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="G:\progects\quantumnet\src\renderer\components\different" />
       <recent name="G:\progects\quantumnet\src\renderer\assets" />
       <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\progects\quantumnet\src\renderer\store\modules" />
+      <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements" />
+      <recent name="G:\progects\quantumnet\src\renderer\core\plugins" />
+      <recent name="G:\progects\quantumnet\src\renderer\core\mixins" />
+      <recent name="G:\progects\quantumnet\src\renderer\components\sidebar" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -306,7 +320,9 @@
       <workItem from="1564391013832" duration="23586000" />
       <workItem from="1564471592186" duration="18663000" />
       <workItem from="1564562534545" duration="10569000" />
-      <workItem from="1564583040524" duration="184000" />
+      <workItem from="1564583040524" duration="365000" />
+      <workItem from="1564583705653" duration="1552000" />
+      <workItem from="1564730270112" duration="11504000" />
     </task>
     <servers />
   </component>

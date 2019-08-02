@@ -1,5 +1,6 @@
-import {ipcRenderer} from 'electron'
-import {fileLocalRead, openLoadDialog} from "../../core/helpers";
+import {ipcRenderer}  from 'electron'
+import router         from "@/router";
+import {fileLocalRead, openLoadDialog} from "@/core/helpers";
 
 const namespaced = true;
 
@@ -98,13 +99,11 @@ const actions = {
   EVENT_saveNetworkAs({commit}) {
     commit('set_saveNetworkAs');
   },
-  EVENT_logOut({dispatch}, ctx) {
+  EVENT_logOut({dispatch}) {
     localStorage.removeItem('userToken');
-    localStorage.removeItem('userId');
-    localStorage.removeItem('user');
-    dispatch('globalView/SET_userToken', '', {root: true});
+    dispatch('mod_user/SET_userToken', '', {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
-    ctx.$router.replace({name: 'login'});
+    router.replace({name: 'login'});
   },
   EVENT_appClose({dispatch, rootState}) {
     if(rootState.mod_api.statusLocalCore === 'online') {

@@ -3,7 +3,7 @@ import { baseUrlCloud }  from '@/core/constants.js'
 
 
 const requestCloudApi = function (method, path, dataRequest) {
-  const userToken = store.state.globalView.userToken;
+  const userToken = store.state.mod_user.userToken;
   const headers = userToken.length
     ? {'authorization': `Bearer ${userToken}`}
     : '';

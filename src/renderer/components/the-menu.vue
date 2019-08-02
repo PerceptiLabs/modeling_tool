@@ -80,7 +80,7 @@ export default {
       return this.$store.state.globalView.appIsOpen
     },
     isLogin() {
-      return !!this.$store.state.globalView.userToken
+      return this.$store.getters['mod_user/GET_userIsLogin']
     },
     isMac() {
       return process.platform === 'darwin'
@@ -197,7 +197,7 @@ export default {
       this.offMainTutorial();
     },
     logOut() {
-      this.$store.dispatch('mod_events/EVENT_logOut', this);
+      this.$store.dispatch('mod_events/EVENT_logOut');
       this.offMainTutorial();
     },
     showTutorial() {

@@ -53,8 +53,11 @@ export default {
 
 <style lang="scss" scoped>
   .editable-field {
+    display: inline-block;
     position: relative;
     cursor: pointer;
+    min-width: 2em;
+    min-height: 1em;
   }
 
   .editable-field_input-wrap {

@@ -66,7 +66,7 @@ export default {
       return this.$store.state.mod_login.showLoader
     },
     userIsLogin() {
-      return this.$store.state.globalView.userToken
+      return this.$store.getters['mod_user/GET_userIsLogin']
     },
   },
   methods: {
@@ -92,7 +92,7 @@ export default {
       this.requestCloudApi('post', 'Customer/Login', dataParams)
         .then((response)=>{
           const token = response.data.data.token;
-          this.$store.dispatch('globalView/SET_userToken', token);
+          this.$store.dispatch('mod_user/SET_userToken', token);
           if(this.saveToken) {
             localStorage.setItem('userToken', token);
           }

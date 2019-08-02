@@ -16,7 +16,7 @@
               span Regression
             base-radio(group-name="group" value-input="Sigmoid1" v-model="settings.neurons")
               span Anomalie detection
-      template(v-if="userMode === 'advanced'")
+      template(v-if="userMode === 'Advanced'")
         .settings-layer_section
           .form_row
             .form_label Split:

@@ -83,7 +83,7 @@
       ipcRenderer.on('show-mac-header', (event, value) => { this.showMacHeader = value });
       ipcRenderer.on('info',            (event, data) => { console.log(data); });
       ipcRenderer.on('show-restore-down-icon', (event, value) => {
-        this.$store.commit('globalView/SET_restoreDownIcon', value);
+        this.$store.commit('globalView/SET_appIsFullView', value);
       });
 
       this.calcAppPath();
@@ -109,10 +109,10 @@
         return this.$store.state.mod_autoUpdate.showNotAvailable
       },
       // userToken() {
-      //   return this.$store.state.globalView.userToken
+      //   return this.$store.state.mod_user.userToken
       // },
       userId() {
-        return this.$store.getters['globalView/GET_userID']
+        return this.$store.state.mod_user.userID
       }
     },
     watch: {
@@ -163,7 +163,7 @@
       checkToken() {
         let localUserToken = localStorage.getItem('userToken');
         if(localUserToken) {
-          this.$store.dispatch('globalView/SET_userToken', localUserToken);
+          this.$store.dispatch('mod_user/SET_userToken', localUserToken);
           if(this.$router.history.current.name === 'login') {
             this.$router.replace({name: 'projects'});
           }

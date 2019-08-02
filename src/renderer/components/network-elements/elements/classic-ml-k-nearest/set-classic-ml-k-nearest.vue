@@ -19,7 +19,7 @@
           .form_label Neighbors:
           .form_input
             input(type="text")
-      template(v-if="userMode === 'advanced'")
+      template(v-if="userMode === 'Advanced'")
         .settings-layer_section
           .form_row
             .form_label Weights:

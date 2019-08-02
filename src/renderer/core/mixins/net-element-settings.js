@@ -26,7 +26,7 @@ const netElementSettings = {
   },
   computed: {
     userMode() {
-      return this.$store.state.globalView.userMode
+      return this.$store.state.mod_user.userRole
     },
     codeInputDim() {
       return this.currentEl.layerMeta.InputDim
