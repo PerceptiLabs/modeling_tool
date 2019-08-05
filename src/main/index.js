@@ -2,7 +2,7 @@
 
 import { app, BrowserWindow, Menu, ipcMain, dialog }  from 'electron'
 import { autoUpdater }                        from 'electron-updater'
-//import ua                                     from 'universal-analytics'
+import ua                                     from 'universal-analytics'
 
 autoUpdater.autoDownload = false;
 
@@ -86,9 +86,7 @@ function createWindow () {
     menuJson.forEach((menuItem)=> {
       if(menuItem.submenu.length) {
         menuItem.submenu.forEach((subMenuItem)=> {
-          subMenuItem.click = ()=> {
-            mainWindow.webContents.send('menu-event', subMenuItem.id);
-          }
+          subMenuItem.click = ()=> {mainWindow.webContents.send('menu-event', subMenuItem.id)}
         })
       }
     });

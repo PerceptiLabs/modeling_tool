@@ -13,7 +13,9 @@ const clickOutside = {
   },
   methods: {
     clickOutside(event) {
-      if (event.target.closest('.js-clickout') !== this.ClickElementTracking) {
+      if (event.target.closest('.js-clickout') !== this.ClickElementTracking
+        && !(event.target.closest('.app-header_nav'))
+      ) {
         document.removeEventListener('click', this.clickOutside);
         this.ClickElementTracking = null;
         this.clickOutsideAction();
