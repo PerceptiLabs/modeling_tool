@@ -105,7 +105,8 @@ const actions = {
     dispatch('mod_workspace/RESET_network', null, {root: true});
     router.replace({name: 'login'});
   },
-  EVENT_appClose({dispatch, rootState}) {
+  EVENT_appClose({dispatch, rootState}, event) {
+    if(event) event.preventDefault();
     if(rootState.mod_api.statusLocalCore === 'online') {
       dispatch('mod_api/API_stopTraining', null, {root: true})
         .then(()=> { return dispatch('mod_api/API_CLOSE_core', null, {root: true}) })

@@ -26,17 +26,14 @@
               i.icon.icon-shevron-right(
                 v-if="subItem.submenu"
                 )
-            //-div.header-nav_sublist-btn(
-              v-if="i === navMenu.length - 1 && index === item.submenu.length - 1"
-              ) Version: {{appVersion}}
-            ul.header-nav_sublist.sublist--right(v-if="subItem.submenu")
+            //-ul.header-nav_sublist.sublist--right(v-if="subItem.submenu")
               li.header-nav_item(
                 v-for="(subSubItem, ind) in subItem.submenu"
-                :key="subSubItem.ind"
+                /:key="subSubItem.ind"
               )
                 button.btn.btn--link.header-nav_sublist-btn(type="button"
-                  :disabled="subSubItem.enabled === false"
-                  @click="subItem.active ? subItem.active() : ()=>{}"
+                  /:disabled="subSubItem.enabled === false"
+                  @click="subItem.active"
                 )
                   span {{subSubItem.label}}
                   span.text-disable.hotkey(
@@ -96,7 +93,7 @@ export default {
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+S' : 'ctrl+shift+s',            enabled: this.openApp,        active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Log out',                                                                            enabled: this.isLogin,        active: this.logOut },
-            {label: 'Exit',         accelerator: this.isMac ? 'meta+q' : 'ctrl+q',                        enabled: true,                active: this.appClose }
+            {label: 'Exit',         accelerator: this.isMac ? 'meta+q' : 'alt+f4',                        enabled: true,                active: (e)=> this.appClose(e) }
           ]
         },
         {
@@ -135,7 +132,7 @@ export default {
             {label: 'Tutorial mode',                                                                      enabled: !this.isTutorialActive && this.isLogin,     active: this.showTutorial },
             {label: 'Check for updates',                                                                                                active: this.checkUpdate },
             {type: 'separator'},
-            {label: `Version: ${this.appVersion}`,                                                        enabled: false,}
+            {label: `Version: ${this.appVersion}`,                                                        enabled: false,               active: ()=>{} }
           ]
         },
         {
@@ -145,7 +142,7 @@ export default {
             {label: 'Esc',                   accelerator: 'esc',                                                                         active: this.HC_esc,                       visible: false  },
             {label: 'addLayerContainer',     accelerator: this.isMac ? 'meta+g' : 'ctrl+g',               enabled: this.openApp,         active: this.HC_addLayerContainer,         visible: false  },
             {label: 'unGroupLayerContainer', accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',   enabled: this.openApp,         active: this.HC_unGroupLayerContainer,     visible: false  },
-            {label: 'preventClose',                                                                       enabled: true,                 active: function(e) {e.preventDefault()},  visible: false  },
+            //{label: 'preventClose',          accelerator: 'Alt+F4',                                                             enabled: true,                 active: function(e) {e.preventDefault()},  visible: false  },
           ]
         }
       ]
@@ -164,7 +161,7 @@ export default {
   },
   watch: {
     navMenu(newMenu) {
-      ipcRenderer.send('app-menu', newMenu)
+      if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
     }
   },
   methods: {
