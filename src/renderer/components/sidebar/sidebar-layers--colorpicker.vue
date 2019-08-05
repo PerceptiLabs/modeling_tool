@@ -1,9 +1,9 @@
 <template lang="pug">
-  .layer-colorpicker
+  .layer-colorpicker.js-clickout
     button.btn.btn--icon.layer-item--btn-action(type="button"
       :class="layerItemColor"
       :style="iconColor"
-      @click="toggleColorpicker"
+      @click="toggleColorpicker($event)"
       )
       i.icon.icon-ellipse
     .layer-colorpicker_wrap(v-if="showColorpicker")
@@ -107,8 +107,19 @@ export default {
     }
   },
   methods: {
-    toggleColorpicker() {
-      this.showColorpicker = !this.showColorpicker
+    clickOutsideAction() {
+      this.showColorpicker = false
+    },
+    toggleColorpicker(ev) {
+      if(this.showColorpicker) {
+        this.showColorpicker = false;
+        document.removeEventListener('click', this.clickOutside);
+      }
+      else {
+        this.showColorpicker = true;
+        this.ClickElementTracking = ev.target.closest('.js-clickout');
+        document.addEventListener('click', this.clickOutside);
+      }
     },
   }
 }
