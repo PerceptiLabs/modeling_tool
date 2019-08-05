@@ -1385,7 +1385,7 @@ const actions = {
     dispatch('lockElements', '#tutorial_layersbar-list');
     dispatch('lockElements', '#tutorial_layer_child-list');
     if(rootGetters['mod_workspace/GET_currentNetworkElementList'] !== null &&
-      !getters.getIstutorialMode)  dispatch('mod_workspace/ADD_network', {'ctx': context})
+      !getters.getIstutorialMode)  dispatch('mod_workspace/ADD_network')
   },
   removeSchematicElement() {
     let schematicElement = document.querySelector('.schematic');
