@@ -64,10 +64,8 @@ export default {
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
     },
-    openLoadDialog,
     loadTFFiles() {
       this.$store.commit('globalView/GP_showWorkspaceBeforeImport', false);
-      this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
       let opt = {
         title:"Load TensorFlow Model",
         properties: ['openFile', 'multiSelections'],
@@ -75,19 +73,16 @@ export default {
           {name: 'All', extensions: ['pb', 'pbtxt', 'ckpt', 'pb.*', 'pbtxt.*', 'ckpt.*']},
         ]
       };
-      this.openLoadDialog(opt)
-        .then((pathArr)=>{
-          console.log(pathArr);
-
+      openLoadDialog(opt)
+        .then((pathArr)=> {
+          this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
           let requestValue = {
             ...this.settings,
             Paths: pathArr
           };
-          return this.$store.dispatch('mod_api/API_parse', {path: requestValue, ctx: this});
+          return this.$store.dispatch('mod_api/API_parse', requestValue);
         })
-        .then(()=>{
-          this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
-        })
+        .then(()=> { this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', false) })
         .catch(()=> {})
     },
   }

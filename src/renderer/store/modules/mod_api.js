@@ -234,7 +234,7 @@ const actions = {
       action: 'Export',
       value: value
     };
-    console.log(theData);
+    console.log('Export send', theData);
     coreRequest(theData)
       .then((data)=> {
         console.log('API_exportData answer', data);
@@ -335,15 +335,17 @@ const actions = {
         console.error(err);
       });
   },
-  API_parse({dispatch, getters, rootGetters}, {path, ctx}) {
+  API_parse({dispatch, getters, rootGetters}, path) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: "Parse",
       value: path
     };
+    console.log('Parse send', theData);
     return coreRequest(theData)
       .then((data)=> {
-        dispatch('mod_workspace/ADD_network', {network: data.network, ctx}, {root: true});
+        console.log('Parse answer', data);
+        dispatch('mod_workspace/ADD_network', data.network, {root: true});
       })
       .catch((err)=> {
         console.error('Parse answer', err);

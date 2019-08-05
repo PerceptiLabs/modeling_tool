@@ -61,15 +61,10 @@ export default {
     }
   },
   methods: {
-    loadPathFolder,
     saveLoadFile() {
-      this.loadPathFolder()
-        .then((pathArr)=>{
-          this.settings.Location = pathArr[0];
-        })
-        .catch((err)=> {
-          console.error(err)
-        } )
+      loadPathFolder()
+        .then((pathArr)=> this.settings.Location = pathArr[0] )
+        .catch((err)=> console.error(err) )
     },
     exportData() {
       this.$store.dispatch('mod_api/API_exportData', this.settings)

@@ -120,7 +120,7 @@
             {name: 'All', extensions: ['exe']},
           ]
         };
-        this.openLoadDialog(opt)
+        openLoadDialog(opt)
           .then((pathArr)=> this.saveLoadFile(pathArr))
           .catch(()=> {
             this.disabledBtn = false;
