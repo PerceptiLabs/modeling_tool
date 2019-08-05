@@ -9,12 +9,9 @@ const baseNetPaintArrows = {
   },
   watch: {
     networkMode(newVal) {
-      if(newVal == 'addArrow') {
-        this.$refs.rootBaseElement.addEventListener('mouseup', this.arrowEndPaint);
-      }
-      else {
-        this.$refs.rootBaseElement.removeEventListener('mouseup', this.arrowEndPaint);
-      }
+      newVal === 'addArrow'
+        ? this.$refs.rootBaseElement.addEventListener('mouseup', this.arrowEndPaint)
+        : this.$refs.rootBaseElement.removeEventListener('mouseup', this.arrowEndPaint);
     },
   },
   methods: {

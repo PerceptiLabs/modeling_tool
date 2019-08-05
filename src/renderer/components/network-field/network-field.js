@@ -150,7 +150,7 @@ export default {
         this.multiSelect.xStart = this.multiSelect.x = this.findXPosition(ev);
         this.multiSelect.yStart = this.multiSelect.y = this.findYPosition(ev);
         this.$refs.network.addEventListener('mousemove', this.moveMultiSelect);
-        this.$refs.network.addEventListener('mouseup', this.mouseUpMultiSelect);
+        document.addEventListener('mouseup', this.mouseUpMultiSelect);
       }
       if(isLeftBtn && !isEditMode && isOpenNet && targetEl) {
         this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
@@ -198,7 +198,7 @@ export default {
     },
     removeMultiSelectListener() {
       this.$refs.network.removeEventListener('mousemove', this.moveMultiSelect);
-      this.$refs.network.removeEventListener('mouseup', this.mouseUpMultiSelect);
+      document.removeEventListener('mouseup', this.mouseUpMultiSelect);
     },
     // resizeCalc(ev) {
     //   let width = ev.srcElement.innerWidth;
@@ -264,7 +264,7 @@ export default {
     },
     addArrowListener() {
       this.$refs.network.addEventListener('mousemove', this.arrowMovePaint);
-      this.$refs.network.addEventListener('mouseup', this.removeArrowListener);
+      document.addEventListener('mouseup', this.removeArrowListener);
     },
     arrowMovePaint(ev) {
       this.$store.commit('mod_tutorials/SET_isDottedArrow', false);
@@ -278,7 +278,7 @@ export default {
     removeArrowListener() {
       this.$store.commit('mod_workspace/CLEAR_preArrow');
       this.$refs.network.removeEventListener('mousemove', this.arrowMovePaint);
-      this.$refs.network.removeEventListener('mouseup', this.removeArrowListener)
+      document.removeEventListener('mouseup', this.removeArrowListener)
     },
     createArrowList() {
       if(!this.networkElementList) {

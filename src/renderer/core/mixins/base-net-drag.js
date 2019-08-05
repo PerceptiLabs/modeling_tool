@@ -34,11 +34,11 @@ const baseNetDrag = {
       if (this.contextIsOpen || this.settingsIsOpen) return;
 
       this.$parent.$parent.$el.addEventListener('mousemove', this.move);
-      this.$parent.$parent.$el.addEventListener('mouseup', this.up);
+      document.addEventListener('mouseup', this.up);
 
       this.$parent.$parent.$el.addEventListener('touchmove', this.move, true);
-      this.$parent.$parent.$el.addEventListener('touchend touchcancel', this.up, true);
-      this.$parent.$parent.$el.addEventListener('touchstart', this.up, true);
+      document.addEventListener('touchend touchcancel', this.up, true);
+      document.addEventListener('touchstart', this.up, true);
 
       this.bodyDrag = true;
 
@@ -73,11 +73,11 @@ const baseNetDrag = {
       this.$parent.$parent.createArrowList();
 
       this.$parent.$parent.$el.removeEventListener('mousemove', this.move);
-      this.$parent.$parent.$el.removeEventListener('mouseup', this.up);
+      document.removeEventListener('mouseup', this.up);
 
       this.$parent.$parent.$el.removeEventListener('touchmove', this.move, true);
-      this.$parent.$parent.$el.removeEventListener('touchend touchcancel', this.up, true);
-      this.$parent.$parent.$el.removeEventListener('touchstart', this.up, true);
+      document.removeEventListener('touchend touchcancel', this.up, true);
+      document.removeEventListener('touchstart', this.up, true);
     },
 
   },
