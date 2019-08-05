@@ -3,9 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_user.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_user.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/charts/chart-heatmap.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/charts/chart-heatmap.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -44,6 +43,7 @@
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="G:\progects\quantumnet\node_modules\prettier" />
     <property name="settings.editor.selected.configurable" value="preferences.sourceCode.HTML" />
+    <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2018.3.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -309,7 +309,12 @@
       <workItem from="1564562534545" duration="10569000" />
       <workItem from="1564583040524" duration="365000" />
       <workItem from="1564583705653" duration="1552000" />
-      <workItem from="1564730270112" duration="13272000" />
+      <workItem from="1564730270112" duration="13950000" />
+      <workItem from="1564757105943" duration="21000" />
+      <workItem from="1564757436029" duration="4000" />
+      <workItem from="1564757608756" duration="154000" />
+      <workItem from="1564758644436" duration="80000" />
+      <workItem from="1564995481950" duration="667000" />
     </task>
     <servers />
   </component>
