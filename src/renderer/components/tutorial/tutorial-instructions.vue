@@ -138,7 +138,9 @@ export default {
       onTutorial:                 'mod_tutorials/onTutorial',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
-      popupInfo:                  'globalView/GP_infoPopup'
+      popupInfo:                  'globalView/GP_infoPopup',
+      trackerTutorialStart:       'mod_tracker/EVENT_tutorialModeStart',
+      trackerTutorialFinished:    'mod_tracker/EVENT_tutorialModeFinished'
     }),
     changeStep(way) {
       if(way === 'next') {
@@ -151,6 +153,7 @@ export default {
       this.setTutorialIstarted(true);
       this.setActiveStep(way);
       this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
+      this.trackerTutorialStart();
     },
     endTutorial() {
       this.setNetworkCoreStatus(false);
@@ -158,6 +161,7 @@ export default {
                       If you wish to save the model you created, can do so from the File menu in the top left.
                       Or you can export it by clicking on the tab "Export" in the right menu.`);
       this.switchTutorialMode();
+      this.trackerTutorialFinished();
     },
     switchTutorialMode() {
       this.isTutorialMode ? this.offTutorial() : this.onTutorial(this);

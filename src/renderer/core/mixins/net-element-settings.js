@@ -50,6 +50,7 @@ const netElementSettings = {
         tabName
       };
       this.$store.dispatch('mod_workspace/SET_elementSettings', JSON.parse(JSON.stringify(saveSettings)));
+      this.$store.dispatch('mod_tracker/EVENT_applyLayerSettings', tabName, {root: true});
     },
     confirmSettings() {
       this.$store.dispatch('mod_api/API_getOutputDim');

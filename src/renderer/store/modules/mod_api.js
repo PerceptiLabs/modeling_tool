@@ -144,7 +144,8 @@ const actions = {
     coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
-        setTimeout(()=>dispatch('mod_workspace/EVENT_chartsRequest', null, {root: true}), 500)
+        dispatch('mod_tracker/EVENT_trainingStart', theData.value, {root: true});
+        setTimeout(()=> dispatch('mod_workspace/EVENT_chartsRequest', null, {root: true}), 500)
       })
       .catch((err) =>{
         console.error(err);
@@ -156,10 +157,9 @@ const actions = {
       action: 'headless',
       value: value
     };
+    console.log('API_setHeadless');
     return coreRequest(theData)
-      .then((data)=> {
-        return data
-      })
+      .then((data)=> data)
       .catch((err) =>{
         console.error(err);
       });
@@ -170,10 +170,9 @@ const actions = {
       action: 'updateResults',
       value: ''
     };
+    console.log('API_updateResults');
     return coreRequest(theData)
-      .then((data)=> {
-        return data
-      })
+      .then((data)=> data)
       .catch((err) =>{
         console.error(err);
       });
@@ -210,7 +209,7 @@ const actions = {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
         dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
         dispatch('API_getStatus');
-        return
+        dispatch('mod_tracker/EVENT_trainingStop', null, {root: true});
       })
       .catch((err) =>{
         console.error(err);
@@ -234,15 +233,26 @@ const actions = {
       action: 'Export',
       value: value
     };
+    const trackerData = {
+      result: '',
+      network: prepareNetwork(rootGetters['mod_workspace/GET_currentNetworkElementList']),
+      settings: value
+    };
     console.log('Export send', theData);
     coreRequest(theData)
       .then((data)=> {
         console.log('API_exportData answer', data);
+        dispatch('globalView/GP_infoPopup', data);
+        trackerData.result = 'success';
       })
-      .catch((err) =>{
+      .catch((err)=> {
         console.error(err);
-      });
-    //dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
+        dispatch('globalView/GP_errorPopup', err);
+        trackerData.result = 'error';
+      })
+      .finally(()=> {
+        dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
+      })
   },
   API_CLOSE_core({getters, dispatch, rootState}) {
     const theData = {
@@ -268,7 +278,9 @@ const actions = {
       value: ''
     };
     return coreRequest(theData)
-      .then((data)=> {})
+      .then((data)=> {
+        dispatch('mod_tracker/EVENT_testOpenTab', null, {root: true});
+      })
       .catch((err) =>{
         console.error(err);
       });
@@ -282,9 +294,14 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        rootGetters['mod_workspace/GET_networkWaitGlobalEvent']
-          ? dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
-          : dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
+        if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
+          dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
+          dispatch('mod_tracker/EVENT_testStop', null, {root: true});
+        }
+        else {
+          dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
+          dispatch('mod_tracker/EVENT_testPlay', null, {root: true});
+        }
       })
       .catch((err) =>{
         console.error(err);
@@ -298,7 +315,10 @@ const actions = {
     };
     dispatch('API_updateResults')
       .then(()=> coreRequest(theData))
-      .then(()=> dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true}))
+      .then(()=> {
+        dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true});
+        dispatch('mod_tracker/EVENT_testMove', theData.action, {root: true});
+      })
       .catch((err) =>{
         console.error(err);
       });
@@ -362,9 +382,7 @@ const actions = {
       }
     };
     return coreRequest(theData)
-      .then((data)=> {
-        return data
-      })
+      .then((data)=> data)
       .catch((err)=> {
         console.error(err);
       });

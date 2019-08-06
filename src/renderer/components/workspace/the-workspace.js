@@ -225,12 +225,13 @@ export default {
           return fileLocalSave(path, stringNetwork)
         })
         .then((filePath)=> {
-          savePathToLocalStorage(stringNetwork, filePath)
+          savePathToLocalStorage(stringNetwork, filePath);
+          this.$store.dispatch('mod_tracker/EVENT_modelSave', stringNetwork);
         })
         .catch((err)=> {
           console.log(err)
         })
-        .finally(()=>{
+        .finally(()=> {
           this.$refs.networkField[0].$refs.network.style.filter = '';
         });
     },

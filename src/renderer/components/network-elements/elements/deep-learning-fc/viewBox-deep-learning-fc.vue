@@ -37,7 +37,7 @@
 </template>
 
 <script>
-  import ChartSwitch    from "@/components/charts/chart-switch.vue";
+  import ChartSwitch  from "@/components/charts/chart-switch.vue";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxDeepLearningFC",
@@ -70,13 +70,13 @@
       getData() {
         switch (this.currentTab) {
           case 'Output':
-            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Output')
+            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Output');
             break;
           case 'Weights & Bias':
-            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Weights&Bias')
+            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Weights&Bias');
             break;
           case 'Gradients':
-            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Gradients')
+            this.chartRequest(this.boxElementID, 'DeepLearningFC', 'Gradients');
             break;
         }
       }

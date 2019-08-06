@@ -14,6 +14,7 @@ const viewBoxMixin = {
   },
   mounted() {
     this.getData();
+    //this.$store.dispatch('mod_tracker/EVENT_trainingLayerView');
   },
   beforeDestroy() {
     this.chartData = {};

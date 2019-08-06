@@ -107,9 +107,10 @@ const actions = {
   },
   EVENT_appClose({dispatch, rootState}, event) {
     if(event) event.preventDefault();
+    dispatch('mod_tracker/EVENT_appClose', null, {root: true});
     if(rootState.mod_api.statusLocalCore === 'online') {
       dispatch('mod_api/API_stopTraining', null, {root: true})
-        .then(()=> { return dispatch('mod_api/API_CLOSE_core', null, {root: true}) })
+        .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
         .then(()=> ipcRenderer.send('app-close'));
     }
     else {

@@ -25,7 +25,6 @@
 
 <script>
   import {ipcRenderer}  from 'electron'
-  import mixpanel       from 'mixpanel-browser'
 
   import HeaderLinux    from '@/components/header/header-linux.vue';
   import HeaderWin      from '@/components/header/header-win.vue';
@@ -37,14 +36,12 @@
     name: 'TheApp',
     components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup },
     created() {
-      const mixpanelToken = 'ff98c9e22047d4a1eef9146339e038ee';
-      mixpanel.init(mixpanelToken);
-
+      this.$store.dispatch('mod_tracker/TRACK_initMixPanel');
     },
     mounted() {
       /*Menu*/
       ipcRenderer.on('get-app-version', (event, data) => {
-        this.$store.commit('globalView/SET_appVersion', data)
+        this.$store.commit('globalView/SET_appVersion', data);
       });
 
       /*Auto update*/
@@ -90,7 +87,7 @@
       this.checkToken();
       this.$nextTick(() =>{
         if(this.userId === 'Guest') {
-          mixpanel.identify(this.userId);
+          this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
         }
         this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
@@ -122,8 +119,7 @@
         }
       },
       userId(newVal) {
-        console.log('mixpanel.identify', newVal);
-        mixpanel.identify(newVal);
+        this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
       }
     },
     methods: {
@@ -132,16 +128,13 @@
           ipcRenderer.send('change-route', {path, id: this.userId})
         }
       },
-      trackStartApp() {
-        mixpanel.track('Start app');
-      },
       appReady() {
         ipcRenderer.send('app-ready');
-        this.trackStartApp();
         const splash = document.getElementById('splashscreen');
         setTimeout(()=>{
           splash.remove();
           document.body.className = "";
+          this.$store.dispatch('mod_tracker/EVENT_appStart');
         }, 1000)
       },
       calcAppPath() {

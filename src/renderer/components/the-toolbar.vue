@@ -50,13 +50,12 @@
           i.icon.icon-step-next
     ul.toolbar_list
       li(:class="{'tutorial-active': activeStepStoryboard === 4}")
-        button#tutorial_run-training-button.btn.btn--toolbar.bg-primary(type="button"
+        button#tutorial_run-training-button.btn.btn--toolbar.bg-primary.run-button(type="button"
           :disabled="statusLocalCore === 'offline'"
           :class="statusStartBtn"
           v-tooltip:bottom="'Run/Stop'"
           v-tooltip-interactive:bottom="interactiveInfo.runButton"
-          @click="onOffBtn()"
-          class="run-button"
+          @click="onOffBtn"
         )
           i.icon.icon-on-off
           span(v-html="statusTraining === 'training' || statusTraining === 'pause' ? 'Stop' : 'Run'")
@@ -66,7 +65,7 @@
           :disabled="!isTraining"
           v-tooltip:bottom="'Pause'"
           v-tooltip-interactive:bottom="interactiveInfo.pause"
-          @click="trainPause()"
+          @click="trainPause"
         )
           i.icon.icon-pause
       li
@@ -74,7 +73,7 @@
           :disabled="statusNetworkCore !== 'Validation'"
           v-tooltip:bottom="'Skip'"
           v-tooltip-interactive:bottom="interactiveInfo.skip"
-          @click="skipValid()"
+          @click="skipValid"
         )
           i.icon.icon-next
     //ul.toolbar_list

@@ -15,10 +15,9 @@ const requestCloudApi = function (method, path, dataRequest) {
     data: dataRequest
     //...queryParams // data: {request body}, params: {query params}
   })
-    .then((response)=>{
-      return response
-    })
-    .catch((error)=>{
+    .then((response)=> response)
+    .catch((error)=> {
+      store.dispatch('mod_tracker/EVENT_cloudError', error);
       throw (error.response.data);
     });
 };

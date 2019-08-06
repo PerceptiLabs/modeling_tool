@@ -30,12 +30,11 @@ const coreRequest = function (message, port, address) {
             store.dispatch('mod_workspace/SET_openStatistics', null);
             store.dispatch('mod_workspace/SET_openTest', null);
             store.dispatch('globalView/GP_errorPopup', obgData.errorMessage);
-            console.log(obgData.errorMessage);
-            mixpanel.track('Core error', {'errorList': obgData.errorMessage});
+            store.dispatch('mod_tracker/EVENT_coreError', obgData.errorMessage);
             store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
           }
           if(obgData.warningMessage && obgData.warningMessage.length) {
-            mixpanel.track('Core warning', obgData.warningMessage);
+            store.dispatch('mod_tracker/EVENT_coreWarning', obgData.warningMessage);
             console.warn('core warning', obgData.warningMessage);
           }
           resolve(obgData.content);

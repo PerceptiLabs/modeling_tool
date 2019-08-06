@@ -1369,13 +1369,14 @@ const actions = {
     commit('SET_showTutorialStoryBoard', false);
     commit('SET_interactiveInfo', false);
   },
-  offTutorial({dispatch, commit, getters}) {
+  offTutorial({dispatch, commit, getters, state}) {
     if(getters.getIstutorialMode) {
       commit('SET_isTutorialMode', false);
       commit('SET_showMainTutorialInstruction', false);
       commit('SET_interactiveInfo', false);
       dispatch('resetTutorial');
       dispatch('unlockAllElements');
+      dispatch('mod_tracker/EVENT_tutorialModeStop', state.activeStepMainTutorial, {root: true});
     }
   },
   onTutorial({dispatch, commit, getters, rootGetters}, context) {
