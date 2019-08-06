@@ -2,21 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_tracker.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/App.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/viewBox-deep-learning-fc.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/deep-learning-fc/viewBox-deep-learning-fc.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-toolbar.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/tutorial/tutorial-instructions.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/tutorial/tutorial-instructions.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/meta/workspace-meta.pug" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/workspace/meta/workspace-meta.pug" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/workspace/the-workspace.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCore.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCore.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-viewBox.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_tutorials.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_tutorials.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -327,7 +314,7 @@
       <workItem from="1564757608756" duration="154000" />
       <workItem from="1564758644436" duration="80000" />
       <workItem from="1564995481950" duration="14928000" />
-      <workItem from="1565078677020" duration="20063000" />
+      <workItem from="1565078677020" duration="20355000" />
     </task>
     <servers />
   </component>
