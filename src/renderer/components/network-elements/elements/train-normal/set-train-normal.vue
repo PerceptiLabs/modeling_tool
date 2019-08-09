@@ -145,24 +145,24 @@ export default {
       let loss = '';
       switch (this.settings.Loss) {
         case 'Cross_entropy':
-          loss = `flat_logits = tf.reshape(X['${this.notLabelsInput}'], [-1, N_class]);
-flat_labels = tf.reshape(X['${this.settings.Labels}'], [-1, N_class]);
+          loss = `flat_logits = tf.reshape(X['${this.notLabelsInput}']['Y'], [-1, N_class]);
+flat_labels = tf.reshape(X['${this.settings.Labels}']['Y'], [-1, N_class]);
 loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_logits));`
           break;
         case 'Quadratic':
-          loss = `loss=tf.losses.mean_squared_error(X['${this.settings.Labels}'],X['${this.notLabelsInput}']);`
+          loss = `loss=tf.losses.mean_squared_error(X['${this.settings.Labels}']['Y'],X['${this.notLabelsInput}']['Y']);`
           break;
         case 'W_cross_entropy':
-          loss = `flat_logits = tf.reshape(X['${this.notLabelsInput}'], [-1, N_class]);
-flat_labels = tf.reshape(X['${this.settings.Labels}'], [-1, N_class]);
+          loss = `flat_logits = tf.reshape(X['${this.notLabelsInput}']['Y'], [-1, N_class]);
+flat_labels = tf.reshape(X['${this.settings.Labels}']['Y'], [-1, N_class]);
 class_weights = tf.constant(${this.settings.Class_weights},dtype=tf.float32);
 loss = tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels,flat_logits, ${this.settings.Class_weights}));`
           break;
         case 'Dice':
           loss = `eps = 1e-5;
-prediction = X['${this.notLabelsInput}'];
-intersection = tf.reduce_sum(tf.multiply(prediction, X['${this.settings.Labels}']));
-union = eps + tf.reduce_sum(tf.multiply(prediction, prediction)) + tf.reduce_sum(tf.multiply(X['${this.settings.Labels}'], X['${this.settings.Labels}']));
+prediction = X['${this.notLabelsInput}']['Y'];
+intersection = tf.reduce_sum(tf.multiply(prediction, X['${this.settings.Labels}']['Y']));
+union = eps + tf.reduce_sum(tf.multiply(prediction, prediction)) + tf.reduce_sum(tf.multiply(X['${this.settings.Labels}']['Y'], X['${this.settings.Labels}']['Y']));
 cost_tmp = (2 * intersection/ (union));
 cost_clip = tf.clip_by_value(cost_tmp, eps, 1.0-eps);
 loss = 1 - cost_clip;`
@@ -196,15 +196,15 @@ Y=tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum,momentum=${thi
     codeAccuracy() {
       let accuracy = '';
       if(this.settings.N_Class < 1) {
-        accuracy = `correct_prediction = tf.equal(X['${this.notLabelsInput}'], X['${this.settings.Labels}']);
+        accuracy = `correct_prediction = tf.equal(X['${this.notLabelsInput}']['Y'], X['${this.settings.Labels}']['Y']);
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));`
       }
-      else accuracy = `arg_output=tf.argmax(X['${this.notLabelsInput}'],-1);
-arg_label=tf.argmax(X['${this.settings.Labels}'],-1);
+      else accuracy = `arg_output=tf.argmax(X['${this.notLabelsInput}']['Y'],-1);
+arg_label=tf.argmax(X['${this.settings.Labels}']['Y'],-1);
 correct_prediction = tf.equal(arg_output, arg_label);
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32));
-f1=tf.contrib.metrics.f1_score(X['${this.settings.Labels}'],X['${this.notLabelsInput}'])[0];
-auc=tf.metrics.auc(labels=X['${this.settings.Labels}'],predictions=X['${this.notLabelsInput}'],curve='ROC')[0];`
+f1=tf.contrib.metrics.f1_score(X['${this.settings.Labels}']['Y'],X['${this.notLabelsInput}']['Y'])[0];
+auc=tf.metrics.auc(labels=X['${this.settings.Labels}']['Y'],predictions=X['${this.notLabelsInput}']['Y'],curve='ROC')[0];`
       return accuracy
     },
     codeDefault() {

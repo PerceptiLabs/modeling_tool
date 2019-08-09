@@ -78,7 +78,12 @@
   font-size: var(--size-layers-btn);
   width: 6em;
   height: 6em;
-
+  &[draggable="true"] {
+    cursor: grab;
+    &:active {
+      cursor: grabbing;
+    }
+  }
   .icon {
     font-size: 3.3em;
     text-shadow: $icon-shad;
