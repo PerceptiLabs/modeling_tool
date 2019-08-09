@@ -257,6 +257,9 @@ export default {
     focusArrow(ev) {
       this.currentFocusedArrow = ev.target;
     },
+    blurArrow() {
+      this.currentFocusedArrow = null;
+    },
     drawArrows() {
       this.calcOffset();
       //this.calcLayerSize();

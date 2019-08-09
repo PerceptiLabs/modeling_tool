@@ -41,6 +41,7 @@
           :data-startid="arrow.l1.layerId"
           :data-stopid="arrow.l2.layerId"
           @focus="focusArrow($event)"
+          @blur="blurArrow"
           :marker-end="arrowMarkerStyle(arrow)"
           :d="arrow.positionArrow.path.arrow"
           style="stroke: #22DDE5; strokeWidth: 3; fill: transparent"
