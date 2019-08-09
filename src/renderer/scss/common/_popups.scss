@@ -1,6 +1,6 @@
 .popup {
 	border-radius: $bdrs;
-	background-color: $bg-toolbar;
+	//background-color: $bg-toolbar;
 }
 
 .popup_header {
@@ -31,6 +31,7 @@
 }
 .popup_tab-body {
   display: flex;
+  background-color: rgba($bg-toolbar, .95);
   .popup_body {
     flex: 0 0 100%;
     margin-right: -100%;
