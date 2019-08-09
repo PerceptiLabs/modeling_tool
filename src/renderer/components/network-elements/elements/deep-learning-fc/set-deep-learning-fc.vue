@@ -94,7 +94,7 @@
             activeFunc = `Y=node;`;
             break;
         }
-        //for element in X.get_shape().as_list()[1:]:
+        //for element in X['Y'].get_shape().as_list()[1:]:
         const fc = `input_size=1
 for element in ${this.codeInputDim}:
   input_size*=element
@@ -103,7 +103,7 @@ initial = tf.truncated_normal(shape, stddev=0.1);
 W=tf.Variable(initial);
 initial = tf.constant(0.1, shape=[${this.settings.Neurons}]);
 b=tf.Variable(initial);
-flat_node=tf.cast(tf.reshape(X,[-1,input_size]),dtype=tf.float32);
+flat_node=tf.cast(tf.reshape(X['Y'],[-1,input_size]),dtype=tf.float32);
 node=tf.matmul(flat_node,W)${this.settings.Dropout ? ';\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
 node=node+b;`;
         return {

@@ -221,7 +221,7 @@ export default {
 initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Patch_size}**2 * ${this.settings.Feature_maps})));
 initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
 b=tf.Variable(initial);
-node = tf.nn.conv1d(X, W, ${this.settings.Stride}, padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
+node = tf.nn.conv1d(X['Y'], W, ${this.settings.Stride}, padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
 node=node+b;`;
           break;
         case '2D':
@@ -230,7 +230,7 @@ initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Patch_siz
 W = tf.Variable(initial);
 initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
 b=tf.Variable(initial);
-node = tf.nn.conv2d(X, W, strides=[1, ${this.settings.Stride},${this.settings.Stride}, 1], padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
+node = tf.nn.conv2d(X['Y'], W, strides=[1, ${this.settings.Stride},${this.settings.Stride}, 1], padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
 node=node+b;`;
           break;
         case '3D':
@@ -239,7 +239,7 @@ initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Patch_siz
 W = tf.Variable(initial);
 initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
 b=tf.Variable(initial);
-node = tf.nn.conv3d(X, W, strides=[1, ${this.settings.Stride},
+node = tf.nn.conv3d(X['Y'], W, strides=[1, ${this.settings.Stride},
 ${this.settings.Stride}, ${this.settings.Stride}, 1],
 padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
 node=node+b;`;

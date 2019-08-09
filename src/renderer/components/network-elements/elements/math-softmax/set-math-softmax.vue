@@ -27,7 +27,7 @@ export default {
   computed: {
     codeDefault() {
       return {
-        Output: `Y=tf.nn.softmax(X);`
+        Output: `Y=tf.nn.softmax(X['Y']);`
       }
     }
   }

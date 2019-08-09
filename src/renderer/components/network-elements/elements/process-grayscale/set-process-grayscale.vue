@@ -27,7 +27,7 @@ export default {
   computed: {
     codeDefault() {
       return {
-        Output: `Y=tf.image.rgb_to_grayscale(X);`
+        Output: `Y=tf.image.rgb_to_grayscale(X['Y']);`
       }
     }
   }

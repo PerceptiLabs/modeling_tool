@@ -54,7 +54,7 @@ export default {
     }),
     codeDefault() {
       return {
-        Output: `Y=tf.one_hot(tf.cast(X,dtype=tf.int32),${this.settings.N_class});`
+        Output: `Y=tf.one_hot(tf.cast(X['Y'],dtype=tf.int32),${this.settings.N_class});`
       }
     }
   },

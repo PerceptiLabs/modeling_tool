@@ -43,7 +43,7 @@ export default {
   computed: {
     codeDefault() {
       return {
-        Output: `Y=tf.argmax(X,${this.settings.Dim});`
+        Output: `Y=tf.argmax(X['Y'],${this.settings.Dim});`
       }
     }
   }

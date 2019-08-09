@@ -65,7 +65,7 @@
     computed: {
       codeDefault() {
         return {
-          Output: `Y=tf.image.crop_to_bounding_box(X, ${this.settings.Offset_height}, ${this.settings.Offset_width}, ${this.settings.Target_height}, ${this.settings.Target_width})`
+          Output: `Y=tf.image.crop_to_bounding_box(X['Y'], ${this.settings.Offset_height}, ${this.settings.Offset_width}, ${this.settings.Target_height}, ${this.settings.Target_width})`
         }
       }
     }
