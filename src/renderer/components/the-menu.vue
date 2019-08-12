@@ -56,6 +56,10 @@ export default {
       default: true,
     }
   },
+  mounted() {
+    this.mainProcessListeners()
+
+  },
   data() {
     return {
       dataKeymap: {}
@@ -64,7 +68,8 @@ export default {
   computed: {
     ...mapGetters({
       isTutorialMode: 'mod_tutorials/getIstutorialMode',
-      isStoryBoard:   'mod_tutorials/getIsTutorialStoryBoard'
+      isStoryBoard:   'mod_tutorials/getIsTutorialStoryBoard',
+      isLogin:        'mod_user/GET_userIsLogin'
     }),
     appVersion() {
       return this.$store.state.globalView.appVersion
@@ -75,74 +80,74 @@ export default {
     openApp() {
       return this.$store.state.globalView.appIsOpen
     },
-    isLogin() {
-      return this.$store.getters['mod_user/GET_userIsLogin']
-    },
     isMac() {
       return process.platform === 'darwin'
     },
 
     navMenu() {
+      function returnLabel() {
+        return this.label
+      }
       return [
         {
           label: 'File', visible: true,
           submenu: [
-            {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',                        enabled: this.isLogin,        active: this.addNewNetwork },
-            {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',                        enabled: this.isLogin,        active: this.openModel },
-            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',                        enabled: this.openApp,        active: this.saveModel },
-            {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+S' : 'ctrl+shift+s',            enabled: this.openApp,        active: this.saveModelAs },
+            {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',              enabled: this.isLogin,  active: this.addNewNetwork },
+            {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.isLogin,  active: this.openModel },
+            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
+            {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
-            {label: 'Log out',                                                                            enabled: this.isLogin,        active: this.logOut },
-            {label: 'Exit',         accelerator: this.isMac ? 'meta+q' : 'alt+f4',                        enabled: true,                active: (e)=> this.appClose(e) }
+            {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
+            {label: 'Exit',         accelerator: this.isMac ? 'meta+q' : 'alt+f4',              enabled: true,          active: (e)=> this.appClose(e) }
           ]
         },
         {
           label: 'Edit', visible: true,
           submenu: [
-            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',                        enabled: false,               active: function() {} },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',            enabled: false,               active: function() {} },
+            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              enabled: false,         active: ()=> {} },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  enabled: false,         active: ()=> {} },
             {type: 'separator'},
-            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',                        enabled: this.openApp,        active: this.HCCopy },
-            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',                        enabled: this.openApp,        active: this.HCPaste },
+            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              enabled: this.openApp,  active: this.HCCopy },
+            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              enabled: this.openApp,  active: this.HCPaste },
             {type: 'separator'},
-            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',                        enabled: this.openApp,        active: this.HCSelectAll },
-            {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',            enabled: this.openApp,        active: this.HCDeselectAll },
+            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              enabled: this.openApp,  active: this.HCSelectAll },
+            {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
           ]
         },
         {
           label: 'Window', visible: true,
           submenu: [
-            {label: 'Minimize',                                                                           enabled: true,                active: this.appMinimize },
-            {label: 'Zoom',                                                                               enabled: true,                active: this.appMaximize },
+            {label: 'Minimize',                                                                 enabled: true,          active: this.appMinimize },
+            {label: 'Zoom',                                                                     enabled: true,          active: this.appMaximize },
           ]
         },
         {
           label: 'Settings', visible: true,
           submenu: [
-            {label: 'Hyperparameters',                                                                    enabled: this.openApp,        active: this.openHyperparameters },
-            {label: 'Edit profile',                                                                       enabled: false,               active: function() {} },
-            {label: 'History',                                                                            enabled: false,               active: function() {} },
+            {label: 'Hyperparameters',                                                          enabled: this.openApp,  active: this.openHyperparameters },
+            {label: 'Edit profile',                                                             enabled: false,         active: function() {} },
+            {label: 'History',                                                                  enabled: false,         active: function() {} },
           ]
         },
         {
           label: 'Help', visible: true,
           submenu: [
-            {label: 'Help',                                                                                                             active: () => {this.goToLink(`${baseUrlSite}/i_docs`)} },
-            {label: 'About',                                                                                                            active: () => {this.goToLink(`${baseUrlSite}/about`);} },
-            {label: 'Tutorial mode',                                                                      enabled: !this.isTutorialActive && this.isLogin,     active: this.showTutorial },
-            {label: 'Check for updates',                                                                                                active: this.checkUpdate },
+            {label: 'Help',                                                                                             active: () => {this.goToLink(`${baseUrlSite}/i_docs`)} },
+            {label: 'About',                                                                                            active: () => {this.goToLink(`${baseUrlSite}/about`);} },
+            {label: 'Tutorial mode',                                                            enabled: !this.isTutorialActive && this.isLogin,  active: this.showTutorial },
+            {label: 'Check for updates',                                                                                active: this.checkUpdate },
             {type: 'separator'},
-            {label: `Version: ${this.appVersion}`,                                                        enabled: false,               active: ()=>{} }
+            {label: `Version: ${this.appVersion}`,                                              enabled: false,         active: ()=>{} }
           ]
         },
         {
           label: '', visible: false,
           submenu: [
-            {label: 'Delete',                accelerator: this.isMac ? 'backspace+meta' : 'delete',                                      active: this.HC_delete,                    visible: false  },
-            {label: 'Esc',                   accelerator: 'esc',                                                                         active: this.HC_esc,                       visible: false  },
-            {label: 'addLayerContainer',     accelerator: this.isMac ? 'meta+g' : 'ctrl+g',               enabled: this.openApp,         active: this.HC_addLayerContainer,         visible: false  },
-            {label: 'unGroupLayerContainer', accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',   enabled: this.openApp,         active: this.HC_unGroupLayerContainer,     visible: false  },
-            //{label: 'preventClose',          accelerator: 'Alt+F4',                                                             enabled: true,                 active: function(e) {e.preventDefault()},  visible: false  },
+            {label: 'Delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: false  },
+            {label: 'Esc',          accelerator: 'esc',                                                                 active: this.HC_esc,                       visible: false  },
+            {label: 'addGroup',     accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
+            {label: 'unGroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
+            //{label: 'preventClose',          accelerator: 'Alt+F4',                                     enabled: true,                 active: function(e) {e.preventDefault()},  visible: false  },
           ]
         }
       ]
@@ -161,7 +166,8 @@ export default {
   },
   watch: {
     navMenu(newMenu) {
-      if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
+      ipcRenderer.send('app-menu', newMenu)
+      //if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
     }
   },
   methods: {
@@ -184,11 +190,26 @@ export default {
       HCDeselectAll:    'mod_workspace/SET_elementUnselect'
     }),
     goToLink,
+    mainProcessListeners(isRemove) {
+      this.navMenu.forEach((item) => {
+        item.submenu.forEach((subItem) => {
+          if(subItem.label) {
+            if(isRemove) {
+              ipcRenderer.removeAllListeners(`menu-event-${subItem.label}`);
+            }
+            else {
+              ipcRenderer.on(`menu-event-${subItem.label}`, ()=> { subItem.active() });
+            }
+          }
+        })
+      });
+    },
     checkUpdate() {
       this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
       ipcRenderer.send('check-update');
     },
     addNewNetwork() {
+      console.log('addNewNetwork');
       this.$store.dispatch('mod_workspace/ADD_network');
       this.offMainTutorial();
     },
