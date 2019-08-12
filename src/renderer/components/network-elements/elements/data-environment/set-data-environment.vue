@@ -99,7 +99,6 @@
       },
     },
     methods: {
-      openLoadDialog,
       setTab(i) {
         this.tabSelected = i;
         this.settings.accessProperties.EnvType = this.tabs[i].type;

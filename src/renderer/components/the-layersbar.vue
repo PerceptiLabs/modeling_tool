@@ -20,9 +20,9 @@
             v-for="(element, i) in layer.networkElements"
             :key="i"
           )
-            component(:is="element" :draggable='true')
+            component(:is="element" :draggable="true")
       li.layer
-        layer-custom(:draggable='true')
+        layer-custom(:draggable="true")
 
 </template>
 
