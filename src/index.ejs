@@ -17,6 +17,7 @@
     <% } %>
   </head>
   <body class="show-splashscreen">
+    <div id="app"></div>
     <div id="splashscreen">
       <style>
           body.show-splashscreen {
@@ -120,7 +121,7 @@
           <path d="M167.204 56.1738H161.74V61.3837H167.204V56.1738Z" fill="white"/>
       </svg>
     </div>
-    <div id="app"></div>
+
     <!-- Set `__static` path to static files in production -->
     <script>
       if (process.env.NODE_ENV !== 'development') window.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
