@@ -1,9 +1,10 @@
 {
   "name": "PerceptiLabs",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "author": "PerceptiLabs <contact@perceptilabs.com>",
   "description": "PerceptiLabs is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.",
-  "license": null,
+  "homepage": "perceptilabs.com",
+  "license": "UNLICENSED",
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=--max_old_space_size=8192 node .electron-vue/build.js && electron-builder",
