@@ -28,6 +28,7 @@ const netElementSettingsData = {
     },
 
     getDataPlot(type) {
+      //console.log('getDataPlot');
       let theData = {
         reciever: this.currentNetworkID,
         action: 'getDataPlot',
@@ -47,6 +48,7 @@ const netElementSettingsData = {
         });
     },
     getDataMeta(type) {
+      //console.log('getDataMeta');
       let theData = {
         reciever: this.currentNetworkID,
         action: 'getDataMeta',

@@ -18,11 +18,15 @@
 			flex: 0 0 40%;
 			max-width: 40%;
 		}
+        .form_input {
+            max-width: 60%;
+        }
 		 > .form_label {
 			align-self: flex-start;
 			margin-top: .5rem;
 			margin-bottom: .5rem;;
 		}
+
 	}
 	.form_input {
 		padding-left: 1rem;

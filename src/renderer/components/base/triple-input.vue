@@ -3,14 +3,15 @@
     input.triple-input_input(type="number"
       v-model.number="value1"
     )
-    span.triple-input_seporate X
+    span.triple-input_separate {{ separateSign || 'X'}}
     input.triple-input_input(type="number"
       v-model.number="value2"
     )
-    span.triple-input_seporate X
+    span.triple-input_separate {{ separateSign || 'X' }}
     input.triple-input_input(type="number"
       v-model.number="value3"
     )
+    span.triple-input_separate(v-if="separateSign") {{ separateSign }}
 </template>
 
 <script>
@@ -22,7 +23,11 @@ export default {
   },
 
   props: {
-    inputData: Array
+    inputData: Array,
+    separateSign: {
+      type: String,
+      default: ''
+    }
   },
   computed: {
     value1: {
@@ -66,11 +71,15 @@ export default {
     align-items: center;
   }
   .triple-input_input {
-    width: 2.25em;
+    max-width: 2.25em;
+    min-width: 1.75em;
     padding-right: .15em;
     padding-left: .15em;
   }
-  .triple-input_seporate {
+  .triple-input_separate {
     margin: 0 .5em;
+    &:last-child {
+      margin-right: 0;
+    }
   }
 </style>

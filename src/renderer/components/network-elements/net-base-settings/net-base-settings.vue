@@ -118,6 +118,7 @@ export default {
       this.$store.dispatch('mod_api/API_getPreviewSample', this.currentEl.layerId)
         .then((data)=> {
           if(data) this.imgData = data;
+          else this.confirmSettings();
         })
     },
   }
