@@ -67,7 +67,7 @@
       "verifyUpdateCodeSignature": false
     },
     "linux": {
-      "icon": "build/icons/64x64.png"
+      "icon": "build/icons/256x256.png"
     }
   },
   "dependencies": {
