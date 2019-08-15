@@ -67,7 +67,10 @@
       "verifyUpdateCodeSignature": false
     },
     "linux": {
-      "icon": "build/icons/256x256.png"
+      "icon": "build/icons/512x512.png",
+      "target": [
+        "snap", "deb"
+      ]
     }
   },
   "dependencies": {
