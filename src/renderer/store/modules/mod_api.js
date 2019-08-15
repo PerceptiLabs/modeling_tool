@@ -157,7 +157,7 @@ const actions = {
       action: 'headless',
       value: value
     };
-    console.log('API_setHeadless');
+    //console.log('API_setHeadless');
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err) =>{
@@ -170,7 +170,7 @@ const actions = {
       action: 'updateResults',
       value: ''
     };
-    console.log('API_updateResults');
+    //console.log('API_updateResults');
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err) =>{
@@ -238,7 +238,7 @@ const actions = {
       network: prepareNetwork(rootGetters['mod_workspace/GET_currentNetworkElementList']),
       settings: value
     };
-    console.log('Export send', theData);
+    //console.log('Export send', theData);
     coreRequest(theData)
       .then((data)=> {
         console.log('API_exportData answer', data);
@@ -271,7 +271,7 @@ const actions = {
       dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
   API_postTestStart({rootGetters, rootState, dispatch}) {
-    console.log('API_postTestStart');
+    //console.log('API_postTestStart');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: 'startTest',
@@ -286,7 +286,7 @@ const actions = {
       });
   },
   API_postTestPlay({rootGetters, rootState, dispatch}) {
-    console.log('API_postTestPlay');
+   // console.log('API_postTestPlay');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: 'playTest',
@@ -325,6 +325,7 @@ const actions = {
   },
 
   API_getInputDim({dispatch, getters, rootGetters}) {
+    //console.log("getNetworkInputDim");
     const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
@@ -341,6 +342,7 @@ const actions = {
 
   },
   API_getOutputDim({dispatch, getters, rootGetters}) {
+    //console.log('getNetworkOutputDim');
     const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
@@ -361,7 +363,7 @@ const actions = {
       action: "Parse",
       value: path
     };
-    console.log('Parse send', theData);
+    //console.log('Parse send', theData);
     return coreRequest(theData)
       .then((data)=> {
         console.log('Parse answer', data);
@@ -372,6 +374,7 @@ const actions = {
       });
   },
   API_getPreviewSample({dispatch, rootGetters}, layerId) {
+    //console.log('getPreviewSample');
     const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,

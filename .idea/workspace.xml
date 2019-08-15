@@ -2,10 +2,14 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/setting-file-list.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/index.ejs" beforeDir="false" afterPath="$PROJECT_DIR$/src/index.ejs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/base/triple-input.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/base/triple-input.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings-data.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings-data.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/scss/components/_settings-layer.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/components/_settings-layer.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -39,7 +43,7 @@
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="editor.config.ad.shown" value="true" />
-    <property name="last_opened_file_path" value="G:/anton/vue-spa" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings" />
     <property name="list.type.of.created.stylesheet" value="SCSS" />
     <property name="nodejs_package_manager_path" value="npm" />
     <property name="prettierjs.PrettierConfiguration.Package" value="G:\progects\quantumnet\node_modules\prettier" />
@@ -47,17 +51,17 @@
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2018.3.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
   </component>
   <component name="RecentsManager">
-    <key name="CopyFile.RECENT_KEYS">
-      <recent name="G:\progects\quantumnet\src\renderer\store\modules" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements" />
-      <recent name="G:\progects\quantumnet\src\renderer\core\plugins" />
-      <recent name="G:\progects\quantumnet\src\renderer\core\mixins" />
-      <recent name="G:\progects\quantumnet\src\renderer\components\sidebar" />
-    </key>
     <key name="MoveFile.RECENT_KEYS">
       <recent name="G:\progects\quantumnet\src\renderer\components\different" />
       <recent name="G:\progects\quantumnet\src\renderer\assets" />
       <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
+    </key>
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements-settings" />
+      <recent name="G:\progects\quantumnet\src\renderer\store\modules" />
+      <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements" />
+      <recent name="G:\progects\quantumnet\src\renderer\core\plugins" />
+      <recent name="G:\progects\quantumnet\src\renderer\core\mixins" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -330,7 +334,10 @@
       <workItem from="1565259127244" duration="8380000" />
       <workItem from="1565341139730" duration="3421000" />
       <workItem from="1565591746753" duration="16439000" />
-      <workItem from="1565688978483" duration="2992000" />
+      <workItem from="1565688978483" duration="5435000" />
+      <workItem from="1565706496758" duration="4197000" />
+      <workItem from="1565765804214" duration="27611000" />
+      <workItem from="1565862696542" duration="8507000" />
     </task>
     <servers />
   </component>
