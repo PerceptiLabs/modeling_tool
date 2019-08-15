@@ -21,6 +21,7 @@
     "productName": "PerceptiLabs",
     "appId": "com.perceptilabs.perceptilabs",
     "directories": {
+      "buildResources": "build/icons/icon.*",
       "output": "build"
     },
     "files": [
@@ -68,9 +69,9 @@
       "verifyUpdateCodeSignature": false
     },
     "linux": {
-      "icon": "build/icons/512x512.png",
+      "icon": "build/icons",
       "target": [
-        "snap", "deb"
+        "AppImage", "deb"
       ]
     }
   },
