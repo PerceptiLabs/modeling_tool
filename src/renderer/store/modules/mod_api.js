@@ -242,12 +242,12 @@ const actions = {
     coreRequest(theData)
       .then((data)=> {
         console.log('API_exportData answer', data);
-        dispatch('globalView/GP_infoPopup', data);
+        dispatch('globalView/GP_infoPopup', data, {root: true});
         trackerData.result = 'success';
       })
       .catch((err)=> {
         console.error(err);
-        dispatch('globalView/GP_errorPopup', err);
+        dispatch('globalView/GP_errorPopup', err, {root: true});
         trackerData.result = 'error';
       })
       .finally(()=> {
