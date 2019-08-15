@@ -24,7 +24,8 @@
         :error-row="errorRow"
         )
       .code-wrap(v-if="currentTab === 'error'")
-        p.text-warning {{ errorData.Message }}
+        .code-wrap_error-container
+          p.text-warning {{ errorData.Message }}
 
 </template>
 
@@ -150,5 +151,9 @@ export default {
   .code-wrap {
     height: 30rem;
     font-size: 1.6rem;
+  }
+  .code-wrap_error-container {
+    overflow: scroll;
+    height: 100%;
   }
 </style>
