@@ -237,7 +237,7 @@ export default {
     },
     HC_delete() {
       if(!this.isTutorialMode) {
-        this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement')
+        this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del')
       }
     },
     HC_esc() {

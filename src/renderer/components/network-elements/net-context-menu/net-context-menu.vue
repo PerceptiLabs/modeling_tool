@@ -40,7 +40,7 @@ export default {
       this.$emit('open-settings', ev)
     },
     deleteElement() {
-      this.$store.dispatch('mod_events/EVENT_hotKeyDeleteElement');
+      this.$store.dispatch('mod_workspace/DELETE_element');
     },
     addLayerContainer() {
       this.$store.dispatch('mod_workspace/ADD_container');

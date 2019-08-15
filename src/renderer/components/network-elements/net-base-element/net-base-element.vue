@@ -104,7 +104,7 @@ export default {
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
     }),
     showCheckpoint() {
-      return this.dataEl.checkpoint && this.dataEl.checkpoint.length ? true : false
+      return this.dataEl.checkpoint && this.dataEl.checkpoint.length
     },
     currentId() {
       return this.dataEl.layerId
@@ -120,10 +120,13 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
     },
     wsZoom() {
-      return  this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
     },
-    escButton() {
-      return  this.$store.state.mod_events.globalPressKey.esc;
+    hotKeyPressDeleteEsc() {
+      return this.$store.state.mod_events.globalPressKey.esc;
+    },
+    hotKeyPressDelete() {
+      return this.$store.state.mod_events.globalPressKey.del
     },
     classEl() {
       return {
@@ -154,8 +157,11 @@ export default {
         ? this.mousedownOutsideBefore()
         : null
     },
-    escButton() {
+    hotKeyPressDeleteEsc() {
       if(!this.isTutorialMode) this.hideAllWindow();
+    },
+    hotKeyPressDelete() {
+      if(!this.settingsIsOpen) this.$store.dispatch('mod_workspace/DELETE_element');
     }
   },
   methods: {
