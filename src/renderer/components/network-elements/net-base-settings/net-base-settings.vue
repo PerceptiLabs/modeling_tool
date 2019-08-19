@@ -46,7 +46,7 @@
                 :chart-data="imgData"
               )
         .settings-layer_foot
-          button.btn.btn--primary(type="button"
+          button#tutorial_button-confirm.btn.btn--primary(type="button"
             @click="confirmSettings"
           ) Confirm
 
@@ -54,7 +54,8 @@
 
 <script>
   import coreRequest  from "@/core/apiCore.js";
-  import ChartSwitch    from "@/components/charts/chart-switch.vue";
+  import ChartSwitch  from "@/components/charts/chart-switch.vue";
+  import {mapActions} from 'vuex';
 export default {
   name: 'NetBaseSettings',
   components: {ChartSwitch },
@@ -92,6 +93,9 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate: 'mod_tutorials/pointActivate',
+    }),
     coreRequest,
     toSettings() {
       let tab = this.currentEl.layerSettingsTabName || this.tabSet[0];
@@ -105,14 +109,16 @@ export default {
       this.$emit('press-apply', name);
       this.tabSelected = 'Preview';
       this.$nextTick(()=> {
-        this.getPreviewSample()
+        this.getPreviewSample();
+        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
       })
     },
     updateCode(name) {
       this.$emit('press-update')
     },
     confirmSettings() {
-      this.$emit('press-confirm')
+      this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-confirm'});
+      this.$emit('press-confirm');
     },
     getPreviewSample() {
       this.$store.dispatch('mod_api/API_getPreviewSample', this.currentEl.layerId)

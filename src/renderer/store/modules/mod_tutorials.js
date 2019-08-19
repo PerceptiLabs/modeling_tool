@@ -81,9 +81,15 @@ const state = {
               status: 'disabled'
             },
             {
-              tooltip: 'Apply loaded MNIST',
+              tooltip: 'Click to Apply loaded MNIST',
               position: 'right',
               id: 'tutorial_button-apply',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Click to confirm',
+              position: 'right',
+              id: 'tutorial_button-confirm',
               status: 'disabled'
             }
           ],
@@ -136,6 +142,12 @@ const state = {
               tooltip: 'Click to Apply loaded MNIST',
               position: 'right',
               id: 'tutorial_button-apply',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Click to confirm',
+              position: 'right',
+              id: 'tutorial_button-confirm',
               status: 'disabled'
             }
           ],
@@ -1168,14 +1180,14 @@ const actions = {
       dispatch('drawSchematicElement', getters.getActiveAction.schematic);
       dispatch('showHoverInfo');
     } 
-    else { // all actions are done
+    else { // all actions has been done
       dispatch('removeTooltip');
       dispatch('nextPoint');
       if(getters.getActivePoint) {
         commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
         dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
       }
-      else { //all points are done
+      else { //all points has been done
         dispatch('removeTooltip');
         commit('SET_activePointMainTutorial', 0);
         dispatch('lockOneElement');
