@@ -296,7 +296,39 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../../scss/base";
+  .net-element {
+    position: absolute;
+    box-sizing: border-box;
+    border-radius: .5rem;
+    background-color: $bg-workspace;
+    &:hover {
+      will-change: top, left;
+    }
+    &:after {
+      content: '';
+      opacity: 0;
+      position: absolute;
+      left: -2px;
+      right: -2px;
+      top: -2px;
+      bottom: -2px;
+      border: 3px dotted #fff;
+      background: #000;
+      z-index: -1;
+      border-radius: $bdrs;
+    }
+    &.net-element--active:after {
+      opacity: 1;
+    }
+    .btn--layersbar {
+      width: 60px;
+      height: 60px;
 
+      .icon {
+        font-size: 33px;
+      }
+    }
+  }
   .net-element_window {
     position: absolute;
     z-index: 10;
@@ -320,12 +352,7 @@ export default {
     padding: 0;
     background-color: transparent;
     box-shadow: $layer-shad;
-    .btn:hover {
-      box-shadow: inset 0 0 0 2px $col-primary;
-    }
-    .net-element--active & .btn {
-      box-shadow: inset 0 0 0 1px $col-primary;
-    }
+
   }
   .net-element_be-for-end {
     font-size: 1.2rem;
