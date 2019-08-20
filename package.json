@@ -4,7 +4,9 @@
   "author": "PerceptiLabs <contact@perceptilabs.com>",
   "description": "PerceptiLabs is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.",
   "homepage": "perceptilabs.com",
-  "bugs": { "url": "https://gitter.im/PerceptiLabs/PerceptiLabs?utm_source=share-link&utm_medium=link&utm_campaign=share-link" },
+  "bugs": {
+    "url": "https://gitter.im/PerceptiLabs/PerceptiLabs?utm_source=share-link&utm_medium=link&utm_campaign=share-link"
+  },
   "license": "UNLICENSED",
   "main": "./dist/electron/main.js",
   "scripts": {
@@ -21,6 +23,7 @@
   "build": {
     "productName": "PerceptiLabs",
     "appId": "com.perceptilabs.app",
+    "afterSign": "./notarize.js",
     "directories": {
       "buildResources": "build/icons/icon.*",
       "output": "build"
@@ -40,24 +43,43 @@
     ],
     "dmg": {
       "contents": [
-        { "x": 410, "y": 150, "type": "link", "path": "/Applications" },
-        { "x": 130, "y": 150, "type": "file" }
+        {
+          "x": 410,
+          "y": 150,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 130,
+          "y": 150,
+          "type": "file"
+        }
       ]
     },
     "mac": {
       "icon": "build/icons/icon.icns",
       "category": "public.app-category.productivity",
-      "identity": "Mac Developer: username (XXXXXXXX)",
-      "target": [ "dmg", "zip" ]
+      "hardenedRuntime": true,
+      "entitlements": "build/entitlements.mac.inherit.plist",
+      "gatekeeperAssess": false,
+      "target": [
+        "dmg",
+        "zip"
+      ]
     },
     "win": {
       "icon": "build/icons/icon.ico",
-      "target": [ "nsis" ],
+      "target": [
+        "nsis"
+      ],
       "verifyUpdateCodeSignature": false
     },
     "linux": {
       "icon": "build/icons",
-      "target": [ "AppImage", "deb" ]
+      "target": [
+        "AppImage",
+        "deb"
+      ]
     }
   },
   "dependencies": {
@@ -101,6 +123,7 @@
     "electron-builder": "^20.44.4",
     "electron-debug": "^1.5.0",
     "electron-devtools-installer": "^2.2.4",
+    "electron-notarize": "^0.1.1",
     "file-loader": "^1.1.11",
     "html-webpack-plugin": "^3.2.0",
     "mini-css-extract-plugin": "0.4.0",
