@@ -81,7 +81,7 @@ export default {
           text: `Remember, this is a Beta version, if you find any errors or have any suggestions,
                  please click on
 
-                 <button type="button" class="btn btn--primary bug-report-tutorial">
+                 <button type="button" class="btn btn--primary" style="cursor: default">
                    <span >Report</span>
                    <i class="icon icon-bug-report"></i>
                  </button>
@@ -323,5 +323,8 @@ export default {
   }
   .storyboard-link{
     color: $col-primary;
+  }
+  .no-active {
+    cursor: default;
   }
 </style>
