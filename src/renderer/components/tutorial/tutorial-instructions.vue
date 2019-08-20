@@ -189,7 +189,7 @@ export default {
     position: absolute;
     z-index: 13;
     background: $col-txt2;
-    width: 30rem;
+    width: 32rem;
     top: 90%;
     right: 0;
     color: $white;
@@ -246,7 +246,7 @@ export default {
     font-weight: 500;
   }
   .list-area_list {
-    height: 18rem;
+    height: 20rem;
     overflow: scroll;
   }
   .list-element--status {
@@ -260,7 +260,7 @@ export default {
     }
     &.active:before {
       content: "\e901";
-      left: 2rem;
+      left: 1.8rem;
     }
     &.done:before {
       content: "\e937";
@@ -270,12 +270,12 @@ export default {
   .list-element--status.static_info {
     position: relative;
     &.done:before {
-      left: -1.4rem;
+      left: -2rem;
     }
   }
   .list-element {
     margin-bottom: 0.5rem;
-    font-size: 1.4rem;
+    font-size: 1.6rem;
     position: relative;
     padding: 0 2.5rem 0 3.5rem;
    
