@@ -94,7 +94,8 @@
         if(this.imgType === 'pie'
           && typeof this.chartData.series[0].data[0].value === 'number'
         ) {
-          return `${this.$store.state.mod_statistics.piePercents}%`;
+          let waitInfo = this.$store.state.mod_statistics.piePercents;
+          return  waitInfo ? `${waitInfo}%` : `${this.chartData.series[0].data[0].value.toFixed(2)}%`
         }
         return ''
       }
