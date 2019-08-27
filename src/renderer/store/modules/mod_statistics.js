@@ -3,7 +3,8 @@ const namespaced = true;
 const state = {
   selectedElArr: {
     statistics: null,
-    viewBox: null
+    viewBox: null,
+    piePercents: null
   },
 };
 
@@ -13,6 +14,9 @@ const mutations = {
       value[keyId].layerMeta.isSelected = true;
     }
     state.selectedElArr = value;
+  },
+  SET_piePercents (state, value) {
+    state.piePercents = value
   },
   CHANGE_selectElArr(state, dataEl) {
     let elArr = state.selectedElArr;

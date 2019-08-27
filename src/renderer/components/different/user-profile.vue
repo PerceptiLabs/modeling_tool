@@ -41,7 +41,7 @@
       template(slot="secondTab")
         p secondTab
     .sidebar_action
-      button.btn.btn--primary(type="button" @click="saveUserInfo") Save
+      button.btn.btn--primary(type="button" @click="saveUserInfo" ) Save
 
 </template>
 
@@ -68,7 +68,7 @@ export default {
   computed: {
     user() {
       return this.$store.getters['mod_user/GET_userProfile']
-    }
+    },
   },
   methods: {
     requestCloudApi,
@@ -107,17 +107,24 @@ export default {
     saveUserInfo() {
       this.requestCloudApi('post', 'Customer/Profile', this.user)
         .then((response) => {
-          this.$store.dispatch('globalView/GP_infoPopup', 'Your information has been changed');
         })
         .catch((error) => {
           this.$store.dispatch('globalView/GP_infoPopup', error);
         });
       if(this.showEmailEditFields && this.newEmail.length) {
         this.validateNewEmail()
-          .then(() => this.requestChangeUserEmail())
-          .then(() => {
-            this.$store.dispatch('globalView/GP_infoPopup', `A confirmation has been sent to your old mail ${this.user.email}. Please follow the link and your mail will be changed. Otherwise, your old mail will act`);
-            this.$store.dispatch('mod_events/EVENT_logOut');
+          .then((isValid) => {
+            if(isValid) {
+              this.$store.dispatch('globalView/GP_infoPopup', 'Your information has been changed');
+              return this.requestChangeUserEmail()
+            }
+            return isValid
+          })
+          .then((validResult) => {
+            if(validResult) {
+              this.$store.dispatch('globalView/GP_infoPopup', `A confirmation has been sent to your old mail ${this.user.email}. Please follow the link and your mail will be changed. Otherwise, your old mail will act`);
+              this.$store.dispatch('mod_events/EVENT_logOut');
+            }
           })
           .catch((error) => {
             this.$store.dispatch('globalView/GP_infoPopup', error);

@@ -29,7 +29,7 @@
         v-show="activeStepStoryBoard < firstTutorial.length - 1"
       )
       footer.modal-popup_footer
-        button.footer_skip-button(@click="skipTutorial") Skip intro
+        button.footer_skip-button(@click="skipStoryBoard") Skip intro
 
         ul.footer_all-slides-controls
           button.btn.btn--link.all-slides-controls_control( type="button"
@@ -140,9 +140,10 @@ export default {
     dot_stepActive(index) {
       this.setActiveStepStoryboard(index)
     },
-    skipTutorial() {
+    skipStoryBoard() {
       this.closeTutorial();
       this.setFirstTimeApp(false);
+      this.onMainTutorial();
     },
     startMainTutorial() {
       if(!this.isTutorialMode) this.onMainTutorial(this);
