@@ -55,13 +55,16 @@ const chartsMixin = {
     },
     isNotPie() {
       return !(this.$options._componentTag === "ChartPie" || this.$options._componentTag === "chart-pie")
-    }
+    },
   },
   watch: {
     doShowCharts() {
       if(this.isNeedWait && this.chartModelBuffer) {
         if(this.isNotPicture) this.$refs.chart.hideLoading();
         this.chartModel = this.chartModelBuffer;
+        if(this.chartModelBuffer.series[0].type === 'pie') {
+          this.$store.commit('mod_statistics/SET_piePercents', this.chartModel.series[0].data[0].value.toFixed(2))
+        }
       }
     },
     // '$store.state.mod_events.chartResize': {

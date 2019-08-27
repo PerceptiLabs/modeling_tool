@@ -323,10 +323,6 @@ export default {
     .btn--layersbar {
       width: 60px;
       height: 60px;
-
-      .icon {
-        font-size: 33px;
-      }
     }
   }
   .net-element_window {

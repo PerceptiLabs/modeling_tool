@@ -142,6 +142,7 @@ export default {
       this.$store.commit('mod_workspace/DELETE_network', index)
     },
     setTabNetwork(index) {
+      this.set_showTrainingSpinner(false);
       if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
       if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
       //if(this.isTutorialMode) return;

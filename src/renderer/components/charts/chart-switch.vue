@@ -22,7 +22,7 @@
         :chart-data="imgData"
         :custom-color="customColor"
       )
-      .base-chart_info(v-if="chartPieInfo.length") {{ chartPieInfo }}%
+      .base-chart_info(v-if="chartPieInfo.length") {{ chartPieInfo }}
 
 </template>
 
@@ -70,8 +70,6 @@
         imgData: null,
         showRequestSpinner: true,
         fullView: false,
-        chartModelBuffer: null,
-        chartPieInfo: []
       }
     },
     computed: {
@@ -92,11 +90,14 @@
       headerOff() {
         return this.$store.getters['mod_workspace/GET_testIsOpen'] || this.disableHeader;
       },
-      isNeedWait() {
-        return this.$store.getters['mod_workspace/GET_networkWaitGlobalEvent']
-      },
-      doShowCharts() {
-        return this.$store.getters['mod_workspace/GET_networkShowCharts']
+      chartPieInfo() {
+        if(this.imgType === 'pie'
+          && typeof this.chartData.series[0].data[0].value === 'number'
+        ) {
+          let waitInfo = this.$store.state.mod_statistics.piePercents;
+          return  waitInfo ? `${waitInfo}%` : `${this.chartData.series[0].data[0].value.toFixed(2)}%`
+        }
+        return ''
       }
     },
     watch: {
@@ -113,13 +114,6 @@
           this.imgData = null
         }
       },
-      doShowCharts() {
-        if(this.isNeedWait
-          && this.imgType === 'pie'
-          && typeof this.chartData.series[0].data[0].value === 'number') {
-            this.chartPieInfo = this.chartData.series[0].data[0].value.toFixed(2);
-        }
-      }
     },
     methods: {
       toggleFullView() {
