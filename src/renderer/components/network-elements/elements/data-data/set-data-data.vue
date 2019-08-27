@@ -132,7 +132,6 @@
       typeOpened() {
         const path = this.settings.accessProperties.Path;
         if(path.length) {
-          console.log(path[0].indexOf('.'));
           return path[0].indexOf('.') > 0 ? 'files' : 'folders'
         }
         else return ''
@@ -141,18 +140,19 @@
         get() {
           const path = this.settings.accessProperties.Path;
           const partitionList = this.settings.accessProperties.Partition_list;
-
           const fileArray = path.map((item, index)=> {
             return {
               path: item,
               settings: partitionList[index] || [20, 70, 10]
-            }
+            };
           });
+          const partList = fileArray.map((item)=> item.settings);
+          this.settings.accessProperties.Partition_list = partList;
           return fileArray;
         },
         set(newVal) {
           const partitionList = newVal.map((item)=> item.settings);
-          const pathList = newVal.map((item)=> item.path);
+          const pathList =      newVal.map((item)=> item.path);
           this.settings.accessProperties.Path = pathList;
           this.settings.accessProperties.Partition_list = partitionList;
         }
@@ -188,9 +188,9 @@
           title:"Load file or files",
           properties: ['openFile', 'multiSelections'],
           filters: [
-            {name: 'All', extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz']},
-            {name: 'Images', extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff']},
-            {name: 'Text', extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
+            {name: 'All',     extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz']},
+            {name: 'Images',  extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff']},
+            {name: 'Text',    extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
           ]
         };
         let optionTutorial = {
@@ -218,10 +218,9 @@
         else this.loadFolder(true)
       },
       saveLoadFile(pathArr, isAppend) {
-        console.log(pathArr);
         if(isAppend) {
           const allPath = [... this.settings.accessProperties.Path, ...pathArr];
-          this.settings.accessProperties.Path = [... new Set(allPath)];
+          this.settings.accessProperties.Path = [... new Set(allPath)]
         }
         else this.settings.accessProperties.Path = pathArr;
         this.getSettingsInfo();
