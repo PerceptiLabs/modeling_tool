@@ -16,4 +16,24 @@ module.exports = async (context) => {
             console.log(err);
         }
   }
-};ß
+};
+
+
+// require('dotenv').config();
+// const { notarize } = require('electron-notarize');
+
+// exports.default = async function notarizing(context) {
+//   const { electronPlatformName, appOutDir } = context;  
+//   if (electronPlatformName !== 'darwin') {
+//     return;
+//   }
+
+//   const appName = context.packager.appInfo.productFilename;
+
+//   return await notarize({
+//     appBundleId: 'com.perceptilabs.app',
+//               appPath: './dist/mac/PerceptiLabs.app',
+//               appleId: process.env.appleId,
+//               appleIdPassword: process.env.appleASP,
+//   });
+// };
