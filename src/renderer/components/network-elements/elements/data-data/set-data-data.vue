@@ -143,7 +143,7 @@
           const fileArray = path.map((item, index)=> {
             return {
               path: item,
-              settings: partitionList[index] || [20, 70, 10]
+              settings: partitionList[index] || [70, 20, 10]
             };
           });
           const partList = fileArray.map((item)=> item.settings);
