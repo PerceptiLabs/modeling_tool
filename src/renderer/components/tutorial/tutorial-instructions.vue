@@ -6,56 +6,57 @@
     )
       span Tutorial
       i.icon.icon-ellipse
-    
-    .tutorial-instruction-box_list-area(v-if="isShowInstructions")
+
+    .tutorial-instruction-box_list-area(v-if="isShowInstructions" @mousedown="dragElement($event)")
       header.list-area_header
         div
           button.header_close-instructions.i.icon.icon-app-close(@click="switchTutorialMode")
           //span.header_title title_q
-        .header_arrows-top
+        .header_arrows-top(:class="{'list-hide': !isMaximize}" @click="minimizeList")
           i.icon.icon-shevron
           i.icon.icon-shevron
-      
-      p.list-area_title {{interective[activeStep].title}}
-      ul.list-area_list
-        .list-element.list-element--status(
-          v-for="(point, index) in points"
-          v-if="stepCount !== stepsLength"
-          :key="index"
-          :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
-        )
-          .element-text(v-html="point.content")
-          .list-element_static
-            .static_info.list-element--status(
-              v-for="(info, index) in point.static_info"
-              v-html="info.content"
-              :key="index" 
-              :class="[{'done': info.status === 'done'}]"
-            )
+
+      .list-area-box(v-show="isMaximize")
+        p.list-area_title {{interective[activeStep].title}}
+        ul.list-area_list
+          .list-element.list-element--status(
+            v-for="(point, index) in points"
+            v-if="stepCount !== stepsLength"
+            :key="index"
+            :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
+          )
+            .element-text(v-html="point.content")
+            .list-element_static
+              .static_info.list-element--status(
+                v-for="(info, index) in point.static_info"
+                v-html="info.content"
+                :key="index"
+                :class="[{'done': info.status === 'done'}]"
+              )
           
-      footer.list-area_footer
-        button.footer_all-tutorials-btn
-          i.icon.icon-shevron-right
-          span All tutorials
-        .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
-        div
-          //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back 
-          button.footer_btn(
-            v-if="isFirstStep"
-            @click="startTutorial('next')"
-            ) Next
-          button.footer_btn(
-            v-else-if="activeAction.next && !allPointsIsDone"
-            @click="pointActivate({way: 'next', validation: activeAction.id})"
-            ) Next
-          button.footer_btn(
-            v-else-if="stepCount !== stepsLength"
-            @click="changeStep('next')" :disabled="disabledNext"
-            ) Next
-          button.footer_btn(
-            v-else-if="stepCount === stepsLength"
-            @click="endTutorial()"
-            ) End
+        footer.list-area_footer
+          button.footer_all-tutorials-btn
+            i.icon.icon-shevron-right
+            span All tutorials
+          .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
+          div
+            //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back
+            button.footer_btn(
+              v-if="isFirstStep"
+              @click="startTutorial('next')"
+              ) Next
+            button.footer_btn(
+              v-else-if="activeAction.next && !allPointsIsDone"
+              @click="pointActivate({way: 'next', validation: activeAction.id})"
+              ) Next
+            button.footer_btn(
+              v-else-if="stepCount !== stepsLength"
+              @click="changeStep('next')" :disabled="disabledNext"
+              ) Next
+            button.footer_btn(
+              v-else-if="stepCount === stepsLength"
+              @click="endTutorial()"
+              ) End
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex';
@@ -63,7 +64,8 @@ export default {
   name: 'TutorialInstructions',
   data() {
     return {
-      count: 0
+      count: 0,
+      isMaximize: true
     }
   },
   watch: {
@@ -152,7 +154,7 @@ export default {
       if(this.currentNetworkElementList) this.addNetwork();
       this.setTutorialIstarted(true);
       this.setActiveStep(way);
-      this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
+      this.pointActivate({way: null, validation: this.activePoint.actions[0].id});
       this.trackerTutorialStart();
     },
     endTutorial() {
@@ -164,9 +166,43 @@ export default {
       this.trackerTutorialFinished();
     },
     switchTutorialMode() {
-      this.isTutorialMode ? this.offTutorial() : this.onTutorial(this);
+      if(this.isTutorialMode) {
+        this.offTutorial();
+      } else {
+        this.onTutorial(this);
+        this.isMaximize = true;
+      }
     },
 
+    minimizeList() {
+      this.isMaximize = !this.isMaximize;
+    },
+    dragElement(event) {
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      const element = event.currentTarget;
+      event.preventDefault();
+      pos3 = event.clientX;
+      pos4 = event.clientY;
+      element.style.cursor = 'grabbing';
+      document.addEventListener('mouseup', closeDragElement);
+      document.addEventListener('mousemove', elementDrag);
+
+      function elementDrag(docEvent) {
+        event.preventDefault();
+        pos1 = pos3 - docEvent.clientX;
+        pos2 = pos4 - docEvent.clientY;
+        pos3 = docEvent.clientX;
+        pos4 = docEvent.clientY;
+        element.style.top = (element.offsetTop - pos2) + "px";
+        element.style.left = (element.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement() {
+        document.removeEventListener('mouseup', closeDragElement);
+        document.removeEventListener('mousemove', elementDrag);
+        element.style.cursor = '';
+      }
+    }
   }
 }
 
@@ -196,6 +232,7 @@ export default {
     border-radius: 5px;
     overflow: hidden;
     box-shadow: $box-shad;
+    cursor: move;
   }
   .list-area_header {
     background: $bg-workspace;
@@ -220,6 +257,7 @@ export default {
     color: $color-text-instructions;
   }
   .header_arrows-top {
+    transform: rotate(-180deg);
     color: $col-txt;
     background: $col-txt2;
     height: 100%;
@@ -228,10 +266,13 @@ export default {
     align-items: center;
     flex-direction: column;
     padding: 0 1.2rem;
+    cursor: pointer;
+    &.list-hide {
+      transform: rotate(0);
+    }
     .icon{
       font-size: 1.3rem;
       position: relative;
-      transform: rotate(-180deg);
       &:first-child {
         top: 0.4rem;
       }
