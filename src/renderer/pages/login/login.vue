@@ -76,7 +76,7 @@ export default {
     },
     validateForm() {
       this.$validator.validateAll()
-        .then((result) => {
+        .then((result)=> {
           if (result) {
             this.requestLoginUser();
             return;
@@ -90,21 +90,22 @@ export default {
         "Password": this.userPass
       };
       this.requestCloudApi('post', 'Customer/Login', dataParams)
-        .then((response)=>{
+        .then((response)=> {
           const token = response.data.data.token;
           this.$store.dispatch('mod_user/SET_userToken', token);
           if(this.saveToken) {
-            localStorage.setItem('userToken', token);
+            localStorage.setItem('currentUser', token);
           }
-          this.$nextTick(()=>{
+          this.$store.dispatch('mod_user/CHECK_LOCAL_usersList');
+          this.$nextTick(()=> {
             this.TRACKER_createUser();
           });
           this.loginUser()
         })
-        .catch((error)=>{
+        .catch((error)=> {
           this.$store.dispatch('globalView/GP_infoPopup', error);
         })
-        .finally(()=>{
+        .finally(()=> {
           this.$store.commit('mod_login/SET_showLoader', false);
         });
     },

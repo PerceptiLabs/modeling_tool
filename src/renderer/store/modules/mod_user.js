@@ -2,7 +2,8 @@ const namespaced = true;
 
 const state = {
   userToken: '',
-  userProfile: null
+  userProfile: null,
+  getLocalUserList: JSON.parse(localStorage.getItem('usersList')),
 };
 
 const getters = {
@@ -20,6 +21,9 @@ const getters = {
   GET_userProfile(state) {
     return state.userProfile
   },
+  GET_LOCAL_userInfo(state, getters) {
+    return state.getLocalUserList[getters.GET_userID]
+  }
 };
 
 const mutations = {
@@ -43,6 +47,48 @@ const actions = {
   SET_userProfile({commit}, value) {
     commit('set_userProfile', value);
   },
+  // GET_LOCAL_usersList() {
+  //   console.log('GET_LOCAL_usersList');
+  //   return
+  // },
+  CHECK_LOCAL_usersList({dispatch, getters, state}) {
+    //console.log('CHECK_LOCAL_usersList', dispatch);
+    let usersList = state.getLocalUserList;
+    //console.log('CHECK_LOCAL_usersList', usersList);
+    const userId = getters.GET_userID;
+    const defaultUserInfo = {
+      showFirstAppTutorial: true,
+      projectsList: []
+    };
+    //console.log('usersList', usersList, 'userId', userId);
+    if(usersList) {
+      if(usersList[userId]) return;
+    }
+    else {
+      usersList = {};
+    }
+    dispatch('SET_LOCAL_userInfo', {userData: defaultUserInfo, localList: usersList});
+  },
+  SET_LOCAL_userInfo({getters, state}, { userData, localList } ) {
+    //console.log('SET_LOCAL_userInfo', userData, localList);
+    let usersList = localList || state.getLocalUserList;
+    //console.log('usersList', usersList);
+    const userId = getters.GET_userID;
+    usersList[userId] = userData;
+    //console.log(usersList);
+    localStorage.setItem('usersList', JSON.stringify(usersList));
+  },
+  UPDATE_LOCAL_userInfo({dispatch, getters}, { key, data }) {
+    let userInfo = getters.GET_LOCAL_userInfo;
+    //console.log('UPDATE_LOCAL_userInfo', userInfo);
+    userInfo[key] = data;
+    dispatch('SET_LOCAL_userInfo', {'userData': userInfo });
+  },
+  // GET_LOCAL_userInfo({getters, state}) {
+  //   let usersList = state.getLocalUserList[getters.GET_userID];
+  //   const userId = ;
+  //   return usersList[userId]
+  // }
 };
 
 export default {

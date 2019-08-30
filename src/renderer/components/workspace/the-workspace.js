@@ -36,7 +36,9 @@ export default {
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
-      showTrainingSpinner:'mod_workspace/GET_showStartTrainingSpinner'
+      showTrainingSpinner:'mod_workspace/GET_showStartTrainingSpinner',
+      getLocalUserInfo:   'mod_user/GET_LOCAL_userInfo',
+      //userId:             'mod_user/GET_userID',
     }),
     ...mapState({
       workspace:                  state => state.mod_workspace.workspaceContent,
@@ -117,12 +119,14 @@ export default {
   },
   methods: {
     ...mapMutations({
-      set_showTrainingSpinner:    'mod_workspace/SET_showStartTrainingSpinner'
+      set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner'
     }),
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
       infoPopup:                'globalView/GP_infoPopup',
-      pauseTraining:            'mod_api/API_pauseTraining'
+      pauseTraining:            'mod_api/API_pauseTraining',
+
+      saveLocalUserInfo:        'mod_user/UPDATE_LOCAL_userInfo',
     }),
     calcScaleMap() {
       this.$nextTick(()=> {
@@ -203,7 +207,7 @@ export default {
         })
         .then(()=> {
           this.$refs.networkField[0].$refs.network.style.filter = '';
-          setLocalProjectsList(projectsList)
+          setLocalProjectsList(this, projectsList)
         })
         .catch((err)=> {console.log(err)});
     },
@@ -222,15 +226,13 @@ export default {
           };
           return openSaveDialog(option);
         })
-        .then((path)=> {
-          return fileLocalSave(path, stringNetwork)
-        })
+        .then((path)=> fileLocalSave(path, stringNetwork))
         .then((filePath)=> {
-          savePathToLocalStorage(stringNetwork, filePath);
+          savePathToLocalStorage(stringNetwork, filePath, this);
           this.$store.dispatch('mod_tracker/EVENT_modelSave', stringNetwork);
         })
         .catch((err)=> {
-          console.log(err)
+          console.error(err)
         })
         .finally(()=> {
           this.$refs.networkField[0].$refs.network.style.filter = '';
@@ -273,15 +275,15 @@ function doScreenShot(ctx) {
       });
   })
 }
-function savePathToLocalStorage(stringProject, path) {
-  let projectsList = JSON.parse(localStorage.getItem('projectsList'));
+function savePathToLocalStorage(stringProject, path, ctx) {
+  let projectsList = ctx.getLocalUserInfo.projectsList;
   let project = JSON.parse(stringProject).project;
   project.path.push(path);
-  if(projectsList) {
+  if(projectsList.length) {
     let idIndex = projectsList.findIndex((proj)=> proj.id === project.id);
     let pathIndex = projectsList.findIndex((proj)=> proj.path[0] === path);
-    let idExist = idIndex >= 0 ? true : false;
-    let pathExist = pathIndex >= 0 ? true : false;
+    let idExist = idIndex >= 0;
+    let pathExist = pathIndex >= 0;
     //to him self
     if(idExist && pathExist && idIndex === pathIndex) {
       projectsList[idIndex] = project
@@ -298,13 +300,12 @@ function savePathToLocalStorage(stringProject, path) {
     }
   }
   else {
-    projectsList = [];
     projectsList.push(project)
   }
-  setLocalProjectsList(projectsList);
+  setLocalProjectsList(ctx, projectsList);
 }
-function setLocalProjectsList(list) {
-  localStorage.setItem('projectsList', JSON.stringify(list))
+function setLocalProjectsList(ctx, projectsListData) {
+  ctx.saveLocalUserInfo({key: 'projectsList', data: projectsListData });
 }
 function cloneNet(net, imgPath, filePath) {
   //clone network

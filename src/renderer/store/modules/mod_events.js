@@ -100,7 +100,7 @@ const actions = {
     commit('set_saveNetworkAs');
   },
   EVENT_logOut({dispatch}) {
-    localStorage.removeItem('userToken');
+    localStorage.removeItem('currentUser');
     dispatch('mod_user/SET_userToken', '', {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
     router.replace({name: 'login'});

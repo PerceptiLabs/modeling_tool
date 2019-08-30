@@ -7,29 +7,23 @@
     the-toolbar
     the-layersbar
     the-sidebar
-    tutorial-storyboard
+    the-tutorial-storyboard(v-if="isShowTutorial")
 
 </template>
 
 <script>
-  import { mapGetters, mapActions } from 'vuex';
+  import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
   import { throttleEv } from '@/core/helpers.js'
 
   import TheToolbar         from '@/components/the-toolbar.vue'
   import TheLayersbar       from '@/components/the-layersbar.vue'
   import TheSidebar         from '@/components/the-sidebar.vue'
   import TheWorkspace       from '@/components/workspace/the-workspace.vue'
-  import TutorialStoryboard from "@/components/tutorial/tutorial-storyboard.vue";
+  import TheTutorialStoryboard from "@/components/tutorial/tutorial-storyboard.vue";
 
   export default {
     name: 'pageQuantum',
-    components: {
-      TheToolbar,
-      TheLayersbar,
-      TheSidebar,
-      TheWorkspace,
-      TutorialStoryboard
-    },
+    components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
       if(!this.workspaceContent.length) {
         this.$store.dispatch('mod_workspace/ADD_network');
@@ -39,11 +33,14 @@
       this.showPage = true;
       this.$store.commit('globalView/SET_appIsOpen', true);
       window.addEventListener("resize",  this.resizeEv, false);
-      this.$nextTick(()=> this.addListeners())
+      this.$nextTick(()=> {
+        this.addDragListeners();
+        if(this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
+      })
     },
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
-      this.removeListeners();
+      this.removeDragListeners();
       this.$store.commit('globalView/SET_appIsOpen', false);
     },
     data() {
@@ -58,13 +55,15 @@
     },
     computed: {
       ...mapGetters({
-        activeAction:   'mod_tutorials/getActiveAction',
-        editIsOpen:           'mod_workspace/GET_networkIsOpen',
-        currentNetwork: 'mod_workspace/GET_currentNetwork'
+        activeAction:     'mod_tutorials/getActiveAction',
+        editIsOpen:       'mod_workspace/GET_networkIsOpen',
+        currentNetwork:   'mod_workspace/GET_currentNetwork',
+        getLocalUserInfo: 'mod_user/GET_LOCAL_userInfo',
       }),
-      workspaceContent() {
-        return this.$store.state.mod_workspace.workspaceContent
-      },
+      ...mapState({
+        isShowTutorial:   state=> state.mod_tutorials.showTutorialStoryBoard,
+        workspaceContent: state=> state.mod_workspace.workspaceContent,
+      }),
       networkMode() {
         return this.currentNetwork.networkMeta
           ? this.currentNetwork.networkMeta.netMode
@@ -75,24 +74,27 @@
       editIsOpen(newVal) {
         if(newVal) {
           this.$nextTick(function () {
-            this.addListeners()
+            this.addDragListeners()
           })
         }
         else {
-          this.removeListeners();
+          this.removeDragListeners();
           this.offDragListener();
         }
       },
     },
     methods: {
+      ...mapMutations({
+        setShowStoryboard: 'mod_tutorials/SET_showTutorialStoryBoard',
+      }),
       ...mapActions({
         tutorialPointActivate:  'mod_tutorials/pointActivate',
         eventResize:            'mod_events/EVENT_eventResize'
       }),
-      addListeners() {
+      addDragListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
       },
-      removeListeners() {
+      removeDragListeners() {
         this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
       },
       offDragListener() {

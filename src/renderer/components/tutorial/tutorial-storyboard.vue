@@ -1,5 +1,5 @@
 <template lang="pug">
-  .tutorial-box(v-if="statusShowTutorial || isFirstTimeApp")
+  .tutorial-box
     .tutorial-box_modal-popup
       button.close-tutorial.icon.icon-app-close(type="button" @click="closeTutorial")
       .modal-popup_step-info
@@ -42,7 +42,7 @@
 <script>
 import {mapMutations, mapGetters, mapActions} from 'vuex';
 export default {
-  name: 'TutorialStoryboard',
+  name: 'TheTutorialStoryboard',
   data() {
     return {
       firstTutorial: [
@@ -105,12 +105,6 @@ export default {
     }),
     currentStepTutorial() {
       return this.firstTutorial[this.activeStepStoryBoard]
-    },
-    statusShowTutorial() {
-      return this.$store.state.mod_tutorials.showTutorialStoryBoard
-    },
-    isFirstTimeApp() {
-      return this.$store.state.mod_tutorials.firstTimeApp
     }
   },
   methods: {
@@ -120,15 +114,16 @@ export default {
       setShowInstructionsMainTutorial:  'mod_tutorials/SET_showMainTutorialInstruction',
       setTutorialIsStarted:             'mod_tutorials/SET_mainTutorialIsStarted',
       setActiveStep:                    'mod_tutorials/SET_activeStepMainTutorial',
-      setFirstTimeApp:                  'mod_tutorials/SET_firstTimeApp',
+      //setFirstTimeApp:                  'mod_tutorials/SET_firstTimeApp',
       setInteractiveInfo:               'mod_tutorials/SET_interactiveInfo',
       setTutorialMode:                  'mod_tutorials/SET_isTutorialMode'
     }),
     ...mapActions({
-      mainTutorialPointActivate:        'mod_tutorials/pointActivate',
-      onMainTutorial:                   'mod_tutorials/onTutorial',
-      resetStoryBoard:                  'mod_tutorials/resetStoryBoard',
-      addNetwork:                       'mod_workspace/ADD_network'
+      mainTutorialPointActivate: 'mod_tutorials/pointActivate',
+      onMainTutorial:            'mod_tutorials/onTutorial',
+      resetStoryBoard:           'mod_tutorials/resetStoryBoard',
+      addNetwork:                'mod_workspace/ADD_network',
+      saveLocalUserInfo:         'mod_user/UPDATE_LOCAL_userInfo',
     }),
     closeTutorial() {
       this.setActiveStepStoryboard(0);
@@ -142,7 +137,7 @@ export default {
     },
     skipStoryBoard() {
       this.closeTutorial();
-      this.setFirstTimeApp(false);
+      this.saveLocalUserInfo({key: 'showFirstAppTutorial', data: false});
       this.onMainTutorial();
     },
     startMainTutorial() {

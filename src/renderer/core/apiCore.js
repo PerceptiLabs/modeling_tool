@@ -4,7 +4,7 @@ import store from '@/store'
 
 /*GENERAL CORE*/
 const coreRequest = function (message, port, address) {
-  console.log(message.action);
+  //console.log(message.action);
   return new Promise((resolve, reject) => {
     let socket = new net.Socket();
     let socketAddress = address || '127.0.0.1';

@@ -1,6 +1,6 @@
 import { isNumber } from "util";
 import router from "@/router";
-import store from '@/store'
+import store  from '@/store'
 
 const namespaced = true;
 let delayTimer;
@@ -19,7 +19,7 @@ const state = {
   activePointMainTutorial: 0,
   activeActionMainTutorial: 0,
   
-  firstTimeApp: localStorage.showFirstAppTutorial ? false : true,
+  //firstTimeApp: localStorage.showFirstAppTutorial ? false : true,
   interective: {
     first_instructions: {
       title: 'Instructions:',
@@ -1089,7 +1089,7 @@ const mutations = {
   },
   SET_showTutorialStoryBoard(state, value) {
     state.showTutorialStoryBoard = value;
-    state.firstTimeApp = value;
+    //state.firstTimeApp = value;
   },
   SET_showMainTutorialInstruction(state, value) {
     state.showMainTutorialInstruction = value
@@ -1125,11 +1125,6 @@ const mutations = {
     else if(value === 'prev') {
       state.activeActionMainTutorial--
     }
-  },
-  SET_firstTimeApp(state, value) {
-    localStorage.showFirstAppTutorial = value;
-    state.showTutorial = value;
-    state.firstTimeApp = value;
   },
   SET_pointActivate(state, value,) {
     let points = state.interective[value.step].points;

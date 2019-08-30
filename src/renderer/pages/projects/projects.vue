@@ -16,24 +16,26 @@
 <script>
   import fs               from 'fs';
   import {fileLocalRead}  from '@/core/helpers.js'
-  import {mapMutations, mapActions} from 'vuex';
+  import {mapState, mapGetters, mapMutations, mapActions} from 'vuex';
 
   import basicTemplate1 from '@/core/basic-template/base-template-1.js'
 
   export default {
     name: 'PageProjects',
     mounted() {
-      let localProjectsList = JSON.parse(localStorage.getItem('projectsList'));
-      if(Array.isArray(localProjectsList)) {
-        localProjectsList.forEach((el)=> {
-          fileLocalRead(el.path[0])
-            .then(() => {})
-            .catch((err)=> {
-              el.notExist = true
-            })
-        });
-        this.projects = localProjectsList;
-      }
+      this.$nextTick(()=> {
+        let localProjectsList = this.localUserInfo.projectsList;
+        if(Array.isArray(localProjectsList)) {
+          localProjectsList.forEach((el)=> {
+            fileLocalRead(el.path[0])
+              .then(() => {})
+              .catch((err)=> {
+                el.notExist = true
+              })
+          });
+          this.projects = localProjectsList;
+        }
+      })
     },
     data() {
       return {
@@ -61,19 +63,19 @@
       }
     },
     computed: {
-      appVersion() {
-        return this.$store.state.globalView.appVersion
-      },
+      ...mapGetters({
+        networkIsNotEmpty:  'mod_workspace/GET_networkIsNotEmpty',
+        localUserInfo:      'mod_user/GET_LOCAL_userInfo'
+      }),
+      ...mapState({
+        appVersion:         state => state.globalView.appVersion,
+        hotKeyPressDelete:  state => state.mod_events.globalPressKey.del,
+      }),
+
       filteredProjects() {
         this.selectedProject = null;
-        return this.projects.filter((project) => project.name.match(this.search))
-      },
-      networkIsNotEmpty(){
-        return this.$store.getters['mod_workspace/GET_networkIsNotEmpty'];
-      },
-      hotKeyPressDelete() {
-        return this.$store.state.mod_events.globalPressKey.del
-      },
+        return this.projects.filter((project)=> project.name.match(this.search))
+      }
     },
     watch: {
       hotKeyPressDelete() {
