@@ -1,5 +1,4 @@
 const net = require('net');
-import mixpanel       from 'mixpanel-browser'
 import store from '@/store'
 
 /*GENERAL CORE*/

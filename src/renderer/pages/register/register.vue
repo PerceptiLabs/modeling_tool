@@ -68,7 +68,6 @@
 </template>
 
 <script>
-  import {requestCloudApi}  from '@/core/apiCloud.js'
   import { baseUrlSite }    from '@/core/constants.js'
 
   import ViewLoading        from '@/components/different/view-loading.vue'
@@ -100,7 +99,6 @@ export default {
     },
   },
   methods: {
-    requestCloudApi,
     validateForm() {
       this.$validator.validateAll()
         .then((result) => {
@@ -116,15 +114,14 @@ export default {
     registryUser() {
       this.$store.commit('mod_login/SET_showLoader', true);
 
-      this.requestCloudApi('post', 'Customer/CreateGuest', this.user)
+      this.$store.dispatch('mod_apiCloud/CloudAPI_userCreate', this.user)
         .then((response)=>{
-          this.$store.dispatch('globalView/GP_infoPopup', 'A confirmation email has been sent to your email. Follow the link to complete the registration.');
           this.$router.replace('/login');
         })
-        .catch((error)=>{
-          this.$store.dispatch('globalView/GP_infoPopup', error);
-        })
-        .finally(()=>{
+        // .catch((error)=> {
+        //   this.$store.dispatch('globalView/GP_infoPopup', error);
+        // })
+        .finally(()=> {
           this.$store.commit('mod_login/SET_showLoader', false);
         });
     },

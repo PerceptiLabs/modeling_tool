@@ -2,6 +2,7 @@ const namespaced = true;
 
 const state = {
   userToken: '',
+  userTokenRefresh: '',
   userProfile: null,
   getLocalUserList: JSON.parse(localStorage.getItem('usersList')),
 };
@@ -12,11 +13,11 @@ const getters = {
   },
   GET_userID(state) {//'Guest' for the trackers
     const token = state.userToken;
-    return !(token.length) ? 'Guest' : parseJwt(token).unique_name
+    return !token.length ? 'Guest' : parseJwt(token).unique_name
   },
   GET_userRole() {//User, Advanced
     const token = state.userToken;
-    return !(token.length) ? 'Guest' : parseJwt(token).role
+    return !token.length ? 'Guest' : parseJwt(token).role
   },
   GET_userProfile(state) {
     return state.userProfile
@@ -27,8 +28,9 @@ const getters = {
 };
 
 const mutations = {
-  set_userToken (state, value) {
-    state.userToken = value;
+  set_userToken (state, tokens) {
+    state.userToken = tokens.accessToken;
+    state.userTokenRefresh = tokens.refreshToken;
   },
   set_userProfile (state, value) {
     state.userProfile = value
@@ -44,23 +46,22 @@ const actions = {
         : dispatch('mod_api/API_CLOSE_core', null, {root: true});
     }
   },
+  RESET_userToken({commit}) {
+    commit('set_userToken', {
+      accessToken: '',
+      refreshToken: ''
+    });
+  },
   SET_userProfile({commit}, value) {
     commit('set_userProfile', value);
   },
-  // GET_LOCAL_usersList() {
-  //   console.log('GET_LOCAL_usersList');
-  //   return
-  // },
   CHECK_LOCAL_usersList({dispatch, getters, state}) {
-    //console.log('CHECK_LOCAL_usersList', dispatch);
     let usersList = state.getLocalUserList;
-    //console.log('CHECK_LOCAL_usersList', usersList);
     const userId = getters.GET_userID;
     const defaultUserInfo = {
       showFirstAppTutorial: true,
       projectsList: []
     };
-    //console.log('usersList', usersList, 'userId', userId);
     if(usersList) {
       if(usersList[userId]) return;
     }
@@ -70,25 +71,16 @@ const actions = {
     dispatch('SET_LOCAL_userInfo', {userData: defaultUserInfo, localList: usersList});
   },
   SET_LOCAL_userInfo({getters, state}, { userData, localList } ) {
-    //console.log('SET_LOCAL_userInfo', userData, localList);
     let usersList = localList || state.getLocalUserList;
-    //console.log('usersList', usersList);
     const userId = getters.GET_userID;
     usersList[userId] = userData;
-    //console.log(usersList);
     localStorage.setItem('usersList', JSON.stringify(usersList));
   },
   UPDATE_LOCAL_userInfo({dispatch, getters}, { key, data }) {
-    let userInfo = getters.GET_LOCAL_userInfo;
-    //console.log('UPDATE_LOCAL_userInfo', userInfo);
+    let userInfo = JSON.parse(JSON.stringify(getters.GET_LOCAL_userInfo));
     userInfo[key] = data;
     dispatch('SET_LOCAL_userInfo', {'userData': userInfo });
   },
-  // GET_LOCAL_userInfo({getters, state}) {
-  //   let usersList = state.getLocalUserList[getters.GET_userID];
-  //   const userId = ;
-  //   return usersList[userId]
-  // }
 };
 
 export default {

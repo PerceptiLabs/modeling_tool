@@ -154,7 +154,7 @@
         this.$store.commit('globalView/SET_appPath', path);
       },
       checkToken() {
-        let localUserToken = localStorage.getItem('currentUser');
+        let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.$store.dispatch('mod_user/SET_userToken', localUserToken);
           if(this.$router.history.current.name === 'login') {

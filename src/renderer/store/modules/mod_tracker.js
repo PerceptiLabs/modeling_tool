@@ -1,4 +1,4 @@
-import mixPanel       from 'mixpanel-browser'
+import mixPanel from 'mixpanel-browser'
 
 const mixPanelToken = 'ff98c9e22047d4a1eef9146339e038ee';
 const namespaced = true;
@@ -22,6 +22,13 @@ const actions = {
   },
   TRACK_initMixPanelUser({}, id) {
     mixPanel.identify(id);
+  },
+  TRACK_createUser({}, userEmail) {
+    mixPanel.people.set_once({
+      "$email": userEmail,
+      "$created": new Date(),
+      "$last_login": new Date(),
+    });
   },
   /* APP */
   EVENT_appStart({rootState}) {
