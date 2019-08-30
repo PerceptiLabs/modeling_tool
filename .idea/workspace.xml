@@ -3,9 +3,12 @@
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/global-popups/workspace-core-side.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/global-popups/workspace-core-side.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/components/_network-elements.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCore.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCore.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -338,7 +341,9 @@
       <workItem from="1566190148742" duration="4111000" />
       <workItem from="1566286337794" duration="1257000" />
       <workItem from="1566893036840" duration="48000" />
-      <workItem from="1566893174216" duration="8182000" />
+      <workItem from="1566893174216" duration="9906000" />
+      <workItem from="1566983217444" duration="9193000" />
+      <workItem from="1567066166537" duration="1943000" />
     </task>
     <servers />
   </component>
