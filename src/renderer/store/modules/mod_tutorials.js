@@ -801,13 +801,22 @@ const state = {
               id: 'tutorial_run-training-button', 
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
                           <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_partition-training-input',
+              status: 'disabled'
+            },*/
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Epoch:</div> refers to the number of times </br> you want to run through your entire dataset. </br>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_epochs-input',
               status: 'disabled'
             },
           ]
@@ -1227,7 +1236,7 @@ const actions = {
   },
   hideTooltip({getters}) {
     let element = document.getElementById(getters.getActiveAction.id);
-    if(element.parentNode.classList.contains('unlock-element')) {
+    if(element && element.parentNode.classList.contains('unlock-element')) {
       document.querySelector('.tooltip-tutorial').classList.add('tooltip-hide');
     }
   },
@@ -1334,28 +1343,30 @@ const actions = {
     }, 100);
   },
   sideCalculate({rootGetters}, info) {
-    let elCoord = info.element.getBoundingClientRect();
-    let tooltipArrow = 10;
-    let isDraggable = info.element.getAttribute('draggable');
-    let zoom = isDraggable !== 'false' ? 1 : store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
-    switch (info.side) {
-      case 'right':
-        info.tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom  +'px';
-        info.tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
-        break;
-      case 'left':
-        info.tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';
-        info.tooltip.style.left = elCoord.left - tooltipArrow + 'px';
-        break;
-      case 'top':
-        info.tooltip.style.top = elCoord.top - tooltipArrow +'px';
-        info.tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
-        break;
-      case 'bottom':
-        info.tooltip.style.top = elCoord.top + elCoord.height + tooltipArrow +'px';
-        info.tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
-        break;
-    }
+   if(info.element) {
+     let elCoord = info.element.getBoundingClientRect();
+     let tooltipArrow = 10;
+     let isDraggable = info.element.getAttribute('draggable');
+     let zoom = isDraggable !== 'false' ? 1 : store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+     switch (info.side) {
+       case 'right':
+         info.tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom  +'px';
+         info.tooltip.style.left = (elCoord.left + elCoord.width + tooltipArrow) * zoom + 'px';
+         break;
+       case 'left':
+         info.tooltip.style.top = elCoord.top + (elCoord.height / 2) +'px';
+         info.tooltip.style.left = elCoord.left - tooltipArrow + 'px';
+         break;
+       case 'top':
+         info.tooltip.style.top = elCoord.top - tooltipArrow +'px';
+         info.tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
+         break;
+       case 'bottom':
+         info.tooltip.style.top = elCoord.top + elCoord.height + tooltipArrow +'px';
+         info.tooltip.style.left = elCoord.left + (elCoord.width / 2) + 'px';
+         break;
+     }
+   }
   },
   tooltipReposition({dispatch, getters}) {
     if(getters.getIstutorialMode) {

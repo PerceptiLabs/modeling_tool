@@ -6,7 +6,7 @@
         .popup_header.active
           h3 General Settings
       .popup_body
-        .settings-layer_section(v-if="settingsData")
+        //.settings-layer_section(v-if="settingsData")
           .form_row(v-tooltip-interactive:right="interactiveInfo.dataPartition")
             .form_label Data partition:
             .form_input
@@ -51,7 +51,7 @@
               v-validate="'min_value:1'"
               )
               p.text-error(v-show="errors.has('Max_steps')") {{ errors.first('Max_steps') }}
-        .settings-layer_section
+        //.settings-layer_section
           label.form_row(v-tooltip-interactive:right="interactiveInfo.batchSize")
             .form_label Batch size:
             .form_input(id="tutorial_butch-size-input" class="tutorial-relative" data-tutorial-hover-info)
@@ -61,7 +61,7 @@
                 v-validate="'min_value:1'"
                 )
               p.text-error(v-show="errors.has('Batch')") {{ errors.first('Batch') }}
-        .settings-layer_section
+        //.settings-layer_section
           .form_row(v-tooltip-interactive:right="interactiveInfo.shuffleData")
             .form_label Shuffle data:
             #tutorial_shuffle_data.form_input(data-tutorial-hover-info)
@@ -121,7 +121,7 @@ export default {
       if(el.componentName === 'DataData') this.settingsData = true;
       if(el.componentName === 'DataEnvironment') this.settingsEnvironment = true;
     }
-    if(this.isTutorialMode) this.$nextTick(()=>{this.$refs.trainingInput.focus()})
+    if(this.isTutorialMode) this.$nextTick(()=>{this.$refs.epochsInput.focus()})
   },
   data() {
     return {
@@ -207,7 +207,7 @@ export default {
         .then((result) => {
           if (result) {
             this.setGlobalSet();
-            this.tutorialPointActivate({way: 'next', validation:'tutorial_partition-training-input'});
+            this.tutorialPointActivate({way: 'next', validation:'tutorial_epochs-input'});
             return;
           }
           //error func
