@@ -59,6 +59,13 @@ const fileLocalSave = function (fileName, fileContent) {
     });
   });
 };
+/*encryption */
+const encryptionData = function (data) {
+  return JSON.stringify(data).split('').reverse().join('');
+};
+const decryptionData = function (data) {
+  return JSON.stringify(data).split('').reverse().join('');
+};
 
 /*other*/
 const generateID = function() {
@@ -110,6 +117,8 @@ export {
   loadPathFolder,
   fileLocalRead,
   fileLocalSave,
+  encryptionData,
+  decryptionData,
   generateID,
   calcLayerPosition,
   throttleEv,

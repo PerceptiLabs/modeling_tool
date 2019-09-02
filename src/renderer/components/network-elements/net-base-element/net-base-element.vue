@@ -280,7 +280,7 @@ export default {
       this.tutorialShowHideTooltip();
     },
     deleteEl() {
-      if(this.editIsOpen) {
+      if(this.editIsOpen && !this.settingsIsOpen) {
         this.$store.dispatch('mod_workspace/DELETE_element');
         this.$store.dispatch('mod_api/API_getOutputDim');
       }

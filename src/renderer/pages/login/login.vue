@@ -38,7 +38,7 @@
 
 <script>
   import { baseUrlSite }    from '@/core/constants.js'
-  import { goToLink }       from '@/core/helpers.js'
+  import { goToLink, encryptionData }       from '@/core/helpers.js'
 
   import ViewLoading from '@/components/different/view-loading.vue'
 
@@ -88,6 +88,7 @@ export default {
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
         .then((tokens)=> {
           console.log('then', tokens);
+          //encryptionData(tokens.accessToken);
           if(this.saveToken) localStorage.setItem('currentUser', JSON.stringify(tokens));
           this.loginUser()
         })
