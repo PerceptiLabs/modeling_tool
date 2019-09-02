@@ -10,17 +10,18 @@ const actions = {
     const body = {
       "refreshToken": rootState.mod_user.userTokenRefresh
     };
-    console.log(body);
+    console.log('old token', body.refreshToken);
     return requestCloudApi('post', 'Customer/UpdateToken', body)
       .then((response)=> {
-        console.log('CloudAPI_updateToken ok');
         const tokens = response.data.data;
         dispatch('mod_user/SET_userToken', tokens, {root: true});
+        console.log('new token', tokens);
         return tokens
       })
       .catch((error)=> {
         console.log('CloudAPI_updateToken logOut');
         dispatch('mod_events/EVENT_logOut', null, {root: true});
+        throw (error);
       })
   },
   /*USER ACTIONS*/

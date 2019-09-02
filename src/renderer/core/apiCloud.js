@@ -3,13 +3,14 @@ import store  from '@/store'
 import { baseUrlCloud }  from '@/core/constants.js'
 
 
-const requestCloudApi = function (method, path, dataRequest) {
-  console.log('first request');
+const requestCloudApi = function (method, path, dataRequest, isUpdate) {
+  console.log('first request', path);
+  let isUpdates = isUpdate === undefined ? true : isUpdate;
   const userToken = store.state.mod_user.userToken;
   const headers = userToken.length
     ? {'authorization': `Bearer ${userToken}`}
     : '';
-
+  console.log('userToken', userToken);
   return Vue.http({
     method: method,
     url: baseUrlCloud + path,
@@ -19,12 +20,15 @@ const requestCloudApi = function (method, path, dataRequest) {
   })
     .then((response)=> response)
     .catch((error)=> {
-      console.error(error.response.status);
-      if(error.response.status === 401) {
+      console.log(error.response.status, isUpdates);
+      if(error.response.status === 401 && isUpdates) {
         store.dispatch('mod_apiCloud/CloudAPI_updateToken')
           .then(()=> {
-            console.log('second request');
-            return requestCloudApi(method, path, dataRequest)
+            console.log('second request', path);
+            requestCloudApi(method, path, dataRequest, false)
+          })
+          .catch((error)=> {
+            throw (error);
           })
       }
       else {
@@ -33,9 +37,6 @@ const requestCloudApi = function (method, path, dataRequest) {
         throw (error);
       }
     })
-
-
-    ;
 };
 
 export { requestCloudApi };

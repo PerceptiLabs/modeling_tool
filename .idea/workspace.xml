@@ -4,8 +4,9 @@
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-element/net-base-element.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/helpers.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/helpers.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings-data.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/mixins/net-element-settings-data.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_apiCloud.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_apiCloud.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -342,7 +343,7 @@
       <workItem from="1566983217444" duration="9193000" />
       <workItem from="1567066166537" duration="13171000" />
       <workItem from="1567152643956" duration="29475000" />
-      <workItem from="1567404739472" duration="1873000" />
+      <workItem from="1567404739472" duration="16400000" />
     </task>
     <servers />
   </component>
@@ -371,6 +372,31 @@
   <component name="Vcs.Log.Tabs.Properties">
     <option name="TAB_STATES">
       <map>
+        <entry key="1">
+          <value>
+            <State>
+              <option name="SHOW_ONLY_AFFECTED_CHANGES" value="true" />
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="HEAD" />
+                      </list>
+                    </value>
+                  </entry>
+                  <entry key="structure">
+                    <value>
+                      <list>
+                        <option value="dir:G:/progects/quantumnet/.electron-vue" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+            </State>
+          </value>
+        </entry>
         <entry key="MAIN">
           <value>
             <State>
@@ -390,6 +416,11 @@
           </value>
         </entry>
       </map>
+    </option>
+    <option name="OPEN_TABS">
+      <set>
+        <option value="1" />
+      </set>
     </option>
     <option name="RECENT_FILTERS">
       <map>

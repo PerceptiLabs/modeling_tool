@@ -22,13 +22,14 @@ const netElementSettingsData = {
         .then(()=> this.getDataMeta(layerType))
     },
     dataSettingsPlot(layerType) {
+      console.log('dataSettingsPlot', layerType);
       this.deleteDataMeta(layerType)
         .then(()=> this.getDataMeta(layerType))
         .then(()=> this.getDataPlot(layerType))
     },
 
     getDataPlot(type) {
-      //console.log('getDataPlot');
+      console.log('getDataPlot');
       let theData = {
         reciever: this.currentNetworkID,
         action: 'getDataPlot',
@@ -40,6 +41,7 @@ const netElementSettingsData = {
       };
       this.coreRequest(theData)
         .then((data) => {
+          console.log('getDataPlot', data);
           if (data) this.imgData = data;
         })
         .catch((err)=> {
@@ -48,7 +50,7 @@ const netElementSettingsData = {
         });
     },
     getDataMeta(type) {
-      //console.log('getDataMeta');
+
       let theData = {
         reciever: this.currentNetworkID,
         action: 'getDataMeta',
@@ -58,20 +60,23 @@ const netElementSettingsData = {
           Properties: this.settings
         }
       };
+      console.log('getDataMeta', theData);
       return this.coreRequest(theData)
         .then((data) => {
           if (data) {
+            console.log('getDataMeta', data);
             if(data.Action_space) this.actionSpace = data.Action_space;
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
             return data;
           }
-          else throw 'error 115'
+          else throw 'error 70'
         })
         .catch((err) => {
           console.error(err);
         });
     },
     deleteDataMeta(type) {
+      console.log('deleteData');
       let theData = {
         reciever: this.currentNetworkID,
         action: 'deleteData',
@@ -82,7 +87,10 @@ const netElementSettingsData = {
         }
       };
       return this.coreRequest(theData)
-        .then((data) => data)
+        .then((data) => {
+          console.log('deleteData', data);
+          return data
+        })
         .catch((err) => {
           console.error(err);
         });
