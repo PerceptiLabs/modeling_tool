@@ -1,17 +1,17 @@
 <template lang="pug">
   .triple-input
     input.triple-input_input(type="number"
-      disabled="disableEdit"
+      :disabled="disableEdit"
       v-model.number="value1"
     )
     span.triple-input_separate {{ separateSign || 'X'}}
     input.triple-input_input(type="number"
-      disabled="disableEdit"
+      :disabled="disableEdit"
       v-model.number="value2"
     )
     span.triple-input_separate {{ separateSign || 'X' }}
     input.triple-input_input(type="number"
-      disabled="disableEdit"
+      :disabled="disableEdit"
       v-model.number="value3"
     )
     span.triple-input_separate(v-if="separateSign") {{ separateSign }}

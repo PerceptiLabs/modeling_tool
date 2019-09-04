@@ -40,11 +40,11 @@
               @partition-list="setPartitionList"
               @add-file="addFiles"
               )
-          .form_row(v-if="settings.accessProperties.Path.length > 1")
+          .form_row()
             .form_label Summary:
             .form_input
               triple-input(
-                v-model="summary"
+                v-model="Partition_summary"
                 :disable-edit="true"
                 separate-sign="%"
                 )
@@ -86,11 +86,7 @@
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
-      this.getDataMeta('DataData')
-        .then((data)=> {
-          if (data.Columns.length) this.createSelectArr(data.Columns);
-          this.getDataPlot('DataData');
-        });
+
 
     },
     data() {
@@ -99,6 +95,7 @@
         tabs: ['Computer'],
         dataColumns: [],
         dataColumnsSelected: [],
+        Partition_summary: [70,20,10],
         interactiveInfo: {
           folder: {
             title: 'Select Folder',
@@ -109,7 +106,6 @@
             text: 'Select a file that is the data'
           }
         },
-        summary: [1,2,3],
         settings: {
           Type: 'Data',
           accessProperties: {
@@ -163,6 +159,17 @@
       dataColumnsSelected(newVal) {
         this.settings.accessProperties.Columns = newVal;
         this.getDataPlot('DataData')
+      },
+      fileList: {
+        handler(newVal) {
+          this.getDataMeta('DataData')
+            .then((data)=> {
+              if (data.Columns.length) this.createSelectArr(data.Columns);
+              this.getDataPlot('DataData');
+            });
+        },
+        deep: true,
+        immediate: true
       },
       'settings.accessProperties.Path': {
         handler(newVal) {

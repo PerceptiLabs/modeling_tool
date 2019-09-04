@@ -22,14 +22,14 @@ const netElementSettingsData = {
         .then(()=> this.getDataMeta(layerType))
     },
     dataSettingsPlot(layerType) {
-      console.log('dataSettingsPlot', layerType);
+      //console.log('dataSettingsPlot', layerType);
       this.deleteDataMeta(layerType)
         .then(()=> this.getDataMeta(layerType))
         .then(()=> this.getDataPlot(layerType))
     },
 
     getDataPlot(type) {
-      console.log('getDataPlot');
+      //console.log('getDataPlot');
       let theData = {
         reciever: this.currentNetworkID,
         action: 'getDataPlot',
@@ -41,7 +41,7 @@ const netElementSettingsData = {
       };
       this.coreRequest(theData)
         .then((data) => {
-          console.log('getDataPlot', data);
+          //console.log('getDataPlot', data);
           if (data) this.imgData = data;
         })
         .catch((err)=> {

@@ -19,26 +19,22 @@ const requestCloudApi = function (method, path, dataRequest) {
     .then((response)=> response)
     .catch((error)=> {
       console.log(error);
-      if(error.response.status === 401) {
-        return CloudAPI_updateToken()
-          // .then(()=> {
-          //   return singleRequest(method, path, dataRequest)
-          // })
-          // .then((data)=> {
-          //   console.log(data);
-          //   return data
-          // })
-          .catch((error)=> {
-            throw (error);
-          })
-      }
+      if(error.response.status === 401) { return 'updateToken' }
       else {
         store.dispatch('mod_tracker/EVENT_cloudError', error);
         store.dispatch('globalView/GP_errorPopup', error.response.data);
         throw (error);
       }
-    });
-
+    })
+    .then((data)=> {
+      if(data === 'updateToken') {
+        return CloudAPI_updateToken()
+          .then(()=> singleRequest(method, path, dataRequest))
+          .then((data)=> data)
+          .catch((error)=> { throw (error) })
+      }
+      else return data
+    })
 
 };
 
@@ -55,7 +51,6 @@ function singleRequest(method, path, dataRequest) {
 }
 
 function CloudAPI_updateToken() {
-  console.log(store.state.mod_user);
   const body = {
     "refreshToken": store.state.mod_user.userTokenRefresh
   };
@@ -63,7 +58,7 @@ function CloudAPI_updateToken() {
     .then((response)=> {
       const tokens = response.data.data;
       store.dispatch('mod_user/SET_userToken', tokens, {root: true});
-      console.log('new token', tokens);
+      console.log('new token', tokens.accessToken);
       return tokens
     })
     .catch((error)=> {

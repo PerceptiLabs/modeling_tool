@@ -92,7 +92,7 @@ export default {
     .form_input {
       display: flex;
       justify-content: space-between;
-      padding: 0 1.5em 0 0;
+      padding: 0 1.5em 0 1rem;
     }
   }
   .file-settings_list {
