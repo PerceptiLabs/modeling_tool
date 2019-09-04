@@ -6,23 +6,23 @@ const getters = {};
 const mutations = {};
 const actions = {
   /*COMMON ACTIONS*/
-  CloudAPI_updateToken({dispatch, rootState}) {
-    const body = {
-      "refreshToken": rootState.mod_user.userTokenRefresh
-    };
-    return requestCloudApi('post', 'Customer/UpdateToken', body)
-      .then((response)=> {
-        const tokens = response.data.data;
-        dispatch('mod_user/SET_userToken', tokens, {root: true});
-        console.log('new token', tokens);
-        return tokens
-      })
-      .catch((error)=> {
-        console.log('CloudAPI_updateToken logOut');
-        dispatch('mod_events/EVENT_logOut', null, {root: true});
-        throw (error);
-      })
-  },
+  // CloudAPI_updateToken({dispatch, rootState}) {
+  //   const body = {
+  //     "refreshToken": rootState.mod_user.userTokenRefresh
+  //   };
+  //   return requestCloudApi('post', 'Customer/UpdateToken', body)
+  //     .then((response)=> {
+  //       const tokens = response.data.data;
+  //       dispatch('mod_user/SET_userToken', tokens, {root: true});
+  //       console.log('new token', tokens);
+  //       return tokens
+  //     })
+  //     .catch((error)=> {
+  //       console.log('CloudAPI_updateToken logOut');
+  //       dispatch('mod_events/EVENT_logOut', null, {root: true});
+  //       throw (error);
+  //     })
+  // },
   /*USER ACTIONS*/
   CloudAPI_userLogin({dispatch}, userInfo) {
     return requestCloudApi('post', 'Customer/Login', userInfo)
@@ -43,6 +43,10 @@ const actions = {
       "refreshToken": rootState.mod_user.userTokenRefresh
     };
     requestCloudApi('post', 'Customer/Logout', body)
+      .then((response)=> {})
+      .catch((error)=> {
+        console.log('CloudAPI_userLogout', error);
+      })
   },
   CloudAPI_userCreate({dispatch}, userInfo) {
     return requestCloudApi('post', 'Customer/CreateGuest', userInfo)
@@ -63,6 +67,9 @@ const actions = {
         let profile = response.data.data;
         dispatch('mod_user/SET_userProfile', profile, {root: true});
         return true
+      })
+      .catch((error)=> {
+        console.log('CloudAPI_userGetProfile', error);
       })
   },
   CloudAPI_userSetProfile({dispatch}, user) {

@@ -19,6 +19,9 @@
             triple-input(
               v-model="file.settings"
               separate-sign="%"
+              :validate-min="1"
+              :validate-max="98"
+              :validate-sum="100"
             )
     button.btn.btn--link(type="button" @click="addFile") + Add {{ nameAddItem }}
 

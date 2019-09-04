@@ -122,12 +122,12 @@ export default {
     wsZoom() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
     },
-    hotKeyPressDeleteEsc() {
-      return this.$store.state.mod_events.globalPressKey.esc;
-    },
-    hotKeyPressDelete() {
-      return this.$store.state.mod_events.globalPressKey.del
-    },
+    // hotKeyPressEsc() {
+    //   return this.$store.state.mod_events.globalPressKey.esc;
+    // },
+    // hotKeyPressDelete() {
+    //   return this.$store.state.mod_events.globalPressKey.del
+    // },
     classEl() {
       return {
         'net-element--active': this.isSelectedEl,
@@ -157,12 +157,25 @@ export default {
         ? this.mousedownOutsideBefore()
         : null
     },
-    hotKeyPressDeleteEsc() {
-      if(!this.isTutorialMode) this.hideAllWindow();
+    '$store.state.mod_events.globalPressKey.esc': {
+      handler() {
+        if(!this.isTutorialMode) this.hideAllWindow();
+      }
     },
-    hotKeyPressDelete() {
-      if(!this.settingsIsOpen) this.$store.dispatch('mod_workspace/DELETE_element');
-    }
+    '$store.state.mod_events.globalPressKey.del': {
+      handler() {
+        if(this.editIsOpen && !this.settingsIsOpen && this.isSelectedEl) {
+          console.log('deleteEl');
+          this.$store.dispatch('mod_workspace/DELETE_element');
+        }
+      }
+    },
+    // hotKeyPressDelete() {
+    //   if(!this.settingsIsOpen) {
+    //     console.log('hotKeyPressDelete()', this.settingsIsOpen);
+    //     this.$store.dispatch('mod_workspace/DELETE_element');
+    //   }
+    // }
   },
   methods: {
     ...mapActions({
@@ -278,12 +291,6 @@ export default {
       if(!this.isTutorialMode) this.hideAllWindow();
       this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: false });
       this.tutorialShowHideTooltip();
-    },
-    deleteEl() {
-      if(this.editIsOpen && !this.settingsIsOpen) {
-        this.$store.dispatch('mod_workspace/DELETE_element');
-        this.$store.dispatch('mod_api/API_getOutputDim');
-      }
     },
     tutorialSearchId(event) {
        return event.target.tagName === 'I'

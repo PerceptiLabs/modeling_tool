@@ -7,14 +7,15 @@ fieldset {
 
 //input,
 .input,
-input[type='text'],
-input[type='tel'],
-input[type='email'],
-input[type='search'],
-input[type='password'],
-input[type='url'],
-input[type='date'],
-input[type='number'],
+input,
+//input[type='text'],
+//input[type='tel'],
+//input[type='email'],
+//input[type='search'],
+//input[type='password'],
+//input[type='url'],
+//input[type='date'],
+//input[type='number'],
 textarea {
 	font-size: inherit;
 	box-sizing: border-box;

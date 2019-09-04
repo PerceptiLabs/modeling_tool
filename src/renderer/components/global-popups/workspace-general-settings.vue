@@ -129,15 +129,15 @@ export default {
       settingsEnvironment: false,
       settings: {
         Epochs: "1",
-        Batch_size: "32",
+        // Batch_size: "32",
         MaxSteps: "1000",
-        Data_partition: {
-          Training: "70",
-          Validation: "20",
-          Test: "10"
-        },
+        // Data_partition: {
+        //   Training: "70",
+        //   Validation: "20",
+        //   Test: "10"
+        // },
         Dropout_rate: "0.5",
-        Shuffle_data: true,
+        // Shuffle_data: true,
         Save_model_every: "0",
       },
       interactiveInfo: {
@@ -180,9 +180,9 @@ export default {
       networkSettings:    'mod_workspace/GET_currentNetworkSettings',
       networkElementList: 'mod_workspace/GET_currentNetworkElementList',
     }),
-    testValue() {
-      return 100 - (+this.settings.Data_partition.Training + +this.settings.Data_partition.Validation)
-    },
+    // testValue() {
+    //   return 100 - (+this.settings.Data_partition.Training + +this.settings.Data_partition.Validation)
+    // },
     isContinueRun() {
       return this.$store.state.mod_events.runNetwork
     },
@@ -191,9 +191,9 @@ export default {
     },
   },
   watch: {
-    testValue(newVal) {
-      this.settings.Data_partition.Test = newVal.toString()
-    },
+    // testValue(newVal) {
+    //   this.settings.Data_partition.Test = newVal.toString()
+    // },
     escButton() {
       this.closeGlobalSet();
     }

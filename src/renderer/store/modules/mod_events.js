@@ -99,8 +99,8 @@ const actions = {
   EVENT_saveNetworkAs({commit}) {
     commit('set_saveNetworkAs');
   },
-  EVENT_logOut({dispatch}) {
-    dispatch('mod_apiCloud/CloudAPI_userLogout', null, {root: true});
+  EVENT_logOut({dispatch}, isSendLogout = true) {
+    if(isSendLogout) dispatch('mod_apiCloud/CloudAPI_userLogout', null, {root: true});
     localStorage.removeItem('currentUser');
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});

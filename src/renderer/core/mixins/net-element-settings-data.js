@@ -4,7 +4,8 @@ const netElementSettingsData = {
   data() {
     return {
       imgData: null,
-      actionSpace: ''
+      actionSpace: '',
+      Partition_summary: [70,20,10],
     }
   },
   computed: {
@@ -50,7 +51,6 @@ const netElementSettingsData = {
         });
     },
     getDataMeta(type) {
-
       let theData = {
         reciever: this.currentNetworkID,
         action: 'getDataMeta',
@@ -70,6 +70,30 @@ const netElementSettingsData = {
             return data;
           }
           else throw 'error 70'
+        })
+        .catch((err) => {
+          console.error(err);
+        });
+    },
+    getPartitionSummary(type) {
+
+      let theData = {
+        reciever: this.currentNetworkID,
+        action: 'getPartitionSummary',
+        value: {
+          Id: this.currentEl.layerId,
+          Type: type,
+          Properties: this.settings
+        }
+      };
+      console.log('getPartitionSummary', theData);
+      return this.coreRequest(theData)
+        .then((data) => {
+          console.log('getPartitionSummary answer', data);
+          if (data) {
+            this.Partition_summary = data;
+          }
+          else throw 'error 95'
         })
         .catch((err) => {
           console.error(err);

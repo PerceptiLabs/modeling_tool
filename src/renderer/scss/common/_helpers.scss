@@ -172,7 +172,7 @@ $prevBreakPoint: 'large';
   background-color: $col-warning;
 }
 .bg-error {
-  background-color: $col-error;
+  background-color: $col-error !important;
 }
 /* ---------------------------------------------------------
    3. Background decoration

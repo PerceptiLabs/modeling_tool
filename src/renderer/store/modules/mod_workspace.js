@@ -810,7 +810,10 @@ const actions = {
     commit('add_element', {getters, event})
   },
   DELETE_element({commit, getters, dispatch}) {
-    if(getters.GET_networkIsOpen) commit('delete_element', {getters, dispatch, commit})
+    if(getters.GET_networkIsOpen) {
+      commit('delete_element', {getters, dispatch, commit});
+      dispatch('mod_api/API_getOutputDim', null, {root: true});
+    }
   },
   ADD_arrow({commit, getters, dispatch}, stopID) {
     commit('add_arrow', {dispatch, stopID})

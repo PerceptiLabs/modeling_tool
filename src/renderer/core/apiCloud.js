@@ -8,7 +8,6 @@ const requestCloudApi = function (method, path, dataRequest) {
   const headers = userToken.length
     ? {'authorization': `Bearer ${userToken}`}
     : '';
-  console.log('first request token', userToken);
   return Vue.http({
     method: method,
     url: baseUrlCloud + path,
@@ -18,7 +17,6 @@ const requestCloudApi = function (method, path, dataRequest) {
   })
     .then((response)=> response)
     .catch((error)=> {
-      console.log(error);
       if(error.response.status === 401) { return 'updateToken' }
       else {
         store.dispatch('mod_tracker/EVENT_cloudError', error);
@@ -31,7 +29,9 @@ const requestCloudApi = function (method, path, dataRequest) {
         return CloudAPI_updateToken()
           .then(()=> singleRequest(method, path, dataRequest))
           .then((data)=> data)
-          .catch((error)=> { throw (error) })
+          .catch((error)=> {
+            throw (error)
+          })
       }
       else return data
     })
@@ -39,7 +39,6 @@ const requestCloudApi = function (method, path, dataRequest) {
 };
 
 function singleRequest(method, path, dataRequest) {
-  console.log('second request token', store.state.mod_user.userToken);
   return Vue.http({
     method: method,
     url: baseUrlCloud + path,
@@ -58,15 +57,13 @@ function CloudAPI_updateToken() {
     .then((response)=> {
       const tokens = response.data.data;
       store.dispatch('mod_user/SET_userToken', tokens, {root: true});
-      console.log('new token', tokens.accessToken);
       return tokens
     })
     .catch((error)=> {
-      console.log('CloudAPI_updateToken logOut');
-      store.dispatch('mod_events/EVENT_logOut', null, {root: true});
+      store.dispatch('mod_events/EVENT_logOut', false, {root: true});
       store.dispatch('globalView/GP_errorPopup', 'You have not worked with the application for a long time. Please login');
+      console.log(error);
     })
 }
 
 export { requestCloudApi };
-// test@test.com

@@ -40,7 +40,7 @@
               @partition-list="setPartitionList"
               @add-file="addFiles"
               )
-          .form_row()
+          .form_row(v-if="settings.accessProperties.Path.length > 1")
             .form_label Summary:
             .form_input
               triple-input(
@@ -86,8 +86,11 @@
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
-
-
+      this.getDataMeta('DataData')
+        .then((data)=> {
+          if (data.Columns.length) this.createSelectArr(data.Columns);
+          this.getDataPlot('DataData');
+        });
     },
     data() {
       return {
@@ -95,7 +98,6 @@
         tabs: ['Computer'],
         dataColumns: [],
         dataColumnsSelected: [],
-        Partition_summary: [70,20,10],
         interactiveInfo: {
           folder: {
             title: 'Select Folder',
@@ -162,11 +164,7 @@
       },
       fileList: {
         handler(newVal) {
-          this.getDataMeta('DataData')
-            .then((data)=> {
-              if (data.Columns.length) this.createSelectArr(data.Columns);
-              this.getDataPlot('DataData');
-            });
+          this.getPartitionSummary('DataData');
         },
         deep: true,
         immediate: true
