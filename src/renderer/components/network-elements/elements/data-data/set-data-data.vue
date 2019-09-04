@@ -40,11 +40,12 @@
               @partition-list="setPartitionList"
               @add-file="addFiles"
               )
-          .form_row
+          .form_row(v-if="settings.accessProperties.Path.length > 1")
             .form_label Summary:
             .form_input
               triple-input(
                 v-model="summary"
+                :disable-edit="true"
                 separate-sign="%"
                 )
         .settings-layer_section.settings-layer_section--data

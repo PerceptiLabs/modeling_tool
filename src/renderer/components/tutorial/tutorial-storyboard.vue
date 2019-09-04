@@ -263,6 +263,9 @@ export default {
   }
   .step-info_text {
     margin-bottom: 2rem;
+    .btn {
+      //transform: scale(.6) translateX(-20%);
+    }
   }
   .modal-popup_control {
     position: absolute;

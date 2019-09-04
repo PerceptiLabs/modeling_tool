@@ -10,7 +10,6 @@ const actions = {
     const body = {
       "refreshToken": rootState.mod_user.userTokenRefresh
     };
-    console.log('old token', body.refreshToken);
     return requestCloudApi('post', 'Customer/UpdateToken', body)
       .then((response)=> {
         const tokens = response.data.data;
@@ -57,6 +56,26 @@ const actions = {
     //   console.log(error);
     //   throw (error);
     // })
+  },
+  CloudAPI_userGetProfile({dispatch}) {
+    return requestCloudApi('get', 'Customer/Profile')
+      .then((response)=> {
+        let profile = response.data.data;
+        dispatch('mod_user/SET_userProfile', profile, {root: true});
+        return true
+      })
+  },
+  CloudAPI_userSetProfile({dispatch}, user) {
+    return requestCloudApi('post', 'Customer/Profile', user)
+      .then((response)=> response.status === 200 )
+  },
+  CloudAPI_userChangeEmail({dispatch}, dataBody) {
+    return requestCloudApi('post', 'Customer/ChangeEmail', dataBody)
+      .then((response)=> response.status === 200 )
+  },
+  CloudAPI_userChangePassword({dispatch}, dataBody) {
+    return requestCloudApi('post', 'Customer/ChangePassword', dataBody)
+      .then((response)=> response.status === 200 )
   },
 };
 
