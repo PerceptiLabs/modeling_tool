@@ -339,23 +339,24 @@ export default {
     padding: 0;
     background-color: transparent;
     box-shadow: $layer-shad;
-    &:after {
-      content: '';
-      opacity: 0;
-      position: absolute;
-      left: -2px;
-      right: -2px;
-      top: -2px;
-      bottom: -2px;
-      border: 2px dotted #fff;
-      background: #000;
-      z-index: -1;
-      border-radius: $bdrs;
-    }
+    /*<!--&:after {-->*/
+    /*<!--  content: '';-->*/
+    /*<!--  opacity: 0;-->*/
+    /*<!--  position: absolute;-->*/
+    /*<!--  left: -2px;-->*/
+    /*<!--  right: -2px;-->*/
+    /*<!--  top: -2px;-->*/
+    /*<!--  bottom: -2px;-->*/
+    /*<!--  border: 2px dotted #fff;-->*/
+    /*<!--  background: #000;-->*/
+    /*<!--  z-index: -1;-->*/
+    /*<!--  border-radius: $bdrs;-->*/
+    /*<!--}-->*/
   }
-  .net-element--active .net-element_btn:after {
-    opacity: 1;
-  }
+  /*.net-element--active .net-element_btn:after {*/
+  /*  opacity: 1;*/
+  /*}*/
+
   .net-element_be-for-end {
     font-size: 1.2rem;
     position: absolute;

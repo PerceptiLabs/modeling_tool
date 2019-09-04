@@ -80,3 +80,6 @@ $layers-sidebar-active: (
 .net-element .btn--layersbar .icon {
   font-size: 33px;
 }
+.net-element--active .btn--layersbar {
+  box-shadow: inset 0 0 0 3px #fff;
+}
