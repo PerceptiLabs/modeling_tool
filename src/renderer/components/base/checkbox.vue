@@ -7,6 +7,7 @@
       @change="change"
     )
     .checkbox-fake(:class="{'checkbox-fake--icon': iconTheme}")
+      i.icon.icon-check
     .checkbox-text(v-if="labelPosition==='right'")
       slot
 
@@ -60,18 +61,21 @@ export default {
       width: 1px;
       height: 1px;
       &:checked + .checkbox-fake {
-        background: $bg-grad-blue;
-        box-shadow: $icon-shad;
-        &.checkbox-fake--icon {
-          background: $bg-workspace;
-          &:after {
-            opacity: 1;
-          }
+        //background: $bg-grad-blue;
+        //box-shadow: $icon-shad;
+        .icon {
+          opacity: 1;
         }
+        /*<!--&.checkbox-fake&#45;&#45;icon {-->*/
+        /*<!--  background: $bg-workspace;-->*/
+        /*<!--  &:after {-->*/
+        /*<!--    opacity: 1;-->*/
+        /*<!--  }-->*/
+        /*<!--}-->*/
       }
       &:focus + .checkbox-fake {
         outline: 1px dotted $col-primary;
-        box-shadow: 0 0 1px 1px $white;
+        //box-shadow: 0 0 1px 1px $white;
       }
     }
     .checkbox-text {
@@ -85,21 +89,31 @@ export default {
       width: 1.4em;
       height: 1.4em;
       cursor: pointer;
-      background-color: $bg-input;
-      &.checkbox-fake--icon {
-        background-color: $bg-workspace;
-        &:after {
-          content: '\e937';
-          font-family: 'icomoon';
-          font-size: .9em;
-          line-height: 1;
-          position: absolute;
-          top: 50%;
-          left: 50%;
-          opacity: 0;
-          transform: translate(-50%, -50%);
-        }
+      //background-color: $bg-input;
+      background-color: #6E778C;
+      .icon {
+        font-size: .9em;
+        line-height: 1;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        opacity: 0;
+        transform: translate(-50%, -50%);
       }
+      /*<!--&.checkbox-fake&#45;&#45;icon {-->*/
+      /*<!--  background-color: $bg-workspace;-->*/
+      /*<!--  &:after {-->*/
+      /*<!--    content: '\e937';-->*/
+      /*<!--    font-family: 'icomoon';-->*/
+      /*<!--    font-size: .9em;-->*/
+      /*<!--    line-height: 1;-->*/
+      /*<!--    position: absolute;-->*/
+      /*<!--    top: 50%;-->*/
+      /*<!--    left: 50%;-->*/
+      /*<!--    opacity: 0;-->*/
+      /*<!--    transform: translate(-50%, -50%);-->*/
+      /*<!--  }-->*/
+      /*<!--}-->*/
       + .checkbox-text {
         margin-left: .75em;
       }

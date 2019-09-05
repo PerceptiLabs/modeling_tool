@@ -1,6 +1,8 @@
 <template lang="pug">
   .policy
-    .btn.btn--dark-blue-rev.back(@click="backToRegister") Back
+    button.btn.btn--dark-blue-rev.back(
+      type="button"
+      @click="backToRegister") Back
     article.policy_main
       header
         h2 End-User License Agreement ("Agreement")
@@ -57,12 +59,7 @@
 
 <script>
   export default {
-    name: "Policy",
-    props: {
-      isShow: {
-        type: Boolean,
-      }
-    },
+    name: "PolicyLogin",
     methods: {
       backToRegister(){
         this.$emit('backToRegister');
@@ -74,13 +71,18 @@
 <style scoped lang="scss">
   @import '../../scss/base';
   .policy {
-    position: relative;
-    width: auto;
-    max-width: 100rem;
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 2;
+    //max-width: 100rem;
     text-align: left;
-    border: 1px solid $login-blue;
+    //border: 1px solid $login-blue;
+    border-radius: 2*$bdrs;
     background: #161719;
-    margin-top: 2rem;
+    //margin-top: 2rem;
   }
   .policy_main {
     overflow: auto;

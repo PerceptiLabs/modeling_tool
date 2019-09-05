@@ -128,15 +128,15 @@ export default {
       settingsData: false,
       settingsEnvironment: false,
       settings: {
-        Epochs: "1",
-        // Batch_size: "32",
-        MaxSteps: "1000",
+        Epochs: '10',
+        Batch_size: "32",
+        MaxSteps: '1000',
         // Data_partition: {
         //   Training: "70",
         //   Validation: "20",
         //   Test: "10"
         // },
-        Dropout_rate: "0.5",
+        Dropout_rate: '0.5',
         // Shuffle_data: true,
         Save_model_every: "0",
       },

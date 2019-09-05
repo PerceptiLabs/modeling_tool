@@ -23,7 +23,7 @@
         )
         .settings-layer
           slot(:name="tabContent+'-content'")
-        .settings-layer_foot
+        #js-hide-btn.settings-layer_foot
           slot(:name="tabContent+'-action'")
             button.btn.btn--primary(type="button"
               @click="applySettings(tabContent)"

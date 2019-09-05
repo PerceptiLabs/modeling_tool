@@ -69,6 +69,7 @@
             Atari: 'Breakout', //select
             Category: 'Local',
             Type: 'Data',
+            Batch_size: 10,
           }
         },
         interactiveInfo: {

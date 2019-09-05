@@ -8,18 +8,22 @@
   )
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Path.length")
-        button.btn.tutorial-relative(type="button"
-          @click="loadFolder"
-          v-tooltip-interactive:bottom="interactiveInfo.folder"
-        )
-          i.icon.icon-open-folder
-        span.data-select_text or
+
         button.btn.tutorial-relative(type="button"
           @click="loadFile"
           id="tutorial_button-load"
           v-tooltip-interactive:right="interactiveInfo.file"
         )
           i.icon.icon-open-file
+          span Choose files
+
+        button.btn.tutorial-relative(type="button"
+          @click="loadFolder"
+          v-tooltip-interactive:bottom="interactiveInfo.folder"
+        )
+          i.icon.icon-open-folder
+          span Choose folders
+
       template(v-else)
         .settings-layer_section
           .form_row
@@ -40,10 +44,11 @@
               @partition-list="setPartitionList"
               @add-file="addFiles"
               )
+            //
           .form_row(v-if="settings.accessProperties.Path.length > 1")
             .form_label Summary:
             .form_input
-              triple-input(
+              triple-input.file-list-item_settings(
                 v-model="Partition_summary"
                 :disable-edit="true"
                 separate-sign="%"
@@ -54,7 +59,7 @@
             .form_input
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
-            base-checkbox(v-model="settings.accessProperties.Shufflie") Shuffle
+            base-checkbox(v-model="settings.accessProperties.Shuffle_data") Shuffle
 
     template(slot="Cloud-content")
       //-settings-cloud
@@ -118,7 +123,7 @@
             Path: [],
             Partition_list: [],
             Batch_size: 10,
-            Shufflie: true,
+            Shuffle_data: true,
           }
         }
       }
@@ -269,10 +274,10 @@
         })
       },
       hideBtn() {
-        document.getElementById('tutorial_button-apply').style.cssText = 'display: none'
+        document.getElementById('js-hide-btn').style.cssText = 'display: none'
       },
       showBtn() {
-        document.getElementById('tutorial_button-apply').style.cssText = ''
+        document.getElementById('js-hide-btn').style.cssText = ''
       },
     }
   }
@@ -285,19 +290,26 @@
     }
   }
   .section-data-select {
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    /*display: flex;*/
+    /*align-items: center;*/
+    /*justify-content: center;*/
     font-size: 1.4rem;
+    text-align: center;
     padding-bottom: 0;
     .btn {
-      display: flex;
+      display: inline-flex;
       align-items: center;
-      justify-content: center;
-      width: 6.4rem;
-      height: 6.4rem;
+      width: 15.5rem;
+      height: 3.4rem;
+      padding: 0 1.5rem;
       background-color: $bg-input;
-      font-size: 4rem;
+      + .btn {
+        margin-top: .8rem;
+      }
+      .icon {
+        font-size: 1.75rem;
+
+      }
       &:hover {
         box-shadow: inset 0 0 1px 1px $color-5;
       }
@@ -305,5 +317,14 @@
   }
   .data-select_text {
     margin: 0 1.4rem;
+  }
+  .settings-layer_section .file-list-item_settings {
+    font-size: 1rem;
+    .triple-input_input {
+      max-width: 2.8em;
+    }
+    .triple-input_input ~ .triple-input_input {
+      margin-left: 1em;
+    }
   }
 </style>

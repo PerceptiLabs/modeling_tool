@@ -239,9 +239,6 @@ $folder: 'icomoon';
 .icon-computer:before {
   content: "\e94c";
 }
-.icon-check-mark:before {
-  content: "\e937";
-}
 .icon-player-prev:before {
   content: "\e945";
 }
@@ -337,6 +334,9 @@ $folder: 'icomoon';
 }
 .icon-double-shevron-bottom:before {
   content: "\e967";
+}
+.icon-check:before {
+  content: "\e968";
 }
 .icon-code-error:before {
   content: "!";

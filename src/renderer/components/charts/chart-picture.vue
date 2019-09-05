@@ -62,7 +62,7 @@ export default {
     object-fit: contain;
     width: 100%;
     height: 100%;
-    max-height: 35vh;
+    max-height: 40vh;
     background: $bg-workspace;
   }
 </style>

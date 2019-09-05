@@ -16,7 +16,7 @@
             button.btn.btn--icon.icon.icon-app-close(type="button" @click="deleteItem(i)")
             span.file-item_path {{ file.path }}
           .form_input
-            triple-input(
+            triple-input.file-list-item_settings(
               v-model="file.settings"
               separate-sign="%"
               :validate-min="1"
@@ -117,6 +117,7 @@ export default {
       margin-right: .5rem;
     }
   }
+
   .file-item_path {
     max-width: 10rem;
     overflow: hidden;
