@@ -76,17 +76,12 @@ export default {
           img: './static/img/tutorial/tutorial-1_step-5-icon.svg',
           lookEyesClass: 'look-top-left'
         },
+
         {
           title: 'Now you know the basics of the program. Feel free to start building your first AI!',
-          text: `Remember, this is a Beta version, if you find any errors or have any suggestions,
-                 please click on
-
-                 <button type="button" class="btn btn--primary" style="cursor: default">
-                   <span >Report</span>
-                   <i class="icon icon-bug-report"></i>
-                 </button>
-
-                 <br>Any feedback is highly appreciated!`,
+          text: `<span style="line-height: 1.8;">Remember, this is a Beta version, if you find any errors or have any suggestions, please click on </span>
+                 <img src="./static/img/tutorial/report-button-img.png" style="width: 56px;position: relative;top: -5px;" ><br>
+                 <span>Any feedback is highly appreciated!</span>`,
           button: {
             text: `Let's Try It`,
             action: ()=> {this.startMainTutorial()}
@@ -96,6 +91,10 @@ export default {
       ]
     }
   },
+/*<button type="button" class="btn btn--primary">
+  <span >Report</span>
+  <i class="icon icon-bug-report"></i>
+  </button>*/
   computed: {
     ...mapGetters({
       mainTutorialActivePoint:    'mod_tutorials/getActivePoint',
@@ -325,5 +324,10 @@ export default {
   }
   .no-active {
     cursor: default;
+  }
+  .last-slide{
+    button {
+      border: 2px solid red;
+    }
   }
 </style>
