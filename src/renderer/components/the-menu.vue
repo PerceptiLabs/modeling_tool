@@ -166,8 +166,7 @@ export default {
   },
   watch: {
     navMenu(newMenu) {
-      ipcRenderer.send('app-menu', newMenu)
-      //if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
+      if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
     }
   },
   methods: {
@@ -209,7 +208,6 @@ export default {
       ipcRenderer.send('check-update');
     },
     addNewNetwork() {
-      console.log('addNewNetwork');
       this.$store.dispatch('mod_workspace/ADD_network');
       this.offMainTutorial();
     },
@@ -241,6 +239,7 @@ export default {
       }
     },
     HC_esc() {
+      console.log('HC_esc');
       this.$store.dispatch('mod_events/EVENT_hotKeyEsc')
     },
     HC_addLayerContainer() {

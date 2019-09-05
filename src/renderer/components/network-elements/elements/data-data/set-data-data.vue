@@ -258,7 +258,9 @@
         }
       },
       createSelectArr(data) {
-        data.forEach((el, index)=> this.dataColumns.push({text: el, value: index}));
+        let selectArr = [];
+        data.forEach((el, index)=> selectArr.push({text: el, value: index}));
+        this.dataColumns = [...selectArr];
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
       saveSettings(tabName) {
@@ -303,12 +305,13 @@
       height: 3.4rem;
       padding: 0 1.5rem;
       background-color: $bg-input;
+      font-weight: 300;
       + .btn {
         margin-top: .8rem;
       }
       .icon {
         font-size: 1.75rem;
-
+        margin-right: 0.5rem;
       }
       &:hover {
         box-shadow: inset 0 0 1px 1px $color-5;

@@ -150,6 +150,9 @@ const actions = {
             clientWidth: el.layerMeta.position.left * 2,
           },
           layerSettings: el.layerSettings,
+          // connectionOut: el.connectionOut,
+          // connectionIn: el.connectionIn,
+          // connectionArrow: el.connectionArrow,
           offsetY: el.layerMeta.position.top * 2,
           offsetX: el.layerMeta.position.left * 2
         };
@@ -165,7 +168,7 @@ const actions = {
       buffer.forEach((el) => {
         dispatch('mod_workspace/ADD_element', el, {root: true});
       });
-      dispatch('mod_buffer/CLEAR_buffer', null, {root: true});
+      //dispatch('mod_buffer/CLEAR_buffer', null, {root: true});
     }
   },
 };

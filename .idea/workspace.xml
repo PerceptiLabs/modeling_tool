@@ -2,22 +2,10 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/src/renderer/pages/logout-user-page-wrap.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/base/checkbox.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/base/checkbox.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/charts/chart-picture.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/global-popups/workspace-general-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/global-popups/workspace-general-settings.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/setting-file-list.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements-settings/setting-file-list.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-environment/set-data-environment.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/elements/data-environment/set-data-environment.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/login/login.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/register/policy.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/register/policy.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/pages/register/register.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/pages/register/register.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/fonts/_icomoon.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/scss/pages/_login.scss" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/scss/pages/_login.scss" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/fonts/icomoon/icomoon.woff" beforeDir="false" afterPath="$PROJECT_DIR$/static/fonts/icomoon/icomoon.woff" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/static/fonts/icomoon/selection.json" beforeDir="false" afterPath="$PROJECT_DIR$/static/fonts/icomoon/selection.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/components/the-menu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/components/the-menu.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_events.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -358,7 +346,7 @@
       <workItem from="1567494557633" duration="24800000" />
       <workItem from="1567577156162" duration="25764000" />
       <workItem from="1567662799837" duration="4305000" />
-      <workItem from="1567678299683" duration="6818000" />
+      <workItem from="1567678299683" duration="14797000" />
     </task>
     <servers />
   </component>
