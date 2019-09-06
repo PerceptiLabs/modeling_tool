@@ -126,7 +126,8 @@ export default {
     }),
     closeTutorial() {
       this.setActiveStepStoryboard(0);
-      this.setShowStoryboard(false)
+      this.setShowStoryboard(false);
+      this.saveLocalUserInfo({key: 'showFirstAppTutorial', data: false});
     },
     set_stepActive(way) {
       this.setActiveStepStoryboard(way)
@@ -136,7 +137,6 @@ export default {
     },
     skipStoryBoard() {
       this.closeTutorial();
-      this.saveLocalUserInfo({key: 'showFirstAppTutorial', data: false});
       this.onMainTutorial();
     },
     startMainTutorial() {
