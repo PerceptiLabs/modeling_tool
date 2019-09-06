@@ -18,7 +18,11 @@
             key="1"
             :chart-label="chartLabel"
             :chart-data="imgData"
-        )
+          )
+        .form_row
+          .form_label Batch size:
+          .form_input
+            input(type="number" v-model="settings.accessProperties.Batch_size")
 
     template(slot="<i class='icon icon-search'></i> Unity-content")
       .settings-layer_section
