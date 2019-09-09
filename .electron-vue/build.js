@@ -4,7 +4,7 @@ process.env.NODE_ENV = 'production'
 process.env.CSC_LINK = '../perceptilabs.p12'
 process.env.CSC_KEY_PASSWORD = 'com.perceptilabs.app'
 process.env.appleId = 'stetsenko.ant1@gmail.com'
-process.env.appleASP = 'bwlb-jrxm-fvlx-cacw'
+process.env.appleASP = 'tpms-dyrp-wfbj-xvay'
 console.log(process.env.BUILD_TARGET);
 
 //const { say } = require('cfonts')
