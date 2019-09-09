@@ -23,7 +23,7 @@
   "build": {
     "productName": "PerceptiLabs",
     "appId": "com.perceptilabs.app",
-    "afterSign": "./notarize.js",
+    "afterAllArtifactBuild": "./notarize.js",
     "directories": {
       "buildResources": "build/icons/icon.*",
       "output": "build"
