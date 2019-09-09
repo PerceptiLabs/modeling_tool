@@ -1,20 +1,10 @@
-import Vue    from 'vue'
-import store  from '@/store'
-import { baseUrlCloud }  from '@/core/constants.js'
+import store            from '@/store'
+import axios            from 'axios'
+import { baseUrlCloud } from '@/core/constants.js'
 
 
-const requestCloudApi = function (method, path, dataRequest) {
-  const userToken = store.state.mod_user.userToken;
-  const headers = userToken.length
-    ? {'authorization': `Bearer ${userToken}`}
-    : '';
-  return Vue.http({
-    method: method,
-    url: baseUrlCloud + path,
-    headers: headers,
-    data: dataRequest
-    //...queryParams // data: {request body}, params: {query params}
-  })
+const requestCloudApi = function (method, path, data, params) {
+  return httpRequest(method, path, data, params)
     .then((response)=> response)
     .catch((error)=> {
       if(error.response.status === 401) { return 'updateToken' }
@@ -38,22 +28,33 @@ const requestCloudApi = function (method, path, dataRequest) {
 
 };
 
-function singleRequest(method, path, dataRequest) {
-  return Vue.http({
-    method: method,
+function httpRequest(method, path, data, params) {
+  const userToken = store.state.mod_user.userToken;
+  const headers = {
+    'Content-Type': 'application/json-patch+json',
+  };
+
+  if(userToken.length) {
+    headers.Authorization = `Bearer ${userToken}`
+  }
+  return axios({
+    headers,
+    method,
     url: baseUrlCloud + path,
-    headers: {'authorization': `Bearer ${store.state.mod_user.userToken}`},
-    data: dataRequest
-    //...queryParams // data: {request body}, params: {query params}
+    data,
+    params
   })
     .then((response)=> response)
+    .catch((error) => {
+      throw (error);
+    });
 }
 
 function CloudAPI_updateToken() {
   const body = {
     "refreshToken": store.state.mod_user.userTokenRefresh
   };
-  return singleRequest('post', 'Customer/UpdateToken', body)
+  return httpRequest('post', 'Customer/UpdateToken', body)
     .then((response)=> {
       const tokens = response.data.data;
       store.dispatch('mod_user/SET_userToken', tokens, {root: true});
