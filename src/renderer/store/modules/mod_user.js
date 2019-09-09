@@ -23,7 +23,9 @@ const getters = {
     return state.userProfile
   },
   GET_LOCAL_userInfo(state, getters) {
-    return state.getLocalUserList[getters.GET_userID]
+    if(state.getLocalUserList) {
+      return state.getLocalUserList[getters.GET_userID]
+    }
   }
 };
 

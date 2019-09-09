@@ -23,7 +23,7 @@ import {mask} from 'vue-the-mask' // page registration dont use now
 
 if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
-Vue.http = Vue.prototype.$http = axios;
+//Vue.http = Vue.prototype.$http = axios;
 
 Vue.config.productionTip = isDevelopMode;
 Vue.config.performance = isDevelopMode;
