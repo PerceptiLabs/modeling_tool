@@ -60,15 +60,18 @@ const actions = {
     startCore();
 
     function startCore() {
+      console.log('startCore');
       coreIsStarting = true;
       let openServer;
       let platformPath = '';
+      console.log('platform', process.platform);
       switch (process.platform) {
         case 'win32':
           platformPath = 'core/appServer.exe';
           break;
         case 'darwin':
         case 'linux':
+          console.log('start file');
           process.env.NODE_ENV === 'production'
             ? platformPath = path + 'core/appServer'
             : platformPath = 'core/appServer';
@@ -77,10 +80,11 @@ const actions = {
       openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe'] });
 
       openServer.on('error', (err) => {
-        console.log(err);
+        console.log('error core', err);
         coreOffline()
       });
       openServer.on('close', (code) => {
+        console.log('close core', err);
         coreOffline()
       });
       waitOnlineCore()
