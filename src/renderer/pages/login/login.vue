@@ -87,7 +87,7 @@ export default {
           console.log('then', tokens);
           //encryptionData(tokens.accessToken);
           if(this.saveToken) localStorage.setItem('currentUser', JSON.stringify(tokens));
-          this.loginUser()
+          //this.loginUser()
         })
         //.catch((error)=> {console.log('catch Login');})
         .finally(()=> {
