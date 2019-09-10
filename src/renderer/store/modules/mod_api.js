@@ -84,7 +84,7 @@ const actions = {
         coreOffline()
       });
       openServer.on('close', (code) => {
-        console.log('close core', err);
+        console.log('close core', code);
         coreOffline()
       });
       waitOnlineCore()
