@@ -153,7 +153,7 @@ function createWindow () {
    */
   mainWindow.checkForUpdates = function() {
     if(process.env.NODE_ENV !== 'development') {
-      //mainWindow.webContents.send('info', 'checkForUpdates');
+      mainWindow.webContents.send('info', 'checkForUpdates');
       const UpdateUrl = 'https://uantumetdisks.blob.core.windows.net/updates-admin/';
       const UpdateOpt = {
         provider: 'generic',
@@ -214,7 +214,10 @@ autoUpdater.on('update-available', (info)=> {
   mainWindow.webContents.send('update-available', info);
 });
 autoUpdater.on('error', (err)=> {
-  mainWindow.webContents.send('update-error', err);
+  console.log('error upload', err);
+  console.log('error upload message', err.message);
+  console.log('error upload stack', err.stack);
+  mainWindow.webContents.send('update-error', err.message);
 });
 autoUpdater.on('download-progress', (progressObj)=> {
   mainWindow.webContents.send('update-downloading', progressObj.percent);

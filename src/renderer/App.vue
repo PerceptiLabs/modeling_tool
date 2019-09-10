@@ -46,35 +46,35 @@
 
       /*Auto update*/
       ipcRenderer.on('checking-for-update', (event, updateInfo) => {
-        //console.log('checking-for-update', updateInfo);
+        console.log('checking-for-update', updateInfo);
         this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo)
       });
       ipcRenderer.on('update-available', (event, updateInfo) => {
-        //console.log('update-available', updateInfo);
+        console.log('update-available', updateInfo);
         this.$nextTick(()=>{
           this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
           this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo);
         })
       });
       ipcRenderer.on('update-not-available', (event, update) => {
-        //console.log('update-not-available', update);
+        console.log('update-not-available', update);
         if(this.showNotAvailable) {
           this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
           this.$store.commit('mod_autoUpdate/SET_updateStatus', 'not update')
         }
       });
       ipcRenderer.on('update-downloading', (event, percent) => {
-        //console.log('update-downloading', percent);
+        console.log('update-downloading', percent);
         this.$store.commit('mod_autoUpdate/SET_updateProgress', Math.round(percent));
       });
       ipcRenderer.on('update-completed', (event, percent) => {
-        //console.log('update-completed', percent);
+        console.log('update-completed', percent);
         this.$store.commit('mod_autoUpdate/SET_updateStatus', 'done')
       });
       ipcRenderer.on('update-error', (event, error) => {
-        //console.log('update-error', error);
+        console.log('update-error', JSON.parse(error));
         this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', false);
-        if(error.code) this.$store.dispatch('globalView/GP_infoPopup', error.code);
+        if(error) this.$store.dispatch('globalView/GP_infoPopup', error);
       });
 
       ipcRenderer.on('show-mac-header', (event, value) => { this.showMacHeader = value });

@@ -1,6 +1,6 @@
 {
   "name": "PerceptiLabs",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "author": "PerceptiLabs <contact@perceptilabs.com>",
   "description": "PerceptiLabs is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.",
   "homepage": "perceptilabs.com",
@@ -23,7 +23,6 @@
   "build": {
     "productName": "PerceptiLabs",
     "appId": "com.perceptilabs.app",
-    "afterAllArtifactBuild": "./notarize.js",
     "directories": {
       "buildResources": "build/icons/icon.*",
       "output": "build"

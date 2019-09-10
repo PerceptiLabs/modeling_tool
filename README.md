@@ -12,8 +12,14 @@ npm install
 npm run dev
 
 # build electron application for production
-npm run build
-
+windows
+    npm run build
+linux
+    npm run build
+mac
+    xattr -cr .
+    sudo npm run build
+    node notarize.js
 
 # lint all JS/Vue component files in `src/`
 npm run lint
