@@ -2,10 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="43561b69-39ea-4126-8378-52d8f076f74b" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/core/apiCloud.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/main.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_user.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_user.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/src/renderer/store/modules/mod_api.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -20,6 +17,7 @@
     <option name="RECENT_TEMPLATES">
       <list>
         <option value="SCSS File" />
+        <option value="JavaScript File" />
       </list>
     </option>
   </component>
@@ -47,17 +45,17 @@
     <property name="ts.external.directory.path" value="C:\Program Files\JetBrains\WebStorm 2018.3.3\plugins\JavaScriptLanguage\jsLanguageServicesImpl\external" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\progects\quantumnet\src\renderer\components\different" />
-      <recent name="G:\progects\quantumnet\src\renderer\assets" />
-      <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="G:\progects\quantumnet\src\renderer\pages" />
       <recent name="G:\progects\quantumnet\src\renderer\store\modules" />
       <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements-settings" />
       <recent name="G:\progects\quantumnet\src\renderer\components\network-elements\elements" />
       <recent name="G:\progects\quantumnet\src\renderer\core\plugins" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\quantumnet\src\renderer\components\different" />
+      <recent name="G:\progects\quantumnet\src\renderer\assets" />
+      <recent name="G:\progects\quantumnet\src\renderer\assets\img" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -348,7 +346,8 @@
       <workItem from="1567662799837" duration="4305000" />
       <workItem from="1567678299683" duration="14848000" />
       <workItem from="1567699252352" duration="8026000" />
-      <workItem from="1568010042518" duration="4643000" />
+      <workItem from="1568010042518" duration="9436000" />
+      <workItem from="1568101146669" duration="6293000" />
     </task>
     <servers />
   </component>
