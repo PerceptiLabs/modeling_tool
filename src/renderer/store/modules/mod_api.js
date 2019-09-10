@@ -259,6 +259,7 @@ const actions = {
       })
   },
   API_CLOSE_core({getters, dispatch, rootState}) {
+    console.log('API_CLOSE_core');
     const theData = {
       reciever: 'server',
       action: 'Close',
