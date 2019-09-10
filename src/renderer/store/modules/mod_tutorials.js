@@ -1272,12 +1272,12 @@ const actions = {
          break;
         case 'arrow':
           commit('SET_isDottedArrow', true);
-          let arrowSize = 10;
+          let layersbarElementSize = document.querySelector('#tutorial_layersbar-list li button').getBoundingClientRect();
           let firstElement = document.getElementById(getters.getActiveAction.schematic.connection_start);
           let secondElement = document.getElementById(getters.getActiveAction.id);
-
           let start = firstElement.getBoundingClientRect();
           let stop = secondElement.getBoundingClientRect();
+          let arrowSize = start.width - layersbarElementSize.width === 0 ? 12 : 0;
 
           if(getters.getActiveAction.schematic.position === 'bottom') {
             store.commit('mod_workspace/SET_preArrowStart', {x: start.right - start.width - start.width / 2 - arrowSize, y: start.top - start.width});

@@ -304,7 +304,7 @@ export default {
       left: 1.8rem;
     }
     &.done:before {
-      content: "\e937";
+      content: "\e968";
       left: 2rem;
     }
   }
