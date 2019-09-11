@@ -72,11 +72,6 @@
         this.$store.commit('mod_autoUpdate/SET_updateStatus', 'done')
       });
       ipcRenderer.on('update-error', (event, error) => {
-<<<<<<< HEAD
-        console.log('update-error', JSON.parse(error));
-=======
-        console.log('update-error', error);
->>>>>>> 40326a8dba731624af2eb4bb5d99f5f937610b5b
         this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', false);
         if(error) this.$store.dispatch('globalView/GP_infoPopup', error);
       });
