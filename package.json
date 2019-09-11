@@ -11,6 +11,7 @@
   "main": "./dist/electron/main.js",
   "scripts": {
     "build": "cross-env NODE_OPTIONS=--max_old_space_size=8192 node .electron-vue/build.js && electron-builder",
+    "build:debug": "cross-env IS_DEBUG_MODE=true NODE_OPTIONS=--max_old_space_size=8192 node .electron-vue/build.js && electron-builder",
     "publish": "electron-builder -p always",
     "build:dir": "node .electron-vue/build.js && electron-builder --dir",
     "build:clean": "cross-env BUILD_TARGET=clean node .electron-vue/build.js",

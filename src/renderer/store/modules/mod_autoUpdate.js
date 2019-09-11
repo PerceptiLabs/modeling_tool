@@ -18,7 +18,7 @@ const getters = {
 
 const mutations = {
   SET_showPopupUpdates (state, value) {
-    console.log('SET_showPopupUpdates');
+    //console.log('SET_showPopupUpdates');
     state.showPopupUpdates = value
   },
   SET_showNotAvailable (state, value) {

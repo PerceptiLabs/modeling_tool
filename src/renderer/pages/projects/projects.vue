@@ -24,16 +24,19 @@
     name: 'PageProjects',
     mounted() {
       this.$nextTick(()=> {
-        let localProjectsList = this.localUserInfo.projectsList;
-        if(Array.isArray(localProjectsList)) {
-          localProjectsList.forEach((el)=> {
-            fileLocalRead(el.path[0])
-              .then(() => {})
-              .catch((err)=> {
-                el.notExist = true
-              })
-          });
-          this.projects = localProjectsList;
+        if(this.localUserInfo) {
+          let localProjectsList = JSON.parse(JSON.stringify(this.localUserInfo.projectsList));
+          if (Array.isArray(localProjectsList)) {
+            localProjectsList.forEach((el) => {
+              fileLocalRead(el.path[0])
+                .then(() => {
+                })
+                .catch((err) => {
+                  el.notExist = true
+                })
+            });
+            this.projects = localProjectsList;
+          }
         }
       })
     },

@@ -239,7 +239,7 @@ export default {
       }
     },
     HC_esc() {
-      console.log('HC_esc');
+      //console.log('HC_esc');
       this.$store.dispatch('mod_events/EVENT_hotKeyEsc')
     },
     HC_addLayerContainer() {

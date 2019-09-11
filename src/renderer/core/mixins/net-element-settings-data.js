@@ -46,7 +46,7 @@ const netElementSettingsData = {
           if (data) this.imgData = data;
         })
         .catch((err)=> {
-          console.log('answer err');
+          //console.log('answer err');
           console.error(err);
         });
     },
@@ -60,11 +60,11 @@ const netElementSettingsData = {
           Properties: this.settings
         }
       };
-      console.log('getDataMeta', theData);
+      //console.log('getDataMeta', theData);
       return this.coreRequest(theData)
         .then((data) => {
           if (data) {
-            console.log('getDataMeta', data);
+            //console.log('getDataMeta', data);
             if(data.Action_space) this.actionSpace = data.Action_space;
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
             return data;
@@ -86,10 +86,10 @@ const netElementSettingsData = {
           Properties: this.settings
         }
       };
-      console.log('getPartitionSummary', theData);
+      //console.log('getPartitionSummary', theData);
       return this.coreRequest(theData)
         .then((data) => {
-          console.log('getPartitionSummary answer', data);
+          //console.log('getPartitionSummary answer', data);
           if (data) {
             this.Partition_summary = data;
           }
@@ -100,7 +100,7 @@ const netElementSettingsData = {
         });
     },
     deleteDataMeta(type) {
-      console.log('deleteData');
+      //console.log('deleteData');
       let theData = {
         reciever: this.currentNetworkID,
         action: 'deleteData',
@@ -112,7 +112,7 @@ const netElementSettingsData = {
       };
       return this.coreRequest(theData)
         .then((data) => {
-          console.log('deleteData', data);
+          //console.log('deleteData', data);
           return data
         })
         .catch((err) => {

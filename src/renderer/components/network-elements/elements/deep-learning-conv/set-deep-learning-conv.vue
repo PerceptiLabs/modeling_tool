@@ -265,7 +265,7 @@ node=node+b;`;
           //pooling = `Y=max_pool(Y, ${this.settings.Pool_area}, ${this.settings.Stride},${this.settings.Padding},${this.settings.Conv_dim});`;
           pooling = '';
           var switcherPooling = calcSwitcher(this);
-          console.log('switcherPooling ', switcherPooling);
+          //console.log('switcherPooling ', switcherPooling);
           switch (switcherPooling) {
             case '1D':
               pooling = `Y=tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding})`;

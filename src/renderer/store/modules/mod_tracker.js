@@ -17,7 +17,7 @@ const mutations = {
 
 const actions = {
   TRACK_initMixPanel() {
-    console.log('TRACK_initMixPanel');
+    //console.log('TRACK_initMixPanel');
     mixPanel.init(mixPanelToken);
   },
   TRACK_initMixPanelUser({}, id) {

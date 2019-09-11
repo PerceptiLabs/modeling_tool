@@ -165,7 +165,7 @@ export default {
     '$store.state.mod_events.globalPressKey.del': {
       handler() {
         if(this.editIsOpen && !this.settingsIsOpen && this.isSelectedEl) {
-          console.log('deleteEl');
+          //console.log('deleteEl');
           this.$store.dispatch('mod_workspace/DELETE_element');
         }
       }

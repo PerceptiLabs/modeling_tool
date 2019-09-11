@@ -37,6 +37,7 @@
     components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup },
     created() {
       this.$store.dispatch('mod_tracker/TRACK_initMixPanel');
+      this.$store.dispatch('mod_user/GET_LOCAL_userInfo');
     },
     mounted() {
       /*Menu*/
@@ -46,29 +47,29 @@
 
       /*Auto update*/
       ipcRenderer.on('checking-for-update', (event, updateInfo) => {
-        console.log('checking-for-update', updateInfo);
+        //console.log('checking-for-update', updateInfo);
         this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo)
       });
       ipcRenderer.on('update-available', (event, updateInfo) => {
-        console.log('update-available', updateInfo);
+        //console.log('update-available', updateInfo);
         this.$nextTick(()=>{
           this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
           this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo);
         })
       });
       ipcRenderer.on('update-not-available', (event, update) => {
-        console.log('update-not-available', update);
+        //console.log('update-not-available', update);
         if(this.showNotAvailable) {
           this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
           this.$store.commit('mod_autoUpdate/SET_updateStatus', 'not update')
         }
       });
       ipcRenderer.on('update-downloading', (event, percent) => {
-        console.log('update-downloading', percent);
+        //console.log('update-downloading', percent);
         this.$store.commit('mod_autoUpdate/SET_updateProgress', Math.round(percent));
       });
       ipcRenderer.on('update-completed', (event, percent) => {
-        console.log('update-completed', percent);
+        //console.log('update-completed', percent);
         this.$store.commit('mod_autoUpdate/SET_updateStatus', 'done')
       });
       ipcRenderer.on('update-error', (event, error) => {

@@ -60,33 +60,35 @@ const actions = {
     startCore();
 
     function startCore() {
-      console.log('startCore');
-      coreIsStarting = true;
-      let openServer;
-      let platformPath = '';
-      console.log('platform', process.platform);
-      switch (process.platform) {
-        case 'win32':
-          platformPath = 'core/appServer.exe';
-          break;
-        case 'darwin':
-        case 'linux':
-          console.log('start file');
-          process.env.NODE_ENV === 'production'
-            ? platformPath = path + 'core/appServer'
-            : platformPath = 'core/appServer';
-          break;
-      }
-      openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe'] });
+      if(!process.env.IS_DEBUG_MODE) {
+        //console.log('startCore');
+        coreIsStarting = true;
+        let openServer;
+        let platformPath = '';
+        //console.log('platform', process.platform);
+        switch (process.platform) {
+          case 'win32':
+            platformPath = 'core/appServer.exe';
+            break;
+          case 'darwin':
+          case 'linux':
+            //console.log('start file');
+            process.env.NODE_ENV === 'production'
+              ? platformPath = path + 'core/appServer'
+              : platformPath = 'core/appServer';
+            break;
+        }
+        openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
 
-      openServer.on('error', (err) => {
-        console.log('error core', err);
-        coreOffline()
-      });
-      openServer.on('close', (code) => {
-        console.log('close core', code);
-        coreOffline()
-      });
+        openServer.on('error', (err) => {
+          //console.log('error core', err);
+          coreOffline()
+        });
+        openServer.on('close', (code) => {
+          //console.log('close core', code);
+          coreOffline()
+        });
+      }
       waitOnlineCore()
     }
     function waitOnlineCore() {
@@ -245,7 +247,7 @@ const actions = {
     //console.log('Export send', theData);
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_exportData answer', data);
+        //console.log('API_exportData answer', data);
         dispatch('globalView/GP_infoPopup', data, {root: true});
         trackerData.result = 'success';
       })
@@ -259,7 +261,7 @@ const actions = {
       })
   },
   API_CLOSE_core({getters, dispatch, rootState}) {
-    console.log('API_CLOSE_core');
+    //console.log('API_CLOSE_core');
     const theData = {
       reciever: 'server',
       action: 'Close',
@@ -371,7 +373,7 @@ const actions = {
     //console.log('Parse send', theData);
     return coreRequest(theData)
       .then((data)=> {
-        console.log('Parse answer', data);
+        //console.log('Parse answer', data);
         dispatch('mod_workspace/ADD_network', data.network, {root: true});
       })
       .catch((err)=> {

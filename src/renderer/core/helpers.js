@@ -16,7 +16,7 @@ const openLoadDialog = function (options) {
 };
 
 const openSaveDialog = function (options) {
-  console.log('openSaveDialog', options);
+  //console.log('openSaveDialog', options);
   return new Promise((success, reject) => {
     ipcRenderer.on('open-save-dialog_path', (event, path) => {
       ipcRenderer.removeAllListeners('open-save-dialog_path');
@@ -32,7 +32,7 @@ const loadPathFolder = function (customOptions) {
     properties: ['openDirectory']
   };
   let options = optionsDefault || customOptions;
-  console.log(options);
+  //console.log(options);
   return openLoadDialog(options);
 };
 
@@ -107,7 +107,7 @@ const throttleEv = function (func, ms) {
 };
 
 const goToLink = function (url) {
-  console.log(url);
+  //console.log(url);
   shell.openExternal(url);
 };
 

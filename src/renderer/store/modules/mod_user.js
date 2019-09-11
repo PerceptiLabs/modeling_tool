@@ -4,7 +4,7 @@ const state = {
   userToken: '',
   userTokenRefresh: '',
   userProfile: null,
-  getLocalUserList: JSON.parse(localStorage.getItem('usersList')),
+  getLocalUserList: null,
 };
 
 const getters = {
@@ -36,6 +36,9 @@ const mutations = {
   },
   set_userProfile (state, value) {
     state.userProfile = value
+  },
+  set_localUserList (state, value) {
+    state.getLocalUserList = value
   },
 };
 
@@ -72,10 +75,14 @@ const actions = {
     }
     dispatch('SET_LOCAL_userInfo', {userData: defaultUserInfo, localList: usersList});
   },
-  SET_LOCAL_userInfo({getters, state}, { userData, localList } ) {
-    let usersList = localList || state.getLocalUserList;
+  GET_LOCAL_userInfo({commit}) {
+    commit('set_localUserList', JSON.parse(localStorage.getItem('usersList')));
+  },
+  SET_LOCAL_userInfo({getters, state, commit}, { userData, localList } ) {
+    let usersList = localList || JSON.parse(JSON.stringify(state.getLocalUserList));
     const userId = getters.GET_userID;
     usersList[userId] = userData;
+    commit('set_localUserList', usersList);
     localStorage.setItem('usersList', JSON.stringify(usersList));
   },
   UPDATE_LOCAL_userInfo({dispatch, getters}, { key, data }) {

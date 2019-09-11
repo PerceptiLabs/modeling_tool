@@ -49,7 +49,7 @@ export default {
     },
   },
   created () {
-    const code = this.currentEl.layerCode || this.theCode;
+    const code = this.currentEl.layerCode.length ? {'Output': this.currentEl.layerCode} : this.theCode;
     const keys = Object.keys(code);
     this.currentTab = keys[0];
   },

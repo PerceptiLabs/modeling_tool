@@ -84,14 +84,14 @@ export default {
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
         .then((tokens)=> {
-          console.log('then', tokens);
+          //console.log('then', tokens);
           //encryptionData(tokens.accessToken);
           if(this.saveToken) localStorage.setItem('currentUser', JSON.stringify(tokens));
           //this.loginUser()
         })
         //.catch((error)=> {console.log('catch Login');})
         .finally(()=> {
-          console.log('finally');
+          //console.log('finally');
           this.$store.commit('mod_login/SET_showLoader', false);
         });
     },
