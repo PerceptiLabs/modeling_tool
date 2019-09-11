@@ -58,7 +58,7 @@ function createWindow () {
     }
   });
 
-  mainWindow.webContents.openDevTools();
+  if(process.env.IS_DEBUG_MODE) mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
