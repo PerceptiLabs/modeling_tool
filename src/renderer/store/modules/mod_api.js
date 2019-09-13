@@ -1,4 +1,5 @@
 import coreRequest  from "@/core/apiCore.js";
+import { isDebugMode } from '@/core/constants.js'
 
 const {spawn} = require('child_process');
 
@@ -60,7 +61,8 @@ const actions = {
     startCore();
 
     function startCore() {
-      if(!process.env.IS_DEBUG_MODE) {
+      console.log('isDebugMode', isDebugMode);
+      if(!isDebugMode) {
         //console.log('startCore');
         coreIsStarting = true;
         let openServer;
@@ -395,6 +397,34 @@ const actions = {
       .then((data)=> data)
       .catch((err)=> {
         console.error(err);
+      });
+  },
+  API_checkTrainedNetwork({dispatch, getters, rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "isTrained"
+    };
+    //console.log('Parse send', theData);
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error('isTrained answer', err);
+      });
+  },
+  API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      action: "SaveTrained",
+      value:  {Location, 'frontendNetwork': JSON.parse(frontendNetwork)}
+    };
+    console.log('saveTrainedNetwork send', theData);
+    return coreRequest(theData)
+      .then((data)=> {
+        console.log('saveTrainedNetwork answer', data);
+        return data
+      })
+      .catch((err)=> {
+        console.error('SaveTrained answer', err);
       });
   },
 };

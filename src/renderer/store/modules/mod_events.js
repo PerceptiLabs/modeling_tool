@@ -42,39 +42,39 @@ const actions = {
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },
-  EVENT_loadNetwork({dispatch}, pathArr) {
-    let localProjectsList = localStorage.getItem('projectsList');
-    let projectsList, pathIndex;
-    if(localProjectsList) {
-      projectsList = JSON.parse(localProjectsList);
-      pathIndex = projectsList.findIndex((proj)=> proj.path[0] === pathArr[0]);
+  EVENT_loadNetwork({dispatch, rootGetters}, pathArr) {
+    let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
+    let pathIndex;
+    console.log(localProjectsList);
+    if(localProjectsList.length) {
+      pathIndex = localProjectsList.findIndex((proj)=> proj.path[0] === pathArr[0]);
     }
     return fileLocalRead(pathArr[0])
       .then((data) => {
         //validate JSON
         let net = {};
-        net = JSON.parse(data.toString());
-        //console.log('net', net);
-        // try {
-        //   net = JSON.parse(data.toString());
-        //
-        // }
-        // catch(e) {
-        //   this.$store.dispatch('globalView/GP_infoPopup', 'JSON file is not valid');
-        //   return
-        // }
+        try {
+          net = JSON.parse(data.toString());
+        }
+        catch(e) {
+          dispatch('globalView/GP_infoPopup', 'JSON file is not valid', {root: true});
+          return
+        }
         //validate model
-        // try {
-        //   if(!(net.network.networkName && net.network.networkID && net.network.networkMeta && net.network.networkElementList)) {
-        //     throw ('err')
-        //   }
-        // }
-        // catch(e) {
-        //   this.$store.dispatch('globalView/GP_infoPopup', 'The model is not valid');
-        //   return;
-        // }
-        if(pathIndex > -1 && projectsList) {
-          net.network.networkID = projectsList[pathIndex].id;
+        try {
+          if(!(net.network.networkName
+            && net.network.networkMeta
+            && net.network.networkElementList)
+          ) {
+            throw ('err')
+          }
+        }
+        catch(e) {
+          dispatch('globalView/GP_infoPopup', 'The model is not valid', {root: true});
+          return;
+        }
+        if(pathIndex > -1 && localProjectsList) {
+          net.network.networkID = localProjectsList[pathIndex].id;
         }
         dispatch('mod_workspace/ADD_network', net.network, {root: true});
       }

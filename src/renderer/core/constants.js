@@ -1,4 +1,5 @@
-const isDevelopMode = process.env.NODE_ENV !== 'production' ? true : false;
+const isDevelopMode = process.env.NODE_ENV !== 'production';
+const isDebugMode = !!process.env.IS_DEBUG_MODE;
 
 const trainingElements  = ['TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
 const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningDeconv', 'DeepLearningRecurrent'];
@@ -13,6 +14,7 @@ const workspaceGrid = 10;
 
 export {
   isDevelopMode,
+  isDebugMode,
   trainingElements,
   deepLearnElements,
   pathWebWorkers,

@@ -57,7 +57,7 @@ function createWindow () {
       //plugins: true,
     }
   });
-
+  console.log('process.env.IS_DEBUG_MODE', process.env.IS_DEBUG_MODE);
   if(process.env.IS_DEBUG_MODE) mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 

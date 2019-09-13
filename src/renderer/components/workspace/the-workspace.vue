@@ -38,6 +38,7 @@
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
         workspace-before-import(v-if="showWorkspaceBeforeImport")
+        workspace-save-network(ref="saveNetworkPopup")
 
       start-training-spinner(v-if="showTrainingSpinner")
 

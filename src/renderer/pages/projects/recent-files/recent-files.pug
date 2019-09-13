@@ -28,7 +28,7 @@ ul.project-list.page-projects_project-list
             template(v-if="project.notExist")
               span.content-info_status.bg-error Doesn’t exist
             template(v-else)
-              span.content-info_status.primary(v-if="project.trainedPath") Trained
+              span.content-info_status.primary(v-if="project.isTrained") Trained
               span.content-info_status.dark-blue(v-else) Not trained
 
           .project-content_img

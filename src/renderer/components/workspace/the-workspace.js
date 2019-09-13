@@ -10,6 +10,7 @@ import GeneralSettings        from "@/components/global-popups/workspace-general
 import GeneralResult          from "@/components/global-popups/workspace-result";
 import SelectCoreSide         from "@/components/global-popups/workspace-core-side";
 import WorkspaceBeforeImport  from "@/components/global-popups/workspace-before-import";
+import WorkspaceSaveNetwork   from "@/components/global-popups/workspace-save-network.vue";
 import TheStatistics          from "@/components/statistics/the-statistics.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
@@ -19,7 +20,7 @@ export default {
   name: 'WorkspaceContent',
   components: {
     NetworkField, TextEditable,
-    GeneralSettings, GeneralResult, SelectCoreSide, WorkspaceBeforeImport,
+    GeneralSettings, GeneralResult, SelectCoreSide, WorkspaceBeforeImport, WorkspaceSaveNetwork,
     TheStatistics, TheTesting, TheViewBox, StartTrainingSpinner
   },
   data() {
@@ -103,12 +104,12 @@ export default {
     },
     '$store.state.mod_events.saveNetwork': {
       handler() {
-        this.saveNetwork();
+        this.eventSaveNetwork();
       }
     },
     '$store.state.mod_events.saveNetworkAs': {
       handler() {
-        this.saveNetworkAs();
+        this.eventSaveNetworkAs();
       }
     },
     currentSelectedEl(newStatus) {
@@ -125,6 +126,8 @@ export default {
       tutorialPointActivate:    'mod_tutorials/pointActivate',
       infoPopup:                'globalView/GP_infoPopup',
       pauseTraining:            'mod_api/API_pauseTraining',
+      checkTrainedNetwork:      'mod_api/API_checkTrainedNetwork',
+      saveTrainedNetwork:       'mod_api/API_saveTrainedNetwork',
 
       saveLocalUserInfo:        'mod_user/UPDATE_LOCAL_userInfo',
     }),
@@ -185,58 +188,96 @@ export default {
         this.$store.dispatch('mod_workspace/SET_openTest', true);
       })
     },
-    saveNetwork() {
-      let projectsList = JSON.parse(localStorage.getItem('projectsList'));
-      if(!projectsList) {
-        this.saveNetworkAs();
-        return
-      }
-      let idIndex = projectsList.findIndex((proj) => proj.id === this.currentNetwork.networkID);
-      if(idIndex < 0) {
-        this.saveNetworkAs();
-        return
-      }
 
+    eventSaveNetwork() {
+      const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
-      doScreenShot(this)
-        .then((img)=> {
-          const currentPath = projectsList[idIndex].path[0];
-          const stringNet = cloneNet(network, img, currentPath);
-          projectsList[idIndex] = JSON.parse(stringNet).project  ;
-          fileLocalSave(currentPath, stringNet)
+      console.log(!projectsList, findIndexId(projectsList, network) < 0);
+      if(!projectsList || findIndexId(projectsList, network) < 0) {
+        this.eventSaveNetworkAs();
+        return
+      }
+      let idIndex = findIndexId(projectsList, network);
+      const currentPath = projectsList[idIndex].path[0];
+      this.saveNetwork(currentPath);
+
+      function findIndexId(list, currentNet) {
+        return list.findIndex((proj) => proj.id === currentNet.networkID)
+      }
+      //
+      // const network = this.currentNetwork;
+      // doScreenShot(this)
+      //   .then((img)=> {
+      //     const currentPath = projectsList[idIndex].path[0];
+      //     const stringNet = cloneNet(network, img, currentPath);
+      //     projectsList[idIndex] = JSON.parse(stringNet).project  ;
+      //     fileLocalSave(currentPath, stringNet)
+      //   })
+      //   .then(()=> {
+      //     this.$refs.networkField[0].$refs.network.style.filter = '';
+      //     this.saveLocalUserInfo({key: 'projectsList', data: projectsList });
+      //   })
+      //   .catch((err)=> {console.log(err)});
+    },
+    eventSaveNetworkAs() {
+      const network = this.currentNetwork;
+      const option = {
+        title:"Save Network",
+        defaultPath: `*/${network.networkName}`,
+        filters: [
+          {name: 'Text', extensions: ['json']},
+        ]
+      };
+      openSaveDialog(option)
+        .then((path)=> {
+          this.saveNetwork(path)
+        })
+    },
+
+    saveNetwork(savePath) {
+      console.log('saveNetwork', savePath);
+      const networkField = this.$refs.networkField[0].$refs.network;
+      networkField.style.filter = 'blur(5px)';
+      let stringNetwork;
+      Promise.all([
+        this.checkTrainedNetwork(),
+        doScreenShot(networkField)
+      ])
+        .then((result)=> {
+          console.log('Promise.all', result);
+          const isTrainingNet = result[0];
+          const imgString = result[1];
+          stringNetwork = cloneNet(this.currentNetwork, imgString);
+          if(isTrainingNet) {
+            return this.askSaveFilePopup()
+              //.then((isSaveOnlyModel)=> isSaveOnlyModel)
+          }
+          else return false;
+        })
+        .then((isSaveTrainedModel)=> {
+          console.log('isSaveTrainedModel', isSaveTrainedModel);
+          if(isSaveTrainedModel) {
+            return this.saveTrainedNetwork({'Location': savePath, 'frontendNetwork': stringNetwork})
+          }
+          else {
+            return fileLocalSave(savePath, stringNetwork)
+          }
         })
         .then(()=> {
-          this.$refs.networkField[0].$refs.network.style.filter = '';
-          setLocalProjectsList(this, projectsList)
-        })
-        .catch((err)=> {console.log(err)});
-    },
-    saveNetworkAs() {
-      const network = this.currentNetwork;
-      let stringNetwork;
-      doScreenShot(this)
-        .then((img)=> {
-          stringNetwork = cloneNet(network, img);
-          const option = {
-            title:"Save Network",
-            defaultPath: `*/${network.networkName}`,
-            filters: [
-              {name: 'Text', extensions: ['json']},
-            ]
-          };
-          return openSaveDialog(option);
-        })
-        .then((path)=> fileLocalSave(path, stringNetwork))
-        .then((filePath)=> {
-          savePathToLocalStorage(stringNetwork, filePath, this);
+          saveProjectToLocalStore(stringNetwork, savePath, this);
           this.$store.dispatch('mod_tracker/EVENT_modelSave', stringNetwork);
         })
-        .catch((err)=> {
-          console.error(err)
-        })
+        .catch((error) => {})
         .finally(()=> {
-          this.$refs.networkField[0].$refs.network.style.filter = '';
-        });
+            networkField.style.filter = '';
+          });
+    },
+    askSaveFilePopup() {
+      return this.$refs.saveNetworkPopup[0].openPopup()
+        .then((answer)=> answer)
+        .catch((err)=> {
+
+        })
     },
     trainingFinished(index) {
       let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;
@@ -248,34 +289,39 @@ export default {
     },
     trainingWaiting(index) {
       return this.workspace[index].networkMeta.coreStatus.Status === 'Waiting';
-    }
+    },
+
   }
 }
 
-function doScreenShot(ctx) {
+function doScreenShot(networkFieldEl) {
   return new Promise((resolve, reject)=> {
-    const networkField = ctx.$refs.networkField[0].$refs.network;
     const svg = document.querySelector('.svg-arrow');
     const arrowsCanvas = document.createElement('canvas');
     arrowsCanvas.style.position = 'absolute';
     arrowsCanvas.style.zIndex = '0';
-    networkField.appendChild(arrowsCanvas);
+    networkFieldEl.appendChild(arrowsCanvas);
     canvg(arrowsCanvas, svg.outerHTML, {});
     svg.style.display = 'none';
-    networkField.style.filter = 'blur(5px)';
+
     const options = {
       scale: 1,
       backgroundColor: 'null',
     };
-    return html2canvas(networkField, options)
+    return html2canvas(networkFieldEl, options)
       .then((canvas)=> {
         resolve(canvas.toDataURL());
+      })
+      .finally(()=> {
         svg.style.display = '';
         arrowsCanvas.remove();
-      });
+      })
+
   })
 }
-function savePathToLocalStorage(stringProject, path, ctx) {
+
+function saveProjectToLocalStore(stringProject, path, ctx) {
+  console.log('saveProjectToLocalStore', stringProject, path);
   let projectsList = ctx.getLocalUserInfo.projectsList;
   let project = JSON.parse(stringProject).project;
   project.path.push(path);
@@ -302,11 +348,9 @@ function savePathToLocalStorage(stringProject, path, ctx) {
   else {
     projectsList.push(project)
   }
-  setLocalProjectsList(ctx, projectsList);
+  ctx.saveLocalUserInfo({key: 'projectsList', data: projectsList });
 }
-function setLocalProjectsList(ctx, projectsListData) {
-  ctx.saveLocalUserInfo({key: 'projectsList', data: projectsListData });
-}
+
 function cloneNet(net, imgPath, filePath) {
   //clone network
   var outNet = {};
@@ -336,7 +380,7 @@ function cloneNet(net, imgPath, filePath) {
       name: outNet.networkName,
       id: outNet.networkID,
       path: [],
-      trainedPath: '',
+      isTrained: false,
       isCloud: false,
       isChecked: false,
       notExist: false

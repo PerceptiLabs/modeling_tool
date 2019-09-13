@@ -93,7 +93,7 @@
       }
       this.getDataMeta('DataData')
         .then((data)=> {
-          if (data.Columns.length) this.createSelectArr(data.Columns);
+          if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
           this.getDataPlot('DataData');
         });
     },

@@ -29,8 +29,7 @@
           if (Array.isArray(localProjectsList)) {
             localProjectsList.forEach((el) => {
               fileLocalRead(el.path[0])
-                .then(() => {
-                })
+                .then(() => { })
                 .catch((err) => {
                   el.notExist = true
                 })
