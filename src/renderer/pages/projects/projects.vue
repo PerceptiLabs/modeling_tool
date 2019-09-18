@@ -14,31 +14,13 @@
 
 </template>
 <script>
-  import fs               from 'fs';
-  import {fileLocalRead}  from '@/core/helpers.js'
+  import {filePCRead, folderPCDelete}  from '@/core/helpers.js'
   import {mapState, mapGetters, mapMutations, mapActions} from 'vuex';
 
   import basicTemplate1 from '@/core/basic-template/base-template-1.js'
 
   export default {
     name: 'PageProjects',
-    mounted() {
-      this.$nextTick(()=> {
-        if(this.localUserInfo) {
-          let localProjectsList = JSON.parse(JSON.stringify(this.localUserInfo.projectsList));
-          if (Array.isArray(localProjectsList)) {
-            localProjectsList.forEach((el) => {
-              fileLocalRead(el.path[0])
-                .then(() => { })
-                .catch((err) => {
-                  el.notExist = true
-                })
-            });
-            this.projects = localProjectsList;
-          }
-        }
-      })
-    },
     data() {
       return {
         source: 'computer',
@@ -73,23 +55,47 @@
         appVersion:         state => state.globalView.appVersion,
         hotKeyPressDelete:  state => state.mod_events.globalPressKey.del,
       }),
-
       filteredProjects() {
         this.selectedProject = null;
         return this.projects.filter((project)=> project.name.match(this.search))
       }
     },
     watch: {
+      'localUserInfo.projectsList.length': {
+        handler() {
+          if(!this.localUserInfo) return;
+
+          let localProjectsList = JSON.parse(JSON.stringify(this.localUserInfo.projectsList));
+          if (Array.isArray(localProjectsList)) {
+            localProjectsList.forEach((el) => {
+              el.notExist = false;
+              el.isChecked = false;
+              filePCRead(el.pathModel)
+                .then(() => { })
+                .catch((err) => {
+                  el.notExist = true
+                })
+            });
+            this.projects = localProjectsList;
+          }
+        },
+        immediate: true
+      },
       hotKeyPressDelete() {
-        let indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
-        if(indexCheckedProj >= 0) {
-          let pathDelete = this.projects[indexCheckedProj].path[0];
-          fs.unlink(pathDelete, ()=> {
-            this.projects.splice(indexCheckedProj, 1);
-            localStorage.setItem('projectsList', JSON.stringify(this.projects));
-            this.$nextTick(()=> this.$store.dispatch('globalView/GP_infoPopup', "The project has been successfully deleted"))
+        const indexCheckedProj = this.projects.findIndex((el)=> el.isChecked === true);
+        if(indexCheckedProj < 0) return;
+
+        const selectedProject = this.projects[indexCheckedProj];
+        const isProjectNotExist = selectedProject.notExist;
+        const pathDelete = selectedProject.pathProject[0];
+        folderPCDelete(pathDelete)
+          .then(()=> {
+            const newProjectsList = JSON.parse(JSON.stringify(this.localUserInfo.projectsList));
+            newProjectsList.splice(indexCheckedProj, 1);
+            this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
+            this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
           })
-        }
+          .catch ((err)=> {console.error(err)})
       }
     },
     methods: {
@@ -98,10 +104,12 @@
         setTutorialStoryBoard:  'mod_tutorials/SET_showTutorialStoryBoard',
       }),
       ...mapActions({
-        openNetwork: 'mod_events/EVENT_openNetwork',
-        loadNetwork: 'mod_events/EVENT_loadNetwork',
-        beginTutorial: 'mod_tutorials/START_storyboard',
-        addNetwork: 'mod_workspace/ADD_network'
+        openNetwork:        'mod_events/EVENT_openNetwork',
+        loadNetwork:        'mod_events/EVENT_loadNetwork',
+        beginTutorial:      'mod_tutorials/START_storyboard',
+        addNetwork:         'mod_workspace/ADD_network',
+        saveLocalUserInfo:  'mod_user/UPDATE_LOCAL_userInfo',
+        showInfoPopup:      'globalView/GP_infoPopup',
       }),
       openTemplate(path) {
         this.loadNetwork(path)

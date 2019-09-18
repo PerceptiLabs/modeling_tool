@@ -1,11 +1,11 @@
 @import 'base';
 /*----- CSS VAR -----*/
-:root {
-  --size-layers-btn: .8rem;
-  @include media('>=medium') {
-    --size-layers-btn: 1rem;
-  }
-}
+//:root {
+//  --size-layers-btn: .8rem;
+//  @include media('>=medium') {
+//    --size-layers-btn: 1rem;
+//  }
+//}
 /*----- Common styles -----*/
 @import 'fonts/icomoon';
 @import 'fonts/roboto';

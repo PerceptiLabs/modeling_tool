@@ -31,21 +31,22 @@ const loadPathFolder = function (customOptions) {
     title:"Load folder",
     properties: ['openDirectory']
   };
-  let options = optionsDefault || customOptions;
+  let options = {...optionsDefault, ...customOptions};
   //console.log(options);
   return openLoadDialog(options);
 };
 
 
 /*file actions*/
-const fileLocalRead = function (path) {
+const filePCRead = function (path) {
   return new Promise((success, reject) => {
     fs.readFile(path, (err, data) => {
       return !!err ? reject(err) : success(data);
     })
   });
 };
-const fileLocalSave = function (fileName, fileContent) {
+
+const filePCSave = function (fileName, fileContent) {
   return new Promise((success, reject) => {
     fs.writeFile(fileName, fileContent, (err, data) => {
       if(err) {
@@ -56,6 +57,34 @@ const fileLocalSave = function (fileName, fileContent) {
         store.dispatch('globalView/GP_infoPopup', 'The file has been successfully saved');
         return success(fileName)
       }
+    });
+  });
+};
+const projectPCSave = function (projectPathArr, fileContent) {
+  const projectPath = projectPathArr[0];
+  if (!fs.existsSync(projectPath)){
+    fs.mkdirSync(projectPath);
+  }
+  const jsonPath = `${projectPath}\\${fileContent.networkID}.json`;
+  return filePCSave(jsonPath, JSON.stringify(fileContent))
+};
+const folderPCDelete = function (path) {
+  return new Promise((success, reject) => {
+    if (!fs.existsSync(path)) success();
+
+    const files = fs.readdirSync(path);
+    if (files.length > 0) {
+      files.forEach(function(filename) {
+        if (fs.statSync(path + "/" + filename).isDirectory()) {
+          removeDir(path + "/" + filename)
+        } else {
+          fs.unlinkSync(path + "/" + filename)
+        }
+      });
+    }
+    fs.rmdir(path, (err)=> {
+      if(err) reject(err);
+      else success()
     });
   });
 };
@@ -115,8 +144,10 @@ export {
   openLoadDialog,
   openSaveDialog,
   loadPathFolder,
-  fileLocalRead,
-  fileLocalSave,
+  filePCRead,
+  filePCSave,
+  projectPCSave,
+  folderPCDelete,
   encryptionData,
   decryptionData,
   generateID,

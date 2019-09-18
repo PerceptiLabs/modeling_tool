@@ -1,6 +1,6 @@
 import {ipcRenderer}  from 'electron'
 import router         from "@/router";
-import {fileLocalRead, openLoadDialog} from "@/core/helpers";
+import {filePCRead, openLoadDialog, loadPathFolder} from "@/core/helpers";
 
 const namespaced = true;
 
@@ -42,29 +42,26 @@ const actions = {
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },
-  EVENT_loadNetwork({dispatch, rootGetters}, pathArr) {
+  EVENT_loadNetwork({dispatch, rootGetters}, pathFile) {
     let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
     let pathIndex;
-    console.log(localProjectsList);
     if(localProjectsList.length) {
-      pathIndex = localProjectsList.findIndex((proj)=> proj.path[0] === pathArr[0]);
+      pathIndex = localProjectsList.findIndex((proj)=> proj.pathModel === pathFile);
     }
-    return fileLocalRead(pathArr[0])
+    return filePCRead(pathFile)
       .then((data) => {
         //validate JSON
         let net = {};
-        try {
-          net = JSON.parse(data.toString());
-        }
+        try { net = JSON.parse(data.toString()); }
         catch(e) {
           dispatch('globalView/GP_infoPopup', 'JSON file is not valid', {root: true});
           return
         }
         //validate model
         try {
-          if(!(net.network.networkName
-            && net.network.networkMeta
-            && net.network.networkElementList)
+          if(!(net.networkName
+            && net.networkMeta
+            && net.networkElementList)
           ) {
             throw ('err')
           }
@@ -74,23 +71,18 @@ const actions = {
           return;
         }
         if(pathIndex > -1 && localProjectsList) {
-          net.network.networkID = localProjectsList[pathIndex].id;
+          net.networkID = localProjectsList[pathIndex].id;
         }
-        dispatch('mod_workspace/ADD_network', net.network, {root: true});
+        dispatch('mod_workspace/ADD_network', net, {root: true});
       }
     );
   },
   EVENT_openNetwork({dispatch}) {
     const opt = {
-      title:"Load Model",
-      filters: [
-        {name: 'Text', extensions: ['json']},
-      ]
+      title:"Load Project Folder",
     };
-    openLoadDialog(opt)
-      .then((pathArr)=> {
-        dispatch('EVENT_loadNetwork', pathArr)
-      })
+    loadPathFolder(opt)
+      .then((pathArr)=> { dispatch('EVENT_loadNetwork', pathArr) })
       .catch((err)=> {});
   },
   EVENT_saveNetwork({commit}) {

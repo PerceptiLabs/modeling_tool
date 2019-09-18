@@ -37,7 +37,7 @@ const coreRequest = function (message, port, address) {
             store.dispatch('mod_tracker/EVENT_coreWarning', obgData.warningMessage);
             console.warn('core warning', obgData.warningMessage);
           }
-          console.log(obgData);
+          //console.log(obgData);
           resolve(obgData.content);
         }
         if (data.toString().endsWith('exit')) {

@@ -404,7 +404,6 @@ const actions = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: "isTrained"
     };
-    //console.log('Parse send', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -415,14 +414,10 @@ const actions = {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
       action: "SaveTrained",
-      value:  {Location, 'frontendNetwork': JSON.parse(frontendNetwork)}
+      value:  {Location, frontendNetwork}
     };
-    console.log('saveTrainedNetwork send', theData);
     return coreRequest(theData)
-      .then((data)=> {
-        console.log('saveTrainedNetwork answer', data);
-        return data
-      })
+      .then((data)=> data)
       .catch((err)=> {
         console.error('SaveTrained answer', err);
       });

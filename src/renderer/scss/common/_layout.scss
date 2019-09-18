@@ -4,9 +4,9 @@ html {
 	font-size: $global-font-size;
 	box-sizing: border-box;
 
-@include media('>=large') {
-		font-size: 10px;
-	}
+//@include media('>=large') {
+//		font-size: 10px;
+//	}
 }
 
 *,

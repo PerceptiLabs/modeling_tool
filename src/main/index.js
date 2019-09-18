@@ -43,8 +43,8 @@ function createWindow () {
    */
   mainWindow = new BrowserWindow({
     frame: !!(process.platform === 'darwin'),
-    height: 768,
-    width: 1024,
+    height: 600,
+    width: 800,
     minHeight: 600,
     minWidth: 800,
     useContentSize: true,
@@ -57,7 +57,7 @@ function createWindow () {
       //plugins: true,
     }
   });
-  console.log('process.env.IS_DEBUG_MODE', process.env.IS_DEBUG_MODE);
+  //console.log('process.env.IS_DEBUG_MODE', process.env.IS_DEBUG_MODE);
   if(process.env.IS_DEBUG_MODE) mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
@@ -128,6 +128,7 @@ function createWindow () {
   ipcMain.on('app-ready', (event) => {
     mainWindow.checkForUpdates();
     mainWindow.webContents.send('get-app-version', app.getVersion());
+    mainWindow.maximize();
   });
   ipcMain.on('check-update', (event) => {
     mainWindow.checkForUpdates();

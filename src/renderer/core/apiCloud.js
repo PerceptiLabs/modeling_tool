@@ -7,6 +7,7 @@ const requestCloudApi = function (method, path, data, params) {
   return httpRequest(method, path, data, params)
     .then((response)=> response)
     .catch((error)=> {
+      console.log(error.response);
       if(error.response.status === 401) { return 'updateToken' }
       else {
         store.dispatch('mod_tracker/EVENT_cloudError', error);

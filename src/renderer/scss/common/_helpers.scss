@@ -162,6 +162,10 @@ $prevBreakPoint: 'large';
   text-overflow: ellipsis;
   overflow: hidden;
 }
+.ellipsis--right {
+  @extend .ellipsis;
+  direction: rtl;
+}
 .bg-primary {
   background-color: $col-primary;
 }

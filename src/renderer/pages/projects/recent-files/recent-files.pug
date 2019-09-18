@@ -14,11 +14,11 @@ ul.project-list.page-projects_project-list
     h3 Add new project
   article.project-box(
     v-if="filteredProjects.length"
-    v-for="(project, index) in filteredProjects"
-    :key="project.index"
+    v-for="project in filteredProjects"
+    :key="project.id"
     )
       button.project(
-        @dblclick="openTemplate(project.path)"
+        @dblclick="openTemplate(project.pathModel)"
         @click="selectTemplate(project)"
         :class="{'active': project.isChecked}"
         )
@@ -34,5 +34,5 @@ ul.project-list.page-projects_project-list
           .project-content_img
             img(:src="project.image")
       h3 {{ project.name }}
-      p {{ project.path[0] }}
+      p.ellipsis--right(:title="project.pathProject[0]") {{ project.pathProject[0] }}
       time.text-disable {{ project.time }}
