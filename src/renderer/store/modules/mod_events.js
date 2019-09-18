@@ -73,6 +73,7 @@ const actions = {
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
         }
+        net.networkPath =
         dispatch('mod_workspace/ADD_network', net, {root: true});
       }
     );
@@ -82,7 +83,11 @@ const actions = {
       title:"Load Project Folder",
     };
     loadPathFolder(opt)
-      .then((pathArr)=> { dispatch('EVENT_loadNetwork', pathArr) })
+      .then((pathArr)=> {
+        const pathFolder = pathArr[0];
+        const netId = pathFolder.slice(pathFolder.lastIndexOf('\\') + 1, pathFolder.length);
+        dispatch('EVENT_loadNetwork', `${pathFolder}\\${netId}.json`)
+      })
       .catch((err)=> {});
   },
   EVENT_saveNetwork({commit}) {
