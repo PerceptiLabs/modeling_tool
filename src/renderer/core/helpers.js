@@ -140,6 +140,10 @@ const goToLink = function (url) {
   shell.openExternal(url);
 };
 
+const deepCopy = function (object) {
+  return JSON.parse(JSON.stringify(object))
+};
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -153,5 +157,6 @@ export {
   generateID,
   calcLayerPosition,
   throttleEv,
-  goToLink
+  goToLink,
+  deepCopy
 }

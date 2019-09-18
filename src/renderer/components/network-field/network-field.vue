@@ -3,6 +3,7 @@
     ref="network"
     @mousedown="refNetworkMouseDown($event)"
   )
+    p {{currentNetwork.networkID}}
     svg.svg-arrow(:style="styleSvgArrow")
       defs
         marker#svg-arrow_triangle(

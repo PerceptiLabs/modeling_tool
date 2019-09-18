@@ -2,7 +2,7 @@ import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
 import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 
-import { openSaveDialog, filePCSave, projectPCSave, generateID, loadPathFolder }  from "@/core/helpers.js";
+import { openSaveDialog, filePCSave, projectPCSave, generateID, loadPathFolder, deepCopy }  from "@/core/helpers.js";
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -219,22 +219,24 @@ export default {
     eventSaveNetworkAs() {
       const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
-
+      let newProjId;
       if(findIndexId(projectsList, network) >= 0) {
-
+        newProjId = generateID();
       }
       loadPathFolder()
         .then((path)=> {
-          this.saveNetwork(path, )
+          this.saveNetwork(path, newProjId)
         })
     },
 
-    saveNetwork(savePath) {
+    saveNetwork(savePath, newId) {
       const networkField = this.$refs.networkField[0].$refs.network;
-      const currentNet = this.currentNetwork;
-      const pathSaveProject = [`${savePath[0]}\\${currentNet.networkID}`];
       networkField.style.filter = 'blur(5px)';
-      let prepareNet;
+
+      const currentNet = this.currentNetwork;
+      const projectId = newId || currentNet.networkID;
+      const pathSaveProject = [`${savePath[0]}\\${projectId}`];
+      let prepareNet = cloneNet(currentNet, projectId, pathSaveProject);
       /*check Is Trained Net + do ScreenShot*/
       Promise.all([
         this.checkTrainedNetwork(),
@@ -243,8 +245,7 @@ export default {
         .then((result)=> {
           /*prepare Net + ask what the file save*/
           const isTrainingNet = result[0];
-          const imgString = result[1];
-          prepareNet = cloneNet(currentNet, imgString, pathSaveProject);
+          prepareNet.toLocal.image = result[1];
           if(isTrainingNet) return this.askSaveFilePopup();
           else return false;
         })
@@ -320,7 +321,7 @@ function doScreenShot(networkFieldEl) {
 }
 
 function saveProjectToLocalStore(project, ctx) {
-  let projectsLocalList = JSON.parse(JSON.stringify(ctx.getLocalUserInfo.projectsList));
+  let projectsLocalList = deepCopy(ctx.getLocalUserInfo.projectsList);
 
   if(projectsLocalList.length) {
     const idIndex = projectsLocalList.findIndex((proj)=> proj.id === project.id);
@@ -337,13 +338,14 @@ function saveProjectToLocalStore(project, ctx) {
   ctx.saveLocalUserInfo({key: 'projectsList', data: projectsLocalList });
 }
 
-function cloneNet(net, imgBase64, pathProject) {
+function cloneNet(net, idProject, pathProject) {
   //clone network
   let toFile = {};
   for (var key in net) {
     if(key === 'networkElementList') toFile[key] = JSON.parse(cloneEl(net[key]));
     else toFile[key] = net[key];
   }
+  if(idProject) toFile.networkID = idProject;
   toFile.networkMeta = {};
   //create project
   const time = new Date();
@@ -357,11 +359,11 @@ function cloneNet(net, imgBase64, pathProject) {
   };
   const toLocal = {
     time: time.toLocaleString("ru", timeOptions),
-    image: imgBase64,
+    image: null,
     name: toFile.networkName,
-    id: toFile.networkID,
+    id: idProject,
     pathProject: pathProject,
-    pathModel: `${pathProject[0]}\\${toFile.networkID}.json`,
+    pathModel: `${pathProject[0]}\\${idProject}.json`,
     isTrained: false,
     isCloud: false,
   };
