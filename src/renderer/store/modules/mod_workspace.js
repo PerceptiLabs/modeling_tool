@@ -126,6 +126,7 @@ const mutations = {
       networkSettings: null,
       networkMeta: {},
       networkElementList: null,
+      networkRootFolder: []
     };
     const defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
@@ -420,7 +421,9 @@ const mutations = {
       dispatch('globalView/GP_infoPopup', 'Connection already exists!', {root: true});
       return
     }
-    if(currentElement(startID).componentName === 'LayerContainer' || currentElement(stopID).componentName === 'LayerContainer') {
+    if(currentElement(startID).componentName === 'LayerContainer'
+      || currentElement(stopID).componentName === 'LayerContainer'
+    ) {
       dispatch('globalView/GP_infoPopup', 'Cannot create connection to Layer Container!', {root: true});
       return
     }
@@ -437,7 +440,9 @@ const mutations = {
     let elStart = currentElement(startID);
     let elStop = currentElement(stopID);
 
-    if(elStart.componentName === 'LayerContainer' || elStop.componentName === 'LayerContainer') {
+    if(elStart.componentName === 'LayerContainer'
+      || elStop.componentName === 'LayerContainer'
+    ) {
       dispatch('globalView/GP_infoPopup', 'To remove the connection, please open the Layer Container', {root: true});
       return
     }

@@ -2,9 +2,9 @@ import {calcLayerPosition} from '@/core/helpers.js'
 import { workspaceGrid }   from '@/core/constants.js'
 
 const baseNetDrag = {
-  props: {
-    dataEl: {type: Object},
-  },
+  // props: {
+  //   dataEl: {type: Object},
+  // },
   data() {
     return {
       left: this.x,

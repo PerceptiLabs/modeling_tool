@@ -2,7 +2,7 @@ import html2canvas  from 'html2canvas';
 import canvg        from 'canvg'
 import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 
-import { openSaveDialog, filePCSave, projectPCSave, generateID, loadPathFolder, deepCopy }  from "@/core/helpers.js";
+import { projectPCSave, generateID, loadPathFolder, deepCopy }  from "@/core/helpers.js";
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -143,8 +143,8 @@ export default {
       pauseTraining:            'mod_api/API_pauseTraining',
       checkTrainedNetwork:      'mod_api/API_checkTrainedNetwork',
       saveTrainedNetwork:       'mod_api/API_saveTrainedNetwork',
-
       saveLocalUserInfo:        'mod_user/UPDATE_LOCAL_userInfo',
+      trackerModelSave:         'mod_tracker/EVENT_modelSave',
     }),
     calcScaleMap() {
       this.$nextTick(()=> {
@@ -265,7 +265,8 @@ export default {
         .then(()=> {
           /*save project to project page*/
           saveProjectToLocalStore(prepareNet.toLocal, this);
-          this.$store.dispatch('mod_tracker/EVENT_modelSave', prepareNet.toFile);
+          this.infoPopup('The file has been successfully saved');
+          this.trackerModelSave(prepareNet.toFile);
         })
         .catch((error) => {})
         .finally(()=> {

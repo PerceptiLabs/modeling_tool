@@ -5,6 +5,7 @@
     :id="dataEl.layerMeta.tutorialId"
     :class="classEl"
 
+    @mousedown="switchMousedownEvent($event)"
     @click="switchClickEvent($event)"
     @dblclick.stop.prevent="switchDblclick($event)"
     @contextmenu.stop.prevent="openContext($event)"
@@ -15,7 +16,12 @@
       i.icon.icon-code-error
     .net-element_btn(ref="BaseElement")
       slot
-    //-
+    .net-element_arrows-start
+      button.arrows-start_btn.arrows-start_btn--top(type="button" @mousedown="startArrowPaint($event)")
+      button.arrows-start_btn.arrows-start_btn--right(type="button" @mousedown="startArrowPaint($event)")
+      button.arrows-start_btn.arrows-start_btn--bottom(type="button" @mousedown="startArrowPaint($event)")
+      button.arrows-start_btn.arrows-start_btn--left(type="button" @mousedown="startArrowPaint($event)")
+
     .net-element_window(
       v-if="settingsIsOpen"
       :class="classElWindow"
@@ -66,20 +72,20 @@ export default {
     }
   },
   mounted() {
-    this.$refs.rootBaseElement.addEventListener('mousedown', this.switchMousedownEvent);
+    //this.$refs.rootBaseElement.addEventListener('mousedown', this.switchMousedownEvent);
     this.$refs.rootBaseElement.addEventListener('touchstart', this.switchMousedownEvent);
   },
 
   beforeDestroy() {
-    this.$refs.rootBaseElement.removeEventListener('mousedown', this.switchMousedownEvent);
+    //this.$refs.rootBaseElement.removeEventListener('mousedown', this.switchMousedownEvent);
     this.$refs.rootBaseElement.removeEventListener('touchstart', this.switchMousedownEvent);
     /*appMode*/
     this.$parent.$parent.$el.removeEventListener('mousemove', this.arrowMovePaint);
-    this.$refs.rootBaseElement.removeEventListener('mouseup', this.arrowEndPaint);
+    this.$refs.rootBaseElement.removeEventListener('mouseup', this.$_paintArrow_arrowEndPaint);
 
     this.$parent.$parent.$el.removeEventListener('touchmove', this.arrowMovePaint, true);
-    this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.arrowEndPaint, true);
-    this.$refs.rootBaseElement.removeEventListener('touchstart', this.arrowEndPaint, true);
+    this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.$_paintArrow_arrowEndPaint, true);
+    this.$refs.rootBaseElement.removeEventListener('touchstart', this.$_paintArrow_arrowEndPaint, true);
     /*clickOutsideAction*/
     document.removeEventListener('mousedown', this.mousedownOutside);
   },
@@ -164,8 +170,10 @@ export default {
     },
     '$store.state.mod_events.globalPressKey.del': {
       handler() {
-        if(this.editIsOpen && !this.settingsIsOpen && this.isSelectedEl) {
-          //console.log('deleteEl');
+        if(this.editIsOpen
+          && !this.settingsIsOpen
+          && this.isSelectedEl
+        ) {
           this.$store.dispatch('mod_workspace/DELETE_element');
         }
       }
@@ -179,15 +187,28 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate: 'mod_tutorials/pointActivate',
-      tutorialShowHideTooltip: 'mod_tutorials/showHideTooltip',
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+      tutorialShowHideTooltip:  'mod_tutorials/showHideTooltip',
+      setNetMode:               'mod_workspace/SET_netMode',
     }),
+    startArrowPaint(ev) {
+      document.addEventListener('mouseup', this.toEditMode);
+      this.$store.dispatch('mod_workspace/SET_netMode', 'addArrow');
+      this.$_paintArrow_arrowStartPaint(ev);
+    },
+    toEditMode() {
+      this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+      document.removeEventListener('mouseup', this.toEditMode);
+    },
     switchMousedownEvent(ev) {
       if (this.isLock) return;
       //console.log('switchMousedownEvent', ev);
-      if(this.networkMode === 'addArrow') this.arrowStartPaint(ev);
+      if(this.networkMode === 'addArrow') this.$_paintArrow_arrowStartPaint(ev);
 
-      if(this.networkMode === 'edit' && this.editIsOpen && ev.button === 0) {
+      if(this.networkMode === 'edit'
+        && this.editIsOpen
+        && ev.button === 0
+      ) {
         this.setFocusEl(ev);
         this.bodyDown(ev)
       }
@@ -195,7 +216,9 @@ export default {
     switchClickEvent(ev) {
       if (this.isLock) return;
 
-      if (!this.editIsOpen && !this.layerContainer) {
+      if (!this.editIsOpen
+        && !this.layerContainer
+      ) {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
       }
     },
@@ -310,6 +333,14 @@ export default {
     background-color: $bg-workspace;
     &:hover {
       will-change: top, left;
+      .net-element_arrows-start {
+        display: block;
+      }
+    }
+    &.net-element--active {
+      .net-element_arrows-start {
+        display: block;
+      }
     }
     .btn--layersbar {
       width: 60px;
@@ -375,11 +406,44 @@ export default {
     z-index: 4;
   }
   .net-element_code-error {
-
     right: 2px;
   }
   .net-element--hide-layer {
     opacity: 0;
     visibility: hidden;
+  }
+  .net-element_arrows-start {
+    display: none;
+  }
+  .arrows-start_btn {
+    position: absolute;
+    width: .8rem;
+    height: .8rem;
+    background: #00C8D1;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    display: block;
+    z-index: 4;
+    padding: 0;
+    &--top {
+      top: 0;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+    &--left {
+      left: 0;
+      top: 50%;
+      transform: translate(-50%, -50%);
+    }
+    &--right {
+      right: 0;
+      top: 50%;
+      transform: translate(50%, -50%);
+    }
+    &--bottom {
+      bottom: 0;
+      left: 50%;
+      transform: translate(-50%, 50%);
+    }
   }
 </style>

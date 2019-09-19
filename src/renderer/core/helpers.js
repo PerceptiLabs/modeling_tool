@@ -54,7 +54,6 @@ const filePCSave = function (fileName, fileContent) {
         return reject(err);
       }
       else {
-        store.dispatch('globalView/GP_infoPopup', 'The file has been successfully saved');
         return success(fileName)
       }
     });
@@ -71,21 +70,18 @@ const projectPCSave = function (projectPathArr, fileContent) {
 const folderPCDelete = function (path) {
   return new Promise((success, reject) => {
     if (!fs.existsSync(path)) success();
-
     const files = fs.readdirSync(path);
     if (files.length > 0) {
       files.forEach(function(filename) {
         if (fs.statSync(path + "/" + filename).isDirectory()) {
-          removeDir(path + "/" + filename)
+          folderPCDelete(path + "/" + filename)
         } else {
           fs.unlinkSync(path + "/" + filename)
         }
       });
     }
-    fs.rmdir(path, (err)=> {
-      if(err) reject(err);
-      else success()
-    });
+    fs.rmdirSync(path);
+    success();
   });
 };
 /*encryption */

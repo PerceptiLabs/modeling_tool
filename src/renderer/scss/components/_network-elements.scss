@@ -77,9 +77,14 @@ $layers-sidebar-active: (
 	opacity: .4;
 }
 
-.net-element .btn--layersbar .icon {
-  font-size: 33px;
+.net-element {
+  &:hover .btn--layersbar {
+    box-shadow: inset 0 0 0 3px #fff;
+  }
+  .btn--layersbar .icon {
+    font-size: 33px;
+  }
 }
 .net-element--active .btn--layersbar {
-  box-shadow: inset 0 0 0 3px #fff;
+  box-shadow: inset 0 0 0 1px #fff;
 }

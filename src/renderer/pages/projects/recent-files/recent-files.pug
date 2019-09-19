@@ -18,7 +18,7 @@ ul.project-list.page-projects_project-list
     :key="project.id"
     )
       button.project(
-        @dblclick="openTemplate(project.pathModel)"
+        @dblclick="openTemplate({'pathFile': project.pathModel, 'pathRootFolder': project.pathProject})"
         @click="selectTemplate(project)"
         :class="{'active': project.isChecked}"
         )

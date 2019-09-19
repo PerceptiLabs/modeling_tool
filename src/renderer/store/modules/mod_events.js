@@ -42,7 +42,7 @@ const actions = {
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },
-  EVENT_loadNetwork({dispatch, rootGetters}, pathFile) {
+  EVENT_loadNetwork({dispatch, rootGetters}, {pathRootFolder, pathFile}) {
     let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
     let pathIndex;
     if(localProjectsList.length) {
@@ -73,7 +73,7 @@ const actions = {
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
         }
-        net.networkPath =
+        net.networkRootFolder = pathRootFolder;
         dispatch('mod_workspace/ADD_network', net, {root: true});
       }
     );
@@ -84,9 +84,10 @@ const actions = {
     };
     loadPathFolder(opt)
       .then((pathArr)=> {
-        const pathFolder = pathArr[0];
-        const netId = pathFolder.slice(pathFolder.lastIndexOf('\\') + 1, pathFolder.length);
-        dispatch('EVENT_loadNetwork', `${pathFolder}\\${netId}.json`)
+        const pathRootFolder = pathArr[0];
+        const netId = pathRootFolder.slice(pathRootFolder.lastIndexOf('\\') + 1, pathRootFolder.length);
+        const pathFile = `${pathFolder}\\${netId}.json`;
+        dispatch('EVENT_loadNetwork', {pathRootFolder, pathFile})
       })
       .catch((err)=> {});
   },

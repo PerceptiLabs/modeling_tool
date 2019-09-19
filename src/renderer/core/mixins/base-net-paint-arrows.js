@@ -1,21 +1,21 @@
 const baseNetPaintArrows = {
   computed: {
-    startDrawArrow() {
-      return this.$store.state.mod_workspace.startArrowID
-    },
-    preArrow() {
-      return this.$store.state.mod_workspace.preArrow
-    }
+    // $_paintArrow_startDrawArrow() {
+    //   return this.$store.state.mod_workspace.startArrowID
+    // },
+    // $_paintArrow_preArrow() {
+    //   return this.$store.state.mod_workspace.preArrow
+    // }
   },
   watch: {
     networkMode(newVal) {
       newVal === 'addArrow'
-        ? this.$refs.rootBaseElement.addEventListener('mouseup', this.arrowEndPaint)
-        : this.$refs.rootBaseElement.removeEventListener('mouseup', this.arrowEndPaint);
+        ? this.$refs.rootBaseElement.addEventListener('mouseup', this.$_paintArrow_arrowEndPaint)
+        : this.$refs.rootBaseElement.removeEventListener('mouseup', this.$_paintArrow_arrowEndPaint);
     },
   },
   methods: {
-    arrowStartPaint(ev) {
+    $_paintArrow_arrowStartPaint(ev) {
       ev.preventDefault();
       ev.stopPropagation();
       let el = this.dataEl;
@@ -28,9 +28,9 @@ const baseNetPaintArrows = {
         x: el.layerMeta.position.left + layerSize/2
       });
     },
-    arrowEndPaint(ev) {
+    $_paintArrow_arrowEndPaint(ev) {
       ev.preventDefault();
-      ev.stopPropagation();
+      //ev.stopPropagation();
       this.$parent.$parent.removeArrowListener();
       this.$store.dispatch('mod_workspace/ADD_arrow', this.dataEl.layerId);
       this.$store.commit('mod_workspace/CLEAR_preArrow')

@@ -1,20 +1,31 @@
-import coreRequest  from "@/core/apiCore.js";
-import { isDebugMode } from '@/core/constants.js'
+import coreRequest      from "@/core/apiCore.js";
+import { isDebugMode }  from '@/core/constants.js'
+import { deepCopy }     from "@/core/helpers.js";
 
 const {spawn} = require('child_process');
 
-function prepareNetwork(elementList) {
+function prepareNetwork(network) {
   let layers = {};
-  for(let layer in elementList) {
+  const rootPath = network.networkRootFolder[0];
+  for(let layer in network.networkElementList) {
     const dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
-    const el = elementList[layer];
+    const el = network.networkElementList[layer];
+    let checkpointPath = deepCopy(el.checkpoint);
     if(el.componentName === 'LayerContainer') continue;
+    /*prepare checkpoint*/
+    console.log(rootPath, el.checkpoint.length);
+    if(rootPath && el.checkpoint.length) {
+      const filePath = el.checkpoint[1].slice(0, el.checkpoint[1].length);
+      checkpointPath[1] = `${rootPath}\\${filePath}`;
+      console.log(checkpointPath[1]);
+    }
+    /*prepare elements*/
     if(dataLayers.includes(el.componentName)) {
       layers[el.layerId] = {
         Name: el.layerName,
         Type: el.componentName,
         Properties: el.layerSettings,
-        checkpoint: el.checkpoint,
+        checkpoint: checkpointPath,
         endPoints: el.endPoints,
         //Code: el.coreCode,
         backward_connections: el.connectionIn,
@@ -25,7 +36,7 @@ function prepareNetwork(elementList) {
       layers[el.layerId] = {
         Name: el.layerName,
         Type: el.componentName,
-        checkpoint: el.checkpoint,
+        checkpoint: checkpointPath,
         endPoints: el.endPoints,
         Properties: el.layerSettings,
         Code: el.layerCode,
@@ -63,33 +74,33 @@ const actions = {
     function startCore() {
       console.log('isDebugMode', isDebugMode);
       if(!isDebugMode) {
-        //console.log('startCore');
-        coreIsStarting = true;
-        let openServer;
-        let platformPath = '';
-        //console.log('platform', process.platform);
-        switch (process.platform) {
-          case 'win32':
-            platformPath = 'core/appServer.exe';
-            break;
-          case 'darwin':
-          case 'linux':
-            //console.log('start file');
-            process.env.NODE_ENV === 'production'
-              ? platformPath = path + 'core/appServer'
-              : platformPath = 'core/appServer';
-            break;
-        }
-        openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
-
-        openServer.on('error', (err) => {
-          //console.log('error core', err);
-          coreOffline()
-        });
-        openServer.on('close', (code) => {
-          //console.log('close core', code);
-          coreOffline()
-        });
+        // //console.log('startCore');
+        // coreIsStarting = true;
+        // let openServer;
+        // let platformPath = '';
+        // //console.log('platform', process.platform);
+        // switch (process.platform) {
+        //   case 'win32':
+        //     platformPath = 'core/appServer.exe';
+        //     break;
+        //   case 'darwin':
+        //   case 'linux':
+        //     //console.log('start file');
+        //     process.env.NODE_ENV === 'production'
+        //       ? platformPath = path + 'core/appServer'
+        //       : platformPath = 'core/appServer';
+        //     break;
+        // }
+        // openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
+        //
+        // openServer.on('error', (err) => {
+        //   //console.log('error core', err);
+        //   coreOffline()
+        // });
+        // openServer.on('close', (code) => {
+        //   //console.log('close core', code);
+        //   coreOffline()
+        // });
       }
       waitOnlineCore()
     }
@@ -139,11 +150,12 @@ const actions = {
 
   API_startTraining({dispatch, getters, rootGetters}) {
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
-    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    //const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
     let message = {
       Hyperparameters: net.networkSettings,
-      Layers: prepareNetwork(elementList)
+      Layers: prepareNetwork(net)
     };
+    console.log(message);
     const theData = {
       reciever: net.networkID,
       action: "Start",
@@ -236,14 +248,15 @@ const actions = {
       });
   },
   API_exportData({rootGetters, dispatch}, value) {
+    const net = rootGetters['mod_workspace/GET_currentNetwork'];
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: net.networkID,
       action: 'Export',
       value: value
     };
     const trackerData = {
       result: '',
-      network: prepareNetwork(rootGetters['mod_workspace/GET_currentNetworkElementList']),
+      network: prepareNetwork(net),
       settings: value
     };
     //console.log('Export send', theData);
@@ -335,11 +348,11 @@ const actions = {
 
   API_getInputDim({dispatch, getters, rootGetters}) {
     //console.log("getNetworkInputDim");
-    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    const net = rootGetters['mod_workspace/GET_currentNetwork'];
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: net.networkID,
       action: "getNetworkInputDim",
-      value: prepareNetwork(elementList)
+      value: prepareNetwork(net)
     };
     return coreRequest(theData)
       .then((data)=> {
@@ -352,11 +365,11 @@ const actions = {
   },
   API_getOutputDim({dispatch, getters, rootGetters}) {
     //console.log('getNetworkOutputDim');
-    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    const net = rootGetters['mod_workspace/GET_currentNetwork'];
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: net.networkID,
       action: "getNetworkOutputDim",
-      value: prepareNetwork(elementList)
+      value: prepareNetwork(net)
     };
     coreRequest(theData)
       .then((data)=> {
@@ -384,13 +397,13 @@ const actions = {
   },
   API_getPreviewSample({dispatch, rootGetters}, layerId) {
     //console.log('getPreviewSample');
-    const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+    const net = rootGetters['mod_workspace/GET_currentNetwork'];
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: net.networkID,
       action: "getPreviewSample",
       value: {
         Id: layerId,
-        Network: prepareNetwork(elementList)
+        Network: prepareNetwork(net)
       }
     };
     return coreRequest(theData)
