@@ -12,37 +12,35 @@ jobs:
         vmImage: "ubuntu-16.04"
     steps:
     - bash: |
-        cd scripts
-        CONDA_ENV_FILE="../backend/environment.yml"
         echo "Test in Ubuntu"
 
 
 ### TEST WINDOWS  ###
 
-#  - job: test_windows
-#    pool:
-#        #win-pool
-#        vmImage: "windows-latest"
-#    steps:
-#    - powershell: |
-#        Write-Host "test in windows"  
+  - job: test_windows
+    pool:
+        #win-pool
+        vmImage: "windows-latest"
+    steps:
+    - powershell: |
+        Write-Host "test in windows"  
 
 
 ### TEST OSX  ###
 
-#  - job: test_osx
-#    pool:
-#        vmImage: "macOS-10.14"
-#    steps:
-#    - bash: |
-#        echo "Test in osx" 
+  - job: test_osx
+    pool:
+        vmImage: "macOS-10.14"
+    steps:
+    - bash: |
+        echo "Test in osx" 
 
 
 ### BUILD UBUNTU ###
 
   - job: build_ubuntu
     dependsOn:
-        ["test_ubuntu"] #, "test_windows", "test_osx"
+        ["test_ubuntu", "test_windows", "test_osx"] 
     pool:
         vmImage: "ubuntu-16.04"
     steps:
@@ -64,7 +62,7 @@ jobs:
 
   - job: build_windows
     dependsOn:
-        ["test_ubuntu"] #, "test_windows", "test_osx"
+        ["test_ubuntu", "test_windows", "test_osx"]
     pool:
         #win-pool
         vmImage: "windows-latest"
@@ -87,7 +85,7 @@ jobs:
 
   - job: build_osx
     dependsOn:
-        ["test_ubuntu"] #, "test_windows", "test_osx"
+        ["test_ubuntu", "test_windows", "test_osx"]
     pool:
         vmImage: "macOS-10.14"
     steps:
@@ -111,7 +109,7 @@ jobs:
     pool:
         vmImage: "ubuntu-16.04"
     dependsOn:
-      ["build_ubuntu"] #, "build_windows", "build_osx"
+      ["build_ubuntu", "test_windows", "test_osx"]
     steps:
       - publish: $(Build.Repository.LocalPath)/scripts/
         artifact: scripts
