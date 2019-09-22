@@ -19,23 +19,23 @@ jobs:
 
 ### TEST WINDOWS  ###
 
-  - job: test_windows
-    pool:
-        #win-pool
-        vmImage: "windows-latest"
-    steps:
-    - powershell: |
-        Write-Host "test in windows"  
+#  - job: test_windows
+#    pool:
+#        #win-pool
+#        vmImage: "windows-latest"
+#    steps:
+#    - powershell: |
+#        Write-Host "test in windows"  
 
 
 ### TEST OSX  ###
 
-  - job: test_osx
-    pool:
-        vmImage: "macOS-10.14"
-    steps:
-    - bash: |
-        echo "Test in osx" 
+#  - job: test_osx
+#    pool:
+#        vmImage: "macOS-10.14"
+#    steps:
+#    - bash: |
+#        echo "Test in osx" 
 
 
 ### BUILD UBUNTU ###
