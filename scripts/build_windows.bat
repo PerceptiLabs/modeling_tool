@@ -29,6 +29,7 @@ dir
 
 python setup.pyx develop --user
 move mainServer.pyx mainServer.py
+del *.py
 
 dir
 
