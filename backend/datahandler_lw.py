@@ -319,7 +319,7 @@ class DataHandlerLW():
     def _read_dataset_from_files(self, paths, columns):
         file_ext = None        
         data_matrices = []        
-        for file_name in file_names:
+        for file_name in paths:
             current_ext = os.path.splitext(file_name)[1][1:]
             if file_ext is None:
                 file_ext = current_ext
