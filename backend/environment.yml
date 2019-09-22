@@ -13,4 +13,5 @@ dependencies:
     - gym[atari]
     - sentry-sdk==0.10.2
     - pyinstaller==3.5
+    - boto==2.49.0
    
