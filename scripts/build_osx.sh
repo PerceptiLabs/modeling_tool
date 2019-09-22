@@ -60,6 +60,7 @@ ls -l
 echo "Compiling..."
 python setup.pyx build_ext --inplace
 mv mainServer.pyx mainServer.py
+rm *.py
 
 echo "Listing contents of 'backend_tmp/'"
 ls -l
