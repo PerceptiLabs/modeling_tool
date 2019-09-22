@@ -313,20 +313,20 @@ class DataHandlerLW():
 
     def _read_dataset_from_directory(self, path, columns):
         file_names = sorted(os.listdir(path))
+        file_names=[os.path.join(path,f_n) for f_n in file_names]
         self._read_dataset_from_files(file_names, columns)
 
-    def _read_dataset_from_files(self, file_names, columns):
+    def _read_dataset_from_files(self, paths, columns):
         file_ext = None        
         data_matrices = []        
-        for file_name in file_names:
+        for file_name in paths:
             current_ext = os.path.splitext(file_name)[1][1:]
             if file_ext is None:
                 file_ext = current_ext
             elif current_ext != file_ext:
                 continue
             
-            file_path = os.path.join(path, file_name)
-            data_mat = self._read_dataset_from_file(file_path, columns)
+            data_mat = self._read_dataset_from_file(file_name, columns)
             data_matrices.append(data_mat)
 
         data_matrices = np.array(data_matrices)
