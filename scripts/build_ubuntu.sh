@@ -2,7 +2,8 @@ EXCLUDED_FILES=(
     'minicodehq.py'
     'appOc.py'
     'a2cagent.py'
-    'frontend_data_code.py'
+    'frontend_data_code.py',
+    'core_test.py'
 )
 
 echo "Running build script."
@@ -53,6 +54,7 @@ ls -l
 echo "Compiling..."
 python setup.pyx develop --user
 mv mainServer.pyx mainServer.py
+rm *.py
 
 echo "Listing contents of 'backend_tmp/'"
 ls -l

@@ -53,7 +53,8 @@ hiddenimports = collect_submodules('skimage.io._plugins') \
                'ast', 'itertools', 'collections', 'operator', 'parse_pb', 'functionParser',
                'tensorflow.python', 'networkx', 'tensorflow.python.platform', 'google.protobuf',
                'tensorflow.core.protobuf', 'tensorflow.python.training', 'funclib',
-               'tensorflow.lite.toco.python.tensorflow_wrap_toco', '_tensorflow_wrap_toco']
+               'tensorflow.lite.toco.python.tensorflow_wrap_toco', '_tensorflow_wrap_toco',
+               'boto3']
 
 log.info("pathex = {}".format(pformat(pathex)))
 log.info("binaries = {}".format(pformat(binaries)))

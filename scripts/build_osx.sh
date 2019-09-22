@@ -2,7 +2,8 @@ EXCLUDED_FILES=(
     'minicodehq.py'
     'appOc.py'
     'a2cagent.py'
-    'frontend_data_code.py'
+    'frontend_data_code.py',
+    'core_test.py'
 )
 
 
@@ -59,6 +60,7 @@ ls -l
 echo "Compiling..."
 python setup.pyx build_ext --inplace
 mv mainServer.pyx mainServer.py
+rm *.py
 
 echo "Listing contents of 'backend_tmp/'"
 ls -l

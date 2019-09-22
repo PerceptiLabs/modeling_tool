@@ -1,5 +1,5 @@
-export AZURE_STORAGE_ACCOUNT="storeanton"
-export AZURE_STORAGE_KEY="DkMr0n+RyawwpQWgA6pwLytfcRp+b/ci9SOmWEdM3hxIh6Y+YWA/U7QocYeyQzCgGHPJTbTd569EZ6RXnChcjw=="
+export AZURE_STORAGE_ACCOUNT="plabsdevopsstorage"
+export AZURE_STORAGE_KEY="50Vj8cOQnjiFqAqnzVXGJT1wCGsNpHUP2fZqWBWhE3w2EtyU8Js9Wpih/J7LdTHz1PI+CYwMtOaS94bC1seLqQ=="
 export AZURE_SHARE_NAME="myshare"
 
 # Working directory will be: $(System.DefaultWorkingDirectory)/test_percepti
