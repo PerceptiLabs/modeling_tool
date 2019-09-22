@@ -20,6 +20,7 @@ del minicodehq.py
 del appOc.py
 del a2cagent.py
 del frontend_data_code.py
+del core_test.py
 
 move setup.py setup.pyx
 move mainServer.py mainServer.pyx
