@@ -28,8 +28,8 @@ move mainServer.py mainServer.pyx
 dir
 
 python setup.pyx develop --user
-move mainServer.pyx mainServer.py
 del *.py
+move mainServer.pyx mainServer.py
 
 dir
 
