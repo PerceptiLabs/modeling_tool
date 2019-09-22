@@ -19,7 +19,8 @@ jobs:
 
   - job: test_windows
     pool:
-        win-pool
+        #win-pool
+        vmImage: "windows-latest"
     steps:
     - powershell: |
         Write-Host "test in windows"  
@@ -63,7 +64,8 @@ jobs:
     dependsOn:
         ["test_ubuntu", "test_windows", "test_osx"]
     pool:
-        win-pool
+        #win-pool
+        vmImage: "windows-latest"
     steps:
     - script: |
         cd scripts/
