@@ -39,8 +39,8 @@ jobs:
 ### BUILD UBUNTU ###
 
   - job: build_ubuntu
-    dependsOn:
-        ["test_ubuntu", "test_windows", "test_osx"] 
+#    dependsOn:
+#        ["test_ubuntu", "test_windows", "test_osx"] 
     pool:
         vmImage: "ubuntu-16.04"
     steps:
@@ -61,8 +61,8 @@ jobs:
 ### BUILD WINDOWS ###
 
   - job: build_windows
-    dependsOn:
-        ["test_ubuntu", "test_windows", "test_osx"]
+#    dependsOn:
+#        ["test_ubuntu", "test_windows", "test_osx"]
     pool:
         #win-pool
         vmImage: "windows-latest"
@@ -84,8 +84,8 @@ jobs:
 ### BUILD OSX ###
 
   - job: build_osx
-    dependsOn:
-        ["test_ubuntu", "test_windows", "test_osx"]
+#    dependsOn:
+#        ["test_ubuntu", "test_windows", "test_osx"]
     pool:
         vmImage: "macOS-10.14"
     steps:
