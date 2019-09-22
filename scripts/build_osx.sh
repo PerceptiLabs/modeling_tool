@@ -2,7 +2,8 @@ EXCLUDED_FILES=(
     'minicodehq.py'
     'appOc.py'
     'a2cagent.py'
-    'frontend_data_code.py'
+    'frontend_data_code.py',
+    'core_test.py'
 )
 
 
