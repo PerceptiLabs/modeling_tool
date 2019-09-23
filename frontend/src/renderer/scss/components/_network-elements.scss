@@ -48,12 +48,12 @@ $layers-sidebar-active: (
 );
 
 @each $name, $color in $layers-sidebar-active {
-	//.net-element-#{$name} {
-	//	&:hover,
-	//	&.active {
-	//		background: $color;
-	//	}
-	//}
+	.net-element-#{$name} {
+		&:hover,
+		&.active {
+			background: $color;
+		}
+	}
 }
 
 .net-element-custom {
@@ -79,7 +79,7 @@ $layers-sidebar-active: (
 
 .net-element {
   &:hover .btn--layersbar {
-    box-shadow: inset 0 0 0 3px #fff;
+    box-shadow: inset 0 0 0 1px #fff;
   }
   .btn--layersbar .icon {
     font-size: 33px;
