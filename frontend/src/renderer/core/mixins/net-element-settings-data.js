@@ -1,4 +1,4 @@
-import coreRequest  from "@/core/apiCore.js";
+import {coreRequest}  from "@/core/apiWeb.js";
 
 const netElementSettingsData = {
   data() {
@@ -13,7 +13,9 @@ const netElementSettingsData = {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
     },
     inputPath() {
-      return this.settings.accessProperties.Path.join(', ')
+      return this.settings.accessProperties.Path.length > 0
+        ? this.settings.accessProperties.Path[0].name
+        : ''
     }
   },
   methods: {

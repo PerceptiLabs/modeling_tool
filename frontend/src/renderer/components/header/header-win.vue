@@ -1,5 +1,5 @@
 <template lang="pug">
-  header.app-header
+  header.app-header.invisible
     .app-header_logo
       a(@click="toProjectPage")
         img(src="./../../../../static/img/logo_small_dark.svg" alt="PerceptiLabs logo")

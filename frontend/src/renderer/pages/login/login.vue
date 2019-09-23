@@ -34,8 +34,11 @@
 </template>
 
 <script>
+  import mixpanel           from 'mixpanel-browser'
+
+  import {requestCloudApi}  from '@/core/apiCloud.js'
   import { baseUrlSite }    from '@/core/constants.js'
-  import { goToLink, encryptionData }       from '@/core/helpers.js'
+  import { goToLink }       from '@/core/helpers.js'
 
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
 
@@ -95,9 +98,17 @@ export default {
           this.$store.commit('mod_login/SET_showLoader', false);
         });
     },
-    // loginUser() {
-    //   this.$router.replace('/projects');
-    // },
+    TRACKER_createUser() {
+      console.log('TRACKER_createUser');
+      mixpanel.people.set_once({
+        "$email": this.userEmail,
+        "$created": new Date(),
+        "$last_login": new Date(),
+      });
+    },
+    loginUser() {
+      this.$router.replace('/projects');
+    },
   }
 }
 </script>

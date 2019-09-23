@@ -43,7 +43,7 @@
 </template>
 
 <script>
-  import { ipcRenderer } from 'electron'
+  //import { ipcRenderer } from 'electron'
   import { mapGetters, mapMutations, mapActions } from 'vuex';
   import { baseUrlSite } from '@/core/constants.js';
   import { goToLink }    from '@/core/helpers.js'
@@ -165,9 +165,9 @@ export default {
     },
   },
   watch: {
-    navMenu(newMenu) {
+/*    navMenu(newMenu) {
       if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
-    }
+    }*/
   },
   methods: {
     ...mapMutations({
@@ -204,8 +204,8 @@ export default {
       });
     },
     checkUpdate() {
-      this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
-      ipcRenderer.send('check-update');
+/*      this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
+      ipcRenderer.send('check-update');*/
     },
     addNewNetwork() {
       this.$store.dispatch('mod_workspace/ADD_network');

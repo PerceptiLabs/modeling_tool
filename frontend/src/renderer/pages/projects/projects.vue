@@ -21,6 +21,20 @@
 
   export default {
     name: 'PageProjects',
+    // mounted() {
+    //   let localProjectsList = JSON.parse(localStorage.getItem('projectsList')) || [];
+    //   if(Array.isArray(localProjectsList)) {
+    //     localProjectsList.forEach((el)=> {
+    //       fileLocalRead(el.path[0])
+    //         .then(() => {})
+    //         .catch((err)=> {
+    //           el.notExist = true
+    //         })
+    //     });
+    //
+    //   }
+    //   this.projects = localProjectsList;
+    // },
     data() {
       return {
         source: 'computer',

@@ -9,20 +9,28 @@
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Path.length")
 
-        button.btn.tutorial-relative(type="button"
+        //-button.btn.tutorial-relative(type="button"
           @click="loadFile"
           id="tutorial_button-load"
           v-tooltip-interactive:right="interactiveInfo.file"
-        )
+          )
           i.icon.icon-open-file
           span Choose files
 
-        button.btn.tutorial-relative(type="button"
+        //-button.btn.tutorial-relative(type="button"
           @click="loadFolder"
           v-tooltip-interactive:bottom="interactiveInfo.folder"
-        )
+          )
           i.icon.icon-open-folder
           span Choose folders
+        web-upload-file#tutorial_button-load.tutorial-relative(
+          v-model="settings.accessProperties.PathFake"
+          :input-disabled="disabledBtn"
+          :input-multiple="true"
+          :showPath="false"
+        )
+          .btn.btn--dark-blue-rev
+            i.icon.icon-open-file
 
       template(v-else)
         .settings-layer_section
@@ -79,6 +87,7 @@
   import SettingsFileList  from '@/components/network-elements/elements-settings/setting-file-list.vue';
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
   import TripleInput    from "@/components/base/triple-input";
+  import WebUploadFile  from "@/components/web/upload-file.vue";
 
   import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
   import {mapActions, mapGetters}     from 'vuex';
@@ -86,7 +95,7 @@
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
-    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList },
+    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, WebUploadFile },
     mounted() {
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
@@ -121,6 +130,7 @@
             Category:'Local',
             Type: 'Data',
             Path: [],
+            PathFake: [],
             Partition_list: [],
             Batch_size: 10,
             Shuffle_data: true,
@@ -163,9 +173,17 @@
       }
     },
     watch: {
-      dataColumnsSelected(newVal) {
-        this.settings.accessProperties.Columns = newVal;
-        this.getDataPlot('DataData')
+      // dataColumnsSelected(newVal) {
+      //   this.settings.accessProperties.Columns = newVal;
+      //   this.getDataPlot('DataData')
+      // },
+      'settings.accessProperties.PathFake': {
+        handler() {
+          console.log('DataData');
+          this.dataSettingsPlot('DataData');
+          this.settings.accessProperties.Path = ['./RedHats'];
+        },
+        //deep: true
       },
       fileList: {
         handler(newVal) {
@@ -212,17 +230,17 @@
             {name: 'All', extensions: ['npy']},
           ]
         };
-        let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
+/*        let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
         openLoadDialog(optionDialog)
           .then((pathArr)=> this.saveLoadFile(pathArr, isAppend))
           .catch(()=> {
-          })
+          })*/
       },
       loadFolder(isAppend) {
-        loadPathFolder()
-          .then((pathArr)=> this.saveLoadFile(pathArr, isAppend))
-          .catch(()=> {
-          })
+        // loadPathFolder()
+        //   .then((pathArr)=> this.saveLoadFile(pathArr, isAppend))
+        //   .catch(()=> {
+        //   })
       },
       addFiles() {
         if(this.typeOpened === 'files') this.loadFile(true);

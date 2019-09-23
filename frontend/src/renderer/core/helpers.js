@@ -1,29 +1,29 @@
-import {shell, ipcRenderer }   from 'electron'
-import fs    from 'fs';
+//import {shell, ipcRenderer }   from 'electron'
+//import fs    from 'fs';
 import store from '@/store'
 
 import { workspaceGrid }   from '@/core/constants.js'
 
 /*modal window*/
 const openLoadDialog = function (options) {
-  return new Promise((success, reject) => {
+/*  return new Promise((success, reject) => {
     ipcRenderer.on('open-dialog_path', (event, path) => {
       ipcRenderer.removeAllListeners('open-dialog_path');
       !!(path && path.length) ? success(path) : reject();
     });
     ipcRenderer.send('open-dialog', options);
-  });
+  });*/
 };
 
 const openSaveDialog = function (options) {
-  //console.log('openSaveDialog', options);
+/*  console.log('openSaveDialog', options);
   return new Promise((success, reject) => {
     ipcRenderer.on('open-save-dialog_path', (event, path) => {
       ipcRenderer.removeAllListeners('open-save-dialog_path');
       !!(path && path.length) ? success(path) : reject();
     });
     ipcRenderer.send('open-save-dialog', options);
-  });
+  });*/
 };
 
 const loadPathFolder = function (customOptions) {
@@ -132,8 +132,8 @@ const throttleEv = function (func, ms) {
 };
 
 const goToLink = function (url) {
-  //console.log(url);
-  shell.openExternal(url);
+  console.log(url);
+  //shell.openExternal(url);
 };
 
 const deepCopy = function (object) {

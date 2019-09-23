@@ -105,6 +105,12 @@
     name: "ViewBoxTrainNormal",
     components: {ChartSwitch},
     mixins: [viewBoxMixin],
+    created() {
+      //console.log(this.chartData.Prediction.PvG);
+    },
+    mounted() {
+      //console.log(this.chartData.Prediction.PvG);
+    },
     data() {
       return {
         chartData: {
@@ -187,6 +193,7 @@
     },
     watch: {
       testIsOpen(newVal) {
+        //console.log(this.chartData.Prediction.PvG);
         newVal ? this.setTab('Prediction') : null
       }
     },
@@ -200,6 +207,7 @@
         this.tutorialPointActivate({way: 'next', validation: id})
       },
       getData() {
+        //console.log(this.chartData)
         switch (this.currentTab) {
           case 'Prediction':
             this.chartRequest(this.statElementID, 'TrainNormal', 'Prediction');

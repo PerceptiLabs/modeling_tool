@@ -50,7 +50,7 @@
 
 .invisible {
   opacity: 0;
-  position: absolute;
+  position: absolute!important;
   left: -9999px;
 }
 
@@ -71,7 +71,7 @@
   }
 }
 
-$prevBreakPoint: 'large';
+$prevBreakPoint: '4k';
 @each $name, $size in $breakpoint {
   @if $name != large {
     .hide-for-#{$name}-only {

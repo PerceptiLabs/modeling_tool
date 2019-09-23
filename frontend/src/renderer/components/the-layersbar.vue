@@ -140,7 +140,7 @@ export default {
           layerClass: 'net-element-train',
           iconClass: 'icon-training',
           showEl: false,
-          //networkElements: ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
+          //networkElements: ['TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
           networkElements: trainingElements,
           id:'tutorial_training'
         },

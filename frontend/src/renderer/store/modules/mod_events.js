@@ -1,4 +1,4 @@
-import {ipcRenderer}  from 'electron'
+//import {ipcRenderer}  from 'electron'
 import router         from "@/router";
 import {filePCRead, openLoadDialog, loadPathFolder} from "@/core/helpers";
 
@@ -105,7 +105,7 @@ const actions = {
     router.replace({name: 'login'});
   },
   EVENT_appClose({dispatch, rootState}, event) {
-    if(event) event.preventDefault();
+/*    if(event) event.preventDefault();
     dispatch('mod_tracker/EVENT_appClose', null, {root: true});
     if(rootState.mod_api.statusLocalCore === 'online') {
       dispatch('mod_api/API_stopTraining', null, {root: true})
@@ -114,9 +114,9 @@ const actions = {
     }
     else {
       ipcRenderer.send('app-close')
-    }
+    }*/
   },
-  EVENT_appMinimize() {
+/*  EVENT_appMinimize() {
     ipcRenderer.send('app-minimize')
   },
   EVENT_appMaximize() {
@@ -124,8 +124,7 @@ const actions = {
   },
   EVENT_eventResize({commit}) {
     commit('set_eventResize');
-
-  },
+  },*/
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)
   },

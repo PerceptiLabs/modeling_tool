@@ -1,4 +1,5 @@
 <template lang="pug">
+  //-:draggable="false"  disabled="disabled"
   .btn.btn--layersbar.net-element-math(:draggable="draggable"
   data-component="MathSplit"
   data-layer="Split"
