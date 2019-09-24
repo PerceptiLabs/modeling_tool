@@ -90,21 +90,5 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-  .triple-input {
-    font-size: 1.4rem;
-    display: flex;
-    align-items: center;
-  }
-  .triple-input_input {
-    max-width: 2.25em;
-    min-width: 1.75em;
-    padding-right: .15em;
-    padding-left: .15em;
-  }
-  .triple-input_separate {
-    margin: 0 .5em;
-    &:last-child {
-      margin-right: 0;
-    }
-  }
+  @import "../../scss/components/triple-input";
 </style>

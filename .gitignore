@@ -1,6 +1,7 @@
 #Backend ignores
 backend/*.pyc
 backend/*.pyo
+backend/__pycache__/
 #Frontend ignores
 frontend/.DS_Store
 frontend/dist/*
@@ -13,10 +14,11 @@ frontend/npm-debug.log
 frontend/npm-debug.log.*
 frontend/thumbs.db
 !frontend/.gitkeep
-frontend/.idea
-frontend/.idea/*
-frontend/.idea/workspace.xml
-frontend/../.idea/workspace.xml
+.idea
+.idea/*
+.idea/workspace.xml
+../.idea/workspace.xml
 frontend/core/*
-frontend/core_local/*
-frontend/.vscode/*
+.vscode/*
+
+.local_gitignore

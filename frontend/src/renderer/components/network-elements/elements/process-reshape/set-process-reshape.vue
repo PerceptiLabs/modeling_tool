@@ -6,13 +6,32 @@
     @press-confirm="confirmSettings"
     @press-update="updateCode"
     )
-    template(slot="Settings-content")
+    //-template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
           .form_label Reshape:
           #tutorial_input-reshape.form_input(data-tutorial-hover-info)
             triple-input.tutorial-relative(v-model="settings.Shape")
 
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
+          .form_label Transpose:
+          #tutorial_input-transpose.form_input(data-tutorial-hover-info)
+            triple-input(v-model="settings.Permutation")
+    template(slot="Settings-content")
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
+          .form_label Reshape:
+          #tutorial_input-reshape.form_input(data-tutorial-hover-info)
+            triple-input-element-reshape.tutorial-relative(
+              v-model="settings.Shape"
+              :axis-position="settings.Permutation"
+              @swap12="swap12"
+              @swap23="swap23"
+              @swap13="swap13"
+              )
+
+      .settings-layer_section
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
           .form_label Transpose:
@@ -30,12 +49,13 @@
 <script>
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import TripleInput    from "@/components/base/triple-input";
+  import TripleInputElementReshape    from "@/components/base/triple-input--element-reshape.vue";
   import { mapActions, mapGetters } from 'vuex';
 
   export default {
     name: 'SetProcessReshape',
     mixins: [mixinSet],
-    components: { TripleInput },
+    components: { TripleInput, TripleInputElementReshape },
     data() {
       return {
         settings: {
@@ -96,6 +116,24 @@ Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
         tutorialPointActivate:    'mod_tutorials/pointActivate',
         infoPopup:                'globalView/GP_infoPopup',
       }),
+      swap12() {
+        const shap = this.settings.Shape;
+        const perm = this.settings.Permutation;
+        this.settings.Shape       = [shap[1], shap[0], shap[2]];
+        this.settings.Permutation = [perm[1], perm[0], perm[2]];
+      },
+      swap23() {
+        const shap = this.settings.Shape;
+        const perm = this.settings.Permutation;
+        this.settings.Shape       = [shap[0], shap[2], shap[1]];
+        this.settings.Permutation = [perm[0], perm[2], perm[1]];
+      },
+      swap13() {
+        const shap = this.settings.Shape;
+        const perm = this.settings.Permutation;
+        this.settings.Shape       = [shap[2], shap[1], shap[0]];
+        this.settings.Permutation = [perm[2], perm[1], perm[0]];
+      },
       saveSettings(tabName) {
         this.applySettings(tabName);
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'})
