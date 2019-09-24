@@ -95,7 +95,7 @@ class lwNetwork():
 
             if content["Type"]=="DataData":
                 if Id in dataDict:
-                    #If there is data loaded in the component
+                    
                     data=dataDict[Id].sample
                     try:
                         if np.shape(data)[0]!=1:

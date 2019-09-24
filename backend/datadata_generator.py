@@ -31,6 +31,7 @@ class FileCsvStrategy(AbstractStrategy):
     def execute(self, var_train, var_test, var_valid, rate_train, rate_test, rate_valid):
         code = ""
         code += "df = pd.read_csv('%s')\n" % self._path
+        code += "cols = list(self.dframe.columns)"
         code += "data_mat = df.to_numpy().astype(np.float32)\n"
         code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_test, var_valid,
                                                                 rate_train, rate_test, rate_valid)
@@ -124,8 +125,10 @@ class S3BucketJsonStrategy(AbstractStrategy):
 
 
 class DataDataCodeGenerator(CodeGenerator):
-    def __init__(self, sources, partitions, seed=0):
+    def __init__(self, sources, partitions, batch_size, shuffle, seed=0):
         self._seed = seed
+        self.batch_size=batch_size
+        self.shuffle=shuffle
         
         self._strategies = []
         self._partitions = []
@@ -174,9 +177,30 @@ class DataDataCodeGenerator(CodeGenerator):
                                 rate_test=partition[1],
                                 rate_valid=partition[2])
         code += '\n'
+        code += "X_train_size = X_train.shape[0]\n"
+        code += "X_validation_size = X_validation.shape[0]\n"
+        code += "X_test_size = X_test.shape[0]\n"
+        code += '\n'
+        code += "_sample = X_train[0]\n"
+        code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
+        code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
+        code += "\n"
         code += 'X_train = tf.data.Dataset.from_tensor_slices(X_train)\n'
-        code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
         code += 'X_validation = tf.data.Dataset.from_tensor_slices(X_validation)\n'
+        code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
+        code += "\n"
+        if self.shuffle:
+            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(%d).repeat()\n" % (self._seed, int(self.batch_size))
+        else:
+            code += "X_train=X_train.repeat().batch(%d)\n" % int(self.batch_size)
+        code += "X_validation=X_validation.repeat().batch(%d)\n" % int(self.batch_size)
+        code += "X_test=X_test.repeat(1).batch(1)\n"
+        code += "\n"
+        code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
+        code += "train_iterator = iterator.make_initializer(X_train)\n"
+        code += "validation_iterator = iterator.make_initializer(X_validation)\n"
+        code += "test_iterator = iterator.make_initializer(X_test)\n"
+        code += "Y = next_elements = iterator.get_next()\n"
         return code
     
     def _get_code_multi_strategy(self):
@@ -198,12 +222,28 @@ class DataDataCodeGenerator(CodeGenerator):
         # Concatenation        
         n_sets = len(self._partitions)
         code += "X_train_stacked = np.vstack([{}])\n".format(", ".join([mask_trn.format(i) for i in range(n_sets)]))
-        code += "X_test_stacked = np.vstack([{}])\n".format(", ".join([mask_tst.format(i) for i in range(n_sets)]))
         code += "X_validation_stacked = np.vstack([{}])\n".format(", ".join([mask_vld.format(i) for i in range(n_sets)]))
+        code += "X_test_stacked = np.vstack([{}])\n".format(", ".join([mask_tst.format(i) for i in range(n_sets)]))
+        code += '\n'
+        code += "X_train_size = X_train_stacked.shape[0]"
+        code += "X_validation_size = X_validation_stacked.shape[0]"
+        code += "X_test_size = X_test_stacked.shape[0]"
+        code += '\n'
+        code += "_sample = X_trained_stacked[0]\n"
+        code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
+        code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
         code += "\n"
         code += "X_train = tf.data.Dataset.from_tensor_slices(X_train_stacked)\n"
-        code += "X_test = tf.data.Dataset.from_tensor_slices(X_test_stacked)\n"
         code += "X_validation = tf.data.Dataset.from_tensor_slices(X_validation_stacked)\n"
+        code += "X_test = tf.data.Dataset.from_tensor_slices(X_test_stacked)\n"
+        code += "\n"
+        if self.shuffle:
+            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(%d).repeat()\n" % (self._seed, int(self.batch_size))
+        else:
+            code += "X_train=X_train.repeat().batch(%d)\n" % int(self.batch_size)
+        code += "X_validation=X_validation.repeat().batch(%d)\n" % int(self.batch_size)
+        code += "X_test=X_test.repeat(1).batch(1)\n"
+        
         return code        
 
     def _select_strategy(self, source):

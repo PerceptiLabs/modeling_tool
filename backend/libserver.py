@@ -12,7 +12,8 @@ import time
 from sentry_sdk import configure_scope
 import numpy as np
 # from datahandler_lw import DataHandlerLW
-from lw_data import lw_data
+# from lw_data import lw_data
+from dataKeeper import dataKeeper as lw_data
 from extractVariables import *
 from createDataObject import createDataObject
 
@@ -215,6 +216,8 @@ class Message:
             try:
                 if value["Id"] not in self.dataDict[reciever]:
                     self.dataDict[reciever][value["Id"]]=lw_data(value["Id"],value["Properties"]["accessProperties"])
+                    self.dataDict[reciever][value["Id"]].generateCode()
+                    self.dataDict[reciever][value["Id"]].executeCode()
                 else:
                     self.dataDict[reciever][value["Id"]].updateProperties(value["Properties"]["accessProperties"])
                 content=self.dataDict[reciever][value["Id"]].getData(value["Properties"]["accessProperties"])
@@ -227,6 +230,8 @@ class Message:
             try:
                 if value["Id"] not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"]:
                     self.dataDict[reciever][value["Id"]]=lw_data(value["Id"],value["Properties"]["accessProperties"])
+                    self.dataDict[reciever][value["Id"]].generateCode()
+                    self.dataDict[reciever][value["Id"]].executeCode()
                 else:
                     self.dataDict[reciever][value["Id"]].updateProperties(value["Properties"]["accessProperties"])
                 content=self.dataDict[reciever][value["Id"]].getMetadata()
@@ -239,9 +244,11 @@ class Message:
             try:
                 if value["Id"] not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"]:
                     self.dataDict[reciever][value["Id"]]=lw_data(value["Id"],value["Properties"]["accessProperties"])
+                    self.dataDict[reciever][value["Id"]].generateCode()
+                    self.dataDict[reciever][value["Id"]].executeCode()
                 else:
                     self.dataDict[reciever][value["Id"]].updateProperties(value["Properties"]["accessProperties"])
-                content=self.dataDict[reciever][value["Id"]].getPartitionSummary()
+                content=self.dataDict[reciever][value["Id"]].partition_summary
             except Exception as e:
                 content={"Content":"","errorMessage":str(e)}
 
@@ -280,7 +287,11 @@ class Message:
                 #Get the pretrained variables and constants
                 for id_, value in jsonNetwork.items():
                     if id_ not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"] and value["Properties"] is not None:                                        
-                        self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])                                                
+                        self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
+                        self.dataDict[reciever][id_].generateCode()
+                        self.dataDict[reciever][id_].executeCode()    
+                    else:
+                        self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])                                            
                     
                     if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
                         ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
@@ -305,7 +316,11 @@ class Message:
                 #Get the pretrained variables and constants
                 for id_, value in jsonNetwork.items():
                     if id_ not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"] and value["Properties"] is not None:
-                        self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])                        
+                        self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
+                        self.dataDict[reciever][id_].generateCode()
+                        self.dataDict[reciever][id_].executeCode()
+                    else:
+                        self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])                             
                     
                     if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
                         ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
@@ -332,6 +347,10 @@ class Message:
                 for id_, value in jsonNetwork.items():
                     if id_ not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"] and value["Properties"] is not None:                    
                         self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
+                        self.dataDict[reciever][id_].generateCode()
+                        self.dataDict[reciever][id_].executeCode()
+                    else:
+                        self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])      
                     
                     if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
                         ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
