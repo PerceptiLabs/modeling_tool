@@ -21,3 +21,5 @@ frontend/../.idea/workspace.xml
 frontend/core/*
 frontend/core_local/*
 frontend/.vscode/*
+
+.local_gitignore
