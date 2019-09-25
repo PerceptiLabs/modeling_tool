@@ -8,7 +8,7 @@ from s3buckets import S3BucketAdapter
 
 class AbstractStrategy(ABC):
     @abstractmethod
-    def execute(self, var_train, var_test, var_valid, rate_train, rate_test, rate_valid):    
+    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):    
         raise NotImplementedError
 
     
@@ -16,11 +16,11 @@ class FileNumpyStrategy(AbstractStrategy):
     def __init__(self, path):
         self._path = path
 
-    def execute(self, var_train, var_test, var_valid, rate_train, rate_test, rate_valid):
+    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         code = ""
         code += "data_mat = np.load('%s').astype(np.float32)\n" % self._path
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_test, var_valid,
-                                                                rate_train, rate_test, rate_valid)
+        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                rate_train, rate_valid, rate_test)
         return code
 
     
@@ -28,13 +28,13 @@ class FileCsvStrategy(AbstractStrategy):
     def __init__(self, path):
         self._path = path
         
-    def execute(self, var_train, var_test, var_valid, rate_train, rate_test, rate_valid):
+    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         code = ""
         code += "df = pd.read_csv('%s')\n" % self._path
         code += "cols = list(self.dframe.columns)"
         code += "data_mat = df.to_numpy().astype(np.float32)\n"
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_test, var_valid,
-                                                                rate_train, rate_test, rate_valid)
+        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                rate_train, rate_valid, rate_test)
         return code
 
     
@@ -42,7 +42,7 @@ class DirectoryImageStrategy(AbstractStrategy):
     def __init__(self, path):
         self._path = path
 
-    def execute(self, var_train, var_test, var_valid, rate_train, rate_test, rate_valid):
+    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         code = ""
         code += "file_paths = [os.path.join('%s', p)\n" % self._path
         code += "for p in os.listdir('%s')]\n\n" % self._path
@@ -52,8 +52,8 @@ class DirectoryImageStrategy(AbstractStrategy):
         code += "    data_mat_list.append(data_mat)\n"
         code += "\n"
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_test, var_valid,
-                                                                rate_train, rate_test, rate_valid)
+        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                rate_train, rate_valid, rate_test)
         return code
 
         
@@ -67,7 +67,7 @@ class S3BucketImageStrategy(AbstractStrategy):
         self._aws_key_id = aws_access_key_id
         self._aws_key = aws_secret_access_key        
 
-    def execute(self, var_train, var_test, var_valid, rate_train, rate_test, rate_valid):
+    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         code = ""
         code += "adapter = S3BucketAdapter(bucket='%s',\n" % self._bucket
         code += "                          region_name='%s',\n" % self._region
@@ -84,8 +84,8 @@ class S3BucketImageStrategy(AbstractStrategy):
         code += "\n"
         code += "adapter.close()\n"                
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_test, var_valid,
-                                                                rate_train, rate_test, rate_valid)
+        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                rate_train, rate_valid, rate_test)
         return code
 
     
@@ -99,7 +99,7 @@ class S3BucketJsonStrategy(AbstractStrategy):
         self._aws_key_id = aws_access_key_id
         self._aws_key = aws_secret_access_key
         
-    def execute(self, var_train, var_test, var_valid, rate_train, rate_test, rate_valid):
+    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         code = ""
         code += "adapter = S3BucketAdapter(bucket='%s',\n" % self._bucket
         code += "                          region_name='%s',\n" % self._region
@@ -119,8 +119,8 @@ class S3BucketJsonStrategy(AbstractStrategy):
         code += "\n"
         code += "adapter.close()\n"        
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_test, var_valid,
-                                                                rate_train, rate_test, rate_valid)
+        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                rate_train, rate_valid, rate_test)
         return code
 
 
@@ -171,11 +171,11 @@ class DataDataCodeGenerator(CodeGenerator):
     def _get_code_single_strategy(self):
         strategy, partition = self._strategies[0], self._partitions[0]
         code = strategy.execute(var_train='X_train',
-                                var_test='X_test',
                                 var_valid='X_validation',
+                                var_test='X_test',
                                 rate_train=partition[0],
-                                rate_test=partition[1],
-                                rate_valid=partition[2])
+                                rate_valid=partition[1],
+                                rate_test=partition[2])
         code += '\n'
         code += "X_train_size = X_train.shape[0]\n"
         code += "X_validation_size = X_validation.shape[0]\n"
@@ -184,16 +184,17 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "_sample = X_train[0]\n"
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
+        code += "_batch_size = %d" % int(self.batch_size)
         code += "\n"
         code += 'X_train = tf.data.Dataset.from_tensor_slices(X_train)\n'
         code += 'X_validation = tf.data.Dataset.from_tensor_slices(X_validation)\n'
         code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
         code += "\n"
         if self.shuffle:
-            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(%d).repeat()\n" % (self._seed, int(self.batch_size))
+            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size).repeat()\n" % self._seed
         else:
-            code += "X_train=X_train.repeat().batch(%d)\n" % int(self.batch_size)
-        code += "X_validation=X_validation.repeat().batch(%d)\n" % int(self.batch_size)
+            code += "X_train=X_train.repeat().batch(_batch_size)\n"
+        code += "X_validation=X_validation.repeat().batch(_batch_size)\n"
         code += "X_test=X_test.repeat(1).batch(1)\n"
         code += "\n"
         code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
@@ -212,11 +213,11 @@ class DataDataCodeGenerator(CodeGenerator):
         # Load each dataset and split it
         for counter, (strategy, partition) in enumerate(zip(self._strategies, self._partitions)):
             code += strategy.execute(var_train=mask_trn.format(counter),
-                                          var_test=mask_tst.format(counter),
                                           var_valid=mask_vld.format(counter),
+                                          var_test=mask_tst.format(counter),
                                           rate_train=partition[0],
-                                          rate_test=partition[1],
-                                          rate_valid=partition[2])
+                                          rate_valid=partition[1],                                          
+                                          rate_test=partition[2])
         code += '\n'
             
         # Concatenation        
@@ -225,32 +226,39 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "X_validation_stacked = np.vstack([{}])\n".format(", ".join([mask_vld.format(i) for i in range(n_sets)]))
         code += "X_test_stacked = np.vstack([{}])\n".format(", ".join([mask_tst.format(i) for i in range(n_sets)]))
         code += '\n'
-        code += "X_train_size = X_train_stacked.shape[0]"
-        code += "X_validation_size = X_validation_stacked.shape[0]"
-        code += "X_test_size = X_test_stacked.shape[0]"
+        code += "X_train_size = X_train_stacked.shape[0]\n"
+        code += "X_validation_size = X_validation_stacked.shape[0]\n"
+        code += "X_test_size = X_test_stacked.shape[0]\n"
         code += '\n'
-        code += "_sample = X_trained_stacked[0]\n"
+        code += "_sample = X_train_stacked[0]\n"
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
+        code += "_batch_size = %d" % int(self.batch_size)
         code += "\n"
         code += "X_train = tf.data.Dataset.from_tensor_slices(X_train_stacked)\n"
         code += "X_validation = tf.data.Dataset.from_tensor_slices(X_validation_stacked)\n"
         code += "X_test = tf.data.Dataset.from_tensor_slices(X_test_stacked)\n"
         code += "\n"
         if self.shuffle:
-            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(%d).repeat()\n" % (self._seed, int(self.batch_size))
+            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size).repeat()\n" % self._seed
         else:
-            code += "X_train=X_train.repeat().batch(%d)\n" % int(self.batch_size)
-        code += "X_validation=X_validation.repeat().batch(%d)\n" % int(self.batch_size)
+            code += "X_train=X_train.repeat().batch(_batch_size)\n"
+        code += "X_validation=X_validation.repeat().batch(_batch_size)\n"
         code += "X_test=X_test.repeat(1).batch(1)\n"
+        code += "\n"
+        code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
+        code += "train_iterator = iterator.make_initializer(X_train)\n"
+        code += "validation_iterator = iterator.make_initializer(X_validation)\n"
+        code += "test_iterator = iterator.make_initializer(X_test)\n"
+        code += "Y = next_elements = iterator.get_next()\n"
         
         return code        
 
     def _select_strategy(self, source):
         if source['type'] == 'file':
-            strategy = self._select_file_strategy(file_path=source['path'])
+            strategy = self._select_file_strategy(file_path=os.path.abspath(source['path']).replace("\\","\\\\"))
         elif source['type'] == 'directory':
-            strategy = self._select_directory_strategy(directory_path=source['path'])
+            strategy = self._select_directory_strategy(directory_path=os.path.abspath(source['path']).replace("\\","\\\\"))
         elif source['type'] == 's3bucket':
             strategy = self._select_s3bucket_strategy(bucket=source['bucket'],
                                                       region_name=source['region_name'],

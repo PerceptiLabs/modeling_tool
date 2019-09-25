@@ -290,7 +290,7 @@ class Message:
                         self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
                         self.dataDict[reciever][id_].generateCode()
                         self.dataDict[reciever][id_].executeCode()    
-                    else:
+                    elif id_ in self.dataDict[reciever]:
                         self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])                                            
                     
                     if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
@@ -319,7 +319,7 @@ class Message:
                         self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
                         self.dataDict[reciever][id_].generateCode()
                         self.dataDict[reciever][id_].executeCode()
-                    else:
+                    elif id_ in self.dataDict[reciever]:
                         self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])                             
                     
                     if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
@@ -349,9 +349,9 @@ class Message:
                         self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
                         self.dataDict[reciever][id_].generateCode()
                         self.dataDict[reciever][id_].executeCode()
-                    else:
-                        self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])      
-                    
+                    elif id_ in self.dataDict[reciever]:
+                        self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])    
+
                     if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
                         ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
                         self.checkpointDict[value["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()

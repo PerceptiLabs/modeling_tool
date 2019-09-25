@@ -150,10 +150,10 @@ class core():
                 self.trainingIterations=self.maxIter
                 self.batch_size=graph[i]['Info']["Data"].source_obj.batch_size
             elif graph[i]['Info']['Type']=="DataData":
-                self.maxIter=graph[i]['Info']["Data"].source_obj.maxIter
-                self.maxTestIter=graph[i]['Info']["Data"].source_obj.maxTestIter
-                self.batch_size=graph[i]['Info']["Data"].source_obj.batch_size
-                self.trainingIterations=graph[i]['Info']["Data"].source_obj.trainingIterations
+                self.maxIter=graph[i]['Info']["Data"].maxIter
+                self.maxTestIter=graph[i]['Info']["Data"].maxTestIter
+                self.batch_size=graph[i]['Info']["Data"].batch_size
+                self.trainingIterations=graph[i]['Info']["Data"].trainingIterations
 
 
         
@@ -494,7 +494,7 @@ class core():
             except:
                 return False
         
-        if type(thing) in [list, tuple, set]:
+        if type(thing) in [list, tuple, set, np.ndarray]:
             return all([self._isNumberOrNumberContainer(x) for x in thing])
         elif isinstance(thing, dict):
             return all([self._isNumberOrNumberContainer(x) for x in thing.values()])
