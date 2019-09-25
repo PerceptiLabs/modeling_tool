@@ -21,7 +21,8 @@ class dataKeeper():
         partitions = self.accessProperties["Partition_list"]
         batch_size = self.accessProperties["Batch_size"]
         shuffle= self.accessProperties["Shuffle_data"]
-        codeGen = DataDataCodeGenerator(sources, partitions, batch_size, shuffle, seed=seed)
+        columns = self.accessProperties["Columns"] if "Columns" in self.accessProperties else []
+        codeGen = DataDataCodeGenerator(sources, partitions, batch_size, shuffle, seed=seed, columns=columns)
         self.code = codeGen.get_code()
         return self.code
 
@@ -67,8 +68,8 @@ class dataKeeper():
         return self.locals_["train_iterator"]
 
     @property
-    def validaton_iterator(self):
-        return self.locals_["validaton_iterator"]
+    def validation_iterator(self):
+        return self.locals_["validation_iterator"]
 
     @property
     def test_iterator(self):
@@ -102,23 +103,22 @@ if __name__ == "__main__":
     
     Id = 5
     accessProperties = {'Batch_size': 10,
-                                               'Category': 'Local',
-                                               'Columns': 0,
-                                               'Content': '',
-                                               'Dataset_size': 3000,
-                                               'Partition_list': [[70, 20, 10],
-                                                                  [70, 20, 10]],
-                                               'Shuffle_data': True,
-                                               'Sources': [{'path': 'C:\\Users\\Robert\\Documents\\PerceptiLabs\\PereptiLabsPlatform\\Data\\mnist_split\\mnist_input.npy',
-                                                            'type': 'file'},
-                                                           {'path': 'C:\\Users\\Robert\\Documents\\PerceptiLabs\\PereptiLabsPlatform\\Data\\mnist_split\\mnist_input '
-                                                                    '- '
-                                                                    'Copy.npy',
-                                                            'type': 'file'}],
-                                               'Type': 'Data',
-                                               'errorMessage': "'NoneType' "
-                                                               'object is not '
-                                                               'subscriptable'}
+                            'Category': 'Local',
+                            'Columns': [0,1,2],
+                            'Content': '',
+                            'Dataset_size': 3000,
+                            'Partition_list': [[70,
+                                                20,
+                                                10]],
+                            'Shuffle_data': True,
+                            'Sources': [{'path': 'C:\\Users\\Robert\\Documents\\PerceptiLabs\\PereptiLabsPlatform\\Data\\data_banknote_authentication.csv',
+                                        'type': 'file'}],
+                            'Type': 'Data',
+                            'errorMessage': "'NoneType' "
+                                            'object '
+                                            'is '
+                                            'not '
+                                            'subscriptable'}
     dk=dataKeeper(Id,accessProperties)
     code=dk.generateCode()
     print(code)

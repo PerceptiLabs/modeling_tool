@@ -6,7 +6,6 @@ from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
 
 import math
 from lw_graph import Graph
-from datahandler_lw import DataHandlerLW
 from extractVariables import *
 from createDataObject import createDataObject
 
@@ -95,20 +94,22 @@ class lwNetwork():
 
             if content["Type"]=="DataData":
                 if Id in dataDict:
-                    print("Id: ", Id)
-                    print("Data Id: ", dataDict[Id].Id)
-                    print("Data Code: ", dataDict[Id].code)
-                    dataDict[Id].executeCode(globals_=safe_dict)
+                    safe_dict=dataDict[Id].executeCode(globals_=safe_dict)
                     data=dataDict[Id].sample
-                    print("Data:", data)
                     try:
                         if np.shape(data)[0]!=1:
                             data=np.reshape(data, [1,*np.shape(data)])
                     except:
                         pass
                     data=np.array(data,dtype=np.float32)
+
                     outputDict[Id]=data
-                    outputVariables[Id]={"Y":data}
+                    safe_dict.pop("X", None)
+                    outputVariables[Id]={ k : safe_dict[k] for k in set(safe_dict) - set(origionalSafeDict) }
+                    outputVariables[Id]["Y"]=data
+                    safe_dict=origionalSafeDict.copy()
+                    # outputDict[Id]=data
+                    # outputVariables[Id]={"Y":data}
                 # elif "checkpoint" in content and content["checkpoint"] and content["OutputDim"]!="":
                 elif "checkpoint" in content and content["checkpoint"]!=[]:
                     #If the component is loaded from a pre-trained network

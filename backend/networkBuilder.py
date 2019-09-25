@@ -109,8 +109,8 @@ class NetworkBuilder():
 
 
 
-                # outputDict[Id]=safe_dict["Y"]
-                # outputVariables[Id]={ k : safe_dict[k] for k in set(safe_dict) - set(origionalSafeDict) }
+                outputDict[Id]=safe_dict["Y"]
+                outputVariables[Id]={ k : safe_dict[k] for k in set(safe_dict) - set(origionalSafeDict) }
                 safe_dict=origionalSafeDict.copy()
 
 
@@ -123,9 +123,9 @@ class NetworkBuilder():
                 #     errorQueue.put("The data was not read correctly, did you enter the correct data path?")
                 #     print("The data was not read correctly, did you enter the correct data path?")
                 #     return
-                placeholder=content["Data"].output 
-                outputDict[Id]=placeholder
-                outputVariables[Id]={"Y":placeholder}
+                # placeholder=content["Data"].output 
+                # outputDict[Id]=placeholder
+                # outputVariables[Id]={"Y":placeholder}
                 
             elif content["Type"]=="DataEnvironment":
                 if "Batch_size" not in content["Properties"]["accessProperties"]:

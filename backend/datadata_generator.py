@@ -25,14 +25,18 @@ class FileNumpyStrategy(AbstractStrategy):
 
     
 class FileCsvStrategy(AbstractStrategy):
-    def __init__(self, path):
+    def __init__(self, path, columns):
         self._path = path
+        self._columns=columns
         
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         code = ""
         code += "df = pd.read_csv('%s')\n" % self._path
-        code += "cols = list(self.dframe.columns)"
-        code += "data_mat = df.to_numpy().astype(np.float32)\n"
+        code += "cols = list(df.columns)\n"
+        if self._columns:
+            code += "data_mat = df[%s].to_numpy().astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
+        else:
+            code += "data_mat = df.to_numpy().astype(np.float32)\n"
         code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
                                                                 rate_train, rate_valid, rate_test)
         return code
@@ -125,10 +129,11 @@ class S3BucketJsonStrategy(AbstractStrategy):
 
 
 class DataDataCodeGenerator(CodeGenerator):
-    def __init__(self, sources, partitions, batch_size, shuffle, seed=0):
+    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=[]):
         self._seed = seed
         self.batch_size=batch_size
         self.shuffle=shuffle
+        self.columns=columns
         
         self._strategies = []
         self._partitions = []
@@ -274,7 +279,7 @@ class DataDataCodeGenerator(CodeGenerator):
         if ext == '.npy':
             strategy = FileNumpyStrategy(file_path)
         elif ext == '.csv':
-            strategy = FileCsvStrategy(file_path)
+            strategy = FileCsvStrategy(file_path, self.columns)
         else:
             raise NotImplementedError("Extension {} not implemented".format(ext))
         
