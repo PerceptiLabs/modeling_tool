@@ -81,11 +81,11 @@ export default {
     this.$refs.rootBaseElement.removeEventListener('touchstart', this.switchMousedownEvent);
     /*appMode*/
     this.$parent.$parent.$el.removeEventListener('mousemove', this.arrowMovePaint);
-    this.$refs.rootBaseElement.removeEventListener('mouseup', this.$_paintArrow_arrowEndPaint);
+    this.$refs.rootBaseElement.removeEventListener('mouseup', this.Mix_paintArrow_arrowEndPaint);
 
     this.$parent.$parent.$el.removeEventListener('touchmove', this.arrowMovePaint, true);
-    this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.$_paintArrow_arrowEndPaint, true);
-    this.$refs.rootBaseElement.removeEventListener('touchstart', this.$_paintArrow_arrowEndPaint, true);
+    this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.Mix_paintArrow_arrowEndPaint, true);
+    this.$refs.rootBaseElement.removeEventListener('touchstart', this.Mix_paintArrow_arrowEndPaint, true);
     /*clickOutsideAction*/
     document.removeEventListener('mousedown', this.mousedownOutside);
   },
@@ -194,7 +194,7 @@ export default {
     startArrowPaint(ev) {
       document.addEventListener('mouseup', this.toEditMode);
       this.$store.dispatch('mod_workspace/SET_netMode', 'addArrow');
-      this.$_paintArrow_arrowStartPaint(ev);
+      this.Mix_paintArrow_arrowStartPaint(ev);
     },
     toEditMode() {
       this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
@@ -203,7 +203,7 @@ export default {
     switchMousedownEvent(ev) {
       if (this.isLock) return;
       //console.log('switchMousedownEvent', ev);
-      if(this.networkMode === 'addArrow') this.$_paintArrow_arrowStartPaint(ev);
+      if(this.networkMode === 'addArrow') this.Mix_paintArrow_arrowStartPaint(ev);
 
       if(this.networkMode === 'edit'
         && this.editIsOpen

@@ -1,5 +1,4 @@
 import coreRequest      from "@/core/apiCore.js";
-import { isDebugMode }  from '@/core/constants.js'
 import { deepCopy }     from "@/core/helpers.js";
 
 const {spawn} = require('child_process');
@@ -72,36 +71,33 @@ const actions = {
     startCore();
 
     function startCore() {
-      console.log('isDebugMode', isDebugMode);
-      if(!isDebugMode) {
-        //console.log('startCore');
-        coreIsStarting = true;
-        let openServer;
-        let platformPath = '';
-        //console.log('platform', process.platform);
-        switch (process.platform) {
-          case 'win32':
-            platformPath = 'core/appServer.exe';
-            break;
-          case 'darwin':
-          case 'linux':
-            //console.log('start file');
-            process.env.NODE_ENV === 'production'
-              ? platformPath = path + 'core/appServer'
-              : platformPath = 'core/appServer';
-            break;
-        }
-        openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
-
-        openServer.on('error', (err) => {
-          //console.log('error core', err);
-          coreOffline()
-        });
-        openServer.on('close', (code) => {
-          //console.log('close core', code);
-          coreOffline()
-        });
+      //console.log('startCore');
+      coreIsStarting = true;
+      let openServer;
+      let platformPath = '';
+      //console.log('platform', process.platform);
+      switch (process.platform) {
+        case 'win32':
+          platformPath = 'core/appServer.exe';
+          break;
+        case 'darwin':
+        case 'linux':
+          //console.log('start file');
+          process.env.NODE_ENV === 'production'
+            ? platformPath = path + 'core/appServer'
+            : platformPath = 'core/appServer';
+          break;
       }
+      openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
+
+      openServer.on('error', (err) => {
+        //console.log('error core', err);
+        coreOffline()
+      });
+      openServer.on('close', (code) => {
+        //console.log('close core', code);
+        coreOffline()
+      });
       waitOnlineCore()
     }
     function waitOnlineCore() {

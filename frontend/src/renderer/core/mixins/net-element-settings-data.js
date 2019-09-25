@@ -3,36 +3,35 @@ import coreRequest  from "@/core/apiCore.js";
 const netElementSettingsData = {
   data() {
     return {
-      imgData: null,
-      actionSpace: '',
-      Partition_summary: [70,20,10],
+      Mix_settingsData_imgData: null,
+      Mix_settingsData_actionSpace: '',
+      Mix_settingsData_Partition_summary: [70,20,10],
     }
   },
   computed: {
-    currentNetworkID() {
+    Mix_settingsData_currentNetworkID() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
     },
-    inputPath() {
-      return this.settings.accessProperties.Path.join(', ')
+    Mix_settingsData_inputPath() {
+      const pathArr = this.settings.accessProperties.Path.map((el)=> el.path);
+      return pathArr.join(', ')
     }
   },
   methods: {
     coreRequest,
-    dataSettingsMeta(layerType) {
-      return this.deleteDataMeta(layerType)
-        .then(()=> this.getDataMeta(layerType))
+    Mix_settingsData_dataSettingsMeta(layerType) {
+      return this.Mix_settingsData_deleteDataMeta(layerType)
+        .then(()=> this.Mix_settingsData_getDataMeta(layerType))
     },
-    dataSettingsPlot(layerType) {
-      //console.log('dataSettingsPlot', layerType);
-      this.deleteDataMeta(layerType)
-        .then(()=> this.getDataMeta(layerType))
-        .then(()=> this.getDataPlot(layerType))
+    Mix_settingsData_dataSettingsPlot(layerType) {
+      this.Mix_settingsData_deleteDataMeta(layerType)
+        .then(()=> this.Mix_settingsData_getDataMeta(layerType))
+        .then(()=> this.Mix_settingsData_getDataPlot(layerType))
     },
 
-    getDataPlot(type) {
-      //console.log('getDataPlot');
+    Mix_settingsData_getDataPlot(type) {
       let theData = {
-        reciever: this.currentNetworkID,
+        reciever: this.Mix_settingsData_currentNetworkID,
         action: 'getDataPlot',
         value: {
           Id: this.currentEl.layerId,
@@ -42,17 +41,15 @@ const netElementSettingsData = {
       };
       this.coreRequest(theData)
         .then((data) => {
-          //console.log('getDataPlot', data);
-          if (data) this.imgData = data;
+          if (data) this.Mix_settingsData_imgData = data;
         })
         .catch((err)=> {
-          //console.log('answer err');
           console.error(err);
         });
     },
-    getDataMeta(type) {
+    Mix_settingsData_getDataMeta(type) {
       let theData = {
-        reciever: this.currentNetworkID,
+        reciever: this.Mix_settingsData_currentNetworkID,
         action: 'getDataMeta',
         value: {
           Id: this.currentEl.layerId,
@@ -60,12 +57,10 @@ const netElementSettingsData = {
           Properties: this.settings
         }
       };
-      //console.log('getDataMeta', theData);
       return this.coreRequest(theData)
         .then((data) => {
           if (data) {
-            //console.log('getDataMeta', data);
-            if(data.Action_space) this.actionSpace = data.Action_space;
+            if(data.Action_space) this.Mix_settingsData_actionSpace = data.Action_space;
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
             return data;
           }
@@ -75,10 +70,9 @@ const netElementSettingsData = {
           console.error(err);
         });
     },
-    getPartitionSummary(type) {
-
+    Mix_settingsData_getPartitionSummary(type) {
       let theData = {
-        reciever: this.currentNetworkID,
+        reciever: this.Mix_settingsData_currentNetworkID,
         action: 'getPartitionSummary',
         value: {
           Id: this.currentEl.layerId,
@@ -86,12 +80,10 @@ const netElementSettingsData = {
           Properties: this.settings
         }
       };
-      //console.log('getPartitionSummary', theData);
       return this.coreRequest(theData)
         .then((data) => {
-          //console.log('getPartitionSummary answer', data);
           if (data) {
-            this.Partition_summary = data;
+            this.Mix_settingsData_Partition_summary = data;
           }
           else throw 'error 95'
         })
@@ -99,10 +91,9 @@ const netElementSettingsData = {
           console.error(err);
         });
     },
-    deleteDataMeta(type) {
-      //console.log('deleteData');
+    Mix_settingsData_deleteDataMeta(type) {
       let theData = {
-        reciever: this.currentNetworkID,
+        reciever: this.Mix_settingsData_currentNetworkID,
         action: 'deleteData',
         value: {
           Id: this.currentEl.layerId,
@@ -111,14 +102,17 @@ const netElementSettingsData = {
         }
       };
       return this.coreRequest(theData)
-        .then((data) => {
-          //console.log('deleteData', data);
-          return data
-        })
+        .then((data) => data)
         .catch((err) => {
           console.error(err);
         });
     },
+    Mix_settingsData_prepareSources(pathArr, type) {
+      return pathArr.map((el)=> { return {
+        type,
+        "path": el
+      }})
+    }
   }
 };
 
