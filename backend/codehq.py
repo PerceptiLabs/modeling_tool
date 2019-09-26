@@ -1,18 +1,22 @@
+import os
+import pprint
+import logging
+
+from code_generator import CustomCodeGenerator, CodePart
+from code_generator.datadata import DataDataCodeGenerator
+from code_generator.tensorflow import DataDataCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator
+
+
+log = logging.getLogger(__name__)
+
+
 class CodeHqNew:
     @staticmethod
-    def layer_to_code_generator(id_, content):
-        print(id_, content)
-
+    def get_code_generator(id_, content):
         type_ = content["Info"]["Type"]
-        con = content["Con"]
-        info = content["Info"]
         props = info["Properties"]
 
-        if 'Code' in content["Info"]:            
-            code_parts = [CodePart(n, c) for n, c in content["Info"]["Code"].items()]
-            code_generator = CustomCodeGenerator(code_parts)
-            return code_generator        
-        elif type_ == 'DataData':
+        if type_ == 'DataData':
             file_paths = content["Info"]["Properties"]["accessProperties"]["Path"]
 
             ######################################        
@@ -30,11 +34,98 @@ class CodeHqNew:
             
             code_generator = DataDataCodeGenerator(sources, partitions)
             return code_generator
+        elif type_ == 'DeepLearningFC':
+            code_gen = FullyConnectedCodeGenerator(n_neurons=props["Neurons"],
+                                                   activation=props["Activation_function"],
+                                                   dropout=props["Dropout"],
+                                                   keep_prob=1.0) # TODO: from where?
+            return code_gen
+        elif type_ == 'DeepLearningConv':
+            code_gen = ConvCodeGenerator(conv_dim=props["Conv_dim"],
+                                         patch_size=props["Patch_size"],
+                                         feature_maps=props["Feature_maps"],
+                                         stride=props["Stride"],
+                                         padding=props["Padding"],
+                                         dropout=props["Dropout"],
+                                         keep_prob=1.0, # TODO: where does this come from?
+                                         activation=props["Activation_function"],
+                                         pool=props["PoolBool"],
+                                         pooling=props["Pooling"],
+                                         pool_area=props["Pool_area"],
+                                         pool_stride=props["Pool_stride"])
+            return code_gen
+        elif type_ == 'DeepLearningDeconv':
+            raise NotImplementedError("Deconv not implemented")
+        elif type_ == 'DeepLearningRecurrent':
+            code_gen = RecurrentCodeGenerator(version=props["Version"],
+                                              time_steps=props["Time_steps"],
+                                              neurons=props["Neurons"],
+                                              return_sequences=False) # TODO: return_sequences from frontend
+            return code_gen
+        elif type_ == 'ProcessCrop':
+            code_gen = CropCodeGenerator(offset_height=props["Offset_height"],
+                                         offset_width=props["Offset_width"],
+                                         target_height=props["Target_height"],
+                                         target_width=props["Target_width"])
+            return code_gen
+        elif type_ == 'ProcessEmbed':
+            code_gen = WordEmbeddingCodeGenerator()
+            return code_gen
+        elif type_ == 'ProcessGrayscale':
+            code_gen = GrayScaleCodeGenerator()
+            return code_gen
+        elif type_ == 'ProcessOneHot':
+            code_gen = OneHotCodeGenerator(n_classes=prop["N_class"])
+            return code_gen
+        elif type_ == 'ProcessReshape':
+            code_gen = ReshapeCodeGenerator(shape=props["Shape"], permutation=props["Permutation"])
+            return code_gen
+        elif type_ == 'TrainNormal':
+            raise NotImplementedError("Train normal not implemented")
+        elif type_ == 'TrainGenetic':
+            raise NotImplementedError("Train genetic algorithm not implemented")
+        elif type_ == 'TrainDynamic':
+            raise NotImplementedError("Train dynamic routing not implemented")
+        elif type_ == 'TrainReinforce':
+            raise NotImplementedError("Train reinforce not implemented")
+        elif type_ == 'MathArgmax':
+            code_gen = ArgmaxCodeGenerator(dim=props["Dim"])
+            return code_gen
+        elif type_ == 'MathMerge':
+            code_gen = MergeCodeGenerator(type_=prop["Type"], merge_dim=prop["Merge_dim"])
+            return code_gen
+        elif type_ == 'MathSoftmax':
+            code_gen = SoftmaxCodeGenerator()
+            return code_gen
+        elif type_ == 'MathSplit':
+            raise NotImplementedError("Math split not implemented")
+        elif 'Code' in content["Info"]:
+            code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
+            code_generator = CustomCodeGenerator(code_parts)
+            return code_generator
         else:
-            print("dont know how to parse layer")
-            return None        
-    
-                    
+            log.error("Unrecognized layer. Type {}: {}".format(type_, pprint.pformat(content)))
+            return None
+
+
+if __name__ == "__main__":
+    import json
+    from graph import Graph
+
+    with open('net.json', 'r') as f:
+        json_network = json.load(f)
+
+    graph = Graph(json_network["Layers"])
+
+    generator_graph = dict()
+
+    for id_, content in graph.graphs.items():
+        code_gen = CodeHqNew.get_code_generator(id_, content)
+        generator_graph[id_] = code_gen
+        print("-----------------")
+        print(code_gen)
+        print(code_gen.get_code())
+        print("-----------------")
 
 
 
@@ -176,7 +267,6 @@ class CodeHQ(object):
             b=tf.Variable(initial); \
             flat_node=tf.cast(tf.reshape(X,[-1,"+input_size+"]),dtype=tf.float32); \
             node=tf.matmul(flat_node,W)+b"
-
 
         showstring=showstring+"\n"+self.activation(properties, X)
 

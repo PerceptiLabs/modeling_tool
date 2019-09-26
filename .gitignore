@@ -1,7 +1,11 @@
 #Backend ignores
 backend/*.pyc
 backend/*.pyo
-backend/__pycache__/
+**/__pycache__/
+*.pyc
+*.py~
+*#*#
+backend
 #Frontend ignores
 frontend/.DS_Store
 frontend/core/*

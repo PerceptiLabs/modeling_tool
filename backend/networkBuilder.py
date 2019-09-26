@@ -1,5 +1,6 @@
 from codehq import CodeHQ
-from data import Data
+# from data import Data
+from dataKeeper import dataKeeper as Data
 from extractVariables import *
 
 import numpy as np
@@ -102,18 +103,29 @@ class NetworkBuilder():
             #     safe_dict["Xvariables"]=Xvariables
 
             if content["Type"]=="DataData":
+                content["Data"]=Data(Id,content["Properties"]["accessProperties"])
+                content["Data"].generateCode(seed=randomSeed)
+                safe_dict=content["Data"].executeCode(globals_=safe_dict)
+
+
+
+                outputDict[Id]=safe_dict["Y"]
+                outputVariables[Id]={ k : safe_dict[k] for k in set(safe_dict) - set(origionalSafeDict) }
+                safe_dict=origionalSafeDict.copy()
+
+
                 #Create a data object and put as a refence into content["code"]["data"]?
                 #We can then easily call .getData and have a reference to the placeholder from the object for the session.
                 # try:
-                content['Properties']['accessProperties']['Seed']=randomSeed
-                content["Data"]=Data(content["Properties"],jsonNetwork["Hyperparameters"])
+                # content['Properties']['accessProperties']['Seed']=randomSeed
+                # content["Data"]=Data(content["Properties"],jsonNetwork["Hyperparameters"])
                 # except:
                 #     errorQueue.put("The data was not read correctly, did you enter the correct data path?")
                 #     print("The data was not read correctly, did you enter the correct data path?")
                 #     return
-                placeholder=content["Data"].placeholder 
-                outputDict[Id]=placeholder
-                outputVariables[Id]={"Y":placeholder}
+                # placeholder=content["Data"].output 
+                # outputDict[Id]=placeholder
+                # outputVariables[Id]={"Y":placeholder}
                 
             elif content["Type"]=="DataEnvironment":
                 if "Batch_size" not in content["Properties"]["accessProperties"]:
