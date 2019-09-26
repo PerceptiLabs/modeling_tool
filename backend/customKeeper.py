@@ -16,9 +16,15 @@ class dataKeeper():
         self.locals_=None
 
     def generateCode(self, seed=0):
+        if self.accessProperties["Code"]=="":
+            self.code=self.accessProperties["Code"]
+        else:
+            if self.accessProperties["Type"]=="Fully_Connected":
+                codeGen=fc_generator()
+            elif ...
 
-        # codeGen = DataDataCodeGenerator(sources, partitions, batch_size, shuffle, seed=seed, columns=columns)
-        self.code = codeGen.get_code()
+            
+            self.code = codeGen.get_code()
         return self.code
 
     def executeCode(self, globals_=globals(), locals_={}):
