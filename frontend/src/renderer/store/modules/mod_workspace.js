@@ -16,6 +16,7 @@ const state = {
     stop: {x: 0, y: 0},
   },
   showStartTrainingSpinner: false,
+  isOpenElement: false,
 };
 
 const getters = {
@@ -55,20 +56,13 @@ const getters = {
   GET_networkIsTraining(state, getters) {
     const coreStatus = getters.GET_networkCoreStatus;
     const statusList = ['Training', 'Validation', 'Paused'];
-    return statusList.includes(coreStatus) ? true : false
+    return !!statusList.includes(coreStatus)
   },
   GET_tutorialActiveId(state, getters, rootState, rootGetters) {
     if( rootGetters['mod_tutorials/getIstutorialMode'] && rootGetters['mod_tutorials/getActiveAction']) {
       return rootGetters['mod_tutorials/getActiveAction'].dynamic_id
     }
   },
-  // GET_networkCanEditLayers(state, getters) {
-  //   if(getters.GET_networkIsNotEmpty) {
-  //     let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
-  //     let openTest = getters.GET_currentNetwork.networkMeta.openTest;
-  //     return !(openStatistics || openTest) ? true : false;
-  //   }
-  // },
   GET_statisticsIsOpen(state, getters) {
     if(getters.GET_networkIsNotEmpty) {
       return getters.GET_currentNetwork.networkMeta.openStatistics;
@@ -83,7 +77,7 @@ const getters = {
     if(getters.GET_networkIsNotEmpty) {
       let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
       let openTest = getters.GET_currentNetwork.networkMeta.openTest;
-      return !(openStatistics || openTest) ? true : false;
+      return !(openStatistics || openTest);
     }
   },
   GET_networkWaitGlobalEvent(state, getters) {
@@ -104,6 +98,9 @@ const getters = {
   GET_showStartTrainingSpinner(state) {
     return state.showStartTrainingSpinner
   },
+  GET_enableHotKeyElement(state, getters) {
+    return !state.isOpenElement && getters.GET_networkIsOpen
+  }
 };
 
 const mutations = {
@@ -718,6 +715,9 @@ const mutations = {
       stop: {x: 0, y: 0},
     }
   },
+  set_isOpenElement (state, value) {
+    state.isOpenElement = value
+  },
 };
 
 const actions = {
@@ -833,7 +833,7 @@ const actions = {
     commit('set_elementSelect', value)
   },
   SET_elementSelectAll({commit, getters}) {
-    commit('set_elementSelectAll', {getters})
+    if(getters.GET_enableHotKeyElement) commit('set_elementSelectAll', {getters})
   },
   SET_elementMultiSelect({commit}, value) {
     commit('set_elementMultiSelect', value)
@@ -844,7 +844,7 @@ const actions = {
   SET_elementOutputDim({commit, getters}, value) {
     commit('set_elementOutputDim', {getters, value})
   },
-  CHANGE_elementPosition({commit, getters}, value) {
+  CHANGE_elementPosition({commit}, value) {
     commit('change_elementPosition', value)
   },
   //---------------
@@ -864,6 +864,12 @@ const actions = {
   },
   UNGROUP_container({commit, getters, dispatch}, container) {
     if(getters.GET_networkIsOpen) commit('ungroup_container', {container, dispatch, getters})
+  },
+  //---------------
+  //  OTHER
+  //---------------
+  SET_isOpenElement({commit}, value) {
+    commit('set_isOpenElement', value)
   },
 };
 

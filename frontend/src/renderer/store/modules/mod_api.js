@@ -12,11 +12,9 @@ function prepareNetwork(network) {
     let checkpointPath = deepCopy(el.checkpoint);
     if(el.componentName === 'LayerContainer') continue;
     /*prepare checkpoint*/
-    console.log(rootPath, el.checkpoint.length);
     if(rootPath && el.checkpoint.length) {
       const filePath = el.checkpoint[1].slice(0, el.checkpoint[1].length);
       checkpointPath[1] = `${rootPath}\\${filePath}`;
-      console.log(checkpointPath[1]);
     }
     /*prepare elements*/
     if(dataLayers.includes(el.componentName)) {

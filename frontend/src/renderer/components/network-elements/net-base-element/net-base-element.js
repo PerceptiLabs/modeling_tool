@@ -83,12 +83,6 @@ export default {
     wsZoom() {
       return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
     },
-    // hotKeyPressEsc() {
-    //   return this.$store.state.mod_events.globalPressKey.esc;
-    // },
-    // hotKeyPressDelete() {
-    //   return this.$store.state.mod_events.globalPressKey.del
-    // },
     classEl() {
       return {
         'net-element--active': this.isSelectedEl,
@@ -129,30 +123,28 @@ export default {
           && !this.settingsIsOpen
           && this.isSelectedEl
         ) {
-          this.$store.dispatch('mod_workspace/DELETE_element');
+          this.elementDelete();
         }
       }
     },
-    // hotKeyPressDelete() {
-    //   if(!this.settingsIsOpen) {
-    //     console.log('hotKeyPressDelete()', this.settingsIsOpen);
-    //     this.$store.dispatch('mod_workspace/DELETE_element');
-    //   }
-    // }
   },
   methods: {
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
       tutorialShowHideTooltip:  'mod_tutorials/showHideTooltip',
       setNetMode:               'mod_workspace/SET_netMode',
+      setElementInfoOpen:       'mod_workspace/SET_isOpenElement',
+      elementDelete:            'mod_workspace/DELETE_element',
+      elementMultiSelect:       'mod_workspace/SET_elementMultiSelect',
+      elementSelect:            'mod_workspace/SET_elementSelect'
     }),
     startArrowPaint(ev) {
       document.addEventListener('mouseup', this.toEditMode);
-      this.$store.dispatch('mod_workspace/SET_netMode', 'addArrow');
+      this.setNetMode('addArrow');
       this.Mix_paintArrow_arrowStartPaint(ev);
     },
     toEditMode() {
-      this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+      this.setNetMode('edit');
       document.removeEventListener('mouseup', this.toEditMode);
     },
     switchMousedownEvent(ev) {
@@ -180,7 +172,7 @@ export default {
     switchDblclick(event) {
       if (this.isLock) return;
       if(this.networkMode !== 'edit') {
-        this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
+        this.setNetMode('edit');
         this.setFocusEl(event);
       }
       this.layerContainer
@@ -194,6 +186,8 @@ export default {
       this.tutorialShowHideTooltip();
       this.hideAllWindow();
       if(!this.editIsOpen) return;
+
+      this.setElementInfoOpen(true);
       this.settingsIsOpen = true;
 
       this.$nextTick(() => {
@@ -212,6 +206,7 @@ export default {
         }
         //this.calcWindowPosition();
         if(this.networkMode === 'edit' && this.editIsOpen) {
+          this.setElementInfoOpen(true);
           this.contextIsOpen = true;
         }
       }
@@ -246,8 +241,8 @@ export default {
     },
     setFocusEl(ev) {
       ev.ctrlKey
-        ? this.$store.dispatch('mod_workspace/SET_elementMultiSelect', {id: this.currentId, setValue: true })
-        : this.$store.dispatch('mod_workspace/SET_elementSelect',      {id: this.currentId, setValue: true })
+        ? this.elementMultiSelect({id: this.currentId, setValue: true })
+        : this.elementSelect({id: this.currentId, setValue: true })
     },
     mousedownOutsideBefore() {
       this.MousedownElementTracking = this.$refs.rootBaseElement;
@@ -257,6 +252,7 @@ export default {
       if (this.editIsOpen) this.deselect()
     },
     hideAllWindow() {
+      this.setElementInfoOpen(false);
       this.settingsIsOpen = false;
       this.contextIsOpen = false;
       this.openWinPosition = {
@@ -267,7 +263,7 @@ export default {
     },
     deselect() {
       if(!this.isTutorialMode) this.hideAllWindow();
-      this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: false });
+      this.elementSelect({id: this.currentId, setValue: false });
       this.tutorialShowHideTooltip();
     },
     tutorialSearchId(event) {
