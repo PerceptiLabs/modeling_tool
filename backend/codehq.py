@@ -1,3 +1,43 @@
+class CodeHqNew:
+    @staticmethod
+    def layer_to_code_generator(id_, content):
+        print(id_, content)
+
+        type_ = content["Info"]["Type"]
+        con = content["Con"]
+        info = content["Info"]
+        props = info["Properties"]
+
+        if 'Code' in content["Info"]:            
+            code_parts = [CodePart(n, c) for n, c in content["Info"]["Code"].items()]
+            code_generator = CustomCodeGenerator(code_parts)
+            return code_generator        
+        elif type_ == 'DataData':
+            file_paths = content["Info"]["Properties"]["accessProperties"]["Path"]
+
+            ######################################        
+            # HACK TO MIMIC NEW STYLE USING SOURCE DICTS INSTEAD OF PATHS!
+            sources = []
+            partitions = []
+            for path in file_paths:
+                if os.path.isfile(path):
+                    src = {'path': path, 'type': 'file'}
+                elif os.path.isdir(path):
+                    src = {'path': path, 'type': 'directory'}
+                sources.append(src)
+                partitions.append([70, 20, 10])
+            ######################################
+            
+            code_generator = DataDataCodeGenerator(sources, partitions)
+            return code_generator
+        else:
+            print("dont know how to parse layer")
+            return None        
+    
+                    
+
+
+
 class CodeHQ(object):
     def get_code(self, layer_type, properties, X):
         """Dispatch method"""

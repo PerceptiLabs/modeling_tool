@@ -50,7 +50,8 @@ $layers-sidebar-active: (
 @each $name, $color in $layers-sidebar-active {
 	.net-element-#{$name} {
 		&:hover,
-		&.active {
+		&.active,
+        .net-element:hover & {
 			background: $color;
 		}
 	}

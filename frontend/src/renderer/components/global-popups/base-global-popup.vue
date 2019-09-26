@@ -61,5 +61,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+  .settings-layer_section {
+    width: 100%;
+  }
 </style>
