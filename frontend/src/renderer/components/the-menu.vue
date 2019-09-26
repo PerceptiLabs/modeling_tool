@@ -132,8 +132,8 @@ export default {
         {
           label: 'Help', visible: true,
           submenu: [
-            {label: 'Help',                                                                                             active: () => {this.goToLink(`${baseUrlSite}/i_docs`)} },
-            {label: 'About',                                                                                            active: () => {this.goToLink(`${baseUrlSite}/about`);} },
+            {label: 'Help',                                                                                             active: this.goToHelpPage },
+            {label: 'About',                                                                                            active: this.goToAboutPage },
             {label: 'Tutorial mode',                                                            enabled: !this.isTutorialActive && this.isLogin,  active: this.showTutorial },
             {label: 'Check for updates',                                                                                active: this.checkUpdate },
             {type: 'separator'},
@@ -178,7 +178,9 @@ export default {
     }),
     ...mapActions({
       infoPopup:        'globalView/GP_infoPopup',
+      popupConfirm:     'globalView/GP_confirmPopup',
       offMainTutorial:  'mod_tutorials/offTutorial',
+      hideTooltip:      'mod_tutorials/hideTooltip',
       appClose:         'mod_events/EVENT_appClose',
       appMinimize:      'mod_events/EVENT_appMinimize',
       appMaximize:      'mod_events/EVENT_appMaximize',
@@ -208,12 +210,64 @@ export default {
       ipcRenderer.send('check-update');
     },
     addNewNetwork() {
-      this.$store.dispatch('mod_workspace/ADD_network');
-      this.offMainTutorial();
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$store.dispatch('mod_workspace/ADD_network');
+            }
+          });
+      } else {
+        this.$store.dispatch('mod_workspace/ADD_network');
+      }
     },
     logOut() {
-      this.$store.dispatch('mod_events/EVENT_logOut');
-      this.offMainTutorial();
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$store.dispatch('mod_events/EVENT_logOut');
+            }
+          });
+      } else {
+        this.$store.dispatch('mod_events/EVENT_logOut');
+      }
+    },
+    goToHelpPage() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.goToLink(`${baseUrlSite}/i_docs`)
+            }
+          });
+      } else {
+        this.goToLink(`${baseUrlSite}/i_docs`)
+      }
+    },
+    goToAboutPage() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.goToLink(`${baseUrlSite}/about`)
+            }
+          });
+      } else {
+        this.goToLink(`${baseUrlSite}/about`)
+      }
     },
     showTutorial() {
       this.$store.dispatch('mod_tutorials/START_storyboard');
@@ -222,8 +276,19 @@ export default {
       this.$store.commit('globalView/GP_showNetGlobalSet', true);
     },
     openModel() {
-      this.openNetwork();
-      this.offMainTutorial();
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.openNetwork();
+            }
+          });
+      } else {
+        this.openNetwork();
+      }
     },
     saveModel() {
       this.saveNetwork();

@@ -21,6 +21,7 @@
     router-view.app-page
     update-popup
     the-info-popup
+    confirm-popup
 </template>
 
 <script>
@@ -31,10 +32,11 @@
   import HeaderMac      from '@/components/header/header-mac.vue';
   import updatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
   import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
+  import confirmPopup   from "@/components/global-popups/confirm-popup.vue";
 
   export default {
     name: 'TheApp',
-    components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup },
+    components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup, confirmPopup },
     created() {
       this.$store.dispatch('mod_tracker/TRACK_initMixPanel');
       this.$store.dispatch('mod_user/GET_LOCAL_userInfo');
