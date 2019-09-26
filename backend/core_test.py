@@ -63,7 +63,7 @@ class CustomCodeGenerator(CodeGenerator):
     def __init__(self, input_):
         if isinstance(input_, str):
             self._code_parts = [CodePart(name=None, code=input_)]
-        elif isinstance(input_, list) and all([isinstance(x, CodeParts) for x in input_]):
+        elif isinstance(input_, list) and all([isinstance(x, CodePart) for x in input_]):
             self._code_parts = copy.copy(input_)
         else:
             raise ValueError("Inputs must be either string or list of CodeParts")
@@ -78,12 +78,16 @@ class CustomCodeGenerator(CodeGenerator):
         return code
 
 
+
 TRAIN_TEMPLATE = """
 cost = tf.reduce_mean(tf.square(y_tensor - y))
 step = tf.train.%s(learning_rate=%f).minimize(cost)
 
 sess = tf.InteractiveSession()
 sess.run(tf.initialize_all_variables())
+
+
+api.dataset.get_number_of_samples()
 
 for epoch in range(%d):
     api.mode.set_training()
@@ -105,6 +109,10 @@ for epoch in range(%d):
 
 TEST_TEMPLATE = """
 api.mode.set_testing()
+
+
+
+
 y_pred = sess.run(y, feed_dict={X_tensor: X_})
 api.data.store_value('y_pred', y_pred.squeeze())
 api.ui.process()
@@ -141,23 +149,20 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code = self._get_training_code() + '\n' + self._get_testing_code()
         return code
 
-FULLY_CONNECTED_TEMPLATE = """
-W1 = tf.Variable(tf.truncated_normal(shape=[%d,%d], stddev=0.01))
-b1 = tf.Variable(tf.constant(0.01))
-z1 = tf.matmul(X, W1) + b1
-Y = tf.nn.%s(z1)
-"""
-    
-class FullyConnectedCodeGenerator(CodeGenerator):
-    def __init__(self, n_inputs, n_units, activation='relu'):
-        self._n_inputs = n_inputs
-        self._n_units = n_units
-        self._activation = activation
 
-    def get_code(self):
-        code = FULLY_CONNECTED_TEMPLATE % (self._n_inputs, self._n_units, self._activation)
-        return code
+import os
+
         
+        
+        
+
+        
+        
+        
+        
+        
+                
+    
 
 class ExecutionScope:
     def __init__(self, globals_, locals_=None):
@@ -435,7 +440,7 @@ class Core:
 
         # The APIs exposed to the user
         data_api = DataApi(data_pipe)
-        mode_api = ModeApi(core_state)        
+        mode_api = ModeApi(core_state)
         ui_api = UiApi(ui_channel)
         api = Api(data_api, mode_api, ui_api)
         
@@ -507,29 +512,88 @@ class GraphPropagator:
         
                     
 
-                    
+
+class Graph(object):
+    def __init__(self, layerDict):
+        self.graph=layerDict
+        self.copykeys=[]
+        self.start_nodes=self.get_start_nodes(self.graph)
+        self.end_points=self.get_end_points(self.graph)
+        self.placeholders=self.start_nodes[:]
+
+        self.graphs = self.create_graphs(self.graph, self.start_nodes, self.end_points)
+
+    def get_start_nodes(self,graph):
+        start_nodes=[]
+        for Id, content in self.graph.items():
+            if not content["backward_connections"]:
+                start_nodes.append(Id)
+        return start_nodes
+
+    def get_end_points(self,graph):
+        end_points=[]
+        for Id, content in self.graph.items():
+            if not content["forward_connections"]:
+                end_points.append(Id)
+        return end_points
+    
+    def create_graphs(self, graph, start, end_points):
+        cyclicCheck={}
+        visited, queue = {}, start[:]
+        while queue:
+            queueLen=len(queue)
+            Id = queue.pop(0)
+            try:
+                cyclicCheck[Id]+=1
+            except:
+                cyclicCheck[Id]=0
+            if cyclicCheck[Id]>queueLen:
+                raise Exception("Could not order the graph, maybe there is a cyclical connection?")
+            #if graph[Id]["Type"]==("Train" or "Data"):
+            # if type(graph[Id]["code"]) is not str:
+            #     if graph[Id]["code"]["type"]=="Train&Data":
+                #self.placeholders.append(Id)
+
+            if not set(self.graph[Id]["backward_connections"]).issubset(list(visited.keys())):
+                if not queue:
+                    pass
+                else:
+                    queue.append(Id)
+            elif Id not in visited:
+                visited[Id]=dict(Con=self.graph[Id]["backward_connections"],Info=graph[Id],Copy=False)
+                for for_con in graph[Id]["forward_connections"]:
+                    if for_con not in queue:
+                        queue.append(for_con)
+                # queue.extend(graph[Id]["forward_connections"])
+
+        return visited
+
+
     
 if __name__ == "__main__":
-    import queue
+    import json
+    with open('net.json', 'r') as f:
+        json_network = json.load(f)
 
-    data_x = CustomCodeGenerator(DATA_LAYER_X)
-    data_y = CustomCodeGenerator(DATA_LAYER_Y)    
+    graph = Graph(json_network["Layers"])
 
-    fc1 = FullyConnectedCodeGenerator(2, 10)
-    fc2 = FullyConnectedCodeGenerator(10, 1, activation='sigmoid')    
+    from codehq import CodeHqNew as CodeHq
+
+
+
+    generator_graph = dict()
     
-    network = CustomCodeGenerator(NET_CODE)
-    data = CustomCodeGenerator(DATA_CODE)
-    train = TrainNormalCodeGenerator(optimizer='adam', learning_rate=0.001)
-    
-    #graph = {'0': data, '1': network, '2': train}
+    for id_, content in graph.graphs.items():
+        code_gen = CodeHq.get_code_generator(id_, content)
+        generator_graph[id_] = code_gen
 
-    graph = {'0': data_x, '1': fc1, '2': fc2, '3': train}
-    
-    for id_, cg in graph.items():
-        print("Layer with id {}".format(id_))
-        print(cg.get_code())
-
+        
+    for id_, code_generator in generator_graph.items():
+        print("---------------------")
+        print("id", id_)
+        print("code")
+        print(code_generator.get_code())
+        print("---------------------")        
 
     gp = GraphPropagator(graph)
     output = gp.propagate()

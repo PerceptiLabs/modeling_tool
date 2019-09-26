@@ -4,7 +4,8 @@ import logging
 
 from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
-from code_generator.tensorflow import DataDataCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator
+from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator
+
 
 
 log = logging.getLogger(__name__)
@@ -14,7 +15,7 @@ class CodeHqNew:
     @staticmethod
     def get_code_generator(id_, content):
         type_ = content["Info"]["Type"]
-        props = info["Properties"]
+        props = content["Info"]["Properties"]
 
         if type_ == 'DataData':
             file_paths = content["Info"]["Properties"]["accessProperties"]["Path"]
@@ -75,13 +76,14 @@ class CodeHqNew:
             code_gen = GrayScaleCodeGenerator()
             return code_gen        
         elif type_ == 'ProcessOneHot':
-            code_gen = OneHotCodeGenerator(n_classes=prop["N_class"])
+            code_gen = OneHotCodeGenerator(n_classes=props["N_class"])
             return code_gen
         elif type_ == 'ProcessReshape':
             code_gen = ReshapeCodeGenerator(shape=props["Shape"], permutation=props["Permutation"])
             return code_gen
         elif type_ == 'TrainNormal':
-            raise NotImplementedError("Train normal not implemented")
+            code_gen = TrainNormalCodeGenerator()
+            return code_gen
         elif type_ == 'TrainGenetic':
             raise NotImplementedError("Train genetic algorithm not implemented")
         elif type_ == 'TrainDynamic':

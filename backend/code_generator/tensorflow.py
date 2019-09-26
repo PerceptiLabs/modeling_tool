@@ -14,7 +14,7 @@ def get_activation_code(var_in, var_out, func=None):
         else:
             raise ValueError("Unknown activation function '{}'".format(func))
         
-        code = '%s = %s(%s)\n' % (func, var_out, var_in)        
+        code = '%s = %s(%s)\n' % (var_out, func, var_in)        
     return code
 
 
@@ -278,6 +278,75 @@ class ConvCodeGenerator(CodeGenerator):
         code += "node = tf.nn.conv2d(X, W, strides=[1]+[%s]*dim+[1], padding='%s')\n" % (self._stride, self._padding)
         return code
         
-        
 
-            
+TRAIN_TEMPLATE = """
+cost = tf.reduce_mean(tf.square(y_tensor - y))
+step = tf.train.%s(learning_rate=%f).minimize(cost)
+
+sess = tf.InteractiveSession()
+sess.run(tf.initialize_all_variables())
+
+
+api.dataset.get_number_of_samples()
+
+for epoch in range(%d):
+    api.mode.set_training()
+    api.data.store_value('epoch', epoch)
+
+    for iter in range(%d):
+        sess.run(step, feed_dict={X_tensor: X_, y_tensor: y_})
+
+        api.data.store_value('iter', iter)
+        api.ui.process()
+
+    api.mode.set_validation()
+    y_pred, cost_ = sess.run([y, cost], feed_dict={X_tensor: X_, y_tensor: y_})
+
+    api.data.store_value('loss', cost_)
+    api.data.store_value('iter', iter)
+    api.ui.process()
+"""
+
+TEST_TEMPLATE = """
+api.mode.set_testing()
+
+
+
+
+y_pred = sess.run(y, feed_dict={X_tensor: X_})
+api.data.store_value('y_pred', y_pred.squeeze())
+api.ui.process()
+"""
+
+
+    
+class TrainNormalCodeGenerator(CodeGenerator):
+    def __init__(self, optimizer='adam', learning_rate=0.001):
+        self._optimizer = optimizer
+        self._learning_rate = learning_rate
+        self._n_epochs = 300
+        self._n_iters = 3
+
+    def _get_training_code(self):
+        if self._optimizer == 'adam':
+            optimizer_class = 'AdamOptimizer'
+        elif self._optimizer == 'adagrad':
+            optimizer_class = 'AdagradOptimizer'
+
+        code = TRAIN_TEMPLATE % (optimizer_class,
+                                 self._learning_rate,
+                                 self._n_epochs,
+                                 self._n_iters)
+        return code
+
+    def _get_testing_code(self):
+        return TEST_TEMPLATE
+
+    def get_code_parts(self):
+        cp1 = CodePart('training', self._get_training_code())
+        cp2 = CodePart('testing', self._get_testing_code())
+        return [cp1, cp2]
+
+    def get_code(self):
+        code = self._get_training_code() + '\n' + self._get_testing_code()
+        return code
