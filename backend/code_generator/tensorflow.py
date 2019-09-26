@@ -14,7 +14,7 @@ def get_activation_code(var_in, var_out, func=None):
         else:
             raise ValueError("Unknown activation function '{}'".format(func))
         
-        code = '%s = %s(%s)\n' % (func, var_out, var_in)        
+        code = '%s = %s(%s)\n' % (var_out, func, var_in)        
     return code
 
 
@@ -61,11 +61,11 @@ class RecurrentCodeGenerator(CodeGenerator):
 
 class WordEmbeddingCodeGenerator(CodeGenerator):
     def get_code(self):
-        code  = 'words = tf.string_split(X)\n'
+        code  = "words = tf.string_split(X['Y'])\n"
         code += 'vocab_size=words.get_shape().as_list()[0]\n'
         code += 'embed_size=10\n'
         code += 'embedding = tf.Variable(tf.random_uniform((vocab_size, embed_size), -1, 1))\n'
-        code += 'Y = tf.nn.embedding_lookup(embedding, X)\n'
+        code += "Y = tf.nn.embedding_lookup(embedding, X[''Y])\n"
         return code
 
 
@@ -74,7 +74,7 @@ class OneHotCodeGenerator(CodeGenerator):
         self._n_classes = n_classes
         
     def get_code(self):
-        code = "Y=tf.one_hot(tf.cast(X,dtype=tf.int32), %s)" % self._n_classes
+        code = "Y=tf.one_hot(tf.cast(X['Y'],dtype=tf.int32), %s)" % self._n_classes
         return code
 
     
@@ -86,7 +86,7 @@ class CropCodeGenerator(CodeGenerator):
         self._target_width = target_width
 
     def get_code(self):
-        code = "Y=tf.image.crop_to_bounding_box(X, %d, %d, %d, %d)\n" % (self._offset_height,
+        code = "Y=tf.image.crop_to_bounding_box(X['Y'], %d, %d, %d, %d)\n" % (self._offset_height,
                                                                          self._offset_width,
                                                                          self._target_height,
                                                                          self._target_width)
@@ -95,10 +95,10 @@ class CropCodeGenerator(CodeGenerator):
 
 class GrayscaleCodeGenerator(CodeGenerator):
     def get_code(self):
-        code  = 'if X.get_shape().as_list()[-1] == 3:\n'
-        code += '    Y = tf.image.rgb_to_grayscale(X)\n'
+        code  = "if X['Y'].get_shape().as_list()[-1] == 3:\n"
+        code += "    Y = tf.image.rgb_to_grayscale(X['Y'])\n"
         code += 'else:\n'
-        code += '    Y = X\n'
+        code += "    Y = X['Y']\n"
         return code
 
 
@@ -107,13 +107,13 @@ class ArgmaxCodeGenerator(CodeGenerator):
         self._dim = dim
 
     def get_code(self):
-        code = 'Y = tf.argmax(X, %s)' % self._dim
+        code = "Y = tf.argmax(X['Y'], %s)" % self._dim
         return code
 
 
 class SoftmaxCodeGenerator(CodeGenerator):
     def get_code(self):
-        code = 'Y = tf.nn.softmax(X)'
+        code = "Y = tf.nn.softmax(X['Y'])"
         return code
 
 
@@ -126,7 +126,7 @@ class MergeCodeGenerator(CodeGenerator):
         # TODO: in python version < 3.6 dicts aren't ordered. caution if we allow custom environments in the future.
         
         if self._type == 'Concat':
-            # Due to duplicate values in X, just take every other value.            
+            # Due to duplicate values in X['Y'], just take every other value.            
             code  = "for i in range(0, len(list(X['Y'].values())), 2):\n"
             code += "    if not Y:\n"
             code += "        Y = list(X['Y'].values())[i]\n"
@@ -165,13 +165,13 @@ class FullyConnectedCodeGenerator(CodeGenerator):
         self._activation = activation
 
     def get_code(self):
-        code  = "input_size = np.cumprod(X.get_shape().as_list()[1:])[-1]\n"
+        code  = "input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]\n"
         code += "shape = [input_size, %s]\n" % self._n_neurons
         code += "initial = tf.truncated_normal(shape, stddev=0.1)\n"
         code += "W = tf.Variable(initial)\n"
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._n_neurons
         code += "b = tf.Variable(initial)\n"
-        code += "flat_node = tf.cast(tf.reshape(X, [-1, input_size]), dtype=tf.float32)\n"
+        code += "flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)\n"
         code += "node = tf.matmul(flat_node, W)\n"
 
         if self._dropout:
@@ -226,7 +226,7 @@ class ConvCodeGenerator(CodeGenerator):
             if self._conv_dim != "Automatic":
                 code += "dim_str = '%s'\n" % self._conv_dim
             else:
-                code += "dim_str = str(len(X.get_shape())-1)+'D'\n"
+                code += "dim_str = str(len(X['Y'].get_shape())-1)+'D'\n"
 
             code += "Y = tf.nn.max_pool(Y, %s, %s, '%s', dim_str)" % (self._pool_area, self._pool_stride, self._pool_padding)
         if self._pool and self._pooling == "Mean":
@@ -234,48 +234,48 @@ class ConvCodeGenerator(CodeGenerator):
         return code
 
     def _get_code_1d(self):
-        code  = "shape = [%s, X.get_shape()[-1], %s]\n" % (self._patch_size, self._feature_maps)
+        code  = "shape = [%s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
         code += "W = tf.Variable(initial)\n"
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial)\n"
         code += "\n"        
-        code += "node = tf.nn.conv1d(X, W, %s, padding='%s')\n" % (self._stride, self._padding)
+        code += "node = tf.nn.conv1d(X['Y'], W, %s, padding=%s)\n" % (self._stride, self._padding)
         return code
 
     def _get_code_2d(self):
-        code  = "shape = [%s, %s, X.get_shape()[-1], %s]\n" % (self._patch_size, self._patch_size, self._feature_maps)
+        code  = "shape = [%s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
         code += "W = tf.Variable(initial)\n"
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial)\n"
         code += "\n"        
-        code += "node = tf.nn.conv2d(X, W, strides=[1, %s, %s, 1], padding='%s')\n" % (self._stride, self._stride, self._padding)
+        code += "node = tf.nn.conv2d(X['Y'], W, strides=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
         return code
     
     def _get_code_3d(self):
-        code  = "shape = [%s, %s, %s, X.get_shape()[-1], %s]\n" % (self._patch_size, self._patch_size, self._patch_size, self._feature_maps)
+        code  = "shape = [%s, %s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._patch_size, self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
         code += "W = tf.Variable(initial)\n"
         code += "\n"        
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial)\n"
         code += "\n"        
-        code += "node = tf.nn.conv3d(X, W, strides=[1, %s, %s, %s, 1], padding='%s')\n" % (self._stride, self._stride, self._stride, self._padding)
+        code += "node = tf.nn.conv3d(X['Y'], W, strides=[1, %s, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._stride, self._padding)
         return code
     
     def _get_code_autodim(self):
-        code  = "dim = str(len(X.get_shape())-1)\n"
-        code += "shape = [%s]*dim + [X.get_shape()[-1]], %s]\n" % (self._patch_size, self._feature_maps)
+        code  = "dim = str(len(X['Y'].get_shape())-1)\n"
+        code += "shape = [%s]*dim + [X['Y'].get_shape().as_list()[-1]], %s]\n" % (self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
         code += "W = tf.Variable(initial)\n"
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial)\n"
         code += "\n"        
-        code += "node = tf.nn.conv2d(X, W, strides=[1]+[%s]*dim+[1], padding='%s')\n" % (self._stride, self._padding)
+        code += "node = tf.nn.conv2d(X['Y'], W, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
         return code
         
         

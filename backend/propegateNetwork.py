@@ -1,4 +1,4 @@
-from codehq import CodeHQ
+from codehq import CodeHqNew
 
 import numpy as np
 import tensorflow as tf
@@ -8,6 +8,7 @@ import math
 from lw_graph import Graph
 from extractVariables import *
 from createDataObject import createDataObject
+from codeHQKeeper import codeHQKeeper
 
 import sys
 import traceback
@@ -71,7 +72,7 @@ class lwNetwork():
         ErrorDict=dict()
         ErrorRowDict=dict()
 
-        codeHQ=CodeHQ()
+        codeHQ=CodeHqNew()
         for Id in list(graph.keys()):
             content=graph[Id]['Info']
             ErrorDict[Id]=""
@@ -200,15 +201,17 @@ class lwNetwork():
                                 content["Code"]+=new_row
                             else:
                                 content["Code"]+=row+"\n"   
+                    # try:
+                    #     codeString=content["Code"]
+                    #     if type(codeString) is dict:
+                    #         codeString="\n".join(list(codeString.values()))
+                    # except:
+                    #     codeString=codeHQ.get_code(content['Type'],content['Properties'],X)
+                    codeObj=codeHQKeeper(Id,content)
+                    print(codeObj.generateCode())
                     try:
-                        codeString=content["Code"]
-                        if type(codeString) is dict:
-                            codeString="\n".join(list(codeString.values()))
-                    except:
-                        codeString=codeHQ.get_code(content['Type'],content['Properties'],X)
-
-                    try:
-                        exec(codeString,safe_dict)    #,{"__builtins__":None},safe_dict
+                        # exec(codeString,safe_dict)    #,{"__builtins__":None},safe_dict
+                        safe_dict=codeObj.executeCode(globals_=safe_dict)
 
                     except SyntaxError as e:
                         print(traceback.format_exc())

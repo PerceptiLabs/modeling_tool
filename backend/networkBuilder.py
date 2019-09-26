@@ -1,6 +1,7 @@
-from codehq import CodeHQ
+from codehq import CodeHqNew
 # from data import Data
 from dataKeeper import dataKeeper as Data
+from codeHQKeeper import codeHQKeeper
 from extractVariables import *
 
 import numpy as np
@@ -80,7 +81,7 @@ class NetworkBuilder():
         # print(safe_dict)
         # exec("print(keep_prob)",{"__builtins__":None},safe_dict)
         # error
-        codeHQ=CodeHQ()
+        codeHQ=None
         for Id in list(graph.keys()):
             content=graph[Id]['Info']
             log.info("Building network component of type {} with id {}".format(content["Type"], Id))
@@ -240,12 +241,16 @@ class NetworkBuilder():
                         else:
                             content["Code"]["Output"]+=row+"\n" 
 
-                if content["Code"]["Output"]!="":
-                    codeString=content["Code"]["Output"]
-                else:
-                    codeString=codeHQ.get_code(content['Type'],content['Properties'],X)
+                # if content["Code"]["Output"]!="":
+                #     codeString=content["Code"]["Output"]
+                # else:
+                #     codeString=codeHQ.get_code(content['Type'],content['Properties'],X)
 
-                self._exec(codeString, safe_dict)
+                codeObj=codeHQKeeper(Id,content)
+                print(codeObj.generateCode())
+                safe_dict=codeObj.executeCode(globals_=safe_dict)
+
+                # self._exec(codeString, safe_dict)
                 #exec(codeString,{"__builtins__":None},safe_dict)
                 
                 outputDict[Id]=safe_dict["Y"]       #The variables run in exec are not added to local() but to the safe_dict

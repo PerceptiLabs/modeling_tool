@@ -1,4 +1,4 @@
-from codehq import CodeHQ
+from codehq import CodeHqNew
 from networkBuilder import NetworkBuilder
 from networkExporter import exportNetwork
 
