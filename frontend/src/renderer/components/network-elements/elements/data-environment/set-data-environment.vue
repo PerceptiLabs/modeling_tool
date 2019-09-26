@@ -17,7 +17,7 @@
           chart-switch(
             key="1"
             :chart-label="chartLabel"
-            :chart-data="imgData"
+            :chart-data="Mix_settingsData_imgData"
           )
         .form_row
           .form_label Batch size:
@@ -28,7 +28,7 @@
       .settings-layer_section
         .form_row
           input.form_input(type="text" placeholder="c:" readonly
-          v-model="inputPath"
+          v-model="Mix_settingsData_inputPath"
           )
           button.btn.btn--primary(type="button"
             @click="loadFile"
@@ -38,7 +38,7 @@
           chart-switch.data-settings_chart(
             key="2"
             :disable-header="true"
-            :chart-data="imgData"
+            :chart-data="Mix_settingsData_imgData"
           )
 
 </template>
@@ -90,14 +90,14 @@
     },
     computed: {
       chartLabel() {
-        return `Action space: ${this.actionSpace}`
+        return `Action space: ${this.Mix_settingsData_actionSpace}`
       }
     },
     watch: {
       'settings.accessProperties.Atari': {
         handler(newVal) {
           if(newVal) {
-            this.dataSettingsPlot('DataEnvironment');
+            this.Mix_settingsData_dataSettingsPlot('DataEnvironment');
           }
         },
         immediate: true
@@ -107,13 +107,13 @@
       setTab(i) {
         this.tabSelected = i;
         this.settings.accessProperties.EnvType = this.tabs[i].type;
-        this.imgData = null;
-        this.dataSettingsPlot('DataEnvironment')
+        this.Mix_settingsData_imgData = null;
+        this.Mix_settingsData_dataSettingsPlot('DataEnvironment')
       },
-      saveLoadFile(pathArr) {
+      saveLoadFile(pathArr, type) {
         this.disabledBtn = false;
-        this.settings.accessProperties.Path = pathArr;
-        this.dataSettingsPlot('DataEnvironment')
+        this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
+        this.Mix_settingsData_dataSettingsPlot('DataEnvironment')
       },
       loadFile() {
         this.disabledBtn = true;
@@ -125,7 +125,7 @@
           ]
         };
         openLoadDialog(opt)
-          .then((pathArr)=> this.saveLoadFile(pathArr))
+          .then((pathArr)=> this.saveLoadFile(pathArr, 'file'))
           .catch(()=> {
             this.disabledBtn = false;
           })

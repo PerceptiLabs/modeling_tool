@@ -25,10 +25,10 @@ mac
 npm run lint
 
 # clone project
-git clone --depth=1 https://redmine-git.webssa.com/git/quantumnet
+git clone --depth=1 https://PerceptiLabs@dev.azure.com/PerceptiLabs/PerceptiLabs/_git/PerceptiLabs
 git remote set-branches origin '*'
 git fetch -v
-git checkout BRACH //dev, master, beta-testing, web
+git checkout BRACH //dev, stage, master, web-dev, web-master
 
 ```
 

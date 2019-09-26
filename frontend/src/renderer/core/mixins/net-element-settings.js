@@ -17,7 +17,7 @@ const netElementSettings = {
   },
   mounted() {
     this.$store.dispatch('mod_api/API_getInputDim')
-      .then(()=>{
+      .then(()=> {
         if(!this.currentEl.layerCode) this.updateCode();
         else this.coreCode = JSON.parse(JSON.stringify(this.currentEl.layerCode));
 

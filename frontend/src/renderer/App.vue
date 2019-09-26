@@ -131,9 +131,9 @@
         }
       },
       appReady() {
-        ipcRenderer.send('app-ready');
         const splash = document.getElementById('splashscreen');
-        setTimeout(()=>{
+        setTimeout(()=> {
+          ipcRenderer.send('app-ready');
           splash.remove();
           document.body.className = "";
           this.$store.dispatch('mod_tracker/EVENT_appStart');
