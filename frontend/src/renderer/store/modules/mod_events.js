@@ -1,6 +1,6 @@
 import {ipcRenderer}  from 'electron'
 import router         from "@/router";
-import {filePCRead, openLoadDialog, loadPathFolder} from "@/core/helpers";
+import {filePCRead, loadPathFolder} from "@/core/helpers";
 
 const namespaced = true;
 
@@ -129,11 +129,11 @@ const actions = {
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)
   },
-  EVENT_hotKeyEsc({commit, rootGetters, dispatch}) {
+  EVENT_hotKeyEsc({commit}) {
     commit('set_globalPressKey', 'esc');
   },
   EVENT_hotKeyCopy({rootGetters, dispatch}) {
-    if(rootGetters['mod_workspace/GET_networkIsOpen']) {
+    if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
       let arrBuf = [];
       arrSelect.forEach((el) => {
@@ -162,7 +162,7 @@ const actions = {
   },
   EVENT_hotKeyPaste({rootState, rootGetters, dispatch}) {
     let buffer = rootState.mod_buffer.buffer;
-    if(rootGetters['mod_workspace/GET_networkIsOpen'] && buffer) {
+    if(rootGetters['mod_workspace/GET_enableHotKeyElement'] && buffer) {
       buffer.forEach((el) => {
         dispatch('mod_workspace/ADD_element', el, {root: true});
       });

@@ -6,7 +6,6 @@ from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
 
 import math
 from lw_graph import Graph
-from datahandler_lw import DataHandlerLW
 from extractVariables import *
 from createDataObject import createDataObject
 
@@ -95,7 +94,11 @@ class lwNetwork():
 
             if content["Type"]=="DataData":
                 if Id in dataDict:
-                    #If there is data loaded in the component
+                    if dataDict[Id].locals_:
+                        safe_dict=dataDict[Id].locals_
+                    else:
+                        safe_dict=dataDict[Id].executeCode(globals_=safe_dict)
+                    
                     data=dataDict[Id].sample
                     try:
                         if np.shape(data)[0]!=1:
@@ -103,8 +106,14 @@ class lwNetwork():
                     except:
                         pass
                     data=np.array(data,dtype=np.float32)
+
                     outputDict[Id]=data
-                    outputVariables[Id]={"Y":data}
+                    safe_dict.pop("X", None)
+                    outputVariables[Id]={ k : safe_dict[k] for k in set(safe_dict) - set(origionalSafeDict) }
+                    outputVariables[Id]["Y"]=data
+                    safe_dict=origionalSafeDict.copy()
+                    # outputDict[Id]=data
+                    # outputVariables[Id]={"Y":data}
                 # elif "checkpoint" in content and content["checkpoint"] and content["OutputDim"]!="":
                 elif "checkpoint" in content and content["checkpoint"]!=[]:
                     #If the component is loaded from a pre-trained network
@@ -199,20 +208,16 @@ class lwNetwork():
                         codeString=codeHQ.get_code(content['Type'],content['Properties'],X)
 
                     try:
-                        # codeObject=compile(codeString, 'codeString.py', 'exec')
                         exec(codeString,safe_dict)    #,{"__builtins__":None},safe_dict
 
                     except SyntaxError as e:
                         print(traceback.format_exc())
                         error_class = e.__class__.__name__
                         detail = e.args[0]
-                        # line_number=e.lineno
                         tbObj=traceback.TracebackException(*sys.exc_info())
 
                         ErrorDict[Id]="".join(tbObj.format_exception_only())
                         ErrorRowDict[Id]=tbObj.lineno or "?"
-                        # ErrorDict[Id]="%s at line %d: %s" % (error_class, line_number, detail)
-                        # ErrorRowDict[Id]=line_number
                     
                         outputDict[Id]=""
                         safe_dict.pop("X", None)
@@ -234,11 +239,6 @@ class lwNetwork():
 
                         if line_number=="":
                             line_number = tb.tb_lineno
-                        # try:    
-                        #     line_number = traceback.extract_tb(tb)[1][1]
-                        # except:
-                        #     line_number = traceback.extract_tb(tb)[-1][1]
-                        # print("AHAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAHAAAAAAAAAAAAAAAAAAAA",traceback.extract_tb(tb)[1][1])
                         
                         ErrorDict[Id]="%s at line %d: %s" % (error_class, line_number, detail)
                         ErrorRowDict[Id]=line_number
@@ -247,30 +247,7 @@ class lwNetwork():
                         safe_dict.pop("X", None)
                         outputVariables[Id]={ k : safe_dict[k] for k in set(safe_dict) - set(origionalSafeDict) }
                         safe_dict=origionalSafeDict.copy()         
-
-
-                    
-                           
-                    # for codeLine in codeString.split("\n"):
-                        #     try:
-                        #         exec(codeLine)
-                        #     except SyntaxError as e:
-                        #         error_class = e.__class__.__name__
-                        #         detail = e.args[0]
-                        #         line_number=codeString.split("\n").index(codeLine)+1
-                        #         ErrorDict[Id]="%s at line %d: %s" % (error_class, line_number, detail)
-                        #         ErrorRowDict[Id]=line_number
-                        #         break
-                        #     except Exception as e:
-                        #         error_class = e.__class__.__name__
-                        #         try:
-                        #             detail = e.args[0]
-                        #         except:
-                        #             detail=e
-                        #         line_number=codeString.split("\n").index(codeLine)+1
-                        #         ErrorDict[Id]="%s at line %d: %s" % (error_class, line_number, detail)
-                        #         ErrorRowDict[Id]=line_number
-                        #         break             
+       
                     else:
                         outputDict[Id]=safe_dict["Y"]
                         safe_dict.pop("X", None)

@@ -57,8 +57,7 @@ function createWindow () {
       //plugins: true,
     }
   });
-  //console.log('process.env.IS_DEBUG_MODE', process.env.IS_DEBUG_MODE);
-  if(process.env.IS_DEBUG_MODE) mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
@@ -126,9 +125,9 @@ function createWindow () {
       : mainWindow.maximize()
   });
   ipcMain.on('app-ready', (event) => {
+    mainWindow.maximize();
     mainWindow.checkForUpdates();
     mainWindow.webContents.send('get-app-version', app.getVersion());
-    mainWindow.maximize();
   });
   ipcMain.on('check-update', (event) => {
     mainWindow.checkForUpdates();

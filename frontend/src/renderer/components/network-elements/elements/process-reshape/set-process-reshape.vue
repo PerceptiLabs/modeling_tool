@@ -6,18 +6,6 @@
     @press-confirm="confirmSettings"
     @press-update="updateCode"
     )
-    //-template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
-          .form_label Reshape:
-          #tutorial_input-reshape.form_input(data-tutorial-hover-info)
-            triple-input.tutorial-relative(v-model="settings.Shape")
-
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
-          .form_label Transpose:
-          #tutorial_input-transpose.form_input(data-tutorial-hover-info)
-            triple-input(v-model="settings.Permutation")
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
@@ -26,13 +14,20 @@
             triple-input-element-reshape.tutorial-relative(
               v-model="settings.Shape"
               :axis-position="settings.Permutation"
+              :validate-sum="currentEl.layerMeta.InputDim"
               @swap12="swap12"
               @swap23="swap23"
               @swap13="swap13"
               )
 
       .settings-layer_section
-      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
+          .form_label Transpose map:
+          .form_input
+            setting-reshape-image(
+              :axis-settings="settings.Shape"
+            )
+      //-.settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
           .form_label Transpose:
           #tutorial_input-transpose.form_input(data-tutorial-hover-info)
@@ -50,12 +45,13 @@
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import TripleInput    from "@/components/base/triple-input";
   import TripleInputElementReshape    from "@/components/base/triple-input--element-reshape.vue";
+  import SettingReshapeImage    from "@/components/network-elements/elements-settings/setting-reshape-image.vue";
   import { mapActions, mapGetters } from 'vuex';
 
   export default {
     name: 'SetProcessReshape',
     mixins: [mixinSet],
-    components: { TripleInput, TripleInputElementReshape },
+    components: { TripleInput, TripleInputElementReshape, SettingReshapeImage },
     data() {
       return {
         settings: {

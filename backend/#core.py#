@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow.python.saved_model import tag_constants
 import math
 from graph import Graph
-from dataKeeper import dataKeeper as Data
+from data import Data
 from extractVariables import *
 
 import sys
@@ -69,7 +69,8 @@ class core():
     def startNetwork(self,warningQueue,errorQueue,commandQ,resultQ,jsonNetwork):
         if log.isEnabledFor(logging.DEBUG):
             log.debug("startNetwork with jsonNetwork: " + pprint.pformat(jsonNetwork))
-            
+
+        
         #import json
         #with open('net.json', 'w') as f:
         #    json.dump(jsonNetwork, f, indent=4)
@@ -150,10 +151,10 @@ class core():
                 self.trainingIterations=self.maxIter
                 self.batch_size=graph[i]['Info']["Data"].source_obj.batch_size
             elif graph[i]['Info']['Type']=="DataData":
-                self.maxIter=graph[i]['Info']["Data"].maxIter
-                self.maxTestIter=graph[i]['Info']["Data"].maxTestIter
-                self.batch_size=graph[i]['Info']["Data"].batch_size
-                self.trainingIterations=graph[i]['Info']["Data"].trainingIterations
+                self.maxIter=graph[i]['Info']["Data"].source_obj.maxIter
+                self.maxTestIter=graph[i]['Info']["Data"].source_obj.maxTestIter
+                self.batch_size=graph[i]['Info']["Data"].source_obj.batch_size
+                self.trainingIterations=graph[i]['Info']["Data"].source_obj.trainingIterations
 
 
         
@@ -494,7 +495,7 @@ class core():
             except:
                 return False
         
-        if type(thing) in [list, tuple, set, np.ndarray]:
+        if type(thing) in [list, tuple, set]:
             return all([self._isNumberOrNumberContainer(x) for x in thing])
         elif isinstance(thing, dict):
             return all([self._isNumberOrNumberContainer(x) for x in thing.values()])
