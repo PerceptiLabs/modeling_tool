@@ -1,5 +1,5 @@
 import numpy as np
-from datadata_generator import DataDataCodeGenerator
+from code_generator import DataDataCodeGenerator
 import copy
 
 import tensorflow as tf
