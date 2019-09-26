@@ -94,7 +94,11 @@ class lwNetwork():
 
             if content["Type"]=="DataData":
                 if Id in dataDict:
-                    safe_dict=dataDict[Id].executeCode(globals_=safe_dict)
+                    if dataDict[Id].locals_:
+                        safe_dict=dataDict[Id].locals_
+                    else:
+                        safe_dict=dataDict[Id].executeCode(globals_=safe_dict)
+                    
                     data=dataDict[Id].sample
                     try:
                         if np.shape(data)[0]!=1:

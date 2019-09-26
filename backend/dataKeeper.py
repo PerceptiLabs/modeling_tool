@@ -33,13 +33,13 @@ class dataKeeper():
         self.locals_=locals_
         return locals_
 
-    def updateProperties(self, accessProperties):
+    def updateProperties(self, accessProperties, seed=0, globals_=globals(), locals_={}):
         #Remove all sources here which have not been changed from the last accessproperties? We then need a way to send those into the locals and merge with the current ones.
         #Alternative would be to check which variables have changed from last instance (compare code somehow?) and then just put those variables in locals.
         if accessProperties!=self.accessProperties:
             self.accessProperties=accessProperties
-            self.generateCode()
-            self.executeCode()
+            self.generateCode(seed=seed)
+            self.executeCode(globals_=globals_, locals_=locals_)
 
     def getMetadata(self):
         if "EnvType" in self.accessProperties:
