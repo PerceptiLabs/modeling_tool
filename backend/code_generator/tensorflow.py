@@ -1,4 +1,6 @@
-from code_generator import CodeGenerator
+from collections import namedtuple
+
+from code_generator import CodeGenerator, CodePart
 
 
 def get_activation_code(var_in, var_out, func=None):
@@ -74,7 +76,7 @@ class OneHotCodeGenerator(CodeGenerator):
         self._n_classes = n_classes
         
     def get_code(self):
-        code = "Y=tf.one_hot(tf.cast(X,dtype=tf.int32), %s)" % self._n_classes
+        code = "Y=tf.one_hot(tf.cast(X['Y'],dtype=tf.int32), %s)" % self._n_classes
         return code
 
     
@@ -95,7 +97,7 @@ class CropCodeGenerator(CodeGenerator):
 
 class GrayscaleCodeGenerator(CodeGenerator):
     def get_code(self):
-        code  = 'if X.get_shape().as_list()[-1] == 3:\n'
+        code  = 'if X["Y"].get_shape().as_list()[-1] == 3:\n'
         code += '    Y = tf.image.rgb_to_grayscale(X)\n'
         code += 'else:\n'
         code += '    Y = X\n'
@@ -165,13 +167,13 @@ class FullyConnectedCodeGenerator(CodeGenerator):
         self._activation = activation
 
     def get_code(self):
-        code  = "input_size = np.cumprod(X.get_shape().as_list()[1:])[-1]\n"
+        code  = "input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]\n"
         code += "shape = [input_size, %s]\n" % self._n_neurons
         code += "initial = tf.truncated_normal(shape, stddev=0.1)\n"
         code += "W = tf.Variable(initial)\n"
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._n_neurons
         code += "b = tf.Variable(initial)\n"
-        code += "flat_node = tf.cast(tf.reshape(X, [-1, input_size]), dtype=tf.float32)\n"
+        code += "flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)\n"
         code += "node = tf.matmul(flat_node, W)\n"
 
         if self._dropout:
@@ -226,7 +228,7 @@ class ConvCodeGenerator(CodeGenerator):
             if self._conv_dim != "Automatic":
                 code += "dim_str = '%s'\n" % self._conv_dim
             else:
-                code += "dim_str = str(len(X.get_shape())-1)+'D'\n"
+                code += "dim_str = str(len(X['Y'].get_shape().as_list())-1)+'D'\n"
 
             code += "Y = tf.nn.max_pool(Y, %s, %s, '%s', dim_str)" % (self._pool_area, self._pool_stride, self._pool_padding)
         if self._pool and self._pooling == "Mean":
@@ -234,118 +236,115 @@ class ConvCodeGenerator(CodeGenerator):
         return code
 
     def _get_code_1d(self):
-        code  = "shape = [%s, X.get_shape()[-1], %s]\n" % (self._patch_size, self._feature_maps)
+        code  = "shape = [%s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
         code += "W = tf.Variable(initial)\n"
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial)\n"
         code += "\n"        
-        code += "node = tf.nn.conv1d(X, W, %s, padding='%s')\n" % (self._stride, self._padding)
+        code += "node = tf.nn.conv1d(X['Y'], W, %s, padding=%s)\n" % (self._stride, self._padding)
         return code
 
     def _get_code_2d(self):
-        code  = "shape = [%s, %s, X.get_shape()[-1], %s]\n" % (self._patch_size, self._patch_size, self._feature_maps)
+        code  = "shape = [%s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
         code += "W = tf.Variable(initial)\n"
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial)\n"
         code += "\n"        
-        code += "node = tf.nn.conv2d(X, W, strides=[1, %s, %s, 1], padding='%s')\n" % (self._stride, self._stride, self._padding)
+        code += "node = tf.nn.conv2d(X['Y'], W, strides=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
         return code
     
     def _get_code_3d(self):
-        code  = "shape = [%s, %s, %s, X.get_shape()[-1], %s]\n" % (self._patch_size, self._patch_size, self._patch_size, self._feature_maps)
+        code  = "shape = [%s, %s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._patch_size, self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
         code += "W = tf.Variable(initial)\n"
         code += "\n"        
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial)\n"
         code += "\n"        
-        code += "node = tf.nn.conv3d(X, W, strides=[1, %s, %s, %s, 1], padding='%s')\n" % (self._stride, self._stride, self._stride, self._padding)
+        code += "node = tf.nn.conv3d(X['Y'], W, strides=[1, %s, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._stride, self._padding)
         return code
     
     def _get_code_autodim(self):
-        code  = "dim = str(len(X.get_shape())-1)\n"
-        code += "shape = [%s]*dim + [X.get_shape()[-1]], %s]\n" % (self._patch_size, self._feature_maps)
+        code  = "dim = str(len(X['Y'.get_shape().as_list())-1)\n"
+        code += "shape = [%s]*dim + [X['Y'].get_shape().as_list()[-1]], %s]\n" % (self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
         code += "W = tf.Variable(initial)\n"
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial)\n"
         code += "\n"        
-        code += "node = tf.nn.conv2d(X, W, strides=[1]+[%s]*dim+[1], padding='%s')\n" % (self._stride, self._padding)
+        code += "node = tf.nn.conv2d(X['Y'], W, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
         return code
-        
-
-TRAIN_TEMPLATE = """
-cost = tf.reduce_mean(tf.square(y_tensor - y))
-step = tf.train.%s(learning_rate=%f).minimize(cost)
-
-sess = tf.InteractiveSession()
-sess.run(tf.initialize_all_variables())
 
 
-api.dataset.get_number_of_samples()
-
-for epoch in range(%d):
-    api.mode.set_training()
-    api.data.store_value('epoch', epoch)
-
-    for iter in range(%d):
-        sess.run(step, feed_dict={X_tensor: X_, y_tensor: y_})
-
-        api.data.store_value('iter', iter)
-        api.ui.process()
-
-    api.mode.set_validation()
-    y_pred, cost_ = sess.run([y, cost], feed_dict={X_tensor: X_, y_tensor: y_})
-
-    api.data.store_value('loss', cost_)
-    api.data.store_value('iter', iter)
-    api.ui.process()
-"""
-
-TEST_TEMPLATE = """
-api.mode.set_testing()
-
-
-
-
-y_pred = sess.run(y, feed_dict={X_tensor: X_})
-api.data.store_value('y_pred', y_pred.squeeze())
-api.ui.process()
-"""
-
+TrainInputBranch = namedtuple('TrainInput', ['direct_layer', 'data_layer'])
 
     
 class TrainNormalCodeGenerator(CodeGenerator):
-    def __init__(self, optimizer='adam', learning_rate=0.001):
+    def __init__(self, network_input_branch, labels_input_branch,
+                 n_epochs, n_iterations,
+                 optimizer='adam', learning_rate=0.001):
+        self._net_in = network_input_branch
+        self._lbl_in = labels_input_branch
         self._optimizer = optimizer
         self._learning_rate = learning_rate
-        self._n_epochs = 300
-        self._n_iters = 3
+        self._n_epochs = n_epochs
+        self._n_iters = n_iterations
 
     def _get_training_code(self):
         if self._optimizer == 'adam':
-            optimizer_class = 'AdamOptimizer'
+            opt_class = 'AdamOptimizer'
         elif self._optimizer == 'adagrad':
-            optimizer_class = 'AdagradOptimizer'
+            opt_class = 'AdagradOptimizer'
 
-        code = TRAIN_TEMPLATE % (optimizer_class,
-                                 self._learning_rate,
-                                 self._n_epochs,
-                                 self._n_iters)
+        code  = ""
+        code += "y_pred = X['%s']['Y']\n" % self._net_in.direct_layer
+        code += "y_label = X['%s']['Y']\n" % self._lbl_in.direct_layer      
+        code += "cost = tf.reduce_mean(tf.square(y_pred - y_label))\n"
+        code += "step = tf.train.%s(learning_rate=%f).minimize(cost)\n" % (opt_class, self._learning_rate)
+
+        code += "train_iterator_network = tf.get_default_graph().get_operation_by_name('train_iterator_%s')\n" % self._net_in.data_layer
+        code += "train_iterator_label = tf.get_default_graph().get_operation_by_name('train_iterator_%s')\n" % self._lbl_in.data_layer
+        
+        code += "sess = tf.InteractiveSession()\n"
+        code += "sess.run(tf.initialize_all_variables())\n"
+        code += "\n"
+        code += "for epoch in range(%d):\n" % self._n_epochs
+        code += "    api.mode.set_training()\n"
+        code += "    api.data.store_value('epoch', epoch)\n"
+        code += "    sess.run(train_iterator_network)\n"
+        code += "    sess.run(train_iterator_label)\n"        
+        code += "    \n"
+        code += "    for iter in range(%d):\n" % self._n_iters
+        code += "        sess.run(step)\n"
+        code += "        \n"
+        code += "        api.data.store_value('iter', iter)\n"
+        code += "        api.ui.process()\n"
+        code += "    \n"
+        code += "    api.mode.set_validation()\n"
+        code += "    cost_ = sess.run(cost)\n"
+        code += "    \n"
+        code += "    api.data.store_value('loss', cost_)\n"
+        code += "    api.data.store_value('iter', iter)\n"
+        code += "    api.ui.process()\n"
         return code
 
     def _get_testing_code(self):
-        return TEST_TEMPLATE
+        code  = "api.mode.set_testing()\n"
+        code += "y_pred_ = sess.run(y_pred)\n"
+        code += "api.data.store_value('y_pred', y_pred_.squeeze())\n"
+        code += "api.ui.process()\n"
+        return code
+
 
     def get_code_parts(self):
         cp1 = CodePart('training', self._get_training_code())
         cp2 = CodePart('testing', self._get_testing_code())
-        return [cp1, cp2]
+        return [cp1, cp2] # TODO: Should probably be dicts?
 
     def get_code(self):
         code = self._get_training_code() + '\n' + self._get_testing_code()

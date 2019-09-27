@@ -261,6 +261,11 @@ class coreLogic():
             with self.resultQ.mutex:
                 self.resultQ.queue.clear()
 
+            import json
+            with open('results.json') as f:
+                json.dumps(f, self.savedResultsDict)
+            
+
         return {"content":"Results saved"}
 
     def getTrainingStatistics(self,value):

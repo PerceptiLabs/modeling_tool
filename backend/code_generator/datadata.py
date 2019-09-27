@@ -129,11 +129,12 @@ class S3BucketJsonStrategy(AbstractStrategy):
 
 
 class DataDataCodeGenerator(CodeGenerator):
-    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=[]):
+    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=[], layer_id=None):
         self._seed = seed
         self.batch_size=batch_size
         self.shuffle=shuffle
         self.columns=columns
+        self._layer_id = layer_id
         
         self._strategies = []
         self._partitions = []
@@ -203,7 +204,7 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "X_test=X_test.repeat(1).batch(1)\n"
         code += "\n"
         code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
-        code += "train_iterator = iterator.make_initializer(X_train)\n"
+        code += "train_iterator = iterator.make_initializer(X_train, name='train_iterator_%s')\n" % self._layer_id
         code += "validation_iterator = iterator.make_initializer(X_validation)\n"
         code += "test_iterator = iterator.make_initializer(X_test)\n"
         code += "Y = next_elements = iterator.get_next()\n"
@@ -339,8 +340,7 @@ if __name__ == "__main__":
                     'pd': pd,
                     'json': json,
                     'S3BucketAdapter': S3BucketAdapter,                    
-                    'np': np}
-        
+                    'np': np}        
         locals_ = {}
         
         print("Executing code:")

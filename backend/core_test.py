@@ -1,167 +1,30 @@
 import tensorflow as tf
 import numpy as np
 import time
-import copy 
+import sys
+import copy
+import queue
+import os
+import logging
+import pprint
 from abc import ABC, abstractmethod
 from collections import namedtuple
+from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
 
-NET_CODE = """
-X_tensor = tf.placeholder(tf.float32, [None, 2], name='X')
-y_tensor = tf.placeholder(tf.float32, [None, 1], name='y')
-
-
-W1 = tf.Variable(tf.truncated_normal(shape=[2,10], stddev=0.01))
-b1 = tf.Variable(tf.constant(0.01))
-z1 = tf.matmul(X_tensor, W1) + b1
-
-W2 = tf.Variable(tf.truncated_normal(shape=[10,1], stddev=0.01))
-b2 = tf.Variable(tf.constant(0.01))
-z2 = tf.matmul(z1, W2) + b2
-
-y = tf.nn.sigmoid(z2)
-"""
-
-DATA_CODE = """
-y_ = np.array([[0], [1]], dtype=np.float32)
-api.data.store_value('sample', X_[0])
-"""
+log = logging.getLogger(__name__)
 
 
-DATA_LAYER_X = """
-Y = np.array([[1,2], [7,8]], dtype=np.float32)
-api.data.store_value('sample', Y[0])
-
-Y = tf.data.Dataset.from_tensor_slices(Y)
-"""
-
-DATA_LAYER_Y = """
-Y = np.array([[0], [1]], dtype=np.float32)
-api.data.store_value('sample', Y[0])
-
-Y = tf.data.Dataset.from_tensor_slices(Y)
-"""
+def switch_to(mode):
+    #Hack to turn eager mode on and off so it does not affect the computational core (since eager mode is global) (can be a problem if running when core already is started?)
+    ctx = context()._eager_context
+    ctx.mode = mode
+    ctx.is_eager = mode == EAGER_MODE
 
 
-
-
-
-CodePart = namedtuple('CodePart', ['name', 'code'])
-    
-
-class CodeGenerator(ABC):
-    @abstractmethod
-    def get_code(self):
-        raise NotImplementedError
-
-    def get_code_parts(self):
-        code = self.get_code()        
-        code_parts = [CodePart(name=None, code=code)]
-        return code_parts
-    
-
-class CustomCodeGenerator(CodeGenerator):
-    def __init__(self, input_):
-        if isinstance(input_, str):
-            self._code_parts = [CodePart(name=None, code=input_)]
-        elif isinstance(input_, list) and all([isinstance(x, CodePart) for x in input_]):
-            self._code_parts = copy.copy(input_)
-        else:
-            raise ValueError("Inputs must be either string or list of CodeParts")
-
-    def get_code_parts(self):
-        return self._code_parts
-
-    def get_code(self):
-        code = ''
-        for cp in self._code_parts:
-            code += cp.code + '\n'            
-        return code
-
-
-
-TRAIN_TEMPLATE = """
-cost = tf.reduce_mean(tf.square(y_tensor - y))
-step = tf.train.%s(learning_rate=%f).minimize(cost)
-
-sess = tf.InteractiveSession()
-sess.run(tf.initialize_all_variables())
-
-
-api.dataset.get_number_of_samples()
-
-for epoch in range(%d):
-    api.mode.set_training()
-    api.data.store_value('epoch', epoch)
-
-    for iter in range(%d):
-        sess.run(step, feed_dict={X_tensor: X_, y_tensor: y_})
-
-        api.data.store_value('iter', iter)
-        api.ui.process()
-
-    api.mode.set_validation()
-    y_pred, cost_ = sess.run([y, cost], feed_dict={X_tensor: X_, y_tensor: y_})
-
-    api.data.store_value('loss', cost_)
-    api.data.store_value('iter', iter)
-    api.ui.process()
-"""
-
-TEST_TEMPLATE = """
-api.mode.set_testing()
-
-
-
-
-y_pred = sess.run(y, feed_dict={X_tensor: X_})
-api.data.store_value('y_pred', y_pred.squeeze())
-api.ui.process()
-"""
-
-class TrainNormalCodeGenerator(CodeGenerator):
-    def __init__(self, optimizer='adam', learning_rate=0.001):
-        self._optimizer = optimizer
-        self._learning_rate = learning_rate
-        self._n_epochs = 300
-        self._n_iters = 3
-
-    def _get_training_code(self):
-        if self._optimizer == 'adam':
-            optimizer_class = 'AdamOptimizer'
-        elif self._optimizer == 'adagrad':
-            optimizer_class = 'AdagradOptimizer'
-
-        code = TRAIN_TEMPLATE % (optimizer_class,
-                                 self._learning_rate,
-                                 self._n_epochs,
-                                 self._n_iters)
-        return code
-
-    def _get_testing_code(self):
-        return TEST_TEMPLATE
-
-    def get_code_parts(self):
-        cp1 = CodePart('training', self._get_training_code())
-        cp2 = CodePart('testing', self._get_testing_code())
-        return [cp1, cp2]
-
-    def get_code(self):
-        code = self._get_training_code() + '\n' + self._get_testing_code()
-        return code
 
 
 import os
 
-        
-        
-        
-
-        
-        
-        
-        
-        
-                
     
 
 class ExecutionScope:
@@ -184,7 +47,20 @@ class ExecutionScope:
         return copy.copy(self._globals)
 
     def run(self, code):
-        exec(code, self._globals, self._locals)
+        try:
+            exec(code, self._globals, self._locals)
+        except:
+            text  = "Exception when executing code:\n"
+            text += "------------------------------\n"
+            text += code
+            text += "------------------------------\n"
+            #text += "Globals:\n"
+            #text += pprint.pformat(self._globals)
+            text += "Locals:\n"
+            text += pprint.pformat(self._locals)
+            log.error(text)
+            log.exception("Exception:")            
+            raise
 
     def set_local(self, key, value):
         self._locals[key] = copy.copy(value)
@@ -216,10 +92,6 @@ class DataContainer:
         except KeyError:
             self._data_dict[root_key] = [value]
 
-    def to_dict(self):
-        data_dict = copy.copy(self._data_dict)
-        return data_dict
-
     def __getitem__(self, id_):
         data = copy.copy(self._data_dict.get(id_))
         return data
@@ -227,6 +99,29 @@ class DataContainer:
     def __contains__(self, id_):
         return id_ in self._data_dict
 
+    def to_dict(self):
+        data_dict = copy.copy(self._data_dict)
+        return data_dict
+
+    def to_result_dict(self):
+        result_dict = {
+            "iter": iter_,
+            "epoch": max_iter,
+            "maxEpochs": max_epochs,
+            "batch_size": batch_size,
+            "graphObj": graph_obj,
+            "trainingIterations": training_iterations,
+            "trainDict": train_dict,
+            "testIter": test_iter,
+            "maxTestIter": max_test_iter,
+            "testDict": test_dict,
+            "trainingStatus": training_status,
+            "status": status
+        }
+        return result_dict
+
+
+    
 
 class DataPipe:
     # Class concerned with entering data correctly.
@@ -426,10 +321,11 @@ class CoreState:
 
         
 class Core:
-    def __init__(self, graph_dict, command_queue, result_queue):
-        self._graph = self._build_graph(graph_dict)
+    def __init__(self, graph_dict, command_queue, result_queue, codehq):
+        self._graph = graph_dict
         self._command_queue = command_queue
         self._result_queue = result_queue
+        self._codehq = codehq
 
     def run(self):        
         core_state = CoreState()        
@@ -448,23 +344,63 @@ class Core:
                     'np': np,
                     'api': api}
 
-        with ExecutionScope(globals_) as e:
-            for id_, code_generator in self._graph.items():
-                data_pipe.root_key = id_
-                code = code_generator.get_code()
-                e.run(code)
-        
 
-    def _build_graph(self, graph_dict):
-        return graph_dict # TODO: FIX THIS! SHOULD USE OLD GRAPH CODE.
+        outputs = {}        
+        for id_, content in self._graph.items():
+
+            code_gen = self._codehq.get_code_generator(id_, content)
+            code = code_gen.get_code()
+            
+            locals_ = {'X': {}}
+
+            # Collect outputs from input layers
+
+            if len(content["Con"]) == 1:
+                input_layer_id = content["Con"][0]
+
+                if '_sample' in outputs[input_layer_id]:
+                    Y = outputs[input_layer_id]['_sample']
+                else:
+                    Y = outputs[input_layer_id]['Y']                        
+                
+                X = {'Y': Y}
+                locals_['X'] = X
+            elif len(content["Con"]) > 1:
+                X = {}
+                for input_layer_id in content["Con"]:
+                    if '_sample' in outputs[input_layer_id]:
+                        Y = outputs[input_layer_id]['_sample']
+                    else:
+                        Y = outputs[input_layer_id]['Y']                        
+                    X[input_layer_id] = {'Y': Y}
+                locals_['X'] = X
+
+            log.info("---------------------------------")
+            log.info("Executing code from layer {} [{}]".format(id_, content["Info"]["Type"]))
+            log.info("Code: " + code)                                 
+            log.error("Locals: " + pprint.pformat(locals_))
+            log.info("---------------------------------")
+
+            
+            tf.disable_eager_execution()
+            print("EAGERLY:",tf.executing_eagerly())
+
+            with ExecutionScope(globals_, locals_) as e:
+                data_pipe.root_key = id_
+                e.run(code)
+                outputs[id_] = e.locals
+
+                pprint.pprint(e.globals)
+
 
     
 LayerPreviewInfo = namedtuple('LayerPreviewInfo', ['Y', 'shape'])
 
 
 class GraphPropagator:
-    def __init__(self, graph_dict):
+    def __init__(self, graph_dict, codehq):
         self._graph = graph_dict
+        self._codehq = codehq
         #sess = tf.InteractiveSession()
         #sess.run(tf.initialize_all_variables())
         #self._sess = sess
@@ -481,18 +417,72 @@ class GraphPropagator:
                     'api': api}
         outputs = {}
 
-        graph_shortened = list(self._graph.items())[:-1]
+        switch_to(EAGER_MODE)
+        #tf.enable_eager_execution()
 
-        tf.enable_eager_execution()
-        
-        with ExecutionScope(globals_) as e:
-            e.set_local('X', None)
-            
-            for id_, code_generator in graph_shortened:
-                output = self._execute_layer(data_container, data_pipe, e, id_, code_generator)
-                outputs[id_] = output
+        for id_, content in self._graph.items():
+
+            if content["Info"]["Type"] == "TrainNormal":
+                print("Skip training layer...")
+                continue
+
+
+            code_gen = self._codehq.get_code_generator(id_, content)
+            code = code_gen.get_code()
+
+            locals_ = {'X': {}}
+
+            # Collect outputs from input layers
+
+            if len(content["Con"]) == 1:
+                input_layer_id = content["Con"][0]
+
+                if '_sample' in outputs[input_layer_id]:
+                    Y = outputs[input_layer_id]['_sample']
+                else:
+                    Y = outputs[input_layer_id]['Y']                        
                 
-        tf.disable_eager_execution()
+                X = {'Y': Y}
+                locals_['X'] = X
+            elif len(content["Con"]) > 1:
+                X = {}
+                for input_layer_id in content["Con"]:
+                    if '_sample' in outputs[input_layer_id]:
+                        Y = outputs[input_layer_id]['_sample']
+                    else:
+                        Y = outputs[input_layer_id]['Y']                        
+                    X[input_layer_id] = {'Y': Y}
+                locals_['X'] = X
+
+            log.info("---------------------------------")
+            log.info("Executing code from layer {} [{}]".format(id_, content["Info"]["Type"]))
+            log.info("Code: " + code)                                 
+            #log.error("Locals: " + pprint.pformat(locals_))
+            log.info("---------------------------------")
+            
+            with ExecutionScope(globals_, locals_) as e:
+                e.run(code)
+                outputs[id_] = e.locals
+
+            
+            #if "Train" in code_generator.__class__.__name__:
+            #    print("Skipping training layer!")
+            #    continue
+
+        log.info("DONE EXECUTING! GETTING SHAPES OF LAYERS")
+
+        for id_, content in self._graph.items():
+            if id_ not in outputs:
+                continue
+            
+            Y = outputs[id_].get('Y')
+            Y = np.atleast_2d(Y)
+            log.info("Layer {} [{}] has shape: {}".format(id_,
+                                                          content["Info"]["Type"],
+                                                          Y.shape[1:]))
+
+        switch_to(GRAPH_MODE)            
+        #tf.disable_eager_execution()
         
         return outputs
                     
@@ -501,12 +491,28 @@ class GraphPropagator:
         code = code_generator.get_code()
         scope.run(code)
 
+        print("RUNNING CODE-----")
+        print(code)
+
         Y = scope.locals['Y']
 
-        if id_ in data_container and 'sample' in data_container[id_]:
-            Y = np.atleast_2d(data_container[id_]['sample'])
+        #if id_ in data_container and 'sample' in data_container[id_]:
+        #    Y = np.atleast_2d(data_container[id_]['sample'])
+        #
+        #    print("SAMPLE IS IN CONTAINER!")
+        #    import pdb; pdb.set_trace()
+
+        sample = scope.locals.get('_sample')
+        if sample is not None:
+            Y = sample
+            print("SAMPLE IS PRESENT!")
+
+            
+        import pdb; pdb.set_trace()
+
+        
                     
-        scope.set_local('X', Y)
+        scope.set_local('X', {'Y': Y})
         output = Y
         return output
         
@@ -571,6 +577,10 @@ class Graph(object):
 
     
 if __name__ == "__main__":
+    logging.basicConfig(stream=sys.stdout,
+                        format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
+                        level=logging.DEBUG)
+
     import json
     with open('net.json', 'r') as f:
         json_network = json.load(f)
@@ -579,36 +589,21 @@ if __name__ == "__main__":
 
     from codehq import CodeHqNew as CodeHq
 
+    #for id_, content in graph.graphs.items():
+    #    code_gen = CodeHq.get_code_generator(id_, content)
 
 
-    generator_graph = dict()
-    
-    for id_, content in graph.graphs.items():
-        code_gen = CodeHq.get_code_generator(id_, content)
-        generator_graph[id_] = code_gen
-
-        
-    for id_, code_generator in generator_graph.items():
-        print("---------------------")
-        print("id", id_)
-        print("code")
-        print(code_generator.get_code())
-        print("---------------------")        
-
-    gp = GraphPropagator(graph)
+    gp = GraphPropagator(graph.graphs, CodeHq)
     output = gp.propagate()
 
-    from pprint import pprint
-    pprint(output)
 
-    #raise SystemExit
-
+    
     #import pdb; pdb.set_trace()
 
     cc = queue.Queue()
     rc = queue.Queue()
     
-    core = Core(graph, cc, rc)
+    core = Core(graph.graphs, cc, rc, CodeHq)
     core.run()
     
 
