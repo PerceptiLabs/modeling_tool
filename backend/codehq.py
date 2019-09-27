@@ -68,12 +68,12 @@ class CodeHqNew:
                                          target_height=props["Target_height"],
                                          target_width=props["Target_width"])
             return code_gen
-        elif type_ == 'ProcessEmbed':            
+        elif type_ == 'ProcessEmbed':
             code_gen = WordEmbeddingCodeGenerator()
             return code_gen
         elif type_ == 'ProcessGrayscale':
             code_gen = GrayScaleCodeGenerator()
-            return code_gen        
+            return code_gen
         elif type_ == 'ProcessOneHot':
             code_gen = OneHotCodeGenerator(n_classes=props["N_class"])
             return code_gen
@@ -92,8 +92,13 @@ class CodeHqNew:
             code_gen = ArgmaxCodeGenerator(dim=props["Dim"])
             return code_gen
         elif type_ == 'MathMerge':
+<<<<<<< HEAD
             code_gen = MergeCodeGenerator(type_=props["Type"], merge_dim=props["Merge_dim"])
             return code_gen                                          
+=======
+            code_gen = MergeCodeGenerator(type_=prop["Type"], merge_dim=prop["Merge_dim"])
+            return code_gen
+>>>>>>> e1c8ee55c6eb7d41a589856733be8b72eaa3b181
         elif type_ == 'MathSoftmax':
             code_gen = SoftmaxCodeGenerator()
             return code_gen
@@ -102,31 +107,31 @@ class CodeHqNew:
         elif 'Code' in content["Info"]:
             code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
             code_generator = CustomCodeGenerator(code_parts)
-            return code_generator        
+            return code_generator
         else:
             log.error("Unrecognized layer. Type {}: {}".format(type_, pprint.pformat(content)))
             return None
-        
+
 
 if __name__ == "__main__":
     import json
     from graph import Graph
-    
+
     with open('net.json', 'r') as f:
         json_network = json.load(f)
 
     graph = Graph(json_network["Layers"])
 
     generator_graph = dict()
-    
+
     for id_, content in graph.graphs.items():
         code_gen = CodeHqNew.get_code_generator(id_, content)
         generator_graph[id_] = code_gen
         print("-----------------")
         print(code_gen)
         print(code_gen.get_code())
-        print("-----------------")        
-        
+        print("-----------------")
+
 
 
 # class CodeHQ(object):
