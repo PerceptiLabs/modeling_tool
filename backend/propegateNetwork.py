@@ -9,6 +9,7 @@ from lw_graph import Graph
 from extractVariables import *
 from createDataObject import createDataObject
 from codeHQKeeper import codeHQKeeper
+from dataKeeper import dataKeeper
 
 import sys
 import traceback
@@ -77,14 +78,17 @@ class lwNetwork():
             content=graph[Id]['Info']
             ErrorDict[Id]=""
             ErrorRowDict[Id]=""
+            previousHash=[]
 
             if len(graph[Id]['Con'])>1:
                 X=dict()
                 for i in graph[Id]['Con']:
                     X.update(dict.fromkeys([i, graph[i]['Info']["Name"]],outputVariables[i]))
+                    previousHash.append(dataDict[i].hash)
                     # Xvariables.update(dict.fromkeys([i, graph[i]['Info']["Name"]],outputVariables[i]))
             elif len(graph[Id]['Con'])==1:
                 X=outputVariables[graph[Id]['Con'][0]]
+                previousHash.append(dataDict[graph[Id]['Con'][0]].hash)
                 # Xvariables=outputVariables[graph[Id]['Con'][0]]
 
             if "X" in locals():
@@ -94,11 +98,45 @@ class lwNetwork():
             #     safe_dict["Xvariables"]=Xvariables
 
             if content["Type"]=="DataData":
-                if Id in dataDict:
-                    if dataDict[Id].locals_:
+                if "checkpoint" in content and content["checkpoint"]!=[]:
+                    #If the component is loaded from a pre-trained network
+                    data=""
+
+                    outDim=ast.literal_eval("["+content["OutputDim"].replace("x",",").replace("None","1")+"]")
+                    
+                    data=np.zeros(outDim)
+                    try:
+                        if np.shape(data)[0]!=1:
+                            data=np.reshape(data, [1,*np.shape(data)])
+                    except:
+                        pass
+                    data=np.array(data,dtype=np.float32)
+                    outputDict[Id]=data
+                    outputVariables[Id]={"Y":data}
+                else:
+                    # if dataDict[Id].locals_:
+                    #     safe_dict=dataDict[Id].locals_
+                    # else:
+                    #     safe_dict=dataDict[Id].executeCode(globals_=safe_dict)
+                    if Id not in dataDict:
+                        if content["Properties"] is not None:
+                            dataDict[Id]=dataKeeper(Id,content["Properties"]["accessProperties"])
+                        else:
+                            dataDict[Id]=dataKeeper(Id,"")
+                            outputDict[Id]=""
+                            outputVariables[Id]=""
+                            continue
+                        
+                    # codeObj=codeHQKeeper(Id,content)
+                    # print(codeObj.generateCode())
+                    try:
+                        # exec(codeString,safe_dict)    #,{"__builtins__":None},safe_dict
+                        dataDict[Id].updateProperties(previousHash, content, globals_=safe_dict)
                         safe_dict=dataDict[Id].locals_
-                    else:
-                        safe_dict=dataDict[Id].executeCode(globals_=safe_dict)
+                    except Exception as e:
+                        outputDict[Id]=""
+                        outputVariables[Id]=""
+                        continue
                     
                     data=dataDict[Id].sample
                     try:
@@ -116,45 +154,8 @@ class lwNetwork():
                     # outputDict[Id]=data
                     # outputVariables[Id]={"Y":data}
                 # elif "checkpoint" in content and content["checkpoint"] and content["OutputDim"]!="":
-                elif "checkpoint" in content and content["checkpoint"]!=[]:
-                    #If the component is loaded from a pre-trained network
-                    data=""
 
-                    outDim=ast.literal_eval("["+content["OutputDim"].replace("x",",").replace("None","1")+"]")
-                    
-                    data=np.zeros(outDim)
-                    try:
-                        if np.shape(data)[0]!=1:
-                            data=np.reshape(data, [1,*np.shape(data)])
-                    except:
-                        pass
-                    data=np.array(data,dtype=np.float32)
-                    outputDict[Id]=data
-                    outputVariables[Id]={"Y":data}
-                else:
-                    # :'(
-                    outputDict[Id]=""
-                    outputVariables[Id]=""
                 
-                # try:
-                #     # if Id not in dataDict:
-                #     #     dataH=DataHandlerLW(graph[Id]['Info']["Properties"]["accessProperties"])
-                #     #     dataDict[Id]=dataH
-                #     data=dataDict[Id].sample
-                #     try:
-                #         if np.shape(data)[0]!=1:
-                #             data=np.reshape(data, [1,*np.shape(data)])
-                #     except:
-                #         pass
-                #     data=np.array(data,dtype=np.float32)
-                #     outputDict[Id]=outputVariables[Id]=data
-                # except:
-                #     outputDict[Id]=""
-                #     outputVariables[Id]=""
-
-                # outputDict[Id]=content["Properties"]["Data"]
-                # outputVariables[Id]=content["Properties"]["Data"]
-
             elif content["Type"]=="DataEnvironment":
                 try:
                     data=dataDict[Id].sample
@@ -207,11 +208,15 @@ class lwNetwork():
                     #         codeString="\n".join(list(codeString.values()))
                     # except:
                     #     codeString=codeHQ.get_code(content['Type'],content['Properties'],X)
-                    codeObj=codeHQKeeper(Id,content)
-                    print(codeObj.generateCode())
+                    if Id not in dataDict:
+                        dataDict[Id]=codeHQKeeper(Id,content)
+                        
+                    # codeObj=codeHQKeeper(Id,content)
+                    # print(codeObj.generateCode())
                     try:
                         # exec(codeString,safe_dict)    #,{"__builtins__":None},safe_dict
-                        safe_dict=codeObj.executeCode(globals_=safe_dict)
+                        dataDict[Id].updateProperties(previousHash, content, globals_=safe_dict)
+                        safe_dict=dataDict[Id].locals_ if dataDict[Id].locals_ else safe_dict
 
                     except SyntaxError as e:
                         print(traceback.format_exc())

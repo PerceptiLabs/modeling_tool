@@ -66,7 +66,8 @@ class core():
 
         self.outputVariablesStructure=dict()
         
-    def startNetwork(self,warningQueue,errorQueue,commandQ,resultQ,jsonNetwork):
+    def startNetwork(self,warningQueue,errorQueue,commandQ,resultQ,dataDict,jsonNetwork):
+        dataDict=dataDict.copy()
         if log.isEnabledFor(logging.DEBUG):
             log.debug("startNetwork with jsonNetwork: " + pprint.pformat(jsonNetwork))
             
@@ -119,7 +120,7 @@ class core():
         # Build network/model
         # Either use FLAG_DISTRIBUTED and have if/else statement when doing sess.run for TensorFlow OR put whole startNetwork() content inside a with strategy.scope()
         try:
-            outputDict, outputVariables, self.FLAG_REINFORCE = NetworkBuilder().buildNetwork(self.graphObj,jsonNetwork,self.randomSeed,keep_prob,checkpointDict,self.batch_size,warningQueue,errorQueue)
+            outputDict, outputVariables, self.FLAG_REINFORCE = NetworkBuilder().buildNetwork(self.graphObj,jsonNetwork,self.randomSeed,keep_prob,checkpointDict,self.batch_size,dataDict,warningQueue,errorQueue)
         except Exception as e:
             self.resetVariables()
             # errorQueue.put("The network did not build correctly.")
