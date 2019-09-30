@@ -2,7 +2,7 @@ import {shell, ipcRenderer }   from 'electron'
 import fs    from 'fs';
 import store from '@/store'
 
-import { workspaceGrid }   from '@/core/constants.js'
+import { workspaceGrid, pathSlash }   from '@/core/constants.js'
 
 /*modal window*/
 const openLoadDialog = function (options) {
@@ -65,7 +65,7 @@ const projectPCSave = function (projectPathArr, fileContent) {
   if (!fs.existsSync(projectPath)){
     fs.mkdirSync(projectPath);
   }
-  const jsonPath = `${projectPath}\\${fileContent.networkID}.json`;
+  const jsonPath = `${projectPath}${pathSlash}${fileContent.networkID}.json`;
   return filePCSave(jsonPath, JSON.stringify(fileContent))
 };
 const folderPCDelete = function (path) {

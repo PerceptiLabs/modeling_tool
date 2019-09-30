@@ -3,6 +3,7 @@ import canvg        from 'canvg'
 import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 
 import { projectPCSave, generateID, loadPathFolder, deepCopy }  from "@/core/helpers.js";
+import { pathSlash }  from "@/core/constants.js";
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -239,7 +240,7 @@ export default {
 
       const currentNet = this.currentNetwork;
       const projectId = newId || currentNet.networkID;
-      const pathSaveProject = [`${savePath[0]}\\${projectId}`];
+      const pathSaveProject = [savePath[0] + pathSlash + projectId];
       let prepareNet = cloneNet(currentNet, projectId, pathSaveProject);
       /*check Is Trained Net + do ScreenShot*/
       Promise.all([
@@ -368,7 +369,7 @@ function cloneNet(net, idProject, pathProject) {
     name: toFile.networkName,
     id: idProject,
     pathProject: pathProject,
-    pathModel: `${pathProject[0]}\\${idProject}.json`,
+    pathModel: pathProject[0] + pathSlash + idProject + '.json',
     isTrained: false,
     isCloud: false,
   };
