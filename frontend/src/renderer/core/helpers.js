@@ -106,7 +106,8 @@ const throttleEv = function (func, ms) {
   var isThrottled = false,
     savedArgs,
     savedThis;
-  let delay = 33 || ms; //30Hz
+  let delay = ms || 33; //30Hz
+
   function wrapper() {
 
     if (isThrottled) {
