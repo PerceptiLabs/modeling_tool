@@ -13,8 +13,10 @@ import logging
 log = logging.getLogger(__name__)
 
 class coreLogic():
-    def __init__(self,networkName):
+    def __init__(self,networkName, dataDict):
         self.networkName=networkName
+        self.dataDict=dataDict
+
         self.warningQueue=queue.Queue()
         self.errorQueue=queue.Queue()
         self.commandQ=queue.Queue()
@@ -38,7 +40,7 @@ class coreLogic():
         self.network=network
         if self.cThread is None:
             try:
-                self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
+                self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, self.dataDict, network)
                 self.cThread.start()
             except:
                 self.errorQueue.put("Could not boot up the new thread to run the computations on")
@@ -52,14 +54,14 @@ class coreLogic():
                     time.sleep(0.05)
 
                 try:
-                    self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
+                    self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, self.dataDict, network)
                     self.cThread.start()
                     #self.status="Setup"
                 except:
                     self.errorQueue.put("Could not boot up the new thread to run the computations on")
             else:
                 try:
-                    self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
+                    self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, self.dataDict, network)
                     self.cThread.start()
                     #self.status="Setup"
                 except:
