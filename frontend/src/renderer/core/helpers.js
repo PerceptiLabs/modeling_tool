@@ -29,6 +29,7 @@ const openSaveDialog = function (options) {
 const loadPathFolder = function (customOptions) {
   const optionsDefault = {
     title:"Load folder",
+    buttonLabel: "Load folder",
     properties: ['openDirectory']
   };
   let options = {...optionsDefault, ...customOptions};

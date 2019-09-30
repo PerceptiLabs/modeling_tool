@@ -223,7 +223,11 @@ export default {
       if(findIndexId(projectsList, network) >= 0) {
         newProjId = generateID();
       }
-      loadPathFolder()
+      const option = {
+        title: "Select folder",
+        buttonLabel: "Select folder"
+      };
+      loadPathFolder(option)
         .then((path)=> {
           this.saveNetwork(path, newProjId)
         })
