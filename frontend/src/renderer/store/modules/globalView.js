@@ -17,7 +17,10 @@ const state = {
     showInfoPopup: false,
     showErrorPopup: false,
     showWorkspaceBeforeImport: false,
+    showConfirmPopup: false,
   },
+  popupConfirmCancel: null,
+  popupConfirmOk: null,
 };
 const getters = {
   GET_appPath(state) {
@@ -63,6 +66,11 @@ const mutations = {
   gp_infoPopup(state, value) {
     state.globalPopup.showInfoPopup = value
   },
+  gp_confirmPopup(state, value) {
+    state.globalPopup.showConfirmPopup = value.text;
+    state.popupConfirmCancel = value.cancel;
+    state.popupConfirmOk = value.ok;
+  },
   gp_errorPopup(state, value) {
     state.globalPopup.showErrorPopup = value
   },
@@ -91,6 +99,9 @@ const actions = {
   },
   GP_infoPopup({commit}, value) {
     commit('gp_infoPopup', value);
+  },
+  GP_confirmPopup({commit}, value) {
+    commit('gp_confirmPopup', value);
   },
   GP_errorPopup({commit}, value) {
     commit('gp_errorPopup', value);

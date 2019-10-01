@@ -1,6 +1,7 @@
 import {ipcRenderer}  from 'electron'
 import router         from "@/router";
 import {filePCRead, loadPathFolder} from "@/core/helpers";
+import { pathSlash } from "@/core/constants";
 
 const namespaced = true;
 
@@ -43,6 +44,7 @@ const actions = {
     commit('set_calcArray')
   },
   EVENT_loadNetwork({dispatch, rootGetters}, {pathRootFolder, pathFile}) {
+    console.log(pathRootFolder, pathFile);
     let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
     let pathIndex;
     if(localProjectsList.length) {
@@ -85,8 +87,8 @@ const actions = {
     loadPathFolder(opt)
       .then((pathArr)=> {
         const pathRootFolder = pathArr[0];
-        const netId = pathRootFolder.slice(pathRootFolder.lastIndexOf('\\') + 1, pathRootFolder.length);
-        const pathFile = `${pathFolder}\\${netId}.json`;
+        const netId = pathRootFolder.slice(pathRootFolder.lastIndexOf(pathSlash) + 1, pathRootFolder.length);
+        const pathFile = `${pathRootFolder}${pathSlash}${netId}.json`;
         dispatch('EVENT_loadNetwork', {pathRootFolder, pathFile})
       })
       .catch((err)=> {});

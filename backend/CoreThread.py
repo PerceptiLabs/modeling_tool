@@ -5,7 +5,7 @@ from sentry_sdk import capture_exception
 from sentry_sdk import configure_scope
 
 class CoreThread(threading.Thread):
-   def __init__(self, func, warningQueue, errorQueue, commandQ, resultQ, network):
+   def __init__(self, func, warningQueue, errorQueue, commandQ, resultQ, dataDict, network):
       super(CoreThread,self).__init__()
       # threading.Thread.__init__(self)
       self.func=func
@@ -14,9 +14,10 @@ class CoreThread(threading.Thread):
       self.resultQ=resultQ  #The queue where the results will come in from
       self.commandQ=commandQ  #The Queue where we can give stop or pause commands to the thread
       self.network=network
+      self.dataDict=dataDict
    def run(self):
       try:
-         self.func(self.warningQueue,self.errorQueue,self.commandQ,self.resultQ,self.network)
+         self.func(self.warningQueue,self.errorQueue,self.commandQ,self.resultQ,self.dataDict,self.network)
       except Exception as e:
          print("--------------------------------")
          #ErrorDump with exact details

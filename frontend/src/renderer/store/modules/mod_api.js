@@ -1,5 +1,6 @@
 import coreRequest      from "@/core/apiCore.js";
 import { deepCopy }     from "@/core/helpers.js";
+import { pathSlash }    from "@/core/constants.js";
 
 const {spawn} = require('child_process');
 
@@ -14,7 +15,7 @@ function prepareNetwork(network) {
     /*prepare checkpoint*/
     if(rootPath && el.checkpoint.length) {
       const filePath = el.checkpoint[1].slice(0, el.checkpoint[1].length);
-      checkpointPath[1] = `${rootPath}\\${filePath}`;
+      checkpointPath[1] = rootPath + pathSlash + filePath;
     }
     /*prepare elements*/
     if(dataLayers.includes(el.componentName)) {

@@ -246,6 +246,9 @@ export default {
     },
     activeStepStoryboard() {
       return this.$store.state.mod_tutorials.activeStepStoryboard
+    },
+    confirmPopupAnswer() {
+      return this.$store.state.globalView.confirmPopupAnswer
     }
   },
   watch: {
@@ -265,6 +268,8 @@ export default {
       removeTooltip:            'mod_tutorials/removeTooltip',
       pauseTraining:            'mod_api/API_pauseTraining',
       offMainTutorial:          'mod_tutorials/offTutorial',
+      popupConfirm:             'globalView/GP_confirmPopup',
+      hideTooltip:              'mod_tutorials/hideTooltip'
     }),
     onOffBtn() {
       if(this.isTraining) this.trainStop();
@@ -334,8 +339,19 @@ export default {
       this.setInteractiveInfo(!this.interactiveInfoStatus);
     },
     toHomePage() {
-      this.offMainTutorial();
-      this.$router.push({name: 'projects'});
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$router.push({name: 'projects'});
+            }
+          });
+      } else {
+        this.$router.push({name: 'projects'});
+      }
     }
   }
 }
