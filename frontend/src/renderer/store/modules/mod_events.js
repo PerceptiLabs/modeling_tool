@@ -44,6 +44,7 @@ const actions = {
     commit('set_calcArray')
   },
   EVENT_loadNetwork({dispatch, rootGetters}, {pathRootFolder, pathFile}) {
+    console.log(pathRootFolder, pathFile);
     let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
     let pathIndex;
     if(localProjectsList.length) {
@@ -87,7 +88,7 @@ const actions = {
       .then((pathArr)=> {
         const pathRootFolder = pathArr[0];
         const netId = pathRootFolder.slice(pathRootFolder.lastIndexOf(pathSlash) + 1, pathRootFolder.length);
-        const pathFile = pathFolder+pathSlash+netId+'.json';
+        const pathFile = `${pathRootFolder}${pathSlash}${netId}.json`;
         dispatch('EVENT_loadNetwork', {pathRootFolder, pathFile})
       })
       .catch((err)=> {});
