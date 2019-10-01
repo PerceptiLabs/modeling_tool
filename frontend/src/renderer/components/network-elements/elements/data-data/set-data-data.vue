@@ -204,7 +204,8 @@
           ]
         };
         let optionTutorial = {
-          title:"Load file",
+          title: "Load file",
+          buttonLabel: 'Load file',
           defaultPath: `${this.appPath}basic-data`,
           properties: ['openFile'],
           filters: [
