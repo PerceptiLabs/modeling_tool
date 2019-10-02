@@ -1348,9 +1348,6 @@ const actions = {
      let elCoord = info.element.getBoundingClientRect();
      let tooltipArrow = 10;
      let isZoomElement = info.element.querySelector('.net-element_btn');
-
-
-     //let zoom = isDraggable !== 'false' ? 1 : store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
      let zoom = isZoomElement ? store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom : 1;
      switch (info.side) {
        case 'right':
