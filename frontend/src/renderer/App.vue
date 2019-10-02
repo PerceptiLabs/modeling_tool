@@ -1,7 +1,4 @@
 <template lang="pug">
-  //-#app(
-    v-hotkey="keymap"
-    )
   #app
     header-win.app-header(
       v-if="platform === 'win32'"
@@ -26,70 +23,74 @@
 
 <script>
   import {ipcRenderer}  from 'electron'
+  import { mapMutations, mapActions } from 'vuex';
 
   import HeaderLinux    from '@/components/header/header-linux.vue';
   import HeaderWin      from '@/components/header/header-win.vue';
   import HeaderMac      from '@/components/header/header-mac.vue';
-  import updatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
+  import UpdatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
   import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
-  import confirmPopup   from "@/components/global-popups/confirm-popup.vue";
+  import ConfirmPopup   from "@/components/global-popups/confirm-popup.vue";
 
   export default {
     name: 'TheApp',
-    components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup, confirmPopup },
+    components: {
+      HeaderLinux, HeaderWin, HeaderMac,
+      UpdatePopup, TheInfoPopup, ConfirmPopup
+    },
     created() {
-      this.$store.dispatch('mod_tracker/TRACK_initMixPanel');
-      this.$store.dispatch('mod_user/GET_LOCAL_userInfo');
+      this.trackerInit();
+      this.readUserInfo();
     },
     mounted() {
       /*Menu*/
-      ipcRenderer.on('get-app-version', (event, data) => {
-        this.$store.commit('globalView/SET_appVersion', data);
+      ipcRenderer.on('get-app-version', (event, data)=> {
+        this.SET_appVersion(data);
       });
 
       /*Auto update*/
-      ipcRenderer.on('checking-for-update', (event, updateInfo) => {
+      ipcRenderer.on('checking-for-update', (event, updateInfo)=> {
         //console.log('checking-for-update', updateInfo);
-        this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo)
+        this.SET_updateInfo(updateInfo)
       });
-      ipcRenderer.on('update-available', (event, updateInfo) => {
+      ipcRenderer.on('update-available', (event, updateInfo)=> {
         //console.log('update-available', updateInfo);
-        this.$nextTick(()=>{
-          this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
-          this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo);
+        this.$nextTick(()=> {
+          this.SET_showPopupUpdates(true);
+          this.SET_updateInfo(updateInfo)
         })
       });
-      ipcRenderer.on('update-not-available', (event, update) => {
+      ipcRenderer.on('update-not-available', (event, update)=> {
         //console.log('update-not-available', update);
         if(this.showNotAvailable) {
-          this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
-          this.$store.commit('mod_autoUpdate/SET_updateStatus', 'not update')
+          this.SET_showPopupUpdates(true);
+          this.SET_updateStatus('not update')
         }
       });
-      ipcRenderer.on('update-downloading', (event, percent) => {
+      ipcRenderer.on('update-downloading', (event, percent)=> {
         //console.log('update-downloading', percent);
-        this.$store.commit('mod_autoUpdate/SET_updateProgress', Math.round(percent));
+        this.SET_updateProgress(Math.round(percent));
       });
-      ipcRenderer.on('update-completed', (event, percent) => {
+      ipcRenderer.on('update-completed', (event, percent)=> {
         //console.log('update-completed', percent);
-        this.$store.commit('mod_autoUpdate/SET_updateStatus', 'done')
+        this.SET_updateStatus('done')
       });
-      ipcRenderer.on('update-error', (event, error) => {
-        this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', false);
-        if(error) this.$store.dispatch('globalView/GP_infoPopup', error);
+      ipcRenderer.on('update-error', (event, error)=> {
+        this.SET_showPopupUpdates(false);
+        if(error) this.openErrorPopup(error);
       });
 
-      ipcRenderer.on('show-mac-header', (event, value) => { this.showMacHeader = value });
-      ipcRenderer.on('info',            (event, data) => { console.log(data); });
-      ipcRenderer.on('show-restore-down-icon', (event, value) => {
-        this.$store.commit('globalView/SET_appIsFullView', value);
+      ipcRenderer.on('show-mac-header', (event, value)=> { this.showMacHeader = value });
+      ipcRenderer.on('info',            (event, data)=> { console.log(data); });
+      ipcRenderer.on('show-restore-down-icon', (event, value)=> {
+        this.SET_appIsFullView(value);
       });
 
       this.calcAppPath();
       this.checkToken();
-      this.$nextTick(() =>{
+      this.$nextTick(()=> {
         if(this.userId === 'Guest') {
-          this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
+          this.trackerCreateUser(this.userId);
         }
         this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
@@ -107,9 +108,6 @@
       showNotAvailable() {
         return this.$store.state.mod_autoUpdate.showNotAvailable
       },
-      // userToken() {
-      //   return this.$store.state.mod_user.userToken
-      // },
       userId() {
         return this.$store.getters['mod_user/GET_userID']
       }
@@ -121,10 +119,32 @@
         }
       },
       userId(newVal) {
-        this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
+        this.trackerCreateUser(newVal);
       }
     },
     methods: {
+      ...mapMutations({
+        SET_appVersion:       'globalView/SET_appVersion',
+        SET_appIsFullView:    'globalView/SET_appIsFullView',
+        SET_appPath:          'globalView/SET_appPath',
+        SET_updateInfo:       'mod_autoUpdate/SET_updateInfo',
+        SET_showPopupUpdates: 'mod_autoUpdate/SET_showPopupUpdates',
+        SET_updateStatus:     'mod_autoUpdate/SET_updateStatus',
+        SET_updateProgress:   'mod_autoUpdate/SET_updateProgress',
+      }),
+      ...mapActions({
+        openErrorPopup:   'globalView/GP_infoPopup',
+        trackerInit:      'mod_tracker/TRACK_initMixPanel',
+        trackerCreateUser:'mod_tracker/TRACK_initMixPanelUser',
+        trackerAppStart:  'mod_tracker/EVENT_appStart',
+        eventAppClose:    'mod_events/EVENT_appClose',
+        eventAppMinimize: 'mod_events/EVENT_appMinimize',
+        eventAppMaximize: 'mod_events/EVENT_appMaximize',
+        setUserToken:     'mod_user/SET_userToken',
+        readUserInfo:     'mod_user/GET_LOCAL_userInfo',
+        enableLogHistory: 'mod_workspace-history/SET_isEnableHistory'
+      }),
+
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {
           ipcRenderer.send('change-route', {path, id: this.userId})
@@ -136,7 +156,8 @@
           ipcRenderer.send('app-ready');
           splash.remove();
           document.body.className = "";
-          this.$store.dispatch('mod_tracker/EVENT_appStart');
+          this.trackerAppStart();
+          this.enableLogHistory(true);
         }, 1000)
       },
       calcAppPath() {
@@ -153,12 +174,12 @@
             path = resPath.slice(0, resPath.indexOf('resources'));
             break
         }
-        this.$store.commit('globalView/SET_appPath', path);
+        this.SET_appPath(path);
       },
       checkToken() {
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
-          this.$store.dispatch('mod_user/SET_userToken', localUserToken);
+          this.setUserToken(localUserToken);
           if(this.$router.history.current.name === 'login') {
             this.$router.replace({name: 'projects'});
           }
@@ -166,13 +187,13 @@
       },
       /*Header actions*/
       appClose() {
-        this.$store.dispatch('mod_events/EVENT_appClose');
+        this.eventAppClose();
       },
       appMinimize() {
-        this.$store.dispatch('mod_events/EVENT_appMinimize');
+        this.eventAppMinimize();
       },
       appMaximize() {
-        this.$store.dispatch('mod_events/EVENT_appMaximize');
+        this.eventAppMaximize();
       },
     },
   }
