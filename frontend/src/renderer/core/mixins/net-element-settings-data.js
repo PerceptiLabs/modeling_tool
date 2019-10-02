@@ -10,7 +10,7 @@ const netElementSettingsData = {
   },
   computed: {
     Mix_settingsData_currentNetworkID() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
+      return this.$store.getters['mod_workspace/GET_currentNetworkId']
     },
     Mix_settingsData_inputPath() {
       return this.settings.accessProperties.Path.join(', ')

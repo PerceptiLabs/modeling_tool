@@ -142,7 +142,7 @@
         eventAppMaximize: 'mod_events/EVENT_appMaximize',
         setUserToken:     'mod_user/SET_userToken',
         readUserInfo:     'mod_user/GET_LOCAL_userInfo',
-        enableLogHistory: 'mod_workspace-history/SET_isEnableHistory'
+        //enableLogHistory: 'mod_workspace-history/SET_isEnableHistory'
       }),
 
       sendPathToAnalist(path) {
@@ -157,7 +157,7 @@
           splash.remove();
           document.body.className = "";
           this.trackerAppStart();
-          this.enableLogHistory(true);
+          //this.enableLogHistory(true);
         }, 1000)
       },
       calcAppPath() {

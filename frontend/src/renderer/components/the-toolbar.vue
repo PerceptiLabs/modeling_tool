@@ -246,15 +246,11 @@ export default {
     },
     isDisabledPrevStep() {
       const history = this.networkHistory;
-      return !history && history.historyStep === history.historyNet.length
-      // if(!history) return true;
-      // else {
-      //
-      // }
+      return !!history && history.historyStep === history.historyNet.length - 1
     },
     isDisabledNextStep() {
       const history = this.networkHistory;
-      return !history && history.historyStep === 0
+      return !!history && history.historyStep === 0
     }
   },
   watch: {
@@ -282,7 +278,7 @@ export default {
       hideTooltip:          'mod_tutorials/hideTooltip',
       set_netMode:          'mod_workspace/SET_netMode',
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
-      toNextStepHistory:    'mod_workspace-history/TO_stepStepHistory',
+      toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
     }),
     onOffBtn() {
       if(this.isTraining) this.trainStop();

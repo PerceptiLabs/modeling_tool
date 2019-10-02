@@ -160,7 +160,7 @@ export default {
 
       saveLocalUserInfo:    'mod_user/UPDATE_LOCAL_userInfo',
       trackerModelSave:     'mod_tracker/EVENT_modelSave',
-      enableLogHistory:     'mod_workspace-history/SET_isEnableHistory'
+      //enableLogHistory:     'mod_workspace-history/SET_isEnableHistory'
     }),
     calcScaleMap() {
       this.$nextTick(()=> {
@@ -180,14 +180,14 @@ export default {
       this.delete_network(index)
     },
     setTabNetwork(index) {
-      this.enableLogHistory(false);
+      //this.enableLogHistory(false);
       this.set_showTrainingSpinner(false);
       if(this.statisticsIsOpen !== null) this.set_openStatistics(false);
       if(this.testIsOpen !== null) this.set_openTest(false);
       //if(this.isTutorialMode) return;
       this.set_currentNetwork(index);
       this.set_elementUnselect();
-      this.$nextTick(()=> { this.enableLogHistory(true) })
+      //this.$nextTick(()=> { this.enableLogHistory(true) })
     },
     toggleSidebar() {
       this.set_hideSidebar(!this.hideSidebar)

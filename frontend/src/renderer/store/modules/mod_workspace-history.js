@@ -3,19 +3,18 @@ const namespaced = true;
 const state = {
   history: {},
   maxSteps: 20,
-  isEnableHistory: false,
+  isEnableHistory: true,
 
 };
 
 const getters = {
-  GET_isEnableHistory(state, rootGetters) {
+  GET_isEnableHistory(state, getters, rootState, rootGetters) {
     return state.isEnableHistory && rootGetters['mod_workspace/GET_networkIsOpen']
   },
-  GET_currentNetHistory(state, rootGetters) {
-    const currentNetId = rootGetters['mod_workspace/GET_currentNetwork'].networkID;
-    return !!currentNetId
-      ? state.history[currentNetId]
-      : null
+  GET_currentNetHistory(state, getters, rootState, rootGetters) {
+    const currentNet = rootGetters['mod_workspace/GET_currentNetwork'];
+    if(!!currentNet) return state.history[currentNet.networkID];
+    else return null
   },
 };
 
@@ -30,22 +29,59 @@ const mutations = {
   },
   set_isEnableHistory(state, value) {
     state.isEnableHistory = value;
-  }
+  },
+  to_prevStepHistory(state, {currentID, dispatch}) {
+    let historyCurrNet = state.history[currentID];
+    if(historyCurrNet.historyStep < historyCurrNet.historyNet.length - 1) {
+      const numStep = ++state.history[currentID].historyStep;
+      dispatch('mod_workspace/SET_historyStep', historyCurrNet.historyNet[numStep], {root: true});
+      dispatch('mod_events/EVENT_calcArray', null, {root: true});
+    }
+  },
+  to_nextStepHistory(state, {currentID, dispatch}) {
+    let historyCurrNet = state.history[currentID];
+    if(historyCurrNet.historyStep) {
+      const numStep = --state.history[currentID].historyStep;
+      dispatch('mod_workspace/SET_historyStep', historyCurrNet.historyNet[numStep], {root: true});
+      dispatch('mod_events/EVENT_calcArray', null, {root: true});
+    }
+  },
+  update_nextStepHistory(state, {id, value, commit}) {
+    let historyCurrNet = state.history[id];
+    historyCurrNet.historyNet.splice(0, historyCurrNet.historyStep);
+    state.history[id].historyStep = 0;
+    commit('push_newSnapshot', {id, value});
+  },
 };
 
 const actions = {
-  PUSH_newSnapshot({rootGetters, commit, dispatch, state}, newData) {
+  PUSH_newSnapshot({rootGetters, commit, dispatch, state}) {
     const currentNet = rootGetters['mod_workspace/GET_currentNetwork'];
-    const currentId = currentNet.networkID;
+    const currentId = rootGetters['mod_workspace/GET_currentNetworkId'];
     let historyNet = state.history[currentId];
     const newSnapshot = {
       networkName: currentNet.networkName,
-      networkElementList: currentNet.networkElementList,
-      ...newData
+      networkElementList: cloneEl(currentNet.networkElementList),
     };
 
     if(!historyNet) { dispatch('UPDATE_networkList') }
-    commit('push_newSnapshot', {id: currentId, value: newSnapshot});
+    if(historyNet.historyStep) {
+      commit('update_nextStepHistory', {id: currentId, value: newSnapshot, commit});
+    }
+    else {
+      commit('push_newSnapshot', {id: currentId, value: newSnapshot});
+    }
+
+
+    function cloneEl(el) {
+      return JSON.parse(JSON.stringify(
+        el,
+        (key, val)=> {
+          if (key === 'calcAnchor') return undefined;
+          else return val;
+        },
+        ' '));
+    }
   },
   UPDATE_networkList({rootGetters, rootState, commit, state}) {
     const wsList = rootState.mod_workspace.workspaceContent;
@@ -72,17 +108,26 @@ const actions = {
   SET_isEnableHistory({commit}, val) {
     commit('set_isEnableHistory', val)
   },
-  TO_prevStepHistory({commit}) {
-
+  TO_prevStepHistory({commit, getters, rootGetters, dispatch}) {
+    if(getters.GET_isEnableHistory) {
+      dispatch('SET_isEnableHistory', false);
+      const currentID = rootGetters['mod_workspace/GET_currentNetworkId'];
+      commit('to_prevStepHistory', {currentID, dispatch});
+    }
   },
-  TO_nextStepHistory({commit}) {
-    commit('set_isEnableHistory')
+  TO_nextStepHistory({commit, getters, rootGetters, dispatch}) {
+    if(getters.GET_isEnableHistory) {
+      dispatch('SET_isEnableHistory', false);
+      const currentID = rootGetters['mod_workspace/GET_currentNetworkId'];
+      commit('to_nextStepHistory', {currentID, dispatch});
+    }
   },
 };
 
 export default {
   namespaced,
   state,
+  getters,
   mutations,
   actions
 }
