@@ -142,6 +142,17 @@ const deepCopy = function (object) {
   return JSON.parse(JSON.stringify(object))
 };
 
+const deepCloneNetwork = function (object) {
+  return JSON.parse(JSON.stringify(
+    object,
+    (key, val)=> {
+      if (key === 'calcAnchor') return undefined;
+      else return val;
+    },
+    ' ')
+  );
+};
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -156,5 +167,6 @@ export {
   calcLayerPosition,
   throttleEv,
   goToLink,
-  deepCopy
+  deepCopy,
+  deepCloneNetwork
 }

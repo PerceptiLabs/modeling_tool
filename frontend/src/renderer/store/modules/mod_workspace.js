@@ -112,6 +112,10 @@ const mutations = {
   reset_network(state) {
     state.workspaceContent = []
   },
+  RESTORE_network(state, val) {
+    state.workspaceContent = val.workspaceContent;
+    state.currentNetwork = val.currentNetwork;
+  },
   //---------------
   //  NETWORK
   //---------------

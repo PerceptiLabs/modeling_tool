@@ -1,3 +1,5 @@
+import { deepCloneNetwork }  from "@/core/helpers.js";
+
 const namespaced = true;
 
 const state = {
@@ -61,7 +63,7 @@ const actions = {
     let historyNet = state.history[currentId];
     const newSnapshot = {
       networkName: currentNet.networkName,
-      networkElementList: cloneEl(currentNet.networkElementList),
+      networkElementList: deepCloneNetwork(currentNet.networkElementList),
     };
 
     if(!historyNet) { dispatch('UPDATE_networkList') }
@@ -70,17 +72,6 @@ const actions = {
     }
     else {
       commit('push_newSnapshot', {id: currentId, value: newSnapshot});
-    }
-
-
-    function cloneEl(el) {
-      return JSON.parse(JSON.stringify(
-        el,
-        (key, val)=> {
-          if (key === 'calcAnchor') return undefined;
-          else return val;
-        },
-        ' '));
     }
   },
   UPDATE_networkList({rootGetters, rootState, commit, state}) {

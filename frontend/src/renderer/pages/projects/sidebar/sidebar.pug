@@ -6,6 +6,12 @@
 
 .form_holder
   button.btn.btn--outline-blue.projects-sidebar_link(type="button"
+    v-if="localUserInfo.workspace"
+    @click="openLastWS"
+  )
+    span Continue the last session
+
+  button.btn.btn--outline-blue.projects-sidebar_link(type="button"
     @click="openNetwork"
   )
     span Open model

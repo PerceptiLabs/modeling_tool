@@ -25,13 +25,11 @@
     name: 'pageQuantum',
     components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
-      if(!this.workspaceContent.length) {
-        this.$store.dispatch('mod_workspace/ADD_network');
-      }
+      if(!this.workspaceContent.length) this.ADD_network();
     },
     mounted() {
       this.showPage = true;
-      this.$store.commit('globalView/SET_appIsOpen', true);
+      this.set_appIsOpen(true);
       window.addEventListener("resize",  this.resizeEv, false);
       this.$nextTick(()=> {
         this.addDragListeners();
@@ -41,7 +39,7 @@
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
       this.removeDragListeners();
-      this.$store.commit('globalView/SET_appIsOpen', false);
+      this.set_appIsOpen(false);
     },
     data() {
       return {
@@ -86,10 +84,14 @@
     methods: {
       ...mapMutations({
         setShowStoryboard: 'mod_tutorials/SET_showTutorialStoryBoard',
+        set_appIsOpen: 'globalView/SET_appIsOpen',
+        add_dragElement: 'mod_workspace/ADD_dragElement',
       }),
       ...mapActions({
         tutorialPointActivate:  'mod_tutorials/pointActivate',
-        eventResize:            'mod_events/EVENT_eventResize'
+        eventResize:            'mod_events/EVENT_eventResize',
+        ADD_network:            'mod_workspace/ADD_network',
+        ADD_element:            'mod_workspace/ADD_element',
       }),
       addDragListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);
@@ -105,7 +107,10 @@
         this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
       },
       dragStart(event) {
-        if ( event.target.draggable && this.editIsOpen && event.target.className.includes('btn--layersbar')) {
+        if ( event.target.draggable
+          && this.editIsOpen
+          && event.target.className.includes('btn--layersbar')
+        ) {
           this.$refs.layersbar.addEventListener("dragend", this.dragEnd, false);
           this.$refs.layersbar.addEventListener("dragover", this.dragOver, false);
           this.$refs.layersbar.addEventListener("dragenter", this.dragEnter, false);
@@ -113,7 +118,7 @@
           this.$refs.layersbar.addEventListener("drop", this.dragDrop, false);
 
           this.dragMeta.dragged = event.target;
-          this.$store.commit('mod_workspace/ADD_dragElement', event);
+          this.add_dragElement(event);
           event.target.style.opacity = .75;
         }
       },
@@ -129,8 +134,8 @@
       dragLeave(event) {},
       dragDrop(event) {
         event.preventDefault();
-        if ( event.target.classList[0] === this.dragMeta.outClassName) {
-          this.$store.dispatch('mod_workspace/ADD_element', event)
+        if(event.target.classList[0] === this.dragMeta.outClassName) {
+          this.ADD_element(event)
         }
       },
     }

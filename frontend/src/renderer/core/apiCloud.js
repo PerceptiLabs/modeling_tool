@@ -18,7 +18,7 @@ const requestCloudApi = function (method, path, data, params) {
     .then((data)=> {
       if(data === 'updateToken') {
         return CloudAPI_updateToken()
-          .then(()=> singleRequest(method, path, dataRequest))
+          .then(()=> httpRequest(method, path, dataRequest))
           .then((data)=> data)
           .catch((error)=> {
             throw (error)

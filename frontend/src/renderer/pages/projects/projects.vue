@@ -102,6 +102,7 @@
       ...mapMutations({
         setTutorialMode:        'mod_tutorials/SET_isTutorialMode',
         setTutorialStoryBoard:  'mod_tutorials/SET_showTutorialStoryBoard',
+        restore_network:        'mod_workspace/RESTORE_network',
       }),
       ...mapActions({
         openNetwork:        'mod_events/EVENT_openNetwork',
@@ -110,6 +111,8 @@
         addNetwork:         'mod_workspace/ADD_network',
         saveLocalUserInfo:  'mod_user/UPDATE_LOCAL_userInfo',
         showInfoPopup:      'globalView/GP_infoPopup',
+        DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace'
+
       }),
       openTemplate(path) {
         this.loadNetwork(path)
@@ -123,6 +126,11 @@
       },
       openBasicTemplate(net) {
         this.addNetwork(net.network)
+      },
+      openLastWS() {
+        this.restore_network(this.localUserInfo.workspace);
+        this.DELETE_userWorkspace();
+        this.goNextPage()
       },
       goNextPage() {
         this.$router.push({name: 'app'});
