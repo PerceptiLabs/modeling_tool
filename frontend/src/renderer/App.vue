@@ -44,15 +44,10 @@
     },
     mounted() {
       /*Menu*/
-      ipcRenderer.on('get-app-version', (event, data)=> {
-        this.SET_appVersion(data);
-      });
+      ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));
 
       /*Auto update*/
-      ipcRenderer.on('checking-for-update', (event, updateInfo)=> {
-        //console.log('checking-for-update', updateInfo);
-        this.SET_updateInfo(updateInfo)
-      });
+      ipcRenderer.on('checking-for-update', (event, updateInfo)=> this.SET_updateInfo(updateInfo));
       ipcRenderer.on('update-available', (event, updateInfo)=> {
         //console.log('update-available', updateInfo);
         this.$nextTick(()=> {
@@ -67,14 +62,8 @@
           this.SET_updateStatus('not update')
         }
       });
-      ipcRenderer.on('update-downloading', (event, percent)=> {
-        //console.log('update-downloading', percent);
-        this.SET_updateProgress(Math.round(percent));
-      });
-      ipcRenderer.on('update-completed', (event, percent)=> {
-        //console.log('update-completed', percent);
-        this.SET_updateStatus('done')
-      });
+      ipcRenderer.on('update-downloading', (event, percent)=> this.SET_updateProgress(Math.round(percent)));
+      ipcRenderer.on('update-completed', (event, percent)=> this.SET_updateStatus('done'));
       ipcRenderer.on('update-error', (event, error)=> {
         this.SET_showPopupUpdates(false);
         if(error) this.openErrorPopup(error);
@@ -82,16 +71,12 @@
 
       ipcRenderer.on('show-mac-header', (event, value)=> { this.showMacHeader = value });
       ipcRenderer.on('info',            (event, data)=> { console.log(data); });
-      ipcRenderer.on('show-restore-down-icon', (event, value)=> {
-        this.SET_appIsFullView(value);
-      });
+      ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
 
       this.calcAppPath();
       this.checkToken();
       this.$nextTick(()=> {
-        if(this.userId === 'Guest') {
-          this.trackerCreateUser(this.userId);
-        }
+        //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
         this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
       })
@@ -110,16 +95,19 @@
       },
       userId() {
         return this.$store.getters['mod_user/GET_userID']
+      },
+      userEmail() {
+        return this.$store.getters['mod_user/GET_userEmail']
       }
     },
     watch: {
       '$route': {
-        handler(to, from) {
+        handler(to) {
           this.sendPathToAnalist(to.fullPath)
         }
       },
-      userId(newVal) {
-        this.trackerCreateUser(newVal);
+      userId() {
+        this.initUser()
       }
     },
     methods: {
@@ -127,6 +115,7 @@
         SET_appVersion:       'globalView/SET_appVersion',
         SET_appIsFullView:    'globalView/SET_appIsFullView',
         SET_appPath:          'globalView/SET_appPath',
+
         SET_updateInfo:       'mod_autoUpdate/SET_updateInfo',
         SET_showPopupUpdates: 'mod_autoUpdate/SET_showPopupUpdates',
         SET_updateStatus:     'mod_autoUpdate/SET_updateStatus',
@@ -134,17 +123,29 @@
       }),
       ...mapActions({
         openErrorPopup:   'globalView/GP_infoPopup',
+
         trackerInit:      'mod_tracker/TRACK_initMixPanel',
-        trackerCreateUser:'mod_tracker/TRACK_initMixPanelUser',
+        trackerInitUser:  'mod_tracker/TRACK_initMixPanelUser',
+        trackerCreateUser:'mod_tracker/TRACK_createUser',
+        trackerUpdateUser:'mod_tracker/TRACK_updateUser',
         trackerAppStart:  'mod_tracker/EVENT_appStart',
+
         eventAppClose:    'mod_events/EVENT_appClose',
         eventAppMinimize: 'mod_events/EVENT_appMinimize',
         eventAppMaximize: 'mod_events/EVENT_appMaximize',
+
         setUserToken:     'mod_user/SET_userToken',
         readUserInfo:     'mod_user/GET_LOCAL_userInfo',
-        //enableLogHistory: 'mod_workspace-history/SET_isEnableHistory'
       }),
-
+      initUser() {
+        this.trackerInitUser(this.userId)
+          .then(()=> {
+            if(this.userId !== 'Guest') {
+              this.trackerCreateUser(this.userEmail);
+              this.trackerUpdateUser(this.userEmail);
+            }
+          })
+      },
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {
           ipcRenderer.send('change-route', {path, id: this.userId})
@@ -157,7 +158,6 @@
           splash.remove();
           document.body.className = "";
           this.trackerAppStart();
-          //this.enableLogHistory(true);
         }, 1000)
       },
       calcAppPath() {
@@ -184,6 +184,7 @@
             this.$router.replace({name: 'projects'});
           }
         }
+        else this.trackerInitUser(this.userId)
       },
       /*Header actions*/
       appClose() {

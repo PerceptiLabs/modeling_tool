@@ -111,15 +111,8 @@ export default {
       this.$store.commit('mod_login/SET_showLoader', true);
 
       this.$store.dispatch('mod_apiCloud/CloudAPI_userCreate', this.user)
-        .then((response)=>{
-          this.$router.replace('/login');
-        })
-        // .catch((error)=> {
-        //   this.$store.dispatch('globalView/GP_infoPopup', error);
-        // })
-        .finally(()=> {
-          this.$store.commit('mod_login/SET_showLoader', false);
-        });
+        .then((response)=> {this.$router.replace('/login')})
+        .finally(()=> {this.$store.commit('mod_login/SET_showLoader', false)});
     },
     toPolicy() {
       this.isShowPolicy = true;

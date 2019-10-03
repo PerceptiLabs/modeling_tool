@@ -13,13 +13,21 @@ const getters = {
   GET_userIsLogin(state) {
     return !!state.userToken.length
   },
-  GET_userID(state) {//'Guest' for the trackers
+  GET_userTokenInfo(state) {
     const token = state.userToken;
-    return !token.length ? 'Guest' : parseJwt(token).unique_name
+    return token.length ? parseJwt(token) : null;
   },
-  GET_userRole() {//User, Advanced
-    const token = state.userToken;
-    return !token.length ? 'Guest' : parseJwt(token).role
+  GET_userID(state, getters) {//'Guest' for the trackers
+    const info = getters.GET_userTokenInfo;
+    return !info ? 'Guest' : info.unique_name
+  },
+  GET_userRole(state, getters) {//User, Advanced
+    const info = getters.GET_userTokenInfo;
+    return !info ? 'Guest' : info.role
+  },
+  GET_userEmail(state, getters) {
+    const info = getters.GET_userTokenInfo;
+    return !info ? 'Guest' : info.email
   },
   GET_userProfile(state) {
     return state.userProfile

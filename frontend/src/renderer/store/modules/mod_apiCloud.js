@@ -30,7 +30,6 @@ const actions = {
         const tokens = response.data.data;
         dispatch('mod_user/SET_userToken', tokens, {root: true});
         dispatch('mod_user/CHECK_LOCAL_usersList', null, {root: true});
-        dispatch('mod_tracker/TRACK_createUser', userInfo.Email, {root: true});
         return tokens
       })
       // .catch((error)=> {

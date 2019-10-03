@@ -83,15 +83,15 @@
     },
     methods: {
       ...mapMutations({
-        setShowStoryboard: 'mod_tutorials/SET_showTutorialStoryBoard',
-        set_appIsOpen: 'globalView/SET_appIsOpen',
-        add_dragElement: 'mod_workspace/ADD_dragElement',
+        setShowStoryboard:'mod_tutorials/SET_showTutorialStoryBoard',
+        set_appIsOpen:    'globalView/SET_appIsOpen',
+        add_dragElement:  'mod_workspace/ADD_dragElement',
       }),
       ...mapActions({
-        tutorialPointActivate:  'mod_tutorials/pointActivate',
-        eventResize:            'mod_events/EVENT_eventResize',
-        ADD_network:            'mod_workspace/ADD_network',
-        ADD_element:            'mod_workspace/ADD_element',
+        tutorialPointActivate:'mod_tutorials/pointActivate',
+        eventResize:          'mod_events/EVENT_eventResize',
+        ADD_network:          'mod_workspace/ADD_network',
+        ADD_element:          'mod_workspace/ADD_element',
       }),
       addDragListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);

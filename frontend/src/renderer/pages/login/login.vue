@@ -42,11 +42,6 @@
 export default {
   name: 'PageLogin',
   components: { LogoutUserPageWrap },
-  // mounted() {
-  //   if(this.userIsLogin) {
-  //     this.loginUser()
-  //   }
-  // },
   data() {
     return {
       userEmail: '',
@@ -59,9 +54,6 @@ export default {
     isLoading() {
       return this.$store.state.mod_login.showLoader
     },
-    // userIsLogin() {
-    //   return this.$store.getters['mod_user/GET_userIsLogin']
-    // },
   },
   methods: {
     toLink(url) {
@@ -83,21 +75,10 @@ export default {
         "Password": this.userPass
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
-        .then((tokens)=> {
-          //console.log('then', tokens);
-          //encryptionData(tokens.accessToken);
-          if(this.saveToken) localStorage.setItem('currentUser', JSON.stringify(tokens));
-          //this.loginUser()
-        })
-        //.catch((error)=> {console.log('catch Login');})
-        .finally(()=> {
-          //console.log('finally');
-          this.$store.commit('mod_login/SET_showLoader', false);
-        });
+        .then((tokens)=>{if(this.saveToken) localStorage.setItem('currentUser', JSON.stringify(tokens))})
+        .catch((error)=>{console.err(error)})
+        .finally(()=>   {this.$store.commit('mod_login/SET_showLoader', false)});
     },
-    // loginUser() {
-    //   this.$router.replace('/projects');
-    // },
   }
 }
 </script>
