@@ -102,6 +102,7 @@
       ...mapMutations({
         setTutorialMode:        'mod_tutorials/SET_isTutorialMode',
         setTutorialStoryBoard:  'mod_tutorials/SET_showTutorialStoryBoard',
+        restore_network:        'mod_workspace/RESTORE_network',
       }),
       ...mapActions({
         openNetwork:        'mod_events/EVENT_openNetwork',
@@ -123,6 +124,10 @@
       },
       openBasicTemplate(net) {
         this.addNetwork(net.network)
+      },
+      openLastWS() {
+        this.restore_network(this.localUserInfo.workspace);
+        this.goNextPage()
       },
       goNextPage() {
         this.$router.push({name: 'app'});

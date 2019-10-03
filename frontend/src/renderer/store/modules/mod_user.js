@@ -1,3 +1,5 @@
+import { deepCloneNetwork }  from "@/core/helpers.js";
+
 const namespaced = true;
 
 const state = {
@@ -11,13 +13,21 @@ const getters = {
   GET_userIsLogin(state) {
     return !!state.userToken.length
   },
-  GET_userID(state) {//'Guest' for the trackers
+  GET_userTokenInfo(state) {
     const token = state.userToken;
-    return !token.length ? 'Guest' : parseJwt(token).unique_name
+    return token.length ? parseJwt(token) : null;
   },
-  GET_userRole() {//User, Advanced
-    const token = state.userToken;
-    return !token.length ? 'Guest' : parseJwt(token).role
+  GET_userID(state, getters) {//'Guest' for the trackers
+    const info = getters.GET_userTokenInfo;
+    return !info ? 'Guest' : info.unique_name
+  },
+  GET_userRole(state, getters) {//User, Advanced
+    const info = getters.GET_userTokenInfo;
+    return !info ? 'Guest' : info.role
+  },
+  GET_userEmail(state, getters) {
+    const info = getters.GET_userTokenInfo;
+    return !info ? 'Guest' : info.email
   },
   GET_userProfile(state) {
     return state.userProfile
@@ -39,6 +49,9 @@ const mutations = {
   },
   set_localUserList (state, value) {
     state.getLocalUserList = value
+  },
+  delete_userWorkspace (state, id) {
+    state.getLocalUserList[id].workspace = null
   },
 };
 
@@ -90,6 +103,16 @@ const actions = {
     userInfo[key] = data;
     dispatch('SET_LOCAL_userInfo', {'userData': userInfo });
   },
+  SAVE_LOCAL_workspace({rootState, dispatch}) {
+    const cloneWS = deepCloneNetwork({
+      workspaceContent: rootState.mod_workspace.workspaceContent,
+      currentNetwork: rootState.mod_workspace.currentNetwork,
+    });
+    dispatch('UPDATE_LOCAL_userInfo', { key: 'workspace', data: cloneWS });
+  },
+  DELETE_userWorkspace({getters, commit}) {
+    commit('delete_userWorkspace', getters.GET_userID);
+  }
 };
 
 export default {

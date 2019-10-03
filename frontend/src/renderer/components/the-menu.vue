@@ -104,8 +104,8 @@ export default {
         {
           label: 'Edit', visible: true,
           submenu: [
-            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              enabled: false,         active: ()=> {} },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  enabled: false,         active: ()=> {} },
+            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              enabled: this.openApp,  active: this.toPrevStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  enabled: this.openApp,  active: this.toNextStepHistory },
             {type: 'separator'},
             {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              enabled: this.openApp,  active: this.HCCopy },
             {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              enabled: this.openApp,  active: this.HCPaste },
@@ -188,7 +188,9 @@ export default {
       HCCopy:           'mod_events/EVENT_hotKeyCopy',
       HCPaste:          'mod_events/EVENT_hotKeyPaste',
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
-      HCDeselectAll:    'mod_workspace/SET_elementUnselect'
+      HCDeselectAll:    'mod_workspace/SET_elementUnselect',
+      toPrevStepHistory:'mod_workspace-history/TO_prevStepHistory',
+      toNextStepHistory:'mod_workspace-history/TO_nextStepHistory',
     }),
     goToLink,
     mainProcessListeners(isRemove) {
@@ -304,7 +306,6 @@ export default {
       }
     },
     HC_esc() {
-      //console.log('HC_esc');
       this.$store.dispatch('mod_events/EVENT_hotKeyEsc')
     },
     HC_addLayerContainer() {

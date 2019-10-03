@@ -86,7 +86,7 @@ export default {
   },
   computed: {
     currentNetworkID() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
+      return this.$store.getters['mod_workspace/GET_currentNetworkId']
     },
     isTutorial() {
       return this.$store.getters['mod_tutorials/getIstutorialMode']

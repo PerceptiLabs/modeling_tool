@@ -107,7 +107,8 @@ const throttleEv = function (func, ms) {
   var isThrottled = false,
     savedArgs,
     savedThis;
-  let delay = 33 || ms; //30Hz
+  let delay = ms || 33; //30Hz
+
   function wrapper() {
 
     if (isThrottled) {
@@ -141,6 +142,17 @@ const deepCopy = function (object) {
   return JSON.parse(JSON.stringify(object))
 };
 
+const deepCloneNetwork = function (object) {
+  return JSON.parse(JSON.stringify(
+    object,
+    (key, val)=> {
+      if (key === 'calcAnchor') return undefined;
+      else return val;
+    },
+    ' ')
+  );
+};
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -155,5 +167,6 @@ export {
   calcLayerPosition,
   throttleEv,
   goToLink,
-  deepCopy
+  deepCopy,
+  deepCloneNetwork
 }

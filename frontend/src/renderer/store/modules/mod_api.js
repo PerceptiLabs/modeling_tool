@@ -127,7 +127,7 @@ const actions = {
 
   API_getStatus({rootGetters, dispatch, commit}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
       value: ''
     };
@@ -168,7 +168,7 @@ const actions = {
   },
   API_setHeadless({dispatch, rootState, rootGetters}, value) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'headless',
       value: value
     };
@@ -181,7 +181,7 @@ const actions = {
   },
   API_updateResults({dispatch, rootState, rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'updateResults',
       value: ''
     };
@@ -194,7 +194,7 @@ const actions = {
   },
   API_pauseTraining({dispatch, rootState, rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Pause',
       value: ''
     };
@@ -215,7 +215,7 @@ const actions = {
   },
   API_stopTraining({dispatch, rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Stop',
       value: ''
     };
@@ -232,7 +232,7 @@ const actions = {
   },
   API_skipValidTraining({rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'SkipToValidation',
       value: ''
     };
@@ -290,7 +290,7 @@ const actions = {
   API_postTestStart({rootGetters, rootState, dispatch}) {
     //console.log('API_postTestStart');
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'startTest',
       value: ''
     };
@@ -305,7 +305,7 @@ const actions = {
   API_postTestPlay({rootGetters, rootState, dispatch}) {
    // console.log('API_postTestPlay');
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'playTest',
       value: ''
     };
@@ -326,7 +326,7 @@ const actions = {
   },
   API_postTestMove({rootGetters, rootState, dispatch}, request) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: request, //nextStep, previousStep
       value: ''
     };
@@ -376,7 +376,7 @@ const actions = {
   },
   API_parse({dispatch, getters, rootGetters}, path) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "Parse",
       value: path
     };
@@ -409,7 +409,7 @@ const actions = {
   },
   API_checkTrainedNetwork({dispatch, getters, rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "isTrained"
     };
     return coreRequest(theData)
@@ -420,7 +420,7 @@ const actions = {
   },
   API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetwork'].networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "SaveTrained",
       value:  {Location, frontendNetwork}
     };

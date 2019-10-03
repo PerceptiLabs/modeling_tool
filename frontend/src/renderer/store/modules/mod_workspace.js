@@ -28,6 +28,11 @@ const getters = {
       ? state.workspaceContent[state.currentNetwork]
       : {networkID: '1'} //for the close ap when the empty workspace
   },
+  GET_currentNetworkId(state, getters) {
+    return getters.GET_networkIsNotEmpty
+      ? state.workspaceContent[state.currentNetwork].networkID
+      : 0
+  },
   GET_currentNetworkSettings(state, getters) {
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork].networkSettings
@@ -106,6 +111,10 @@ const getters = {
 const mutations = {
   reset_network(state) {
     state.workspaceContent = []
+  },
+  RESTORE_network(state, val) {
+    state.workspaceContent = val.workspaceContent;
+    state.currentNetwork = val.currentNetwork;
   },
   //---------------
   //  NETWORK
@@ -328,7 +337,7 @@ const mutations = {
   SET_elementName(state, value) {
     currentElement(value.id).layerName = value.setValue
   },
-  add_element(state, {getters, event}) {
+  add_element(state, {getters, dispatch, event}) {
     let duplicatePositionIndent = 30;
     let newEl = state.dragElement
       ? state.dragElement
@@ -354,6 +363,7 @@ const mutations = {
     if(!elementList) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
     state.dragElement = null;
+    dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
 
     function checkPosition(el, list) {
       let depth = 0;
@@ -455,10 +465,11 @@ const mutations = {
   },
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
-  set_elementSettings(state, settings) {
+  set_elementSettings(state, {dispatch, settings}) {
     currentElement(settings.elId).layerSettings = settings.set;
     currentElement(settings.elId).layerCode = settings.code;
     currentElement(settings.elId).layerSettingsTabName = settings.tabName;
+    dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
   },
 
   /*-- NETWORK ELEMENTS META --*/
@@ -718,6 +729,10 @@ const mutations = {
   set_isOpenElement (state, value) {
     state.isOpenElement = value
   },
+  set_historyStep (state, {value, dispatch}) {
+    state.workspaceContent[state.currentNetwork].networkName = value.networkName;
+    state.workspaceContent[state.currentNetwork].networkElementList = value.networkElementList;
+  },
 };
 
 const actions = {
@@ -808,11 +823,11 @@ const actions = {
   //---------------
   //  NETWORK ELEMENTS
   //---------------
-  SET_elementSettings({commit}, settings) {
-    commit('set_elementSettings', settings)
+  SET_elementSettings({commit, dispatch}, settings) {
+    commit('set_elementSettings', {dispatch, settings})
   },
-  ADD_element({commit, getters}, event) {
-    commit('add_element', {getters, event})
+  ADD_element({commit, getters, dispatch}, event) {
+    commit('add_element', {getters, dispatch, event})
   },
   DELETE_element({commit, getters, dispatch}) {
     if(getters.GET_networkIsOpen) {
@@ -870,6 +885,9 @@ const actions = {
   //---------------
   SET_isOpenElement({commit}, value) {
     commit('set_isOpenElement', value)
+  },
+  SET_historyStep({commit, dispatch}, value) {
+    commit('set_historyStep', {value, dispatch});
   },
 };
 

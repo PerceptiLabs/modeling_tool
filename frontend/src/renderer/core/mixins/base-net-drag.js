@@ -78,6 +78,7 @@ const baseNetDrag = {
       this.$parent.$parent.$el.removeEventListener('touchmove', this.move, true);
       document.removeEventListener('touchend touchcancel', this.up, true);
       document.removeEventListener('touchstart', this.up, true);
+      this.$store.dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
     },
 
   },

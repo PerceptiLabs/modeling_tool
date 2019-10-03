@@ -102,11 +102,12 @@
     },
     watch: {
       chartData(newVal) {
+        console.log(newVal);
         if(newVal) {
           this.imgType = newVal.series[0].type;
           this.imgData = newVal;
           if(this.showRequestSpinner) {
-            setTimeout(()=>{this.showRequestSpinner = false;}, 300)
+            setTimeout(()=>{this.showRequestSpinner = false}, 300)
           }
         }
         else {

@@ -29,7 +29,7 @@ const viewBoxMixin = {
       return viewBoxEl === undefined ? undefined : viewBoxEl.layerId.toString()
     },
     currentNetworkID() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
+      return this.$store.getters['mod_workspace/GET_currentNetworkId']
     },
     serverStatus() {
       return this.$store.getters['mod_workspace/GET_networkCoreStatus']

@@ -10,7 +10,7 @@ const requestCloudApi = function (method, path, data, params) {
       console.log(error.response);
       if(error.response.status === 401) { return 'updateToken' }
       else {
-        store.dispatch('mod_tracker/EVENT_cloudError', error);
+        store.dispatch('mod_tracker/EVENT_cloudError', {method, path, error});
         store.dispatch('globalView/GP_errorPopup', error.response.data);
         throw (error);
       }
@@ -18,7 +18,7 @@ const requestCloudApi = function (method, path, data, params) {
     .then((data)=> {
       if(data === 'updateToken') {
         return CloudAPI_updateToken()
-          .then(()=> singleRequest(method, path, dataRequest))
+          .then(()=> httpRequest(method, path, dataRequest))
           .then((data)=> data)
           .catch((error)=> {
             throw (error)

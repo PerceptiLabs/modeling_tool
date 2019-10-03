@@ -7,7 +7,7 @@
     @press-confirm="confirmSettings"
   )
     template(slot="Computer-content")
-      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Path.length")
+      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
 
         button.btn.tutorial-relative(type="button"
           @click="loadFile"
@@ -45,7 +45,7 @@
               @add-file="addFiles"
               )
             //
-          .form_row(v-if="settings.accessProperties.Path.length > 1")
+          .form_row(v-if="settings.accessProperties.Sources.length > 1")
             .form_label Summary:
             .form_input
               triple-input.file-list-item_settings(
@@ -120,8 +120,8 @@
             Dataset_size: 3000,
             Category:'Local',
             Type: 'Data',
-            Path: [],
-            //Sources: [], //{type: 'file'/'directory', path: 'PATH'}
+            //Path: [],
+            Sources: [], //{type: 'file'/'directory', path: 'PATH'}
             Partition_list: [],
             Batch_size: 10,
             Shuffle_data: true,
@@ -135,7 +135,7 @@
         isTutorialMode: 'mod_tutorials/getIstutorialMode',
       }),
       typeOpened() {
-        const path = this.settings.accessProperties.Path;
+        const path = this.settings.accessProperties.Sources;
         if(path.length) {
           //return path[0].indexOf('.') > 0 ? 'files' : 'folders'
           console.log(path);
@@ -145,11 +145,12 @@
       },
       fileList: {
         get() {
-          const path = this.settings.accessProperties.Path;
+          const path = this.settings.accessProperties.Sources;
           const partitionList = this.settings.accessProperties.Partition_list;
           const fileArray = path.map((item, index)=> {
             return {
-              path: item,
+              path: item.path,
+              type: item.type,
               settings: partitionList[index] || [70, 20, 10]
             };
           });
@@ -159,8 +160,12 @@
         },
         set(newVal) {
           const partitionList = newVal.map((item)=> item.settings);
-          const pathList =      newVal.map((item)=> item.path);
-          this.settings.accessProperties.Path = pathList;
+          const pathList =      newVal.map((item)=> {
+            return {
+              path: item.path,
+              type: item.type
+            }});
+          this.settings.accessProperties.Sources = pathList;
           this.settings.accessProperties.Partition_list = partitionList;
         }
       }
@@ -177,7 +182,7 @@
         deep: true,
         immediate: true
       },
-      'settings.accessProperties.Path.length': {
+      'settings.accessProperties.Sources.length': {
         handler(newVal) {
           if(newVal) this.showBtn();
           else { this.$nextTick(()=> { this.hideBtn(); })
@@ -230,26 +235,26 @@
       },
       saveLoadFile(pathArr, type, isAppend) {
         if(isAppend) {
-          const allPath = [... this.settings.accessProperties.Path, ...pathArr];
-          this.settings.accessProperties.Path = [... new Set(allPath)]
+          const allPath = [... this.settings.accessProperties.Sources.map((el)=> el.path), ...pathArr];
+          this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources([... new Set(allPath)], type)
         }
-        else this.settings.accessProperties.Path = pathArr;
+        else this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
         this.getSettingsInfo();
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'})
       },
       clearPath() {
         this.Mix_settingsData_deleteDataMeta('DataData')
           .then(()=> {
-            this.settings.accessProperties.Path = [];
+            this.settings.accessProperties.Sources = [];
             this.getSettingsInfo()
           })
           .catch(()=> console.log('set-data-data 144 err'))
       },
       getSettingsInfo() {
-        if(this.settings.accessProperties.Path.length) {
+        if(this.settings.accessProperties.Sources.length) {
           this.Mix_settingsData_dataSettingsMeta('DataData')
-            .then((data)=>{
-              if (data.Columns.length) {
+            .then((data)=> {
+              if (data.Columns && data.Columns.length) {
                 this.createSelectArr(data.Columns);
                 return data
               }

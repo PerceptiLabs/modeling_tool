@@ -21,7 +21,8 @@ export default {
   name: 'WorkspaceContent',
   components: {
     NetworkField, TextEditable,
-    GeneralSettings, GeneralResult, SelectCoreSide, WorkspaceBeforeImport, WorkspaceSaveNetwork,
+    GeneralSettings, GeneralResult, SelectCoreSide,
+    WorkspaceBeforeImport, WorkspaceSaveNetwork,
     TheStatistics, TheTesting, TheViewBox, StartTrainingSpinner
   },
   data() {
@@ -40,7 +41,6 @@ export default {
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
       showTrainingSpinner:'mod_workspace/GET_showStartTrainingSpinner',
       getLocalUserInfo:   'mod_user/GET_LOCAL_userInfo',
-      //userId:             'mod_user/GET_userID',
     }),
     ...mapState({
       workspace:                  state => state.mod_workspace.workspaceContent,
@@ -58,7 +58,7 @@ export default {
         return Math.round(zoom);
       },
       set: function (newValue) {
-        this.$store.dispatch('mod_workspace/SET_statusNetworkZoom', newValue/100);
+        this.set_statusNetworkZoom(newValue/100);
       }
     },
     hasStatistics() {
@@ -90,8 +90,8 @@ export default {
       if(newStatus === 'Finished'
         && this.testIsOpen === null
       ) {
-        this.$store.dispatch('globalView/NET_trainingDone');
-        this.$store.dispatch('mod_workspace/EVENT_startDoRequest', false);
+        this.net_trainingDone();
+        this.event_startDoRequest(false);
       }
     },
     coreStatus(newStatus, oldStatus) {
@@ -127,7 +127,7 @@ export default {
         && this.isTutorialMode
         && this.tutorialActiveStep === 'training'
       ) {
-        this.$store.dispatch('mod_tutorials/pointActivate', {
+        this.tutorialPointActivate({
           way: 'next',
           validation: newStatus[0].layerMeta.tutorialId
         });
@@ -136,16 +136,31 @@ export default {
   },
   methods: {
     ...mapMutations({
-      set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner'
+      set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
+      delete_network:           'mod_workspace/DELETE_network',
+      set_currentNetwork:       'mod_workspace/SET_currentNetwork',
+      set_hideSidebar:          'globalView/SET_hideSidebar',
     }),
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
-      infoPopup:                'globalView/GP_infoPopup',
-      pauseTraining:            'mod_api/API_pauseTraining',
-      checkTrainedNetwork:      'mod_api/API_checkTrainedNetwork',
-      saveTrainedNetwork:       'mod_api/API_saveTrainedNetwork',
-      saveLocalUserInfo:        'mod_user/UPDATE_LOCAL_userInfo',
-      trackerModelSave:         'mod_tracker/EVENT_modelSave',
+      infoPopup:            'globalView/GP_infoPopup',
+      net_trainingDone:     'globalView/NET_trainingDone',
+
+      pauseTraining:        'mod_api/API_pauseTraining',
+      checkTrainedNetwork:  'mod_api/API_checkTrainedNetwork',
+      saveTrainedNetwork:   'mod_api/API_saveTrainedNetwork',
+
+      set_openStatistics:   'mod_workspace/SET_openStatistics',
+      set_openTest:         'mod_workspace/SET_openTest',
+      set_elementUnselect:  'mod_workspace/SET_elementUnselect',
+      set_networkName:      'mod_workspace/SET_networkName',
+      event_startDoRequest: 'mod_workspace/EVENT_startDoRequest',
+      set_statusNetworkZoom:'mod_workspace/SET_statusNetworkZoom',
+
+      tutorialPointActivate:'mod_tutorials/pointActivate',
+
+      saveLocalUserInfo:    'mod_user/UPDATE_LOCAL_userInfo',
+      trackerModelSave:     'mod_tracker/EVENT_modelSave',
+      //enableLogHistory:     'mod_workspace-history/SET_isEnableHistory'
     }),
     calcScaleMap() {
       this.$nextTick(()=> {
@@ -162,18 +177,20 @@ export default {
         : this.decScale();
     },
     deleteTabNetwork(index) {
-      this.$store.commit('mod_workspace/DELETE_network', index)
+      this.delete_network(index)
     },
     setTabNetwork(index) {
+      //this.enableLogHistory(false);
       this.set_showTrainingSpinner(false);
-      if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
-      if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
+      if(this.statisticsIsOpen !== null) this.set_openStatistics(false);
+      if(this.testIsOpen !== null) this.set_openTest(false);
       //if(this.isTutorialMode) return;
-      this.$store.commit('mod_workspace/SET_currentNetwork', index);
-      this.$store.dispatch('mod_workspace/SET_elementUnselect');
+      this.set_currentNetwork(index);
+      this.set_elementUnselect();
+      //this.$nextTick(()=> { this.enableLogHistory(true) })
     },
     toggleSidebar() {
-      this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
+      this.set_hideSidebar(!this.hideSidebar)
     },
     decScale() {
       if (this.scaleNet <= 30) this.scaleNet = 30;
@@ -189,19 +206,16 @@ export default {
     //   // this.network[i].meta.top = newRect.top;
     //   // this.network[i].meta.left = newRect.left;
     // },
-    editNetName(newName) {
-      this.$store.dispatch('mod_workspace/SET_networkName', newName);
-    },
     openStatistics(i) {
       this.setTabNetwork(i);
       this.$nextTick(()=>{
-        this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+        this.set_openStatistics(true);
       })
     },
     openTest(i) {
       this.setTabNetwork(i);
       this.$nextTick(()=>{
-        this.$store.dispatch('mod_workspace/SET_openTest', true);
+        this.set_openTest(true);
       })
     },
 
