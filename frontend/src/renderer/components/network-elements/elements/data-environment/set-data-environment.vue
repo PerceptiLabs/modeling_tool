@@ -69,7 +69,8 @@
           Type: 'Environment',
           accessProperties: {
             EnvType: 'Gym',
-            Path: [],
+            //Path: [],
+            Sources: [], //{type: 'file'/'directory', path: 'PATH'}
             Atari: 'Breakout', //select
             Category: 'Local',
             Type: 'Data',

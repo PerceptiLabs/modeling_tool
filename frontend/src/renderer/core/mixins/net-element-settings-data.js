@@ -13,7 +13,8 @@ const netElementSettingsData = {
       return this.$store.getters['mod_workspace/GET_currentNetworkId']
     },
     Mix_settingsData_inputPath() {
-      return this.settings.accessProperties.Path.join(', ')
+      const pathArr = this.settings.accessProperties.Sources.map((el)=> el.path);
+      return pathArr.join(', ')
     }
   },
   methods: {

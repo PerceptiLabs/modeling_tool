@@ -71,7 +71,7 @@ $clip-path_indent: $arrows-start_size/2;
   left: 0;
   right: 0;
   bottom: 50%;
-  z-index: 3;
+  z-index: 4;
   clip-path: polygon(50% 0%, 100% $clip-path_indent, 70% 65%, 30% 65%, 0 $clip-path_indent);
   transform-origin: bottom;
   &:hover .arrows-start_btn {

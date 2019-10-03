@@ -48,13 +48,14 @@ $layers-sidebar-active: (
 );
 
 @each $name, $color in $layers-sidebar-active {
-	.net-element-#{$name} {
-		&:hover,
-		&.active,
-        .net-element:hover & {
-			background: $color;
-		}
-	}
+  .net-element-#{$name} {
+    &:hover,
+    &.active,
+    .net-element_btn:hover &,
+    .net-element_arrows-start:hover ~ .net-element_btn & {
+      background: $color;
+    }
+  }
 }
 
 .net-element-custom {
