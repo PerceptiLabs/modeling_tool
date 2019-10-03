@@ -24,8 +24,7 @@ const netElementSettingsData = {
         .then(()=> this.Mix_settingsData_getDataMeta(layerType))
     },
     Mix_settingsData_dataSettingsPlot(layerType) {
-      this.Mix_settingsData_deleteDataMeta(layerType)
-        .then(()=> this.Mix_settingsData_getDataMeta(layerType))
+      this.Mix_settingsData_getDataMeta(layerType)
         .then(()=> this.Mix_settingsData_getDataPlot(layerType))
     },
 
@@ -41,6 +40,7 @@ const netElementSettingsData = {
       };
       this.coreRequest(theData)
         .then((data) => {
+          console.log('getDataPlot', data);
           if (data) this.Mix_settingsData_imgData = data;
         })
         .catch((err)=> {
@@ -59,6 +59,7 @@ const netElementSettingsData = {
       };
       return this.coreRequest(theData)
         .then((data) => {
+          console.log('getDataMeta', data);
           if (data) {
             if(data.Action_space) this.Mix_settingsData_actionSpace = data.Action_space;
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
@@ -102,7 +103,10 @@ const netElementSettingsData = {
         }
       };
       return this.coreRequest(theData)
-        .then((data) => data)
+        .then((data) => {
+          console.log('deleteData', data);
+          data
+        })
         .catch((err) => {
           console.error(err);
         });

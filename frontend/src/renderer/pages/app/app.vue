@@ -26,6 +26,7 @@
     components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
       if(!this.workspaceContent.length) this.ADD_network();
+      this.DELETE_userWorkspace();
     },
     mounted() {
       this.showPage = true;
@@ -92,6 +93,7 @@
         eventResize:          'mod_events/EVENT_eventResize',
         ADD_network:          'mod_workspace/ADD_network',
         ADD_element:          'mod_workspace/ADD_element',
+        DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace'
       }),
       addDragListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);

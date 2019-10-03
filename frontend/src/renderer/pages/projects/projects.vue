@@ -111,8 +111,6 @@
         addNetwork:         'mod_workspace/ADD_network',
         saveLocalUserInfo:  'mod_user/UPDATE_LOCAL_userInfo',
         showInfoPopup:      'globalView/GP_infoPopup',
-        DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace'
-
       }),
       openTemplate(path) {
         this.loadNetwork(path)
@@ -129,7 +127,6 @@
       },
       openLastWS() {
         this.restore_network(this.localUserInfo.workspace);
-        this.DELETE_userWorkspace();
         this.goNextPage()
       },
       goNextPage() {
