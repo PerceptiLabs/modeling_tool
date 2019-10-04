@@ -148,7 +148,7 @@ class DataDataCodeGenerator(CodeGenerator):
             self._partitions.append(partition)
             self._strategies.append(self._select_strategy(source))
         
-    def get_code(self):
+    def get_code(self, mode='normal'):
         code = ''
         code += 'np.random.seed(%d)\n\n' % self._seed
         
@@ -188,9 +188,11 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "X_test_size = X_test.shape[0]\n"
         code += '\n'
         code += "_sample = X_train[0]\n"
+        code += "api.data.store(sample=_sample)\n"
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
-        code += "_batch_size = %d" % int(self.batch_size)
+        code += "_batch_size = %d\n" % int(self.batch_size)
+        code += "api.data.store(batch_size=_batch_size)\n"
         code += "\n"
         code += 'X_train = tf.data.Dataset.from_tensor_slices(X_train)\n'
         code += 'X_validation = tf.data.Dataset.from_tensor_slices(X_validation)\n'
@@ -237,9 +239,11 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "X_test_size = X_test_stacked.shape[0]\n"
         code += '\n'
         code += "_sample = X_train_stacked[0]\n"
+        code += "api.data.store(sample=_sample)\n"        
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
         code += "_batch_size = %d" % int(self.batch_size)
+        code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
         code += "X_train = tf.data.Dataset.from_tensor_slices(X_train_stacked)\n"
         code += "X_validation = tf.data.Dataset.from_tensor_slices(X_validation_stacked)\n"

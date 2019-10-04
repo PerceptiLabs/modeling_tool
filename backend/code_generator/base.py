@@ -6,7 +6,7 @@ CodePart = namedtuple('CodePart', ['name', 'code'])
 
 class CodeGenerator(ABC):
     @abstractmethod
-    def get_code(self):
+    def get_code(self, mode='normal'):
         raise NotImplementedError
 
     def get_code_parts(self):
@@ -24,10 +24,10 @@ class CustomCodeGenerator(CodeGenerator):
         else:
             raise ValueError("Inputs must be either string or list of CodeParts")
 
-    def get_code_parts(self):
+    def get_code_parts(self, mode='normal'):
         return self._code_parts
 
-    def get_code(self):
+    def get_code(self, mode='normal'):    
         code = ''
         for cp in self._code_parts:
             code += cp.code + '\n'            

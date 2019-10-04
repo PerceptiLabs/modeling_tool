@@ -16,12 +16,12 @@ def switch_to(mode):
 
 class TestConvCode:
     def test_syntax_1D(self):
-        gen = ConvCodeGenerator('1D', 1, 2, 3, "'SAME'")
+        gen = ConvCodeGenerator(0, '1D', 1, 2, 3, "'SAME'")
         code = gen.get_code()
         ast.parse(code) # Can raise SyntaxError => test fails.
 
     def test_runs_1D(self):
-        gen = ConvCodeGenerator('1D', 1, 2, 3, "'SAME'")
+        gen = ConvCodeGenerator(0, '1D', 1, 2, 3, "'SAME'")
         code = gen.get_code()
 
         switch_to(EAGER_MODE)
@@ -35,12 +35,12 @@ class TestConvCode:
         assert np.all(Y.numpy() == 0.1) # 0.1 is the default bias :)
 
     def test_syntax_2D(self):
-        gen = ConvCodeGenerator('2D', 1, 2, 3, "'SAME'")
+        gen = ConvCodeGenerator(0, '2D', 1, 2, 3, "'SAME'")
         code = gen.get_code()
         ast.parse(code)
         
     def test_runs_2D(self):
-        gen = ConvCodeGenerator('2D', 1, 2, 3, "'SAME'")
+        gen = ConvCodeGenerator(0, '2D', 1, 2, 3, "'SAME'")
         code = gen.get_code()
 
         switch_to(EAGER_MODE)        
@@ -54,12 +54,12 @@ class TestConvCode:
         assert np.all(Y.numpy() == 0.1)
         
     def test_syntax_3D(self):
-        gen = ConvCodeGenerator('3D', 1, 2, 3, "'SAME'")
+        gen = ConvCodeGenerator(0, '3D', 1, 2, 3, "'SAME'")
         code = gen.get_code()
         ast.parse(code)
         
     def test_runs_3D(self):
-        gen = ConvCodeGenerator('3D', 1, 2, 3, "'SAME'")
+        gen = ConvCodeGenerator(0, '3D', 1, 2, 3, "'SAME'")
         code = gen.get_code()
 
         switch_to(EAGER_MODE)                
@@ -168,7 +168,7 @@ class TestMerge:
     
 class TestFullyConnected:
     def test_syntax(self):
-        gen = FullyConnectedCodeGenerator(10, 'Sigmoid')
+        gen = FullyConnectedCodeGenerator(0, 10, 'Sigmoid')
         code = gen.get_code()
         ast.parse(code)
     
@@ -177,7 +177,7 @@ class TestTrainNormal:
     def test_syntax(self):
         network_branch = TrainInputBranch(direct_layer='1564399782856', data_layer='1564399775664')
         labels_branch = TrainInputBranch(direct_layer='1564399782856', data_layer='1564399786876')
-        gen = TrainNormalCodeGenerator(network_branch, labels_branch)
+        gen = TrainNormalCodeGenerator(network_branch, labels_branch, n_epochs=2, n_iterations=3)
         code = gen.get_code()
         ast.parse(code)
 
@@ -232,6 +232,10 @@ class TestTrainNormal:
         }
 
         api = mock.Mock()
+        api.control.epoch_loop = lambda x: range(x)
+        api.control.training_iteration_loop = lambda x: range(x)
+        api.control.validation_iteration_loop = lambda x: range(x)
+        api.control.testing_iteration_loop = lambda x: range(x)                        
         locals_ = {'X': X, 'api': api}
 
         # Run code

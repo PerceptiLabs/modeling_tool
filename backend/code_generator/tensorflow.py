@@ -25,7 +25,7 @@ class ReshapeCodeGenerator(CodeGenerator):
         self._shape = shape
         self._permutation = permutation
         
-    def get_code(self):
+    def get_code(self, mode='normal'):
         shape_text = ', '.join([str(i) for i in self._shape])
         perm_text = ', '.join([str(i) for i in self._permutation])
         code = ""
@@ -41,7 +41,7 @@ class RecurrentCodeGenerator(CodeGenerator):
         self._neurons = neurons
         self._return_sequences = return_sequences
 
-    def get_code(self):
+    def get_code(self, mode='normal'):
         code = ''
         if self._version == 'LSTM':
             code += "cell = tf.nn.rnn_cell.LSTMCell(%s, state_is_tuple=True)\n" % self._neurons
@@ -62,7 +62,7 @@ class RecurrentCodeGenerator(CodeGenerator):
     
 
 class WordEmbeddingCodeGenerator(CodeGenerator):
-    def get_code(self):
+    def get_code(self, mode='normal'):
         code  = 'words = tf.string_split(X)\n'
         code += 'vocab_size=words.get_shape().as_list()[0]\n'
         code += 'embed_size=10\n'
@@ -75,8 +75,8 @@ class OneHotCodeGenerator(CodeGenerator):
     def __init__(self, n_classes):
         self._n_classes = n_classes
         
-    def get_code(self):
-        code = "Y=tf.one_hot(tf.cast(X['Y'],dtype=tf.int32), %s)" % self._n_classes
+    def get_code(self, mode='normal'):
+        code = "Y=tf.one_hot(tf.cast(X['Y'],dtype=tf.int32), %s)\n" % self._n_classes
         return code
 
     
@@ -87,7 +87,7 @@ class CropCodeGenerator(CodeGenerator):
         self._target_height = target_height        
         self._target_width = target_width
 
-    def get_code(self):
+    def get_code(self, mode='normal'):
         code = "Y=tf.image.crop_to_bounding_box(X, %d, %d, %d, %d)\n" % (self._offset_height,
                                                                          self._offset_width,
                                                                          self._target_height,
@@ -96,7 +96,7 @@ class CropCodeGenerator(CodeGenerator):
     
 
 class GrayscaleCodeGenerator(CodeGenerator):
-    def get_code(self):
+    def get_code(self, mode='normal'):
         code  = 'if X["Y"].get_shape().as_list()[-1] == 3:\n'
         code += '    Y = tf.image.rgb_to_grayscale(X)\n'
         code += 'else:\n'
@@ -108,13 +108,13 @@ class ArgmaxCodeGenerator(CodeGenerator):
     def __init__(self, dim):
         self._dim = dim
 
-    def get_code(self):
+    def get_code(self, mode='normal'):
         code = 'Y = tf.argmax(X, %s)' % self._dim
         return code
 
 
 class SoftmaxCodeGenerator(CodeGenerator):
-    def get_code(self):
+    def get_code(self, mode='normal'):
         code = 'Y = tf.nn.softmax(X)'
         return code
 
@@ -124,7 +124,7 @@ class MergeCodeGenerator(CodeGenerator):
         self._type = type_
         self._merge_dim = merge_dim
 
-    def get_code(self):
+    def get_code(self, mode='normal'):
         # TODO: in python version < 3.6 dicts aren't ordered. caution if we allow custom environments in the future.
         
         if self._type == 'Concat':
@@ -160,19 +160,20 @@ class MergeCodeGenerator(CodeGenerator):
             return code
 
 class FullyConnectedCodeGenerator(CodeGenerator):
-    def __init__(self, n_neurons, activation=None, dropout=False, keep_prob=1.0):
+    def __init__(self, layer_id, n_neurons, activation=None, dropout=False, keep_prob=1.0):
+        self._layer_id = layer_id
         self._n_neurons = n_neurons
         self._dropout = dropout
         self._keep_prob = keep_prob
         self._activation = activation
 
-    def get_code(self):
+    def get_code(self, mode='normal'):
         code  = "input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]\n"
         code += "shape = [input_size, %s]\n" % self._n_neurons
         code += "initial = tf.truncated_normal(shape, stddev=0.1)\n"
-        code += "W = tf.Variable(initial)\n"
+        code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._n_neurons
-        code += "b = tf.Variable(initial)\n"
+        code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id
         code += "flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)\n"
         code += "node = tf.matmul(flat_node, W)\n"
 
@@ -186,9 +187,10 @@ class FullyConnectedCodeGenerator(CodeGenerator):
 
     
 class ConvCodeGenerator(CodeGenerator):
-    def __init__(self, conv_dim, patch_size, feature_maps, stride, padding,
+    def __init__(self, layer_id, conv_dim, patch_size, feature_maps, stride, padding,
                  dropout=False, keep_prob=None, activation=None,
                  pool=False, pooling=None, pool_area=None, pool_padding=None, pool_stride=None):
+        self._layer_id = layer_id
         self._conv_dim = conv_dim
         self._patch_size = patch_size
         self._feature_maps = feature_maps
@@ -203,7 +205,7 @@ class ConvCodeGenerator(CodeGenerator):
         self._pool_padding = pool_padding
         self._pool_stride = pool_stride
 
-    def get_code(self):
+    def get_code(self, mode='normal'):
         code = ''
         
         # Get the main code
@@ -238,10 +240,10 @@ class ConvCodeGenerator(CodeGenerator):
     def _get_code_1d(self):
         code  = "shape = [%s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
-        code += "W = tf.Variable(initial)\n"
+        code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
-        code += "b = tf.Variable(initial)\n"
+        code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id
         code += "\n"        
         code += "node = tf.nn.conv1d(X['Y'], W, %s, padding=%s)\n" % (self._stride, self._padding)
         return code
@@ -249,10 +251,10 @@ class ConvCodeGenerator(CodeGenerator):
     def _get_code_2d(self):
         code  = "shape = [%s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
-        code += "W = tf.Variable(initial)\n"
+        code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id        
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
-        code += "b = tf.Variable(initial)\n"
+        code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id        
         code += "\n"        
         code += "node = tf.nn.conv2d(X['Y'], W, strides=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
         return code
@@ -260,10 +262,10 @@ class ConvCodeGenerator(CodeGenerator):
     def _get_code_3d(self):
         code  = "shape = [%s, %s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._patch_size, self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
-        code += "W = tf.Variable(initial)\n"
+        code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id                
         code += "\n"        
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
-        code += "b = tf.Variable(initial)\n"
+        code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                
         code += "\n"        
         code += "node = tf.nn.conv3d(X['Y'], W, strides=[1, %s, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._stride, self._padding)
         return code
@@ -272,10 +274,10 @@ class ConvCodeGenerator(CodeGenerator):
         code  = "dim = str(len(X['Y'.get_shape().as_list())-1)\n"
         code += "shape = [%s]*dim + [X['Y'].get_shape().as_list()[-1]], %s]\n" % (self._patch_size, self._feature_maps)
         code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
-        code += "W = tf.Variable(initial)\n"
+        code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id                     
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
-        code += "b = tf.Variable(initial)\n"
+        code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                        
         code += "\n"        
         code += "node = tf.nn.conv2d(X['Y'], W, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
         return code
@@ -292,10 +294,10 @@ class TrainNormalCodeGenerator(CodeGenerator):
         self._lbl_in = labels_input_branch
         self._optimizer = optimizer
         self._learning_rate = learning_rate
-        self._n_epochs = n_epochs
-        self._n_iters = n_iterations
+        self._n_epochs = int(n_epochs)
+        self._n_iters = int(n_iterations)
 
-    def _get_training_code(self):
+    def _get_training_code(self, mode):
         if self._optimizer == 'adam':
             opt_class = 'AdamOptimizer'
         elif self._optimizer == 'adagrad':
@@ -304,48 +306,76 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code  = ""
         code += "y_pred = X['%s']['Y']\n" % self._net_in.direct_layer
         code += "y_label = X['%s']['Y']\n" % self._lbl_in.direct_layer      
-        code += "cost = tf.reduce_mean(tf.square(y_pred - y_label))\n"
-        code += "step = tf.train.%s(learning_rate=%f).minimize(cost)\n" % (opt_class, self._learning_rate)
+        code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
+        code += "step = tf.train.%s(learning_rate=%f).minimize(loss)\n" % (opt_class, self._learning_rate)
+        code += "\n"
+        code += "# Metrics\n"
+        code += "correct_predictions = tf.equal(tf.argmax(y_pred), tf.argmax(y_label))\n"
+        code += "accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))\n"
+        code += "f1, _ = tf.contrib.metrics.f1_score(y_label, y_pred)\n"
+        code += "auc, _ = tf.metrics.auc(labels=y_label, predictions=y_pred, curve='ROC')\n"
+        code += "\n"
 
+        if mode != 'headless':
+            code += "# Gradients\n"
+            code += "gradients = {}\n"
+            code += "for var in tf.trainable_variables():\n"
+            code += "    name = 'grad-' + var.name\n"
+            code += "    gradients[name] = tf.gradients(loss, [var])\n"
+            code += "\n"
+            
         code += "train_iterator_network = tf.get_default_graph().get_operation_by_name('train_iterator_%s')\n" % self._net_in.data_layer
         code += "train_iterator_label = tf.get_default_graph().get_operation_by_name('train_iterator_%s')\n" % self._lbl_in.data_layer
-        
+        code += "\n"
         code += "sess = tf.InteractiveSession()\n"
-        code += "sess.run(tf.initialize_all_variables())\n"
+        code += "init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())\n"
+        code += "sess.run(init)\n"
+        code += "\n"
+        code += "api.data.store(max_epoch=%d,\n" % (self._n_epochs - 1)
+        code += "               max_iter_training=%d,\n" % (self._n_iters - 1)
+        code += "               max_iter_validation=%d)\n" % (self._n_iters - 1)
         code += "\n"
         code += "for epoch in range(%d):\n" % self._n_epochs
-        code += "    api.mode.set_training()\n"
-        code += "    api.data.store_value('epoch', epoch)\n"
         code += "    sess.run(train_iterator_network)\n"
-        code += "    sess.run(train_iterator_label)\n"        
+        code += "    sess.run(train_iterator_label)\n"
+        code += "    api.data.store(iter_training=0, iter_validation=0)\n"
         code += "    \n"
         code += "    for iter in range(%d):\n" % self._n_iters
         code += "        sess.run(step)\n"
-        code += "        \n"
-        code += "        api.data.store_value('iter', iter)\n"
-        code += "        api.ui.process()\n"
+        code += "        acc_train, f1_train, auc_train = sess.run([accuracy, f1, auc])\n"
+        code += "        api.data.store(iter_training=iter)\n"
+        
+        if mode != 'headless':
+            code += "        gradient_vals = sess.run(gradients)\n"
+            code += "        api.data.stack(**gradient_vals)\n"
+            
+        code += "        api.ui.render(dashboard='train_val')\n"
+        code += "    \n"        
+        code += "    for iter in range(%d):\n" % self._n_iters
+        code += "        loss_ = sess.run(loss)\n"
+        code += "        acc_val, f1_val, auc_val = sess.run([accuracy, f1, auc])\n"
+        code += "        api.data.store(iter_validation=iter)\n"
+        code += "        api.ui.render(dashboard='train_val')\n"        
         code += "    \n"
-        code += "    api.mode.set_validation()\n"
-        code += "    cost_ = sess.run(cost)\n"
-        code += "    \n"
-        code += "    api.data.store_value('loss', cost_)\n"
-        code += "    api.data.store_value('iter', iter)\n"
-        code += "    api.ui.process()\n"
+        code += "    api.data.store(epoch=epoch)\n"
+        code += "    api.data.stack(acc_training_epoch=acc_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
+        code += "                   acc_validation_epoch=acc_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
         return code
 
-    def _get_testing_code(self):
-        code  = "api.mode.set_testing()\n"
-        code += "y_pred_ = sess.run(y_pred)\n"
-        code += "api.data.store_value('y_pred', y_pred_.squeeze())\n"
-        code += "api.ui.process()\n"
+    def _get_testing_code(self, mode):
+        code  = "api.data.store(max_iter_testing=%d)\n" % (self._n_iters - 1)
+        code += "for iter in range(10):\n"
+        code += "    y_pred_ = sess.run(y_pred)\n"
+        code += "    api.data.stack(y_pred=y_pred_.squeeze())\n"
+        code += "    api.data.store(iter_testing=iter)\n"
+        code += "    api.ui.render(dashboard='testing')\n"        
         return code
 
-
-    def get_code_parts(self):
-        cp1 = CodePart('training', self._get_training_code())
-        cp2 = CodePart('testing', self._get_testing_code())
+    def get_code_parts(self, mode='normal'):
+        cp1 = CodePart('training', self._get_training_code(mode))
+        cp2 = CodePart('testing', self._get_testing_code(mode))
         return [cp1, cp2] # TODO: Should probably be dicts?
 
-    def get_code(self):
-        code = self._get_training_code() + '\n' + self._get_testing_code()
+    def get_code(self, mode='normal'):
+        code = self._get_training_code(mode) + '\n' + self._get_testing_code(mode)
         return code
