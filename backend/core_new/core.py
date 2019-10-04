@@ -98,23 +98,56 @@ class LayerExtrasReader:
     def to_dict(self):
         return copy.copy(self._dict)
 
+    def _put_in_dict(self, key, value):
+        try:
+            self._dict[key].update(value)
+        except:
+            self._dict[key]=value
+
+    def _evalSample(self,sample):
+        if isinstance(sample, tf.Tensor) or isinstance(sample, tf.Variable):
+            return sample.numpy()
+        else:
+            return sample
+
     def read(self, session, data_container):
-        shape = None
+        shape = ''
         Y = session.locals.get('Y')
         if isinstance(Y, tf.Tensor):
             shape = Y.shape.as_list()
+            if not shape:
+                shape=[1]
         
-        sample = None
+        sample = ''
         if session.layer_id in data_container:
             layer_dict = data_container[session.layer_id]
             
-            if'sample' in layer_dict:
+            if 'sample' in layer_dict:
                 sample = layer_dict['sample']
-            
-        self._dict[session.layer_id] = {'sample': sample,'shape': shape}
+            elif 'Y' in layer_dict:
+                sample = layer_dict['Y']
+
+        sample=self._evalSample(sample)
+        self._put_in_dict(session.layer_id,{'sample': sample,'shape': shape})
+
+    def read_syntax_error(self, session):
+        tbObj=traceback.TracebackException(*sys.exc_info())
+        self._put_in_dict(session.layer_id,{"errorMessage": "".join(tbObj.format_exception_only()), "errorRow": tbObj.lineno or "?"})    
 
     def read_error(self, session, e):
-        self._dict[session.layer_id] = {"errorMessage": e, "errorRow": e.row}    
+        error_class = e.__class__.__name__
+        detail = e
+        _, _, tb = sys.exc_info()
+        tb_list=traceback.extract_tb(tb)
+        line_number=""
+        for i in tb_list:
+            if i[2]=="<module>":
+                line_number=i[1]
+
+        if line_number=="":
+            line_number = tb.tb_lineno
+
+        self._put_in_dict(session.layer_id, {"errorMessage": "%s at line %d: %s" % (error_class, line_number, detail), "errorRow": line_number})
     
 
 class BaseCore:
@@ -173,9 +206,18 @@ class BaseCore:
             session.run() 
         except LayerSessionStop:
             raise # Not an error. Re-raise.
+        except SyntaxError as e:
+            if self._layer_extras_reader is not None:
+                self._layer_extras_reader.read_syntax_error(session)
+            else:
+                raise
         except Exception as e:
-            self._on_error(session, traceback.format_exc())
-            raise
+            # self._on_error(session, traceback.format_exc())
+            if self._layer_extras_reader is not None:
+                self._layer_extras_reader.read_error(session,e)
+            else:
+                raise
+        
            
         if log.isEnabledFor(logging.DEBUG):
             log.debug("Session local variables [post execution]: " + pprint.pformat(session.locals, compact=True))
@@ -272,7 +314,7 @@ if __name__ == "__main__":
     # newPropegateNetwork(json_network["Layers"])
 
 
-    import pdb; pdb.set_trace()
+    # import pdb; pdb.set_trace()
 
     # sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
     # core = Core(CodeHq, graph_dict, data_container, sph, mode=mode)

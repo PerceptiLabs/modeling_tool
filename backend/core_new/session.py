@@ -40,6 +40,9 @@ class LayerSession(ApiCallbackHandler):
             
         self._globals['api'] = self._api        
         exec(self._code, self._globals, self._locals)
+
+        for name, value in self._locals.items():
+            self._data_container.store_value(self._layer_id, name, value)
         
     def on_store_value(self, name, value):
         if self._data_container is not None:
