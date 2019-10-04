@@ -17,6 +17,9 @@ from dataKeeper import dataKeeper as lw_data
 from extractVariables import *
 from createDataObject import createDataObject
 
+from core_new.core import *
+from newPropegateNetwork import newPropegateNetwork
+
 import pprint
 import logging
 log = logging.getLogger(__name__)
@@ -293,34 +296,41 @@ class Message:
         #     content=propegateOutputs(self.dataDict[reciever],jsonNetwork)
 
         
+        # elif action == "getNetworkInputDim":
+        #     jsonNetwork=self.request.get("value")
+        #     if reciever not in self.lwNetworks or self.lwNetworks[reciever].jsonNetwork!=jsonNetwork:
+        #         #Get the pretrained variables and constants
+        #         for id_, value in jsonNetwork.items():
+        #             if id_ not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"] and value["Properties"] is not None:                                        
+        #                 self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
+        #                 self.dataDict[reciever][id_].generateCode()
+        #                 self.dataDict[reciever][id_].executeCode()    
+        #             elif id_ in self.dataDict[reciever]:
+        #                 self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])                                            
+                    
+        #             if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
+        #                 ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
+        #                 self.checkpointDict[value["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
+        #                 ckptObj.close()
+                    
+        #         #Get the pre loaded data
+        #         for Id in list(self.dataDict[reciever].keys()):
+        #             if Id not in list(jsonNetwork.keys()):
+        #                 del self.dataDict[reciever][Id]
+                
+        #         if reciever not in self.lwNetworks:
+        #             self.lwNetworks[reciever]=lwNetwork(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
+        #         else:
+        #             self.lwNetworks[reciever].propegateOutputs(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
+
+        #     content=self.lwNetworks[reciever].inputDim
+
         elif action == "getNetworkInputDim":
             jsonNetwork=self.request.get("value")
-            if reciever not in self.lwNetworks or self.lwNetworks[reciever].jsonNetwork!=jsonNetwork:
-                #Get the pretrained variables and constants
-                for id_, value in jsonNetwork.items():
-                    if id_ not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"] and value["Properties"] is not None:                                        
-                        self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
-                        self.dataDict[reciever][id_].generateCode()
-                        self.dataDict[reciever][id_].executeCode()    
-                    elif id_ in self.dataDict[reciever]:
-                        self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])                                            
-                    
-                    if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
-                        ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
-                        self.checkpointDict[value["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
-                        ckptObj.close()
-                    
-                #Get the pre loaded data
-                for Id in list(self.dataDict[reciever].keys()):
-                    if Id not in list(jsonNetwork.keys()):
-                        del self.dataDict[reciever][Id]
-                
-                if reciever not in self.lwNetworks:
-                    self.lwNetworks[reciever]=lwNetwork(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
-                else:
-                    self.lwNetworks[reciever].propegateOutputs(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
+            content=newPropegateNetwork(jsonNetwork).outputDim
 
-            content=self.lwNetworks[reciever].inputDim
+            
+            content=self.lwNetworks[reciever].outputDim
 
         elif action == "getNetworkOutputDim":
             jsonNetwork=self.request.get("value")

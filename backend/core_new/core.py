@@ -111,8 +111,11 @@ class LayerExtrasReader:
             if'sample' in layer_dict:
                 sample = layer_dict['sample']
             
-        self._dict[session.layer_id] = {'sample': sample, 'shape': shape}
-        
+        self._dict[session.layer_id] = {'sample': sample,'shape': shape}
+
+    def read_error(self, session, e):
+        self._dict[session.layer_id] = {"errorMessage": e, "errorRow": e.row}    
+    
 
 class BaseCore:
     def __init__(self, codehq, graph_dict, data_container, session_process_handler=None, layer_extras_reader=None,
@@ -216,11 +219,11 @@ class LightweightCore(BaseCore):
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
 
     import json
     import queue
-    with open('net.json', 'r') as f:
+    with open('C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Networks/net.json', 'r') as f:
         json_network = json.load(f)
 
     graph = Graph(json_network["Layers"])
@@ -242,9 +245,9 @@ if __name__ == "__main__":
     cq = queue.Queue()
     rq = queue.Queue()
 
-    def f(queue, delay, command):
-        time.sleep(delay)
-        queue.put(command)
+    # def f(queue, delay, command):
+    #     time.sleep(delay)
+    #     queue.put(command)
 
     import time
     import threading
@@ -253,7 +256,7 @@ if __name__ == "__main__":
     #threading.Thread(target=f, args=(cq, 8, 'stop')).start()        
 
 
-    mode = 'headless'
+    # mode = 'headless'
 
     graph_dict = graph.graphs
     data_container = DataContainer()
@@ -265,11 +268,15 @@ if __name__ == "__main__":
     lw_core.run()
     print(ler.to_dict())
 
+    # from newPropegateNetwork import newPropegateNetwork
+    # newPropegateNetwork(json_network["Layers"])
+
+
     import pdb; pdb.set_trace()
 
-    sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
-    core = Core(CodeHq, graph_dict, data_container, sph, mode=mode)
-    core.run()
+    # sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
+    # core = Core(CodeHq, graph_dict, data_container, sph, mode=mode)
+    # core.run()
 
     
 

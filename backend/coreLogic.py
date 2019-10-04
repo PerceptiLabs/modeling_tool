@@ -9,6 +9,9 @@ import copy
 import traceback
 import os
 
+from core_new.core import *
+from core_new.data import DataContainer
+
 import logging
 log = logging.getLogger(__name__)
 
@@ -27,7 +30,7 @@ class coreLogic():
 
         self.status="Created"
 
-        self.core=core(self.networkName)
+        # self.core=core(self.networkName)
 
         self.savedResultsDict=dict()
 
@@ -36,37 +39,54 @@ class coreLogic():
     def startCore(self,network):
         #Start the backendthread and give it the network
         self.network=network
-        if self.cThread is None:
-            try:
-                self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
-                self.cThread.start()
-            except:
-                self.errorQueue.put("Could not boot up the new thread to run the computations on")
-            self.status="Running"
-            return {"content": "core started"}
-        else:
-            if self.cThread.isAlive():
-                self.Stop()
 
-                while self.cThread.isAlive():
-                    time.sleep(0.05)
+        graph = Graph(network).graphs
+        mode = 'headless'
 
-                try:
-                    self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
-                    self.cThread.start()
-                    #self.status="Setup"
-                except:
-                    self.errorQueue.put("Could not boot up the new thread to run the computations on")
-            else:
-                try:
-                    self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
-                    self.cThread.start()
-                    #self.status="Setup"
-                except:
-                    self.errorQueue.put("Could not boot up the new thread to run the computations on")
-                    #self.status="SetupFailed"
-            self.status="Running"
-            return {"content":"core started"}
+        data_container = DataContainer()    
+
+        ler = LayerExtrasReader()
+
+        lw_core = LightweightCore(CodeHq, graph_dict, data_container, ler)    
+        lw_core.run()
+        print(ler.to_dict())
+
+        import pdb; pdb.set_trace()
+
+        sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
+        core = Core(CodeHq, graph_dict, data_container, sph, mode=mode)
+        core.run()
+        # if self.cThread is None:
+        #     try:
+        #         self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
+        #         self.cThread.start()
+        #     except:
+        #         self.errorQueue.put("Could not boot up the new thread to run the computations on")
+        #     self.status="Running"
+        #     return {"content": "core started"}
+        # else:
+        #     if self.cThread.isAlive():
+        #         self.Stop()
+
+        #         while self.cThread.isAlive():
+        #             time.sleep(0.05)
+
+        #         try:
+        #             self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
+        #             self.cThread.start()
+        #             #self.status="Setup"
+        #         except:
+        #             self.errorQueue.put("Could not boot up the new thread to run the computations on")
+        #     else:
+        #         try:
+        #             self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
+        #             self.cThread.start()
+        #             #self.status="Setup"
+        #         except:
+        #             self.errorQueue.put("Could not boot up the new thread to run the computations on")
+        #             #self.status="SetupFailed"
+        #     self.status="Running"
+        return {"content":"core started"}
 
     def onThread(self, function, *args, **kwargs):
         print(function)
