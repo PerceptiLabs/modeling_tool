@@ -5,7 +5,6 @@ backend/*.pyo
 *.pyc
 *.py~
 *#*#
-backend
 #Frontend ignores
 frontend/.DS_Store
 frontend/core/*

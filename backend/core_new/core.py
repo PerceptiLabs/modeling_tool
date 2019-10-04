@@ -6,15 +6,11 @@ import numpy as np
 import traceback
 import tensorflow as tf
 
-from core_new.ui import UiChannel
-from core_new.api import Api, DataApi
+
+from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer, TrainValTestDataPolicy
-from core_new.state import State
 from core_new.utils import set_tensorflow_mode
-from core_new.control import BaseControlApi, ControlApi
-from core_new.results import ResultDictMaker
 from core_new.session import LayerSession, LayerSessionStop
-from core_new.execution import ExecutionScope
 
 from graph import Graph
 

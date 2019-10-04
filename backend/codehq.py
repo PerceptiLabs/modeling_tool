@@ -39,13 +39,15 @@ class CodeHqNew:
                                                    layer_id=id_)
             return code_generator
         elif type_ == 'DeepLearningFC':
-            code_gen = FullyConnectedCodeGenerator(n_neurons=props["Neurons"],
+            code_gen = FullyConnectedCodeGenerator(layer_id=id_,
+                                                   n_neurons=props["Neurons"],
                                                    activation=props["Activation_function"],
                                                    dropout=props["Dropout"],
                                                    keep_prob=1.0) # TODO: from where?
             return code_gen
         elif type_ == 'DeepLearningConv':
-            code_gen = ConvCodeGenerator(conv_dim=props["Conv_dim"],
+            code_gen = ConvCodeGenerator(layer_id=id_,
+                                         conv_dim=props["Conv_dim"],
                                          patch_size=props["Patch_size"],
                                          feature_maps=props["Feature_maps"],
                                          stride=props["Stride"],
@@ -85,10 +87,11 @@ class CodeHqNew:
             code_gen = ReshapeCodeGenerator(shape=props["Shape"], permutation=props["Permutation"])
             return code_gen
         elif type_ == 'TrainNormal':
-            # TODO: the ids shouldn't be hardcoded :P. The 'data_layer' can probably be naively derived from the 'direct_layer'.            
+            # TODO: the ids shouldn't be hardcoded :P. The 'data_layer' can probably be naively derived from the 'direct_layer'.
+            # TODO: dont hardcode epoch and iterations
             network_branch = TrainInputBranch(direct_layer='1564399782856', data_layer='1564399775664')
-            labels_branch = TrainInputBranch(direct_layer='1564399782856', data_layer='1564399786876')
-            code_gen = TrainNormalCodeGenerator(network_branch, labels_branch, n_epochs=2, n_iterations=100)
+            labels_branch =  TrainInputBranch(direct_layer='1564399788744', data_layer='1564399786876')
+            code_gen = TrainNormalCodeGenerator(network_branch, labels_branch, n_epochs=20, n_iterations=70)
             return code_gen
         elif type_ == 'TrainGenetic':
             raise NotImplementedError("Train genetic algorithm not implemented")
