@@ -16,13 +16,13 @@
     .net-element_checkpoint-icon.net-element_code-error(v-if="dataEl.layerCodeError")
       i.icon.icon-code-error
 
-    .net-element_arrows-start
+    .net-element_arrows-start(v-if="editIsOpen")
       button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
-    .net-element_arrows-start.net-element_arrows-start--right
+    .net-element_arrows-start.net-element_arrows-start--right(v-if="editIsOpen")
       button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
-    .net-element_arrows-start.net-element_arrows-start--bottom
+    .net-element_arrows-start.net-element_arrows-start--bottom(v-if="editIsOpen")
       button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
-    .net-element_arrows-start.net-element_arrows-start--left
+    .net-element_arrows-start.net-element_arrows-start--left(v-if="editIsOpen")
       button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
 
     .net-element_btn(ref="BaseElement")

@@ -5,45 +5,7 @@ import { pathSlash }    from "@/core/constants.js";
 const {spawn} = require('child_process');
 
 function prepareNetwork(network) {
-  let layers = {};
-  const rootPath = network.networkRootFolder[0];
-  for(let layer in network.networkElementList) {
-    const dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
-    const el = network.networkElementList[layer];
-    let checkpointPath = deepCopy(el.checkpoint);
-    if(el.componentName === 'LayerContainer') continue;
-    /*prepare checkpoint*/
-    if(rootPath && el.checkpoint.length) {
-      const filePath = el.checkpoint[1].slice(0, el.checkpoint[1].length);
-      checkpointPath[1] = rootPath + pathSlash + filePath;
-    }
-    /*prepare elements*/
-    if(dataLayers.includes(el.componentName)) {
-      layers[el.layerId] = {
-        Name: el.layerName,
-        Type: el.componentName,
-        Properties: el.layerSettings,
-        checkpoint: checkpointPath,
-        endPoints: el.endPoints,
-        //Code: el.coreCode,
-        backward_connections: el.connectionIn,
-        forward_connections: el.connectionOut
-      };
-    }
-    else {
-      layers[el.layerId] = {
-        Name: el.layerName,
-        Type: el.componentName,
-        checkpoint: checkpointPath,
-        endPoints: el.endPoints,
-        Properties: el.layerSettings,
-        Code: el.layerCode,
-        backward_connections: el.connectionIn,
-        forward_connections: el.connectionOut
-      };
-    }
-  }
-  return layers
+
 }
 
 const namespaced = true;
@@ -53,7 +15,48 @@ const state = {
 };
 
 const getters = {
-
+  GET_coreNetwork(state, getters, rootState, rootGetters) {
+    const network = rootGetters['mod_workspace/GET_currentNetwork'];
+    let layers = {};
+    const rootPath = network.networkRootFolder[0];
+    for(let layer in network.networkElementList) {
+      const dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
+      const el = network.networkElementList[layer];
+      let checkpointPath = deepCopy(el.checkpoint);
+      if(el.componentName === 'LayerContainer') continue;
+      /*prepare checkpoint*/
+      if(rootPath && el.checkpoint.length) {
+        const filePath = el.checkpoint[1].slice(0, el.checkpoint[1].length);
+        checkpointPath[1] = rootPath + pathSlash + filePath;
+      }
+      /*prepare elements*/
+      if(dataLayers.includes(el.componentName)) {
+        layers[el.layerId] = {
+          Name: el.layerName,
+          Type: el.componentName,
+          Properties: el.layerSettings,
+          checkpoint: checkpointPath,
+          endPoints: el.endPoints,
+          //Code: el.coreCode,
+          backward_connections: el.connectionIn,
+          forward_connections: el.connectionOut
+        };
+      }
+      else {
+        layers[el.layerId] = {
+          Name: el.layerName,
+          Type: el.componentName,
+          checkpoint: checkpointPath,
+          endPoints: el.endPoints,
+          Properties: el.layerSettings,
+          Code: el.layerCode,
+          backward_connections: el.connectionIn,
+          forward_connections: el.connectionOut
+        };
+      }
+    }
+    return layers
+  }
 };
 
 const mutations = {
@@ -63,6 +66,9 @@ const mutations = {
 };
 
 const actions = {
+  //---------------
+  //  CORE
+  //---------------
   API_runServer({state, commit, dispatch, getters, rootGetters}) {
     let timer;
     let coreIsStarting = false;
@@ -89,22 +95,20 @@ const actions = {
       }
       openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
 
-      openServer.on('error', (err) => {
+      openServer.on('error', (err)=> {
         //console.log('error core', err);
         coreOffline()
       });
-      openServer.on('close', (code) => {
+      openServer.on('close', (code)=> {
         //console.log('close core', code);
         coreOffline()
       });
       waitOnlineCore()
     }
     function waitOnlineCore() {
-      timer = setInterval(()=>{
+      timer = setInterval(()=> {
         let status = state.statusLocalCore;
-        if(status === 'offline') {
-          getCoreRequest();
-        }
+        if(status === 'offline') getCoreRequest();
         else clearInterval(timer);
       }, 5000);
     }
@@ -114,81 +118,50 @@ const actions = {
         value: ''
       };
       coreRequest(theData)
-        .then((data)=> {
-          commit('SET_statusLocalCore', 'online')
-        })
-        .catch((err) =>{
-        });
+        .then((data)=> { commit('SET_statusLocalCore', 'online') })
+        .catch((err)=> {  });
     }
     function coreOffline() {
       commit('SET_statusLocalCore', 'offline');
     }
   },
-
-  API_getStatus({rootGetters, dispatch, commit}) {
+  API_CLOSE_core({getters, dispatch, rootState}) {
+    //console.log('API_CLOSE_core');
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
+      reciever: 'server',
+      action: 'Close',
       value: ''
     };
     coreRequest(theData)
-      .then((data)=> {
-        dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
-      })
-      .catch((err) =>{
-        if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
-          console.error(err);
-        }
-        commit('SET_statusLocalCore', 'offline')
-      });
+      .then((data)=> { return })
+      .catch((err)=> { console.error(err) });
+    // if(rootState.mod_workspace.workspaceContent.length)
+    //   dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
 
+
+  //---------------
+  //  NETWORK TRAINING
+  //---------------
   API_startTraining({dispatch, getters, rootGetters}) {
     const net = rootGetters['mod_workspace/GET_currentNetwork'];
     //const elementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
-    let message = {
-      Hyperparameters: net.networkSettings,
-      Layers: prepareNetwork(net)
-    };
-    console.log(message);
     const theData = {
-      reciever: net.networkID,
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "Start",
-      value: message
+      value: {
+        Hyperparameters: net.networkSettings,
+        Layers: getters.GET_coreNetwork
+      }
     };
+    console.log('Start', theData);
     coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
         dispatch('mod_tracker/EVENT_trainingStart', theData.value, {root: true});
         setTimeout(()=> dispatch('mod_workspace/EVENT_chartsRequest', null, {root: true}), 500)
       })
-      .catch((err) =>{
-        console.error(err);
-      });
-  },
-  API_setHeadless({dispatch, rootState, rootGetters}, value) {
-    const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'headless',
-      value: value
-    };
-    //console.log('API_setHeadless');
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err) =>{
-        console.error(err);
-      });
-  },
-  API_updateResults({dispatch, rootState, rootGetters}) {
-    const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'updateResults',
-      value: ''
-    };
-    //console.log('API_updateResults');
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err) =>{
+      .catch((err)=> {
         console.error(err);
       });
   },
@@ -209,7 +182,7 @@ const actions = {
           dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true})
         }
       })
-      .catch((err) =>{
+      .catch((err)=> {
         console.error(err);
       });
   },
@@ -226,7 +199,7 @@ const actions = {
         dispatch('API_getStatus');
         dispatch('mod_tracker/EVENT_trainingStop', null, {root: true});
       })
-      .catch((err) =>{
+      .catch((err)=> {
         console.error(err);
       });
   },
@@ -238,55 +211,15 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {})
-      .catch((err) =>{
-        console.error(err);
-      });
-  },
-  API_exportData({rootGetters, dispatch}, value) {
-    const net = rootGetters['mod_workspace/GET_currentNetwork'];
-    const theData = {
-      reciever: net.networkID,
-      action: 'Export',
-      value: value
-    };
-    const trackerData = {
-      result: '',
-      network: prepareNetwork(net),
-      settings: value
-    };
-    //console.log('Export send', theData);
-    coreRequest(theData)
-      .then((data)=> {
-        //console.log('API_exportData answer', data);
-        dispatch('globalView/GP_infoPopup', data, {root: true});
-        trackerData.result = 'success';
-      })
       .catch((err)=> {
         console.error(err);
-        dispatch('globalView/GP_errorPopup', err, {root: true});
-        trackerData.result = 'error';
-      })
-      .finally(()=> {
-        dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
-      })
-  },
-  API_CLOSE_core({getters, dispatch, rootState}) {
-    //console.log('API_CLOSE_core');
-    const theData = {
-      reciever: 'server',
-      action: 'Close',
-      value: ''
-    };
-    coreRequest(theData)
-      .then((data)=> {
-        return
-      })
-      .catch((err) =>{
-        console.error(err);
       });
-    if(rootState.mod_workspace.workspaceContent.length)
-      dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true})
   },
+
+
+  //---------------
+  //  NETWORK TESTING
+  //---------------
   API_postTestStart({rootGetters, rootState, dispatch}) {
     //console.log('API_postTestStart');
     const theData = {
@@ -295,15 +228,11 @@ const actions = {
       value: ''
     };
     return coreRequest(theData)
-      .then((data)=> {
-        dispatch('mod_tracker/EVENT_testOpenTab', null, {root: true});
-      })
-      .catch((err) =>{
-        console.error(err);
-      });
+      .then((data)=> { dispatch('mod_tracker/EVENT_testOpenTab', null, {root: true}) })
+      .catch((err)=> { console.error(err) });
   },
   API_postTestPlay({rootGetters, rootState, dispatch}) {
-   // console.log('API_postTestPlay');
+    // console.log('API_postTestPlay');
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'playTest',
@@ -320,7 +249,7 @@ const actions = {
           dispatch('mod_tracker/EVENT_testPlay', null, {root: true});
         }
       })
-      .catch((err) =>{
+      .catch((err)=> {
         console.error(err);
       });
   },
@@ -336,77 +265,15 @@ const actions = {
         dispatch('mod_workspace/EVENT_onceDoRequest', null, {root: true});
         dispatch('mod_tracker/EVENT_testMove', theData.action, {root: true});
       })
-      .catch((err) =>{
+      .catch((err)=> {
         console.error(err);
       });
   },
 
-  API_getInputDim({dispatch, getters, rootGetters}) {
-    //console.log("getNetworkInputDim");
-    const net = rootGetters['mod_workspace/GET_currentNetwork'];
-    const theData = {
-      reciever: net.networkID,
-      action: "getNetworkInputDim",
-      value: prepareNetwork(net)
-    };
-    return coreRequest(theData)
-      .then((data)=> {
-        if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
-      })
-      .catch((err) =>{
-        console.error(err);
-      });
 
-  },
-  API_getOutputDim({dispatch, getters, rootGetters}) {
-    //console.log('getNetworkOutputDim');
-    const net = rootGetters['mod_workspace/GET_currentNetwork'];
-    const theData = {
-      reciever: net.networkID,
-      action: "getNetworkOutputDim",
-      value: prepareNetwork(net)
-    };
-    coreRequest(theData)
-      .then((data)=> {
-        if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
-      })
-      .catch((err)=> {
-        console.error(err);
-      });
-  },
-  API_parse({dispatch, getters, rootGetters}, path) {
-    const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: "Parse",
-      value: path
-    };
-    //console.log('Parse send', theData);
-    return coreRequest(theData)
-      .then((data)=> {
-        //console.log('Parse answer', data);
-        dispatch('mod_workspace/ADD_network', data.network, {root: true});
-      })
-      .catch((err)=> {
-        console.error('Parse answer', err);
-      });
-  },
-  API_getPreviewSample({dispatch, rootGetters}, layerId) {
-    //console.log('getPreviewSample');
-    const net = rootGetters['mod_workspace/GET_currentNetwork'];
-    const theData = {
-      reciever: net.networkID,
-      action: "getPreviewSample",
-      value: {
-        Id: layerId,
-        Network: prepareNetwork(net)
-      }
-    };
-    return coreRequest(theData)
-      .then((data)=> data)
-      .catch((err)=> {
-        console.error(err);
-      });
-  },
+  //---------------
+  //  NETWORK SAVE
+  //---------------
   API_checkTrainedNetwork({dispatch, getters, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -428,6 +295,172 @@ const actions = {
       .then((data)=> data)
       .catch((err)=> {
         console.error('SaveTrained answer', err);
+      });
+  },
+
+
+  //---------------
+  //  ELEMENT SETTINGS
+  //---------------
+  API_getInputDim({dispatch, getters, rootGetters}) {
+    //console.log("getNetworkInputDim");
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: "getNetworkInputDim",
+      value: getters.GET_coreNetwork
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
+      })
+      .catch((err)=> {
+        console.error(err);
+      });
+
+  },
+  API_getOutputDim({dispatch, getters, rootGetters}) {
+    //console.log('getNetworkOutputDim');
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: "getNetworkOutputDim",
+      value: getters.GET_coreNetwork
+    };
+    coreRequest(theData)
+      .then((data)=> {
+        if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
+      })
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
+  API_getPreviewSample({dispatch, getters, rootGetters}, {layerId, varData}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: "getPreviewSample",
+      value: {
+        Id: layerId,
+        Network: getters.GET_coreNetwork,
+        Variable: varData
+      }
+    };
+    console.log('getPreviewSample', theData);
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
+  API_getPreviewVariableList({dispatch, getters, rootGetters}, layerId) {
+    //console.log('store API_getPreviewVariableList');
+    //const net = rootGetters['mod_workspace/GET_currentNetwork'];
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getPreviewVariableList',
+      value: {
+        Id: layerId,
+        Network: getters.GET_coreNetwork
+      }
+    };
+    console.log('getPreviewVariableList', theData);
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
+  //---------------
+  //  IMPORT/EXPORT
+  //---------------
+  API_parse({dispatch, getters, rootGetters}, path) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: "Parse",
+      value: path
+    };
+    //console.log('Parse send', theData);
+    return coreRequest(theData)
+      .then((data)=> {
+        //console.log('Parse answer', data);
+        dispatch('mod_workspace/ADD_network', data.network, {root: true});
+      })
+      .catch((err)=> {
+        console.error('Parse answer', err);
+      });
+  },
+  API_exportData({rootGetters, getters, dispatch}, value) {
+    const net = rootGetters['mod_workspace/GET_currentNetwork'];
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'Export',
+      value: value
+    };
+    const trackerData = {
+      result: '',
+      network: getters.GET_coreNetwork,
+      settings: value
+    };
+    //console.log('Export send', theData);
+    coreRequest(theData)
+      .then((data)=> {
+        //console.log('API_exportData answer', data);
+        dispatch('globalView/GP_infoPopup', data, {root: true});
+        trackerData.result = 'success';
+      })
+      .catch((err)=> {
+        console.error(err);
+        dispatch('globalView/GP_errorPopup', err, {root: true});
+        trackerData.result = 'error';
+      })
+      .finally(()=> {
+        dispatch('mod_tracker/EVENT_modelExport', trackerData, {root: true});
+      })
+  },
+  //---------------
+  //  OTHER
+  //---------------
+  API_getStatus({rootGetters, dispatch, commit}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: rootGetters['mod_workspace/GET_testIsOpen'] ? 'getTestStatus' :'getStatus',
+      value: ''
+    };
+    coreRequest(theData)
+      .then((data)=> {
+        dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
+      })
+      .catch((err)=> {
+        if(err.toString() !== "Error: connect ECONNREFUSED 127.0.0.1:5000") {
+          console.error(err);
+        }
+        commit('SET_statusLocalCore', 'offline')
+      });
+  },
+
+
+  API_setHeadless({dispatch, rootState, rootGetters}, value) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'headless',
+      value: value
+    };
+    //console.log('API_setHeadless');
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
+  API_updateResults({dispatch, rootState, rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'updateResults',
+      value: ''
+    };
+    //console.log('API_updateResults');
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error(err);
       });
   },
 };

@@ -16,7 +16,7 @@
         li.custom-select_separator
 
       li.custom-select_option(
-        v-for="(option, i) in selectOptions"
+        v-for="(option, i) in trueModel"
         :key="i"
         :class="{'custom-select_option-open': openIndexSublist === i}"
         )
@@ -103,10 +103,16 @@ export default {
     uniqName() {
       return this._uid + 'selectid'
     },
+    trueModel() {
+      const optionsList = this.selectOptions;
+      if(!optionsList.length) return optionsList;
+      if( optionsList[0].constructor.name === 'Object') return optionsList;
+      else return optionsList.map((el)=> { return { text: el, value: el, }})
+    },
     labelText() {
       if(this.value.length) {
         let checkedTextList = [];
-        addSelectedText(this.value, this.selectOptions, checkedTextList);
+        addSelectedText(this.value, this.trueModel, checkedTextList);
         return checkedTextList.join(', ')
       }
       else return this.selectPlaceholder;
@@ -119,7 +125,7 @@ export default {
       }
     },
     selectAllBtn() {
-      let all = this.selectOptions.length || 0;
+      let all = this.trueModel.length || 0;
       let check = this.checkedOptions.length;
       if(all === check)             return {iconClass: 'icon-app-minimize',  action: ()=> this.defaultModel()};
       if(all > check && check > 0)  return {iconClass: 'icon-app-close',     action: ()=> this.defaultModel()};
@@ -139,7 +145,7 @@ export default {
       this.selectMultiple ? this.checkedOptions = [] : this.checkedOptions = ''
     },
     enableAll() {
-      this.selectOptions.forEach((item)=> this.checkedOptions.push(item.value));
+      this.trueModel.forEach((item)=> this.checkedOptions.push(item.value));
     },
     openList() {
       this.isOpenList ? this.closeList() : this.isOpenList = true

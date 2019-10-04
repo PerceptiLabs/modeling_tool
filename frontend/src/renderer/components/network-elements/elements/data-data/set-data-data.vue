@@ -94,7 +94,6 @@
       this.Mix_settingsData_getDataMeta('DataData')
         .then((data)=> {
           if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
-          this.Mix_settingsData_getDataPlot('DataData');
         });
     },
     data() {
@@ -138,7 +137,7 @@
         const path = this.settings.accessProperties.Sources;
         if(path.length) {
           //return path[0].indexOf('.') > 0 ? 'files' : 'folders'
-          console.log(path);
+          //console.log(path);
           return path[0].type
         }
         else return ''
@@ -173,7 +172,8 @@
     watch: {
       dataColumnsSelected(newVal) {
         this.settings.accessProperties.Columns = newVal;
-        this.Mix_settingsData_getDataPlot('DataData')
+        //this.Mix_settingsData_getDataPlot('DataData')
+        //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
       },
       fileList: {
         handler(newVal) {
@@ -220,14 +220,12 @@
         let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
         openLoadDialog(optionDialog)
           .then((pathArr)=> this.saveLoadFile(pathArr, 'file', isAppend))
-          .catch(()=> {
-          })
+          .catch(()=> { })
       },
       loadFolder(isAppend) {
         loadPathFolder()
           .then((pathArr)=> this.saveLoadFile(pathArr, 'directory', isAppend))
-          .catch(()=> {
-          })
+          .catch(()=> { })
       },
       addFiles() {
         if(this.typeOpened === 'file') this.loadFile(true);
@@ -259,7 +257,8 @@
                 return data
               }
             })
-            .then(()=> this.Mix_settingsData_getDataPlot('DataData'))
+            //.then(()=> this.Mix_settingsData_getDataPlot('DataData'))
+            //.then(()=> this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId))
         }
       },
       createSelectArr(data) {
@@ -270,6 +269,7 @@
       },
       saveSettings(tabName) {
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
+        //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId);
         this.applySettings(tabName);
         this.checkPartitionList()
       },

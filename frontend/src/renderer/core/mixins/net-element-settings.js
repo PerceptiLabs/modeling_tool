@@ -2,7 +2,7 @@ import SettingsCode     from '@/components/network-elements/elements-settings/se
 import NetBaseSettings  from '@/components/network-elements/net-base-settings/net-base-settings.vue';
 
 const netElementSettings = {
-  inject: ['hideAllWindow'],
+
   props: {
     currentEl: {
       type: Object,
@@ -15,15 +15,15 @@ const netElementSettings = {
       coreCode: '',
     }
   },
-  mounted() {
-    this.$store.dispatch('mod_api/API_getInputDim')
-      .then(()=> {
-        if(!this.currentEl.layerCode) this.updateCode();
-        else this.coreCode = JSON.parse(JSON.stringify(this.currentEl.layerCode));
-
-        if (this.currentEl.layerSettings) this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
-      })
-  },
+  // mounted() {
+  //   this.$store.dispatch('mod_api/API_getInputDim')
+  //     .then(()=> {
+  //       if(!this.currentEl.layerCode) this.updateCode();
+  //       else this.coreCode = JSON.parse(JSON.stringify(this.currentEl.layerCode));
+  //
+  //       if (this.currentEl.layerSettings) this.settings = JSON.parse(JSON.stringify(this.currentEl.layerSettings));
+  //     })
+  // },
   computed: {
     userMode() {
       return this.$store.getters['mod_user/GET_userRole']
@@ -40,9 +40,9 @@ const netElementSettings = {
       this.applySettings(tabName);
     },
     applySettings(tabName) {
-      if(tabName === 'Settings') {
-        this.updateCode();
-      }
+      // if(tabName === 'Settings') {
+      //   this.updateCode();
+      // }
       const saveSettings = {
         'elId': this.currentEl.layerId,
         'code': this.coreCode ? JSON.parse(JSON.stringify(this.coreCode)) : null,
@@ -53,7 +53,6 @@ const netElementSettings = {
       this.$store.dispatch('mod_tracker/EVENT_applyLayerSettings', tabName, {root: true});
     },
     confirmSettings() {
-      this.$store.dispatch('mod_api/API_getOutputDim');
       this.hideAllWindow();
     }
   }
