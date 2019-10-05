@@ -44,17 +44,25 @@ class coreLogic():
         mode = 'headless'
 
         data_container = DataContainer()    
+        session_history = SessionHistory()
+        
+        layer_extras_reader = LayerExtrasReader()
 
-        ler = LayerExtrasReader()
-
-        lw_core = LightweightCore(CodeHq, graph_dict, data_container, ler)    
+        lw_core = LightweightCore(CodeHq, graph_dict, data_container, session_history, layer_extras_reader)    
         lw_core.run()
         print(ler.to_dict())
 
         import pdb; pdb.set_trace()
 
-        sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
-        core = Core(CodeHq, graph_dict, data_container, sph, mode=mode)
+        self.commandQ=queue.Queue()
+        self.resultQ=queue.LifoQueue()
+
+
+        session_history = SessionHistory()        
+        session_proc_handler = SessionProcessHandler(graph_dict, data_container
+                                                     self.commandQ, self.resultQ, mode)
+        core = Core(CodeHq, graph_dict, data_container,
+                    session_history, session_proc_handler, mode=mode)
         core.run()
         # if self.cThread is None:
         #     try:

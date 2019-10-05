@@ -364,7 +364,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
     def _get_testing_code(self, mode):
         code  = "api.data.store(max_iter_testing=%d)\n" % (self._n_iters - 1)
-        code += "for iter in range(10):\n"
+        code += "for iter in range(%d):\n" % self._n_iters
         code += "    y_pred_ = sess.run(y_pred)\n"
         code += "    api.data.stack(y_pred=y_pred_.squeeze())\n"
         code += "    api.data.store(iter_testing=iter)\n"
