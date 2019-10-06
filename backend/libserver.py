@@ -18,7 +18,6 @@ from extractVariables import *
 from createDataObject import createDataObject
 
 from core_new.core import *
-from newPropegateNetwork import newPropegateNetwork
 
 import pprint
 import logging
