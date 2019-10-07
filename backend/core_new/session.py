@@ -29,6 +29,8 @@ class LayerSession(ApiCallbackHandler):
 
         self._globals = copy.copy(global_vars) if global_vars is not None else {}
         self._locals = copy.copy(local_vars) if local_vars is not None else {}
+        self._inputs = copy.copy(self._locals)
+        self._outputs = {}
 
         self._process_handler = process_handler
 
@@ -45,6 +47,10 @@ class LayerSession(ApiCallbackHandler):
 
         for name, value in self._locals.items():
             self._data_container.store_value(self._layer_id, name, value)
+
+            if not name in self._inputs:
+                # TODO: shouldn't it be new OR changed variables? I.e., 'if not (name in self._inputs and value == self._inputs[name]):'                
+                self._outputs[name] = value                
         
     def on_store_value(self, name, value):
         if self._data_container is not None:
@@ -111,6 +117,6 @@ class LayerSession(ApiCallbackHandler):
 
     @property
     def outputs(self):
-        return self.locals # TODO: problem if outputs is called before run?
+        return self._outputs
     
 
