@@ -199,7 +199,7 @@ export default {
       })
     },
     openContext(event) {
-      if(!this.isTutorialMode) {
+      if(!this.isTutorialMode && !this.settingsIsOpen) {
         this.hideAllWindow();
         if(!this.currentSelectedEl.length) {
           this.setFocusEl(event);
