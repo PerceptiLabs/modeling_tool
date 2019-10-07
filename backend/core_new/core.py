@@ -105,13 +105,14 @@ class LayerExtrasReader:
             return sample
 
     def read(self, session, data_container):
-        shape = ''
+        outShape = ''
         Y = session.locals.get('Y')
         if isinstance(Y, tf.Tensor):
-            shape = Y.shape.as_list()
-            if not shape:
-                shape=[1]
-        
+            outShape = Y.shape.as_list()
+            outShape=outShape[1:]
+            if not outShape:
+                outShape=[1]
+                
         sample = ''
         if session.layer_id in data_container:
             layer_dict = data_container[session.layer_id]
@@ -122,10 +123,12 @@ class LayerExtrasReader:
                 sample = layer_dict['Y']
 
         sample=self._evalSample(sample)
-        self._put_in_dict(session.layer_id,{'sample': sample,'shape': shape})
+
+        self._put_in_dict(session.layer_id,{'Sample': sample,'outShape': outShape, 'Variables': layer_dict.keys()})
 
     def read_syntax_error(self, session):
         tbObj=traceback.TracebackException(*sys.exc_info())
+
         self._put_in_dict(session.layer_id,{"errorMessage": "".join(tbObj.format_exception_only()), "errorRow": tbObj.lineno or "?"})    
 
     def read_error(self, session, e):
@@ -191,11 +194,12 @@ class BaseCore:
         code = self._codehq.get_code_generator(id_, content).get_code(mode=self._mode)            
         #globals_, locals_ = scope_initializer.get_layer_inputs(id_, content["Con"])
             
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("Session local variables [pre execution]: " + pprint.pformat(locals_, compact=True))
-
+        
         globals_ = {'tf': tf, 'np': np}
         locals_ = {'X': self._session_history.merge_session_outputs(content['Con'])}
+
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug("Session local variables [pre execution]: " + pprint.pformat(locals_, compact=True))
                 
         session = LayerSession(id_, content['Info']['Type'], code,
                                global_vars=globals_,
@@ -327,27 +331,27 @@ if __name__ == "__main__":
     # newPropegateNetwork(json_network["Layers"])
 
 
-    def result_reader(q):
-        # read and print whatever comes onto results queue
-        while True:
-            while not q.empty():
-                res = q.get()
-                import pprint
+    # def result_reader(q):
+    #     # read and print whatever comes onto results queue
+    #     while True:
+    #         while not q.empty():
+    #             res = q.get()
+    #             import pprint
                 
-                print("RESULTS:" + pprint.pformat(res, depth=2))
-            import time
-            time.sleep(0.5)
+    #             print("RESULTS:" + pprint.pformat(res, depth=2))
+    #         import time
+    #         time.sleep(0.5)
         
-    threading.Thread(target=result_reader, args=(rq,)).start()            
+    # threading.Thread(target=result_reader, args=(rq,)).start()            
 
-    # import pdb; pdb.set_trace()
-    mode = 'normal'
-    session_history = SessionHistory() 
-    #session_history = session_history_lw
+    # # import pdb; pdb.set_trace()
+    # mode = 'normal'
+    # session_history = SessionHistory() 
+    # #session_history = session_history_lw
 
-    sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
-    core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
-    core.run()
+    # sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
+    # core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
+    # core.run()
 
     
 

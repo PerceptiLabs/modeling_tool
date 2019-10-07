@@ -18,20 +18,14 @@ class CodeHqNew:
         props = content["Info"]["Properties"]
 
         if type_ == 'DataData':
-            file_paths = content["Info"]["Properties"]["accessProperties"]["Path"]
+            sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
+            partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
 
-            ######################################        
-            # HACK TO MIMIC NEW STYLE USING SOURCE DICTS INSTEAD OF PATHS!
-            sources = []
-            partitions = []
-            for path in file_paths:
-                if os.path.isfile(path):
-                    src = {'path': path, 'type': 'file'}
-                elif os.path.isdir(path):
-                    src = {'path': path, 'type': 'directory'}
-                sources.append(src)
-                partitions.append([70, 20, 10])
-            ######################################
+            # sources = []
+            # partitions = []
+            # for source, partition in zip(sources, partitionList):
+            #     sources.append(source)
+            #     partitions.append(partition)
             
             code_generator = DataDataCodeGenerator(sources, partitions,
                                                    batch_size=16, shuffle=False,
