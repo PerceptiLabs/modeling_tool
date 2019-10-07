@@ -94,6 +94,9 @@ export default {
     });
     if(!this.settings.Labels && this.inputLayers.length) this.settings.Labels = this.inputLayers[0].value.toString();
   },
+  mounted() {
+    this.coreCode = this.codeDefault
+  },
   data() {
     return {
       inputLayers: [],

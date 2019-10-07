@@ -1,5 +1,4 @@
 import coreRequest  from "@/core/apiCore.js";
-
 const netElementSettingsData = {
   data() {
     return {
@@ -18,35 +17,51 @@ const netElementSettingsData = {
     }
   },
   methods: {
+    // ...mapActions({
+    //   api_getPreviewVariableList:,
+    //   api_getPreviewSample:      'mod_api/API_getPreviewSample',
+    // }),
     coreRequest,
-    Mix_settingsData_dataSettingsMeta(layerType) {
-      return this.Mix_settingsData_deleteDataMeta(layerType)
-        .then(()=> this.Mix_settingsData_getDataMeta(layerType))
-    },
-    Mix_settingsData_dataSettingsPlot(layerType) {
-      this.Mix_settingsData_getDataMeta(layerType)
-        .then(()=> this.Mix_settingsData_getDataPlot(layerType))
-    },
+    // Mix_settingsData_dataSettingsMeta(layerType) {
+    //   return this.Mix_settingsData_deleteDataMeta(layerType)
+    //     .then(()=> this.Mix_settingsData_getDataMeta(layerType))
+    // },
+    // Mix_settingsData_dataSettingsPlot(layerType) {
+    //   this.Mix_settingsData_getDataMeta(layerType)
+    //     .then(()=> this.Mix_settingsData_getDataPlot(layerType))
+    // },
+    // Mix_settingsData_getPreviewVariableList(layerId) {
+    //   //console.log('Mix_settingsData_getPreviewVariableList');
+    //   this.$store.dispatch('mod_api/API_getPreviewVariableList', layerId)
+    //     .then((data)=> {
+    //       console.log(data);
+    //       //this.$store.dispatch('mod_api/API_getPreviewSample', {layerId, varData: 'Y'})
+    //       //this.api_getPreviewSample({layerId, })
+    //     })
+    //     // .then((imgData)=> {
+    //     //   console.log(imgData);
+    //     // })
+    // },
+    // Mix_settingsData_getDataPlot(type) {
+    //   let theData = {
+    //     reciever: this.Mix_settingsData_currentNetworkID,
+    //     action: 'getDataPlot',
+    //     value: {
+    //       Id: this.currentEl.layerId,
+    //       Type: type,
+    //       Properties: this.settings
+    //     }
+    //   };
+    //   this.coreRequest(theData)
+    //     .then((data) => {
+    //       console.log('getDataPlot', data);
+    //       if (data) this.Mix_settingsData_imgData = data;
+    //     })
+    //     .catch((err)=> {
+    //       console.error(err);
+    //     });
+    // },
 
-    Mix_settingsData_getDataPlot(type) {
-      let theData = {
-        reciever: this.Mix_settingsData_currentNetworkID,
-        action: 'getDataPlot',
-        value: {
-          Id: this.currentEl.layerId,
-          Type: type,
-          Properties: this.settings
-        }
-      };
-      this.coreRequest(theData)
-        .then((data) => {
-          console.log('getDataPlot', data);
-          if (data) this.Mix_settingsData_imgData = data;
-        })
-        .catch((err)=> {
-          console.error(err);
-        });
-    },
     Mix_settingsData_getDataMeta(type) {
       let theData = {
         reciever: this.Mix_settingsData_currentNetworkID,
@@ -59,7 +74,7 @@ const netElementSettingsData = {
       };
       return this.coreRequest(theData)
         .then((data) => {
-          console.log('getDataMeta', data);
+          //console.log('getDataMeta', data);
           if (data) {
             if(data.Action_space) this.Mix_settingsData_actionSpace = data.Action_space;
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
@@ -105,7 +120,7 @@ const netElementSettingsData = {
       return this.coreRequest(theData)
         .then((data) => {
           console.log('deleteData', data);
-          data
+          return data
         })
         .catch((err) => {
           console.error(err);

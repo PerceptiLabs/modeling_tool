@@ -78,7 +78,8 @@ const actions = {
     const userId = getters.GET_userID;
     const defaultUserInfo = {
       showFirstAppTutorial: true,
-      projectsList: []
+      projectsList: [],
+      workspace: null
     };
     if(usersList) {
       if(usersList[userId]) return;

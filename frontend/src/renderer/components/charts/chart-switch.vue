@@ -102,7 +102,6 @@
     },
     watch: {
       chartData(newVal) {
-        console.log(newVal);
         if(newVal) {
           this.imgType = newVal.series[0].type;
           this.imgData = newVal;
