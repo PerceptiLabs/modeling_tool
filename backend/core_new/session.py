@@ -22,12 +22,25 @@ def requires_process_handler(f):
     return wrapper
 
 
+class LayerIo:
+    def __init__(self, global_vars=None, local_vars=None):
+        self._globals = copy.copy(global_vars) if global_vars is not None else {}
+        self._locals = copy.copy(local_vars) if local_vars is not None else {}
+
+    @property
+    def globals(self):
+        return copy.copy(self._globals)
+    
+    @property
+    def locals(self):
+        return copy.copy(self._locals)
+
+
 class LayerSession(ApiCallbackHandler):
     PAUSE_TIME = 0.3
     
     def __init__(self, layer_id, layer_type, code, global_vars=None, local_vars=None,
-                 data_container=None, process_handler=None):
-        
+                 data_container=None, process_handler=None):        
         self._layer_id = layer_id
         self._layer_type = layer_type
         self._code = code
@@ -36,26 +49,46 @@ class LayerSession(ApiCallbackHandler):
         self._stopped = False
         self._paused = False
 
-        self._globals = copy.copy(global_vars) if global_vars is not None else {}
-        self._locals = copy.copy(local_vars) if local_vars is not None else {}
-        self._inputs = copy.copy(self._locals)
-        self._outputs = {}
+        self._inputs = LayerIo(global_vars, local_vars)
+        self._outputs = None
 
         self._process_handler = process_handler
         self._api = Api(self)
 
     def run(self):
-        if 'api' in self._globals and self._globals['api'] is not self._api:
-            log.warning("Overwriting existing, non-identical, api in globals")
-            
-        self._globals['api'] = self._api        
-        exec(self._code, self._globals, self._locals)
+        global_vars, local_vars = self._get_input_vars(insert_api=True)
+        exec(self._code, global_vars, local_vars)
 
-        for name, value in self._locals.items():
+        for name, value in local_vars.items():
             self._data_container.store_value(self._layer_id, name, value)
 
-            if not (name in self._inputs and value == self._inputs[name]):
-                self._outputs[name] = value                
+        self._set_output_vars(global_vars, local_vars)
+
+    def _set_output_vars(self, global_vars, local_vars):
+        global_out, local_out = {}, {}
+        
+        for name, value in global_vars.items():
+            if name in global_out and value is global_out[name]:
+                continue
+            global_out[name] = value
+                
+        for name, value in local_vars.items():
+            if name in local_out and value is local_out[name]:
+                continue
+            local_out[name] = value
+
+        self._outputs = LayerIo(global_out, local_out)
+
+    def _get_input_vars(self, insert_api=True):
+        global_vars = self._inputs.globals
+        local_vars = self._inputs.locals
+
+        if insert_api and 'api' in global_vars and global_vars['api'] is not self._api:
+            log.warning("Overwriting existing, non-identical, api in globals")
+        if insert_api:
+            global_vars['api'] = self._api
+
+        return global_vars, local_vars
         
     def on_store_value(self, name, value):
         if self._data_container is not None:
@@ -95,14 +128,6 @@ class LayerSession(ApiCallbackHandler):
         return self._paused
         
     @property
-    def locals(self):
-        return copy.copy(self._locals)
-    
-    @property
-    def globals(self):
-        return copy.copy(self._globals)
-
-    @property
     def code(self):
         return self._code
 
@@ -114,6 +139,10 @@ class LayerSession(ApiCallbackHandler):
     def layer_type(self):
         return self._layer_type
 
+    @property
+    def inputs(self):
+        return self._inputs
+    
     @property
     def outputs(self):
         return self._outputs

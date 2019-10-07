@@ -6,11 +6,10 @@ import numpy as np
 import traceback
 import tensorflow as tf
 
-
 from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer, TrainValTestDataPolicy
 from core_new.utils import set_tensorflow_mode
-from core_new.session import LayerSession, LayerSessionStop
+from core_new.session import LayerSession, LayerSessionStop, LayerIo
 
 from graph import Graph
 
@@ -36,17 +35,21 @@ class SessionHistory:
             yield id_, session
 
     def merge_session_outputs(self, layer_ids):
-        results = {}
+        local_vars = {}
+        global_vars = {}
+        
         if len(layer_ids) == 1:
-            print(layer_ids)
             session = self._sessions[layer_ids[0]]
-            results.update(session.outputs)
+            local_vars.update(session.outputs.locals)
+            global_vars.update(session.outputs.globals)            
         elif len(layer_ids) > 1:
             for id_ in layer_ids:
                 session = self._sessions[id_]                
-                results[id_] = session.outputs
-                
-        return results
+                local_vars[id_] = session.outputs.locals
+                global_vars.update(session.outputs.globals) # WARNING: may lead to race condition where global variables are updated depending on which layer is executed first.
+
+        outputs = LayerIo(global_vars, local_vars)
+        return outputs
 
     
 class SessionProcessHandler:
@@ -106,7 +109,7 @@ class LayerExtrasReader:
 
     def read(self, session, data_container):
         shape = ''
-        Y = session.locals.get('Y')
+        Y = session.outputs.locals.get('Y')
         if isinstance(Y, tf.Tensor):
             shape = Y.shape.as_list()
             if not shape:
@@ -182,38 +185,40 @@ class BaseCore:
         if self._tf_eager:
             set_tensorflow_mode('graph')        
             
-    def _run_layer(self, id_, content):
-        
+    def _run_layer(self, id_, content):        
         code = self._codehq.get_code_generator(id_, content).get_code(mode=self._mode)            
-        #globals_, locals_ = scope_initializer.get_layer_inputs(id_, content["Con"])
             
         if log.isEnabledFor(logging.DEBUG):
             log.debug("Session local variables [pre execution]: " + pprint.pformat(locals_, compact=True))
 
-        globals_ = {'tf': tf, 'np': np}
-        locals_ = {'X': self._session_history.merge_session_outputs(content['Con'])}
-                
+        outputs = self._session_history.merge_session_outputs(layer_ids=content['Con'])
+        globals_ = {'tf': tf, 'np': np} # Default globals
+        globals_.update(outputs.globals)
+        
+        locals_ = {'X': outputs.locals}
+        
         session = LayerSession(id_, content['Info']['Type'], code,
                                global_vars=globals_,
                                local_vars=locals_,
                                data_container=self._data_container,
                                process_handler=self._session_process_handler)                               
         try:        
-            session.run() 
+            session.run()
         except LayerSessionStop:
             raise # Not an error. Re-raise.
         except SyntaxError as e:
+            log.error("Error running session!" + traceback.format_exc())            
             if self._layer_extras_reader is not None:
                 self._layer_extras_reader.read_syntax_error(session)
             else:
                 raise
         except Exception as e:
-            # self._on_error(session, traceback.format_exc())
+            log.error("Error running session!" + traceback.format_exc())
+            #self._on_error(session, traceback.format_exc())
             if self._layer_extras_reader is not None:
                 self._layer_extras_reader.read_error(session,e)
             else:
                 raise
-        
            
         if log.isEnabledFor(logging.DEBUG):
             log.debug("Session local variables [post execution]: " + pprint.pformat(session.locals, compact=True))
