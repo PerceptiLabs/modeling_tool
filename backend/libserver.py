@@ -437,7 +437,8 @@ class Message:
                 else:
                     return reduceTo2d(data[...,-1])
 
-            content = createDataObject([reduceTo2d(np.asarray(sample))])
+            content = {"Sample": createDataObject([reduceTo2d(np.asarray(sample))]),
+                        "VariableName":"Y"}
 
 
             # value=self.request.get("value")
@@ -478,6 +479,46 @@ class Message:
             # from pprint import pprint
             # pprint(content)           
 
+
+        elif action == "getPreviewVariableList":
+            value=self.request.get("value")
+            jsonNetwork=value["Network"]
+            LayerId=value["Id"]
+
+            graph = Graph(jsonNetwork)
+            
+            graph_dict = graph.graphs
+            data_container = DataContainer()
+            
+            session_history_lw = SessionHistory()
+            extras_reader = LayerExtrasReader()
+
+            from codehq import CodeHqNew as CodeHq
+
+            lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
+                                    session_history_lw, extras_reader)    
+            lw_core.run()
+            
+            content = extras_reader.to_dict()[LayerId]["Variables"]
+
+            # if reciever not in self.lwNetworks or self.lwNetworks[reciever].jsonNetwork!=jsonNetwork:
+            #     #Get the pretrained variables and constants
+            #     for id_, value in jsonNetwork.items():
+            #         if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
+            #             ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
+            #             self.checkpointDict[value["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
+            #             ckptObj.close()
+            #     #Get the pre loaded data
+            #     for Id in list(self.dataDict[reciever].keys()):
+            #         if Id not in list(jsonNetwork.keys()):
+            #             del self.dataDict[reciever][Id]
+                
+            #     if reciever not in self.lwNetworks:
+            #         self.lwNetworks[reciever]=lwNetwork(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
+            #     else:
+            #         self.lwNetworks[reciever].propegateOutputs(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
+            
+            # content=self.lwNetworks[reciever].getPreviewVariableList(LayerId)
         
         ####################################Parser###################################
         elif action == "Parse":

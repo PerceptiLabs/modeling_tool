@@ -124,7 +124,7 @@ class LayerExtrasReader:
 
         sample=self._evalSample(sample)
 
-        self._put_in_dict(session.layer_id,{'Sample': sample,'outShape': outShape, 'Variables': layer_dict.keys()})
+        self._put_in_dict(session.layer_id,{'Sample': sample,'outShape': outShape, 'Variables': list(layer_dict.keys())})
 
     def read_syntax_error(self, session):
         tbObj=traceback.TracebackException(*sys.exc_info())
