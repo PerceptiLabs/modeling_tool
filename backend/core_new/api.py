@@ -1,12 +1,18 @@
 """ Thin classes with private variables to block user access to core """
 
-class ApiCallbackHandler:
+from abc import ABC, abstractmethod
+from collections import namedtuple
+
+class ApiCallbackHandler(ABC):
+    @abstractmethod
     def on_store_value(self, name, value):
         raise NotImplementedError
-
-    def on_stack_value(self, name, value):
-        raise NotImplementedError        
     
+    @abstractmethod
+    def on_stack_value(self, name, value):
+        raise NotImplementedError
+    
+    @abstractmethod    
     def on_render(self, dashboard):
         raise NotImplementedError
     
@@ -33,9 +39,9 @@ class UiApi:
         
 
 class Api:
-    def __init__(self, data, ui):
-        self.__data = data
-        self.__ui = ui
+    def __init__(self, session):
+        self.__data = DataApi(session)
+        self.__ui = UiApi(session)
 
     @property
     def data(self):

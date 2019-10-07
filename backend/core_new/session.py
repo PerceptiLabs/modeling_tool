@@ -1,9 +1,9 @@
 import time
 import copy
 import logging
+import functools
 
-from core_new.api import ApiCallbackHandler
-from core_new.api import Api, UiApi, DataApi
+from core_new.api import ApiCallbackHandler, Api
 
 log = logging.getLogger(__name__)
 
@@ -11,6 +11,15 @@ log = logging.getLogger(__name__)
 class LayerSessionStop(Exception):
     """ Used to break out of userland code when stop is pressed in the UI """
     pass
+
+
+def requires_process_handler(f):
+    @functools.wraps(f)
+    def wrapper(*args, **kwargs):
+        if args[0]._process_handler is None:
+            raise RuntimeError("'{}' requires process_handler to be set!".format(f.__name__))
+        return f(*args, **kwargs)
+    return wrapper
 
 
 class LayerSession(ApiCallbackHandler):
@@ -33,10 +42,7 @@ class LayerSession(ApiCallbackHandler):
         self._outputs = {}
 
         self._process_handler = process_handler
-
-        data_api = DataApi(self)
-        ui_api = UiApi(self)
-        self._api = Api(data_api, ui_api)
+        self._api = Api(self)
 
     def run(self):
         if 'api' in self._globals and self._globals['api'] is not self._api:
@@ -48,8 +54,7 @@ class LayerSession(ApiCallbackHandler):
         for name, value in self._locals.items():
             self._data_container.store_value(self._layer_id, name, value)
 
-            if not name in self._inputs:
-                # TODO: shouldn't it be new OR changed variables? I.e., 'if not (name in self._inputs and value == self._inputs[name]):'                
+            if not (name in self._inputs and value == self._inputs[name]):
                 self._outputs[name] = value                
         
     def on_store_value(self, name, value):
@@ -65,7 +70,7 @@ class LayerSession(ApiCallbackHandler):
             return
 
         while self._paused and not self._stopped:
-            time.sleep(self.PAUSE_TIME) # Wait for core to request an unpause or stop.
+            time.sleep(self.PAUSE_TIME) # Wait for request to unpause or stop.
             self._process_handler.on_process(self, dashboard)            
             
         if self._stopped:
@@ -73,22 +78,16 @@ class LayerSession(ApiCallbackHandler):
 
         self._process_handler.on_process(self, dashboard)
 
+    @requires_process_handler
     def pause(self):
-        if self._process_handler is None:
-            raise RuntimeError("process_handler must be set to support pausing")
-            
         self._paused = True
 
+    @requires_process_handler        
     def unpause(self):
-        if self._process_handler is None:
-            raise RuntimeError("process_handler must be set to support unpausing")
-        
         self._paused = False
 
+    @requires_process_handler        
     def stop(self):
-        if self._process_handler is None:
-            raise RuntimeError("process_handler must be set to support stopping")
-        
         self._stopped = True
 
     @property
@@ -120,3 +119,8 @@ class LayerSession(ApiCallbackHandler):
         return self._outputs
     
 
+
+if __name__ == "__main__":
+
+    ls = LayerSession(123, 'DataData', 'print("Hello")\n', )
+    ls.pause()
