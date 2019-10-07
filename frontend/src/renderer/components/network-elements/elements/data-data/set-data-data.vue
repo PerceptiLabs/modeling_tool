@@ -60,14 +60,22 @@
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
             base-checkbox(v-model="settings.accessProperties.Shuffle_data") Shuffle
-
-    template(slot="Cloud-content")
+        //-.settings-layer_foot
+          button.btn.btn--primary(type="button") Apply
+    //-template(slot="Cloud-content")
       //-settings-cloud
-
+    template(slot="Code-content")
+      settings-code(
+        :current-el="currentEl"
+        :el-settings="settings"
+        v-model="coreCode"
+      )
     template(slot="Computer-action")
 
-    template(slot="Cloud-action")
+    //-template(slot="Cloud-action")
       span
+    template(slot="Code-action")
+
 
 </template>
 
@@ -99,7 +107,7 @@
     data() {
       return {
         //tabs: ['Computer', 'Cloud'],
-        tabs: ['Computer'],
+        tabs: ['Computer', 'Code'],
         dataColumns: [],
         dataColumnsSelected: [],
         interactiveInfo: {
@@ -184,9 +192,8 @@
       },
       'settings.accessProperties.Sources.length': {
         handler(newVal) {
-          if(newVal) this.showBtn();
-          else { this.$nextTick(()=> { this.hideBtn(); })
-          }
+          if(newVal) this.$nextTick(()=> { this.showBtn() });
+          else this.$nextTick(()=> { this.hideBtn() })
         },
         immediate: true
       }
