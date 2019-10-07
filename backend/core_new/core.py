@@ -172,10 +172,6 @@ class BaseCore:
                 log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
                 continue
 
-            if layer_id in self._session_history:
-                log.info("Layer {} [{}] already in history. Skipping.".format(layer_id, layer_type))
-                continue
-
             log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
             try:
                 self._run_layer(layer_id, content)
