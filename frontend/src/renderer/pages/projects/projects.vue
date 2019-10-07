@@ -14,7 +14,7 @@
 
 </template>
 <script>
-  import {filePCRead, folderPCDelete}  from '@/core/helpers.js'
+  import {filePCRead, folderPCDelete, deepCopy}  from '@/core/helpers.js'
   import {mapState, mapGetters, mapMutations, mapActions} from 'vuex';
 
   import basicTemplate1 from '@/core/basic-template/base-template-1.js'
@@ -65,7 +65,7 @@
         handler() {
           if(!this.localUserInfo) return;
 
-          let localProjectsList = JSON.parse(JSON.stringify(this.localUserInfo.projectsList));
+          let localProjectsList = deepCopy(this.localUserInfo.projectsList);
           if (Array.isArray(localProjectsList)) {
             localProjectsList.forEach((el) => {
               el.notExist = false;
@@ -90,7 +90,7 @@
         const pathDelete = selectedProject.pathProject[0];
         folderPCDelete(pathDelete)
           .then(()=> {
-            const newProjectsList = JSON.parse(JSON.stringify(this.localUserInfo.projectsList));
+            const newProjectsList = deepCopy(this.localUserInfo.projectsList);
             newProjectsList.splice(indexCheckedProj, 1);
             this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
             this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))

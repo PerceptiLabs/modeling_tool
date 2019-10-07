@@ -1,4 +1,4 @@
-import { generateID, calcLayerPosition }  from "@/core/helpers.js";
+import { generateID, calcLayerPosition, deepCopy }  from "@/core/helpers.js";
 import { widthElement } from '@/core/constants.js'
 import Vue    from 'vue'
 import router from '@/router'
@@ -162,7 +162,7 @@ const mutations = {
     //-- Check and create the position
     createPositionElements(newNetwork.networkElementList);
     //-- Add to workspace
-    workspace.push(JSON.parse(JSON.stringify(newNetwork)));
+    workspace.push(deepCopy(newNetwork));
     //-- Open last Network
     state.currentNetwork = workspace.length - 1;
     //-- Go to app page

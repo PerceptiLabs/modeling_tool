@@ -368,6 +368,24 @@ const actions = {
         console.error(err);
       });
   },
+  API_getCode({dispatch, getters, rootGetters}, value) {
+    //console.log('store API_getPreviewVariableList');
+    //const net = rootGetters['mod_workspace/GET_currentNetwork'];
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getCode',
+      value
+    };
+    console.log('getCode', theData);
+    return coreRequest(theData)
+      .then((data)=> {
+        console.log(data);
+        return data
+      })
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
   //---------------
   //  IMPORT/EXPORT
   //---------------

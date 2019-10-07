@@ -1,4 +1,4 @@
-import { deepCloneNetwork }  from "@/core/helpers.js";
+import { deepCloneNetwork, deepCopy }  from "@/core/helpers.js";
 
 const namespaced = true;
 
@@ -93,14 +93,14 @@ const actions = {
     commit('set_localUserList', JSON.parse(localStorage.getItem('usersList')));
   },
   SET_LOCAL_userInfo({getters, state, commit}, { userData, localList } ) {
-    let usersList = localList || JSON.parse(JSON.stringify(state.getLocalUserList));
+    let usersList = localList || deepCopy(state.getLocalUserList);
     const userId = getters.GET_userID;
     usersList[userId] = userData;
     commit('set_localUserList', usersList);
     localStorage.setItem('usersList', JSON.stringify(usersList));
   },
   UPDATE_LOCAL_userInfo({dispatch, getters}, { key, data }) {
-    let userInfo = JSON.parse(JSON.stringify(getters.GET_LOCAL_userInfo));
+    let userInfo = deepCopy(getters.GET_LOCAL_userInfo);
     userInfo[key] = data;
     dispatch('SET_LOCAL_userInfo', {'userData': userInfo });
   },

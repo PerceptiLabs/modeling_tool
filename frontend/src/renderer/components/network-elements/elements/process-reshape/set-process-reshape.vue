@@ -36,6 +36,7 @@
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
 
@@ -77,12 +78,12 @@
       ...mapGetters({
         isTutorialMode: 'mod_tutorials/getIstutorialMode'
       }),
-//       codeDefault() {
-//         return {
-//           Output: `Y=tf.reshape(X['Y'], [-1]+[layer_output for layer_output in [${this.settings.Shape}]]);
-// Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
-//         }
-//       }
+      codeDefault() {
+        return {
+          Output: `Y=tf.reshape(X['Y'], [-1]+[layer_output for layer_output in [${this.settings.Shape}]]);
+Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
+        }
+      }
     },
     watch: {
       'settings.Shape': {

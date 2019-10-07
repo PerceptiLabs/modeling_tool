@@ -71,6 +71,8 @@
         cminstance: null,
         options: {
           autoCloseBrackets: true,
+          autofocus: true,
+          historyEventDelay: 100,
           tabSize: 4,
           styleActiveLine: true,
           lineNumbers: true,

@@ -28,7 +28,7 @@
 </template>
 
 <script>
-
+  import { deepCopy } from "@/core/helpers.js";
   import TripleInput    from "@/components/base/triple-input";
 export default {
   name: "SettingsFileList",
@@ -51,7 +51,7 @@ export default {
   watch: {
     value: {
       handler(newVal) {
-        this.fileList = JSON.parse(JSON.stringify(newVal))
+        this.fileList = deepCopy(newVal)
       },
       deep: true,
       immediate: true

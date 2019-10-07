@@ -34,24 +34,24 @@
 
 export default {
   name: "SettingsCode",
-  components: {codeHq},
+  components: { codeHq },
   props: {
-    // trainingMode: {
-    //   type: Boolean,
-    //   default: false
-    // },
-    currentEl: {
-      type: Object,
-    },
+    currentEl:  { type: Object },
+    elSettings: { type: Object },
     value: {
       type: [String, Object],
       default: ''
     },
   },
   mounted () {
-    const code = this.currentEl.layerCode ? {'Output': this.currentEl.layerCode} : this.theCode;
-    const keys = Object.keys(code);
-    this.currentTab = keys[0];
+    console.log(this.currentEl);
+
+    if(this.currentEl.layerCode) {
+      this.theCode = {'Output': this.currentEl.layerCode};
+      this.currentTab = 'Output';
+    }
+    else this.getCode();
+
   },
   beforeDestroy() {
     this.closeFullView()
@@ -63,9 +63,6 @@ export default {
     }
   },
   computed: {
-    // isMultiTabs() {
-    //   return typeof this.theCode === 'string' ? false : true
-    // },
     theCode: {
       get: function() {
         return this.value
@@ -82,6 +79,17 @@ export default {
     }
   },
   methods: {
+    getCode() {
+      const value = {
+        Id: this.currentEl.layerId,
+        Type: this.currentEl.componentName,
+        Properties: this.elSettings
+      };
+      this.$store.dispatch('mod_api/API_getCode', value)
+        .then((code)=> {
+          console.log(code);
+        })
+    },
     toggleFullView() {
       this.fullView = !this.fullView;
       document.querySelector('.popup_body').classList.toggle("popup_body--show-code");
