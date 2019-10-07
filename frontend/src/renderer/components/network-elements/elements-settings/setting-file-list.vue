@@ -99,7 +99,7 @@ export default {
     }
   }
   .file-settings_list {
-    height: 20rem;
+    max-height: 20rem;
     overflow-y: auto;
     background-color: $bg-input;
     margin: 0 (-$file-list-indent) .5rem;
