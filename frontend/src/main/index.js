@@ -112,11 +112,12 @@ function createWindow () {
   });
   ipcMain.on('app-minimize', (event, arg) => {
     if(process.platform === 'darwin') {
-      mainWindow.minimize();
-    } else {
       mainWindow.isMaximized()
-          ? mainWindow.unmaximize()
-          : mainWindow.minimize()
+        ? mainWindow.unmaximize()
+        : mainWindow.minimize()
+    }
+    else {
+      mainWindow.minimize();
     }
   });
   ipcMain.on('app-maximize', (event, arg) => {

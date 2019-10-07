@@ -83,6 +83,10 @@ const actions = {
     return requestCloudApi('post', 'Customer/ChangePassword', dataBody)
       .then((response)=> response.status === 200 )
   },
+  CloudAPI_checkStatus({dispatch}) {
+    return requestCloudApi('get', 'Customer/CheckStatus')
+      .then((response)=> response.status === 200 )
+  },
 };
 
 export default {

@@ -74,7 +74,7 @@
       ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
 
       this.calcAppPath();
-      this.checkToken();
+      this.checkLocalToken();
       this.$nextTick(()=> {
         //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
         this.appReady();
@@ -136,6 +136,7 @@
 
         setUserToken:     'mod_user/SET_userToken',
         readUserInfo:     'mod_user/GET_LOCAL_userInfo',
+        checkCloudToken:  'mod_apiCloud/CloudAPI_checkStatus',
       }),
       initUser() {
         this.trackerInitUser(this.userId)
@@ -157,7 +158,12 @@
           ipcRenderer.send('app-ready');
           splash.remove();
           document.body.className = "";
-          this.trackerAppStart();
+          this.checkCloudToken()
+            .then((qe)=> {
+              console.log(qe);
+              this.trackerAppStart()
+            })
+
         }, 1000)
       },
       calcAppPath() {
@@ -176,7 +182,7 @@
         }
         this.SET_appPath(path);
       },
-      checkToken() {
+      checkLocalToken() {
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.setUserToken(localUserToken);

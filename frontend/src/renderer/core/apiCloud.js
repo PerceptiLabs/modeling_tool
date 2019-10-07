@@ -15,16 +15,16 @@ const requestCloudApi = function (method, path, data, params) {
         throw (error);
       }
     })
-    .then((data)=> {
-      if(data === 'updateToken') {
+    .then((answer)=> {
+      if(answer === 'updateToken') {
         return CloudAPI_updateToken()
-          .then(()=> httpRequest(method, path, dataRequest))
-          .then((data)=> data)
+          .then(()=> httpRequest(method, path, data))
+          .then((answ)=> answ)
           .catch((error)=> {
             throw (error)
           })
       }
-      else return data
+      else return answer
     })
 
 };
