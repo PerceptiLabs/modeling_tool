@@ -17,38 +17,38 @@ from graph import Graph
 
 log = logging.getLogger(__name__)
 
-class LayerScopeInitializer:
-    """ Glues layers together by feeding the correct globals/locals """
 
-    # TODO: maybe the contents of DataKeeper can be fed as default inputs to this one somehow?
-    
-    def __init__(self, default_globals=None, default_locals=None):
-        self._global_outputs = {}
-        self._local_outputs = {}
-        self._default_globals = default_globals if default_globals is not None else {}
+class SessionHistory:
+    def __init__(self):
+        self.reset()
 
-    def set_layer_outputs(self, id_, globals_, locals_):
-        self._global_outputs[id_] = globals_
-        self._local_outputs[id_] = locals_
+    def reset(self):
+        self._sessions = {}        
 
-    def get_layer_inputs(self, id_, input_layer_ids):
-        locals_ = {'X': {}}
-        globals_ = copy.copy(self._default_globals)
+    def __contains__(self, id_):
+        return id_ in self._sessions
         
-        if len(input_layer_ids) == 1:
-            id_from = input_layer_ids[0]
-            Y = self._local_outputs[id_from]['Y']
-            locals_['X'] = {'Y': Y}
-            globals_.update(self._global_outputs[id_from])
-        elif len(input_layer_ids) > 1:
-            locals_['X'] = {}
-            for id_from in input_layer_ids:
-                Y = self._local_outputs[id_from]['Y']
-                locals_['X'][id_from] = {'Y': Y}
-                globals_.update(self._global_outputs[id_from])
+    def __setitem__(self, id_, value):
+        self._sessions[id_] = value
 
-        return globals_, locals_
+    def items(self):
+        for id_, session in self._sessions.items():
+            yield id_, session
 
+    def merge_session_outputs(self, layer_ids):
+        results = {}
+        if len(layer_ids) == 1:
+            print(layer_ids)
+            session = self._sessions[layer_ids[0]]
+            results.update(session.outputs)
+        elif len(layer_ids) > 1:
+            for id_ in layer_ids:
+                session = self._sessions[id_]                
+                results[id_] = session.outputs
+                
+        return results
+
+    
 class SessionProcessHandler:
     def __init__(self, graph_dict, data_container, command_queue, result_queue, mode):
         self._graph = graph_dict
@@ -59,22 +59,16 @@ class SessionProcessHandler:
         
     def on_process(self, session, dashboard):
         """ Called in response to 'api.ui.render' calls in the layer code """
-
         self._handle_commands(session)
-
-        # Put data_container on result queue
+        self._send_results(session)
+        
+    def _send_results(self, session):
         data_dict = self._data_container.to_dict()
-
-        # Convert data container format to resultDict format.
-        # TODO: maybe we want different policies for different dashboards in the future?
-        data_policy = TrainValTestDataPolicy(session, data_dict, self._graph)
+        data_policy = TrainValTestDataPolicy(session, data_dict, self._graph) # Convert data container format to resultDict format.
+        
         results_dict = data_policy.get_results()
         self._result_queue.put(results_dict)
-        
-        if log.isEnabledFor(logging.DEBUG) and self._mode == 'normal':
-            log.debug("Pushed results onto queue: " + str(results_dict))
-        if log.isEnabledFor(logging.DEBUG) and self._mode == 'headless':            
-            log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, compact=True))
+        log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=1))
         
     def _handle_commands(self, session):
         while not self._command_queue.empty():
@@ -151,8 +145,8 @@ class LayerExtrasReader:
     
 
 class BaseCore:
-    def __init__(self, codehq, graph_dict, data_container, session_process_handler=None, layer_extras_reader=None,
-                 mode='normal', skip_layers=None, tf_eager=False):
+    def __init__(self, codehq, graph_dict, data_container, session_history, session_process_handler=None,
+                 layer_extras_reader=None, mode='normal', skip_layers=None, tf_eager=False):
         self._graph = graph_dict
         self._codehq = codehq
         self._mode = mode
@@ -160,7 +154,9 @@ class BaseCore:
         self._tf_eager = tf_eager
         self._session_process_handler = session_process_handler
         self._layer_extras_reader = layer_extras_reader
-        self._skip_layers = skip_layers if skip_layers is not None else []                
+        self._session_history = session_history        
+        self._skip_layers = skip_layers if skip_layers is not None else []        
+
         
     def run(self):
         self._data_container.reset()
@@ -170,18 +166,19 @@ class BaseCore:
         else:
             set_tensorflow_mode('graph') # Default to graph mode
 
-        default_globals = {'tf': tf, 'np': np}
-        scope_initializer = LayerScopeInitializer(default_globals) # Ensures layers have the correct input
-        
         for layer_id, content in self._graph.items():
             layer_type = content["Info"]["Type"]
             if layer_type in self._skip_layers:
-                log.info("Skipping layer with id {} and type {}".format(layer_id, layer_type))
+                log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
+                continue
+
+            if layer_id in self._session_history:
+                log.info("Layer {} [{}] already in history. Skipping.".format(layer_id, layer_type))
                 continue
 
             log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
             try:
-                self._run_layer(layer_id, content, scope_initializer)
+                self._run_layer(layer_id, content)
             except LayerSessionStop:
                 log.info("Stop requested during execution of layer session {}".format(layer_id))                
                 break
@@ -189,15 +186,18 @@ class BaseCore:
         if self._tf_eager:
             set_tensorflow_mode('graph')        
             
-    def _run_layer(self, id_, content, scope_initializer):
+    def _run_layer(self, id_, content):
+        
         code = self._codehq.get_code_generator(id_, content).get_code(mode=self._mode)            
-        globals_, locals_ = scope_initializer.get_layer_inputs(id_, content["Con"])
+        #globals_, locals_ = scope_initializer.get_layer_inputs(id_, content["Con"])
             
         if log.isEnabledFor(logging.DEBUG):
             log.debug("Session local variables [pre execution]: " + pprint.pformat(locals_, compact=True))
+
+        globals_ = {'tf': tf, 'np': np}
+        locals_ = {'X': self._session_history.merge_session_outputs(content['Con'])}
                 
-        session = LayerSession(id_,
-                               code,
+        session = LayerSession(id_, content['Info']['Type'], code,
                                global_vars=globals_,
                                local_vars=locals_,
                                data_container=self._data_container,
@@ -222,7 +222,7 @@ class BaseCore:
         if log.isEnabledFor(logging.DEBUG):
             log.debug("Session local variables [post execution]: " + pprint.pformat(session.locals, compact=True))
             
-        scope_initializer.set_layer_outputs(id_, session.globals, session.locals)
+        self._session_history[id_] = session
 
         if self._layer_extras_reader is not None:
             self._layer_extras_reader.read(session, self._data_container)
@@ -245,16 +245,19 @@ class BaseCore:
 
 
 class Core(BaseCore):
-    def __init__(self, codehq, graph_dict, data_container, session_process_handler, mode='normal'):
-        super().__init__(codehq, graph_dict, data_container, session_process_handler=session_process_handler, mode=mode)
+    def __init__(self, codehq, graph_dict, data_container, session_history,
+                 session_process_handler, mode='normal'):
+        super().__init__(codehq, graph_dict, data_container, session_history,
+                         session_process_handler=session_process_handler, mode=mode)
 
         
 class LightweightCore(BaseCore):
     MODE = 'headless'    
     SKIP_LAYERS = ['TrainNormal']
     
-    def __init__(self, codehq, graph_dict, data_container, layer_extras_reader):
-        super().__init__(codehq, graph_dict, data_container, layer_extras_reader=layer_extras_reader, tf_eager=True,
+    def __init__(self, codehq, graph_dict, data_container, session_history, layer_extras_reader):
+        super().__init__(codehq, graph_dict, data_container, session_history,
+                         layer_extras_reader=layer_extras_reader, tf_eager=True,
                          skip_layers=self.SKIP_LAYERS, mode=self.MODE)
 
         
@@ -265,7 +268,16 @@ if __name__ == "__main__":
 
     import json
     import queue
-    with open('C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Networks/net.json', 'r') as f:
+    import os
+
+    p1 = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Networks/net.json'
+    if os.path.exists(p1):
+        path = p1
+    else:
+        path = 'net.json'
+        
+    
+    with open(path, 'r') as f:
         json_network = json.load(f)
 
     graph = Graph(json_network["Layers"])
@@ -298,27 +310,44 @@ if __name__ == "__main__":
     #threading.Thread(target=f, args=(cq, 8, 'stop')).start()        
 
 
-    # mode = 'headless'
+
 
     graph_dict = graph.graphs
     data_container = DataContainer()
     
+    session_history_lw = SessionHistory()
+    extras_reader = LayerExtrasReader()
 
-    ler = LayerExtrasReader()
-
-    lw_core = LightweightCore(CodeHq, graph_dict, data_container, ler)    
+    lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
+                              session_history_lw, extras_reader)    
     lw_core.run()
-    print(ler.to_dict())
+    print(extras_reader.to_dict())
 
     # from newPropegateNetwork import newPropegateNetwork
     # newPropegateNetwork(json_network["Layers"])
 
 
-    # import pdb; pdb.set_trace()
+    def result_reader(q):
+        # read and print whatever comes onto results queue
+        while True:
+            while not q.empty():
+                res = q.get()
+                import pprint
+                
+                print("RESULTS:" + pprint.pformat(res, depth=2))
+            import time
+            time.sleep(0.5)
+        
+    threading.Thread(target=result_reader, args=(rq,)).start()            
 
-    # sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
-    # core = Core(CodeHq, graph_dict, data_container, sph, mode=mode)
-    # core.run()
+    # import pdb; pdb.set_trace()
+    mode = 'normal'
+    session_history = SessionHistory() 
+    #session_history = session_history_lw
+
+    sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
+    core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
+    core.run()
 
     
 

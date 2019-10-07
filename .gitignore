@@ -1,6 +1,7 @@
 #Backend ignores
 backend/*.pyc
 backend/*.pyo
+backend/net.json
 **/__pycache__/
 *.pyc
 *.py~

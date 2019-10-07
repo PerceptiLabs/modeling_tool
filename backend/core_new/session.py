@@ -9,16 +9,18 @@ log = logging.getLogger(__name__)
 
 
 class LayerSessionStop(Exception):
+    """ Used to break out of userland code when stop is pressed in the UI """
     pass
 
 
 class LayerSession(ApiCallbackHandler):
     PAUSE_TIME = 0.3
     
-    def __init__(self, layer_id, code, global_vars=None, local_vars=None,
+    def __init__(self, layer_id, layer_type, code, global_vars=None, local_vars=None,
                  data_container=None, process_handler=None):
         
         self._layer_id = layer_id
+        self._layer_type = layer_type
         self._code = code
         self._data_container = data_container
 
@@ -103,5 +105,12 @@ class LayerSession(ApiCallbackHandler):
     def layer_id(self):
         return self._layer_id
 
+    @property
+    def layer_type(self):
+        return self._layer_type
+
+    @property
+    def outputs(self):
+        return self.locals # TODO: problem if outputs is called before run?
     
-    
+

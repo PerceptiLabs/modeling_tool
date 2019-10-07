@@ -53,7 +53,7 @@ class TrainValTestDataPolicy:
 
     def get_results(self):
         train_dict = {}
-        test_dict = {}
+        #test_dict = {}
         
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
@@ -87,11 +87,11 @@ class TrainValTestDataPolicy:
 
                     if grad_layer_id not in train_dict:
                         train_dict[grad_layer_id] = {}
-                    if grad_layer_id not in test_dict:
-                        test_dict[grad_layer_id] = {}
+                    #if grad_layer_id not in test_dict:
+                    #    test_dict[grad_layer_id] = {}
                     
                     train_dict[grad_layer_id]['Gradient'] = value[-1] # LATEST GRADIENTS
-                    test_dict[grad_layer_id]['Gradient'] = value[-1]                                
+                    #test_dict[grad_layer_id]['Gradient'] = value[-1]                                
 
             if content["Info"]["Type"] in ["DataData", "DataEnvironment"]:
                 batch_size = self._data[id_].get('batch_size', -1)
@@ -141,12 +141,12 @@ class TrainValTestDataPolicy:
             "epoch": epoch,
             "maxEpochs": max_epoch,
             "batch_size": batch_size,
-            "graphObj": {},#copy.copy(self._graph_dict),
+            "graphObj": copy.copy(self._graph_dict),
             "trainingIterations": itr_trn,
             "trainDict": train_dict,
             "testIter": itr_tst,
             "maxTestIter": max_itr_tst,
-            "testDict": test_dict,
+            "testDict": train_dict,#test_dict,
             "trainingStatus": training_status,
             "testStatus": test_status,           
             "status": status
