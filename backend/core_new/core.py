@@ -54,7 +54,6 @@ class SessionCache:
         n_entries = len(self._dict.keys())        
         n_removed = n_entries - len(new_dict.keys())
         self._dict = new_dict
-        
         log.info("Cache invalidation removed {}/{} entries".format(n_removed, n_entries))
                  
 
@@ -196,6 +195,8 @@ class LayerExtrasReader:
     
 
 class BaseCore:
+    DEFAULT_GLOBALS = {'tf': tf, 'np': np}
+    
     def __init__(self, codehq, graph_dict, data_container, session_history, session_process_handler=None,
                  layer_extras_reader=None, mode='normal', skip_layers=None, tf_eager=False):
         self._graph = graph_dict
@@ -235,13 +236,9 @@ class BaseCore:
             set_tensorflow_mode('graph')        
             
     def _run_layer(self, id_, content):        
-        code = self._codehq.get_code_generator(id_, content).get_code(mode=self._mode)            
-
-        outputs = self._session_history.merge_session_outputs(layer_ids=content['Con'])
-        globals_ = {'tf': tf, 'np': np} # Default globals
-        globals_.update(outputs.globals)        
-        locals_ = {'X': outputs.locals}
+        code = self._codehq.get_code_generator(id_, content).get_code(mode=self._mode)
         
+        globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])        
         session = LayerSession(id_, content['Info']['Type'], code,
                                global_vars=globals_,
                                local_vars=locals_,
@@ -269,6 +266,15 @@ class BaseCore:
 
         if self._layer_extras_reader is not None:
             self._layer_extras_reader.read(session, self._data_container)
+
+    def _get_globals_and_locals(self, input_layer_ids):
+        outputs = self._session_history.merge_session_outputs(input_layer_ids)
+        
+        globals_ = copy.copy(self.DEFAULT_GLOBALS)
+        globals_.update(outputs.globals)
+        
+        locals_ = {'X': outputs.locals}
+        return globals_, locals_        
 
     def on_error(self, session, formatted_exception):
         """ Handling of errors received when executing layer code """

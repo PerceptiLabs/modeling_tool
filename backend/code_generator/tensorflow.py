@@ -283,15 +283,12 @@ class ConvCodeGenerator(CodeGenerator):
         return code
 
 
-TrainInputBranch = namedtuple('TrainInput', ['direct_layer', 'data_layer'])
-
-    
 class TrainNormalCodeGenerator(CodeGenerator):
-    def __init__(self, network_input_branch, labels_input_branch,
+    def __init__(self, output_layer, target_layer,
                  n_epochs, n_iterations,
                  optimizer='adam', learning_rate=0.001):
-        self._net_in = network_input_branch
-        self._lbl_in = labels_input_branch
+        self._output_layer = output_layer
+        self._target_layer = target_layer
         self._optimizer = optimizer
         self._learning_rate = learning_rate
         self._n_epochs = int(n_epochs)
@@ -304,8 +301,8 @@ class TrainNormalCodeGenerator(CodeGenerator):
             opt_class = 'AdagradOptimizer'
 
         code  = ""
-        code += "y_pred = X['%s']['Y']\n" % self._net_in.direct_layer
-        code += "y_label = X['%s']['Y']\n" % self._lbl_in.direct_layer      
+        code += "y_pred = X['%s']['Y']\n" % self._output_layer
+        code += "y_label = X['%s']['Y']\n" % self._target_layer      
         code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
         code += "step = tf.train.%s(learning_rate=%f).minimize(loss)\n" % (opt_class, self._learning_rate)
         code += "\n"
@@ -323,9 +320,13 @@ class TrainNormalCodeGenerator(CodeGenerator):
             code += "    name = 'grad-' + var.name\n"
             code += "    gradients[name] = tf.gradients(loss, [var])\n"
             code += "\n"
-            
-        code += "train_iterator_network = tf.get_default_graph().get_operation_by_name('train_iterator_%s')\n" % self._net_in.data_layer
-        code += "train_iterator_label = tf.get_default_graph().get_operation_by_name('train_iterator_%s')\n" % self._lbl_in.data_layer
+
+
+        code += "# Get iterators\n"
+        code += "ops = tf.get_default_graph().get_operations()\n"
+        code += "train_iterators = [op for op in ops if 'train_iterator' in op.name]\n"
+        code += "validation_iterators = [op for op in ops if 'validation_iterator' in op.name]\n"
+        code += "test_iterators = [op for op in ops if 'test_iterator' in op.name]\n"                
         code += "\n"
         code += "sess = tf.InteractiveSession()\n"
         code += "init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())\n"
@@ -336,8 +337,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "               max_iter_validation=%d)\n" % (self._n_iters - 1)
         code += "\n"
         code += "for epoch in range(%d):\n" % self._n_epochs
-        code += "    sess.run(train_iterator_network)\n"
-        code += "    sess.run(train_iterator_label)\n"
+        code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
         code += "    \n"
         code += "    for iter in range(%d):\n" % self._n_iters
@@ -350,7 +350,8 @@ class TrainNormalCodeGenerator(CodeGenerator):
             code += "        api.data.stack(**gradient_vals)\n"
             
         code += "        api.ui.render(dashboard='train_val')\n"
-        code += "    \n"        
+        code += "    \n"
+        code += "    sess.run(validation_iterators)\n"        
         code += "    for iter in range(%d):\n" % self._n_iters
         code += "        loss_ = sess.run(loss)\n"
         code += "        acc_val, f1_val, auc_val = sess.run([accuracy, f1, auc])\n"
@@ -364,6 +365,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
     def _get_testing_code(self, mode):
         code  = "api.data.store(max_iter_testing=%d)\n" % (self._n_iters - 1)
+        code += "sess.run(test_iterators)\n"                
         code += "for iter in range(%d):\n" % self._n_iters
         code += "    y_pred_ = sess.run(y_pred)\n"
         code += "    api.data.stack(y_pred=y_pred_.squeeze())\n"
