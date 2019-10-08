@@ -154,13 +154,14 @@ class LayerExtrasReader:
             return sample
 
     def read(self, session, data_container):
-        shape = ''
+        outShape = ''
         Y = session.outputs.locals.get('Y')
         if isinstance(Y, tf.Tensor):
-            shape = Y.shape.as_list()
-            if not shape:
-                shape=[1]
-        
+            outShape = Y.shape.as_list()
+            outShape=outShape[1:]
+            if not outShape:
+                outShape=[1]
+                
         sample = ''
         if session.layer_id in data_container:
             layer_dict = data_container[session.layer_id]
@@ -171,10 +172,12 @@ class LayerExtrasReader:
                 sample = layer_dict['Y']
 
         sample=self._evalSample(sample)
-        self._put_in_dict(session.layer_id,{'sample': sample,'shape': shape})
+
+        self._put_in_dict(session.layer_id,{'Sample': sample,'outShape': outShape, 'Variables': list(layer_dict.keys())})
 
     def read_syntax_error(self, session):
         tbObj=traceback.TracebackException(*sys.exc_info())
+
         self._put_in_dict(session.layer_id,{"errorMessage": "".join(tbObj.format_exception_only()), "errorRow": tbObj.lineno or "?"})    
 
     def read_error(self, session, e):
@@ -233,7 +236,7 @@ class BaseCore:
             
     def _run_layer(self, id_, content):        
         code = self._codehq.get_code_generator(id_, content).get_code(mode=self._mode)            
-            
+
         outputs = self._session_history.merge_session_outputs(layer_ids=content['Con'])
         globals_ = {'tf': tf, 'np': np} # Default globals
         globals_.update(outputs.globals)        
@@ -367,27 +370,27 @@ if __name__ == "__main__":
     # newPropegateNetwork(json_network["Layers"])
 
 
-    def result_reader(q):
-        # read and print whatever comes onto results queue
-        while True:
-            while not q.empty():
-                res = q.get()
-                import pprint
+    # def result_reader(q):
+    #     # read and print whatever comes onto results queue
+    #     while True:
+    #         while not q.empty():
+    #             res = q.get()
+    #             import pprint
                 
-                print("RESULTS:" + pprint.pformat(res, depth=2))
-            import time
-            time.sleep(0.5)
+    #             print("RESULTS:" + pprint.pformat(res, depth=2))
+    #         import time
+    #         time.sleep(0.5)
         
-    threading.Thread(target=result_reader, args=(rq,)).start()            
+    # threading.Thread(target=result_reader, args=(rq,)).start()            
 
-    # import pdb; pdb.set_trace()
-    mode = 'normal'
-    session_history = SessionHistory() 
-    #session_history = session_history_lw
+    # # import pdb; pdb.set_trace()
+    # mode = 'normal'
+    # session_history = SessionHistory() 
+    # #session_history = session_history_lw
 
-    sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
-    core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
-    core.run()
+    # sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
+    # core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
+    # core.run()
 
     
 
