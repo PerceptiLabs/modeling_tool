@@ -360,6 +360,42 @@ const actions = {
         console.error(err);
       });
   },
+  API_getPartitionSummary({getters, rootGetters}, layerId) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getPartitionSummary',
+      value: {
+        Id: layerId,
+        Network: getters.GET_coreNetwork
+      }
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        console.log('getPartitionSummary', data);
+        return data
+      })
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
+  API_getDataMeta({getters, rootGetters}, layerId) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getDataMeta',
+      value: {
+        Id: layerId,
+        Network: getters.GET_coreNetwork
+      }
+    };
+    return coreRequest(theData)
+      .then((data)=> {
+        console.log('getPartitionSummary', data);
+        return data
+      })
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
   //---------------
   //  IMPORT/EXPORT
   //---------------

@@ -99,7 +99,7 @@
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
-      this.Mix_settingsData_getDataMeta('DataData')
+      this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
         .then((data)=> {
           if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
         });
@@ -185,7 +185,7 @@
       },
       fileList: {
         handler(newVal) {
-          this.Mix_settingsData_getPartitionSummary('DataData');
+          this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
         },
         deep: true,
         immediate: true
@@ -200,7 +200,9 @@
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate: 'mod_tutorials/pointActivate',
+        tutorialPointActivate:  'mod_tutorials/pointActivate',
+        // API_getPartitionSummary:'mod_api/API_getPartitionSummary',
+        // API_getDataMeta:        'mod_api/API_getDataMeta',
       }),
       setPartitionList(list) {
         this.settings.accessProperties.Partition_list = list

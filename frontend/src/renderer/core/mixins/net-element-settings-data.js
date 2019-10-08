@@ -3,7 +3,7 @@ const netElementSettingsData = {
   data() {
     return {
       Mix_settingsData_imgData: null,
-      Mix_settingsData_actionSpace: '',
+      //Mix_settingsData_actionSpace: '',
       Mix_settingsData_Partition_summary: [70,20,10],
     }
   },
@@ -62,17 +62,8 @@ const netElementSettingsData = {
     //     });
     // },
 
-    Mix_settingsData_getDataMeta(type) {
-      let theData = {
-        reciever: this.Mix_settingsData_currentNetworkID,
-        action: 'getDataMeta',
-        value: {
-          Id: this.currentEl.layerId,
-          Type: type,
-          Properties: this.settings
-        }
-      };
-      return this.coreRequest(theData)
+    Mix_settingsData_getDataMeta(layerId) {
+      return this.$store.dispatch('mod_api/API_getDataMeta', layerId)
         .then((data) => {
           //console.log('getDataMeta', data);
           if (data) {
@@ -86,17 +77,8 @@ const netElementSettingsData = {
           console.error(err);
         });
     },
-    Mix_settingsData_getPartitionSummary(type) {
-      let theData = {
-        reciever: this.Mix_settingsData_currentNetworkID,
-        action: 'getPartitionSummary',
-        value: {
-          Id: this.currentEl.layerId,
-          Type: type,
-          Properties: this.settings
-        }
-      };
-      return this.coreRequest(theData)
+    Mix_settingsData_getPartitionSummary(layerId) {
+      return this.$store.dispatch('mod_api/API_getPartitionSummary', layerId)
         .then((data) => {
           if (data) {
             this.Mix_settingsData_Partition_summary = data;

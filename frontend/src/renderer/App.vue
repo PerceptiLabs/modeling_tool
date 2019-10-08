@@ -17,7 +17,7 @@
     )
     router-view.app-page
     update-popup
-    the-info-popup
+    the-info-popup(v-if="isShowPopup")
     confirm-popup
 </template>
 
@@ -98,7 +98,17 @@
       },
       userEmail() {
         return this.$store.getters['mod_user/GET_userEmail']
-      }
+      },
+      /*show popup*/
+      infoPopup() {
+        return this.$store.state.globalView.globalPopup.showInfoPopup
+      },
+      errorPopup() {
+        return this.$store.state.globalView.globalPopup.showErrorPopup
+      },
+      isShowPopup() {
+        return this.errorPopup.length || this.infoPopup.length
+      },
     },
     watch: {
       '$route': {
