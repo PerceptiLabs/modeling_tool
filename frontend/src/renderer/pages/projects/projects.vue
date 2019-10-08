@@ -21,6 +21,9 @@
 
   export default {
     name: 'PageProjects',
+    mounted() {
+      this.checkCloudToken()
+    },
     data() {
       return {
         source: 'computer',
@@ -100,17 +103,18 @@
     },
     methods: {
       ...mapMutations({
-        setTutorialMode:        'mod_tutorials/SET_isTutorialMode',
-        setTutorialStoryBoard:  'mod_tutorials/SET_showTutorialStoryBoard',
-        restore_network:        'mod_workspace/RESTORE_network',
+        setTutorialMode:      'mod_tutorials/SET_isTutorialMode',
+        setTutorialStoryBoard:'mod_tutorials/SET_showTutorialStoryBoard',
+        restore_network:      'mod_workspace/RESTORE_network',
       }),
       ...mapActions({
-        openNetwork:        'mod_events/EVENT_openNetwork',
-        loadNetwork:        'mod_events/EVENT_loadNetwork',
-        beginTutorial:      'mod_tutorials/START_storyboard',
-        addNetwork:         'mod_workspace/ADD_network',
-        saveLocalUserInfo:  'mod_user/UPDATE_LOCAL_userInfo',
-        showInfoPopup:      'globalView/GP_infoPopup',
+        openNetwork:      'mod_events/EVENT_openNetwork',
+        loadNetwork:      'mod_events/EVENT_loadNetwork',
+        beginTutorial:    'mod_tutorials/START_storyboard',
+        addNetwork:       'mod_workspace/ADD_network',
+        saveLocalUserInfo:'mod_user/UPDATE_LOCAL_userInfo',
+        showInfoPopup:    'globalView/GP_infoPopup',
+        checkCloudToken:  'mod_apiCloud/CloudAPI_checkStatus',
       }),
       openTemplate(path) {
         this.loadNetwork(path)

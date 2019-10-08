@@ -146,7 +146,6 @@
 
         setUserToken:     'mod_user/SET_userToken',
         readUserInfo:     'mod_user/GET_LOCAL_userInfo',
-        checkCloudToken:  'mod_apiCloud/CloudAPI_checkStatus',
       }),
       initUser() {
         this.trackerInitUser(this.userId)
@@ -168,12 +167,7 @@
           ipcRenderer.send('app-ready');
           splash.remove();
           document.body.className = "";
-          this.checkCloudToken()
-            .then((qe)=> {
-              console.log(qe);
-              this.trackerAppStart()
-            })
-
+          this.trackerAppStart();
         }, 1000)
       },
       calcAppPath() {
