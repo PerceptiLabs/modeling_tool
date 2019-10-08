@@ -451,6 +451,9 @@ class Message:
             else:
                 sample = extras_reader.to_dict()[LayerId]["Sample"]
 
+            if len(np.shape(sample))>1:
+                sample=np.squeeze(sample)
+
             def reduceTo2d(data):
                 data_shape=np.shape(np.squeeze(data))
                 if len(data_shape)<=2 or (len(data_shape)==3 and (data_shape[-1]==3 or data_shape[-1]==1)):
