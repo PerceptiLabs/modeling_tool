@@ -414,6 +414,11 @@ class Message:
             jsonNetwork=value["Network"]
             LayerId=value["Id"]
 
+            try:
+                Variable=value["Variable"]
+            except:
+                Variable=None
+
             graph = Graph(jsonNetwork)
             
             graph_dict = graph.graphs
@@ -428,7 +433,10 @@ class Message:
                                     session_history_lw, extras_reader)    
             lw_core.run()
             
-            sample = extras_reader.to_dict()[LayerId]["Sample"]
+            if Variable:
+                sample = data_container.to_dict()[LayerId][Variable]
+            else:
+                sample = extras_reader.to_dict()[LayerId]["Sample"]
 
             def reduceTo2d(data):
                 data_shape=np.shape(np.squeeze(data))
@@ -438,7 +446,7 @@ class Message:
                     return reduceTo2d(data[...,-1])
 
             content = {"Sample": createDataObject([reduceTo2d(np.asarray(sample))]),
-                        "VariableName":"Y"}
+                        "VariableName":"Y" if not Variable else Variable}
 
 
             # value=self.request.get("value")
