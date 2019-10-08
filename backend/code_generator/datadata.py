@@ -52,7 +52,7 @@ class DirectoryImageStrategy(AbstractStrategy):
         code += "for p in os.listdir('%s')]\n\n" % self._path
         code += "data_mat_list = []\n"
         code += "for path in file_paths:\n"
-        code += "    data_mat = skimage.io.imread(path)\n"
+        code += "    data_mat = skimage.io.imread(path)\n"        
         code += "    data_mat_list.append(data_mat)\n"
         code += "\n"
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
@@ -183,33 +183,7 @@ class DataDataCodeGenerator(CodeGenerator):
                                 rate_valid=partition[1],
                                 rate_test=partition[2])
         code += '\n'
-        code += "X_train_size = X_train.shape[0]\n"
-        code += "X_validation_size = X_validation.shape[0]\n"
-        code += "X_test_size = X_test.shape[0]\n"
-        code += '\n'
-        code += "_sample = X_train[0]\n"
-        code += "api.data.store(sample=_sample)\n"
-        code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
-        code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
-        code += "_batch_size = %d\n" % int(self.batch_size)
-        code += "api.data.store(batch_size=_batch_size)\n"
-        code += "\n"
-        code += 'X_train = tf.data.Dataset.from_tensor_slices(X_train)\n'
-        code += 'X_validation = tf.data.Dataset.from_tensor_slices(X_validation)\n'
-        code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
-        code += "\n"
-        if self.shuffle:
-            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size).repeat()\n" % self._seed
-        else:
-            code += "X_train=X_train.repeat().batch(_batch_size)\n"
-        code += "X_validation=X_validation.repeat().batch(_batch_size)\n"
-        code += "X_test=X_test.repeat(1).batch(1)\n"
-        code += "\n"
-        code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
-        code += "train_iterator = iterator.make_initializer(X_train, name='train_iterator_%s')\n" % self._layer_id
-        code += "validation_iterator = iterator.make_initializer(X_validation)\n"
-        code += "test_iterator = iterator.make_initializer(X_test)\n"
-        code += "Y = next_elements = iterator.get_next()\n"
+        code += self._get_code_common()
         return code
     
     def _get_code_multi_strategy(self):
@@ -230,25 +204,34 @@ class DataDataCodeGenerator(CodeGenerator):
             
         # Concatenation        
         n_sets = len(self._partitions)
-        code += "X_train_stacked = np.vstack([{}])\n".format(", ".join([mask_trn.format(i) for i in range(n_sets)]))
-        code += "X_validation_stacked = np.vstack([{}])\n".format(", ".join([mask_vld.format(i) for i in range(n_sets)]))
-        code += "X_test_stacked = np.vstack([{}])\n".format(", ".join([mask_tst.format(i) for i in range(n_sets)]))
+        list_str_trn = ", ".join([mask_trn.format(i) for i in range(n_sets)])
+        list_str_val = ", ".join([mask_vld.format(i) for i in range(n_sets)])
+        list_str_tst = ", ".join([mask_tst.format(i) for i in range(n_sets)])
+        code += "X_train = np.vstack([%s])\n" % list_str_trn
+        code += "X_validation = np.vstack([%s])\n" % list_str_val
+        code += "X_test = np.vstack([%s])\n" % list_str_tst
         code += '\n'
-        code += "X_train_size = X_train_stacked.shape[0]\n"
-        code += "X_validation_size = X_validation_stacked.shape[0]\n"
-        code += "X_test_size = X_test_stacked.shape[0]\n"
+        code += self._get_code_common()
+        return code
+
+    def _get_code_common(self):
+        code  = "# Shapes, preview and batch sizes\n"
+        code += 'X_train_size = X_train.shape[0]\n'
+        code += "X_validation_size = X_validation.shape[0]\n"
+        code += "X_test_size = X_test.shape[0]\n"
         code += '\n'
-        code += "_sample = X_train_stacked[0]\n"
-        code += "api.data.store(sample=_sample)\n"        
+        code += "_sample = X_train[0]\n"
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
-        code += "_batch_size = %d" % int(self.batch_size)
+        code += "_batch_size = %d\n" % int(self.batch_size)
+        code += "api.data.store(sample=_sample)\n"        
         code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
-        code += "X_train = tf.data.Dataset.from_tensor_slices(X_train_stacked)\n"
-        code += "X_validation = tf.data.Dataset.from_tensor_slices(X_validation_stacked)\n"
-        code += "X_test = tf.data.Dataset.from_tensor_slices(X_test_stacked)\n"
+        code += 'X_train = tf.data.Dataset.from_tensor_slices(X_train)\n'
+        code += 'X_validation = tf.data.Dataset.from_tensor_slices(X_validation)\n'
+        code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
         code += "\n"
+        
         if self.shuffle:
             code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size).repeat()\n" % self._seed
         else:
@@ -257,11 +240,10 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "X_test=X_test.repeat(1).batch(1)\n"
         code += "\n"
         code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
-        code += "train_iterator = iterator.make_initializer(X_train)\n"
+        code += "train_iterator = iterator.make_initializer(X_train, name='train_iterator_%s')\n" % self._layer_id
         code += "validation_iterator = iterator.make_initializer(X_validation)\n"
         code += "test_iterator = iterator.make_initializer(X_test)\n"
         code += "Y = next_elements = iterator.get_next()\n"
-        
         return code        
 
     def _select_strategy(self, source):
