@@ -40,11 +40,12 @@ class LayerSession(ApiCallbackHandler):
     PAUSE_TIME = 0.3
     
     def __init__(self, layer_id, layer_type, code, global_vars=None, local_vars=None,
-                 data_container=None, process_handler=None):        
+                 data_container=None, process_handler=None, cache=None):        
         self._layer_id = layer_id
         self._layer_type = layer_type
         self._code = code
         self._data_container = data_container
+        self._cache = cache
 
         self._stopped = False
         self._paused = False
@@ -110,6 +111,18 @@ class LayerSession(ApiCallbackHandler):
             raise LayerSessionStop
 
         self._process_handler.on_process(self, dashboard)
+
+    def on_cache_put(self, key, value):
+        if self._cache is not None:
+            self._cache.put(key, value, self._layer_id)
+
+    def on_cache_get(self, key):
+        if self._cache is not None:
+            self._cache.get(key)
+
+    def on_cache_contains(self, key):
+        if self._cache is not None:        
+            return key in self._cache
 
     @requires_process_handler
     def pause(self):

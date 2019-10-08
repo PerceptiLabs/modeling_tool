@@ -59,7 +59,7 @@ class coreLogic():
 
 
         session_history = SessionHistory()        
-        session_proc_handler = SessionProcessHandler(graph_dict, data_container
+        session_proc_handler = SessionProcessHandler(graph_dict, data_container,
                                                      self.commandQ, self.resultQ, mode)
         core = Core(CodeHq, graph_dict, data_container,
                     session_history, session_proc_handler, mode=mode)

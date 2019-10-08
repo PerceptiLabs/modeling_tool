@@ -5,6 +5,7 @@ import logging
 import numpy as np
 import traceback
 import tensorflow as tf
+from collections import namedtuple
 
 from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer, TrainValTestDataPolicy
@@ -17,12 +18,54 @@ from graph import Graph
 log = logging.getLogger(__name__)
 
 
+
+
+
+CacheEntry = namedtuple('CacheEntry', ['inserting_layer', 'value'])
+
+
+class SessionCache:
+    def __init__(self):
+        self._dict = {}
+
+    def __contains__(self, key):
+        return key in self._dict
+
+    def put(self, key, value, layer_id):
+        if key in self:
+            log.warning("Overwriting key {} in cache".format(key))
+        else:
+            log.debug("Inserting key {} to cache".format(key))
+
+        entry = CacheEntry(inserting_layer=layer_id, value=value)
+        self._dict[key] = entry
+
+    def get(self, key):
+        if not key in self:
+            raise ValueError("No entry with key {} in cache!".format(key))
+
+        log.debug("Loading entry {} from cache...".format(key))                
+        entry = self._dict.get(key)        
+        return entry.value
+
+    def invalidate(self, keep_layers):
+        new_dict = {key: entry for key, entry in self._dict.items()
+                    if entry.inserting_layer in set(keep_layers)}
+
+        n_entries = len(self._dict.keys())        
+        n_removed = n_entries - len(new_dict.keys())
+        self._dict = new_dict
+        
+        log.info("Cache invalidation removed {}/{} entries".format(n_removed, n_entries))
+                 
+
 class SessionHistory:
     def __init__(self):
         self.reset()
 
     def reset(self):
-        self._sessions = {}        
+        self._sessions = {}
+        self._cache = SessionCache()
 
     def __contains__(self, id_):
         return id_ in self._sessions
@@ -51,6 +94,9 @@ class SessionHistory:
         outputs = LayerIo(global_vars, local_vars)
         return outputs
 
+    @property
+    def cache(self):
+        return self._cache
     
 class SessionProcessHandler:
     def __init__(self, graph_dict, data_container, command_queue, result_queue, mode):
@@ -158,11 +204,11 @@ class BaseCore:
         self._session_process_handler = session_process_handler
         self._layer_extras_reader = layer_extras_reader
         self._session_history = session_history        
-        self._skip_layers = skip_layers if skip_layers is not None else []        
-
+        self._skip_layers = skip_layers if skip_layers is not None else []
         
     def run(self):
         self._data_container.reset()
+        self._session_history.cache.invalidate(keep_layers=self._graph.keys())
 
         if self._tf_eager:
             set_tensorflow_mode('eager')
@@ -188,41 +234,34 @@ class BaseCore:
     def _run_layer(self, id_, content):        
         code = self._codehq.get_code_generator(id_, content).get_code(mode=self._mode)            
             
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("Session local variables [pre execution]: " + pprint.pformat(locals_, compact=True))
-
         outputs = self._session_history.merge_session_outputs(layer_ids=content['Con'])
         globals_ = {'tf': tf, 'np': np} # Default globals
-        globals_.update(outputs.globals)
-        
+        globals_.update(outputs.globals)        
         locals_ = {'X': outputs.locals}
         
         session = LayerSession(id_, content['Info']['Type'], code,
                                global_vars=globals_,
                                local_vars=locals_,
                                data_container=self._data_container,
-                               process_handler=self._session_process_handler)                               
+                               process_handler=self._session_process_handler,
+                               cache=self._session_history.cache)                               
         try:        
             session.run()
         except LayerSessionStop:
             raise # Not an error. Re-raise.
         except SyntaxError as e:
-            log.error("Error running session!" + traceback.format_exc())            
+            self.on_error(session, traceback.format_exc())            
             if self._layer_extras_reader is not None:
                 self._layer_extras_reader.read_syntax_error(session)
             else:
                 raise
         except Exception as e:
-            log.error("Error running session!" + traceback.format_exc())
-            #self._on_error(session, traceback.format_exc())
+            self.on_error(session, traceback.format_exc())
             if self._layer_extras_reader is not None:
                 self._layer_extras_reader.read_error(session,e)
             else:
                 raise
            
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("Session local variables [post execution]: " + pprint.pformat(session.locals, compact=True))
-            
         self._session_history[id_] = session
 
         if self._layer_extras_reader is not None:
@@ -265,7 +304,7 @@ class LightweightCore(BaseCore):
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
-                        level=logging.INFO)
+                        level=logging.DEBUG)
 
     import json
     import queue

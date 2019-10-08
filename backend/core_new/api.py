@@ -1,7 +1,7 @@
 """ Thin classes with private variables to block user access to core """
 
 from abc import ABC, abstractmethod
-from collections import namedtuple
+
 
 class ApiCallbackHandler(ABC):
     @abstractmethod
@@ -36,12 +36,27 @@ class UiApi:
 
     def render(self, dashboard=None):
         self.__handler.on_render(dashboard)
+
+        
+class CacheApi:
+    def __init__(self, session):
+        self.__session = session
+
+    def put(self, key, value):
+        self.__session.on_cache_put(key, value)
+        
+    def get(self, key):
+        return self.__session.on_cache_get(key)
+
+    def __contains__(self, key):
+        return self.__session.on_cache_contains(key)
         
 
 class Api:
     def __init__(self, session):
         self.__data = DataApi(session)
         self.__ui = UiApi(session)
+        self.__cache = CacheApi(session)
 
     @property
     def data(self):
@@ -51,6 +66,9 @@ class Api:
     def ui(self):
         return self.__ui
 
+    @property
+    def cache(self):
+        return self.__cache
 
     
 

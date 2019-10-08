@@ -17,8 +17,12 @@ class FileNumpyStrategy(AbstractStrategy):
         self._path = path
 
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
-        code = ""
-        code += "data_mat = np.load('%s').astype(np.float32)\n" % self._path
+        code  = "if '%s' not in api.cache:\n" % self._path
+        #code += "    import pdb; pdb.set_trace()\n"
+        code += "    data_mat = np.load('%s').astype(np.float32)\n" % self._path
+        code += "    api.cache.put('%s', data_mat)\n" % self._path
+        code += "else:\n"
+        code += "    data_mat = api.cache.get('%s')\n" % self._path
         code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
                                                                 rate_train, rate_valid, rate_test)
         return code
@@ -30,13 +34,16 @@ class FileCsvStrategy(AbstractStrategy):
         self._columns=columns
         
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
-        code = ""
-        code += "df = pd.read_csv('%s')\n" % self._path
-        code += "cols = list(df.columns)\n"
+        code  = "if '%s' not in api.cache:\n" % self._path        
+        code += "    df = pd.read_csv('%s')\n" % self._path
+        code += "    cols = list(df.columns)\n"
         if self._columns:
-            code += "data_mat = df[%s].to_numpy().astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
+            code += "    data_mat = df[%s].to_numpy().astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
         else:
-            code += "data_mat = df.to_numpy().astype(np.float32)\n"
+            code += "    data_mat = df.to_numpy().astype(np.float32)\n"
+        code += "    api.cache.put('%s', data_mat)\n" % self._path            
+        code += "else:\n"
+        code += "    data_mat = api.cache.get('%s')\n" % self._path        
         code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
                                                                 rate_train, rate_valid, rate_test)
         return code
@@ -52,7 +59,11 @@ class DirectoryImageStrategy(AbstractStrategy):
         code += "for p in os.listdir('%s')]\n\n" % self._path
         code += "data_mat_list = []\n"
         code += "for path in file_paths:\n"
-        code += "    data_mat = skimage.io.imread(path)\n"        
+        code += "    if path not in api.cache:\n"
+        code += "        data_mat = skimage.io.imread(path)\n"
+        code += "        api.cache.put(path, data_mat)\n"
+        code += "    else:\n"
+        code += "        data_mat = api.cache.get(path)\n"
         code += "    data_mat_list.append(data_mat)\n"
         code += "\n"
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
@@ -82,8 +93,12 @@ class S3BucketImageStrategy(AbstractStrategy):
         code += "                             prefix='%s')\n" % self._prefix
         code += "data_mat_list = []\n"
         code += "for key in file_keys:\n"
-        code += "    file_path = adapter.download_file(key)\n"
-        code += "    data_mat = skimage.io.imread(file_path)\n"
+        code += "    if key not in api.cache:\n"
+        code += "        file_path = adapter.download_file(key)\n"
+        code += "        data_mat = skimage.io.imread(file_path)\n"
+        code += "        api.cache.put(path, data_mat)\n"        
+        code += "    else:\n"
+        code += "        data_mat = api.cache.get(path)\n"
         code += "    data_mat_list.append(data_mat)\n"
         code += "\n"
         code += "adapter.close()\n"                
@@ -114,11 +129,15 @@ class S3BucketJsonStrategy(AbstractStrategy):
         code += "                             prefix='%s')\n" % self._prefix
         code += "data_mat_list = []\n"
         code += "for key in file_keys:\n"
-        code += "    file_path = adapter.download_file(key)\n"
-        code += "    with open(file_path, 'r') as f:\n"
-        code += "        json_dict = json.load(f)\n"        
-        code += "    df = pd.DataFrame.from_dict(json_dict)\n"
-        code += "    data_mat = df.to_numpy()\n"
+        code += "    if key not in api.cache:\n"        
+        code += "        file_path = adapter.download_file(key)\n"
+        code += "        with open(file_path, 'r') as f:\n"
+        code += "            json_dict = json.load(f)\n"        
+        code += "        df = pd.DataFrame.from_dict(json_dict)\n"
+        code += "        data_mat = df.to_numpy().astype(np.float32)\n"
+        code += "        api.cache.put(path, data_mat)\n"                
+        code += "    else:\n"
+        code += "        data_mat = api.cache.get(path)\n"
         code += "    data_mat_list.append(data_mat)\n"
         code += "\n"
         code += "adapter.close()\n"        
