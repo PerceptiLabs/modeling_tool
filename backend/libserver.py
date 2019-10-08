@@ -157,6 +157,13 @@ class Message:
         message = json_bytes
         return message
 
+    def _is_jsonable(self, x):
+        try:
+            json.dumps(x)
+            return True
+        except (TypeError, OverflowError):
+            return False
+
     def _create_response_json_content(self):
         reciever=self.request.get("reciever")
         action = self.request.get("action")
@@ -244,16 +251,22 @@ class Message:
 
         elif action == "getPartitionSummary":
             value=self.request.get("value")
-            try:
-                if value["Id"] not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"]:
-                    self.dataDict[reciever][value["Id"]]=lw_data(value["Id"],value["Properties"]["accessProperties"])
-                    self.dataDict[reciever][value["Id"]].generateCode()
-                    self.dataDict[reciever][value["Id"]].executeCode()
-                else:
-                    self.dataDict[reciever][value["Id"]].updateProperties(value["Properties"]["accessProperties"])
-                content=self.dataDict[reciever][value["Id"]].partition_summary
-            except Exception as e:
-                content={"Content":"","errorMessage":str(e)}
+            Id=value["Id"]
+            Type=value("Type")
+            accessProperties=value["Properties"]["accessProperties"]
+
+            cotnent=""
+
+            # try:
+            #     if value["Id"] not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"]:
+            #         self.dataDict[reciever][value["Id"]]=lw_data(value["Id"],value["Properties"]["accessProperties"])
+            #         self.dataDict[reciever][value["Id"]].generateCode()
+            #         self.dataDict[reciever][value["Id"]].executeCode()
+            #     else:
+            #         self.dataDict[reciever][value["Id"]].updateProperties(value["Properties"]["accessProperties"])
+            #     content=self.dataDict[reciever][value["Id"]].partition_summary
+            # except Exception as e:
+            #     content={"Content":"","errorMessage":str(e)}
 
 
         elif action == "deleteData":
@@ -445,8 +458,18 @@ class Message:
                 else:
                     return reduceTo2d(data[...,-1])
 
-            content = {"Sample": createDataObject([reduceTo2d(np.asarray(sample))]),
-                        "VariableName":"Y" if not Variable else Variable}
+            dataObject=createDataObject([reduceTo2d(np.asarray(sample))])
+            
+            if self._is_jsonable(dataObject):
+                content = {
+                    "Sample": dataObject,
+                    "VariableName":"Y" if not Variable else Variable
+                }
+            else:
+                content = {
+                    "Sample": "",
+                    "VariableName":"Y" if not Variable else Variable
+                }
 
 
             # value=self.request.get("value")
