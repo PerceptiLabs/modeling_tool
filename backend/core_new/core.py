@@ -18,9 +18,6 @@ from graph import Graph
 log = logging.getLogger(__name__)
 
 
-
-
-
 CacheEntry = namedtuple('CacheEntry', ['inserting_layer', 'value'])
 
 
@@ -33,9 +30,10 @@ class SessionCache:
 
     def put(self, key, value, layer_id):
         if key in self:
-            log.warning("Overwriting key {} in cache".format(key))
+            message = "Overwriting cache entry {} ({}->{})".format(key, self._dict[key].__class__.__name__, value.__class__.__name__)
+            log.warning(message)
         else:
-            log.debug("Inserting key {} to cache".format(key))
+            log.debug("Creating new cache entry {} [{}]".format(key, value.__class__.__name__))
 
         entry = CacheEntry(inserting_layer=layer_id, value=value)
         self._dict[key] = entry
@@ -44,8 +42,9 @@ class SessionCache:
         if not key in self:
             raise ValueError("No entry with key {} in cache!".format(key))
 
-        log.debug("Loading entry {} from cache...".format(key))                
-        entry = self._dict.get(key)        
+
+        entry = self._dict.get(key)
+        log.debug("Loading entry {} [{}] from cache...".format(key, entry.value.__class__.__name__))
         return entry.value
 
     def invalidate(self, keep_layers):
@@ -210,6 +209,7 @@ class BaseCore:
         self._skip_layers = skip_layers if skip_layers is not None else []
         
     def run(self):
+        log.info("Running core [{}]".format(self.__class__.__name__))
         self._data_container.reset()
         self._session_history.cache.invalidate(keep_layers=self._graph.keys())
 
@@ -358,11 +358,11 @@ if __name__ == "__main__":
     graph_dict = graph.graphs
     data_container = DataContainer()
     
-    session_history_lw = SessionHistory()
+    session_history = SessionHistory()
     extras_reader = LayerExtrasReader()
 
     lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-                              session_history_lw, extras_reader)    
+                              session_history, extras_reader)    
     lw_core.run()
     print(extras_reader.to_dict())
 
@@ -384,13 +384,13 @@ if __name__ == "__main__":
     # threading.Thread(target=result_reader, args=(rq,)).start()            
 
     # # import pdb; pdb.set_trace()
-    # mode = 'normal'
+    mode = 'normal'
     # session_history = SessionHistory() 
     # #session_history = session_history_lw
 
-    # sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
-    # core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
-    # core.run()
+    sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
+    core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
+    core.run()
 
     
 
