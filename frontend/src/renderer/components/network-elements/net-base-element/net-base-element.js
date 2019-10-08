@@ -64,6 +64,9 @@ export default {
       currentSelectedEl:    'mod_workspace/GET_currentSelectedEl',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
     }),
+    showDotsArrow() {
+      return this.editIsOpen && !this.settingsIsOpen && !this.contextIsOpen
+    },
     showCheckpoint() {
       return this.dataEl.checkpoint && this.dataEl.checkpoint.length
     },

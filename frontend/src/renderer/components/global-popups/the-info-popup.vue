@@ -76,7 +76,7 @@
   }
   .popup_clipboard {
     position: absolute;
-    top: 0;
+    top: -1rem;
     right: 1rem;
     font-size: 1.6rem;
   }
