@@ -67,6 +67,7 @@ class SessionProcessHandler:
         data_policy = TrainValTestDataPolicy(session, data_dict, self._graph) # Convert data container format to resultDict format.
         
         results_dict = data_policy.get_results()
+        
         self._result_queue.put(results_dict)
         log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=1))
         
@@ -114,6 +115,8 @@ class LayerExtrasReader:
                 outShape=[1]
                 
         sample = ''
+        Xy = ''
+        layer_keys=[]
         if session.layer_id in data_container:
             layer_dict = data_container[session.layer_id]
             
@@ -122,9 +125,14 @@ class LayerExtrasReader:
             elif 'Y' in layer_dict:
                 sample = layer_dict['Y']
 
-        sample=self._evalSample(sample)
+            if "X" in layer_dict and "Y" in layer_dict["X"]:
+                Xy = layer_dict["X"]["Y"]
 
-        self._put_in_dict(session.layer_id,{'Sample': sample,'outShape': outShape, 'Variables': list(layer_dict.keys())})
+            layer_keys = list(layer_dict.keys())
+
+            sample=self._evalSample(sample)
+
+        self._put_in_dict(session.layer_id,{'Sample': sample, 'outShape': outShape, 'inShape': str(Xy).replace("'",""), 'Variables': layer_keys})
 
     def read_syntax_error(self, session):
         tbObj=traceback.TracebackException(*sys.exc_info())
@@ -171,6 +179,8 @@ class BaseCore:
 
         for layer_id, content in self._graph.items():
             layer_type = content["Info"]["Type"]
+            if not content["Info"]["Properties"]:
+                continue
             if layer_type in self._skip_layers:
                 log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
                 continue
@@ -340,14 +350,14 @@ if __name__ == "__main__":
         
     # threading.Thread(target=result_reader, args=(rq,)).start()            
 
-    # # import pdb; pdb.set_trace()
-    # mode = 'normal'
-    # session_history = SessionHistory() 
-    # #session_history = session_history_lw
+    # import pdb; pdb.set_trace()
+    mode = 'normal'
+    session_history = SessionHistory() 
+    #session_history = session_history_lw
 
-    # sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
-    # core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
-    # core.run()
+    sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
+    core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
+    core.run()
 
     
 

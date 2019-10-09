@@ -30,7 +30,7 @@ class coreLogic():
 
         self.status="Created"
 
-        self.core=core(self.networkName)
+        # self.core=core(self.networkName)
 
         self.savedResultsDict=dict()
 
@@ -40,91 +40,72 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.network=network
 
-        # graph = Graph(network).graphs
-        # mode = 'headless'
+        mode = 'normal'
 
-        # data_container = DataContainer()    
-        # session_history = SessionHistory()
-        
-        # layer_extras_reader = LayerExtrasReader()
+        data_container = DataContainer()
 
-        # lw_core = LightweightCore(CodeHq, graph_dict, data_container, session_history, layer_extras_reader)    
-        # lw_core.run()
-        # print(ler.to_dict())
+        graph = Graph(network['Layers'])
+        graph_dict=graph.graphs
 
-        # import pdb; pdb.set_trace()
+        from codehq import CodeHqNew as CodeHq
 
-        # self.commandQ=queue.Queue()
-        # self.resultQ=queue.LifoQueue()
+        session_history = SessionHistory()        
+        session_proc_handler = SessionProcessHandler(graph_dict, data_container,
+                                                     self.commandQ, self.resultQ, mode)
+        self.core = Core(CodeHq, graph_dict, data_container,
+                    session_history, session_proc_handler, mode=mode)
 
+        if self.cThread is not None and self.cThread.isAlive():
+            self.Stop()
 
-        # session_history = SessionHistory()        
-        # session_proc_handler = SessionProcessHandler(graph_dict, data_container,
-        #                                              self.commandQ, self.resultQ, mode)
-        # core = Core(CodeHq, graph_dict, data_container,
-        #             session_history, session_proc_handler, mode=mode)
-        # core.run()
-        if self.cThread is None:
+            while self.cThread.isAlive():
+                time.sleep(0.05)
+
             try:
-                self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
+                # self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
+                self.cThread=CoreThread(self.core.run,self.errorQueue)
                 self.cThread.start()
             except:
-                self.errorQueue.put("Could not boot up the new thread to run the computations on")
-            self.status="Running"
-            return {"content": "core started"}
+                self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
         else:
-            if self.cThread.isAlive():
-                self.Stop()
-
-                while self.cThread.isAlive():
-                    time.sleep(0.05)
-
-                try:
-                    self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
-                    self.cThread.start()
-                    #self.status="Setup"
-                except:
-                    self.errorQueue.put("Could not boot up the new thread to run the computations on")
-            else:
-                try:
-                    self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
-                    self.cThread.start()
-                    #self.status="Setup"
-                except:
-                    self.errorQueue.put("Could not boot up the new thread to run the computations on")
-                    #self.status="SetupFailed"
-            self.status="Running"
+            try:
+                self.cThread=CoreThread(self.core.run,self.errorQueue)
+                self.cThread.start()
+            except Exception as e:
+                self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
+        self.status="Running"
+            
         return {"content":"core started"}
 
-    def onThread(self, function, *args, **kwargs):
-        print(function)
-        self.commandQ.put((function, args, kwargs))
+    # def onThread(self, function, *args, **kwargs):
+    #     print(function)
+    #     self.commandQ.put((function, args, kwargs))
 
-    def Pause(self):
-        if self.core.testStatus!="nextStep" or self.core.testStatus!="previousStep":
-            if self.status=="Paused":
-                self.status="Running"
-            else:
-                self.status="Paused"
-        return {"content":self.setCoreStatus(self.status)}
+    # def Pause(self):
+    #     if self.core.testStatus!="nextStep" or self.core.testStatus!="previousStep":
+    #         if self.status=="Paused":
+    #             self.status="Running"
+    #         else:
+    #             self.status="Paused"
+    #     return {"content":self.setCoreStatus(self.status)}
 
     def Close(self):
         self.status="Stop"
-        self.setCoreStatus(self.status)
-        if self.core.sess:
-            self.core.sess.close()
-        if self.cThread is not None:
-            while self.cThread.isAlive():
-                time.sleep(0.05)
-            self.cThread.join()
-            print("Core Killed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        # self.setCoreStatus(self.status)
+        # if self.core.sess:
+        #     self.core.sess.close()
+        # if self.cThread is not None:
+        #     while self.cThread.isAlive():
+        #         time.sleep(0.05)
+        #     self.cThread.join()
+        #     print("Core Killed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return {"content":"closing the core"}
 
-    def headlessOn(self):
-        self.onThread(self.core.headlessOn)
+    # def headlessOn(self):
+    #     self.onThread(self.core.headlessOn)
 
-    def headlessOff(self):
-        self.onThread(self.core.headlessOff)
+    # def headlessOff(self):
+    #     self.onThread(self.core.headlessOff)
 
     def Stop(self):
         self.status="Stop"
@@ -133,155 +114,156 @@ class coreLogic():
     def checkCore(self):
         return {"content":"Alive"}
 
-    def setCoreStatus(self,status):
-        self.onThread(self.core.setStatus,status)
-        return {"content":"current status is: " + str(status)}
+    # def setCoreStatus(self,status):
+    #     self.onThread(self.core.setStatus,status)
+    #     return {"content":"current status is: " + str(status)}
 
     def isTrained(self,):
-        return {"content":self.core.exporter is not None}
+        # return {"content":self.core.exporter is not None}
+        return {"content":False}
 
-    def exportNetwork(self,value):
-        if self.core.exporter is None:
-            self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
-            return {"content":"Export Failed.\nNo trained weights to Export."}
-        try:
-            if value["Type"]=="TFModel":
-                path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
-                if value["Compressed"]:
-                    self.core.exporter.asCompressedTfModel(path)
-                else:
-                    self.core.exporter.asTfModel(path,self.core.epoch)
-                return {"content":"Export success!\nSaved as:\n" + path}
+    # def exportNetwork(self,value):
+    #     if self.core.exporter is None:
+    #         self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
+    #         return {"content":"Export Failed.\nNo trained weights to Export."}
+    #     try:
+    #         if value["Type"]=="TFModel":
+    #             path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
+    #             if value["Compressed"]:
+    #                 self.core.exporter.asCompressedTfModel(path)
+    #             else:
+    #                 self.core.exporter.asTfModel(path,self.core.epoch)
+    #             return {"content":"Export success!\nSaved as:\n" + path}
             
-        except Exception as e:
-            self.warningQueue.put("Export Failed with this error: ")
-            self.warningQueue.put(str(e))
-            print("Export failed")
-            print(traceback.format_exc())
-            return {"content":"Export Failed with this error: " + str(e)}
+    #     except Exception as e:
+    #         self.warningQueue.put("Export Failed with this error: ")
+    #         self.warningQueue.put(str(e))
+    #         print("Export failed")
+    #         print(traceback.format_exc())
+    #         return {"content":"Export Failed with this error: " + str(e)}
 
-    def saveNetwork(self,value):
-        if self.core.exporter is None:
-            self.warningQueue.put("Save failed.\nMake sure you have started running the network before you try to Export it.")
-            return {"content":"Save Failed.\nNo trained weights to Export."}
-        try:
-            # path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
-            # value["Location"]="C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Networks"
-            path=os.path.abspath(value["Location"][0]+"/"+str(self.networkName))
-            self.core.saveNetwork(path,value["frontendNetwork"])
-            return {"content":"Save succeeded!"}
-        except Exception as e:
-            self.warningQueue.put("Save Failed with this error: ")
-            self.warningQueue.put(str(e))
-            print("Save failed")
-            print(traceback.format_exc())
-            return {"content":"Save Failed with this error: " + str(e)}
+    # def saveNetwork(self,value):
+    #     if self.core.exporter is None:
+    #         self.warningQueue.put("Save failed.\nMake sure you have started running the network before you try to Export it.")
+    #         return {"content":"Save Failed.\nNo trained weights to Export."}
+    #     try:
+    #         # path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
+    #         # value["Location"]="C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Networks"
+    #         path=os.path.abspath(value["Location"][0]+"/"+str(self.networkName))
+    #         self.core.saveNetwork(path,value["frontendNetwork"])
+    #         return {"content":"Save succeeded!"}
+    #     except Exception as e:
+    #         self.warningQueue.put("Save Failed with this error: ")
+    #         self.warningQueue.put(str(e))
+    #         print("Save failed")
+    #         print(traceback.format_exc())
+    #         return {"content":"Save Failed with this error: " + str(e)}
 
         
-        # if self.core.sess is None or self.core.graphObj is None or self.core.outputDict is None:
-        #     self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
-        #     return {"content":"Export Failed.\nNo trained weights to Export."}
-        # try:
-        #     #The reason we need to send so many self variables (especially Saver instead of initializing it in the export function) is because we need everything to be initialized
-        #     #in the thread. When we run this function it is not run on the thread, but rather run in the main thread with variables taken from the thread. If we want to run
-        #     #the function on the thread, we need a queue system to call the function and check for reply, and we need to make sure the thread never is terminated.
-        #     self.core.exportNetwork(self.core.sess,self.core.saver,self.core.graphObj,self.core.outputDict,value)
-        #     return {"content":"Export success!\nSaved in:\n" + str(value["Location"])}
-        # except Exception as e:
-        #     self.warningQueue.put("Export Failed with this error: ")
-        #     self.warningQueue.put(str(e))
-        #     print("Export failed")
-        #     print(traceback.format_exc())
-        #     return {"content":"Export Failed with this error: " + str(e)}
+    #     # if self.core.sess is None or self.core.graphObj is None or self.core.outputDict is None:
+    #     #     self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
+    #     #     return {"content":"Export Failed.\nNo trained weights to Export."}
+    #     # try:
+    #     #     #The reason we need to send so many self variables (especially Saver instead of initializing it in the export function) is because we need everything to be initialized
+    #     #     #in the thread. When we run this function it is not run on the thread, but rather run in the main thread with variables taken from the thread. If we want to run
+    #     #     #the function on the thread, we need a queue system to call the function and check for reply, and we need to make sure the thread never is terminated.
+    #     #     self.core.exportNetwork(self.core.sess,self.core.saver,self.core.graphObj,self.core.outputDict,value)
+    #     #     return {"content":"Export success!\nSaved in:\n" + str(value["Location"])}
+    #     # except Exception as e:
+    #     #     self.warningQueue.put("Export Failed with this error: ")
+    #     #     self.warningQueue.put(str(e))
+    #     #     print("Export failed")
+    #     #     print(traceback.format_exc())
+    #     #     return {"content":"Export Failed with this error: " + str(e)}
 
 
 
 
 
-        # if self.cThread is not None:
-        #     self.onThread(self.core.exportNetwork,value)
-        #     while True:
-        #         if not self.resultQ.empty():
-        #             resultMessage=self.resultQ.get()
-        #             print(resultMessage)
-        #             if type(resultMessage) is str:
-        #                 #Can catch warnings or more specific errors here as well if we want.
-        #                 if resultMessage=="ExportSuccess":
-        #                     return {"content":"Export success! \n Saved in: " + str(value["Location"])}
-        #                 if resultMessage=="ExportFailed":
-        #                     return {"conent":"Export Failed"}
-        #             time.sleep(0.2)
+    #     # if self.cThread is not None:
+    #     #     self.onThread(self.core.exportNetwork,value)
+    #     #     while True:
+    #     #         if not self.resultQ.empty():
+    #     #             resultMessage=self.resultQ.get()
+    #     #             print(resultMessage)
+    #     #             if type(resultMessage) is str:
+    #     #                 #Can catch warnings or more specific errors here as well if we want.
+    #     #                 if resultMessage=="ExportSuccess":
+    #     #                     return {"content":"Export success! \n Saved in: " + str(value["Location"])}
+    #     #                 if resultMessage=="ExportFailed":
+    #     #                     return {"conent":"Export Failed"}
+    #     #             time.sleep(0.2)
 
-    def skipValidation(self):
-        self.onThread(self.core.skip)
-        #Check if validation was skipped or not before returning message
-        return {"content":"skipped validation"}
+    # def skipValidation(self):
+    #     self.onThread(self.core.skip)
+    #     #Check if validation was skipped or not before returning message
+    #     return {"content":"skipped validation"}
 
-    def getTestStatus(self):
-        try:
-            if self.savedResultsDict["maxTestIter"]!=0:
-                if self.status=="Running":
-                    return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.savedResultsDict["testIter"], "Progress": self.savedResultsDict["testIter"]/(self.savedResultsDict["maxTestIter"]-1)}
-                else:
-                    return {"Status":self.status,"Iterations":self.savedResultsDict["testIter"], "Progress": self.savedResultsDict["testIter"]/(self.savedResultsDict["maxTestIter"]-1)}
-            else:
-                print("Max Test Iterations are 0")
-                return {"content":"Max Test Iterations are 0"}
-        except KeyError:
-            return {}
-        # if self.core.testIterations!=0:
-        #     if self.status=="Running":
-        #         return {"Status":self.core.trainingStatus,"Iterations":self.core.testIter, "Progress": self.core.testIter/(self.core.testIterations-1)}
-        #     else:
-        #         return {"Status":self.status,"Iterations":self.core.testIter, "Progress": self.core.testIter/(self.core.testIterations-1)}
-        # else:
-        #     print("Test Iterations are 0")
+    # def getTestStatus(self):
+    #     try:
+    #         if self.savedResultsDict["maxTestIter"]!=0:
+    #             if self.status=="Running":
+    #                 return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.savedResultsDict["testIter"], "Progress": self.savedResultsDict["testIter"]/(self.savedResultsDict["maxTestIter"]-1)}
+    #             else:
+    #                 return {"Status":self.status,"Iterations":self.savedResultsDict["testIter"], "Progress": self.savedResultsDict["testIter"]/(self.savedResultsDict["maxTestIter"]-1)}
+    #         else:
+    #             print("Max Test Iterations are 0")
+    #             return {"content":"Max Test Iterations are 0"}
+    #     except KeyError:
+    #         return {}
+    #     # if self.core.testIterations!=0:
+    #     #     if self.status=="Running":
+    #     #         return {"Status":self.core.trainingStatus,"Iterations":self.core.testIter, "Progress": self.core.testIter/(self.core.testIterations-1)}
+    #     #     else:
+    #     #         return {"Status":self.status,"Iterations":self.core.testIter, "Progress": self.core.testIter/(self.core.testIterations-1)}
+    #     # else:
+    #     #     print("Test Iterations are 0")
 
-    def getStatus(self):
-        try:
-            if self.status=="Running":
-                return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
-            else:
-                return {"Status":self.status,"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
-        except KeyError:
-            return {}
-        # if self.status=="Running":
-        #     return {"Status":self.core.trainingStatus,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
-        # else:
-        #     return {"Status":self.status,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
+    # def getStatus(self):
+    #     try:
+    #         if self.status=="Running":
+    #             return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
+    #         else:
+    #             return {"Status":self.status,"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
+    #     except KeyError:
+    #         return {}
+    #     # if self.status=="Running":
+    #     #     return {"Status":self.core.trainingStatus,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
+    #     # else:
+    #     #     return {"Status":self.status,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
 
-    def startTest(self):
-        if self.core.maxTestIter>0:
-            self.onThread(self.core.startTest)
-            while self.core.testStatus!="Waiting":
-                time.sleep(0.05)
-            return {"content":"Started Testing"}
-        else:
-            return {"content":"No test data"}
+    # def startTest(self):
+    #     if self.core.maxTestIter>0:
+    #         self.onThread(self.core.startTest)
+    #         while self.core.testStatus!="Waiting":
+    #             time.sleep(0.05)
+    #         return {"content":"Started Testing"}
+    #     else:
+    #         return {"content":"No test data"}
 
-    def nextStep(self):
-        testIter=self.core.testIter
-        self.onThread(self.core.nextTestStep)
-        while testIter==self.core.testIter:
-            time.sleep(0.05)
-        return {"content":"Current sample is: "+str(self.core.testIter)}
+    # def nextStep(self):
+    #     testIter=self.core.testIter
+    #     self.onThread(self.core.nextTestStep)
+    #     while testIter==self.core.testIter:
+    #         time.sleep(0.05)
+    #     return {"content":"Current sample is: "+str(self.core.testIter)}
     
-    def previousStep(self):
-        testIter=self.core.testIter
-        self.onThread(self.core.prevousTestStep)
-        while testIter==self.core.testIter and testIter>1:
-            time.sleep(0.05)
-        return {"content":"Current sample is: "+str(self.core.testIter)}
+    # def previousStep(self):
+    #     testIter=self.core.testIter
+    #     self.onThread(self.core.prevousTestStep)
+    #     while testIter==self.core.testIter and testIter>1:
+    #         time.sleep(0.05)
+    #     return {"content":"Current sample is: "+str(self.core.testIter)}
 
-    def resetTest(self):
-        self.onThread(self.core.resetTest)
-        while self.core.testIter>1:
-            time.sleep(0.05)
-        return {"content":"Test is now back to iter 1"}
+    # def resetTest(self):
+    #     self.onThread(self.core.resetTest)
+    #     while self.core.testIter>1:
+    #         time.sleep(0.05)
+    #     return {"content":"Test is now back to iter 1"}
 
-    def playTest(self):
-        self.onThread(self.core.playTest)
-        return {"content":"Current sample is: "+str(self.core.testIter)}
+    # def playTest(self):
+    #     self.onThread(self.core.playTest)
+    #     return {"content":"Current sample is: "+str(self.core.testIter)}
 
     def updateResults(self):
         if not self.resultQ.empty():
@@ -289,9 +271,9 @@ class coreLogic():
             with self.resultQ.mutex:
                 self.resultQ.queue.clear()
 
-            import json
-            with open('results.json') as f:
-                json.dumps(f, self.savedResultsDict)
+            # import json
+            # with open('results.json') as f:
+            #     json.dumps(f, self.savedResultsDict)
             
 
         return {"content":"Results saved"}
@@ -343,6 +325,9 @@ class coreLogic():
             return {"Data":dataObj}            
         elif layerType=="DataData":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})
+
+            import pdb; pdb.set_trace()
+            
             dataObj = createDataObject([D[-1]])      
             return {"Data":dataObj}
         elif layerType=="DeepLearningFC":

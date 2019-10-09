@@ -54,6 +54,9 @@ class TrainValTestDataPolicy:
     def get_results(self):
         train_dict = {}
         #test_dict = {}
+
+        for id_, value in self._data.items():
+            train_dict[id_]=value
         
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:

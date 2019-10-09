@@ -17,6 +17,11 @@ class CodeHqNew:
         type_ = content["Info"]["Type"]
         props = content["Info"]["Properties"]
 
+
+        # if 'Code' in content["Info"]:
+        #     code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
+        #     code_generator = CustomCodeGenerator(code_parts)
+        #     return code_generator
         if type_ == 'DataData':
             sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
             partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
@@ -104,10 +109,6 @@ class CodeHqNew:
             return code_gen
         elif type_ == 'MathSplit':
             raise NotImplementedError("Math split not implemented")
-        elif 'Code' in content["Info"]:
-            code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
-            code_generator = CustomCodeGenerator(code_parts)
-            return code_generator        
         else:
             log.error("Unrecognized layer. Type {}: {}".format(type_, pprint.pformat(content)))
             return None
