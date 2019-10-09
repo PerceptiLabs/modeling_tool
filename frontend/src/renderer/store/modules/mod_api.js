@@ -8,6 +8,7 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
+  corePid: 0
 };
 
 const getters = {
@@ -59,6 +60,9 @@ const mutations = {
   SET_statusLocalCore(state, value) {
     state.statusLocalCore = value
   },
+  set_corePid(state, value) {
+    state.corePid = value
+  },
 };
 
 const actions = {
@@ -87,7 +91,8 @@ const actions = {
           break;
       }
       openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
-
+      console.log(openServer);
+      commit('set_corePid', openServer.pid);
       openServer.on('error', (err)=>  { coreOffline() });
       openServer.on('close', (code)=> { coreOffline() });
       waitOnlineCore()
@@ -338,6 +343,7 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
+    console.log('API_getPreviewVariableList');
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {

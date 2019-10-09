@@ -271,7 +271,7 @@ export default {
     },
     tutorialSearchId(event) {
       return event.target.tagName === 'I'
-        ? event.target.parentNode.parentNode.parentNode.id
+        ? event.target.parentNode.parentNode.id
         : event.target.parentNode.id
     }
   }

@@ -200,7 +200,7 @@ export default {
   }
   .custom-select_option-list {
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     top: 100%;
     left: 0;
     max-height: 13.5rem;
