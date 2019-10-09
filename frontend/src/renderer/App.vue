@@ -17,7 +17,7 @@
     )
     router-view.app-page
     update-popup
-    the-info-popup
+    the-info-popup(v-if="isShowPopup")
     confirm-popup
 </template>
 
@@ -39,10 +39,13 @@
       UpdatePopup, TheInfoPopup, ConfirmPopup
     },
     created() {
+      window.addEventListener('online',  this.updateOnlineStatus);
+      window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
     },
     mounted() {
+      this.updateOnlineStatus();
       /*Menu*/
       ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));
 
@@ -74,12 +77,16 @@
       ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
 
       this.calcAppPath();
-      this.checkToken();
+      this.checkLocalToken();
       this.$nextTick(()=> {
         //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
         this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
       })
+    },
+    beforeDestroy() {
+      window.removeEventListener('online',  this.updateOnlineStatus);
+      window.removeEventListener('offline', this.updateOnlineStatus);
     },
     data() {
       return {
@@ -98,7 +105,17 @@
       },
       userEmail() {
         return this.$store.getters['mod_user/GET_userEmail']
-      }
+      },
+      /*show popup*/
+      infoPopup() {
+        return this.$store.state.globalView.globalPopup.showInfoPopup
+      },
+      errorPopup() {
+        return this.$store.state.globalView.globalPopup.showErrorPopup
+      },
+      isShowPopup() {
+        return this.errorPopup.length || this.infoPopup.length
+      },
     },
     watch: {
       '$route': {
@@ -123,6 +140,7 @@
       }),
       ...mapActions({
         openErrorPopup:   'globalView/GP_infoPopup',
+        SET_onlineStatus: 'globalView/SET_onlineStatus',
 
         trackerInit:      'mod_tracker/TRACK_initMixPanel',
         trackerInitUser:  'mod_tracker/TRACK_initMixPanelUser',
@@ -137,6 +155,9 @@
         setUserToken:     'mod_user/SET_userToken',
         readUserInfo:     'mod_user/GET_LOCAL_userInfo',
       }),
+      updateOnlineStatus() {
+        this.SET_onlineStatus(navigator.onLine);
+      },
       initUser() {
         this.trackerInitUser(this.userId)
           .then(()=> {
@@ -176,7 +197,7 @@
         }
         this.SET_appPath(path);
       },
-      checkToken() {
+      checkLocalToken() {
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.setUserToken(localUserToken);

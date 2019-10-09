@@ -1,6 +1,7 @@
 const namespaced = true;
 
 const state = {
+  onlineStatus: true,
   hideLayers: true,
   hideSidebar: true,
   platform: process.platform,
@@ -30,6 +31,9 @@ const getters = {
 };
 
 const mutations = {
+  set_onlineStatus (state, value) {
+    state.onlineStatus = value
+  },
   SET_hideLayers (state, value) {
     state.hideLayers = value
   },
@@ -93,6 +97,9 @@ const actions = {
   NET_trainingDone({commit, dispatch}) {
     commit('GP_showNetResult', true);
     dispatch('mod_workspace/SET_openTest', false, {root: true});
+  },
+  SET_onlineStatus({commit}, value) {
+    commit('set_onlineStatus', value);
   },
   SET_timeIntervalDoRequest({commit, dispatch}, value) {
     commit('set_timeIntervalDoRequest', value);

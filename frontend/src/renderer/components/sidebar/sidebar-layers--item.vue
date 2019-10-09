@@ -81,8 +81,7 @@ export default {
     },
     setSelect(ev) {
       if (this.statisticsIsOpen) {
-        console.log('TODO add functions');
-        //this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
+        this.$store.commit('mod_statistics/CHANGE_selectElArr', this.itemData)
       }
       else {
         this.ClickElementTracking = ev.target.closest('.js-clickout');

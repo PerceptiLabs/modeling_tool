@@ -106,12 +106,18 @@ export default {
           submenu: [
             {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              enabled: this.openApp,  active: this.toPrevStepHistory },
             {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  enabled: this.openApp,  active: this.toNextStepHistory },
-            {type: 'separator'},
+            {type:  'separator'},
             {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              enabled: this.openApp,  active: this.HCCopy },
             {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              enabled: this.openApp,  active: this.HCPaste },
-            {type: 'separator'},
+            {type:  'separator'},
             {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              enabled: this.openApp,  active: this.HCSelectAll },
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
+            {type:  'separator'},
+            {label: 'delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: true  },
+            {label: 'add group',     accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: true  },
+            {label: 'ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: true  },
+            {type:  'separator'},
+            {label: 'close setting popups',          accelerator: 'esc',                                                                 active: this.HC_esc,                       visible: true  },
           ]
         },
         {
@@ -143,10 +149,6 @@ export default {
         {
           label: '', visible: false,
           submenu: [
-            {label: 'Delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: false  },
-            {label: 'Esc',          accelerator: 'esc',                                                                 active: this.HC_esc,                       visible: false  },
-            {label: 'addGroup',     accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
-            {label: 'unGroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
             //{label: 'preventClose',          accelerator: 'Alt+F4',                                     enabled: true,                 active: function(e) {e.preventDefault()},  visible: false  },
           ]
         }

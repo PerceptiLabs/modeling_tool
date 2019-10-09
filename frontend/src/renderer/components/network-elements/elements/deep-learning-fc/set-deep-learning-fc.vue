@@ -78,38 +78,38 @@
       ...mapGetters({
         isTutorialMode: 'mod_tutorials/getIstutorialMode'
       }),
-      codeDefault() {
-        let activeFunc = '';
-        switch (this.settings.Activation_function) {
-          case 'Sigmoid':
-            activeFunc = `Y=tf.sigmoid(node);`;
-            break;
-          case 'ReLU':
-            activeFunc = `Y=tf.nn.relu(node);`;
-            break;
-          case 'Tanh':
-            activeFunc = `Y=tf.tanh(node);`;
-            break;
-          case 'None':
-            activeFunc = `Y=node;`;
-            break;
-        }
-        //for element in X['Y'].get_shape().as_list()[1:]:
-        const fc = `input_size=1
-for element in ${this.codeInputDim}:
-  input_size*=element
-shape=[input_size,${this.settings.Neurons}];
-initial = tf.truncated_normal(shape, stddev=0.1);
-W=tf.Variable(initial);
-initial = tf.constant(0.1, shape=[${this.settings.Neurons}]);
-b=tf.Variable(initial);
-flat_node=tf.cast(tf.reshape(X['Y'],[-1,input_size]),dtype=tf.float32);
-node=tf.matmul(flat_node,W)${this.settings.Dropout ? ';\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
-node=node+b;`;
-        return {
-          Output: `${fc}\n${activeFunc}`
-        }
-      }
+//       codeDefault() {
+//         let activeFunc = '';
+//         switch (this.settings.Activation_function) {
+//           case 'Sigmoid':
+//             activeFunc = `Y=tf.sigmoid(node);`;
+//             break;
+//           case 'ReLU':
+//             activeFunc = `Y=tf.nn.relu(node);`;
+//             break;
+//           case 'Tanh':
+//             activeFunc = `Y=tf.tanh(node);`;
+//             break;
+//           case 'None':
+//             activeFunc = `Y=node;`;
+//             break;
+//         }
+//         //for element in X['Y'].get_shape().as_list()[1:]:
+//         const fc = `input_size=1
+// for element in ${this.codeInputDim}:
+//   input_size*=element
+// shape=[input_size,${this.settings.Neurons}];
+// initial = tf.truncated_normal(shape, stddev=0.1);
+// W=tf.Variable(initial);
+// initial = tf.constant(0.1, shape=[${this.settings.Neurons}]);
+// b=tf.Variable(initial);
+// flat_node=tf.cast(tf.reshape(X['Y'],[-1,input_size]),dtype=tf.float32);
+// node=tf.matmul(flat_node,W)${this.settings.Dropout ? ';\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
+// node=node+b;`;
+//         return {
+//           Output: `${fc}\n${activeFunc}`
+//         }
+//       }
     },
     watch: {
       'settings.Neurons': {

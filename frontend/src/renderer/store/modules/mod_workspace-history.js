@@ -11,7 +11,7 @@ const state = {
 
 const getters = {
   GET_isEnableHistory(state, getters, rootState, rootGetters) {
-    return state.isEnableHistory && rootGetters['mod_workspace/GET_networkIsOpen']
+    return state.isEnableHistory && rootGetters['mod_workspace/GET_enableHotKeyElement']
   },
   GET_currentNetHistory(state, getters, rootState, rootGetters) {
     const currentNet = rootGetters['mod_workspace/GET_currentNetwork'];

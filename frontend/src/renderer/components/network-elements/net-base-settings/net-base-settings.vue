@@ -73,7 +73,6 @@ export default {
     }
   },
   computed: {
-
     isTutorial() {
       return this.$store.getters['mod_tutorials/getIstutorialMode']
     }

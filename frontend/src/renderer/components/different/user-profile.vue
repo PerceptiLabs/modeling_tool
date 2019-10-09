@@ -95,10 +95,11 @@
 </template>
 
 <script>
-import BaseSwitcher      from "@/components/different/switcher.vue";
-import TextEditable      from '@/components/base/text-editable.vue'
+import BaseSwitcher from "@/components/different/switcher.vue";
+import TextEditable from '@/components/base/text-editable.vue'
 
 import { mapGetters, mapMutations, mapActions } from 'vuex';
+import { deepCopy } from "@/core/helpers.js";
 
 export default {
   name: "UserProfile",
@@ -141,12 +142,12 @@ export default {
       cloud_userChangePassword: 'mod_apiCloud/CloudAPI_userChangePassword',
     }),
     editFirstName(newVal) {
-      let newInfo = JSON.parse(JSON.stringify(this.user));
+      let newInfo = deepCopy(this.user);
       newInfo.firstName = newVal;
       this.setUserInfo(newInfo);
     },
     editLastName(newVal) {
-      let newInfo = JSON.parse(JSON.stringify(this.user));
+      let newInfo = deepCopy(this.user);
       newInfo.lastName = newVal;
       this.setUserInfo(newInfo);
     },

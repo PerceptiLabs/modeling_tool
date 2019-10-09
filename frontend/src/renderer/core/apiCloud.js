@@ -4,10 +4,12 @@ import { baseUrlCloud } from '@/core/constants.js'
 
 
 const requestCloudApi = function (method, path, data, params) {
+  // if(!store.state.globalView.onlineStatus) {
+  //   return new Promise((resolve, reject) => resolve);
+  // }
   return httpRequest(method, path, data, params)
     .then((response)=> response)
     .catch((error)=> {
-      console.log(error.response);
       if(error.response.status === 401) { return 'updateToken' }
       else {
         store.dispatch('mod_tracker/EVENT_cloudError', {method, path, error});
@@ -15,18 +17,17 @@ const requestCloudApi = function (method, path, data, params) {
         throw (error);
       }
     })
-    .then((data)=> {
-      if(data === 'updateToken') {
+    .then((answer)=> {
+      if(answer === 'updateToken') {
         return CloudAPI_updateToken()
-          .then(()=> httpRequest(method, path, dataRequest))
-          .then((data)=> data)
+          .then(()=> httpRequest(method, path, data))
+          .then((answ)=> answ)
           .catch((error)=> {
             throw (error)
           })
       }
-      else return data
+      else return answer
     })
-
 };
 
 function httpRequest(method, path, data, params) {

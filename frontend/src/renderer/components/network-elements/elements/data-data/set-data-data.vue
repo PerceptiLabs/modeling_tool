@@ -60,14 +60,22 @@
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
             base-checkbox(v-model="settings.accessProperties.Shuffle_data") Shuffle
-
-    template(slot="Cloud-content")
+        //-.settings-layer_foot
+          button.btn.btn--primary(type="button") Apply
+    //-template(slot="Cloud-content")
       //-settings-cloud
-
+    template(slot="Code-content")
+      settings-code(
+        :current-el="currentEl"
+        :el-settings="settings"
+        v-model="coreCode"
+      )
     template(slot="Computer-action")
 
-    template(slot="Cloud-action")
+    //-template(slot="Cloud-action")
       span
+    template(slot="Code-action")
+
 
 </template>
 
@@ -91,7 +99,7 @@
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
-      this.Mix_settingsData_getDataMeta('DataData')
+      this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
         .then((data)=> {
           if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
         });
@@ -99,7 +107,7 @@
     data() {
       return {
         //tabs: ['Computer', 'Cloud'],
-        tabs: ['Computer'],
+        tabs: ['Computer', 'Code'],
         dataColumns: [],
         dataColumnsSelected: [],
         interactiveInfo: {
@@ -177,23 +185,24 @@
       },
       fileList: {
         handler(newVal) {
-          this.Mix_settingsData_getPartitionSummary('DataData');
+          this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
         },
         deep: true,
         immediate: true
       },
       'settings.accessProperties.Sources.length': {
         handler(newVal) {
-          if(newVal) this.showBtn();
-          else { this.$nextTick(()=> { this.hideBtn(); })
-          }
+          if(newVal) this.$nextTick(()=> { this.showBtn() });
+          else this.$nextTick(()=> { this.hideBtn() })
         },
         immediate: true
       }
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate: 'mod_tutorials/pointActivate',
+        tutorialPointActivate:  'mod_tutorials/pointActivate',
+        // API_getPartitionSummary:'mod_api/API_getPartitionSummary',
+        // API_getDataMeta:        'mod_api/API_getDataMeta',
       }),
       setPartitionList(list) {
         this.settings.accessProperties.Partition_list = list
