@@ -4,6 +4,9 @@ import { baseUrlCloud } from '@/core/constants.js'
 
 
 const requestCloudApi = function (method, path, data, params) {
+  // if(!store.state.globalView.onlineStatus) {
+  //   return new Promise((resolve, reject) => resolve);
+  // }
   return httpRequest(method, path, data, params)
     .then((response)=> response)
     .catch((error)=> {
@@ -25,7 +28,6 @@ const requestCloudApi = function (method, path, data, params) {
       }
       else return answer
     })
-
 };
 
 function httpRequest(method, path, data, params) {

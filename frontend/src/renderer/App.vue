@@ -39,10 +39,13 @@
       UpdatePopup, TheInfoPopup, ConfirmPopup
     },
     created() {
+      window.addEventListener('online',  this.updateOnlineStatus);
+      window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
     },
     mounted() {
+      this.updateOnlineStatus();
       /*Menu*/
       ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));
 
@@ -80,6 +83,10 @@
         this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
       })
+    },
+    beforeDestroy() {
+      window.removeEventListener('online',  this.updateOnlineStatus);
+      window.removeEventListener('offline', this.updateOnlineStatus);
     },
     data() {
       return {
@@ -133,6 +140,7 @@
       }),
       ...mapActions({
         openErrorPopup:   'globalView/GP_infoPopup',
+        SET_onlineStatus: 'globalView/SET_onlineStatus',
 
         trackerInit:      'mod_tracker/TRACK_initMixPanel',
         trackerInitUser:  'mod_tracker/TRACK_initMixPanelUser',
@@ -147,6 +155,9 @@
         setUserToken:     'mod_user/SET_userToken',
         readUserInfo:     'mod_user/GET_LOCAL_userInfo',
       }),
+      updateOnlineStatus() {
+        this.SET_onlineStatus(navigator.onLine);
+      },
       initUser() {
         this.trackerInitUser(this.userId)
           .then(()=> {

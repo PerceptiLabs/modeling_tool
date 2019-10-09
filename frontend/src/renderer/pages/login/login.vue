@@ -76,7 +76,7 @@ export default {
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
         .then((tokens)=>{if(this.saveToken) localStorage.setItem('currentUser', JSON.stringify(tokens))})
-        .catch((error)=>{console.err(error)})
+        .catch((error)=>{console.log(error)})
         .finally(()=>   {this.$store.commit('mod_login/SET_showLoader', false)});
     },
   }
