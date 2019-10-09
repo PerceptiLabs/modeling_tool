@@ -12,6 +12,9 @@ class DataContainer:
         if not layer_id in self._data_dict:
             self._data_dict[layer_id] = dict()
 
+    def store_value_in_root(self, name, value):
+        self._data_dict[name] = value
+
     def store_value(self, layer_id, name, value):
         self._create_subdict_if_needed(layer_id)
         self._data_dict[layer_id][name] = value
@@ -43,6 +46,17 @@ class DataPolicy(ABC):
     @abstractmethod
     def get_results(self):
         raise NotImplementedError
+
+class Evaluator:
+    def set_sess(self,sess):
+        self.sess=sess
+
+    def eval(self,variable):
+        import tensorflow as tf
+        if self.sess and tf.contrib.framework.is_tensor(variable):
+            return self.sess.run(variable)
+        else:
+            return variable
     
     
 class TrainValTestDataPolicy:
@@ -51,13 +65,26 @@ class TrainValTestDataPolicy:
         self._data = data_dict
         self._graph_dict = graph_dict
 
+    def evaluate_dict(self, d, evaluator):
+        if type(d) is dict:
+            new_d={}
+            for key, value in d.items():
+                new_d[key] = self.evaluate_dict(value, evaluator)
+            return new_d
+
+        return evaluator.eval(d)
+
     def get_results(self):
         train_dict = {}
+        evaluator = Evaluator()
         #test_dict = {}
 
-        for id_, value in self._data.items():
-            train_dict[id_]=value
-        
+        sess=self._data.pop("sess", None)
+        if sess:
+            evaluator.set_sess(sess)
+
+        train_dict = self.evaluate_dict(self._data,evaluator)
+
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
                 continue
@@ -144,7 +171,7 @@ class TrainValTestDataPolicy:
             "epoch": epoch,
             "maxEpochs": max_epoch,
             "batch_size": batch_size,
-            "graphObj": copy.copy(self._graph_dict),
+            # "graphObj": copy.copy(self._graph_dict),
             "trainingIterations": itr_trn,
             "trainDict": train_dict,
             "testIter": itr_tst,

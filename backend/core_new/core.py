@@ -5,12 +5,12 @@ import logging
 import numpy as np
 import traceback
 import tensorflow as tf
-
+from collections import namedtuple
 
 from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer, TrainValTestDataPolicy
 from core_new.utils import set_tensorflow_mode
-from core_new.session import LayerSession, LayerSessionStop
+from core_new.session import LayerSession, LayerSessionStop, LayerIo
 
 from graph import Graph
 
@@ -18,12 +18,52 @@ from graph import Graph
 log = logging.getLogger(__name__)
 
 
+CacheEntry = namedtuple('CacheEntry', ['inserting_layer', 'value'])
+
+
+class SessionCache:
+    def __init__(self):
+        self._dict = {}
+
+    def __contains__(self, key):
+        return key in self._dict
+
+    def put(self, key, value, layer_id):
+        if key in self:
+            message = "Overwriting cache entry {} ({}->{})".format(key, self._dict[key].__class__.__name__, value.__class__.__name__)
+            log.warning(message)
+        else:
+            log.debug("Creating new cache entry {} [{}]".format(key, value.__class__.__name__))
+
+        entry = CacheEntry(inserting_layer=layer_id, value=value)
+        self._dict[key] = entry
+
+    def get(self, key):
+        if not key in self:
+            raise ValueError("No entry with key {} in cache!".format(key))
+
+
+        entry = self._dict.get(key)
+        log.debug("Loading entry {} [{}] from cache...".format(key, entry.value.__class__.__name__))
+        return entry.value
+
+    def invalidate(self, keep_layers):
+        new_dict = {key: entry for key, entry in self._dict.items()
+                    if entry.inserting_layer in set(keep_layers)}
+
+        n_entries = len(self._dict.keys())        
+        n_removed = n_entries - len(new_dict.keys())
+        self._dict = new_dict
+        log.info("Cache invalidation removed {}/{} entries".format(n_removed, n_entries))
+                 
+
 class SessionHistory:
     def __init__(self):
         self.reset()
 
     def reset(self):
-        self._sessions = {}        
+        self._sessions = {}
+        self._cache = SessionCache()
 
     def __contains__(self, id_):
         return id_ in self._sessions
@@ -36,18 +76,25 @@ class SessionHistory:
             yield id_, session
 
     def merge_session_outputs(self, layer_ids):
-        results = {}
+        local_vars = {}
+        global_vars = {}
+        
         if len(layer_ids) == 1:
-            print(layer_ids)
             session = self._sessions[layer_ids[0]]
-            results.update(session.outputs)
+            local_vars.update(session.outputs.locals)
+            global_vars.update(session.outputs.globals)            
         elif len(layer_ids) > 1:
             for id_ in layer_ids:
                 session = self._sessions[id_]                
-                results[id_] = session.outputs
-                
-        return results
+                local_vars[id_] = session.outputs.locals
+                global_vars.update(session.outputs.globals) # WARNING: may lead to race condition where global variables are updated depending on which layer is executed first.
 
+        outputs = LayerIo(global_vars, local_vars)
+        return outputs
+
+    @property
+    def cache(self):
+        return self._cache
     
 class SessionProcessHandler:
     def __init__(self, graph_dict, data_container, command_queue, result_queue, mode):
@@ -107,7 +154,7 @@ class LayerExtrasReader:
 
     def read(self, session, data_container):
         outShape = ''
-        Y = session.locals.get('Y')
+        Y = session.outputs.locals.get('Y')
         if isinstance(Y, tf.Tensor):
             outShape = Y.shape.as_list()
             outShape=outShape[1:]
@@ -156,6 +203,8 @@ class LayerExtrasReader:
     
 
 class BaseCore:
+    DEFAULT_GLOBALS = {'tf': tf, 'np': np}
+    
     def __init__(self, codehq, graph_dict, data_container, session_history, session_process_handler=None,
                  layer_extras_reader=None, mode='normal', skip_layers=None, tf_eager=False):
         self._graph = graph_dict
@@ -166,11 +215,12 @@ class BaseCore:
         self._session_process_handler = session_process_handler
         self._layer_extras_reader = layer_extras_reader
         self._session_history = session_history        
-        self._skip_layers = skip_layers if skip_layers is not None else []        
-
+        self._skip_layers = skip_layers if skip_layers is not None else []
         
     def run(self):
+        log.info("Running core [{}]".format(self.__class__.__name__))
         self._data_container.reset()
+        self._session_history.cache.invalidate(keep_layers=self._graph.keys())
 
         if self._tf_eager:
             set_tensorflow_mode('eager')
@@ -195,47 +245,49 @@ class BaseCore:
         if self._tf_eager:
             set_tensorflow_mode('graph')        
             
-    def _run_layer(self, id_, content):
+    def _run_layer(self, id_, content):        
+        code = self._codehq.get_code_generator(id_, content).get_code(mode=self._mode)
         
-        code = self._codehq.get_code_generator(id_, content).get_code(mode=self._mode)            
-        #globals_, locals_ = scope_initializer.get_layer_inputs(id_, content["Con"])
-            
-        
-        globals_ = {'tf': tf, 'np': np}
-        locals_ = {'X': self._session_history.merge_session_outputs(content['Con'])}
-
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("Session local variables [pre execution]: " + pprint.pformat(locals_, compact=True))
-                
+        globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])        
         session = LayerSession(id_, content['Info']['Type'], code,
                                global_vars=globals_,
                                local_vars=locals_,
                                data_container=self._data_container,
-                               process_handler=self._session_process_handler)                               
+                               process_handler=self._session_process_handler,
+                               cache=self._session_history.cache)                               
         try:        
-            session.run() 
+            session.run()
         except LayerSessionStop:
             raise # Not an error. Re-raise.
         except SyntaxError as e:
+            self.on_error(session, traceback.format_exc())            
             if self._layer_extras_reader is not None:
                 self._layer_extras_reader.read_syntax_error(session)
             else:
                 raise
         except Exception as e:
-            # self._on_error(session, traceback.format_exc())
+            self.on_error(session, traceback.format_exc())
             if self._layer_extras_reader is not None:
                 self._layer_extras_reader.read_error(session,e)
             else:
                 raise
-        
            
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("Session local variables [post execution]: " + pprint.pformat(session.locals, compact=True))
-            
         self._session_history[id_] = session
 
         if self._layer_extras_reader is not None:
             self._layer_extras_reader.read(session, self._data_container)
+
+    def _get_globals_and_locals(self, input_layer_ids):
+        outputs = self._session_history.merge_session_outputs(input_layer_ids)
+        
+        globals_ = copy.copy(self.DEFAULT_GLOBALS)
+        globals_.update(outputs.globals)
+
+        locals_=outputs.locals
+        locals_.pop('X', None)
+        
+        locals_ = {'X': locals_}
+        return globals_, locals_        
 
     def on_error(self, session, formatted_exception):
         """ Handling of errors received when executing layer code """
@@ -274,7 +326,7 @@ class LightweightCore(BaseCore):
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
-                        level=logging.INFO)
+                        level=logging.DEBUG)
 
     import json
     import queue
@@ -325,11 +377,11 @@ if __name__ == "__main__":
     graph_dict = graph.graphs
     data_container = DataContainer()
     
-    session_history_lw = SessionHistory()
+    session_history = SessionHistory()
     extras_reader = LayerExtrasReader()
 
     lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-                              session_history_lw, extras_reader)    
+                              session_history, extras_reader)    
     lw_core.run()
     print(extras_reader.to_dict())
 
@@ -350,10 +402,10 @@ if __name__ == "__main__":
         
     # threading.Thread(target=result_reader, args=(rq,)).start()            
 
-    # import pdb; pdb.set_trace()
+    # # import pdb; pdb.set_trace()
     mode = 'normal'
-    session_history = SessionHistory() 
-    #session_history = session_history_lw
+    # session_history = SessionHistory() 
+    # #session_history = session_history_lw
 
     sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
     core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)

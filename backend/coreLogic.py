@@ -44,8 +44,8 @@ class coreLogic():
 
         data_container = DataContainer()
 
-        graph = Graph(network['Layers'])
-        graph_dict=graph.graphs
+        self.graphObj = Graph(network['Layers'])
+        graph_dict=self.graphObj.graphs
 
         from codehq import CodeHqNew as CodeHq
 
@@ -65,7 +65,7 @@ class coreLogic():
                 # self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
                 self.cThread=CoreThread(self.core.run,self.errorQueue)
                 self.cThread.start()
-            except:
+            except Exception as e:
                 self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
         else:
             try:
@@ -109,7 +109,9 @@ class coreLogic():
 
     def Stop(self):
         self.status="Stop"
-        return {"content":self.setCoreStatus(self.status)}
+        self.commandQ.put("Stop")
+        return {"content":"Stopping"}
+        # return {"content":self.setCoreStatus(self.status)}
 
     def checkCore(self):
         return {"content":"Alive"}
@@ -219,18 +221,18 @@ class coreLogic():
     #     # else:
     #     #     print("Test Iterations are 0")
 
-    # def getStatus(self):
-    #     try:
-    #         if self.status=="Running":
-    #             return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
-    #         else:
-    #             return {"Status":self.status,"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
-    #     except KeyError:
-    #         return {}
-    #     # if self.status=="Running":
-    #     #     return {"Status":self.core.trainingStatus,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
-    #     # else:
-    #     #     return {"Status":self.status,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
+    def getStatus(self):
+        try:
+            if self.status=="Running":
+                return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
+            else:
+                return {"Status":self.status,"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
+        except KeyError:
+            return {}
+        # if self.status=="Running":
+        #     return {"Status":self.core.trainingStatus,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
+        # else:
+        #     return {"Status":self.status,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
 
     # def startTest(self):
     #     if self.core.maxTestIter>0:
@@ -285,7 +287,7 @@ class coreLogic():
             self.maxIter=self.savedResultsDict["maxIter"]
             self.maxEpochs=self.savedResultsDict["maxEpochs"]
             self.batch_size=self.savedResultsDict["batch_size"]
-            self.graphObj=self.savedResultsDict["graphObj"]
+            # self.graphObj=self.savedResultsDict["graphObj"]
             self.trainingIterations=self.savedResultsDict["trainingIterations"]
             self.resultDict=self.savedResultsDict["trainDict"]
         except KeyError:
@@ -299,7 +301,7 @@ class coreLogic():
             self.iter=self.savedResultsDict["testIter"]
             self.maxIter=self.savedResultsDict["maxTestIter"]
             self.batch_size=1
-            self.graphObj=self.savedResultsDict["graphObj"]
+            # self.graphObj=self.savedResultsDict["graphObj"]
             self.trainingIterations=self.savedResultsDict["trainingIterations"]
             self.resultDict=self.savedResultsDict["testDict"]
         except KeyError:
@@ -324,10 +326,7 @@ class coreLogic():
             dataObj = createDataObject([state])
             return {"Data":dataObj}            
         elif layerType=="DataData":
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})
-
-            import pdb; pdb.set_trace()
-            
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
             dataObj = createDataObject([D[-1]])      
             return {"Data":dataObj}
         elif layerType=="DeepLearningFC":
@@ -479,15 +478,15 @@ class coreLogic():
                 D = [createDataObject([input_]) for input_ in inputs]
                 
                 X=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":""})
-                
+
                 if type(X) is dict:
                     for key,value in X.items():
                         try:
                             int(key)
                             if key==self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
-                                Labels=value
+                                Labels=value['Y']
                             else:
-                                Network_output=value
+                                Network_output=value['Y']
                         except:
                             pass
                         

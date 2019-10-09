@@ -4,9 +4,7 @@ import logging
 
 from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
-from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainInputBranch
-
-
+from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator
 
 log = logging.getLogger(__name__)
 
@@ -77,7 +75,8 @@ class CodeHqNew:
             code_gen = WordEmbeddingCodeGenerator()
             return code_gen
         elif type_ == 'ProcessGrayscale':
-            code_gen = GrayScaleCodeGenerator()
+            # code_gen = GrayScaleCodeGenerator()
+            code_gen = ''
             return code_gen        
         elif type_ == 'ProcessOneHot':
             code_gen = OneHotCodeGenerator(n_classes=props["N_class"])
@@ -86,11 +85,18 @@ class CodeHqNew:
             code_gen = ReshapeCodeGenerator(shape=props["Shape"], permutation=props["Permutation"])
             return code_gen
         elif type_ == 'TrainNormal':
-            # TODO: the ids shouldn't be hardcoded :P. The 'data_layer' can probably be naively derived from the 'direct_layer'.
-            # TODO: dont hardcode epoch and iterations
-            network_branch = TrainInputBranch(direct_layer='1564399782856', data_layer='1564399775664')
-            labels_branch =  TrainInputBranch(direct_layer='1564399788744', data_layer='1564399786876')
-            code_gen = TrainNormalCodeGenerator(network_branch, labels_branch, n_epochs=20, n_iterations=70)
+            # TODO: dont hardcode epoch and iterations. From where should they come?
+
+            target_layer = props['Labels']
+            output_layer = [x for x in content['Con'] if x != target_layer][0] # take the FIRST non-target layer as network output/prediction
+            
+            if len(content['Con']) > 2:
+                log.warning("More than 2 input layers not supported to training layer! Will treat {} as network output layer.".format(output_layer))
+
+            code_gen = TrainNormalCodeGenerator(output_layer=output_layer,
+                                                target_layer=target_layer,
+                                                n_epochs=20,
+                                                n_iterations=70)
             return code_gen
         elif type_ == 'TrainGenetic':
             raise NotImplementedError("Train genetic algorithm not implemented")
@@ -102,7 +108,7 @@ class CodeHqNew:
             code_gen = ArgmaxCodeGenerator(dim=props["Dim"])
             return code_gen
         elif type_ == 'MathMerge':
-            code_gen = MergeCodeGenerator(type_=prop["Type"], merge_dim=prop["Merge_dim"])
+            code_gen = MergeCodeGenerator(type_=props["Type"], merge_dim=props["Merge_dim"])
             return code_gen                                          
         elif type_ == 'MathSoftmax':
             code_gen = SoftmaxCodeGenerator()
