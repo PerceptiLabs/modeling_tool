@@ -419,15 +419,9 @@ class Message:
             dataObject=createDataObject([reduceTo2d(np.asarray(sample))])
             
             if self._is_jsonable(dataObject):
-                content = {
-                    "Sample": dataObject,
-                    "VariableName":"Y" if not Variable else Variable
-                }
+                content = dataObject
             else:
-                content = {
-                    "Sample": "",
-                    "VariableName":"Y" if not Variable else Variable
-                }
+                content = ""
 
 
 
@@ -453,7 +447,10 @@ class Message:
             extrasDict=extras_reader.to_dict()
 
             if LayerId in extrasDict:
-                content = extras_reader.to_dict()[LayerId]["Variables"]
+                content = {
+                    "VariableList":extras_reader.to_dict()[LayerId]["Variables"],
+                    "VariableName": extras_reader.to_dict()[LayerId]["Default_var"]
+                }
             else:
                 content = ""
 

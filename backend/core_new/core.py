@@ -169,8 +169,10 @@ class LayerExtrasReader:
             
             if 'sample' in layer_dict:
                 sample = layer_dict['sample']
+                default_var = 'sample'
             elif 'Y' in layer_dict:
                 sample = layer_dict['Y']
+                default_var = 'Y'
 
             if "X" in layer_dict and "Y" in layer_dict["X"]:
                 Xy = layer_dict["X"]["Y"]
@@ -179,7 +181,7 @@ class LayerExtrasReader:
 
             sample=self._evalSample(sample)
 
-        self._put_in_dict(session.layer_id,{'Sample': sample, 'outShape': outShape, 'inShape': str(Xy).replace("'",""), 'Variables': layer_keys})
+        self._put_in_dict(session.layer_id,{'Sample': sample, 'outShape': outShape, 'inShape': str(Xy).replace("'",""), 'Variables': layer_keys, 'Default_var':default_var})
 
     def read_syntax_error(self, session):
         tbObj=traceback.TracebackException(*sys.exc_info())
