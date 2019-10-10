@@ -12,6 +12,9 @@ class DataContainer:
         if not layer_id in self._data_dict:
             self._data_dict[layer_id] = dict()
 
+    def store_value_in_root(self, name, value):
+        self._data_dict[name] = value
+
     def store_value(self, layer_id, name, value):
         self._create_subdict_if_needed(layer_id)
         self._data_dict[layer_id][name] = value
@@ -43,6 +46,17 @@ class DataPolicy(ABC):
     @abstractmethod
     def get_results(self):
         raise NotImplementedError
+
+class Evaluator:
+    def set_sess(self,sess):
+        self.sess=sess
+
+    def eval(self,variable):
+        import tensorflow as tf
+        if self.sess and tf.contrib.framework.is_tensor(variable):
+            return self.sess.run(variable)
+        else:
+            return variable
     
     
 class TrainValTestDataPolicy:
@@ -51,10 +65,26 @@ class TrainValTestDataPolicy:
         self._data = data_dict
         self._graph_dict = graph_dict
 
+    def evaluate_dict(self, d, evaluator):
+        if type(d) is dict:
+            new_d={}
+            for key, value in d.items():
+                new_d[key] = self.evaluate_dict(value, evaluator)
+            return new_d
+
+        return evaluator.eval(d)
+
     def get_results(self):
         train_dict = {}
         #test_dict = {}
-        
+
+        if not self._session._headless:
+            evaluator = Evaluator()
+            sess=self._data.pop("sess", None)
+            if sess:
+                evaluator.set_sess(sess)
+            train_dict = self.evaluate_dict(self._data,evaluator)
+
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
                 continue
@@ -79,19 +109,20 @@ class TrainValTestDataPolicy:
                 train_dict['epochValF1'] = self._data[id_].get('f1_validation_epoch', [-1])
                 train_dict['epochValAUC'] = self._data[id_].get('auc_validation_epoch', [-1])
 
-                for key, value in self._data[id_].items():
-                    if not key.startswith('grad-weights-'):
-                        continue
+                if not self._session._headless:
+                    for key, value in self._data[id_].items():
+                        if not key.startswith('grad-weights-'):
+                            continue
 
-                    grad_layer_id = key[len('grad-weights-'):].split(':')[0]
+                        grad_layer_id = key[len('grad-weights-'):].split(':')[0]
 
-                    if grad_layer_id not in train_dict:
-                        train_dict[grad_layer_id] = {}
-                    #if grad_layer_id not in test_dict:
-                    #    test_dict[grad_layer_id] = {}
-                    
-                    train_dict[grad_layer_id]['Gradient'] = value[-1] # LATEST GRADIENTS
-                    #test_dict[grad_layer_id]['Gradient'] = value[-1]                                
+                        if grad_layer_id not in train_dict:
+                            train_dict[grad_layer_id] = {}
+                        #if grad_layer_id not in test_dict:
+                        #    test_dict[grad_layer_id] = {}
+                        
+                        train_dict[grad_layer_id]['Gradient'] = value
+                        #test_dict[grad_layer_id]['Gradient'] = value[-1]                                
 
             if content["Info"]["Type"] in ["DataData", "DataEnvironment"]:
                 batch_size = self._data[id_].get('batch_size', -1)
@@ -141,7 +172,7 @@ class TrainValTestDataPolicy:
             "epoch": epoch,
             "maxEpochs": max_epoch,
             "batch_size": batch_size,
-            "graphObj": copy.copy(self._graph_dict),
+            # "graphObj": copy.copy(self._graph_dict),
             "trainingIterations": itr_trn,
             "trainDict": train_dict,
             "testIter": itr_tst,

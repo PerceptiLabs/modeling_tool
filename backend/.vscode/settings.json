@@ -1,4 +1,5 @@
 {
     "python.linting.pylintEnabled": false,
-    "python.pythonPath": "C:\\Users\\Robert\\Anaconda3\\envs\\baseCore\\python.exe"
+    "python.pythonPath": "/Users/mukund/anaconda2/envs/perceptilabs/bin/python",
+    "python.formatting.provider": "black"
 }

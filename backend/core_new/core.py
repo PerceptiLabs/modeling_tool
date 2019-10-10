@@ -114,6 +114,7 @@ class SessionProcessHandler:
         data_policy = TrainValTestDataPolicy(session, data_dict, self._graph) # Convert data container format to resultDict format.
         
         results_dict = data_policy.get_results()
+        
         self._result_queue.put(results_dict)
         log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=1))
         
@@ -128,6 +129,12 @@ class SessionProcessHandler:
                 session.unpause()
             elif command == 'stop':
                 session.stop()
+            ## add headless commands
+            elif command == 'headlessOn':
+                session.headlessOn()
+            elif command == 'headlessOff':
+                session.headlessOff()
+                
             else:
                 log.warning("Unknown command: '{}'".format(command))        
 
@@ -161,17 +168,26 @@ class LayerExtrasReader:
                 outShape=[1]
                 
         sample = ''
+        Xy = ''
+        layer_keys=[]
         if session.layer_id in data_container:
             layer_dict = data_container[session.layer_id]
             
             if 'sample' in layer_dict:
                 sample = layer_dict['sample']
+                default_var = 'sample'
             elif 'Y' in layer_dict:
                 sample = layer_dict['Y']
+                default_var = 'Y'
 
-        sample=self._evalSample(sample)
+            if "X" in layer_dict and "Y" in layer_dict["X"]:
+                Xy = layer_dict["X"]["Y"]
 
-        self._put_in_dict(session.layer_id,{'Sample': sample,'outShape': outShape, 'Variables': list(layer_dict.keys())})
+            layer_keys = list(layer_dict.keys())
+
+            sample=self._evalSample(sample)
+
+        self._put_in_dict(session.layer_id,{'Sample': sample, 'outShape': outShape, 'inShape': str(Xy).replace("'",""), 'Variables': layer_keys, 'Default_var':default_var})
 
     def read_syntax_error(self, session):
         tbObj=traceback.TracebackException(*sys.exc_info())
@@ -221,6 +237,8 @@ class BaseCore:
 
         for layer_id, content in self._graph.items():
             layer_type = content["Info"]["Type"]
+            if not content["Info"]["Properties"]:
+                continue
             if layer_type in self._skip_layers:
                 log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
                 continue
@@ -272,8 +290,11 @@ class BaseCore:
         
         globals_ = copy.copy(self.DEFAULT_GLOBALS)
         globals_.update(outputs.globals)
+
+        locals_=outputs.locals
+        locals_.pop('X', None)
         
-        locals_ = {'X': outputs.locals}
+        locals_ = {'X': locals_}
         return globals_, locals_        
 
     def on_error(self, session, formatted_exception):
@@ -298,6 +319,13 @@ class Core(BaseCore):
                  session_process_handler, mode='normal'):
         super().__init__(codehq, graph_dict, data_container, session_history,
                          session_process_handler=session_process_handler, mode=mode)
+
+    # def headlessOn(self, mode):
+    #     pass
+
+    # def headlessOff(self, mode):
+    #     pass
+
 
         
 class LightweightCore(BaseCore):

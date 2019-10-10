@@ -19,6 +19,7 @@ from createDataObject import createDataObject
 
 from core_new.core import *
 from graph import Graph
+from codehq import CodeHqNew as CodeHq
 
 import pprint
 import logging
@@ -198,7 +199,7 @@ class Message:
             scope.set_extra("value",self.request.get("value"))
             #Check what the request is for and then get the properties needed for that function
             if action in coreCalls:
-                scope.set_extra("Core properties", core.core.__dict__)
+                # scope.set_extra("Core properties", core.core.__dict__)
                 # coreProperties=dict()
                 # for key, value in core.core.__dict__.items():
                 #     if type(value).__name__!="dict":
@@ -214,59 +215,70 @@ class Message:
             elif action in parseCalls:
                 pass
             else:
-                scope.set_extra("Core properties", core.core.__dict__)
+                # scope.set_extra("Core properties", core.core.__dict__)
                 for dataId, dataValue in self.dataDict[reciever].items():
                     scope.set_extra("data object for layer: "+str(dataId), dataValue.__dict__)
 
-        #Process the message
         #####################################B4End###################################
-        #Remove getDataPlot, we can just use getPreviewSample now for it
-        if action == "getDataPlot":
+        if action == "getDataMeta":
             value=self.request.get("value")
-            try:
-                if value["Id"] not in self.dataDict[reciever]:
-                    self.dataDict[reciever][value["Id"]]=lw_data(value["Id"],value["Properties"]["accessProperties"])
-                    self.dataDict[reciever][value["Id"]].generateCode()
-                    self.dataDict[reciever][value["Id"]].executeCode()
-                else:
-                    self.dataDict[reciever][value["Id"]].updateProperties(value["Properties"]["accessProperties"])
-                content=self.dataDict[reciever][value["Id"]].getData(value["Properties"]["accessProperties"])
-            except Exception as e:
-                content={"Content":"","errorMessage":str(e)}
-            # print(self.dataDict)
+            Id=value["Id"]
+            jsonNetwork=value["jsonNetwork"]
 
-        elif action == "getDataMeta":
-            value=self.request.get("value")
-            try:
-                if value["Id"] not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"]:
-                    self.dataDict[reciever][value["Id"]]=lw_data(value["Id"],value["Properties"]["accessProperties"])
-                    self.dataDict[reciever][value["Id"]].generateCode()
-                    self.dataDict[reciever][value["Id"]].executeCode()
-                else:
-                    self.dataDict[reciever][value["Id"]].updateProperties(value["Properties"]["accessProperties"])
-                content=self.dataDict[reciever][value["Id"]].getMetadata()
-            except Exception as e:
-                content={"Content":"","errorMessage":str(e)}
-            # print(self.dataDict)
+            graph = Graph(jsonNetwork)
+            
+            graph_dict = graph.graphs
+            data_container = DataContainer()
+            
+            session_history_lw = SessionHistory()
+            extras_reader = LayerExtrasReader()
+
+            from codehq import CodeHqNew as CodeHq
+
+            lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
+                                    session_history_lw, extras_reader)    
+            lw_core.run()
+
+
+            def try_fetch(dict,variable):
+                try:
+                    return dict[variable]
+                except:
+                    pass
+            
+            content={
+                "Action_space": try_fetch(data_container[Id],"_action_space"),
+                "Dataset_size": try_fetch(data_container[Id], "_data_size"),
+                "Columns": try_fetch(data_container[Id], "cols")
+            }
+
 
         elif action == "getPartitionSummary":
             value=self.request.get("value")
             Id=value["Id"]
-            Type=value("Type")
-            accessProperties=value["Properties"]["accessProperties"]
+            jsonNetwork=value["jsonNetwork"]
 
-            cotnent=""
+            graph = Graph(jsonNetwork)
+            
+            graph_dict = graph.graphs
+            data_container = DataContainer()
+            
+            session_history_lw = SessionHistory()
+            extras_reader = LayerExtrasReader()
 
-            # try:
-            #     if value["Id"] not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"]:
-            #         self.dataDict[reciever][value["Id"]]=lw_data(value["Id"],value["Properties"]["accessProperties"])
-            #         self.dataDict[reciever][value["Id"]].generateCode()
-            #         self.dataDict[reciever][value["Id"]].executeCode()
-            #     else:
-            #         self.dataDict[reciever][value["Id"]].updateProperties(value["Properties"]["accessProperties"])
-            #     content=self.dataDict[reciever][value["Id"]].partition_summary
-            # except Exception as e:
-            #     content={"Content":"","errorMessage":str(e)}
+            from codehq import CodeHqNew as CodeHq
+
+            lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
+                                    session_history_lw, extras_reader)    
+            lw_core.run()
+
+            def try_fetch(dict,variable):
+                try:
+                    return dict[variable]
+                except:
+                    return ""
+
+            content=try_fetch(data_container[Id],"_partition_summary")
 
 
         elif action == "deleteData":
@@ -287,56 +299,16 @@ class Message:
 
         elif action == "getCode":
             value=self.request.get("value")
-            if value["Id"] in self.dataDict[reciever]:
-                return self.dataDict[reciever][value["Id"]].generateCode(value["Properties"]["accessProperties"])
-            else:
-                if value["Type"] in ["DataData", "DataEnvironment"]:
-                    self.dataDict[reciever][value["Id"]]=lw_data(value["Id"],value["Properties"]["accessProperties"])
-                    return self.dataDict[reciever][value["Id"]].generateCode()
-                else:
-                    pass
+            print("VALUE: ", value)
+            Id=value["Id"]
+            Type=value["Type"]
+            Properties=value["Properties"]
+            Con=value["backward_connections"]
+            content={"Info":{"Type":Type, "Id": Id, "Properties": Properties}, "Con":Con}
 
-        ################# Deprecated ##################
-        # elif action == "getNetworkData":
-        #     #Send in dataDict to get instant access to the data saved in the core. Less information sending and easier for frontend.
-        #     #Also, if any id in dataDict does not exist in the graph we get for the "reciever", then delete that.
-        #     jsonNetwork=self.request.get("value")
-
-        #     for Id in list(self.dataDict[reciever].keys()):
-        #         if Id not in list(jsonNetwork.keys()):
-        #             del self.dataDict[reciever][Id]
-
-        #     content=propegateOutputs(self.dataDict[reciever],jsonNetwork)
-
-        
-        # elif action == "getNetworkInputDim":
-        #     jsonNetwork=self.request.get("value")
-        #     if reciever not in self.lwNetworks or self.lwNetworks[reciever].jsonNetwork!=jsonNetwork:
-        #         #Get the pretrained variables and constants
-        #         for id_, value in jsonNetwork.items():
-        #             if id_ not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"] and value["Properties"] is not None:                                        
-        #                 self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
-        #                 self.dataDict[reciever][id_].generateCode()
-        #                 self.dataDict[reciever][id_].executeCode()    
-        #             elif id_ in self.dataDict[reciever]:
-        #                 self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])                                            
-                    
-        #             if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
-        #                 ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
-        #                 self.checkpointDict[value["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
-        #                 ckptObj.close()
-                    
-        #         #Get the pre loaded data
-        #         for Id in list(self.dataDict[reciever].keys()):
-        #             if Id not in list(jsonNetwork.keys()):
-        #                 del self.dataDict[reciever][Id]
-                
-        #         if reciever not in self.lwNetworks:
-        #             self.lwNetworks[reciever]=lwNetwork(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
-        #         else:
-        #             self.lwNetworks[reciever].propegateOutputs(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
-
-        #     content=self.lwNetworks[reciever].inputDim
+            from codehq import CodeHqNew as CodeHq
+            
+            content = {"Output": CodeHq.get_code_generator(Id,content).get_code()}
 
         elif action == "getNetworkInputDim":
             jsonNetwork=self.request.get("value")
@@ -358,7 +330,11 @@ class Message:
                                     session_history_lw, extras_reader)    
             lw_core.run()
             
-            content=extras_reader.to_dict()["inShape"]
+            inShape={}
+            for Id, value in extras_reader.to_dict().items():
+                inShape[Id]=value["inShape"]
+
+            content=inShape
                 
             
         elif action == "getNetworkOutputDim":
@@ -389,38 +365,13 @@ class Message:
                 content[key]={}
                 content[key].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
                 if "errorMessage" in value:
+                    print("ErrorMessage: ", value['errorMessage'])
                     content[key].update({"Error": value['errorMessage']})
                     content[key].update({"Row": value['errorRow']})
                 else:
                     content[key].update({"Error": None})
                     content[key].update({"Row": None})
 
-            # jsonNetwork=self.request.get("value")
-            # if reciever not in self.lwNetworks or self.lwNetworks[reciever].jsonNetwork!=jsonNetwork:
-            #     #Get the pretrained variables and constants
-            #     for id_, value in jsonNetwork.items():
-            #         if id_ not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"] and value["Properties"] is not None:
-            #             self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
-            #             self.dataDict[reciever][id_].generateCode()
-            #             self.dataDict[reciever][id_].executeCode()
-            #         elif id_ in self.dataDict[reciever]:
-            #             self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])                             
-                    
-            #         if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
-            #             ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
-            #             self.checkpointDict[value["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
-            #             ckptObj.close()
-            #     #Get the pre loaded data
-            #     for Id in list(self.dataDict[reciever].keys()):
-            #         if Id not in list(jsonNetwork.keys()):
-            #             del self.dataDict[reciever][Id]
-                
-            #     if reciever not in self.lwNetworks:
-            #         self.lwNetworks[reciever]=lwNetwork(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
-            #     else:
-            #         self.lwNetworks[reciever].propegateOutputs(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
-
-            # content=self.lwNetworks[reciever].outputDim
 
         elif action == "getPreviewSample":
             value=self.request.get("value")
@@ -446,10 +397,15 @@ class Message:
                                     session_history_lw, extras_reader)    
             lw_core.run()
             
+            sample=""
             if Variable:
-                sample = data_container.to_dict()[LayerId][Variable]
+                dataContainerDict=data_container.to_dict()
+                if LayerId in dataContainerDict:
+                    sample = dataContainerDict[LayerId][Variable]
             else:
-                sample = extras_reader.to_dict()[LayerId]["Sample"]
+                extrasDict=extras_reader.to_dict()
+                if LayerId in extrasDict:
+                    sample = extrasDict[LayerId]["Sample"]
 
             if len(np.shape(sample))>1:
                 sample=np.squeeze(sample)
@@ -464,54 +420,10 @@ class Message:
             dataObject=createDataObject([reduceTo2d(np.asarray(sample))])
             
             if self._is_jsonable(dataObject):
-                content = {
-                    "Sample": dataObject,
-                    "VariableName":"Y" if not Variable else Variable
-                }
+                content = dataObject
             else:
-                content = {
-                    "Sample": "",
-                    "VariableName":"Y" if not Variable else Variable
-                }
+                content = ""
 
-
-            # value=self.request.get("value")
-            # jsonNetwork=value["Network"]
-            # LayerId=value["Id"]
-            # if reciever not in self.lwNetworks or self.lwNetworks[reciever].jsonNetwork!=jsonNetwork:
-            #     #Get the pretrained variables and constants
-            #     for id_, value in jsonNetwork.items():
-            #         if id_ not in self.dataDict[reciever] and value["Type"] in ["DataData", "DataEnvironment"] and value["Properties"] is not None:                    
-            #             self.dataDict[reciever][id_]=lw_data(id_,value["Properties"]["accessProperties"])
-            #             self.dataDict[reciever][id_].generateCode()
-            #             self.dataDict[reciever][id_].executeCode()
-            #         elif id_ in self.dataDict[reciever]:
-            #             self.dataDict[reciever][id_].updateProperties(value["Properties"]["accessProperties"])    
-
-            #         if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
-            #             ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
-            #             self.checkpointDict[value["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
-            #             ckptObj.close()
-            #     #Get the pre loaded data
-            #     for Id in list(self.dataDict[reciever].keys()):
-            #         if Id not in list(jsonNetwork.keys()):
-            #             del self.dataDict[reciever][Id]
-                
-            #     if reciever not in self.lwNetworks:
-            #         self.lwNetworks[reciever]=lwNetwork(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
-            #     else:
-            #         self.lwNetworks[reciever].propegateOutputs(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
-
-            # def reduceTo2d(data):
-            #     data_shape=np.shape(np.squeeze(data))
-            #     if len(data_shape)<=2 or (len(data_shape)==3 and (data_shape[-1]==3 or data_shape[-1]==1)):
-            #         return data
-            #     else:
-            #         return reduceTo2d(data[...,-1])
-
-            # content=createDataObject([reduceTo2d(np.asarray(self.lwNetworks[reciever].previewLayer[LayerId]))])
-            # from pprint import pprint
-            # pprint(content)           
 
 
         elif action == "getPreviewVariableList":
@@ -533,7 +445,18 @@ class Message:
                                     session_history_lw, extras_reader)    
             lw_core.run()
             
-            content = extras_reader.to_dict()[LayerId]["Variables"]
+            extrasDict=extras_reader.to_dict()
+            if LayerId in extrasDict:
+                # try:
+                content = {
+                    "VariableList":extras_reader.to_dict()[LayerId]["Variables"],
+                    "VariableName": extras_reader.to_dict()[LayerId]["Default_var"]
+                }
+                # except Exception as e:
+                #     print(e)
+                #     import pdb;pdb.set_trace()
+            else:
+                content = ""
 
             # if reciever not in self.lwNetworks or self.lwNetworks[reciever].jsonNetwork!=jsonNetwork:
             #     #Get the pretrained variables and constants
@@ -721,18 +644,8 @@ class Message:
         elif type(content) is dict and "content" not in content:
             content={"content":content}
 
-        content_encoding = "utf-8"
-        # response = {
-        #     "content_bytes": self._json_encode(content, content_encoding),
-        #     "content_type": "text/json",
-        #     "content_encoding": content_encoding,
-        # }
         endTime=time.time()
-        # print("Time it took to execute: ",endTime-startTime)
-        # try:
-        #     content["executeTime"]=endTime-startTime
-        # except:
-        #     content={"content":content, "executeTime": endTime-startTime}
+
         response = {
             "content": content
         }

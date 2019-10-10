@@ -89,3 +89,32 @@ class Graph(object):
                 elif graph[Id]['Info']['Properties']['ReinforceType']=='PPO':
                     pass
         return newGraph
+
+if __name__ == "__main__":
+    properties={
+            "Name": "Data_1",
+            "Type": "DataData",
+            "Properties": {
+                "Type": "Data",
+                "accessProperties": {
+                    "Columns": [],
+                    "Dataset_size": 1,
+                    "Category": "Local",
+                    "Type": "Data",
+                    "Partition_List":[[70,20,10],[60,30,10]],
+                    "Path": [
+                        "C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Data/mnist_split/mnist_input.npy",
+                        "C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Data/mnist_split/mnist_input.npy"
+                    ],
+                    "Content": "",
+                    "Warning": "Could not find path"
+                }
+            },
+            "checkpoint": [],
+            "endPoints": [],
+            "backward_connections": [],
+            "forward_connections": []
+        }
+    miniNet={"123":properties}
+    graph=Graph(miniNet).graphs
+    print(graph)

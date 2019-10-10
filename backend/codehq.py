@@ -15,6 +15,11 @@ class CodeHqNew:
         type_ = content["Info"]["Type"]
         props = content["Info"]["Properties"]
 
+
+        # if 'Code' in content["Info"]:
+        #     code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
+        #     code_generator = CustomCodeGenerator(code_parts)
+        #     return code_generator
         if type_ == 'DataData':
             sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
             partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
@@ -70,7 +75,8 @@ class CodeHqNew:
             code_gen = WordEmbeddingCodeGenerator()
             return code_gen
         elif type_ == 'ProcessGrayscale':
-            code_gen = GrayScaleCodeGenerator()
+            # code_gen = GrayScaleCodeGenerator()
+            code_gen = ''
             return code_gen        
         elif type_ == 'ProcessOneHot':
             code_gen = OneHotCodeGenerator(n_classes=props["N_class"])
@@ -102,17 +108,13 @@ class CodeHqNew:
             code_gen = ArgmaxCodeGenerator(dim=props["Dim"])
             return code_gen
         elif type_ == 'MathMerge':
-            code_gen = MergeCodeGenerator(type_=prop["Type"], merge_dim=prop["Merge_dim"])
+            code_gen = MergeCodeGenerator(type_=props["Type"], merge_dim=props["Merge_dim"])
             return code_gen                                          
         elif type_ == 'MathSoftmax':
             code_gen = SoftmaxCodeGenerator()
             return code_gen
         elif type_ == 'MathSplit':
             raise NotImplementedError("Math split not implemented")
-        elif 'Code' in content["Info"]:
-            code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
-            code_generator = CustomCodeGenerator(code_parts)
-            return code_generator        
         else:
             log.error("Unrecognized layer. Type {}: {}".format(type_, pprint.pformat(content)))
             return None

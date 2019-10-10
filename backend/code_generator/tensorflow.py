@@ -328,6 +328,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "test_iterators = [op for op in ops if 'test_iterator' in op.name]\n"                
         code += "\n"
         code += "sess = tf.InteractiveSession()\n"
+        code += "api.data.store_session(sess)\n"
         code += "init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())\n"
         code += "sess.run(init)\n"
         code += "\n"
@@ -338,28 +339,38 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "for epoch in range(%d):\n" % self._n_epochs
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
+        code += "    #Setting the variables to empty as a way to reset them every epoch.\n"
+        code += "    api.data.store(acc_train_iter=[], loss_train_iter=[], f1_train_iter=[], auc_train_iter=[],\n" 
+        code += "                   acc_val_iter=[], loss_val_iter=[], f1_val_iter=[], auc_val_iter=[])\n"
         code += "    \n"
         code += "    for iter in range(%d):\n" % self._n_iters
         code += "        sess.run(step)\n"
-        code += "        acc_train, f1_train, auc_train = sess.run([accuracy, f1, auc])\n"
+        code += "        acc_train, loss_train, f1_train, auc_train = sess.run([accuracy, loss, f1, auc])\n"
+        code += "        api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train, f1_train_iter=f1_train, auc_train_iter=auc_train)\n"
         code += "        api.data.store(iter_training=iter)\n"
+        
         
         if mode != 'headless':
             code += "        gradient_vals = sess.run(gradients)\n"
-            code += "        api.data.stack(**gradient_vals)\n"
-            
+            code += "        for grandName, gradValue in gradient_vals.items():\n"
+            code += "            api.data.stack(gradName={'Min': np.min(np.min(gradValue)), 'Max': np.max(np.max(gradValue)), 'Average': np.average(gradValue)})\n"
+            #code += "        api.data.stack(**gradient_vals)\n"
+
+        code += "        api.data.store_locals(locals())\n" 
         code += "        api.ui.render(dashboard='train_val')\n"
         code += "    \n"
         code += "    sess.run(validation_iterators)\n"        
         code += "    for iter in range(%d):\n" % self._n_iters
         code += "        loss_ = sess.run(loss)\n"
-        code += "        acc_val, f1_val, auc_val = sess.run([accuracy, f1, auc])\n"
+        code += "        acc_val, loss_val, f1_val, auc_val = sess.run([accuracy, loss, f1, auc])\n"
+        code += "        api.data.stack(acc_val_iter=acc_val, loss_val_iter=loss_val, f1_val_iter=f1_val, auc_val_iter=auc_val)\n"
         code += "        api.data.store(iter_validation=iter)\n"
         code += "        api.ui.render(dashboard='train_val')\n"        
         code += "    \n"
         code += "    api.data.store(epoch=epoch)\n"
-        code += "    api.data.stack(acc_training_epoch=acc_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
-        code += "                   acc_validation_epoch=acc_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
+        code += "    api.data.stack(acc_training_epoch=acc_train, loss_train_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
+        code += "                   acc_validation_epoch=acc_val, loss_val_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
+        code += "    api.ui.render(dashboard='train_val')\n"
         return code
 
     def _get_testing_code(self, mode):

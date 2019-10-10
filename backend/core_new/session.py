@@ -49,7 +49,7 @@ class LayerSession(ApiCallbackHandler):
 
         self._stopped = False
         self._paused = False
-
+        self._headless = False
         self._inputs = LayerIo(global_vars, local_vars)
         self._outputs = None
 
@@ -95,9 +95,17 @@ class LayerSession(ApiCallbackHandler):
         if self._data_container is not None:
             self._data_container.store_value(self._layer_id, name, value)
 
+    def on_store_session(self, name, value):
+        if self._data_container is not None:
+            self._data_container.store_value_in_root(name, value)
+
     def on_stack_value(self, name, value):
         if self._data_container is not None:        
-            self._data_container.stack_value(self._layer_id, name, value)        
+            self._data_container.stack_value(self._layer_id, name, value)      
+
+    def on_store_locals(self, locals_):
+        for name, value in locals_.items():
+            self.on_store_value(name, value)  
 
     def on_render(self, dashboard=None):
         if self._process_handler is None:
@@ -135,6 +143,14 @@ class LayerSession(ApiCallbackHandler):
     @requires_process_handler        
     def stop(self):
         self._stopped = True
+
+    @requires_process_handler
+    def headlessOn(self):
+        self._headless = True
+
+    @requires_process_handler
+    def headlessOff(self):
+        self._headless = False
 
     @property
     def is_paused(self):

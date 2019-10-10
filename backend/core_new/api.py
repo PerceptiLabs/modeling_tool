@@ -25,6 +25,12 @@ class DataApi:
         for name, value in kwargs.items():        
             self.__handler.on_store_value(name, value)
 
+    def store_locals(self, locals_):
+        self.__handler.on_store_locals(locals_)
+    
+    def store_session(self, sess):
+        self.__handler.on_store_session("sess", sess)
+
     def stack(self, **kwargs):
         for name, value in kwargs.items():
             self.__handler.on_stack_value(name, value)
