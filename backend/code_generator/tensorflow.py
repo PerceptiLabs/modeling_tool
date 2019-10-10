@@ -353,8 +353,8 @@ class TrainNormalCodeGenerator(CodeGenerator):
         
         if mode != 'headless':
             code += "        gradient_vals = sess.run(gradients)\n"
-            code += "        for grandName, gradValue in gradient_vals:\n"
-            code += "            api.data.stack(gradName={;in: np.min(np.min(gradValue)), Max: np.max(np.max(gradValue)), Average: np.average(gradValue)})\n"
+            code += "        for grandName, gradValue in gradient_vals.items():\n"
+            code += "            api.data.stack(gradName={'Min': np.min(np.min(gradValue)), 'Max': np.max(np.max(gradValue)), 'Average': np.average(gradValue)})\n"
             #code += "        api.data.stack(**gradient_vals)\n"
 
         code += "        api.data.store_locals(locals())\n" 

@@ -103,10 +103,10 @@ class coreLogic():
         return {"content":"closing the core"}
 
     def headlessOn(self):
-        self.commandQ("headlessOn")
+        self.commandQ.put("headlessOn")
 
     def headlessOff(self):
-        self.commandQ("headlessOff")
+        self.commandQ.put("headlessOff")
 
     def Stop(self):
         self.status="Stop"

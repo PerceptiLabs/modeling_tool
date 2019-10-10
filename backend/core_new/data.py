@@ -78,7 +78,7 @@ class TrainValTestDataPolicy:
         train_dict = {}
         #test_dict = {}
 
-        if not self._session.headless:
+        if not self._session._headless:
             evaluator = Evaluator()
             sess=self._data.pop("sess", None)
             if sess:
@@ -109,7 +109,7 @@ class TrainValTestDataPolicy:
                 train_dict['epochValF1'] = self._data[id_].get('f1_validation_epoch', [-1])
                 train_dict['epochValAUC'] = self._data[id_].get('auc_validation_epoch', [-1])
 
-                if not self._session.headless:
+                if not self._session._headless:
                     for key, value in self._data[id_].items():
                         if not key.startswith('grad-weights-'):
                             continue
