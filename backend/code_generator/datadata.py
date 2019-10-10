@@ -18,7 +18,6 @@ class FileNumpyStrategy(AbstractStrategy):
 
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         code  = "if '%s' not in api.cache:\n" % self._path
-        #code += "    import pdb; pdb.set_trace()\n"
         code += "    data_mat = np.load('%s').astype(np.float32)\n" % self._path
         code += "    api.cache.put('%s', data_mat)\n" % self._path
         code += "else:\n"
