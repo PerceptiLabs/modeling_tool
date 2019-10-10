@@ -131,9 +131,9 @@ class SessionProcessHandler:
                 session.stop()
             ## add headless commands
             elif command == 'headlessOn':
-                #add some code here
+                session.headlessOn()
             elif command == 'headlessOff':
-                #add code here
+                session.headlessOff()
                 
             else:
                 log.warning("Unknown command: '{}'".format(command))        
