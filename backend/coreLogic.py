@@ -779,8 +779,6 @@ class coreLogic():
                         print("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
                         self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
                     except:
-                        print("1")
-                        import pdb; pdb.set_trace()
                         try:
                             print("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                             self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
@@ -793,8 +791,6 @@ class coreLogic():
                 try:
                     result=self.resultDict[layerId][variable]
                 except:
-                    print("2")
-                    import pdb; pdb.set_trace()
                     try:
                         print("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                         self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
@@ -806,8 +802,6 @@ class coreLogic():
                 try:
                     result=self.resultDict[layerId]
                 except:
-                    print("3")
-                    import pdb; pdb.set_trace()
                     print("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     result=[]

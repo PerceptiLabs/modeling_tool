@@ -121,7 +121,7 @@ class TrainValTestDataPolicy:
                         #if grad_layer_id not in test_dict:
                         #    test_dict[grad_layer_id] = {}
                         
-                        train_dict[grad_layer_id]['Gradient'] = value[-1] # LATEST GRADIENTS
+                        train_dict[grad_layer_id]['Gradient'] = value
                         #test_dict[grad_layer_id]['Gradient'] = value[-1]                                
 
             if content["Info"]["Type"] in ["DataData", "DataEnvironment"]:

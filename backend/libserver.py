@@ -303,7 +303,8 @@ class Message:
             Id=value["Id"]
             Type=value["Type"]
             Properties=value["Properties"]
-            content={"Info":{"Type":Type, "Id": Id, "Properties": Properties}}
+            Con=value["backward_connections"]
+            content={"Info":{"Type":Type, "Id": Id, "Properties": Properties}, "Con":Con}
 
             from codehq import CodeHqNew as CodeHq
             
