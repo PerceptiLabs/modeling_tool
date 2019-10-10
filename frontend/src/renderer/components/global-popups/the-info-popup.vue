@@ -5,6 +5,9 @@
       .popup_tab-set
         .popup_header.active
           .header_attention(:class="{'header_attention--error': !isInfo}") !
+          button.popup_clipboard.btn.btn--icon.icon.icon-clipboard-add(type="button"
+            :class="styleClipboard"
+            @click="copyClipboard")
       .popup_body
         .settings-layer_section.big-text
           p.text-center(v-if="isText") {{ popupText }}
@@ -13,9 +16,6 @@
               v-for="(text, i) in popupText"
               :key="i"
               ) {{ text }}
-          button.popup_clipboard.btn.btn--icon.icon.icon-clipboard-add(type="button"
-            :class="styleClipboard"
-            @click="copyClipboard")
       .popup_foot
         button.btn-info-popup(type="button"
         @click="closePopup") OK
@@ -71,13 +71,15 @@
 <style scoped lang="scss">
   @import "../../scss/base";
   @import "../../scss/common/infoPopup";
+  .popup_header {
+    position: relative;
+  }
   .settings-layer_section {
     white-space: pre;
-    position: relative;
   }
   .popup_clipboard {
     position: absolute;
-    top: -1rem;
+    bottom: 0;
     right: 1rem;
     font-size: 1.6rem;
   }

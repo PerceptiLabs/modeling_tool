@@ -52,6 +52,8 @@
 .popup_body {
 	display: flex;
 	flex-direction: column;
+    max-height: 75vh;
+    overflow-y: auto;
 	&.indent {
 		padding: $popup-indent-top $popup-indent-left;
 	}
