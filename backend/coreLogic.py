@@ -30,7 +30,7 @@ class coreLogic():
 
         self.status="Created"
 
-        # self.core=core(self.networkName)
+        #self.core=core(self.networkName)
 
         self.savedResultsDict=dict()
 
@@ -40,7 +40,8 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.network=network
 
-        mode = 'normal'
+        mode = 'normal' 
+         # TODO #add headless mode 
 
         data_container = DataContainer()
 
@@ -101,11 +102,11 @@ class coreLogic():
         #     print("Core Killed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return {"content":"closing the core"}
 
-    # def headlessOn(self):
-    #     self.onThread(self.core.headlessOn)
+    def headlessOn(self):
+        self.commandQ("headlessOn")
 
-    # def headlessOff(self):
-    #     self.onThread(self.core.headlessOff)
+    def headlessOff(self):
+        self.commandQ("headlessOff")
 
     def Stop(self):
         self.status="Stop"

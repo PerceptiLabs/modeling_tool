@@ -49,7 +49,7 @@ class LayerSession(ApiCallbackHandler):
 
         self._stopped = False
         self._paused = False
-
+        self._headless = True
         self._inputs = LayerIo(global_vars, local_vars)
         self._outputs = None
 
@@ -143,6 +143,14 @@ class LayerSession(ApiCallbackHandler):
     @requires_process_handler        
     def stop(self):
         self._stopped = True
+
+    @requires_process_handler
+    def headlessOn(self):
+        self._headless = True
+
+    @requires_process_handler
+    def headlessOff(self):
+        self._headless = False
 
     @property
     def is_paused(self):
