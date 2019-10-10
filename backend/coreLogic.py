@@ -30,7 +30,7 @@ class coreLogic():
 
         self.status="Created"
 
-        # self.core=core(self.networkName)
+        #self.core=core(self.networkName)
 
         self.savedResultsDict=dict()
 
@@ -40,7 +40,8 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.network=network
 
-        mode = 'normal'
+        mode = 'normal' 
+         # TODO #add headless mode 
 
         data_container = DataContainer()
 

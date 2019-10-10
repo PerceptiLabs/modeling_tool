@@ -76,14 +76,14 @@ class TrainValTestDataPolicy:
 
     def get_results(self):
         train_dict = {}
-        evaluator = Evaluator()
         #test_dict = {}
 
-        sess=self._data.pop("sess", None)
-        if sess:
-            evaluator.set_sess(sess)
-
-        train_dict = self.evaluate_dict(self._data,evaluator)
+        if not self._session.headless:
+            evaluator = Evaluator()
+            sess=self._data.pop("sess", None)
+            if sess:
+                evaluator.set_sess(sess)
+            train_dict = self.evaluate_dict(self._data,evaluator)
 
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
@@ -109,19 +109,20 @@ class TrainValTestDataPolicy:
                 train_dict['epochValF1'] = self._data[id_].get('f1_validation_epoch', [-1])
                 train_dict['epochValAUC'] = self._data[id_].get('auc_validation_epoch', [-1])
 
-                for key, value in self._data[id_].items():
-                    if not key.startswith('grad-weights-'):
-                        continue
+                if not self._session.headless:
+                    for key, value in self._data[id_].items():
+                        if not key.startswith('grad-weights-'):
+                            continue
 
-                    grad_layer_id = key[len('grad-weights-'):].split(':')[0]
+                        grad_layer_id = key[len('grad-weights-'):].split(':')[0]
 
-                    if grad_layer_id not in train_dict:
-                        train_dict[grad_layer_id] = {}
-                    #if grad_layer_id not in test_dict:
-                    #    test_dict[grad_layer_id] = {}
-                    
-                    train_dict[grad_layer_id]['Gradient'] = value[-1] # LATEST GRADIENTS
-                    #test_dict[grad_layer_id]['Gradient'] = value[-1]                                
+                        if grad_layer_id not in train_dict:
+                            train_dict[grad_layer_id] = {}
+                        #if grad_layer_id not in test_dict:
+                        #    test_dict[grad_layer_id] = {}
+                        
+                        train_dict[grad_layer_id]['Gradient'] = value[-1] # LATEST GRADIENTS
+                        #test_dict[grad_layer_id]['Gradient'] = value[-1]                                
 
             if content["Info"]["Type"] in ["DataData", "DataEnvironment"]:
                 batch_size = self._data[id_].get('batch_size', -1)

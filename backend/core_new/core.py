@@ -129,6 +129,12 @@ class SessionProcessHandler:
                 session.unpause()
             elif command == 'stop':
                 session.stop()
+            ## add headless commands
+            elif command == 'headlessOn':
+                #add some code here
+            elif command == 'headlessOff':
+                #add code here
+                
             else:
                 log.warning("Unknown command: '{}'".format(command))        
 
@@ -313,6 +319,13 @@ class Core(BaseCore):
                  session_process_handler, mode='normal'):
         super().__init__(codehq, graph_dict, data_container, session_history,
                          session_process_handler=session_process_handler, mode=mode)
+
+    # def headlessOn(self, mode):
+    #     pass
+
+    # def headlessOff(self, mode):
+    #     pass
+
 
         
 class LightweightCore(BaseCore):
