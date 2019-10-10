@@ -3,7 +3,6 @@
     :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-confirm="confirmSettings"
-    @press-update="updateCode"
   )
     template(slot="Settings-content")
       .settings-layer_section
@@ -15,6 +14,7 @@
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
 
@@ -52,11 +52,6 @@ export default {
     ...mapGetters({
       isTutorialMode: 'mod_tutorials/getIstutorialMode'
     }),
-    codeDefault() {
-      return {
-        Output: `Y=tf.one_hot(tf.cast(X['Y'],dtype=tf.int32),${this.settings.N_class});`
-      }
-    }
   },
   methods: {
     ...mapActions({

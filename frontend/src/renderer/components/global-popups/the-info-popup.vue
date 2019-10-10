@@ -72,6 +72,7 @@
   @import "../../scss/base";
   @import "../../scss/common/infoPopup";
   .settings-layer_section {
+    white-space: pre;
     position: relative;
   }
   .popup_clipboard {

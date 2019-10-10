@@ -91,7 +91,6 @@ const actions = {
           break;
       }
       openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
-      console.log(openServer);
       commit('set_corePid', openServer.pid);
       openServer.on('error', (err)=>  { coreOffline() });
       openServer.on('close', (code)=> { coreOffline() });
@@ -356,12 +355,8 @@ const actions = {
       action: 'getCode',
       value
     };
-    console.log('getCode', theData);
     return coreRequest(theData)
-      .then((data)=> {
-        console.log(data);
-        return data
-      })
+      .then((data)=> data)
       .catch((err)=> {
         console.error(err);
       });
@@ -375,11 +370,9 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
+    console.log('getPartitionSummary');
     return coreRequest(theData)
-      .then((data)=> {
-        console.log('getPartitionSummary', data);
-        return data
-      })
+      .then((data)=> data)
       .catch((err)=> {
         console.error(err);
       });
@@ -393,11 +386,9 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
+    console.log('getDataMeta');
     return coreRequest(theData)
-      .then((data)=> {
-        console.log('getPartitionSummary', data);
-        return data
-      })
+      .then((data)=> data)
       .catch((err)=> {
         console.error(err);
       });

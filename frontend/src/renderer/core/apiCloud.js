@@ -13,6 +13,7 @@ const requestCloudApi = function (method, path, data, params) {
       if(error.response.status === 401) { return 'updateToken' }
       else {
         store.dispatch('mod_tracker/EVENT_cloudError', {method, path, error});
+        console.log('error.response', error.response);
         store.dispatch('globalView/GP_errorPopup', error.response.data);
         throw (error);
       }

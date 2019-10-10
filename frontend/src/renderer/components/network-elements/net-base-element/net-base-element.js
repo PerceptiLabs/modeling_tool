@@ -270,9 +270,9 @@ export default {
       this.tutorialShowHideTooltip();
     },
     tutorialSearchId(event) {
-      return event.target.tagName === 'I'
-        ? event.target.parentNode.parentNode.id
-        : event.target.parentNode.id
+      // return event.target.tagName === 'I'
+      //   ? event.target.parentNode.parentNode.id
+      //   : event.target.parentNode.id
     }
   }
 }
