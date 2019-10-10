@@ -13,6 +13,19 @@ class CoreThread(threading.Thread):
    def run(self):
       try:
          self.func()
+
+      except SyntaxError as e:
+         print("--------------------------------")
+         print(traceback.format_exc())
+         print("--------------------------------")
+
+         # with configure_scope() as scope:
+#             scope.set_extra("network",self.network)
+
+         capture_exception()
+         tbObj=traceback.TracebackException(*sys.exc_info())
+         self.errorQueue.put("".join(tbObj.format_exception_only()))
+
       except Exception as e:
          print("--------------------------------")
          print(traceback.format_exc())
