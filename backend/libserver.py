@@ -307,7 +307,7 @@ class Message:
 
             from codehq import CodeHqNew as CodeHq
             
-            content = CodeHq.get_code_generator(Id,content).get_code()
+            content = {"Output": CodeHq.get_code_generator(Id,content).get_code()}
 
         elif action == "getNetworkInputDim":
             jsonNetwork=self.request.get("value")

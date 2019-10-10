@@ -790,6 +790,7 @@ class coreLogic():
                 try:
                     result=self.resultDict[layerId][variable]
                 except:
+                    import pdb; pdb.set_trace()
                     try:
                         print("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                         self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
