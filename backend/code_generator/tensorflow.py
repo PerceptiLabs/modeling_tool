@@ -505,7 +505,7 @@ class TrainReinforce(CodeGenerator):
         code += "                y_batch[i] = t['reward']\n"
         code += "                if not t['done']:\n"
         code += "                    feed_dict = {state_tensor: [t['new_state_seq']]}\n"
-        code += "                    Q = Q_online.eval(feed_dict=feed_dict).squeeze()\n" # TODO: should be Q_target here
+        code += "                    Q = Q_target.eval(feed_dict=feed_dict).squeeze()\n" 
         code += "                    y_batch[i] += gamma*np.amax(Q)\n"
         code += "                a_batch[i] = t['action']\n"
         code += "                X_batch[i] = t['new_state_seq']\n"
