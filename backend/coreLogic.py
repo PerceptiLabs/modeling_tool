@@ -102,10 +102,10 @@ class coreLogic():
         return {"content":"closing the core"}
 
     def headlessOn(self):
-        self.commandQ("headlessOn")
+        self.commandQ.put("headlessOn")
 
     def headlessOff(self):
-        self.commandQ("headlessOff")
+        self.commandQ.put("headlessOff")
 
     def Stop(self):
         self.status="Stop"
@@ -540,12 +540,20 @@ class coreLogic():
                 return returnDict
 
             if view=="Accuracy":
-                acc=self.getStatistics({"layerId":layerId,"variable":"accuracy","innervariable":""})
+                acc_train=self.getStatistics({"layerId":layerId,"variable":"acc_train_iter","innervariable":""})
+                acc_val=self.getStatistics({"layerId":layerId,"variable":"acc_val_iter","innervariable":""})
+
+                currentTraining=acc_train
+                if isinstance(acc_train,np.ndarray):
+                    currentValidation=np.concatenate((acc_train,np.asarray(acc_val)))
+                elif isinstance(acc_train,list):
+                    if isinstance(acc_val,list):
+                        currentValidation=acc_train+acc_val
+                    else:
+                        currentValidation=acc_train+list(acc_val)
                 
-                currentTraining=acc[:self.trainingIterations]
-                currentValidation=acc[:self.maxIter]
-                totalTraining=self.getStatistics({"layerId":layerId,"variable":"epochTrainAccuracy","innervariable":""})
-                totalValidation=self.getStatistics({"layerId":layerId,"variable":"epochValAccuracy","innervariable":""})
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"acc_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"acc_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
                                                      typeList=['line', 'line'],
@@ -558,12 +566,20 @@ class coreLogic():
                 return output
                 
             if view=="Loss":
-                loss=self.getStatistics({"layerId":layerId,"variable":"loss","innervariable":""})
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"loss_train_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"loss_val_iter","innervariable":""})
 
-                currentTraining=loss[:self.trainingIterations]
-                currentValidation=loss[:self.maxIter]
-                totalTraining=self.getStatistics({"layerId":layerId,"variable":"epochTrainLoss","innervariable":""})
-                totalValidation=self.getStatistics({"layerId":layerId,"variable":"epochValLoss","innervariable":""})
+                currentTraining=loss_train
+                if isinstance(loss_train,np.ndarray):
+                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                elif isinstance(loss_train,list):
+                    if isinstance(loss_val,list):
+                        currentValidation=loss_train+loss_val
+                    else:
+                        currentValidation=loss_train+list(loss_val)
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_train_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"loss_val_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
                                                      typeList=['line', 'line'],
@@ -575,12 +591,19 @@ class coreLogic():
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             if view=="F1":
-                f1=self.getStatistics({"layerId":layerId,"variable":"f1","innervariable":""})
+                f1_train=self.getStatistics({"layerId":layerId,"variable":"f1_train_iter","innervariable":""})
+                f1_val=self.getStatistics({"layerId":layerId,"variable":"f1_val_iter","innervariable":""})
 
-                currentTraining=f1[:self.trainingIterations]
-                currentValidation=f1[:self.maxIter]
-                totalTraining=self.getStatistics({"layerId":layerId,"variable":"epochTrainF1","innervariable":""})
-                totalValidation=self.getStatistics({"layerId":layerId,"variable":"epochValF1","innervariable":""})
+                currentTraining=f1_train
+                if isinstance(f1_train,np.ndarray):
+                    currentValidation=np.concatenate((f1_train,np.asarray(f1_val)))
+                elif isinstance(f1_train,list):
+                    if isinstance(f1_val,list):
+                        currentValidation=f1_train+f1_val
+                    else:
+                        currentValidation=f1_train+list(f1_val)
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"f1_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"f1_validation_epoch","innervariable":""})
 
 
 
@@ -628,12 +651,19 @@ class coreLogic():
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output            
             if view=="AUC":
-                auc=self.getStatistics({"layerId":layerId,"variable":"auc","innervariable":""})
-                
-                currentTraining=auc[:self.trainingIterations]
-                currentValidation=auc[:self.maxIter]
-                totalTraining=self.getStatistics({"layerId":layerId,"variable":"epochTrainAUC","innervariable":""})
-                totalValidation=self.getStatistics({"layerId":layerId,"variable":"epochValAUC","innervariable":""})
+                auc_train=self.getStatistics({"layerId":layerId,"variable":"auc_train_iter","innervariable":""})
+                auc_val=self.getStatistics({"layerId":layerId,"variable":"auc_val_iter","innervariable":""})
+
+                currentTraining=auc_train
+                if isinstance(auc_train,np.ndarray):
+                    currentValidation=np.concatenate((auc_train,np.asarray(auc_val)))
+                elif isinstance(auc_train,list):
+                    if isinstance(auc_val,list):
+                        currentValidation=auc_train+auc_val
+                    else:
+                        currentValidation=auc_train+list(auc_val)
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"auc_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"auc_validation_epoch","innervariable":""})
 
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],

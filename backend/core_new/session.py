@@ -49,7 +49,7 @@ class LayerSession(ApiCallbackHandler):
 
         self._stopped = False
         self._paused = False
-        self._headless = True
+        self._headless = False
         self._inputs = LayerIo(global_vars, local_vars)
         self._outputs = None
 

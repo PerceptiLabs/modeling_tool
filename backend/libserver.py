@@ -303,11 +303,12 @@ class Message:
             Id=value["Id"]
             Type=value["Type"]
             Properties=value["Properties"]
-            content={"Info":{"Type":Type, "Id": Id, "Properties": Properties}}
+            Con=value["backward_connections"]
+            content={"Info":{"Type":Type, "Id": Id, "Properties": Properties}, "Con":Con}
 
             from codehq import CodeHqNew as CodeHq
             
-            content = CodeHq.get_code_generator(Id,content).get_code()
+            content = {"Output": CodeHq.get_code_generator(Id,content).get_code()}
 
         elif action == "getNetworkInputDim":
             jsonNetwork=self.request.get("value")
@@ -445,12 +446,15 @@ class Message:
             lw_core.run()
             
             extrasDict=extras_reader.to_dict()
-
             if LayerId in extrasDict:
+                # try:
                 content = {
                     "VariableList":extras_reader.to_dict()[LayerId]["Variables"],
                     "VariableName": extras_reader.to_dict()[LayerId]["Default_var"]
                 }
+                # except Exception as e:
+                #     print(e)
+                #     import pdb;pdb.set_trace()
             else:
                 content = ""
 
@@ -640,18 +644,8 @@ class Message:
         elif type(content) is dict and "content" not in content:
             content={"content":content}
 
-        content_encoding = "utf-8"
-        # response = {
-        #     "content_bytes": self._json_encode(content, content_encoding),
-        #     "content_type": "text/json",
-        #     "content_encoding": content_encoding,
-        # }
         endTime=time.time()
-        # print("Time it took to execute: ",endTime-startTime)
-        # try:
-        #     content["executeTime"]=endTime-startTime
-        # except:
-        #     content={"content":content, "executeTime": endTime-startTime}
+
         response = {
             "content": content
         }
