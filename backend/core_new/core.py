@@ -422,6 +422,9 @@ if __name__ == "__main__":
     # session_history = SessionHistory() 
     # #session_history = session_history_lw
 
+
+   
+
     sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
     core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
     core.run()

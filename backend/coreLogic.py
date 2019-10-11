@@ -40,8 +40,7 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.network=network
 
-        mode = 'normal' 
-         # TODO #add headless mode 
+        #mode = 'normal' 
 
         data_container = DataContainer()
 
@@ -52,7 +51,7 @@ class coreLogic():
 
         session_history = SessionHistory()        
         session_proc_handler = SessionProcessHandler(graph_dict, data_container,
-                                                     self.commandQ, self.resultQ, mode)
+                                                     self.commandQ, self.resultQ) #mode
         self.core = Core(CodeHq, graph_dict, data_container,
                     session_history, session_proc_handler, mode=mode)
 
