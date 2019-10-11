@@ -332,6 +332,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "api.data.store_session(sess)\n"
         code += "init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())\n"
         code += "sess.run(init)\n"
+        code += "api.data.store_locals(locals())\n" 
         code += "\n"
         code += "api.data.store(max_epoch=%d,\n" % (self._n_epochs - 1)
         code += "               max_iter_training=%d,\n" % (self._n_iters - 1)
@@ -349,15 +350,17 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "        acc_train, loss_train, f1_train, auc_train = sess.run([accuracy, loss, f1, auc])\n"
         code += "        api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train, f1_train_iter=f1_train, auc_train_iter=auc_train)\n"
         code += "        api.data.store(iter_training=iter)\n"
-        
+
         
         if mode != 'headless':
             code += "        gradient_vals = sess.run(gradients)\n"
-            code += "        for grandName, gradValue in gradient_vals.items():\n"
-            code += "            api.data.stack(gradName={'Min': np.min(np.min(gradValue)), 'Max': np.max(np.max(gradValue)), 'Average': np.average(gradValue)})\n"
-            #code += "        api.data.stack(**gradient_vals)\n"
+            code += "        new_gradient_vals={}\n"
+            code += "        for gradName, gradValue in gradient_vals.items():\n"
+            code += "            new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+            code += "            new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+            code += "            new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+            code += "        api.data.stack(**new_gradient_vals)\n"
 
-        code += "        api.data.store_locals(locals())\n" 
         code += "        api.ui.render(dashboard='train_val')\n"
         code += "    \n"
         code += "    sess.run(validation_iterators)\n"        

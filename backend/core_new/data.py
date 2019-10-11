@@ -24,6 +24,8 @@ class DataContainer:
 
         try:
             self._data_dict[layer_id][name].append(value)
+            if len(self._data_dict[layer_id][name])>500:
+                self._data_dict[layer_id][name].pop(0)
         except AttributeError:
             print("warning, overwriting existing value!")
             self._data_dict[layer_id][name] = [value]
@@ -113,16 +115,22 @@ class TrainValTestDataPolicy:
                     for key, value in self._data[id_].items():
                         if not key.startswith('grad-weights-'):
                             continue
-
                         grad_layer_id = key[len('grad-weights-'):].split(':')[0]
 
                         if grad_layer_id not in train_dict:
                             train_dict[grad_layer_id] = {}
+                        if 'Gradient' not in train_dict[grad_layer_id]:
+                            train_dict[grad_layer_id]['Gradient']={}
                         #if grad_layer_id not in test_dict:
                         #    test_dict[grad_layer_id] = {}
                         
-                        train_dict[grad_layer_id]['Gradient'] = value
-                        #test_dict[grad_layer_id]['Gradient'] = value[-1]                                
+                        if key.split(':')[2]=="Min":
+                            train_dict[grad_layer_id]['Gradient']['Min'] = value
+                        elif key.split(':')[2]=="Max":
+                            train_dict[grad_layer_id]['Gradient']['Max'] = value
+                        elif key.split(':')[2]=="Average":
+                            train_dict[grad_layer_id]['Gradient']['Average'] = value
+                        # test_dict[grad_layer_id]['Gradient'] = value[-1] 
 
             if content["Info"]["Type"] in ["DataData", "DataEnvironment"]:
                 batch_size = self._data[id_].get('batch_size', -1)
@@ -177,7 +185,7 @@ class TrainValTestDataPolicy:
             "trainDict": train_dict,
             "testIter": itr_tst,
             "maxTestIter": max_itr_tst,
-            "testDict": train_dict,#test_dict,
+            # "testDict": test_dict,
             "trainingStatus": training_status,
             "testStatus": test_status,           
             "status": status
