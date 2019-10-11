@@ -265,7 +265,10 @@ const actions = {
       action: "isTrained"
     };
     return coreRequest(theData)
-      .then((data)=> data)
+      .then((data)=> {
+        console.log(data);
+        return data
+      })
       .catch((err)=> {
         console.error('isTrained answer', err);
       });

@@ -189,7 +189,7 @@ export default {
         this.set_showTrainingSpinner(false);
         this.counterHideSpinner = 0
       } else ++this.counterHideSpinner;
-      //TODO check paused in tutorial
+      //TODO need paused in tutorial
       //this.set_showTrainingSpinner(false);
       //     this.pauseTraining();
       //     this.trainingWasPaused = true;
