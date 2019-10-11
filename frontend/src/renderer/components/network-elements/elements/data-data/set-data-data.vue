@@ -1,6 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :tab-set="tabs"
+    :tab-set="dynamicTabs"
     :current-el="currentEl"
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
@@ -141,6 +141,9 @@
         appPath:        'globalView/GET_appPath',
         isTutorialMode: 'mod_tutorials/getIstutorialMode',
       }),
+      dynamicTabs() {
+        return this.settings.accessProperties.Sources.length ? ['Computer', 'Code'] : ['Computer']
+      },
       typeOpened() {
         const path = this.settings.accessProperties.Sources;
         if(path.length) {

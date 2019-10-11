@@ -155,7 +155,7 @@ const actions = {
   API_pauseTraining({dispatch, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'Pause',
+      action: 'Pause',// Pause and Unpause
       value: ''
     };
     coreRequest(theData)
@@ -298,6 +298,7 @@ const actions = {
     };
     return coreRequest(theData)
       .then((data)=> {
+        console.log('getNetworkInputDim', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err)=> {

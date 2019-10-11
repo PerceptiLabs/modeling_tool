@@ -510,7 +510,7 @@ const mutations = {
     elPosition.top = value.top;
     elPosition.left = value.left;
   },
-  set_elementInputDim(state, {value}) {
+  set_elementInputDim(state, value) {
     for(let element in value) {
       currentElement(element).layerMeta.InputDim = value[element]
     }
@@ -853,8 +853,8 @@ const actions = {
   SET_elementMultiSelect({commit}, value) {
     commit('set_elementMultiSelect', value)
   },
-  SET_elementInputDim({commit, getters}, value) {
-    commit('set_elementInputDim', {getters, value})
+  SET_elementInputDim({commit}, value) {
+    commit('set_elementInputDim', value)
   },
   SET_elementOutputDim({commit, getters}, value) {
     //console.log('SET_elementOutputDim');
