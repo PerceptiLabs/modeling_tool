@@ -593,6 +593,9 @@ class Message:
         elif action == "Pause":
             content=core.Pause()
 
+        elif action == "Unpause":
+            content=core.Unpause()
+
         elif action == "SkipToValidation":
             content=core.skipToValidation()
 
