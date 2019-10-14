@@ -21,8 +21,8 @@ class coreLogic():
         self.warningQueue=queue.Queue()
         self.errorQueue=queue.Queue()
         self.commandQ=queue.Queue()
-        self.resultQ=queue.LifoQueue()
-        # self.resultQ=queue.Queue()
+        # self.resultQ=queue.LifoQueue()
+        self.resultQ=queue.Queue()
         self.cThread=None
 
         self.trainResults=None
@@ -30,9 +30,12 @@ class coreLogic():
 
         self.status="Created"
 
+        self.testIter=0
+        self.testList=[]
+
         #self.core=core(self.networkName)
 
-        self.savedResultsDict=dict()
+        self.savedResultsDict={}
 
         self.network=None
 
@@ -123,7 +126,8 @@ class coreLogic():
 
     def isTrained(self,):
         # return {"content":self.core.exporter is not None}
-        return {"content":False}
+        if self.cThread:
+            return {"content":False}
 
     # def exportNetwork(self,value):
     #     if self.core.exporter is None:
@@ -202,25 +206,25 @@ class coreLogic():
     #     #Check if validation was skipped or not before returning message
     #     return {"content":"skipped validation"}
 
-    # def getTestStatus(self):
-    #     try:
-    #         if self.savedResultsDict["maxTestIter"]!=0:
-    #             if self.status=="Running":
-    #                 return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.savedResultsDict["testIter"], "Progress": self.savedResultsDict["testIter"]/(self.savedResultsDict["maxTestIter"]-1)}
-    #             else:
-    #                 return {"Status":self.status,"Iterations":self.savedResultsDict["testIter"], "Progress": self.savedResultsDict["testIter"]/(self.savedResultsDict["maxTestIter"]-1)}
-    #         else:
-    #             print("Max Test Iterations are 0")
-    #             return {"content":"Max Test Iterations are 0"}
-    #     except KeyError:
-    #         return {}
-    #     # if self.core.testIterations!=0:
-    #     #     if self.status=="Running":
-    #     #         return {"Status":self.core.trainingStatus,"Iterations":self.core.testIter, "Progress": self.core.testIter/(self.core.testIterations-1)}
-    #     #     else:
-    #     #         return {"Status":self.status,"Iterations":self.core.testIter, "Progress": self.core.testIter/(self.core.testIterations-1)}
-    #     # else:
-    #     #     print("Test Iterations are 0")
+    def getTestStatus(self):
+        try:
+            if self.savedResultsDict["maxTestIter"]!=0:
+                if self.status=="Running":
+                    return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
+                else:
+                    return {"Status":self.status,"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
+            else:
+                print("Max Test Iterations are 0")
+                return {"content":"Max Test Iterations are 0"}
+        except KeyError:
+            return {}
+        # if self.core.testIterations!=0:
+        #     if self.status=="Running":
+        #         return {"Status":self.core.trainingStatus,"Iterations":self.core.testIter, "Progress": self.core.testIter/(self.core.testIterations-1)}
+        #     else:
+        #         return {"Status":self.status,"Iterations":self.core.testIter, "Progress": self.core.testIter/(self.core.testIterations-1)}
+        # else:
+        #     print("Test Iterations are 0")
 
     def getStatus(self):
         try:
@@ -235,49 +239,49 @@ class coreLogic():
         # else:
         #     return {"Status":self.status,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
 
-    # def startTest(self):
-    #     if self.core.maxTestIter>0:
-    #         self.onThread(self.core.startTest)
-    #         while self.core.testStatus!="Waiting":
-    #             time.sleep(0.05)
-    #         return {"content":"Started Testing"}
-    #     else:
-    #         return {"content":"No test data"}
+    def startTest(self):
+        #TODO: Remove this function
+        if self.savedResultsDict["trainingStatus"]=='Testing' or self.savedResultsDict["trainingStatus"]=='Finished':
+            return {"content":"Started Testing"}
+        else:
+            return {"content":"No test data"}
 
-    # def nextStep(self):
-    #     testIter=self.core.testIter
-    #     self.onThread(self.core.nextTestStep)
-    #     while testIter==self.core.testIter:
-    #         time.sleep(0.05)
-    #     return {"content":"Current sample is: "+str(self.core.testIter)}
+    def nextStep(self):
+        if self.testIter<self.maxTestIter-1:
+            self.testIter+=1
+        else:
+            self.resetTest()
+        return {"content":"Current sample is: "+str(self.testIter)}
     
-    # def previousStep(self):
-    #     testIter=self.core.testIter
-    #     self.onThread(self.core.prevousTestStep)
-    #     while testIter==self.core.testIter and testIter>1:
-    #         time.sleep(0.05)
-    #     return {"content":"Current sample is: "+str(self.core.testIter)}
+    def previousStep(self):
+        if self.testIter>0:
+            self.testIter-=1
+        return {"content":"Current sample is: "+str(self.testIter)}
 
-    # def resetTest(self):
-    #     self.onThread(self.core.resetTest)
-    #     while self.core.testIter>1:
-    #         time.sleep(0.05)
-    #     return {"content":"Test is now back to iter 1"}
+    def resetTest(self):
+        self.testIter=0
+        return {"content":"Test is now back to iter 1"}
 
-    # def playTest(self):
-    #     self.onThread(self.core.playTest)
-    #     return {"content":"Current sample is: "+str(self.core.testIter)}
+    def playTest(self):
+        #TODO: Not yet implemented
+        return {"content":"Current sample is: "+str(self.testIter)}
 
     def updateResults(self):
-        if not self.resultQ.empty():
-            self.savedResultsDict=self.resultQ.get()
-            with self.resultQ.mutex:
-                self.resultQ.queue.clear()
+        # if not self.resultQ.empty():
+        #     self.savedResultsDict.update(self.resultQ.get())
+        #     with self.resultQ.mutex:
+        #         self.resultQ.queue.clear()
 
-            # import json
-            # with open('results.json') as f:
-            #     json.dumps(f, self.savedResultsDict)
-            
+        #TODO: Look from the back and go forward if we find a test instead of going through all of them
+        tmp=None
+
+        while not self.resultQ.empty():
+            tmp=self.resultQ.get()
+            if "testDict" in tmp:
+                self.testList.append(tmp["testDict"])
+
+        if tmp:
+            self.savedResultsDict.update(tmp)
 
         return {"content":"Results saved"}
 
@@ -288,7 +292,6 @@ class coreLogic():
             self.maxIter=self.savedResultsDict["maxIter"]
             self.maxEpochs=self.savedResultsDict["maxEpochs"]
             self.batch_size=self.savedResultsDict["batch_size"]
-            # self.graphObj=self.savedResultsDict["graphObj"]
             self.trainingIterations=self.savedResultsDict["trainingIterations"]
             self.resultDict=self.savedResultsDict["trainDict"]
         except KeyError:
@@ -299,13 +302,17 @@ class coreLogic():
 
     def getTestingStatistics(self,value):
         try:
-            self.iter=self.savedResultsDict["testIter"]
-            self.maxIter=self.savedResultsDict["maxTestIter"]
+            self.maxTestIter=self.savedResultsDict['maxTestIter']
             self.batch_size=1
-            # self.graphObj=self.savedResultsDict["graphObj"]
-            self.trainingIterations=self.savedResultsDict["trainingIterations"]
-            self.resultDict=self.savedResultsDict["testDict"]
-        except KeyError:
+            self.resultDict=self.testList[self.testIter]
+
+            # self.iter=self.savedResultsDict["testIter"]
+            # self.maxIter=self.savedResultsDict["maxTestIter"]
+            # self.batch_size=1
+            # self.trainingIterations=self.savedResultsDict["trainingIterations"]
+            # self.resultDict=self.savedResultsDict["testDict"]
+        except KeyError as e:
+            print("ERROR: ", e)
             return {}
 
         return self.getLayerStatistics(value)
@@ -776,14 +783,14 @@ class coreLogic():
                     result=self.resultDict[layerId][variable][innervariable]
                 except:
                     try:
-                        print("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
+                        log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
                         self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
                     except:
                         try:
-                            print("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
+                            log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                             self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                         except:
-                            print("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                            log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                             self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
 
                     result=[]
@@ -792,21 +799,21 @@ class coreLogic():
                     result=self.resultDict[layerId][variable]
                 except:
                     try:
-                        print("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
+                        log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                         self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                     except:
-                        print("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                        log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                         self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     result=[]
             else:
                 try:
                     result=self.resultDict[layerId]
                 except:
-                    print("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                    log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     result=[]
         else:
-            print("ResultDict is empty :'(")
+            log.debug("ResultDict is empty :'(")
             self.warningQueue.put("There are no results to fetch")
             result=[]
 

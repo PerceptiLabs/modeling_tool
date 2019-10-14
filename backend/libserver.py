@@ -447,14 +447,10 @@ class Message:
             
             extrasDict=extras_reader.to_dict()
             if LayerId in extrasDict:
-                # try:
                 content = {
-                    "VariableList":extras_reader.to_dict()[LayerId]["Variables"],
-                    "VariableName": extras_reader.to_dict()[LayerId]["Default_var"]
+                    "VariableList": extrasDict[LayerId]["Variables"],
+                    "VariableName": extrasDict[LayerId]["Default_var"],
                 }
-                # except Exception as e:
-                #     print(e)
-                #     import pdb;pdb.set_trace()
             else:
                 content = ""
 
@@ -649,8 +645,7 @@ class Message:
         response = {
             "content": content
         }
-        # from pprint import pprint
-        # pprint(response)
+        print("Response: ", response)
         return response
 
     def _create_response_binary_content(self):

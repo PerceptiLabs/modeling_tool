@@ -325,7 +325,10 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "ops = tf.get_default_graph().get_operations()\n"
         code += "train_iterators = [op for op in ops if 'train_iterator' in op.name]\n"
         code += "validation_iterators = [op for op in ops if 'validation_iterator' in op.name]\n"
-        code += "test_iterators = [op for op in ops if 'test_iterator' in op.name]\n"                
+        code += "test_iterators = [op for op in ops if 'test_iterator' in op.name]\n" 
+        code += "#tf variables to be evaluated and sent to the frontend\n"
+        # code += "tf_variables= [n.op for n in tf.get_default_graph().as_graph_def().node if tf.contrib.framework.is_tensor(n.op)]\n"   
+        # code += "import pdb; pdb.set_trace()"            
         code += "\n"
         code += "sess = tf.InteractiveSession()\n"
         code += "api.data.store_session(sess)\n"
@@ -345,20 +348,21 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "                   acc_val_iter=[], loss_val_iter=[], f1_val_iter=[], auc_val_iter=[])\n"
         code += "    \n"
         code += "    for iter in range(%d):\n" % self._n_iters
+        
         code += "        sess.run(step)\n"
+        # code += "        if not api.ui.headless:\n"
+        # code += "        sess.run(most_variables)\n"
         code += "        acc_train, loss_train, f1_train, auc_train = sess.run([accuracy, loss, f1, auc])\n"
         code += "        api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train, f1_train_iter=f1_train, auc_train_iter=auc_train)\n"
         code += "        api.data.store(iter_training=iter)\n"
 
-        
-        if mode != 'headless':
-            code += "        gradient_vals = sess.run(gradients)\n"
-            code += "        new_gradient_vals={}\n"
-            code += "        for gradName, gradValue in gradient_vals.items():\n"
-            code += "            new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
-            code += "            new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
-            code += "            new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
-            code += "        api.data.stack(**new_gradient_vals)\n"
+        code += "        gradient_vals = sess.run(gradients)\n"
+        code += "        new_gradient_vals={}\n"
+        code += "        for gradName, gradValue in gradient_vals.items():\n"
+        code += "            new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+        code += "            new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+        code += "            new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+        code += "        api.data.stack(**new_gradient_vals)\n"
 
         code += "        api.ui.render(dashboard='train_val')\n"
         code += "    \n"

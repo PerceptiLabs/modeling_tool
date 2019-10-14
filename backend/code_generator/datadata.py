@@ -22,6 +22,7 @@ class FileNumpyStrategy(AbstractStrategy):
         code += "    api.cache.put('%s', data_mat)\n" % self._path
         code += "else:\n"
         code += "    data_mat = api.cache.get('%s')\n" % self._path
+        # code += "np.random.shuffle(data_mat)\n"
         code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
                                                                 rate_train, rate_valid, rate_test)
         return code
@@ -251,7 +252,7 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "\n"
         
         if self.shuffle:
-            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size).repeat()\n" % self._seed
+            code += "X_train=X_train.shuffle(X_train_size,seed=%d).repeat().batch(_batch_size)\n" % self._seed
         else:
             code += "X_train=X_train.repeat().batch(_batch_size)\n"
         code += "X_validation=X_validation.repeat().batch(_batch_size)\n"

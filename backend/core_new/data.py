@@ -59,9 +59,73 @@ class Evaluator:
             return self.sess.run(variable)
         else:
             return variable
+
+class TestDataPolicy:
+    def __init__(self, session, data_dict, graph_dict):
+        self._session = session
+        self._data = data_dict
+        self._graph_dict = graph_dict
     
+    def evaluate_dict(self, d, evaluator):
+        if type(d) is dict:
+            new_d={}
+            for key, value in d.items():
+                # if key != "X":
+                new_d[key] = self.evaluate_dict(value, evaluator)
+            return new_d
+
+        return evaluator.eval(d)
+
+    def get_results(self):
+        test_dict = {}
+
+        if not self._session._headless:
+            evaluator = Evaluator()
+            sess=self._data.pop("sess", None)
+            if sess:
+                evaluator.set_sess(sess)
+
+            for key,content in self._graph_dict.items():
+                con=content["Con"]
+                data={i:self._data[key][i] for i in self._data[key] if i!='X'}
+                test_dict[key] = self.evaluate_dict(data,evaluator)
+                if len(con)>1:
+                    X=dict()
+                    for i in con:
+                        X.update({i:test_dict[i]})
+                    test_dict[key]["X"]=X
+                elif len(con)>0:    
+                    test_dict[key]["X"]={i:test_dict[con[0]][i] for i in test_dict[con[0]] if i!='X'}
+
+
+        for id_, content in self._graph_dict.items():
+            if id_ not in self._data:
+                continue
+            
+            if content["Info"]["Type"] in ["TrainNormal", "TrainReinforce"]:
+                itr_tst = self._data[id_].get('iter_testing', 0)
+     
+                max_itr_tst = self._data[id_].get('max_iter_testing', -1)
+
+        training_status = 'Testing'
+        status='Running'
+        test_status='Waiting'
+
+        if itr_tst < max_itr_tst:
+            test_status = 'Waiting'
+        else:
+            training_status = 'Finished' 
+        
+        result_dict = {
+            "maxTestIter": max_itr_tst,
+            "testDict": test_dict,
+            "trainingStatus": training_status,
+            "testStatus": test_status,           
+            "status": status
+        }
+        return result_dict
     
-class TrainValTestDataPolicy:
+class TrainValDataPolicy:
     def __init__(self, session, data_dict, graph_dict):
         self._session = session
         self._data = data_dict
@@ -71,6 +135,7 @@ class TrainValTestDataPolicy:
         if type(d) is dict:
             new_d={}
             for key, value in d.items():
+                # if key != "X":
                 new_d[key] = self.evaluate_dict(value, evaluator)
             return new_d
 
@@ -78,14 +143,30 @@ class TrainValTestDataPolicy:
 
     def get_results(self):
         train_dict = {}
-        #test_dict = {}
 
         if not self._session._headless:
             evaluator = Evaluator()
             sess=self._data.pop("sess", None)
             if sess:
                 evaluator.set_sess(sess)
-            train_dict = self.evaluate_dict(self._data,evaluator)
+            # train_dict = self.evaluate_dict(self._data,evaluator)
+            for key,content in self._graph_dict.items():
+                con=content["Con"]
+                data={i:self._data[key][i] for i in self._data[key] if i!='X'}
+                train_dict[key] = self.evaluate_dict(data,evaluator)
+                if len(con)>1:
+                    X=dict()
+                    for i in con:
+                        # import pdb;pdb.set_trace()
+                        # X.update({v:train_dict[con[i]][v] for v in train_dict[con[i]] if v!='X'})
+                        X.update({i:train_dict[i]})
+                        X[i].pop('X')
+                    train_dict[key]["X"]=X
+                elif len(con)>0:    
+                    # import pdb;pdb.set_trace()
+                    train_dict[key]["X"]={v:train_dict[con[0]][v] for v in train_dict[con[0]] if v!='X'}
+            # import pdb;pdb.set_trace()
+            
 
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
@@ -95,13 +176,10 @@ class TrainValTestDataPolicy:
                 epoch = self._data[id_].get('epoch', 0)        
                 itr_trn = self._data[id_].get('iter_training', 0)
                 itr_val = self._data[id_].get('iter_validation', 0)
-                itr_tst = self._data[id_].get('iter_testing', 0)
 
                 max_epoch = self._data[id_].get('max_epoch', -1)        
                 max_itr_trn = self._data[id_].get('max_iter_training', -1)
                 max_itr_val = self._data[id_].get('max_iter_validation', -1)
-                max_itr_tst = self._data[id_].get('max_iter_testing', -1)
-
 
                 train_dict['epochTrainAccuracy'] = self._data[id_].get('acc_training_epoch', [-1])
                 train_dict['epochTrainF1'] = self._data[id_].get('f1_training_epoch', [-1])
@@ -121,8 +199,6 @@ class TrainValTestDataPolicy:
                             train_dict[grad_layer_id] = {}
                         if 'Gradient' not in train_dict[grad_layer_id]:
                             train_dict[grad_layer_id]['Gradient']={}
-                        #if grad_layer_id not in test_dict:
-                        #    test_dict[grad_layer_id] = {}
                         
                         if key.split(':')[2]=="Min":
                             train_dict[grad_layer_id]['Gradient']['Min'] = value
@@ -130,11 +206,9 @@ class TrainValTestDataPolicy:
                             train_dict[grad_layer_id]['Gradient']['Max'] = value
                         elif key.split(':')[2]=="Average":
                             train_dict[grad_layer_id]['Gradient']['Average'] = value
-                        # test_dict[grad_layer_id]['Gradient'] = value[-1] 
 
             if content["Info"]["Type"] in ["DataData", "DataEnvironment"]:
                 batch_size = self._data[id_].get('batch_size', -1)
-
 
         # Set up variables to mimic FSM:
         itr = itr_trn + itr_val
@@ -157,22 +231,7 @@ class TrainValTestDataPolicy:
             if self._session.is_paused:
                 status = 'Paused'
             else:
-                status = 'Running'
-        else:
-            # Testing mode
-            training_status = 'Finished'
-
-            if itr_tst < max_itr_tst:
-                test_status = 'Running'
-            else:
-                # TODO: should it be smth like "Finished" now? Since we will
-                # now run all test iterations and THEN send all results to coreLogic [for previous/next view etc]
-                test_status = 'Waiting' 
-                
-            if self._session.is_paused:
-                status = 'Paused'
-            else:
-                status = 'Done training'            
+                status = 'Running'     
         
         result_dict = {
             "iter": itr,
@@ -183,15 +242,7 @@ class TrainValTestDataPolicy:
             # "graphObj": copy.copy(self._graph_dict),
             "trainingIterations": itr_trn,
             "trainDict": train_dict,
-            "testIter": itr_tst,
-            "maxTestIter": max_itr_tst,
-            # "testDict": test_dict,
-            "trainingStatus": training_status,
-            "testStatus": test_status,           
+            "trainingStatus": training_status,  
             "status": status
         }
         return result_dict
-
-
-    
-    

@@ -31,7 +31,7 @@ class CodeHqNew:
             #     partitions.append(partition)
             
             code_generator = DataDataCodeGenerator(sources, partitions,
-                                                   batch_size=16, shuffle=False,
+                                                   batch_size=16, shuffle=True,
                                                    seed=0, columns=[],
                                                    layer_id=id_)
             return code_generator
@@ -96,7 +96,7 @@ class CodeHqNew:
             code_gen = TrainNormalCodeGenerator(output_layer=output_layer,
                                                 target_layer=target_layer,
                                                 n_epochs=20,
-                                                n_iterations=70)
+                                                n_iterations=10)
             return code_gen
         elif type_ == 'TrainGenetic':
             raise NotImplementedError("Train genetic algorithm not implemented")

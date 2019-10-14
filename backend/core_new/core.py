@@ -8,7 +8,7 @@ import tensorflow as tf
 from collections import namedtuple
 
 from core_new.api import Api, DataApi, UiApi
-from core_new.data import DataContainer, TrainValTestDataPolicy
+from core_new.data import DataContainer, TrainValDataPolicy, TestDataPolicy
 from core_new.utils import set_tensorflow_mode
 from core_new.session import LayerSession, LayerSessionStop, LayerIo
 
@@ -81,14 +81,21 @@ class SessionHistory:
         
         if len(layer_ids) == 1:
             session = self._sessions[layer_ids[0]]
-            local_vars.update(session.outputs.locals)
+            locals_=session.outputs.locals
+            locals_.pop('X', None)
+            locals_ = {'X': locals_}
+            local_vars.update(locals_)
             global_vars.update(session.outputs.globals)            
         elif len(layer_ids) > 1:
             for id_ in layer_ids:
-                session = self._sessions[id_]                
-                local_vars[id_] = session.outputs.locals
+                session = self._sessions[id_]     
+                locals_= session.outputs.locals 
+                locals_.pop('X',None)      
+                local_vars[id_] = locals_
                 global_vars.update(session.outputs.globals) # WARNING: may lead to race condition where global variables are updated depending on which layer is executed first.
+            local_vars = {'X': local_vars}
 
+    
         outputs = LayerIo(global_vars, local_vars)
         return outputs
 
@@ -107,11 +114,14 @@ class SessionProcessHandler:
     def on_process(self, session, dashboard):
         """ Called in response to 'api.ui.render' calls in the layer code """
         self._handle_commands(session)
-        self._send_results(session)
+        self._send_results(session, dashboard)
         
-    def _send_results(self, session):
+    def _send_results(self, session, dashboard):
         data_dict = self._data_container.to_dict()
-        data_policy = TrainValTestDataPolicy(session, data_dict, self._graph) # Convert data container format to resultDict format.
+        if dashboard == "train_val":
+            data_policy = TrainValDataPolicy(session, data_dict, self._graph) # Convert data container format to resultDict format.
+        elif dashboard == "testing":
+            data_policy = TestDataPolicy(session, data_dict, self._graph)
         
         results_dict = data_policy.get_results()
         
@@ -160,34 +170,51 @@ class LayerExtrasReader:
 
     def read(self, session, data_container):
         outShape = ''
-        Y = session.outputs.locals.get('Y')
-        if isinstance(Y, tf.Tensor):
-            outShape = Y.shape.as_list()
-            outShape=outShape[1:]
-            if not outShape:
-                outShape=[1]
+        # Y = session.outputs.locals.get('Y')
+        # if isinstance(Y, tf.Tensor):
+        #     outShape = Y.shape.as_list()
+        #     outShape=outShape[1:]
+        #     if not outShape:
+        #         outShape=[1]
                 
         sample = ''
-        Xy = ''
+        inShape=''
+        default_var=''
         layer_keys=[]
         if session.layer_id in data_container:
             layer_dict = data_container[session.layer_id]
+
+            if 'Y' in layer_dict:
+                Y = layer_dict['Y'] 
+                if isinstance(Y, tf.Tensor):
+                    outShape = Y.shape.as_list()
+                    outShape=outShape[1:]
+                else:
+                    outShape = np.shape(Y)[1:]
+                if not outShape:
+                    outShape=[1]
             
-            if 'sample' in layer_dict:
-                sample = layer_dict['sample']
-                default_var = 'sample'
-            elif 'Y' in layer_dict:
+            # if 'sample' in layer_dict:
+            #     sample = layer_dict['sample']
+            #     default_var = 'sample'
+            if 'Y' in layer_dict:
                 sample = layer_dict['Y']
                 default_var = 'Y'
 
             if "X" in layer_dict and "Y" in layer_dict["X"]:
                 Xy = layer_dict["X"]["Y"]
+                if isinstance(Xy, tf.Tensor):
+                    inShape = Xy.shape.as_list()
+                    inShape=inShape[1:]
+                    if not inShape:
+                        inShape=[1]
 
             layer_keys = list(layer_dict.keys())
 
             sample=self._evalSample(sample)
 
-        self._put_in_dict(session.layer_id,{'Sample': sample, 'outShape': outShape, 'inShape': str(Xy).replace("'",""), 'Variables': layer_keys, 'Default_var':default_var})
+        self._put_in_dict(session.layer_id,{'Sample': sample, 'outShape': outShape, 'inShape': str(inShape).replace("'",""), 'Variables': layer_keys, 'Default_var':default_var})
+        print("Session dict:", self.to_dict())
 
     def read_syntax_error(self, session):
         tbObj=traceback.TracebackException(*sys.exc_info())
@@ -262,7 +289,8 @@ class BaseCore:
                                local_vars=locals_,
                                data_container=self._data_container,
                                process_handler=self._session_process_handler,
-                               cache=self._session_history.cache)                               
+                               cache=self._session_history.cache)   
+
         try:        
             session.run()
         except LayerSessionStop:
@@ -292,9 +320,8 @@ class BaseCore:
         globals_.update(outputs.globals)
 
         locals_=outputs.locals
-        locals_.pop('X', None)
-        
-        locals_ = {'X': locals_}
+        print("Locals: ", locals_)
+
         return globals_, locals_        
 
     def on_error(self, session, formatted_exception):
@@ -424,7 +451,9 @@ if __name__ == "__main__":
 
     sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
     core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
-    core.run()
+    import threading
+    threading.Thread()
+    # core.run()
 
     
 
