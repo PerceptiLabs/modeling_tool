@@ -251,12 +251,18 @@ class DataDataCodeGenerator(CodeGenerator):
         code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
         code += "\n"
         
+        # if self.shuffle:
+        #     code += "X_train=X_train.shuffle(X_train_size,seed=%d).repeat().batch(_batch_size)\n" % self._seed
+        # else:
+        #     code += "X_train=X_train.repeat().batch(_batch_size)\n"
+        # code += "X_validation=X_validation.repeat().batch(_batch_size)\n"
+        # code += "X_test=X_test.repeat(1).batch(1)\n"
         if self.shuffle:
-            code += "X_train=X_train.shuffle(X_train_size,seed=%d).repeat().batch(_batch_size)\n" % self._seed
+            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size)\n" % self._seed
         else:
-            code += "X_train=X_train.repeat().batch(_batch_size)\n"
-        code += "X_validation=X_validation.repeat().batch(_batch_size)\n"
-        code += "X_test=X_test.repeat(1).batch(1)\n"
+            code += "X_train=X_train.batch(_batch_size)\n"
+        code += "X_validation=X_validation.batch(_batch_size)\n"
+        code += "X_test=X_test.batch(1)\n"
         code += "\n"
         code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
         code += "train_iterator = iterator.make_initializer(X_train, name='train_iterator_%s')\n" % self._layer_id

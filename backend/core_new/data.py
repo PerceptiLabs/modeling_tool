@@ -78,7 +78,7 @@ class TestDataPolicy:
 
     def get_results(self):
         test_dict = {}
-
+        self._session._headless=True
         if not self._session._headless:
             evaluator = Evaluator()
             sess=self._data.pop("sess", None)
@@ -143,7 +143,7 @@ class TrainValDataPolicy:
 
     def get_results(self):
         train_dict = {}
-
+        self._session._headless=True
         if not self._session._headless:
             evaluator = Evaluator()
             sess=self._data.pop("sess", None)
@@ -151,6 +151,7 @@ class TrainValDataPolicy:
                 evaluator.set_sess(sess)
             # train_dict = self.evaluate_dict(self._data,evaluator)
             for key,content in self._graph_dict.items():
+                print("Content: ", content)
                 con=content["Con"]
                 data={i:self._data[key][i] for i in self._data[key] if i!='X'}
                 train_dict[key] = self.evaluate_dict(data,evaluator)
