@@ -108,6 +108,9 @@ class LayerSession(ApiCallbackHandler):
         for name, value in locals_.items():
             self.on_store_value(name, value)  
 
+    def on_tensors_get(self):
+        return self._data_container.on_tensors_get()
+
     def on_render(self, dashboard=None):
         if self._process_handler is None:
             return

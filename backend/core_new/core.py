@@ -104,12 +104,12 @@ class SessionHistory:
         return self._cache
     
 class SessionProcessHandler:
-    def __init__(self, graph_dict, data_container, command_queue, result_queue, mode):
+    def __init__(self, graph_dict, data_container, command_queue, result_queue):  # mode
         self._graph = graph_dict
         self._data_container = data_container
         self._command_queue = command_queue
         self._result_queue = result_queue
-        self._mode = mode
+        #self._mode = mode
         
     def on_process(self, session, dashboard):
         """ Called in response to 'api.ui.render' calls in the layer code """
@@ -135,6 +135,8 @@ class SessionProcessHandler:
         
             if command == 'pause':
                 session.pause()
+            if command == 'unpause':
+                session.unpause()
             elif command == 'run':
                 session.unpause()
             elif command == 'stop':
@@ -241,10 +243,9 @@ class BaseCore:
     DEFAULT_GLOBALS = {'tf': tf, 'np': np}
     
     def __init__(self, codehq, graph_dict, data_container, session_history, session_process_handler=None,
-                 layer_extras_reader=None, mode='normal', skip_layers=None, tf_eager=False):
+                 layer_extras_reader=None, skip_layers=None, tf_eager=False): 
         self._graph = graph_dict
         self._codehq = codehq
-        self._mode = mode
         self._data_container = data_container
         self._tf_eager = tf_eager
         self._session_process_handler = session_process_handler
@@ -281,7 +282,7 @@ class BaseCore:
             set_tensorflow_mode('graph')        
             
     def _run_layer(self, id_, content):        
-        code = self._codehq.get_code_generator(id_, content).get_code(mode=self._mode)
+        code = self._codehq.get_code_generator(id_, content).get_code()
         
         globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])        
         session = LayerSession(id_, content['Info']['Type'], code,
@@ -343,26 +344,21 @@ class BaseCore:
 
 class Core(BaseCore):
     def __init__(self, codehq, graph_dict, data_container, session_history,
-                 session_process_handler, mode='normal'):
+                 session_process_handler): 
         super().__init__(codehq, graph_dict, data_container, session_history,
-                         session_process_handler=session_process_handler, mode=mode)
+                         session_process_handler=session_process_handler)
 
-    # def headlessOn(self, mode):
-    #     pass
-
-    # def headlessOff(self, mode):
-    #     pass
 
 
         
 class LightweightCore(BaseCore):
-    MODE = 'headless'    
+    #MODE = 'headless'    
     SKIP_LAYERS = ['TrainNormal']
     
     def __init__(self, codehq, graph_dict, data_container, session_history, layer_extras_reader):
         super().__init__(codehq, graph_dict, data_container, session_history,
                          layer_extras_reader=layer_extras_reader, tf_eager=True,
-                         skip_layers=self.SKIP_LAYERS, mode=self.MODE)
+                         skip_layers=self.SKIP_LAYERS)
 
         
 if __name__ == "__main__":
@@ -373,8 +369,8 @@ if __name__ == "__main__":
     import json
     import queue
     import os
-
-    p1 = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Networks/net.json'
+    os.environ['KMP_DUPLICATE_LIB_OK']='True'
+    p1 = '/Users/mukund/Desktop/PerceptiLabs/backend/net.json'
     if os.path.exists(p1):
         path = p1
     else:
@@ -449,11 +445,18 @@ if __name__ == "__main__":
     # session_history = SessionHistory() 
     # #session_history = session_history_lw
 
-    sph = SessionProcessHandler(graph_dict, data_container, cq, rq, mode)    
-    core = Core(CodeHq, graph_dict, data_container, session_history, sph, mode=mode)
+
+   
+
+    sph = SessionProcessHandler(graph_dict, data_container, cq, rq)    
+    core = Core(CodeHq, graph_dict, data_container, session_history, sph)
     import threading
-    threading.Thread()
+    threading.Thread(target=core.run).start()
     # core.run()
-
-    
-
+    import time
+    time.sleep(2)
+    cq.put("pause")
+    time.sleep(2)
+    cq.put("unpause")
+    time.sleep(2)
+    cq.put("pause")

@@ -43,8 +43,7 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.network=network
 
-        mode = 'normal' 
-         # TODO #add headless mode 
+        #mode = 'normal' 
 
         data_container = DataContainer()
 
@@ -55,9 +54,9 @@ class coreLogic():
 
         session_history = SessionHistory()        
         session_proc_handler = SessionProcessHandler(graph_dict, data_container,
-                                                     self.commandQ, self.resultQ, mode)
+                                                     self.commandQ, self.resultQ) #mode
         self.core = Core(CodeHq, graph_dict, data_container,
-                    session_history, session_proc_handler, mode=mode)
+                    session_history, session_proc_handler ) #mode=mode
 
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()
@@ -92,6 +91,15 @@ class coreLogic():
     #         else:
     #             self.status="Paused"
     #     return {"content":self.setCoreStatus(self.status)}
+
+
+    def Pause(self):
+        self.commanQ.put('pause')
+        return {"content": "paused"}
+        
+    def Unpause(self):
+        self.commandQ.put('unpause')
+        return {"content":"unpaused"}
 
     def Close(self):
         self.status="Stop"

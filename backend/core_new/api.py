@@ -35,6 +35,9 @@ class DataApi:
         for name, value in kwargs.items():
             self.__handler.on_stack_value(name, value)
 
+    def get_tensors(self):
+        return self.__handler.on_tensors_get()
+
         
 class UiApi:
     def __init__(self, callback_handler):
@@ -42,6 +45,9 @@ class UiApi:
 
     def render(self, dashboard=None):
         self.__handler.on_render(dashboard)
+
+    def headless(self):
+        return self.__handler._headless
 
         
 class CacheApi:

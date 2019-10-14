@@ -32,6 +32,22 @@ class DataContainer:
         except KeyError:
             self._data_dict[layer_id][name] = [value]
 
+    def evaluate_dict(self, d):
+        import tensorflow as tf
+        if type(d) is dict:
+            new_d={}
+            for key, value in d.items():
+                new_d[key] = self.evaluate_dict(value)
+                if new_d[key] is None or new_d[key]=={}:
+                    new_d.pop(key)
+            return new_d
+
+        if tf.contrib.framework.is_tensor(d):
+            return d
+
+    def on_tensors_get(self):
+        return self.evaluate_dict(self.to_dict())
+
     def __getitem__(self, id_):
         data = copy.copy(self._data_dict.get(id_))
         return data
@@ -49,54 +65,14 @@ class DataPolicy(ABC):
     def get_results(self):
         raise NotImplementedError
 
-class Evaluator:
-    def set_sess(self,sess):
-        self.sess=sess
-
-    def eval(self,variable):
-        import tensorflow as tf
-        if self.sess and tf.contrib.framework.is_tensor(variable):
-            return self.sess.run(variable)
-        else:
-            return variable
-
 class TestDataPolicy:
     def __init__(self, session, data_dict, graph_dict):
         self._session = session
         self._data = data_dict
         self._graph_dict = graph_dict
-    
-    def evaluate_dict(self, d, evaluator):
-        if type(d) is dict:
-            new_d={}
-            for key, value in d.items():
-                # if key != "X":
-                new_d[key] = self.evaluate_dict(value, evaluator)
-            return new_d
-
-        return evaluator.eval(d)
 
     def get_results(self):
-        test_dict = {}
-        self._session._headless=True
-        if not self._session._headless:
-            evaluator = Evaluator()
-            sess=self._data.pop("sess", None)
-            if sess:
-                evaluator.set_sess(sess)
-
-            for key,content in self._graph_dict.items():
-                con=content["Con"]
-                data={i:self._data[key][i] for i in self._data[key] if i!='X'}
-                test_dict[key] = self.evaluate_dict(data,evaluator)
-                if len(con)>1:
-                    X=dict()
-                    for i in con:
-                        X.update({i:test_dict[i]})
-                    test_dict[key]["X"]=X
-                elif len(con)>0:    
-                    test_dict[key]["X"]={i:test_dict[con[0]][i] for i in test_dict[con[0]] if i!='X'}
-
+        test_dict = self._data.copy()
 
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
@@ -106,6 +82,24 @@ class TestDataPolicy:
                 itr_tst = self._data[id_].get('iter_testing', 0)
      
                 max_itr_tst = self._data[id_].get('max_iter_testing', -1)
+
+                if "all_tensors" in self._data[id_]:
+                    all_tensors=train_dict[id_].pop("all_tensors")
+
+                    import collections
+                    import six
+                    def update(d, u):
+                        for k, v in six.iteritems(u):
+                            dv = d.get(k, {})
+                            if not isinstance(dv, collections.Mapping):
+                                d[k] = v
+                            elif isinstance(v, collections.Mapping):
+                                d[k] = update(dv, v)
+                            else:
+                                d[k] = v
+                        return d
+
+                    train_dict=update(train_dict,all_tensors)
 
         training_status = 'Testing'
         status='Running'
@@ -131,43 +125,8 @@ class TrainValDataPolicy:
         self._data = data_dict
         self._graph_dict = graph_dict
 
-    def evaluate_dict(self, d, evaluator):
-        if type(d) is dict:
-            new_d={}
-            for key, value in d.items():
-                # if key != "X":
-                new_d[key] = self.evaluate_dict(value, evaluator)
-            return new_d
-
-        return evaluator.eval(d)
-
     def get_results(self):
-        train_dict = {}
-        self._session._headless=True
-        if not self._session._headless:
-            evaluator = Evaluator()
-            sess=self._data.pop("sess", None)
-            if sess:
-                evaluator.set_sess(sess)
-            # train_dict = self.evaluate_dict(self._data,evaluator)
-            for key,content in self._graph_dict.items():
-                print("Content: ", content)
-                con=content["Con"]
-                data={i:self._data[key][i] for i in self._data[key] if i!='X'}
-                train_dict[key] = self.evaluate_dict(data,evaluator)
-                if len(con)>1:
-                    X=dict()
-                    for i in con:
-                        # import pdb;pdb.set_trace()
-                        # X.update({v:train_dict[con[i]][v] for v in train_dict[con[i]] if v!='X'})
-                        X.update({i:train_dict[i]})
-                        X[i].pop('X')
-                    train_dict[key]["X"]=X
-                elif len(con)>0:    
-                    # import pdb;pdb.set_trace()
-                    train_dict[key]["X"]={v:train_dict[con[0]][v] for v in train_dict[con[0]] if v!='X'}
-            # import pdb;pdb.set_trace()
-            
+        train_dict = self._data.copy()
 
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
@@ -182,13 +141,31 @@ class TrainValDataPolicy:
                 max_itr_trn = self._data[id_].get('max_iter_training', -1)
                 max_itr_val = self._data[id_].get('max_iter_validation', -1)
 
-                train_dict['epochTrainAccuracy'] = self._data[id_].get('acc_training_epoch', [-1])
-                train_dict['epochTrainF1'] = self._data[id_].get('f1_training_epoch', [-1])
-                train_dict['epochTrainAUC'] = self._data[id_].get('auc_training_epoch', [-1])
+                # train_dict['epochTrainAccuracy'] = self._data[id_].get('acc_training_epoch', [-1])
+                # train_dict['epochTrainF1'] = self._data[id_].get('f1_training_epoch', [-1])
+                # train_dict['epochTrainAUC'] = self._data[id_].get('auc_training_epoch', [-1])
                 
-                train_dict['epochValAccuracy'] = self._data[id_].get('acc_validation_epoch', [-1])
-                train_dict['epochValF1'] = self._data[id_].get('f1_validation_epoch', [-1])
-                train_dict['epochValAUC'] = self._data[id_].get('auc_validation_epoch', [-1])
+                # train_dict['epochValAccuracy'] = self._data[id_].get('acc_validation_epoch', [-1])
+                # train_dict['epochValF1'] = self._data[id_].get('f1_validation_epoch', [-1])
+                # train_dict['epochValAUC'] = self._data[id_].get('auc_validation_epoch', [-1])
+
+                if "all_tensors" in self._data[id_]:
+                    all_tensors=train_dict[id_].pop("all_tensors")
+
+                    import collections
+                    import six
+                    def update(d, u):
+                        for k, v in six.iteritems(u):
+                            dv = d.get(k, {})
+                            if not isinstance(dv, collections.Mapping):
+                                d[k] = v
+                            elif isinstance(v, collections.Mapping):
+                                d[k] = update(dv, v)
+                            else:
+                                d[k] = v
+                        return d
+
+                    train_dict=update(train_dict,all_tensors)
 
                 if not self._session._headless:
                     for key, value in self._data[id_].items():

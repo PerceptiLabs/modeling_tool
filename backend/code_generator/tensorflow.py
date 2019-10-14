@@ -25,7 +25,7 @@ class ReshapeCodeGenerator(CodeGenerator):
         self._shape = shape
         self._permutation = permutation
         
-    def get_code(self, mode='normal'):
+    def get_code(self):
         shape_text = ', '.join([str(i) for i in self._shape])
         perm_text = ', '.join([str(i) for i in self._permutation])
         code = ""
@@ -41,7 +41,7 @@ class RecurrentCodeGenerator(CodeGenerator):
         self._neurons = neurons
         self._return_sequences = return_sequences
 
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code = ''
         if self._version == 'LSTM':
             code += "cell = tf.nn.rnn_cell.LSTMCell(%s, state_is_tuple=True)\n" % self._neurons
@@ -62,7 +62,7 @@ class RecurrentCodeGenerator(CodeGenerator):
     
 
 class WordEmbeddingCodeGenerator(CodeGenerator):
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code  = 'words = tf.string_split(X)\n'
         code += 'vocab_size=words.get_shape().as_list()[0]\n'
         code += 'embed_size=10\n'
@@ -75,7 +75,7 @@ class OneHotCodeGenerator(CodeGenerator):
     def __init__(self, n_classes):
         self._n_classes = n_classes
         
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code = "Y=tf.one_hot(tf.cast(X['Y'],dtype=tf.int32), %s)\n" % self._n_classes
         return code
 
@@ -87,7 +87,7 @@ class CropCodeGenerator(CodeGenerator):
         self._target_height = target_height        
         self._target_width = target_width
 
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code = "Y=tf.image.crop_to_bounding_box(X, %d, %d, %d, %d)\n" % (self._offset_height,
                                                                          self._offset_width,
                                                                          self._target_height,
@@ -96,7 +96,7 @@ class CropCodeGenerator(CodeGenerator):
     
 
 class GrayscaleCodeGenerator(CodeGenerator):
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code  = 'if X["Y"].get_shape().as_list()[-1] == 3:\n'
         code += '    Y = tf.image.rgb_to_grayscale(X)\n'
         code += 'else:\n'
@@ -108,13 +108,13 @@ class ArgmaxCodeGenerator(CodeGenerator):
     def __init__(self, dim):
         self._dim = dim
 
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code = 'Y = tf.argmax(X, %s)' % self._dim
         return code
 
 
 class SoftmaxCodeGenerator(CodeGenerator):
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code = 'Y = tf.nn.softmax(X)'
         return code
 
@@ -124,7 +124,7 @@ class MergeCodeGenerator(CodeGenerator):
         self._type = type_
         self._merge_dim = merge_dim
 
-    def get_code(self, mode='normal'):
+    def get_code(self):
         # TODO: in python version < 3.6 dicts aren't ordered. caution if we allow custom environments in the future.
         
         if self._type == 'Concat':
@@ -167,7 +167,7 @@ class FullyConnectedCodeGenerator(CodeGenerator):
         self._keep_prob = keep_prob
         self._activation = activation
 
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code  = "input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]\n"
         code += "shape = [input_size, %s]\n" % self._n_neurons
         code += "initial = tf.truncated_normal(shape, stddev=0.1)\n"
@@ -205,7 +205,7 @@ class ConvCodeGenerator(CodeGenerator):
         self._pool_padding = pool_padding
         self._pool_stride = pool_stride
 
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code = ''
         
         # Get the main code
@@ -294,7 +294,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         self._n_epochs = int(n_epochs)
         self._n_iters = int(n_iterations)
 
-    def _get_training_code(self, mode):
+    def _get_training_code(self):
         if self._optimizer == 'adam':
             opt_class = 'AdamOptimizer'
         elif self._optimizer == 'adagrad':
@@ -313,13 +313,12 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "auc, _ = tf.metrics.auc(labels=y_label, predictions=y_pred, curve='ROC')\n"
         code += "\n"
 
-        if mode != 'headless':
-            code += "# Gradients\n"
-            code += "gradients = {}\n"
-            code += "for var in tf.trainable_variables():\n"
-            code += "    name = 'grad-' + var.name\n"
-            code += "    gradients[name] = tf.gradients(loss, [var])\n"
-            code += "\n"
+        code += "# Gradients\n"
+        code += "gradients = {}\n"
+        code += "for var in tf.trainable_variables():\n"
+        code += "    name = 'grad-' + var.name\n"
+        code += "    gradients[name] = tf.gradients(loss, [var])\n"
+        code += "\n"
 
         code += "# Get iterators\n"
         code += "ops = tf.get_default_graph().get_operations()\n"
@@ -327,14 +326,14 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "validation_iterators = [op for op in ops if 'validation_iterator' in op.name]\n"
         code += "test_iterators = [op for op in ops if 'test_iterator' in op.name]\n" 
         code += "#tf variables to be evaluated and sent to the frontend\n"
-        # code += "tf_variables= [n.op for n in tf.get_default_graph().as_graph_def().node if tf.contrib.framework.is_tensor(n.op)]\n"   
-        # code += "import pdb; pdb.set_trace()"            
+        # code += "tf_variables= [n.op for n in tf.get_default_graph().as_graph_def().node if tf.contrib.framework.is_tensor(n.op)]\n"           
         code += "\n"
         code += "sess = tf.InteractiveSession()\n"
-        code += "api.data.store_session(sess)\n"
+        # code += "api.data.store_session(sess)\n"
         code += "init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())\n"
         code += "sess.run(init)\n"
-        code += "api.data.store_locals(locals())\n" 
+        code += "api.data.store_locals(locals())\n"
+        code += "all_tensors=api.data.get_tensors()\n" 
         code += "\n"
         code += "api.data.store(max_epoch=%d,\n" % (self._n_epochs - 1)
         code += "               max_iter_training=%d,\n" % (self._n_iters - 1)
@@ -347,26 +346,25 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    api.data.store(acc_train_iter=[], loss_train_iter=[], f1_train_iter=[], auc_train_iter=[],\n" 
         code += "                   acc_val_iter=[], loss_val_iter=[], f1_val_iter=[], auc_val_iter=[])\n"
         code += "    \n"
-        # code += "    for iter in range(%d):\n" % self._n_iters
         code += "    try:\n"
         code += "        iter=0\n"
         code += "        while True:\n"
-        # code += "            import pdb;pdb.set_trace()\n"
-        # code += "            sess.run(step)\n"
-        # code += "        if not api.ui.headless:\n"
-        # code += "        sess.run(most_variables)\n"
-        code += "            _, acc_train, loss_train, f1_train, auc_train, gradient_vals = sess.run([step, accuracy, loss, f1, auc, gradients])\n"
+        code += "            if False:\n"
+        code += "                _, acc_train, loss_train, f1_train, auc_train = sess.run([step, accuracy, loss, f1, auc])\n"
+        code += "            else:\n"
+        code += "                _, acc_train, loss_train, f1_train, auc_train, gradient_vals, all_evaled_tensors = sess.run([step, accuracy, loss, f1, auc, gradients, all_tensors])\n"
+        code += "                api.data.store(all_tensors=all_evaled_tensors)\n"
+        
+        code += "                new_gradient_vals={}\n"
+        code += "                for gradName, gradValue in gradient_vals.items():\n"
+        code += "                     new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+        code += "                     new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+        code += "                     new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+        code += "                api.data.stack(**new_gradient_vals)\n"
+        
         code += "            api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train, f1_train_iter=f1_train, auc_train_iter=auc_train)\n"
-        code += "            print('ITER: %d , ACCURACY: %d', iter, acc_train*100)\n"
+        code += "            print('ITER: %d , ACCURACY: %d', (iter, acc_train*100))\n"
         code += "            api.data.store(iter_training=iter)\n"
-
-        # code += "            gradient_vals = sess.run(gradients)\n"
-        code += "            new_gradient_vals={}\n"
-        code += "            for gradName, gradValue in gradient_vals.items():\n"
-        code += "                new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
-        code += "                new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
-        code += "                new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
-        code += "            api.data.stack(**new_gradient_vals)\n"
 
         code += "            api.ui.render(dashboard='train_val')\n"
         code += "            iter+=1\n"
@@ -374,12 +372,22 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "        pass\n"
         code += "    \n"
         code += "    sess.run(validation_iterators)\n"        
-        # code += "    for iter in range(%d):\n" % self._n_iters
         code += "    try:\n"
         code += "        iter=0\n"
         code += "        while True:\n"
-        # code += "            loss_ = sess.run(loss)\n"
-        code += "            acc_val, loss_val, f1_val, auc_val = sess.run([accuracy, loss, f1, auc])\n"
+        code += "            if False:\n"
+        code += "                _, acc_val, loss_val, f1_val, auc_val = sess.run([step, accuracy, loss, f1, auc])\n"
+        code += "            else:\n"
+        code += "                _, acc_val, loss_val, f1_val, auc_val, gradient_vals, all_evaled_tensors = sess.run([step, accuracy, loss, f1, auc, gradients, all_tensors])\n"
+        code += "                api.data.store(all_tensors=all_evaled_tensors)\n"
+        
+        code += "                new_gradient_vals={}\n"
+        code += "                for gradName, gradValue in gradient_vals.items():\n"
+        code += "                     new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+        code += "                     new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+        code += "                     new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+        code += "                api.data.stack(**new_gradient_vals)\n"
+
         code += "            api.data.stack(acc_val_iter=acc_val, loss_val_iter=loss_val, f1_val_iter=f1_val, auc_val_iter=auc_val)\n"
         code += "            api.data.store(iter_validation=iter)\n"
         code += "            api.ui.render(dashboard='train_val')\n"  
@@ -393,7 +401,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    api.ui.render(dashboard='train_val')\n"
         return code
 
-    def _get_testing_code(self, mode):
+    def _get_testing_code(self):
         code  = "api.data.store(max_iter_testing=%d)\n" % (self._n_iters - 1)
         code += "sess.run(test_iterators)\n"                
         # code += "for iter in range(%d):\n" % self._n_iters
@@ -407,13 +415,13 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    pass\n"
         return code
 
-    def get_code_parts(self, mode='normal'):
-        cp1 = CodePart('training', self._get_training_code(mode))
-        cp2 = CodePart('testing', self._get_testing_code(mode))
+    def get_code_parts(self):
+        cp1 = CodePart('training', self._get_training_code())
+        cp2 = CodePart('testing', self._get_testing_code())
         return [cp1, cp2] # TODO: Should probably be dicts?
 
-    def get_code(self, mode='normal'):
-        code = self._get_training_code(mode) + '\n' + self._get_testing_code(mode)
+    def get_code(self):
+        code = self._get_training_code() + '\n' + self._get_testing_code()
         return code
 
 
@@ -436,7 +444,7 @@ class TrainReinforce(CodeGenerator):
         self._training_frequency = 2
         self._copy_weights_frequency = 2
         
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code  = "global state_tensor, env\n"
         code += "Q_online = X[%s]['Y']\n" % self._online_network_id
         code += "Q_target = X[%s]['Y']\n" % self._target_network_id                
