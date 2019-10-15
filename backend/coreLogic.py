@@ -94,7 +94,7 @@ class coreLogic():
 
 
     def Pause(self):
-        self.commanQ.put('pause')
+        self.commandQ.put('pause')
         return {"content": "paused"}
         
     def Unpause(self):
@@ -517,7 +517,14 @@ class coreLogic():
                         APvG = createDataObject([network_average, labels_average], nameList=['Prediction', 'Ground Truth'])
                         
                         # PIE
-                        acc=self.getStatistics({"layerId":layerId,"variable":"accuracy","innervariable":""})
+                        acc_train=self.getStatistics({"layerId":layerId,"variable":"acc_train_iter","innervariable":""})
+                        acc_val=self.getStatistics({"layerId":layerId,"variable":"acc_val_iter","innervariable":""})
+
+                        if acc_val!=[]:
+                            acc=acc_val
+                        else:
+                            acc=acc_train
+
                         try:
                             lastAcc=acc[-1]
                         except:

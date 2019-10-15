@@ -363,7 +363,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "                api.data.stack(**new_gradient_vals)\n"
         
         code += "            api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train, f1_train_iter=f1_train, auc_train_iter=auc_train)\n"
-        code += "            print('ITER: %d , ACCURACY: %d', (iter, acc_train*100))\n"
         code += "            api.data.store(iter_training=iter)\n"
 
         code += "            api.ui.render(dashboard='train_val')\n"
@@ -395,6 +394,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    except tf.errors.OutOfRangeError:\n"
         code += "        pass\n"     
         code += "    \n"
+        code += "    print('ITER: %d , ACCURACY: %d' % (iter, acc_train*100))\n"
         code += "    api.data.store(epoch=epoch)\n"
         code += "    api.data.stack(acc_training_epoch=acc_train, loss_train_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
         code += "                   acc_validation_epoch=acc_val, loss_val_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
@@ -403,14 +403,16 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
     def _get_testing_code(self):
         code  = "api.data.store(max_iter_testing=%d)\n" % (self._n_iters - 1)
-        code += "sess.run(test_iterators)\n"                
-        # code += "for iter in range(%d):\n" % self._n_iters
+        code += "sess.run(test_iterators)\n"     
+        code += "iter = 0\n"
         code += "try:\n"
         code += "    while True:\n"
-        code += "        y_pred_ = sess.run(y_pred)\n"
+        code += "        y_pred_, all_evaled_tensors = sess.run([y_pred, all_tensors])\n"
+        code += "        api.data.store(all_tensors=all_evaled_tensors)\n"
         code += "        api.data.stack(y_pred=y_pred_.squeeze())\n"
         code += "        api.data.store(iter_testing=iter)\n"
         code += "        api.ui.render(dashboard='testing')\n"  
+        code += "        iter+=1\n"
         code += "except tf.errors.OutOfRangeError:\n"      
         code += "    pass\n"
         return code

@@ -84,7 +84,7 @@ class TestDataPolicy:
                 max_itr_tst = self._data[id_].get('max_iter_testing', -1)
 
                 if "all_tensors" in self._data[id_]:
-                    all_tensors=train_dict[id_].pop("all_tensors")
+                    all_tensors=test_dict[id_].pop("all_tensors")
 
                     import collections
                     import six
@@ -99,7 +99,7 @@ class TestDataPolicy:
                                 d[k] = v
                         return d
 
-                    train_dict=update(train_dict,all_tensors)
+                    test_dict=update(test_dict,all_tensors)
 
         training_status = 'Testing'
         status='Running'
