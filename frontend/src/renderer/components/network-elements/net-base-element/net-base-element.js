@@ -268,6 +268,12 @@ export default {
       if(!this.isTutorialMode) this.hideAllWindow();
       this.elementSelect({id: this.currentId, setValue: false });
       this.tutorialShowHideTooltip();
+    },
+    tutorialSearchId(event) {
+      //TODO need paused in tutorial
+      /// return event.target.tagName === 'I'
+      //   ? event.target.parentNode.parentNode.id
+      //   : event.target.parentNode.id
     }
   }
 }

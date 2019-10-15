@@ -8,6 +8,7 @@
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
 
@@ -22,13 +23,6 @@ export default {
   data() {
     return {
       tabs: ['Code'],
-    }
-  },
-  computed: {
-    codeDefault() {
-      return {
-        Output: ''
-      }
     }
   }
 }

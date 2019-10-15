@@ -34,14 +34,10 @@ export default {
     currentEl: { type: Object },
   },
   mounted () {
-    //this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
     this.api_getVariableList(this.layerId)
       .then((data)=> {
-        console.log(data);
-        this.previewList = data;
-        this.getSample(null);
-        //this.$store.dispatch('mod_api/API_getPreviewSample', {layerId, varData: 'Y'})
-        //this.api_getPreviewSample({layerId, })
+        this.previewValue = data.VariableName;
+        this.previewList = data.VariableList;
       })
 
   },
@@ -60,14 +56,14 @@ export default {
   watch: {
     previewValue(newVal) {
       this.getSample(newVal)
-    }
+    },
   },
   methods: {
     ...mapActions({
-      api_getVariableList: 'mod_api/API_getPreviewVariableList',
-      api_getPreviewSample:'mod_api/API_getPreviewSample',
-      api_getOutputDim:    'mod_api/API_getOutputDim',
-      tutorialPointActivate: 'mod_tutorials/pointActivate',
+      api_getVariableList:  'mod_api/API_getPreviewVariableList',
+      api_getPreviewSample: 'mod_api/API_getPreviewSample',
+      api_getOutputDim:     'mod_api/API_getOutputDim',
+      tutorialPointActivate:'mod_tutorials/pointActivate',
     }),
     toSettings() {
       this.$emit('to-settings');
@@ -77,11 +73,10 @@ export default {
       this.hideAllWindow();
     },
     getSample(data) {
+      //console.log('getSample');
       this.api_getPreviewSample({layerId: this.layerId, varData: data})
         .then((data)=> {
-          console.log(data);
-          this.imgData = data.Sample;
-          this.previewValue = data.VariableName;
+          this.imgData = data;
           this.api_getOutputDim();
         })
     }

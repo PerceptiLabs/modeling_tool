@@ -30,7 +30,8 @@
 </template>
 
 <script>
-  import codeHq    from "@/components/network-elements/elements-settings/code-hq.vue";
+  import codeHq from "@/components/network-elements/elements-settings/code-hq.vue";
+  import { deepCopy } from "@/core/helpers.js";
 
 export default {
   name: "SettingsCode",
@@ -45,11 +46,7 @@ export default {
   },
   mounted () {
     console.log(this.currentEl);
-
-    if(this.currentEl.layerCode) {
-      this.theCode = {'Output': this.currentEl.layerCode};
-      this.currentTab = 'Output';
-    }
+    if(this.currentEl.layerCode) this.setCode(this.currentEl.layerCode);
     else this.getCode();
 
   },
@@ -83,12 +80,15 @@ export default {
       const value = {
         Id: this.currentEl.layerId,
         Type: this.currentEl.componentName,
-        Properties: this.elSettings
+        Properties: this.elSettings,
+        backward_connections: this.currentEl.connectionIn
       };
       this.$store.dispatch('mod_api/API_getCode', value)
-        .then((code)=> {
-          console.log(code);
-        })
+        .then((code)=> { this.setCode(code) })
+    },
+    setCode(objCode) {
+      this.theCode = deepCopy(objCode);
+      this.currentTab = Object.keys(objCode)[0];
     },
     toggleFullView() {
       this.fullView = !this.fullView;

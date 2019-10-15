@@ -138,7 +138,7 @@ export default {
         {
           label: 'Help', visible: true,
           submenu: [
-            {label: 'Help',                                                                                             active: this.goToHelpPage },
+            {label: 'Help',                                                                     enabled: false,         active: this.goToHelpPage },
             {label: 'About',                                                                                            active: this.goToAboutPage },
             {label: 'Tutorial mode',                                                            enabled: !this.isTutorialActive && this.isLogin,  active: this.showTutorial },
             {label: 'Check for updates',                                                                                active: this.checkUpdate },

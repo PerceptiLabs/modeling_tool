@@ -16,7 +16,7 @@ import TheStatistics          from "@/components/statistics/the-statistics.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
-
+var unwatch;
 export default {
   name: 'WorkspaceContent',
   components: {
@@ -25,21 +25,30 @@ export default {
     WorkspaceBeforeImport, WorkspaceSaveNetwork,
     TheStatistics, TheTesting, TheViewBox, StartTrainingSpinner
   },
+  created() {
+
+
+  },
   data() {
     return {
-      trainingWasPaused: false
+      trainingWasPaused: false,
+      counterHideSpinner: 0,
+      //unwatch: null
     }
   },
   computed: {
     ...mapGetters({
       currentNetwork:     'mod_workspace/GET_currentNetwork',
       currentSelectedEl:  'mod_workspace/GET_currentSelectedEl',
-      isTutorialMode:     'mod_tutorials/getIstutorialMode',
-      tutorialActiveStep: 'mod_tutorials/getActiveStep',
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
+      doShowCharts:       'mod_workspace/GET_networkShowCharts',
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
       showTrainingSpinner:'mod_workspace/GET_showStartTrainingSpinner',
+
+      isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      tutorialActiveStep: 'mod_tutorials/getActiveStep',
+
       getLocalUserInfo:   'mod_user/GET_LOCAL_userInfo',
     }),
     ...mapState({
@@ -94,24 +103,37 @@ export default {
         this.event_startDoRequest(false);
       }
     },
-    coreStatus(newStatus, oldStatus) {
-      if(newStatus.Status === 'Training'
-        && oldStatus.Status === 'Training'
-        && this.showTrainingSpinner
-      ) {
-        this.set_showTrainingSpinner(false);
-      }
-      else if(this.isTutorialMode
-        && newStatus.Status === 'Training'
-        && oldStatus.Status === 'Training'
-        && !this.trainingWasPaused
-      ) {
-        this.set_showTrainingSpinner(false);
-        this.pauseTraining();
-        this.trainingWasPaused = true;
-      }
-
+    showTrainingSpinner(newVal) {
+      //console.log('showTrainingSpinner', newVal);
+      if(newVal) unwatch = this.$watch('doShowCharts', this.watch_doShowCharts);
+      else unwatch();
     },
+    // doShowCharts() {
+    //   console.log('doShowCharts', this.counterHideSpinner);
+    //   if(this.showTrainingSpinner) {
+    //     if (this.counterHideSpinner === 2) {
+    //       this.set_showTrainingSpinner(false);
+    //       this.counterHideSpinner = 0
+    //     } else ++this.counterHideSpinner;
+    //   }
+    // },
+    // coreStatus(newStatus, oldStatus) {
+    //   console.log('coreStatus', newStatus.Status, oldStatus.Status, this.showTrainingSpinner);
+    //   if(newStatus.Status === 'Training'
+    //     //&& oldStatus.Status === 'Training'
+    //     && this.showTrainingSpinner
+    //   ) {
+    //     this.set_showTrainingSpinner(false);
+    //   }
+    //   else if(this.isTutorialMode
+    //     && newStatus.Status === 'Training'
+    //     //&& oldStatus.Status === 'Training'
+    //     && !this.trainingWasPaused
+    //   ) {
+    //
+    //   }
+    //
+    // },
     '$store.state.mod_events.saveNetwork': {
       handler() {
         this.eventSaveNetwork();
@@ -162,6 +184,16 @@ export default {
       trackerModelSave:     'mod_tracker/EVENT_modelSave',
       //enableLogHistory:     'mod_workspace-history/SET_isEnableHistory'
     }),
+    watch_doShowCharts() {
+      if (this.counterHideSpinner > 1) {
+        this.set_showTrainingSpinner(false);
+        this.counterHideSpinner = 0
+      } else ++this.counterHideSpinner;
+      //TODO need paused in tutorial
+      //this.set_showTrainingSpinner(false);
+      //     this.pauseTraining();
+      //     this.trainingWasPaused = true;
+    },
     calcScaleMap() {
       this.$nextTick(()=> {
         const net = this.$refs.networkField[0].$refs.network;

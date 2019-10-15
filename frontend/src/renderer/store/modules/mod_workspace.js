@@ -510,13 +510,13 @@ const mutations = {
     elPosition.top = value.top;
     elPosition.left = value.left;
   },
-  set_elementInputDim(state, {getters, value}) {
-    for(let element in getters.GET_currentNetworkElementList) {
+  set_elementInputDim(state, value) {
+    for(let element in value) {
       currentElement(element).layerMeta.InputDim = value[element]
     }
   },
-  set_elementOutputDim(state, {getters, value}) {
-    for(let element in getters.GET_currentNetworkElementList) {
+  set_elementOutputDim(state, {value}) {
+    for(let element in value) {
       currentElement(element).layerMeta.OutputDim = value[element].Dim;
       currentElement(element).layerCodeError = value[element].Error
     }
@@ -853,10 +853,11 @@ const actions = {
   SET_elementMultiSelect({commit}, value) {
     commit('set_elementMultiSelect', value)
   },
-  SET_elementInputDim({commit, getters}, value) {
-    commit('set_elementInputDim', {getters, value})
+  SET_elementInputDim({commit}, value) {
+    commit('set_elementInputDim', value)
   },
   SET_elementOutputDim({commit, getters}, value) {
+    //console.log('SET_elementOutputDim');
     commit('set_elementOutputDim', {getters, value})
   },
   CHANGE_elementPosition({commit}, value) {

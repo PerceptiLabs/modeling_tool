@@ -16,7 +16,6 @@ const netElementSettings = {
     }
   },
   beforeMount() {
-    this.coreCode = this.codeDefault;
     if(this.currentEl.layerSettings) this.settings = deepCopy(this.currentEl.layerSettings);
   },
   computed: {
@@ -28,9 +27,6 @@ const netElementSettings = {
     },
   },
   methods: {
-    updateCode() {
-      this.coreCode = this.codeDefault
-    },
     saveSettings(tabName) {
       this.applySettings(tabName);
     },

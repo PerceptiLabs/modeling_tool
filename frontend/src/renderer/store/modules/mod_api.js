@@ -8,6 +8,7 @@ const namespaced = true;
 
 const state = {
   statusLocalCore: 'offline', //online
+  corePid: 0
 };
 
 const getters = {
@@ -59,6 +60,9 @@ const mutations = {
   SET_statusLocalCore(state, value) {
     state.statusLocalCore = value
   },
+  set_corePid(state, value) {
+    state.corePid = value
+  },
 };
 
 const actions = {
@@ -87,7 +91,7 @@ const actions = {
           break;
       }
       openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
-
+      commit('set_corePid', openServer.pid);
       openServer.on('error', (err)=>  { coreOffline() });
       openServer.on('close', (code)=> { coreOffline() });
       waitOnlineCore()
@@ -151,7 +155,7 @@ const actions = {
   API_pauseTraining({dispatch, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: 'Pause',
+      action: 'Pause',// Pause and Unpause
       value: ''
     };
     coreRequest(theData)
@@ -261,7 +265,10 @@ const actions = {
       action: "isTrained"
     };
     return coreRequest(theData)
-      .then((data)=> data)
+      .then((data)=> {
+        console.log(data);
+        return data
+      })
       .catch((err)=> {
         console.error('isTrained answer', err);
       });
@@ -291,6 +298,7 @@ const actions = {
     };
     return coreRequest(theData)
       .then((data)=> {
+        console.log('getNetworkInputDim', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err)=> {
@@ -338,6 +346,7 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
+    console.log('API_getPreviewVariableList');
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -350,12 +359,8 @@ const actions = {
       action: 'getCode',
       value
     };
-    console.log('getCode', theData);
     return coreRequest(theData)
-      .then((data)=> {
-        console.log(data);
-        return data
-      })
+      .then((data)=> data)
       .catch((err)=> {
         console.error(err);
       });
@@ -369,11 +374,9 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
+    console.log('getPartitionSummary');
     return coreRequest(theData)
-      .then((data)=> {
-        console.log('getPartitionSummary', data);
-        return data
-      })
+      .then((data)=> data)
       .catch((err)=> {
         console.error(err);
       });
@@ -387,11 +390,9 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
+    console.log('getDataMeta');
     return coreRequest(theData)
-      .then((data)=> {
-        console.log('getPartitionSummary', data);
-        return data
-      })
+      .then((data)=> data)
       .catch((err)=> {
         console.error(err);
       });

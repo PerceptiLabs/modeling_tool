@@ -7,7 +7,9 @@
       span {{ labelText }}
       i.icon.icon-shevron.icon--open
 
-    ul.custom-select_option-list.action-list(v-show="isOpenList")
+    ul.custom-select_option-list.action-list(
+      v-show="isOpenList"
+      )
       template(v-if="selectMultiple")
         li.custom-select_option
           button.action-list_btn(type="button" @click="selectAllBtn.action")
@@ -42,7 +44,7 @@
                 .action-list_bg
                 span.action-list_btn-text {{ subOption.text }}
         template(v-else)
-          label.action-list_btn
+          label.action-list_btn(@click.stop="clickList")
             input.action-list_input(
               :type="typeSelectList"
               :name="uniqName"
@@ -136,11 +138,13 @@ export default {
   watch: {
     checkedOptions(newVal, oldVal) {
       if(oldVal === null) return;
-      if(!this.selectMultiple) this.closeList();
       this.$emit('input', newVal);
     },
   },
   methods: {
+    clickList() {
+      if(!this.selectMultiple) this.closeList();
+    },
     defaultModel() {
       this.selectMultiple ? this.checkedOptions = [] : this.checkedOptions = ''
     },
@@ -196,7 +200,7 @@ export default {
   }
   .custom-select_option-list {
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     top: 100%;
     left: 0;
     max-height: 13.5rem;

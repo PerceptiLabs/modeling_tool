@@ -68,6 +68,9 @@ export default {
     statisticsIsOpen() {
       return this.$store.getters['mod_workspace/GET_statisticsIsOpen']
     },
+    testIsOpen() {
+      return this.$store.getters['mod_workspace/GET_testIsOpen']
+    },
     currentId() {
       return this.itemData.layerId
     },
@@ -80,7 +83,7 @@ export default {
       this.$store.dispatch('mod_workspace/TOGGLE_container', {val: this.openContainer, container: this.itemData})
     },
     setSelect(ev) {
-      if (this.statisticsIsOpen) {
+      if (this.statisticsIsOpen || this.testIsOpen) {
         this.$store.commit('mod_statistics/CHANGE_selectElArr', this.itemData)
       }
       else {
@@ -90,7 +93,7 @@ export default {
       }
     },
     clickOutsideAction() {
-      if (!this.statisticsIsOpen) {
+      if (!this.statisticsIsOpen || !this.testIsOpen) {
         this.deselect()
       }
     },
