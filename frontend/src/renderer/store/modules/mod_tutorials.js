@@ -1,4 +1,3 @@
-import { isNumber } from "util";
 import router from "@/router";
 import store  from '@/store'
 
@@ -1104,14 +1103,14 @@ const mutations = {
     state.showMainTutorialInstruction = value
   },
   SET_activeStepMainTutorial(state, value) {
-    if(isNumber(value)) {
+    if(Number.isInteger(value)) {
       state.activeStepMainTutorial = value
     } else if(value === 'next') {
       state.activeStepMainTutorial++
     }
   },
   SET_activePointMainTutorial(state, value) {
-    if(isNumber(value)) {
+    if(Number.isInteger(value)) {
       state.activePointMainTutorial = value
     } else if(value === 'next') {
       state.activePointMainTutorial++
@@ -1125,7 +1124,7 @@ const mutations = {
     static_info[value.index].status = value.status
   },
   SET_activeActionMainTutorial(state, value) {
-    if(isNumber(value)) {
+    if(Number.isInteger(value)) {
       state.activeActionMainTutorial = value
     }
     else if(value === 'next') {

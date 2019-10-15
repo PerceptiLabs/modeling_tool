@@ -197,7 +197,7 @@ export default {
         this.calcWindowPosition();
         this.tutorialPointActivate({
           way: 'next',
-          validation: this.tutorialSearchId(event)
+          validation: event.currentTarget.id
         })
       })
     },
@@ -268,11 +268,6 @@ export default {
       if(!this.isTutorialMode) this.hideAllWindow();
       this.elementSelect({id: this.currentId, setValue: false });
       this.tutorialShowHideTooltip();
-    },
-    tutorialSearchId(event) {
-      return event.target.tagName === 'I'
-        ? event.target.parentNode.parentNode.parentNode.id
-        : event.target.parentNode.id
     }
   }
 }
