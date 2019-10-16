@@ -213,10 +213,11 @@ class TrainReinforceDataPolicy(DataPolicy):
                 if n_actions != -1 and current_action != -1:
                     train_dict[id_]['pred'] = np.zeros((n_actions,))
                     train_dict[id_]['pred'][int(current_action)] = 1
-                
-                train_dict[id_]['Reward'] = self._data[id_].get('reward', [-1])
-                train_dict[id_]['epochTotalReward'] = self._data[id_].get('total_reward', [-1])
 
+                train_dict[id_]['X'] = {}
+                train_dict[id_]['X']['Reward'] = self._data[id_].get('reward', [-1])
+                train_dict[id_]['X']['epochTotalReward'] = self._data[id_].get('total_reward', [-1])
+                
             elif content["Info"]["Type"] == "DataEnvironment":
                 train_dict[id_] = {}                
                 pass                

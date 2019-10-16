@@ -579,7 +579,7 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "            feed_dict = {\n"
         code += "                         state_tensor: np.atleast_2d(X_batch),\n"
         code += "                         a_tensor: np.atleast_2d(a_batch),\n"
-        code += "     p                    y_tensor: np.atleast_2d(y_batch),\n"
+        code += "                         y_tensor: np.atleast_2d(y_batch),\n"
         code += "                        }\n"
         code += "            sess.run(step, feed_dict=feed_dict)\n"
         #code += "            print('Took training step!')\n"        
