@@ -145,6 +145,8 @@ class SessionProcessHandler:
                 session.headlessOn()
             elif command == 'headlessOff':
                 session.headlessOff()
+            elif command == "skip":
+                session.skip = True
                 
             else:
                 log.warning("Unknown command: '{}'".format(command))        

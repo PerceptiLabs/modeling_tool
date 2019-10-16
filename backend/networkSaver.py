@@ -1,6 +1,7 @@
 import re
 import json
 from functionParser import explain
+from codehq import CodeHqNew as CodeHq
 
 def getVariableLibrary(variable):
     try:
@@ -32,10 +33,20 @@ def isAssign(string):
         print(e)
         return False
 
-def createNewLayerCode(layer,variables):
-    if "Code" not in layer["Info"]:
-        return ""
-    tabs=layer["Info"]["Code"]
+def createNewLayerCode(id_,layer,variables):
+    # if "Code" not in layer["Info"]:
+    #     return ""
+    if "Code" in layer["Info"] and layer["Info"]["Code"]:
+        tabs=layer["Info"]["Code"]
+    else:
+        Type=layer["Info"]["Type"]
+        Properties=layer["Info"]["Properties"]
+        Con=layer["Con"]
+        content={"Info":{"Type":Type, "Id": id_, "Properties": Properties}, "Con":Con}
+        tabs=CodeHq.get_code_generator(id_,content).get_code()
+        if type(tabs) is not dict:
+            tabs={"Output":tabs} 
+
     newCodeTabs=dict()
 
     for tab,code in tabs.items():
@@ -59,10 +70,9 @@ def createNewLayerCode(layer,variables):
 
 def createNetwork(graph_variables,graphObj,frontendNetwork,checkpoint):
     graph=graphObj.graphs
-    print("Graph Variables: ", graph_variables)
     frontendLayers=frontendNetwork["networkElementList"].copy()
     for Id, layer in graph.items():
-        newCode=createNewLayerCode(layer,graph_variables[Id])
+        newCode=createNewLayerCode(Id,layer,graph_variables[Id])
         frontendLayers[Id]["layerCode"]=newCode
         frontendLayers[Id]["checkpoint"]=checkpoint
 

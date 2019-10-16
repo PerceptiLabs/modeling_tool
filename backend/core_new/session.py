@@ -50,6 +50,7 @@ class LayerSession(ApiCallbackHandler):
         self._stopped = False
         self._paused = False
         self._headless = False
+        self._skip = False
         self._inputs = LayerIo(global_vars, local_vars)
         self._outputs = None
 
@@ -110,6 +111,10 @@ class LayerSession(ApiCallbackHandler):
 
     def on_tensors_get(self):
         return self._data_container.on_tensors_get()
+
+    def on_set_saver(self, sess, saver):
+        if self._data_container is not None:
+            self._data_container.store_value_in_root("saver", (sess, saver))
 
     def on_render(self, dashboard=None):
         if self._process_handler is None:

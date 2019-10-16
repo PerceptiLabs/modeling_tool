@@ -10,6 +10,9 @@ import traceback
 import os
 import threading
 
+from networkExporter import exportNetwork
+from networkSaver import saveNetwork
+
 from core_new.core import *
 from core_new.data import DataContainer
 
@@ -36,6 +39,8 @@ class coreLogic():
         self.testList=[]
         self.playCounter=None
         self.playing=False
+        
+        self.saver=None
 
         #self.core=core(self.networkName)
 
@@ -84,18 +89,6 @@ class coreLogic():
             
         return {"content":"core started"}
 
-    # def onThread(self, function, *args, **kwargs):
-    #     print(function)
-    #     self.commandQ.put((function, args, kwargs))
-
-    # def Pause(self):
-    #     if self.core.testStatus!="nextStep" or self.core.testStatus!="previousStep":
-    #         if self.status=="Paused":
-    #             self.status="Running"
-    #         else:
-    #             self.status="Paused"
-    #     return {"content":self.setCoreStatus(self.status)}
-
 
     def Pause(self):
         self.commandQ.put('pause')
@@ -106,16 +99,6 @@ class coreLogic():
         return {"content":"unpaused"}
 
     def Close(self):
-        # self.status="Stop"
-        # self.commandQ.put("stop")
-        # self.setCoreStatus(self.status)
-        # if self.core.sess:
-        #     self.core.sess.close()
-        # if self.cThread is not None:
-        #     while self.cThread.isAlive():
-        #         time.sleep(0.05)
-        #     self.cThread.join()
-        #     print("Core Killed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         return {"content":"closing the core"}
 
     def headlessOn(self):
@@ -128,97 +111,69 @@ class coreLogic():
         self.status="Stop"
         self.commandQ.put("stop")
         return {"content":"Stopping"}
-        # return {"content":self.setCoreStatus(self.status)}
 
     def checkCore(self):
         return {"content":"Alive"}
 
-    # def setCoreStatus(self,status):
-    #     self.onThread(self.core.setStatus,status)
-    #     return {"content":"current status is: " + str(status)}
-
     def isTrained(self,):
-        # return {"content":self.core.exporter is not None}
-        if self.cThread:
+        if self.saver:
+            return {"content":True}
+        else:
             return {"content":False}
 
-    # def exportNetwork(self,value):
-    #     if self.core.exporter is None:
-    #         self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
-    #         return {"content":"Export Failed.\nNo trained weights to Export."}
-    #     try:
-    #         if value["Type"]=="TFModel":
-    #             path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
-    #             if value["Compressed"]:
-    #                 self.core.exporter.asCompressedTfModel(path)
-    #             else:
-    #                 self.core.exporter.asTfModel(path,self.core.epoch)
-    #             return {"content":"Export success!\nSaved as:\n" + path}
+    def exportNetwork(self,value):
+        if self.saver is None:
+            self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
+            return {"content":"Export Failed.\nNo trained weights to Export."}
+        try:
+            exporter = exportNetwork(self.saver)
+            if value["Type"]=="TFModel":
+                path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
+                if value["Compressed"]:
+                    exporter.asCompressedTfModel(path)
+                else:
+                    exporter.asTfModel(path,self.epoch)
+                return {"content":"Export success!\nSaved as:\n" + path}
             
-    #     except Exception as e:
-    #         self.warningQueue.put("Export Failed with this error: ")
-    #         self.warningQueue.put(str(e))
-    #         print("Export failed")
-    #         print(traceback.format_exc())
-    #         return {"content":"Export Failed with this error: " + str(e)}
+        except Exception as e:
+            self.warningQueue.put("Export Failed with this error: ")
+            self.warningQueue.put(str(e))
+            print("Export failed")
+            print(traceback.format_exc())
+            return {"content":"Export Failed with this error: " + str(e)}
 
-    # def saveNetwork(self,value):
-    #     if self.core.exporter is None:
-    #         self.warningQueue.put("Save failed.\nMake sure you have started running the network before you try to Export it.")
-    #         return {"content":"Save Failed.\nNo trained weights to Export."}
-    #     try:
-    #         # path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
-    #         # value["Location"]="C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Networks"
-    #       # path=os.path.abspath(value["Location"][0]+"/"+str(self.networkName))
-    #         path=os.path.abspath(value["Location"][0]+"/"+"model.json")
-    #         self.core.saveNetwork(path,value["frontendNetwork"])
-    #         return {"content":"Save succeeded!"}
-    #     except Exception as e:
-    #         self.warningQueue.put("Save Failed with this error: ")
-    #         self.warningQueue.put(str(e))
-    #         print("Save failed")
-    #         print(traceback.format_exc())
-    #         return {"content":"Save Failed with this error: " + str(e)}
+    def saveNetwork(self,value):
+        if self.saver is None:
+            self.warningQueue.put("Save failed.\nMake sure you have started running the network before you try to Export it.")
+            return {"content":"Save Failed.\nNo trained weights to Export."}
+        try:
+            if "all_tensors" not in self.saver:
+                raise Exception("'all_tensors' was not found so the Saver could not create any references to the expored checkpoints.\nTry adding 'api.data.store(all_tensors=api.data.get_tensors())' to your Training Layer.")
+            elif self.saver["all_tensors"]==[]:
+                raise Exception("'all_tensors' was found but contained no variables.")
 
-        
-    #     # if self.core.sess is None or self.core.graphObj is None or self.core.outputDict is None:
-    #     #     self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
-    #     #     return {"content":"Export Failed.\nNo trained weights to Export."}
-    #     # try:
-    #     #     #The reason we need to send so many self variables (especially Saver instead of initializing it in the export function) is because we need everything to be initialized
-    #     #     #in the thread. When we run this function it is not run on the thread, but rather run in the main thread with variables taken from the thread. If we want to run
-    #     #     #the function on the thread, we need a queue system to call the function and check for reply, and we need to make sure the thread never is terminated.
-    #     #     self.core.exportNetwork(self.core.sess,self.core.saver,self.core.graphObj,self.core.outputDict,value)
-    #     #     return {"content":"Export success!\nSaved in:\n" + str(value["Location"])}
-    #     # except Exception as e:
-    #     #     self.warningQueue.put("Export Failed with this error: ")
-    #     #     self.warningQueue.put(str(e))
-    #     #     print("Export failed")
-    #     #     print(traceback.format_exc())
-    #     #     return {"content":"Export Failed with this error: " + str(e)}
+            exporter = exportNetwork(self.saver)
+            path=os.path.abspath(value["Location"][0])
+            frontendNetwork=value["frontendNetwork"]
+            if not os.path.exists(path):   
+                os.mkdir(path)
+            checkpoint=[None, os.path.relpath(exporter.asTfModel(path,self.epoch),path)]
 
+            newPath=os.path.abspath(path+"/"+"model.json")
+            saveNetwork(newPath, self.saver["all_tensors"], self.graphObj, frontendNetwork, checkpoint)
 
+            return {"content":"Save succeeded!"}
+        except Exception as e:
+            self.errorQueue.put("Save Failed with this error: ")
+            self.errorQueue.put(str(e))
+            print("Save failed")
+            print(traceback.format_exc())
+            return {"content":"Save Failed with this error: " + str(e)}
 
-
-
-    #     # if self.cThread is not None:
-    #     #     self.onThread(self.core.exportNetwork,value)
-    #     #     while True:
-    #     #         if not self.resultQ.empty():
-    #     #             resultMessage=self.resultQ.get()
-    #     #             print(resultMessage)
-    #     #             if type(resultMessage) is str:
-    #     #                 #Can catch warnings or more specific errors here as well if we want.
-    #     #                 if resultMessage=="ExportSuccess":
-    #     #                     return {"content":"Export success! \n Saved in: " + str(value["Location"])}
-    #     #                 if resultMessage=="ExportFailed":
-    #     #                     return {"conent":"Export Failed"}
-    #     #             time.sleep(0.2)
-
-    # def skipValidation(self):
-    #     self.onThread(self.core.skip)
-    #     #Check if validation was skipped or not before returning message
-    #     return {"content":"skipped validation"}
+    def skipValidation(self):
+        self.commandQ.put("skip")
+        #Check if validation was skipped or not before returning message
+        return {"content":"skipped validation"}
 
     def getTestStatus(self):
         try:
@@ -308,13 +263,15 @@ class coreLogic():
 
         while not self.resultQ.empty():
             tmp=self.resultQ.get()
+
+            if "saver" in tmp:
+                self.saver=tmp.pop("saver")
+                # self.exporter = exportNetwork(saver)
+
             if "testDict" in tmp:
                 self.testList.append(tmp["testDict"])
                 if not self.maxTestIter:
                     self.maxTestIter = tmp['maxTestIter']
-            # else:
-            #     trainResults=tmp
-
         if tmp:
             self.savedResultsDict.update(tmp)
 

@@ -138,6 +138,7 @@ class TrainValDataPolicy:
 
     def get_results(self):
         train_dict = {}
+        saver=None
 
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
@@ -149,9 +150,26 @@ class TrainValDataPolicy:
                 itr_trn = self._data[id_].get('iter_training', 0)
                 itr_val = self._data[id_].get('iter_validation', 0)
 
+                if "saver" in self._data:
+                    saver = self._data.pop('saver', None)
+                if saver:
+                    sess=saver[0]
+                    tf_saver=saver[1]
+                    network_outputs=self._data[id_].get("y_pred",None)
+                    input_id=None
+                    tmp_content=self._graph_dict[[i for i in content["Info"]["backward_connections"] if i!=self._graph_dict[content["Info"]["Properties"]["Labels"]]][0]]
+                    while tmp_content["Info"]["backward_connections"]!=[]:
+                        input_id=tmp_content["Info"]["backward_connections"][0]
+                        tmp_content=self._graph_dict[input_id]
+
+                    network_inputs=self._data[input_id]["Y"]
+                    saver={"sess":sess, "saver":tf_saver, "network_inputs":network_inputs, "network_outputs": network_outputs}
+                    if "all_tensors" in self._data[id_]:
+                        saver.update({"all_tensors":self._data[id_]["all_tensors"]})
+
                 max_epoch = self._data[id_].get('max_epoch', -1)        
-                max_itr_trn = self._data[id_].get('max_iter_training', -1)
-                max_itr_val = self._data[id_].get('max_iter_validation', -1)
+                train_datasize = self._data[id_].get('train_datasize', -1)
+                val_datasize = self._data[id_].get('val_datasize', -1)
 
                 train_dict[id_]['acc_training_epoch'] = self._data[id_].get('acc_training_epoch', [-1])
                 train_dict[id_]['loss_training_epoch'] = self._data[id_].get('loss_training_epoch', [-1])
@@ -173,9 +191,9 @@ class TrainValDataPolicy:
                 train_dict[id_]['f1_val_iter'] = self._data[id_].get('f1_val_iter', [-1])
                 train_dict[id_]['auc_val_iter'] = self._data[id_].get('auc_val_iter', [-1])
 
-                if "all_tensors" in self._data[id_]:
+                if "all_evaled_tensors" in self._data[id_]:
                     # all_tensors=train_dict[id_].pop("all_tensors")
-                    all_tensors=self._data[id_]["all_tensors"]
+                    all_evaled_tensors=self._data[id_]["all_evaled_tensors"]
 
                     import collections
                     import six
@@ -190,7 +208,7 @@ class TrainValDataPolicy:
                                 d[k] = v
                         return d
 
-                    train_dict=update(train_dict,all_tensors)
+                    train_dict=update(train_dict,all_evaled_tensors)
 
                 if not self._session._headless:
                     for key, value in self._data[id_].items():
@@ -215,6 +233,10 @@ class TrainValDataPolicy:
 
         # Set up variables to mimic FSM:
         itr = itr_trn + itr_val
+        #Dividing with batch_size to get the actuall iterations it will run rather than 
+        max_itr_trn=train_datasize/batch_size
+        max_itr_val=val_datasize/batch_size
+
         max_itr = max_itr_trn + max_itr_val
 
         # Initial values
@@ -249,4 +271,6 @@ class TrainValDataPolicy:
             "trainingStatus": training_status,  
             "status": status
         }
+        if saver is not None:
+            result_dict["saver"]=saver
         return result_dict
