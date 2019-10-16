@@ -132,10 +132,9 @@ class SessionProcessHandler:
         while not self._command_queue.empty():
             command = self._command_queue.get()
             log.info("Received command '{}'".format(command))
-        
             if command == 'pause':
                 session.pause()
-            if command == 'unpause':
+            elif command == 'unpause':
                 session.unpause()
             elif command == 'run':
                 session.unpause()

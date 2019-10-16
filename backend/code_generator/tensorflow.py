@@ -332,12 +332,13 @@ class TrainNormalCodeGenerator(CodeGenerator):
         # code += "api.data.store_session(sess)\n"
         code += "init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())\n"
         code += "sess.run(init)\n"
+        code += "import pdb;pdb.set_trace()\n"
         code += "api.data.store_locals(locals())\n"
         code += "all_tensors=api.data.get_tensors()\n" 
         code += "\n"
         code += "api.data.store(max_epoch=%d,\n" % (self._n_epochs - 1)
-        code += "               max_iter_training=%d,\n" % (self._n_iters - 1)
-        code += "               max_iter_validation=%d)\n" % (self._n_iters - 1)
+        code += "               max_iter_training=_data_size[0],\n"
+        code += "               max_iter_validation=_data_size[1])\n"
         code += "\n"
         code += "for epoch in range(%d):\n" % self._n_epochs
         code += "    sess.run(train_iterators)\n"
@@ -345,9 +346,9 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    #Setting the variables to empty as a way to reset them every epoch.\n"
         code += "    api.data.store(acc_train_iter=[], loss_train_iter=[], f1_train_iter=[], auc_train_iter=[],\n" 
         code += "                   acc_val_iter=[], loss_val_iter=[], f1_val_iter=[], auc_val_iter=[])\n"
+        code += "    iter=0\n"
         code += "    \n"
         code += "    try:\n"
-        code += "        iter=0\n"
         code += "        while True:\n"
         code += "            if False:\n"
         code += "                _, acc_train, loss_train, f1_train, auc_train = sess.run([step, accuracy, loss, f1, auc])\n"
@@ -372,7 +373,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    \n"
         code += "    sess.run(validation_iterators)\n"        
         code += "    try:\n"
-        code += "        iter=0\n"
         code += "        while True:\n"
         code += "            if False:\n"
         code += "                _, acc_val, loss_val, f1_val, auc_val = sess.run([step, accuracy, loss, f1, auc])\n"
@@ -392,17 +392,17 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "            api.ui.render(dashboard='train_val')\n"  
         code += "            iter+=1\n" 
         code += "    except tf.errors.OutOfRangeError:\n"
-        code += "        pass\n"     
+        code += "        pass\n"    
         code += "    \n"
         code += "    print('ITER: %d , ACCURACY: %d' % (iter, acc_train*100))\n"
         code += "    api.data.store(epoch=epoch)\n"
-        code += "    api.data.stack(acc_training_epoch=acc_train, loss_train_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
-        code += "                   acc_validation_epoch=acc_val, loss_val_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
+        code += "    api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
+        code += "                   acc_validation_epoch=acc_val, loss_validation_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
         code += "    api.ui.render(dashboard='train_val')\n"
         return code
 
     def _get_testing_code(self):
-        code  = "api.data.store(max_iter_testing=%d)\n" % (self._n_iters - 1)
+        code  = "api.data.store(max_iter_testing=_data_size[2])\n"
         code += "sess.run(test_iterators)\n"     
         code += "iter = 0\n"
         code += "try:\n"
@@ -411,8 +411,8 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "        api.data.store(all_tensors=all_evaled_tensors)\n"
         code += "        api.data.stack(y_pred=y_pred_.squeeze())\n"
         code += "        api.data.store(iter_testing=iter)\n"
-        code += "        api.ui.render(dashboard='testing')\n"  
         code += "        iter+=1\n"
+        code += "        api.ui.render(dashboard='testing')\n"  
         code += "except tf.errors.OutOfRangeError:\n"      
         code += "    pass\n"
         return code

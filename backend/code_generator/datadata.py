@@ -240,6 +240,7 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "X_test_size = X_test.shape[0]\n"
         code += '\n'
         code += "_sample = X_train[0]\n"
+        code += "global _data_size\n"
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
         code += "_batch_size = %d\n" % int(self.batch_size)
@@ -250,13 +251,6 @@ class DataDataCodeGenerator(CodeGenerator):
         code += 'X_validation = tf.data.Dataset.from_tensor_slices(X_validation)\n'
         code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
         code += "\n"
-        
-        # if self.shuffle:
-        #     code += "X_train=X_train.shuffle(X_train_size,seed=%d).repeat().batch(_batch_size)\n" % self._seed
-        # else:
-        #     code += "X_train=X_train.repeat().batch(_batch_size)\n"
-        # code += "X_validation=X_validation.repeat().batch(_batch_size)\n"
-        # code += "X_test=X_test.repeat(1).batch(1)\n"
         if self.shuffle:
             code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size)\n" % self._seed
         else:

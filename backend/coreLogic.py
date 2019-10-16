@@ -8,6 +8,7 @@ import psutil
 import copy
 import traceback
 import os
+import threading
 
 from core_new.core import *
 from core_new.data import DataContainer
@@ -31,7 +32,10 @@ class coreLogic():
         self.status="Created"
 
         self.testIter=0
+        self.maxTestIter=0
         self.testList=[]
+        self.playCounter=None
+        self.playing=False
 
         #self.core=core(self.networkName)
 
@@ -102,7 +106,8 @@ class coreLogic():
         return {"content":"unpaused"}
 
     def Close(self):
-        self.status="Stop"
+        # self.status="Stop"
+        # self.commandQ.put("stop")
         # self.setCoreStatus(self.status)
         # if self.core.sess:
         #     self.core.sess.close()
@@ -121,7 +126,7 @@ class coreLogic():
 
     def Stop(self):
         self.status="Stop"
-        self.commandQ.put("Stop")
+        self.commandQ.put("stop")
         return {"content":"Stopping"}
         # return {"content":self.setCoreStatus(self.status)}
 
@@ -164,7 +169,8 @@ class coreLogic():
     #     try:
     #         # path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
     #         # value["Location"]="C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Networks"
-    #         path=os.path.abspath(value["Location"][0]+"/"+str(self.networkName))
+    #       # path=os.path.abspath(value["Location"][0]+"/"+str(self.networkName))
+    #         path=os.path.abspath(value["Location"][0]+"/"+"model.json")
     #         self.core.saveNetwork(path,value["frontendNetwork"])
     #         return {"content":"Save succeeded!"}
     #     except Exception as e:
@@ -270,9 +276,26 @@ class coreLogic():
         self.testIter=0
         return {"content":"Test is now back to iter 1"}
 
+    def increaseStep(self):
+        while self.testIter<self.maxTestIter:
+            if not self.playing:
+                return
+            self.testIter+=1
+            time.sleep(0.5)
+        self.playing=False
+        return
+
     def playTest(self):
-        #TODO: Not yet implemented
-        return {"content":"Current sample is: "+str(self.testIter)}
+        if self.playCounter:
+            self.playing=False
+            self.playCounter.join()
+            self.playCounter=None
+        else:
+            self.playing=True
+            self.playCounter=threading.Thread(target=self.increaseStep)
+            self.playCounter.start()
+
+        return {"content": "Play started"}
 
     def updateResults(self):
         # if not self.resultQ.empty():
@@ -287,6 +310,10 @@ class coreLogic():
             tmp=self.resultQ.get()
             if "testDict" in tmp:
                 self.testList.append(tmp["testDict"])
+                if not self.maxTestIter:
+                    self.maxTestIter = tmp['maxTestIter']
+            # else:
+            #     trainResults=tmp
 
         if tmp:
             self.savedResultsDict.update(tmp)
@@ -310,15 +337,9 @@ class coreLogic():
 
     def getTestingStatistics(self,value):
         try:
-            self.maxTestIter=self.savedResultsDict['maxTestIter']
+            # self.maxTestIter=self.maxTestIter
             self.batch_size=1
             self.resultDict=self.testList[self.testIter]
-
-            # self.iter=self.savedResultsDict["testIter"]
-            # self.maxIter=self.savedResultsDict["maxTestIter"]
-            # self.batch_size=1
-            # self.trainingIterations=self.savedResultsDict["trainingIterations"]
-            # self.resultDict=self.savedResultsDict["testDict"]
         except KeyError as e:
             print("ERROR: ", e)
             return {}
@@ -601,8 +622,8 @@ class coreLogic():
                     else:
                         currentValidation=loss_train+list(loss_val)
 
-                totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_train_epoch","innervariable":""})
-                totalValidation=self.getStatistics({"layerId":layerId,"variable":"loss_val_epoch","innervariable":""})
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"loss_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
                                                      typeList=['line', 'line'],

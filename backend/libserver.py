@@ -244,8 +244,8 @@ class Message:
                 try:
                     return dict[variable]
                 except:
-                    pass
-            
+                    return ""
+
             content={
                 "Action_space": try_fetch(data_container[Id],"_action_space"),
                 "Dataset_size": try_fetch(data_container[Id], "_data_size"),
@@ -330,12 +330,21 @@ class Message:
                                     session_history_lw, extras_reader)    
             lw_core.run()
             
-            inShape={}
-            for Id, value in extras_reader.to_dict().items():
-                inShape[Id]=value["inShape"]
+            content={}
+            # for Id, value in extras_reader.to_dict().items():
+            #     inShape[Id]=value["inShape"]
 
-            content=inShape
-                
+            for Id, value in extras_reader.to_dict().items():
+                content[Id]={}
+                content[Id].update({"inShape":value["inShape"]})
+                if "errorMessage" in value:
+                    print("ErrorMessage: ", value['errorMessage'])
+                    content[Id].update({"Error": value['errorMessage']})
+                    content[Id].update({"Row": value['errorRow']})
+                else:
+                    content[Id].update({"Error": None})
+                    content[Id].update({"Row": None})
+
             
         elif action == "getNetworkOutputDim":
             jsonNetwork=self.request.get("value")
@@ -361,16 +370,16 @@ class Message:
 
             content={}
 
-            for key, value in extrasDict.items():
-                content[key]={}
-                content[key].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
+            for Id, value in extrasDict.items():
+                content[Id]={}
+                content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
                 if "errorMessage" in value:
                     print("ErrorMessage: ", value['errorMessage'])
-                    content[key].update({"Error": value['errorMessage']})
-                    content[key].update({"Row": value['errorRow']})
+                    content[Id].update({"Error": value['errorMessage']})
+                    content[Id].update({"Row": value['errorRow']})
                 else:
-                    content[key].update({"Error": None})
-                    content[key].update({"Row": None})
+                    content[Id].update({"Error": None})
+                    content[Id].update({"Row": None})
 
 
         elif action == "getPreviewSample":
@@ -451,27 +460,11 @@ class Message:
                     "VariableList": extrasDict[LayerId]["Variables"],
                     "VariableName": extrasDict[LayerId]["Default_var"],
                 }
+                if "errorMessage" in extrasDict[LayerId]:
+                    content.update({"Error": value['errorMessage']})
+                    content.update({"Row": value['errorRow']})
             else:
                 content = ""
-
-            # if reciever not in self.lwNetworks or self.lwNetworks[reciever].jsonNetwork!=jsonNetwork:
-            #     #Get the pretrained variables and constants
-            #     for id_, value in jsonNetwork.items():
-            #         if "checkpoint" in value and value["checkpoint"]!=[] and value["checkpoint"][-1] not in self.checkpointDict:
-            #             ckptObj=extractCheckpointInfo(value["endPoints"], *value["checkpoint"])
-            #             self.checkpointDict[value["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
-            #             ckptObj.close()
-            #     #Get the pre loaded data
-            #     for Id in list(self.dataDict[reciever].keys()):
-            #         if Id not in list(jsonNetwork.keys()):
-            #             del self.dataDict[reciever][Id]
-                
-            #     if reciever not in self.lwNetworks:
-            #         self.lwNetworks[reciever]=lwNetwork(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
-            #     else:
-            #         self.lwNetworks[reciever].propegateOutputs(self.dataDict[reciever],self.checkpointDict,jsonNetwork)
-            
-            # content=self.lwNetworks[reciever].getPreviewVariableList(LayerId)
         
         ####################################Parser###################################
         elif action == "Parse":
@@ -648,7 +641,7 @@ class Message:
         response = {
             "content": content
         }
-        print("Response: ", response)
+        # print("Response: ", response)
         return response
 
     def _create_response_binary_content(self):

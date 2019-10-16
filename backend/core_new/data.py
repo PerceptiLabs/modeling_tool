@@ -72,19 +72,36 @@ class TestDataPolicy:
         self._graph_dict = graph_dict
 
     def get_results(self):
-        test_dict = self._data.copy()
+        test_dict = {}
 
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
                 continue
             
             if content["Info"]["Type"] in ["TrainNormal", "TrainReinforce"]:
+                test_dict[id_]={}
                 itr_tst = self._data[id_].get('iter_testing', 0)
      
                 max_itr_tst = self._data[id_].get('max_iter_testing', -1)
 
+                test_dict[id_]['acc_training_epoch'] = 0
+                test_dict[id_]['f1_training_epoch'] = 0
+                test_dict[id_]['auc_training_epoch'] = 0
+                
+                test_dict[id_]['acc_validation_epoch'] = 0
+                test_dict[id_]['f1_validation_epoch'] = 0
+                test_dict[id_]['auc_validation_epoch'] = 0
+
+                test_dict[id_]['acc_train_iter'] = 0
+                test_dict[id_]['f1_train_iter'] = 0
+                test_dict[id_]['auc_train_iter'] = 0
+                
+                test_dict[id_]['acc_val_iter'] = 0
+                test_dict[id_]['f1_val_iter'] = 0
+                test_dict[id_]['auc_val_iter'] = 0
+
                 if "all_tensors" in self._data[id_]:
-                    all_tensors=test_dict[id_].pop("all_tensors")
+                    all_tensors=self._data[id_]["all_tensors"]
 
                     import collections
                     import six
@@ -100,15 +117,9 @@ class TestDataPolicy:
                         return d
 
                     test_dict=update(test_dict,all_tensors)
-
-        training_status = 'Testing'
+        training_status = 'Finished'
         status='Running'
         test_status='Waiting'
-
-        if itr_tst < max_itr_tst:
-            test_status = 'Waiting'
-        else:
-            training_status = 'Finished' 
         
         result_dict = {
             "maxTestIter": max_itr_tst,
@@ -126,13 +137,14 @@ class TrainValDataPolicy:
         self._graph_dict = graph_dict
 
     def get_results(self):
-        train_dict = self._data.copy()
+        train_dict = {}
 
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
                 continue
             
             if content["Info"]["Type"] in ["TrainNormal", "TrainReinforce"]:
+                train_dict[id_]={}
                 epoch = self._data[id_].get('epoch', 0)        
                 itr_trn = self._data[id_].get('iter_training', 0)
                 itr_val = self._data[id_].get('iter_validation', 0)
@@ -141,16 +153,29 @@ class TrainValDataPolicy:
                 max_itr_trn = self._data[id_].get('max_iter_training', -1)
                 max_itr_val = self._data[id_].get('max_iter_validation', -1)
 
-                # train_dict['epochTrainAccuracy'] = self._data[id_].get('acc_training_epoch', [-1])
-                # train_dict['epochTrainF1'] = self._data[id_].get('f1_training_epoch', [-1])
-                # train_dict['epochTrainAUC'] = self._data[id_].get('auc_training_epoch', [-1])
+                train_dict[id_]['acc_training_epoch'] = self._data[id_].get('acc_training_epoch', [-1])
+                train_dict[id_]['loss_training_epoch'] = self._data[id_].get('loss_training_epoch', [-1])
+                train_dict[id_]['f1_training_epoch'] = self._data[id_].get('f1_training_epoch', [-1])
+                train_dict[id_]['auc_training_epoch'] = self._data[id_].get('auc_training_epoch', [-1])
                 
-                # train_dict['epochValAccuracy'] = self._data[id_].get('acc_validation_epoch', [-1])
-                # train_dict['epochValF1'] = self._data[id_].get('f1_validation_epoch', [-1])
-                # train_dict['epochValAUC'] = self._data[id_].get('auc_validation_epoch', [-1])
+                train_dict[id_]['acc_validation_epoch'] = self._data[id_].get('acc_validation_epoch', [-1])
+                train_dict[id_]['loss_validation_epoch'] = self._data[id_].get('loss_validation_epoch', [-1])
+                train_dict[id_]['f1_validation_epoch'] = self._data[id_].get('f1_validation_epoch', [-1])
+                train_dict[id_]['auc_validation_epoch'] = self._data[id_].get('auc_validation_epoch', [-1])
+
+                train_dict[id_]['acc_train_iter'] = self._data[id_].get('acc_train_iter', [-1])
+                train_dict[id_]['loss_train_iter'] = self._data[id_].get('loss_train_iter', [-1])
+                train_dict[id_]['f1_train_iter'] = self._data[id_].get('f1_train_iter', [-1])
+                train_dict[id_]['auc_train_iter'] = self._data[id_].get('auc_train_iter', [-1])
+                
+                train_dict[id_]['acc_val_iter'] = self._data[id_].get('acc_val_iter', [-1])
+                train_dict[id_]['loss_val_iter'] = self._data[id_].get('loss_val_iter', [-1])
+                train_dict[id_]['f1_val_iter'] = self._data[id_].get('f1_val_iter', [-1])
+                train_dict[id_]['auc_val_iter'] = self._data[id_].get('auc_val_iter', [-1])
 
                 if "all_tensors" in self._data[id_]:
-                    all_tensors=train_dict[id_].pop("all_tensors")
+                    # all_tensors=train_dict[id_].pop("all_tensors")
+                    all_tensors=self._data[id_]["all_tensors"]
 
                     import collections
                     import six
@@ -194,7 +219,6 @@ class TrainValDataPolicy:
 
         # Initial values
         training_status = 'Waiting'
-        test_status = 'First'
         status = 'Created'
 
         # LOGIC
@@ -209,7 +233,10 @@ class TrainValDataPolicy:
             if self._session.is_paused:
                 status = 'Paused'
             else:
-                status = 'Running'     
+                status = 'Running' 
+        else:
+            if itr >= max_itr_trn-1:
+                training_status='Finished'    
         
         result_dict = {
             "iter": itr,
@@ -217,7 +244,6 @@ class TrainValDataPolicy:
             "epoch": epoch,
             "maxEpochs": max_epoch,
             "batch_size": batch_size,
-            # "graphObj": copy.copy(self._graph_dict),
             "trainingIterations": itr_trn,
             "trainDict": train_dict,
             "trainingStatus": training_status,  

@@ -16,23 +16,17 @@ class CodeHqNew:
         props = content["Info"]["Properties"]
 
 
-        # if 'Code' in content["Info"]:
-        #     code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
-        #     code_generator = CustomCodeGenerator(code_parts)
-        #     return code_generator
+        if 'Code' in content["Info"] and content["Info"]['Code']:
+            code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
+            code_generator = CustomCodeGenerator(code_parts)
+            return code_generator
         if type_ == 'DataData':
             sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
             partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
-
-            # sources = []
-            # partitions = []
-            # for source, partition in zip(sources, partitionList):
-            #     sources.append(source)
-            #     partitions.append(partition)
             
             code_generator = DataDataCodeGenerator(sources, partitions,
-                                                   batch_size=16, shuffle=True,
-                                                   seed=0, columns=[],
+                                                   batch_size=props["accessProperties"]['Batch_size'], shuffle=props["accessProperties"]['Shuffle_data'],
+                                                   seed=0, columns=props["accessProperties"]['Columns'],
                                                    layer_id=id_)
             return code_generator
         elif type_ == 'DeepLearningFC':
@@ -87,15 +81,28 @@ class CodeHqNew:
         elif type_ == 'TrainNormal':
             # TODO: dont hardcode epoch and iterations. From where should they come?
 
-            target_layer = props['Labels']
-            output_layer = [x for x in content['Con'] if x != target_layer][0] # take the FIRST non-target layer as network output/prediction
+            if 'Labels' in props:
+                target_layer = props['Labels']
+            else:    
+                target_layer = "'Target layer here'"
+
+            if len(content['Con'])>1:
+                output_layer = [x for x in content['Con'] if x != target_layer][0] # take the FIRST non-target layer as network output/prediction
+            else:
+                output_layer = "'Output layer here'"
+
+            if 'Epochs' in props:
+                epochs = props['Epochs']
+            else:
+                epochs = 20
+
             
             if len(content['Con']) > 2:
                 log.warning("More than 2 input layers not supported to training layer! Will treat {} as network output layer.".format(output_layer))
 
             code_gen = TrainNormalCodeGenerator(output_layer=output_layer,
                                                 target_layer=target_layer,
-                                                n_epochs=20,
+                                                n_epochs=epochs,
                                                 n_iterations=10)
             return code_gen
         elif type_ == 'TrainGenetic':
