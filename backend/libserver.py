@@ -222,18 +222,12 @@ class Message:
         #####################################B4End###################################
         if action == "getDataMeta":
             value=self.request.get("value")
-            # Id=value["Id"]
-            # jsonNetwork=value["jsonNetwork"]
-
             Id=value["Id"]
-            props=value["Properties"]
-            type_=value["Type"]
+            jsonNetwork=value["Network"]
 
-            graph_dict={Id:{"Con": [],"Info": {"Properties":props, "Type": type_},"Copy": False}}
-
-            # graph = Graph(jsonNetwork)
+            graph = Graph(jsonNetwork)
             
-            # graph_dict = graph.graphs
+            graph_dict = graph.graphs
             data_container = DataContainer()
             
             session_history_lw = SessionHistory()
@@ -262,7 +256,7 @@ class Message:
         elif action == "getPartitionSummary":
             value=self.request.get("value")
             Id=value["Id"]
-            jsonNetwork=value["jsonNetwork"]
+            jsonNetwork=value["Network"]
 
             graph = Graph(jsonNetwork)
             
@@ -647,7 +641,7 @@ class Message:
         response = {
             "content": content
         }
-        # print("Response: ", response)
+        print("Response: ", response)
         return response
 
     def _create_response_binary_content(self):

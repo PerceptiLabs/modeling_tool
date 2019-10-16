@@ -332,7 +332,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         # code += "api.data.store_session(sess)\n"
         code += "init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())\n"
         code += "sess.run(init)\n"
-        code += "import pdb;pdb.set_trace()\n"
         code += "api.data.store_locals(locals())\n"
         code += "all_tensors=api.data.get_tensors()\n" 
         code += "\n"

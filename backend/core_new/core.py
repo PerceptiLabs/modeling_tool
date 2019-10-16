@@ -215,7 +215,7 @@ class LayerExtrasReader:
             sample=self._evalSample(sample)
 
         self._put_in_dict(session.layer_id,{'Sample': sample, 'outShape': outShape, 'inShape': str(inShape).replace("'",""), 'Variables': layer_keys, 'Default_var':default_var})
-        print("Session dict:", self.to_dict())
+        # print("Session dict:", self.to_dict())
 
     def read_syntax_error(self, session):
         tbObj=traceback.TracebackException(*sys.exc_info())
@@ -320,7 +320,6 @@ class BaseCore:
         globals_.update(outputs.globals)
 
         locals_=outputs.locals
-        print("Locals: ", locals_)
 
         return globals_, locals_        
 
