@@ -7,7 +7,9 @@
       span {{ labelText }}
       i.icon.icon-shevron.icon--open
 
-    ul.custom-select_option-list.action-list(v-show="isOpenList")
+    ul.custom-select_option-list.action-list(
+      v-show="isOpenList"
+      )
       template(v-if="selectMultiple")
         li.custom-select_option
           button.action-list_btn(type="button" @click="selectAllBtn.action")
@@ -16,7 +18,7 @@
         li.custom-select_separator
 
       li.custom-select_option(
-        v-for="(option, i) in selectOptions"
+        v-for="(option, i) in trueModel"
         :key="i"
         :class="{'custom-select_option-open': openIndexSublist === i}"
         )
@@ -42,7 +44,7 @@
                 .action-list_bg
                 span.action-list_btn-text {{ subOption.text }}
         template(v-else)
-          label.action-list_btn
+          label.action-list_btn(@click.stop="clickList")
             input.action-list_input(
               :type="typeSelectList"
               :name="uniqName"
@@ -103,10 +105,16 @@ export default {
     uniqName() {
       return this._uid + 'selectid'
     },
+    trueModel() {
+      const optionsList = this.selectOptions;
+      if(!optionsList.length) return optionsList;
+      if( optionsList[0].constructor.name === 'Object') return optionsList;
+      else return optionsList.map((el)=> { return { text: el, value: el, }})
+    },
     labelText() {
       if(this.value.length) {
         let checkedTextList = [];
-        addSelectedText(this.value, this.selectOptions, checkedTextList);
+        addSelectedText(this.value, this.trueModel, checkedTextList);
         return checkedTextList.join(', ')
       }
       else return this.selectPlaceholder;
@@ -119,7 +127,7 @@ export default {
       }
     },
     selectAllBtn() {
-      let all = this.selectOptions.length || 0;
+      let all = this.trueModel.length || 0;
       let check = this.checkedOptions.length;
       if(all === check)             return {iconClass: 'icon-app-minimize',  action: ()=> this.defaultModel()};
       if(all > check && check > 0)  return {iconClass: 'icon-app-close',     action: ()=> this.defaultModel()};
@@ -130,16 +138,18 @@ export default {
   watch: {
     checkedOptions(newVal, oldVal) {
       if(oldVal === null) return;
-      if(!this.selectMultiple) this.closeList();
       this.$emit('input', newVal);
     },
   },
   methods: {
+    clickList() {
+      if(!this.selectMultiple) this.closeList();
+    },
     defaultModel() {
       this.selectMultiple ? this.checkedOptions = [] : this.checkedOptions = ''
     },
     enableAll() {
-      this.selectOptions.forEach((item)=> this.checkedOptions.push(item.value));
+      this.trueModel.forEach((item)=> this.checkedOptions.push(item.value));
     },
     openList() {
       this.isOpenList ? this.closeList() : this.isOpenList = true
@@ -190,7 +200,7 @@ export default {
   }
   .custom-select_option-list {
     position: absolute;
-    z-index: 2;
+    z-index: 3;
     top: 100%;
     left: 0;
     max-height: 13.5rem;

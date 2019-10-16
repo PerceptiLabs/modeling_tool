@@ -3,7 +3,6 @@
     :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-confirm="confirmSettings"
-    @press-update="updateCode"
   )
     template(slot="Settings-content")
       .settings-layer_section
@@ -32,8 +31,9 @@
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
-        )
+      )
 
 </template>
 
@@ -54,46 +54,6 @@ export default {
           title: 'Operation',
           text: 'Choose which operation to use'
         }
-      }
-    }
-  },
-  computed: {
-    codeDefault() {
-      let typeCode;
-      switch (this.settings.Type) {
-        case 'Add':
-          typeCode = `for i in range(0,len(list(X['Y'].values())),2):
-if not Y:
-   Y=list(X['Y'].values())[i]
-Y=tf. add(list(X['Y'].values())[i],Y);`
-          break;
-        case 'Sub':
-          typeCode = `for i in range(0,len(list(X['Y'].values())),2):
-if not Y:
-   Y=list(X['Y'].values())[i]
-Y=tf. subtract(list(X['Y'].values())[i],Y);`
-          break;
-        case 'Multi':
-          typeCode = `for i in range(0,len(list(X['Y'].values())),2):
-if not Y:
-   Y=list(X['Y'].values())[i]
-Y=tf.multiply(list(X['Y'].values())[i],Y);`
-          break;
-        case 'Div':
-          typeCode = `for i in range(0,len(list(X['Y'].values())),2):
-if not Y:
-   Y=list(X['Y'].values())[i]
-Y=tf.divide(list(X['Y'].values())[i],Y);`
-          break;
-        case 'Concat':
-          typeCode = `for c in range(0,len(list(X['Y'].values())),2):
-if not Y:
-   Y=c
-Y=tf.concat([Y, list(X['Y'].values())[c]],${this.settings.Merge_dim});`
-          break;
-      }
-      return {
-        Output: typeCode
       }
     }
   }

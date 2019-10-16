@@ -18,8 +18,10 @@ import logging
 log = logging.getLogger(__name__)
 
 class coreLogic():
-    def __init__(self,networkName):
+    def __init__(self,networkName, dataDict):
         self.networkName=networkName
+        self.dataDict=dataDict
+
         self.warningQueue=queue.Queue()
         self.errorQueue=queue.Queue()
         self.commandQ=queue.Queue()
@@ -93,6 +95,7 @@ class coreLogic():
     # def onThread(self, function, *args, **kwargs):
     #     print(function)
     #     self.commandQ.put((function, args, kwargs))
+
 
     # def Pause(self):
     #     if self.core.testStatus!="nextStep" or self.core.testStatus!="previousStep":

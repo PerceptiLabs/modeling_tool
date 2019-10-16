@@ -1,7 +1,4 @@
 <template lang="pug">
-  //-#app(
-    v-hotkey="keymap"
-    )
   #app
     header-win.app-header(
       v-if="platform === 'win32'"
@@ -20,78 +17,76 @@
     )
     router-view.app-page
     update-popup
-    the-info-popup
+    the-info-popup(v-if="isShowPopup")
+    confirm-popup
 </template>
 
 <script>
   import {ipcRenderer}  from 'electron'
+  import { mapMutations, mapActions } from 'vuex';
 
   import HeaderLinux    from '@/components/header/header-linux.vue';
   import HeaderWin      from '@/components/header/header-win.vue';
   import HeaderMac      from '@/components/header/header-mac.vue';
-  import updatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
+  import UpdatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
   import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
+  import ConfirmPopup   from "@/components/global-popups/confirm-popup.vue";
 
   export default {
     name: 'TheApp',
-    components: { HeaderLinux, HeaderWin, HeaderMac, updatePopup, TheInfoPopup },
+    components: {
+      HeaderLinux, HeaderWin, HeaderMac,
+      UpdatePopup, TheInfoPopup, ConfirmPopup
+    },
     created() {
-      this.$store.dispatch('mod_tracker/TRACK_initMixPanel');
-      this.$store.dispatch('mod_user/GET_LOCAL_userInfo');
+      window.addEventListener('online',  this.updateOnlineStatus);
+      window.addEventListener('offline', this.updateOnlineStatus);
+      this.trackerInit();
+      this.readUserInfo();
     },
     mounted() {
+      this.updateOnlineStatus();
       /*Menu*/
-      ipcRenderer.on('get-app-version', (event, data) => {
-        this.$store.commit('globalView/SET_appVersion', data);
-      });
+      ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));
 
       /*Auto update*/
-      ipcRenderer.on('checking-for-update', (event, updateInfo) => {
-        //console.log('checking-for-update', updateInfo);
-        this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo)
-      });
-      ipcRenderer.on('update-available', (event, updateInfo) => {
+      ipcRenderer.on('checking-for-update', (event, updateInfo)=> this.SET_updateInfo(updateInfo));
+      ipcRenderer.on('update-available', (event, updateInfo)=> {
         //console.log('update-available', updateInfo);
-        this.$nextTick(()=>{
-          this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
-          this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo);
+        this.$nextTick(()=> {
+          this.SET_showPopupUpdates(true);
+          this.SET_updateInfo(updateInfo)
         })
       });
-      ipcRenderer.on('update-not-available', (event, update) => {
+      ipcRenderer.on('update-not-available', (event, update)=> {
         //console.log('update-not-available', update);
         if(this.showNotAvailable) {
-          this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
-          this.$store.commit('mod_autoUpdate/SET_updateStatus', 'not update')
+          this.SET_showPopupUpdates(true);
+          this.SET_updateStatus('not update')
         }
       });
-      ipcRenderer.on('update-downloading', (event, percent) => {
-        //console.log('update-downloading', percent);
-        this.$store.commit('mod_autoUpdate/SET_updateProgress', Math.round(percent));
-      });
-      ipcRenderer.on('update-completed', (event, percent) => {
-        //console.log('update-completed', percent);
-        this.$store.commit('mod_autoUpdate/SET_updateStatus', 'done')
-      });
-      ipcRenderer.on('update-error', (event, error) => {
-        this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', false);
-        if(error) this.$store.dispatch('globalView/GP_infoPopup', error);
+      ipcRenderer.on('update-downloading', (event, percent)=> this.SET_updateProgress(Math.round(percent)));
+      ipcRenderer.on('update-completed', (event, percent)=> this.SET_updateStatus('done'));
+      ipcRenderer.on('update-error', (event, error)=> {
+        this.SET_showPopupUpdates(false);
+        if(error) this.openErrorPopup(error);
       });
 
-      ipcRenderer.on('show-mac-header', (event, value) => { this.showMacHeader = value });
-      ipcRenderer.on('info',            (event, data) => { console.log(data); });
-      ipcRenderer.on('show-restore-down-icon', (event, value) => {
-        this.$store.commit('globalView/SET_appIsFullView', value);
-      });
+      ipcRenderer.on('show-mac-header', (event, value)=> { this.showMacHeader = value });
+      ipcRenderer.on('info',            (event, data)=> { console.log(data); });
+      ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
 
       this.calcAppPath();
-      this.checkToken();
-      this.$nextTick(() =>{
-        if(this.userId === 'Guest') {
-          this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
-        }
+      this.checkLocalToken();
+      this.$nextTick(()=> {
+        //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
         this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
       })
+    },
+    beforeDestroy() {
+      window.removeEventListener('online',  this.updateOnlineStatus);
+      window.removeEventListener('offline', this.updateOnlineStatus);
     },
     data() {
       return {
@@ -105,24 +100,73 @@
       showNotAvailable() {
         return this.$store.state.mod_autoUpdate.showNotAvailable
       },
-      // userToken() {
-      //   return this.$store.state.mod_user.userToken
-      // },
       userId() {
         return this.$store.getters['mod_user/GET_userID']
-      }
+      },
+      userEmail() {
+        return this.$store.getters['mod_user/GET_userEmail']
+      },
+      /*show popup*/
+      infoPopup() {
+        return this.$store.state.globalView.globalPopup.showInfoPopup
+      },
+      errorPopup() {
+        return this.$store.state.globalView.globalPopup.showErrorPopup
+      },
+      isShowPopup() {
+        return this.errorPopup.length || this.infoPopup.length
+      },
     },
     watch: {
       '$route': {
-        handler(to, from) {
+        handler(to) {
           this.sendPathToAnalist(to.fullPath)
         }
       },
-      userId(newVal) {
-        this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
+      userId() {
+        this.initUser()
       }
     },
     methods: {
+      ...mapMutations({
+        SET_appVersion:       'globalView/SET_appVersion',
+        SET_appIsFullView:    'globalView/SET_appIsFullView',
+        SET_appPath:          'globalView/SET_appPath',
+
+        SET_updateInfo:       'mod_autoUpdate/SET_updateInfo',
+        SET_showPopupUpdates: 'mod_autoUpdate/SET_showPopupUpdates',
+        SET_updateStatus:     'mod_autoUpdate/SET_updateStatus',
+        SET_updateProgress:   'mod_autoUpdate/SET_updateProgress',
+      }),
+      ...mapActions({
+        openErrorPopup:   'globalView/GP_infoPopup',
+        SET_onlineStatus: 'globalView/SET_onlineStatus',
+
+        trackerInit:      'mod_tracker/TRACK_initMixPanel',
+        trackerInitUser:  'mod_tracker/TRACK_initMixPanelUser',
+        trackerCreateUser:'mod_tracker/TRACK_createUser',
+        trackerUpdateUser:'mod_tracker/TRACK_updateUser',
+        trackerAppStart:  'mod_tracker/EVENT_appStart',
+
+        eventAppClose:    'mod_events/EVENT_appClose',
+        eventAppMinimize: 'mod_events/EVENT_appMinimize',
+        eventAppMaximize: 'mod_events/EVENT_appMaximize',
+
+        setUserToken:     'mod_user/SET_userToken',
+        readUserInfo:     'mod_user/GET_LOCAL_userInfo',
+      }),
+      updateOnlineStatus() {
+        this.SET_onlineStatus(navigator.onLine);
+      },
+      initUser() {
+        this.trackerInitUser(this.userId)
+          .then(()=> {
+            if(this.userId !== 'Guest') {
+              this.trackerCreateUser(this.userEmail);
+              this.trackerUpdateUser(this.userEmail);
+            }
+          })
+      },
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {
           ipcRenderer.send('change-route', {path, id: this.userId})
@@ -134,7 +178,7 @@
           ipcRenderer.send('app-ready');
           splash.remove();
           document.body.className = "";
-          this.$store.dispatch('mod_tracker/EVENT_appStart');
+          this.trackerAppStart();
         }, 1000)
       },
       calcAppPath() {
@@ -151,26 +195,27 @@
             path = resPath.slice(0, resPath.indexOf('resources'));
             break
         }
-        this.$store.commit('globalView/SET_appPath', path);
+        this.SET_appPath(path);
       },
-      checkToken() {
+      checkLocalToken() {
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
-          this.$store.dispatch('mod_user/SET_userToken', localUserToken);
+          this.setUserToken(localUserToken);
           if(this.$router.history.current.name === 'login') {
             this.$router.replace({name: 'projects'});
           }
         }
+        else this.trackerInitUser(this.userId)
       },
       /*Header actions*/
       appClose() {
-        this.$store.dispatch('mod_events/EVENT_appClose');
+        this.eventAppClose();
       },
       appMinimize() {
-        this.$store.dispatch('mod_events/EVENT_appMinimize');
+        this.eventAppMinimize();
       },
       appMaximize() {
-        this.$store.dispatch('mod_events/EVENT_appMaximize');
+        this.eventAppMaximize();
       },
     },
   }

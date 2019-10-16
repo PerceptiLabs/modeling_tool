@@ -8,6 +8,7 @@
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
 
@@ -24,12 +25,5 @@ export default {
       tabs: ['Code'],
     }
   },
-  computed: {
-    codeDefault() {
-      return {
-        Output: `Y=tf.image.rgb_to_grayscale(X['Y']);`
-      }
-    }
-  }
 }
 </script>

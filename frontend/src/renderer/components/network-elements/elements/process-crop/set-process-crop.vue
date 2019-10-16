@@ -3,7 +3,6 @@
     :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-confirm="confirmSettings"
-    @press-update="updateCode"
   )
     template(slot="Settings-content")
       .settings-layer_section.text-center.crop-box
@@ -24,6 +23,7 @@
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
 
@@ -62,13 +62,6 @@
         }
       }
     },
-    computed: {
-      codeDefault() {
-        return {
-          Output: `Y=tf.image.crop_to_bounding_box(X['Y'], ${this.settings.Offset_height}, ${this.settings.Offset_width}, ${this.settings.Target_height}, ${this.settings.Target_width})`
-        }
-      }
-    }
   }
 </script>
 <style lang="scss">

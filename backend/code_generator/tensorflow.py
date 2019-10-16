@@ -63,11 +63,11 @@ class RecurrentCodeGenerator(CodeGenerator):
 
 class WordEmbeddingCodeGenerator(CodeGenerator):
     def get_code(self):
-        code  = 'words = tf.string_split(X)\n'
+        code  = "words = tf.string_split(X['Y'])\n"
         code += 'vocab_size=words.get_shape().as_list()[0]\n'
         code += 'embed_size=10\n'
         code += 'embedding = tf.Variable(tf.random_uniform((vocab_size, embed_size), -1, 1))\n'
-        code += 'Y = tf.nn.embedding_lookup(embedding, X)\n'
+        code += "Y = tf.nn.embedding_lookup(embedding, X[''Y])\n"
         return code
 
 
@@ -88,7 +88,7 @@ class CropCodeGenerator(CodeGenerator):
         self._target_width = target_width
 
     def get_code(self):
-        code = "Y=tf.image.crop_to_bounding_box(X, %d, %d, %d, %d)\n" % (self._offset_height,
+        code = "Y=tf.image.crop_to_bounding_box(X['Y'], %d, %d, %d, %d)\n" % (self._offset_height,
                                                                          self._offset_width,
                                                                          self._target_height,
                                                                          self._target_width)
@@ -97,10 +97,10 @@ class CropCodeGenerator(CodeGenerator):
 
 class GrayscaleCodeGenerator(CodeGenerator):
     def get_code(self):
-        code  = 'if X["Y"].get_shape().as_list()[-1] == 3:\n'
-        code += '    Y = tf.image.rgb_to_grayscale(X)\n'
+        code  = "if X['Y'].get_shape().as_list()[-1] == 3:\n"
+        code += "    Y = tf.image.rgb_to_grayscale(X['Y'])\n"
         code += 'else:\n'
-        code += '    Y = X\n'
+        code += "    Y = X['Y']\n"
         return code
 
 
@@ -109,13 +109,13 @@ class ArgmaxCodeGenerator(CodeGenerator):
         self._dim = dim
 
     def get_code(self):
-        code = 'Y = tf.argmax(X, %s)' % self._dim
+        code = "Y = tf.argmax(X['Y'], %s)" % self._dim
         return code
 
 
 class SoftmaxCodeGenerator(CodeGenerator):
     def get_code(self):
-        code = 'Y = tf.nn.softmax(X)'
+        code = "Y = tf.nn.softmax(X['Y'])"
         return code
 
 
@@ -128,7 +128,7 @@ class MergeCodeGenerator(CodeGenerator):
         # TODO: in python version < 3.6 dicts aren't ordered. caution if we allow custom environments in the future.
         
         if self._type == 'Concat':
-            # Due to duplicate values in X, just take every other value.            
+            # Due to duplicate values in X['Y'], just take every other value.            
             code  = "for i in range(0, len(list(X['Y'].values())), 2):\n"
             code += "    if not Y:\n"
             code += "        Y = list(X['Y'].values())[i]\n"

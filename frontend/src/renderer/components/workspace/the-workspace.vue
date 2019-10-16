@@ -38,7 +38,11 @@
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
         workspace-before-import(v-if="showWorkspaceBeforeImport")
-        workspace-save-network(ref="saveNetworkPopup")
+        workspace-save-network(
+          v-if="saveNetworkPopup.show"
+          ref="saveNetworkPopup"
+          :exist-trained="saveNetworkPopup.existTrained"
+          )
 
       start-training-spinner(v-if="showTrainingSpinner")
 

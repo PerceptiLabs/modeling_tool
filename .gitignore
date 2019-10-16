@@ -6,6 +6,8 @@ backend/net.json
 *.pyc
 *.py~
 *#*#
+.vscode/
+backend/.vscode/
 #Frontend ignores
 frontend/.DS_Store
 frontend/core/*
@@ -15,6 +17,7 @@ frontend/dist/web/*
 frontend/node_modules/
 frontend/build/*
 !frontend/build/icons
+!frontend/build/*.plist
 frontend/npm-debug.log
 frontend/npm-debug.log.*
 frontend/thumbs.db

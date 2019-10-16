@@ -12,19 +12,21 @@
     )
     .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
     .net-element_checkpoint-icon(v-if="showCheckpoint") t
+
     .net-element_checkpoint-icon.net-element_code-error(v-if="dataEl.layerCodeError")
       i.icon.icon-code-error
+
+    .net-element_arrows-start(v-if="showDotsArrow")
+      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
+    .net-element_arrows-start.net-element_arrows-start--right(v-if="showDotsArrow")
+      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
+    .net-element_arrows-start.net-element_arrows-start--bottom(v-if="showDotsArrow")
+      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
+    .net-element_arrows-start.net-element_arrows-start--left(v-if="showDotsArrow")
+      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
+
     .net-element_btn(ref="BaseElement")
       slot
-
-    .net-element_arrows-start
-      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
-    .net-element_arrows-start.net-element_arrows-start--right
-      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
-    .net-element_arrows-start.net-element_arrows-start--bottom
-      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
-    .net-element_arrows-start.net-element_arrows-start--left
-      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
 
     .net-element_window(
       v-if="settingsIsOpen"

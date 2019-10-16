@@ -198,14 +198,16 @@ class Message:
         startTime=time.time()
 
         #Check if the core exists, otherwise create one
-        if reciever not in self.cores:
-            core=coreLogic(reciever)
-            self.cores[reciever]=core
-        else:
-            core=self.cores[reciever]
+        
 
         if not reciever in self.dataDict:
             self.dataDict[reciever]=dict()
+
+        if reciever not in self.cores:
+            core=coreLogic(reciever, self.dataDict[reciever])
+            self.cores[reciever]=core
+        else:
+            core=self.cores[reciever]
 
         warnings=core.warningQueue
         warningList=[]
@@ -342,6 +344,7 @@ class Message:
             
         elif action == "getNetworkOutputDim":
             jsonNetwork=self.request.get("value")
+
             
             from pprint import pprint
             pprint(jsonNetwork)

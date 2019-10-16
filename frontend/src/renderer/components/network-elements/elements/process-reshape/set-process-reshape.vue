@@ -4,7 +4,6 @@
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
     @press-confirm="confirmSettings"
-    @press-update="updateCode"
     )
     template(slot="Settings-content")
       .settings-layer_section
@@ -36,6 +35,7 @@
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
 
@@ -52,6 +52,10 @@
     name: 'SetProcessReshape',
     mixins: [mixinSet],
     components: { TripleInput, TripleInputElementReshape, SettingReshapeImage },
+    mounted() {
+      console.log(this.currentEl);
+      this.$store.dispatch('mod_api/API_getInputDim')
+    },
     data() {
       return {
         settings: {
@@ -74,12 +78,6 @@
       ...mapGetters({
         isTutorialMode: 'mod_tutorials/getIstutorialMode'
       }),
-      codeDefault() {
-        return {
-          Output: `Y=tf.reshape(X['Y'], [-1]+[layer_output for layer_output in [${this.settings.Shape}]]);
-Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
-        }
-      }
     },
     watch: {
       'settings.Shape': {

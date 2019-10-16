@@ -34,31 +34,20 @@
               @click="updateCode"
               ) Update code
       .popup_body.active(v-if="tabSelected === 'Preview'")
-        .settings-layer_section
-          .settings-layer
-            .form_row
-              button.btn.btn--link(type="button" @click="toSettings")
-                i.icon.icon-backward
-                span Back
-            .form_row
-              chart-switch.data-settings_chart(
-                :disable-header="true"
-                :chart-data="imgData"
-              )
-        .settings-layer_foot
-          button#tutorial_button-confirm.btn.btn--primary(type="button"
-            @click="confirmSettings"
-          ) Confirm
+        settings-preview(
+          :current-el="currentEl"
+          @to-settings="toSettings"
+          )
+
 
 </template>
 
 <script>
   import coreRequest  from "@/core/apiCore.js";
-  import ChartSwitch  from "@/components/charts/chart-switch.vue";
-  import {mapActions} from 'vuex';
+  import SettingsPreview  from "@/components/network-elements/elements-settings/setting-preview.vue";
 export default {
   name: 'NetBaseSettings',
-  components: {ChartSwitch },
+  components: {SettingsPreview },
   props: {
     tabSet: {
       type: Array,
@@ -81,21 +70,14 @@ export default {
     return {
       tabSelected: '',
       disableSettings: false,
-      imgData: null
     }
   },
   computed: {
-    currentNetworkID() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
-    },
     isTutorial() {
       return this.$store.getters['mod_tutorials/getIstutorialMode']
     }
   },
   methods: {
-    ...mapActions({
-      tutorialPointActivate: 'mod_tutorials/pointActivate',
-    }),
     coreRequest,
     toSettings() {
       let tab = this.currentEl.layerSettingsTabName || this.tabSet[0];
@@ -107,29 +89,16 @@ export default {
     },
     applySettings(name) {
       this.$emit('press-apply', name);
+      //const elId = this.currentEl.layerId;
       this.tabSelected = 'Preview';
-      this.$nextTick(()=> {
-        this.getPreviewSample();
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
-      })
     },
     updateCode(name) {
       this.$emit('press-update')
     },
-    confirmSettings() {
-      this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-confirm'});
-      this.$emit('press-confirm');
-    },
-    getPreviewSample() {
-      this.$store.dispatch('mod_api/API_getPreviewSample', this.currentEl.layerId)
-        .then((data)=> {
-          if(data) {
-            //console.log(data);
-            this.imgData = data;
-          }
-          else this.confirmSettings();
-        })
-    },
+    // confirmSettings() {
+    //   this.$emit('press-confirm');
+    // },
+
   }
 }
 </script>

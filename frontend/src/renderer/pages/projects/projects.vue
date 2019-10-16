@@ -14,13 +14,16 @@
 
 </template>
 <script>
-  import {filePCRead, folderPCDelete}  from '@/core/helpers.js'
+  import {filePCRead, folderPCDelete, deepCopy}  from '@/core/helpers.js'
   import {mapState, mapGetters, mapMutations, mapActions} from 'vuex';
 
   import basicTemplate1 from '@/core/basic-template/base-template-1.js'
 
   export default {
     name: 'PageProjects',
+    mounted() {
+      this.checkCloudToken()
+    },
     data() {
       return {
         source: 'computer',
@@ -65,7 +68,7 @@
         handler() {
           if(!this.localUserInfo) return;
 
-          let localProjectsList = JSON.parse(JSON.stringify(this.localUserInfo.projectsList));
+          let localProjectsList = deepCopy(this.localUserInfo.projectsList);
           if (Array.isArray(localProjectsList)) {
             localProjectsList.forEach((el) => {
               el.notExist = false;
@@ -90,7 +93,7 @@
         const pathDelete = selectedProject.pathProject[0];
         folderPCDelete(pathDelete)
           .then(()=> {
-            const newProjectsList = JSON.parse(JSON.stringify(this.localUserInfo.projectsList));
+            const newProjectsList = deepCopy(this.localUserInfo.projectsList);
             newProjectsList.splice(indexCheckedProj, 1);
             this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
             this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
@@ -100,16 +103,18 @@
     },
     methods: {
       ...mapMutations({
-        setTutorialMode:        'mod_tutorials/SET_isTutorialMode',
-        setTutorialStoryBoard:  'mod_tutorials/SET_showTutorialStoryBoard',
+        setTutorialMode:      'mod_tutorials/SET_isTutorialMode',
+        setTutorialStoryBoard:'mod_tutorials/SET_showTutorialStoryBoard',
+        restore_network:      'mod_workspace/RESTORE_network',
       }),
       ...mapActions({
-        openNetwork:        'mod_events/EVENT_openNetwork',
-        loadNetwork:        'mod_events/EVENT_loadNetwork',
-        beginTutorial:      'mod_tutorials/START_storyboard',
-        addNetwork:         'mod_workspace/ADD_network',
-        saveLocalUserInfo:  'mod_user/UPDATE_LOCAL_userInfo',
-        showInfoPopup:      'globalView/GP_infoPopup',
+        openNetwork:      'mod_events/EVENT_openNetwork',
+        loadNetwork:      'mod_events/EVENT_loadNetwork',
+        beginTutorial:    'mod_tutorials/START_storyboard',
+        addNetwork:       'mod_workspace/ADD_network',
+        saveLocalUserInfo:'mod_user/UPDATE_LOCAL_userInfo',
+        showInfoPopup:    'globalView/GP_infoPopup',
+        checkCloudToken:  'mod_apiCloud/CloudAPI_checkStatus',
       }),
       openTemplate(path) {
         this.loadNetwork(path)
@@ -123,6 +128,10 @@
       },
       openBasicTemplate(net) {
         this.addNetwork(net.network)
+      },
+      openLastWS() {
+        this.restore_network(this.localUserInfo.workspace);
+        this.goNextPage()
       },
       goNextPage() {
         this.$router.push({name: 'app'});

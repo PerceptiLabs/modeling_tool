@@ -107,13 +107,14 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex';
+import { deepCopy } from "@/core/helpers.js";
 export default {
   name: "GeneralSettings",
   mounted() {
     const net = this.networkElementList;
     const settings = this.networkSettings;
     if(settings !== null) {
-      this.settings = JSON.parse(JSON.stringify(settings));
+      this.settings = deepCopy(settings);
     }
 
     for(let elID in net) {

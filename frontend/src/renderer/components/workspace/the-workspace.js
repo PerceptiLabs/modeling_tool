@@ -3,6 +3,7 @@ import canvg        from 'canvg'
 import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 
 import { projectPCSave, generateID, loadPathFolder, deepCopy }  from "@/core/helpers.js";
+import { pathSlash }  from "@/core/constants.js";
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -15,31 +16,44 @@ import TheStatistics          from "@/components/statistics/the-statistics.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
-
+var unwatch;
 export default {
   name: 'WorkspaceContent',
   components: {
     NetworkField, TextEditable,
-    GeneralSettings, GeneralResult, SelectCoreSide, WorkspaceBeforeImport, WorkspaceSaveNetwork,
+    GeneralSettings, GeneralResult, SelectCoreSide,
+    WorkspaceBeforeImport, WorkspaceSaveNetwork,
     TheStatistics, TheTesting, TheViewBox, StartTrainingSpinner
+  },
+  created() {
+
+
   },
   data() {
     return {
-      trainingWasPaused: false
+      trainingWasPaused: false,
+      counterHideSpinner: 0,
+      saveNetworkPopup: {
+        show: false,
+        existTrained: false
+      }
+      //unwatch: null
     }
   },
   computed: {
     ...mapGetters({
       currentNetwork:     'mod_workspace/GET_currentNetwork',
       currentSelectedEl:  'mod_workspace/GET_currentSelectedEl',
-      isTutorialMode:     'mod_tutorials/getIstutorialMode',
-      tutorialActiveStep: 'mod_tutorials/getActiveStep',
       testIsOpen:         'mod_workspace/GET_testIsOpen',
       statusNetworkCore:  'mod_workspace/GET_networkCoreStatus',
+      doShowCharts:       'mod_workspace/GET_networkShowCharts',
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
       showTrainingSpinner:'mod_workspace/GET_showStartTrainingSpinner',
+
+      isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      tutorialActiveStep: 'mod_tutorials/getActiveStep',
+
       getLocalUserInfo:   'mod_user/GET_LOCAL_userInfo',
-      //userId:             'mod_user/GET_userID',
     }),
     ...mapState({
       workspace:                  state => state.mod_workspace.workspaceContent,
@@ -57,7 +71,7 @@ export default {
         return Math.round(zoom);
       },
       set: function (newValue) {
-        this.$store.dispatch('mod_workspace/SET_statusNetworkZoom', newValue/100);
+        this.set_statusNetworkZoom(newValue/100);
       }
     },
     hasStatistics() {
@@ -89,28 +103,41 @@ export default {
       if(newStatus === 'Finished'
         && this.testIsOpen === null
       ) {
-        this.$store.dispatch('globalView/NET_trainingDone');
-        this.$store.dispatch('mod_workspace/EVENT_startDoRequest', false);
+        this.net_trainingDone();
+        this.event_startDoRequest(false);
       }
     },
-    coreStatus(newStatus, oldStatus) {
-      if(newStatus.Status === 'Training'
-        && oldStatus.Status === 'Training'
-        && this.showTrainingSpinner
-      ) {
-        this.set_showTrainingSpinner(false);
-      }
-      else if(this.isTutorialMode
-        && newStatus.Status === 'Training'
-        && oldStatus.Status === 'Training'
-        && !this.trainingWasPaused
-      ) {
-        this.set_showTrainingSpinner(false);
-        this.pauseTraining();
-        this.trainingWasPaused = true;
-      }
-
+    showTrainingSpinner(newVal) {
+      //console.log('showTrainingSpinner', newVal);
+      if(newVal) unwatch = this.$watch('doShowCharts', this.watch_doShowCharts);
+      else unwatch();
     },
+    // doShowCharts() {
+    //   console.log('doShowCharts', this.counterHideSpinner);
+    //   if(this.showTrainingSpinner) {
+    //     if (this.counterHideSpinner === 2) {
+    //       this.set_showTrainingSpinner(false);
+    //       this.counterHideSpinner = 0
+    //     } else ++this.counterHideSpinner;
+    //   }
+    // },
+    // coreStatus(newStatus, oldStatus) {
+    //   console.log('coreStatus', newStatus.Status, oldStatus.Status, this.showTrainingSpinner);
+    //   if(newStatus.Status === 'Training'
+    //     //&& oldStatus.Status === 'Training'
+    //     && this.showTrainingSpinner
+    //   ) {
+    //     this.set_showTrainingSpinner(false);
+    //   }
+    //   else if(this.isTutorialMode
+    //     && newStatus.Status === 'Training'
+    //     //&& oldStatus.Status === 'Training'
+    //     && !this.trainingWasPaused
+    //   ) {
+    //
+    //   }
+    //
+    // },
     '$store.state.mod_events.saveNetwork': {
       handler() {
         this.eventSaveNetwork();
@@ -126,7 +153,7 @@ export default {
         && this.isTutorialMode
         && this.tutorialActiveStep === 'training'
       ) {
-        this.$store.dispatch('mod_tutorials/pointActivate', {
+        this.tutorialPointActivate({
           way: 'next',
           validation: newStatus[0].layerMeta.tutorialId
         });
@@ -135,17 +162,42 @@ export default {
   },
   methods: {
     ...mapMutations({
-      set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner'
+      set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
+      delete_network:           'mod_workspace/DELETE_network',
+      set_currentNetwork:       'mod_workspace/SET_currentNetwork',
+      set_hideSidebar:          'globalView/SET_hideSidebar',
     }),
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
-      infoPopup:                'globalView/GP_infoPopup',
-      pauseTraining:            'mod_api/API_pauseTraining',
-      checkTrainedNetwork:      'mod_api/API_checkTrainedNetwork',
-      saveTrainedNetwork:       'mod_api/API_saveTrainedNetwork',
-      saveLocalUserInfo:        'mod_user/UPDATE_LOCAL_userInfo',
-      trackerModelSave:         'mod_tracker/EVENT_modelSave',
+      infoPopup:            'globalView/GP_infoPopup',
+      net_trainingDone:     'globalView/NET_trainingDone',
+
+      pauseTraining:        'mod_api/API_pauseTraining',
+      checkTrainedNetwork:  'mod_api/API_checkTrainedNetwork',
+      saveTrainedNetwork:   'mod_api/API_saveTrainedNetwork',
+
+      set_openStatistics:   'mod_workspace/SET_openStatistics',
+      set_openTest:         'mod_workspace/SET_openTest',
+      set_elementUnselect:  'mod_workspace/SET_elementUnselect',
+      set_networkName:      'mod_workspace/SET_networkName',
+      event_startDoRequest: 'mod_workspace/EVENT_startDoRequest',
+      set_statusNetworkZoom:'mod_workspace/SET_statusNetworkZoom',
+
+      tutorialPointActivate:'mod_tutorials/pointActivate',
+
+      saveLocalUserInfo:    'mod_user/UPDATE_LOCAL_userInfo',
+      trackerModelSave:     'mod_tracker/EVENT_modelSave',
+      //enableLogHistory:     'mod_workspace-history/SET_isEnableHistory'
     }),
+    watch_doShowCharts() {
+      if (this.counterHideSpinner > 1) {
+        this.set_showTrainingSpinner(false);
+        this.counterHideSpinner = 0
+      } else ++this.counterHideSpinner;
+      //TODO need paused in tutorial
+      //this.set_showTrainingSpinner(false);
+      //     this.pauseTraining();
+      //     this.trainingWasPaused = true;
+    },
     calcScaleMap() {
       this.$nextTick(()=> {
         const net = this.$refs.networkField[0].$refs.network;
@@ -161,18 +213,20 @@ export default {
         : this.decScale();
     },
     deleteTabNetwork(index) {
-      this.$store.commit('mod_workspace/DELETE_network', index)
+      this.delete_network(index)
     },
     setTabNetwork(index) {
+      //this.enableLogHistory(false);
       this.set_showTrainingSpinner(false);
-      if(this.statisticsIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openStatistics', false);
-      if(this.testIsOpen !== null) this.$store.dispatch('mod_workspace/SET_openTest', false);
+      if(this.statisticsIsOpen !== null) this.set_openStatistics(false);
+      if(this.testIsOpen !== null) this.set_openTest(false);
       //if(this.isTutorialMode) return;
-      this.$store.commit('mod_workspace/SET_currentNetwork', index);
-      this.$store.dispatch('mod_workspace/SET_elementUnselect');
+      this.set_currentNetwork(index);
+      this.set_elementUnselect();
+      //this.$nextTick(()=> { this.enableLogHistory(true) })
     },
     toggleSidebar() {
-      this.$store.commit('globalView/SET_hideSidebar', !this.hideSidebar)
+      this.set_hideSidebar(!this.hideSidebar)
     },
     decScale() {
       if (this.scaleNet <= 30) this.scaleNet = 30;
@@ -188,70 +242,97 @@ export default {
     //   // this.network[i].meta.top = newRect.top;
     //   // this.network[i].meta.left = newRect.left;
     // },
-    editNetName(newName) {
-      this.$store.dispatch('mod_workspace/SET_networkName', newName);
-    },
     openStatistics(i) {
       this.setTabNetwork(i);
       this.$nextTick(()=>{
-        this.$store.dispatch('mod_workspace/SET_openStatistics', true);
+        this.set_openStatistics(true);
       })
     },
     openTest(i) {
       this.setTabNetwork(i);
       this.$nextTick(()=>{
-        this.$store.dispatch('mod_workspace/SET_openTest', true);
+        this.set_openTest(true);
       })
     },
 
     eventSaveNetwork() {
+      //this.askSaveFilePopup();
       const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
       if(!projectsList.length || findIndexId(projectsList, network) < 0) {
         this.eventSaveNetworkAs();
         return
       }
-      let idIndex = findIndexId(projectsList, network);
-      const currentPath = projectsList[idIndex].pathProject[0];
-      const currentPathFolder = currentPath.slice(0, -(network.networkID.length + 1));
-      this.saveNetwork([currentPathFolder]);
-    },
-    eventSaveNetworkAs() {
-      const projectsList = this.getLocalUserInfo.projectsList;
-      const network = this.currentNetwork;
-      let newProjId;
-      if(findIndexId(projectsList, network) >= 0) {
-        newProjId = generateID();
-      }
-      loadPathFolder()
-        .then((path)=> {
-          this.saveNetwork(path, newProjId)
+      this.checkTrainedNetwork()
+        .then((isTrained)=> {
+          this.saveNetworkPopup.existTrained = isTrained;
+          if(isTrained) this.eventSaveNetworkAs(network);
+          else {
+            // let idIndex = findIndexId(projectsList, network);
+            // const currentPath = projectsList[idIndex].pathProject[0];
+            // const currentPathFolder = currentPath.slice(0, -(network.networkID.length + 1));
+            // this.saveNetwork([currentPathFolder]);
+            this.saveNetwork()
+          }
         })
     },
+    eventSaveNetworkAs(net) {
+      console.log('eventSaveNetworkAs', net);
+      // const projectsList = this.getLocalUserInfo.projectsList;
+      // const network = this.currentNetwork;
+      // let newProjId;
+      // if(findIndexId(projectsList, network) >= 0) {
+      //   newProjId = generateID();
+      // }
+      this.askSaveFilePopup()
+        .then((settings)=> {
+          console.log(settings);
+          //this.saveNetwork();
+        })
+        .catch(()=> {})
+      // const option = {
+      //   title: "Select folder",
+      //   buttonLabel: "Select folder"
+      // };
+      // loadPathFolder(option)
+      //   .then((path)=> {
+      //     this.saveNetwork(path, newProjId)
+      //   })
+    },
+    askSaveFilePopup() {
+      this.saveNetworkPopup.show = true;
+      return this.$nextTick()
+        .then(()=> this.$refs.saveNetworkPopup[0].openPopup())
+        .catch(()=> {
+          this.infoPopup('Project not saved');
+        })
+        .finally(()=> this.saveNetworkPopup.show = false)
 
-    saveNetwork(savePath, newId) {
+      // return this.$nextTick(()=> {
+      //   return this.$refs.saveNetworkPopup[0].openPopup()
+      //     .then((answer)=> {
+      //       console.log(answer);
+      //       return answer
+      //     })
+      //     .catch(()=> {
+      //       this.infoPopup('Project not saved');
+      //     }  )
+      //     .finally(()=> this.showSaveNetworkPopup = false)
+      // })
+    },
+    saveNetwork(netInfo) {
       const networkField = this.$refs.networkField[0].$refs.network;
       networkField.style.filter = 'blur(5px)';
 
       const currentNet = this.currentNetwork;
       const projectId = newId || currentNet.networkID;
-      const pathSaveProject = [`${savePath[0]}\\${projectId}`];
+      const pathSaveProject = [savePath[0] + pathSlash + projectId];
       let prepareNet = cloneNet(currentNet, projectId, pathSaveProject);
       /*check Is Trained Net + do ScreenShot*/
-      Promise.all([
-        this.checkTrainedNetwork(),
-        doScreenShot(networkField)
-      ])
-        .then((result)=> {
-          /*prepare Net + ask what the file save*/
-          const isTrainingNet = result[0];
-          prepareNet.toLocal.image = result[1];
-          if(isTrainingNet) return this.askSaveFilePopup();
-          else return false;
-        })
-        .then((isSaveTrainedModel)=> {
-          /*save files the core or front*/
-          if(isSaveTrainedModel) {
+      doScreenShot(networkField)
+        .then((img)=> {
+          prepareNet.toLocal.image = img;
+          if(netInfo.isSaveTrainedModel) {
             prepareNet.toLocal.isTrained = true;
             return this.saveTrainedNetwork({
               'Location': savePath,
@@ -270,16 +351,44 @@ export default {
         })
         .catch((error) => {})
         .finally(()=> {
-            networkField.style.filter = '';
-          });
+          networkField.style.filter = '';
+        });
+      // Promise.all([
+      //   this.checkTrainedNetwork(),
+      //   doScreenShot(networkField)
+      // ])
+      //   .then((result)=> {
+      //     /*prepare Net + ask what the file save*/
+      //     const isTrainingNet = result[0];
+      //     prepareNet.toLocal.image = result[1];
+      //     if(isTrainingNet) return this.askSaveFilePopup();
+      //     else return false;
+      //   })
+      //   .then((isSaveTrainedModel)=> {
+      //     /*save files the core or front*/
+      //     if(isSaveTrainedModel) {
+      //       prepareNet.toLocal.isTrained = true;
+      //       return this.saveTrainedNetwork({
+      //         'Location': savePath,
+      //         'frontendNetwork': prepareNet.toFile
+      //       })
+      //     }
+      //     else {
+      //       return projectPCSave(pathSaveProject, prepareNet.toFile)
+      //     }
+      //   })
+      //   .then(()=> {
+      //     /*save project to project page*/
+      //     saveProjectToLocalStore(prepareNet.toLocal, this);
+      //     this.infoPopup('The file has been successfully saved');
+      //     this.trackerModelSave(prepareNet.toFile);
+      //   })
+      //   .catch((error) => {})
+      //   .finally(()=> {
+      //       networkField.style.filter = '';
+      //     });
     },
-    askSaveFilePopup() {
-      return this.$refs.saveNetworkPopup[0].openPopup()
-        .then((answer)=> answer)
-        .catch((err)=> {
 
-        })
-    },
     trainingFinished(index) {
       let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;
       return networkStatus === 'Finished' || networkStatus === 'Testing';
@@ -363,8 +472,7 @@ function cloneNet(net, idProject, pathProject) {
     image: null,
     name: toFile.networkName,
     id: idProject,
-    pathProject: pathProject,
-    pathModel: `${pathProject[0]}\\${idProject}.json`,
+    pathRootFolder: pathProject,
     isTrained: false,
     isCloud: false,
   };

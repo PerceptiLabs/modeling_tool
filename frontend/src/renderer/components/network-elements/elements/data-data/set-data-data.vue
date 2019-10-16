@@ -1,6 +1,6 @@
 <template lang="pug">
   net-base-settings(
-    :tab-set="tabs"
+    :tab-set="dynamicTabs"
     :current-el="currentEl"
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
@@ -60,14 +60,22 @@
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
             base-checkbox(v-model="settings.accessProperties.Shuffle_data") Shuffle
-
-    template(slot="Cloud-content")
+        //-.settings-layer_foot
+          button.btn.btn--primary(type="button") Apply
+    //-template(slot="Cloud-content")
       //-settings-cloud
-
+    template(slot="Code-content")
+      settings-code(
+        :current-el="currentEl"
+        :el-settings="settings"
+        v-model="coreCode"
+      )
     template(slot="Computer-action")
 
-    template(slot="Cloud-action")
+    //-template(slot="Cloud-action")
       span
+    template(slot="Code-action")
+
 
 </template>
 
@@ -91,16 +99,15 @@
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
-      this.Mix_settingsData_getDataMeta('DataData')
+      this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
         .then((data)=> {
           if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
-          this.Mix_settingsData_getDataPlot('DataData');
         });
     },
     data() {
       return {
         //tabs: ['Computer', 'Cloud'],
-        tabs: ['Computer'],
+        tabs: ['Computer', 'Code'],
         dataColumns: [],
         dataColumnsSelected: [],
         interactiveInfo: {
@@ -134,11 +141,14 @@
         appPath:        'globalView/GET_appPath',
         isTutorialMode: 'mod_tutorials/getIstutorialMode',
       }),
+      dynamicTabs() {
+        return this.settings.accessProperties.Sources.length ? ['Computer', 'Code'] : ['Computer']
+      },
       typeOpened() {
         const path = this.settings.accessProperties.Sources;
         if(path.length) {
           //return path[0].indexOf('.') > 0 ? 'files' : 'folders'
-          console.log(path);
+          //console.log(path);
           return path[0].type
         }
         else return ''
@@ -173,27 +183,29 @@
     watch: {
       dataColumnsSelected(newVal) {
         this.settings.accessProperties.Columns = newVal;
-        this.Mix_settingsData_getDataPlot('DataData')
+        //this.Mix_settingsData_getDataPlot('DataData')
+        //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
       },
       fileList: {
         handler(newVal) {
-          this.Mix_settingsData_getPartitionSummary('DataData');
+          this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
         },
         deep: true,
         immediate: true
       },
       'settings.accessProperties.Sources.length': {
         handler(newVal) {
-          if(newVal) this.showBtn();
-          else { this.$nextTick(()=> { this.hideBtn(); })
-          }
+          if(newVal) this.$nextTick(()=> { this.showBtn() });
+          else this.$nextTick(()=> { this.hideBtn() })
         },
         immediate: true
       }
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate: 'mod_tutorials/pointActivate',
+        tutorialPointActivate:  'mod_tutorials/pointActivate',
+        // API_getPartitionSummary:'mod_api/API_getPartitionSummary',
+        // API_getDataMeta:        'mod_api/API_getDataMeta',
       }),
       setPartitionList(list) {
         this.settings.accessProperties.Partition_list = list
@@ -209,7 +221,8 @@
           ]
         };
         let optionTutorial = {
-          title:"Load file",
+          title: "Load file",
+          buttonLabel: 'Load file',
           defaultPath: `${this.appPath}basic-data`,
           properties: ['openFile'],
           filters: [
@@ -219,27 +232,25 @@
         let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
         openLoadDialog(optionDialog)
           .then((pathArr)=> this.saveLoadFile(pathArr, 'file', isAppend))
-          .catch(()=> {
-          })
+          .catch(()=> { })
       },
       loadFolder(isAppend) {
         loadPathFolder()
           .then((pathArr)=> this.saveLoadFile(pathArr, 'directory', isAppend))
-          .catch(()=> {
-          })
+          .catch(()=> { })
       },
       addFiles() {
         if(this.typeOpened === 'file') this.loadFile(true);
         else this.loadFolder(true)
       },
       saveLoadFile(pathArr, type, isAppend) {
+        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'});
         if(isAppend) {
           const allPath = [... this.settings.accessProperties.Sources.map((el)=> el.path), ...pathArr];
           this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources([... new Set(allPath)], type)
         }
         else this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
         this.getSettingsInfo();
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'})
       },
       clearPath() {
         this.Mix_settingsData_deleteDataMeta('DataData')
@@ -252,13 +263,14 @@
       getSettingsInfo() {
         if(this.settings.accessProperties.Sources.length) {
           this.Mix_settingsData_dataSettingsMeta('DataData')
-            .then((data)=>{
-              if (data.Columns.length) {
+            .then((data)=> {
+              if (data.Columns && data.Columns.length) {
                 this.createSelectArr(data.Columns);
                 return data
               }
             })
-            .then(()=> this.Mix_settingsData_getDataPlot('DataData'))
+            //.then(()=> this.Mix_settingsData_getDataPlot('DataData'))
+            //.then(()=> this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId))
         }
       },
       createSelectArr(data) {
@@ -269,6 +281,7 @@
       },
       saveSettings(tabName) {
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
+        //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId);
         this.applySettings(tabName);
         this.checkPartitionList()
       },

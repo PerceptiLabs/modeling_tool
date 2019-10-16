@@ -15,6 +15,7 @@ class dataKeeper():
         self.accessProperties = accessProperties
         self.code=None
         self.locals_=None
+        self.hash=None
 
     def generateCode(self, seed=0):
         sources = self.accessProperties["Sources"]
@@ -33,13 +34,31 @@ class dataKeeper():
         self.locals_=locals_
         return locals_
 
-    def updateProperties(self, accessProperties, seed=0, globals_=globals(), locals_={}):
-        #Remove all sources here which have not been changed from the last accessproperties? We then need a way to send those into the locals and merge with the current ones.
-        #Alternative would be to check which variables have changed from last instance (compare code somehow?) and then just put those variables in locals.
-        if accessProperties!=self.accessProperties:
-            self.accessProperties=accessProperties
-            self.generateCode(seed=seed)
-            self.executeCode(globals_=globals_, locals_=locals_)
+    def calculateHash(self, previousLayerHash, settings):
+        """
+            previousLayerHash should be a list
+        """
+        if "Code" in settings and settings["Code"]:
+            layerHash=hash(str(settings["Code"]))
+        else:
+            layerHash=hash(str(settings))
+
+        for hash_ in previousLayerHash:
+            if hash_ is None:
+                raise ValueError("The previous layer needs to have been ran to run this layer")
+            layerHash+=hash_
+
+        return layerHash
+
+
+    def updateProperties(self, previousLayerHash, settings, globals_=globals(), locals_={}):
+        newHash=self.calculateHash(previousLayerHash, settings)
+        if newHash != self.hash:
+            print("Generating new code for the layer ", settings["Name"])
+            self.settings=settings
+            self.generateCode()
+            self.executeCode(globals_=globals_,locals_=locals_)
+            self.hash=newHash
 
     def getMetadata(self):
         if "EnvType" in self.accessProperties:
