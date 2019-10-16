@@ -195,10 +195,10 @@ class LayerExtrasReader:
                 if not outShape:
                     outShape=[1]
             
-            # if 'sample' in layer_dict:
-            #     sample = layer_dict['sample']
-            #     default_var = 'sample'
-            if 'Y' in layer_dict:
+            if 'sample' in layer_dict:
+                sample = layer_dict['sample']
+                default_var = 'sample'
+            elif 'Y' in layer_dict:
                 sample = layer_dict['Y']
                 default_var = 'Y'
 
