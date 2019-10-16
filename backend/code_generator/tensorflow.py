@@ -430,7 +430,7 @@ LayerPair = namedtuple('LayerPair', ['online_id', 'target_id'])
 
 
 
-class TrainReinforce(CodeGenerator):
+class TrainReinforceCodeGenerator(CodeGenerator):
     def __init__(self, online_network_id, target_network_id, layer_pairs, n_episodes=20000, history_length=2, batch_size=32, learning_rate=0.1, discount_factor=0.99,
                  replay_start_size=1000, replay_memory_size=300000,
                  initial_exploration=0.9, final_exploration=0.1,
@@ -757,9 +757,9 @@ if __name__ == "__main__":
         '2': {'Y': Y2}        
     }
 
-    tr = TrainReinforce(online_network_id='1', target_network_id='2',
-                        layer_pairs=[LayerPair('11', '21')],                        
-                        history_length=SEQ_SIZE)
+    tr = TrainReinforceCodeGenerator(online_network_id='1', target_network_id='2',
+                                     layer_pairs=[LayerPair('11', '21')],                        
+                                     history_length=SEQ_SIZE)
     code = tr.get_code()
 
     glob_ = {'tf': tf, 'np': np, 'state_tensor': state_tensor, 'env': env}    
