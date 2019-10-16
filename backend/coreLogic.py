@@ -10,6 +10,7 @@ import traceback
 import os
 import threading
 
+from modules import ModuleProvider
 from core_new.core import *
 from core_new.data import DataContainer
 
@@ -56,11 +57,16 @@ class coreLogic():
 
         from codehq import CodeHqNew as CodeHq
 
+        module_provider = ModuleProvider()
+        module_provider.load('tensorflow', as_name='tf')
+        module_provider.load('numpy', as_name='np')
+        module_provider.load('gym')        
+
         session_history = SessionHistory()        
         session_proc_handler = SessionProcessHandler(graph_dict, data_container,
-                                                     self.commandQ, self.resultQ) #mode
+                                                     self.commandQ, self.resultQ)
         self.core = Core(CodeHq, graph_dict, data_container,
-                    session_history, session_proc_handler ) #mode=mode
+                         session_history, module_provider, session_proc_handler) 
 
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()
