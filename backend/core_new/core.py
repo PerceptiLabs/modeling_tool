@@ -14,7 +14,7 @@ from core_new.data import DataContainer
 from core_new.utils import set_tensorflow_mode
 from core_new.history import SessionHistory
 from core_new.session import LayerSession, LayerSessionStop, LayerIo
-from core_new.data.policies import TrainValDataPolicy, TestDataPolicy
+from core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
 
 log = logging.getLogger(__name__)
 
@@ -25,7 +25,6 @@ class SessionProcessHandler:
         self._data_container = data_container
         self._command_queue = command_queue
         self._result_queue = result_queue
-        #self._mode = mode
         
     def on_process(self, session, dashboard):
         """ Called in response to 'api.ui.render' calls in the layer code """
@@ -33,16 +32,11 @@ class SessionProcessHandler:
         self._send_results(session, dashboard)
         
     def _send_results(self, session, dashboard):
-        data_dict = self._data_container.to_dict()
-        if dashboard == "train_val":
-            data_policy = TrainValDataPolicy(session, data_dict, self._graph) # Convert data container format to resultDict format.
-        elif dashboard == "testing":
-            data_policy = TestDataPolicy(session, data_dict, self._graph)
-        
+        data_policy = self._get_data_policy(session, dashboard)
         results_dict = data_policy.get_results()
         
         self._result_queue.put(results_dict)
-        log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=1))
+        #log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=2))
         
     def _handle_commands(self, session):
         while not self._command_queue.empty():
@@ -66,6 +60,16 @@ class SessionProcessHandler:
             else:
                 log.warning("Unknown command: '{}'".format(command))        
 
+    def _get_data_policy(self, session, dashboard):
+        data_dict = self._data_container.to_dict()
+        if dashboard == "train_val":
+            data_policy = TrainValDataPolicy(session, data_dict, self._graph)
+        elif dashboard == "testing":
+            data_policy = TestDataPolicy(session, data_dict, self._graph)
+        elif dashboard == "train_reinforce":
+            data_policy = TrainReinforceDataPolicy(session, data_dict, self._graph)
+        return data_policy
+        
 
 class LayerExtrasReader:
     def __init__(self):

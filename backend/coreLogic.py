@@ -9,6 +9,7 @@ import copy
 import traceback
 import os
 import threading
+import pprint
 
 from modules import ModuleProvider
 from core_new.core import *
@@ -340,9 +341,18 @@ class coreLogic():
             self.trainingIterations=self.savedResultsDict["trainingIterations"]
             self.resultDict=self.savedResultsDict["trainDict"]
         except KeyError:
+            log.exception("Error in getTrainingStatistics")                        
             return {}
 
-        return self.getLayerStatistics(value)
+
+        try:
+            layer_statistics = self.getLayerStatistics(value)
+            return layer_statistics
+        except:
+            message = "Error in getTrainingStatistics."
+            if log.isEnabledFor(logging.DEBUG):
+                message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
+            log.exception(message)
 
 
     def getTestingStatistics(self,value):
@@ -351,10 +361,18 @@ class coreLogic():
             self.batch_size=1
             self.resultDict=self.testList[self.testIter]
         except KeyError as e:
-            print("ERROR: ", e)
+            log.exception("Error in getTestingStatistics")            
             return {}
 
-        return self.getLayerStatistics(value)
+        try:
+            layer_statistics = self.getLayerStatistics(value)
+            return layer_statistics
+        except:
+            message = "Error in getTestingStatistics."
+            if log.isEnabledFor(logging.DEBUG):
+                message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
+            log.exception(message)
+
 
     
     def getLayerStatistics(self,value):
@@ -736,7 +754,8 @@ class coreLogic():
                 state_ = createDataObject([state])
 
                 prediction = self.getStatistics({"layerId":layerId,"variable":"pred","innervariable":""})
-                prediction = createDataObject([prediction[0]], typeList=['line'])
+                
+                prediction = createDataObject([prediction], typeList=['line'])
                 
                 output = {"Input":state_, "Prediction": prediction}
                 return output

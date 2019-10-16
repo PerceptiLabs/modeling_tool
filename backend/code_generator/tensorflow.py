@@ -444,6 +444,7 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         self._gamma = discount_factor
         self._update_frequency = update_frequency
         self._copy_weights_frequency = target_network_update_frequency
+        self._n_steps_max = 1000
 
         self._online_network_id = online_network_id# #"'1'"
         self._target_network_id = target_network_id# "'2'"
@@ -461,6 +462,9 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "history_length = %d\n" % self._history_length
         code += "replay_start_size = %d\n" % self._replay_start_size
         code += "n_actions = env.action_space.n\n"
+        code += "n_steps_max = %d\n" % self._n_steps_max
+        code += "n_episodes = %d\n" % self._n_episodes
+        code += "api.data.store(n_steps_max=n_steps_max, n_episodes=n_episodes, batch_size=batch_size, n_actions=n_actions)\n"
         code += "\n"
         code += "# Exploration/exploitation tradeoff\n" # TODO: name
         code += "def epsilon(episode):\n"
@@ -506,13 +510,16 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "replay_memory = []\n" 
         code += "\n"
         code += "iteration = 0\n"
-        code += "for episode in range(%d):\n" % self._n_episodes
+        code += "for episode in range(n_episodes):\n"
         code += "    state = env.reset()\n"
         code += "    state_seq = [state]*history_length\n"
+        code += "    api.data.store(episode=episode)\n"
         code += "    \n"
         #code += "    print('NEW EPISODE', episode)\n"
         code += "    done = False\n"
-        code += "    while not done:\n"
+        code += "    step_counter = 0\n"
+        code += "    reward_list = []\n"
+        code += "    while not done and step_counter < n_steps_max:\n"
         #code += "        print('state:')\n"
         #code += "        print(np.squeeze(state_seq))\n"
         code += "        explore = np.random.random() < epsilon(episode) or iteration < replay_start_size\n"
@@ -529,6 +536,10 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "        \n"
         code += "        new_state, reward, done, info = env.step(action)\n"
         code += "        new_state_seq = state_seq[1:] + [new_state]\n"
+        code += "        reward_list.append(reward)\n"
+        code += "        api.data.store(current_state=state, current_action=action, step_counter=step_counter)\n"
+        code += "        api.data.store(reward=reward_list)\n"
+        code += "        api.ui.render(dashboard='train_reinforce')\n"
         code += "        \n"
         code += "        # Remember transition\n"
         code += "        transition = {\n"
@@ -568,7 +579,7 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "            feed_dict = {\n"
         code += "                         state_tensor: np.atleast_2d(X_batch),\n"
         code += "                         a_tensor: np.atleast_2d(a_batch),\n"
-        code += "                         y_tensor: np.atleast_2d(y_batch),\n"
+        code += "     p                    y_tensor: np.atleast_2d(y_batch),\n"
         code += "                        }\n"
         code += "            sess.run(step, feed_dict=feed_dict)\n"
         #code += "            print('Took training step!')\n"        
@@ -577,7 +588,10 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "        if iteration % {} == 0:\n".format(self._copy_weights_frequency)
         code += "            copy_weights(sess)\n"
         code += "        iteration += 1\n"
-        #code += "        print('iteration '+str(iteration))\n"
+        code += "        step_counter += 1\n"
+        code += "        state = new_state\n"
+        code += "    api.data.stack(total_reward=np.sum(reward_list))\n"
+        #code += "    print('iteration '+str(iteration))\n"
 
 
         return code

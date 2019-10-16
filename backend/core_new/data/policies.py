@@ -1,18 +1,18 @@
 from abc import ABC, abstractmethod
-
+import numpy as np
 
 class DataPolicy(ABC):
+    def __init__(self, session, data_dict, graph_dict):
+        self._session = session
+        self._data = data_dict
+        self._graph_dict = graph_dict
+    
     @abstractmethod
     def get_results(self):
         raise NotImplementedError
 
     
 class TestDataPolicy(DataPolicy):
-    def __init__(self, session, data_dict, graph_dict):
-        self._session = session
-        self._data = data_dict
-        self._graph_dict = graph_dict
-
     def get_results(self):
         test_dict = {}
 
@@ -73,11 +73,6 @@ class TestDataPolicy(DataPolicy):
         return result_dict
     
 class TrainValDataPolicy(DataPolicy):
-    def __init__(self, session, data_dict, graph_dict):
-        self._session = session
-        self._data = data_dict
-        self._graph_dict = graph_dict
-
     def get_results(self):
         train_dict = {}
 
@@ -185,6 +180,56 @@ class TrainValDataPolicy(DataPolicy):
             "maxIter": max_itr,
             "epoch": epoch,
             "maxEpochs": max_epoch,
+            "batch_size": batch_size,
+            "trainingIterations": itr_trn,
+            "trainDict": train_dict,
+            "trainingStatus": training_status,  
+            "status": status
+        }
+        return result_dict
+
+
+
+class TrainReinforceDataPolicy(DataPolicy):
+    def get_results(self):
+        train_dict = {}
+       
+        for id_, content in self._graph_dict.items():
+            if id_ not in self._data:
+                continue
+            
+            if content["Info"]["Type"] == "TrainReinforce":
+                step_counter = self._data[id_].get('step_counter', -1)
+                n_steps_max = self._data[id_].get('n_steps_max', -1)                
+                episode = self._data[id_].get('episode', -1)
+                n_episodes = self._data[id_].get('n_episodes', -1)
+                batch_size = self._data[id_].get('batch_size', -1)                                
+
+                train_dict[id_] = {}
+                train_dict[id_]['state'] = self._data[id_].get('current_state', -1)
+
+                current_action = self._data[id_].get('current_action', -1)
+                n_actions = self._data[id_].get('n_actions', -1)
+                if n_actions != -1 and current_action != -1:
+                    train_dict[id_]['pred'] = np.zeros((n_actions,))
+                    train_dict[id_]['pred'][int(current_action)] = 1
+                
+                train_dict[id_]['Reward'] = self._data[id_].get('reward', [-1])
+                train_dict[id_]['epochTotalReward'] = self._data[id_].get('total_reward', [-1])
+
+            elif content["Info"]["Type"] == "DataEnvironment":
+                train_dict[id_] = {}                
+                pass                
+                
+        training_status = 'Training'
+        status = 'Running'
+        itr_trn = 123
+ 
+        result_dict = {
+            "iter": step_counter,
+            "maxIter": n_steps_max,
+            "epoch": episode,
+            "maxEpochs": n_episodes,
             "batch_size": batch_size,
             "trainingIterations": itr_trn,
             "trainDict": train_dict,

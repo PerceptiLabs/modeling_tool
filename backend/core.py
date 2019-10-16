@@ -69,7 +69,7 @@ class core():
     def startNetwork(self,warningQueue,errorQueue,commandQ,resultQ,dataDict,jsonNetwork):
         dataDict=dataDict.copy()
         if log.isEnabledFor(logging.DEBUG):
-            log.debug("startNetwork with jsonNetwork: " + pprint.pformat(jsonNetwork))
+            pass#log.debug("startNetwork with jsonNetwork: " + pprint.pformat(jsonNetwork))
             
         #import json
         #with open('net.json', 'w') as f:
