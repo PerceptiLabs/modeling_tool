@@ -21,10 +21,12 @@ class FunctionHook:
         if self._include_vars:
             prev_frame = inspect.currentframe().f_back
             globals_ = prev_frame.f_globals.copy()
-            locals_ = prev_frame.f_locals.copy()                
-            return self._hook(self._target, globals_, locals_, *args, **kwargs)
+            locals_ = prev_frame.f_locals.copy()
         else:
-            return self._hook(self._target, *args, **kwargs)            
+            globals_, locals_ = None, None
+            
+        return self._hook(self._target, globals_, locals_, *args, **kwargs)
+
 
     def __repr__(self):
         return "FunctionHook rerouting {} via {}".format(self._target, self._hook)

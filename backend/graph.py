@@ -91,6 +91,7 @@ class Graph(object):
                         if copied_id in newGraph[endId]['Con']:
                             online_net = copied_id
                             target_net = id_
+                            newGraph[endId]['Con'].append(id_) # TODO: is backwards connections needed too?
                     
                     newGraph[endId]['Info']['ExtraInfo'] = dict()
                     newGraph[endId]['Info']['ExtraInfo']['Pairs'] = layer_pairs

@@ -6,7 +6,7 @@ from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
 from code_generator.dataenv import DataEnvironmentCodeGenerator
 
-from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainReinforceCodeGenerator
+from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
 log = logging.getLogger(__name__)
 
@@ -35,8 +35,8 @@ class CodeHqNew:
         elif type_ == 'DataEnvironment':
 
             env_name = 'Breakout-v0'
-            hist_len = 4 # TOOD: NOT HARDCODED
-            code_gen = DataEnvironmentCodeGenerator(env_name, hist_len)
+            history_length = 4 # TOOD: NOT HARDCODED
+            code_gen = DataEnvironmentCodeGenerator(env_name, history_length)
             return code_gen
         elif type_ == 'DeepLearningFC':
             code_gen = FullyConnectedCodeGenerator(layer_id=id_,
@@ -120,14 +120,14 @@ class CodeHqNew:
             raise NotImplementedError("Train dynamic routing not implemented")
         elif type_ == 'TrainReinforce':
 
-            layer_pairs = content['Info']['ExtraInfo']['Pairs']            
-            online_net_id = content['Info']['ExtraInfo']['OnlineNet']
-            target_net_id = content['Info']['ExtraInfo']['TargetNet']
+            layer_pairs = [LayerPair(a, b) for a, b in content['Info']['ExtraInfo']['Pairs']]            
+            online_net = content['Info']['ExtraInfo']['OnlineNet']
+            target_net = content['Info']['ExtraInfo']['TargetNet']
             history_length = 4 # TODO: not hardcoded!
-            code_gen = TrainReinforceCodeGenerator(online_net_id,
-                                                   target_net_id,
-                                                   layer_pairs,
-                                                   history_length)
+            code_gen = TrainReinforceCodeGenerator(online_network_id=online_net,
+                                                   target_network_id=target_net,
+                                                   layer_pairs=layer_pairs,
+                                                   history_length=history_length)
             return code_gen
         elif type_ == 'MathArgmax':
             code_gen = ArgmaxCodeGenerator(dim=props["Dim"])

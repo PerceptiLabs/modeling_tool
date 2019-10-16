@@ -3,9 +3,13 @@ import tensorflow as tf
 
 from core_new.core import BaseCore
 
-def placeholder_hook_1(func, dtype, shape=None, name=None):
+def placeholder_hook_1(func, globals_, locals_, dtype, shape=None, name=None):    
+    if shape is None:
+        raise ValueError("Can only handle defined shapes in eager_mode!")
+
     matrix = np.zeros((1,)+tuple(shape[1:]))    
-    const = tf.constant(matrix, dtype=tf.float32)    
+    const = tf.constant(matrix, dtype=tf.float32)
+    #const = tf.constant(locals_['sample'])
     return const
 
 def placeholder_hook_2(func, globals_, locals_, dtype, shape=None, name=None):
