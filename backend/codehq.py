@@ -16,14 +16,14 @@ class CodeHqNew:
         props = content["Info"]["Properties"]
 
 
-        if 'Code' in content["Info"] and content["Info"]['Code']:
-            code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
-            code_generator = CustomCodeGenerator(code_parts)
-            return code_generator
+        #if 'Code' in content["Info"] and content["Info"]['Code']:
+        #    code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
+        #    code_generator = CustomCodeGenerator(code_parts)
+        #    return code_generator
         if type_ == 'DataData':
             sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
             partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
-            
+
             code_generator = DataDataCodeGenerator(sources, partitions,
                                                    batch_size=props["accessProperties"]['Batch_size'], shuffle=props["accessProperties"]['Shuffle_data'],
                                                    seed=0, columns=props["accessProperties"]['Columns'],
