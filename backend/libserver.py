@@ -18,6 +18,7 @@ from extractVariables import *
 from createDataObject import createDataObject
 
 from core_new.core import *
+from core_new.history import SessionHistory
 from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from graph import Graph
 from codehq import CodeHqNew as CodeHq

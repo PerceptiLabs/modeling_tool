@@ -13,6 +13,7 @@ import threading
 from modules import ModuleProvider
 from core_new.core import *
 from core_new.data import DataContainer
+from core_new.history import SessionHistory
 
 import logging
 log = logging.getLogger(__name__)

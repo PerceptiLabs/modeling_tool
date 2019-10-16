@@ -7,103 +7,18 @@ import traceback
 import tensorflow as tf
 from collections import namedtuple
 
+from graph import Graph
 from modules import ModuleProvider
 from core_new.api import Api, DataApi, UiApi
-from core_new.data import DataContainer, TrainValDataPolicy, TestDataPolicy
+from core_new.data import DataContainer
 from core_new.utils import set_tensorflow_mode
+from core_new.history import SessionHistory
 from core_new.session import LayerSession, LayerSessionStop, LayerIo
-
-from graph import Graph
-
+from core_new.data.policies import TrainValDataPolicy, TestDataPolicy
 
 log = logging.getLogger(__name__)
 
 
-CacheEntry = namedtuple('CacheEntry', ['inserting_layer', 'value'])
-
-
-class SessionCache:
-    def __init__(self):
-        self._dict = {}
-
-    def __contains__(self, key):
-        return key in self._dict
-
-    def put(self, key, value, layer_id):
-        if key in self:
-            message = "Overwriting cache entry {} ({}->{})".format(key, self._dict[key].__class__.__name__, value.__class__.__name__)
-            log.warning(message)
-        else:
-            log.debug("Creating new cache entry {} [{}]".format(key, value.__class__.__name__))
-
-        entry = CacheEntry(inserting_layer=layer_id, value=value)
-        self._dict[key] = entry
-
-    def get(self, key):
-        if not key in self:
-            raise ValueError("No entry with key {} in cache!".format(key))
-
-
-        entry = self._dict.get(key)
-        log.debug("Loading entry {} [{}] from cache...".format(key, entry.value.__class__.__name__))
-        return entry.value
-
-    def invalidate(self, keep_layers):
-        new_dict = {key: entry for key, entry in self._dict.items()
-                    if entry.inserting_layer in set(keep_layers)}
-
-        n_entries = len(self._dict.keys())        
-        n_removed = n_entries - len(new_dict.keys())
-        self._dict = new_dict
-        log.info("Cache invalidation removed {}/{} entries".format(n_removed, n_entries))
-                 
-
-class SessionHistory:
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self._sessions = {}
-        self._cache = SessionCache()
-
-    def __contains__(self, id_):
-        return id_ in self._sessions
-        
-    def __setitem__(self, id_, value):
-        self._sessions[id_] = value
-
-    def items(self):
-        for id_, session in self._sessions.items():
-            yield id_, session
-
-    def merge_session_outputs(self, layer_ids):
-        local_vars = {}
-        global_vars = {}
-        
-        if len(layer_ids) == 1:
-            session = self._sessions[layer_ids[0]]
-            locals_=session.outputs.locals
-            locals_.pop('X', None)
-            locals_ = {'X': locals_}
-            local_vars.update(locals_)
-            global_vars.update(session.outputs.globals)            
-        elif len(layer_ids) > 1:
-            for id_ in layer_ids:
-                session = self._sessions[id_]     
-                locals_= session.outputs.locals 
-                locals_.pop('X',None)      
-                local_vars[id_] = locals_
-                global_vars.update(session.outputs.globals) # WARNING: may lead to race condition where global variables are updated depending on which layer is executed first.
-            local_vars = {'X': local_vars}
-
-    
-        outputs = LayerIo(global_vars, local_vars)
-        return outputs
-
-    @property
-    def cache(self):
-        return self._cache
-    
 class SessionProcessHandler:
     def __init__(self, graph_dict, data_container, command_queue, result_queue):  # mode
         self._graph = graph_dict

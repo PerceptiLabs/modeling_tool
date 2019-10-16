@@ -393,7 +393,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    except tf.errors.OutOfRangeError:\n"
         code += "        pass\n"    
         code += "    \n"
-        code += "    print('ITER: %d , ACCURACY: %d' % (iter, acc_train*100))\n"
+        #code += "    print('ITER: %d , ACCURACY: %d' % (iter, acc_train*100))\n"
         code += "    api.data.store(epoch=epoch)\n"
         code += "    api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
         code += "                   acc_validation_epoch=acc_val, loss_validation_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
