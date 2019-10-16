@@ -151,7 +151,7 @@ export default {
       }
     },
     startTutorial(way) {
-      if(this.currentNetworkElementList) this.addNetwork();
+      //if(this.currentNetworkElementList) this.addNetwork();
       this.setTutorialIstarted(true);
       this.setActiveStep(way);
       this.pointActivate({way: null, validation: this.activePoint.actions[0].id});
@@ -171,6 +171,7 @@ export default {
       } else {
         this.onTutorial(this);
         this.isMaximize = true;
+        if(this.currentNetworkElementList) this.addNetwork();
       }
     },
 

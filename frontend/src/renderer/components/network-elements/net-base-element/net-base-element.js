@@ -197,7 +197,7 @@ export default {
         this.calcWindowPosition();
         this.tutorialPointActivate({
           way: 'next',
-          validation: this.tutorialSearchId(event)
+          validation: event.currentTarget.id
         })
       })
     },

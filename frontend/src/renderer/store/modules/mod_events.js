@@ -104,6 +104,7 @@ const actions = {
     localStorage.removeItem('currentUser');
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
+    dispatch('mod_tutorials/offTutorial', null, {root: true});
     router.replace({name: 'login'});
   },
   EVENT_appClose({dispatch, rootState, rootGetters}, event) {

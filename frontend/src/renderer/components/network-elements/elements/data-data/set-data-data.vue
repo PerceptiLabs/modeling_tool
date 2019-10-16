@@ -244,13 +244,13 @@
         else this.loadFolder(true)
       },
       saveLoadFile(pathArr, type, isAppend) {
+        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'});
         if(isAppend) {
           const allPath = [... this.settings.accessProperties.Sources.map((el)=> el.path), ...pathArr];
           this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources([... new Set(allPath)], type)
         }
         else this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
         this.getSettingsInfo();
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'})
       },
       clearPath() {
         this.Mix_settingsData_deleteDataMeta('DataData')

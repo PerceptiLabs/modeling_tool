@@ -295,10 +295,8 @@ export default {
       }
     },
     saveModel() {
-      if(this.openApp) {
-        this.saveNetwork();
-        this.offMainTutorial();
-      }
+      this.saveNetwork();
+      this.offMainTutorial();
     },
     saveModelAs() {
       this.saveNetworkAs();
