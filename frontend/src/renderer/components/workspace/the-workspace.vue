@@ -42,6 +42,7 @@
           v-if="saveNetworkPopup.show"
           ref="saveNetworkPopup"
           :exist-trained="saveNetworkPopup.existTrained"
+          :freeze-info="saveNetworkPopup.freezeInfo"
           )
 
       start-training-spinner(v-if="showTrainingSpinner")

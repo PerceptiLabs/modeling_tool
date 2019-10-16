@@ -3,7 +3,7 @@
     :tab-set="popupTitle"
     )
     template(slot="Choose what to save-content")
-      .settings-layer_section
+      .settings-layer_section(v-if="!freezeInfo")
         .form_row
           .form_label Project name:
           .form_input
@@ -12,11 +12,11 @@
               :readonly="isEmptyPath"
               :class="{'bg-error': !settings.projectName}"
             )
-      .settings-layer_section
+      .settings-layer_section(v-if="!freezeInfo")
         .form_row
           .form_label Project path:
           .form_input
-            input.ellipsis--right(type="text"
+            input.ellipsis(type="text"
               v-model="settings.projectPath"
               :readonly="isEmptyPath"
               :class="{'bg-error': !settings.projectPath}"
@@ -35,6 +35,7 @@
       button.btn.btn--primary(type="button"
         @click="closePopup") Cancel
       button.btn.btn--primary(type="button"
+        :disabled="!settings.projectPath.length"
         @click="answerPopup") Continue
 
 
@@ -42,28 +43,34 @@
 
 <script>
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
-import { openLoadDialog } from '@/core/helpers.js'
+import { openLoadDialog, generateID } from '@/core/helpers.js'
 
 export default {
   name: "WorkspaceSaveNetwork",
   components: {BaseGlobalPopup},
   props: {
-    existTrained: { type: Boolean }
+    existTrained: { type: Boolean },
+    freezeInfo: { type: Boolean },
   },
   created() {
-    this.settings.projectName = this.currentNetwork.networkName;
-    if(this.existTrained) this.settings.isSaveTrainedModel = false
-  },
-  mounted() {
     console.log('currentNetwork', this.currentNetwork);
-
+    this.settings.projectName = this.currentNetwork.networkName;
+    this.settings.isSaveTrainedModel = this.existTrained;
+    if(this.freezeInfo) {
+      this.settings.projectPath = this.currentNetwork.networkRootFolder;
+    }
   },
+  // mounted() {
+  //   console.log('currentNetwork', this.currentNetwork);
+  //
+  // },
   data() {
     return {
       popupTitle: ['Choose what to save'],
       settings: {
         projectName: '',
         projectPath: '',
+        //projectId: '',
         isSaveTrainedModel: true,
       },
       promiseOk: null,
@@ -96,6 +103,7 @@ export default {
       this.promiseFail(false)
     },
     answerPopup() {
+      //this.settings.projectId = this.saveProjectId;
       this.promiseOk(this.settings);
     },
     loadPathProject() {
@@ -105,7 +113,7 @@ export default {
         properties: ['openDirectory'],
       };
       openLoadDialog(opt)
-        .then((pathArr)=> { this.settings.projectPath = pathArr })
+        .then((pathArr)=> { this.settings.projectPath = pathArr[0] })
         .catch(()=> {})
     },
   }

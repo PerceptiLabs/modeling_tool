@@ -18,7 +18,7 @@ ul.project-list.page-projects_project-list
     :key="project.id"
     )
       button.project(
-        @dblclick="openTemplate({'pathFile': project.pathModel, 'pathRootFolder': project.pathProject})"
+        @dblclick="openTemplate(project.pathProject)"
         @click="selectTemplate(project)"
         :class="{'active': project.isChecked}"
         )
@@ -34,5 +34,5 @@ ul.project-list.page-projects_project-list
           .project-content_img
             img(:src="project.image")
       h3 {{ project.name }}
-      p.ellipsis--right(:title="project.pathProject[0]") {{ project.pathProject[0] }}
+      p.ellipsis--right(:title="project.pathProject") {{ project.pathProject }}
       time.text-disable {{ project.time }}

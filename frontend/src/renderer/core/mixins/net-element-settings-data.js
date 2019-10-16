@@ -27,7 +27,7 @@ const netElementSettingsData = {
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
             return data;
           }
-          else throw 'error 70'
+          //else throw 'error 70'
         })
         .catch((err) => {
           console.error(err);
@@ -36,10 +36,11 @@ const netElementSettingsData = {
     Mix_settingsData_getPartitionSummary(layerId) {
       return this.$store.dispatch('mod_api/API_getPartitionSummary', layerId)
         .then((data) => {
+          console.log(data);
           if (data) {
             this.Mix_settingsData_Partition_summary = data;
           }
-          else throw 'error 95'
+          //else throw 'error 95'
         })
         .catch((err) => {
           console.error(err);

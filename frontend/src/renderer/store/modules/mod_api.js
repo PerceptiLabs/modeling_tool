@@ -15,7 +15,7 @@ const getters = {
   GET_coreNetwork(state, getters, rootState, rootGetters) {
     const network = rootGetters['mod_workspace/GET_currentNetwork'];
     let layers = {};
-    const rootPath = network.networkRootFolder[0];
+    const rootPath = network.networkRootFolder;
     for(let layer in network.networkElementList) {
       const dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
       const el = network.networkElementList[layer];
@@ -265,10 +265,7 @@ const actions = {
       action: "isTrained"
     };
     return coreRequest(theData)
-      .then((data)=> {
-        console.log(data);
-        return data
-      })
+      .then((data)=> data)
       .catch((err)=> {
         console.error('isTrained answer', err);
       });
@@ -279,6 +276,7 @@ const actions = {
       action: "SaveTrained",
       value:  {Location, frontendNetwork}
     };
+    console.log('SaveTrained', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {

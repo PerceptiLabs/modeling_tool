@@ -5,7 +5,7 @@ const basicTemplate1 = {
     "networkID": "",
     "networkSettings": null,
     "networkMeta": {},
-    "networkRootFolder": [],
+    "networkRootFolder": '',
     "networkElementList": {
       "1564399775664": {
         "layerId": "1564399775664",

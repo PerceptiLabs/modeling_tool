@@ -54,21 +54,25 @@ const filePCSave = function (fileName, fileContent) {
         store.dispatch('globalView/GP_errorPopup', `An error occurred creating the file ${err.message}`);
         return reject(err);
       }
-      else {
-        return success(fileName)
-      }
+      else return success(fileName)
     });
   });
 };
-const projectPCSave = function (projectPathArr, fileContent) {
-  const projectPath = projectPathArr[0];
+const projectPCSave = function (fileContent) {
+  console.log(fileContent);
+  const projectPath = `${fileContent.networkRootFolder}${pathSlash}${fileContent.networkName}` ;
   if (!fs.existsSync(projectPath)){
     fs.mkdirSync(projectPath);
   }
-  const jsonPath = `${projectPath}${pathSlash}${fileContent.networkID}.json`;
+  const jsonPath = projectPathModel(projectPath);
+  console.log('jsonPath', jsonPath);
   return filePCSave(jsonPath, JSON.stringify(fileContent))
 };
+const projectPathModel = function (projectPath) {
+  return `${projectPath}${pathSlash}model.json`
+};
 const folderPCDelete = function (path) {
+  console.log(path);
   return new Promise((success, reject) => {
     if (!fs.existsSync(path)) success();
     const files = fs.readdirSync(path);
@@ -160,6 +164,7 @@ export {
   filePCRead,
   filePCSave,
   projectPCSave,
+  projectPathModel,
   folderPCDelete,
   encryptionData,
   decryptionData,

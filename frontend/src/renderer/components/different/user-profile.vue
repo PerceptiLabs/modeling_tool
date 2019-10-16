@@ -91,6 +91,9 @@
       button.btn.btn--primary(type="button"
         @click="saveUserInfo"
         :disabled="isDisabledBtn") Save
+      button.btn.btn--primary(type="button"
+        @click="UpdateUserInfo"
+        :disabled="isDisabledBtn") Update
 
 </template>
 
@@ -166,7 +169,9 @@ export default {
         newPasswordConfirmation: '',
       };
     },
-
+    UpdateUserInfo() {
+      this.cloud_userGetProfile()
+    },
     saveUserInfo() {
       Promise.all([ changeProfile(this), changeEmail(this), changePassword(this) ])
         .then((result)=> {

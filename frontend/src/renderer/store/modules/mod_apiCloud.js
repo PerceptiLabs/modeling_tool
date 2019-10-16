@@ -77,7 +77,7 @@ const actions = {
       .catch((error)=> console.log('CloudAPI_userChangePassword', error) )
   },
   CloudAPI_checkStatus({dispatch}) {
-    return requestCloudApi('get', 'Customer/CheckStatus')
+    return requestCloudApi('get', 'Customer/Profile')
       .then((response)=> response )
       .catch((error)=> console.log('CloudAPI_checkStatus', error) )
   },

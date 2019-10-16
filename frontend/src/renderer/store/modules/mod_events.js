@@ -1,6 +1,6 @@
 import {ipcRenderer}  from 'electron'
 import router         from "@/router";
-import {filePCRead, loadPathFolder} from "@/core/helpers";
+import {filePCRead, loadPathFolder, projectPathModel} from "@/core/helpers";
 import { pathSlash } from "@/core/constants";
 
 const namespaced = true;
@@ -43,8 +43,9 @@ const actions = {
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },
-  EVENT_loadNetwork({dispatch, rootGetters}, {pathRootFolder, pathFile}) {
-    console.log(pathRootFolder, pathFile);
+  EVENT_loadNetwork({dispatch, rootGetters}, pathProject) {
+    const pathFile = projectPathModel(pathProject);
+    console.log(pathFile);
     let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
     let pathIndex;
     if(localProjectsList.length) {
@@ -75,7 +76,7 @@ const actions = {
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
         }
-        net.networkRootFolder = pathRootFolder;
+        //net.networkRootFolder = pathRootFolder;
         dispatch('mod_workspace/ADD_network', net, {root: true});
       }
     );
@@ -85,12 +86,7 @@ const actions = {
       title:"Load Project Folder",
     };
     loadPathFolder(opt)
-      .then((pathArr)=> {
-        const pathRootFolder = pathArr[0];
-        const netId = pathRootFolder.slice(pathRootFolder.lastIndexOf(pathSlash) + 1, pathRootFolder.length);
-        const pathFile = `${pathRootFolder}${pathSlash}${netId}.json`;
-        dispatch('EVENT_loadNetwork', {pathRootFolder, pathFile})
-      })
+      .then((pathArr)=> dispatch('EVENT_loadNetwork', pathArr[0]))
       .catch((err)=> {});
   },
   EVENT_saveNetwork({commit}) {

@@ -132,7 +132,7 @@ const mutations = {
       networkSettings: null,
       networkMeta: {},
       networkElementList: null,
-      networkRootFolder: []
+      networkRootFolder: ''
     };
     const defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
