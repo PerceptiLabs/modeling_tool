@@ -33,10 +33,10 @@ self.addEventListener('message', function(message) {
         data.push(i);
       }
     }
-    // if(data[0] !== 0) data.unshift(0);
-    // if(data.length > maxItems) {
-    //   if (data[data.length - 1] !== xLength - 1) data.push(xLength - 1);
-    // }
+    if(data[0] !== 0) data.unshift(0);
+    if(data.length > maxItems) {
+      if (data[data.length - 1] !== xLength - 1) data.push(xLength - 1);
+    }
   }
   function filteredSeriesData(model) {
     model.series.forEach((chart)=> {

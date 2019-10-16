@@ -129,6 +129,7 @@ export default {
     max-height: none;
     .settings-layer {
       max-height: none;
+      overflow: hidden;
     }
   }
 </style>

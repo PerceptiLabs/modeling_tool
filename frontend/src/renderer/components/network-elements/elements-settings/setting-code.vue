@@ -21,6 +21,7 @@
       code-hq.code-wrap(
         v-if="theCode && currentTab !== 'error'"
         v-model="theCode[currentTab]"
+        ref="codeEditor"
         :error-row="errorRow"
         )
       .code-wrap(v-if="currentTab === 'error'")
@@ -94,6 +95,7 @@ export default {
       this.fullView = !this.fullView;
       document.querySelector('.popup_body').classList.toggle("popup_body--show-code");
       document.querySelector('.network').classList.toggle("network--show-code");
+      this.$refs.codeEditor.refresh();
     },
     closeFullView() {
       this.fullView = false;
@@ -151,6 +153,7 @@ export default {
     flex: 1;
     flex-direction: column;
     width: 100%;
+    overflow: hidden;
     .code-wrap,
     .bookmark_content {
       height: 100%;
