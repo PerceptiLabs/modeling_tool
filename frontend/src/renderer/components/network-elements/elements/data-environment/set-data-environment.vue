@@ -95,14 +95,14 @@
       }
     },
     watch: {
-      'settings.accessProperties.Atari': {
-        handler(newVal) {
-          if(newVal) {
-            this.Mix_settingsData_dataSettingsPlot('DataEnvironment');
-          }
-        },
-        immediate: true
-      },
+      // 'settings.accessProperties.Atari': {
+      //   handler(newVal) {
+      //     if(newVal) {
+      //       this.Mix_settingsData_getDataPlot('DataEnvironment');
+      //     }
+      //   },
+      //   immediate: true
+      // },
     },
     methods: {
       setTab(i) {

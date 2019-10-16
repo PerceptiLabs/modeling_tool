@@ -141,7 +141,7 @@ const actions = {
         Layers: getters.GET_coreNetwork
       }
     };
-    console.log('Start', theData);
+    //console.log('Start', theData);
     coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
@@ -276,7 +276,7 @@ const actions = {
       action: "SaveTrained",
       value:  {Location, frontendNetwork}
     };
-    console.log('SaveTrained', theData);
+    //console.log('SaveTrained', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -294,9 +294,10 @@ const actions = {
       action: "getNetworkInputDim",
       value: getters.GET_coreNetwork
     };
+    console.log('getNetworkInputDim request', theData);
     return coreRequest(theData)
       .then((data)=> {
-        console.log('getNetworkInputDim', data);
+        console.log('getNetworkInputDim answer', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err)=> {
@@ -328,7 +329,7 @@ const actions = {
         Variable: varData
       }
     };
-    console.log('getPreviewSample', theData);
+    //console.log('getPreviewSample', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -344,7 +345,7 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
-    console.log('API_getPreviewVariableList');
+    //console.log('API_getPreviewVariableList');
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -372,7 +373,7 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
-    console.log('getPartitionSummary');
+    //console.log('getPartitionSummary');
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -388,7 +389,7 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
-    console.log('getDataMeta');
+    //console.log('getDataMeta');
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {

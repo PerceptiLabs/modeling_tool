@@ -21,29 +21,27 @@ const netElementSettingsData = {
     Mix_settingsData_getDataMeta(layerId) {
       return this.$store.dispatch('mod_api/API_getDataMeta', layerId)
         .then((data) => {
-          //console.log('getDataMeta', data);
+          console.log('getDataMeta', data);
           if (data) {
             if(data.Action_space) this.Mix_settingsData_actionSpace = data.Action_space;
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
             return data;
           }
-          //else throw 'error 70'
         })
         .catch((err) => {
-          console.error(err);
+          console.error('getDataMeta', err);
         });
     },
     Mix_settingsData_getPartitionSummary(layerId) {
       return this.$store.dispatch('mod_api/API_getPartitionSummary', layerId)
         .then((data) => {
-          console.log(data);
+          console.log('getPartitionSummary', data);
           if (data) {
             this.Mix_settingsData_Partition_summary = data;
           }
-          //else throw 'error 95'
         })
         .catch((err) => {
-          console.error(err);
+          console.error('getPartitionSummary', err);
         });
     },
     Mix_settingsData_deleteDataMeta(type) {
@@ -62,9 +60,28 @@ const netElementSettingsData = {
           return data
         })
         .catch((err) => {
-          console.error(err);
+          console.error('deleteData', err);
         });
     },
+    // Mix_settingsData_getDataPlot(type) {
+    //   let theData = {
+    //     reciever: this.Mix_settingsData_currentNetworkID,
+    //     action: 'getDataPlot',
+    //     value: {
+    //       Id: this.currentEl.layerId,
+    //       Type: type,
+    //       Properties: this.settings
+    //     }
+    //   };
+    //   this.coreRequest(theData)
+    //     .then((data) => {
+    //       console.log('getDataPlot', data);
+    //       if (data) this.Mix_settingsData_imgData = data;
+    //     })
+    //     .catch((err)=> {
+    //       console.error(err);
+    //     });
+    // },
     Mix_settingsData_prepareSources(pathArr, type) {
       return pathArr.map((el)=> { return {
         type,

@@ -512,7 +512,8 @@ const mutations = {
   },
   set_elementInputDim(state, value) {
     for(let element in value) {
-      currentElement(element).layerMeta.InputDim = value[element]
+      currentElement(element).layerMeta.InputDim = value[element].inShape;
+      currentElement(element).layerCodeError = value[element].Error
     }
   },
   set_elementOutputDim(state, {value}) {

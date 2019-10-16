@@ -191,7 +191,7 @@
           this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
         },
         deep: true,
-        immediate: true
+        //immediate: true
       },
       'settings.accessProperties.Sources.length': {
         handler(newVal) {
