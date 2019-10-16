@@ -114,7 +114,7 @@ export default {
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
             {type:  'separator'},
             {label: 'delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: true  },
-            {label: 'add group',     accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: true  },
+            {label: 'add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: true  },
             {label: 'ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: true  },
             {type:  'separator'},
             {label: 'close setting popups',          accelerator: 'esc',                                                                 active: this.HC_esc,                       visible: true  },
@@ -295,8 +295,10 @@ export default {
       }
     },
     saveModel() {
-      this.saveNetwork();
-      this.offMainTutorial();
+      if(this.openApp) {
+        this.saveNetwork();
+        this.offMainTutorial();
+      }
     },
     saveModelAs() {
       this.saveNetworkAs();

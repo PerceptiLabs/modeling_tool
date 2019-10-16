@@ -33,6 +33,10 @@ export default {
     return {
       trainingWasPaused: false,
       counterHideSpinner: 0,
+      saveNetworkPopup: {
+        show: false,
+        existTrained: false
+      }
       //unwatch: null
     }
   },
@@ -252,35 +256,71 @@ export default {
     },
 
     eventSaveNetwork() {
+      //this.askSaveFilePopup();
       const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
       if(!projectsList.length || findIndexId(projectsList, network) < 0) {
         this.eventSaveNetworkAs();
         return
       }
-      let idIndex = findIndexId(projectsList, network);
-      const currentPath = projectsList[idIndex].pathProject[0];
-      const currentPathFolder = currentPath.slice(0, -(network.networkID.length + 1));
-      this.saveNetwork([currentPathFolder]);
-    },
-    eventSaveNetworkAs() {
-      const projectsList = this.getLocalUserInfo.projectsList;
-      const network = this.currentNetwork;
-      let newProjId;
-      if(findIndexId(projectsList, network) >= 0) {
-        newProjId = generateID();
-      }
-      const option = {
-        title: "Select folder",
-        buttonLabel: "Select folder"
-      };
-      loadPathFolder(option)
-        .then((path)=> {
-          this.saveNetwork(path, newProjId)
+      this.checkTrainedNetwork()
+        .then((isTrained)=> {
+          this.saveNetworkPopup.existTrained = isTrained;
+          if(isTrained) this.eventSaveNetworkAs(network);
+          else {
+            // let idIndex = findIndexId(projectsList, network);
+            // const currentPath = projectsList[idIndex].pathProject[0];
+            // const currentPathFolder = currentPath.slice(0, -(network.networkID.length + 1));
+            // this.saveNetwork([currentPathFolder]);
+            this.saveNetwork()
+          }
         })
     },
+    eventSaveNetworkAs(net) {
+      console.log('eventSaveNetworkAs', net);
+      // const projectsList = this.getLocalUserInfo.projectsList;
+      // const network = this.currentNetwork;
+      // let newProjId;
+      // if(findIndexId(projectsList, network) >= 0) {
+      //   newProjId = generateID();
+      // }
+      this.askSaveFilePopup()
+        .then((settings)=> {
+          console.log(settings);
+          //this.saveNetwork();
+        })
+        .catch(()=> {})
+      // const option = {
+      //   title: "Select folder",
+      //   buttonLabel: "Select folder"
+      // };
+      // loadPathFolder(option)
+      //   .then((path)=> {
+      //     this.saveNetwork(path, newProjId)
+      //   })
+    },
+    askSaveFilePopup() {
+      this.saveNetworkPopup.show = true;
+      return this.$nextTick()
+        .then(()=> this.$refs.saveNetworkPopup[0].openPopup())
+        .catch(()=> {
+          this.infoPopup('Project not saved');
+        })
+        .finally(()=> this.saveNetworkPopup.show = false)
 
-    saveNetwork(savePath, newId) {
+      // return this.$nextTick(()=> {
+      //   return this.$refs.saveNetworkPopup[0].openPopup()
+      //     .then((answer)=> {
+      //       console.log(answer);
+      //       return answer
+      //     })
+      //     .catch(()=> {
+      //       this.infoPopup('Project not saved');
+      //     }  )
+      //     .finally(()=> this.showSaveNetworkPopup = false)
+      // })
+    },
+    saveNetwork(netInfo) {
       const networkField = this.$refs.networkField[0].$refs.network;
       networkField.style.filter = 'blur(5px)';
 
@@ -289,20 +329,10 @@ export default {
       const pathSaveProject = [savePath[0] + pathSlash + projectId];
       let prepareNet = cloneNet(currentNet, projectId, pathSaveProject);
       /*check Is Trained Net + do ScreenShot*/
-      Promise.all([
-        this.checkTrainedNetwork(),
-        doScreenShot(networkField)
-      ])
-        .then((result)=> {
-          /*prepare Net + ask what the file save*/
-          const isTrainingNet = result[0];
-          prepareNet.toLocal.image = result[1];
-          if(isTrainingNet) return this.askSaveFilePopup();
-          else return false;
-        })
-        .then((isSaveTrainedModel)=> {
-          /*save files the core or front*/
-          if(isSaveTrainedModel) {
+      doScreenShot(networkField)
+        .then((img)=> {
+          prepareNet.toLocal.image = img;
+          if(netInfo.isSaveTrainedModel) {
             prepareNet.toLocal.isTrained = true;
             return this.saveTrainedNetwork({
               'Location': savePath,
@@ -321,16 +351,44 @@ export default {
         })
         .catch((error) => {})
         .finally(()=> {
-            networkField.style.filter = '';
-          });
+          networkField.style.filter = '';
+        });
+      // Promise.all([
+      //   this.checkTrainedNetwork(),
+      //   doScreenShot(networkField)
+      // ])
+      //   .then((result)=> {
+      //     /*prepare Net + ask what the file save*/
+      //     const isTrainingNet = result[0];
+      //     prepareNet.toLocal.image = result[1];
+      //     if(isTrainingNet) return this.askSaveFilePopup();
+      //     else return false;
+      //   })
+      //   .then((isSaveTrainedModel)=> {
+      //     /*save files the core or front*/
+      //     if(isSaveTrainedModel) {
+      //       prepareNet.toLocal.isTrained = true;
+      //       return this.saveTrainedNetwork({
+      //         'Location': savePath,
+      //         'frontendNetwork': prepareNet.toFile
+      //       })
+      //     }
+      //     else {
+      //       return projectPCSave(pathSaveProject, prepareNet.toFile)
+      //     }
+      //   })
+      //   .then(()=> {
+      //     /*save project to project page*/
+      //     saveProjectToLocalStore(prepareNet.toLocal, this);
+      //     this.infoPopup('The file has been successfully saved');
+      //     this.trackerModelSave(prepareNet.toFile);
+      //   })
+      //   .catch((error) => {})
+      //   .finally(()=> {
+      //       networkField.style.filter = '';
+      //     });
     },
-    askSaveFilePopup() {
-      return this.$refs.saveNetworkPopup[0].openPopup()
-        .then((answer)=> answer)
-        .catch((err)=> {
 
-        })
-    },
     trainingFinished(index) {
       let networkStatus = this.workspace[index].networkMeta.coreStatus.Status;
       return networkStatus === 'Finished' || networkStatus === 'Testing';
@@ -414,8 +472,7 @@ function cloneNet(net, idProject, pathProject) {
     image: null,
     name: toFile.networkName,
     id: idProject,
-    pathProject: pathProject,
-    pathModel: pathProject[0] + pathSlash + idProject + '.json',
+    pathRootFolder: pathProject,
     isTrained: false,
     isCloud: false,
   };
