@@ -254,7 +254,16 @@ class coreLogic():
     def getStatus(self):
         try:
             if self.status=="Running":
-                return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
+                progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
+                result = {
+                    "Status":self.savedResultsDict["trainingStatus"],
+                    "Iterations": self.savedResultsDict["iter"],
+                    "Epoch": self.savedResultsDict["epoch"],
+                    "Progress": progress,
+                    "CPU": psutil.cpu_percent(),
+                    "Memory": dict(psutil.virtual_memory()._asdict())["percent"]
+                }
+                return result
             else:
                 return {"Status":self.status,"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
         except KeyError:

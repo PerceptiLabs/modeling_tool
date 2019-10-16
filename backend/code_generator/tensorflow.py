@@ -593,6 +593,7 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "        step_counter += 1\n"
         code += "        state = new_state\n"
         code += "    api.data.stack(episode_reward=np.sum(reward_list))\n"
+        code += "    api.data.stack(episode_steps=step_counter)\n"        
         code += "    if len(loss_list) > 0:\n"
         code += "        api.data.stack(episode_loss=loss_list[-1])\n"        
         #code += "    print('iteration '+str(iteration))\n"

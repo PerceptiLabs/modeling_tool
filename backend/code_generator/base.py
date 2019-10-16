@@ -6,7 +6,7 @@ CodePart = namedtuple('CodePart', ['name', 'code'])
 
 class CodeGenerator(ABC):
     @abstractmethod
-    def get_code(self, mode='normal'):
+    def get_code(self):
         raise NotImplementedError
 
     def get_code_parts(self):
@@ -14,6 +14,17 @@ class CodeGenerator(ABC):
         code_parts = [CodePart(name=None, code=code)]
         return code_parts
 
+    def __repr__(self):
+        text  = "{}\n".format(self.__class__.__name__)
+        
+        fields = sorted(self.__dict__.items(), key=lambda x: x[0]) # Sort by name
+        n_chars = max([len(name) for name, value in fields])
+        
+        for name, value in fields:
+            text += "    {} : {}\n".format(name.ljust(n_chars, " "), value)
+            
+        return text
+    
     
 class CustomCodeGenerator(CodeGenerator):
     def __init__(self, input_):
@@ -24,7 +35,7 @@ class CustomCodeGenerator(CodeGenerator):
         else:
             raise ValueError("Inputs must be either string or list of CodeParts")
 
-    def get_code_parts(self, mode='normal'):
+    def get_code_parts(self):
         return self._code_parts
 
     def get_code(self, mode='normal'):    
@@ -33,3 +44,12 @@ class CustomCodeGenerator(CodeGenerator):
             code += cp.code + '\n'            
         return code
 
+    def __repr__(self):
+        full_text  = "{}\n".format(self.__class__.__name__)
+        full_text += "Code:\n"
+        
+        for count, line in enumerate(self.get_code().split('\n'), 1):
+            full_text += "{} {}".format(count, line)
+            
+        return full_text
+            

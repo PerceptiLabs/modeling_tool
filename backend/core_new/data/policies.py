@@ -217,6 +217,7 @@ class TrainReinforceDataPolicy(DataPolicy):
                 train_dict[id_]['X'] = {}
                 train_dict[id_]['X']['Reward'] = self._data[id_].get('reward', [-1])
                 train_dict[id_]['X']['epochTotalReward'] = self._data[id_].get('episode_reward', [-1])
+                train_dict[id_]['X']['epochTotalSteps'] = self._data[id_].get('episode_steps', [-1])
 
 
                 train_dict[id_]['loss'] = self._data[id_].get('loss', [-1])

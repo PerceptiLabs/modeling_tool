@@ -201,7 +201,10 @@ class BaseCore:
             set_tensorflow_mode('graph')        
             
     def _run_layer(self, id_, content):        
-        code = self._codehq.get_code_generator(id_, content).get_code()
+        code_gen = self._codehq.get_code_generator(id_, content)
+        log.debug(repr(code_gen))
+        
+        code = code_gen.get_code()
         
         globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])        
         session = LayerSession(id_, content['Info']['Type'], code,
