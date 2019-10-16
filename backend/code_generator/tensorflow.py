@@ -63,11 +63,11 @@ class RecurrentCodeGenerator(CodeGenerator):
 
 class WordEmbeddingCodeGenerator(CodeGenerator):
     def get_code(self):
-        code  = 'words = tf.string_split(X)\n'
+        code  = "words = tf.string_split(X['Y'])\n"
         code += 'vocab_size=words.get_shape().as_list()[0]\n'
         code += 'embed_size=10\n'
         code += 'embedding = tf.Variable(tf.random_uniform((vocab_size, embed_size), -1, 1))\n'
-        code += 'Y = tf.nn.embedding_lookup(embedding, X)\n'
+        code += "Y = tf.nn.embedding_lookup(embedding, X[''Y])\n"
         return code
 
 
@@ -88,7 +88,7 @@ class CropCodeGenerator(CodeGenerator):
         self._target_width = target_width
 
     def get_code(self):
-        code = "Y=tf.image.crop_to_bounding_box(X, %d, %d, %d, %d)\n" % (self._offset_height,
+        code = "Y=tf.image.crop_to_bounding_box(X['Y'], %d, %d, %d, %d)\n" % (self._offset_height,
                                                                          self._offset_width,
                                                                          self._target_height,
                                                                          self._target_width)
@@ -97,10 +97,10 @@ class CropCodeGenerator(CodeGenerator):
 
 class GrayscaleCodeGenerator(CodeGenerator):
     def get_code(self):
-        code  = 'if X["Y"].get_shape().as_list()[-1] == 3:\n'
-        code += '    Y = tf.image.rgb_to_grayscale(X)\n'
+        code  = "if X['Y'].get_shape().as_list()[-1] == 3:\n"
+        code += "    Y = tf.image.rgb_to_grayscale(X['Y'])\n"
         code += 'else:\n'
-        code += '    Y = X\n'
+        code += "    Y = X['Y']\n"
         return code
 
 
@@ -109,13 +109,13 @@ class ArgmaxCodeGenerator(CodeGenerator):
         self._dim = dim
 
     def get_code(self):
-        code = 'Y = tf.argmax(X, %s)' % self._dim
+        code = "Y = tf.argmax(X['Y'], %s)" % self._dim
         return code
 
 
 class SoftmaxCodeGenerator(CodeGenerator):
     def get_code(self):
-        code = 'Y = tf.nn.softmax(X)'
+        code = "Y = tf.nn.softmax(X['Y'])"
         return code
 
 
@@ -128,7 +128,7 @@ class MergeCodeGenerator(CodeGenerator):
         # TODO: in python version < 3.6 dicts aren't ordered. caution if we allow custom environments in the future.
         
         if self._type == 'Concat':
-            # Due to duplicate values in X, just take every other value.            
+            # Due to duplicate values in X['Y'], just take every other value.            
             code  = "for i in range(0, len(list(X['Y'].values())), 2):\n"
             code += "    if not Y:\n"
             code += "        Y = list(X['Y'].values())[i]\n"
@@ -434,37 +434,48 @@ class TrainNormalCodeGenerator(CodeGenerator):
 LayerPair = namedtuple('LayerPair', ['online_id', 'target_id'])
 
 
+
 class TrainReinforce(CodeGenerator):
-    def __init__(self):
-        self._n_episodes = 10
-        self._n_iterations = 100
-        self._n_seq_frames = 4
-        self._n_obs_frames = 2
-        self._batch_size = 16
-        self._replay_memory_size = 5000
-        self._learning_rate = 0.01
-        self._gamma = 0.1
-        self._online_network_id = "'1'"
-        self._target_network_id = "'2'"
-        self._layer_pairs = [LayerPair('1', '2')]
-        self._training_frequency = 2
-        self._copy_weights_frequency = 2
+    def __init__(self, online_network_id, target_network_id, layer_pairs, n_episodes=20000, history_length=2, batch_size=32, learning_rate=0.1, discount_factor=0.99,
+                 replay_start_size=1000, replay_memory_size=300000,
+                 initial_exploration=0.9, final_exploration=0.1,
+                 update_frequency=4, target_network_update_frequency=100):
+        self._batch_size = batch_size                
+        self._n_episodes = n_episodes
+        self._history_length = history_length
+        self._replay_start_size = replay_start_size        
+        self._replay_memory_size = replay_memory_size
+        self._learning_rate = learning_rate
+        self._gamma = discount_factor
+        self._update_frequency = update_frequency
+        self._copy_weights_frequency = target_network_update_frequency
+
+        self._online_network_id = online_network_id# #"'1'"
+        self._target_network_id = target_network_id# "'2'"
+        self._layer_pairs = layer_pairs# [LayerPair('11', '21')]#, LayerPair('12', '22')]
+        
         
     def get_code(self):
         code  = "global state_tensor, env\n"
-        code += "Q_online = X[%s]['Y']\n" % self._online_network_id
-        code += "Q_target = X[%s]['Y']\n" % self._target_network_id                
+        code += "Q_online = X['%s']['Y']\n" % self._online_network_id
+        code += "Q_target = X['%s']['Y']\n" % self._target_network_id                
         code += "\n"
         code += "# Constants\n"
         code += "gamma = %f\n" % self._gamma
-        code += "n_iters = %d\n" % self._n_iterations
         code += "batch_size = %d\n" % self._batch_size
-        code += "n_seq_frames = %d\n" % self._n_seq_frames
-        code += "n_obs_frames = %d\n" % self._n_obs_frames
+        code += "history_length = %d\n" % self._history_length
+        code += "replay_start_size = %d\n" % self._replay_start_size
         code += "n_actions = env.action_space.n\n"
         code += "\n"
+        code += "# Exploration/exploitation tradeoff\n" # TODO: name
+        code += "def epsilon(episode):\n"
+        code += "    #eps = 1/np.sqrt(1 + episode)\n"
+        code += "    eps = 0.9**(episode/500)\n"
+        code += "    eps = max(0.1, eps)\n"
+        code += "    return eps\n"
+        code += "\n"
         code += "# Optimizer\n"
-        code += "input_shape = [4, 210, 160, 3]\n" # TODO: fix this!
+        code += "input_shape = state_tensor.get_shape().as_list()[1:]\n" # TODO: fix this!
         code += "y_tensor = tf.placeholder(tf.float32, [None, 1], name='y')\n"
         code += "a_tensor = tf.placeholder(tf.uint8, [None, 1], name='a')\n"
         code += "\n"
@@ -499,22 +510,27 @@ class TrainReinforce(CodeGenerator):
         code += "replay_memory_size = %d\n" % self._replay_memory_size
         code += "replay_memory = []\n" 
         code += "\n"
+        code += "iteration = 0\n"        
         code += "for episode in range(%d):\n" % self._n_episodes
         code += "    state = env.reset()\n"
-        code += "    state_seq = [state]*n_seq_frames\n"
+        code += "    state_seq = [state]*history_length\n"
         code += "    \n"
-        code += "    iteration = 0\n"
+        code += "    print('NEW EPISODE', episode)\n"
         code += "    done = False\n"
         code += "    while not done:\n"
-        code += "        explore = np.random.random() < 0.3 or iteration < n_obs_frames\n"
+        code += "        print('state:')\n"
+        code += "        print(np.squeeze(state_seq))\n"        
+        code += "        explore = np.random.random() < epsilon(episode) or iteration < replay_start_size\n"
         code += "        if explore:\n"
         code += "            action = env.action_space.sample()\n"
-        code += "            print('random action' + str(action))\n"
+        code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array([state_seq])}).squeeze()\n"
+        code += "            print('Q ' + str(Q))\n"        
+        code += "            print('action: ' + str(action) + ' (random)')\n"
         code += "        else:\n"
         code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array([state_seq])}).squeeze()\n"
         code += "            action = np.argmax(Q)\n"
         code += "            print('Q ' + str(Q))\n"
-        code += "            print('chosen action ' + str(action))\n"        
+        code += "            print('action: ' + str(action) + '(chosen)')\n"        
         code += "        \n"
         code += "        new_state, reward, done, info = env.step(action)\n"
         code += "        new_state_seq = state_seq[1:] + [new_state]\n"
@@ -527,13 +543,24 @@ class TrainReinforce(CodeGenerator):
         code += "                      'reward': reward,\n"
         code += "                      'done': done\n"         
         code += "                      }\n"
+        code += "        #if reward > 0:\n"
+        code += "        #    replay_memory.extend([transition]*9000)\n"
         code += "        replay_memory.append(transition)\n"
+        code += "        #    if reward > 0:\n"
+        code += "        #        import pdb; pdb.set_trace()\n"
+        code += "        #        replay_memory.extend([transition]*300)\n"
         code += "        if len(replay_memory) > replay_memory_size:\n"
-        code += "            transitions.pop(0)\n"
+        code += "            #if replay_memory[0]['reward'] < 1000:\n"
+        code += "            replay_memory.pop(0)\n"
         code += "        \n"
+        code += "        state_seq = new_state_seq\n"        
+        code += "        print(np.histogram([r['reward'] for r in replay_memory])[0])\n"
+        code += "        print('eps', epsilon(episode))\n"
+        code += "        print('REWARD', reward)\n"
+        code += "        #if reward > 0: import pdb; pdb.set_trace()\n"
         code += "        # Training\n"
         code += "        \n"
-        code += "        if iteration > n_iters and iteration % {} == 0:\n".format(self._training_frequency)
+        code += "        if iteration % {} == 0 and iteration > replay_start_size:\n".format(self._update_frequency) # TODO: better name for n_iters
         code += "            batch_transitions = np.random.choice(replay_memory, batch_size)\n"
         code += "            y_batch = np.zeros((batch_size, 1))\n"
         code += "            a_batch = np.zeros((batch_size, 1))\n" 
@@ -546,7 +573,7 @@ class TrainReinforce(CodeGenerator):
         code += "                    Q = Q_target.eval(feed_dict=feed_dict).squeeze()\n" 
         code += "                    y_batch[i] += gamma*np.amax(Q)\n"
         code += "                a_batch[i] = t['action']\n"
-        code += "                X_batch[i] = t['new_state_seq']\n"
+        code += "                X_batch[i] = t['state_seq']\n"
         code += "            \n"
         code += "            feed_dict = {\n"
         code += "                         state_tensor: np.atleast_2d(X_batch),\n"
@@ -557,24 +584,118 @@ class TrainReinforce(CodeGenerator):
         code += "            print('Took training step!')\n"        
         code += "        \n"
         code += "        # Copy weights\n"
-        code += "        if iteration % {} == 0:\n".format(self._training_frequency)
+        code += "        if iteration % {} == 0:\n".format(self._copy_weights_frequency)
         code += "            copy_weights(sess)\n"
-        code += "            print('Copied weights!')\n"
         code += "        iteration += 1\n"
         code += "        print('iteration '+str(iteration))\n"
 
 
         return code
 
+    
+import gym
+import copy
+import numpy as np
+import random
+class DummyEnv(gym.Env):
+
+    def __init__(self):
+        self.action_space = gym.spaces.Discrete(4)
+        self.observation_space = gym.spaces.Box(np.array([0]), np.array([1]))
+        self.reset()
+        
+    def reset(self):
+        self._has_entered = {
+            'bot_right': False,           
+            'top_right': False,
+            'bot_left': False,                        
+            'top_left': False
+        }
+        self._pos = 'bot_left'
+        self._done = False
+        self._actions = []
+        return self._get_state()
+
+    def step(self, action):
+        if self._done:
+            raise RuntimeError("Already done!")
+        
+        pos1 = self._pos
+        
+        if action == 0: # MOVE UP
+            if self._pos == 'bot_left':
+                self._pos = 'top_left'
+            elif self._pos == 'bot_right':
+                self._pos = 'top_right'
+        elif action == 1: # MOVE RIGHT
+            if self._pos == 'top_left':
+                self._pos = 'top_right'
+            elif self._pos == 'bot_left':
+                self._pos = 'bot_right'
+            
+        elif action == 2: # MOVE DOWN
+            if self._pos == 'top_left':
+                self._pos = 'bot_left'
+            elif self._pos == 'top_right':
+                self._pos = 'bot_right'
+        elif action == 3: # MOVE LEFT
+            if self._pos == 'top_right':
+                self._pos = 'top_left'
+            elif self._pos == 'bot_right':
+                self._pos = 'bot_left'            
+
+        self._actions.append(action)
+        self._done = len(self._actions) >= 4
+
+        if self._actions == [0, 1, 2, 3]:
+            # Reward only comes if all has been entered and if the first action was to move up
+            reward = 100
+        else:
+            reward = -10
+
+        state = self._get_state()
+        return state, reward, self._done, {'actions': self._actions}
+
+    def _get_state(self):
+        state = np.zeros((2, 2))
+        if self._pos == 'top_left':
+            state[0, 0] = 1
+        elif self._pos == 'bot_left':
+            state[1, 0] = 1
+        elif self._pos == 'top_right':
+            state[0, 1] = 1
+        elif self._pos == 'bot_right':
+            state[1, 1] = 1
+        return state
+        
+    def seed(self, seed):
+        random.seed(seed)
+        np.random.seed(seed)
+    
+
+
+
+    
 if __name__ == "__main__":
+
+
+    #import pdb; pdb.set_trace()
+
+    
     import tensorflow as tf
     import numpy as np
     import gym
 
-    WINDOW_SIZE = 4
-    env = gym.make('Breakout-v0')
+    np.random.seed(456)
+    tf.set_random_seed(456)
+    
+    #env = gym.make('Breakout-v0')
+    
+    env = DummyEnv()
+    
     sample = env.reset()
-    state_window_shape = (None, WINDOW_SIZE, ) + sample.shape # [None, 4, 210, 160, 3]
+    SEQ_SIZE = 2
+    state_window_shape = (None, SEQ_SIZE, ) + sample.shape # [None, 4, 210, 160, 3]
     #print(state_window_shape)
     #raise SystemExit
     state_tensor = tf.placeholder(tf.float32, shape=state_window_shape, name='state_tensor')
@@ -582,39 +703,68 @@ if __name__ == "__main__":
     #import pdb; pdb.set_trace()
 
     # Online Network 
-    N_NEURONS = 4 # n states
+    N_NEURONS = 4 # n actions
     X = {'Y':  state_tensor}
     input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
     shape = [input_size, N_NEURONS]
     initial = tf.truncated_normal(shape, stddev=0.1)
-    W = tf.Variable(initial, name='weights-1')#\n" % self._layer_id
+    W = tf.Variable(initial, name='weights-11')#\n" % self._layer_id
     initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
-    b = tf.Variable(initial, name='bias-1')#\n" % self._layer_id
+    b = tf.Variable(initial, name='bias-11')#\n" % self._layer_id
+    flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
+    node = tf.matmul(flat_node, W)    
+    node = node + b
+    Y1 = node
+
+    '''
+    X = {'Y':  Y1}
+    input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
+    shape = [input_size, N_NEURONS]
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    W = tf.Variable(initial, name='weights-12')#\n" % self._layer_id
+    initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
+    b = tf.Variable(initial, name='bias-12')#\n" % self._layer_id
     flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
     node = tf.matmul(flat_node, W)    
     node = node + b
     Y1 = tf.sigmoid(node)
+    '''
+    
     
     # Target Network 
-    N_NEURONS = 4 # n states
+    N_NEURONS = 4 # n actions
     X = {'Y':  state_tensor}
     input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
     shape = [input_size, N_NEURONS]
     initial = tf.truncated_normal(shape, stddev=0.1)
-    W = tf.Variable(initial, name='weights-2')#\n" % self._layer_id
+    W = tf.Variable(initial, name='weights-21')#\n" % self._layer_id
     initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
-    b = tf.Variable(initial, name='bias-2')#\n" % self._layer_id
+    b = tf.Variable(initial, name='bias-21')#\n" % self._layer_id
+    flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
+    node = tf.matmul(flat_node, W)    
+    node = node + b
+    Y2 = node
+    '''
+    X = {'Y':  Y2}
+    input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
+    shape = [input_size, N_NEURONS]
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    W = tf.Variable(initial, name='weights-22')#\n" % self._layer_id
+    initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
+    b = tf.Variable(initial, name='bias-22')#\n" % self._layer_id
     flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
     node = tf.matmul(flat_node, W)    
     node = node + b
     Y2 = tf.sigmoid(node)
-
+    '''
     X = {
         '1': {'Y': Y1},
         '2': {'Y': Y2}        
     }
 
-    tr = TrainReinforce()
+    tr = TrainReinforce(online_network_id='1', target_network_id='2',
+                        layer_pairs=[LayerPair('11', '21')],                        
+                        history_length=SEQ_SIZE)
     code = tr.get_code()
 
     glob_ = {'tf': tf, 'np': np, 'state_tensor': state_tensor, 'env': env}    

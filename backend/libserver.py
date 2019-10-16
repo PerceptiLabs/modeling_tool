@@ -18,8 +18,10 @@ from extractVariables import *
 from createDataObject import createDataObject
 
 from core_new.core import *
+from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from graph import Graph
 from codehq import CodeHqNew as CodeHq
+from modules import ModuleProvider
 
 import pprint
 import logging
@@ -165,20 +167,47 @@ class Message:
         except (TypeError, OverflowError):
             return False
 
+    def _create_lw_core(self, jsonNetwork):
+        graph = Graph(jsonNetwork)
+        
+        graph_dict = graph.graphs
+        data_container = DataContainer()
+        
+        session_history_lw = SessionHistory()
+        extras_reader = LayerExtrasReader()
+
+        from codehq import CodeHqNew as CodeHq
+
+        module_provider = ModuleProvider()
+        module_provider.load('tensorflow', as_name='tf')
+        module_provider.load('numpy', as_name='np')
+        module_provider.load('gym')
+        
+        for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
+            module_provider.install_hook(hook_target, hook_func)
+            
+        lw_core = LightweightCore(CodeHq, graph_dict,
+                                  data_container, session_history_lw,
+                                  module_provider, extras_reader)
+        
+        return lw_core, extras_reader, data_container
+
     def _create_response_json_content(self):
         reciever=self.request.get("reciever")
         action = self.request.get("action")
         startTime=time.time()
 
         #Check if the core exists, otherwise create one
-        if reciever not in self.cores:
-            core=coreLogic(reciever)
-            self.cores[reciever]=core
-        else:
-            core=self.cores[reciever]
+        
 
         if not reciever in self.dataDict:
             self.dataDict[reciever]=dict()
+
+        if reciever not in self.cores:
+            core=coreLogic(reciever, self.dataDict[reciever])
+            self.cores[reciever]=core
+        else:
+            core=self.cores[reciever]
 
         warnings=core.warningQueue
         warningList=[]
@@ -225,18 +254,7 @@ class Message:
             Id=value["Id"]
             jsonNetwork=value["Network"]
 
-            graph = Graph(jsonNetwork)
-            
-            graph_dict = graph.graphs
-            data_container = DataContainer()
-            
-            session_history_lw = SessionHistory()
-            extras_reader = LayerExtrasReader()
-
-            from codehq import CodeHqNew as CodeHq
-
-            lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-                                    session_history_lw, extras_reader)    
+            lw_core, _, data_container = self._create_lw_core(jsonNetwork)
             lw_core.run()
 
 
@@ -258,18 +276,7 @@ class Message:
             Id=value["Id"]
             jsonNetwork=value["Network"]
 
-            graph = Graph(jsonNetwork)
-            
-            graph_dict = graph.graphs
-            data_container = DataContainer()
-            
-            session_history_lw = SessionHistory()
-            extras_reader = LayerExtrasReader()
-
-            from codehq import CodeHqNew as CodeHq
-
-            lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-                                    session_history_lw, extras_reader)    
+            lw_core, _, data_container = self._create_lw_core(jsonNetwork)
             lw_core.run()
 
             def try_fetch(dict,variable):
@@ -315,18 +322,7 @@ class Message:
             from pprint import pprint
             pprint(jsonNetwork)
 
-            graph = Graph(jsonNetwork)
-            
-            graph_dict = graph.graphs
-            data_container = DataContainer()
-            
-            session_history_lw = SessionHistory()
-            extras_reader = LayerExtrasReader()
-
-            from codehq import CodeHqNew as CodeHq
-
-            lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-                                    session_history_lw, extras_reader)    
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)            
             lw_core.run()
             
             content={}
@@ -347,22 +343,12 @@ class Message:
             
         elif action == "getNetworkOutputDim":
             jsonNetwork=self.request.get("value")
+
             
             from pprint import pprint
             pprint(jsonNetwork)
 
-            graph = Graph(jsonNetwork)
-            
-            graph_dict = graph.graphs
-            data_container = DataContainer()
-            
-            session_history_lw = SessionHistory()
-            extras_reader = LayerExtrasReader()
-
-            from codehq import CodeHqNew as CodeHq
-
-            lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-                                    session_history_lw, extras_reader)    
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                        
             lw_core.run()
             
             extrasDict=extras_reader.to_dict()
@@ -391,18 +377,7 @@ class Message:
             except:
                 Variable=None
 
-            graph = Graph(jsonNetwork)
-            
-            graph_dict = graph.graphs
-            data_container = DataContainer()
-            
-            session_history_lw = SessionHistory()
-            extras_reader = LayerExtrasReader()
-
-            from codehq import CodeHqNew as CodeHq
-
-            lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-                                    session_history_lw, extras_reader)    
+            lw_core, extras_reader, data_container = self._create_lw_core(jsonNetwork)                                    
             lw_core.run()
             
             sample=""
@@ -439,18 +414,7 @@ class Message:
             jsonNetwork=value["Network"]
             LayerId=value["Id"]
 
-            graph = Graph(jsonNetwork)
-            
-            graph_dict = graph.graphs
-            data_container = DataContainer()
-            
-            session_history_lw = SessionHistory()
-            extras_reader = LayerExtrasReader()
-
-            from codehq import CodeHqNew as CodeHq
-
-            lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-                                    session_history_lw, extras_reader)    
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                                                
             lw_core.run()
             
             extrasDict=extras_reader.to_dict()

@@ -7,6 +7,7 @@ import traceback
 import tensorflow as tf
 from collections import namedtuple
 
+from modules import ModuleProvider
 from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer, TrainValDataPolicy, TestDataPolicy
 from core_new.utils import set_tensorflow_mode
@@ -132,6 +133,7 @@ class SessionProcessHandler:
         while not self._command_queue.empty():
             command = self._command_queue.get()
             log.info("Received command '{}'".format(command))
+            
             if command == 'pause':
                 session.pause()
             elif command == 'unpause':
@@ -241,9 +243,7 @@ class LayerExtrasReader:
     
 
 class BaseCore:
-    DEFAULT_GLOBALS = {'tf': tf, 'np': np}
-    
-    def __init__(self, codehq, graph_dict, data_container, session_history, session_process_handler=None,
+    def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, session_process_handler=None,
                  layer_extras_reader=None, skip_layers=None, tf_eager=False): 
         self._graph = graph_dict
         self._codehq = codehq
@@ -253,6 +253,7 @@ class BaseCore:
         self._layer_extras_reader = layer_extras_reader
         self._session_history = session_history        
         self._skip_layers = skip_layers if skip_layers is not None else []
+        self._module_provider = module_provider        
         
     def run(self):
         log.info("Running core [{}]".format(self.__class__.__name__))
@@ -317,10 +318,17 @@ class BaseCore:
 
     def _get_globals_and_locals(self, input_layer_ids):
         outputs = self._session_history.merge_session_outputs(input_layer_ids)
-        
-        globals_ = copy.copy(self.DEFAULT_GLOBALS)
-        globals_.update(outputs.globals)
 
+        # Load globals.
+        # Note that modules imported via module provider will overwrite in-code imports        
+        globals_ = {}
+        globals_.update(outputs.globals) # Other global variables
+        globals_.update(self._module_provider.modules) # Default modules. 
+
+        if len(self._module_provider.hooks) > 0:
+            targets = [x.target_path for x in self._module_provider.hooks]
+            log.info("Globals subject to code hooks are: {}".format(", ".join(targets)))
+        
         locals_=outputs.locals
 
         return globals_, locals_        
@@ -344,27 +352,16 @@ class BaseCore:
 
 class Core(BaseCore):
     def __init__(self, codehq, graph_dict, data_container, session_history,
-                 session_process_handler): 
-        super().__init__(codehq, graph_dict, data_container, session_history,
+                 module_provider, session_process_handler):
+        super().__init__(codehq, graph_dict, data_container,
+                         session_history, module_provider,
                          session_process_handler=session_process_handler)
-
-
-
-        
-class LightweightCore(BaseCore):
-    #MODE = 'headless'    
-    SKIP_LAYERS = ['TrainNormal']
-    
-    def __init__(self, codehq, graph_dict, data_container, session_history, layer_extras_reader):
-        super().__init__(codehq, graph_dict, data_container, session_history,
-                         layer_extras_reader=layer_extras_reader, tf_eager=True,
-                         skip_layers=self.SKIP_LAYERS)
 
         
 if __name__ == "__main__":
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
 
     import json
     import queue
@@ -410,6 +407,13 @@ if __name__ == "__main__":
     #threading.Thread(target=f, args=(cq, 8, 'stop')).start()        
 
 
+    from core_new.lightweight import LightweightCore, placeholder_hook_1
+    
+    module_provider = ModuleProvider()
+    module_provider.load('tensorflow', as_name='tf')
+    module_provider.load('numpy', as_name='np')
+
+    module_provider.install_hook('tf.placeholder', placeholder_hook_1, include_vars=True)
 
 
     graph_dict = graph.graphs
@@ -419,7 +423,7 @@ if __name__ == "__main__":
     extras_reader = LayerExtrasReader()
 
     lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-                              session_history, extras_reader)    
+                              session_history, module_provider, extras_reader)    
     lw_core.run()
     print(extras_reader.to_dict())
 
@@ -447,9 +451,13 @@ if __name__ == "__main__":
 
 
    
+    module_provider = ModuleProvider()
+    module_provider.load('tensorflow', as_name='tf')
+    module_provider.load('numpy', as_name='np')
+   
 
     sph = SessionProcessHandler(graph_dict, data_container, cq, rq)    
-    core = Core(CodeHq, graph_dict, data_container, session_history, sph)
+    core = Core(CodeHq, graph_dict, data_container, session_history, module_provider, sph)
     import threading
     threading.Thread(target=core.run).start()
     # core.run()

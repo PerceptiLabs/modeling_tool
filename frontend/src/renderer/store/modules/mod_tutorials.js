@@ -1,4 +1,3 @@
-import { isNumber } from "util";
 import router from "@/router";
 import store  from '@/store'
 
@@ -1104,14 +1103,14 @@ const mutations = {
     state.showMainTutorialInstruction = value
   },
   SET_activeStepMainTutorial(state, value) {
-    if(isNumber(value)) {
+    if(Number.isInteger(value)) {
       state.activeStepMainTutorial = value
     } else if(value === 'next') {
       state.activeStepMainTutorial++
     }
   },
   SET_activePointMainTutorial(state, value) {
-    if(isNumber(value)) {
+    if(Number.isInteger(value)) {
       state.activePointMainTutorial = value
     } else if(value === 'next') {
       state.activePointMainTutorial++
@@ -1125,7 +1124,7 @@ const mutations = {
     static_info[value.index].status = value.status
   },
   SET_activeActionMainTutorial(state, value) {
-    if(isNumber(value)) {
+    if(Number.isInteger(value)) {
       state.activeActionMainTutorial = value
     }
     else if(value === 'next') {
@@ -1278,14 +1277,15 @@ const actions = {
           let start = firstElement.getBoundingClientRect();
           let stop = secondElement.getBoundingClientRect();
           let arrowSize = start.width - layersbarElementSize.width === 0 ? 12 : 0;
+          let zoom = store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
 
           if(getters.getActiveAction.schematic.position === 'bottom') {
-            store.commit('mod_workspace/SET_preArrowStart', {x: start.right - start.width - start.width / 2 - arrowSize, y: start.top - start.width});
-            store.commit('mod_workspace/SET_preArrowStop', {x: stop.right - start.width - start.width / 2 - arrowSize, y: stop.top - start.width*2 + arrowSize});
+            store.commit('mod_workspace/SET_preArrowStart', {x: (start.right - start.width - start.width / 2 - arrowSize) * zoom, y: (start.top - start.width)  * zoom });
+            store.commit('mod_workspace/SET_preArrowStop', {x: (stop.right - start.width - start.width / 2 - arrowSize)  * zoom, y: (stop.top - start.width*2 + arrowSize)  * zoom});
           }
           else {
-            store.commit('mod_workspace/SET_preArrowStart', {x: start.right - start.width - arrowSize, y: start.top - start.height - arrowSize});
-            store.commit('mod_workspace/SET_preArrowStop', {x: stop.right -  stop.width*2 - arrowSize, y: stop.top - stop.height - arrowSize});
+            store.commit('mod_workspace/SET_preArrowStart', {x: (start.right - start.width - arrowSize)  * zoom, y: (start.top - start.height - arrowSize)  * zoom});
+            store.commit('mod_workspace/SET_preArrowStop', {x: (stop.right -  stop.width*2 - arrowSize)  * zoom, y: (stop.top - stop.height - arrowSize)  * zoom});
           }
       }
     }
@@ -1346,8 +1346,8 @@ const actions = {
    if(info.element) {
      let elCoord = info.element.getBoundingClientRect();
      let tooltipArrow = 10;
-     let isDraggable = info.element.getAttribute('draggable');
-     let zoom = isDraggable !== 'false' ? 1 : store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
+     let isZoomElement = info.element.querySelector('.net-element_btn');
+     let zoom = isZoomElement ? store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom : 1;
      switch (info.side) {
        case 'right':
          info.tooltip.style.top = (elCoord.top + elCoord.height / 2) * zoom  +'px';

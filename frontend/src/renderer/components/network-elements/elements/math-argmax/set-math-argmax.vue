@@ -3,7 +3,6 @@
     :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-confirm="confirmSettings"
-    @press-update="updateCode"
   )
     template(slot="Settings-content")
       .settings-layer_section
@@ -14,6 +13,7 @@
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
 
@@ -37,13 +37,6 @@ export default {
           title: 'Dimension',
           text: 'Choose which axis to do the operation on'
         }
-      }
-    }
-  },
-  computed: {
-    codeDefault() {
-      return {
-        Output: `Y=tf.argmax(X['Y'],${this.settings.Dim});`
       }
     }
   }

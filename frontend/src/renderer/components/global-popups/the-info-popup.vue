@@ -1,13 +1,16 @@
 <template lang="pug">
-  .popup-global(v-if="isShowPopup")
+  .popup-global
     .popup-global_overlay(@click="closePopup()")
     section.popup
       .popup_tab-set
         .popup_header.active
           .header_attention(:class="{'header_attention--error': !isInfo}") !
+          button.popup_clipboard.btn.btn--icon.icon.icon-clipboard-add(type="button"
+            :class="styleClipboard"
+            @click="copyClipboard")
       .popup_body
-        .settings-layer_section
-          p.middle-text.text-center(v-if="isText") {{ popupText }}
+        .settings-layer_section.big-text
+          p.text-center(v-if="isText") {{ popupText }}
           ul(v-else)
             li(
               v-for="(text, i) in popupText"
@@ -15,7 +18,7 @@
               ) {{ text }}
       .popup_foot
         button.btn-info-popup(type="button"
-        @click="closePopup()") OK
+        @click="closePopup") OK
 
 </template>
 
@@ -24,6 +27,10 @@
     name: "TheInfoPopup",
     data() {
       return {
+        styleClipboard: {
+          'text-error': false,
+          'text-primary': false
+        }
       }
     },
     computed: {
@@ -49,6 +56,11 @@
       }
     },
     methods: {
+      copyClipboard() {
+        navigator.clipboard.writeText(JSON.stringify(this.popupText))
+          .then((data)=> { this.styleClipboard['text-primary'] = true })
+          .catch((err)=> { this.styleClipboard['text-error'] = true })
+      },
       closePopup() {
         this.$store.commit('globalView/HIDE_allGlobalPopups');
       }
@@ -58,38 +70,17 @@
 
 <style scoped lang="scss">
   @import "../../scss/base";
-  .popup-global{
-    z-index: 13;
+  @import "../../scss/common/infoPopup";
+  .popup_header {
+    position: relative;
   }
-
-  .popup-global .popup{
-    background: $bg-workspace;
-    border: 1px solid #495163;
-    box-shadow: 0 0 7px 3px #4a484880;
+  .settings-layer_section {
+    white-space: pre;
   }
-  .popup_header{
-    background: transparent;
-    height: 5rem;
-    padding-top: 1.4rem;
-  }
-  .header_attention {
-    color: #fff;
-    background: $color-6;
-    padding: .3rem 1.1rem;
-    font-weight: bold;
+  .popup_clipboard {
+    position: absolute;
+    bottom: 0;
+    right: 1rem;
     font-size: 1.6rem;
-    height: 1.7em;
-    width: 1.7em;
-    text-align: center;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-  .header_attention--error {
-    background: $col-warning;
-  }
-  .popup_body p{
-    font-size: 1.5rem;
   }
 </style>

@@ -10,6 +10,7 @@ const baseUrlSite   = 'https://perceptilabs-website-dev.azurewebsites.net';
 
 const widthElement = 60;
 const workspaceGrid = 10;
+const pathSlash = process.platform === 'win32' ? '\\' : '/';
 
 export {
   isDevelopMode,
@@ -19,5 +20,6 @@ export {
   widthElement,
   workspaceGrid,
   baseUrlCloud,
-  baseUrlSite
+  baseUrlSite,
+  pathSlash
 }

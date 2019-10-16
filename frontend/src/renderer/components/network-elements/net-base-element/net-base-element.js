@@ -64,6 +64,9 @@ export default {
       currentSelectedEl:    'mod_workspace/GET_currentSelectedEl',
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
     }),
+    showDotsArrow() {
+      return this.editIsOpen && !this.settingsIsOpen && !this.contextIsOpen
+    },
     showCheckpoint() {
       return this.dataEl.checkpoint && this.dataEl.checkpoint.length
     },
@@ -194,12 +197,12 @@ export default {
         this.calcWindowPosition();
         this.tutorialPointActivate({
           way: 'next',
-          validation: this.tutorialSearchId(event)
+          validation: event.currentTarget.id
         })
       })
     },
     openContext(event) {
-      if(!this.isTutorialMode) {
+      if(!this.isTutorialMode && !this.settingsIsOpen) {
         this.hideAllWindow();
         if(!this.currentSelectedEl.length) {
           this.setFocusEl(event);
@@ -267,9 +270,10 @@ export default {
       this.tutorialShowHideTooltip();
     },
     tutorialSearchId(event) {
-      return event.target.tagName === 'I'
-        ? event.target.parentNode.parentNode.parentNode.id
-        : event.target.parentNode.parentNode.id
+      //TODO need paused in tutorial
+      /// return event.target.tagName === 'I'
+      //   ? event.target.parentNode.parentNode.id
+      //   : event.target.parentNode.id
     }
   }
 }

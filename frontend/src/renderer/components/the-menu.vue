@@ -104,14 +104,20 @@ export default {
         {
           label: 'Edit', visible: true,
           submenu: [
-            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              enabled: false,         active: ()=> {} },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  enabled: false,         active: ()=> {} },
-            {type: 'separator'},
+            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              enabled: this.openApp,  active: this.toPrevStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  enabled: this.openApp,  active: this.toNextStepHistory },
+            {type:  'separator'},
             {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              enabled: this.openApp,  active: this.HCCopy },
             {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              enabled: this.openApp,  active: this.HCPaste },
-            {type: 'separator'},
+            {type:  'separator'},
             {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              enabled: this.openApp,  active: this.HCSelectAll },
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
+            {type:  'separator'},
+            {label: 'delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: true  },
+            {label: 'add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: true  },
+            {label: 'ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: true  },
+            {type:  'separator'},
+            {label: 'close setting popups',          accelerator: 'esc',                                                                 active: this.HC_esc,                       visible: true  },
           ]
         },
         {
@@ -132,8 +138,8 @@ export default {
         {
           label: 'Help', visible: true,
           submenu: [
-            {label: 'Help',                                                                                             active: () => {this.goToLink(`${baseUrlSite}/i_docs`)} },
-            {label: 'About',                                                                                            active: () => {this.goToLink(`${baseUrlSite}/about`);} },
+            {label: 'Help',                                                                     enabled: false,         active: this.goToHelpPage },
+            {label: 'About',                                                                                            active: this.goToAboutPage },
             {label: 'Tutorial mode',                                                            enabled: !this.isTutorialActive && this.isLogin,  active: this.showTutorial },
             {label: 'Check for updates',                                                                                active: this.checkUpdate },
             {type: 'separator'},
@@ -143,10 +149,6 @@ export default {
         {
           label: '', visible: false,
           submenu: [
-            {label: 'Delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: false  },
-            {label: 'Esc',          accelerator: 'esc',                                                                 active: this.HC_esc,                       visible: false  },
-            {label: 'addGroup',     accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
-            {label: 'unGroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
             //{label: 'preventClose',          accelerator: 'Alt+F4',                                     enabled: true,                 active: function(e) {e.preventDefault()},  visible: false  },
           ]
         }
@@ -178,7 +180,9 @@ export default {
     }),
     ...mapActions({
       infoPopup:        'globalView/GP_infoPopup',
+      popupConfirm:     'globalView/GP_confirmPopup',
       offMainTutorial:  'mod_tutorials/offTutorial',
+      hideTooltip:      'mod_tutorials/hideTooltip',
       appClose:         'mod_events/EVENT_appClose',
       appMinimize:      'mod_events/EVENT_appMinimize',
       appMaximize:      'mod_events/EVENT_appMaximize',
@@ -186,7 +190,9 @@ export default {
       HCCopy:           'mod_events/EVENT_hotKeyCopy',
       HCPaste:          'mod_events/EVENT_hotKeyPaste',
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
-      HCDeselectAll:    'mod_workspace/SET_elementUnselect'
+      HCDeselectAll:    'mod_workspace/SET_elementUnselect',
+      toPrevStepHistory:'mod_workspace-history/TO_prevStepHistory',
+      toNextStepHistory:'mod_workspace-history/TO_nextStepHistory',
     }),
     goToLink,
     mainProcessListeners(isRemove) {
@@ -208,12 +214,64 @@ export default {
       ipcRenderer.send('check-update');
     },
     addNewNetwork() {
-      this.$store.dispatch('mod_workspace/ADD_network');
-      this.offMainTutorial();
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$store.dispatch('mod_workspace/ADD_network');
+            }
+          });
+      } else {
+        this.$store.dispatch('mod_workspace/ADD_network');
+      }
     },
     logOut() {
-      this.$store.dispatch('mod_events/EVENT_logOut');
-      this.offMainTutorial();
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$store.dispatch('mod_events/EVENT_logOut');
+            }
+          });
+      } else {
+        this.$store.dispatch('mod_events/EVENT_logOut');
+      }
+    },
+    goToHelpPage() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.goToLink(`${baseUrlSite}/i_docs`)
+            }
+          });
+      } else {
+        this.goToLink(`${baseUrlSite}/i_docs`)
+      }
+    },
+    goToAboutPage() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.goToLink(`${baseUrlSite}/about`)
+            }
+          });
+      } else {
+        this.goToLink(`${baseUrlSite}/about`)
+      }
     },
     showTutorial() {
       this.$store.dispatch('mod_tutorials/START_storyboard');
@@ -222,8 +280,19 @@ export default {
       this.$store.commit('globalView/GP_showNetGlobalSet', true);
     },
     openModel() {
-      this.openNetwork();
-      this.offMainTutorial();
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.openNetwork();
+            }
+          });
+      } else {
+        this.openNetwork();
+      }
     },
     saveModel() {
       this.saveNetwork();
@@ -239,7 +308,6 @@ export default {
       }
     },
     HC_esc() {
-      //console.log('HC_esc');
       this.$store.dispatch('mod_events/EVENT_hotKeyEsc')
     },
     HC_addLayerContainer() {

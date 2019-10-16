@@ -1,6 +1,7 @@
 import {ipcRenderer}  from 'electron'
 import router         from "@/router";
 import {filePCRead, loadPathFolder} from "@/core/helpers";
+import { pathSlash } from "@/core/constants";
 
 const namespaced = true;
 
@@ -43,6 +44,7 @@ const actions = {
     commit('set_calcArray')
   },
   EVENT_loadNetwork({dispatch, rootGetters}, {pathRootFolder, pathFile}) {
+    console.log(pathRootFolder, pathFile);
     let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
     let pathIndex;
     if(localProjectsList.length) {
@@ -85,8 +87,8 @@ const actions = {
     loadPathFolder(opt)
       .then((pathArr)=> {
         const pathRootFolder = pathArr[0];
-        const netId = pathRootFolder.slice(pathRootFolder.lastIndexOf('\\') + 1, pathRootFolder.length);
-        const pathFile = `${pathFolder}\\${netId}.json`;
+        const netId = pathRootFolder.slice(pathRootFolder.lastIndexOf(pathSlash) + 1, pathRootFolder.length);
+        const pathFile = `${pathRootFolder}${pathSlash}${netId}.json`;
         dispatch('EVENT_loadNetwork', {pathRootFolder, pathFile})
       })
       .catch((err)=> {});
@@ -102,15 +104,19 @@ const actions = {
     localStorage.removeItem('currentUser');
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
+    dispatch('mod_tutorials/offTutorial', null, {root: true});
     router.replace({name: 'login'});
   },
-  EVENT_appClose({dispatch, rootState}, event) {
+  EVENT_appClose({dispatch, rootState, rootGetters}, event) {
     if(event) event.preventDefault();
     dispatch('mod_tracker/EVENT_appClose', null, {root: true});
+    if(rootGetters['mod_user/GET_userIsLogin']) {
+      dispatch('mod_user/SAVE_LOCAL_workspace', null, {root: true});
+    }
     if(rootState.mod_api.statusLocalCore === 'online') {
       dispatch('mod_api/API_stopTraining', null, {root: true})
         .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
-        .then(()=> ipcRenderer.send('app-close'));
+        .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
     }
     else {
       ipcRenderer.send('app-close')

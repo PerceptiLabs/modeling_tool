@@ -239,12 +239,12 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "X_validation_size = X_validation.shape[0]\n"
         code += "X_test_size = X_test.shape[0]\n"
         code += '\n'
-        code += "_sample = X_train[0]\n"
+        # code += "_sample = X_train[0]\n"
         code += "global _data_size\n"
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
         code += "_batch_size = %d\n" % int(self.batch_size)
-        code += "api.data.store(sample=_sample)\n"        
+        # code += "api.data.store(sample=_sample)\n"        
         code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
         code += 'X_train = tf.data.Dataset.from_tensor_slices(X_train)\n'

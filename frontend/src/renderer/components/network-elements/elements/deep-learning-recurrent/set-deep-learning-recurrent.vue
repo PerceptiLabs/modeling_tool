@@ -3,7 +3,6 @@
     :current-el="currentEl"
     @press-apply="saveSettings($event)"
     @press-confirm="confirmSettings"
-    @press-update="updateCode"
   )
     template(slot="Settings-content")
       .settings-layer_section
@@ -36,6 +35,7 @@
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
 
@@ -68,34 +68,6 @@ export default {
           text: 'Choose how many time steps to use'
         }
       },
-    }
-  },
-  computed: {
-    codeDefault() {
-      let versionCode;
-      switch (this.settings.Version) {
-        case 'LSTM':
-          versionCode = `node=tf.reshape(X['Y'],[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
-cell = tf.nn.rnn_cell.LSTMCell(${this.settings.Neurons}, state_is_tuple=True);
-rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
-Y=tf.reshape(rnn_outputs,[-1,cell.output_size]);`
-          break;
-        case 'GRU':
-          versionCode = `node=tf.reshape(X['Y'],[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
-cell = tf.nn.rnn_cell.GRUCell(${this.settings.Neurons});
-rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
-Y=tf.reshape(rnn_outputs,[-1,cell.output_size]);`
-          break;
-        case 'RNN':
-          versionCode = `node=tf.reshape(X['Y'],[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
-cell = tf.nn.rnn_cell.BasicRNNCell(${this.settings.Neurons});
-rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
-Y=tf.reshape(rnn_outputs,[-1,cell.output_size]);`
-          break;
-      }
-      return {
-        Output: versionCode
-      }
     }
   }
 }

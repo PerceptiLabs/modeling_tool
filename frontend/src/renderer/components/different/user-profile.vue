@@ -95,10 +95,11 @@
 </template>
 
 <script>
-import BaseSwitcher      from "@/components/different/switcher.vue";
-import TextEditable      from '@/components/base/text-editable.vue'
+import BaseSwitcher from "@/components/different/switcher.vue";
+import TextEditable from '@/components/base/text-editable.vue'
 
 import { mapGetters, mapMutations, mapActions } from 'vuex';
+import { deepCopy } from "@/core/helpers.js";
 
 export default {
   name: "UserProfile",
@@ -141,12 +142,12 @@ export default {
       cloud_userChangePassword: 'mod_apiCloud/CloudAPI_userChangePassword',
     }),
     editFirstName(newVal) {
-      let newInfo = JSON.parse(JSON.stringify(this.user));
+      let newInfo = deepCopy(this.user);
       newInfo.firstName = newVal;
       this.setUserInfo(newInfo);
     },
     editLastName(newVal) {
-      let newInfo = JSON.parse(JSON.stringify(this.user));
+      let newInfo = deepCopy(this.user);
       newInfo.lastName = newVal;
       this.setUserInfo(newInfo);
     },
@@ -170,17 +171,23 @@ export default {
       Promise.all([ changeProfile(this), changeEmail(this), changePassword(this) ])
         .then((result)=> {
           let listInfo = [];
-          result.forEach((el)=> { if(el) listInfo.push(el) });
-          this.showInfoPopup(listInfo);
+          let emailValidation = result[1];
+          let passValidation = result[2];
+          if(emailValidation || passValidation) {
+            result.forEach((el)=> { if(el) listInfo.push(el) });
+            this.showInfoPopup(listInfo);
+          }
         })
-        .catch((error) => {});
+        .catch((error) => {
+          console.log(error)
+        });
 
 
       function changeProfile(ctx) {
         return ctx.cloud_userSetProfile(ctx.user)
           .then(()=> {
             return 'Your information has been changed'
-          })
+          });
       }
       function changeEmail(ctx) {
         if(ctx.isShowEmailForm && ctx.email.newEmail.length) {
@@ -194,10 +201,18 @@ export default {
                 };
                 return ctx.cloud_userChangeEmail(request)
               }
+              else {
+                return false;
+              }
             })
-            .then(()=> {
-              ctx.logout();
-              return `A confirmation has been sent to your old mail ${ctx.user.email}. Please follow the link and your mail will be changed. Otherwise, your old mail will act`;
+            .then((isValid)=> {
+              if (isValid) {
+                ctx.logout();
+                return `A confirmation has been sent to your old mail ${ctx.user.email}. Please follow the link and your mail will be changed. Otherwise, your old mail will act`;
+              }
+              else {
+                return false;
+              }
             })
         }
       }
