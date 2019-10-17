@@ -1,6 +1,6 @@
 <template lang="pug">
 .tutorial-instruction-box
-    button.btn.btn--dark-blue-rev(type="button"
+    button.btn.btn--dark(type="button"
       @click="switchTutorialMode"
       :class="{'green-status' : isTutorialMode}"
     )

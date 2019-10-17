@@ -96,13 +96,14 @@
 
     .toolbar_settings
       span.text-primary.middle-text(v-html="statusTrainingText")
-      button.btn.btn--tutorial(
+      button.btn.btn--dark(
         type="button"
-        :class="{'btn--tutorial-active': interactiveInfoStatus}"
+        :class="{'green-status': interactiveInfoStatus}"
         @click="toggleInteractiveInfo"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
         span ?
+        i.icon.icon-ellipse
       tutorial-instructions(v-tooltip-interactive:bottom="interactiveInfo.tutorial")
 </template>
 
