@@ -360,6 +360,7 @@ export default {
     background-color: $bg-toolbar;
     position: relative;
     grid-area: toolbar;
+    z-index: 2;
   }
   .toggle-wrap {
     width: $w-layersbar * .87;

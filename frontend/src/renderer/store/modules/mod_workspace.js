@@ -103,8 +103,8 @@ const getters = {
   GET_showStartTrainingSpinner(state) {
     return state.showStartTrainingSpinner
   },
-  GET_enableHotKeyElement(state, getters) {
-    return !state.isOpenElement && getters.GET_networkIsOpen
+  GET_enableHotKeyElement(state, getters, rootState) {
+    return !state.isOpenElement && getters.GET_networkIsOpen && rootState.mod_events.isEnableCustomHotKey
   }
 };
 
