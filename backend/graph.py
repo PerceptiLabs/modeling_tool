@@ -80,6 +80,23 @@ class Graph(object):
                                 self.copykeys.append(str(maxId+int(Id)))
                     newGraph.pop(endId)
                     newGraph[endId]=graph[endId]
+
+                    layer_pairs = []
+                    for id_ in newGraph:
+                        copied_id = newGraph[id_].get('CopyOf')
+                        if copied_id is None:
+                            continue                        
+                        layer_pairs.append((copied_id, id_))
+
+                        if copied_id in newGraph[endId]['Con']:
+                            online_net = copied_id
+                            target_net = id_
+                            newGraph[endId]['Con'].append(id_) # TODO: is backwards connections needed too?
+                    
+                    newGraph[endId]['Info']['ExtraInfo'] = dict()
+                    newGraph[endId]['Info']['ExtraInfo']['Pairs'] = layer_pairs
+                    newGraph[endId]['Info']['ExtraInfo']['OnlineNet'] = online_net
+                    newGraph[endId]['Info']['ExtraInfo']['TargetNet'] = target_net                    
                 elif graph[Id]['Info']['Properties']['ReinforceType']=='Policy_gradient':
                     pass
                 elif graph[Id]['Info']['Properties']['ReinforceType']=='A2C':

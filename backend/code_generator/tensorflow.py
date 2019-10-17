@@ -4,7 +4,7 @@ from code_generator import CodeGenerator, CodePart
 
 
 def get_activation_code(var_in, var_out, func=None):
-    if func is None:
+    if func is None or func == 'None':
         code = '%s = %s\n' % (var_out, var_in)
     else:
         if func == 'Sigmoid':
@@ -319,7 +319,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    name = 'grad-' + var.name\n"
         code += "    gradients[name] = tf.gradients(loss, [var])\n"
         code += "\n"
-
         code += "# Get iterators\n"
         code += "ops = tf.get_default_graph().get_operations()\n"
         code += "train_iterators = [op for op in ops if 'train_iterator' in op.name]\n"
@@ -435,7 +434,7 @@ LayerPair = namedtuple('LayerPair', ['online_id', 'target_id'])
 
 
 
-class TrainReinforce(CodeGenerator):
+class TrainReinforceCodeGenerator(CodeGenerator):
     def __init__(self, online_network_id, target_network_id, layer_pairs, n_episodes=20000, history_length=2, batch_size=32, learning_rate=0.1, discount_factor=0.99,
                  replay_start_size=1000, replay_memory_size=300000,
                  initial_exploration=0.9, final_exploration=0.1,
@@ -449,6 +448,7 @@ class TrainReinforce(CodeGenerator):
         self._gamma = discount_factor
         self._update_frequency = update_frequency
         self._copy_weights_frequency = target_network_update_frequency
+        self._n_steps_max = 1000
 
         self._online_network_id = online_network_id# #"'1'"
         self._target_network_id = target_network_id# "'2'"
@@ -466,6 +466,9 @@ class TrainReinforce(CodeGenerator):
         code += "history_length = %d\n" % self._history_length
         code += "replay_start_size = %d\n" % self._replay_start_size
         code += "n_actions = env.action_space.n\n"
+        code += "n_steps_max = %d\n" % self._n_steps_max
+        code += "n_episodes = %d\n" % self._n_episodes
+        code += "api.data.store(n_steps_max=n_steps_max, n_episodes=n_episodes, batch_size=batch_size, n_actions=n_actions)\n"
         code += "\n"
         code += "# Exploration/exploitation tradeoff\n" # TODO: name
         code += "def epsilon(episode):\n"
@@ -487,16 +490,28 @@ class TrainReinforce(CodeGenerator):
         code += "step = optimizer.minimize(loss_tensor)\n"
         code += "\n"
 
+        code += "# Gradients\n"
+        code += "gradients = {}\n"
+        code += "for var in tf.trainable_variables():\n"
+        code += "    name = 'grad-' + var.name\n"
+        code += "    gradient_tensor = tf.gradients(loss_tensor, [var])\n"
+        code += "    if gradient_tensor[0] is not None:\n" # Without an explicit dependence, the derivative should be 0.
+        code += "        gradients[name] = gradient_tensor \n"
+        code += "\n"
+        code += "new_gradient_vals = None\n"
+
+
         code += "def copy_weights(sess):\n"
         code += "    variables = {var.op.name: var for var in tf.trainable_variables()}\n"
         code += "    update_ops = []\n"        
         for pair in self._layer_pairs:
-            code += "    W_online = variables['weights-%s']\n" % pair.online_id
-            code += "    W_target = variables['weights-%s']\n" % pair.target_id
-            code += "    update_ops.append(W_target.assign(W_online))\n"
-            code += "    b_online = variables['bias-%s']\n" % pair.online_id
-            code += "    b_target = variables['bias-%s']\n" % pair.target_id
-            code += "    update_ops.append(b_target.assign(b_online))\n"
+            code += "    if 'weights-%s' in variables:\n" % pair.online_id
+            code += "        W_online = variables['weights-%s']\n" % pair.online_id
+            code += "        W_target = variables['weights-%s']\n" % pair.target_id
+            code += "        update_ops.append(W_target.assign(W_online))\n"
+            code += "        b_online = variables['bias-%s']\n" % pair.online_id
+            code += "        b_target = variables['bias-%s']\n" % pair.target_id
+            code += "        update_ops.append(b_target.assign(b_online))\n"
             code += "    \n"
         code += "    \n"
         code += "    sess.run(update_ops)\n"
@@ -505,35 +520,40 @@ class TrainReinforce(CodeGenerator):
         code += "sess.run(init)\n"
         code += "\n"                
         code += "copy_weights(sess)\n"
+
+        code += "api.data.store_locals(locals())\n"
+        code += "all_tensors=api.data.get_tensors()\n" 
+        
         code += "\n"
         code += "# Run training\n"
         code += "replay_memory_size = %d\n" % self._replay_memory_size
         code += "replay_memory = []\n" 
         code += "\n"
-        code += "iteration = 0\n"        
-        code += "for episode in range(%d):\n" % self._n_episodes
+        code += "iteration = 0\n"
+        code += "for episode in range(n_episodes):\n"
         code += "    state = env.reset()\n"
         code += "    state_seq = [state]*history_length\n"
+        code += "    api.data.store(episode=episode)\n"
         code += "    \n"
-        code += "    print('NEW EPISODE', episode)\n"
         code += "    done = False\n"
-        code += "    while not done:\n"
-        code += "        print('state:')\n"
-        code += "        print(np.squeeze(state_seq))\n"        
+        code += "    step_counter = 0\n"
+        code += "    loss_list = []\n"
+        code += "    reward_list = []\n"        
+        code += "    while not done and step_counter < n_steps_max:\n"
         code += "        explore = np.random.random() < epsilon(episode) or iteration < replay_start_size\n"
         code += "        if explore:\n"
         code += "            action = env.action_space.sample()\n"
         code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array([state_seq])}).squeeze()\n"
-        code += "            print('Q ' + str(Q))\n"        
-        code += "            print('action: ' + str(action) + ' (random)')\n"
         code += "        else:\n"
         code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array([state_seq])}).squeeze()\n"
         code += "            action = np.argmax(Q)\n"
-        code += "            print('Q ' + str(Q))\n"
-        code += "            print('action: ' + str(action) + '(chosen)')\n"        
         code += "        \n"
         code += "        new_state, reward, done, info = env.step(action)\n"
         code += "        new_state_seq = state_seq[1:] + [new_state]\n"
+        code += "        reward_list.append(reward)\n"
+        code += "        api.data.store(current_state=state, current_action=action, step_counter=step_counter)\n"
+        code += "        api.data.store(reward=np.cumsum(reward_list))\n"
+        code += "        api.ui.render(dashboard='train_reinforce')\n"
         code += "        \n"
         code += "        # Remember transition\n"
         code += "        transition = {\n"
@@ -544,20 +564,11 @@ class TrainReinforce(CodeGenerator):
         code += "                      'done': done\n"         
         code += "                      }\n"
         code += "        #if reward > 0:\n"
-        code += "        #    replay_memory.extend([transition]*9000)\n"
         code += "        replay_memory.append(transition)\n"
-        code += "        #    if reward > 0:\n"
-        code += "        #        import pdb; pdb.set_trace()\n"
-        code += "        #        replay_memory.extend([transition]*300)\n"
         code += "        if len(replay_memory) > replay_memory_size:\n"
-        code += "            #if replay_memory[0]['reward'] < 1000:\n"
         code += "            replay_memory.pop(0)\n"
         code += "        \n"
         code += "        state_seq = new_state_seq\n"        
-        code += "        print(np.histogram([r['reward'] for r in replay_memory])[0])\n"
-        code += "        print('eps', epsilon(episode))\n"
-        code += "        print('REWARD', reward)\n"
-        code += "        #if reward > 0: import pdb; pdb.set_trace()\n"
         code += "        # Training\n"
         code += "        \n"
         code += "        if iteration % {} == 0 and iteration > replay_start_size:\n".format(self._update_frequency) # TODO: better name for n_iters
@@ -580,15 +591,30 @@ class TrainReinforce(CodeGenerator):
         code += "                         a_tensor: np.atleast_2d(a_batch),\n"
         code += "                         y_tensor: np.atleast_2d(y_batch),\n"
         code += "                        }\n"
-        code += "            sess.run(step, feed_dict=feed_dict)\n"
-        code += "            print('Took training step!')\n"        
+        code += "            _, loss, gradient_vals, all_tensors_values = sess.run([step, loss_tensor, gradients, all_tensors], feed_dict=feed_dict)\n"
+        code += "            loss_list.append(loss)\n"
+        code += "            api.data.store(loss=loss_list)\n"
+        code += "            api.data.store(all_tensors=all_tensors_values)\n"
+
+        code += "            new_gradient_vals={}\n"
+        code += "            for gradName, gradValue in gradient_vals.items():\n"
+        code += "                new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+        code += "                new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+        code += "                new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+
+        code += "        if new_gradient_vals is not None:\n"
+        code += "            api.data.stack(**new_gradient_vals)\n"
         code += "        \n"
         code += "        # Copy weights\n"
         code += "        if iteration % {} == 0:\n".format(self._copy_weights_frequency)
         code += "            copy_weights(sess)\n"
         code += "        iteration += 1\n"
-        code += "        print('iteration '+str(iteration))\n"
-
+        code += "        step_counter += 1\n"
+        code += "        state = new_state\n"
+        code += "    api.data.stack(episode_reward=np.sum(reward_list))\n"
+        code += "    api.data.stack(episode_steps=step_counter)\n"        
+        code += "    if len(loss_list) > 0:\n"
+        code += "        api.data.stack(episode_loss=loss_list[-1])\n"        
 
         return code
 
@@ -677,8 +703,109 @@ class DummyEnv(gym.Env):
 
     
 if __name__ == "__main__":
+    #import pdb; pdb.set_trace()
+
+    
+    import tensorflow as tf
+    import numpy as np
+    import gym
+
+    np.random.seed(456)
+    tf.set_random_seed(456)
+    
+    
+    from unittest import mock
+    api = mock.Mock()
+    env = gym.make('Breakout-v0')    
+    #env = DummyEnv()
+    
+    sample = env.reset()
+    SEQ_SIZE = 2
+    state_window_shape = (None, SEQ_SIZE, ) + sample.shape # [None, 4, 210, 160, 3]
+    #print(state_window_shape)
+    #raise SystemExit
+    state_tensor = tf.placeholder(tf.float32, shape=state_window_shape, name='state_tensor')
+
+    #import pdb; pdb.set_trace()
+
+    # Online Network 
+    N_NEURONS = 4 # n actions
+    X = {'Y':  state_tensor}
+    input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
+    shape = [input_size, N_NEURONS]
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    W = tf.Variable(initial, name='weights-11')#\n" % self._layer_id
+    initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
+    b = tf.Variable(initial, name='bias-11')#\n" % self._layer_id
+    flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
+    node = tf.matmul(flat_node, W)    
+    node = node + b
+    Y1 = node
+
+    '''
+    X = {'Y':  Y1}
+    input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
+    shape = [input_size, N_NEURONS]
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    W = tf.Variable(initial, name='weights-12')#\n" % self._layer_id
+    initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
+    b = tf.Variable(initial, name='bias-12')#\n" % self._layer_id
+    flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
+    node = tf.matmul(flat_node, W)    
+    node = node + b
+    Y1 = tf.sigmoid(node)
+    '''
+    
+    
+    # Target Network 
+    N_NEURONS = 4 # n actions
+    X = {'Y':  state_tensor}
+    input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
+    shape = [input_size, N_NEURONS]
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    W = tf.Variable(initial, name='weights-21')#\n" % self._layer_id
+    initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
+    b = tf.Variable(initial, name='bias-21')#\n" % self._layer_id
+    flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
+    node = tf.matmul(flat_node, W)    
+    node = node + b
+    Y2 = node
+    '''
+    X = {'Y':  Y2}
+    input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
+    shape = [input_size, N_NEURONS]
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    W = tf.Variable(initial, name='weights-22')#\n" % self._layer_id
+    initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
+    b = tf.Variable(initial, name='bias-22')#\n" % self._layer_id
+    flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
+    node = tf.matmul(flat_node, W)    
+    node = node + b
+    Y2 = tf.sigmoid(node)
+    '''
+    X = {
+        '1': {'Y': Y1},
+        '2': {'Y': Y2}        
+    }
+
+    tr = TrainReinforceCodeGenerator(online_network_id='1', target_network_id='2',
+                                     layer_pairs=[LayerPair('11', '21')],                        
+                                     history_length=SEQ_SIZE)
+    code = tr.get_code()
+
+    glob_ = {'tf': tf, 'np': np, 'state_tensor': state_tensor, 'env': env, 'api': api}    
+    loc_ = {'X': X}
+    try:
+        exec(code, glob_, loc_)
+    except:
+        for i, l in enumerate(code.split('\n'), 1):
+            print(i, l)
+        raise
+        
 
 
+
+    """ # BELOW IS A WORKING TEST CASE
     #import pdb; pdb.set_trace()
 
     
@@ -690,7 +817,8 @@ if __name__ == "__main__":
     tf.set_random_seed(456)
     
     #env = gym.make('Breakout-v0')
-    
+    from unittest import mock
+    api = mock.Mock()    
     env = DummyEnv()
     
     sample = env.reset()
@@ -762,12 +890,12 @@ if __name__ == "__main__":
         '2': {'Y': Y2}        
     }
 
-    tr = TrainReinforce(online_network_id='1', target_network_id='2',
-                        layer_pairs=[LayerPair('11', '21')],                        
-                        history_length=SEQ_SIZE)
+    tr = TrainReinforceCodeGenerator(online_network_id='1', target_network_id='2',
+                                     layer_pairs=[LayerPair('11', '21')],                        
+                                     history_length=SEQ_SIZE)
     code = tr.get_code()
 
-    glob_ = {'tf': tf, 'np': np, 'state_tensor': state_tensor, 'env': env}    
+    glob_ = {'tf': tf, 'np': np, 'state_tensor': state_tensor, 'env': env, 'api': api}    
     loc_ = {'X': X}
     try:
         exec(code, glob_, loc_)
@@ -779,4 +907,4 @@ if __name__ == "__main__":
     
         
     
-
+    """

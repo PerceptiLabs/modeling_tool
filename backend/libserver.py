@@ -18,6 +18,7 @@ from extractVariables import *
 from createDataObject import createDataObject
 
 from core_new.core import *
+from core_new.history import SessionHistory
 from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from graph import Graph
 from codehq import CodeHqNew as CodeHq
@@ -319,8 +320,7 @@ class Message:
         elif action == "getNetworkInputDim":
             jsonNetwork=self.request.get("value")
             
-            from pprint import pprint
-            pprint(jsonNetwork)
+            pprint.pprint(jsonNetwork)
 
             lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)            
             lw_core.run()
@@ -365,8 +365,7 @@ class Message:
             jsonNetwork=self.request.get("value")
 
             
-            from pprint import pprint
-            pprint(jsonNetwork)
+            pprint.pprint(jsonNetwork)
 
             lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                        
             lw_core.run()
@@ -624,7 +623,7 @@ class Message:
         response = {
             "content": content
         }
-        print("Response: ", response)
+        log.debug("Response: " + pprint.pformat(response, depth=6))        
         return response
 
     def _create_response_binary_content(self):

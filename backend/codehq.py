@@ -4,15 +4,26 @@ import logging
 
 from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
+from code_generator.dataenv import DataEnvironmentCodeGenerator
 
-from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator
+from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
 log = logging.getLogger(__name__)
 
 
+
+
 class CodeHqNew:
-    @staticmethod
-    def get_code_generator(id_, content):
+    @classmethod
+    def get_code_generator(cls, id_, content):
+        try:
+            return cls._get_code_generator(id_, content)
+        except:
+            log.exception("Error in code hq. id = {} and content = {}".format(id_, content))
+            raise        
+
+    @classmethod
+    def _get_code_generator(cls, id_, content):        
 
         type_ = content["Info"]["Type"]
         props = content["Info"]["Properties"]
@@ -31,6 +42,11 @@ class CodeHqNew:
                                                    seed=0, columns=props["accessProperties"]['Columns'],
                                                    layer_id=id_)
             return code_generator
+        elif type_ == 'DataEnvironment':
+            env_name = 'Breakout-v0'
+            history_length = 4 # TOOD: NOT HARDCODED
+            code_gen = DataEnvironmentCodeGenerator(env_name, history_length)
+            return code_gen
         elif type_ == 'DeepLearningFC':
             code_gen = FullyConnectedCodeGenerator(layer_id=id_,
                                                    n_neurons=props["Neurons"],
@@ -71,8 +87,9 @@ class CodeHqNew:
             code_gen = WordEmbeddingCodeGenerator()
             return code_gen
         elif type_ == 'ProcessGrayscale':
-            # code_gen = GrayScaleCodeGenerator()
-            code_gen = ''
+            code_gen = GrayscaleCodeGenerator()
+            print(repr(code_gen))
+            #code_gen = ''
             return code_gen        
         elif type_ == 'ProcessOneHot':
             code_gen = OneHotCodeGenerator(n_classes=props["N_class"])
@@ -112,7 +129,16 @@ class CodeHqNew:
         elif type_ == 'TrainDynamic':
             raise NotImplementedError("Train dynamic routing not implemented")
         elif type_ == 'TrainReinforce':
-            raise NotImplementedError("Train reinforce not implemented")
+
+            layer_pairs = [LayerPair(a, b) for a, b in content['Info']['ExtraInfo']['Pairs']]            
+            online_net = content['Info']['ExtraInfo']['OnlineNet']
+            target_net = content['Info']['ExtraInfo']['TargetNet']
+            history_length = 4 # TODO: not hardcoded!
+            code_gen = TrainReinforceCodeGenerator(online_network_id=online_net,
+                                                   target_network_id=target_net,
+                                                   layer_pairs=layer_pairs,
+                                                   history_length=history_length)
+            return code_gen
         elif type_ == 'MathArgmax':
             code_gen = ArgmaxCodeGenerator(dim=props["Dim"])
             return code_gen
