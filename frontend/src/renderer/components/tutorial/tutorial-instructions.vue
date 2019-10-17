@@ -1,62 +1,57 @@
 <template lang="pug">
 .tutorial-instruction-box
-    button.btn.btn--dark-blue-rev(type="button"
-      @click="switchTutorialMode"
-      :class="{'green-status' : isTutorialMode}"
-    )
-      span Tutorial
-      i.icon.icon-ellipse
+  slot
 
-    .tutorial-instruction-box_list-area(v-if="isShowInstructions" @mousedown="dragElement($event)")
-      header.list-area_header
+  .tutorial-instruction-box_list-area(v-if="isShowInstructions" @mousedown="dragElement($event)")
+    header.list-area_header
+      div
+        button.header_close-instructions.i.icon.icon-app-close(@click="switchTutorialMode")
+        //span.header_title title_q
+      .header_arrows-top(:class="{'list-hide': !isMaximize}" @click="minimizeList")
+        i.icon.icon-shevron
+        i.icon.icon-shevron
+
+    .list-area-box(v-show="isMaximize")
+      p.list-area_title {{interective[activeStep].title}}
+      ul.list-area_list
+        .list-element.list-element--status(
+          v-for="(point, index) in points"
+          v-if="stepCount !== stepsLength"
+          :key="index"
+          :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
+        )
+          .element-text(v-html="point.content")
+          .list-element_static
+            .static_info.list-element--status(
+              v-for="(info, index) in point.static_info"
+              v-html="info.content"
+              :key="index"
+              :class="[{'done': info.status === 'done'}]"
+            )
+
+      footer.list-area_footer
+        button.footer_all-tutorials-btn
+          i.icon.icon-shevron-right
+          span All tutorials
+        .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
         div
-          button.header_close-instructions.i.icon.icon-app-close(@click="switchTutorialMode")
-          //span.header_title title_q
-        .header_arrows-top(:class="{'list-hide': !isMaximize}" @click="minimizeList")
-          i.icon.icon-shevron
-          i.icon.icon-shevron
-
-      .list-area-box(v-show="isMaximize")
-        p.list-area_title {{interective[activeStep].title}}
-        ul.list-area_list
-          .list-element.list-element--status(
-            v-for="(point, index) in points"
-            v-if="stepCount !== stepsLength"
-            :key="index"
-            :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
-          )
-            .element-text(v-html="point.content")
-            .list-element_static
-              .static_info.list-element--status(
-                v-for="(info, index) in point.static_info"
-                v-html="info.content"
-                :key="index"
-                :class="[{'done': info.status === 'done'}]"
-              )
-          
-        footer.list-area_footer
-          button.footer_all-tutorials-btn
-            i.icon.icon-shevron-right
-            span All tutorials
-          .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
-          div
-            //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back
-            button.footer_btn(
-              v-if="isFirstStep"
-              @click="startTutorial('next')"
-              ) Next
-            button.footer_btn(
-              v-else-if="activeAction.next && !allPointsIsDone"
-              @click="pointActivate({way: 'next', validation: activeAction.id})"
-              ) Next
-            button.footer_btn(
-              v-else-if="stepCount !== stepsLength"
-              @click="changeStep('next')" :disabled="disabledNext"
-              ) Next
-            button.footer_btn(
-              v-else-if="stepCount === stepsLength"
-              @click="endTutorial()"
-              ) End
+          //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back
+          button.footer_btn(
+            v-if="isFirstStep"
+            @click="startTutorial('next')"
+            ) Next
+          button.footer_btn(
+            v-else-if="activeAction.next && !allPointsIsDone"
+            @click="pointActivate({way: 'next', validation: activeAction.id})"
+            ) Next
+          button.footer_btn(
+            v-else-if="stepCount !== stepsLength"
+            @click="changeStep('next')" :disabled="disabledNext"
+            ) Next
+          button.footer_btn(
+            v-else-if="stepCount === stepsLength"
+            @click="endTutorial()"
+            ) End
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex';

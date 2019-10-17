@@ -42,10 +42,10 @@ function createWindow () {
    */
   mainWindow = new BrowserWindow({
     frame: !!(process.platform === 'darwin'),
-    height: 600,
-    width: 800,
-    minHeight: 600,
-    minWidth: 800,
+    height: 650,
+    width: 940,
+    minHeight: 650,
+    minWidth: 940,
     useContentSize: true,
     titleBarStyle: "hidden",
     webPreferences: {
