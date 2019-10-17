@@ -329,13 +329,33 @@ class Message:
             # for Id, value in extras_reader.to_dict().items():
             #     inShape[Id]=value["inShape"]
 
-            for Id, value in extras_reader.to_dict().items():
+            extras_dict=extras_reader.to_dict()
+            for Id, value in jsonNetwork.items():
+                extras_value={}
                 content[Id]={}
-                content[Id].update({"inShape":value["inShape"]})
-                if "errorMessage" in value:
-                    print("ErrorMessage: ", value['errorMessage'])
-                    content[Id].update({"Error": value['errorMessage']})
-                    content[Id].update({"Row": value['errorRow']})
+
+                if Id in extras_dict:
+                    extras_value=extras_dict[Id]
+
+                con=value['backward_connections']
+
+                if len(con)==1 and con[0] in extras_dict:
+                    content[Id].update({"inShape":str(extras_dict[con[0]]["outShape"])})
+                else:
+                    tmp=[]
+                    for i in con:
+                        if i in extras_dict:
+                            tmp.append(extras_dict[i]["outShape"])
+                    tmp=np.squeeze(tmp).tolist()
+
+                    content[Id].update({"inShape":str(tmp).replace("'","")})
+
+                # content[Id]={"inShape":str(extras_dict[jsonNetwork[Id]['backward_connections'][0]]) if len(jsonNetwork[Id]['backward_connections'])==1 else str([extras_dict[i] for i in jsonNetwork[Id]['backward_connections']]).replace("'","")}
+                # content[Id].update({"inShape":value["inShape"]})
+                if "errorMessage" in extras_value:
+                    print("ErrorMessage: ", extras_value['errorMessage'])
+                    content[Id].update({"Error": extras_value['errorMessage']})
+                    content[Id].update({"Row": extras_value['errorRow']})
                 else:
                     content[Id].update({"Error": None})
                     content[Id].update({"Row": None})

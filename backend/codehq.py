@@ -18,11 +18,11 @@ class CodeHqNew:
         props = content["Info"]["Properties"]
 
 
-        #if 'Code' in content["Info"] and content["Info"]['Code']:
-        #    code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
-        #    code_generator = CustomCodeGenerator(code_parts)
-        #    return code_generator
-        if type_ == 'DataData':
+        if 'Code' in content["Info"] and content["Info"]['Code']:
+           code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
+           code_generator = CustomCodeGenerator(code_parts)
+           return code_generator
+        elif type_ == 'DataData':
             sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
             partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
 
@@ -117,7 +117,7 @@ class CodeHqNew:
             code_gen = ArgmaxCodeGenerator(dim=props["Dim"])
             return code_gen
         elif type_ == 'MathMerge':
-            code_gen = MergeCodeGenerator(type_=prop["Type"], merge_dim=prop["Merge_dim"])
+            code_gen = MergeCodeGenerator(type_=props["Type"], merge_dim=props["Merge_dim"])
             return code_gen
         elif type_ == 'MathSoftmax':
             code_gen = SoftmaxCodeGenerator()
