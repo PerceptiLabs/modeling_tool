@@ -245,6 +245,11 @@ class BaseCore:
         globals_.update(outputs.globals) # Other global variables
         globals_.update(self._module_provider.modules) # Default modules. 
 
+        if log.isEnabledFor(logging.DEBUG):
+            from code_generator.tensorflow import DummyEnv
+            globals_['DummyEnv'] = DummyEnv
+        
+        
         if len(self._module_provider.hooks) > 0:
             targets = [x.target_path for x in self._module_provider.hooks]
             log.info("Globals subject to code hooks are: {}".format(", ".join(targets)))

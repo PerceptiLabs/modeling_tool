@@ -67,10 +67,8 @@ class coreLogic():
         module_provider.load('gym')        
 
         session_history = SessionHistory()        
-        session_proc_handler = SessionProcessHandler(graph_dict, data_container,
-                                                     self.commandQ, self.resultQ)
-        self.core = Core(CodeHq, graph_dict, data_container,
-                         session_history, module_provider, session_proc_handler) 
+        session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
+        self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider, session_proc_handler) 
 
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()

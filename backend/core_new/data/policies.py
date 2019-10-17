@@ -207,6 +207,9 @@ class TrainReinforceDataPolicy(DataPolicy):
 
                 train_dict[id_] = {}
                 train_dict[id_]['state'] = self._data[id_].get('current_state', -1)
+                state__ = train_dict[id_]['state']
+                #print("CURRENT STATE READ IN POLICY")
+                #print(train_dict[id_]['state'])
 
                 current_action = self._data[id_].get('current_action', -1)
                 n_actions = self._data[id_].get('n_actions', -1)
@@ -222,14 +225,68 @@ class TrainReinforceDataPolicy(DataPolicy):
 
                 train_dict[id_]['loss'] = self._data[id_].get('loss', [-1])
                 train_dict[id_]['epochTrainLoss'] = self._data[id_].get('episode_reward', [-1])
+
+
+                if "all_tensors" in self._data[id_]:
+                    # all_tensors=train_dict[id_].pop("all_tensors")
+                    all_tensors=self._data[id_]["all_tensors"]
+
+                    import collections
+                    import six
+                    def update(d, u):
+                        for k, v in six.iteritems(u):
+                            dv = d.get(k, {})
+                            if not isinstance(dv, collections.Mapping):
+                                d[k] = v
+                            elif isinstance(v, collections.Mapping):
+                                d[k] = update(dv, v)
+                            else:
+                                d[k] = v
+                        return d
+
+                    train_dict=update(train_dict,all_tensors)
+
                 
-            elif content["Info"]["Type"] == "DataEnvironment":
-                train_dict[id_] = {}                
-                pass                
+                if not self._session._headless:
+                    for key, value in self._data[id_].items():
+                        if not key.startswith('grad-weights-'):
+                            continue
+                        grad_layer_id = key[len('grad-weights-'):].split(':')[0]
+                        
+                        if grad_layer_id not in train_dict:
+                            train_dict[grad_layer_id] = {}
+                        if 'Gradient' not in train_dict[grad_layer_id]:
+                            train_dict[grad_layer_id]['Gradient']={}
+                        
+                        if key.split(':')[2]=="Min":
+                            train_dict[grad_layer_id]['Gradient']['Min'] = value
+                        elif key.split(':')[2]=="Max":
+                            train_dict[grad_layer_id]['Gradient']['Max'] = value
+                        elif key.split(':')[2]=="Average":
+                            train_dict[grad_layer_id]['Gradient']['Average'] = value
+
+                        ## Gradients are only defined for the target network.
+                        #copied_id = self._graph_dict[grad_layer_id].get('CopyOf')
+                        #if copied_id is not None:
+                        #    if copied_id not in train_dict:
+                        #        train_dict[copied_id] = {}                                                    
+                        #    train_dict[copied_id]['Gradient'] = train_dict[grad_layer_id]['Gradient'].copy()
+
+       
+        for id_, content in self._graph_dict.items():
+            if content["Info"]["Type"] == "DataEnvironment":
+                train_dict[id_] = {'state': state__}
+                break
+                
                 
         training_status = 'Training'
         status = 'Running'
         itr_trn = 123
+
+        import pprint
+        #print("train_dict")
+        #pprint.pprint(train_dict)
+        
  
         result_dict = {
             "iter": step_counter,

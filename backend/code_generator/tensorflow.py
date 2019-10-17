@@ -4,7 +4,7 @@ from code_generator import CodeGenerator, CodePart
 
 
 def get_activation_code(var_in, var_out, func=None):
-    if func is None:
+    if func is None or func == 'None':
         code = '%s = %s\n' % (var_out, var_in)
     else:
         if func == 'Sigmoid':
@@ -319,7 +319,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    name = 'grad-' + var.name\n"
         code += "    gradients[name] = tf.gradients(loss, [var])\n"
         code += "\n"
-
         code += "# Get iterators\n"
         code += "ops = tf.get_default_graph().get_operations()\n"
         code += "train_iterators = [op for op in ops if 'train_iterator' in op.name]\n"
@@ -486,6 +485,20 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "step = optimizer.minimize(loss_tensor)\n"
         code += "\n"
 
+        code += "print('trainables ', tf.trainable_variables())\n"
+        
+        code += "# Gradients\n"
+        code += "gradients = {}\n"
+        code += "for var in tf.trainable_variables():\n"
+        code += "    name = 'grad-' + var.name\n"
+        code += "    gradient_tensor = tf.gradients(loss_tensor, [var])\n"
+        code += "    if gradient_tensor[0] is not None:\n" # Without an explicit dependence, the derivative should be 0.
+        code += "        gradients[name] = gradient_tensor \n"
+        code += "\n"
+        code += "new_gradient_vals = None\n"
+        code += "print('GRADIENTS 1', gradients)\n"
+
+
         code += "def copy_weights(sess):\n"
         code += "    variables = {var.op.name: var for var in tf.trainable_variables()}\n"
         code += "    update_ops = []\n"        
@@ -504,6 +517,10 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "sess.run(init)\n"
         code += "\n"                
         code += "copy_weights(sess)\n"
+
+        code += "api.data.store_locals(locals())\n"
+        code += "all_tensors=api.data.get_tensors()\n" 
+        
         code += "\n"
         code += "# Run training\n"
         code += "replay_memory_size = %d\n" % self._replay_memory_size
@@ -539,6 +556,7 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "        new_state_seq = state_seq[1:] + [new_state]\n"
         code += "        reward_list.append(reward)\n"
         code += "        api.data.store(current_state=state, current_action=action, step_counter=step_counter)\n"
+        #code += "        print('CURRENT STATE:', state)\n"
         code += "        api.data.store(reward=np.cumsum(reward_list))\n"
         code += "        api.ui.render(dashboard='train_reinforce')\n"
         code += "        \n"
@@ -571,20 +589,40 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "            for i, t in enumerate(batch_transitions):\n"
         code += "                y_batch[i] = t['reward']\n"
         code += "                if not t['done']:\n"
+        code += "                    print('hashed new state seq', hash(t['new_state_seq'].tostring()))\n"
         code += "                    feed_dict = {state_tensor: [t['new_state_seq']]}\n"
         code += "                    Q = Q_target.eval(feed_dict=feed_dict).squeeze()\n" 
         code += "                    y_batch[i] += gamma*np.amax(Q)\n"
+        code += "                    print('Q', np.amax(Q), Q)\n"
         code += "                a_batch[i] = t['action']\n"
         code += "                X_batch[i] = t['state_seq']\n"
+        code += "                print('hashed state seq', hash(t['state_seq'].tostring()))\n"
+        code += "                print('y', y_batch[i], 'reward', t['reward'], 'action', t['action'])\n"
         code += "            \n"
         code += "            feed_dict = {\n"
         code += "                         state_tensor: np.atleast_2d(X_batch),\n"
         code += "                         a_tensor: np.atleast_2d(a_batch),\n"
         code += "                         y_tensor: np.atleast_2d(y_batch),\n"
         code += "                        }\n"
-        code += "            _, loss = sess.run([step, loss_tensor], feed_dict=feed_dict)\n"
+        code += "            print('GRADIENTS 2!!!!', gradients)\n"
+        code += "            _, loss, gradient_vals, all_tensors_values = sess.run([step, loss_tensor, gradients, all_tensors], feed_dict=feed_dict)\n"
+        #code += "            print('ALL TENSORS VALUES', all_tensors_values)\n"
+        #code += "            #print('batch', X_batch, y_batch, a_batch)\n"
+        code += "            print('evallllll' ,[x.eval() for x in tf.trainable_variables()])\n"        
         code += "            loss_list.append(loss)\n"
         code += "            api.data.store(loss=loss_list)\n"
+        code += "            api.data.store(all_tensors=all_tensors_values)\n"
+
+        code += "            new_gradient_vals={}\n"
+        code += "            for gradName, gradValue in gradient_vals.items():\n"
+        code += "                new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+        code += "                new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+        code += "                new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+        code += "        print('grad vals' , new_gradient_vals)\n"
+
+        code += "        if new_gradient_vals is not None:\n"
+        code += "            api.data.stack(**new_gradient_vals)\n"
+        
         code += "        \n"
         code += "        # Copy weights\n"
         code += "        if iteration % {} == 0:\n".format(self._copy_weights_frequency)
@@ -686,8 +724,109 @@ class DummyEnv(gym.Env):
 
     
 if __name__ == "__main__":
+    #import pdb; pdb.set_trace()
+
+    
+    import tensorflow as tf
+    import numpy as np
+    import gym
+
+    np.random.seed(456)
+    tf.set_random_seed(456)
+    
+    
+    from unittest import mock
+    api = mock.Mock()
+    env = gym.make('Breakout-v0')    
+    #env = DummyEnv()
+    
+    sample = env.reset()
+    SEQ_SIZE = 2
+    state_window_shape = (None, SEQ_SIZE, ) + sample.shape # [None, 4, 210, 160, 3]
+    #print(state_window_shape)
+    #raise SystemExit
+    state_tensor = tf.placeholder(tf.float32, shape=state_window_shape, name='state_tensor')
+
+    #import pdb; pdb.set_trace()
+
+    # Online Network 
+    N_NEURONS = 4 # n actions
+    X = {'Y':  state_tensor}
+    input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
+    shape = [input_size, N_NEURONS]
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    W = tf.Variable(initial, name='weights-11')#\n" % self._layer_id
+    initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
+    b = tf.Variable(initial, name='bias-11')#\n" % self._layer_id
+    flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
+    node = tf.matmul(flat_node, W)    
+    node = node + b
+    Y1 = node
+
+    '''
+    X = {'Y':  Y1}
+    input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
+    shape = [input_size, N_NEURONS]
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    W = tf.Variable(initial, name='weights-12')#\n" % self._layer_id
+    initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
+    b = tf.Variable(initial, name='bias-12')#\n" % self._layer_id
+    flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
+    node = tf.matmul(flat_node, W)    
+    node = node + b
+    Y1 = tf.sigmoid(node)
+    '''
+    
+    
+    # Target Network 
+    N_NEURONS = 4 # n actions
+    X = {'Y':  state_tensor}
+    input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
+    shape = [input_size, N_NEURONS]
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    W = tf.Variable(initial, name='weights-21')#\n" % self._layer_id
+    initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
+    b = tf.Variable(initial, name='bias-21')#\n" % self._layer_id
+    flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
+    node = tf.matmul(flat_node, W)    
+    node = node + b
+    Y2 = node
+    '''
+    X = {'Y':  Y2}
+    input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]
+    shape = [input_size, N_NEURONS]
+    initial = tf.truncated_normal(shape, stddev=0.1)
+    W = tf.Variable(initial, name='weights-22')#\n" % self._layer_id
+    initial = tf.constant(0.1, shape=[N_NEURONS])#\n" % self._n_neurons
+    b = tf.Variable(initial, name='bias-22')#\n" % self._layer_id
+    flat_node = tf.cast(tf.reshape(X['Y'], [-1, input_size]), dtype=tf.float32)
+    node = tf.matmul(flat_node, W)    
+    node = node + b
+    Y2 = tf.sigmoid(node)
+    '''
+    X = {
+        '1': {'Y': Y1},
+        '2': {'Y': Y2}        
+    }
+
+    tr = TrainReinforceCodeGenerator(online_network_id='1', target_network_id='2',
+                                     layer_pairs=[LayerPair('11', '21')],                        
+                                     history_length=SEQ_SIZE)
+    code = tr.get_code()
+
+    glob_ = {'tf': tf, 'np': np, 'state_tensor': state_tensor, 'env': env, 'api': api}    
+    loc_ = {'X': X}
+    try:
+        exec(code, glob_, loc_)
+    except:
+        for i, l in enumerate(code.split('\n'), 1):
+            print(i, l)
+        raise
+        
 
 
+
+    """ # BELOW IS A WORKING TEST CASE
     #import pdb; pdb.set_trace()
 
     
@@ -699,7 +838,8 @@ if __name__ == "__main__":
     tf.set_random_seed(456)
     
     #env = gym.make('Breakout-v0')
-    
+    from unittest import mock
+    api = mock.Mock()    
     env = DummyEnv()
     
     sample = env.reset()
@@ -776,7 +916,7 @@ if __name__ == "__main__":
                                      history_length=SEQ_SIZE)
     code = tr.get_code()
 
-    glob_ = {'tf': tf, 'np': np, 'state_tensor': state_tensor, 'env': env}    
+    glob_ = {'tf': tf, 'np': np, 'state_tensor': state_tensor, 'env': env, 'api': api}    
     loc_ = {'X': X}
     try:
         exec(code, glob_, loc_)
@@ -788,4 +928,4 @@ if __name__ == "__main__":
     
         
     
-
+    """

@@ -8,6 +8,7 @@ class DataEnvironmentCodeGenerator(CodeGenerator):
     def get_code(self):
         code  = "global state_tensor, env\n"
         code += "env = gym.make('%s')\n" % self._env_name
+        code += "env = DummyEnv()\n" # TODO: REMOVE THIS WHEN NOT DEBUGGING!!!!
         code += "\n"
         code += "sample = env.reset()\n"
         code += "api.data.store(sample=sample)\n"        
