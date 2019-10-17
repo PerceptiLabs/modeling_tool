@@ -118,8 +118,20 @@
 
 .btn--dark-blue {
   @extend .btn--tabs;
-
   background: $bg-window;
+}
+.btn--dark {
+  @extend .btn--tabs;
+  background: $bg-grad-black;
+  color: $white;
+  transition: none;
+  min-width: 4rem;
+  padding: 1rem;
+  &.green-status {
+    .icon {
+      color: $color-1;
+    }
+  }
 }
 
 .btn--dark-blue-rev {

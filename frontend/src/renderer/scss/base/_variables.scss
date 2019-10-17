@@ -54,6 +54,7 @@ $color-10: #6CF4D1;
 $bg-grad-cyan: linear-gradient($color-1, $color-2);
 $bg-grad-blue: linear-gradient($color-5, $color-6);
 $bg-grad-disable: linear-gradient($color-9, $color-8);
+$bg-grad-black: linear-gradient(90deg, $bg-window -41.67%, #2F3238 151.67%, #23252A 151.67%);
 
 
 $box-shad: 0 2px 7px 0px rgba(#000, .3);
