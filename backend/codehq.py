@@ -11,9 +11,19 @@ from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGener
 log = logging.getLogger(__name__)
 
 
+
+
 class CodeHqNew:
-    @staticmethod
-    def get_code_generator(id_, content):
+    @classmethod
+    def get_code_generator(cls, id_, content):
+        try:
+            return cls._get_code_generator(id_, content)
+        except:
+            log.exception("Error in code hq. id = {} and content = {}".format(id_, content))
+            raise        
+
+    @classmethod
+    def _get_code_generator(cls, id_, content):        
 
         type_ = content["Info"]["Type"]
         props = content["Info"]["Properties"]
@@ -33,7 +43,6 @@ class CodeHqNew:
                                                    layer_id=id_)
             return code_generator
         elif type_ == 'DataEnvironment':
-
             env_name = 'Breakout-v0'
             history_length = 4 # TOOD: NOT HARDCODED
             code_gen = DataEnvironmentCodeGenerator(env_name, history_length)
@@ -78,8 +87,9 @@ class CodeHqNew:
             code_gen = WordEmbeddingCodeGenerator()
             return code_gen
         elif type_ == 'ProcessGrayscale':
-            # code_gen = GrayScaleCodeGenerator()
-            code_gen = ''
+            code_gen = GrayscaleCodeGenerator()
+            print(repr(code_gen))
+            #code_gen = ''
             return code_gen        
         elif type_ == 'ProcessOneHot':
             code_gen = OneHotCodeGenerator(n_classes=props["N_class"])

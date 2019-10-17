@@ -18,10 +18,11 @@ class CodeGenerator(ABC):
         text  = "{}\n".format(self.__class__.__name__)
         
         fields = sorted(self.__dict__.items(), key=lambda x: x[0]) # Sort by name
-        n_chars = max([len(name) for name, value in fields])
-        
-        for name, value in fields:
-            text += "    {} : {}\n".format(name.ljust(n_chars, " "), value)
+        if len(fields) > 0:
+            n_chars = max([len(name) for name, value in fields])
+            
+            for name, value in fields:
+                text += "    {} : {}\n".format(name.ljust(n_chars, " "), value)
             
         return text
     

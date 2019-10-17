@@ -485,8 +485,6 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "step = optimizer.minimize(loss_tensor)\n"
         code += "\n"
 
-        code += "print('trainables ', tf.trainable_variables())\n"
-        
         code += "# Gradients\n"
         code += "gradients = {}\n"
         code += "for var in tf.trainable_variables():\n"
@@ -496,19 +494,19 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "        gradients[name] = gradient_tensor \n"
         code += "\n"
         code += "new_gradient_vals = None\n"
-        code += "print('GRADIENTS 1', gradients)\n"
 
 
         code += "def copy_weights(sess):\n"
         code += "    variables = {var.op.name: var for var in tf.trainable_variables()}\n"
         code += "    update_ops = []\n"        
         for pair in self._layer_pairs:
-            code += "    W_online = variables['weights-%s']\n" % pair.online_id
-            code += "    W_target = variables['weights-%s']\n" % pair.target_id
-            code += "    update_ops.append(W_target.assign(W_online))\n"
-            code += "    b_online = variables['bias-%s']\n" % pair.online_id
-            code += "    b_target = variables['bias-%s']\n" % pair.target_id
-            code += "    update_ops.append(b_target.assign(b_online))\n"
+            code += "    if 'weights-%s' in variables:\n" % pair.online_id
+            code += "        W_online = variables['weights-%s']\n" % pair.online_id
+            code += "        W_target = variables['weights-%s']\n" % pair.target_id
+            code += "        update_ops.append(W_target.assign(W_online))\n"
+            code += "        b_online = variables['bias-%s']\n" % pair.online_id
+            code += "        b_target = variables['bias-%s']\n" % pair.target_id
+            code += "        update_ops.append(b_target.assign(b_online))\n"
             code += "    \n"
         code += "    \n"
         code += "    sess.run(update_ops)\n"
@@ -532,31 +530,23 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "    state_seq = [state]*history_length\n"
         code += "    api.data.store(episode=episode)\n"
         code += "    \n"
-        #code += "    print('NEW EPISODE', episode)\n"
         code += "    done = False\n"
         code += "    step_counter = 0\n"
         code += "    loss_list = []\n"
         code += "    reward_list = []\n"        
         code += "    while not done and step_counter < n_steps_max:\n"
-        #code += "        print('state:')\n"
-        #code += "        print(np.squeeze(state_seq))\n"
         code += "        explore = np.random.random() < epsilon(episode) or iteration < replay_start_size\n"
         code += "        if explore:\n"
         code += "            action = env.action_space.sample()\n"
         code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array([state_seq])}).squeeze()\n"
-        #code += "            print('Q ' + str(Q))\n"        
-        #code += "            print('action: ' + str(action) + ' (random)')\n"
         code += "        else:\n"
         code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array([state_seq])}).squeeze()\n"
         code += "            action = np.argmax(Q)\n"
-        #code += "            print('Q ' + str(Q))\n"
-        #code += "            print('action: ' + str(action) + '(chosen)')\n"        
         code += "        \n"
         code += "        new_state, reward, done, info = env.step(action)\n"
         code += "        new_state_seq = state_seq[1:] + [new_state]\n"
         code += "        reward_list.append(reward)\n"
         code += "        api.data.store(current_state=state, current_action=action, step_counter=step_counter)\n"
-        #code += "        print('CURRENT STATE:', state)\n"
         code += "        api.data.store(reward=np.cumsum(reward_list))\n"
         code += "        api.ui.render(dashboard='train_reinforce')\n"
         code += "        \n"
@@ -574,10 +564,6 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "            replay_memory.pop(0)\n"
         code += "        \n"
         code += "        state_seq = new_state_seq\n"        
-        #code += "        print(np.histogram([r['reward'] for r in replay_memory])[0])\n"
-        #code += "        print('eps', epsilon(episode))\n"
-        #code += "        print('REWARD', reward)\n"
-        #code += "        #if reward > 0: import pdb; pdb.set_trace()\n"
         code += "        # Training\n"
         code += "        \n"
         code += "        if iteration % {} == 0 and iteration > replay_start_size:\n".format(self._update_frequency) # TODO: better name for n_iters
@@ -589,26 +575,18 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "            for i, t in enumerate(batch_transitions):\n"
         code += "                y_batch[i] = t['reward']\n"
         code += "                if not t['done']:\n"
-        code += "                    print('hashed new state seq', hash(t['new_state_seq'].tostring()))\n"
         code += "                    feed_dict = {state_tensor: [t['new_state_seq']]}\n"
         code += "                    Q = Q_target.eval(feed_dict=feed_dict).squeeze()\n" 
         code += "                    y_batch[i] += gamma*np.amax(Q)\n"
-        code += "                    print('Q', np.amax(Q), Q)\n"
         code += "                a_batch[i] = t['action']\n"
         code += "                X_batch[i] = t['state_seq']\n"
-        code += "                print('hashed state seq', hash(t['state_seq'].tostring()))\n"
-        code += "                print('y', y_batch[i], 'reward', t['reward'], 'action', t['action'])\n"
         code += "            \n"
         code += "            feed_dict = {\n"
         code += "                         state_tensor: np.atleast_2d(X_batch),\n"
         code += "                         a_tensor: np.atleast_2d(a_batch),\n"
         code += "                         y_tensor: np.atleast_2d(y_batch),\n"
         code += "                        }\n"
-        code += "            print('GRADIENTS 2!!!!', gradients)\n"
         code += "            _, loss, gradient_vals, all_tensors_values = sess.run([step, loss_tensor, gradients, all_tensors], feed_dict=feed_dict)\n"
-        #code += "            print('ALL TENSORS VALUES', all_tensors_values)\n"
-        #code += "            #print('batch', X_batch, y_batch, a_batch)\n"
-        code += "            print('evallllll' ,[x.eval() for x in tf.trainable_variables()])\n"        
         code += "            loss_list.append(loss)\n"
         code += "            api.data.store(loss=loss_list)\n"
         code += "            api.data.store(all_tensors=all_tensors_values)\n"
@@ -618,11 +596,9 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "                new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
         code += "                new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
         code += "                new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
-        code += "        print('grad vals' , new_gradient_vals)\n"
 
         code += "        if new_gradient_vals is not None:\n"
         code += "            api.data.stack(**new_gradient_vals)\n"
-        
         code += "        \n"
         code += "        # Copy weights\n"
         code += "        if iteration % {} == 0:\n".format(self._copy_weights_frequency)
@@ -634,8 +610,6 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "    api.data.stack(episode_steps=step_counter)\n"        
         code += "    if len(loss_list) > 0:\n"
         code += "        api.data.stack(episode_loss=loss_list[-1])\n"        
-        #code += "    print('iteration '+str(iteration))\n"
-
 
         return code
 

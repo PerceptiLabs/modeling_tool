@@ -170,12 +170,16 @@ class BaseCore:
         self._layer_extras_reader = layer_extras_reader
         self._session_history = session_history        
         self._skip_layers = skip_layers if skip_layers is not None else []
-        self._module_provider = module_provider        
-        
+        self._module_provider = module_provider
+
     def run(self):
         log.info("Running core [{}]".format(self.__class__.__name__))
         self._data_container.reset()
         self._session_history.cache.invalidate(keep_layers=self._graph.keys())
+
+        log.info("Layers will be executed in the following order: " \
+                 + ", ".join([id_ + ' [' + cont["Info"]["Type"]+']' for id_, cont in self._graph.items()]))
+        
 
         if self._tf_eager:
             set_tensorflow_mode('eager')
@@ -184,8 +188,10 @@ class BaseCore:
 
         for layer_id, content in self._graph.items():
             layer_type = content["Info"]["Type"]
-            if not content["Info"]["Properties"]:
-                continue
+            #if not content["Info"]["Properties"]:
+            #    log.info("Layer {} [{}] has no declared properties. Skipping.".format(layer_id, layer_type))
+            #    continue
+            
             if layer_type in self._skip_layers:
                 log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
                 continue
@@ -205,7 +211,9 @@ class BaseCore:
         log.debug(repr(code_gen))
         
         code = code_gen.get_code()
-        
+
+        print(content['Con'])
+
         globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])        
         session = LayerSession(id_, content['Info']['Type'], code,
                                global_vars=globals_,
@@ -230,12 +238,15 @@ class BaseCore:
                 self._layer_extras_reader.read_error(session,e)
             else:
                 raise
-           
+
+
         self._session_history[id_] = session
 
         if self._layer_extras_reader is not None:
             self._layer_extras_reader.read(session, self._data_container)
-
+            
+        log.debug("Done running layer {}".format(id_))#. Locals:  {}".format(id_, session.outputs.locals))
+                  
     def _get_globals_and_locals(self, input_layer_ids):
         outputs = self._session_history.merge_session_outputs(input_layer_ids)
 
@@ -245,10 +256,9 @@ class BaseCore:
         globals_.update(outputs.globals) # Other global variables
         globals_.update(self._module_provider.modules) # Default modules. 
 
-        if log.isEnabledFor(logging.DEBUG):
+        if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
             from code_generator.tensorflow import DummyEnv
             globals_['DummyEnv'] = DummyEnv
-        
         
         if len(self._module_provider.hooks) > 0:
             targets = [x.target_path for x in self._module_provider.hooks]
