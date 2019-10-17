@@ -5,6 +5,7 @@ import logging
 import numpy as np
 import traceback
 import tensorflow as tf
+import pandas as pd
 from collections import namedtuple
 
 from modules import ModuleProvider
@@ -267,7 +268,7 @@ class BaseCore:
 
         for layer_id, content in self._graph.items():
             layer_type = content["Info"]["Type"]
-            if not content["Info"]["Properties"]:
+            if not (content["Info"]["Properties"] or content["Info"]["Code"]):
                 continue
             if layer_type in self._skip_layers:
                 log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
@@ -321,13 +322,13 @@ class BaseCore:
 
         # Load globals.
         # Note that modules imported via module provider will overwrite in-code imports        
-        globals_ = {}
+        globals_ = {"tf": tf, "np": np, "pd":pd}
         globals_.update(outputs.globals) # Other global variables
-        globals_.update(self._module_provider.modules) # Default modules. 
+        # globals_.update(self._module_provider.modules) # Default modules. 
 
-        if len(self._module_provider.hooks) > 0:
-            targets = [x.target_path for x in self._module_provider.hooks]
-            log.info("Globals subject to code hooks are: {}".format(", ".join(targets)))
+        # if len(self._module_provider.hooks) > 0:
+        #     targets = [x.target_path for x in self._module_provider.hooks]
+        #     log.info("Globals subject to code hooks are: {}".format(", ".join(targets)))
         
         locals_=outputs.locals
 

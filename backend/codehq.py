@@ -71,8 +71,7 @@ class CodeHqNew:
             code_gen = WordEmbeddingCodeGenerator()
             return code_gen
         elif type_ == 'ProcessGrayscale':
-            # code_gen = GrayScaleCodeGenerator()
-            code_gen = ''
+            code_gen = GrayscaleCodeGenerator()
             return code_gen        
         elif type_ == 'ProcessOneHot':
             code_gen = OneHotCodeGenerator(n_classes=props["N_class"])
