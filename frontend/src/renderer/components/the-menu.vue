@@ -1,5 +1,8 @@
 <template lang="pug">
-  nav.app-header_nav(v-if="showMenu" v-hotkey="keymap")
+  nav.app-header_nav(
+    :style="{'app-header--hidden': isMac}"
+    v-hotkey="keymap"
+    )
     ul.header-nav
       li.header-nav_item(
       v-for="(item, i) in navMenu"
@@ -50,16 +53,10 @@
 
 export default {
   name: "TheMenu",
-  props: {
-    showMenu: {
-      type: Boolean,
-      default: true,
-    }
-  },
   mounted() {
     this.mainProcessListeners()
-
   },
+  
   data() {
     return {
       dataKeymap: {}
@@ -85,9 +82,6 @@ export default {
     },
 
     navMenu() {
-      function returnLabel() {
-        return this.label
-      }
       return [
         {
           label: 'File', visible: true,
@@ -98,26 +92,26 @@ export default {
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
-            {label: 'Exit',         accelerator: this.isMac ? 'meta+q' : 'alt+f4',              enabled: true,          active: (e)=> this.appClose(e) }
+            {label: 'Exit',         accelerator: this.isMac ? 'meta+q' : 'alt+f4',                                      active: (e)=> this.appClose(e) }
           ]
         },
         {
           label: 'Edit', visible: true,
           submenu: [
-            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              enabled: this.openApp,  active: this.toPrevStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  enabled: this.openApp,  active: this.toNextStepHistory },
+            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',           active: this.toPrevStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',           active: this.toNextStepHistory },
             {type:  'separator'},
-            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              enabled: this.openApp,  active: this.HCCopy },
-            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              enabled: this.openApp,  active: this.HCPaste },
+            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',           active: this.HCCopy },
+            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',          active: this.HCPaste },
             {type:  'separator'},
-            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              enabled: this.openApp,  active: this.HCSelectAll },
+            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
             {type:  'separator'},
-            {label: 'delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: true  },
-            {label: 'add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: true  },
-            {label: 'ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: true  },
+            {label: 'Delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: true  },
+            {label: 'Add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: true  },
+            {label: 'Ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: true  },
             {type:  'separator'},
-            {label: 'close setting popups',          accelerator: 'esc',                                                                 active: this.HC_esc,                       visible: true  },
+            {label: 'Close setting popups',          accelerator: 'esc',                                                active: this.HC_esc,                       visible: true  },
           ]
         },
         {
@@ -325,6 +319,14 @@ export default {
   .app-header_nav {
     height: 100%;
     -webkit-app-region: no-drag;
+  }
+  .app-header--hidden {
+    position: absolute;
+    opacity: 0;
+    left: -9999px;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
   }
   .header-nav {
     font-weight: 500;

@@ -85,7 +85,8 @@ function createWindow () {
     menuJson.forEach((menuItem)=> {
       if(menuItem.submenu.length) {
         menuItem.submenu.forEach((subMenuItem)=> {
-          subMenuItem.click = ()=> {mainWindow.webContents.send(`menu-event-${subMenuItem.label}`)}
+          console.log(!subMenuItem.role);
+          if(!subMenuItem.role) subMenuItem.click = ()=> {mainWindow.webContents.send(`menu-event-${subMenuItem.label}`)}
         })
       }
     });
