@@ -1,6 +1,6 @@
 <template lang="pug">
   nav.app-header_nav(
-    :style="{'app-header--hidden': isMac}"
+    :class="{'app-header--hidden': isMac}"
     v-hotkey="keymap"
     )
     ul.header-nav
@@ -83,6 +83,21 @@ export default {
 
     navMenu() {
       return [
+        ...(process.platform === 'darwin' ? [{
+            label: 'PerceptiLabs',
+            submenu: [
+              { role: 'about',      active: ()=>{}},
+              {label: 'Check for updates...', active: this.checkUpdate },
+              { type: 'separator'},
+              { role: 'services',   active: ()=>{}},
+              { type: 'separator'},
+              { role: 'hide',       active: ()=>{}},
+              { role: 'hideothers', active: ()=>{}},
+              { role: 'unhide',     active: ()=>{}},
+              { type: 'separator'},
+              {label: 'Quit PerceptiLabs', accelerator: 'meta+q', active: (e)=> this.appClose(e) }
+            ]
+          }] : []),
         {
           label: 'File', visible: true,
           submenu: [
@@ -92,7 +107,10 @@ export default {
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
-            {label: 'Exit',         accelerator: this.isMac ? 'meta+q' : 'alt+f4',                                      active: (e)=> this.appClose(e) }
+            ...(this.isMac 
+              ? [] 
+              : [{label: 'Exit', accelerator: 'alt+f4',                            active: (e)=> this.appClose(e) }]
+            )
           ]
         },
         {
@@ -106,19 +124,7 @@ export default {
             {type:  'separator'},
             {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
-            {type:  'separator'},
-            {label: 'Delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: true  },
-            {label: 'Add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: true  },
-            {label: 'Ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: true  },
-            {type:  'separator'},
-            {label: 'Close setting popups',          accelerator: 'esc',                                                active: this.HC_esc,                       visible: true  },
-          ]
-        },
-        {
-          label: 'Window', visible: true,
-          submenu: [
-            {label: 'Minimize',                                                                 enabled: true,          active: this.appMinimize },
-            {label: 'Zoom',                                                                     enabled: true,          active: this.appMaximize },
+            
           ]
         },
         {
@@ -130,12 +136,35 @@ export default {
           ]
         },
         {
+          role: 'window',
+          label: 'Window', visible: true,
+          submenu: [
+            ...(this.isMac 
+              ? [
+                  { role: 'minimize', active: ()=>{}},
+                  { role: 'zoom',     active: ()=>{}},
+                  { type: 'separator'},
+                  { role: 'front',    active: ()=>{} },
+                  { type: 'separator'},
+                ] 
+              : [
+                  {label: 'Minimize',                                                           enabled: true,          active: this.appMinimize },
+                  {label: 'Zoom',                                                               enabled: true,          active: this.appMaximize },
+                ]
+            ),
+          ]
+        },
+        {
+          role: 'help',
           label: 'Help', visible: true,
           submenu: [
             {label: 'Help',                                                                     enabled: false,         active: this.goToHelpPage },
             {label: 'About',                                                                                            active: this.goToAboutPage },
-            {label: 'Tutorial mode',                                                            enabled: !this.isTutorialActive && this.isLogin,  active: this.showTutorial },
-            {label: 'Check for updates',                                                                                active: this.checkUpdate },
+            {label: 'Tutorial mode',                                  enabled: !this.isTutorialActive && this.isLogin,  active: this.showTutorial },
+            ...(this.isMac 
+              ? [] 
+              : [{label: 'Check for updates',                                                              active: this.checkUpdate }]
+            ),
             {type: 'separator'},
             {label: `Version: ${this.appVersion}`,                                              enabled: false,         active: ()=>{} }
           ]
@@ -143,7 +172,12 @@ export default {
         {
           label: '', visible: false,
           submenu: [
-            //{label: 'preventClose',          accelerator: 'Alt+F4',                                     enabled: true,                 active: function(e) {e.preventDefault()},  visible: false  },
+            {type:  'separator'},
+            {label: 'Delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: false  },
+            {label: 'Add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
+            {label: 'Ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
+            {type:  'separator'},
+            {label: 'Close setting popups',          accelerator: 'esc',                                                active: this.HC_esc,                       visible: false  },
           ]
         }
       ]
