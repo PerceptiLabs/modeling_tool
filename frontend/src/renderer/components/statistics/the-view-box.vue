@@ -12,6 +12,7 @@
 <script>
   import DataData             from '@/components/network-elements/elements/data-data/viewBox-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/viewBox-data-environment.vue'
+  import DataCloud            from '@/components/network-elements/elements/data-cloud/viewBox-data-cloud.vue'
 
   import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/viewBox-deep-learning-fc.vue'
   import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/viewBox-deep-learning-conv.vue'
@@ -32,7 +33,7 @@
 export default {
   name: "TheViewBox",
   components: {
-    DataData, DataEnvironment,
+    DataData, DataEnvironment, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
     MathArgmax, MathMerge, MathSoftmax, MathSplit

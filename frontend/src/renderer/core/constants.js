@@ -1,6 +1,6 @@
 const isDevelopMode = process.env.NODE_ENV !== 'production';
 
-const trainingElements  = ['TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
+const trainingElements  = ['TrainLoss', 'TrainOptimizer', 'TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic'];
 const deepLearnElements = ['DeepLearningFC', 'DeepLearningConv', 'DeepLearningDeconv', 'DeepLearningRecurrent'];
 
 const pathWebWorkers = './static/webworkers';

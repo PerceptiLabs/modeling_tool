@@ -53,8 +53,7 @@
     mixins: [mixinSet],
     components: { TripleInput, TripleInputElementReshape, SettingReshapeImage },
     mounted() {
-      //console.log(this.currentEl);
-      this.$store.dispatch('mod_api/API_getInputDim')
+      this.$store.dispatch('mod_api/API_getInputDim');
     },
     data() {
       return {
