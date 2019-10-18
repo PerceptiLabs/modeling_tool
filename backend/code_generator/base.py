@@ -39,6 +39,28 @@ class CustomCodeGenerator(CodeGenerator):
     def get_code_parts(self):
         return self._code_parts
 
+    def _replace_ckpt_references(self,code):
+        import re
+        codeString=code
+        codeRows=re.split(';|\n',codeString)
+        codeRows=list(filter(None,codeRows))
+        new_code=""
+        for row in codeRows:
+            if "loc:@" in row:
+                splitRow=row.split("=")
+                new_row=splitRow[0]+"=checkpoint['"+ splitRow[1].replace("loc:@","").replace("'","") +"']\n"
+                new_code+=new_row
+            else:
+                new_code+=row+"\n"
+        return new_code 
+
+    def replace_ckpt_references(self):
+        new_code_parts=[]
+        for _codePart in self._code_parts:
+            new_code_parts.append(CodePart(name=_codePart.name, code=self._replace_ckpt_references(_codePart.code)))
+        self._code_parts=new_code_parts
+        
+
     def get_code(self, mode='normal'):    
         code = ''
         for cp in self._code_parts:

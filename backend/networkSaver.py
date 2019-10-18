@@ -83,6 +83,7 @@ def createNetwork(graph_variables,graphObj,frontendNetwork,checkpoint):
 
 def saveNetwork(path,graph_variables,graphObj,frontendNetwork,checkpoint):
     json_network=createNetwork(graph_variables,graphObj,frontendNetwork,checkpoint)
+    print(json_network)
     with open(path, 'w') as json_file:
         json.dump(json_network, json_file)
 

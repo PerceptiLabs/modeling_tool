@@ -66,12 +66,12 @@ class coreLogic():
 
         from codehq import CodeHqNew as CodeHq
 
-        module_provider = ModuleProvider()
-        module_provider.load('tensorflow', as_name='tf')
-        module_provider.load('numpy', as_name='np')
-        module_provider.load('pandas', as_name='pd')
-        module_provider.load('gym')   
-        # module_provider=None     
+        # module_provider = ModuleProvider()
+        # module_provider.load('tensorflow', as_name='tf')
+        # module_provider.load('numpy', as_name='np')
+        # module_provider.load('pandas', as_name='pd')
+        # module_provider.load('gym')   
+        module_provider=None     
 
         session_history = SessionHistory()        
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)

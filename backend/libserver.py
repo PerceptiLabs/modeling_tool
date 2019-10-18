@@ -179,14 +179,14 @@ class Message:
 
         from codehq import CodeHqNew as CodeHq
 
-        module_provider = ModuleProvider()
-        module_provider.load('tensorflow', as_name='tf')
-        module_provider.load('numpy', as_name='np')
-        module_provider.load('gym')
-        # module_provider=None
+        # module_provider = ModuleProvider()
+        # module_provider.load('tensorflow', as_name='tf')
+        # module_provider.load('numpy', as_name='np')
+        # module_provider.load('gym')
+        module_provider=None
         
-        for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
-            module_provider.install_hook(hook_target, hook_func)
+        # for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
+        #     module_provider.install_hook(hook_target, hook_func)
             
         lw_core = LightweightCore(CodeHq, graph_dict,
                                   data_container, session_history_lw,
