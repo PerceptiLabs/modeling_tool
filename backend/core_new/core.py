@@ -183,7 +183,13 @@ class BaseCore:
 
         log.info("Layers will be executed in the following order: " \
                  + ", ".join([id_ + ' [' + cont["Info"]["Type"]+']' for id_, cont in self._graph.items()]))
+
         
+        if len(self._module_provider.hooks) > 0:
+            targets = [x for x in self._module_provider.hooks.keys()]
+            log.info("Module hooks installed are: {}".format(", ".join(targets)))
+        else:
+            log.info("No module hooks installed")        
 
         if self._tf_eager:
             set_tensorflow_mode('eager')
@@ -262,10 +268,6 @@ class BaseCore:
         if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
             from code_generator.tensorflow import DummyEnv
             globals_['DummyEnv'] = DummyEnv
-        
-        if len(self._module_provider.hooks) > 0:
-            targets = [x.target_path for x in self._module_provider.hooks]
-            log.info("Globals subject to code hooks are: {}".format(", ".join(targets)))
         
         locals_=outputs.locals
 
