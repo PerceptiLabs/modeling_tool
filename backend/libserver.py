@@ -18,6 +18,7 @@ from extractVariables import *
 from createDataObject import createDataObject
 
 from core_new.core import *
+from core_new.history import SessionHistory
 from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from graph import Graph
 from codehq import CodeHqNew as CodeHq
@@ -178,14 +179,14 @@ class Message:
 
         from codehq import CodeHqNew as CodeHq
 
-        # module_provider = ModuleProvider()
-        # module_provider.load('tensorflow', as_name='tf')
-        # module_provider.load('numpy', as_name='np')
-        # module_provider.load('gym')
-        module_provider=None
+        module_provider = ModuleProvider()
+        module_provider.load('tensorflow', as_name='tf')
+        module_provider.load('numpy', as_name='np')
+        module_provider.load('gym')
+        # module_provider=None
         
-        # for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
-        #     module_provider.install_hook(hook_target, hook_func)
+        for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
+            module_provider.install_hook(hook_target, hook_func)
             
         lw_core = LightweightCore(CodeHq, graph_dict,
                                   data_container, session_history_lw,
@@ -320,8 +321,7 @@ class Message:
         elif action == "getNetworkInputDim":
             jsonNetwork=self.request.get("value")
             
-            from pprint import pprint
-            pprint(jsonNetwork)
+            pprint.pprint(jsonNetwork)
 
             lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)            
             lw_core.run()
@@ -366,8 +366,7 @@ class Message:
             jsonNetwork=self.request.get("value")
 
             
-            from pprint import pprint
-            pprint(jsonNetwork)
+            pprint.pprint(jsonNetwork)
 
             lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                        
             lw_core.run()
@@ -445,8 +444,8 @@ class Message:
                     "VariableName": extrasDict[LayerId]["Default_var"],
                 }
                 if "errorMessage" in extrasDict[LayerId]:
-                    content.update({"Error": value['errorMessage']})
-                    content.update({"Row": value['errorRow']})
+                    content.update({"Error": extrasDict[LayerId]['errorMessage']})
+                    content.update({"Row": extrasDict[LayerId]['errorRow']})
             else:
                 content = ""
         
@@ -625,7 +624,7 @@ class Message:
         response = {
             "content": content
         }
-        print("Response: ", response)
+        # log.debug("Response: " + pprint.pformat(response, depth=6))        
         return response
 
     def _create_response_binary_content(self):

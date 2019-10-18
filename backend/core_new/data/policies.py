@@ -1,76 +1,18 @@
-import copy
 from abc import ABC, abstractmethod
+import numpy as np
 
-class DataContainer:
-    def __init__(self):
-        self.reset()
-
-    def reset(self):
-        self._data_dict = dict()        
-
-    def _create_subdict_if_needed(self, layer_id):
-        if not layer_id in self._data_dict:
-            self._data_dict[layer_id] = dict()
-
-    def store_value_in_root(self, name, value):
-        self._data_dict[name] = value
-
-    def store_value(self, layer_id, name, value):
-        self._create_subdict_if_needed(layer_id)
-        self._data_dict[layer_id][name] = value
-
-    def stack_value(self, layer_id, name, value):
-        self._create_subdict_if_needed(layer_id)
-
-        try:
-            self._data_dict[layer_id][name].append(value)
-            if len(self._data_dict[layer_id][name])>500:
-                self._data_dict[layer_id][name].pop(0)
-        except AttributeError:
-            print("warning, overwriting existing value!")
-            self._data_dict[layer_id][name] = [value]
-        except KeyError:
-            self._data_dict[layer_id][name] = [value]
-
-    def evaluate_dict(self, d):
-        import tensorflow as tf
-        if type(d) is dict:
-            new_d={}
-            for key, value in d.items():
-                new_d[key] = self.evaluate_dict(value)
-                if new_d[key] is None or new_d[key]=={}:
-                    new_d.pop(key)
-            return new_d
-
-        if tf.contrib.framework.is_tensor(d):
-            return d
-
-    def on_tensors_get(self):
-        return self.evaluate_dict(self.to_dict())
-
-    def __getitem__(self, id_):
-        data = copy.copy(self._data_dict.get(id_))
-        return data
-
-    def __contains__(self, id_):
-        return id_ in self._data_dict
-
-    def to_dict(self):
-        data_dict = copy.copy(self._data_dict)
-        return data_dict
-
-    
 class DataPolicy(ABC):
-    @abstractmethod
-    def get_results(self):
-        raise NotImplementedError
-
-class TestDataPolicy:
     def __init__(self, session, data_dict, graph_dict):
         self._session = session
         self._data = data_dict
         self._graph_dict = graph_dict
+    
+    @abstractmethod
+    def get_results(self):
+        raise NotImplementedError
 
+    
+class TestDataPolicy(DataPolicy):
     def get_results(self):
         test_dict = {}
 
@@ -130,12 +72,7 @@ class TestDataPolicy:
         }
         return result_dict
     
-class TrainValDataPolicy:
-    def __init__(self, session, data_dict, graph_dict):
-        self._session = session
-        self._data = data_dict
-        self._graph_dict = graph_dict
-
+class TrainValDataPolicy(DataPolicy):
     def get_results(self):
         train_dict = {}
         saver=None
@@ -274,3 +211,116 @@ class TrainValDataPolicy:
         if saver is not None:
             result_dict["saver"]=saver
         return result_dict
+
+
+class TrainReinforceDataPolicy(DataPolicy):
+    def get_results(self):
+        train_dict = {}
+       
+        for id_, content in self._graph_dict.items():
+            if id_ not in self._data:
+                continue
+            
+            if content["Info"]["Type"] == "TrainReinforce":
+                step_counter = self._data[id_].get('step_counter', -1)
+                n_steps_max = self._data[id_].get('n_steps_max', -1)                
+                episode = self._data[id_].get('episode', -1)
+                n_episodes = self._data[id_].get('n_episodes', -1)
+                batch_size = self._data[id_].get('batch_size', -1)                                
+
+                train_dict[id_] = {}
+                train_dict[id_]['state'] = self._data[id_].get('current_state', -1)
+                state__ = train_dict[id_]['state']
+                #print("CURRENT STATE READ IN POLICY")
+                #print(train_dict[id_]['state'])
+
+                current_action = self._data[id_].get('current_action', -1)
+                n_actions = self._data[id_].get('n_actions', -1)
+                if n_actions != -1 and current_action != -1:
+                    train_dict[id_]['pred'] = np.zeros((n_actions,))
+                    train_dict[id_]['pred'][int(current_action)] = 1
+
+                train_dict[id_]['X'] = {}
+                train_dict[id_]['X']['Reward'] = self._data[id_].get('reward', [-1])
+                train_dict[id_]['X']['epochTotalReward'] = self._data[id_].get('episode_reward', [-1])
+                train_dict[id_]['X']['epochTotalSteps'] = self._data[id_].get('episode_steps', [-1])
+
+
+                train_dict[id_]['loss'] = self._data[id_].get('loss', [-1])
+                train_dict[id_]['epochTrainLoss'] = self._data[id_].get('episode_loss', [-1])
+
+
+                if "all_tensors" in self._data[id_]:
+                    # all_tensors=train_dict[id_].pop("all_tensors")
+                    all_tensors=self._data[id_]["all_tensors"]
+
+                    import collections
+                    import six
+                    def update(d, u):
+                        for k, v in six.iteritems(u):
+                            dv = d.get(k, {})
+                            if not isinstance(dv, collections.Mapping):
+                                d[k] = v
+                            elif isinstance(v, collections.Mapping):
+                                d[k] = update(dv, v)
+                            else:
+                                d[k] = v
+                        return d
+
+                    train_dict=update(train_dict,all_tensors)
+
+                
+                if not self._session._headless:
+                    for key, value in self._data[id_].items():
+                        if not key.startswith('grad-weights-'):
+                            continue
+                        grad_layer_id = key[len('grad-weights-'):].split(':')[0]
+                        
+                        if grad_layer_id not in train_dict:
+                            train_dict[grad_layer_id] = {}
+                        if 'Gradient' not in train_dict[grad_layer_id]:
+                            train_dict[grad_layer_id]['Gradient']={}
+                        
+                        if key.split(':')[2]=="Min":
+                            train_dict[grad_layer_id]['Gradient']['Min'] = value
+                        elif key.split(':')[2]=="Max":
+                            train_dict[grad_layer_id]['Gradient']['Max'] = value
+                        elif key.split(':')[2]=="Average":
+                            train_dict[grad_layer_id]['Gradient']['Average'] = value
+
+                        ## Gradients are only defined for the target network.
+                        #copied_id = self._graph_dict[grad_layer_id].get('CopyOf')
+                        #if copied_id is not None:
+                        #    if copied_id not in train_dict:
+                        #        train_dict[copied_id] = {}                                                    
+                        #    train_dict[copied_id]['Gradient'] = train_dict[grad_layer_id]['Gradient'].copy()
+
+       
+        for id_, content in self._graph_dict.items():
+            if content["Info"]["Type"] == "DataEnvironment":
+                train_dict[id_] = {'state': state__}
+                break
+                
+                
+        training_status = 'Training'
+        status = 'Running'
+        itr_trn = 123
+
+        import pprint
+        #print("train_dict")
+        #pprint.pprint(train_dict)
+        
+ 
+        result_dict = {
+            "iter": step_counter,
+            "maxIter": n_steps_max,
+            "epoch": episode,
+            "maxEpochs": n_episodes,
+            "batch_size": batch_size,
+            "trainingIterations": itr_trn,
+            "trainDict": train_dict,
+            "trainingStatus": training_status,  
+            "status": status
+        }
+        return result_dict
+
