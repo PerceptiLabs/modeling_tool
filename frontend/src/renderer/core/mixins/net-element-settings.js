@@ -12,7 +12,9 @@ const netElementSettings = {
   data() {
     return {
       settings: {},
-      coreCode: '',
+      coreCode: {
+        Output: ''
+      },
     }
   },
   beforeMount() {
