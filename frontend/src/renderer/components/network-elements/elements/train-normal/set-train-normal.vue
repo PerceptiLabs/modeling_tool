@@ -13,7 +13,7 @@
               v-model="settings.Labels"
               :select-options="inputLayers"
             )
-      .settings-layer_section
+      //-.settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
           .form_label Cost function:
           #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
@@ -30,7 +30,7 @@
           .form_label Class weights:
           .form_input
             input(type="number" v-model="settings.Class_weights")
-      .settings-layer_section
+      //-.settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
           .form_label Optimizer:
           #tutorial_optimizer.form_input(data-tutorial-hover-info)
@@ -100,14 +100,14 @@ export default {
       settings: {
         Labels: '',
         N_class: '1',
-        Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
+        //Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
         Class_weights: 1,
         Learning_rate: "0.01",
-        Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop
-        Beta_1: '0.1',
-        Beta_2: '0.1',
-        Momentum: '0.1',
-        Decay: '0.1',
+        //Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop
+        // Beta_1: '0.1',
+        // Beta_2: '0.1',
+        // Momentum: '0.1',
+        // Decay: '0.1',
         Training_iters: "20000"
       },
       interactiveInfo: {
@@ -115,14 +115,14 @@ export default {
           title: 'Labels',
           text: 'Choose which input connection is represent the labels'
         },
-        costFunction: {
-          title: 'Split on',
-          text: 'Choose in which position to split on at the chosen axis'
-        },
-        optimizer: {
-          title: 'Optimizer',
-          text: 'Choose which optimizer to use'
-        },
+        // costFunction: {
+        //   title: 'Split on',
+        //   text: 'Choose in which position to split on at the chosen axis'
+        // },
+        // optimizer: {
+        //   title: 'Optimizer',
+        //   text: 'Choose which optimizer to use'
+        // },
         learningRate: {
           title: 'Learning Rate',
           text: 'Set the learning rate'

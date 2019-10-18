@@ -65,6 +65,7 @@ export default {
   },
   mounted() {
     this.toSettings();
+    if(this.currentEl.layerCode || this.currentEl.layerSettings) this.tabSelected = 'Preview';
   },
   data() {
     return {

@@ -15,7 +15,8 @@ const state = {
   globalPressKey: {
     del: 0,
     esc: 0
-  }
+  },
+  isEnableCustomHotKey: true
 };
 
 const mutations = {
@@ -36,6 +37,9 @@ const mutations = {
   },
   set_globalPressKey(state, path) {
     state.globalPressKey[path]++
+  },
+  set_enableCustomHotKey(state, value) {
+    state.isEnableCustomHotKey = value
   },
 };
 
@@ -170,6 +174,9 @@ const actions = {
       });
       //dispatch('mod_buffer/CLEAR_buffer', null, {root: true});
     }
+  },
+  SET_enableCustomHotKey({commit}, val) {
+    commit('set_enableCustomHotKey', val)
   },
 };
 

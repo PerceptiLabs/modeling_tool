@@ -20,12 +20,14 @@
   import TrainGenetic     from '@/components/network-elements/elements/train-genetic/viewBox-train-genetic.vue'
   import TrainNormal      from '@/components/network-elements/elements/train-normal/viewBox-train-normal.vue'
   import TrainReinforce   from '@/components/network-elements/elements/train-reinforce/viewBox-train-reinforce.vue'
+  import TrainLoss        from '@/components/network-elements/elements/train-loss/viewBox-train-loss.vue'
+  import TrainOptimizer   from '@/components/network-elements/elements/train-optimizer/viewBox-train-optimizer.vue'
   import { mapGetters, mapMutations, mapActions } from 'vuex';
 
 export default {
   name: "TheStatistics",
   components: {
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
   },
   props: {

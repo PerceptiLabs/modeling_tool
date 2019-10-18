@@ -96,15 +96,33 @@
 
     .toolbar_settings
       span.text-primary.middle-text(v-html="statusTrainingText")
-      button.btn.btn--dark(
+      button.btn.btn--dark-blue.btn--toolbar-settings(
         type="button"
-        :class="{'green-status': interactiveInfoStatus}"
+        :class="{'btn--tutorial-active': interactiveInfoStatus}"
+        @click="toggleInteractiveInfo"
+        v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+      )
+        span </>
+        i.icon.icon-ellipse
+
+      button.btn.btn--dark-blue.btn--toolbar-settings(
+        type="button"
+        :class="{'btn--tutorial-active': interactiveInfoStatus}"
         @click="toggleInteractiveInfo"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
         span ?
         i.icon.icon-ellipse
-      tutorial-instructions(v-tooltip-interactive:bottom="interactiveInfo.tutorial")
+
+      tutorial-instructions(
+        ref="tutorialComponent"
+        v-tooltip-interactive:bottom="interactiveInfo.tutorial")
+        button.btn.btn--dark-blue.btn--toolbar-settings(type="button"
+          @click="switchTutorialMode"
+          :class="{'btn--tutorial-active': isTutorialMode}"
+        )
+          span Tutorial
+          i.icon.icon-ellipse
 </template>
 
 <script>
@@ -120,50 +138,17 @@ export default {
       x: null,
       y: null,
       interactiveInfo: {
-        edit: {
-          title: 'Edit',
-          text: `Use this to being able to drag & ,<br/> drop, select, edit, etc`
-        },
-        arrow: {
-          title: 'Arrow',
-          text: `Use this to connect the <br/>layers and define the dataflow`
-        },
-        undo: {
-          title: 'Undo',
-          text: `Use this to connect the <br/>Undo`
-        },
-        redo: {
-          title: 'Redo',
-          text: `Redo`
-        },
-        runButton: {
-          title: 'Run/Stop',
-          text: `Start training/Stop training`
-        },
-        pause: {
-          title: 'Pause',
-          text: `Pause training/Unpause training`
-        },
-        skip: {
-          title: 'Skip',
-          text: `Skip validation`
-        },
-        hyperparameters: {
-          title: 'Generate Hyperparameters',
-          text: `Auto-generate the hyperparameters`
-        },
-        blackBox: {
-          title: 'BlackBox',
-          text: `Load the data and let our algorithm </br> build a model for you and train it`
-        },
-        interactiveDoc: {
-          title: 'Interactive documentation',
-          text: `Use this to find out what all </br> different operations and functions do`
-        },
-        tutorial: {
-          title: 'Tutorial',
-          text: `Choose an interactive tutorial`
-        }
+        edit:     {title: 'Edit',     text: `Use this to being able to drag & ,<br/> drop, select, edit, etc`},
+        arrow:    {title: 'Arrow',    text: `Use this to connect the <br/>layers and define the dataflow`},
+        undo:     {title: 'Undo',     text: `Use this to connect the <br/>Undo`},
+        redo:     {title: 'Redo',     text: `Redo`},
+        runButton:{title: 'Run/Stop', text: `Start training/Stop training`},
+        pause:    {title: 'Pause',    text: `Pause training/Unpause training`},
+        skip:     {title: 'Skip',     text: `Skip validation`},
+        hyperparameters: {title: 'Generate Hyperparameters',text: `Auto-generate the hyperparameters`},
+        blackBox: {title: 'BlackBox', text: `Load the data and let our algorithm </br> build a model for you and train it`},
+        interactiveDoc: {title: 'Interactive documentation', text: `Use this to find out what all </br> different operations and functions do`},
+        tutorial: {title: 'Tutorial', text: `Choose an interactive tutorial`}
       }
     }
   },
@@ -281,6 +266,9 @@ export default {
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
     }),
+    switchTutorialMode() {
+      this.$refs.tutorialComponent.switchTutorialMode()
+    },
     onOffBtn() {
       if(this.isTraining) this.trainStop();
       else this.trainStart();
@@ -372,6 +360,7 @@ export default {
     background-color: $bg-toolbar;
     position: relative;
     grid-area: toolbar;
+    z-index: 2;
   }
   .toggle-wrap {
     width: $w-layersbar * .87;
@@ -477,7 +466,18 @@ export default {
     border-radius: 50%;
     margin: .4rem;
   }
+  .btn--toolbar-settings {
+    min-width: 0;
+    color: inherit;
+    padding-right: 1rem;
+    padding-left: 1rem;
+    .icon {
+      margin-left: .7rem;
+    }
+  }
   .btn--tutorial-active {
-    box-shadow: inset 0 0 1px 1px $color-1;
+    .icon {
+      color: $color-1;;
+    }
   }
 </style>

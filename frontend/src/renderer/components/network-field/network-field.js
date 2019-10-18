@@ -1,5 +1,6 @@
 import DataData             from '@/components/network-elements/elements/data-data/data-data.vue'
 import DataEnvironment      from '@/components/network-elements/elements/data-environment/data-environment.vue'
+import DataCloud            from '@/components/network-elements/elements/data-cloud/data-cloud.vue'
 
 import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/deep-learning-fc.vue'
 import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/deep-learning-conv.vue'
@@ -16,6 +17,8 @@ import TrainNormal          from '@/components/network-elements/elements/train-n
 import TrainGenetic         from '@/components/network-elements/elements/train-genetic/train-genetic.vue'
 import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/train-dynamic.vue'
 import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/train-reinforce.vue'
+import TrainLoss            from '@/components/network-elements/elements/train-loss/train-loss.vue'
+import TrainOptimizer       from '@/components/network-elements/elements/train-optimizer/train-optimizer.vue'
 
 import MathArgmax           from '@/components/network-elements/elements/math-argmax/math-argmax.vue'
 import MathMerge            from '@/components/network-elements/elements/math-merge/math-merge.vue'
@@ -38,10 +41,10 @@ import { mapGetters, mapMutations, mapActions } from 'vuex';
 export default {
   name: 'NetworkField',
   components: {
-    DataData, DataEnvironment,
+    DataData, DataEnvironment, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerContainer, LayerCustom,

@@ -109,7 +109,7 @@ export default {
             {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
             ...(this.isMac 
               ? [] 
-              : [{label: 'Exit', accelerator: 'alt+f4',                            active: (e)=> this.appClose(e) }]
+              : [{label: 'Exit', accelerator: 'alt+f4', active: (e)=> this.appClose(e) }]
             )
           ]
         },
@@ -130,9 +130,9 @@ export default {
         {
           label: 'Settings', visible: true,
           submenu: [
-            {label: 'Hyperparameters',                                                          enabled: this.openApp,  active: this.openHyperparameters },
-            {label: 'Edit profile',                                                             enabled: false,         active: function() {} },
-            {label: 'History',                                                                  enabled: false,         active: function() {} },
+            {label: 'Hyperparameters', enabled: this.openApp,  active: this.openHyperparameters },
+            {label: 'Edit profile',    enabled: false,         active: function() {} },
+            {label: 'History',         enabled: false,         active: function() {} },
           ]
         },
         {
@@ -148,8 +148,8 @@ export default {
                   { type: 'separator'},
                 ] 
               : [
-                  {label: 'Minimize',                                                           enabled: true,          active: this.appMinimize },
-                  {label: 'Zoom',                                                               enabled: true,          active: this.appMaximize },
+                  {label: 'Minimize', active: this.appMinimize },
+                  {label: 'Zoom',     active: this.appMaximize },
                 ]
             ),
           ]
@@ -158,15 +158,15 @@ export default {
           role: 'help',
           label: 'Help', visible: true,
           submenu: [
-            {label: 'Help',                                                                     enabled: false,         active: this.goToHelpPage },
-            {label: 'About',                                                                                            active: this.goToAboutPage },
-            {label: 'Tutorial mode',                                  enabled: !this.isTutorialActive && this.isLogin,  active: this.showTutorial },
+            {label: 'Help',          enabled: false,                                  active: this.goToHelpPage },
+            {label: 'About',                                                          active: this.goToAboutPage },
+            {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
             ...(this.isMac 
               ? [] 
-              : [{label: 'Check for updates',                                                              active: this.checkUpdate }]
+              : [{label: 'Check for updates',                                         active: this.checkUpdate }]
             ),
             {type: 'separator'},
-            {label: `Version: ${this.appVersion}`,                                              enabled: false,         active: ()=>{} }
+            {label: `Version: ${this.appVersion}`, enabled: false,                    active: ()=>{} }
           ]
         },
         {
