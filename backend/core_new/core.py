@@ -165,7 +165,7 @@ class LayerExtrasReader:
 
 class BaseCore:
     def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, session_process_handler=None,
-                 layer_extras_reader=None, skip_layers=None, tf_eager=False): 
+                 layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpoints=None): 
         self._graph = graph_dict
         self._codehq = codehq
         self._data_container = data_container
@@ -175,6 +175,7 @@ class BaseCore:
         self._session_history = session_history        
         self._skip_layers = skip_layers if skip_layers is not None else []
         self._module_provider = module_provider
+        self._checkpoints = checkpoints
 
     def run(self):
         log.info("Running core [{}]".format(self.__class__.__name__))
@@ -218,11 +219,14 @@ class BaseCore:
         code_gen = self._codehq.get_code_generator(id_, content)
         log.debug(repr(code_gen))
         
+        globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])  
+
+        if content['Info']['checkpoint'] and type(code_gen) == "CustomCodeGenerator":
+            locals_.update({"checkpoint":self._checkpoints[content['checkpoint'][0]]})
+            code_gen.replace_ckpt_references()
+
         code = code_gen.get_code()
 
-        print(content['Con'])
-
-        globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])        
         session = LayerSession(id_, content['Info']['Type'], code,
                                global_vars=globals_,
                                local_vars=locals_,
@@ -260,10 +264,10 @@ class BaseCore:
 
         # Load globals.
         # Note that modules imported via module provider will overwrite in-code imports        
-        # globals_ = {"tf": tf, "np": np, "pd":pd, "gym":gym}
-        globals_ = {}
+        globals_ = {"tf": tf, "np": np, "pd":pd, "gym":gym}
+        # globals_ = {}
         globals_.update(outputs.globals) # Other global variables
-        globals_.update(self._module_provider.modules) # Default modules. 
+        # globals_.update(self._module_provider.modules) # Default modules. 
 
         if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
             from code_generator.tensorflow import DummyEnv
