@@ -130,7 +130,7 @@
       },
       saveSettings(tabName) {
         this.applySettings(tabName);
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'})
+        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'}));
       },
     }
   }

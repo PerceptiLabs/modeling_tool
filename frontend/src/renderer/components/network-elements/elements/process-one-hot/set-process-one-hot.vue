@@ -60,7 +60,7 @@ export default {
     }),
     saveSettings(tabName) {
       this.applySettings(tabName);
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_number-of-classes'})
+      this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_number-of-classes'}));
     }
   },
 }

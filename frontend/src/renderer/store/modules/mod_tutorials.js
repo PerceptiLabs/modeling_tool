@@ -179,13 +179,13 @@ const state = {
               },
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: 'Click to create a connection',
               position: 'right',
               id: 'tutorial_list-arrow',
               status: 'disabled',
               check_prev_id: true
-            },
+            },*/
             {
               tooltip: `Connect Data with <br> Process Reshape`,
               position: 'right',
@@ -196,18 +196,24 @@ const state = {
               },
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: 'Click to go back to work with items',
               position: 'right',
               id: 'tutorial_pointer',
               status: 'disabled'
-            },
+            },*/
             {
               tooltip: 'Double click to open settings',
               position: 'right',
               id: 'tutorial_process-reshape-1',
               status: 'disabled'
-            }
+            },
+/*            {
+              tooltip: 'Click to confirm',
+              position: 'right',
+              id: 'tutorial_button-confirm',
+              status: 'disabled'
+            }*/
           ],
           static_info: [
             {
@@ -241,10 +247,16 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           Reshape to 28x28x1 and
-                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
+                          <div class="tooltip-tutorial_bold">click Apply to continue</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_input-reshape',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Click to confirm',
+              position: 'right',
+              id: 'tutorial_button-confirm',
               status: 'disabled'
             }
           ],
@@ -361,13 +373,13 @@ const state = {
               },
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: 'Click to create a connection',
               position: 'right',
               id: 'tutorial_list-arrow',
               status: 'disabled',
               check_prev_id: true
-            },
+            },*/
             {
               tooltip: 'Connect Process Reshape <br> with Deep learning convolution',
               position: 'right',
@@ -378,12 +390,12 @@ const state = {
               },
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: 'Click to go back to work with items',
               position: 'right',
               id: 'tutorial_pointer',
               status: 'disabled'
-            },
+            },*/
             {
               tooltip: 'Double click to open settings',
               position: 'right',
@@ -402,6 +414,12 @@ const state = {
               id: 'tutorial_patch-size',
               status: 'disabled'
             },
+            {
+              tooltip: 'Click to confirm',
+              position: 'right',
+              id: 'tutorial_button-confirm',
+              status: 'disabled'
+            }
           ],
           static_info: [
             {
@@ -442,13 +460,13 @@ const state = {
               },
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: 'Click to create a connection',
               position: 'right',
               id: 'tutorial_list-arrow',
               status: 'disabled',
               check_prev_id: true
-            },
+            },*/
             {
               tooltip: 'Connect Deep Learning Conv <br> with Deep learning FC',
               position: 'right',
@@ -459,12 +477,12 @@ const state = {
               },
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: 'Click to go back to work with items',
               position: 'right',
               id: 'tutorial_pointer',
               status: 'disabled'
-            },
+            },*/
             {
               tooltip: 'Double click to open settings',
               position: 'right',
@@ -518,6 +536,12 @@ const state = {
               id: 'tutorial_neurons',
               status: 'disabled'
             },
+            {
+              tooltip: 'Click to confirm',
+              position: 'right',
+              id: 'tutorial_button-confirm',
+              status: 'disabled'
+            }
           ],
         },
       ]
@@ -548,13 +572,13 @@ const state = {
               },
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: 'Click to create a connection',
               position: 'right',
               id: 'tutorial_list-arrow',
               status: 'disabled',
               check_prev_id: true
-            },
+            },*/
             {
               tooltip: 'Connect Data with Process One Hot',
               position: 'right',
@@ -565,12 +589,12 @@ const state = {
               },
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: 'Click to go back to work with items',
               position: 'right',
               id: 'tutorial_pointer',
               status: 'disabled'
-            },
+            },*/
             {
               tooltip: 'Double click to set classes',
               position: 'right',
@@ -581,6 +605,12 @@ const state = {
               tooltip: 'Set 10 and click Apply changes',
               position: 'right',
               id: 'tutorial_number-of-classes',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Click to confirm',
+              position: 'right',
+              id: 'tutorial_button-confirm',
               status: 'disabled'
             }
           ],
@@ -657,13 +687,13 @@ const state = {
               },
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: 'Click to create a connection',
               position: 'right',
               id: 'tutorial_list-arrow',
               status: 'disabled',
               check_prev_id: true
-            },
+            },*/
             {
               tooltip: 'Connect Process one Hot with Train Normal',
               position: 'right',
@@ -685,12 +715,12 @@ const state = {
               },
               status: 'disabled'
             },
-            {
+/*            {
               tooltip: 'Click to go back to work with items',
               position: 'right',
               id: 'tutorial_pointer',
               status: 'disabled'
-            },
+            },*/
             {
               tooltip: 'Double click to define parameters',
               position: 'right',
@@ -706,6 +736,12 @@ const state = {
                        </div>`,
               position: 'right',
               id: 'tutorial_cost-function',
+              status: 'disabled'
+            },
+            {
+              tooltip: 'Click to confirm',
+              position: 'right',
+              id: 'tutorial_button-confirm',
               status: 'disabled'
             }
           ],
@@ -1128,10 +1164,10 @@ const mutations = {
       state.activeActionMainTutorial = value
     }
     else if(value === 'next') {
-      state.activeActionMainTutorial++
+      state.activeActionMainTutorial++;
     }
     else if(value === 'prev') {
-      state.activeActionMainTutorial--
+      state.activeActionMainTutorial--;
     }
   },
   SET_pointActivate(state, value,) {
@@ -1182,7 +1218,7 @@ const actions = {
       dispatch('removeSchematicElement');
       dispatch('drawSchematicElement', getters.getActiveAction.schematic);
       dispatch('showHoverInfo');
-    } 
+    }
     else { // all actions has been done
       dispatch('removeTooltip');
       dispatch('nextPoint');
