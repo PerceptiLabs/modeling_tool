@@ -222,7 +222,7 @@ export default {
     },
     saveSettings(tabName) {
       this.applySettings(tabName);
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_patch-size'})
+      this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_patch-size'}));
     },
     focusFirstTutorialField() {
       this.$nextTick(()=> {

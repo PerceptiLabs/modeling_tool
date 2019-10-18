@@ -96,7 +96,7 @@
       }),
       saveSettings(tabName) {
         this.applySettings(tabName);
-        this.tutorialPointActivate({way:'next', validation: 'tutorial_neurons'})
+        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_neurons'}));
       }
     }
   }

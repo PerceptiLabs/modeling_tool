@@ -280,10 +280,10 @@
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
       saveSettings(tabName) {
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
         //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId);
         this.applySettings(tabName);
-        this.checkPartitionList()
+        this.checkPartitionList();
+        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'}))
       },
       checkPartitionList() {
         this.settings.accessProperties.Partition_list.forEach((item)=> {
