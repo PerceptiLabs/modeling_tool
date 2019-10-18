@@ -46,10 +46,8 @@ export default {
     },
   },
   mounted () {
-    console.log(this.currentEl);
     if(this.currentEl.layerCode) this.setCode(this.currentEl.layerCode);
     else this.getCode();
-
   },
   beforeDestroy() {
     this.closeFullView()
@@ -84,8 +82,12 @@ export default {
         Properties: this.elSettings,
         backward_connections: this.currentEl.connectionIn
       };
+      console.log('value', value);
       this.$store.dispatch('mod_api/API_getCode', value)
-        .then((code)=> { this.setCode(code) })
+        .then((code)=> {
+          console.log('code', code);
+          this.setCode(code)
+        })
     },
     setCode(objCode) {
       this.theCode = deepCopy(objCode);

@@ -36,6 +36,7 @@ export default {
   mounted () {
     this.api_getVariableList(this.layerId)
       .then((data)=> {
+        console.log('getVariableList', data);
         this.previewValue = data.VariableName;
         this.previewList = data.VariableList;
       })
@@ -73,7 +74,7 @@ export default {
       this.hideAllWindow();
     },
     getSample(data) {
-      //console.log('getSample');
+      console.log('getSample');
       this.api_getPreviewSample({layerId: this.layerId, varData: data})
         .then((data)=> {
           this.imgData = data;

@@ -3,7 +3,7 @@
     :tab-set="popupTitle"
     )
     template(slot="Choose what to save-content")
-      .settings-layer_section(v-if="!freezeInfo")
+      .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
         .form_row
           .form_label Project name:
           .form_input
@@ -12,7 +12,7 @@
               :readonly="isEmptyPath"
               :class="{'bg-error': !settings.projectName}"
             )
-      .settings-layer_section(v-if="!freezeInfo")
+      .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
         .form_row
           .form_label Project path:
           .form_input
@@ -44,21 +44,24 @@
 <script>
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
 import { openLoadDialog, generateID } from '@/core/helpers.js'
+import { pathSlash }  from "@/core/constants.js";
 
 export default {
   name: "WorkspaceSaveNetwork",
   components: {BaseGlobalPopup},
   props: {
-    existTrained: { type: Boolean },
-    freezeInfo: { type: Boolean },
+    popupSettings: {type: Object},
   },
   created() {
-    console.log('currentNetwork', this.currentNetwork);
     this.settings.projectName = this.currentNetwork.networkName;
-    this.settings.isSaveTrainedModel = this.existTrained;
-    if(this.freezeInfo) {
+    if(this.popupSettings.isFreezeInfo) {
       this.settings.projectPath = this.currentNetwork.networkRootFolder;
     }
+    this.$store.dispatch('mod_api/API_checkTrainedNetwork')
+      .then((isTrained)=> {
+        this.settings.isSaveTrainedModel = isTrained;
+        this.existTrained = isTrained;
+      })
   },
   // mounted() {
   //   console.log('currentNetwork', this.currentNetwork);
@@ -73,6 +76,7 @@ export default {
         //projectId: '',
         isSaveTrainedModel: true,
       },
+      existTrained: false,
       promiseOk: null,
       promiseFail: null,
     }
@@ -88,6 +92,7 @@ export default {
   watch: {
     'settings.projectName': {
       handler(newVal) {
+        if(this.popupSettings.isSyncName)
         this.$store.dispatch('mod_workspace/SET_networkName', newVal)
       }
     }
@@ -103,7 +108,9 @@ export default {
       this.promiseFail(false)
     },
     answerPopup() {
-      //this.settings.projectId = this.saveProjectId;
+      if(!this.popupSettings.isFreezeInfo) {
+        this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
+      }
       this.promiseOk(this.settings);
     },
     loadPathProject() {
