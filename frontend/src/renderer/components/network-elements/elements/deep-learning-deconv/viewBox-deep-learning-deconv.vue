@@ -1,16 +1,5 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset(v-if="!testIsOpen")
-      li.statistics-box_tab(
-      v-for="(tab, i) in tabset"
-      :key="i"
-      )
-        button.btn.btn--tabs(
-        type="button"
-        @click="setTab(tab)"
-        :class="{'active': currentTab === tab}"
-        ) {{ tab }}
-      //&& chartData['Weights&Output']
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output'")
       .statistics-box_row
         .statistics-box_col(v-if="!testIsOpen")
@@ -61,16 +50,16 @@
           Gradients: {
             Gradients: null,
           }},
-        currentTab: 'Weights & Output',
+        //currentTab: 'Weights & Output',
         tabset: ['Weights & Output', 'Bias', 'Gradients'],
         colorList: ['#83c1ff', '#0070d6', '#6b8ff7']
       }
     },
     methods: {
-      setTab(name) {
-        this.currentTab = name;
-        this.setTabAction();
-      },
+      // setTab(name) {
+      //   this.currentTab = name;
+      //   this.setTabAction();
+      // },
       getData() {
         switch (this.currentTab) {
           case 'Weights & Output':

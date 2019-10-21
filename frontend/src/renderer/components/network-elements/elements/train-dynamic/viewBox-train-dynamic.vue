@@ -1,15 +1,5 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset
-      li.statistics-box_tab(
-      v-for="(tab, i) in tabset"
-      :key="i"
-      )
-        button.btn.btn--tabs(
-        type="button"
-        @click="setTab(tab)"
-        :class="{'active': currentTab === tab}"
-        ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row
         .statistics-box_col
@@ -89,7 +79,6 @@
     components: {ChartSwitch},
     data() {
       return {
-        currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
         optionLine1: null,
         option3d: data3d,
@@ -98,9 +87,7 @@
       }
     },
     methods: {
-      setTab(name) {
-        this.currentTab = name
-      }
+
     }
   }
 </script>

@@ -69,7 +69,7 @@
                 span Yes
               base-radio(group-name="group2" :value-input="false" v-model="settings.Shuffle_data")
                 span No
-        .settings-layer_section
+        //-.settings-layer_section
           label.form_row(v-tooltip-interactive:right="interactiveInfo.epochs")
             .form_label Epochs:
             .form_input(id="tutorial_epochs-input" class="tutorial-relative" data-tutorial-hover-info)
@@ -129,7 +129,7 @@ export default {
       settingsData: false,
       settingsEnvironment: false,
       settings: {
-        Epochs: '10',
+        //Epochs: '10',
         Batch_size: "32",
         MaxSteps: '1000',
         // Data_partition: {

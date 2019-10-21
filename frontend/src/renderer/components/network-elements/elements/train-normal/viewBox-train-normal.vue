@@ -1,16 +1,16 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset(v-if="!testIsOpen")
+    //-ul.statistics-box_tabset(v-if="!testIsOpen")
       li.statistics-box_tab(
       v-for="(tab, i) in tabset"
-      :key="i"
+      /:key="i"
       )
         button.btn.btn--tabs.tutorial-relative(
         type="button"
         v-tooltip-interactive:right="tab.interactiveInfo"
         @click="setTab(tab.name, tab.id)"
-        :class="{'active': currentTab === tab.name}"
-        :id="tab.id"
+        /:class="{'active': currentTab === tab.name}"
+        /:id="tab.id"
         ) {{ tab.name }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row(v-if="!testIsOpen")
@@ -131,8 +131,9 @@
             Total: null,
           }
         },
-        currentTab: 'Prediction',
-        tabset: [
+        //currentTab: 'Prediction',
+        tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'AUC'],
+        tabset1: [
           {
             name: 'Prediction',
             id: 'tutorial_prediction-tab',
@@ -194,12 +195,13 @@
       ...mapActions({
         tutorialPointActivate:    'mod_tutorials/pointActivate',
       }),
-      setTab(name, id) {
-        this.currentTab = name;
-        this.setTabAction();
-        this.tutorialPointActivate({way: 'next', validation: id})
-      },
+      // setTab(name, id) {
+      //   this.currentTab = name;
+      //   this.setTabAction();
+      //   this.tutorialPointActivate({way: 'next', validation: id})
+      // },
       getData() {
+        console.log('getData TrainNormal');
         switch (this.currentTab) {
           case 'Prediction':
             this.chartRequest(this.statElementID, 'TrainNormal', 'Prediction');
@@ -219,5 +221,26 @@
         }
       }
     },
+    // watch: {
+    //   currentTab(newTab) {
+    //     switch (newTab) {
+    //       case 'Prediction':
+    //         this.chartRequest(this.statElementID, 'TrainNormal', 'Prediction');
+    //         break;
+    //       case 'Accuracy':
+    //         this.chartRequest(this.statElementID, 'TrainNormal', 'Accuracy');
+    //         break;
+    //       case 'Loss':
+    //         this.chartRequest(this.statElementID, 'TrainNormal', 'Loss');
+    //         break;
+    //       case 'F1':
+    //         this.chartRequest(this.statElementID, 'TrainNormal', 'F1');
+    //         break;
+    //       case 'AUC':
+    //         this.chartRequest(this.statElementID, 'TrainNormal', 'AUC');
+    //         break;
+    //     }
+    //   }
+    // }
   }
 </script>

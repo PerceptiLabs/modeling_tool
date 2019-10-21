@@ -13,7 +13,12 @@
               v-model="settings.Labels"
               :select-options="inputLayers"
             )
-      //-.settings-layer_section
+      .settings-layer_section
+        .form_row
+          .form_label Epochs:
+          .form_input
+            input(type="number" v-model="settings.Epochs")
+      .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
           .form_label Cost function:
           #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
@@ -30,7 +35,7 @@
           .form_label Class weights:
           .form_input
             input(type="number" v-model="settings.Class_weights")
-      //-.settings-layer_section
+      .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
           .form_label Optimizer:
           #tutorial_optimizer.form_input(data-tutorial-hover-info)
@@ -99,15 +104,16 @@ export default {
       inputLayers: [],
       settings: {
         Labels: '',
+        Epochs: 10,
         N_class: '1',
-        //Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
+        Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
         Class_weights: 1,
         Learning_rate: "0.01",
-        //Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop
-        // Beta_1: '0.1',
-        // Beta_2: '0.1',
-        // Momentum: '0.1',
-        // Decay: '0.1',
+        Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop
+        Beta_1: '0.1',
+        Beta_2: '0.1',
+        Momentum: '0.1',
+        Decay: '0.1',
         Training_iters: "20000"
       },
       interactiveInfo: {

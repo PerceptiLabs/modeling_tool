@@ -9,8 +9,9 @@
   align-items: center;
   flex: 0 0 auto;
   justify-content: space-between;
-  padding: .7rem 1rem;
+  padding: .3rem 1rem;
   background: $bg-toolbar;
+  min-height: 3.5rem;
   h3 {
     margin: 0;
   }

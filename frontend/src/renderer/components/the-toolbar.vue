@@ -102,7 +102,7 @@
         @click="toggleInteractiveInfo"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
-        span </>
+        span Notebook
         i.icon.icon-ellipse
 
       button.btn.btn--dark-blue.btn--toolbar-settings(
@@ -111,7 +111,7 @@
         @click="toggleInteractiveInfo"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
-        span ?
+        span Help
         i.icon.icon-ellipse
 
       tutorial-instructions(
@@ -451,8 +451,8 @@ export default {
     align-items: center;
     margin-left: auto;
     > * + * {
-      margin-left: 1rem;
-      margin-right: 1rem;
+      margin-left: .4rem;
+      margin-right: .4rem;
     }
   }
   #tutorial_pointer {
@@ -471,6 +471,7 @@ export default {
     color: inherit;
     padding-right: 1rem;
     padding-left: 1rem;
+
     .icon {
       margin-left: .7rem;
     }

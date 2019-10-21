@@ -1,15 +1,5 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset(v-if="!testIsOpen")
-      li.statistics-box_tab(
-      v-for="(tab, i) in tabset"
-      :key="i"
-      )
-        button.btn.btn--tabs(
-        type="button"
-        @click="setTab(tab)"
-        :class="{'active': currentTab === tab}"
-        ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Output' && chartData.Output")
       chart-switch(
         key="1"
@@ -45,16 +35,11 @@
     mixins: [viewBoxMixin],
     data() {
       return {
-        currentTab: 'Output',
         tabset: ['Output', 'Weights & Bias', 'Gradients'],
         colorList: ['#83c1ff', '#0070d6', '#6b8ff7']
       }
     },
     methods: {
-      setTab(name) {
-        this.currentTab = name;
-        this.setTabAction();
-      },
       getData() {
         switch (this.currentTab) {
           case 'Output':
