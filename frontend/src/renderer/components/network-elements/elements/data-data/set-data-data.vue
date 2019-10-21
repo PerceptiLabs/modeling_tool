@@ -293,10 +293,12 @@
         })
       },
       hideBtn() {
-        document.getElementById('js-hide-btn').style.cssText = 'display: none'
+        const btn = document.getElementById('js-hide-btn');
+        if(btn) btn.style.cssText = 'display: none'
       },
       showBtn() {
-        document.getElementById('js-hide-btn').style.cssText = ''
+        const btn = document.getElementById('js-hide-btn');
+        if(btn) btn.style.cssText = ''
       },
     }
   }

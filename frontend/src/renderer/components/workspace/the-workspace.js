@@ -26,18 +26,19 @@ export default {
     TheStatistics, TheTesting, TheViewBox, StartTrainingSpinner
   },
   created() {
-
-
+    this.refreshSavePopup();
   },
   data() {
     return {
       trainingWasPaused: false,
       counterHideSpinner: 0,
-      saveNetworkPopup: {
+      saveNetworkPopupDefault: {
         show: false,
-        existTrained: false,
-        freezeInfo: false
-      }
+        //existTrained: false,
+        isFreezeInfo: false,
+        isSyncName: false
+      },
+      saveNetworkPopup: null
       //unwatch: null
     }
   },
@@ -180,6 +181,7 @@ export default {
       set_openTest:         'mod_workspace/SET_openTest',
       set_elementUnselect:  'mod_workspace/SET_elementUnselect',
       set_networkName:      'mod_workspace/SET_networkName',
+      set_networkRootFolder:'mod_workspace/SET_networkRootFolder',
       event_startDoRequest: 'mod_workspace/EVENT_startDoRequest',
       set_statusNetworkZoom:'mod_workspace/SET_statusNetworkZoom',
 
@@ -189,6 +191,9 @@ export default {
       trackerModelSave:     'mod_tracker/EVENT_modelSave',
       //enableLogHistory:     'mod_workspace-history/SET_isEnableHistory'
     }),
+    refreshSavePopup() {
+      this.saveNetworkPopup = {...this.saveNetworkPopupDefault}
+    },
     watch_doShowCharts() {
       if (this.counterHideSpinner > 1) {
         this.set_showTrainingSpinner(false);
@@ -262,19 +267,21 @@ export default {
       const network = this.currentNetwork;
       this.checkTrainedNetwork()
         .then((isTrained)=> {
-          console.log('isTrained', isTrained);
-          this.saveNetworkPopup.existTrained = !!isTrained;
+          //this.saveNetworkPopup.existTrained = !!isTrained;
+          console.log(!projectsList.length, findIndexId(projectsList, network) < 0);
           if(!projectsList.length || findIndexId(projectsList, network) < 0) {
-            console.log('save new net');
-            this.eventSaveNetworkAs();
+            console.log('Сохранить новую');
+            this.saveNetworkPopup.isSyncName = true;
+            this.eventSaveNetworkAs(network.networkID, true)
             return
           }
           if(isTrained) {
-            console.log('save current trained net');
-            this.eventSaveNetworkAs(network.networkID);
+            console.log('Сохранить текущюю тренированную');
+            this.saveNetworkPopup.isFreezeInfo = true;
+            this.eventSaveNetworkAs(network.networkID)
           }
           else {
-            console.log('save current not trained net');
+            console.log('Сохранить текущюю не тренированную');
             const settings = {
               isSaveTrainedModel: false,
               projectName: network.networkName,
@@ -284,26 +291,26 @@ export default {
           }
         })
     },
-    eventSaveNetworkAs(netId) {
-      console.log('eventSaveNetworkAs', netId);
-      this.askSaveFilePopup(netId)
-        .then((settings)=> {
-          console.log('eventSaveNetworkAs answer', settings);
-          this.saveNetwork(settings, netId);
+    eventSaveNetworkAs(netId, isSaveProjectPath) {
+      this.askSaveFilePopup()
+        .then((answer)=> {
+          if(answer) {
+            console.log('eventSaveNetworkAs answer', answer);
+            this.saveNetwork(answer, netId, isSaveProjectPath);
+          }
         })
         .catch((err)=> {
           console.log('eventSaveNetworkAs err');
         })
     },
-    askSaveFilePopup(isFreeze) {
+    askSaveFilePopup() {
       this.saveNetworkPopup.show = true;
-      this.saveNetworkPopup.freezeInfo = !!isFreeze;
       return this.$nextTick()
-        .then(()=>    this.$refs.saveNetworkPopup[0].openPopup())
-        .catch(()=>   this.infoPopup('Project not saved'))
-        .finally(()=> this.saveNetworkPopup.show = false)
+        .then(()=>     this.$refs.saveNetworkPopup[0].openPopup())
+        .catch((err)=> this.infoPopup('Project not saved'))
+        .finally(()=>  this.refreshSavePopup())
     },
-    saveNetwork(netInfo, netId) {
+    saveNetwork(netInfo, netId, saveProjectPath) {
       // isSaveTrainedModel: true
       // projectName: "New_Network"
       // projectPath:
@@ -315,15 +322,17 @@ export default {
       const newProjectId = netId || generateID();
       //const rootProjectPath = netInfo.projectPath;
       //const projectId = newId || currentNet.networkID;
-      const pathSaveProject = netInfo.projectPath + pathSlash + netInfo.projectName;
-      let prepareNet = cloneNet(currentNet, newProjectId, pathSaveProject);
-      console.log(prepareNet);
+      const pathSaveProject = netInfo.projectPath;
+      //const pathSaveProject = netInfo.projectPath;
+      let prepareNet = cloneNet(currentNet, newProjectId, netInfo);
+      //console.log(prepareNet);
       /*check Is Trained Net + do ScreenShot*/
       doScreenShot(networkField)
         .then((img)=> {
           prepareNet.toLocal.image = img;
           console.log('сохранить через кор', netInfo.isSaveTrainedModel);
           if(netInfo.isSaveTrainedModel) {
+            console.log('сохранить через кор')
             prepareNet.toLocal.isTrained = true;
             return this.saveTrainedNetwork({
               'Location': [pathSaveProject],
@@ -331,13 +340,14 @@ export default {
             })
           }
           else {
-            console.log('doScreenShot else');
+            console.log('сохранить через app');
             return projectPCSave(prepareNet.toFile)
           }
         })
         .then(()=> {
           /*save project to project page*/
           saveProjectToLocalStore(prepareNet.toLocal, this);
+          if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
           this.infoPopup('The file has been successfully saved');
           this.trackerModelSave(prepareNet.toFile);
         })
@@ -392,11 +402,12 @@ function saveProjectToLocalStore(project, ctx) {
 
   if(projectsLocalList.length) {
     const idIndex = projectsLocalList.findIndex((proj)=> proj.id === project.id);
-    const pathIndex = projectsLocalList.findIndex((proj)=> proj.pathModel === project.pathModel);
+    //const pathIndex = projectsLocalList.findIndex((proj)=> proj.pathModel === project.pathModel);
     const idExist = idIndex >= 0;
-    const pathExist = pathIndex >= 0;
-
-    if(idExist && pathExist && idIndex === pathIndex) projectsLocalList[idIndex] = project; //to him self
+    //const pathExist = pathIndex >= 0;
+    //console.log(idIndex, pathIndex);
+    //if(idExist && pathExist && idIndex === pathIndex) projectsLocalList[idIndex] = project; //to him self
+    if(idExist) projectsLocalList[idIndex] = project; //to him self
     else projectsLocalList.push(project) //create new
   }
   else {
@@ -405,7 +416,7 @@ function saveProjectToLocalStore(project, ctx) {
   ctx.saveLocalUserInfo({key: 'projectsList', data: projectsLocalList });
 }
 
-function cloneNet(net, idProject, pathProject) {
+function cloneNet(net, idProject, newNetInfo) {
   //clone network
   let toFile = {};
   for (var key in net) {
@@ -413,8 +424,9 @@ function cloneNet(net, idProject, pathProject) {
     else toFile[key] = net[key];
   }
   if(idProject) toFile.networkID = idProject;
+  toFile.networkName = newNetInfo.projectName;
   toFile.networkMeta = {};
-  toFile.networkRootFolder = pathProject;
+  toFile.networkRootFolder = newNetInfo.projectPath;
   //create project
   const time = new Date();
   const timeOptions = {
@@ -428,10 +440,9 @@ function cloneNet(net, idProject, pathProject) {
   const toLocal = {
     time: time.toLocaleString("ru", timeOptions),
     image: null,
-    name: toFile.networkName,
+    name: newNetInfo.projectName,
     id: idProject,
-    //networkRootFolder: pathProject,
-    pathProject: pathProject,
+    pathProject: newNetInfo.projectPath,
     isTrained: false,
     isCloud: false,
   };

@@ -56,32 +56,39 @@ const filePCSave = function (fileName, fileContent) {
       }
       else return success(fileName)
     });
+    return success(fileName)
   });
 };
+
 const projectPCSave = function (fileContent) {
-  console.log(fileContent);
-  const projectPath = `${fileContent.networkRootFolder}${pathSlash}${fileContent.networkName}` ;
+  console.log('projectPCSave', fileContent);
+  // //const projectPath = `${fileContent.networkRootFolder}${pathSlash}${fileContent.networkName}`;
+  const projectPath = fileContent.networkRootFolder;
+  // console.log('projectPath1', projectPath);
   if (!fs.existsSync(projectPath)){
     fs.mkdirSync(projectPath);
   }
+  // console.log('projectPath2', projectPath);
   const jsonPath = projectPathModel(projectPath);
-  console.log('jsonPath', jsonPath);
+  // console.log('jsonPath', jsonPath);
   return filePCSave(jsonPath, JSON.stringify(fileContent))
 };
+
 const projectPathModel = function (projectPath) {
   return `${projectPath}${pathSlash}model.json`
 };
+
 const folderPCDelete = function (path) {
-  console.log(path);
+  console.log('folderPCDelete', path);
   return new Promise((success, reject) => {
     if (!fs.existsSync(path)) success();
     const files = fs.readdirSync(path);
     if (files.length > 0) {
       files.forEach(function(filename) {
-        if (fs.statSync(path + "/" + filename).isDirectory()) {
-          folderPCDelete(path + "/" + filename)
+        if (fs.statSync(path + pathSlash + filename).isDirectory()) {
+          folderPCDelete(path + pathSlash + filename)
         } else {
-          fs.unlinkSync(path + "/" + filename)
+          fs.unlinkSync(path + pathSlash + filename)
         }
       });
     }
@@ -89,6 +96,7 @@ const folderPCDelete = function (path) {
     success();
   });
 };
+
 /*encryption */
 const encryptionData = function (data) {
   return JSON.stringify(data).split('').reverse().join('');

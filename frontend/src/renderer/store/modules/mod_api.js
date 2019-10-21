@@ -276,7 +276,7 @@ const actions = {
       action: "SaveTrained",
       value:  {Location, frontendNetwork}
     };
-    //console.log('SaveTrained', theData);
+    console.log('SaveTrained', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {

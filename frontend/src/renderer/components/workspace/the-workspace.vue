@@ -41,8 +41,7 @@
         workspace-save-network(
           v-if="saveNetworkPopup.show"
           ref="saveNetworkPopup"
-          :exist-trained="saveNetworkPopup.existTrained"
-          :freeze-info="saveNetworkPopup.freezeInfo"
+          :popup-settings="saveNetworkPopup"
           )
 
       start-training-spinner(v-if="showTrainingSpinner")

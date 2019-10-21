@@ -122,6 +122,9 @@ const mutations = {
   set_networkName(state, {getters, value}) {
     getters.GET_currentNetwork.networkName = value
   },
+  set_networkRootFolder(state, {getters, value}) {
+    getters.GET_currentNetwork.networkRootFolder = value
+  },
   add_network (state, network) {
     let workspace = state.workspaceContent;
     let newNetwork = {};
@@ -745,6 +748,9 @@ const actions = {
   },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
+  },
+  SET_networkRootFolder({commit, getters}, value) {
+    commit('set_networkRootFolder', {getters, value})
   },
   SET_networkSettings({commit, getters}, value) {
     commit('set_networkSettings', {getters, value})
