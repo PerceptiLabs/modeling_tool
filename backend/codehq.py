@@ -125,9 +125,12 @@ class CodeHqNew:
 
             code_gen = TrainNormalCodeGenerator(output_layer=output_layer,
                                                 target_layer=target_layer,
-                                                n_epochs=epochs,
-                                                n_iterations=10)
+                                                n_epochs=epochs)
             return code_gen
+        # elif type_ == 'TrainLoss':
+
+        # elif type_ == 'TrainOptimizer':
+
         elif type_ == 'TrainGenetic':
             raise NotImplementedError("Train genetic algorithm not implemented")
         elif type_ == 'TrainDynamic':
