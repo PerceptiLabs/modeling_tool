@@ -155,7 +155,7 @@ export default {
     }),
     saveSettings(tabName) {
       this.applySettings(tabName);
-      this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_cost-function'}));
+      this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_labels'}));
     },
   },
   watch: {

@@ -187,12 +187,16 @@ const state = {
               check_prev_id: true
             },*/
             {
-              tooltip: `Connect Data with <br> Process Reshape`,
-              position: 'right',
-              id: 'tutorial_process-reshape-1',
+              tooltip: `If you hover your mouse on one sides
+                        </br> of some element  you'll see connection dots </br>
+                        Do this and then make connection between
+                        <div class="tooltip-tutorial_bold">Data and Process Reshape</div>`,
+              position: 'bottom',
+              id: 'tutorial_data-data-1',
               schematic: {
                 type: 'arrow',
                 connection_start: 'tutorial_data-data-1',
+                connection_end: 'tutorial_process-reshape-1'
               },
               status: 'disabled'
             },
@@ -649,7 +653,7 @@ const state = {
                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
-              id: 'tutorial_cost-function',
+              id: 'tutorial_learning_rate',
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -729,13 +733,11 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Cost function:</div> 
-                          calculates the error </br> 
-                          of the prediction, which is required </br> 
-                          for backpropagation.
+                        Choose which input connection</br> is represent the labels. </br>
+                        Then click Apply
                        </div>`,
               position: 'right',
-              id: 'tutorial_cost-function',
+              id: 'tutorial_labels',
               status: 'disabled'
             },
             {
@@ -763,46 +765,46 @@ const state = {
           content: `In the <div class="marker">Top Toolbar</div> go to <div class="marker">Run</div>
                     Check all inputs in General Settings and click Apply`,
           hoverInfo: [
-            {
+/*            {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
                           <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_partition-training-input',
-            },
-            {
+            },*/
+/*            {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
                           <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_partition-validation-input',
-            },
-            {
+            },*/
+/*            {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
                           <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_partition-test-input',
-            },
-            {
+            },*/
+/*            {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Batch size:</div> to make the training </br> more efficient, you can train on </br> multiples samples at the same time. </br>
                           <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_butch-size-input',
-            },
-            {
+            },*/
+/*            {
               tooltip: `<div class="tooltip-tutorial_italic">
                           Choose to shuffle the data or not
                           <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_shuffle_data',
-            },
+            },*/
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Epoch:</div> refers to the number of times </br> you want to run through your entire dataset. </br>
@@ -1211,9 +1213,9 @@ const actions = {
       let checkId = document.getElementById(getters.getActiveAction.id);
       let prevId = getters.getActiveAction.check_prev_id;
       if(prevId) checkId = document.getElementById(getters.getPrevActiveAction.dynamic_id);
-      if(!checkId) {
+/*      if(!checkId) {
         commit('SET_activeActionMainTutorial', 'prev');
-      }
+      }*/
       dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
       dispatch('removeSchematicElement');
       dispatch('drawSchematicElement', getters.getActiveAction.schematic);
@@ -1309,7 +1311,8 @@ const actions = {
           commit('SET_isDottedArrow', true);
           let layersbarElementSize = document.querySelector('#tutorial_layersbar-list li button').getBoundingClientRect();
           let firstElement = document.getElementById(getters.getActiveAction.schematic.connection_start);
-          let secondElement = document.getElementById(getters.getActiveAction.id);
+          let endId =  getters.getActiveAction.schematic.connection_end || getters.getActiveAction.id;
+          let secondElement = document.getElementById(endId);
           let start = firstElement.getBoundingClientRect();
           let stop = secondElement.getBoundingClientRect();
           let arrowSize = start.width - layersbarElementSize.width === 0 ? 12 : 0;
