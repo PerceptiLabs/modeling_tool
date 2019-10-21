@@ -70,10 +70,6 @@ class coreLogic():
         module_provider.load('numpy', as_name='np')
         module_provider.load('pandas', as_name='pd')
         module_provider.load('gym')   
-<<<<<<< HEAD
-        # module_provider=None     
-=======
->>>>>>> 4c8f3912e1c6e177867c749e636b530ff89456ab
 
         session_history = SessionHistory()        
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
