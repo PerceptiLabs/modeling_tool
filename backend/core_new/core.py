@@ -264,10 +264,16 @@ class BaseCore:
 
         # Load globals.
         # Note that modules imported via module provider will overwrite in-code imports        
+<<<<<<< HEAD
         # globals_ = {"tf": tf, "np": np, "pd":pd, "gym":gym}
         globals_ = {}
         globals_.update(outputs.globals) # Other global variables
         globals_.update(self._module_provider.modules) # Default modules. 
+=======
+        globals_ = {}
+        globals_.update(outputs.globals) # Other global variables
+        globals_.update(self._module_provider.modules) 
+>>>>>>> 4c8f3912e1c6e177867c749e636b530ff89456ab
 
         if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
             from code_generator.tensorflow import DummyEnv

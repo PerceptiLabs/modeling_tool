@@ -1,9 +1,5 @@
-import logging
 import inspect
 import importlib
-
-
-log = logging.getLogger(__name__)
 
 
 class InvalidPathError(Exception):
@@ -54,10 +50,10 @@ class ObjectProxy:
             self._hooks[target_name] = ObjectHook(target, hook_func, include_vars)
         elif len(split) > 1:
             first_name, remaining_path = split
-        
             attr = getattr(self, first_name)
+            
             if attr is None:
-                raise ValueError
+                raise InvalidPathError                
             elif isinstance(attr, ObjectProxy):
                 proxy = attr
             else:
@@ -95,16 +91,13 @@ class ModuleProvider:
             self._modules[module_name].install_hook(remaining_path, hook_func, include_vars)
             self._hooks[target_path] = hook_func
         except InvalidPathError:
-            log.error("Invalid path: {}".format(target_path))            
+            raise ValueError("Invalid path: '{}'".format(target_path))
         except:
-            log.exception("Exception when installing hook!")
+            raise
 
-    # def uninstall_hooks(self):
-    #     for key in self._modules.keys():
-    #         self.uninstall_hook(key)
-            
-    # def uninstall_hook(self, target_path):
-    #     self._modules[key] = value.target                
+    def uninstall_hooks(self):
+        for key in self._modules.keys():
+            self._modules[target_path] = self._modules[target_path].target                            
 
     @property
     def modules(self):
