@@ -180,7 +180,8 @@ class Message:
         graph_dict = graph.graphs
 
         for value in graph_dict.values():
-            self.add_to_checkpointDict(value["Info"])
+            if "checkpoint" in value["Info"] and value["Info"]["checkpoint"]:
+                self.add_to_checkpointDict(value["Info"])
 
         data_container = DataContainer()
         
@@ -539,7 +540,8 @@ class Message:
         elif action == "Start":
             network=self.request.get("value")
             for value in network['Layers'].values():
-                self.add_to_checkpointDict(value)
+                if "checkpoint" in value and value["checkpoint"]:
+                    self.add_to_checkpointDict(value)
             content=core.startCore(network, self.checkpointDict.copy())
 
         elif action=="startTest":
