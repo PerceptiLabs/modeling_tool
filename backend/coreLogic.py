@@ -23,9 +23,8 @@ import logging
 log = logging.getLogger(__name__)
 
 class coreLogic():
-    def __init__(self,networkName, dataDict):
+    def __init__(self,networkName):
         self.networkName=networkName
-        self.dataDict=dataDict
 
         self.warningQueue=queue.Queue()
         self.errorQueue=queue.Queue()
@@ -53,7 +52,7 @@ class coreLogic():
 
         self.network=None
 
-    def startCore(self,network):
+    def startCore(self,network, checkpointValues):
         #Start the backendthread and give it the network
         self.network=network
 
@@ -75,7 +74,7 @@ class coreLogic():
 
         session_history = SessionHistory()        
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
-        self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider, session_proc_handler) 
+        self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider, session_proc_handler, checkpointValues) 
 
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()

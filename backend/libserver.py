@@ -216,7 +216,7 @@ class Message:
             self.dataDict[reciever]=dict()
 
         if reciever not in self.cores:
-            core=coreLogic(reciever, self.dataDict[reciever])
+            core=coreLogic(reciever)
             self.cores[reciever]=core
         else:
             core=self.cores[reciever]
@@ -537,8 +537,10 @@ class Message:
             content=result
 
         elif action == "Start":
-            value=self.request.get("value")
-            content=core.startCore(value)
+            network=self.request.get("value")
+            for value in network['Layers'].values():
+                self.add_to_checkpointDict(value)
+            content=core.startCore(network, self.checkpointDict.copy())
 
         elif action=="startTest":
             content=core.startTest()
