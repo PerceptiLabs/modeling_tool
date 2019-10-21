@@ -99,12 +99,12 @@ class ModuleProvider:
         except:
             log.exception("Exception when installing hook!")
 
-    def uninstall_hooks(self):
-        for key in self._modules.keys():
-            self.uninstall_hook(key)
+    # def uninstall_hooks(self):
+    #     for key in self._modules.keys():
+    #         self.uninstall_hook(key)
             
-    def uninstall_hook(self, target_path):
-        self._modules[key] = value.target                
+    # def uninstall_hook(self, target_path):
+    #     self._modules[key] = value.target                
 
     @property
     def modules(self):

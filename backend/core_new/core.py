@@ -221,8 +221,9 @@ class BaseCore:
         
         globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])  
 
-        if content['Info']['checkpoint'] and type(code_gen) == "CustomCodeGenerator":
-            locals_.update({"checkpoint":self._checkpoints[content['checkpoint'][0]]})
+        if 'checkpoint' in content['Info'] and content['Info']['checkpoint'] and type(code_gen).__name__ == "CustomCodeGenerator":
+            import pdb; pdb.set_trace()
+            locals_.update({"checkpoint":self._checkpoints[content['Info']['checkpoint'][1]]})
             code_gen.replace_ckpt_references()
 
         code = code_gen.get_code()
@@ -264,10 +265,10 @@ class BaseCore:
 
         # Load globals.
         # Note that modules imported via module provider will overwrite in-code imports        
-        globals_ = {"tf": tf, "np": np, "pd":pd, "gym":gym}
-        # globals_ = {}
+        # globals_ = {"tf": tf, "np": np, "pd":pd, "gym":gym}
+        globals_ = {}
         globals_.update(outputs.globals) # Other global variables
-        # globals_.update(self._module_provider.modules) # Default modules. 
+        globals_.update(self._module_provider.modules) # Default modules. 
 
         if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
             from code_generator.tensorflow import DummyEnv

@@ -282,6 +282,66 @@ class ConvCodeGenerator(CodeGenerator):
         code += "node = tf.nn.conv2d(X['Y'], W, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
         return code
 
+class TrainLoss(CodeGenerator):
+    def __init__(self, output_layer, target_layer, loss_function, class_weights = 1):
+        self._output_layer = output_layer
+        self._target_layer = target_layer
+        self._loss_function = loss_function
+        self._class_weights = class_weights
+
+    def get_code(self):
+        code = ""
+        code += "y_pred = X['%s']['Y']\n" % self._output_layer
+        code += "y_label = X['%s']['Y']\n" % self._target_layer  
+        if self._loss_function == "Cross_entropy":
+            code += "batch_size = y_pred.get_shape().as_list()[0]\n"
+            code += "flat_pred = tf.reshape(y_pred, [batch_size, -1])\n"
+            code += "flat_labels = tf.reshape(y_labels, [batch_size, -1])\n"
+            code += "Y = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=flat_pred, labels=flat_labels))\n"
+
+        elif self._loss_function == "Quadratic":
+            code += "Y = tf.reduce_mean(tf.square(y_pred - y_label))\n"
+
+        elif self._loss_function == "W_cross_entropy":
+            code += "batch_size = y_pred.get_shape().as_list()[0]\n"
+            code += "flat_pred = tf.reshape(y_pred, [batch_size, -1])\n"
+            code += "flat_labels = tf.reshape(y_labels, [batch_size, -1])\n"
+            code += "Y =  tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_logits, %s))\n" % self._class_weights
+
+        elif self._loss_function == "Dice":
+            code += "eps = 1e-5\n"
+            code += "intersection = tf.reduce_sum(tf.multiply(y_pred, y_labels))\n"
+            code += "union = eps + tf.reduce_sum(tf.multiply(y_pred, y_pred)) + tf.reduce_sum(tf.multiply(y_labels, y_labels))\n"
+            code += "cost_tmp = (2 * intersection/union)\n"
+            code += "cost_clip = tf.clip_by_value(cost_tmp, eps, 1.0-eps)\n"
+            code += "Y = 1 - cost_clip\n"
+
+        return code
+
+class TrainOptimizer(CodeGenerator):
+    def __init__(self, optimizer, learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9):
+        self._optimizer = optimizer
+        self._learning_rate = learning_rate
+        self._decay_steps = decay_steps
+        self._decay_rate = decay_rate
+        self._momentum = momentum
+
+    def get_code(self):
+        code = ""
+        if self._optimizer == 'SGD':
+            code += "Y = tf.train.GradientDescentOptimizer(%f).minimize(X['Y'])\n" % self._learning_rate
+        elif self._optimizer == 'Momentum':
+            code += "global_step = tf.Variable(0)\n"
+            code += "learning_rate_momentum = tf.train.exponential_decay(learning_rate=%f, global_step=global_step, decay_steps=%f, decay_rate=%f, staircase=True)\n" % (self._learning_rate, self._decay_steps, self._decay_rate)
+            code += "Y = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum=%f).minimize(X['Y'], global_step=global_step)\n" % self._momentum
+        elif self._optimizer == "ADAM":
+            code += "Y = tf.train.AdamOptimizer(learning_rate=%f).minimize(X['Y'])\n" % self._learning_rate
+        elif self._optimizer == "adagrad":
+            code += "Y = tf.train.AdagradOptimizer(learning_rate=%f).minimize(X['Y'])\n" % self._learning_rate
+        elif self._optimizer == "RMSprop":
+            code += "Y = tf.train.RMSPropOptimizer(learning_rate=%f).minimize(X['Y'])\n" % self._learning_rate
+        return code
+
 
 class TrainNormalCodeGenerator(CodeGenerator):
     def __init__(self, output_layer, target_layer,
@@ -410,9 +470,8 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "iter = 0\n"
         code += "try:\n"
         code += "    while True:\n"
-        code += "        y_pred_, all_evaled_tensors = sess.run([y_pred, all_tensors])\n"
+        code += "        all_evaled_tensors = sess.run(all_tensors)\n"
         code += "        api.data.store(all_tensors=all_evaled_tensors)\n"
-        code += "        api.data.stack(y_pred=y_pred_.squeeze())\n"
         code += "        api.data.store(iter_testing=iter)\n"
         code += "        iter+=1\n"
         code += "        api.ui.render(dashboard='testing')\n"  

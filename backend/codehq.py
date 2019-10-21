@@ -95,6 +95,12 @@ class CodeHqNew:
         elif type_ == 'ProcessReshape':
             code_gen = ReshapeCodeGenerator(shape=props["Shape"], permutation=props["Permutation"])
             return code_gen
+        elif type_ == 'TrainLoss':
+            if 'Labels' in props:
+                target_layer = props['Labels']
+            else:    
+                target_layer = "'Target layer here'"
+            
         elif type_ == 'TrainNormal':
             # TODO: dont hardcode epoch and iterations. From where should they come?
 
