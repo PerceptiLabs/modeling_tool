@@ -122,7 +122,7 @@ export default {
       if(el.componentName === 'DataData') this.settingsData = true;
       if(el.componentName === 'DataEnvironment') this.settingsEnvironment = true;
     }
-    if(this.isTutorialMode) this.$nextTick(()=>{this.$refs.epochsInput.focus()})
+    //if(this.isTutorialMode) this.$nextTick(()=>{this.$refs.epochsInput.focus()})
   },
   data() {
     return {
@@ -142,7 +142,7 @@ export default {
         Save_model_every: "0",
       },
       interactiveInfo: {
-        dataPartition: {
+/*        dataPartition: {
           title: 'Data partition',
           text: 'Partition the data'
         },
@@ -157,7 +157,7 @@ export default {
         shuffleData: {
           title: 'Shuffle data',
           text: 'Choose to shuffle the data or not'
-        },
+        },*/
         epochs: {
           title: 'Epochs',
           text: 'Set the number of epochs'

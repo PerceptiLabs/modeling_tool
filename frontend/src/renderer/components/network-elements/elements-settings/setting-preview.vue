@@ -69,7 +69,6 @@ export default {
       this.$emit('to-settings');
     },
     confirmSettings() {
-      console.log('confirm pressed!');
       this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-confirm'});
       this.hideAllWindow();
     },

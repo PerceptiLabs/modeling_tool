@@ -5,7 +5,6 @@
     data-type="Training"
     v-tooltip:right="'Optimizer'"
     v-tooltip-interactive:right="interactiveInfo"
-    id="tutorial_training-normal"
     :style="layerStyles"
   )
     i.icon.icon-train-optimaze
