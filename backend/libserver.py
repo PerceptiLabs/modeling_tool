@@ -168,6 +168,7 @@ class Message:
         except (TypeError, OverflowError):
             return False
 
+
     def _create_lw_core(self, jsonNetwork):
         graph = Graph(jsonNetwork)
         
@@ -663,7 +664,7 @@ class Message:
         self._write()
 
     def close(self):
-        print("closing connection to", self.addr)
+        log.info("closing connection to {}".format(self.addr))
         try:
             self.selector.unregister(self.sock)
         except Exception as e:

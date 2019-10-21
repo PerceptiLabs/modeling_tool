@@ -10,6 +10,7 @@ import traceback
 import os
 import threading
 import pprint
+import logging
 
 from networkExporter import exportNetwork
 from networkSaver import saveNetwork
@@ -18,9 +19,10 @@ from modules import ModuleProvider
 from core_new.core import *
 from core_new.data import DataContainer
 from core_new.history import SessionHistory
+from analytics.scraper import get_scraper
 
-import logging
 log = logging.getLogger(__name__)
+scraper = get_scraper()
 
 class coreLogic():
     def __init__(self,networkName, dataDict):
@@ -204,8 +206,15 @@ class coreLogic():
         # else:
         #     print("Test Iterations are 0")
 
+    def get_cpu_and_mem(self):
+        cpu = psutil.cpu_percent()
+        mem = dict(psutil.virtual_memory()._asdict())["percent"]
+        scraper.submit('cpu_and_mem', {'cpu': cpu, 'mem': mem})
+        return cpu, mem
+        
     def getStatus(self):
         try:
+            cpu, mem = self.get_cpu_and_mem()
             if self.status=="Running":
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 result = {
@@ -213,12 +222,20 @@ class coreLogic():
                     "Iterations": self.savedResultsDict["iter"],
                     "Epoch": self.savedResultsDict["epoch"],
                     "Progress": progress,
-                    "CPU": psutil.cpu_percent(),
-                    "Memory": dict(psutil.virtual_memory()._asdict())["percent"]
+                    "CPU": cpu,
+                    "Memory": mem
                 }
                 return result
             else:
-                return {"Status":self.status,"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
+                progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
+                return {
+                    "Status":self.status,
+                    "Iterations":self.savedResultsDict["iter"],
+                    "Epoch":self.savedResultsDict["epoch"],
+                    "Progress": progress,
+                    "CPU":cpu,
+                    "Memory":mem
+                }
         except KeyError:
             return {}
         # if self.status=="Running":
