@@ -363,7 +363,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         
 
     def _get_training_code(self):
-        # if self._optimizer == 'adam':
+        # if self._optimizer == 'adam': 
         #     opt_class = 'AdamOptimizer'
         # elif self._optimizer == 'adagrad':
         #     opt_class = 'AdagradOptimizer'
