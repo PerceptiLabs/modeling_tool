@@ -282,14 +282,14 @@ class ConvCodeGenerator(CodeGenerator):
         code += "node = tf.nn.conv2d(X['Y'], W, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
         return code
 
-class TrainLoss(CodeGenerator):
+class TrainLossCodeGenerator(CodeGenerator):
     def __init__(self, output_layer, target_layer, loss_function, class_weights = 1):
         self._output_layer = output_layer
         self._target_layer = target_layer
         self._loss_function = loss_function
         self._class_weights = class_weights
 
-    def get_code(self):
+    def get_loss_code(self):
         code = ""
         code += "y_pred = X['%s']['Y']\n" % self._output_layer
         code += "y_label = X['%s']['Y']\n" % self._target_layer  
@@ -297,16 +297,16 @@ class TrainLoss(CodeGenerator):
             code += "batch_size = y_pred.get_shape().as_list()[0]\n"
             code += "flat_pred = tf.reshape(y_pred, [batch_size, -1])\n"
             code += "flat_labels = tf.reshape(y_labels, [batch_size, -1])\n"
-            code += "Y = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=flat_pred, labels=flat_labels))\n"
+            code += "loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=flat_pred, labels=flat_labels))\n"
 
         elif self._loss_function == "Quadratic":
-            code += "Y = tf.reduce_mean(tf.square(y_pred - y_label))\n"
+            code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
 
         elif self._loss_function == "W_cross_entropy":
             code += "batch_size = y_pred.get_shape().as_list()[0]\n"
             code += "flat_pred = tf.reshape(y_pred, [batch_size, -1])\n"
             code += "flat_labels = tf.reshape(y_labels, [batch_size, -1])\n"
-            code += "Y =  tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_logits, %s))\n" % self._class_weights
+            code += "loss =  tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_logits, %s))\n" % self._class_weights
 
         elif self._loss_function == "Dice":
             code += "eps = 1e-5\n"
@@ -314,71 +314,82 @@ class TrainLoss(CodeGenerator):
             code += "union = eps + tf.reduce_sum(tf.multiply(y_pred, y_pred)) + tf.reduce_sum(tf.multiply(y_labels, y_labels))\n"
             code += "cost_tmp = (2 * intersection/union)\n"
             code += "cost_clip = tf.clip_by_value(cost_tmp, eps, 1.0-eps)\n"
-            code += "Y = 1 - cost_clip\n"
+            code += "loss = 1 - cost_clip\n"
+
+        elif self._loss_function == "None":
+            pass
+
+        else:
+            raise NotImplementedError("The Loss you tried to use is not yet implemented")
 
         return code
-
-class TrainOptimizer(CodeGenerator):
-    def __init__(self, optimizer, learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9):
-        self._optimizer = optimizer
-        self._learning_rate = learning_rate
-        self._decay_steps = decay_steps
-        self._decay_rate = decay_rate
-        self._momentum = momentum
-
     def get_code(self):
+        code=self.get_loss_code()
+        code += "Y=loss\n"
+        return code
+
+class TrainOptimizerCodeGenerator(CodeGenerator):
+    def __init__(self, optimizer, learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999):
+        self._optimizer = optimizer
+        self._learning_rate = str(learning_rate)
+        self._decay_steps = str(decay_steps)
+        self._decay_rate = str(decay_rate)
+        self._momentum = str(momentum)
+        self._beta1 = str(beta1)
+        self._beta2 = str(beta2)
+
+    def get_optimizer_code(self):
         code = ""
         if self._optimizer == 'SGD':
-            code += "Y = tf.train.GradientDescentOptimizer(%f).minimize(X['Y'])\n" % self._learning_rate
+            code += "step = tf.train.GradientDescentOptimizer(learning_rate=%s).minimize(loss)\n" % self._learning_rate
         elif self._optimizer == 'Momentum':
             code += "global_step = tf.Variable(0)\n"
-            code += "learning_rate_momentum = tf.train.exponential_decay(learning_rate=%f, global_step=global_step, decay_steps=%f, decay_rate=%f, staircase=True)\n" % (self._learning_rate, self._decay_steps, self._decay_rate)
-            code += "Y = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum=%f).minimize(X['Y'], global_step=global_step)\n" % self._momentum
-        elif self._optimizer == "ADAM":
-            code += "Y = tf.train.AdamOptimizer(learning_rate=%f).minimize(X['Y'])\n" % self._learning_rate
+            code += "learning_rate_momentum = tf.train.exponential_decay(learning_rate=%s, global_step=global_step, decay_steps=%s, decay_rate=%s, staircase=True)\n" % (self._learning_rate, self._decay_steps, self._decay_rate)
+            code += "step = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum=%s).minimize(loss, global_step=global_step)\n" % self._momentum
+        elif self._optimizer == "adam":
+            code += "step = tf.train.AdamOptimizer(learning_rate=%s,beta1=%s,beta2=%s).minimize(loss)\n" % (self._learning_rate, self._beta1, self._beta2)
         elif self._optimizer == "adagrad":
-            code += "Y = tf.train.AdagradOptimizer(learning_rate=%f).minimize(X['Y'])\n" % self._learning_rate
+            code += "step = tf.train.AdagradOptimizer(learning_rate=%s).minimize(loss)\n" % self._learning_rate
         elif self._optimizer == "RMSprop":
-            code += "Y = tf.train.RMSPropOptimizer(learning_rate=%f).minimize(X['Y'])\n" % self._learning_rate
+            code += "step = tf.train.RMSPropOptimizer(learning_rate=%s).minimize(loss)\n" % self._learning_rate
+        elif self._optimizer == "None":
+            pass
+        else:
+            raise NotImplementedError("The Optimizer you tried to use is not yet implemented")
+        return code
+
+    def get_code(self):
+        code = "loss=X['Y']\n"
+        code += self.get_optimizer_code()
+        code += "Y=step\n"
         return code
 
 
 class TrainNormalCodeGenerator(CodeGenerator):
     def __init__(self, output_layer, target_layer,
                  n_epochs,
-                 optimizer='adam', learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9,
-                 loss_function='Quadratic', class_weights = 1):
+                 loss_function='Quadratic', class_weights = 1,
+                 optimizer='adam', learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999):
         self._output_layer = output_layer
         self._target_layer = target_layer
         self._n_epochs = int(n_epochs)
+        #Loss
+        self._loss_function = loss_function
+        self._class_weights = class_weights
         #Optimizer
         self._optimizer = optimizer
         self._learning_rate = learning_rate
         self._decay_steps = decay_steps
         self._decay_rate = decay_rate
         self._momentum = momentum
-        #Loss
-        self._loss_function = loss_function
-        self._class_weights = class_weights
+        self._beta1 = beta1
+        self._beta2 = beta2
         
 
     def _get_training_code(self):
-        # if self._optimizer == 'adam': 
-        #     opt_class = 'AdamOptimizer'
-        # elif self._optimizer == 'adagrad':
-        #     opt_class = 'AdagradOptimizer'
-        # elif self._optimizer == 'SGD':
-        #     opt_class = 'GradientDescentOptimizer'
-        # elif self._optimizer == 'RMSprop':
-        #     opt_class = 'RMSPropOptimizer'
-
         code  = ""
-        # code += "y_pred = X['%s']['Y']\n" % self._output_layer
-        # code += "y_label = X['%s']['Y']\n" % self._target_layer      
-        # code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
-        # code += "step = tf.train.%s(learning_rate=%f).minimize(loss)\n" % (opt_class, self._learning_rate)
-        code += self._get_loss_code()
-        code += self._get_optimizer_code()
+        code += TrainLossCodeGenerator(self._output_layer, self._target_layer, self._loss_function, self._class_weights).get_loss_code()
+        code += TrainOptimizerCodeGenerator(self._optimizer,self._learning_rate, self._decay_steps, self._decay_rate, self._momentum, self._beta1, self._beta2).get_optimizer_code()
         code += "\n"
         code += "# Metrics\n"
         code += "correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_label,-1))\n"
@@ -476,62 +487,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
         code += "                   acc_validation_epoch=acc_val, loss_validation_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
         code += "    api.ui.render(dashboard='train_val')\n"
-        return code
-
-    def _get_loss_code(self):
-        code = ""
-        code += "y_pred = X['%s']['Y']\n" % self._output_layer
-        code += "y_label = X['%s']['Y']\n" % self._target_layer  
-        if self._loss_function == "Cross_entropy":
-            code += "batch_size = y_pred.get_shape().as_list()[0]\n"
-            code += "flat_pred = tf.reshape(y_pred, [batch_size, -1])\n"
-            code += "flat_labels = tf.reshape(y_labels, [batch_size, -1])\n"
-            code += "loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=flat_pred, labels=flat_labels))\n"
-
-        elif self._loss_function == "Quadratic":
-            code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
-
-        elif self._loss_function == "W_cross_entropy":
-            code += "batch_size = y_pred.get_shape().as_list()[0]\n"
-            code += "flat_pred = tf.reshape(y_pred, [batch_size, -1])\n"
-            code += "flat_labels = tf.reshape(y_labels, [batch_size, -1])\n"
-            code += "loss =  tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_logits, %s))\n" % self._class_weights
-
-        elif self._loss_function == "Dice":
-            code += "eps = 1e-5\n"
-            code += "intersection = tf.reduce_sum(tf.multiply(y_pred, y_labels))\n"
-            code += "union = eps + tf.reduce_sum(tf.multiply(y_pred, y_pred)) + tf.reduce_sum(tf.multiply(y_labels, y_labels))\n"
-            code += "cost_tmp = (2 * intersection/union)\n"
-            code += "cost_clip = tf.clip_by_value(cost_tmp, eps, 1.0-eps)\n"
-            code += "loss = 1 - cost_clip\n"
-
-        elif self._loss_function == "None":
-            pass
-
-        else:
-            raise NotImplementedError("The Loss you tried to use is not yet implemented")
-
-        return code
-
-
-    def _get_optimizer_code(self):
-        code = ""
-        if self._optimizer == 'SGD':
-            code += "step = tf.train.GradientDescentOptimizer(%f).minimize(loss)\n" % self._learning_rate
-        elif self._optimizer == 'Momentum':
-            code += "global_step = tf.Variable(0)\n"
-            code += "learning_rate_momentum = tf.train.exponential_decay(learning_rate=%f, global_step=global_step, decay_steps=%f, decay_rate=%f, staircase=True)\n" % (self._learning_rate, self._decay_steps, self._decay_rate)
-            code += "step = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum=%f).minimize(loss, global_step=global_step)\n" % self._momentum
-        elif self._optimizer == "adam":
-            code += "step = tf.train.AdamOptimizer(learning_rate=%f).minimize(loss)\n" % self._learning_rate
-        elif self._optimizer == "adagrad":
-            code += "step = tf.train.AdagradOptimizer(learning_rate=%f).minimize(loss)\n" % self._learning_rate
-        elif self._optimizer == "RMSprop":
-            code += "step = tf.train.RMSPropOptimizer(learning_rate=%f).minimize(loss)\n" % self._learning_rate
-        elif self._optimizer == "None":
-            pass
-        else:
-            raise NotImplementedError("The Optimizer you tried to use is not yet implemented")
         return code
 
 

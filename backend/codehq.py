@@ -6,7 +6,7 @@ from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
 from code_generator.dataenv import DataEnvironmentCodeGenerator
 
-from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainReinforceCodeGenerator, LayerPair
+from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
 log = logging.getLogger(__name__)
 
@@ -95,11 +95,6 @@ class CodeHqNew:
         elif type_ == 'ProcessReshape':
             code_gen = ReshapeCodeGenerator(shape=props["Shape"], permutation=props["Permutation"])
             return code_gen
-        elif type_ == 'TrainLoss':
-            if 'Labels' in props:
-                target_layer = props['Labels']
-            else:    
-                target_layer = "'Target layer here'"
             
         elif type_ == 'TrainNormal':
             # TODO: dont hardcode epoch and iterations. From where should they come?
@@ -127,9 +122,33 @@ class CodeHqNew:
                                                 target_layer=target_layer,
                                                 n_epochs=epochs)
             return code_gen
-        # elif type_ == 'TrainLoss':
 
-        # elif type_ == 'TrainOptimizer':
+        elif type_ == 'TrainLoss':
+            if 'Labels' in props:
+                target_layer = props['Labels']
+            else:    
+                target_layer = "'Target layer here'"
+
+            if len(content['Con'])>1:
+                output_layer = [x for x in content['Con'] if x != target_layer][0] # take the FIRST non-target layer as network output/prediction
+            else:
+                output_layer = "'Output layer here'"
+
+            code_gen = TrainLossCodeGenerator(output_layer=output_layer,
+                                              target_layer=target_layer,
+                                              loss_function=props['Loss'],
+                                              class_weights=props['Class_weights'])
+            return code_gen
+
+        elif type_ == 'TrainOptimizer':
+            code_gen = TrainOptimizerCodeGenerator(optimizer=props['Optimizer'],
+                                                   learning_rate=props['learning_rate'] if 'learning_rate' in props else 0.001,
+                                                   decay_steps=props['decay_steps'] if 'decay_steps' in props else 10000,
+                                                   decay_rate=props['decay_rate'] if 'decay_rate' in props else 0.96,
+                                                   momentum=props['Momentum'],
+                                                   beta1=props['Beta_1'],
+                                                   beta2=props['Beta_2'])
+            return code_gen
 
         elif type_ == 'TrainGenetic':
             raise NotImplementedError("Train genetic algorithm not implemented")
