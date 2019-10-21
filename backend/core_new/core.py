@@ -165,7 +165,7 @@ class LayerExtrasReader:
 
 class BaseCore:
     def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, session_process_handler=None,
-                 layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpoints=None): 
+                 layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpointValues=None): 
         self._graph = graph_dict
         self._codehq = codehq
         self._data_container = data_container
@@ -175,7 +175,7 @@ class BaseCore:
         self._session_history = session_history        
         self._skip_layers = skip_layers if skip_layers is not None else []
         self._module_provider = module_provider
-        self._checkpoints = checkpoints
+        self._checkpointValues = checkpointValues
 
     def run(self):
         log.info("Running core [{}]".format(self.__class__.__name__))
@@ -221,9 +221,8 @@ class BaseCore:
         
         globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])  
 
-        if 'checkpoint' in content['Info'] and content['Info']['checkpoint'] and type(code_gen).__name__ == "CustomCodeGenerator":
-            import pdb; pdb.set_trace()
-            locals_.update({"checkpoint":self._checkpoints[content['Info']['checkpoint'][1]]})
+        if content['Info']['checkpoint'] and type(code_gen).__name__ == "CustomCodeGenerator" and self._checkpointValues:
+            locals_.update({"checkpoint":self._checkpointValues[content['Info']['checkpoint'][-1]]})
             code_gen.replace_ckpt_references()
 
         code = code_gen.get_code()
@@ -297,10 +296,11 @@ class BaseCore:
 
 class Core(BaseCore):
     def __init__(self, codehq, graph_dict, data_container, session_history,
-                 module_provider, session_process_handler):
+                 module_provider, session_process_handler, checkpointValues=None):
         super().__init__(codehq, graph_dict, data_container,
                          session_history, module_provider,
-                         session_process_handler=session_process_handler)
+                         session_process_handler=session_process_handler,
+                         checkpointValues=checkpointValues)
 
         
 if __name__ == "__main__":

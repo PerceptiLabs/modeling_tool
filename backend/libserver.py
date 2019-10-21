@@ -14,7 +14,6 @@ import numpy as np
 # from datahandler_lw import DataHandlerLW
 # from lw_data import lw_data
 from dataKeeper import dataKeeper as lw_data
-from extractVariables import *
 from createDataObject import createDataObject
 
 from core_new.core import *
@@ -168,10 +167,21 @@ class Message:
         except (TypeError, OverflowError):
             return False
 
+    def add_to_checkpointDict(self, content):
+        if content["checkpoint"][-1] not in self.checkpointDict:
+            from extractVariables import extractCheckpointInfo
+            ckptObj=extractCheckpointInfo(content["endPoints"], *content["checkpoint"])
+            self.checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
+            ckptObj.close()
+
     def _create_lw_core(self, jsonNetwork):
         graph = Graph(jsonNetwork)
         
         graph_dict = graph.graphs
+
+        for value in graph_dict.values():
+            self.add_to_checkpointDict(value["Info"])
+
         data_container = DataContainer()
         
         session_history_lw = SessionHistory()
@@ -190,7 +200,7 @@ class Message:
             
         lw_core = LightweightCore(CodeHq, graph_dict,
                                   data_container, session_history_lw,
-                                  module_provider, extras_reader)
+                                  module_provider, extras_reader, checkpointValues=self.checkpointDict.copy())
         
         return lw_core, extras_reader, data_container
 
