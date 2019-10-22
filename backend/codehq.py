@@ -52,7 +52,7 @@ class CodeHqNew:
                                                    n_neurons=props["Neurons"],
                                                    activation=props["Activation_function"],
                                                    dropout=props["Dropout"],
-                                                   keep_prob=1.0) # TODO: from where?
+                                                   keep_prob=props["Keep_prob"]) # TODO: from where?
             return code_gen
         elif type_ == 'DeepLearningConv':
             code_gen = ConvCodeGenerator(layer_id=id_,
@@ -62,7 +62,7 @@ class CodeHqNew:
                                          stride=props["Stride"],
                                          padding=props["Padding"],
                                          dropout=props["Dropout"],
-                                         keep_prob=1.0, # TODO: where does this come from?
+                                         keep_prob=props["Keep_prob"], # TODO: where does this come from?
                                          activation=props["Activation_function"],
                                          pool=props["PoolBool"],
                                          pooling=props["Pooling"],
@@ -76,7 +76,7 @@ class CodeHqNew:
                                          stride=props["Stride"],
                                          padding=props["Padding"],
                                          dropout=props["Dropout"],
-                                         keep_prob=1.0, # TODO: where does this come from?
+                                         keep_prob=props["Keep_prob"], # TODO: where does this come from?
                                          activation=props["Activation_function"])
             return code_gen
         elif type_ == 'DeepLearningRecurrent':
@@ -122,7 +122,16 @@ class CodeHqNew:
 
             code_gen = TrainNormalCodeGenerator(output_layer=output_layer,
                                                 target_layer=target_layer,
-                                                n_epochs=props['Epochs'])
+                                                n_epochs=props['Epochs'],
+                                                loss_function=props['Loss'],
+                                                class_weights = props['Class_weights'],
+                                                optimizer=props['Optimizer'],
+                                                learning_rate=props['Learning_rate'],
+                                                decay_steps=props['Decay_steps'],   #TODO: Send from frontend instead
+                                                decay_rate=props['Decay_rate'],
+                                                momentum=props['Momentum'], 
+                                                beta1=props['Beta_1'],
+                                                beta2=props['Beta_2'])
             return code_gen
 
         elif type_ == 'TrainLoss':
