@@ -18,7 +18,7 @@ def setup_logger():
     """
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
     
 if __name__ == "__main__":
     setup_logger()

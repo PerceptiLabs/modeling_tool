@@ -4,44 +4,59 @@ import logging
 
 from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
-from code_generator.tensorflow import ReshapeCodeGenerator, FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator
+from code_generator.dataenv import DataEnvironmentCodeGenerator
 
+from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
 log = logging.getLogger(__name__)
 
 
+
+
 class CodeHqNew:
-    @staticmethod
-    def get_code_generator(id_, content):
-        type_ = content["Type"]
-        props = content["Properties"]
+    @classmethod
+    def get_code_generator(cls, id_, content):
+        try:
+            return cls._get_code_generator(id_, content)
+        except:
+            log.exception("Error in code hq. id = {} and content = {}".format(id_, content))
+            raise        
 
-        # if type_ == 'DataData':
-        #     file_paths = content["Info"]["Properties"]["accessProperties"]["Path"]
+    @classmethod
+    def _get_code_generator(cls, id_, content):        
 
-        #     ######################################        
-        #     # HACK TO MIMIC NEW STYLE USING SOURCE DICTS INSTEAD OF PATHS!
-        #     sources = []
-        #     partitions = []
-        #     for path in file_paths:
-        #         if os.path.isfile(path):
-        #             src = {'path': path, 'type': 'file'}
-        #         elif os.path.isdir(path):
-        #             src = {'path': path, 'type': 'directory'}
-        #         sources.append(src)
-        #         partitions.append([70, 20, 10])
-        #     ######################################
-            
-        #     code_generator = DataDataCodeGenerator(sources, partitions)
-        #     return code_generator
-        if type_ == 'DeepLearningFC':
-            code_gen = FullyConnectedCodeGenerator(n_neurons=props["Neurons"],
+        type_ = content["Info"]["Type"]
+        props = content["Info"]["Properties"]
+
+
+        if 'Code' in content["Info"] and content["Info"]['Code']:
+           code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
+           code_generator = CustomCodeGenerator(code_parts)
+           return code_generator
+        elif type_ == 'DataData':
+            sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
+            partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
+
+            code_generator = DataDataCodeGenerator(sources, partitions,
+                                                   batch_size=props["accessProperties"]['Batch_size'], shuffle=props["accessProperties"]['Shuffle_data'],
+                                                   seed=0, columns=props["accessProperties"]['Columns'],
+                                                   layer_id=id_)
+            return code_generator
+        elif type_ == 'DataEnvironment':
+            env_name = 'Breakout-v0'
+            history_length = 4 # TOOD: NOT HARDCODED
+            code_gen = DataEnvironmentCodeGenerator(env_name, history_length)
+            return code_gen
+        elif type_ == 'DeepLearningFC':
+            code_gen = FullyConnectedCodeGenerator(layer_id=id_,
+                                                   n_neurons=props["Neurons"],
                                                    activation=props["Activation_function"],
                                                    dropout=props["Dropout"],
                                                    keep_prob=1.0) # TODO: from where?
             return code_gen
         elif type_ == 'DeepLearningConv':
-            code_gen = ConvCodeGenerator(conv_dim=props["Conv_dim"],
+            code_gen = ConvCodeGenerator(layer_id=id_,
+                                         conv_dim=props["Conv_dim"],
                                          patch_size=props["Patch_size"],
                                          feature_maps=props["Feature_maps"],
                                          stride=props["Stride"],
@@ -60,7 +75,9 @@ class CodeHqNew:
             code_gen = RecurrentCodeGenerator(version=props["Version"],
                                               time_steps=props["Time_steps"],
                                               neurons=props["Neurons"],
-                                              return_sequences=False) # TODO: return_sequences from frontend
+                                              return_sequences=False, # TODO: return_sequences from frontend
+                                              dropout=props["Dropout"],
+                                              keep_prop=1) # TODO: where does this come from?
             return code_gen
         elif type_ == 'ProcessCrop':
             code_gen = CropCodeGenerator(offset_height=props["Offset_height"],
@@ -72,42 +89,93 @@ class CodeHqNew:
             code_gen = WordEmbeddingCodeGenerator()
             return code_gen
         elif type_ == 'ProcessGrayscale':
-            code_gen = GrayScaleCodeGenerator()
-            return code_gen
+            code_gen = GrayscaleCodeGenerator()
+            return code_gen        
         elif type_ == 'ProcessOneHot':
             code_gen = OneHotCodeGenerator(n_classes=props["N_class"])
             return code_gen
         elif type_ == 'ProcessReshape':
             code_gen = ReshapeCodeGenerator(shape=props["Shape"], permutation=props["Permutation"])
             return code_gen
+            
         elif type_ == 'TrainNormal':
-            raise NotImplementedError("Train normal not implemented")
+            if 'Labels' in props:
+                target_layer = props['Labels']
+            else:    
+                target_layer = "'Target layer here'"
+
+            if len(content['Con'])>1:
+                output_layer = [x for x in content['Con'] if x != target_layer][0] # take the FIRST non-target layer as network output/prediction
+            else:
+                output_layer = "'Output layer here'"
+
+            if 'Epochs' in props:
+                epochs = props['Epochs']
+            else:
+                epochs = 20
+
+            
+            if len(content['Con']) > 2:
+                log.warning("More than 2 input layers not supported to training layer! Will treat {} as network output layer.".format(output_layer))
+
+            code_gen = TrainNormalCodeGenerator(output_layer=output_layer,
+                                                target_layer=target_layer,
+                                                n_epochs=epochs)
+            return code_gen
+
+        elif type_ == 'TrainLoss':
+            if 'Labels' in props:
+                target_layer = props['Labels']
+            else:    
+                target_layer = "'Target layer here'"
+
+            if len(content['Con'])>1:
+                output_layer = [x for x in content['Con'] if x != target_layer][0] # take the FIRST non-target layer as network output/prediction
+            else:
+                output_layer = "'Output layer here'"
+
+            code_gen = TrainLossCodeGenerator(output_layer=output_layer,
+                                              target_layer=target_layer,
+                                              loss_function=props['Loss'],
+                                              class_weights=props['Class_weights'])
+            return code_gen
+
+        elif type_ == 'TrainOptimizer':
+            code_gen = TrainOptimizerCodeGenerator(optimizer=props['Optimizer'],
+                                                   learning_rate=props['learning_rate'] if 'learning_rate' in props else 0.001,
+                                                   decay_steps=props['decay_steps'] if 'decay_steps' in props else 10000,
+                                                   decay_rate=props['decay_rate'] if 'decay_rate' in props else 0.96,
+                                                   momentum=props['Momentum'],
+                                                   beta1=props['Beta_1'],
+                                                   beta2=props['Beta_2'])
+            return code_gen
+
         elif type_ == 'TrainGenetic':
             raise NotImplementedError("Train genetic algorithm not implemented")
         elif type_ == 'TrainDynamic':
             raise NotImplementedError("Train dynamic routing not implemented")
         elif type_ == 'TrainReinforce':
-            raise NotImplementedError("Train reinforce not implemented")
+
+            layer_pairs = [LayerPair(a, b) for a, b in content['Info']['ExtraInfo']['Pairs']]            
+            online_net = content['Info']['ExtraInfo']['OnlineNet']
+            target_net = content['Info']['ExtraInfo']['TargetNet']
+            history_length = 4 # TODO: not hardcoded!
+            code_gen = TrainReinforceCodeGenerator(online_network_id=online_net,
+                                                   target_network_id=target_net,
+                                                   layer_pairs=layer_pairs,
+                                                   history_length=history_length)
+            return code_gen
         elif type_ == 'MathArgmax':
             code_gen = ArgmaxCodeGenerator(dim=props["Dim"])
             return code_gen
         elif type_ == 'MathMerge':
-<<<<<<< HEAD
             code_gen = MergeCodeGenerator(type_=props["Type"], merge_dim=props["Merge_dim"])
-            return code_gen                                          
-=======
-            code_gen = MergeCodeGenerator(type_=prop["Type"], merge_dim=prop["Merge_dim"])
             return code_gen
->>>>>>> e1c8ee55c6eb7d41a589856733be8b72eaa3b181
         elif type_ == 'MathSoftmax':
             code_gen = SoftmaxCodeGenerator()
             return code_gen
         elif type_ == 'MathSplit':
             raise NotImplementedError("Math split not implemented")
-        elif 'Code' in content["Info"]:
-            code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
-            code_generator = CustomCodeGenerator(code_parts)
-            return code_generator
         else:
             log.error("Unrecognized layer. Type {}: {}".format(type_, pprint.pformat(content)))
             return None

@@ -139,7 +139,12 @@ def scatter(dataVec, subSampleSize=None):
 
 
 def pie(dataVec, subSampleSize=None):
-    list_ = [dict(name=n, value=float(v)) for n, v in dataVec]
+    try:
+        list_ = [dict(name=n, value=float(v)) for n, v in dataVec]
+    except Exception as e:
+        print(e)
+        print(dataVec)
+        raise
     output = {"data": list_}
     return output
 
