@@ -31,7 +31,7 @@
 </template>
 
 <script>
-  import ChartSwitch    from "@/components/charts/chart-switch";
+  import ChartSwitch  from "@/components/charts/chart-switch";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxDeepLearningDeconv",
@@ -50,26 +50,21 @@
           Gradients: {
             Gradients: null,
           }},
-        //currentTab: 'Weights & Output',
-        tabset: ['Weights & Output', 'Bias', 'Gradients'],
+        btnList: {'Weights & Output': null, 'Bias': null, 'Gradients': null},
         colorList: ['#83c1ff', '#0070d6', '#6b8ff7']
       }
     },
     methods: {
-      // setTab(name) {
-      //   this.currentTab = name;
-      //   this.setTabAction();
-      // },
       getData() {
         switch (this.currentTab) {
           case 'Weights & Output':
-            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Weights&Output')
+            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Weights&Output');
             break;
           case 'Bias':
-            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Bias')
+            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Bias');
             break;
           case 'Gradients':
-            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Gradients')
+            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Gradients');
             break;
         }
       }
