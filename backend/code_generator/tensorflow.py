@@ -191,23 +191,16 @@ class FullyConnectedCodeGenerator(CodeGenerator):
         return code
 
 class DeconvCodeGenerator(CodeGenerator):
-    def __init__(self, layer_id, conv_dim, patch_size, feature_maps, stride, padding,
-                 dropout=False, keep_prob=None, activation=None,
-                 pool=False, pooling=None, pool_area=None, pool_padding=None, pool_stride=None):
+    def __init__(self, layer_id, conv_dim, feature_maps, stride, padding,
+                 dropout=False, keep_prob=None, activation=None):
         self._layer_id = layer_id
         self._conv_dim = conv_dim
-        self._patch_size = patch_size
         self._feature_maps = feature_maps
         self._stride = stride
         self._padding = padding
         self._dropout = dropout
         self._keep_prob = keep_prob
         self._activation = activation
-        self._pool = pool
-        self._pooling = pooling
-        self._pool_area = pool_area
-        self._pool_padding = pool_padding
-        self._pool_stride = pool_stride
 
     def get_code(self):
         code = ''
@@ -232,51 +225,51 @@ class DeconvCodeGenerator(CodeGenerator):
         return code
 
     def _get_code_1d(self):
-        code  = "shape = [%s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._feature_maps)
-        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
+        code  = "shape = [%s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._stride, self._feature_maps)
+        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._stride, self._feature_maps)
         code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id
         code += "\n"    
-        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s]])\n" %(self._stride, self._feature_maps)    
-        code += "node = tf.nn.conv1d_transpose(X['Y'], W, output_shape, stride=%s, padding=%s)\n" % (self._stride, self._padding)
+        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
+        code += "node = tf.nn.conv1d_transpose(X['Y'], W, output_shape, strides=%s, padding=%s)\n" % (self._stride, self._padding)
         return code
 
     def _get_code_2d(self):
-        code  = "shape = [%s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._patch_size, self._feature_maps)
-        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
+        code  = "shape = [%s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._stride, self._stride, self._feature_maps)
+        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._stride, self._feature_maps)
         code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id        
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id        
         code += "\n"        
-        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s]])\n" %(self._stride, self._feature_maps)    
-        code += "node = tf.nn.conv2d_transpose(X['Y'], W, output_shape, stride=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
+        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
+        code += "node = tf.nn.conv2d_transpose(X['Y'], W, output_shape, strides=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
         return code
 
     def _get_code_3d(self):
-        code  = "shape = [%s, %s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._patch_size, self._patch_size, self._patch_size, self._feature_maps)
-        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
+        code  = "shape = [%s, %s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._stride, self._stride, self._stride, self._feature_maps)
+        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._stride, self._feature_maps)
         code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id                
         code += "\n"        
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                
         code += "\n"        
-        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s]])\n" %(self._stride, self._feature_maps)
+        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)
         code += "node = tf.nn.conv3d_transpose(X['Y'], W, output_shape, strides=[1, %s, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._stride, self._padding)
         return code
     
     def _get_code_autodim(self):
         code  = "dim = str(len(X['Y'.get_shape().as_list())-1)\n"
-        code += "shape = [%s]*dim + [X['Y'].get_shape().as_list()[-1]], %s]\n" % (self._patch_size, self._feature_maps)
-        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._patch_size, self._feature_maps)
+        code += "shape = [%s]*dim + [X['Y'].get_shape().as_list()[-1]], %s]\n" % (self._stride, self._feature_maps)
+        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._stride, self._feature_maps)
         code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id                     
         code += "\n"                
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                        
         code += "\n"    
-        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s]])\n" %(self._stride, self._feature_maps)    
+        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
         code += "node = tf.nn.conv2d(X['Y'], W, output_shape, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
         return code
 
