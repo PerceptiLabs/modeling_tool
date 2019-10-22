@@ -636,7 +636,7 @@ class Message:
         response = {
             "content": content
         }
-        print("Requst: %s\nResponse: %s" % (str(action), str(response)))
+        # print("Requst: %s\nResponse: %s" % (str(action), str(response)))
         # log.debug("Response: " + pprint.pformat(response, depth=6))        
         return response
 

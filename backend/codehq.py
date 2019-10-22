@@ -43,8 +43,8 @@ class CodeHqNew:
                                                    layer_id=id_)
             return code_generator
         elif type_ == 'DataEnvironment':
-            env_name = 'Breakout-v0'
-            history_length = 4 # TOOD: NOT HARDCODED
+            env_name = props['accessProperties']["Atari"]+"-v0"
+            history_length = props['accessProperties']['History_length']
             code_gen = DataEnvironmentCodeGenerator(env_name, history_length)
             return code_gen
         elif type_ == 'DeepLearningFC':
