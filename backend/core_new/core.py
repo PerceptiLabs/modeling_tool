@@ -14,6 +14,7 @@ from modules import ModuleProvider
 from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer
 from core_new.utils import set_tensorflow_mode
+from core_new.extras import LayerExtrasReader
 from core_new.history import SessionHistory
 from core_new.session import LayerSession, LayerSessionStop, LayerIo
 from core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
@@ -76,94 +77,6 @@ class SessionProcessHandler:
         return data_policy
         
 
-class LayerExtrasReader:
-    def __init__(self):
-        self._dict = {}
-
-    def to_dict(self):
-        return copy.copy(self._dict)
-
-    def _put_in_dict(self, key, value):
-        try:
-            self._dict[key].update(value)
-        except:
-            self._dict[key]=value
-
-    def _evalSample(self,sample):
-        if isinstance(sample, tf.Tensor) or isinstance(sample, tf.Variable):
-            return sample.numpy()
-        else:
-            return sample
-
-    def read(self, session, data_container):
-        outShape = ''
-        # Y = session.outputs.locals.get('Y')
-        # if isinstance(Y, tf.Tensor):
-        #     outShape = Y.shape.as_list()
-        #     outShape=outShape[1:]
-        #     if not outShape:
-        #         outShape=[1]
-                
-        sample = ''
-        inShape=''
-        default_var=''
-        layer_keys=[]
-        if session.layer_id in data_container:
-            layer_dict = data_container[session.layer_id]
-
-            if 'Y' in layer_dict:
-                Y = layer_dict['Y'] 
-                if isinstance(Y, tf.Tensor):
-                    outShape = Y.shape.as_list()
-                    outShape=outShape[1:]
-                else:
-                    outShape = np.shape(Y)[1:]
-                if not outShape:
-                    outShape=[1]
-            
-            if 'sample' in layer_dict:
-                sample = layer_dict['sample']
-                default_var = 'sample'
-            elif 'Y' in layer_dict:
-                sample = layer_dict['Y']
-                default_var = 'Y'
-
-            if "X" in layer_dict and "Y" in layer_dict["X"]:
-                Xy = layer_dict["X"]["Y"]
-                if isinstance(Xy, tf.Tensor):
-                    inShape = Xy.shape.as_list()
-                    inShape=inShape[1:]
-                    if not inShape:
-                        inShape=[1]
-
-            layer_keys = list(layer_dict.keys())
-
-            sample=self._evalSample(sample)
-
-        self._put_in_dict(session.layer_id,{'Sample': sample, 'outShape': outShape, 'inShape': str(inShape).replace("'",""), 'Variables': layer_keys, 'Default_var':default_var})
-        # print("Session dict:", self.to_dict())
-
-    def read_syntax_error(self, session):
-        tbObj=traceback.TracebackException(*sys.exc_info())
-
-        self._put_in_dict(session.layer_id,{"errorMessage": "".join(tbObj.format_exception_only()), "errorRow": tbObj.lineno or "?"})    
-
-    def read_error(self, session, e):
-        error_class = e.__class__.__name__
-        detail = e
-        _, _, tb = sys.exc_info()
-        tb_list=traceback.extract_tb(tb)
-        line_number=""
-        for i in tb_list:
-            if i[2]=="<module>":
-                line_number=i[1]
-
-        if line_number=="":
-            line_number = tb.tb_lineno
-
-        self._put_in_dict(session.layer_id, {"errorMessage": "%s at line %d: %s" % (error_class, line_number, detail), "errorRow": line_number})
-    
-
 class BaseCore:    
     @scraper.monitor(tag='core_init')
     def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, session_process_handler=None,
@@ -180,31 +93,16 @@ class BaseCore:
         self._checkpointValues = checkpointValues
 
     def run(self):
-        log.info("Running core [{}]".format(self.__class__.__name__))
+        self._print_basic_info()
+        
         self._data_container.reset()
         self._session_history.cache.invalidate(keep_layers=self._graph.keys())
-
-        log.info("Layers will be executed in the following order: " \
-                 + ", ".join([id_ + ' [' + cont["Info"]["Type"]+']' for id_, cont in self._graph.items()]))
-
-        
-        if len(self._module_provider.hooks) > 0:
-            targets = [x for x in self._module_provider.hooks.keys()]
-            log.info("Module hooks installed are: {}".format(", ".join(targets)))
-        else:
-            log.info("No module hooks installed")        
-
-        if self._tf_eager:
-            set_tensorflow_mode('eager')
-        else:
-            set_tensorflow_mode('graph') # Default to graph mode
+        set_tensorflow_mode('eager' if self._tf_eager else 'graph')
 
         for layer_id, content in self._graph.items():
             layer_type = content["Info"]["Type"]
-            if not (content["Info"]["Properties"] or ("Code" in content["Info"] and content["Info"]["Code"])):
-                continue
-            if layer_type in self._skip_layers:
-                log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
+
+            if self._should_skip_layer(layer_id, content):
                 continue
 
             log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
@@ -214,8 +112,8 @@ class BaseCore:
                 log.info("Stop requested during execution of layer session {}".format(layer_id))                
                 break
 
-        if self._tf_eager:
-            set_tensorflow_mode('graph')        
+        #if self._tf_eager:
+        #    set_tensorflow_mode('graph')        
             
     def _run_layer(self, id_, content):        
         code_gen = self._codehq.get_code_generator(id_, content)
@@ -276,7 +174,31 @@ class BaseCore:
         
         locals_=outputs.locals
 
-        return globals_, locals_        
+        return globals_, locals_
+
+    def _print_basic_info(self):
+        log.info("Running core [{}]".format(self.__class__.__name__))
+        
+        layer_repr = [id_ + ' [' + cont["Info"]["Type"]+']' for id_, cont in self._graph.items()]
+        log.info("Layers will be executed in the following order: "+ ", ".join(layer_repr))
+        
+        if len(self._module_provider.hooks) > 0:
+            targets = [x for x in self._module_provider.hooks.keys()]
+            log.info("Module hooks installed are: {}".format(", ".join(targets)))
+        else:
+            log.info("No module hooks installed")
+
+    def _should_skip_layer(self, layer_id, content):
+        if not (content["Info"]["Properties"] \
+                or ("Code" in content["Info"] and content["Info"]["Code"])):
+            return True
+
+        layer_type = content["Info"]["Type"]                
+        if layer_type in self._skip_layers:
+            log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
+            return True
+        
+        return False
 
     def on_error(self, session, formatted_exception):
         """ Handling of errors received when executing layer code """
