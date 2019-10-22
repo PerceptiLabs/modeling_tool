@@ -6,7 +6,7 @@ from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
 from code_generator.dataenv import DataEnvironmentCodeGenerator
 
-from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
+from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
 log = logging.getLogger(__name__)
 
@@ -43,8 +43,8 @@ class CodeHqNew:
                                                    layer_id=id_)
             return code_generator
         elif type_ == 'DataEnvironment':
-            env_name = 'Breakout-v0'
-            history_length = 4 # TOOD: NOT HARDCODED
+            env_name = props['accessProperties']["Atari"]+"-v0"
+            history_length = props['accessProperties']['History_length']
             code_gen = DataEnvironmentCodeGenerator(env_name, history_length)
             return code_gen
         elif type_ == 'DeepLearningFC':
@@ -70,7 +70,15 @@ class CodeHqNew:
                                          pool_stride=props["Pool_stride"])
             return code_gen
         elif type_ == 'DeepLearningDeconv':
-            raise NotImplementedError("Deconv not implemented")
+            code_gen = DeconvCodeGenerator(layer_id=id_,
+                                         conv_dim=props["Deconv_dim"],
+                                         feature_maps=props["Feature_maps"],
+                                         stride=props["Stride"],
+                                         padding=props["Padding"],
+                                         dropout=props["Dropout"],
+                                         keep_prob=1.0, # TODO: where does this come from?
+                                         activation=props["Activation_function"])
+            return code_gen
         elif type_ == 'DeepLearningRecurrent':
             code_gen = RecurrentCodeGenerator(version=props["Version"],
                                               time_steps=props["Time_steps"],
@@ -109,18 +117,12 @@ class CodeHqNew:
             else:
                 output_layer = "'Output layer here'"
 
-            if 'Epochs' in props:
-                epochs = props['Epochs']
-            else:
-                epochs = 20
-
-            
             if len(content['Con']) > 2:
                 log.warning("More than 2 input layers not supported to training layer! Will treat {} as network output layer.".format(output_layer))
 
             code_gen = TrainNormalCodeGenerator(output_layer=output_layer,
                                                 target_layer=target_layer,
-                                                n_epochs=epochs)
+                                                n_epochs=props['Epochs'])
             return code_gen
 
         elif type_ == 'TrainLoss':
