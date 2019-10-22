@@ -18,6 +18,7 @@ from createDataObject import createDataObject
 
 from core_new.core import *
 from core_new.history import SessionHistory
+from core_new.errors import LightweightErrorHandler
 from core_new.extras import LayerExtrasReader
 from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from graph import Graph
@@ -198,10 +199,13 @@ class Message:
         
         for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
             module_provider.install_hook(hook_target, hook_func)
+
+        error_handler = LightweightErrorHandler()
             
         lw_core = LightweightCore(CodeHq, graph_dict,
                                   data_container, session_history_lw,
-                                  module_provider, extras_reader, checkpointValues=self.checkpointDict.copy())
+                                  module_provider, error_handler,
+                                  extras_reader, checkpointValues=self.checkpointDict.copy())
         
         return lw_core, extras_reader, data_container
 
@@ -364,14 +368,15 @@ class Message:
 
                 # content[Id]={"inShape":str(extras_dict[jsonNetwork[Id]['backward_connections'][0]]) if len(jsonNetwork[Id]['backward_connections'])==1 else str([extras_dict[i] for i in jsonNetwork[Id]['backward_connections']]).replace("'","")}
                 # content[Id].update({"inShape":value["inShape"]})
-                if "errorMessage" in extras_value:
-                    print("ErrorMessage: ", extras_value['errorMessage'])
-                    content[Id].update({"Error": extras_value['errorMessage']})
-                    content[Id].update({"Row": extras_value['errorRow']})
-                else:
-                    content[Id].update({"Error": None})
-                    content[Id].update({"Row": None})
 
+                if Id in lw_core.error_handler:
+                    log.info("ErrorMessage: "\
+                             + lw_core.error_handler[Id].error_message)                    
+                    content[Id]['Error'] = lw_core.error_handler[Id].error_message
+                    content[Id]['Row'] = lw_core.error_handler[Id].error_line
+                else:
+                    content[Id]['Error'] = None
+                    content[Id]['Row'] = None
             
         elif action == "getNetworkOutputDim":
             jsonNetwork=self.request.get("value")
@@ -389,14 +394,14 @@ class Message:
             for Id, value in extrasDict.items():
                 content[Id]={}
                 content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
-                if "errorMessage" in value:
-                    print("ErrorMessage: ", value['errorMessage'])
-                    content[Id].update({"Error": value['errorMessage']})
-                    content[Id].update({"Row": value['errorRow']})
-                else:
-                    content[Id].update({"Error": None})
-                    content[Id].update({"Row": None})
 
+                if Id in lw_core.error_handler:
+                    log.info("ErrorMessage: " + lw_core.error_handler[Id].error_message)                    
+                    content[Id]['Error'] = lw_core.error_handler[Id].error_message
+                    content[Id]['Row'] = lw_core.error_handler[Id].error_line
+                else:
+                    content[Id]["Error"] = None
+                    content[Id]["Row"] = None
 
         elif action == "getPreviewSample":
             value=self.request.get("value")
@@ -454,9 +459,12 @@ class Message:
                     "VariableList": extrasDict[LayerId]["Variables"],
                     "VariableName": extrasDict[LayerId]["Default_var"],
                 }
-                if "errorMessage" in extrasDict[LayerId]:
-                    content.update({"Error": extrasDict[LayerId]['errorMessage']})
-                    content.update({"Row": extrasDict[LayerId]['errorRow']})
+
+                if LayerId in lw_core.error_handler:
+                    log.info("ErrorMessage: "+ lw_core.error_handler[LayerId].error_message)                    
+                    content['Error'] = lw_core.error_handler[LayerId].error_message
+                    content['Row'] = lw_core.error_handler[LayerId].error_line
+
             else:
                 content = ""
         

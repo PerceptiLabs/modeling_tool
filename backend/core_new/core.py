@@ -15,6 +15,7 @@ from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer
 from core_new.utils import set_tensorflow_mode
 from core_new.extras import LayerExtrasReader
+from core_new.errors import LayerSessionAbort
 from core_new.history import SessionHistory
 from core_new.session import LayerSession, LayerSessionStop, LayerIo
 from core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
@@ -75,28 +76,28 @@ class SessionProcessHandler:
         elif dashboard == "train_reinforce":
             data_policy = TrainReinforceDataPolicy(session, data_dict, self._graph)
         return data_policy
-        
 
+    
 class BaseCore:    
     @scraper.monitor(tag='core_init')
-    def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, session_process_handler=None,
+    def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, error_handler, session_process_handler=None,
                  layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpointValues=None): 
         self._graph = graph_dict
         self._codehq = codehq
         self._data_container = data_container
         self._tf_eager = tf_eager
         self._session_process_handler = session_process_handler
+        self._error_handler = error_handler
         self._layer_extras_reader = layer_extras_reader
         self._session_history = session_history        
-        self._skip_layers = skip_layers if skip_layers is not None else []
+        self._skip_layers = skip_layers or []
         self._module_provider = module_provider
         self._checkpointValues = checkpointValues
 
     def run(self):
+        self._reset()        
         self._print_basic_info()
         
-        self._data_container.reset()
-        self._session_history.cache.invalidate(keep_layers=self._graph.keys())
         set_tensorflow_mode('eager' if self._tf_eager else 'graph')
 
         for layer_id, content in self._graph.items():
@@ -109,12 +110,12 @@ class BaseCore:
             try:
                 self._run_layer(layer_id, content)
             except LayerSessionStop:
-                log.info("Stop requested during execution of layer session {}".format(layer_id))                
+                log.info("Stop requested during session {}".format(layer_id))                
+                break
+            except LayerSessionAbort:
+                log.info("Error handler aborted session {}".format(layer_id))
                 break
 
-        #if self._tf_eager:
-        #    set_tensorflow_mode('graph')        
-            
     def _run_layer(self, id_, content):        
         code_gen = self._codehq.get_code_generator(id_, content)
         log.debug(repr(code_gen))
@@ -138,19 +139,8 @@ class BaseCore:
             session.run()
         except LayerSessionStop:
             raise # Not an error. Re-raise.
-        except SyntaxError as e:
-            self.on_error(session, traceback.format_exc())            
-            if self._layer_extras_reader is not None:
-                self._layer_extras_reader.read_syntax_error(session)
-            else:
-                raise
         except Exception as e:
-            self.on_error(session, traceback.format_exc())
-            if self._layer_extras_reader is not None:
-                self._layer_extras_reader.read_error(session,e)
-            else:
-                raise
-
+            self._error_handler.handle_run_error(session, e)
 
         self._session_history[id_] = session
 
@@ -175,6 +165,12 @@ class BaseCore:
         locals_=outputs.locals
 
         return globals_, locals_
+    
+    def _reset(self):
+        self._data_container.reset()
+        self._session_history.cache.invalidate(keep_layers=self._graph.keys())
+        self._error_handler.clear()
+        self._layer_extras_reader.clear()            
 
     def _print_basic_info(self):
         log.info("Running core [{}]".format(self.__class__.__name__))
@@ -200,28 +196,15 @@ class BaseCore:
         
         return False
 
-    def on_error(self, session, formatted_exception):
-        """ Handling of errors received when executing layer code """
-
-        # Add line numbers to the code
-        code_lines = session.code.split('\n')
-        code_lines = ["%d %s" % (i, l) for i, l in enumerate(code_lines, 1)]
-        code = "\n".join(code_lines)
-
-        message  = "Exception when running layer session %s:\n" % session.layer_id
-        message += "%s\n" % code
-        message += "\n"
-        message += formatted_exception
-        log.error(message)
-
-        # TODO: post message to error queue???
-
+    @property
+    def error_handler(self):
+        return self._error_handler
 
 class Core(BaseCore):
     def __init__(self, codehq, graph_dict, data_container, session_history,
-                 module_provider, session_process_handler, checkpointValues=None):
+                 module_provider, error_handler, session_process_handler, checkpointValues=None):
         super().__init__(codehq, graph_dict, data_container,
-                         session_history, module_provider,
+                         session_history, module_provider, error_handler,
                          session_process_handler=session_process_handler,
                          checkpointValues=checkpointValues)
 

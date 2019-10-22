@@ -3,6 +3,9 @@ import tensorflow as tf
 
 class LayerExtrasReader:
     def __init__(self):
+        self.clear()
+
+    def clear(self):
         self._dict = {}
 
     def to_dict(self):
@@ -67,7 +70,7 @@ class LayerExtrasReader:
 
         self._put_in_dict(session.layer_id,{'Sample': sample, 'outShape': outShape, 'inShape': str(inShape).replace("'",""), 'Variables': layer_keys, 'Default_var':default_var})
         # print("Session dict:", self.to_dict())
-
+    """
     def read_syntax_error(self, session):
         tbObj=traceback.TracebackException(*sys.exc_info())
 
@@ -87,4 +90,4 @@ class LayerExtrasReader:
             line_number = tb.tb_lineno
 
         self._put_in_dict(session.layer_id, {"errorMessage": "%s at line %d: %s" % (error_class, line_number, detail), "errorRow": line_number})
-    
+    """
