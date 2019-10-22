@@ -467,9 +467,9 @@ class Message:
                 if LayerId in lw_core.error_handler:
                     log.info("ErrorMessage: " + str(lw_core.error_handler[LayerId]))
                     
-                    content[Id]['Error'] = {
-                        'Message': lw_core.error_handler[Id].error_message,
-                        'Row': lw_core.error_handler[Id].error_line
+                    content['Error'] = {
+                        'Message': lw_core.error_handler[LayerId].error_message,
+                        'Row': lw_core.error_handler[LayerId].error_line
                     }
             else:
                 content = ""
