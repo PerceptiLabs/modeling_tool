@@ -49,7 +49,6 @@ const actions = {
   },
   EVENT_loadNetwork({dispatch, rootGetters}, pathProject) {
     const pathFile = projectPathModel(pathProject);
-    console.log(pathFile);
     let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
     let pathIndex;
     if(localProjectsList.length) {
@@ -80,7 +79,6 @@ const actions = {
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
         }
-        //net.networkRootFolder = pathRootFolder;
         dispatch('mod_workspace/ADD_network', net, {root: true});
       }
     );

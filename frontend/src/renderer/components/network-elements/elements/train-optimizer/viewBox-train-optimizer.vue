@@ -120,48 +120,6 @@
           }
         },
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'AUC'],
-        tabset1: [
-          {
-            name: 'Prediction',
-            id: 'tutorial_prediction-tab',
-            interactiveInfo: {
-              title: 'Prediction',
-              text: 'View the input, current accuracy and <br/> output prediction vs ground truth/labels'
-            }
-          },
-          {
-            name: 'Accuracy',
-            id: 'tutorial_accuracy-tab',
-            interactiveInfo: {
-              title: 'Accuracy',
-              text: 'View the accuracy.'
-            }
-          },
-          {
-            name: 'Loss',
-            id: 'tutorial_loss-tab',
-            interactiveInfo: {
-              title: 'Loss',
-              text: 'View the loss.'
-            }
-          },
-          {
-            name: 'F1',
-            id: 'tutorial_f1-tab',
-            interactiveInfo: {
-              title: 'F1',
-              text: 'View the F1 score.'
-            }
-          },
-          {
-            name: 'AUC',
-            id: 'tutorial_auc-tab',
-            interactiveInfo: {
-              title: 'AUC',
-              text: 'View the AUC.'
-            }
-          },
-        ],
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
         colorPie: ['#6B8FF7', '#383F50'],

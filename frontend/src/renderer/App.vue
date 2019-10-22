@@ -52,14 +52,12 @@
       /*Auto update*/
       ipcRenderer.on('checking-for-update', (event, updateInfo)=> this.SET_updateInfo(updateInfo));
       ipcRenderer.on('update-available', (event, updateInfo)=> {
-        //console.log('update-available', updateInfo);
         this.$nextTick(()=> {
           this.SET_showPopupUpdates(true);
           this.SET_updateInfo(updateInfo)
         })
       });
       ipcRenderer.on('update-not-available', (event, update)=> {
-        //console.log('update-not-available', update);
         if(this.showNotAvailable) {
           this.SET_showPopupUpdates(true);
           this.SET_updateStatus('not update')
@@ -73,7 +71,7 @@
       });
 
       ipcRenderer.on('show-mac-header', (event, value)=> { this.showMacHeader = value });
-      ipcRenderer.on('info',            (event, data)=> { console.log(data); });
+      ipcRenderer.on('info',            (event, data)=> { /*console.log(data); */});
       ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
 
       this.calcAppPath();

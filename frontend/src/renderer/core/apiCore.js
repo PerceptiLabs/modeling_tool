@@ -3,7 +3,6 @@ import store from '@/store'
 
 /*GENERAL CORE*/
 const coreRequest = function (message, port, address) {
-  //console.log(message.action);
   return new Promise((resolve, reject) => {
     let socket = new net.Socket();
     let socketAddress = address || '127.0.0.1';
@@ -37,7 +36,6 @@ const coreRequest = function (message, port, address) {
             store.dispatch('mod_tracker/EVENT_coreWarning', obgData.warningMessage);
             console.warn('core warning', obgData.warningMessage);
           }
-          //console.log(obgData);
           resolve(obgData.content);
         }
         if (data.toString().endsWith('exit')) {

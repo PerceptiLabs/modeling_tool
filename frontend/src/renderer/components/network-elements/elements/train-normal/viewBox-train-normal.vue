@@ -99,7 +99,7 @@
 <script>
   import ChartSwitch      from "@/components/charts/chart-switch";
   import viewBoxMixin   from "@/core/mixins/net-element-viewBox.js";
-  import { mapActions } from 'vuex';
+
 
   export default {
     name: "ViewBoxTrainNormal",
@@ -131,13 +131,13 @@
             Total: null,
           }
         },
-        //currentTab: 'Prediction',
         tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'AUC'],
         tabset1: [
           {
-            name: 'Prediction',
-            id: 'tutorial_prediction-tab',
-            interactiveInfo: {
+            btnName: 'Prediction',
+            btnId: 'tutorial_prediction-tab',
+            btnClass: 'string',
+            btnInteractiveInfo: {
               title: 'Prediction',
               text: 'View the input, current accuracy and <br/> output prediction vs ground truth/labels'
             }
@@ -192,16 +192,8 @@
       }
     },
     methods: {
-      ...mapActions({
-        tutorialPointActivate:    'mod_tutorials/pointActivate',
-      }),
-      // setTab(name, id) {
-      //   this.currentTab = name;
-      //   this.setTabAction();
-      //   this.tutorialPointActivate({way: 'next', validation: id})
-      // },
+
       getData() {
-        console.log('getData TrainNormal');
         switch (this.currentTab) {
           case 'Prediction':
             this.chartRequest(this.statElementID, 'TrainNormal', 'Prediction');

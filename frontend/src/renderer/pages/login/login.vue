@@ -75,9 +75,11 @@ export default {
         "Password": this.userPass
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
-        .then((tokens)=>{if(this.saveToken) localStorage.setItem('currentUser', JSON.stringify(tokens))})
-        .catch((error)=>{console.log(error)})
-        .finally(()=>   {this.$store.commit('mod_login/SET_showLoader', false)});
+        .then((tokens)=> {
+          if(this.saveToken) this.$store.dispatch('mod_user/SET_userTokenLocal', tokens)
+        })
+        .catch((error)=> {console.log(error)})
+        .finally(()=>    {this.$store.commit('mod_login/SET_showLoader', false)});
     },
   }
 }

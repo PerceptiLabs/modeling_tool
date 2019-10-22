@@ -63,17 +63,12 @@ export default {
         this.existTrained = isTrained;
       })
   },
-  // mounted() {
-  //   console.log('currentNetwork', this.currentNetwork);
-  //
-  // },
   data() {
     return {
       popupTitle: ['Choose what to save'],
       settings: {
         projectName: '',
         projectPath: '',
-        //projectId: '',
         isSaveTrainedModel: true,
       },
       existTrained: false,

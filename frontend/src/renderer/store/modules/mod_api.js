@@ -5,7 +5,7 @@ import { pathSlash }  from "@/core/constants.js";
 const {spawn} = require('child_process');
 
 const namespaced = true;
-let pauseAction = 'Pause';
+//let pauseAction = 'Pause';
 
 const state = {
   statusLocalCore: 'offline', //online
@@ -142,7 +142,6 @@ const actions = {
         Layers: getters.GET_coreNetwork
       }
     };
-    //console.log('Start', theData);
     coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
@@ -156,20 +155,25 @@ const actions = {
   API_pauseTraining({dispatch, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: pauseAction, // Pause and Unpause
+      action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Pause' ? 'Unpause' : 'Pause' , // Pause and Unpause
       value: ''
     };
     coreRequest(theData)
       .then((data)=> {
+        console.log('API_pauseTraining answer', data);
         dispatch('API_getStatus');
         if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
           dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
           dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
-          pauseAction = 'Unpause';
+          dispatch('API_getStatus');
+          setTimeout(()=> {
+            dispatch('API_getStatus');
+          }, 1000)
+          //pauseAction = 'Unpause';
         }
         else {
           dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
-          pauseAction = 'Pause';
+          //pauseAction = 'Pause';
         }
       })
       .catch((err)=> {
@@ -314,9 +318,12 @@ const actions = {
       action: "getNetworkOutputDim",
       value: getters.GET_coreNetwork
     };
-    coreRequest(theData)
+    console.log('API_getOutputDim');
+    return coreRequest(theData)
       .then((data)=> {
+        console.log('API_getOutputDim answer', data);
         if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
+        return true;
       })
       .catch((err)=> {
         console.error(err);
@@ -332,7 +339,7 @@ const actions = {
         Variable: varData
       }
     };
-    //console.log('getPreviewSample', theData);
+    console.log('getPreviewSample', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -348,7 +355,6 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
-    //console.log('API_getPreviewVariableList');
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -376,7 +382,6 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
-    //console.log('getPartitionSummary');
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -392,7 +397,6 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
-    //console.log('getDataMeta');
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -453,6 +457,7 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
+        console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err)=> {

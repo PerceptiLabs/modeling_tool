@@ -864,7 +864,6 @@ const actions = {
     commit('set_elementInputDim', value)
   },
   SET_elementOutputDim({commit, getters}, value) {
-    //console.log('SET_elementOutputDim');
     commit('set_elementOutputDim', {getters, value})
   },
   CHANGE_elementPosition({commit}, value) {

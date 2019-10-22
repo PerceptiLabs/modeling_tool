@@ -17,10 +17,10 @@
           chart-switch(
             key="1"
             :chart-label="chartLabel"
-            :chart-data="Mix_settingsData_imgData"
+            :chart-data="imgData"
           )
         .form_row
-          .form_label Batch size:
+          .form_label History length:
           .form_input
             input(type="number" v-model="settings.accessProperties.Batch_size")
 
@@ -38,7 +38,7 @@
           chart-switch.data-settings_chart(
             key="2"
             :disable-header="true"
-            :chart-data="Mix_settingsData_imgData"
+            :chart-data="imgData"
           )
 
 </template>
@@ -55,10 +55,15 @@
     name: 'SetDataEnvironment',
     mixins: [mixinSet, mixinData],
     components: { ChartSwitch},
+    mounted() {
+
+      this.getPreviewSample();
+    },
     data() {
       return {
         tabs: ['Gym', `<i class='icon icon-search'></i> Unity`],
         disabledBtn: false,
+        imgData: null,
         selectOptions: [
           { text: 'Breakout',     value: 'Breakout' },
           { text: 'BankHeist',    value: 'BankHeist' },
@@ -74,7 +79,7 @@
             Atari: 'Breakout', //select
             Category: 'Local',
             Type: 'Data',
-            Batch_size: 10,
+            History_length: 10,
           }
         },
         interactiveInfo: {
@@ -95,26 +100,26 @@
       }
     },
     watch: {
-      // 'settings.accessProperties.Atari': {
-      //   handler(newVal) {
-      //     if(newVal) {
-      //       this.Mix_settingsData_getDataPlot('DataEnvironment');
-      //     }
-      //   },
-      //   immediate: true
-      // },
+      'settings.accessProperties.Atari': {
+        handler(newVal) {
+          if(newVal) {
+            this.getPreviewSample();
+          }
+        },
+        //immediate: true
+      },
     },
     methods: {
       setTab(i) {
         this.tabSelected = i;
-        this.settings.accessProperties.EnvType = this.tabs[i].type;
-        this.Mix_settingsData_imgData = null;
-        this.Mix_settingsData_dataSettingsPlot('DataEnvironment')
+        // this.settings.accessProperties.EnvType = this.tabs[i].type;
+        // this.Mix_settingsData_imgData = null;
+        // this.Mix_settingsData_dataSettingsPlot('DataEnvironment')
       },
       saveLoadFile(pathArr, type) {
         this.disabledBtn = false;
-        this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
-        this.Mix_settingsData_dataSettingsPlot('DataEnvironment')
+        // this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
+        // this.Mix_settingsData_dataSettingsPlot('DataEnvironment')
       },
       loadFile() {
         this.disabledBtn = true;
@@ -130,6 +135,13 @@
           .catch(()=> {
             this.disabledBtn = false;
           })
+      },
+      getPreviewSample() {
+        this.applySettings();
+        this.$store.dispatch('mod_api/API_getPreviewSample', {layerId: this.currentEl.layerId, varData: 'sample'})
+          .then((data)=> {
+            this.imgData = data
+          } )
       }
     },
   }

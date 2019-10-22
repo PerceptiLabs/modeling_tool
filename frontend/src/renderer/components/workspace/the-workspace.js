@@ -110,7 +110,6 @@ export default {
       }
     },
     showTrainingSpinner(newVal) {
-      //console.log('showTrainingSpinner', newVal);
       if(newVal) unwatch = this.$watch('doShowCharts', this.watch_doShowCharts);
       else unwatch();
     },
@@ -189,7 +188,6 @@ export default {
 
       saveLocalUserInfo:    'mod_user/UPDATE_LOCAL_userInfo',
       trackerModelSave:     'mod_tracker/EVENT_modelSave',
-      //enableLogHistory:     'mod_workspace-history/SET_isEnableHistory'
     }),
     refreshSavePopup() {
       this.saveNetworkPopup = {...this.saveNetworkPopupDefault}
@@ -222,14 +220,11 @@ export default {
       this.delete_network(index)
     },
     setTabNetwork(index) {
-      //this.enableLogHistory(false);
       this.set_showTrainingSpinner(false);
       if(this.statisticsIsOpen !== null) this.set_openStatistics(false);
       if(this.testIsOpen !== null) this.set_openTest(false);
-      //if(this.isTutorialMode) return;
       this.set_currentNetwork(index);
       this.set_elementUnselect();
-      //this.$nextTick(()=> { this.enableLogHistory(true) })
     },
     toggleSidebar() {
       this.set_hideSidebar(!this.hideSidebar)
@@ -262,26 +257,20 @@ export default {
     },
 
     eventSaveNetwork() {
-      //this.askSaveFilePopup();
       const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
       this.checkTrainedNetwork()
         .then((isTrained)=> {
-          //this.saveNetworkPopup.existTrained = !!isTrained;
-          console.log(!projectsList.length, findIndexId(projectsList, network) < 0);
           if(!projectsList.length || findIndexId(projectsList, network) < 0) {
-            console.log('Сохранить новую');
             this.saveNetworkPopup.isSyncName = true;
             this.eventSaveNetworkAs(network.networkID, true)
             return
           }
           if(isTrained) {
-            console.log('Сохранить текущюю тренированную');
             this.saveNetworkPopup.isFreezeInfo = true;
             this.eventSaveNetworkAs(network.networkID)
           }
           else {
-            console.log('Сохранить текущюю не тренированную');
             const settings = {
               isSaveTrainedModel: false,
               projectName: network.networkName,
@@ -295,13 +284,10 @@ export default {
       this.askSaveFilePopup()
         .then((answer)=> {
           if(answer) {
-            console.log('eventSaveNetworkAs answer', answer);
             this.saveNetwork(answer, netId, isSaveProjectPath);
           }
         })
-        .catch((err)=> {
-          console.log('eventSaveNetworkAs err');
-        })
+        .catch((err)=> console.log(err))
     },
     askSaveFilePopup() {
       this.saveNetworkPopup.show = true;
@@ -311,28 +297,19 @@ export default {
         .finally(()=>  this.refreshSavePopup())
     },
     saveNetwork(netInfo, netId, saveProjectPath) {
-      // isSaveTrainedModel: true
-      // projectName: "New_Network"
-      // projectPath:
-      console.log('saveNetwork netInfo', netInfo);
       const networkField = this.$refs.networkField[0].$refs.network;
       networkField.style.filter = 'blur(5px)';
 
       const currentNet = this.currentNetwork;
       const newProjectId = netId || generateID();
-      //const rootProjectPath = netInfo.projectPath;
-      //const projectId = newId || currentNet.networkID;
       const pathSaveProject = netInfo.projectPath;
-      //const pathSaveProject = netInfo.projectPath;
       let prepareNet = cloneNet(currentNet, newProjectId, netInfo);
-      //console.log(prepareNet);
       /*check Is Trained Net + do ScreenShot*/
       doScreenShot(networkField)
         .then((img)=> {
           prepareNet.toLocal.image = img;
-          console.log('сохранить через кор', netInfo.isSaveTrainedModel);
           if(netInfo.isSaveTrainedModel) {
-            console.log('сохранить через кор')
+            /*core save*/
             prepareNet.toLocal.isTrained = true;
             return this.saveTrainedNetwork({
               'Location': [pathSaveProject],
@@ -340,7 +317,7 @@ export default {
             })
           }
           else {
-            console.log('сохранить через app');
+            /*app save*/
             return projectPCSave(prepareNet.toFile)
           }
         })

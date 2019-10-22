@@ -78,11 +78,9 @@ export default {
       pointActivate:    'mod_tutorials/pointActivate'
     }),
     setBtnList(arrList) {
-      console.log('setBtnList', arrList);
       this.tabset = arrList;
     },
     setCurrentTab(tab) {
-      console.log('setCurrentTab', tab);
       this.currentTab = tab;
     }
   },
