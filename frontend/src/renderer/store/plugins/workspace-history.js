@@ -20,7 +20,6 @@ const wsHistory = (store)=> {
   store.watch(
     (state, getters)=> getters['mod_workspace/GET_currentNetwork'].networkName,
     (newName)=> {
-      //console.log('update networkName');
       if(store.getters['mod_workspace-history/GET_isEnableHistory']) {
         pushSnapshot()
       }

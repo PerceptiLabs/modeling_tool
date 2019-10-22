@@ -1,6 +1,10 @@
 from core_new.cache import SessionCache
 from core_new.session import LayerIo
 
+class HistoryInputException(Exception):
+    """ Used to not run a layer if there are no inputs """
+    pass
+
 class SessionHistory:
     def __init__(self):
         self.reset()
@@ -31,7 +35,7 @@ class SessionHistory:
         if len(layer_ids) == 1:
             session = self._sessions[layer_ids[0]]
             if session.outputs is None:
-                raise ValueError("The input to this layer has not yet been computed")
+                raise HistoryInputException("The input to this layer has not yet been computed")
             locals_=session.outputs.locals
             locals_.pop('X', None)
             locals_ = {'X': locals_}
@@ -43,7 +47,7 @@ class SessionHistory:
             for id_ in layer_ids:
                 session = self._sessions[id_]   
                 if session.outputs is None:
-                    raise ValueError("The input to this layer has not yet been computed")
+                    raise HistoryInputException("The input to this layer has not yet been computed")
                 locals_= session.outputs.locals 
                 locals_.pop('X',None)      
                 local_vars[id_] = locals_

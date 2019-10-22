@@ -146,11 +146,7 @@
       },
       typeOpened() {
         const path = this.settings.accessProperties.Sources;
-        if(path.length) {
-          //return path[0].indexOf('.') > 0 ? 'files' : 'folders'
-          //console.log(path);
-          return path[0].type
-        }
+        if(path.length) return path[0].type;
         else return ''
       },
       fileList: {
@@ -258,7 +254,7 @@
             this.settings.accessProperties.Sources = [];
             this.getSettingsInfo()
           })
-          .catch(()=> console.log('set-data-data 144 err'))
+          .catch((err)=> console.log(err))
       },
       getSettingsInfo() {
         if(this.settings.accessProperties.Sources.length) {
@@ -269,8 +265,6 @@
                 return data
               }
             })
-            //.then(()=> this.Mix_settingsData_getDataPlot('DataData'))
-            //.then(()=> this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId))
         }
       },
       createSelectArr(data) {
@@ -281,7 +275,6 @@
       },
       saveSettings(tabName) {
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
-        //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId);
         this.applySettings(tabName);
         this.checkPartitionList()
       },
@@ -309,9 +302,6 @@
     }
   }
   .section-data-select {
-    /*display: flex;*/
-    /*align-items: center;*/
-    /*justify-content: center;*/
     font-size: 1.4rem;
     text-align: center;
     padding-bottom: 0;

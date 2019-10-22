@@ -146,11 +146,7 @@
       },
       typeOpened() {
         const path = this.settings.accessProperties.Sources;
-        if(path.length) {
-          //return path[0].indexOf('.') > 0 ? 'files' : 'folders'
-          //console.log(path);
-          return path[0].type
-        }
+        if(path.length) return path[0].type;
         else return ''
       },
       fileList: {
@@ -258,7 +254,7 @@
             this.settings.accessProperties.Sources = [];
             this.getSettingsInfo()
           })
-          .catch(()=> console.log('set-data-data 144 err'))
+          .catch((err)=> console.log(err))
       },
       getSettingsInfo() {
         if(this.settings.accessProperties.Sources.length) {

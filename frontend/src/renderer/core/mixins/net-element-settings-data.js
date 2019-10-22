@@ -2,7 +2,6 @@ import coreRequest  from "@/core/apiCore.js";
 const netElementSettingsData = {
   data() {
     return {
-      Mix_settingsData_imgData: null,
       Mix_settingsData_actionSpace: '',
       Mix_settingsData_Partition_summary: [70,20,10],
     }
@@ -21,7 +20,6 @@ const netElementSettingsData = {
     Mix_settingsData_getDataMeta(layerId) {
       return this.$store.dispatch('mod_api/API_getDataMeta', layerId)
         .then((data) => {
-          console.log('getDataMeta', data);
           if (data) {
             if(data.Action_space) this.Mix_settingsData_actionSpace = data.Action_space;
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
@@ -35,7 +33,6 @@ const netElementSettingsData = {
     Mix_settingsData_getPartitionSummary(layerId) {
       return this.$store.dispatch('mod_api/API_getPartitionSummary', layerId)
         .then((data) => {
-          console.log('getPartitionSummary', data);
           if (data) {
             this.Mix_settingsData_Partition_summary = data;
           }
@@ -55,10 +52,7 @@ const netElementSettingsData = {
         }
       };
       return this.coreRequest(theData)
-        .then((data) => {
-          console.log('deleteData', data);
-          return data
-        })
+        .then((data) => data)
         .catch((err) => {
           console.error('deleteData', err);
         });

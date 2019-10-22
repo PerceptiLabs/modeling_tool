@@ -35,11 +35,13 @@ class ReshapeCodeGenerator(CodeGenerator):
 
     
 class RecurrentCodeGenerator(CodeGenerator):
-    def __init__(self, version, time_steps, neurons, return_sequences=False):
+    def __init__(self, version, time_steps, neurons, return_sequences=False, dropout=False, keep_prop=1):
         self._version = version
         self._time_steps = time_steps
         self._neurons = neurons
         self._return_sequences = return_sequences
+        self._dropout=dropout
+        self._keep_prob=keep_prop
 
     def get_code(self):
         code = ''
@@ -49,6 +51,9 @@ class RecurrentCodeGenerator(CodeGenerator):
             code += "cell = tf.nn.rnn_cell.GRUCell(%s, state_is_tuple=True)\n" % self._neurons
         elif self._version == 'RNN':
             code += "cell = tf.nn.rnn_cell.BasicRNNCell(%s, state_is_tuple=True)\n" % self._neurons
+
+        if self._dropout:
+            code += "cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=%s)" % self._keep_prob
             
         code += "node = X['Y']\n"
         code += "rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype)\n"
@@ -67,7 +72,7 @@ class WordEmbeddingCodeGenerator(CodeGenerator):
         code += 'vocab_size=words.get_shape().as_list()[0]\n'
         code += 'embed_size=10\n'
         code += 'embedding = tf.Variable(tf.random_uniform((vocab_size, embed_size), -1, 1))\n'
-        code += "Y = tf.nn.embedding_lookup(embedding, X[''Y])\n"
+        code += "Y = tf.nn.embedding_lookup(embedding, X['Y'])\n"
         return code
 
 
@@ -184,6 +189,90 @@ class FullyConnectedCodeGenerator(CodeGenerator):
         code += "\n"
         code += get_activation_code(var_out='Y', var_in='node', func=self._activation)
         return code
+
+class DeconvCodeGenerator(CodeGenerator):
+    def __init__(self, layer_id, conv_dim, feature_maps, stride, padding,
+                 dropout=False, keep_prob=None, activation=None):
+        self._layer_id = layer_id
+        self._conv_dim = conv_dim
+        self._feature_maps = feature_maps
+        self._stride = stride
+        self._padding = padding
+        self._dropout = dropout
+        self._keep_prob = keep_prob
+        self._activation = activation
+
+    def get_code(self):
+        code = ''
+        
+        # Get the main code
+        if self._conv_dim == "1D":
+            code += self._get_code_1d()
+        elif self._conv_dim == "2D":
+            code += self._get_code_2d()            
+        elif self._conv_dim == "3D":
+            code += self._get_code_3d()
+        elif self._conv_dim == "Automatic":
+            code += self._get_code_autodim()
+
+        if self._dropout:
+            code += "tf.nn.dropout(node, %f)\n\n" % self._keep_prob
+
+        # Activation
+        code += "node = node + b\n"
+        code += get_activation_code(var_out='Y', var_in='node', func=self._activation)
+       
+        return code
+
+    def _get_code_1d(self):
+        code  = "shape = [%s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._stride, self._feature_maps)
+        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._stride, self._feature_maps)
+        code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id
+        code += "\n"                
+        code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
+        code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id
+        code += "\n"    
+        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
+        code += "node = tf.nn.conv1d_transpose(X['Y'], W, output_shape, strides=%s, padding=%s)\n" % (self._stride, self._padding)
+        return code
+
+    def _get_code_2d(self):
+        code  = "shape = [%s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._stride, self._stride, self._feature_maps)
+        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._stride, self._feature_maps)
+        code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id        
+        code += "\n"                
+        code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
+        code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id        
+        code += "\n"        
+        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
+        code += "node = tf.nn.conv2d_transpose(X['Y'], W, output_shape, strides=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
+        return code
+
+    def _get_code_3d(self):
+        code  = "shape = [%s, %s, %s, X['Y'].get_shape().as_list()[-1], %s]\n" % (self._stride, self._stride, self._stride, self._feature_maps)
+        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._stride, self._feature_maps)
+        code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id                
+        code += "\n"        
+        code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
+        code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                
+        code += "\n"        
+        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)
+        code += "node = tf.nn.conv3d_transpose(X['Y'], W, output_shape, strides=[1, %s, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._stride, self._padding)
+        return code
+    
+    def _get_code_autodim(self):
+        code  = "dim = str(len(X['Y'.get_shape().as_list())-1)\n"
+        code += "shape = [%s]*dim + [X['Y'].get_shape().as_list()[-1]], %s]\n" % (self._stride, self._feature_maps)
+        code += "initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(%s**2 + %s)))\n" % (self._stride, self._feature_maps)
+        code += "W = tf.Variable(initial, name='weights-%s')\n" % self._layer_id                     
+        code += "\n"                
+        code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
+        code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                        
+        code += "\n"    
+        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
+        code += "node = tf.nn.conv2d(X['Y'], W, output_shape, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
+        return code
+
 
     
 class ConvCodeGenerator(CodeGenerator):
@@ -302,6 +391,9 @@ class TrainLossCodeGenerator(CodeGenerator):
         elif self._loss_function == "Quadratic":
             code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
 
+        elif self._loss_function == "Regression":
+            code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
+
         elif self._loss_function == "W_cross_entropy":
             code += "batch_size = y_pred.get_shape().as_list()[0]\n"
             code += "flat_pred = tf.reshape(y_pred, [batch_size, -1])\n"
@@ -394,8 +486,12 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "# Metrics\n"
         code += "correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_label,-1))\n"
         code += "accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))\n"
-        code += "f1, _ = tf.contrib.metrics.f1_score(y_label, y_pred)\n"
-        code += "auc, _ = tf.metrics.auc(labels=y_label, predictions=y_pred, curve='ROC')\n"
+        if self._loss_function == "Regression":
+        	code += "f1 = tf.constant(0)\n"
+        	code += "auc = tf.constant(0)\n"
+        else:
+	        code += "f1, _ = tf.contrib.metrics.f1_score(y_label, y_pred)\n"
+	        code += "auc, _ = tf.metrics.auc(labels=y_label, predictions=y_pred, curve='ROC')\n"
         code += "\n"
 
         code += "# Gradients\n"

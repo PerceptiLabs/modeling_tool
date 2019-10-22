@@ -365,11 +365,11 @@ class Message:
                 # content[Id].update({"inShape":value["inShape"]})
                 if "errorMessage" in extras_value:
                     print("ErrorMessage: ", extras_value['errorMessage'])
-                    content[Id].update({"Error": extras_value['errorMessage']})
-                    content[Id].update({"Row": extras_value['errorRow']})
+                    error={"Error": {"Message": extras_value['errorMessage'], "Row":extras_value['errorRow']}}
+                    content[Id].update(error)
                 else:
-                    content[Id].update({"Error": None})
-                    content[Id].update({"Row": None})
+                    error={"Error": None}
+                    content[Id].update(error)
 
             
         elif action == "getNetworkOutputDim":
@@ -389,12 +389,11 @@ class Message:
                 content[Id]={}
                 content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
                 if "errorMessage" in value:
-                    print("ErrorMessage: ", value['errorMessage'])
-                    content[Id].update({"Error": value['errorMessage']})
-                    content[Id].update({"Row": value['errorRow']})
+                    error={"Error": {"Message": value['errorMessage'], "Row":value['errorRow']}}
+                    content[Id].update(error)
                 else:
-                    content[Id].update({"Error": None})
-                    content[Id].update({"Row": None})
+                    error={"Error": None}
+                    content[Id].update(error)
 
 
         elif action == "getPreviewSample":
@@ -454,8 +453,8 @@ class Message:
                     "VariableName": extrasDict[LayerId]["Default_var"],
                 }
                 if "errorMessage" in extrasDict[LayerId]:
-                    content.update({"Error": extrasDict[LayerId]['errorMessage']})
-                    content.update({"Row": extrasDict[LayerId]['errorRow']})
+                    error={"Error": {"Message": extrasDict[LayerId]['errorMessage'], "Row":extrasDict[LayerId]['errorRow']}}
+                    content.update(error)
             else:
                 content = ""
         
@@ -637,7 +636,7 @@ class Message:
         response = {
             "content": content
         }
-        print(response)
+        # print("Requst: %s\nResponse: %s" % (str(action), str(response)))
         # log.debug("Response: " + pprint.pformat(response, depth=6))        
         return response
 
