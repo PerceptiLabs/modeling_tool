@@ -16,7 +16,7 @@ from core_new.data import DataContainer
 from core_new.utils import set_tensorflow_mode
 from core_new.extras import LayerExtrasReader
 from core_new.errors import LayerSessionAbort
-from core_new.history import SessionHistory
+from core_new.history import SessionHistory, HistoryInputException
 from core_new.session import LayerSession, LayerSessionStop, LayerIo
 from core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
 from analytics.scraper import get_scraper
@@ -119,8 +119,13 @@ class BaseCore:
     def _run_layer(self, id_, content):        
         code_gen = self._codehq.get_code_generator(id_, content)
         log.debug(repr(code_gen))
-        
-        globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])  
+
+        try:
+            globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])  
+        except HistoryInputException:
+            if self._layer_extras_reader is not None:
+                self._layer_extras_reader.set_empty(id_)
+            return
 
         if content['Info']['checkpoint'] and type(code_gen).__name__ == "CustomCodeGenerator" and self._checkpointValues:
             locals_.update({"checkpoint":self._checkpointValues[content['Info']['checkpoint'][-1]]})
@@ -158,9 +163,9 @@ class BaseCore:
         globals_.update(outputs.globals) # Other global variables
         globals_.update(self._module_provider.modules) 
 
-        if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
-            from code_generator.tensorflow import DummyEnv
-            globals_['DummyEnv'] = DummyEnv
+        # if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
+        #     from code_generator.tensorflow import DummyEnv
+        #     globals_['DummyEnv'] = DummyEnv
         
         locals_=outputs.locals
 

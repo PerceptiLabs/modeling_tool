@@ -82,10 +82,8 @@ export default {
         Properties: this.elSettings,
         backward_connections: this.currentEl.connectionIn
       };
-      console.log('value', value);
       this.$store.dispatch('mod_api/API_getCode', value)
         .then((code)=> {
-          console.log('code', code);
           this.setCode(code)
         })
     },

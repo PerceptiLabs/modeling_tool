@@ -4,7 +4,7 @@
       v-for="(tab, i) in tabSet"
       :key="i"
     )
-      button.btn.btn--tabs(
+      button.btn.btn--tabs.statistics-box_btn(
         type="button"
         @click="setCurrentTab(tab)"
         :class="{'active': currentTab === tab}"
@@ -13,7 +13,7 @@
 </template>
 
 <script>
-
+  import { mapActions } from 'vuex';
 export default {
   name: "ViewBoxBtnList",
   props: {
@@ -28,48 +28,36 @@ export default {
     }
   },
   methods: {
+    ...mapActions({
+      tutorialPointActivate:    'mod_tutorials/pointActivate',
+    }),
     setCurrentTab(tab) {
       this.currentTab = tab;
-      this.$emit('set-current-tab', tab)
+      this.$emit('set-current-tab', tab);
+      if(false)  this.tutorialPointActivate({way: 'next', validation: id})
     }
   }
 }
 </script>
 
-<style lang="scss">
+<style lang="scss" scoped>
   @import "../../scss/base";
-  /*.statistics-box--horizontally {*/
-  /*  flex-direction: column;*/
-  /*}*/
-  /*.statistics-box--horizontally .statistics-box_tabset{*/
-  /*  flex-wrap: nowrap;*/
-  /*  max-width: 100%;*/
-  /*  flex: 0 0 auto;*/
-  /*  justify-content: flex-end;*/
-  /*  position: absolute;*/
-  /*  top: 0;*/
-  /*  right: 0;*/
-  /*  background: none;*/
-  /*}*/
   .statistics-box_tabset {
     display: flex;
     flex-wrap: nowrap;
     flex: 0 0 auto;
     justify-content: flex-end;
-    //max-width: 10.4rem;
-    //background-color: $bg-window;
-
   }
   .statistics-box_tab {
     display: flex;
-   // padding: 3px 3px 0 1px;
     + .statistics-box_tab {
       padding-left: .8rem;
     }
-    .btn {
-      flex: 1;
-      color: inherit;
-      background: linear-gradient(270deg, #5C6680 0%, #5D698D 100%);
-    }
+  }
+  .statistics-box_btn {
+    flex: 1;
+    color: inherit;
+    min-width: 11.6rem;
+    background: linear-gradient(270deg, #5C6680 0%, #5D698D 100%);
   }
 </style>

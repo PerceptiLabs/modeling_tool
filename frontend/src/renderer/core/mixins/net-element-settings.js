@@ -9,14 +9,14 @@ const netElementSettings = {
     }
   },
   components: { SettingsCode, NetBaseSettings },
+  beforeMount() {
+    if(this.currentEl.layerSettings) this.settings = deepCopy(this.currentEl.layerSettings);
+  },
   data() {
     return {
       settings: {},
       coreCode: ''
     }
-  },
-  beforeMount() {
-    if(this.currentEl.layerSettings) this.settings = deepCopy(this.currentEl.layerSettings);
   },
   computed: {
     userMode() {

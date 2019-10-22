@@ -38,6 +38,7 @@ class coreLogic():
 
         self.trainResults=None
         self.testResults=None
+        self.paused=False
 
         self.status="Created"
 
@@ -107,11 +108,13 @@ class coreLogic():
 
     def Pause(self):
         self.commandQ.put('pause')
-        return {"content": "paused"}
+        self.paused=True
+        return {"content": "Paused"}
         
     def Unpause(self):
         self.commandQ.put('unpause')
-        return {"content":"unpaused"}
+        self.paused=False
+        return {"content":"Unpaused"}
 
     def Close(self):
         return {"content":"closing the core"}
@@ -194,7 +197,7 @@ class coreLogic():
         try:
             if self.savedResultsDict["maxTestIter"]!=0:
                 if self.status=="Running":
-                    return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
+                    return {"Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
                 else:
                     return {"Status":self.status,"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
             else:
@@ -346,13 +349,15 @@ class coreLogic():
             self.batch_size=1
             self.resultDict=self.testList[self.testIter]
         except KeyError as e:
+            print(e)
             log.exception("Error in getTestingStatistics")            
             return {}
 
         try:
             layer_statistics = self.getLayerStatistics(value)
             return layer_statistics
-        except:
+        except Exception as e:
+            print(e)
             message = "Error in getTestingStatistics."
             if log.isEnabledFor(logging.DEBUG):
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)

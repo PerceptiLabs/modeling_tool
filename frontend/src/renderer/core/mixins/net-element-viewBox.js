@@ -99,7 +99,6 @@ const viewBoxMixin = {
           this.$store.dispatch('mod_workspace/CHECK_requestInterval', answerDelay);
         })
         .catch((err)=> {
-          //console.log('answer err');
           console.error(err);
         });
     }

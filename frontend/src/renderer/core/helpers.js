@@ -16,7 +16,6 @@ const openLoadDialog = function (options) {
 };
 
 const openSaveDialog = function (options) {
-  //console.log('openSaveDialog', options);
   return new Promise((success, reject) => {
     ipcRenderer.on('open-save-dialog_path', (event, path) => {
       ipcRenderer.removeAllListeners('open-save-dialog_path');
@@ -33,7 +32,6 @@ const loadPathFolder = function (customOptions) {
     properties: ['openDirectory']
   };
   let options = {...optionsDefault, ...customOptions};
-  //console.log(options);
   return openLoadDialog(options);
 };
 
@@ -61,16 +59,11 @@ const filePCSave = function (fileName, fileContent) {
 };
 
 const projectPCSave = function (fileContent) {
-  console.log('projectPCSave', fileContent);
-  // //const projectPath = `${fileContent.networkRootFolder}${pathSlash}${fileContent.networkName}`;
   const projectPath = fileContent.networkRootFolder;
-  // console.log('projectPath1', projectPath);
   if (!fs.existsSync(projectPath)){
     fs.mkdirSync(projectPath);
   }
-  // console.log('projectPath2', projectPath);
   const jsonPath = projectPathModel(projectPath);
-  // console.log('jsonPath', jsonPath);
   return filePCSave(jsonPath, JSON.stringify(fileContent))
 };
 
@@ -79,7 +72,6 @@ const projectPathModel = function (projectPath) {
 };
 
 const folderPCDelete = function (path) {
-  console.log('folderPCDelete', path);
   return new Promise((success, reject) => {
     if (!fs.existsSync(path)) success();
     const files = fs.readdirSync(path);
@@ -146,7 +138,6 @@ const throttleEv = function (func, ms) {
 };
 
 const goToLink = function (url) {
-  //console.log(url);
   shell.openExternal(url);
 };
 

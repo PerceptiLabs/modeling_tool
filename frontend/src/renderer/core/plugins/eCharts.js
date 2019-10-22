@@ -256,13 +256,13 @@ ECharts.registerTheme('quantum', {
   },
   "visualMap": {
     "color": [
-      "#D0DBFF",
-      "#ABBEF9",
-      "#86A2F4",
-      "#6185EE",
-      "#567ADF",
+      "#4065C1",
       "#4B70D0",
-      "#4065C1"
+      "#567ADF",
+      "#6185EE",
+      "#86A2F4",
+      "#ABBEF9",
+      "#D0DBFF"
     ],
     textStyle: {
       color: '#e1e1e1'
