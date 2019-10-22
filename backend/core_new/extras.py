@@ -23,6 +23,9 @@ class LayerExtrasReader:
         else:
             return sample
 
+    def set_empty(self, layer_id):
+        self._put_in_dict(layer_id,{'Sample': '', 'outShape': '', 'inShape': '', 'Variables': '', 'Default_var':''})
+        
     def read(self, session, data_container):
         outShape = ''
         # Y = session.outputs.locals.get('Y')

@@ -370,13 +370,14 @@ class Message:
                 # content[Id].update({"inShape":value["inShape"]})
 
                 if Id in lw_core.error_handler:
-                    log.info("ErrorMessage: "\
-                             + lw_core.error_handler[Id].error_message)                    
-                    content[Id]['Error'] = lw_core.error_handler[Id].error_message
-                    content[Id]['Row'] = lw_core.error_handler[Id].error_line
+                    log.info("ErrorMessage: " + str(lw_core.error_handler[Id]))
+
+                    content[Id]['Error'] = {
+                        'Message': lw_core.error_handler[Id].error_message,
+                        'Row': lw_core.error_handler[Id].error_line
+                    }
                 else:
                     content[Id]['Error'] = None
-                    content[Id]['Row'] = None
             
         elif action == "getNetworkOutputDim":
             jsonNetwork=self.request.get("value")
@@ -396,12 +397,14 @@ class Message:
                 content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
 
                 if Id in lw_core.error_handler:
-                    log.info("ErrorMessage: " + lw_core.error_handler[Id].error_message)                    
-                    content[Id]['Error'] = lw_core.error_handler[Id].error_message
-                    content[Id]['Row'] = lw_core.error_handler[Id].error_line
+                    log.info("ErrorMessage: " + str(lw_core.error_handler[Id]))
+
+                    content[Id]['Error'] = {
+                        'Message': lw_core.error_handler[Id].error_message,
+                        'Row': lw_core.error_handler[Id].error_line
+                    }
                 else:
-                    content[Id]["Error"] = None
-                    content[Id]["Row"] = None
+                    content[Id]['Error'] = None                    
 
         elif action == "getPreviewSample":
             value=self.request.get("value")
@@ -461,10 +464,12 @@ class Message:
                 }
 
                 if LayerId in lw_core.error_handler:
-                    log.info("ErrorMessage: "+ lw_core.error_handler[LayerId].error_message)                    
-                    content['Error'] = lw_core.error_handler[LayerId].error_message
-                    content['Row'] = lw_core.error_handler[LayerId].error_line
-
+                    log.info("ErrorMessage: " + str(lw_core.error_handler[LayerId]))
+                    
+                    content[Id]['Error'] = {
+                        'Message': lw_core.error_handler[Id].error_message,
+                        'Row': lw_core.error_handler[Id].error_line
+                    }
             else:
                 content = ""
         

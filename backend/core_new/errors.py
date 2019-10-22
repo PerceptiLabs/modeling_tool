@@ -79,7 +79,7 @@ class LightweightErrorHandler(LayerErrorHandler):
 
         descr = "".join(tbObj.format_exception_only()),
         self._dict[session.layer_id] = ErrorDescription(descr, str(tbObj.lineno) or "?")
-        self._log_error(session, exception, tbObj.lineno)
+        self._log_error(session, exception, int(tbObj.lineno))
         
     def _handle_other_errors(self, session: LayerSession, exception: Exception):                    
         error_class = exception.__class__.__name__
@@ -87,7 +87,7 @@ class LightweightErrorHandler(LayerErrorHandler):
         descr = "%s at line %d: %s" % (error_class, line_number, exception)
 
         self._dict[session.layer_id] = ErrorDescription(descr, str(line_number))
-        self._log_error(session, exception, line_number)        
+        self._log_error(session, exception, int(line_number))        
         
     def to_dict(self):
         return copy.copy(self._dict)
