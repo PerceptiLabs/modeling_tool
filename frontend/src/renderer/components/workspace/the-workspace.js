@@ -111,8 +111,13 @@ export default {
     },
     showTrainingSpinner(newVal) {
       //console.log('showTrainingSpinner', newVal);
-      if(newVal) unwatch = this.$watch('doShowCharts', this.watch_doShowCharts);
-      else unwatch();
+      if(newVal) {
+        unwatch = this.$watch('doShowCharts', this.watch_doShowCharts);
+      }
+      else {
+        unwatch();
+        if(this.isTutorialMode) this.pauseTraining();
+      }
     },
     // doShowCharts() {
     //   console.log('doShowCharts', this.counterHideSpinner);
@@ -197,12 +202,9 @@ export default {
     watch_doShowCharts() {
       if (this.counterHideSpinner > 1) {
         this.set_showTrainingSpinner(false);
-        this.counterHideSpinner = 0
+        this.counterHideSpinner = 0;
+        //if(this.isTutorialMode && this.statusNetworkCore === 'Training') this.pauseTraining();
       } else ++this.counterHideSpinner;
-      //TODO need paused in tutorial
-      //this.set_showTrainingSpinner(false);
-      //     this.pauseTraining();
-      //     this.trainingWasPaused = true;
     },
     calcScaleMap() {
       this.$nextTick(()=> {
