@@ -5,11 +5,11 @@ import { pathSlash }  from "@/core/constants.js";
 const {spawn} = require('child_process');
 
 const namespaced = true;
-let pauseAction = 'Pause';
 
 const state = {
   statusLocalCore: 'offline', //online
-  corePid: 0
+  corePid: 0,
+  pauseAction: 'Pause'
 };
 
 const getters = {
@@ -156,7 +156,7 @@ const actions = {
   API_pauseTraining({dispatch, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: pauseAction, // Pause and Unpause
+      action: state.pauseAction, // Pause and Unpause
       value: ''
     };
     coreRequest(theData)
@@ -165,11 +165,11 @@ const actions = {
         if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
           dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
           dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
-          pauseAction = 'Unpause';
+          state.pauseAction = 'Unpause';
         }
         else {
           dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
-          pauseAction = 'Pause';
+          state.pauseAction = 'Pause';
         }
       })
       .catch((err)=> {
