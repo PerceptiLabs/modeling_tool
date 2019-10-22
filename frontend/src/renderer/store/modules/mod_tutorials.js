@@ -49,7 +49,8 @@ const state = {
               tooltip: 'Click to Data',
               position: 'right',
               id: 'tutorial_data',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true
             },
             {
               tooltip: 'Drag & drop Data',
@@ -61,13 +62,15 @@ const state = {
                 top: 16.4,
                 left: 26
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true
             },
             {
               tooltip: `Double click for select <br> MNIST dataset`,
               position: 'right',
               id: 'tutorial_data-data-1',
               status: 'disabled',
+              animation: true,
               position_element: {
                 top: 6.5,
                 left: 18
@@ -77,19 +80,22 @@ const state = {
               tooltip: `Click for select and <br> load mnist_input.npy`,
               position: 'right',
               id: 'tutorial_button-load',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true
             },
             {
               tooltip: 'Click to Apply loaded MNIST',
               position: 'right',
               id: 'tutorial_button-apply',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Click to confirm',
               position: 'right',
               id: 'tutorial_button-confirm',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             }
           ],
           static_info: [
@@ -111,7 +117,8 @@ const state = {
               tooltip: 'Click to Data',
               position: 'right',
               id: 'tutorial_data',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Drag & drop Data',
@@ -123,31 +130,36 @@ const state = {
                 top: 32.4,
                 left: 26
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: `Double click for select <br> MNIST dataset`,
               position: 'right',
               id: 'tutorial_data-data-2',
               status: 'disabled',
+              animation: true,
             },
             {
               tooltip: `Click for select and <br> load mnist_labels.npy`,
               position: 'right',
               id: 'tutorial_button-load',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Click to Apply loaded MNIST',
               position: 'right',
               id: 'tutorial_button-apply',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Click to confirm',
               position: 'right',
               id: 'tutorial_button-confirm',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             }
           ],
         }
@@ -165,7 +177,8 @@ const state = {
               tooltip: 'Click to Processing',
               position: 'right',
               id: 'tutorial_processing',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Drag & drop Reshape',
@@ -177,7 +190,8 @@ const state = {
                 top: 16.4,
                 left: 42,
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to create a connection',
@@ -198,7 +212,8 @@ const state = {
                 connection_start: 'tutorial_data-data-1',
                 connection_end: 'tutorial_process-reshape-1'
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to go back to work with items',
@@ -210,7 +225,8 @@ const state = {
               tooltip: 'Double click to open settings',
               position: 'right',
               id: 'tutorial_process-reshape-1',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to confirm',
@@ -255,13 +271,15 @@ const state = {
                        </div>`,
               position: 'right',
               id: 'tutorial_input-reshape',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Click to confirm',
               position: 'right',
               id: 'tutorial_button-confirm',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             }
           ],
         },
@@ -363,7 +381,8 @@ const state = {
               tooltip: 'Click to Deep Learning',
               position: 'right',
               id: 'tutorial_deep-learning', 
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Drag & drop Convolution',
@@ -375,7 +394,8 @@ const state = {
                 top: 16.4,
                 left: 58,
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to create a connection',
@@ -392,7 +412,8 @@ const state = {
                 type: 'arrow',
                 connection_start: 'tutorial_process-reshape-1',
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to go back to work with items',
@@ -404,7 +425,8 @@ const state = {
               tooltip: 'Double click to open settings',
               position: 'right',
               id: 'tutorial_convolution-1',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -416,13 +438,15 @@ const state = {
                         </div>`,
               position: 'right',
               id: 'tutorial_patch-size',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Click to confirm',
               position: 'right',
               id: 'tutorial_button-confirm',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             }
           ],
           static_info: [
@@ -450,7 +474,8 @@ const state = {
               tooltip: 'Click to Deep Learning',
               position: 'right',
               id: 'tutorial_deep-learning', 
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Drag & drop Fully Connected',
@@ -462,7 +487,8 @@ const state = {
                 top: 16.4,
                 left: 74,
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to create a connection',
@@ -479,7 +505,8 @@ const state = {
                 type: 'arrow',
                 connection_start: 'tutorial_convolution-1',
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to go back to work with items',
@@ -491,7 +518,8 @@ const state = {
               tooltip: 'Double click to open settings',
               position: 'right',
               id: 'tutorial_fully-connected-1',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             }
           ],
           static_info: [
@@ -538,13 +566,15 @@ const state = {
                         </div>`,
               position: 'right',
               id: 'tutorial_neurons',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Click to confirm',
               position: 'right',
               id: 'tutorial_button-confirm',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             }
           ],
         },
@@ -562,7 +592,8 @@ const state = {
               tooltip: 'Click to Processing',
               position: 'right',
               id: 'tutorial_processing', 
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Drag & drop One Hot',
@@ -574,7 +605,8 @@ const state = {
                 top: 32.4,
                 left: 42,
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to create a connection',
@@ -591,7 +623,8 @@ const state = {
                 type: 'arrow',
                 connection_start: 'tutorial_data-data-2',
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to go back to work with items',
@@ -603,19 +636,22 @@ const state = {
               tooltip: 'Double click to set classes',
               position: 'right',
               id: 'tutorial_one-hot-1',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Set 10 and click Apply changes',
               position: 'right',
               id: 'tutorial_number-of-classes',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Click to confirm',
               position: 'right',
               id: 'tutorial_button-confirm',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             }
           ],
           static_info: [
@@ -677,7 +713,8 @@ const state = {
               tooltip: 'Click to Training',
               position: 'right',
               id: 'tutorial_training', 
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Drag & drop Normal',
@@ -689,7 +726,8 @@ const state = {
                 top: 32.4,
                 left: 75,
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to create a connection',
@@ -706,7 +744,8 @@ const state = {
                 type: 'arrow',
                 connection_start: 'tutorial_one-hot-1',
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Connect Deep learning FC with Train Normal',
@@ -717,7 +756,8 @@ const state = {
                 position: 'bottom',
                 connection_start: 'tutorial_fully-connected-1',
               },
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: 'Click to go back to work with items',
@@ -729,7 +769,8 @@ const state = {
               tooltip: 'Double click to define parameters',
               position: 'right',
               id: 'tutorial_training-normal-1',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -738,13 +779,15 @@ const state = {
                        </div>`,
               position: 'right',
               id: 'tutorial_labels',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
             {
               tooltip: 'Click to confirm',
               position: 'right',
               id: 'tutorial_button-confirm',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             }
           ],
           static_info: [
@@ -836,7 +879,8 @@ const state = {
               tooltip: 'Click to run training',
               position: 'bottom',
               id: 'tutorial_run-training-button', 
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
 /*            {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -854,7 +898,8 @@ const state = {
                         </div>`,
               position: 'right',
               id: 'tutorial_epochs-input',
-              status: 'disabled'
+              status: 'disabled',
+              animation: true,
             },
           ]
         },
@@ -871,6 +916,7 @@ const state = {
             {
               id: 'tutorial_statistics', 
               status: 'disabled',
+              animation: true,
               schematic: {
                 type: 'border'
               },
@@ -886,6 +932,7 @@ const state = {
             {
               id: 'tutorial_view-box', 
               status: 'disabled',
+              animation: true,
               schematic: {
                 type: 'border',
               },
@@ -916,6 +963,7 @@ const state = {
               position: 'right',
               id: 'tutorial_process-reshape-1',
               status: 'disabled',
+              animation: true,
             }
           ]
         },
@@ -929,6 +977,7 @@ const state = {
               position: 'right',
               id: 'tutorial_view-box',
               status: 'disabled',
+              animation: true,
               next: true
             },
             { 
@@ -936,11 +985,13 @@ const state = {
               position: 'right',
               id: 'tutorial_fully-connected-1',
               status: 'disabled',
+              animation: true,
             },
             { 
               id: 'tutorial_prediction-chart',
               position: 'right',
               status: 'disabled',
+              animation: true,
               schematic: {
                 type: 'border',
               },
@@ -953,6 +1004,7 @@ const state = {
               position: 'right',
               id: 'tutorial_prediction-tab',
               status: 'disabled',
+              animation: true,
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -961,6 +1013,7 @@ const state = {
               position: 'right',
               id: 'tutorial_accuracy-tab',
               status: 'disabled',
+              animation: true,
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -969,6 +1022,7 @@ const state = {
               position: 'right',
               id: 'tutorial_loss-tab',
               status: 'disabled',
+              animation: true,
             }
           ]
         },
@@ -982,6 +1036,7 @@ const state = {
               position: 'bottom',
               id: 'tutorial_pause-training',
               status: 'disabled',
+              animation: true,
             }
           ]
         },
@@ -993,12 +1048,14 @@ const state = {
             {
               position: 'right',
               status: 'disabled',
+              animation: true,
               id:'tutorial_statistic-tab'
             }
           ]
         },
         {
           status:'disabled',
+          animation: true,
           class_style: 'list_subtitle',
           content: 'Click to start test',
           actions: [
@@ -1006,6 +1063,7 @@ const state = {
               tooltip: 'Click to start test',
               position: 'right',
               status: 'disabled',
+              animation: true,
               id:'tutorial_run-test-button'
             }
           ]
@@ -1024,6 +1082,7 @@ const state = {
               tooltip: 'Click to explore view controls',
               position: 'right',
               status: 'disabled',
+              animation: true,
               id:'tutorial_play-test-button'
             }
           ]
@@ -1243,6 +1302,8 @@ const actions = {
       delayTimer = setTimeout(()=>{
         dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
         tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${getters.getActiveAction.position}`);
+        if(getters.getActiveAction.animation)
+          tooltip.classList.add(`tooltip-tutorial-animation--${getters.getActiveAction.position}`);
         tooltip.innerHTML = info.tooltip;
         document.body.appendChild(tooltip);
         element.addEventListener('mouseup', repositionElement);
