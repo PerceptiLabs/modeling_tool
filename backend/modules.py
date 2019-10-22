@@ -95,9 +95,9 @@ class ModuleProvider:
         except:
             raise
 
-    def uninstall_hooks(self):
-        for key in self._modules.keys():
-            self._modules[target_path] = self._modules[target_path].target                            
+    # def uninstall_hooks(self):
+    #     for key in self._modules.keys():
+    #         self._modules[target_path] = self._modules[target_path].target                            
 
     @property
     def modules(self):
