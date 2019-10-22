@@ -33,11 +33,6 @@ const getters = {
       ? state.workspaceContent[state.currentNetwork].networkID
       : 0
   },
-  GET_currentNetworkSettings(state, getters) {
-    return getters.GET_networkIsNotEmpty
-      ? state.workspaceContent[state.currentNetwork].networkSettings
-      : {}
-  },
   GET_currentNetworkElementList(state, getters) {
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork].networkElementList
@@ -132,7 +127,6 @@ const mutations = {
     const defaultNetwork = {
       networkName: 'New_Network',
       networkID: '',
-      networkSettings: null,
       networkMeta: {},
       networkElementList: null,
       networkRootFolder: ''
@@ -259,12 +253,6 @@ const mutations = {
       state.currentNetwork = index < 0 ? 0 : index
     }
     state.workspaceContent.splice(index, 1);
-  },
-  //---------------
-  //  NETWORK SETTINGS
-  //---------------
-  set_networkSettings(state, {getters, value}) {
-    getters.GET_currentNetwork.networkSettings = value
   },
   //---------------
   //  LOADER FOR TRAINING
@@ -751,9 +739,6 @@ const actions = {
   },
   SET_networkRootFolder({commit, getters}, value) {
     commit('set_networkRootFolder', {getters, value})
-  },
-  SET_networkSettings({commit, getters}, value) {
-    commit('set_networkSettings', {getters, value})
   },
   SET_networkElementList({commit, getters}, value) {
     commit('set_networkElementList', {getters, value})

@@ -32,6 +32,30 @@
           .form_input
             input(type="number" v-model="settings.Time_steps")
 
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
+          .form_label Keep Probability:
+          .form_input
+            base-radio(group-name="probability" :value-input="true"  v-model="settings.keep_prob")
+              span Yes
+            base-radio(group-name="probability" :value-input="false"  v-model="settings.keep_prob")
+              span No
+
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
+          .form_label Dropout:
+          .form_input
+            base-radio(group-name="group5" :value-input="true" v-model="settings.Dropout")
+              span Yes
+            base-radio(group-name="group5" :value-input="false" v-model="settings.Dropout")
+              span No
+
+      .settings-layer_section(v-if="settings.Dropout")
+        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
+          .form_label Keep Probability:
+          .form_input
+            input(type="number" v-model="settings.Keep_prob")
+
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
@@ -53,6 +77,8 @@ export default {
         Neurons: "10",
         Version: "LSTM", //#LSTM, GRU, RNN
         Time_steps: "2",
+        Dropout: false, //True, False
+        Keep_prob: '1'
       },
       interactiveInfo: {
         neurons: {

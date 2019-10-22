@@ -63,9 +63,13 @@
             .form_input
               input(type="number" v-model="settings.Momentum")
           .form_row
-            .form_label Decay:
+            .form_label Decay Rate:
             .form_input
-              input(type="number" v-model="settings.Decay")
+              input(type="number" v-model="settings.Decay_rate")
+          .form_row
+            .form_label Decay steps:
+            .form_input
+              input(type="number" v-model="settings.Decay_steps")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
           .form_label Learning rate:
@@ -104,16 +108,17 @@ export default {
       inputLayers: [],
       settings: {
         Labels: '',
-        Epochs: 10,
+        Epochs: '10',
         N_class: '1',
-        Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
-        Class_weights: 1,
-        Learning_rate: "0.01",
-        Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop
-        Beta_1: '0.1',
-        Beta_2: '0.1',
-        Momentum: '0.1',
-        Decay: '0.1',
+        Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
+        Class_weights: '1',
+        Learning_rate: "0.001",
+        Optimizer: "ADAM", //#SGD, Momentum, ADAM, RMSprop
+        Beta_1: '0.9',
+        Beta_2: '0.999',
+        Momentum: '0.9',
+        Decay_steps: '100000',
+        Decay_rate: '0.96',
         Training_iters: "20000"
       },
       interactiveInfo: {

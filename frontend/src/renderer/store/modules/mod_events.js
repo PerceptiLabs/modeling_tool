@@ -11,7 +11,6 @@ const state = {
   saveNetwork: 0,
   saveNetworkAs: 0,
   eventResize: 0,
-  runNetwork: false,
   globalPressKey: {
     del: 0,
     esc: 0
@@ -31,9 +30,6 @@ const mutations = {
   },
   set_eventResize(state) {
     state.eventResize++
-  },
-  set_runNetwork(state, value) {
-    state.runNetwork = value
   },
   set_globalPressKey(state, path) {
     state.globalPressKey[path]++

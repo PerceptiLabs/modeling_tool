@@ -6,16 +6,16 @@
     )
       button.btn.btn--tabs.statistics-box_btn.tutorial-relative(type="button"
         v-if="tabINfo"
-        @click="setCurrentTab(name)"
+        @click="setCurrentTab(name, tabINfo.id)"
         v-tooltip-interactive:bottom="tabINfo.interactiveInfo"
-        :class="{'active': currentTab === name}"
+        :class="[currentTab === name ?  'active' : '', tabINfo.btnClass]"
+        :id="tabINfo.id"
       ) {{ name }}
 
       button.btn.btn--tabs.statistics-box_btn(type="button"
         v-else
         @click="setCurrentTab(name)"
-        :class="[currentTab === name ?  'active' : '', tabINfo.btnClass]"
-        :id="tabINfo.id"
+        :class="{'active': currentTab === name}"
       ) {{ name }}
 
   //-ul.statistics-box_tabset(v-if="!testIsOpen")
@@ -52,10 +52,10 @@ export default {
     ...mapActions({
       tutorialPointActivate:    'mod_tutorials/pointActivate',
     }),
-    setCurrentTab(tab) {
+    setCurrentTab(tab, id) {
       this.currentTab = tab;
       this.$emit('set-current-btn', tab);
-      if(false)  this.tutorialPointActivate({way: 'next', validation: id})
+      if(id) this.tutorialPointActivate({way: 'next', validation: id})
     }
   }
 }
