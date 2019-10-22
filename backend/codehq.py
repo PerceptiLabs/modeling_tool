@@ -75,7 +75,9 @@ class CodeHqNew:
             code_gen = RecurrentCodeGenerator(version=props["Version"],
                                               time_steps=props["Time_steps"],
                                               neurons=props["Neurons"],
-                                              return_sequences=False) # TODO: return_sequences from frontend
+                                              return_sequences=False, # TODO: return_sequences from frontend
+                                              dropout=props["Dropout"],
+                                              keep_prop=1) # TODO: where does this come from?
             return code_gen
         elif type_ == 'ProcessCrop':
             code_gen = CropCodeGenerator(offset_height=props["Offset_height"],
@@ -97,8 +99,6 @@ class CodeHqNew:
             return code_gen
             
         elif type_ == 'TrainNormal':
-            # TODO: dont hardcode epoch and iterations. From where should they come?
-
             if 'Labels' in props:
                 target_layer = props['Labels']
             else:    

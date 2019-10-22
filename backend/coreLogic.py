@@ -102,11 +102,11 @@ class coreLogic():
 
     def Pause(self):
         self.commandQ.put('pause')
-        return {"content": "paused"}
+        return {"content": "Paused"}
         
     def Unpause(self):
         self.commandQ.put('unpause')
-        return {"content":"unpaused"}
+        return {"content":"Unpaused"}
 
     def Close(self):
         return {"content":"closing the core"}
