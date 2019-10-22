@@ -29,7 +29,6 @@ class LayerErrorHandler(ABC):
         self._errors[layer_id] = error
         log.info("Handled error in layer {}. Description: \n{}".format(layer_id, error.long_descr))
 
-
     def _get_error_line(self, exception: Exception):
         tb_list=traceback.extract_tb(exception.__traceback__)
         line_number=None
@@ -46,32 +45,32 @@ class LayerErrorHandler(ABC):
         code_lines = ["  %d %s" % (i, l) for i, l in enumerate(code_lines, 1)]
 
         if error_line is not None:
-            code_lines[error_line] = '->' + code_lines[error_line][2:]
-        
+            code_lines[error_line-1] = '->' + code_lines[error_line-1][2:]
         code = "\n".join(code_lines)
         
-        message  = "Exception when running layer session %s:\n" % session.layer_id
+        message  = "%s when running layer session %s:\n" % (repr(exception), session.layer_id)
         message += "%s\n" % code
         message += "\n"
         message += "".join(traceback.format_tb(exception.__traceback__))
         log.info(message)
 
+    def reset(self):
+        pass
 
+    
 ErrorDescription = namedtuple('ErrorDescription', ['error_message', 'error_line'])
-        
+
+
 class LightweightErrorHandler(LayerErrorHandler):
     def __init__(self):
-        self._dict = {}
-        
-    def __init__(self):
-        self.clear()
+        self.reset()
 
-    def clear(self):
+    def reset(self):
         self._dict = {}
     
     def handle_run_error(self, session: LayerSession, exception: Exception):
         if isinstance(exception, SyntaxError):
-            self._handle_other_error(session, exception)
+            self._handle_syntax_error(session, exception)
         else:
             self._handle_other_errors(session, exception)
 
@@ -100,7 +99,6 @@ class LightweightErrorHandler(LayerErrorHandler):
 
     def __getitem__(self, id_):
         return self._dict[id_]
-    
     
         
 class CoreErrorHandler(LayerErrorHandler):

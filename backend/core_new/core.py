@@ -169,8 +169,10 @@ class BaseCore:
     def _reset(self):
         self._data_container.reset()
         self._session_history.cache.invalidate(keep_layers=self._graph.keys())
-        self._error_handler.clear()
-        self._layer_extras_reader.clear()            
+        self._error_handler.reset()
+
+        if self._layer_extras_reader is not None:
+            self._layer_extras_reader.clear()            
 
     def _print_basic_info(self):
         log.info("Running core [{}]".format(self.__class__.__name__))
