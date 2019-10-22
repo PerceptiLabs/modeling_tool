@@ -36,8 +36,6 @@ class LayerErrorHandler(ABC):
             if i[2]=="<module>":
                 line_number=i[1]
 
-        if line_number is None:
-            line_number = tb.tb_lineno
         return line_number
 
     def _log_error(self, session: LayerSession, exception: Exception, error_line: int=None):
@@ -107,17 +105,29 @@ class CoreErrorHandler(LayerErrorHandler):
     
     def handle_run_error(self, session: LayerSession, exception: Exception):
         line_number = self._get_error_line(exception)
-        
+
         self._log_error(session, exception, line_number)
+        self._put_message_on_queue(session, exception)
         sentry_sdk.capture_exception(exception)
 
-        error_class = exception.__class__.__name__
-        line_number = self._get_error_line(exception)
-        descr = "%s at line %d: %s" % (error_class, line_number, exception)
+        raise LayerSessionAbort() 
+    
+    def _put_message_on_queue(self, session: LayerSession, exception: Exception):
+        tb_obj = traceback.TracebackException(exception.__class__,
+                                              exception,
+                                              exception.__traceback__)
 
-        self._error_queue.put(descr)
+        frames = [f for f in traceback.extract_tb(exception.__traceback__) \
+                  if f.filename == '<string>']
+
+        message  = "Error in layer {} [{}]\n\n".format(session.layer_id, session.layer_type)
+        message += "Traceback (most recent call last):\n"        
+        for summary in frames:
+            message += "  Line {}, in {}\n".format(summary.lineno, summary.name)
+            message += "    {}\n".format(session.code.split('\n')[summary.lineno - 1])
+        message += "\n" + "".join(tb_obj.format_exception_only())
+        self._error_queue.put(message)
         
-        raise LayerSessionAbort() # The core won't continue execution.
     
     
 
