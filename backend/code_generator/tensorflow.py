@@ -376,16 +376,16 @@ class TrainLossCodeGenerator(CodeGenerator):
         self._output_layer = output_layer
         self._target_layer = target_layer
         self._loss_function = loss_function
-        self._class_weights = class_weights
+        self._class_weights = str(class_weights)
 
     def get_loss_code(self):
         code = ""
         code += "y_pred = X['%s']['Y']\n" % self._output_layer
         code += "y_label = X['%s']['Y']\n" % self._target_layer  
         if self._loss_function == "Cross_entropy":
-            code += "batch_size = y_pred.get_shape().as_list()[0]\n"
-            code += "flat_pred = tf.reshape(y_pred, [batch_size, -1])\n"
-            code += "flat_labels = tf.reshape(y_labels, [batch_size, -1])\n"
+            code += "n_classes = y_pred.get_shape().as_list()[-1]\n"
+            code += "flat_pred = tf.reshape(y_pred, [-1, n_classes])\n"
+            code += "flat_labels = tf.reshape(y_labels, [-1, n_classes])\n"
             code += "loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=flat_pred, labels=flat_labels))\n"
 
         elif self._loss_function == "Quadratic":
@@ -395,9 +395,9 @@ class TrainLossCodeGenerator(CodeGenerator):
             code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
 
         elif self._loss_function == "W_cross_entropy":
-            code += "batch_size = y_pred.get_shape().as_list()[0]\n"
-            code += "flat_pred = tf.reshape(y_pred, [batch_size, -1])\n"
-            code += "flat_labels = tf.reshape(y_labels, [batch_size, -1])\n"
+            code += "n_classes = y_pred.get_shape().as_list()[-1]\n"
+            code += "flat_pred = tf.reshape(y_pred, [-1, n_classes])\n"
+            code += "flat_labels = tf.reshape(y_labels, [-1, n_classes])\n"
             code += "loss =  tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_logits, %s))\n" % self._class_weights
 
         elif self._loss_function == "Dice":
@@ -438,7 +438,7 @@ class TrainOptimizerCodeGenerator(CodeGenerator):
             code += "global_step = tf.Variable(0)\n"
             code += "learning_rate_momentum = tf.train.exponential_decay(learning_rate=%s, global_step=global_step, decay_steps=%s, decay_rate=%s, staircase=True)\n" % (self._learning_rate, self._decay_steps, self._decay_rate)
             code += "step = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum=%s).minimize(loss, global_step=global_step)\n" % self._momentum
-        elif self._optimizer == "adam":
+        elif self._optimizer == "ADAM":
             code += "step = tf.train.AdamOptimizer(learning_rate=%s,beta1=%s,beta2=%s).minimize(loss)\n" % (self._learning_rate, self._beta1, self._beta2)
         elif self._optimizer == "adagrad":
             code += "step = tf.train.AdagradOptimizer(learning_rate=%s).minimize(loss)\n" % self._learning_rate
@@ -461,10 +461,10 @@ class TrainNormalCodeGenerator(CodeGenerator):
     def __init__(self, output_layer, target_layer,
                  n_epochs,
                  loss_function='Quadratic', class_weights = 1,
-                 optimizer='adam', learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999):
+                 optimizer='ADAM', learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999):
         self._output_layer = output_layer
         self._target_layer = target_layer
-        self._n_epochs = int(n_epochs)
+        self._n_epochs = n_epochs
         #Loss
         self._loss_function = loss_function
         self._class_weights = class_weights
@@ -487,11 +487,11 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_label,-1))\n"
         code += "accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))\n"
         if self._loss_function == "Regression":
-        	code += "f1 = tf.constant(0)\n"
-        	code += "auc = tf.constant(0)\n"
+            code += "f1 = tf.constant(0)\n"
+            code += "auc = tf.constant(0)\n"
         else:
-	        code += "f1, _ = tf.contrib.metrics.f1_score(y_label, y_pred)\n"
-	        code += "auc, _ = tf.metrics.auc(labels=y_label, predictions=y_pred, curve='ROC')\n"
+            code += "f1, _ = tf.contrib.metrics.f1_score(y_label, y_pred)\n"
+            code += "auc, _ = tf.metrics.auc(labels=y_label, predictions=y_pred, curve='ROC')\n"
         code += "\n"
 
         code += "# Gradients\n"
@@ -516,11 +516,11 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "all_tensors=api.data.get_tensors()\n" 
         code += "api.data.store(all_tensors=all_tensors)\n"
         code += "\n"
-        code += "api.data.store(max_epoch=%d,\n" % (self._n_epochs - 1)
+        code += "api.data.store(max_epoch=%s,\n" % (self._n_epochs - 1)
         code += "               train_datasize=_data_size[0],\n"
         code += "               val_datasize=_data_size[1])\n"
         code += "\n"
-        code += "for epoch in range(%d):\n" % self._n_epochs
+        code += "for epoch in range(%s):\n" % self._n_epochs
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
         code += "    #Setting the variables to empty as a way to reset them every epoch.\n"
