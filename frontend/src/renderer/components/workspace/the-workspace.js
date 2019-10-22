@@ -7,7 +7,6 @@ import { pathSlash }  from "@/core/constants.js";
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
-import GeneralSettings        from "@/components/global-popups/workspace-general-settings.vue";
 import GeneralResult          from "@/components/global-popups/workspace-result";
 import SelectCoreSide         from "@/components/global-popups/workspace-core-side";
 import WorkspaceBeforeImport  from "@/components/global-popups/workspace-before-import";
@@ -21,7 +20,7 @@ export default {
   name: 'WorkspaceContent',
   components: {
     NetworkField, TextEditable,
-    GeneralSettings, GeneralResult, SelectCoreSide,
+    GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork,
     TheStatistics, TheTesting, TheViewBox, StartTrainingSpinner
   },
@@ -62,7 +61,6 @@ export default {
       indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
       statisticsElSelected:       state => state.mod_statistics.selectedElArr,
       hideSidebar:                state => state.globalView.hideSidebar,
-      showGlobalSet:              state => state.globalView.globalPopup.showNetSettings,
       showGlobalResult:           state => state.globalView.globalPopup.showNetResult,
       showWorkspaceBeforeImport:  state => state.globalView.globalPopup.showWorkspaceBeforeImport,
       showCoreSide:               state => state.globalView.globalPopup.showCoreSideSettings,

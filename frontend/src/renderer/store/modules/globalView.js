@@ -12,7 +12,6 @@ const state = {
   timeIntervalDoRequest: 2500,
   requestCounter: 0,
   globalPopup: {
-    showNetSettings: false,
     showNetResult: false,
     showCoreSideSettings: false,
     showInfoPopup: false,
@@ -57,9 +56,6 @@ const mutations = {
   },
   GP_showNetResult (state, value) {
     state.globalPopup.showNetResult = value
-  },
-  GP_showNetGlobalSet (state, value) {
-    state.globalPopup.showNetSettings = value
   },
   GP_showCoreSideSettings (state, value) {
     state.globalPopup.showCoreSideSettings = value

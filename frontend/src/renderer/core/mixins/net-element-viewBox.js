@@ -16,9 +16,7 @@ const viewBoxMixin = {
     }
   },
   mounted() {
-
-    //this.$store.dispatch('mod_tracker/EVENT_trainingLayerView');
-    if(this.tabset) this.$emit('btn-list', this.tabset);
+    if(this.btnList) this.$emit('btn-list', this.btnList);
     this.getData();
   },
   beforeDestroy() {

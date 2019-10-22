@@ -108,73 +108,49 @@
     data() {
       return {
         chartData: {
-          Prediction: {
-            Input: null,
-            PvG: null,
-            AveragePvG: null,
-            Accuracy: null,
-          },
-          Accuracy: {
-            Current: null,
-            Total: null,
-          },
-          Loss: {
-            Current: null,
-            Total: null,
-          },
-          F1: {
-            Current: null,
-            Total: null,
-          },
-          AUC: {
-            Current: null,
-            Total: null,
-          }
+          Prediction: { Input: null, PvG: null, AveragePvG: null, Accuracy: null },
+          Accuracy:   { Current: null, Total: null },
+          Loss:       { Current: null, Total: null },
+          F1:         { Current: null, Total: null },
+          AUC:        { Current: null, Total: null }
         },
-        tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'AUC'],
-        tabset1: [
-          {
-            btnName: 'Prediction',
+        btnList: {
+          'Prediction': {
             btnId: 'tutorial_prediction-tab',
-            btnClass: 'string',
             btnInteractiveInfo: {
               title: 'Prediction',
               text: 'View the input, current accuracy and <br/> output prediction vs ground truth/labels'
             }
           },
-          {
-            name: 'Accuracy',
-            id: 'tutorial_accuracy-tab',
-            interactiveInfo: {
+          'Accuracy': {
+            btnId: 'tutorial_accuracy-tab',
+            btnInteractiveInfo: {
               title: 'Accuracy',
               text: 'View the accuracy.'
             }
           },
-          {
-            name: 'Loss',
-            id: 'tutorial_loss-tab',
-            interactiveInfo: {
+          'Loss': {
+            btnId: 'tutorial_loss-tab',
+            btnInteractiveInfo: {
               title: 'Loss',
               text: 'View the loss.'
             }
           },
-          {
-            name: 'F1',
-            id: 'tutorial_f1-tab',
-            interactiveInfo: {
+          'F1': {
+            btnId: 'tutorial_f1-tab',
+            btnInteractiveInfo: {
               title: 'F1',
               text: 'View the F1 score.'
             }
           },
-          {
-            name: 'AUC',
-            id: 'tutorial_auc-tab',
-            interactiveInfo: {
+          'AUC': {
+            btnId: 'tutorial_auc-tab',
+            btnInteractiveInfo: {
               title: 'AUC',
               text: 'View the AUC.'
             }
           },
-        ],
+        },
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
         colorPie: ['#6B8FF7', '#383F50'],

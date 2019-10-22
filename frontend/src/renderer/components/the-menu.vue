@@ -130,7 +130,6 @@ export default {
         {
           label: 'Settings', visible: true,
           submenu: [
-            {label: 'Hyperparameters', enabled: this.openApp,  active: this.openHyperparameters },
             {label: 'Edit profile',    enabled: false,         active: function() {} },
             {label: 'History',         enabled: false,         active: function() {} },
           ]
@@ -303,9 +302,6 @@ export default {
     },
     showTutorial() {
       this.$store.dispatch('mod_tutorials/START_storyboard');
-    },
-    openHyperparameters() {
-      this.$store.commit('globalView/GP_showNetGlobalSet', true);
     },
     openModel() {
       if(this.isTutorialMode) {

@@ -248,9 +248,8 @@ export default {
     ...mapMutations({
       setInteractiveInfo:     'mod_tutorials/SET_interactiveInfo',
       set_showTrainingSpinner:'mod_workspace/SET_showStartTrainingSpinner',
-      event_runNetwork:       'mod_events/set_runNetwork',
-      showNetGlobalSet:       'globalView/GP_showNetGlobalSet',
       set_hideLayers:         'globalView/SET_hideLayers',
+      GP_showCoreSideSettings:'globalView/GP_showCoreSideSettings',
     }),
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
@@ -277,8 +276,7 @@ export default {
     trainStart() {
       let valid = this.validateNetwork();
       if (!valid) return;
-      this.event_runNetwork(true);
-      this.showNetGlobalSet(true);
+      this.GP_showCoreSideSettings(true);
     },
     trainStop() {
       this.stopTraining();

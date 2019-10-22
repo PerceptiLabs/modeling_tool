@@ -133,15 +133,15 @@ const actions = {
   //  NETWORK TRAINING
   //---------------
   API_startTraining({dispatch, getters, rootGetters}) {
-    const net = rootGetters['mod_workspace/GET_currentNetwork'];
+    //const net = rootGetters['mod_workspace/GET_currentNetwork'];
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "Start",
       value: {
-        Hyperparameters: net.networkSettings,
         Layers: getters.GET_coreNetwork
       }
     };
+    console.log('API_startTraining', theData);
     coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});

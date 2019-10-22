@@ -51,16 +51,11 @@
           Gradients: {
             Gradients: null,
           }},
-        //currentTab: 'Weights & Output',
-        tabset: ['Weights & Output', 'Bias', 'Gradients'],
+        btnList: {'Weights & Output': null, 'Bias': null, 'Gradients': null},
         colorList: ['#83c1ff', '#0070d6', '#6b8ff7']
       }
     },
     methods: {
-      // setTab(name) {
-      //   this.currentTab = name;
-      //   this.setTabAction();
-      // },
       getData() {
         switch (this.currentTab) {
           case 'Weights & Output':
