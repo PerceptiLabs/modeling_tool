@@ -5,6 +5,7 @@ backend/net.json
 **/__pycache__/
 *.pyc
 *.py~
+*.zip
 *#*#
 .vscode/
 backend/.vscode/
