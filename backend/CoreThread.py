@@ -14,28 +14,18 @@ class CoreThread(threading.Thread):
       try:
          self.func()
 
-      except SyntaxError as e:
-         print("--------------------------------")
-         print(traceback.format_exc())
-         print("--------------------------------")
-
-         # with configure_scope() as scope:
-#             scope.set_extra("network",self.network)
-
-         capture_exception()
-         tbObj=traceback.TracebackException(*sys.exc_info())
-         self.errorQueue.put("".join(tbObj.format_exception_only()))
-
       except Exception as e:
-         print("--------------------------------")
-         print(traceback.format_exc())
-         print("--------------------------------")
+         capture_exception()         
+         log.exception("Unexpected exception in CoreThread")
+         #print("--------------------------------")
+         #print(traceback.format_exc())
+         #print("--------------------------------")
 
          # with configure_scope() as scope:
 #             scope.set_extra("network",self.network)
 
-         capture_exception()
-         self.errorQueue.put(str(e))
+
+         self.errorQueue.put("Internal error in CoreThread!")
 
    def join(self, timeout=None):
       # self.commandQ.put("Stop")
