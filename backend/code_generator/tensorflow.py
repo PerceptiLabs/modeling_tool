@@ -391,6 +391,9 @@ class TrainLossCodeGenerator(CodeGenerator):
         elif self._loss_function == "Quadratic":
             code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
 
+        elif self._loss_function == "Regression":
+            code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
+
         elif self._loss_function == "W_cross_entropy":
             code += "batch_size = y_pred.get_shape().as_list()[0]\n"
             code += "flat_pred = tf.reshape(y_pred, [batch_size, -1])\n"
@@ -483,8 +486,12 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "# Metrics\n"
         code += "correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_label,-1))\n"
         code += "accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))\n"
-        code += "f1, _ = tf.contrib.metrics.f1_score(y_label, y_pred)\n"
-        code += "auc, _ = tf.metrics.auc(labels=y_label, predictions=y_pred, curve='ROC')\n"
+        if self._loss_function == "Regression":
+        	code += "f1 = tf.constant(0)\n"
+        	code += "auc = tf.constant(0)\n"
+        else:
+	        code += "f1, _ = tf.contrib.metrics.f1_score(y_label, y_pred)\n"
+	        code += "auc, _ = tf.metrics.auc(labels=y_label, predictions=y_pred, curve='ROC')\n"
         code += "\n"
 
         code += "# Gradients\n"
