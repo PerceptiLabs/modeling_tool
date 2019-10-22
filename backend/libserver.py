@@ -678,7 +678,7 @@ class Message:
         self._write()
 
     def close(self):
-        print("closing connection to", self.addr)
+        log.info("closing connection to {}".format(self.addr))
         try:
             self.selector.unregister(self.sock)
         except Exception as e:

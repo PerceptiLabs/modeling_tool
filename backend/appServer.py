@@ -1,13 +1,23 @@
 import sys
 import socket
+import logging
 import selectors
 import traceback
-
-import libserver
-
 import sentry_sdk
 
+import libserver
+from analytics.scraper import get_scraper
+from databundle import DataBundle
+
+log = logging.getLogger(__name__)
+scraper = get_scraper()
+
 def mainServer():
+    data_bundle = DataBundle()
+    
+    scraper.start()
+    scraper.set_output_directory(data_bundle.path)
+    
     sentry_sdk.init("https://9b884d2181284443b90c21db68add4d7@sentry.io/1512385")
 
     sel = selectors.DefaultSelector()
@@ -18,7 +28,7 @@ def mainServer():
 
     def accept_wrapper(sock):
         conn, addr = sock.accept()  # Should be ready to read
-        print("accepted connection from", addr)
+        log.info("accepted connection from {}".format(addr))
         conn.setblocking(False)
         message = libserver.Message(sel, conn, addr, cores, dataDict,checkpointDict,lwNetworks)
         sel.register(conn, selectors.EVENT_READ, data=message)
@@ -33,10 +43,11 @@ def mainServer():
     # except:
     #     return 0
     lsock.listen()
-    print("listening on", (host, port))
+    log.info("listening on {}:{}".format(host, port))
     lsock.setblocking(False)
     sel.register(lsock, selectors.EVENT_READ, data=None)
-
+    
+    
     try:
         while True:
             events = sel.select(timeout=None)
@@ -59,5 +70,12 @@ def mainServer():
     except SystemExit:
         print("closing application")
     finally:
+        log.info("Closing selector")        
         sel.close()
-        print("All closed")
+        log.info("All closed")        
+
+        log.info("Stopping scraper")
+        scraper.stop()
+
+        log.info("Uploading data bundle...")
+        data_bundle.upload_and_clear()

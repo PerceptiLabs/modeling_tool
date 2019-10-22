@@ -17,9 +17,10 @@ from core_new.utils import set_tensorflow_mode
 from core_new.history import SessionHistory
 from core_new.session import LayerSession, LayerSessionStop, LayerIo
 from core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
+from analytics.scraper import get_scraper
 
 log = logging.getLogger(__name__)
-
+scraper = get_scraper()
 
 class SessionProcessHandler:
     def __init__(self, graph_dict, data_container, command_queue, result_queue):  # mode
@@ -163,7 +164,8 @@ class LayerExtrasReader:
         self._put_in_dict(session.layer_id, {"errorMessage": "%s at line %d: %s" % (error_class, line_number, detail), "errorRow": line_number})
     
 
-class BaseCore:
+class BaseCore:    
+    @scraper.monitor(tag='core_init')
     def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, session_process_handler=None,
                  layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpointValues=None): 
         self._graph = graph_dict
