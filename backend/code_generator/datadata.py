@@ -22,7 +22,6 @@ class FileNumpyStrategy(AbstractStrategy):
         code += "    api.cache.put('%s', data_mat)\n" % self._path
         code += "else:\n"
         code += "    data_mat = api.cache.get('%s')\n" % self._path
-        # code += "np.random.shuffle(data_mat)\n"
         code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
                                                                 rate_train, rate_valid, rate_test)
         return code
@@ -71,7 +70,25 @@ class DirectoryImageStrategy(AbstractStrategy):
                                                                 rate_train, rate_valid, rate_test)
         return code
 
-        
+
+class FileJsonStrategy(AbstractStrategy):
+    def __init__(self, path):
+        self._path = path
+
+    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
+        code  = "if '%s' not in api.cache:\n" % self._path
+        code += "    with open('%s', 'r') as f:\n" % self._path
+        code += "        json_dict = json.load(f)\n"        
+        code += "    df = pd.DataFrame.from_dict(json_dict)\n"
+        code += "    data_mat = df.to_numpy().astype(np.float32)\n"
+        code += "    api.cache.put('%s', data_mat)\n" % self._path
+        code += "else:\n"
+        code += "    data_mat = api.cache.get('%s')\n" % self._path
+        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                rate_train, rate_valid, rate_test)
+        return code
+
+    
 class S3BucketImageStrategy(AbstractStrategy):
     def __init__(self, bucket, region_name, delimiter, prefix,
                  aws_access_key_id, aws_secret_access_key):
@@ -167,7 +184,7 @@ class DataDataCodeGenerator(CodeGenerator):
             self._partitions.append(partition)
             self._strategies.append(self._select_strategy(source))
         
-    def get_code(self, mode='normal'):
+    def get_code(self):
         code = ''
         code += 'np.random.seed(%d)\n\n' % self._seed
         
@@ -282,9 +299,9 @@ class DataDataCodeGenerator(CodeGenerator):
     def _select_file_strategy(self, file_path):
         _, ext = os.path.splitext(file_path)
 
-        if ext == '.npy':
+        if ext in ['.npy', '.npz']:
             strategy = FileNumpyStrategy(file_path)
-        elif ext == '.csv':
+        elif ext in ['.csv', '.txt']:
             strategy = FileCsvStrategy(file_path, self.columns)
         else:
             raise NotImplementedError("Extension {} not implemented".format(ext))
@@ -299,7 +316,7 @@ class DataDataCodeGenerator(CodeGenerator):
             raise ValueError("Can only contain one (and atleast one) type of file!")        
 
         ext = extensions[0]
-        if ext in ['.jpg', '.png']:
+        if ext in ['.jpg', '.png', '.jpeg', '.tif', '.tiff']:
             strategy = DirectoryImageStrategy(directory_path)
         else:
             raise NotImplementedError("Extension {} not implemented".format(ext))            
@@ -316,7 +333,7 @@ class DataDataCodeGenerator(CodeGenerator):
             raise ValueError("Can only contain one (and atleast one) type of file!")        
         
         ext = extensions[0]
-        if ext in ['.jpg', '.png']:
+        if ext in ['.jpg', '.png', '.jpeg', '.tiff', '.tif']:
             strategy = S3BucketImageStrategy(bucket, region_name, delimiter, prefix,
                                              aws_access_key_id, aws_secret_access_key)
         elif ext in ['.json']:
