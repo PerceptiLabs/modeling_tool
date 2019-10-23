@@ -805,8 +805,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: `In the <div class="marker">Top Toolbar</div> go to <div class="marker">Run</div>
-                    Check all inputs in General Settings and click Apply`,
+          content: `In the <div class="marker">Top Toolbar</div> go to <div class="marker">Run</div>`,
           hoverInfo: [
 /*            {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -891,7 +890,7 @@ const state = {
               id: 'tutorial_partition-training-input',
               status: 'disabled'
             },*/
-            {
+/*            {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Epoch:</div> refers to the number of times </br> you want to run through your entire dataset. </br>
                           <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
@@ -900,7 +899,7 @@ const state = {
               id: 'tutorial_epochs-input',
               status: 'disabled',
               animation: true,
-            },
+            },*/
           ]
         },
       ]
