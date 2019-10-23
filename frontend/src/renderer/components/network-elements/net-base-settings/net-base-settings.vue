@@ -25,6 +25,9 @@
           slot(:name="tabContent+'-content'")
         #js-hide-btn.settings-layer_foot
           slot(:name="tabContent+'-action'")
+            button.btn.btn--primary.btn--disabled(type="button"
+              @click="hideAllWindow"
+            ) Cancel
             button.btn.btn--primary(type="button"
               @click="applySettings(tabContent)"
               :id="idSetBtn"
@@ -48,6 +51,7 @@
 export default {
   name: 'NetBaseSettings',
   components: {SettingsPreview },
+  inject: ['hideAllWindow'],
   props: {
     tabSet: {
       type: Array,
@@ -62,6 +66,10 @@ export default {
       type: String,
       default: ''
     },
+    showPreview: {
+      type: Boolean,
+      default: false
+    }
   },
   mounted() {
     this.toSettings();
@@ -76,6 +84,11 @@ export default {
   computed: {
     isTutorial() {
       return this.$store.getters['mod_tutorials/getIstutorialMode']
+    }
+  },
+  watch: {
+    showPreview(newVal) {
+      if(newVal) this.tabSelected = 'Preview';
     }
   },
   methods: {
@@ -131,6 +144,16 @@ export default {
     .settings-layer {
       max-height: none;
       overflow: hidden;
+    }
+  }
+  .settings-layer_foot {
+    justify-content: flex-end;
+    .btn {
+      height: auto;
+      min-width: 7rem;
+    }
+    .btn + .btn {
+      margin-left: .8rem;
     }
   }
 </style>
