@@ -1,5 +1,3 @@
-
-
 def dump_system_info(path):
     import multiprocessing
     import platform
@@ -18,9 +16,19 @@ def dump_system_info(path):
     }
 
     with open(path, 'w') as f:
-        json.dump(info, f, indent=4)    
+        json.dump(info, f, indent=4)
 
+        
+def dump_build_info(path):
+    import json
+
+    info = {}
+    info['commit'] = ''
+    info['version'] = ''    
     
+    with open(path, 'w') as f:
+        json.dump(info, f, indent=4)
+
 
     
 

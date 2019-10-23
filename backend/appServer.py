@@ -23,6 +23,7 @@ def mainServer():
     ]                               
     data_bundle = DataBundle(data_uploaders)
     utils.dump_system_info(os.path.join(data_bundle.path, 'system_info.json'))
+    utils.dump_build_info(os.path.join(data_bundle.path, 'build_info.json'))    
 
     scraper.start()
     scraper.set_output_directory(data_bundle.path)
