@@ -155,7 +155,7 @@ const actions = {
   API_pauseTraining({dispatch, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause' , // Pause and Unpause
+      action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause', // Pause and Unpause
       value: ''
     };
     //console.log('API_pauseTraining', theData);
@@ -294,7 +294,7 @@ const actions = {
       action: "getNetworkInputDim",
       value: getters.GET_coreNetwork
     };
-    console.log('getNetworkInputDim request', theData);
+    //console.log('getNetworkInputDim request', theData);
     return coreRequest(theData)
       .then((data)=> {
         console.log('getNetworkInputDim answer', data);
@@ -332,7 +332,7 @@ const actions = {
         Variable: varData
       }
     };
-    console.log('getPreviewSample', theData);
+    //console.log('getPreviewSample', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
