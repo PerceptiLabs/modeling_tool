@@ -30,6 +30,8 @@
               span Weighted Cross-Entropy
             base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
               span DICE
+            base-radio(group-name="group" value-input="Regression" v-model="settings.Loss")
+              span Regression
               //-Cross-Entropy
         .form_row(v-if="settings.Loss === 'W_cross_entropy'")
           .form_label Class weights:

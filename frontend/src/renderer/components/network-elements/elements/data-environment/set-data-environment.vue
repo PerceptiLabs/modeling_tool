@@ -22,7 +22,7 @@
         .form_row
           .form_label History length:
           .form_input
-            input(type="number" v-model="settings.accessProperties.Batch_size")
+            input(type="number" v-model="settings.accessProperties.History_length")
 
     template(slot="<i class='icon icon-search'></i> Unity-content")
       .settings-layer_section
@@ -57,7 +57,7 @@
     components: { ChartSwitch},
     mounted() {
 
-      this.getPreviewSample();
+      //this.getPreviewSample();
     },
     data() {
       return {
@@ -112,6 +112,7 @@
     methods: {
       setTab(i) {
         this.tabSelected = i;
+        if(i === 'Gym') this.getPreviewSample();
         // this.settings.accessProperties.EnvType = this.tabs[i].type;
         // this.Mix_settingsData_imgData = null;
         // this.Mix_settingsData_dataSettingsPlot('DataEnvironment')
