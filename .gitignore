@@ -31,3 +31,4 @@ frontend/src/node_modules/
 .idea/workspace.xml
 ../.idea/workspace.xml
 .vscode/*
+app.log

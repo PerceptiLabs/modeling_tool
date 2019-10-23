@@ -1,10 +1,12 @@
 import os
 import sys
 import socket
+import shutil
 import logging
 import selectors
 import traceback
 import sentry_sdk
+
 
 import utils
 import libserver
@@ -21,7 +23,7 @@ def mainServer():
     ]                               
     data_bundle = DataBundle(data_uploaders)
     utils.dump_system_info(os.path.join(data_bundle.path, 'system_info.json'))
-    
+
     scraper.start()
     scraper.set_output_directory(data_bundle.path)
     
@@ -84,5 +86,7 @@ def mainServer():
         log.info("Stopping scraper")
         scraper.stop()
 
+        shutil.copyfile('app.log', os.path.join(data_bundle.path, 'app.log'))
+        
         log.info("Uploading data bundle...")
         data_bundle.upload_and_clear()
