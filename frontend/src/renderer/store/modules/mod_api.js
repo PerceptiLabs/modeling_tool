@@ -311,10 +311,10 @@ const actions = {
       action: "getNetworkOutputDim",
       value: getters.GET_coreNetwork
     };
-    console.log('API_getOutputDim');
+    //console.log('API_getOutputDim');
     return coreRequest(theData)
       .then((data)=> {
-        console.log('API_getOutputDim answer', data);
+        //console.log('API_getOutputDim answer', data);
         if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
         return true;
       })
@@ -390,8 +390,12 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
+    console.log('API_getDataMeta', theData);
     return coreRequest(theData)
-      .then((data)=> data)
+      .then((data)=> {
+        console.log('API_getDataMeta ans', data);
+        return data
+      })
       .catch((err)=> {
         console.error(err);
       });
