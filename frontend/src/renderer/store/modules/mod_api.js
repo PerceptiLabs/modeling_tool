@@ -141,7 +141,7 @@ const actions = {
         Layers: getters.GET_coreNetwork
       }
     };
-    console.log('API_startTraining', theData);
+    //console.log('API_startTraining', theData);
     coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
@@ -158,22 +158,15 @@ const actions = {
       action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause' , // Pause and Unpause
       value: ''
     };
+    //console.log('API_pauseTraining', theData);
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_pauseTraining answer', data);
-        dispatch('API_getStatus');
         if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
-          dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
           dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
           dispatch('API_getStatus');
-          setTimeout(()=> {
-            dispatch('API_getStatus');
-          }, 1000)
-          //pauseAction = 'Unpause';
         }
         else {
           dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
-          //pauseAction = 'Pause';
         }
       })
       .catch((err)=> {
@@ -457,7 +450,7 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_getStatus answer', data);
+        //console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err)=> {
