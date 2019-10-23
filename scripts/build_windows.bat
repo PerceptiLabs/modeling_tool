@@ -14,7 +14,7 @@ mkdir backend_out
 mkdir frontend_out 
 
 cd backend_tmp
-copy ..\..\backend\*.py . 
+xcopy /s ..\..\backend\ . 
 
 del minicodehq.py
 del appOc.py

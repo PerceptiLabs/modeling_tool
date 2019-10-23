@@ -18,6 +18,7 @@ from networkSaver import saveNetwork
 from modules import ModuleProvider
 from core_new.core import *
 from core_new.data import DataContainer
+from core_new.errors import CoreErrorHandler
 from core_new.history import SessionHistory
 from analytics.scraper import get_scraper
 
@@ -68,15 +69,19 @@ class coreLogic():
 
         from codehq import CodeHqNew as CodeHq
 
+        error_handler = CoreErrorHandler(self.errorQueue)
+        
+
         module_provider = ModuleProvider()
         module_provider.load('tensorflow', as_name='tf')
         module_provider.load('numpy', as_name='np')
         module_provider.load('pandas', as_name='pd')
         module_provider.load('gym')   
 
-        session_history = SessionHistory()        
+        session_history = SessionHistory()
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
-        self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider, session_proc_handler, checkpointValues) 
+        self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
+                         error_handler, session_proc_handler, checkpointValues) 
 
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()

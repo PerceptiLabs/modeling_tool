@@ -3,11 +3,11 @@
     .popup-global_overlay(@click="closePopup()")
     section.popup
       .popup_tab-set
-        .popup_header.active
-          .header_attention !
+        //.popup_header.active
       .popup_body
         .settings-layer_section
-          p.middle-text.text-center {{infoPopup}}
+          .section_attention !
+          p.section_text.middle-text.text-center {{infoPopup}}
       .popup_foot
         button.btn-info-popup(type="button"
           @click="ok") Ok

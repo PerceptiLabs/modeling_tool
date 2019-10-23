@@ -14,6 +14,8 @@ from modules import ModuleProvider
 from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer
 from core_new.utils import set_tensorflow_mode
+from core_new.extras import LayerExtrasReader
+from core_new.errors import LayerSessionAbort
 from core_new.history import SessionHistory, HistoryInputException
 from core_new.session import LayerSession, LayerSessionStop, LayerIo
 from core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
@@ -74,152 +76,46 @@ class SessionProcessHandler:
         elif dashboard == "train_reinforce":
             data_policy = TrainReinforceDataPolicy(session, data_dict, self._graph)
         return data_policy
-        
 
-class LayerExtrasReader:
-    def __init__(self):
-        self._dict = {}
-
-    def to_dict(self):
-        return copy.copy(self._dict)
-
-    def _put_in_dict(self, key, value):
-        try:
-            self._dict[key].update(value)
-        except:
-            self._dict[key]=value
-
-    def _evalSample(self,sample):
-        if isinstance(sample, tf.Tensor) or isinstance(sample, tf.Variable):
-            return sample.numpy()
-        else:
-            return sample
-
-    def set_empty(self, layer_id):
-        self._put_in_dict(layer_id,{'Sample': '', 'outShape': '', 'inShape': '', 'Variables': '', 'Default_var':''})
-
-    def read(self, session, data_container):
-        outShape = ''
-        # Y = session.outputs.locals.get('Y')
-        # if isinstance(Y, tf.Tensor):
-        #     outShape = Y.shape.as_list()
-        #     outShape=outShape[1:]
-        #     if not outShape:
-        #         outShape=[1]
-                
-        sample = ''
-        inShape=''
-        default_var=''
-        layer_keys=[]
-        if session.layer_id in data_container:
-            layer_dict = data_container[session.layer_id]
-
-            if 'Y' in layer_dict:
-                Y = layer_dict['Y'] 
-                if isinstance(Y, tf.Tensor):
-                    outShape = Y.shape.as_list()
-                    outShape=outShape[1:]
-                else:
-                    outShape = np.shape(Y)[1:]
-                if not outShape:
-                    outShape=[1]
-            
-            if 'sample' in layer_dict:
-                sample = layer_dict['sample']
-                default_var = 'sample'
-            elif 'Y' in layer_dict:
-                sample = layer_dict['Y']
-                default_var = 'Y'
-
-            if "X" in layer_dict and "Y" in layer_dict["X"]:
-                Xy = layer_dict["X"]["Y"]
-                if isinstance(Xy, tf.Tensor):
-                    inShape = Xy.shape.as_list()
-                    inShape=inShape[1:]
-                    if not inShape:
-                        inShape=[1]
-
-            layer_keys = list(layer_dict.keys())
-
-            sample=self._evalSample(sample)
-
-        self._put_in_dict(session.layer_id,{'Sample': sample, 'outShape': outShape, 'inShape': str(inShape).replace("'",""), 'Variables': layer_keys, 'Default_var':default_var})
-        # print("Session dict:", self.to_dict())
-
-    def read_syntax_error(self, session):
-        tbObj=traceback.TracebackException(*sys.exc_info())
-
-        self._put_in_dict(session.layer_id,{"errorMessage": "".join(tbObj.format_exception_only()), "errorRow": tbObj.lineno or "?"})    
-
-    def read_error(self, session, e):
-        error_class = e.__class__.__name__
-        detail = e
-        _, _, tb = sys.exc_info()
-        tb_list=traceback.extract_tb(tb)
-        line_number=""
-        for i in tb_list:
-            if i[2]=="<module>":
-                line_number=i[1]
-
-        if line_number=="":
-            line_number = tb.tb_lineno
-
-        self._put_in_dict(session.layer_id, {"errorMessage": "%s at line %d: %s" % (error_class, line_number, detail), "errorRow": line_number})
     
-
 class BaseCore:    
     @scraper.monitor(tag='core_init')
-    def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, session_process_handler=None,
+    def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, error_handler, session_process_handler=None,
                  layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpointValues=None): 
         self._graph = graph_dict
         self._codehq = codehq
         self._data_container = data_container
         self._tf_eager = tf_eager
         self._session_process_handler = session_process_handler
+        self._error_handler = error_handler
         self._layer_extras_reader = layer_extras_reader
         self._session_history = session_history        
-        self._skip_layers = skip_layers if skip_layers is not None else []
+        self._skip_layers = skip_layers or []
         self._module_provider = module_provider
         self._checkpointValues = checkpointValues
 
     def run(self):
-        log.info("Running core [{}]".format(self.__class__.__name__))
-        self._data_container.reset()
-        self._session_history.cache.invalidate(keep_layers=self._graph.keys())
-
-        log.info("Layers will be executed in the following order: " \
-                 + ", ".join([id_ + ' [' + cont["Info"]["Type"]+']' for id_, cont in self._graph.items()]))
-
+        self._reset()        
+        self._print_basic_info()
         
-        if len(self._module_provider.hooks) > 0:
-            targets = [x for x in self._module_provider.hooks.keys()]
-            log.info("Module hooks installed are: {}".format(", ".join(targets)))
-        else:
-            log.info("No module hooks installed")        
-
-        if self._tf_eager:
-            set_tensorflow_mode('eager')
-        else:
-            set_tensorflow_mode('graph') # Default to graph mode
+        set_tensorflow_mode('eager' if self._tf_eager else 'graph')
 
         for layer_id, content in self._graph.items():
             layer_type = content["Info"]["Type"]
-            if not (content["Info"]["Properties"] or ("Code" in content["Info"] and content["Info"]["Code"])):
-                continue
-            if layer_type in self._skip_layers:
-                log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
+
+            if self._should_skip_layer(layer_id, content):
                 continue
 
             log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
             try:
                 self._run_layer(layer_id, content)
             except LayerSessionStop:
-                log.info("Stop requested during execution of layer session {}".format(layer_id))                
+                log.info("Stop requested during session {}".format(layer_id))                
+                break
+            except LayerSessionAbort:
+                log.info("Error handler aborted session {}".format(layer_id))
                 break
 
-        if self._tf_eager:
-            set_tensorflow_mode('graph')        
-            
     def _run_layer(self, id_, content):        
         code_gen = self._codehq.get_code_generator(id_, content)
         log.debug(repr(code_gen))
@@ -248,19 +144,8 @@ class BaseCore:
             session.run()
         except LayerSessionStop:
             raise # Not an error. Re-raise.
-        except SyntaxError as e:
-            self.on_error(session, traceback.format_exc())            
-            if self._layer_extras_reader is not None:
-                self._layer_extras_reader.read_syntax_error(session)
-            else:
-                raise
         except Exception as e:
-            self.on_error(session, traceback.format_exc())
-            if self._layer_extras_reader is not None:
-                self._layer_extras_reader.read_error(session,e)
-            else:
-                raise
-
+            self._error_handler.handle_run_error(session, e)
 
         self._session_history[id_] = session
 
@@ -284,30 +169,49 @@ class BaseCore:
         
         locals_=outputs.locals
 
-        return globals_, locals_        
+        return globals_, locals_
+    
+    def _reset(self):
+        self._data_container.reset()
+        self._session_history.cache.invalidate(keep_layers=self._graph.keys())
+        self._error_handler.reset()
 
-    def on_error(self, session, formatted_exception):
-        """ Handling of errors received when executing layer code """
+        if self._layer_extras_reader is not None:
+            self._layer_extras_reader.clear()            
 
-        # Add line numbers to the code
-        code_lines = session.code.split('\n')
-        code_lines = ["%d %s" % (i, l) for i, l in enumerate(code_lines, 1)]
-        code = "\n".join(code_lines)
+    def _print_basic_info(self):
+        log.info("Running core [{}]".format(self.__class__.__name__))
+        
+        layer_repr = [id_ + ' [' + cont["Info"]["Type"]+']' for id_, cont in self._graph.items()]
+        log.info("Layers will be executed in the following order: "+ ", ".join(layer_repr))
+        
+        if len(self._module_provider.hooks) > 0:
+            targets = [x for x in self._module_provider.hooks.keys()]
+            log.info("Module hooks installed are: {}".format(", ".join(targets)))
+        else:
+            log.info("No module hooks installed")
 
-        message  = "Exception when running layer session %s:\n" % session.layer_id
-        message += "%s\n" % code
-        message += "\n"
-        message += formatted_exception
-        log.error(message)
+    def _should_skip_layer(self, layer_id, content):
+        if not (content["Info"]["Properties"] \
+                or ("Code" in content["Info"] and content["Info"]["Code"])):
+            return True
 
-        # TODO: post message to error queue???
+        layer_type = content["Info"]["Type"]                
+        if layer_type in self._skip_layers:
+            log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
+            return True
+        
+        return False
 
+    @property
+    def error_handler(self):
+        return self._error_handler
 
 class Core(BaseCore):
     def __init__(self, codehq, graph_dict, data_container, session_history,
-                 module_provider, session_process_handler, checkpointValues=None):
+                 module_provider, error_handler, session_process_handler, checkpointValues=None):
         super().__init__(codehq, graph_dict, data_container,
-                         session_history, module_provider,
+                         session_history, module_provider, error_handler,
                          session_process_handler=session_process_handler,
                          checkpointValues=checkpointValues)
 
