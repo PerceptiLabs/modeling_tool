@@ -125,7 +125,7 @@ const mutations = {
     let newNetwork = {};
     //-- DEFAULT DATA
     const defaultNetwork = {
-      networkName: 'New_Network',
+      networkName: 'New_Model',
       networkID: '',
       networkMeta: {},
       networkElementList: null,
