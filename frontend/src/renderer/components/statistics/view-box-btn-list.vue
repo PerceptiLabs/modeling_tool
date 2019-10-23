@@ -6,10 +6,10 @@
     )
       button.btn.btn--tabs.statistics-box_btn.tutorial-relative(type="button"
         v-if="tabINfo"
-        @click="setCurrentTab(name, tabINfo.id)"
-        v-tooltip-interactive:bottom="tabINfo.interactiveInfo"
+        @click="setCurrentTab(name, tabINfo.btnId)"
+        v-tooltip-interactive:bottom="tabINfo.btnInteractiveInfo"
         :class="[currentTab === name ?  'active' : '', tabINfo.btnClass]"
-        :id="tabINfo.id"
+        :id="tabINfo.btnId"
       ) {{ name }}
 
       button.btn.btn--tabs.statistics-box_btn(type="button"
@@ -17,19 +17,6 @@
         @click="setCurrentTab(name)"
         :class="{'active': currentTab === name}"
       ) {{ name }}
-
-  //-ul.statistics-box_tabset(v-if="!testIsOpen")
-      li.statistics-box_tab(
-      v-for="(tab, i) in tabset"
-      /:key="i"
-      )
-        button.btn.btn--tabs.tutorial-relative(
-        type="button"
-        v-tooltip-interactive:right="tab.interactiveInfo"
-        @click="setTab(tab.name, tab.id)"
-        /:class="{'active': currentTab === tab.name}"
-        /:id="tab.id"
-        ) {{ tab.name }}
 </template>
 
 <script>
