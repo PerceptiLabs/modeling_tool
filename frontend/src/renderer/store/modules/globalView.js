@@ -103,6 +103,9 @@ const actions = {
   GP_infoPopup({commit}, value) {
     commit('gp_infoPopup', value);
   },
+  GP_ComingSoonPopup({commit}) {
+    commit('gp_infoPopup', 'Coming soon');
+  },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);
   },

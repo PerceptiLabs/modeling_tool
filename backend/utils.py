@@ -28,8 +28,3 @@ def dump_build_info(path):
     
     with open(path, 'w') as f:
         json.dump(info, f, indent=4)
-
-
-    
-
-    

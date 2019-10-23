@@ -1,8 +1,7 @@
 <template lang="pug">
   net-base-settings(
     :current-el="currentEl"
-    @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
+    :show-preview="showPreview"
   )
     template(slot="Settings-content")
       .settings-layer_section
@@ -62,6 +61,16 @@
         :el-settings="settings"
         v-model="coreCode"
       )
+    template(slot="Settings-action")
+      button.btn.btn--primary.btn--disabled(type="button"
+        @click="hideAllWindow"
+      ) Cancel
+      button.btn.btn--primary(type="button"
+        @click="applyRecurrentSettings"
+      ) Apply
+      button.btn.btn--primary(type="button"
+        v-coming-soon="true"
+      ) Custom
 
 </template>
 
@@ -71,8 +80,10 @@ import mixinSet       from '@/core/mixins/net-element-settings.js';
 export default {
   name: 'SetDeepLearningRecurrent',
   mixins: [mixinSet],
+  inject: ['hideAllWindow'],
   data() {
     return {
+      showPreview: false,
       settings: {
         Neurons: "10",
         Version: "LSTM", //#LSTM, GRU, RNN
@@ -94,6 +105,12 @@ export default {
           text: 'Choose how many time steps to use'
         }
       },
+    }
+  },
+  methods: {
+    applyRecurrentSettings() {
+      this.applySettings('Settings');
+      this.showPreview = true
     }
   }
 }
