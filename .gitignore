@@ -32,3 +32,4 @@ frontend/src/node_modules/
 ../.idea/workspace.xml
 .vscode/*
 app.log
+backend.log

@@ -25,15 +25,15 @@ class AzureUploader:
         self._acc_key = account_key
         self._container = container_name
 
-    def upload(self, path):
+    def upload(self, file_path):
         block_blob_service = BlockBlobService(account_name=self._acc_name,
                                               account_key=self._acc_key)
-        file_name = os.path.basename(path)
+        file_name = os.path.basename(file_path)
         
         block_blob_service.create_blob_from_path(
             self._container,
             file_name,
-            file_name,
+            file_path,            
             content_settings=ContentSettings(content_type='application/zip')
         )
 
@@ -43,24 +43,35 @@ class AzureUploader:
     
 class DataBundle:
     def __init__(self, uploaders=None):
-        self._path = tempfile.mkdtemp(prefix='bundle_')
-        self._uploaders = uploaders or [] 
+        self._contents_path = tempfile.mkdtemp(prefix='bundle_contents_')
+        self._archives_path = tempfile.mkdtemp(prefix='bundle_archives_')                
+        self._uploaders = uploaders or []
 
-    def compress(self, output_path, type_):
-        files = os.listdir(self._path)
+    def compress(self):
+        files = os.listdir(self._contents_path)
         if len(files) == 0:
             log.info("No files to compress.")
+            return None
         else:
-            log.info("Compressing files: {}".format(", ".join(os.listdir(self._path))))
+            log.info("Compressing files: {}".format(", ".join(files)))
+
+            zip_name = "{}_{}".format(int(time.time()), uuid.uuid4().hex)        
+            path_no_ext = os.path.join(self._archives_path, zip_name)
+            full_path = path_no_ext + '.zip'
+
+            print(full_path)
             
-        shutil.make_archive(output_path, type_, self._path)
-    
+            shutil.make_archive(path_no_ext, 'zip', root_dir=self._contents_path, logger=log)
+            shutil.copyfile(full_path, 'bundle.zip') # TODO: only in debug mode??
+            return full_path
+        
     def clear(self):
-        shutil.rmtree(self._path)
+        shutil.rmtree(self._contents_path)
+        shutil.rmtree(self._archives_path)        
         
     @property
     def path(self):
-        return self._path
+        return self._contents_path
 
     def upload(self, path):
         n_uploaders = len(self._uploaders)
@@ -86,11 +97,10 @@ class DataBundle:
 
     def upload_and_clear(self):
         try:
-            zip_name = "{}_{}".format(int(time.time()), uuid.uuid4().hex)        
-            self.compress(zip_name, 'zip')
-            path = zip_name + '.zip'
+            archive_path = self.compress()
             
-            self.upload(path)
+            if archive_path is not None:
+                self.upload(archive_path)
         except:
             log.exception("Error in upload and clear")
         finally:
