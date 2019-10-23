@@ -126,7 +126,10 @@
   color: $white;
   transition: none;
   min-width: 4rem;
-  padding: 1rem;
+  padding: 0.7rem;
+  &:hover {
+    background: $color-11;
+  }
   &.green-status {
     .icon {
       color: $color-1;
