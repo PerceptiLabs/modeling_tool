@@ -1,3 +1,4 @@
+import os
 import sys
 import socket
 import logging
@@ -5,6 +6,7 @@ import selectors
 import traceback
 import sentry_sdk
 
+import utils
 import libserver
 from analytics.scraper import get_scraper
 from databundle import DataBundle, AzureUploader, AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU, AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US
@@ -18,6 +20,7 @@ def mainServer():
         AzureUploader(AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US)        
     ]                               
     data_bundle = DataBundle(data_uploaders)
+    utils.dump_system_info(os.path.join(data_bundle.path, 'system_info.json'))
     
     scraper.start()
     scraper.set_output_directory(data_bundle.path)
