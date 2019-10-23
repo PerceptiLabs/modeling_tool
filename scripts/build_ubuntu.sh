@@ -3,7 +3,7 @@ EXCLUDED_FILES=(
     'appOc.py'
     'a2cagent.py'
     'frontend_data_code.py',
-    'core_test.py'
+    'core_test.py',
 )
 
 echo "Running build script."
@@ -35,9 +35,9 @@ mkdir backend_tmp
 mkdir backend_out
 mkdir frontend_out
 
-echo "Copying Python files files from ../../backend/"
+echo "Copying files files from ../../backend/"
 cd backend_tmp/
-cp ../../backend/*.py .
+cp -r ../../backend/* .
 
 for file in ${EXCLUDED_FILES[@]}
 do
