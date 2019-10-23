@@ -9,7 +9,6 @@
           .form_input
             input(type="text"
               v-model="settings.projectName"
-              :readonly="isEmptyPath"
               :class="{'bg-error': !settings.projectName}"
             )
       .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
@@ -18,7 +17,6 @@
           .form_input
             input.ellipsis(type="text"
               v-model="settings.projectPath"
-              :readonly="isEmptyPath"
               :class="{'bg-error': !settings.projectPath}"
               @click="loadPathProject"
             )

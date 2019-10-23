@@ -57,7 +57,7 @@
     components: { ChartSwitch},
     mounted() {
 
-      this.getPreviewSample();
+      //this.getPreviewSample();
     },
     data() {
       return {
@@ -112,6 +112,7 @@
     methods: {
       setTab(i) {
         this.tabSelected = i;
+        if(i === 'Gym') this.getPreviewSample();
         // this.settings.accessProperties.EnvType = this.tabs[i].type;
         // this.Mix_settingsData_imgData = null;
         // this.Mix_settingsData_dataSettingsPlot('DataEnvironment')

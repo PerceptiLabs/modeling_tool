@@ -155,7 +155,7 @@ const actions = {
   API_pauseTraining({dispatch, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Pause' ? 'Unpause' : 'Pause' , // Pause and Unpause
+      action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause' , // Pause and Unpause
       value: ''
     };
     coreRequest(theData)
