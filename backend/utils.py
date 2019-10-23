@@ -18,7 +18,7 @@ def dump_system_info(path):
     }
 
     with open(path, 'w') as f:
-        json.dump(info, f)    
+        json.dump(info, f, indent=4)    
 
     
 

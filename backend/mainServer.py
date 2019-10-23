@@ -23,7 +23,7 @@ def setup_logger():
                         level=logging.INFO,
                         handlers=[
                             logging.StreamHandler(),
-                            logging.FileHandler(FILE_NAME)
+                            logging.FileHandler(FILE_NAME, mode='w')
                         ])
     
 if __name__ == "__main__":

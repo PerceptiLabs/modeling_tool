@@ -55,8 +55,7 @@ def mainServer():
     log.info("listening on {}:{}".format(host, port))
     lsock.setblocking(False)
     sel.register(lsock, selectors.EVENT_READ, data=None)
-    
-    
+        
     try:
         while True:
             events = sel.select(timeout=None)
@@ -86,6 +85,7 @@ def mainServer():
         log.info("Stopping scraper")
         scraper.stop()
 
+        log.info("Copying logfile to data bundle. ")
         shutil.copyfile('app.log', os.path.join(data_bundle.path, 'app.log'))
         
         log.info("Uploading data bundle...")
