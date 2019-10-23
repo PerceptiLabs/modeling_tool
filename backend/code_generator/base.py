@@ -61,7 +61,7 @@ class CustomCodeGenerator(CodeGenerator):
         self._code_parts=new_code_parts
         
 
-    def get_code(self, mode='normal'):    
+    def get_code(self):    
         code = ''
         for cp in self._code_parts:
             code += cp.code + '\n'            

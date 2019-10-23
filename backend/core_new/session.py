@@ -125,6 +125,7 @@ class LayerSession(ApiCallbackHandler):
             self._process_handler.on_process(self, dashboard)            
             
         if self._stopped:
+            log.info("Core has been stopped")
             raise LayerSessionStop
 
         self._process_handler.on_process(self, dashboard)

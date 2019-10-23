@@ -18,6 +18,7 @@ from networkSaver import saveNetwork
 from modules import ModuleProvider
 from core_new.core import *
 from core_new.data import DataContainer
+from core_new.errors import CoreErrorHandler
 from core_new.history import SessionHistory
 from analytics.scraper import get_scraper
 
@@ -59,6 +60,10 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.network=network
 
+        # import json
+        # with open('net.json', 'w') as f:
+        #     json.dump(network, f) 
+
         data_container = DataContainer()
 
         self.graphObj = Graph(network['Layers'])
@@ -66,15 +71,19 @@ class coreLogic():
 
         from codehq import CodeHqNew as CodeHq
 
+        error_handler = CoreErrorHandler(self.errorQueue)
+        
+
         module_provider = ModuleProvider()
         module_provider.load('tensorflow', as_name='tf')
         module_provider.load('numpy', as_name='np')
         module_provider.load('pandas', as_name='pd')
         module_provider.load('gym')   
 
-        session_history = SessionHistory()        
+        session_history = SessionHistory()
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
-        self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider, session_proc_handler, checkpointValues) 
+        self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
+                         error_handler, session_proc_handler, checkpointValues) 
 
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()
@@ -190,7 +199,7 @@ class coreLogic():
         try:
             if self.savedResultsDict["maxTestIter"]!=0:
                 if self.status=="Running":
-                    return {"Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
+                    return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
                 else:
                     return {"Status":self.status,"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
             else:
@@ -218,7 +227,7 @@ class coreLogic():
             if self.status=="Running":
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 result = {
-                    "Status":self.savedResultsDict["trainingStatus"],
+                    "Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],
                     "Iterations": self.savedResultsDict["iter"],
                     "Epoch": self.savedResultsDict["epoch"],
                     "Progress": progress,
@@ -229,7 +238,7 @@ class coreLogic():
             else:
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 return {
-                    "Status":self.status,
+                    "Status":"Paused" if self.paused else self.status,
                     "Iterations":self.savedResultsDict["iter"],
                     "Epoch":self.savedResultsDict["epoch"],
                     "Progress": progress,
