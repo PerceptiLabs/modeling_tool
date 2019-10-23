@@ -7,7 +7,7 @@
       .popup_body
         .settings-layer_section.big-text
           .section_attention(:class="{'header_attention--error': !isInfo}") !
-          p.section_text.text-center(v-if="isText") {{ popupText }}
+          p.section_text(v-if="isText") {{ popupText }}
           ul(v-else)
             li(
               v-for="(text, i) in popupText"
@@ -81,6 +81,7 @@
   }
   .section_text {
     margin: 0 1.5rem;
+    width: 100%;
   }
   .popup_clipboard {
     font-size: 1.6rem;
