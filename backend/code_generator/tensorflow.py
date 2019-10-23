@@ -464,7 +464,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
                  optimizer='ADAM', learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999):
         self._output_layer = output_layer
         self._target_layer = target_layer
-        self._n_epochs = n_epochs
+        self._n_epochs = int(n_epochs)
         #Loss
         self._loss_function = loss_function
         self._class_weights = class_weights
@@ -516,11 +516,11 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "all_tensors=api.data.get_tensors()\n" 
         code += "api.data.store(all_tensors=all_tensors)\n"
         code += "\n"
-        code += "api.data.store(max_epoch=%s,\n" % (self._n_epochs - 1)
+        code += "api.data.store(max_epoch=%d,\n" % (self._n_epochs - 1)
         code += "               train_datasize=_data_size[0],\n"
         code += "               val_datasize=_data_size[1])\n"
         code += "\n"
-        code += "for epoch in range(%s):\n" % self._n_epochs
+        code += "for epoch in range(%d):\n" % self._n_epochs
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
         code += "    #Setting the variables to empty as a way to reset them every epoch.\n"

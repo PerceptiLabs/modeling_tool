@@ -59,8 +59,6 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.network=network
 
-        #mode = 'normal' 
-
         data_container = DataContainer()
 
         self.graphObj = Graph(network['Layers'])
