@@ -2,20 +2,20 @@
   .popup-global
     .popup-global_overlay(@click="closePopup()")
     section.popup
-      .popup_tab-set
+      //.popup_tab-set
         .popup_header.active
-          .header_attention(:class="{'header_attention--error': !isInfo}") !
-          button.popup_clipboard.btn.btn--icon.icon.icon-clipboard-add(type="button"
-            :class="styleClipboard"
-            @click="copyClipboard")
       .popup_body
         .settings-layer_section.big-text
-          p.text-center(v-if="isText") {{ popupText }}
+          .section_attention(:class="{'header_attention--error': !isInfo}") !
+          p.section_text.text-center(v-if="isText") {{ popupText }}
           ul(v-else)
             li(
               v-for="(text, i) in popupText"
               :key="i"
               ) {{ text }}
+          button.popup_clipboard.btn.btn--icon.icon.icon-clipboard-add(type="button"
+            :class="styleClipboard"
+            @click="copyClipboard")
       .popup_foot
         button.btn-info-popup(type="button"
         @click="closePopup") OK
@@ -76,11 +76,13 @@
   }
   .settings-layer_section {
     white-space: pre;
+    display: flex;
+    margin-top: 1.3rem;
+  }
+  .section_text {
+    margin: 0 1.5rem;
   }
   .popup_clipboard {
-    position: absolute;
-    bottom: 0;
-    right: 1rem;
     font-size: 1.6rem;
   }
 </style>

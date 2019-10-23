@@ -96,7 +96,7 @@
 
     .toolbar_settings
       span.text-primary.middle-text(v-html="statusTrainingText")
-      button.btn.btn--dark-blue.btn--toolbar-settings(
+      button.btn.btn--dark.btn--toolbar-settings(
         type="button"
         :class="{'btn--tutorial-active': interactiveInfoStatus}"
         @click="toggleInteractiveInfo"
@@ -105,7 +105,7 @@
         span Notebook
         i.icon.icon-ellipse
 
-      button.btn.btn--dark-blue.btn--toolbar-settings(
+      button.btn.btn--dark.btn--toolbar-settings(
         type="button"
         :class="{'btn--tutorial-active': interactiveInfoStatus}"
         @click="toggleInteractiveInfo"
@@ -117,7 +117,7 @@
       tutorial-instructions(
         ref="tutorialComponent"
         v-tooltip-interactive:bottom="interactiveInfo.tutorial")
-        button.btn.btn--dark-blue.btn--toolbar-settings(type="button"
+        button.btn.btn--dark.btn--toolbar-settings(type="button"
           @click="switchTutorialMode"
           :class="{'btn--tutorial-active': isTutorialMode}"
         )
