@@ -85,8 +85,8 @@ def mainServer():
         log.info("Stopping scraper")
         scraper.stop()
 
-        log.info("Copying logfile to data bundle. ")
-        shutil.copyfile('app.log', os.path.join(data_bundle.path, 'app.log'))
+        log.info("Copying logfile to data bundle.")
+        shutil.copyfile('backend.log', os.path.join(data_bundle.path, 'backend.log'))
         
         log.info("Uploading data bundle...")
         data_bundle.upload_and_clear()

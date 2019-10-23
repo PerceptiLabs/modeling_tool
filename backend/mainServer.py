@@ -17,7 +17,7 @@ def setup_logger():
         CRITICAL: A serious error, the program itself may be unable to continue running. 
     """
     FORMAT = '%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s'
-    FILE_NAME = 'app.log'
+    FILE_NAME = 'backend.log'
     
     logging.basicConfig(format=FORMAT,
                         level=logging.INFO,
