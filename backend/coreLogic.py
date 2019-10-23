@@ -549,8 +549,7 @@ class coreLogic():
                             pass
                         
                     cType=self.getPlot(Network_output[-1])
-
-                    if cType=="bar" or cType=="line":
+                    if cType=="bar" or cType=="line" or cType=='scatter':
                         PvG = createDataObject([Network_output[-1], Labels[-1]], nameList=['Prediction', 'Ground Truth'])                        
 
                         # average over samples
@@ -592,7 +591,8 @@ class coreLogic():
 
                         accList = [[('Accuracy', lastAcc*100.0), ('Empty', (1-lastAcc)*100.0)]]
                         Accuracy = createDataObject(accList, typeList=['pie'])
-                        returnDict={"Input":D[0],"PvG":Mask,"AveragePvG":Prediction,"Accuracy":Accuracy}                    
+                        returnDict={"Input":D[0],"PvG":Mask,"AveragePvG":Prediction,"Accuracy":Accuracy}    
+                                    
                 else:
                     chartType="line"
                     if np.shape(X[-1])[0]<10:

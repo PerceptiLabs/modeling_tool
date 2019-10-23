@@ -587,6 +587,8 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    api.ui.render(dashboard='train_val')\n"
         code += "    endTime=time.time()-startTime\n"
         code += "    print('Time: %f' %(endTime))\n"
+        code += "    import sys\n"
+        code += "    print('Size: %f' %(sys.getsizeof(str(all_evaled_tensors))) \n)"
         return code
 
 

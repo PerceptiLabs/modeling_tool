@@ -127,7 +127,6 @@ class TrainValDataPolicy(DataPolicy):
                 train_dict[id_]['loss_val_iter'] = self._data[id_].get('loss_val_iter', [-1])
                 train_dict[id_]['f1_val_iter'] = self._data[id_].get('f1_val_iter', [-1])
                 train_dict[id_]['auc_val_iter'] = self._data[id_].get('auc_val_iter', [-1])
-
                 if "all_evaled_tensors" in self._data[id_]:
                     # all_tensors=train_dict[id_].pop("all_tensors")
                     all_evaled_tensors=self._data[id_]["all_evaled_tensors"]
@@ -145,8 +144,7 @@ class TrainValDataPolicy(DataPolicy):
                                 d[k] = v
                         return d
 
-                    train_dict=update(train_dict,all_evaled_tensors)
-
+                    train_dict=update(train_dict,all_evaled_tensors.copy())
                 if not self._session._headless:
                     for key, value in self._data[id_].items():
                         if not key.startswith('grad-weights-'):
