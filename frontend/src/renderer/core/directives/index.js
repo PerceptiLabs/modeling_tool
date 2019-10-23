@@ -29,6 +29,19 @@ Vue.directive('tooltipInteractive', {
   }
 });
 
+Vue.directive('comingSoon', {
+  bind(el) {
+    el.addEventListener('click', showComingSoonPopup);
+  },
+  unbind(el) {
+    el.removeEventListener('click', showComingSoonPopup);
+  }
+});
+
+function showComingSoonPopup() {
+  store.dispatch('globalView/GP_ComingSoonPopup')
+}
+
 let delayTimer;
 
 function insertTooltipInfo(event) {
