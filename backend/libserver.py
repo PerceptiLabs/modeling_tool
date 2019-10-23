@@ -613,8 +613,8 @@ class Message:
             content=core.saveNetwork(value)
 
         elif action == "getStatus":
-            answer=core.getStatus()
-            content=answer
+            content=core.getStatus()
+            print("Get Status Answer: ", content)
 
         else:
             warningList.append("Invalid action " + str(action))

@@ -4,6 +4,7 @@ import traceback
 import sentry_sdk
 from collections import namedtuple
 from abc import ABC, abstractmethod
+import copy
 
 from core_new.session import LayerSession
 
@@ -24,10 +25,10 @@ class LayerErrorHandler(ABC):
         code = "\n".join(code_lines)
         return code        
 
-    def _store_error(self, layer_id, short_descr, long_descr, line_number):
-        error = ErrorDescription(short_descr, long_descr, line_number)
-        self._errors[layer_id] = error
-        log.info("Handled error in layer {}. Description: \n{}".format(layer_id, error.long_descr))
+    # def _store_error(self, layer_id, short_descr, long_descr, line_number):
+    #     error = ErrorDescription(short_descr, long_descr, line_number)
+    #     self._errors[layer_id] = error
+    #     log.info("Handled error in layer {}. Description: \n{}".format(layer_id, error.long_descr))
 
     def _get_error_line(self, exception: Exception):
         tb_list=traceback.extract_tb(exception.__traceback__)

@@ -60,7 +60,9 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.network=network
 
-        #mode = 'normal' 
+        # import json
+        # with open('net.json', 'w') as f:
+        #     json.dump(network, f) 
 
         data_container = DataContainer()
 
@@ -198,7 +200,7 @@ class coreLogic():
         try:
             if self.savedResultsDict["maxTestIter"]!=0:
                 if self.status=="Running":
-                    return {"Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
+                    return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
                 else:
                     return {"Status":self.status,"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
             else:
@@ -226,7 +228,7 @@ class coreLogic():
             if self.status=="Running":
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 result = {
-                    "Status":self.savedResultsDict["trainingStatus"],
+                    "Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],
                     "Iterations": self.savedResultsDict["iter"],
                     "Epoch": self.savedResultsDict["epoch"],
                     "Progress": progress,
@@ -237,7 +239,7 @@ class coreLogic():
             else:
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 return {
-                    "Status":self.status,
+                    "Status":"Paused" if self.paused else self.status,
                     "Iterations":self.savedResultsDict["iter"],
                     "Epoch":self.savedResultsDict["epoch"],
                     "Progress": progress,
