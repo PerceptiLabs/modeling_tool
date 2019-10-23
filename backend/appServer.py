@@ -7,13 +7,17 @@ import sentry_sdk
 
 import libserver
 from analytics.scraper import get_scraper
-from databundle import DataBundle
+from databundle import DataBundle, AzureUploader, AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU, AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()
 
 def mainServer():
-    data_bundle = DataBundle()
+    data_uploaders = [
+        AzureUploader(AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU),
+        AzureUploader(AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US)        
+    ]                               
+    data_bundle = DataBundle(data_uploaders)
     
     scraper.start()
     scraper.set_output_directory(data_bundle.path)
