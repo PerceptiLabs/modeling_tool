@@ -22,7 +22,7 @@
         .form_row
           .form_label History length:
           .form_input
-            input(type="number" v-model="settings.accessProperties.Batch_size")
+            input(type="number" v-model="settings.accessProperties.History_length")
 
     template(slot="<i class='icon icon-search'></i> Unity-content")
       .settings-layer_section
