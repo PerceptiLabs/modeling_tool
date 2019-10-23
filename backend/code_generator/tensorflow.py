@@ -581,12 +581,12 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "        pass\n"    
         code += "    \n"
         code += "    api.data.store(epoch=epoch)\n"
-        code += "    print('Epoch: %d Acc: %f Loss: %f' %(epoch, acc_train, loss_train))\n"
+        # code += "    print('Epoch: %d Acc: %f Loss: %f' %(epoch, acc_train, loss_train))\n"
         code += "    api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
         code += "                   acc_validation_epoch=acc_val, loss_validation_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
         code += "    api.ui.render(dashboard='train_val')\n"
         code += "    endTime=time.time()-startTime\n"
-        code += "    print('Time: %f' %(endTime))\n"
+        # code += "    print('Time: %f' %(endTime))\n"
         return code
 
 
