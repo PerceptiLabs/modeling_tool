@@ -18,8 +18,10 @@ const netElementSettingsData = {
   methods: {
     coreRequest,
     Mix_settingsData_getDataMeta(layerId) {
+      this.applySettings('');
       return this.$store.dispatch('mod_api/API_getDataMeta', layerId)
         .then((data) => {
+          console.log('Mix_settingsData_getDataMeta', data);
           if (data) {
             if(data.Action_space) this.Mix_settingsData_actionSpace = data.Action_space;
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
