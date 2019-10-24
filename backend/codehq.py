@@ -167,14 +167,13 @@ class CodeHqNew:
             raise NotImplementedError("Train dynamic routing not implemented")
         elif type_ == 'TrainReinforce':
 
+            # import pdb; pdb.set_trace()
             layer_pairs = [LayerPair(a, b) for a, b in content['Info']['ExtraInfo']['Pairs']]            
             online_net = content['Info']['ExtraInfo']['OnlineNet']
             target_net = content['Info']['ExtraInfo']['TargetNet']
-            history_length = 4 # TODO: not hardcoded!
             code_gen = TrainReinforceCodeGenerator(online_network_id=online_net,
                                                    target_network_id=target_net,
-                                                   layer_pairs=layer_pairs,
-                                                   history_length=history_length)
+                                                   layer_pairs=layer_pairs)
             return code_gen
         elif type_ == 'MathArgmax':
             code_gen = ArgmaxCodeGenerator(dim=props["Dim"])

@@ -619,13 +619,12 @@ LayerPair = namedtuple('LayerPair', ['online_id', 'target_id'])
 
 
 class TrainReinforceCodeGenerator(CodeGenerator):
-    def __init__(self, online_network_id, target_network_id, layer_pairs, n_episodes=20000, history_length=2, batch_size=32, learning_rate=0.1, discount_factor=0.99,
+    def __init__(self, online_network_id, target_network_id, layer_pairs, n_episodes=20000, batch_size=32, learning_rate=0.1, discount_factor=0.99,
                  replay_start_size=1000, replay_memory_size=300000,
                  initial_exploration=0.9, final_exploration=0.1,
                  update_frequency=4, target_network_update_frequency=100):
         self._batch_size = batch_size                
         self._n_episodes = n_episodes
-        self._history_length = history_length
         self._replay_start_size = replay_start_size        
         self._replay_memory_size = replay_memory_size
         self._learning_rate = learning_rate
@@ -647,7 +646,8 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "# Constants\n"
         code += "gamma = %f\n" % self._gamma
         code += "batch_size = %d\n" % self._batch_size
-        code += "history_length = %d\n" % self._history_length
+        # code += "history_length = %d\n" % self._history_length
+        code += "history_length = history_length #We use the global history_length from the Environment here\n"
         code += "replay_start_size = %d\n" % self._replay_start_size
         code += "n_actions = env.action_space.n\n"
         code += "n_steps_max = %d\n" % self._n_steps_max
@@ -727,9 +727,9 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "        explore = np.random.random() < epsilon(episode) or iteration < replay_start_size\n"
         code += "        if explore:\n"
         code += "            action = env.action_space.sample()\n"
-        code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array([state_seq])}).squeeze()\n"
+        code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array(state_seq)}).squeeze()\n"
         code += "        else:\n"
-        code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array([state_seq])}).squeeze()\n"
+        code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array(state_seq)}).squeeze()\n"
         code += "            action = np.argmax(Q)\n"
         code += "        \n"
         code += "        new_state, reward, done, info = env.step(action)\n"
