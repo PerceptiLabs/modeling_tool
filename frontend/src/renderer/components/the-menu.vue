@@ -172,7 +172,8 @@ export default {
           label: '', visible: false,
           submenu: [
             {type:  'separator'},
-            {label: 'Delete',       accelerator: this.isMac ? 'backspace+meta' : 'delete',                              active: this.HC_delete,                    visible: false  },
+            {label: 'Delete',       accelerator: this.isMac ? 'meta+backspace' : 'delete',                              active: this.HC_delete,                    visible: false  },
+            {label: 'DeleteMac',    accelerator: this.isMac ? 'backspace' : '',                              active: this.HC_delete,                    visible: false  },
             {label: 'Add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
             {label: 'Ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
             {type:  'separator'},
