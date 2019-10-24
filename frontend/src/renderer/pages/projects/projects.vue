@@ -142,7 +142,7 @@
 <style lang="scss" scoped>
   @import '../../scss/base';
 
-  $section-indent: 5rem;
+  $section-indent: 6rem;
 
   @import './sidebar/sidebar';
   @import './basic-templates/basic-templates';
@@ -167,10 +167,9 @@
     }
   }
   .projects-sidebar_link {
-    font-size: 1.6rem;
-    display: block;
-    width: 100%;
-    margin-bottom: 4rem;
+    font-size: 1.4rem;
+    width: 20rem;
+    margin-bottom: 2rem;
     text-align: center;
     font-weight: normal;
     > * {
@@ -204,7 +203,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-
+    &.get-started-title-margin {
+     margin-bottom: 7rem;
+    }
     h2 {
       display: flex;
       align-items: center;
