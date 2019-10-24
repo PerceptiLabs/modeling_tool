@@ -164,6 +164,7 @@ export default {
     font-size: 1.6rem;
   }
   .code-wrap_error-container {
+    padding: 1rem;
     overflow: scroll;
     height: 100%;
   }
