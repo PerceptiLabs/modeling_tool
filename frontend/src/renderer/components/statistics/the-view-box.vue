@@ -3,7 +3,7 @@
     .info-section_head(v-if="!testIsOpen")
       h3 {{ sectionTitle }}
       view-box-btn-list(
-        v-if="!testIsOpen && btnList"
+        v-show="!testIsOpen && btnList"
         :tab-set="btnList"
         @set-current-btn="setCurrentBtn"
         )

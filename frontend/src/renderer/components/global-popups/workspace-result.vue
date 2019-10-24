@@ -3,20 +3,19 @@
     .popup-global_overlay(@click="closePopup()")
     section.popup
       .popup_tab-set
-        .popup_header.active
+        .popup_header.disable
           h3 Result
       .popup_body
         .settings-layer_section
-
-        //- .body_results-info
-        //-   .results-info--validation
-        //-     p Validation
-        //-     span Validation Accuracy: 70.86%
-        //-     span Validation Loss: 2.35
-        //-   .results-info--validation
-        //-       p Training
-        //-       span Training Accuracy: 71.35%
-        //-       span Training Loss: 2.28  
+          .body_results-info
+            .results-info--validation
+              p Training
+              span Training Accuracy: 71.35%
+              span Training Loss: 2.28
+            .results-info--validation
+              p Validation
+              span Validation Accuracy: 70.86%
+              span Validation Loss: 2.35
 
       .popup_foot
         button.btn.btn--primary(type="button"
@@ -31,6 +30,10 @@ import { mapActions } from 'vuex';
 export default {
   name: "GeneralResult",
   mounted() {
+    this.$store.dispatch('mod_api/API_getResultInfo')
+      .then((data)=>{
+        console.log('GeneralResult', data);
+      })
     this.tutorialPointActivate({way: 'next', validation: 'tutorial_statistic-tab'})
   },
   methods: {
