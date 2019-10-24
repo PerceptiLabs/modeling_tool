@@ -51,5 +51,5 @@
 
 <style scoped lang="scss">
   @import "../../scss/base";
-  @import "../../scss/common/infoPopup";
+  @import "../../scss/common/info-popup";
 </style>

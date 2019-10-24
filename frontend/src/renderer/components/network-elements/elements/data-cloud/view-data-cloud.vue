@@ -1,5 +1,6 @@
 <template lang="pug">
   .btn.btn--layersbar.net-element-data(:draggable="false" :disabled="true"
+    v-coming-soon="true"
     data-component="DataCloud"
     data-layer="Cloud"
     data-type="Data"
