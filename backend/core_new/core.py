@@ -41,6 +41,7 @@ class SessionProcessHandler:
         results_dict = data_policy.get_results()
         
         self._result_queue.put(results_dict)
+        # self._data_container.reset()
         #log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=2))
         
     def _handle_commands(self, session):
@@ -304,9 +305,6 @@ if __name__ == "__main__":
 
     # # import pdb; pdb.set_trace()
     session_history = SessionHistory() 
-    # #session_history = session_history_lw
-
-
    
     module_provider = ModuleProvider()
     module_provider.load('tensorflow', as_name='tf')
@@ -319,13 +317,4 @@ if __name__ == "__main__":
    
     sph = SessionProcessHandler(graph_dict, data_container, cq, rq)    
     core = Core(CodeHq, graph_dict, data_container, session_history, module_provider, error_handler, sph)
-    import threading
     threading.Thread(target=core.run).start()
-    # core.run()
-    # import time
-    # time.sleep(2)
-    # cq.put("pause")
-    # time.sleep(2)
-    # cq.put("unpause")
-    # time.sleep(2)
-    # cq.put("stop")
