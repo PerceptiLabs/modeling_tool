@@ -45,17 +45,17 @@
       globalOptions:{type: Object,   default: () => ({})},
       globalEvents: {type: Array,    default: () => ([])},
 
-      errorRow: {type: Number }
+      errorRow: {type: [Number, String] }
     },
     mounted() {
       this.initialize();
       this.$nextTick(() => {
         this.cminstance.refresh();
 
-        if(this.errorRow) {
+        if(this.errorRowNumber) {
           this.cminstance.markText(
-            { line: this.errorRow - 1,  ch: 0 },
-            { line: this.errorRow,      ch: 0 },
+            { line: this.errorRowNumber - 1,  ch: 0 },
+            { line: this.errorRowNumber,      ch: 0 },
             { className: "code-row_error" }
           );
         }
@@ -82,7 +82,12 @@
         }
       }
     },
+    computed: {
+      errorRowNumber() {
+        return +this.errorRow
 
+      }
+    },
     watch: {
       // options: {
       //   deep: true,

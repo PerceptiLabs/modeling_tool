@@ -7,6 +7,7 @@ backend/net.json
 *.py~
 *.zip
 *#*#
+build/
 .vscode/
 backend/.vscode/
 #Frontend ignores
@@ -30,3 +31,5 @@ frontend/src/node_modules/
 .idea/workspace.xml
 ../.idea/workspace.xml
 .vscode/*
+app.log
+backend.log

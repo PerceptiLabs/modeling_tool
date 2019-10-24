@@ -99,7 +99,7 @@
       button.btn.btn--dark.btn--toolbar-settings(
         type="button"
         :class="{'btn--tutorial-active': interactiveInfoStatus}"
-        @click="toggleInteractiveInfo"
+        v-coming-soon="true"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
         span Notebook

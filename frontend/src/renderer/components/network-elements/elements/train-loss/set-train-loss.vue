@@ -6,6 +6,14 @@
   )
     template(slot="Settings-content")
       .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.labels")
+          .form_label Labels:
+          #tutorial_labels.form_input(data-tutorial-hover-info)
+            base-select(
+              v-model="settings.Labels"
+              :select-options="inputLayers"
+            )
+      .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
           .form_label Cost function:
           #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
@@ -40,21 +48,21 @@ export default {
   name: 'SetTrainLoss',
   mixins: [ mixinSet ],
   beforeMount() {
-    // this.inputId.forEach((id)=> {
-    //   let elList = this.currentNetworkList;
-    //   this.inputLayers.push({
-    //     text: elList[id].layerName,
-    //     value: elList[id].layerId,
-    //     tutorialId: elList[id].tutorialId
-    //   })
-    // });
-    // if(!this.settings.Labels && this.inputLayers.length) this.settings.Labels = this.inputLayers[0].value.toString();
+    this.inputId.forEach((id)=> {
+      let elList = this.currentNetworkList;
+      this.inputLayers.push({
+        text: elList[id].layerName,
+        value: elList[id].layerId,
+        tutorialId: elList[id].tutorialId
+      })
+    });
+    if(!this.settings.Labels && this.inputLayers.length) this.settings.Labels = this.inputLayers[0].value.toString();
   },
   data() {
     return {
       inputLayers: [],
       settings: {
-        // Labels: '',
+        Labels: '',
         // N_class: '1',
         Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
         Class_weights: 1,
@@ -67,6 +75,10 @@ export default {
         // Training_iters: "20000"
       },
       interactiveInfo: {
+        labels: {
+          title: 'Labels',
+          text: 'Choose which input connection is represent the labels'
+        },
         costFunction: {
           title: 'Split on',
           text: 'Choose in which position to split on at the chosen axis'
@@ -75,13 +87,13 @@ export default {
     }
   },
   computed: {
-    // ...mapGetters({
-    //   isTutorialMode:     'mod_tutorials/getIstutorialMode',
-    //   currentNetworkList: 'mod_workspace/GET_currentNetworkElementList'
-    // }),
-    // inputId() {
-    //   return this.currentEl.connectionIn
-    // },
+    ...mapGetters({
+      isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      currentNetworkList: 'mod_workspace/GET_currentNetworkElementList'
+    }),
+    inputId() {
+      return this.currentEl.connectionIn
+    },
     // notLabelsInput() {
     //   return this.inputId.filter((id)=>id !== this.settings.Labels)
     // },
@@ -97,20 +109,20 @@ export default {
     },
   },
   watch: {
-    // 'settings.Labels': {
-    //   handler(newValue) {
-    //     let label = this.inputLayers.filter((item)=> {
-    //       return item.value.toString() === newValue;
-    //     });
-    //     if(this.isTutorialMode && label[0].text !== 'OneHot_1') {
-    //       label = this.inputLayers.filter((item)=> {
-    //         return item.text === 'OneHot_1';
-    //       });
-    //         this.settings.Labels = label[0].value.toString();
-    //         this.popupInfo("Please set One Hot for Labels field when you in tutorial mode");
-    //     }
-    //   }
-    // },
+    'settings.Labels': {
+      handler(newValue) {
+        let label = this.inputLayers.filter((item)=> {
+          return item.value.toString() === newValue;
+        });
+        if(this.isTutorialMode && label[0].text !== 'OneHot_1') {
+          label = this.inputLayers.filter((item)=> {
+            return item.text === 'OneHot_1';
+          });
+            this.settings.Labels = label[0].value.toString();
+            this.popupInfo("Please set One Hot for Labels field when you in tutorial mode");
+        }
+      }
+    },
   }
 }
 </script>

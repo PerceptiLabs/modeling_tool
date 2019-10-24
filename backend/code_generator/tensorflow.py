@@ -489,6 +489,9 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
     def _get_training_code(self):
         code  = ""
+        code += "api.data.store_locals(locals())\n"
+
+        code += "\n"
         code += TrainLossCodeGenerator(self._output_layer, self._target_layer, self._loss_function, self._class_weights).get_loss_code()
         code += "# Gradients\n"
         code += "gradients = {}\n"
@@ -497,6 +500,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    gradients[name] = tf.gradients(loss, [var])\n"
         code += "\n"
         code += TrainOptimizerCodeGenerator(self._optimizer,self._learning_rate, self._decay_steps, self._decay_rate, self._momentum, self._beta1, self._beta2).get_optimizer_code()
+
         code += "\n"
         code += "# Metrics\n"
         code += "correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_label,-1))\n"
@@ -520,7 +524,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "api.data.setSaver(sess,saver)\n"
         code += "init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())\n"
         code += "sess.run(init)\n"
-        code += "api.data.store_locals(locals())\n"
+        
         code += "all_tensors=api.data.get_tensors()\n" 
         code += "api.data.store(all_tensors=all_tensors)\n"
         code += "import time\n"
@@ -530,7 +534,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "               val_datasize=_data_size[1])\n"
         code += "\n"
         code += "for epoch in range(%d):\n" % self._n_epochs
-        code += "    startTime=time.time()\n"
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
         code += "    #Setting the variables to empty as a way to reset them every epoch.\n"
@@ -584,20 +587,14 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
         code += "            api.data.stack(acc_val_iter=acc_val, loss_val_iter=loss_val, f1_val_iter=f1_val, auc_val_iter=auc_val)\n"
         code += "            api.data.store(iter_validation=val_iter)\n"
-        code += "            api.ui.render(dashboard='train_val')\n"  
+        code += "            api.ui.render(dashboard='train_val')\n"
         code += "            val_iter+=1\n" 
         code += "    except tf.errors.OutOfRangeError:\n"
         code += "        pass\n"    
         code += "    \n"
         code += "    api.data.store(epoch=epoch)\n"
-        code += "    print('Epoch: %d Acc: %f Loss: %f' %(epoch, acc_train, loss_train))\n"
         code += "    api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
         code += "                   acc_validation_epoch=acc_val, loss_validation_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
-        code += "    api.ui.render(dashboard='train_val')\n"
-        code += "    endTime=time.time()-startTime\n"
-        code += "    print('Time: %f' %(endTime))\n"
-        code += "    import sys\n"
-        code += "    print('Size: %f' %(sys.getsizeof(str(all_evaled_tensors))) \n)"
         return code
 
 
@@ -623,7 +620,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
     def get_code(self):
         code = self._get_training_code() + '\n' + self._get_testing_code()
-        print(code)
         return code
 
 

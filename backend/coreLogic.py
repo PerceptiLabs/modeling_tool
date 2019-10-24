@@ -366,6 +366,17 @@ class coreLogic():
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
             log.exception(message)
 
+    def getEndResults(self):
+        #TODO: Show in frontend results for each end layer, not just for one.
+        end_results={}
+        for id_, value in self.graphObj.graphs.items():
+            if value["Info"]["Type"]=="TrainNormal":
+                acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
+                acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
+                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
+                loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
+                end_results.update({"acc_train":float(acc_train[-1]), "acc_val":float(acc_val[-1]), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
+        return end_results
 
     
     def getLayerStatistics(self,value):
