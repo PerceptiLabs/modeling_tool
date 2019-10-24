@@ -1,26 +1,28 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-train(:draggable="draggable"
-    data-component="TrainReinforce"
-    data-layer="Reinforcement Learning"
+  .btn.btn--layersbar.net-element-train(:draggable="false" :disabled="true"
+    v-coming-soon="true"
+    data-component="TrainGan"
+    data-layer="GAN"
     data-type="Training"
-    v-tooltip:right="'Reinforcement Learning'"
+    v-tooltip:right="'GAN'"
     v-tooltip-interactive:right="interactiveInfo"
+    id="tutorial_training-gan"
     :style="layerStyles"
   )
-    i.icon.icon-train-reinforce
+    i.icon.icon-train-gan
 
 </template>
 
 <script>
   import mixinSet from '@/core/mixins/net-element-view-layer.js';
 export default {
-  name: 'ViewTrainReinforce',
+  name: 'ViewTrainGan',
   mixins: [mixinSet],
   data() {
     return {
       interactiveInfo: {
-        title: 'Train Reinforce',
-        text: 'Reinforcement learning layer.'
+        title: 'Train GAN',
+        text: ''
       }
     }
   }

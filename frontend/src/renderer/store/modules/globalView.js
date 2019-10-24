@@ -15,6 +15,7 @@ const state = {
     showNetResult: false,
     showCoreSideSettings: false,
     showInfoPopup: false,
+    ComingSoonPopup: false,
     showErrorPopup: false,
     showWorkspaceBeforeImport: false,
     showConfirmPopup: false,
@@ -66,6 +67,9 @@ const mutations = {
   gp_infoPopup(state, value) {
     state.globalPopup.showInfoPopup = value
   },
+  gp_ComingSoonPopup(state, value) {
+    state.globalPopup.ComingSoonPopup = value
+  },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
     state.popupConfirmCancel = value.cancel;
@@ -104,7 +108,8 @@ const actions = {
     commit('gp_infoPopup', value);
   },
   GP_ComingSoonPopup({commit}) {
-    commit('gp_infoPopup', 'Coming soon');
+    commit('gp_infoPopup', 'a');
+    commit('gp_ComingSoonPopup', true);
   },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);

@@ -5,17 +5,21 @@
       //.popup_tab-set
         .popup_header.active
       .popup_body
-        .settings-layer_section.big-text
+        .settings-layer_section.big-text(:class="{'popup--error': !isInfo}")
           .section_attention(:class="{'header_attention--error': !isInfo}") !
-          p.section_text(v-if="isText") {{ popupText }}
+          p.section_text(v-if="isText && !comingSoonPopup") {{ popupText }}
+          p.section_text(v-else-if="isText && comingSoonPopup") This feature is coming soon. For suggestions on new features, hit us up on:&ensp;
+            button.btn.btn--link.text-primary(@click="goToLink('https://gitter.im/PerceptiLabs/PerceptiLabs')") gitter
           ul(v-else)
             li(
               v-for="(text, i) in popupText"
               :key="i"
               ) {{ text }}
-          button.popup_clipboard.btn.btn--icon.icon.icon-clipboard-add(type="button"
-            :class="styleClipboard"
-            @click="copyClipboard")
+
+          .popup_clipboard
+            button.btn.btn--icon.icon.icon-clipboard-add(type="button"
+              :class="styleClipboard"
+              @click="copyClipboard")
       .popup_foot
         button.btn-info-popup(type="button"
         @click="closePopup") OK
@@ -23,6 +27,7 @@
 </template>
 
 <script>
+  import { goToLink }    from '@/core/helpers.js'
   export default {
     name: "TheInfoPopup",
     data() {
@@ -40,6 +45,9 @@
       errorPopup() {
         return this.$store.state.globalView.globalPopup.showErrorPopup
       },
+      comingSoonPopup() {
+        return this.$store.state.globalView.globalPopup.ComingSoonPopup
+      },
       isShowPopup() {
         return this.errorPopup.length || this.infoPopup.length
       },
@@ -56,6 +64,7 @@
       }
     },
     methods: {
+      goToLink,
       copyClipboard() {
         navigator.clipboard.writeText(JSON.stringify(this.popupText))
           .then((data)=> { this.styleClipboard['text-primary'] = true })
@@ -63,27 +72,36 @@
       },
       closePopup() {
         this.$store.commit('globalView/HIDE_allGlobalPopups');
-      }
+      },
     }
   }
 </script>
 
 <style scoped lang="scss">
   @import "../../scss/base";
-  @import "../../scss/common/infoPopup";
+  @import "../../scss/common/info-popup";
   .popup_header {
     position: relative;
   }
   .settings-layer_section {
-    white-space: pre;
     display: flex;
     margin-top: 1.3rem;
+    &.popup--error {
+      .section_text {
+        max-width: none;
+      }
+      white-space: pre;
+    }
   }
   .section_text {
     margin: 0 1.5rem;
     width: 100%;
+    max-width: 30rem;
   }
   .popup_clipboard {
     font-size: 1.6rem;
+  }
+  .popup_foot {
+    justify-content: flex-end;
   }
 </style>

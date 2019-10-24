@@ -88,10 +88,9 @@ class CodeHqNew:
                                               keep_prop=1) # TODO: where does this come from?
             return code_gen
         elif type_ == 'ProcessCrop':
-            code_gen = CropCodeGenerator(offset_height=props["Offset_height"],
-                                         offset_width=props["Offset_width"],
-                                         target_height=props["Target_height"],
-                                         target_width=props["Target_width"])
+            code_gen = CropCodeGenerator(offset_values=props["Offset_width"], # TODO
+                                         target_values=props["Target_values"] # TODO 
+                                                                            )
             return code_gen
         elif type_ == 'ProcessEmbed':
             code_gen = WordEmbeddingCodeGenerator()
@@ -166,15 +165,12 @@ class CodeHqNew:
         elif type_ == 'TrainDynamic':
             raise NotImplementedError("Train dynamic routing not implemented")
         elif type_ == 'TrainReinforce':
-
             layer_pairs = [LayerPair(a, b) for a, b in content['Info']['ExtraInfo']['Pairs']]            
             online_net = content['Info']['ExtraInfo']['OnlineNet']
             target_net = content['Info']['ExtraInfo']['TargetNet']
-            history_length = 4 # TODO: not hardcoded!
             code_gen = TrainReinforceCodeGenerator(online_network_id=online_net,
                                                    target_network_id=target_net,
-                                                   layer_pairs=layer_pairs,
-                                                   history_length=history_length)
+                                                   layer_pairs=layer_pairs)
             return code_gen
         elif type_ == 'MathArgmax':
             code_gen = ArgmaxCodeGenerator(dim=props["Dim"])
