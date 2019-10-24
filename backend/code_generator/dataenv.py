@@ -14,7 +14,7 @@ class DataEnvironmentCodeGenerator(CodeGenerator):
         code += "history_length = %s\n" % self._hist_len
         code += "api.data.store(sample=sample)\n"        
         code += "state_tensor = tf.placeholder(tf.float32, \n"
-        code += "                              shape=(history_length,) + sample.shape,\n"            
+        code += "                              shape=(None, history_length,) + sample.shape,\n"            
         code += "                              name='state_tensor')\n"       
         code += "Y = state_tensor\n"        
         return code

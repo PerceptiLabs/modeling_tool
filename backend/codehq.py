@@ -165,8 +165,6 @@ class CodeHqNew:
         elif type_ == 'TrainDynamic':
             raise NotImplementedError("Train dynamic routing not implemented")
         elif type_ == 'TrainReinforce':
-
-            # import pdb; pdb.set_trace()
             layer_pairs = [LayerPair(a, b) for a, b in content['Info']['ExtraInfo']['Pairs']]            
             online_net = content['Info']['ExtraInfo']['OnlineNet']
             target_net = content['Info']['ExtraInfo']['TargetNet']

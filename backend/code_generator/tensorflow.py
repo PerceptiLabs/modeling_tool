@@ -86,29 +86,20 @@ class OneHotCodeGenerator(CodeGenerator):
 
     
 class CropCodeGenerator(CodeGenerator):
-    def __init__(self, offset_values, target_values):
-        self.offset_values = offset_values
-        self.target_values = target_values #max - min   
+    def __init__(self, offset_height, offset_width, target_height, target_width):
+        self._offset_height = offset_height
+        self._offset_width = offset_width
+        self._target_height = target_height        
+        self._target_width = target_width
 
     def get_code(self):
-        shape = X['Y'].get_shape().as_list()
-        code = "Y = X['Y'][:,:,"
-        for i in range(len(shape)-2):
-            code += "%d:%d+%d, "%(self.offset_values[i], self.target_values[i], self.offset_values[i])
-            code += "]\n"
+        code = "Y=tf.image.crop_to_bounding_box(X['Y'], %d, %d, %d, %d)\n" % (self._offset_height,
+                                                                         self._offset_width,
+                                                                         self._target_height,
+                                                                         self._target_width)
         return code
-
-
-class ResizeCodeGenerator(CodeGenerator):
-    def __init__(self, resize_width, resize_height):
-        self.resize_width = resize_width
-        self.resize_height = resize_height
-
-    def get_code(self):
-        code = "Y = tf.image.resize_images(X['Y'][:], [%d, %d], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)\n"%(self.resize_width, self.resize_height)
-        return code
-
     
+
 class GrayscaleCodeGenerator(CodeGenerator):
     def get_code(self):
         code  = "if X['Y'].get_shape().as_list()[-1] == 3:\n"
@@ -630,9 +621,10 @@ LayerPair = namedtuple('LayerPair', ['online_id', 'target_id'])
 class TrainReinforceCodeGenerator(CodeGenerator):
     def __init__(self, online_network_id, target_network_id, layer_pairs, n_episodes=20000, batch_size=32, learning_rate=0.1, discount_factor=0.99,
                  replay_start_size=1000, replay_memory_size=300000,
-                 initial_exploration=0.9, final_exploration=0.1,
-                 update_frequency=4, target_network_update_frequency=100):
-        self._batch_size = batch_size                
+                 initial_exploration=0.9, final_exploration=0.1, final_exporation_frame=500,
+                 update_frequency=4, target_network_update_frequency=100,
+                 n_steps_max=1000):
+        self._batch_size = batch_size 
         self._n_episodes = n_episodes
         self._replay_start_size = replay_start_size        
         self._replay_memory_size = replay_memory_size
@@ -640,7 +632,13 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         self._gamma = discount_factor
         self._update_frequency = update_frequency
         self._copy_weights_frequency = target_network_update_frequency
-        self._n_steps_max = 1000
+        self._n_steps_max = n_steps_max
+
+        #Exploartion
+        self._initial_exploration=str(initial_exploration)
+        self._final_exploration=str(final_exploration)
+        self._final_exporation_frame=str(final_exporation_frame)
+
 
         self._online_network_id = online_network_id# #"'1'"
         self._target_network_id = target_network_id# "'2'"
@@ -665,8 +663,8 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "\n"
         code += "# Exploration/exploitation tradeoff\n" # TODO: name
         code += "def epsilon(episode):\n"
-        code += "    #eps = 1/np.sqrt(1 + episode)\n"
-        code += "    eps = 0.9**(episode/500)\n"
+        code += "    #eps = 1/np.sqrt(%s + episode)\n" % (self._initial_exploration)
+        code += "    eps = %s**(episode/%s)\n" % (self._final_exploration, self._final_exporation_frame)
         code += "    eps = max(0.1, eps)\n"
         code += "    return eps\n"
         code += "\n"
@@ -736,9 +734,9 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "        explore = np.random.random() < epsilon(episode) or iteration < replay_start_size\n"
         code += "        if explore:\n"
         code += "            action = env.action_space.sample()\n"
-        code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array(state_seq)}).squeeze()\n"
+        code += "            Q = Q_online.eval(feed_dict={state_tensor: [np.array(state_seq)]}).squeeze()\n"
         code += "        else:\n"
-        code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array(state_seq)}).squeeze()\n"
+        code += "            Q = Q_online.eval(feed_dict={state_tensor: [np.array(state_seq)]}).squeeze()\n"
         code += "            action = np.argmax(Q)\n"
         code += "        \n"
         code += "        new_state, reward, done, info = env.step(action)\n"
