@@ -86,20 +86,29 @@ class OneHotCodeGenerator(CodeGenerator):
 
     
 class CropCodeGenerator(CodeGenerator):
-    def __init__(self, offset_height, offset_width, target_height, target_width):
-        self._offset_height = offset_height
-        self._offset_width = offset_width
-        self._target_height = target_height        
-        self._target_width = target_width
+    def __init__(self, offset_values, target_values):
+        self.offset_values = offset_values
+        self.target_values = target_values #max - min   
 
     def get_code(self):
-        code = "Y=tf.image.crop_to_bounding_box(X['Y'], %d, %d, %d, %d)\n" % (self._offset_height,
-                                                                         self._offset_width,
-                                                                         self._target_height,
-                                                                         self._target_width)
+        shape = X['Y'].get_shape().as_list()
+        code = "Y = X['Y'][:,:,"
+        for i in range(len(shape)-2):
+            code += "%d:%d+%d, "%(self.offset_values[i], self.target_values[i], self.offset_values[i])
+            code += "]\n"
         return code
-    
 
+
+class ResizeCodeGenerator(CodeGenerator):
+    def __init__(self, resize_width, resize_height):
+        self.resize_width = resize_width
+        self.resize_height = resize_height
+
+    def get_code(self):
+        code = "Y = tf.image.resize_images(X['Y'][:], [%d, %d], method=tf.image.ResizeMethod.NEAREST_NEIGHBOR)\n"%(self.resize_width, self.resize_height)
+        return code
+
+    
 class GrayscaleCodeGenerator(CodeGenerator):
     def get_code(self):
         code  = "if X['Y'].get_shape().as_list()[-1] == 3:\n"

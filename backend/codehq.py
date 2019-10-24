@@ -88,10 +88,9 @@ class CodeHqNew:
                                               keep_prop=1) # TODO: where does this come from?
             return code_gen
         elif type_ == 'ProcessCrop':
-            code_gen = CropCodeGenerator(offset_height=props["Offset_height"],
-                                         offset_width=props["Offset_width"],
-                                         target_height=props["Target_height"],
-                                         target_width=props["Target_width"])
+            code_gen = CropCodeGenerator(offset_values=props["Offset_width"], # TODO
+                                         target_values=props["Target_values"] # TODO 
+                                                                            )
             return code_gen
         elif type_ == 'ProcessEmbed':
             code_gen = WordEmbeddingCodeGenerator()
