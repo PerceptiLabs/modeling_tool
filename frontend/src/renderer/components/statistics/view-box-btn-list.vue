@@ -26,9 +26,14 @@ export default {
   props: {
     tabSet: { type: Object }
   },
+  activated() {
+    console.log('activate');
+  },
   mounted() {
-    const tabSetKeys = Object.keys(this.tabSet);
-    this.setCurrentTab(tabSetKeys[0]);
+    if(this.tabSet) {
+      const tabSetKeys = Object.keys(this.tabSet);
+      this.setCurrentTab(tabSetKeys[0]);
+    }
   },
   data() {
     return {
