@@ -191,6 +191,11 @@
     background: $col-txt2;
   }
 }
+
+.btn--disabled {
+  background: $bg-scroll;
+}
+
 .green-color-icon{
   color: $color-1;
 }

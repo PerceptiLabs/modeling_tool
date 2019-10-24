@@ -41,6 +41,7 @@ class SessionProcessHandler:
         results_dict = data_policy.get_results()
         
         self._result_queue.put(results_dict)
+        # self._data_container.reset()
         #log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=2))
         
     def _handle_commands(self, session):
@@ -265,25 +266,25 @@ if __name__ == "__main__":
     #threading.Thread(target=f, args=(cq, 8, 'stop')).start()        
 
 
-    from core_new.lightweight import LightweightCore, placeholder_hook_1
+    # from core_new.lightweight import LightweightCore, placeholder_hook_1
     
-    module_provider = ModuleProvider()
-    module_provider.load('tensorflow', as_name='tf')
-    module_provider.load('numpy', as_name='np')
+    # module_provider = ModuleProvider()
+    # module_provider.load('tensorflow', as_name='tf')
+    # module_provider.load('numpy', as_name='np')
 
-    module_provider.install_hook('tf.placeholder', placeholder_hook_1, include_vars=True)
+    # module_provider.install_hook('tf.placeholder', placeholder_hook_1, include_vars=True)
 
 
     graph_dict = graph.graphs
     data_container = DataContainer()
     
-    session_history = SessionHistory()
-    extras_reader = LayerExtrasReader()
+    # session_history = SessionHistory()
+    # extras_reader = LayerExtrasReader()
 
-    lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
-                              session_history, module_provider, extras_reader)    
-    lw_core.run()
-    print(extras_reader.to_dict())
+    # lw_core = LightweightCore(CodeHq, graph_dict, data_container, 
+    #                           session_history, module_provider, extras_reader)    
+    # lw_core.run()
+    # print(extras_reader.to_dict())
 
     # from newPropegateNetwork import newPropegateNetwork
     # newPropegateNetwork(json_network["Layers"])
@@ -303,26 +304,17 @@ if __name__ == "__main__":
     # threading.Thread(target=result_reader, args=(rq,)).start()            
 
     # # import pdb; pdb.set_trace()
-    mode = 'normal'
-    # session_history = SessionHistory() 
-    # #session_history = session_history_lw
-
-
+    session_history = SessionHistory() 
    
     module_provider = ModuleProvider()
     module_provider.load('tensorflow', as_name='tf')
     module_provider.load('numpy', as_name='np')
-   
 
+    from core_new.errors import CoreErrorHandler
+    import queue
+    errorQueue=queue.Queue()
+    error_handler = CoreErrorHandler(errorQueue)
+   
     sph = SessionProcessHandler(graph_dict, data_container, cq, rq)    
-    core = Core(CodeHq, graph_dict, data_container, session_history, module_provider, sph)
-    import threading
+    core = Core(CodeHq, graph_dict, data_container, session_history, module_provider, error_handler, sph)
     threading.Thread(target=core.run).start()
-    # core.run()
-    import time
-    time.sleep(2)
-    cq.put("pause")
-    time.sleep(2)
-    cq.put("unpause")
-    time.sleep(2)
-    cq.put("pause")

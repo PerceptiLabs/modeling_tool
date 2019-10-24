@@ -1,5 +1,6 @@
 import copy
 import tensorflow as tf
+import numpy as np
 
 class LayerExtrasReader:
     def __init__(self):

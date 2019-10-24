@@ -117,6 +117,7 @@ const actions = {
       commit('SET_statusLocalCore', 'offline');
     }
   },
+
   API_CLOSE_core() {
     const theData = {
       reciever: 'server',
@@ -141,7 +142,7 @@ const actions = {
         Layers: getters.GET_coreNetwork
       }
     };
-    console.log('API_startTraining', theData);
+    //console.log('API_startTraining', theData);
     coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
@@ -152,34 +153,29 @@ const actions = {
         console.error(err);
       });
   },
+
   API_pauseTraining({dispatch, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
-      action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause' , // Pause and Unpause
+      action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause', // Pause and Unpause
       value: ''
     };
+    //console.log('API_pauseTraining', theData);
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_pauseTraining answer', data);
-        dispatch('API_getStatus');
         if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
-          dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Paused', {root: true});
           dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
           dispatch('API_getStatus');
-          setTimeout(()=> {
-            dispatch('API_getStatus');
-          }, 1000)
-          //pauseAction = 'Unpause';
         }
         else {
           dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
-          //pauseAction = 'Pause';
         }
       })
       .catch((err)=> {
         console.error(err);
       });
   },
+
   API_stopTraining({dispatch, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -197,6 +193,7 @@ const actions = {
         console.error(err);
       });
   },
+
   API_skipValidTraining({rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -210,6 +207,18 @@ const actions = {
       });
   },
 
+  API_getResultInfo({rootGetters}) {
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getEndResults',
+    };
+    console.log('API_getResultInfo', theData);
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
 
   //---------------
   //  NETWORK TESTING
@@ -224,6 +233,7 @@ const actions = {
       .then((data)=> { dispatch('mod_tracker/EVENT_testOpenTab', null, {root: true}) })
       .catch((err)=> { console.error(err) });
   },
+
   API_postTestPlay({rootGetters, dispatch}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -245,6 +255,7 @@ const actions = {
         console.error(err);
       });
   },
+
   API_postTestMove({rootGetters, rootState, dispatch}, request) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -277,6 +288,7 @@ const actions = {
         console.error('isTrained answer', err);
       });
   },
+
   API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -301,7 +313,7 @@ const actions = {
       action: "getNetworkInputDim",
       value: getters.GET_coreNetwork
     };
-    console.log('getNetworkInputDim request', theData);
+    //console.log('getNetworkInputDim request', theData);
     return coreRequest(theData)
       .then((data)=> {
         console.log('getNetworkInputDim answer', data);
@@ -312,16 +324,17 @@ const actions = {
       });
 
   },
+
   API_getOutputDim({dispatch, getters, rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "getNetworkOutputDim",
       value: getters.GET_coreNetwork
     };
-    console.log('API_getOutputDim');
+    //console.log('API_getOutputDim');
     return coreRequest(theData)
       .then((data)=> {
-        console.log('API_getOutputDim answer', data);
+        //console.log('API_getOutputDim answer', data);
         if(data) dispatch('mod_workspace/SET_elementOutputDim', data, {root: true});
         return true;
       })
@@ -329,6 +342,7 @@ const actions = {
         console.error(err);
       });
   },
+
   API_getPreviewSample({dispatch, getters, rootGetters}, {layerId, varData}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -339,13 +353,14 @@ const actions = {
         Variable: varData
       }
     };
-    console.log('getPreviewSample', theData);
+    //console.log('getPreviewSample', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
         console.error(err);
       });
   },
+
   API_getPreviewVariableList({dispatch, getters, rootGetters}, layerId) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -361,6 +376,7 @@ const actions = {
         console.error(err);
       });
   },
+
   API_getCode({dispatch, getters, rootGetters}, value) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -373,6 +389,7 @@ const actions = {
         console.error(err);
       });
   },
+
   API_getPartitionSummary({getters, rootGetters}, layerId) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -388,6 +405,7 @@ const actions = {
         console.error(err);
       });
   },
+
   API_getDataMeta({getters, rootGetters}, layerId) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
@@ -397,8 +415,12 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
+    console.log('API_getDataMeta', theData);
     return coreRequest(theData)
-      .then((data)=> data)
+      .then((data)=> {
+        console.log('API_getDataMeta ans', data);
+        return data
+      })
       .catch((err)=> {
         console.error(err);
       });
@@ -420,6 +442,7 @@ const actions = {
         console.error('Parse answer', err);
       });
   },
+
   API_exportData({rootGetters, getters, dispatch}, value) {
     //const net = rootGetters['mod_workspace/GET_currentNetwork'];
     const theData = {
@@ -457,7 +480,7 @@ const actions = {
     };
     coreRequest(theData)
       .then((data)=> {
-        console.log('API_getStatus answer', data);
+        //console.log('API_getStatus answer', data);
         dispatch('mod_workspace/SET_statusNetworkCore', data, {root: true})
       })
       .catch((err)=> {
@@ -467,7 +490,6 @@ const actions = {
         commit('SET_statusLocalCore', 'offline')
       });
   },
-
 
   API_setHeadless({dispatch, rootState, rootGetters}, value) {
     const theData = {
@@ -481,6 +503,7 @@ const actions = {
         console.error(err);
       });
   },
+
   API_updateResults({rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],

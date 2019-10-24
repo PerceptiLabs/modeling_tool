@@ -19,7 +19,7 @@ DEFAULT_HANDLERS = [
 log = logging.getLogger(__name__)
 
 class Scraper:
-    PERSIST_INTERVAL = 30 # [s] how often the persist job runs
+    PERSIST_INTERVAL = 10 # [s] how often the persist job runs
 
     def __init__(self, handlers: List[ScraperHandler]=None):
         self._handlers = handlers if handlers is None else DEFAULT_HANDLERS

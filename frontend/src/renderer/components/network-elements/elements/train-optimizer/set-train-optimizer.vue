@@ -8,7 +8,7 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.optimizer")
           .form_label Optimizer:
-          #tutorial_optimizer.form_input(data-tutorial-hover-info)
+          .form_input
             base-radio(group-name="group1" value-input="ADAM" v-model="settings.Optimizer")
               span ADAM
             base-radio(group-name="group1" value-input="SGD" v-model="settings.Optimizer")
@@ -36,6 +36,11 @@
             .form_label Decay:
             .form_input
               input(type="number" v-model="settings.Decay")
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
+          .form_label Learning rate:
+          #tutorial_learning_rate.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.Learning_rate")
 
     template(slot="Code-content")
       settings-code(
@@ -72,7 +77,7 @@ export default {
         // N_class: '1',
         // Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
         // Class_weights: 1,
-        // Learning_rate: "0.01",
+        Learning_rate: "0.001",
         Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop
         Beta_1: '0.1',
         Beta_2: '0.1',
@@ -85,6 +90,10 @@ export default {
           title: 'Optimizer',
           text: 'Choose which optimizer to use'
         },
+        learningRate: {
+          title: 'Learning Rate',
+          text: 'Set the learning rate'
+        }
       }
     }
   },

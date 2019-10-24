@@ -4,7 +4,6 @@
     :current-el="currentEl"
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
   )
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
@@ -99,10 +98,6 @@
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
-      this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
-        .then((data)=> {
-          if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
-        });
     },
     data() {
       return {
@@ -192,7 +187,8 @@
       'settings.accessProperties.Sources.length': {
         handler(newVal) {
           if(newVal) this.$nextTick(()=> { this.showBtn() });
-          else this.$nextTick(()=> { this.hideBtn() })
+          else this.$nextTick(()=> { this.hideBtn() });
+          this.getSettingsInfo()
         },
         immediate: true
       }
@@ -246,27 +242,25 @@
           this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources([... new Set(allPath)], type)
         }
         else this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
-        this.getSettingsInfo();
+        //this.getSettingsInfo();
       },
       clearPath() {
         this.Mix_settingsData_deleteDataMeta('DataData')
           .then(()=> {
             this.settings.accessProperties.Sources = [];
-            this.getSettingsInfo()
+            //this.getSettingsInfo()
           })
           .catch((err)=> console.log(err))
       },
       getSettingsInfo() {
         if(this.settings.accessProperties.Sources.length) {
-          this.Mix_settingsData_dataSettingsMeta('DataData')
-            .then((data)=> {
-              if (data.Columns && data.Columns.length) {
-                this.createSelectArr(data.Columns);
-                return data
-              }
-            })
-            //.then(()=> this.Mix_settingsData_getDataPlot('DataData'))
-            //.then(()=> this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId))
+
+          this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
+            .then((data) => {
+              console.log(data);
+              if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
+            });
+
         }
       },
       createSelectArr(data) {

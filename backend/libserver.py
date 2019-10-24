@@ -612,9 +612,11 @@ class Message:
             value=self.request.get("value")
             content=core.saveNetwork(value)
 
+        elif action == "getEndResults":
+            content=core.getEndResults()
+
         elif action == "getStatus":
-            answer=core.getStatus()
-            content=answer
+            content=core.getStatus()
 
         else:
             warningList.append("Invalid action " + str(action))

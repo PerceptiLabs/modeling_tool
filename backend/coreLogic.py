@@ -60,7 +60,9 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.network=network
 
-        #mode = 'normal' 
+        # import json
+        # with open('net.json', 'w') as f:
+        #     json.dump(network, f) 
 
         data_container = DataContainer()
 
@@ -198,7 +200,7 @@ class coreLogic():
         try:
             if self.savedResultsDict["maxTestIter"]!=0:
                 if self.status=="Running":
-                    return {"Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
+                    return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
                 else:
                     return {"Status":self.status,"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
             else:
@@ -226,7 +228,7 @@ class coreLogic():
             if self.status=="Running":
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 result = {
-                    "Status":self.savedResultsDict["trainingStatus"],
+                    "Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],
                     "Iterations": self.savedResultsDict["iter"],
                     "Epoch": self.savedResultsDict["epoch"],
                     "Progress": progress,
@@ -237,7 +239,7 @@ class coreLogic():
             else:
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 return {
-                    "Status":self.status,
+                    "Status":"Paused" if self.paused else self.status,
                     "Iterations":self.savedResultsDict["iter"],
                     "Epoch":self.savedResultsDict["epoch"],
                     "Progress": progress,
@@ -364,6 +366,17 @@ class coreLogic():
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
             log.exception(message)
 
+    def getEndResults(self):
+        #TODO: Show in frontend results for each end layer, not just for one.
+        end_results={}
+        for id_, value in self.graphObj.graphs.items():
+            if value["Info"]["Type"]=="TrainNormal":
+                acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
+                acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
+                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
+                loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
+                end_results.update({"acc_train":float(acc_train[-1]), "acc_val":float(acc_val[-1]), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
+        return end_results
 
     
     def getLayerStatistics(self,value):
@@ -547,8 +560,7 @@ class coreLogic():
                             pass
                         
                     cType=self.getPlot(Network_output[-1])
-
-                    if cType=="bar" or cType=="line":
+                    if cType=="bar" or cType=="line" or cType=='scatter':
                         PvG = createDataObject([Network_output[-1], Labels[-1]], nameList=['Prediction', 'Ground Truth'])                        
 
                         # average over samples
@@ -590,7 +602,8 @@ class coreLogic():
 
                         accList = [[('Accuracy', lastAcc*100.0), ('Empty', (1-lastAcc)*100.0)]]
                         Accuracy = createDataObject(accList, typeList=['pie'])
-                        returnDict={"Input":D[0],"PvG":Mask,"AveragePvG":Prediction,"Accuracy":Accuracy}                    
+                        returnDict={"Input":D[0],"PvG":Mask,"AveragePvG":Prediction,"Accuracy":Accuracy}    
+                                    
                 else:
                     chartType="line"
                     if np.shape(X[-1])[0]<10:

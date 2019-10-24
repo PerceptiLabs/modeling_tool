@@ -385,8 +385,8 @@ class TrainLossCodeGenerator(CodeGenerator):
         if self._loss_function == "Cross_entropy":
             code += "n_classes = y_pred.get_shape().as_list()[-1]\n"
             code += "flat_pred = tf.reshape(y_pred, [-1, n_classes])\n"
-            code += "flat_labels = tf.reshape(y_labels, [-1, n_classes])\n"
-            code += "loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(logits=flat_pred, labels=flat_labels))\n"
+            code += "flat_labels = tf.reshape(y_label, [-1, n_classes])\n"
+            code += "loss = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=flat_labels, logits=flat_pred))\n"
 
         elif self._loss_function == "Quadratic":
             code += "loss = tf.reduce_mean(tf.square(y_pred - y_label))\n"
@@ -397,13 +397,13 @@ class TrainLossCodeGenerator(CodeGenerator):
         elif self._loss_function == "W_cross_entropy":
             code += "n_classes = y_pred.get_shape().as_list()[-1]\n"
             code += "flat_pred = tf.reshape(y_pred, [-1, n_classes])\n"
-            code += "flat_labels = tf.reshape(y_labels, [-1, n_classes])\n"
-            code += "loss =  tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_logits, %s))\n" % self._class_weights
+            code += "flat_labels = tf.reshape(y_label, [-1, n_classes])\n"
+            code += "loss =  tf.reduce_mean(tf.nn.weighted_cross_entropy_with_logits(flat_labels, flat_pred, %s))\n" % self._class_weights
 
         elif self._loss_function == "Dice":
             code += "eps = 1e-5\n"
-            code += "intersection = tf.reduce_sum(tf.multiply(y_pred, y_labels))\n"
-            code += "union = eps + tf.reduce_sum(tf.multiply(y_pred, y_pred)) + tf.reduce_sum(tf.multiply(y_labels, y_labels))\n"
+            code += "intersection = tf.reduce_sum(tf.multiply(y_pred, y_label))\n"
+            code += "union = eps + tf.reduce_sum(tf.multiply(y_pred, y_pred)) + tf.reduce_sum(tf.multiply(y_label, y_label))\n"
             code += "cost_tmp = (2 * intersection/union)\n"
             code += "cost_clip = tf.clip_by_value(cost_tmp, eps, 1.0-eps)\n"
             code += "loss = 1 - cost_clip\n"
@@ -464,7 +464,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
                  optimizer='ADAM', learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999):
         self._output_layer = output_layer
         self._target_layer = target_layer
-        self._n_epochs = n_epochs
+        self._n_epochs = int(n_epochs)
         #Loss
         self._loss_function = loss_function
         self._class_weights = class_weights
@@ -480,8 +480,18 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
     def _get_training_code(self):
         code  = ""
+        code += "api.data.store_locals(locals())\n"
+
+        code += "\n"
         code += TrainLossCodeGenerator(self._output_layer, self._target_layer, self._loss_function, self._class_weights).get_loss_code()
+        code += "# Gradients\n"
+        code += "gradients = {}\n"
+        code += "for var in tf.trainable_variables():\n"
+        code += "    name = 'grad-' + var.name\n"
+        code += "    gradients[name] = tf.gradients(loss, [var])\n"
+        code += "\n"
         code += TrainOptimizerCodeGenerator(self._optimizer,self._learning_rate, self._decay_steps, self._decay_rate, self._momentum, self._beta1, self._beta2).get_optimizer_code()
+
         code += "\n"
         code += "# Metrics\n"
         code += "correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_label,-1))\n"
@@ -492,13 +502,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         else:
             code += "f1, _ = tf.contrib.metrics.f1_score(y_label, y_pred)\n"
             code += "auc, _ = tf.metrics.auc(labels=y_label, predictions=y_pred, curve='ROC')\n"
-        code += "\n"
-
-        code += "# Gradients\n"
-        code += "gradients = {}\n"
-        code += "for var in tf.trainable_variables():\n"
-        code += "    name = 'grad-' + var.name\n"
-        code += "    gradients[name] = tf.gradients(loss, [var])\n"
         code += "\n"
         code += "# Get iterators\n"
         code += "ops = tf.get_default_graph().get_operations()\n"
@@ -512,15 +515,16 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "api.data.setSaver(sess,saver)\n"
         code += "init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())\n"
         code += "sess.run(init)\n"
-        code += "api.data.store_locals(locals())\n"
+        
         code += "all_tensors=api.data.get_tensors()\n" 
         code += "api.data.store(all_tensors=all_tensors)\n"
+        code += "import time\n"
         code += "\n"
-        code += "api.data.store(max_epoch=%s,\n" % (self._n_epochs - 1)
+        code += "api.data.store(max_epoch=%d,\n" % (self._n_epochs - 1)
         code += "               train_datasize=_data_size[0],\n"
         code += "               val_datasize=_data_size[1])\n"
         code += "\n"
-        code += "for epoch in range(%s):\n" % self._n_epochs
+        code += "for epoch in range(%d):\n" % self._n_epochs
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
         code += "    #Setting the variables to empty as a way to reset them every epoch.\n"
@@ -574,7 +578,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
         code += "            api.data.stack(acc_val_iter=acc_val, loss_val_iter=loss_val, f1_val_iter=f1_val, auc_val_iter=auc_val)\n"
         code += "            api.data.store(iter_validation=val_iter)\n"
-        code += "            api.ui.render(dashboard='train_val')\n"  
+        code += "            api.ui.render(dashboard='train_val')\n"
         code += "            val_iter+=1\n" 
         code += "    except tf.errors.OutOfRangeError:\n"
         code += "        pass\n"    
@@ -582,7 +586,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    api.data.store(epoch=epoch)\n"
         code += "    api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
         code += "                   acc_validation_epoch=acc_val, loss_validation_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
-        code += "    api.ui.render(dashboard='train_val')\n"
         return code
 
 

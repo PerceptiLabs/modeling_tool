@@ -13,11 +13,16 @@
             :select-options="selectOptions"
             v-tooltip-interactive:right="interactiveInfo.selectGame"
           )
-        .form_row(v-tooltip-interactive:right="interactiveInfo.actionSpace")
+        set-data-environment-gym-img(
+          :layer-settings="settings"
+          :layer-id="currentEl.layerId"
+          @apply-settings="applySettings"
+        )
+        //-.form_row(v-tooltip-interactive:right="interactiveInfo.actionSpace")
           chart-switch(
             key="1"
-            :chart-label="chartLabel"
-            :chart-data="imgData"
+            /:chart-label="chartLabel"
+            /:chart-data="imgData"
           )
         .form_row
           .form_label History length:
@@ -50,15 +55,15 @@
   import {openLoadDialog} from '@/core/helpers.js'
 
   import ChartSwitch from "@/components/charts/chart-switch.vue";
+  import SetDataEnvironmentGymImg from "@/components/network-elements/elements/data-environment/set-data-environment--gym-img.vue";
 
   export default {
     name: 'SetDataEnvironment',
     mixins: [mixinSet, mixinData],
-    components: { ChartSwitch},
-    mounted() {
-
-      //this.getPreviewSample();
-    },
+    components: {SetDataEnvironmentGymImg, ChartSwitch},
+    // mounted() {
+    //   this.getPreviewSample();
+    // },
     data() {
       return {
         tabs: ['Gym', `<i class='icon icon-search'></i> Unity`],
@@ -87,10 +92,6 @@
             title: 'Select',
             text: 'Choose game environment'
           },
-          actionSpace: {
-            title: 'Action Space',
-            text: 'Number of different actions </br> you can take in the game'
-          }
         }
       }
     },
@@ -99,24 +100,25 @@
         return `Action space: ${this.Mix_settingsData_actionSpace}`
       }
     },
-    watch: {
-      'settings.accessProperties.Atari': {
-        handler(newVal) {
-          if(newVal) {
-            this.getPreviewSample();
-          }
-        },
-        //immediate: true
-      },
-    },
+    // watch: {
+    //   'settings.accessProperties.Atari': {
+    //     handler(newVal) {
+    //       if(newVal) {
+    //         this.getPreviewSample();
+    //       }
+    //     },
+    //     //immediate: true
+    //   },
+    // },
     methods: {
-      setTab(i) {
-        this.tabSelected = i;
-        if(i === 'Gym') this.getPreviewSample();
-        // this.settings.accessProperties.EnvType = this.tabs[i].type;
-        // this.Mix_settingsData_imgData = null;
-        // this.Mix_settingsData_dataSettingsPlot('DataEnvironment')
-      },
+      // setTab(i) {
+      //   this.tabSelected = i;
+      //   console.log('setTab', i);
+      //   if(i === 'Gym') this.getPreviewSample();
+      //   // this.settings.accessProperties.EnvType = this.tabs[i].type;
+      //   // this.Mix_settingsData_imgData = null;
+      //   // this.Mix_settingsData_dataSettingsPlot('DataEnvironment')
+      // },
       saveLoadFile(pathArr, type) {
         this.disabledBtn = false;
         // this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
@@ -137,13 +139,13 @@
             this.disabledBtn = false;
           })
       },
-      getPreviewSample() {
-        this.applySettings();
-        this.$store.dispatch('mod_api/API_getPreviewSample', {layerId: this.currentEl.layerId, varData: 'sample'})
-          .then((data)=> {
-            this.imgData = data
-          } )
-      }
+      // getPreviewSample() {
+      //   this.applySettings();
+      //   this.$store.dispatch('mod_api/API_getPreviewSample', {layerId: this.currentEl.layerId, varData: 'sample'})
+      //     .then((data)=> {
+      //       this.imgData = data
+      //     } )
+      // }
     },
   }
 </script>
