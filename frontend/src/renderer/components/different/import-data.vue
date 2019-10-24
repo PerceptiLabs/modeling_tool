@@ -19,11 +19,11 @@
           @click="clickQ"
           ) Load
 
-    template(slot="git")
+    //template(slot="git")
       .form_row
         input.form_input(type="text" v-model="settings.Location" placeholder="insert link")
         button.btn.btn--dark-blue-rev(type="button"
-          :disabled="disabledBtn"
+          //:disabled="disabledBtn"
           @click="clickQ"
           ) Load
 
@@ -42,7 +42,7 @@ export default {
       accordionData: [
         {name: 'tensorFlow' , html: 'TensorFlow Model'},
         {name: 'builtIn' , html: 'Built-in Templates'},
-        {name: 'git' , html: '<i class="icon icon-git"></i> Git'},
+        //{name: 'git' , html: '<i class="icon icon-git"></i> Git'},
       ],
       selectOptions: [
         { text: 'Machine Translation',    value: 'machine_translation' },
