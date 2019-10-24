@@ -1,10 +1,10 @@
 .copyryght
-  img.copyryght_logo(src="../../../../static/img/perceptilabs-logo-splashscreen.svg" alt="PerceptiLlabs logo")
+  img.copyryght_logo(src="../../../../static/img/perceptilabs-logo-splashscreen.svg" alt="PerceptiLabs logo")
   .copyryght_text
     p Version: {{appVersion}}
     p Copyright ©2019
 
-.form_holder
+.form_holder.text-center
   button.btn.btn--outline-blue.projects-sidebar_link(type="button"
     v-if="localUserInfo && localUserInfo.workspace"
     @click="openLastWS"

@@ -16,18 +16,18 @@
               )
         .form_holder
           base-checkbox(v-model="settings.Compressed") Compressed
-        .sidebar_line
-        .form_holder
+        //.sidebar_line
+        //.form_holder
           base-checkbox(v-model="settings.git")
             i.icon.icon-git
             span.checkbox-info  Git
-        .form_holder
-          .form_row
+        //.form_holder
+      //  .form_row
             input.form_input(
               type="text"
               placeholder="insert link"
               v-model="settings.gitLink"
-              :disabled="!settings.git"
+      //        :disabled="!settings.git"
             )
             span &nbsp;&nbsp;or&nbsp;&nbsp;
             button.btn.btn--dark-blue-rev(type="button") Create
