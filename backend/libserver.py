@@ -617,7 +617,6 @@ class Message:
 
         elif action == "getStatus":
             content=core.getStatus()
-            print("Get Status Answer: ", content)
 
         else:
             warningList.append("Invalid action " + str(action))

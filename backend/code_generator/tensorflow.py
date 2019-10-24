@@ -525,9 +525,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "               val_datasize=_data_size[1])\n"
         code += "\n"
         code += "for epoch in range(%d):\n" % self._n_epochs
-        code += "    startTime=time.time()\n"
-        code += "    evalTime=0\n"
-        code += "    renderTime=0\n"
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
         code += "    #Setting the variables to empty as a way to reset them every epoch.\n"
@@ -541,9 +538,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "                _, acc_train, loss_train, f1_train, auc_train = sess.run([step, accuracy, loss, f1, auc])\n"
         code += "            else:\n"
         code += "                _, acc_train, loss_train, f1_train, auc_train, gradient_vals, all_evaled_tensors = sess.run([step, accuracy, loss, f1, auc, gradients, all_tensors])\n"
-        code += "                cEvalTime=time.time()\n"
         code += "                api.data.store(all_evaled_tensors=all_evaled_tensors)\n"
-        code += "                evalTime+=(time.time()-cEvalTime)\n"
         
         code += "                new_gradient_vals={}\n"
         code += "                for gradName, gradValue in gradient_vals.items():\n"
@@ -555,9 +550,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "            api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train, f1_train_iter=f1_train, auc_train_iter=auc_train)\n"
         code += "            api.data.store(iter_training=train_iter)\n"
 
-        code += "            cRenderTime=time.time()\n"
         code += "            api.ui.render(dashboard='train_val')\n"
-        code += "            renderTime += (time.time()-cRenderTime)\n"
         code += "            train_iter+=1\n"
         code += "    except tf.errors.OutOfRangeError:\n"
         code += "        pass\n"
@@ -574,9 +567,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "                _, acc_val, loss_val, f1_val, auc_val = sess.run([step, accuracy, loss, f1, auc])\n"
         code += "            else:\n"
         code += "                _, acc_val, loss_val, f1_val, auc_val, gradient_vals, all_evaled_tensors = sess.run([step, accuracy, loss, f1, auc, gradients, all_tensors])\n"
-        code += "                cEvalTime=time.time()\n"
         code += "                api.data.store(all_evaled_tensors=all_evaled_tensors)\n"
-        code += "                evalTime+=(time.time()-cEvalTime)\n"
         
         code += "                new_gradient_vals={}\n"
         code += "                for gradName, gradValue in gradient_vals.items():\n"
@@ -587,24 +578,14 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
         code += "            api.data.stack(acc_val_iter=acc_val, loss_val_iter=loss_val, f1_val_iter=f1_val, auc_val_iter=auc_val)\n"
         code += "            api.data.store(iter_validation=val_iter)\n"
-        code += "            cRenderTime=time.time()\n"
         code += "            api.ui.render(dashboard='train_val')\n"
-        code += "            renderTime += (time.time()-cRenderTime)\n"  
         code += "            val_iter+=1\n" 
         code += "    except tf.errors.OutOfRangeError:\n"
         code += "        pass\n"    
         code += "    \n"
         code += "    api.data.store(epoch=epoch)\n"
-        code += "    print('Epoch: %d Acc: %f Loss: %f' %(epoch, acc_train, loss_train))\n"
         code += "    api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
         code += "                   acc_validation_epoch=acc_val, loss_validation_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
-        code += "    cRenderTime=time.time()\n"
-        code += "    api.ui.render(dashboard='train_val')\n"
-        code += "    renderTime += (time.time()-cRenderTime)\n" 
-        code += "    endTime=time.time()-startTime\n"
-        code += "    print('Time: %f Eval Time: %f' %(endTime, evalTime+renderTime))\n"
-        code += "    import sys\n"
-        code += "    print('Size: %f' %(sys.getsizeof(str(all_evaled_tensors))) \n)"
         return code
 
 
@@ -630,7 +611,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
     def get_code(self):
         code = self._get_training_code() + '\n' + self._get_testing_code()
-        print(code)
         return code
 
 
