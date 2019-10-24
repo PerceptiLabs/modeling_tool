@@ -525,9 +525,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "               val_datasize=_data_size[1])\n"
         code += "\n"
         code += "for epoch in range(%d):\n" % self._n_epochs
-        code += "    startTime=time.time()\n"
-        code += "    evalTime=0\n"
-        code += "    renderTime=0\n"
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
         code += "    #Setting the variables to empty as a way to reset them every epoch.\n"
@@ -541,9 +538,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "                _, acc_train, loss_train, f1_train, auc_train = sess.run([step, accuracy, loss, f1, auc])\n"
         code += "            else:\n"
         code += "                _, acc_train, loss_train, f1_train, auc_train, gradient_vals, all_evaled_tensors = sess.run([step, accuracy, loss, f1, auc, gradients, all_tensors])\n"
-        code += "                cEvalTime=time.time()\n"
         code += "                api.data.store(all_evaled_tensors=all_evaled_tensors)\n"
-        code += "                evalTime+=(time.time()-cEvalTime)\n"
         
         code += "                new_gradient_vals={}\n"
         code += "                for gradName, gradValue in gradient_vals.items():\n"
@@ -555,9 +550,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "            api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train, f1_train_iter=f1_train, auc_train_iter=auc_train)\n"
         code += "            api.data.store(iter_training=train_iter)\n"
 
-        code += "            cRenderTime=time.time()\n"
         code += "            api.ui.render(dashboard='train_val')\n"
-        code += "            renderTime += (time.time()-cRenderTime)\n"
         code += "            train_iter+=1\n"
         code += "    except tf.errors.OutOfRangeError:\n"
         code += "        pass\n"
@@ -574,9 +567,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "                _, acc_val, loss_val, f1_val, auc_val = sess.run([step, accuracy, loss, f1, auc])\n"
         code += "            else:\n"
         code += "                _, acc_val, loss_val, f1_val, auc_val, gradient_vals, all_evaled_tensors = sess.run([step, accuracy, loss, f1, auc, gradients, all_tensors])\n"
-        code += "                cEvalTime=time.time()\n"
         code += "                api.data.store(all_evaled_tensors=all_evaled_tensors)\n"
-        code += "                evalTime+=(time.time()-cEvalTime)\n"
         
         code += "                new_gradient_vals={}\n"
         code += "                for gradName, gradValue in gradient_vals.items():\n"
@@ -587,24 +578,14 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
         code += "            api.data.stack(acc_val_iter=acc_val, loss_val_iter=loss_val, f1_val_iter=f1_val, auc_val_iter=auc_val)\n"
         code += "            api.data.store(iter_validation=val_iter)\n"
-        code += "            cRenderTime=time.time()\n"
         code += "            api.ui.render(dashboard='train_val')\n"
-        code += "            renderTime += (time.time()-cRenderTime)\n"  
         code += "            val_iter+=1\n" 
         code += "    except tf.errors.OutOfRangeError:\n"
         code += "        pass\n"    
         code += "    \n"
         code += "    api.data.store(epoch=epoch)\n"
-        code += "    print('Epoch: %d Acc: %f Loss: %f' %(epoch, acc_train, loss_train))\n"
         code += "    api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
         code += "                   acc_validation_epoch=acc_val, loss_validation_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
-        code += "    cRenderTime=time.time()\n"
-        code += "    api.ui.render(dashboard='train_val')\n"
-        code += "    renderTime += (time.time()-cRenderTime)\n" 
-        code += "    endTime=time.time()-startTime\n"
-        code += "    print('Time: %f Eval Time: %f' %(endTime, evalTime+renderTime))\n"
-        code += "    import sys\n"
-        code += "    print('Size: %f' %(sys.getsizeof(str(all_evaled_tensors))) \n)"
         return code
 
 
@@ -630,7 +611,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
     def get_code(self):
         code = self._get_training_code() + '\n' + self._get_testing_code()
-        print(code)
         return code
 
 
@@ -639,20 +619,26 @@ LayerPair = namedtuple('LayerPair', ['online_id', 'target_id'])
 
 
 class TrainReinforceCodeGenerator(CodeGenerator):
-    def __init__(self, online_network_id, target_network_id, layer_pairs, n_episodes=20000, history_length=2, batch_size=32, learning_rate=0.1, discount_factor=0.99,
+    def __init__(self, online_network_id, target_network_id, layer_pairs, n_episodes=20000, batch_size=32, learning_rate=0.1, discount_factor=0.99,
                  replay_start_size=1000, replay_memory_size=300000,
-                 initial_exploration=0.9, final_exploration=0.1,
-                 update_frequency=4, target_network_update_frequency=100):
-        self._batch_size = batch_size                
+                 initial_exploration=0.9, final_exploration=0.1, final_exporation_frame=500,
+                 update_frequency=4, target_network_update_frequency=100,
+                 n_steps_max=1000):
+        self._batch_size = batch_size 
         self._n_episodes = n_episodes
-        self._history_length = history_length
         self._replay_start_size = replay_start_size        
         self._replay_memory_size = replay_memory_size
         self._learning_rate = learning_rate
         self._gamma = discount_factor
         self._update_frequency = update_frequency
         self._copy_weights_frequency = target_network_update_frequency
-        self._n_steps_max = 1000
+        self._n_steps_max = n_steps_max
+
+        #Exploartion
+        self._initial_exploration=str(initial_exploration)
+        self._final_exploration=str(final_exploration)
+        self._final_exporation_frame=str(final_exporation_frame)
+
 
         self._online_network_id = online_network_id# #"'1'"
         self._target_network_id = target_network_id# "'2'"
@@ -667,7 +653,8 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "# Constants\n"
         code += "gamma = %f\n" % self._gamma
         code += "batch_size = %d\n" % self._batch_size
-        code += "history_length = %d\n" % self._history_length
+        # code += "history_length = %d\n" % self._history_length
+        code += "history_length = history_length #We use the global history_length from the Environment here\n"
         code += "replay_start_size = %d\n" % self._replay_start_size
         code += "n_actions = env.action_space.n\n"
         code += "n_steps_max = %d\n" % self._n_steps_max
@@ -676,8 +663,8 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "\n"
         code += "# Exploration/exploitation tradeoff\n" # TODO: name
         code += "def epsilon(episode):\n"
-        code += "    #eps = 1/np.sqrt(1 + episode)\n"
-        code += "    eps = 0.9**(episode/500)\n"
+        code += "    #eps = 1/np.sqrt(%s + episode)\n" % (self._initial_exploration)
+        code += "    eps = %s**(episode/%s)\n" % (self._final_exploration, self._final_exporation_frame)
         code += "    eps = max(0.1, eps)\n"
         code += "    return eps\n"
         code += "\n"
@@ -747,9 +734,9 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "        explore = np.random.random() < epsilon(episode) or iteration < replay_start_size\n"
         code += "        if explore:\n"
         code += "            action = env.action_space.sample()\n"
-        code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array([state_seq])}).squeeze()\n"
+        code += "            Q = Q_online.eval(feed_dict={state_tensor: [np.array(state_seq)]}).squeeze()\n"
         code += "        else:\n"
-        code += "            Q = Q_online.eval(feed_dict={state_tensor: np.array([state_seq])}).squeeze()\n"
+        code += "            Q = Q_online.eval(feed_dict={state_tensor: [np.array(state_seq)]}).squeeze()\n"
         code += "            action = np.argmax(Q)\n"
         code += "        \n"
         code += "        new_state, reward, done, info = env.step(action)\n"

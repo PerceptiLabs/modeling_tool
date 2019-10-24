@@ -17,7 +17,7 @@ $colorGrey: #727272;
 .template_title {
   font-size: 1.5rem;
   display: block;
-  margin-top: 2rem;
+  margin-top: 3rem;
 }
 
 .basic-templates_crash-course {
@@ -30,7 +30,8 @@ $colorGrey: #727272;
   flex-direction: column;
   align-items: center;
   .template_title {
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
+    margin-top: 5rem;
   }
 }
 
@@ -41,7 +42,7 @@ $colorGrey: #727272;
 }
 .model_icon-box {
   border: 1px solid $col-primary;
-  font-size: 3rem;
+  font-size: 4rem;
   padding: 1.5rem;
   border-radius: $bdrs;
   &.icon-box--outline {
