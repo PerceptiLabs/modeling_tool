@@ -114,8 +114,12 @@ class BaseCore:
                 log.info("Stop requested during session {}".format(layer_id))                
                 break
             except LayerSessionAbort:
+                
                 log.info("Error handler aborted session {}".format(layer_id))
                 break
+            except Exception:
+                log.exception("Exception in %s" % layer_id)
+                raise
 
     def _run_layer(self, id_, content):        
         code_gen = self._codehq.get_code_generator(id_, content)
@@ -126,6 +130,7 @@ class BaseCore:
         except HistoryInputException:
             if self._layer_extras_reader is not None:
                 self._layer_extras_reader.set_empty(id_)
+            log.exception("HistoryInputException for layer %s" % content['Info']['Type'])
             return
 
         if content['Info']['checkpoint'] and type(code_gen).__name__ == "CustomCodeGenerator" and self._checkpointValues:
