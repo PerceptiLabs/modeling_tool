@@ -11,7 +11,6 @@ import GeneralResult          from "@/components/global-popups/workspace-result"
 import SelectCoreSide         from "@/components/global-popups/workspace-core-side";
 import WorkspaceBeforeImport  from "@/components/global-popups/workspace-before-import";
 import WorkspaceSaveNetwork   from "@/components/global-popups/workspace-save-network.vue";
-import TheStatistics          from "@/components/statistics/the-statistics.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
@@ -22,7 +21,7 @@ export default {
     NetworkField, TextEditable,
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork,
-    TheStatistics, TheTesting, TheViewBox, StartTrainingSpinner
+    TheTesting, TheViewBox, StartTrainingSpinner
   },
   created() {
     this.refreshSavePopup();
