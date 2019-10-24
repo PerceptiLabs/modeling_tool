@@ -1,9 +1,9 @@
 <template lang="pug">
   section.network_info-section.tutorial-relative
-    .info-section_head(v-if="!testIsOpen")
+    .info-section_head(v-show="!testIsOpen")
       h3 {{ sectionTitle }}
       view-box-btn-list(
-        v-show="!testIsOpen && btnList"
+        v-if="btnList"
         :tab-set="btnList"
         @set-current-btn="setCurrentBtn"
         )
