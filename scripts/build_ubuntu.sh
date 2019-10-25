@@ -60,9 +60,15 @@ echo "Listing contents of 'backend_tmp/'"
 ls -l
 
 
+
 echo "Running pyinstaller..."
+
 cp ../../backend/linux.spec .
+cp ../../backend/common.spec common.py
+
 pyinstaller --clean -y linux.spec
+
+mv ../../backend/common.py ../../backend/common.spec
 
 if [ -e dist/appServer/libpython3.6m.so.1.0 ]
 then
@@ -79,6 +85,7 @@ cp -r ../backend_tmp/dist .
 
 echo "Done building backend!"
 
+#exit
 # ----- Build frontend ----
 echo "----- Building frontend -----"
 
