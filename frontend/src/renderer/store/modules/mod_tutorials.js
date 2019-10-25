@@ -913,7 +913,10 @@ const state = {
           content: 'The top window shows training <div class="marker">Statistics</div> for the overall model. Press <div class="marker">"Next"</div> to continue',
           actions: [
             {
-              id: 'tutorial_statistics', 
+              id: 'tutorial_statistics',
+              //tooltip: 'Click Next to continue',
+              //id_tooltip: 'tutorial_next_button',
+              //position: 'bottom',
               status: 'disabled',
               animation: true,
               schematic: {
@@ -929,7 +932,10 @@ const state = {
           content: 'The <div class="marker">ViewBox</div> shows what’s happening in each component. Select any layer on the <div class="marker">Map View</div> to go into more detail. Press <div class="marker">"Next"</div> to continue',
           actions: [
             {
-              id: 'tutorial_view-box', 
+              id: 'tutorial_view-box',
+              tooltip: 'Click Next to continue',
+              id_tooltip: 'tutorial_next_button',
+              position: 'bottom',
               status: 'disabled',
               animation: true,
               schematic: {
@@ -988,7 +994,9 @@ const state = {
             },
             { 
               id: 'tutorial_prediction-chart',
-              position: 'right',
+              tooltip: 'Click Next to continue',
+              id_tooltip: 'tutorial_next_button',
+              position: 'bottom',
               status: 'disabled',
               animation: true,
               schematic: {
@@ -1284,25 +1292,32 @@ const actions = {
       dispatch('nextPoint');
       if(getters.getActivePoint) {
         commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
-        dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
+        dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip,});
       }
       else { //all points has been done
         dispatch('removeTooltip');
         commit('SET_activePointMainTutorial', 0);
         dispatch('lockOneElement');
+        if(getters.getActiveStepMainTutorial === 7) {
+          dispatch('createTooltip', {id: 'tutorial_start-training', position: 'right', tooltip: 'Click to run training'});
+        } else {
+          dispatch('createTooltip', {id: 'tutorial_next_button', position: 'right', tooltip: 'Click Next to continue'});
+        }
       }
     }
   },
   createTooltip({getters, dispatch}, info) {
     dispatch('removeTooltip');
-    let element = document.getElementById(info.id);
+    let id = getters.getActiveAction.id_tooltip || info.id;
+    let element = document.getElementById(id);
+    let side = getters.getActiveAction.position || info.position;
     if(getters.getActiveAction.tooltip && element) {
       var tooltip = document.createElement('div');
       delayTimer = setTimeout(()=>{
-        dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
-        tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${getters.getActiveAction.position}`);
+        dispatch('sideCalculate', {element, tooltip, side});
+        tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${side}`);
         if(getters.getActiveAction.animation)
-          tooltip.classList.add(`tooltip-tutorial-animation--${getters.getActiveAction.position}`);
+          tooltip.classList.add(`tooltip-tutorial-animation--${side}`);
         tooltip.innerHTML = info.tooltip;
         document.body.appendChild(tooltip);
         element.addEventListener('mouseup', repositionElement);
@@ -1467,9 +1482,10 @@ const actions = {
      }
    }
   },
-  tooltipReposition({dispatch, getters}) {
+  tooltipReposition({dispatch, getters}, moveInstruction) {
     if(getters.getIstutorialMode) {
-      let element = document.getElementById(getters.getActiveAction.id);
+      let id = moveInstruction ? 'tutorial_next_button' : getters.getActiveAction.id;
+      let element = document.getElementById(id);
       let tooltip = document.querySelector('.tooltip-tutorial');
       dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
     }
