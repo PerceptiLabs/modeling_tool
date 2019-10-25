@@ -65,7 +65,7 @@
             .form_input
               input(type="number" v-model="settings.Momentum")
           .form_row
-            .form_label Decay Rate:
+            .form_label Decay rate:
             .form_input
               input(type="number" v-model="settings.Decay_rate")
           .form_row
@@ -137,7 +137,7 @@ export default {
         //   text: 'Choose which optimizer to use'
         // },
         learningRate: {
-          title: 'Learning Rate',
+          title: 'Learning rate',
           text: 'Set the learning rate'
         }
       }

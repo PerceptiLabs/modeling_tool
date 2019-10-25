@@ -91,7 +91,7 @@ export default {
           text: 'Choose which optimizer to use'
         },
         learningRate: {
-          title: 'Learning Rate',
+          title: 'Learning rate',
           text: 'Set the learning rate'
         }
       }

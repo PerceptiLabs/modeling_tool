@@ -29,7 +29,13 @@
           .form_input
             input(type="number" v-model="settings.accessProperties.History_length")
 
-    template(slot="<i class='icon icon-search'></i> Unity-content")
+    template(slot="Code-content")
+      settings-code(
+        :current-el="currentEl"
+        :el-settings="settings"
+        v-model="coreCode"
+      )
+    //-template(slot="<i class='icon icon-search'></i> Unity-content")
       .settings-layer_section
         .form_row
           input.form_input(type="text" placeholder="c:" readonly
@@ -37,13 +43,13 @@
           )
           button.btn.btn--primary(type="button"
             @click="loadFile"
-            :disabled="disabledBtn"
+            /:disabled="disabledBtn"
           ) Load
         .form_row
           chart-switch.data-settings_chart(
             key="2"
-            :disable-header="true"
-            :chart-data="imgData"
+            /:disable-header="true"
+            /:chart-data="imgData"
           )
 
 </template>
@@ -66,7 +72,8 @@
     // },
     data() {
       return {
-        tabs: ['Gym', `<i class='icon icon-search'></i> Unity`],
+        //tabs: ['Gym', `<i class='icon icon-search'></i> Unity`],
+        tabs: ['Gym', 'Code'],
         disabledBtn: false,
         imgData: null,
         selectOptions: [

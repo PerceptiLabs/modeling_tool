@@ -14,7 +14,7 @@ const requestCloudApi = function (method, path, data, params) {
       else {
         store.dispatch('mod_tracker/EVENT_cloudError', {method, path, error});
         store.dispatch('globalView/GP_errorPopup', error.response.data);
-        console.log(error);
+        throw(error.response)
       }
     })
     .then((answer)=> {

@@ -479,4 +479,7 @@ export default {
       color: $color-1;;
     }
   }
+  .btn-toolbar--home {
+    color: $color-5;
+  }
 </style>

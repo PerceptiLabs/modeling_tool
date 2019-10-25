@@ -9,12 +9,12 @@
           :disabled='isTutorial || disableSettings'
           @click="setTab(tab)"
         )
-          h3(v-html="tab")
+          h4(v-html="tab")
           i.icon.icon-code-error(
             v-if="tab === 'Code' && currentEl.layerCodeError"
           )
       .popup_header.disable(v-else)
-        h3 Preview
+        h4 Preview
     .popup_tab-body
       .popup_body.active(
         v-for="(tabContent, i) in tabSet"

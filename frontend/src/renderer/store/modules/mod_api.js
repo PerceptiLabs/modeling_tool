@@ -353,9 +353,12 @@ const actions = {
         Variable: varData
       }
     };
-    //console.log('getPreviewSample', theData);
+    console.log('getPreviewSample', theData);
     return coreRequest(theData)
-      .then((data)=> data)
+      .then((data)=> {
+        console.log('getPreviewSample answer', data);
+        return data
+      })
       .catch((err)=> {
         console.error(err);
       });
@@ -370,8 +373,12 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
+    console.log('getPreviewVariableList', theData);
     return coreRequest(theData)
-      .then((data)=> data)
+      .then((data)=> {
+        console.log('getPreviewVariableList answer', data);
+        return data
+      })
       .catch((err)=> {
         console.error(err);
       });

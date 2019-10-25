@@ -11,11 +11,11 @@
             .results-info--validation
               p Training
               span Training Accuracy: {{ popupInfo.acc_train | round(2)}}%
-              span Training Loss: {{ popupInfo.loss_train | round(2)}}%
+              span Training Loss: {{ popupInfo.loss_train | round(2)}}
             .results-info--validation
               p Validation
               span Validation Accuracy: {{ popupInfo.acc_val | round(2)}}%
-              span Validation Loss: {{ popupInfo.loss_val | round(2)}}%
+              span Validation Loss: {{ popupInfo.loss_val | round(2)}}
 
       .popup_foot
         //-button.btn.btn--primary(type="button"

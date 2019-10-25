@@ -58,7 +58,7 @@
             .form_input
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
-            base-checkbox(v-model="settings.accessProperties.Shuffle_data") Shuffle
+            base-checkbox.middle-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
         //-.settings-layer_foot
           button.btn.btn--primary(type="button") Apply
     //-template(slot="Cloud-content")

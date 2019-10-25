@@ -457,6 +457,7 @@ const mutations = {
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {dispatch, settings}) {
+    console.log('set_elementSettings', settings);
     currentElement(settings.elId).layerSettings = settings.set;
     currentElement(settings.elId).layerCode = settings.code;
     currentElement(settings.elId).layerSettingsTabName = settings.tabName;

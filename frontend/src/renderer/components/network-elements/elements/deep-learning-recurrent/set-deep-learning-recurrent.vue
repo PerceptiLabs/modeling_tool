@@ -33,7 +33,7 @@
 
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
-          .form_label Keep Probability:
+          .form_label Keep probability:
           .form_input
             base-radio(group-name="probability" :value-input="true"  v-model="settings.keep_prob")
               span Yes
@@ -51,7 +51,7 @@
 
       .settings-layer_section(v-if="settings.Dropout")
         .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
-          .form_label Keep Probability:
+          .form_label Keep probability:
           .form_input
             input(type="number" v-model="settings.Keep_prob")
 

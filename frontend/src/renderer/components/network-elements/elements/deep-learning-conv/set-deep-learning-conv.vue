@@ -70,7 +70,7 @@
               span No
       .settings-layer_section(v-if="settings.Dropout")
         .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
-          .form_label Keep Probability:
+          .form_label Keep probability:
           .form_input
             input(type="number" v-model="settings.Keep_prob")
       .settings-layer_section

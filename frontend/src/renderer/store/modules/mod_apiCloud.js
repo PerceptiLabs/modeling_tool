@@ -52,6 +52,7 @@ const actions = {
       })
       .catch((error)=> console.log('CloudAPI_userCreate', error) )
   },
+
   CloudAPI_userGetProfile({dispatch}) {
     return requestCloudApi('get', 'Customer/Profile')
       .then((response)=> {
@@ -60,6 +61,11 @@ const actions = {
         return true
       })
       .catch((error)=> console.log('CloudAPI_userGetProfile', error) )
+  },
+  CloudAPI_userForgotPassword({dispatch}, email) {
+    return requestCloudApi('post', 'Customer/ForgotPassword', `'${email}'`)
+      .then((response)=> response.status === 200 )
+      .catch((error)=> console.log('CloudAPI_userForgotPassword', error) )
   },
   CloudAPI_userSetProfile({dispatch}, user) {
     return requestCloudApi('post', 'Customer/Profile', user)
