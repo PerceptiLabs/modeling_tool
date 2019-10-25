@@ -16,7 +16,6 @@
       ul.list-area_list
         .list-element.list-element--status(
           v-for="(point, index) in points"
-          v-if="stepCount !== stepsLength"
           :key="index"
           :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
         )

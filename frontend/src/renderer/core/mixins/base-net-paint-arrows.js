@@ -1,5 +1,8 @@
 const baseNetPaintArrows = {
   computed: {
+    activeAction() {
+      return this.$store.getters['mod_tutorials/getActiveAction']
+    },
     // Mix_paintArrow_startDrawArrow() {
     //   return this.$store.state.mod_workspace.startArrowID
     // },
@@ -33,7 +36,8 @@ const baseNetPaintArrows = {
       //ev.stopPropagation();
       this.$parent.$parent.removeArrowListener();
       this.$store.dispatch('mod_workspace/ADD_arrow', this.dataEl.layerId);
-      this.$store.commit('mod_workspace/CLEAR_preArrow')
+      this.$store.commit('mod_workspace/CLEAR_preArrow');
+      //this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: this.activeAction.id});
     }
   }
 }
