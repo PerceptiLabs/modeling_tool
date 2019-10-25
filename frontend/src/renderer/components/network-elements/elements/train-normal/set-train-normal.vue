@@ -15,8 +15,8 @@
             )
       .settings-layer_section
         .form_row
-          .form_label Epochs:
-          .form_input
+          .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
+          #tutorial_epochs.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.Epochs")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
@@ -128,14 +128,18 @@ export default {
           title: 'Labels',
           text: 'Choose which input connection is represent the labels'
         },
-        // costFunction: {
-        //   title: 'Split on',
-        //   text: 'Choose in which position to split on at the chosen axis'
-        // },
-        // optimizer: {
-        //   title: 'Optimizer',
-        //   text: 'Choose which optimizer to use'
-        // },
+        epochs: {
+          title: 'epochs',
+          text: 'Choose'
+        },
+        costFunction: {
+          title: 'Split on',
+          text: 'Choose in which position to split on at the chosen axis'
+         },
+        optimizer: {
+          title: 'Optimizer',
+          text: 'Choose which optimizer to use'
+        },
         learningRate: {
           title: 'Learning rate',
           text: 'Set the learning rate'

@@ -16,7 +16,6 @@
       ul.list-area_list
         .list-element.list-element--status(
           v-for="(point, index) in points"
-          v-if="stepCount !== stepsLength"
           :key="index"
           :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
         )
@@ -40,11 +39,11 @@
             v-if="isFirstStep"
             @click="startTutorial('next')"
             ) Next
-          button.footer_btn(
+          button#tutorial_next_button.footer_btn(
             v-else-if="activeAction.next && !allPointsIsDone"
             @click="pointActivate({way: 'next', validation: activeAction.id})"
             ) Next
-          button.footer_btn(
+          button#tutorial_next_button.footer_btn(
             v-else-if="stepCount !== stepsLength"
             @click="changeStep('next')" :disabled="disabledNext"
             ) Next
@@ -175,15 +174,7 @@ export default {
     },
     dragElement(event) {
       let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      const element = event.currentTarget;
-      event.preventDefault();
-      pos3 = event.clientX;
-      pos4 = event.clientY;
-      element.style.cursor = 'grabbing';
-      document.addEventListener('mouseup', closeDragElement);
-      document.addEventListener('mousemove', elementDrag);
-
-      function elementDrag(docEvent) {
+      let elementDrag = (docEvent) => {
         event.preventDefault();
         pos1 = pos3 - docEvent.clientX;
         pos2 = pos4 - docEvent.clientY;
@@ -191,13 +182,23 @@ export default {
         pos4 = docEvent.clientY;
         element.style.top = (element.offsetTop - pos2) + "px";
         element.style.left = (element.offsetLeft - pos1) + "px";
-      }
+      };
 
-      function closeDragElement() {
+      let closeDragElement = () => {
         document.removeEventListener('mouseup', closeDragElement);
         document.removeEventListener('mousemove', elementDrag);
         element.style.cursor = '';
-      }
+        if (!this.disabledNext || this.activeAction.next && !this.allPointsIsDone) {
+          this.tooltipReposition(true);
+        }
+      };
+      const element = event.currentTarget;
+      event.preventDefault();
+      pos3 = event.clientX;
+      pos4 = event.clientY;
+      element.style.cursor = 'grabbing';
+      document.addEventListener('mouseup', closeDragElement);
+      document.addEventListener('mousemove', elementDrag);
     }
   }
 }

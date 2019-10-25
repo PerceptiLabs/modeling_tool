@@ -27,6 +27,7 @@
           slot(:name="tabContent+'-action'")
             button.btn.btn--primary.btn--disabled(type="button"
               @click="hideAllWindow"
+              :disabled="isTutorial"
             ) Cancel
             button.btn.btn--primary(type="button"
               @click="applySettings(tabContent)"

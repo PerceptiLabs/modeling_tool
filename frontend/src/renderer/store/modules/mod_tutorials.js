@@ -77,7 +77,7 @@ const state = {
               },
             },
             {
-              tooltip: `Click for select and <br> load mnist_input.npy`,
+              tooltip: `Click to select and <br> load mnsit_input.npy`,
               position: 'right',
               id: 'tutorial_button-load',
               status: 'disabled',
@@ -105,13 +105,13 @@ const state = {
             },
             {
               status:'disabled',
-              content: 'Every input image inside the mnist_input.npy file'
+              content: 'There are 3000 samples inside this mnist dataset, each of them representing a handwritten digit'
             }
           ]
         },
         {
           status:'disabled',
-          content: 'Repeat this step for your label data – also known as ground truth (GT) required to train your supervised AI model.',
+          content: 'Repeat this step for your labeled data (your ground thruth) which are integrals representing the handwritten digits and are used to teach the model when it is correct',
           actions: [
             {
               tooltip: 'Click to Data',
@@ -171,7 +171,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > Connect input > Operation settings  ',
+          content: 'In the <div class="marker">Operations Toolbar</div> drag out a <div class="marker">Reshape Layer</div> > Connect an input > Edit the settings',
           actions: [
             {
               tooltip: 'Click to Processing',
@@ -238,7 +238,7 @@ const state = {
           static_info: [
             {
               status:'disabled',
-              content: 'We want to build an image classifier by using images as input, not a flattened array'
+              content: 'We want to build an image classifier by using images as inputs, not flattened arrays which is how this MNIST dataset is formatted'
             },
           ]
         },
@@ -249,7 +249,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           Reshape to 28x28x1 and
-                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
+                          <div class="tooltip-tutorial_bold">then click Apply" <br> (Make only 28x28x1 and Apply fat style)</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_input-reshape',
@@ -291,7 +291,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Convolution</div> > Connect input > Operation settings',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Drag out a Convolution Layer</div> > Connect an input > Edit the settings',
           hoverInfo: [
             {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -405,7 +405,7 @@ const state = {
               check_prev_id: true
             },*/
             {
-              tooltip: 'Connect Process Reshape <br> with Deep learning convolution',
+              tooltip: 'Connect the Reshape layer with <br> the Convolutional layer" (And change it to bounce on <br> the Reshape instead of the Convolution) <br>  with Deep learning convolution',
               position: 'right',
               id: 'tutorial_convolution-1',
               schematic: {
@@ -468,7 +468,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Fully Connected</div> > Connect input > Set neurons',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Drag out a Fully Connected layer</div> > Connect an input > Set the number of neurons',
           actions: [
             {
               tooltip: 'Click to Deep Learning',
@@ -498,7 +498,7 @@ const state = {
               check_prev_id: true
             },*/
             {
-              tooltip: 'Connect Deep Learning Conv <br> with Deep learning FC',
+              tooltip: 'Connect the Convolutional layer <br> with the Fully Connected layer',
               position: 'right',
               id: 'tutorial_fully-connected-1',
               schematic: {
@@ -525,7 +525,7 @@ const state = {
           static_info: [
             {
               status:'disabled',
-              content: 'This operation matches the size of outputs of your model to the number of classes from your label data',
+              content: 'This operation compresses your data into a size that is equal to the number of neurons you set',
             }
           ]
         },
@@ -586,7 +586,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">One Hot</div> > Connect input > Set classes',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">Drag out a One Hot layer</div> > Connect an input > Set classes',
           actions: [
             {
               tooltip: 'Click to Processing',
@@ -616,7 +616,7 @@ const state = {
               check_prev_id: true
             },*/
             {
-              tooltip: 'Connect Data with Process One Hot',
+              tooltip: 'Connect the Data layer with the One Hot layer',
               position: 'right',
               id: 'tutorial_one-hot-1',
               schematic: {
@@ -640,7 +640,7 @@ const state = {
               animation: true,
             },
             {
-              tooltip: 'Set 10 and click Apply changes',
+              tooltip: 'Make sure the classes are <br> set to 10 and then press Apply',
               position: 'right',
               id: 'tutorial_number-of-classes',
               status: 'disabled',
@@ -673,11 +673,11 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Training</div> > <div class="marker">Normal</div> > Connect input > Define parameters',
+          content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Training</div> >  Drag out a <div class="marker">Normal</div> training layer > Connect the inputs > Edit the settings',
           hoverInfo: [
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          Choose which input connection <br> is represent the labels
+                          Choose which input connection <br> represents the labels (GT). <br> In this case, make sure OneHot_1 is selected. 
                           <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
@@ -685,11 +685,19 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          Choose in which position to <br> split at the chosen axis
-                         <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
+                          Epochs 
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
-              id: 'tutorial_learning_rate',
+              id: 'tutorial_epochs',
+            },
+            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          Cost function 
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
+                       </div>`,
+              position: 'right',
+              id: 'tutorial_cost-function',
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -701,12 +709,12 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          Set the learning rate
-                          <div class="tooltip-tutorial_bold">click Apply</div>
+                          Choose in which position to <br> split at the chosen axis
+                         <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_learning_rate',
-            }
+            },
           ],
           actions: [
             {
@@ -737,7 +745,7 @@ const state = {
               check_prev_id: true
             },*/
             {
-              tooltip: 'Connect Process one Hot with Train Normal',
+              tooltip: 'Connect the One Hot layer with <br> the Normal training layer',
               position: 'right',
               id: 'tutorial_training-normal-1',
               schematic: {
@@ -748,7 +756,7 @@ const state = {
               animation: true,
             },
             {
-              tooltip: 'Connect Deep learning FC with Train Normal',
+              tooltip: 'Connect the Fully Connected <br/> layer with the Normal training layer',
               position: 'right',
               id: 'tutorial_training-normal-1',
               schematic: {
@@ -793,7 +801,7 @@ const state = {
           static_info: [
             {
               status:'disabled',
-              content: 'Now that the size of output from the Fully Connected (FC) layer and One Hot layer match, the AI can compare its predictions from the FC layer and answers (GT) from the One Hot. '
+              content: 'Now that the size of output from the Fully Connected (FC) layer and One Hot layer match, the Model can compare its predictions from the FC layer with the answers (GT) from the One Hot. '
             }
           ]
         },
@@ -805,7 +813,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: `In the <div class="marker">Top Toolbar</div> go to <div class="marker">Run</div>`,
+          content: `In the <div class="marker">Top Toolbar</div> press<div class="marker">Run</div>`,
           hoverInfo: [
 /*            {
               tooltip: `<div class="tooltip-tutorial_italic">
@@ -913,7 +921,10 @@ const state = {
           content: 'The top window shows training <div class="marker">Statistics</div> for the overall model. Press <div class="marker">"Next"</div> to continue',
           actions: [
             {
-              id: 'tutorial_statistics', 
+              id: 'tutorial_statistics',
+              //tooltip: 'Click Next to continue',
+              //id_tooltip: 'tutorial_next_button',
+              //position: 'bottom',
               status: 'disabled',
               animation: true,
               schematic: {
@@ -929,7 +940,10 @@ const state = {
           content: 'The <div class="marker">ViewBox</div> shows what’s happening in each component. Select any layer on the <div class="marker">Map View</div> to go into more detail. Press <div class="marker">"Next"</div> to continue',
           actions: [
             {
-              id: 'tutorial_view-box', 
+              id: 'tutorial_view-box',
+              tooltip: 'Click Next to continue',
+              id_tooltip: 'tutorial_next_button',
+              position: 'bottom',
               status: 'disabled',
               animation: true,
               schematic: {
@@ -958,7 +972,7 @@ const state = {
           content: 'Click <div class="marker">Reshape</div> in the <div class="marker">Map View</div> </br> Notice the corresponding display in the <div class="marker">ViewBox</div>',
           actions: [
             { 
-              tooltip: 'Click Reshape',
+              tooltip: 'Click the Reshape layer',
               position: 'right',
               id: 'tutorial_process-reshape-1',
               status: 'disabled',
@@ -969,7 +983,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: 'Click <div class="marker">Fully Connected (FC)</div> in the <div class="marker">Map View</div> See that the output line in FC is the same as <div class="marker">ViewBox</div> Press <div class="marker">"Next"</div> to continue',
+          content: 'Click <div class="marker">Fully Connected (FC)</div> in the <div class="marker">Map View</div>Notice how the bars in the <div class="marker">ViewBox</div> are the exact same as the blue bars in the highlighted area. You can press the Yellow label to hide the Yellow bars if it\'s difficult to see. Press <div class="marker">"Next"</div> to continue',
           actions: [
             { 
               tooltip: 'This is the image that <br/> the AI trying to classify. </br> Press"Next" to continue',
@@ -988,7 +1002,9 @@ const state = {
             },
             { 
               id: 'tutorial_prediction-chart',
-              position: 'right',
+              tooltip: 'Click Next to continue',
+              id_tooltip: 'tutorial_next_button',
+              position: 'bottom',
               status: 'disabled',
               animation: true,
               schematic: {
@@ -1070,7 +1086,7 @@ const state = {
       ]
     },
     testing: {
-      title: 'Step 9. Testing shows how general your model is, i.e. to what extent can it classify things it has never seen before',
+      title: 'Step 9',
       points: [
         {
           status:'last step',
@@ -1084,7 +1100,7 @@ const state = {
               animation: true,
               id:'tutorial_play-test-button'
             }
-          ]
+          ],
         }
       ]
     },
@@ -1284,25 +1300,32 @@ const actions = {
       dispatch('nextPoint');
       if(getters.getActivePoint) {
         commit('SET_pointActivate', {step: getters.getActiveStep, point: getters.getActivePointMainTutorial, status: 'active'});
-        dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
+        dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip,});
       }
       else { //all points has been done
         dispatch('removeTooltip');
         commit('SET_activePointMainTutorial', 0);
         dispatch('lockOneElement');
+        if(getters.getActiveStepMainTutorial === 7) {
+          dispatch('createTooltip', {id: 'tutorial_start-training', position: 'right', tooltip: 'Click to run training'});
+        } else {
+          dispatch('createTooltip', {id: 'tutorial_next_button', position: 'right', tooltip: 'Click Next to continue'});
+        }
       }
     }
   },
   createTooltip({getters, dispatch}, info) {
     dispatch('removeTooltip');
-    let element = document.getElementById(info.id);
+    let id = getters.getActiveAction.id_tooltip || info.id;
+    let element = document.getElementById(id);
+    let side = getters.getActiveAction.position || info.position;
     if(getters.getActiveAction.tooltip && element) {
       var tooltip = document.createElement('div');
       delayTimer = setTimeout(()=>{
-        dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
-        tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${getters.getActiveAction.position}`);
+        dispatch('sideCalculate', {element, tooltip, side});
+        tooltip.classList.add('tooltip-tutorial', `tooltip-tutorial--${side}`);
         if(getters.getActiveAction.animation)
-          tooltip.classList.add(`tooltip-tutorial-animation--${getters.getActiveAction.position}`);
+          tooltip.classList.add(`tooltip-tutorial-animation--${side}`);
         tooltip.innerHTML = info.tooltip;
         document.body.appendChild(tooltip);
         element.addEventListener('mouseup', repositionElement);
@@ -1467,9 +1490,10 @@ const actions = {
      }
    }
   },
-  tooltipReposition({dispatch, getters}) {
+  tooltipReposition({dispatch, getters}, moveInstruction) {
     if(getters.getIstutorialMode) {
-      let element = document.getElementById(getters.getActiveAction.id);
+      let id = moveInstruction ? 'tutorial_next_button' : getters.getActiveAction.id;
+      let element = document.getElementById(id);
       let tooltip = document.querySelector('.tooltip-tutorial');
       dispatch('sideCalculate', {element, tooltip, side: getters.getActiveAction.position});
     }
