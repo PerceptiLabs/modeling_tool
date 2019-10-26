@@ -4,7 +4,6 @@
     :current-el="currentEl"
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
   )
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
@@ -59,7 +58,7 @@
             .form_input
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
-            base-checkbox(v-model="settings.accessProperties.Shuffle_data") Shuffle
+            base-checkbox.middle-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
         //-.settings-layer_foot
           button.btn.btn--primary(type="button") Apply
     //-template(slot="Cloud-content")
@@ -99,10 +98,6 @@
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
-      this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
-        .then((data)=> {
-          if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
-        });
     },
     data() {
       return {
@@ -146,11 +141,7 @@
       },
       typeOpened() {
         const path = this.settings.accessProperties.Sources;
-        if(path.length) {
-          //return path[0].indexOf('.') > 0 ? 'files' : 'folders'
-          //console.log(path);
-          return path[0].type
-        }
+        if(path.length) return path[0].type;
         else return ''
       },
       fileList: {
@@ -191,12 +182,13 @@
           this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
         },
         deep: true,
-        immediate: true
+        //immediate: true
       },
       'settings.accessProperties.Sources.length': {
         handler(newVal) {
           if(newVal) this.$nextTick(()=> { this.showBtn() });
-          else this.$nextTick(()=> { this.hideBtn() })
+          else this.$nextTick(()=> { this.hideBtn() });
+          this.getSettingsInfo()
         },
         immediate: true
       }
@@ -244,33 +236,31 @@
         else this.loadFolder(true)
       },
       saveLoadFile(pathArr, type, isAppend) {
+        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'});
         if(isAppend) {
           const allPath = [... this.settings.accessProperties.Sources.map((el)=> el.path), ...pathArr];
           this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources([... new Set(allPath)], type)
         }
         else this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
-        this.getSettingsInfo();
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'})
+        //this.getSettingsInfo();
       },
       clearPath() {
         this.Mix_settingsData_deleteDataMeta('DataData')
           .then(()=> {
             this.settings.accessProperties.Sources = [];
-            this.getSettingsInfo()
+            //this.getSettingsInfo()
           })
-          .catch(()=> console.log('set-data-data 144 err'))
+          .catch((err)=> console.log(err))
       },
       getSettingsInfo() {
         if(this.settings.accessProperties.Sources.length) {
-          this.Mix_settingsData_dataSettingsMeta('DataData')
-            .then((data)=> {
-              if (data.Columns && data.Columns.length) {
-                this.createSelectArr(data.Columns);
-                return data
-              }
-            })
-            //.then(()=> this.Mix_settingsData_getDataPlot('DataData'))
-            //.then(()=> this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId))
+
+          this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
+            .then((data) => {
+              console.log(data);
+              if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
+            });
+
         }
       },
       createSelectArr(data) {
@@ -280,10 +270,10 @@
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
       saveSettings(tabName) {
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
         //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId);
         this.applySettings(tabName);
-        this.checkPartitionList()
+        this.checkPartitionList();
+        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'}))
       },
       checkPartitionList() {
         this.settings.accessProperties.Partition_list.forEach((item)=> {
@@ -293,10 +283,12 @@
         })
       },
       hideBtn() {
-        document.getElementById('js-hide-btn').style.cssText = 'display: none'
+        const btn = document.getElementById('js-hide-btn');
+        if(btn) btn.style.cssText = 'display: none'
       },
       showBtn() {
-        document.getElementById('js-hide-btn').style.cssText = ''
+        const btn = document.getElementById('js-hide-btn');
+        if(btn) btn.style.cssText = ''
       },
     }
   }

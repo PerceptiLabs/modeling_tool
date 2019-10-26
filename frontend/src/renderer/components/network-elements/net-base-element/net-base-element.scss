@@ -105,3 +105,6 @@ $clip-path_indent: $arrows-start_size/2;
     display: block;
   }
 }
+.net-element--active {
+  z-index: 5;
+}

@@ -34,10 +34,12 @@ export default {
     currentEl: { type: Object },
   },
   mounted () {
-    this.api_getVariableList(this.layerId)
+    this.api_getOutputDim()
       .then((data)=> {
-        this.previewValue = data.VariableName;
-        this.previewList = data.VariableList;
+        if(this.currentEl.layerCodeError) this.toSettings();
+        else {
+          this.getVariableList()
+        }
       })
 
   },
@@ -73,11 +75,16 @@ export default {
       this.hideAllWindow();
     },
     getSample(data) {
-      //console.log('getSample');
       this.api_getPreviewSample({layerId: this.layerId, varData: data})
         .then((data)=> {
           this.imgData = data;
-          this.api_getOutputDim();
+        })
+    },
+    getVariableList() {
+      this.api_getVariableList(this.layerId)
+        .then((data)=> {
+          this.previewValue = data.VariableName;
+          this.previewList = data.VariableList;
         })
     }
   }

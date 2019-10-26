@@ -3,6 +3,7 @@
     input(type="radio"
       :name="groupName"
       :value="valueInput"
+      :disabled="disabled"
       v-model="checked"
       @change="onChange()"
       )
@@ -19,6 +20,10 @@ export default {
     groupName: {
       type: String,
       default: ''
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     },
     value: {type: [Boolean, String]},
     valueInput: {String},

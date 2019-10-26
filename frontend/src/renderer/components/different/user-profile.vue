@@ -1,92 +1,93 @@
 <template lang="pug">
-  .user-profile
-    base-switcher.sidebar_section(
-      :tab-set-data="switcherData"
-    )
+  .user-profile(v-if="user")
+    //-base-switcher.sidebar_section(
+      /:tab-set-data="switcherData"
+      )
       template(slot="firstTab")
-        ul.user-info_list(v-if="user")
-          li
-            .user-info_name First name
-            .user-info_data
-              text-editable(
-                :text-title="user.firstName"
-                @change-title="editFirstName"
-                )
-          li
-            .user-info_name Last name
-            .user-info_data
-              text-editable(
-                :text-title="user.lastName"
-                @change-title="editLastName"
-              )
-          li
-            .user-info_name Email
-            .user-info_data(@dblclick="toggleEmailForm") {{ user.email }}
-            form.user-info_edit(
-              v-show="isShowEmailForm"
-              data-vv-scope="formEmail"
-              )
-              .form_holder
-                input(type="email" placeholder="New email"
-                  v-model="email.newEmail"
-                  name="new email"
-                  v-validate="'required|email'"
-                  ref="newEmail"
-                )
-                p.text-error(
-                  v-show="errors.has('formEmail.new email')"
-                  ) {{ errors.first('formEmail.new email') }}
-
-              .form_holder
-                input(type="email" placeholder="Confirm new email"
-                  v-model="email.newEmailConfirm"
-                  name="confirm new email"
-                  v-validate="'required|confirmed:newEmail'"
-                )
-                p.text-error(
-                  v-show="errors.has('formEmail.confirm new email')"
-                  ) {{ errors.first('formEmail.confirm new email') }}
-          li
-            .user-info_name Password
-            .user-info_data(@dblclick="togglePasswordForm") {{ userPassword }}
-            form.user-info_edit(
-              v-show="isShowPasswordForm"
-              data-vv-scope="formPassword"
-              )
-              .form_holder
-                input(type="password" placeholder="Current password"
-                  v-model="password.oldPassword"
-                  name="password"
-                  v-validate="'required'"
-                )
-                p.text-error(
-                  v-show="errors.has('formPassword.password')"
-                  ) {{ errors.first('formPassword.password') }}
-              .form_holder
-                input(type="password" placeholder="New password"
-                  v-model="password.newPassword"
-                  name="new password"
-                  v-validate="{required: true, min: 6, is_not: password.oldPassword}"
-                  ref="userPass"
-                )
-                p.text-error(
-                  v-show="errors.has('formPassword.new password')"
-                  ) {{ errors.first('formPassword.new password') }}
-
-              .form_holder
-                input(type="password" placeholder="Confirm new password"
-                  v-model="password.newPasswordConfirmation"
-                  name="confirm new email"
-                  v-validate="'required|confirmed:userPass'"
-                  data-vv-as="new password"
-                )
-                p.text-error(
-                  v-show="errors.has('formPassword.confirm new email')"
-                  ) {{ errors.first('formPassword.confirm new email') }}
+        p first tab
 
       template(slot="secondTab")
         p secondTab
+    .sidebar_section
+      ul.user-info_list
+        li
+          .user-info_name First name
+          .user-info_data
+            text-editable(
+              :text-title="user.firstName"
+              @change-title="editFirstName"
+            )
+        li
+          .user-info_name Last name
+          .user-info_data
+            text-editable(
+              :text-title="user.lastName"
+              @change-title="editLastName"
+            )
+        li
+          .user-info_name Email
+          .user-info_data(@dblclick="toggleEmailForm") {{ user.email }}
+          form.user-info_edit(
+            v-show="isShowEmailForm"
+            data-vv-scope="formEmail"
+          )
+            .form_holder
+              input(type="email" placeholder="New email"
+                v-model="email.newEmail"
+                name="new email"
+                v-validate="'required|email'"
+                ref="newEmail"
+              )
+              p.text-error(
+                v-show="errors.has('formEmail.new email')"
+              ) {{ errors.first('formEmail.new email') }}
 
+            .form_holder
+              input(type="email" placeholder="Confirm new email"
+                v-model="email.newEmailConfirm"
+                name="confirm new email"
+                v-validate="'required|confirmed:newEmail'"
+              )
+              p.text-error(
+                v-show="errors.has('formEmail.confirm new email')"
+              ) {{ errors.first('formEmail.confirm new email') }}
+        li
+          .user-info_name Password
+          .user-info_data(@dblclick="togglePasswordForm") {{ userPassword }}
+          form.user-info_edit(
+            v-show="isShowPasswordForm"
+            data-vv-scope="formPassword"
+          )
+            .form_holder
+              input(type="password" placeholder="Current password"
+                v-model="password.oldPassword"
+                name="password"
+                v-validate="'required'"
+              )
+              p.text-error(
+                v-show="errors.has('formPassword.password')"
+              ) {{ errors.first('formPassword.password') }}
+            .form_holder
+              input(type="password" placeholder="New password"
+                v-model="password.newPassword"
+                name="new password"
+                v-validate="{required: true, min: 6, is_not: password.oldPassword}"
+                ref="userPass"
+              )
+              p.text-error(
+                v-show="errors.has('formPassword.new password')"
+              ) {{ errors.first('formPassword.new password') }}
+
+            .form_holder
+              input(type="password" placeholder="Confirm new password"
+                v-model="password.newPasswordConfirmation"
+                name="confirm new email"
+                v-validate="'required|confirmed:userPass'"
+                data-vv-as="new password"
+              )
+              p.text-error(
+                v-show="errors.has('formPassword.confirm new email')"
+              ) {{ errors.first('formPassword.confirm new email') }}
     .sidebar_action
       button.btn.btn--primary(type="button"
         @click="saveUserInfo"
@@ -166,7 +167,6 @@ export default {
         newPasswordConfirmation: '',
       };
     },
-
     saveUserInfo() {
       Promise.all([ changeProfile(this), changeEmail(this), changePassword(this) ])
         .then((result)=> {

@@ -14,7 +14,7 @@
 
 </template>
 <script>
-  import {filePCRead, folderPCDelete, deepCopy}  from '@/core/helpers.js'
+  import {filePCRead, folderPCDelete, deepCopy, projectPathModel}  from '@/core/helpers.js'
   import {mapState, mapGetters, mapMutations, mapActions} from 'vuex';
 
   import basicTemplate1 from '@/core/basic-template/base-template-1.js'
@@ -33,17 +33,17 @@
         basicTemplates: [
           {
             title: 'Image Classification',
-            imgPath: './static/img/imageClassification.svg',
+            imgPath: './static/img/project-page/image-classification.svg',
             template: basicTemplate1
           },
           {
             title: 'Timeseries Regression',
-            imgPath: './static/img/timeSeriesRegression.svg',
+            imgPath: './static/img/project-page/time-series-regression.svg',
             template: basicTemplate1
           },
           {
             title: 'Reinforcement Learning',
-            imgPath: './static/img/reinforcementLearning.svg',
+            imgPath: './static/img/project-page/reinforcement-learning.svg',
             template: basicTemplate1
           },
         ]
@@ -73,7 +73,7 @@
             localProjectsList.forEach((el) => {
               el.notExist = false;
               el.isChecked = false;
-              filePCRead(el.pathModel)
+              filePCRead(projectPathModel(el.pathProject))
                 .then(() => { })
                 .catch((err) => {
                   el.notExist = true
@@ -89,8 +89,8 @@
         if(indexCheckedProj < 0) return;
 
         const selectedProject = this.projects[indexCheckedProj];
-        const isProjectNotExist = selectedProject.notExist;
-        const pathDelete = selectedProject.pathProject[0];
+        //const isProjectNotExist = selectedProject.notExist;
+        const pathDelete = selectedProject.pathProject;
         folderPCDelete(pathDelete)
           .then(()=> {
             const newProjectsList = deepCopy(this.localUserInfo.projectsList);
@@ -142,7 +142,7 @@
 <style lang="scss" scoped>
   @import '../../scss/base';
 
-  $section-indent: 5rem;
+  $section-indent: 6rem;
 
   @import './sidebar/sidebar';
   @import './basic-templates/basic-templates';
@@ -167,10 +167,9 @@
     }
   }
   .projects-sidebar_link {
-    font-size: 1.6rem;
-    display: block;
-    width: 100%;
-    margin-bottom: 4rem;
+    font-size: 1.4rem;
+    width: 20rem;
+    margin-bottom: 2rem;
     text-align: center;
     font-weight: normal;
     > * {
@@ -204,7 +203,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-
+    &.get-started-title-margin {
+     margin-bottom: 7rem;
+    }
     h2 {
       display: flex;
       align-items: center;

@@ -8,123 +8,152 @@ import psutil
 import copy
 import traceback
 import os
-
+import threading
+import pprint
 import logging
+
+from networkExporter import exportNetwork
+from networkSaver import saveNetwork
+
+from modules import ModuleProvider
+from core_new.core import *
+from core_new.data import DataContainer
+from core_new.errors import CoreErrorHandler
+from core_new.history import SessionHistory
+from analytics.scraper import get_scraper
+
 log = logging.getLogger(__name__)
+scraper = get_scraper()
 
 class coreLogic():
-    def __init__(self,networkName, dataDict):
+    def __init__(self,networkName):
         self.networkName=networkName
-        self.dataDict=dataDict
 
         self.warningQueue=queue.Queue()
         self.errorQueue=queue.Queue()
         self.commandQ=queue.Queue()
-        self.resultQ=queue.LifoQueue()
-        # self.resultQ=queue.Queue()
+        # self.resultQ=queue.LifoQueue()
+        self.resultQ=queue.Queue()
         self.cThread=None
 
         self.trainResults=None
         self.testResults=None
+        self.paused=False
 
         self.status="Created"
 
-        self.core=core(self.networkName)
+        self.testIter=0
+        self.maxTestIter=0
+        self.testList=[]
+        self.playCounter=None
+        self.playing=False
+        
+        self.saver=None
 
-        self.savedResultsDict=dict()
+        #self.core=core(self.networkName)
+
+        self.savedResultsDict={}
 
         self.network=None
 
-    def startCore(self,network):
+    def startCore(self,network, checkpointValues):
         #Start the backendthread and give it the network
         self.network=network
-        if self.cThread is None:
-            try:
-                self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, self.dataDict, network)
-                self.cThread.start()
-            except:
-                self.errorQueue.put("Could not boot up the new thread to run the computations on")
-            self.status="Running"
-            return {"content": "core started"}
-        else:
-            if self.cThread.isAlive():
-                self.Stop()
 
-                while self.cThread.isAlive():
-                    time.sleep(0.05)
+        # import json
+        # with open('net.json', 'w') as f:
+        #     json.dump(network, f) 
 
-                try:
-                    self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, self.dataDict, network)
-                    self.cThread.start()
-                    #self.status="Setup"
-                except:
-                    self.errorQueue.put("Could not boot up the new thread to run the computations on")
-            else:
-                try:
-                    self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, self.dataDict, network)
-                    self.cThread.start()
-                    #self.status="Setup"
-                except:
-                    self.errorQueue.put("Could not boot up the new thread to run the computations on")
-                    #self.status="SetupFailed"
-            self.status="Running"
-            return {"content":"core started"}
+        data_container = DataContainer()
 
-    def onThread(self, function, *args, **kwargs):
-        print(function)
-        self.commandQ.put((function, args, kwargs))
+        self.graphObj = Graph(network['Layers'])
+        graph_dict=self.graphObj.graphs
 
-    def Pause(self):
-        if self.core.testStatus!="nextStep" or self.core.testStatus!="previousStep":
-            if self.status=="Paused":
-                self.status="Running"
-            else:
-                self.status="Paused"
-        return {"content":self.setCoreStatus(self.status)}
+        from codehq import CodeHqNew as CodeHq
 
-    def Close(self):
-        self.status="Stop"
-        self.setCoreStatus(self.status)
-        if self.core.sess:
-            self.core.sess.close()
-        if self.cThread is not None:
+        error_handler = CoreErrorHandler(self.errorQueue)
+        
+
+        module_provider = ModuleProvider()
+        module_provider.load('tensorflow', as_name='tf')
+        module_provider.load('numpy', as_name='np')
+        module_provider.load('pandas', as_name='pd')
+        module_provider.load('gym')
+        module_provider.load('json')           
+
+        session_history = SessionHistory()
+        session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
+        self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
+                         error_handler, session_proc_handler, checkpointValues) 
+
+        if self.cThread is not None and self.cThread.isAlive():
+            self.Stop()
+
             while self.cThread.isAlive():
                 time.sleep(0.05)
-            self.cThread.join()
-            print("Core Killed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+
+            try:
+                # self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
+                self.cThread=CoreThread(self.core.run,self.errorQueue)
+                self.cThread.start()
+            except Exception as e:
+                self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
+        else:
+            try:
+                self.cThread=CoreThread(self.core.run,self.errorQueue)
+                self.cThread.start()
+            except Exception as e:
+                self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
+        self.status="Running"
+            
+        return {"content":"core started"}
+
+
+    def Pause(self):
+        self.commandQ.put('pause')
+        self.paused=True
+        return {"content": "Paused"}
+        
+    def Unpause(self):
+        self.commandQ.put('unpause')
+        self.paused=False
+        return {"content":"Unpaused"}
+
+    def Close(self):
         return {"content":"closing the core"}
 
     def headlessOn(self):
-        self.onThread(self.core.headlessOn)
+        self.commandQ.put("headlessOn")
 
     def headlessOff(self):
-        self.onThread(self.core.headlessOff)
+        self.commandQ.put("headlessOff")
 
     def Stop(self):
         self.status="Stop"
-        return {"content":self.setCoreStatus(self.status)}
+        self.commandQ.put("stop")
+        return {"content":"Stopping"}
 
     def checkCore(self):
         return {"content":"Alive"}
 
-    def setCoreStatus(self,status):
-        self.onThread(self.core.setStatus,status)
-        return {"content":"current status is: " + str(status)}
-
     def isTrained(self,):
-        return {"content":self.core.exporter is not None}
+        if self.saver:
+            return {"content":True}
+        else:
+            return {"content":False}
 
     def exportNetwork(self,value):
-        if self.core.exporter is None:
+        if self.saver is None:
             self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
             return {"content":"Export Failed.\nNo trained weights to Export."}
         try:
+            exporter = exportNetwork(self.saver)
             if value["Type"]=="TFModel":
                 path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
                 if value["Compressed"]:
-                    self.core.exporter.asCompressedTfModel(path)
+                    exporter.asCompressedTfModel(path)
                 else:
-                    self.core.exporter.asTfModel(path,self.core.epoch)
+                    exporter.asTfModel(path,self.epoch)
                 return {"content":"Export success!\nSaved as:\n" + path}
             
         except Exception as e:
@@ -135,59 +164,35 @@ class coreLogic():
             return {"content":"Export Failed with this error: " + str(e)}
 
     def saveNetwork(self,value):
-        if self.core.exporter is None:
+        if self.saver is None:
             self.warningQueue.put("Save failed.\nMake sure you have started running the network before you try to Export it.")
             return {"content":"Save Failed.\nNo trained weights to Export."}
         try:
-            # path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
-            # value["Location"]="C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Networks"
-            path=os.path.abspath(value["Location"][0]+"/"+str(self.networkName))
-            self.core.saveNetwork(path,value["frontendNetwork"])
+            if "all_tensors" not in self.saver:
+                raise Exception("'all_tensors' was not found so the Saver could not create any references to the expored checkpoints.\nTry adding 'api.data.store(all_tensors=api.data.get_tensors())' to your Training Layer.")
+            elif self.saver["all_tensors"]==[]:
+                raise Exception("'all_tensors' was found but contained no variables.")
+
+            exporter = exportNetwork(self.saver)
+            path=os.path.abspath(value["Location"][0])
+            frontendNetwork=value["frontendNetwork"]
+            if not os.path.exists(path):   
+                os.mkdir(path)
+            checkpoint=[None, os.path.relpath(exporter.asTfModel(path,self.epoch),path)]
+
+            newPath=os.path.abspath(path+"/"+"model.json")
+            saveNetwork(newPath, self.saver["all_tensors"], self.graphObj, frontendNetwork, checkpoint)
+
             return {"content":"Save succeeded!"}
         except Exception as e:
-            self.warningQueue.put("Save Failed with this error: ")
-            self.warningQueue.put(str(e))
+            self.errorQueue.put("Save Failed with this error: ")
+            self.errorQueue.put(str(e))
             print("Save failed")
             print(traceback.format_exc())
             return {"content":"Save Failed with this error: " + str(e)}
 
-        
-        # if self.core.sess is None or self.core.graphObj is None or self.core.outputDict is None:
-        #     self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
-        #     return {"content":"Export Failed.\nNo trained weights to Export."}
-        # try:
-        #     #The reason we need to send so many self variables (especially Saver instead of initializing it in the export function) is because we need everything to be initialized
-        #     #in the thread. When we run this function it is not run on the thread, but rather run in the main thread with variables taken from the thread. If we want to run
-        #     #the function on the thread, we need a queue system to call the function and check for reply, and we need to make sure the thread never is terminated.
-        #     self.core.exportNetwork(self.core.sess,self.core.saver,self.core.graphObj,self.core.outputDict,value)
-        #     return {"content":"Export success!\nSaved in:\n" + str(value["Location"])}
-        # except Exception as e:
-        #     self.warningQueue.put("Export Failed with this error: ")
-        #     self.warningQueue.put(str(e))
-        #     print("Export failed")
-        #     print(traceback.format_exc())
-        #     return {"content":"Export Failed with this error: " + str(e)}
-
-
-
-
-
-        # if self.cThread is not None:
-        #     self.onThread(self.core.exportNetwork,value)
-        #     while True:
-        #         if not self.resultQ.empty():
-        #             resultMessage=self.resultQ.get()
-        #             print(resultMessage)
-        #             if type(resultMessage) is str:
-        #                 #Can catch warnings or more specific errors here as well if we want.
-        #                 if resultMessage=="ExportSuccess":
-        #                     return {"content":"Export success! \n Saved in: " + str(value["Location"])}
-        #                 if resultMessage=="ExportFailed":
-        #                     return {"conent":"Export Failed"}
-        #             time.sleep(0.2)
-
     def skipValidation(self):
-        self.onThread(self.core.skip)
+        self.commandQ.put("skip")
         #Check if validation was skipped or not before returning message
         return {"content":"skipped validation"}
 
@@ -195,9 +200,9 @@ class coreLogic():
         try:
             if self.savedResultsDict["maxTestIter"]!=0:
                 if self.status=="Running":
-                    return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.savedResultsDict["testIter"], "Progress": self.savedResultsDict["testIter"]/(self.savedResultsDict["maxTestIter"]-1)}
+                    return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
                 else:
-                    return {"Status":self.status,"Iterations":self.savedResultsDict["testIter"], "Progress": self.savedResultsDict["testIter"]/(self.savedResultsDict["maxTestIter"]-1)}
+                    return {"Status":self.status,"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
             else:
                 print("Max Test Iterations are 0")
                 return {"content":"Max Test Iterations are 0"}
@@ -211,12 +216,36 @@ class coreLogic():
         # else:
         #     print("Test Iterations are 0")
 
+    def get_cpu_and_mem(self):
+        cpu = psutil.cpu_percent()
+        mem = dict(psutil.virtual_memory()._asdict())["percent"]
+        scraper.submit('cpu_and_mem', {'cpu': cpu, 'mem': mem})
+        return cpu, mem
+        
     def getStatus(self):
         try:
+            cpu, mem = self.get_cpu_and_mem()
             if self.status=="Running":
-                return {"Status":self.savedResultsDict["trainingStatus"],"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
+                progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
+                result = {
+                    "Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],
+                    "Iterations": self.savedResultsDict["iter"],
+                    "Epoch": self.savedResultsDict["epoch"],
+                    "Progress": progress,
+                    "CPU": cpu,
+                    "Memory": mem
+                }
+                return result
             else:
-                return {"Status":self.status,"Iterations":self.savedResultsDict["iter"],"Epoch":self.savedResultsDict["epoch"], "Progress": (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1)), "CPU":psutil.cpu_percent(), "Memory":dict(psutil.virtual_memory()._asdict())["percent"]}
+                progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
+                return {
+                    "Status":"Paused" if self.paused else self.status,
+                    "Iterations":self.savedResultsDict["iter"],
+                    "Epoch":self.savedResultsDict["epoch"],
+                    "Progress": progress,
+                    "CPU":cpu,
+                    "Memory":mem
+                }
         except KeyError:
             return {}
         # if self.status=="Running":
@@ -225,43 +254,71 @@ class coreLogic():
         #     return {"Status":self.status,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
 
     def startTest(self):
-        if self.core.maxTestIter>0:
-            self.onThread(self.core.startTest)
-            while self.core.testStatus!="Waiting":
-                time.sleep(0.05)
+        #TODO: Remove this function
+        if self.savedResultsDict["trainingStatus"]=='Testing' or self.savedResultsDict["trainingStatus"]=='Finished':
             return {"content":"Started Testing"}
         else:
             return {"content":"No test data"}
 
     def nextStep(self):
-        testIter=self.core.testIter
-        self.onThread(self.core.nextTestStep)
-        while testIter==self.core.testIter:
-            time.sleep(0.05)
-        return {"content":"Current sample is: "+str(self.core.testIter)}
+        if self.testIter<self.maxTestIter-1:
+            self.testIter+=1
+        else:
+            self.resetTest()
+        return {"content":"Current sample is: "+str(self.testIter)}
     
     def previousStep(self):
-        testIter=self.core.testIter
-        self.onThread(self.core.prevousTestStep)
-        while testIter==self.core.testIter and testIter>1:
-            time.sleep(0.05)
-        return {"content":"Current sample is: "+str(self.core.testIter)}
+        if self.testIter>0:
+            self.testIter-=1
+        return {"content":"Current sample is: "+str(self.testIter)}
 
     def resetTest(self):
-        self.onThread(self.core.resetTest)
-        while self.core.testIter>1:
-            time.sleep(0.05)
+        self.testIter=0
         return {"content":"Test is now back to iter 1"}
 
+    def increaseStep(self):
+        while self.testIter<self.maxTestIter:
+            if not self.playing:
+                return
+            self.testIter+=1
+            time.sleep(0.5)
+        self.playing=False
+        return
+
     def playTest(self):
-        self.onThread(self.core.playTest)
-        return {"content":"Current sample is: "+str(self.core.testIter)}
+        if self.playCounter:
+            self.playing=False
+            self.playCounter.join()
+            self.playCounter=None
+        else:
+            self.playing=True
+            self.playCounter=threading.Thread(target=self.increaseStep)
+            self.playCounter.start()
+
+        return {"content": "Play started"}
 
     def updateResults(self):
-        if not self.resultQ.empty():
-            self.savedResultsDict=self.resultQ.get()
-            with self.resultQ.mutex:
-                self.resultQ.queue.clear()
+        # if not self.resultQ.empty():
+        #     self.savedResultsDict.update(self.resultQ.get())
+        #     with self.resultQ.mutex:
+        #         self.resultQ.queue.clear()
+
+        #TODO: Look from the back and go forward if we find a test instead of going through all of them
+        tmp=None
+
+        while not self.resultQ.empty():
+            tmp=self.resultQ.get()
+
+            if "saver" in tmp:
+                self.saver=tmp.pop("saver")
+                # self.exporter = exportNetwork(saver)
+
+            if "testDict" in tmp:
+                self.testList.append(tmp["testDict"])
+                if not self.maxTestIter:
+                    self.maxTestIter = tmp['maxTestIter']
+        if tmp:
+            self.savedResultsDict.update(tmp)
 
         return {"content":"Results saved"}
 
@@ -272,27 +329,55 @@ class coreLogic():
             self.maxIter=self.savedResultsDict["maxIter"]
             self.maxEpochs=self.savedResultsDict["maxEpochs"]
             self.batch_size=self.savedResultsDict["batch_size"]
-            self.graphObj=self.savedResultsDict["graphObj"]
             self.trainingIterations=self.savedResultsDict["trainingIterations"]
             self.resultDict=self.savedResultsDict["trainDict"]
         except KeyError:
+            log.exception("Error in getTrainingStatistics")                        
             return {}
 
-        return self.getLayerStatistics(value)
+
+        try:
+            layer_statistics = self.getLayerStatistics(value)
+            return layer_statistics
+        except:
+            message = "Error in getTrainingStatistics."
+            if log.isEnabledFor(logging.DEBUG):
+                message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
+            log.exception(message)
 
 
     def getTestingStatistics(self,value):
         try:
-            self.iter=self.savedResultsDict["testIter"]
-            self.maxIter=self.savedResultsDict["maxTestIter"]
+            # self.maxTestIter=self.maxTestIter
             self.batch_size=1
-            self.graphObj=self.savedResultsDict["graphObj"]
-            self.trainingIterations=self.savedResultsDict["trainingIterations"]
-            self.resultDict=self.savedResultsDict["testDict"]
-        except KeyError:
+            self.resultDict=self.testList[self.testIter]
+        except KeyError as e:
+            print(e)
+            log.exception("Error in getTestingStatistics")            
             return {}
 
-        return self.getLayerStatistics(value)
+        try:
+            layer_statistics = self.getLayerStatistics(value)
+            return layer_statistics
+        except Exception as e:
+            print(e)
+            message = "Error in getTestingStatistics."
+            if log.isEnabledFor(logging.DEBUG):
+                message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
+            log.exception(message)
+
+    def getEndResults(self):
+        #TODO: Show in frontend results for each end layer, not just for one.
+        end_results={}
+        for id_, value in self.graphObj.graphs.items():
+            if value["Info"]["Type"]=="TrainNormal":
+                acc_train=self.getStatistics({"layerId":id_, "variable":"acc_training_epoch","innervariable":""})
+                acc_val=self.getStatistics({"layerId":id_, "variable":"acc_validation_epoch","innervariable":""})
+                loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
+                loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
+                end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
+                
+        return end_results
 
     
     def getLayerStatistics(self,value):
@@ -311,7 +396,7 @@ class coreLogic():
             dataObj = createDataObject([state])
             return {"Data":dataObj}            
         elif layerType=="DataData":
-            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})           
             dataObj = createDataObject([D[-1]])      
             return {"Data":dataObj}
         elif layerType=="DeepLearningFC":
@@ -463,21 +548,20 @@ class coreLogic():
                 D = [createDataObject([input_]) for input_ in inputs]
                 
                 X=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":""})
-                
+
                 if type(X) is dict:
                     for key,value in X.items():
                         try:
                             int(key)
                             if key==self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
-                                Labels=value
+                                Labels=value['Y']
                             else:
-                                Network_output=value
+                                Network_output=value['Y']
                         except:
                             pass
                         
                     cType=self.getPlot(Network_output[-1])
-
-                    if cType=="bar" or cType=="line":
+                    if cType=="bar" or cType=="line" or cType=='scatter':
                         PvG = createDataObject([Network_output[-1], Labels[-1]], nameList=['Prediction', 'Ground Truth'])                        
 
                         # average over samples
@@ -486,7 +570,14 @@ class coreLogic():
                         APvG = createDataObject([network_average, labels_average], nameList=['Prediction', 'Ground Truth'])
                         
                         # PIE
-                        acc=self.getStatistics({"layerId":layerId,"variable":"accuracy","innervariable":""})
+                        acc_train=self.getStatistics({"layerId":layerId,"variable":"acc_train_iter","innervariable":""})
+                        acc_val=self.getStatistics({"layerId":layerId,"variable":"acc_val_iter","innervariable":""})
+
+                        if acc_val!=[]:
+                            acc=acc_val
+                        else:
+                            acc=acc_train
+
                         try:
                             lastAcc=acc[-1]
                         except:
@@ -512,7 +603,8 @@ class coreLogic():
 
                         accList = [[('Accuracy', lastAcc*100.0), ('Empty', (1-lastAcc)*100.0)]]
                         Accuracy = createDataObject(accList, typeList=['pie'])
-                        returnDict={"Input":D[0],"PvG":Mask,"AveragePvG":Prediction,"Accuracy":Accuracy}                    
+                        returnDict={"Input":D[0],"PvG":Mask,"AveragePvG":Prediction,"Accuracy":Accuracy}    
+                                    
                 else:
                     chartType="line"
                     if np.shape(X[-1])[0]<10:
@@ -525,12 +617,20 @@ class coreLogic():
                 return returnDict
 
             if view=="Accuracy":
-                acc=self.getStatistics({"layerId":layerId,"variable":"accuracy","innervariable":""})
+                acc_train=self.getStatistics({"layerId":layerId,"variable":"acc_train_iter","innervariable":""})
+                acc_val=self.getStatistics({"layerId":layerId,"variable":"acc_val_iter","innervariable":""})
+
+                currentTraining=acc_train
+                if isinstance(acc_train,np.ndarray):
+                    currentValidation=np.concatenate((acc_train,np.asarray(acc_val)))
+                elif isinstance(acc_train,list):
+                    if isinstance(acc_val,list):
+                        currentValidation=acc_train+acc_val
+                    else:
+                        currentValidation=acc_train+list(acc_val)
                 
-                currentTraining=acc[:self.trainingIterations]
-                currentValidation=acc[:self.maxIter]
-                totalTraining=self.getStatistics({"layerId":layerId,"variable":"epochTrainAccuracy","innervariable":""})
-                totalValidation=self.getStatistics({"layerId":layerId,"variable":"epochValAccuracy","innervariable":""})
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"acc_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"acc_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
                                                      typeList=['line', 'line'],
@@ -543,12 +643,20 @@ class coreLogic():
                 return output
                 
             if view=="Loss":
-                loss=self.getStatistics({"layerId":layerId,"variable":"loss","innervariable":""})
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"loss_train_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"loss_val_iter","innervariable":""})
 
-                currentTraining=loss[:self.trainingIterations]
-                currentValidation=loss[:self.maxIter]
-                totalTraining=self.getStatistics({"layerId":layerId,"variable":"epochTrainLoss","innervariable":""})
-                totalValidation=self.getStatistics({"layerId":layerId,"variable":"epochValLoss","innervariable":""})
+                currentTraining=loss_train
+                if isinstance(loss_train,np.ndarray):
+                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                elif isinstance(loss_train,list):
+                    if isinstance(loss_val,list):
+                        currentValidation=loss_train+loss_val
+                    else:
+                        currentValidation=loss_train+list(loss_val)
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"loss_validation_epoch","innervariable":""})
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
                                                      typeList=['line', 'line'],
@@ -560,12 +668,19 @@ class coreLogic():
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
             if view=="F1":
-                f1=self.getStatistics({"layerId":layerId,"variable":"f1","innervariable":""})
+                f1_train=self.getStatistics({"layerId":layerId,"variable":"f1_train_iter","innervariable":""})
+                f1_val=self.getStatistics({"layerId":layerId,"variable":"f1_val_iter","innervariable":""})
 
-                currentTraining=f1[:self.trainingIterations]
-                currentValidation=f1[:self.maxIter]
-                totalTraining=self.getStatistics({"layerId":layerId,"variable":"epochTrainF1","innervariable":""})
-                totalValidation=self.getStatistics({"layerId":layerId,"variable":"epochValF1","innervariable":""})
+                currentTraining=f1_train
+                if isinstance(f1_train,np.ndarray):
+                    currentValidation=np.concatenate((f1_train,np.asarray(f1_val)))
+                elif isinstance(f1_train,list):
+                    if isinstance(f1_val,list):
+                        currentValidation=f1_train+f1_val
+                    else:
+                        currentValidation=f1_train+list(f1_val)
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"f1_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"f1_validation_epoch","innervariable":""})
 
 
 
@@ -613,12 +728,19 @@ class coreLogic():
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output            
             if view=="AUC":
-                auc=self.getStatistics({"layerId":layerId,"variable":"auc","innervariable":""})
-                
-                currentTraining=auc[:self.trainingIterations]
-                currentValidation=auc[:self.maxIter]
-                totalTraining=self.getStatistics({"layerId":layerId,"variable":"epochTrainAUC","innervariable":""})
-                totalValidation=self.getStatistics({"layerId":layerId,"variable":"epochValAUC","innervariable":""})
+                auc_train=self.getStatistics({"layerId":layerId,"variable":"auc_train_iter","innervariable":""})
+                auc_val=self.getStatistics({"layerId":layerId,"variable":"auc_val_iter","innervariable":""})
+
+                currentTraining=auc_train
+                if isinstance(auc_train,np.ndarray):
+                    currentValidation=np.concatenate((auc_train,np.asarray(auc_val)))
+                elif isinstance(auc_train,list):
+                    if isinstance(auc_val,list):
+                        currentValidation=auc_train+auc_val
+                    else:
+                        currentValidation=auc_train+list(auc_val)
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"auc_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"auc_validation_epoch","innervariable":""})
 
 
                 dataObjectCurrent = createDataObject([currentValidation, currentTraining],
@@ -637,7 +759,8 @@ class coreLogic():
                 state_ = createDataObject([state])
 
                 prediction = self.getStatistics({"layerId":layerId,"variable":"pred","innervariable":""})
-                prediction = createDataObject([prediction[0]], typeList=['line'])
+                
+                prediction = createDataObject([prediction], typeList=['line'])
                 
                 output = {"Input":state_, "Prediction": prediction}
                 return output
@@ -661,16 +784,20 @@ class coreLogic():
 
                 # currentReward=r[int(allDones[-1] if allDones.size>0 else 0):int(doneState.size)]
                 # totalReward=np.array([r[int(i-1)] for i in allDones]) if allDones.size>0 else np.array([])
-                current_reward = createDataObject([currentReward])
-                total_reward = createDataObject([totalReward])
+                current_reward = createDataObject([currentReward],
+                                                typeList=['line'])
+                total_reward = createDataObject([totalReward],
+                                                typeList=['line'])
                 obj = {"Current": current_reward, "Total": total_reward}
                 return obj
             if view=="Loss":
                 currentLoss=self.getStatistics({"layerId":layerId,"variable":"loss","innervariable":""})
                 totalLoss=self.getStatistics({"layerId":layerId,"variable":"epochTrainLoss","innervariable":""})
                 
-                current_loss = createDataObject([currentLoss])
-                total_loss = createDataObject([totalLoss])
+                current_loss = createDataObject([currentLoss],
+                                                typeList=['line'])
+                total_loss = createDataObject([totalLoss],
+                                               typeList=['line'])
                 obj = {"Current": current_loss, "Total": total_loss}
                 return obj
             if view=="Steps":
@@ -730,14 +857,14 @@ class coreLogic():
                     result=self.resultDict[layerId][variable][innervariable]
                 except:
                     try:
-                        print("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
+                        log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
                         self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId][variable].keys()))+" |||| Expected: "+str(innervariable))
                     except:
                         try:
-                            print("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
+                            log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                             self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                         except:
-                            print("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                            log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                             self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
 
                     result=[]
@@ -746,21 +873,21 @@ class coreLogic():
                     result=self.resultDict[layerId][variable]
                 except:
                     try:
-                        print("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
+                        log.debug("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                         self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict[layerId].keys()))+" |||| Expected: " + str(variable))
                     except:
-                        print("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                        log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                         self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     result=[]
             else:
                 try:
                     result=self.resultDict[layerId]
                 except:
-                    print("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
+                    log.debug("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     self.warningQueue.put("FieldError, only keys available are: "+str(list(self.resultDict.keys()))+" |||| Expected: " + str(layerId))
                     result=[]
         else:
-            print("ResultDict is empty :'(")
+            log.debug("ResultDict is empty :'(")
             self.warningQueue.put("There are no results to fetch")
             result=[]
 

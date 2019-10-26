@@ -96,14 +96,33 @@
 
     .toolbar_settings
       span.text-primary.middle-text(v-html="statusTrainingText")
-      button.btn.btn--tutorial(
+      button.btn.btn--dark.btn--toolbar-settings(
+        type="button"
+        :class="{'btn--tutorial-active': interactiveInfoStatus}"
+        v-coming-soon="true"
+        v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+      )
+        span Notebook
+        i.icon.icon-ellipse
+
+      button.btn.btn--dark.btn--toolbar-settings(
         type="button"
         :class="{'btn--tutorial-active': interactiveInfoStatus}"
         @click="toggleInteractiveInfo"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
-        span ?
-      tutorial-instructions(v-tooltip-interactive:bottom="interactiveInfo.tutorial")
+        span Help
+        i.icon.icon-ellipse
+
+      tutorial-instructions(
+        ref="tutorialComponent"
+        v-tooltip-interactive:bottom="interactiveInfo.tutorial")
+        button.btn.btn--dark.btn--toolbar-settings(type="button"
+          @click="switchTutorialMode"
+          :class="{'btn--tutorial-active': isTutorialMode}"
+        )
+          span Tutorial
+          i.icon.icon-ellipse
 </template>
 
 <script>
@@ -119,50 +138,17 @@ export default {
       x: null,
       y: null,
       interactiveInfo: {
-        edit: {
-          title: 'Edit',
-          text: `Use this to being able to drag & ,<br/> drop, select, edit, etc`
-        },
-        arrow: {
-          title: 'Arrow',
-          text: `Use this to connect the <br/>layers and define the dataflow`
-        },
-        undo: {
-          title: 'Undo',
-          text: `Use this to connect the <br/>Undo`
-        },
-        redo: {
-          title: 'Redo',
-          text: `Redo`
-        },
-        runButton: {
-          title: 'Run/Stop',
-          text: `Start training/Stop training`
-        },
-        pause: {
-          title: 'Pause',
-          text: `Pause training/Unpause training`
-        },
-        skip: {
-          title: 'Skip',
-          text: `Skip validation`
-        },
-        hyperparameters: {
-          title: 'Generate Hyperparameters',
-          text: `Auto-generate the hyperparameters`
-        },
-        blackBox: {
-          title: 'BlackBox',
-          text: `Load the data and let our algorithm </br> build a model for you and train it`
-        },
-        interactiveDoc: {
-          title: 'Interactive documentation',
-          text: `Use this to find out what all </br> different operations and functions do`
-        },
-        tutorial: {
-          title: 'Tutorial',
-          text: `Choose an interactive tutorial`
-        }
+        edit:     {title: 'Edit',     text: `Use this to being able to drag & ,<br/> drop, select, edit, etc`},
+        arrow:    {title: 'Arrow',    text: `Use this to connect the <br/>layers and define the dataflow`},
+        undo:     {title: 'Undo',     text: `Use this to connect the <br/>Undo`},
+        redo:     {title: 'Redo',     text: `Redo`},
+        runButton:{title: 'Run/Stop', text: `Start training/Stop training`},
+        pause:    {title: 'Pause',    text: `Pause training/Unpause training`},
+        skip:     {title: 'Skip',     text: `Skip validation`},
+        hyperparameters: {title: 'Generate Hyperparameters',text: `Auto-generate the hyperparameters`},
+        blackBox: {title: 'BlackBox', text: `Load the data and let our algorithm </br> build a model for you and train it`},
+        interactiveDoc: {title: 'Interactive documentation', text: `Use this to find out what all </br> different operations and functions do`},
+        tutorial: {title: 'Tutorial', text: `Choose an interactive tutorial`}
       }
     }
   },
@@ -262,9 +248,8 @@ export default {
     ...mapMutations({
       setInteractiveInfo:     'mod_tutorials/SET_interactiveInfo',
       set_showTrainingSpinner:'mod_workspace/SET_showStartTrainingSpinner',
-      event_runNetwork:       'mod_events/set_runNetwork',
-      showNetGlobalSet:       'globalView/GP_showNetGlobalSet',
       set_hideLayers:         'globalView/SET_hideLayers',
+      GP_showCoreSideSettings:'globalView/GP_showCoreSideSettings',
     }),
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
@@ -280,6 +265,9 @@ export default {
       toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
     }),
+    switchTutorialMode() {
+      this.$refs.tutorialComponent.switchTutorialMode()
+    },
     onOffBtn() {
       if(this.isTraining) this.trainStop();
       else this.trainStart();
@@ -288,8 +276,7 @@ export default {
     trainStart() {
       let valid = this.validateNetwork();
       if (!valid) return;
-      this.event_runNetwork(true);
-      this.showNetGlobalSet(true);
+      this.GP_showCoreSideSettings(true);
     },
     trainStop() {
       this.stopTraining();
@@ -371,6 +358,7 @@ export default {
     background-color: $bg-toolbar;
     position: relative;
     grid-area: toolbar;
+    z-index: 2;
   }
   .toggle-wrap {
     width: $w-layersbar * .87;
@@ -461,8 +449,8 @@ export default {
     align-items: center;
     margin-left: auto;
     > * + * {
-      margin-left: 1rem;
-      margin-right: 1rem;
+      margin-left: .4rem;
+      margin-right: .4rem;
     }
   }
   #tutorial_pointer {
@@ -476,7 +464,22 @@ export default {
     border-radius: 50%;
     margin: .4rem;
   }
+  .btn--toolbar-settings {
+    min-width: 0;
+    color: inherit;
+    padding-right: 1rem;
+    padding-left: 1rem;
+
+    .icon {
+      margin-left: .7rem;
+    }
+  }
   .btn--tutorial-active {
-    box-shadow: inset 0 0 1px 1px $color-1;
+    .icon {
+      color: $color-1;;
+    }
+  }
+  .btn-toolbar--home {
+    color: $color-5;
   }
 </style>

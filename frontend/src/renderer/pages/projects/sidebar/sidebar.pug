@@ -1,15 +1,15 @@
 .copyryght
-  img(src="../../../../static/img/percepti-labs-logo.svg" alt="percepti labs logo").copyryght_logo
+  img.copyryght_logo(src="../../../../static/img/perceptilabs-logo-splashscreen.svg" alt="PerceptiLabs logo")
   .copyryght_text
     p Version: {{appVersion}}
     p Copyright ©2019
 
-.form_holder
+.form_holder.text-center
   button.btn.btn--outline-blue.projects-sidebar_link(type="button"
     v-if="localUserInfo && localUserInfo.workspace"
     @click="openLastWS"
   )
-    span Continue the last session
+    span Continue
 
   button.btn.btn--outline-blue.projects-sidebar_link(type="button"
     @click="openNetwork"

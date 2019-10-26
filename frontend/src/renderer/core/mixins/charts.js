@@ -59,8 +59,9 @@ const chartsMixin = {
   },
   watch: {
     doShowCharts() {
-      if(this.isNeedWait && this.chartModelBuffer) {
-        if(this.isNotPicture) this.$refs.chart.hideLoading();
+      if(this.isNeedWait && this.chartModelBuffer && this.isNotPicture) {
+        //if(this.isNotPicture) this.$refs.chart.hideLoading();
+        this.$refs.chart.hideLoading();
         this.chartModel = this.chartModelBuffer;
         if(this.chartModelBuffer.series[0].type === 'pie') {
           this.$store.commit('mod_statistics/SET_piePercents', this.chartModel.series[0].data[0].value.toFixed())

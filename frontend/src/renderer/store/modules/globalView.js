@@ -12,10 +12,10 @@ const state = {
   timeIntervalDoRequest: 2500,
   requestCounter: 0,
   globalPopup: {
-    showNetSettings: false,
     showNetResult: false,
     showCoreSideSettings: false,
     showInfoPopup: false,
+    ComingSoonPopup: false,
     showErrorPopup: false,
     showWorkspaceBeforeImport: false,
     showConfirmPopup: false,
@@ -58,9 +58,6 @@ const mutations = {
   GP_showNetResult (state, value) {
     state.globalPopup.showNetResult = value
   },
-  GP_showNetGlobalSet (state, value) {
-    state.globalPopup.showNetSettings = value
-  },
   GP_showCoreSideSettings (state, value) {
     state.globalPopup.showCoreSideSettings = value
   },
@@ -69,6 +66,9 @@ const mutations = {
   },
   gp_infoPopup(state, value) {
     state.globalPopup.showInfoPopup = value
+  },
+  gp_ComingSoonPopup(state, value) {
+    state.globalPopup.ComingSoonPopup = value
   },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
@@ -106,6 +106,10 @@ const actions = {
   },
   GP_infoPopup({commit}, value) {
     commit('gp_infoPopup', value);
+  },
+  GP_ComingSoonPopup({commit}) {
+    commit('gp_infoPopup', 'a');
+    commit('gp_ComingSoonPopup', true);
   },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);

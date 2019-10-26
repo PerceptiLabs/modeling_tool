@@ -69,7 +69,7 @@
                 span Yes
               base-radio(group-name="group2" :value-input="false" v-model="settings.Shuffle_data")
                 span No
-        .settings-layer_section
+        //-.settings-layer_section
           label.form_row(v-tooltip-interactive:right="interactiveInfo.epochs")
             .form_label Epochs:
             .form_input(id="tutorial_epochs-input" class="tutorial-relative" data-tutorial-hover-info)
@@ -122,14 +122,14 @@ export default {
       if(el.componentName === 'DataData') this.settingsData = true;
       if(el.componentName === 'DataEnvironment') this.settingsEnvironment = true;
     }
-    if(this.isTutorialMode) this.$nextTick(()=>{this.$refs.epochsInput.focus()})
+    //if(this.isTutorialMode) this.$nextTick(()=>{this.$refs.epochsInput.focus()})
   },
   data() {
     return {
       settingsData: false,
       settingsEnvironment: false,
       settings: {
-        Epochs: '10',
+        //Epochs: '10',
         Batch_size: "32",
         MaxSteps: '1000',
         // Data_partition: {
@@ -142,7 +142,7 @@ export default {
         Save_model_every: "0",
       },
       interactiveInfo: {
-        dataPartition: {
+/*        dataPartition: {
           title: 'Data partition',
           text: 'Partition the data'
         },
@@ -157,7 +157,7 @@ export default {
         shuffleData: {
           title: 'Shuffle data',
           text: 'Choose to shuffle the data or not'
-        },
+        },*/
         epochs: {
           title: 'Epochs',
           text: 'Set the number of epochs'

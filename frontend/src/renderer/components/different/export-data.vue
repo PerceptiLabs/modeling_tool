@@ -1,7 +1,7 @@
 <template lang="pug">
   .export-data
-    base-switcher.sidebar_section
-      template(slot="firstTab")
+    base-accordion(:accordion-title="accordionData")
+      template(slot="exportAs")
         .form_holder
           .form_label Path:
           .form_row
@@ -13,45 +13,53 @@
             base-select(
               v-model="settings.Type"
               :select-options="selectOptions"
-              )
+            )
         .form_holder
           base-checkbox(v-model="settings.Compressed") Compressed
-        .sidebar_line
+
+        .form_holder.text-center
+          button.btn.btn--outline-blue.export-button(type="button"
+            @click="exportData"
+          )
+            span Export
+
+      //template(slot="git")
         .form_holder
           base-checkbox(v-model="settings.git")
             i.icon.icon-git
             span.checkbox-info  Git
         .form_holder
-          .form_row
+        .form_row
             input.form_input(
               type="text"
               placeholder="insert link"
               v-model="settings.gitLink"
-              :disabled="!settings.git"
+              //:disabled="!settings.git"
             )
             span &nbsp;&nbsp;or&nbsp;&nbsp;
             button.btn.btn--dark-blue-rev(type="button") Create
-      template(slot="secondTab")
-        p secondTab
-    .sidebar_action
-      button.btn.btn--primary(type="button" @click="exportData") Export
 
 </template>
 
 <script>
 import BaseSwitcher     from "@/components/different/switcher.vue";
 import {loadPathFolder} from '@/core/helpers.js'
+import BaseAccordion    from "@/components/base/accordion.vue";
 
 
 export default {
   name: "ExportData",
-  components: {BaseSwitcher},
+  components: {BaseSwitcher, BaseAccordion},
   data() {
     return {
+      accordionData: [
+        {name: 'exportAs' , html: 'Export as'},
+        //{name: 'git' , html: '<i class="icon icon-git"></i> Git'},
+      ],
       selectOptions: [
         { text: 'TensorFlow Model',  value: 'TFModel' },
-        { text: 'Docker Image',       value: 'Docker' },
-        { text: 'Raw Parameters',     value: 'Raw' }
+        //{ text: 'Docker Image',       value: 'Docker' },
+        //{ text: 'Raw Parameters',     value: 'Raw' }
       ],
       settings: {
         Location: '',
@@ -77,5 +85,8 @@ export default {
   @import "../../scss/base";
   .export-data {
     font-size: 1.2rem;
+  }
+  .export-button {
+    width: 18rem;
   }
 </style>

@@ -48,14 +48,22 @@
               span ReLU
             base-radio(group-name="group1" value-input="Tanh"  v-model="settings.Activation_function")
               span Tanh
+
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
           .form_label Dropout:
           .form_input
-            base-radio(group-name="group5" :value-input="false"  v-model="settings.Dropout")
-              span None
-            base-radio(group-name="group5" :value-input="true"  v-model="settings.Dropout")
-              span Sigmoid
+            base-radio(group-name="group5" :value-input="true" v-model="settings.Dropout")
+              span Yes
+            base-radio(group-name="group5" :value-input="false" v-model="settings.Dropout")
+              span No
+
+      .settings-layer_section(v-if="settings.Dropout")
+        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
+          .form_label Keep probability:
+          .form_input
+            input(type="number" v-model="settings.Keep_prob")
+
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
@@ -80,6 +88,7 @@ export default {
         Feature_maps: "8",
         Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
         Dropout: false, //True, False
+        Keep_prob: '1'
       },
       interactiveInfo: {
         dimension: {

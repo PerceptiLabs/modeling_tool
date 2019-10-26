@@ -14,6 +14,11 @@
               :select-options="inputLayers"
             )
       .settings-layer_section
+        .form_row
+          .form_label(v-tooltip-interactive:right="interactiveInfo.epochs") Epochs:
+          #tutorial_epochs.form_input(data-tutorial-hover-info)
+            input(type="number" v-model="settings.Epochs")
+      .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
           .form_label Cost function:
           #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
@@ -25,6 +30,8 @@
               span Weighted Cross-Entropy
             base-radio(group-name="group" value-input="Dice" v-model="settings.Loss")
               span DICE
+            base-radio(group-name="group" value-input="Regression" v-model="settings.Loss")
+              span Regression
               //-Cross-Entropy
         .form_row(v-if="settings.Loss === 'W_cross_entropy'")
           .form_label Class weights:
@@ -58,9 +65,13 @@
             .form_input
               input(type="number" v-model="settings.Momentum")
           .form_row
-            .form_label Decay:
+            .form_label Decay rate:
             .form_input
-              input(type="number" v-model="settings.Decay")
+              input(type="number" v-model="settings.Decay_rate")
+          .form_row
+            .form_label Decay steps:
+            .form_input
+              input(type="number" v-model="settings.Decay_steps")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
           .form_label Learning rate:
@@ -99,15 +110,17 @@ export default {
       inputLayers: [],
       settings: {
         Labels: '',
+        Epochs: '10',
         N_class: '1',
-        Loss: "Cross_entropy", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
-        Class_weights: 1,
-        Learning_rate: "0.01",
-        Optimizer: "SGD", //#SGD, Momentum, ADAM, RMSprop
-        Beta_1: '0.1',
-        Beta_2: '0.1',
-        Momentum: '0.1',
-        Decay: '0.1',
+        Loss: "Quadratic", //#Cross_entropy, Quadratic, W_cross_entropy, Dice
+        Class_weights: '1',
+        Learning_rate: "0.001",
+        Optimizer: "ADAM", //#SGD, Momentum, ADAM, RMSprop
+        Beta_1: '0.9',
+        Beta_2: '0.999',
+        Momentum: '0.9',
+        Decay_steps: '100000',
+        Decay_rate: '0.96',
         Training_iters: "20000"
       },
       interactiveInfo: {
@@ -115,16 +128,20 @@ export default {
           title: 'Labels',
           text: 'Choose which input connection is represent the labels'
         },
+        epochs: {
+          title: 'epochs',
+          text: 'Choose'
+        },
         costFunction: {
           title: 'Split on',
           text: 'Choose in which position to split on at the chosen axis'
-        },
+         },
         optimizer: {
           title: 'Optimizer',
           text: 'Choose which optimizer to use'
         },
         learningRate: {
-          title: 'Learning Rate',
+          title: 'Learning rate',
           text: 'Set the learning rate'
         }
       }
@@ -149,7 +166,7 @@ export default {
     }),
     saveSettings(tabName) {
       this.applySettings(tabName);
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_cost-function'})
+      this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_labels'}));
     },
   },
   watch: {

@@ -118,8 +118,23 @@
 
 .btn--dark-blue {
   @extend .btn--tabs;
-
   background: $bg-window;
+}
+.btn--dark {
+  @extend .btn--tabs;
+  background: $bg-grad-black;
+  color: $white;
+  transition: none;
+  min-width: 4rem;
+  padding: 0.7rem;
+  &:hover {
+    background: $color-11;
+  }
+  &.green-status {
+    .icon {
+      color: $color-1;
+    }
+  }
 }
 
 .btn--dark-blue-rev {
@@ -176,6 +191,11 @@
     background: $col-txt2;
   }
 }
+
+.btn--disabled {
+  background: $bg-scroll;
+}
+
 .green-color-icon{
   color: $color-1;
 }

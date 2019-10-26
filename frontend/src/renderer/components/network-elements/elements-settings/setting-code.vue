@@ -21,6 +21,7 @@
       code-hq.code-wrap(
         v-if="theCode && currentTab !== 'error'"
         v-model="theCode[currentTab]"
+        ref="codeEditor"
         :error-row="errorRow"
         )
       .code-wrap(v-if="currentTab === 'error'")
@@ -45,10 +46,8 @@ export default {
     },
   },
   mounted () {
-    console.log(this.currentEl);
     if(this.currentEl.layerCode) this.setCode(this.currentEl.layerCode);
     else this.getCode();
-
   },
   beforeDestroy() {
     this.closeFullView()
@@ -84,7 +83,9 @@ export default {
         backward_connections: this.currentEl.connectionIn
       };
       this.$store.dispatch('mod_api/API_getCode', value)
-        .then((code)=> { this.setCode(code) })
+        .then((code)=> {
+          this.setCode(code)
+        })
     },
     setCode(objCode) {
       this.theCode = deepCopy(objCode);
@@ -94,6 +95,7 @@ export default {
       this.fullView = !this.fullView;
       document.querySelector('.popup_body').classList.toggle("popup_body--show-code");
       document.querySelector('.network').classList.toggle("network--show-code");
+      this.$refs.codeEditor.refresh();
     },
     closeFullView() {
       this.fullView = false;
@@ -151,6 +153,7 @@ export default {
     flex: 1;
     flex-direction: column;
     width: 100%;
+    overflow: hidden;
     .code-wrap,
     .bookmark_content {
       height: 100%;
@@ -161,6 +164,7 @@ export default {
     font-size: 1.6rem;
   }
   .code-wrap_error-container {
+    padding: 1rem;
     overflow: scroll;
     height: 100%;
   }

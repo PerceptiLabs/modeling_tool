@@ -17,8 +17,11 @@ class FileNumpyStrategy(AbstractStrategy):
         self._path = path
 
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
-        code = ""
-        code += "data_mat = np.load('%s').astype(np.float32)\n" % self._path
+        code  = "if '%s' not in api.cache:\n" % self._path
+        code += "    data_mat = np.load('%s').astype(np.float32)\n" % self._path
+        code += "    api.cache.put('%s', data_mat)\n" % self._path
+        code += "else:\n"
+        code += "    data_mat = api.cache.get('%s')\n" % self._path
         code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
                                                                 rate_train, rate_valid, rate_test)
         return code
@@ -30,13 +33,16 @@ class FileCsvStrategy(AbstractStrategy):
         self._columns=columns
         
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
-        code = ""
-        code += "df = pd.read_csv('%s')\n" % self._path
-        code += "cols = list(df.columns)\n"
+        code  = "if '%s' not in api.cache:\n" % self._path        
+        code += "    df = pd.read_csv('%s')\n" % self._path
+        code += "    cols = list(df.columns)\n"
         if self._columns:
-            code += "data_mat = df[%s].to_numpy().astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
+            code += "    data_mat = df[%s].to_numpy().astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
         else:
-            code += "data_mat = df.to_numpy().astype(np.float32)\n"
+            code += "    data_mat = df.to_numpy().astype(np.float32)\n"
+        code += "    api.cache.put('%s', data_mat)\n" % self._path            
+        code += "else:\n"
+        code += "    data_mat = api.cache.get('%s')\n" % self._path        
         code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
                                                                 rate_train, rate_valid, rate_test)
         return code
@@ -52,7 +58,11 @@ class DirectoryImageStrategy(AbstractStrategy):
         code += "for p in os.listdir('%s')]\n\n" % self._path
         code += "data_mat_list = []\n"
         code += "for path in file_paths:\n"
-        code += "    data_mat = skimage.io.imread(path)\n"
+        code += "    if path not in api.cache:\n"
+        code += "        data_mat = skimage.io.imread(path)\n"
+        code += "        api.cache.put(path, data_mat)\n"
+        code += "    else:\n"
+        code += "        data_mat = api.cache.get(path)\n"
         code += "    data_mat_list.append(data_mat)\n"
         code += "\n"
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
@@ -60,7 +70,25 @@ class DirectoryImageStrategy(AbstractStrategy):
                                                                 rate_train, rate_valid, rate_test)
         return code
 
-        
+
+class FileJsonStrategy(AbstractStrategy):
+    def __init__(self, path):
+        self._path = path
+
+    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
+        code  = "if '%s' not in api.cache:\n" % self._path
+        code += "    with open('%s', 'r') as f:\n" % self._path
+        code += "        json_dict = json.load(f)\n"        
+        code += "    df = pd.DataFrame.from_dict(json_dict)\n"
+        code += "    data_mat = df.to_numpy().astype(np.float32)\n"
+        code += "    api.cache.put('%s', data_mat)\n" % self._path
+        code += "else:\n"
+        code += "    data_mat = api.cache.get('%s')\n" % self._path
+        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                rate_train, rate_valid, rate_test)
+        return code
+
+    
 class S3BucketImageStrategy(AbstractStrategy):
     def __init__(self, bucket, region_name, delimiter, prefix,
                  aws_access_key_id, aws_secret_access_key):
@@ -82,8 +110,12 @@ class S3BucketImageStrategy(AbstractStrategy):
         code += "                             prefix='%s')\n" % self._prefix
         code += "data_mat_list = []\n"
         code += "for key in file_keys:\n"
-        code += "    file_path = adapter.download_file(key)\n"
-        code += "    data_mat = skimage.io.imread(file_path)\n"
+        code += "    if key not in api.cache:\n"
+        code += "        file_path = adapter.download_file(key)\n"
+        code += "        data_mat = skimage.io.imread(file_path)\n"
+        code += "        api.cache.put(path, data_mat)\n"        
+        code += "    else:\n"
+        code += "        data_mat = api.cache.get(path)\n"
         code += "    data_mat_list.append(data_mat)\n"
         code += "\n"
         code += "adapter.close()\n"                
@@ -114,11 +146,15 @@ class S3BucketJsonStrategy(AbstractStrategy):
         code += "                             prefix='%s')\n" % self._prefix
         code += "data_mat_list = []\n"
         code += "for key in file_keys:\n"
-        code += "    file_path = adapter.download_file(key)\n"
-        code += "    with open(file_path, 'r') as f:\n"
-        code += "        json_dict = json.load(f)\n"        
-        code += "    df = pd.DataFrame.from_dict(json_dict)\n"
-        code += "    data_mat = df.to_numpy()\n"
+        code += "    if key not in api.cache:\n"        
+        code += "        file_path = adapter.download_file(key)\n"
+        code += "        with open(file_path, 'r') as f:\n"
+        code += "            json_dict = json.load(f)\n"        
+        code += "        df = pd.DataFrame.from_dict(json_dict)\n"
+        code += "        data_mat = df.to_numpy().astype(np.float32)\n"
+        code += "        api.cache.put(path, data_mat)\n"                
+        code += "    else:\n"
+        code += "        data_mat = api.cache.get(path)\n"
         code += "    data_mat_list.append(data_mat)\n"
         code += "\n"
         code += "adapter.close()\n"        
@@ -129,11 +165,12 @@ class S3BucketJsonStrategy(AbstractStrategy):
 
 
 class DataDataCodeGenerator(CodeGenerator):
-    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=[]):
+    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=[], layer_id=None):
         self._seed = seed
         self.batch_size=batch_size
         self.shuffle=shuffle
         self.columns=columns
+        self._layer_id = layer_id
         
         self._strategies = []
         self._partitions = []
@@ -182,31 +219,7 @@ class DataDataCodeGenerator(CodeGenerator):
                                 rate_valid=partition[1],
                                 rate_test=partition[2])
         code += '\n'
-        code += "X_train_size = X_train.shape[0]\n"
-        code += "X_validation_size = X_validation.shape[0]\n"
-        code += "X_test_size = X_test.shape[0]\n"
-        code += '\n'
-        code += "_sample = X_train[0]\n"
-        code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
-        code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
-        code += "_batch_size = %d" % int(self.batch_size)
-        code += "\n"
-        code += 'X_train = tf.data.Dataset.from_tensor_slices(X_train)\n'
-        code += 'X_validation = tf.data.Dataset.from_tensor_slices(X_validation)\n'
-        code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
-        code += "\n"
-        if self.shuffle:
-            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size).repeat()\n" % self._seed
-        else:
-            code += "X_train=X_train.repeat().batch(_batch_size)\n"
-        code += "X_validation=X_validation.repeat().batch(_batch_size)\n"
-        code += "X_test=X_test.repeat(1).batch(1)\n"
-        code += "\n"
-        code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
-        code += "train_iterator = iterator.make_initializer(X_train)\n"
-        code += "validation_iterator = iterator.make_initializer(X_validation)\n"
-        code += "test_iterator = iterator.make_initializer(X_test)\n"
-        code += "Y = next_elements = iterator.get_next()\n"
+        code += self._get_code_common()
         return code
     
     def _get_code_multi_strategy(self):
@@ -227,36 +240,46 @@ class DataDataCodeGenerator(CodeGenerator):
             
         # Concatenation        
         n_sets = len(self._partitions)
-        code += "X_train_stacked = np.vstack([{}])\n".format(", ".join([mask_trn.format(i) for i in range(n_sets)]))
-        code += "X_validation_stacked = np.vstack([{}])\n".format(", ".join([mask_vld.format(i) for i in range(n_sets)]))
-        code += "X_test_stacked = np.vstack([{}])\n".format(", ".join([mask_tst.format(i) for i in range(n_sets)]))
+        list_str_trn = ", ".join([mask_trn.format(i) for i in range(n_sets)])
+        list_str_val = ", ".join([mask_vld.format(i) for i in range(n_sets)])
+        list_str_tst = ", ".join([mask_tst.format(i) for i in range(n_sets)])
+        code += "X_train = np.vstack([%s])\n" % list_str_trn
+        code += "X_validation = np.vstack([%s])\n" % list_str_val
+        code += "X_test = np.vstack([%s])\n" % list_str_tst
         code += '\n'
-        code += "X_train_size = X_train_stacked.shape[0]\n"
-        code += "X_validation_size = X_validation_stacked.shape[0]\n"
-        code += "X_test_size = X_test_stacked.shape[0]\n"
+        code += self._get_code_common()
+        return code
+
+    def _get_code_common(self):
+        code  = "# Shapes, preview and batch sizes\n"
+        code += 'X_train_size = X_train.shape[0]\n'
+        code += "X_validation_size = X_validation.shape[0]\n"
+        code += "X_test_size = X_test.shape[0]\n"
         code += '\n'
-        code += "_sample = X_train_stacked[0]\n"
+        # code += "_sample = X_train[0]\n"
+        code += "global _data_size\n"
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
-        code += "_batch_size = %d" % int(self.batch_size)
+        code += "_batch_size = %d\n" % int(self.batch_size)
+        # code += "api.data.store(sample=_sample)\n"        
+        code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
-        code += "X_train = tf.data.Dataset.from_tensor_slices(X_train_stacked)\n"
-        code += "X_validation = tf.data.Dataset.from_tensor_slices(X_validation_stacked)\n"
-        code += "X_test = tf.data.Dataset.from_tensor_slices(X_test_stacked)\n"
+        code += 'X_train = tf.data.Dataset.from_tensor_slices(X_train)\n'
+        code += 'X_validation = tf.data.Dataset.from_tensor_slices(X_validation)\n'
+        code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
         code += "\n"
         if self.shuffle:
-            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size).repeat()\n" % self._seed
+            code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size)\n" % self._seed
         else:
-            code += "X_train=X_train.repeat().batch(_batch_size)\n"
-        code += "X_validation=X_validation.repeat().batch(_batch_size)\n"
-        code += "X_test=X_test.repeat(1).batch(1)\n"
+            code += "X_train=X_train.batch(_batch_size)\n"
+        code += "X_validation=X_validation.batch(_batch_size)\n"
+        code += "X_test=X_test.batch(1)\n"
         code += "\n"
         code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
-        code += "train_iterator = iterator.make_initializer(X_train)\n"
-        code += "validation_iterator = iterator.make_initializer(X_validation)\n"
-        code += "test_iterator = iterator.make_initializer(X_test)\n"
+        code += "train_iterator = iterator.make_initializer(X_train, name='train_iterator_%s')\n" % self._layer_id
+        code += "validation_iterator = iterator.make_initializer(X_validation, name='validation_iterator_%s')\n" % self._layer_id        
+        code += "test_iterator = iterator.make_initializer(X_test, name='test_iterator_%s')\n" % self._layer_id                
         code += "Y = next_elements = iterator.get_next()\n"
-        
         return code        
 
     def _select_strategy(self, source):
@@ -276,9 +299,9 @@ class DataDataCodeGenerator(CodeGenerator):
     def _select_file_strategy(self, file_path):
         _, ext = os.path.splitext(file_path)
 
-        if ext == '.npy':
+        if ext in ['.npy', '.npz']:
             strategy = FileNumpyStrategy(file_path)
-        elif ext == '.csv':
+        elif ext in ['.csv', '.txt']:
             strategy = FileCsvStrategy(file_path, self.columns)
         else:
             raise NotImplementedError("Extension {} not implemented".format(ext))
@@ -293,7 +316,7 @@ class DataDataCodeGenerator(CodeGenerator):
             raise ValueError("Can only contain one (and atleast one) type of file!")        
 
         ext = extensions[0]
-        if ext in ['.jpg', '.png']:
+        if ext in ['.jpg', '.png', '.jpeg', '.tif', '.tiff']:
             strategy = DirectoryImageStrategy(directory_path)
         else:
             raise NotImplementedError("Extension {} not implemented".format(ext))            
@@ -310,7 +333,7 @@ class DataDataCodeGenerator(CodeGenerator):
             raise ValueError("Can only contain one (and atleast one) type of file!")        
         
         ext = extensions[0]
-        if ext in ['.jpg', '.png']:
+        if ext in ['.jpg', '.png', '.jpeg', '.tiff', '.tif']:
             strategy = S3BucketImageStrategy(bucket, region_name, delimiter, prefix,
                                              aws_access_key_id, aws_secret_access_key)
         elif ext in ['.json']:
@@ -339,8 +362,7 @@ if __name__ == "__main__":
                     'pd': pd,
                     'json': json,
                     'S3BucketAdapter': S3BucketAdapter,                    
-                    'np': np}
-        
+                    'np': np}        
         locals_ = {}
         
         print("Executing code:")

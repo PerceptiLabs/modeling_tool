@@ -19,10 +19,11 @@
         )
         p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
         .forgot-password-box
-          a.btn.btn--link-without-underline(
-            :href="`${baseUrlSite}/restore-account`"
+          //-a.btn.btn--link-without-underline(
+            /:href="`${baseUrlSite}/restore-account`"
             @click.prevent="toLink(`${baseUrlSite}/restore-account`)"
-          ) Forgot password?
+            ) Forgot password?
+          router-link.btn.btn--link-without-underline(:to="{name: 'restore-account'}") Forgot password?
 
       .form_holder.login-form_actions
         .form_row
@@ -75,9 +76,11 @@ export default {
         "Password": this.userPass
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
-        .then((tokens)=>{if(this.saveToken) localStorage.setItem('currentUser', JSON.stringify(tokens))})
-        .catch((error)=>{console.log(error)})
-        .finally(()=>   {this.$store.commit('mod_login/SET_showLoader', false)});
+        .then((tokens)=> {
+          if(this.saveToken) this.$store.dispatch('mod_user/SET_userTokenLocal', tokens)
+        })
+        .catch((error)=> {console.log(error)})
+        .finally(()=>    {this.$store.commit('mod_login/SET_showLoader', false)});
     },
   }
 }

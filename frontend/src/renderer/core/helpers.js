@@ -16,7 +16,6 @@ const openLoadDialog = function (options) {
 };
 
 const openSaveDialog = function (options) {
-  //console.log('openSaveDialog', options);
   return new Promise((success, reject) => {
     ipcRenderer.on('open-save-dialog_path', (event, path) => {
       ipcRenderer.removeAllListeners('open-save-dialog_path');
@@ -33,7 +32,6 @@ const loadPathFolder = function (customOptions) {
     properties: ['openDirectory']
   };
   let options = {...optionsDefault, ...customOptions};
-  //console.log(options);
   return openLoadDialog(options);
 };
 
@@ -54,30 +52,35 @@ const filePCSave = function (fileName, fileContent) {
         store.dispatch('globalView/GP_errorPopup', `An error occurred creating the file ${err.message}`);
         return reject(err);
       }
-      else {
-        return success(fileName)
-      }
+      else return success(fileName)
     });
+    return success(fileName)
   });
 };
-const projectPCSave = function (projectPathArr, fileContent) {
-  const projectPath = projectPathArr[0];
+
+const projectPCSave = function (fileContent) {
+  const projectPath = fileContent.networkRootFolder;
   if (!fs.existsSync(projectPath)){
     fs.mkdirSync(projectPath);
   }
-  const jsonPath = `${projectPath}${pathSlash}${fileContent.networkID}.json`;
+  const jsonPath = projectPathModel(projectPath);
   return filePCSave(jsonPath, JSON.stringify(fileContent))
 };
+
+const projectPathModel = function (projectPath) {
+  return `${projectPath}${pathSlash}model.json`
+};
+
 const folderPCDelete = function (path) {
   return new Promise((success, reject) => {
     if (!fs.existsSync(path)) success();
     const files = fs.readdirSync(path);
     if (files.length > 0) {
       files.forEach(function(filename) {
-        if (fs.statSync(path + "/" + filename).isDirectory()) {
-          folderPCDelete(path + "/" + filename)
+        if (fs.statSync(path + pathSlash + filename).isDirectory()) {
+          folderPCDelete(path + pathSlash + filename)
         } else {
-          fs.unlinkSync(path + "/" + filename)
+          fs.unlinkSync(path + pathSlash + filename)
         }
       });
     }
@@ -85,6 +88,7 @@ const folderPCDelete = function (path) {
     success();
   });
 };
+
 /*encryption */
 const encryptionData = function (data) {
   return JSON.stringify(data).split('').reverse().join('');
@@ -134,7 +138,6 @@ const throttleEv = function (func, ms) {
 };
 
 const goToLink = function (url) {
-  //console.log(url);
   shell.openExternal(url);
 };
 
@@ -160,6 +163,7 @@ export {
   filePCRead,
   filePCSave,
   projectPCSave,
+  projectPathModel,
   folderPCDelete,
   encryptionData,
   decryptionData,

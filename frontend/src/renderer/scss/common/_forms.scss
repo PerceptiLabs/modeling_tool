@@ -37,10 +37,10 @@ textarea {
   &::selection {
     background-color: $color-5;
   }
-@include placeholder {
+    @include placeholder {
 		color: $col-placeholder;
 	}
-@include placeholder {
+    @include placeholder {
 			color: #fff;
 			opacity: .5;
 		}
@@ -50,6 +50,8 @@ textarea {
 input[type='number'] {
 	width: 4.5em;
 	text-align: center;
+    padding-right: .5rem;
+    padding-left: .5rem;
 }
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {

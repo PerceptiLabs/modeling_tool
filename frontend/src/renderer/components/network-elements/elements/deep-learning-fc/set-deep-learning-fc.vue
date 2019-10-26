@@ -26,12 +26,17 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
           .form_label Dropout:
-          #tutorial_dropout.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group2" :value-input="true" v-model="settings.Dropout")
+          .form_input
+            base-radio(group-name="group5" :value-input="true" v-model="settings.Dropout")
               span Yes
-            base-radio(group-name="group2" :value-input="false" v-model="settings.Dropout")
+            base-radio(group-name="group5" :value-input="false" v-model="settings.Dropout")
               span No
 
+      .settings-layer_section(v-if="settings.Dropout")
+        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
+          .form_label Keep probability:
+          .form_input
+            input(type="number" v-model="settings.Keep_prob")
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
@@ -57,6 +62,7 @@
           Neurons :"10",
           Activation_function: "Sigmoid",
           Dropout: false,
+          Keep_prob: '1',
         },
         interactiveInfo: {
           neurons: {
@@ -96,7 +102,7 @@
       }),
       saveSettings(tabName) {
         this.applySettings(tabName);
-        this.tutorialPointActivate({way:'next', validation: 'tutorial_neurons'})
+        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_neurons'}));
       }
     }
   }

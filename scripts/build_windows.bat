@@ -14,7 +14,7 @@ mkdir backend_out
 mkdir frontend_out 
 
 cd backend_tmp
-copy ..\..\backend\*.py . 
+xcopy /s ..\..\backend . 
 
 del minicodehq.py
 del appOc.py
@@ -28,7 +28,7 @@ move mainServer.py mainServer.pyx
 dir
 
 python setup.pyx develop --user
-del *.py
+#del *.py
 move mainServer.pyx mainServer.py
 
 dir
@@ -36,10 +36,11 @@ dir
 copy ..\..\backend\windows.spec .
 pyinstaller --clean -y windows.spec
 
+exit /b
+
 cd ..\backend_out
 mkdir dist
 xcopy ..\backend_tmp\dist dist\ /sy 
-
 
 cd ..\..\frontend\
 

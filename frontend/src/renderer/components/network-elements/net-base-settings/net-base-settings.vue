@@ -9,12 +9,12 @@
           :disabled='isTutorial || disableSettings'
           @click="setTab(tab)"
         )
-          h3(v-html="tab")
+          h4(v-html="tab")
           i.icon.icon-code-error(
             v-if="tab === 'Code' && currentEl.layerCodeError"
           )
       .popup_header.disable(v-else)
-        h3 Preview
+        h4 Preview
     .popup_tab-body
       .popup_body.active(
         v-for="(tabContent, i) in tabSet"
@@ -25,6 +25,10 @@
           slot(:name="tabContent+'-content'")
         #js-hide-btn.settings-layer_foot
           slot(:name="tabContent+'-action'")
+            button.btn.btn--primary.btn--disabled(type="button"
+              @click="hideAllWindow"
+              :disabled="isTutorial"
+            ) Cancel
             button.btn.btn--primary(type="button"
               @click="applySettings(tabContent)"
               :id="idSetBtn"
@@ -48,6 +52,7 @@
 export default {
   name: 'NetBaseSettings',
   components: {SettingsPreview },
+  inject: ['hideAllWindow'],
   props: {
     tabSet: {
       type: Array,
@@ -62,9 +67,14 @@ export default {
       type: String,
       default: ''
     },
+    showPreview: {
+      type: Boolean,
+      default: false
+    }
   },
   mounted() {
     this.toSettings();
+    if(this.currentEl.layerCode || this.currentEl.layerSettings) this.tabSelected = 'Preview';
   },
   data() {
     return {
@@ -75,6 +85,11 @@ export default {
   computed: {
     isTutorial() {
       return this.$store.getters['mod_tutorials/getIstutorialMode']
+    }
+  },
+  watch: {
+    showPreview(newVal) {
+      if(newVal) this.tabSelected = 'Preview';
     }
   },
   methods: {
@@ -129,6 +144,17 @@ export default {
     max-height: none;
     .settings-layer {
       max-height: none;
+      overflow: hidden;
+    }
+  }
+  .settings-layer_foot {
+    justify-content: flex-end;
+    .btn {
+      height: auto;
+      min-width: 7rem;
+    }
+    .btn + .btn {
+      margin-left: .8rem;
     }
   }
 </style>

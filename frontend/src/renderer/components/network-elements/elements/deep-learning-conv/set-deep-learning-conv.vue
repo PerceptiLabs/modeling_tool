@@ -3,7 +3,6 @@
     :current-el="currentEl"
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
   )
     template(slot="Settings-content")
       .settings-layer_section
@@ -69,6 +68,11 @@
               span Yes
             base-radio(group-name="group5" :value-input="false"  v-model="settings.Dropout")
               span No
+      .settings-layer_section(v-if="settings.Dropout")
+        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
+          .form_label Keep probability:
+          .form_input
+            input(type="number" v-model="settings.Keep_prob")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
           .form_label Pooling:
@@ -77,20 +81,6 @@
               span Yes
             base-radio(group-name="group6" :value-input="false"  v-model="settings.PoolBool")
               span No
-      //-.settings-layer_section
-        .form_row
-          .form_label Batch Normalization:
-          .form_input
-            base-radio(groupName="group6")
-              span Yes
-            base-radio(groupName="group6")
-              span No
-      //-.settings-layer_section
-        .form_row
-          .form_label Pooling:
-          .form_input
-            base-checkbox(valueInput="Pooling" v-model="settings.pooling")
-            //input(type="checkbox" :value="settings.pooling" @change="changeCheckbox($event)")
       template(v-if="settings.PoolBool")
         .settings-layer_section
           .form_row(v-tooltip-interactive:right="interactiveInfo.poolingType")
@@ -118,6 +108,7 @@
                 span SAME
               base-radio(group-name="Pool_padding" value-input="'VALID'" v-model="settings.Pool_padding")
                 span VALID
+
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
@@ -147,6 +138,7 @@ export default {
         Feature_maps: "8",
         Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
         Dropout: false, //True, False
+        Keep_prob: '1',
         PoolBool: false, //True, False
         Pooling: "Max", //Max, Mean
         Pool_area: "2",
@@ -222,7 +214,7 @@ export default {
     },
     saveSettings(tabName) {
       this.applySettings(tabName);
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_patch-size'})
+      this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_patch-size'}));
     },
     focusFirstTutorialField() {
       this.$nextTick(()=> {

@@ -1,10 +1,13 @@
 #Backend ignores
 backend/*.pyc
 backend/*.pyo
+backend/net.json
 **/__pycache__/
 *.pyc
 *.py~
+*.zip
 *#*#
+build/
 .vscode/
 backend/.vscode/
 #Frontend ignores
@@ -28,3 +31,5 @@ frontend/src/node_modules/
 .idea/workspace.xml
 ../.idea/workspace.xml
 .vscode/*
+app.log
+backend.log

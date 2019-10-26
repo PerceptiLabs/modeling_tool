@@ -3,6 +3,7 @@
     .checkbox-text(v-if="labelPosition==='left'")
       slot
     input(type="checkbox"
+      :disabled="disabled"
       v-model="valueInput"
       @change="change"
     )
@@ -22,6 +23,10 @@ export default {
     labelPosition: {
       type: String,
       default: 'right'
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     },
     iconTheme: {
       type: Boolean,

@@ -54,7 +54,6 @@ export default {
   },
   computed: {
     isNotValidateSum() {
-      console.log(this.validateSum);
       if(this.value1 === 0) return true;
       if(!!this.validateSum.length) {
         const validate = JSON.parse(this.validateSum)[0];

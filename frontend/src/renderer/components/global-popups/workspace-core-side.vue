@@ -19,7 +19,7 @@
             p.big-text Start training
           .settings-layer_foot
             button.btn.btn--dark-blue(type="button" @click="closePopup()") Cancel
-            button.btn.btn--dark-blue(type="button" @click="startTraining()" v-tooltip-interactive:right="interactiveInfo.start") Start
+            button#tutorial_start-training.btn.btn--dark-blue(type="button" @click="startTraining()" v-tooltip-interactive:right="interactiveInfo.start") Start
         .popup_body(
           :class="{'active': tabSelected == 1}"
         )

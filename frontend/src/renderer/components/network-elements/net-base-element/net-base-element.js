@@ -74,7 +74,6 @@ export default {
       return this.dataEl.layerId
     },
     beForEnd() {
-      //console.log('NetBaseElement beForEnd', this.dataEl.el.layerMeta);
       return this.dataEl.layerMeta.OutputDim
     },
     isSelectedEl() {
@@ -152,9 +151,7 @@ export default {
     },
     switchMousedownEvent(ev) {
       if (this.isLock) return;
-      //console.log('switchMousedownEvent', ev);
       if(this.networkMode === 'addArrow') this.Mix_paintArrow_arrowStartPaint(ev);
-
       if(this.networkMode === 'edit'
         && this.editIsOpen
         && ev.button === 0
@@ -197,7 +194,7 @@ export default {
         this.calcWindowPosition();
         this.tutorialPointActivate({
           way: 'next',
-          validation: this.tutorialSearchId(event)
+          validation: event.currentTarget.id
         })
       })
     },

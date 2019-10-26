@@ -1,62 +1,56 @@
 <template lang="pug">
 .tutorial-instruction-box
-    button.btn.btn--dark-blue-rev(type="button"
-      @click="switchTutorialMode"
-      :class="{'green-status' : isTutorialMode}"
-    )
-      span Tutorial
-      i.icon.icon-ellipse
+  slot
 
-    .tutorial-instruction-box_list-area(v-if="isShowInstructions" @mousedown="dragElement($event)")
-      header.list-area_header
+  .tutorial-instruction-box_list-area(v-if="isShowInstructions" @mousedown="dragElement($event)")
+    header.list-area_header
+      div
+        button.header_close-instructions.i.icon.icon-app-close(@click="switchTutorialMode")
+        //span.header_title title_q
+      .header_arrows-top(:class="{'list-hide': !isMaximize}" @click="minimizeList")
+        i.icon.icon-shevron
+        i.icon.icon-shevron
+
+    .list-area-box(v-show="isMaximize")
+      p.list-area_title {{interective[activeStep].title}}
+      ul.list-area_list
+        .list-element.list-element--status(
+          v-for="(point, index) in points"
+          :key="index"
+          :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
+        )
+          .element-text(v-html="point.content")
+          .list-element_static
+            .static_info.list-element--status(
+              v-for="(info, index) in point.static_info"
+              v-html="info.content"
+              :key="index"
+              :class="[{'done': info.status === 'done'}]"
+            )
+
+      footer.list-area_footer
+        button.footer_all-tutorials-btn
+          i.icon.icon-shevron-right
+          span All tutorials
+        .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
         div
-          button.header_close-instructions.i.icon.icon-app-close(@click="switchTutorialMode")
-          //span.header_title title_q
-        .header_arrows-top(:class="{'list-hide': !isMaximize}" @click="minimizeList")
-          i.icon.icon-shevron
-          i.icon.icon-shevron
-
-      .list-area-box(v-show="isMaximize")
-        p.list-area_title {{interective[activeStep].title}}
-        ul.list-area_list
-          .list-element.list-element--status(
-            v-for="(point, index) in points"
-            v-if="stepCount !== stepsLength"
-            :key="index"
-            :class="[point.class_style, {'active': point.status === 'active', 'done': point.status === 'done'}]"
-          )
-            .element-text(v-html="point.content")
-            .list-element_static
-              .static_info.list-element--status(
-                v-for="(info, index) in point.static_info"
-                v-html="info.content"
-                :key="index"
-                :class="[{'done': info.status === 'done'}]"
-              )
-          
-        footer.list-area_footer
-          button.footer_all-tutorials-btn
-            i.icon.icon-shevron-right
-            span All tutorials
-          .curent-steps(v-if="activeStep !== 'first_instructions'") {{stepCount}}/{{stepsLength}}
-          div
-            //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back
-            button.footer_btn(
-              v-if="isFirstStep"
-              @click="startTutorial('next')"
-              ) Next
-            button.footer_btn(
-              v-else-if="activeAction.next && !allPointsIsDone"
-              @click="pointActivate({way: 'next', validation: activeAction.id})"
-              ) Next
-            button.footer_btn(
-              v-else-if="stepCount !== stepsLength"
-              @click="changeStep('next')" :disabled="disabledNext"
-              ) Next
-            button.footer_btn(
-              v-else-if="stepCount === stepsLength"
-              @click="endTutorial()"
-              ) End
+          //button.footer_btn(v-if="stepCount > 0" @click="changeStep('back')") Back
+          button.footer_btn(
+            v-if="isFirstStep"
+            @click="startTutorial('next')"
+            ) Next
+          button#tutorial_next_button.footer_btn(
+            v-else-if="activeAction.next && !allPointsIsDone"
+            @click="pointActivate({way: 'next', validation: activeAction.id})"
+            ) Next
+          button#tutorial_next_button.footer_btn(
+            v-else-if="stepCount !== stepsLength"
+            @click="changeStep('next')" :disabled="disabledNext"
+            ) Next
+          button.footer_btn(
+            v-else-if="stepCount === stepsLength"
+            @click="endTutorial()"
+            ) End
 </template>
 <script>
 import { mapGetters, mapMutations, mapActions } from 'vuex';
@@ -151,7 +145,7 @@ export default {
       }
     },
     startTutorial(way) {
-      if(this.currentNetworkElementList) this.addNetwork();
+      //if(this.currentNetworkElementList) this.addNetwork();
       this.setTutorialIstarted(true);
       this.setActiveStep(way);
       this.pointActivate({way: null, validation: this.activePoint.actions[0].id});
@@ -171,6 +165,7 @@ export default {
       } else {
         this.onTutorial(this);
         this.isMaximize = true;
+        if(this.currentNetworkElementList) this.addNetwork();
       }
     },
 
@@ -179,15 +174,7 @@ export default {
     },
     dragElement(event) {
       let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
-      const element = event.currentTarget;
-      event.preventDefault();
-      pos3 = event.clientX;
-      pos4 = event.clientY;
-      element.style.cursor = 'grabbing';
-      document.addEventListener('mouseup', closeDragElement);
-      document.addEventListener('mousemove', elementDrag);
-
-      function elementDrag(docEvent) {
+      let elementDrag = (docEvent) => {
         event.preventDefault();
         pos1 = pos3 - docEvent.clientX;
         pos2 = pos4 - docEvent.clientY;
@@ -195,13 +182,23 @@ export default {
         pos4 = docEvent.clientY;
         element.style.top = (element.offsetTop - pos2) + "px";
         element.style.left = (element.offsetLeft - pos1) + "px";
-      }
+      };
 
-      function closeDragElement() {
+      let closeDragElement = () => {
         document.removeEventListener('mouseup', closeDragElement);
         document.removeEventListener('mousemove', elementDrag);
         element.style.cursor = '';
-      }
+        if (!this.disabledNext || this.activeAction.next && !this.allPointsIsDone) {
+          this.tooltipReposition(true);
+        }
+      };
+      const element = event.currentTarget;
+      event.preventDefault();
+      pos3 = event.clientX;
+      pos4 = event.clientY;
+      element.style.cursor = 'grabbing';
+      document.addEventListener('mouseup', closeDragElement);
+      document.addEventListener('mousemove', elementDrag);
     }
   }
 }

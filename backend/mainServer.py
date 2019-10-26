@@ -16,9 +16,12 @@ def setup_logger():
         ERROR: More serious problem, the software is not able to perform some function. 
         CRITICAL: A serious error, the program itself may be unable to continue running. 
     """
+    FORMAT = '%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s'
+    FILE_NAME = 'backend.log'
+    
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
-                        level=logging.DEBUG)
+                        level=logging.INFO)
     
 if __name__ == "__main__":
     setup_logger()

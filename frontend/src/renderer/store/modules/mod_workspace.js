@@ -33,11 +33,6 @@ const getters = {
       ? state.workspaceContent[state.currentNetwork].networkID
       : 0
   },
-  GET_currentNetworkSettings(state, getters) {
-    return getters.GET_networkIsNotEmpty
-      ? state.workspaceContent[state.currentNetwork].networkSettings
-      : {}
-  },
   GET_currentNetworkElementList(state, getters) {
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork].networkElementList
@@ -103,8 +98,8 @@ const getters = {
   GET_showStartTrainingSpinner(state) {
     return state.showStartTrainingSpinner
   },
-  GET_enableHotKeyElement(state, getters) {
-    return !state.isOpenElement && getters.GET_networkIsOpen
+  GET_enableHotKeyElement(state, getters, rootState) {
+    return !state.isOpenElement && getters.GET_networkIsOpen && rootState.mod_events.isEnableCustomHotKey
   }
 };
 
@@ -122,17 +117,19 @@ const mutations = {
   set_networkName(state, {getters, value}) {
     getters.GET_currentNetwork.networkName = value
   },
+  set_networkRootFolder(state, {getters, value}) {
+    getters.GET_currentNetwork.networkRootFolder = value
+  },
   add_network (state, network) {
     let workspace = state.workspaceContent;
     let newNetwork = {};
     //-- DEFAULT DATA
     const defaultNetwork = {
-      networkName: 'New_Network',
+      networkName: 'New_Model',
       networkID: '',
-      networkSettings: null,
       networkMeta: {},
       networkElementList: null,
-      networkRootFolder: []
+      networkRootFolder: ''
     };
     const defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
@@ -256,12 +253,6 @@ const mutations = {
       state.currentNetwork = index < 0 ? 0 : index
     }
     state.workspaceContent.splice(index, 1);
-  },
-  //---------------
-  //  NETWORK SETTINGS
-  //---------------
-  set_networkSettings(state, {getters, value}) {
-    getters.GET_currentNetwork.networkSettings = value
   },
   //---------------
   //  LOADER FOR TRAINING
@@ -466,6 +457,7 @@ const mutations = {
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {dispatch, settings}) {
+    console.log('set_elementSettings', settings);
     currentElement(settings.elId).layerSettings = settings.set;
     currentElement(settings.elId).layerCode = settings.code;
     currentElement(settings.elId).layerSettingsTabName = settings.tabName;
@@ -512,7 +504,8 @@ const mutations = {
   },
   set_elementInputDim(state, value) {
     for(let element in value) {
-      currentElement(element).layerMeta.InputDim = value[element]
+      currentElement(element).layerMeta.InputDim = value[element].inShape;
+      currentElement(element).layerCodeError = value[element].Error
     }
   },
   set_elementOutputDim(state, {value}) {
@@ -745,8 +738,8 @@ const actions = {
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
   },
-  SET_networkSettings({commit, getters}, value) {
-    commit('set_networkSettings', {getters, value})
+  SET_networkRootFolder({commit, getters}, value) {
+    commit('set_networkRootFolder', {getters, value})
   },
   SET_networkElementList({commit, getters}, value) {
     commit('set_networkElementList', {getters, value})
@@ -857,7 +850,6 @@ const actions = {
     commit('set_elementInputDim', value)
   },
   SET_elementOutputDim({commit, getters}, value) {
-    //console.log('SET_elementOutputDim');
     commit('set_elementOutputDim', {getters, value})
   },
   CHANGE_elementPosition({commit}, value) {

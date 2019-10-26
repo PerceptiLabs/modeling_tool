@@ -5,6 +5,9 @@ Vue.use(VueNonreactive);
 import coreRequest  from "@/core/apiCore.js";
 
 const viewBoxMixin = {
+  props: {
+    currentTab: {type: String, default: ''}
+  },
   data() {
     return {
       chartData: {},
@@ -13,11 +16,11 @@ const viewBoxMixin = {
     }
   },
   mounted() {
+    if(this.btnList) this.$emit('btn-list', this.btnList);
     this.getData();
-    //this.$store.dispatch('mod_tracker/EVENT_trainingLayerView');
   },
   beforeDestroy() {
-    this.chartData = {};
+    this.chartData = null;
   },
   computed: {
     statElementID() {
@@ -50,6 +53,9 @@ const viewBoxMixin = {
       this.resetViewBox();
     },
     doRequest() {
+      this.getData();
+    },
+    currentTab() {
       this.getData();
     }
   },
@@ -91,11 +97,10 @@ const viewBoxMixin = {
           this.$store.dispatch('mod_workspace/CHECK_requestInterval', answerDelay);
         })
         .catch((err)=> {
-          //console.log('answer err');
           console.error(err);
         });
     }
-  }
+  },
 };
 
 export default viewBoxMixin

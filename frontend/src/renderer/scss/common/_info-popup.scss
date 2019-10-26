@@ -12,7 +12,11 @@
   height: 5rem;
   padding-top: 1.4rem;
 }
-.header_attention {
+.settings-layer_section {
+  display: flex;
+  margin-top: 1.3rem;
+}
+.section_attention {
   color: #fff;
   background: $color-6;
   padding: .3rem 1.1rem;
@@ -26,9 +30,12 @@
   align-items: center;
   justify-content: center;
 }
+.section_text {
+  margin: 0 1.5rem;
+}
 .header_attention--error {
   background: $col-warning;
 }
-.popup_body p{
+.popup_body p {
   font-size: 1.5rem;
 }

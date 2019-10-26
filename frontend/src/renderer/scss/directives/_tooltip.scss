@@ -69,7 +69,7 @@ $triangleWith: 10px;
 }
 
 .tooltip-tutorial {
-  font-size: 1.2rem;
+  font-size: 1.4rem;
   font-weight: 400;
   color: $bg-workspace;
   position: absolute;
@@ -100,6 +100,19 @@ $triangleWith: 10px;
     background: $tutorial-tooltip-bg;
   }
 }
+.tooltip-tutorial-animation--right {
+	animation: tooltips-move-right 1s infinite;
+}
+.tooltip-tutorial-animation--left {
+	animation: tooltips-move-left 1s infinite;
+}
+.tooltip-tutorial-animation--top {
+	animation: tooltips-move-top 1s infinite;
+}
+.tooltip-tutorial-animation--bottom {
+	animation: tooltips-move-bottom 1s infinite;
+}
+
 .tooltip-tutorial--left {
 	transform: translate(-100%, -50%);
 	&:before {
@@ -157,4 +170,25 @@ $triangleWith: 10px;
 
 .js-tooltip-interactive {
 	z-index: 22;
+}
+
+@keyframes tooltips-move-right {
+	0% {margin-left: 0;}
+	50% {margin-left: 5px;}
+	100% {margin-left: 0;}
+}
+@keyframes tooltips-move-left {
+	0% {margin-right: 0;}
+	50% {margin-right: 5px;}
+	100% {margin-right: 0;}
+}
+@keyframes tooltips-move-top {
+	0% {margin-bottom: 0;}
+	50% {margin-bottom: 5px;}
+	100% {margin-bottom: 0;}
+}
+@keyframes tooltips-move-bottom {
+	0% {margin-top: 0;}
+	50% {margin-top: 5px;}
+	100% {margin-top: 0;}
 }

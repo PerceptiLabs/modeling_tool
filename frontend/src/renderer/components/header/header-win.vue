@@ -2,12 +2,14 @@
   header.app-header
     .app-header_logo
       a(@click="toProjectPage")
-        img(src="./../../../../static/img/logo_small_dark.svg" alt="PerceptiLabs logo")
+        img(src="./../../../../static/img/perceptilabs-logo-header.svg" alt="PerceptiLabs logo")
     the-menu
 
     ul.app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
-      button.btn.btn--app-full(type="button" @click="appMaximize()" :class="{'icon-app-restore-down': showRestoreIcon, 'icon-app-resize': !showRestoreIcon}").i.icon
+      button.btn.btn--app-full(type="button"
+        @click="appMaximize"
+        :class="{'icon-app-restore-down': showRestoreIcon, 'icon-app-resize': !showRestoreIcon}").i.icon
       button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close
 </template>
 

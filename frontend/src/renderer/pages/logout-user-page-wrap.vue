@@ -1,7 +1,7 @@
 <template lang="pug">
   main.page_login
     .login_logo
-      img(src="./../../../static/img/percepti-labs-logo.svg" alt="PerceptiLabs logo")
+      img(src="./../../../static/img/perceptilabs-logo-icon.svg" alt="PerceptiLabs logo")
     view-loading
     .login_main
       h1(v-if="titlePage.length") {{ titlePage }}
@@ -50,7 +50,7 @@ export default {
     display: flex;
     align-items: center;
     flex-direction: column;
-    justify-content: center;
+    //justify-content: center;
     padding: 3rem;
     background: linear-gradient(0deg, $bg-workspace -1.66%, #2d2f35 100%);
     overflow-y: auto !important;

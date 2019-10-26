@@ -1,6 +1,6 @@
 import {ipcRenderer}  from 'electron'
 import router         from "@/router";
-import {filePCRead, loadPathFolder} from "@/core/helpers";
+import {filePCRead, loadPathFolder, projectPathModel} from "@/core/helpers";
 import { pathSlash } from "@/core/constants";
 
 const namespaced = true;
@@ -11,11 +11,11 @@ const state = {
   saveNetwork: 0,
   saveNetworkAs: 0,
   eventResize: 0,
-  runNetwork: false,
   globalPressKey: {
     del: 0,
     esc: 0
-  }
+  },
+  isEnableCustomHotKey: true
 };
 
 const mutations = {
@@ -31,11 +31,11 @@ const mutations = {
   set_eventResize(state) {
     state.eventResize++
   },
-  set_runNetwork(state, value) {
-    state.runNetwork = value
-  },
   set_globalPressKey(state, path) {
     state.globalPressKey[path]++
+  },
+  set_enableCustomHotKey(state, value) {
+    state.isEnableCustomHotKey = value
   },
 };
 
@@ -43,8 +43,8 @@ const actions = {
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },
-  EVENT_loadNetwork({dispatch, rootGetters}, {pathRootFolder, pathFile}) {
-    console.log(pathRootFolder, pathFile);
+  EVENT_loadNetwork({dispatch, rootGetters}, pathProject) {
+    const pathFile = projectPathModel(pathProject);
     let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
     let pathIndex;
     if(localProjectsList.length) {
@@ -75,7 +75,6 @@ const actions = {
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
         }
-        net.networkRootFolder = pathRootFolder;
         dispatch('mod_workspace/ADD_network', net, {root: true});
       }
     );
@@ -85,12 +84,7 @@ const actions = {
       title:"Load Project Folder",
     };
     loadPathFolder(opt)
-      .then((pathArr)=> {
-        const pathRootFolder = pathArr[0];
-        const netId = pathRootFolder.slice(pathRootFolder.lastIndexOf(pathSlash) + 1, pathRootFolder.length);
-        const pathFile = `${pathRootFolder}${pathSlash}${netId}.json`;
-        dispatch('EVENT_loadNetwork', {pathRootFolder, pathFile})
-      })
+      .then((pathArr)=> dispatch('EVENT_loadNetwork', pathArr[0]))
       .catch((err)=> {});
   },
   EVENT_saveNetwork({commit}) {
@@ -104,6 +98,7 @@ const actions = {
     localStorage.removeItem('currentUser');
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
+    dispatch('mod_tutorials/offTutorial', null, {root: true});
     router.replace({name: 'login'});
   },
   EVENT_appClose({dispatch, rootState, rootGetters}, event) {
@@ -173,6 +168,9 @@ const actions = {
       });
       //dispatch('mod_buffer/CLEAR_buffer', null, {root: true});
     }
+  },
+  SET_enableCustomHotKey({commit}, val) {
+    commit('set_enableCustomHotKey', val)
   },
 };
 
