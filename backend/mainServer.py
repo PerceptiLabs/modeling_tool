@@ -19,12 +19,9 @@ def setup_logger():
     FORMAT = '%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s'
     FILE_NAME = 'backend.log'
     
-    logging.basicConfig(format=FORMAT,
-                        level=logging.INFO,
-                        handlers=[
-                            logging.StreamHandler(),
-                            logging.FileHandler(FILE_NAME, mode='w')
-                        ])
+    logging.basicConfig(stream=sys.stdout,
+                        format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
+                        level=logging.INFO)
     
 if __name__ == "__main__":
     setup_logger()
