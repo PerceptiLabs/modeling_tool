@@ -813,7 +813,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: `In the <div class="marker">Top Toolbar</div> press<div class="marker">Run</div>`,
+          content: `In the <div class="marker">Top Toolbar</div> press <div class="marker">Run</div>`,
           hoverInfo: [
 /*            {
               tooltip: `<div class="tooltip-tutorial_italic">
