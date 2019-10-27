@@ -176,7 +176,7 @@ def getType(dataVec):
     elif dims == 3:
         return TYPE_HEATMAP        
     else:
-        return TYPE_SCATTER        
+        return TYPE_BAR        
 
     return type_
 
