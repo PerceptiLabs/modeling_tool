@@ -2,7 +2,7 @@
   header.app-header
     .app-header_logo
       a(@click="toProjectPage")
-        img(src="./../../../../static/img/perceptilabs-logo-header.svg" alt="PerceptiLabs logo")
+        img(src="./../../../../static/img/PerceptiLabs_Logo-web-white_beta-01.svg" alt="PerceptiLabs logo")
     the-menu
 
     ul.app-header_actions

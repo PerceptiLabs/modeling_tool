@@ -10,7 +10,7 @@
           p.section_text(v-if="isText && !comingSoonPopup") {{ popupText }}
           p.section_text(v-else-if="isText && comingSoonPopup") This feature is coming soon. For suggestions on new features, hit us up on:&ensp;
             button.btn.btn--link.text-primary(@click="goToLink('https://gitter.im/PerceptiLabs/PerceptiLabs')") gitter
-          ul(v-else)
+          ul.w-100(v-else)
             li(
               v-for="(text, i) in popupText"
               :key="i"
@@ -97,6 +97,10 @@
     margin: 0 1.5rem;
     width: 100%;
     max-width: 30rem;
+    user-select: text;
+    &:selection {
+      background-color: cornflowerblue;
+    }
   }
   .popup_clipboard {
     font-size: 1.6rem;

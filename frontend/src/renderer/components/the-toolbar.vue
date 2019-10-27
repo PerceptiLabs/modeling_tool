@@ -6,7 +6,7 @@
 
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(
+        button.btn.btn--toolbar.btn--toolbar-home(
           type="button"
           @click="toHomePage"
           v-tooltip:bottom="'Home page'"
@@ -391,6 +391,9 @@ export default {
     + .toolbar_list {
       border-left: 1px solid $toolbar-border;
     }
+  }
+  .btn--toolbar-home {
+    color: #7397fe;
   }
   .run-button {
     color: $col-txt2;
