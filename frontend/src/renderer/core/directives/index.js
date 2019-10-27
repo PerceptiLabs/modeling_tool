@@ -30,8 +30,8 @@ Vue.directive('tooltipInteractive', {
 });
 
 Vue.directive('comingSoon', {
-  bind(el) {
-    el.addEventListener('mousedown', showComingSoonPopup);
+  bind(el, binding) {
+    if(binding.value) el.addEventListener('mousedown', showComingSoonPopup);
   },
   unbind(el) {
     el.removeEventListener('mousedown', showComingSoonPopup);

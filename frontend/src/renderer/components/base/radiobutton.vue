@@ -50,6 +50,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .custom-radio {
+    font-size: 1.2rem;
     display: inline-flex;
     align-items: center;
     padding: .5em 1em .5em 0;

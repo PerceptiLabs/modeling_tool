@@ -16,6 +16,9 @@
           :chart-data="imgData"
         )
     .settings-layer_foot
+      button.btn.btn--primary.btn--disabled(type="button"
+        @click="hideAllWindow"
+        ) Cancel
       button#tutorial_button-confirm.btn.btn--primary(type="button"
         @click="confirmSettings"
       ) Confirm
@@ -92,5 +95,14 @@ export default {
 </script>
 <style lang="scss" scoped>
   @import "../../../scss/base";
-
+  .settings-layer_foot {
+    justify-content: flex-end;
+    .btn {
+      height: auto;
+      min-width: 7rem;
+    }
+    .btn + .btn {
+      margin-left: .8rem;
+    }
+  }
 </style>

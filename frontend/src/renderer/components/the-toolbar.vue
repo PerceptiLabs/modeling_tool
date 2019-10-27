@@ -6,7 +6,7 @@
 
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(
+        button.btn.btn--toolbar.btn--toolbar-home(
           type="button"
           @click="toHomePage"
           v-tooltip:bottom="'Home page'"
@@ -98,7 +98,7 @@
       span.text-primary.middle-text(v-html="statusTrainingText")
       button.btn.btn--dark.btn--toolbar-settings(
         type="button"
-        :class="{'btn--tutorial-active': interactiveInfoStatus}"
+        :class="{'btn--tutorial-active': false}"
         v-coming-soon="true"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
@@ -169,6 +169,7 @@ export default {
         'bg-error':   this.statusTraining === 'training',
         'bg-warning': this.statusTraining === 'pause',
         'bg-success': this.statusTraining === 'finish',
+        //'bg-error': this.statusTraining === 'finish',
       }
     },
     statusTraining() {
@@ -391,6 +392,9 @@ export default {
     + .toolbar_list {
       border-left: 1px solid $toolbar-border;
     }
+  }
+  .btn--toolbar-home {
+    color: #7397fe;
   }
   .run-button {
     color: $col-txt2;
