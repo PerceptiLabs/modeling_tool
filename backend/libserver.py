@@ -330,16 +330,20 @@ class Message:
             Type=value["Type"]
             Properties=value["Properties"]
             Con=value["backward_connections"]
-            content={"Info":{"Type":Type, "Id": Id, "Properties": Properties}, "Con":Con}
+            layerInfo={"Info":{"Type":Type, "Id": Id, "Properties": Properties}, "Con":Con}
+            # jsonNetwork=value['jsonNetwork']
+            # Id = value['Id']
+            # graph=Graph(jsonNetwork)
+            # graph_dict = graph.graphs
+
+            # layerInfo=graph_dict[Id]
 
             from codehq import CodeHqNew as CodeHq
             
-            content = {"Output": CodeHq.get_code_generator(Id,content).get_code()}
+            content = {"Output": CodeHq.get_code_generator(Id,layerInfo).get_code()}
 
         elif action == "getNetworkInputDim":
             jsonNetwork=self.request.get("value")
-            
-            pprint.pprint(jsonNetwork)
 
             lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)            
             lw_core.run()
@@ -384,9 +388,6 @@ class Message:
             
         elif action == "getNetworkOutputDim":
             jsonNetwork=self.request.get("value")
-
-            
-            pprint.pprint(jsonNetwork)
 
             lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                        
             lw_core.run()
@@ -778,6 +779,6 @@ class Message:
     
     def shutDown(self):
         for c in self.cores.values():
-            content=c.Close()
+            c.Close()
             del c
         sys.exit(1)

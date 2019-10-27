@@ -50,8 +50,6 @@ class coreLogic():
         
         self.saver=None
 
-        #self.core=core(self.networkName)
-
         self.savedResultsDict={}
 
         self.network=None
@@ -93,14 +91,15 @@ class coreLogic():
                 time.sleep(0.05)
 
             try:
-                # self.cThread=CoreThread(self.core.startNetwork,self.warningQueue,self.errorQueue,self.commandQ,self.resultQ, network)
                 self.cThread=CoreThread(self.core.run,self.errorQueue)
+                self.cThread.daemon = True
                 self.cThread.start()
             except Exception as e:
                 self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
         else:
             try:
                 self.cThread=CoreThread(self.core.run,self.errorQueue)
+                self.cThread.daemon = True
                 self.cThread.start()
             except Exception as e:
                 self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
@@ -119,14 +118,17 @@ class coreLogic():
         self.paused=False
         return {"content":"Unpaused"}
 
-    def Close(self):
-        return {"content":"closing the core"}
-
     def headlessOn(self):
         self.commandQ.put("headlessOn")
 
     def headlessOff(self):
         self.commandQ.put("headlessOff")
+
+    def Close(self):
+        # self.status="Stop"
+        # self.commandQ.put("stop")
+        # self.cThread.join()
+        return {"content":"closing the core"}
 
     def Stop(self):
         self.status="Stop"
@@ -208,13 +210,6 @@ class coreLogic():
                 return {"content":"Max Test Iterations are 0"}
         except KeyError:
             return {}
-        # if self.core.testIterations!=0:
-        #     if self.status=="Running":
-        #         return {"Status":self.core.trainingStatus,"Iterations":self.core.testIter, "Progress": self.core.testIter/(self.core.testIterations-1)}
-        #     else:
-        #         return {"Status":self.status,"Iterations":self.core.testIter, "Progress": self.core.testIter/(self.core.testIterations-1)}
-        # else:
-        #     print("Test Iterations are 0")
 
     def get_cpu_and_mem(self):
         cpu = psutil.cpu_percent()
@@ -248,10 +243,6 @@ class coreLogic():
                 }
         except KeyError:
             return {}
-        # if self.status=="Running":
-        #     return {"Status":self.core.trainingStatus,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
-        # else:
-        #     return {"Status":self.status,"Iterations":self.core.iter,"Epoch":self.core.epoch, "Progress": (self.core.epoch*self.core.maxIter+self.core.iter)/(max(self.core.maxEpochs*self.core.maxIter,1))}
 
     def startTest(self):
         #TODO: Remove this function
@@ -376,7 +367,7 @@ class coreLogic():
                 loss_train=self.getStatistics({"layerId":id_, "variable":"loss_training_epoch","innervariable":""})
                 loss_val=self.getStatistics({"layerId":id_, "variable":"loss_validation_epoch","innervariable":""})
                 end_results.update({"acc_train":float(acc_train[-1]*100), "acc_val":float(acc_val[-1]*100), "loss_train":float(loss_train[-1]), "loss_val":float(loss_val[-1])})
-                
+
         return end_results
 
     
@@ -893,13 +884,6 @@ class coreLogic():
 
         if type(result).__name__!='dict':
             result=np.asarray(result)
-            # if result.shape:
-            #     if result.shape[0]!=self.batch_size and not self.core.stackVariable(self.savedResultsDict["graphObj"].graphs,layerId,variable,innervariable):
-            #         # if self.batch_size==1:
-            #         #     result=np.reshape(result, [1,*result.shape])
-            #         self.warningQueue.put("Dimensionality of the batch size is not correct in layer: "+ str(layerId) + " variable: " + str(variable) + " innervariable: " + str(innervariable) + " , Data size is: " + str(np.shape(result)) + " and Batch size is: " + str(self.batch_size))
-            #         print("Dimensionality of the batch size is not correct in layer: "+ str(layerId) + " variable: " + str(variable) + " innervariable: " + str(innervariable) + " , Data size is: " + str(np.shape(result)) + " and Batch size is: " + str(self.batch_size))
-
         return result
 
     def subsample(self,sample):

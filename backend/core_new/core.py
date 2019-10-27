@@ -57,7 +57,6 @@ class SessionProcessHandler:
                 session.unpause()
             elif command == 'stop':
                 session.stop()
-            ## add headless commands
             elif command == 'headlessOn':
                 session.headlessOn()
             elif command == 'headlessOff':

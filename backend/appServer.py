@@ -69,15 +69,12 @@ def mainServer():
                         message.process_events(mask)
                     except Exception:
                         sentry_sdk.capture_exception()
-                        print(
-                            "main: error: exception for",
-                            f"{message.addr}:\n{traceback.format_exc()}",
-                        )
+                        log.error("main: error: exception for " + str(message.addr) + "\n" + str(traceback.format_exc()))
                         message.close()
     except KeyboardInterrupt:
-        print("caught keyboard interrupt, exiting")
+        log.info("caught keyboard interrupt, exiting")
     except SystemExit:
-        print("closing application")
+        log.info("closing application")
     finally:
         log.info("Closing selector")        
         sel.close()
@@ -87,7 +84,10 @@ def mainServer():
         scraper.stop()
 
         log.info("Copying logfile to data bundle.")
-        shutil.copyfile('backend.log', os.path.join(data_bundle.path, 'backend.log'))
+        try:
+            shutil.copyfile('backend.log', os.path.join(data_bundle.path, 'backend.log'))
+        except:
+            pass
         
         log.info("Uploading data bundle...")
         data_bundle.upload_and_clear()
