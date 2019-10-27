@@ -1,5 +1,6 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-learn-class(:draggable="draggable"
+  .btn.btn--layersbar.net-element-learn-class(:draggable="false" :disabled="true"
+    v-coming-soon="true"
     data-component="ClassicMLKMeans"
     data-layer="K-Means Clustering"
     data-type="Training"

@@ -89,7 +89,7 @@
                 v-show="errors.has('formPassword.confirm new email')"
               ) {{ errors.first('formPassword.confirm new email') }}
     .sidebar_action
-      button.btn.btn--primary(type="button"
+      button.btn.btn--link(type="button"
         @click="saveUserInfo"
         :disabled="isDisabledBtn") Save
 
@@ -259,7 +259,7 @@ export default {
     margin-bottom: 1rem;
   }
   .sidebar_action {
-    text-align: center;
+    text-align: right;
   }
   .user-info_edit {
     width: 100%;

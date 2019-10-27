@@ -405,7 +405,7 @@ const state = {
               check_prev_id: true
             },*/
             {
-              tooltip: 'Connect the Reshape layer with <br> the Convolutional layer" (And change it to bounce on <br> the Reshape instead of the Convolution) <br>  with Deep learning convolution',
+              tooltip: 'Connect the Reshape layer <br> with the Convolutional layer',
               position: 'right',
               id: 'tutorial_convolution-1',
               schematic: {
@@ -813,7 +813,7 @@ const state = {
         {
           status:'disabled',
           class_style: 'list_subtitle',
-          content: `In the <div class="marker">Top Toolbar</div> press<div class="marker">Run</div>`,
+          content: `In the <div class="marker">Top Toolbar</div> press <div class="marker">Run</div>`,
           hoverInfo: [
 /*            {
               tooltip: `<div class="tooltip-tutorial_italic">

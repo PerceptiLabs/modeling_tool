@@ -6,9 +6,10 @@
         button.popup_header(
         v-for="(tab, i) in tabs"
         :key="tab.i"
+        v-coming-soon="tabSelected != i"
         @click="setTab(i)"
         :class="{'disable': tabSelected != i}"
-        :disabled="tabSelected != i"
+        
         )
           h3(v-html="tab")
       .popup_tab-body
