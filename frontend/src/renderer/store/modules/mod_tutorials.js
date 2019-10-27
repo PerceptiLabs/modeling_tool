@@ -406,11 +406,12 @@ const state = {
             },*/
             {
               tooltip: 'Connect the Reshape layer <br> with the Convolutional layer',
-              position: 'right',
-              id: 'tutorial_convolution-1',
+              position: 'bottom',
+              id: 'tutorial_process-reshape-1',
               schematic: {
                 type: 'arrow',
                 connection_start: 'tutorial_process-reshape-1',
+                connection_end: 'tutorial_convolution-1'
               },
               status: 'disabled',
               animation: true,
@@ -499,11 +500,12 @@ const state = {
             },*/
             {
               tooltip: 'Connect the Convolutional layer <br> with the Fully Connected layer',
-              position: 'right',
-              id: 'tutorial_fully-connected-1',
+              position: 'bottom',
+              id: 'tutorial_convolution-1',
               schematic: {
                 type: 'arrow',
                 connection_start: 'tutorial_convolution-1',
+                connection_end: 'tutorial_fully-connected-1'
               },
               status: 'disabled',
               animation: true,
@@ -616,12 +618,13 @@ const state = {
               check_prev_id: true
             },*/
             {
-              tooltip: 'Connect the Data layer with the One Hot layer',
-              position: 'right',
-              id: 'tutorial_one-hot-1',
+              tooltip: 'Connect the Data layer with <br> the One Hot layer',
+              position: 'bottom',
+              id: 'tutorial_data-data-2',
               schematic: {
                 type: 'arrow',
                 connection_start: 'tutorial_data-data-2',
+                connection_end: 'tutorial_one-hot-1',
               },
               status: 'disabled',
               animation: true,
@@ -746,11 +749,12 @@ const state = {
             },*/
             {
               tooltip: 'Connect the One Hot layer with <br> the Normal training layer',
-              position: 'right',
-              id: 'tutorial_training-normal-1',
+              position: 'bottom',
+              id: 'tutorial_one-hot',
               schematic: {
                 type: 'arrow',
-                connection_start: 'tutorial_one-hot-1',
+                connection_start: 'tutorial_one-hot',
+                connection_end: 'tutorial_training-normal-1',
               },
               status: 'disabled',
               animation: true,
@@ -758,11 +762,12 @@ const state = {
             {
               tooltip: 'Connect the Fully Connected <br/> layer with the Normal training layer',
               position: 'right',
-              id: 'tutorial_training-normal-1',
+              id: 'tutorial_fully-connected-1',
               schematic: {
                 type: 'arrow',
                 position: 'bottom',
                 connection_start: 'tutorial_fully-connected-1',
+                connection_end: 'tutorial_training-normal-1',
               },
               status: 'disabled',
               animation: true,
