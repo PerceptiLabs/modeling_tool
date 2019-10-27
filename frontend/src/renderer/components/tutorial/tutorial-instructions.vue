@@ -284,7 +284,7 @@ export default {
     font-weight: 500;
   }
   .list-area_list {
-    height: 20rem;
+    height: 25rem;
     overflow: scroll;
   }
   .list-element--status {

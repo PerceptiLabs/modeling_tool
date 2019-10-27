@@ -54,6 +54,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .custom-checkbox {
+  font-size: 1.2rem;
     position: relative;
     display: inline-flex;
     align-items: center;

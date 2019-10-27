@@ -98,7 +98,7 @@
       span.text-primary.middle-text(v-html="statusTrainingText")
       button.btn.btn--dark.btn--toolbar-settings(
         type="button"
-        :class="{'btn--tutorial-active': interactiveInfoStatus}"
+        :class="{'btn--tutorial-active': false}"
         v-coming-soon="true"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
@@ -169,6 +169,7 @@ export default {
         'bg-error':   this.statusTraining === 'training',
         'bg-warning': this.statusTraining === 'pause',
         'bg-success': this.statusTraining === 'finish',
+        //'bg-error': this.statusTraining === 'finish',
       }
     },
     statusTraining() {
