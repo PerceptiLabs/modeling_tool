@@ -405,7 +405,7 @@ const state = {
               check_prev_id: true
             },*/
             {
-              tooltip: 'Connect the Reshape layer with <br> the Convolutional layer" (And change it to bounce on <br> the Reshape instead of the Convolution) <br>  with Deep learning convolution',
+              tooltip: 'Connect the Reshape layer <br> with the Convolutional layer',
               position: 'right',
               id: 'tutorial_convolution-1',
               schematic: {
