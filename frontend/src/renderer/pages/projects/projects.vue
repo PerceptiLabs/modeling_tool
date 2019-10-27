@@ -160,7 +160,7 @@
 
   .page-projects_sidebar {
     grid-area: sidebar;
-    padding: $section-indent 1rem 1rem 1rem;
+    padding: 2rem 1rem 1rem 1rem;
     background: $col-txt2;
     h3 {
       margin: 2rem 0;

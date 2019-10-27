@@ -8,7 +8,7 @@
           ) Open
 
     template(slot="builtIn")
-      .form_row
+      .form_row.middle-text
         base-select.form_input(
           v-model="settings.Type"
           :select-options="selectOptions"

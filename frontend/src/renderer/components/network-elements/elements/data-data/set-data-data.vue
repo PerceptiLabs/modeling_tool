@@ -58,7 +58,7 @@
             .form_input
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
-            base-checkbox.middle-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
+            base-checkbox.bigest-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
         //-.settings-layer_foot
           button.btn.btn--primary(type="button") Apply
     //-template(slot="Cloud-content")
@@ -338,5 +338,8 @@
     .triple-input_input ~ .triple-input_input {
       margin-left: 1em;
     }
+  }
+  .settings-layer_section--data label.bigest-text {
+    font-size: 1.4rem
   }
 </style>
