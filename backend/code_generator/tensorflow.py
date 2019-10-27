@@ -524,7 +524,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "               val_datasize=_data_size[1])\n"
         code += "\n"
         code += "for epoch in range(%d):\n" % self._n_epochs
-        # code += "    print(epoch)\n"
+        code += "    print(epoch)\n"
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
         code += "    #Setting the variables to empty as a way to reset them every epoch.\n"
