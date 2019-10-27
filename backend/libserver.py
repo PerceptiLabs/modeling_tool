@@ -781,4 +781,4 @@ class Message:
         for c in self.cores.values():
             c.Close()
             del c
-        sys.exit(1)
+        sys.exit()

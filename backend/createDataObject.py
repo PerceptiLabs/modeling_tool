@@ -163,6 +163,11 @@ def getType(dataVec):
     shape = dataVec.shape
     dims = len(shape)
 
+    if dims == 0:
+        if dataVec == 0:
+            return TYPE_SCATTER
+        else:
+            return TYPE_BAR
     if dims == 1 and shape[0] < BAR_LINE_THRESHOLD:
         return TYPE_BAR
     elif dims == 1 and shape[0] >= BAR_LINE_THRESHOLD:
@@ -176,7 +181,7 @@ def getType(dataVec):
     elif dims == 3:
         return TYPE_HEATMAP        
     else:
-        return TYPE_SCATTER        
+        return TYPE_SCATTER   
 
     return type_
 

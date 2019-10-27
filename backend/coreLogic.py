@@ -93,14 +93,14 @@ class coreLogic():
             try:
                 self.cThread=CoreThread(self.core.run,self.errorQueue)
                 self.cThread.daemon = True
-                self.cThread.start()
+                self.cThread.start_with_traces()
             except Exception as e:
                 self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
         else:
             try:
                 self.cThread=CoreThread(self.core.run,self.errorQueue)
                 self.cThread.daemon = True
-                self.cThread.start()
+                self.cThread.start_with_traces()
             except Exception as e:
                 self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
         self.status="Running"
@@ -125,9 +125,8 @@ class coreLogic():
         self.commandQ.put("headlessOff")
 
     def Close(self):
-        # self.status="Stop"
-        # self.commandQ.put("stop")
-        # self.cThread.join()
+        if self.cThread and self.cThread.isAlive():
+            self.cThread.kill()
         return {"content":"closing the core"}
 
     def Stop(self):
