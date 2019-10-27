@@ -171,6 +171,9 @@ export default {
     },
     switchDblclick(event) {
       if (this.isLock) return;
+      if(this.isTutorialMode &&
+         this.tutorialActiveAction.schematic &&
+         this.tutorialActiveAction.schematic.type === 'arrow') return;
       if(this.networkMode !== 'edit') {
         this.setNetMode('edit');
         this.setFocusEl(event);
