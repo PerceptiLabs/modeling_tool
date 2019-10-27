@@ -28,13 +28,18 @@ scraper = get_scraper()
 class coreLogic():
     def __init__(self,networkName):
         self.networkName=networkName
+        self.cThread=None
+        self.status="Created"
+        self.network=None
 
+        self.setupLogic()
+
+    def setupLogic(self):
         self.warningQueue=queue.Queue()
         self.errorQueue=queue.Queue()
         self.commandQ=queue.Queue()
         # self.resultQ=queue.LifoQueue()
         self.resultQ=queue.Queue()
-        self.cThread=None
 
         self.trainResults=None
         self.testResults=None
@@ -47,15 +52,15 @@ class coreLogic():
         self.testList=[]
         self.playCounter=None
         self.playing=False
-        
+
         self.saver=None
 
         self.savedResultsDict={}
-
-        self.network=None
+        
 
     def startCore(self,network, checkpointValues):
         #Start the backendthread and give it the network
+        self.setupLogic()
         self.network=network
 
         # import json
@@ -106,7 +111,6 @@ class coreLogic():
         self.status="Running"
             
         return {"content":"core started"}
-
 
     def Pause(self):
         self.commandQ.put('pause')
@@ -233,7 +237,7 @@ class coreLogic():
             else:
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 return {
-                    "Status":"Paused" if self.paused else self.status,
+                    "Status":self.status,
                     "Iterations":self.savedResultsDict["iter"],
                     "Epoch":self.savedResultsDict["epoch"],
                     "Progress": progress,
@@ -341,6 +345,7 @@ class coreLogic():
             # self.maxTestIter=self.maxTestIter
             self.batch_size=1
             self.resultDict=self.testList[self.testIter]
+            print(len(self.testList))
         except KeyError as e:
             print(e)
             log.exception("Error in getTestingStatistics")            
