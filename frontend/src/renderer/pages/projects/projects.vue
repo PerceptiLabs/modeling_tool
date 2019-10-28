@@ -168,7 +168,7 @@
   }
   .projects-sidebar_link {
     font-size: 1.4rem;
-    width: 20rem;
+    width: 15rem;
     margin-bottom: 2rem;
     text-align: center;
     font-weight: normal;

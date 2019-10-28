@@ -45,27 +45,9 @@ export default {
         //{name: 'git' , html: '<i class="icon icon-git"></i> Git'},
       ],
       selectOptions: [
-        { text: 'Machine Translation',    value: 'machine_translation' },
-        { text: 'Image Processing11',       value: null,
-          sublist: [
-            { text: 'Image Processing 11', value: 'processsing11' },
-            { text: 'Image Processing 12', value: 'processdfsing12' },
-            { text: 'Image Processing 13', value: 'procesasdsing13' },
-            { text: 'Image Processing 14', value: 'processasdasding14' },
-          ],
-        },
-        { text: 'Image Processing',       value: null,
-          sublist: [
-            { text: 'Image Processing 1', value: 'processing1' },
-            { text: 'Image Processing 2', value: 'processing2' },
-            { text: 'Image Processing 3', value: 'processing3' },
-            { text: 'Image Processing 4', value: 'processing4' },
-          ],
-        },
-        { text: 'Anomalie Detection',     value: 'Anomalie' },
+        { text: 'Image Classification',   value: 'ImageClassification' },
+        { text: 'Timeseries Regression',  value: 'Timeseries' },
         { text: 'Reinforcement Learning', value: 'Reinforcement' },
-        { text: 'NLP',                    value: 'NLP' },
-        { text: 'Generative Network',     value: 'Generative' }
       ],
       settings: {
         Location: '',
