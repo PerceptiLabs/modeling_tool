@@ -164,8 +164,7 @@ class coreLogic():
         except Exception as e:
             self.warningQueue.put("Export Failed with this error: ")
             self.warningQueue.put(str(e))
-            print("Export failed")
-            print(traceback.format_exc())
+            log.exception("Export failed")
             return {"content":"Export Failed with this error: " + str(e)}
 
     def saveNetwork(self,value):
@@ -191,8 +190,7 @@ class coreLogic():
         except Exception as e:
             self.errorQueue.put("Save Failed with this error: ")
             self.errorQueue.put(str(e))
-            print("Save failed")
-            print(traceback.format_exc())
+            log.exception("Save failed")
             return {"content":"Save Failed with this error: " + str(e)}
 
     def skipValidation(self):
