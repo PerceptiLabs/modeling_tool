@@ -20,7 +20,7 @@
             input(type="number" v-model="settings.Epochs")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.costFunction")
-          .form_label Cost function:
+          .form_label Loss function:
           #tutorial_cost-function.tutorial-relative.form_input(data-tutorial-hover-info)
             base-radio(group-name="group" value-input="Cross_entropy" v-model="settings.Loss")
               span Cross-Entropy

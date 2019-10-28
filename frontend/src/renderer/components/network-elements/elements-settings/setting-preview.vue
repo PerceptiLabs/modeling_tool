@@ -17,6 +17,7 @@
         )
     .settings-layer_foot
       button.btn.btn--primary.btn--disabled(type="button"
+        :disabled="isTutorialMode"
         @click="hideAllWindow"
         ) Cancel
       button#tutorial_button-confirm.btn.btn--primary(type="button"
@@ -28,7 +29,7 @@
 <script>
   //import codeHq    from "@/components/network-elements/elements-settings/code-hq.vue";
   import ChartSwitch  from "@/components/charts/chart-switch.vue";
-  import {mapActions} from 'vuex';
+  import {mapActions, mapGetters} from 'vuex';
 export default {
   name: "SettingsPreview",
   inject: ['hideAllWindow'],
@@ -54,6 +55,9 @@ export default {
     }
   },
   computed: {
+    ...mapGetters({
+        isTutorialMode:       'mod_tutorials/getIstutorialMode',
+    }),
     layerId() {
       return this.currentEl.layerId
     }

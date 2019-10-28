@@ -125,7 +125,7 @@ export default {
       this.calcSvgSize()
     },
     eventCalcArrow() {
-      this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
+      //this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
       this.createArrowList()
     },
     hotKeyPressDelete() {

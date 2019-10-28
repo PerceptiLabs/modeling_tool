@@ -1,10 +1,11 @@
 <template lang="pug">
-  .btn.btn--layersbar.net-element-process(:draggable="draggable"
-  data-component="ProcessCrop"
-  data-layer="Crop"
-  data-type="Other"
-  v-tooltip:right="'Crop'"
-  v-tooltip-interactive:right="interactiveInfo"
+  .btn.btn--layersbar.net-element-process(:draggable="false" :disabled="true"
+    v-coming-soon="true"
+    data-component="ProcessCrop"
+    data-layer="Crop"
+    data-type="Other"
+    v-tooltip:right="'Crop'"
+    v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
     i.icon.icon-crop-symbol

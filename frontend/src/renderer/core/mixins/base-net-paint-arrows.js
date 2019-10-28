@@ -37,7 +37,7 @@ const baseNetPaintArrows = {
       this.$parent.$parent.removeArrowListener();
       this.$store.dispatch('mod_workspace/ADD_arrow', this.dataEl.layerId);
       this.$store.commit('mod_workspace/CLEAR_preArrow');
-      //this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: this.activeAction.id});
+      this.$store.dispatch('mod_tutorials/pointActivate', {way: 'next', validation: this.activeAction.id});
     }
   }
 }

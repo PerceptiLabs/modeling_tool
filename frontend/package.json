@@ -1,6 +1,6 @@
 {
   "name": "PerceptiLabs",
-  "version": "0.0.15",
+  "version": "0.1.0",
   "author": "PerceptiLabs <contact@perceptilabs.com>",
   "description": "PerceptiLabs is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.",
   "homepage": "perceptilabs.com",
@@ -69,7 +69,7 @@
       ]
     },
     "win": {
-      "icon": "build/icons/icon.ico",
+      "icon": "build/icons/icon.png",
       "target": [
         "nsis"
       ],
