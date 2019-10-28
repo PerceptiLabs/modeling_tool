@@ -317,18 +317,23 @@ class Message:
 
         elif action == "getCode":
             value=self.request.get("value")
+            print(value)
             # Id=value["Id"]
             # Type=value["Type"]
             # Properties=value["Properties"]
             # Con=value["backward_connections"]
             # layerInfo={"Info":{"Type":Type, "Id": Id, "Properties": Properties}, "Con":Con}
 
-            jsonNetwork=value['jsonNetwork']
+            jsonNetwork=value['Network']
             Id = value['Id']
-            graph=Graph(jsonNetwork)
-            graph_dict = graph.graphs
+            
 
-            layerInfo=graph_dict[Id]
+            if jsonNetwork[Id]["Type"] == "TrainReinforce":
+                graph=Graph(jsonNetwork)
+                graph_dict = graph.graphs
+                layerInfo=graph_dict[Id]
+            else:
+                layerInfo={"Info":{"Type":jsonNetwork[Id]["Type"], "Id": Id, "Properties": jsonNetwork[Id]['Properties']}, "Con":jsonNetwork[Id]["backward_connections"]}
 
             from codehq import CodeHqNew as CodeHq
             

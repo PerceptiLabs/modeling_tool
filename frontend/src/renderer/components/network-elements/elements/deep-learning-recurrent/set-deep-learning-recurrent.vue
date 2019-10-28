@@ -31,7 +31,7 @@
           .form_input
             input(type="number" v-model="settings.Time_steps")
 
-      .settings-layer_section
+      //-.settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
           .form_label Keep probability:
           .form_input
@@ -62,15 +62,15 @@
         v-model="coreCode"
       )
     template(slot="Settings-action")
+      button.btn.btn--primary(type="button"
+        v-coming-soon="true"
+      ) Custom
       button.btn.btn--primary.btn--disabled(type="button"
         @click="hideAllWindow"
       ) Cancel
       button.btn.btn--primary(type="button"
         @click="applyRecurrentSettings"
       ) Apply
-      button.btn.btn--primary(type="button"
-        v-coming-soon="true"
-      ) Custom
 
 </template>
 

@@ -6,7 +6,6 @@ section.basic-templates_templates
       v-for="(temp, i) in basicTemplates"
       :key="temp.i"
       @click="openBasicTemplate(temp.template)"
-      :disabled="i > 0"
       )
       img(:src="temp.imgPath" alt="classification")
       span.template_title {{ temp.title }}

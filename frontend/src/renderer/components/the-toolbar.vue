@@ -293,7 +293,7 @@ export default {
       let net;
       if(this.currentElList) net = Object.values(this.currentElList);
       else {
-        this.showInfoPopup('You can not train model without Data element and Training element');
+        this.showInfoPopup('You cannot Run without a Data element and a Training element');
         return false;
       }
 
@@ -360,6 +360,7 @@ export default {
     position: relative;
     grid-area: toolbar;
     z-index: 2;
+    height: $h-toolbar;
   }
   .toggle-wrap {
     width: $w-layersbar * .87;

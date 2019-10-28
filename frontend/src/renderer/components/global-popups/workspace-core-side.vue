@@ -19,8 +19,13 @@
           .settings-layer_section.text-center
             p.big-text Start training
           .settings-layer_foot
-            button.btn.btn--dark-blue(type="button" @click="closePopup()") Cancel
-            button#tutorial_start-training.btn.btn--dark-blue(type="button" @click="startTraining()" v-tooltip-interactive:right="interactiveInfo.start") Start
+            button.btn.btn--primary.btn--disabled(type="button"
+              @click="closePopup()"
+              ) Cancel
+            button#tutorial_start-training.btn.btn--primary(type="button"
+              v-tooltip-interactive:right="interactiveInfo.start"
+              @click="startTraining()"
+              ) Start
         .popup_body(
           :class="{'active': tabSelected == 1}"
         )
@@ -77,3 +82,8 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
+  .settings-layer_foot {
+    justify-content: center;
+  }
+</style>

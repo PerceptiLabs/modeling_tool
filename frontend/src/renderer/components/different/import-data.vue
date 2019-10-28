@@ -10,13 +10,13 @@
     template(slot="builtIn")
       .form_row.middle-text
         base-select.form_input(
-          v-model="settings.Type"
-          :select-options="selectOptions"
+          v-model="basicTemplate.currentName"
+          :select-options="basicTemplate.templatesList"
           select-placeholder="placeholder text"
         )
         button.btn.btn--dark-blue-rev(type="button"
           :disabled="disabledBtn"
-          @click="clickQ"
+          @click="loadBasicTemplate"
           ) Load
 
     //template(slot="git")
@@ -32,6 +32,9 @@
 <script>
 import BaseSwitcher     from "@/components/different/switcher.vue";
 import BaseAccordion    from "@/components/base/accordion.vue";
+import imageClassification    from '@/core/basic-template/image-classification.js'
+import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
+import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
 
 export default {
   name: "ImportData",
@@ -39,48 +42,57 @@ export default {
   data() {
     return {
       disabledBtn: false,
+      settings: {
+        Location: '',
+        git: false,
+        gitLink: ''
+      },
       accordionData: [
         {name: 'tensorFlow' , html: 'TensorFlow Model'},
         {name: 'builtIn' , html: 'Built-in Templates'},
         //{name: 'git' , html: '<i class="icon icon-git"></i> Git'},
       ],
-      selectOptions: [
-        { text: 'Machine Translation',    value: 'machine_translation' },
-        { text: 'Image Processing11',       value: null,
-          sublist: [
-            { text: 'Image Processing 11', value: 'processsing11' },
-            { text: 'Image Processing 12', value: 'processdfsing12' },
-            { text: 'Image Processing 13', value: 'procesasdsing13' },
-            { text: 'Image Processing 14', value: 'processasdasding14' },
-          ],
-        },
-        { text: 'Image Processing',       value: null,
-          sublist: [
-            { text: 'Image Processing 1', value: 'processing1' },
-            { text: 'Image Processing 2', value: 'processing2' },
-            { text: 'Image Processing 3', value: 'processing3' },
-            { text: 'Image Processing 4', value: 'processing4' },
-          ],
-        },
-        { text: 'Anomalie Detection',     value: 'Anomalie' },
-        { text: 'Reinforcement Learning', value: 'Reinforcement' },
-        { text: 'NLP',                    value: 'NLP' },
-        { text: 'Generative Network',     value: 'Generative' }
-      ],
-      settings: {
-        Location: '',
-        Type: 'Anomalie',
-        git: false,
-        gitLink: ''
+      basicTemplate: {
+        currentName: 'imageClassification',
+        currentNet: null,
+        templatesList: [
+          {
+            text: 'Image Classification',
+            imgPath: './static/img/project-page/image-classification.svg',
+            value: 'imageClassification',
+            template: imageClassification
+          },
+          {
+            text: 'Timeseries Regression',
+            imgPath: './static/img/project-page/time-series-regression.svg',
+            value: 'timeseriesRegression',
+            template: timeseriesRegression
+          },
+          {
+            text: 'Reinforcement Learning',
+            imgPath: './static/img/project-page/reinforcement-learning.svg',
+            value: 'reinforcementLearning',
+            template: reinforcementLearning
+          },
+        ],
       }
+    }
+  },
+  watch: {
+    'basicTemplate.currentName': {
+      handler(newName) {
+        const currentIndex = this.basicTemplate.templatesList.findIndex((el)=> el.value === newName);
+        this.basicTemplate.currentNet = this.basicTemplate.templatesList[currentIndex].template
+      },
+      immediate: true
     }
   },
   methods: {
     loadTFFiles() {
       this.$store.commit('globalView/GP_showWorkspaceBeforeImport', true);
     },
-    clickQ() {
-
+    loadBasicTemplate() {
+      this.$store.dispatch('mod_workspace/ADD_network', this.basicTemplate.currentNet.network)
     }
   }
 }
