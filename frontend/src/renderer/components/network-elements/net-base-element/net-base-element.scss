@@ -52,7 +52,8 @@ $clip-path_indent: $arrows-start_size/2;
 .net-element_checkpoint-icon {
   position: absolute;
   font-size: 1.4rem;
-  top: 2px;
+  color: $col-txt2;
+  left: 2px;
   right: 7px;
   z-index: 4;
 }

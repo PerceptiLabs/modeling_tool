@@ -74,7 +74,32 @@
             Steps: null
           }
         },
-        tabset: ['Prediction', 'Reward', 'Loss', 'Steps'],
+        btnList: {
+          'Prediction': {
+            btnInteractiveInfo: {
+              title: 'Prediction',
+              text: 'View the input, current accuracy and <br/> output prediction vs ground truth/labels'
+            }
+          },
+          'Reward': {
+            btnInteractiveInfo: {
+              title: 'Reward',
+              text: 'See the current and total <br/> accumulated Reward'
+            }
+          },
+          'Loss': {
+            btnInteractiveInfo: {
+              title: 'Loss',
+              text: 'See the Loss of the model'
+            }
+          },
+          'Steps': {
+            btnInteractiveInfo: {
+              title: 'Steps',
+              text: 'See how many Steps the model <br/> has taken before it gets a Done state'
+            }
+          },
+        },
         colorList: ['#6B8FF7', '#FECF73'],
       }
     },

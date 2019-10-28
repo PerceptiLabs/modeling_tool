@@ -7,14 +7,15 @@
       .popup_body
         .settings-layer_section.big-text(:class="{'popup--error': !isInfo}")
           .section_attention(:class="{'header_attention--error': !isInfo}") !
-          p.section_text(v-if="isText && !comingSoonPopup") {{ popupText }}
-          p.section_text(v-else-if="isText && comingSoonPopup") This feature is coming soon. For suggestions on new features, hit us up on:&ensp;
-            button.btn.btn--link.text-primary(@click="goToLink('https://gitter.im/PerceptiLabs/PerceptiLabs')") gitter
-          ul.w-100(v-else)
-            li(
-              v-for="(text, i) in popupText"
-              :key="i"
-              ) {{ text }}
+          .section_text
+            p(v-if="isText && !comingSoonPopup") {{ popupText }}
+            p(v-else-if="isText && comingSoonPopup") This feature is coming soon. For suggestions on new features, hit us up on:&ensp;
+              button.btn.btn--link.text-primary(@click="goToLink('https://gitter.im/PerceptiLabs/PerceptiLabs')") gitter
+            ul.w-100(v-else)
+              li(
+                v-for="(text, i) in popupText"
+                :key="i"
+                ) {{ text }}
 
           .popup_clipboard
             button.btn.btn--icon.icon.icon-clipboard-add(type="button"
