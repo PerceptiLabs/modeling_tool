@@ -317,12 +317,6 @@ class Message:
 
         elif action == "getCode":
             value=self.request.get("value")
-            # Id=value["Id"]
-            # Type=value["Type"]
-            # Properties=value["Properties"]
-            # Con=value["backward_connections"]
-            # layerInfo={"Info":{"Type":Type, "Id": Id, "Properties": Properties}, "Con":Con}
-
             jsonNetwork=value['Network']
             Id = value['Id']
             
