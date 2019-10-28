@@ -172,6 +172,7 @@ export default {
     }),
     ...mapActions({
       infoPopup:            'globalView/GP_infoPopup',
+      popupConfirm:         'globalView/GP_confirmPopup',
       net_trainingDone:     'globalView/NET_trainingDone',
 
       pauseTraining:        'mod_api/API_pauseTraining',
@@ -187,6 +188,8 @@ export default {
       set_statusNetworkZoom:'mod_workspace/SET_statusNetworkZoom',
 
       tutorialPointActivate:'mod_tutorials/pointActivate',
+      isTutorialMode:       'mod_tutorials/getIstutorialMode',
+      offMainTutorial:      'mod_tutorials/offTutorial',
 
       saveLocalUserInfo:    'mod_user/UPDATE_LOCAL_userInfo',
       trackerModelSave:     'mod_tracker/EVENT_modelSave',
@@ -215,7 +218,18 @@ export default {
         : this.decScale();
     },
     deleteTabNetwork(index) {
-      this.delete_network(index)
+      if(this.isTutorialMode) {
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.delete_network(index)
+            }
+          });
+      } else {
+        this.delete_network(index)
+      }
     },
     setTabNetwork(index) {
       this.set_showTrainingSpinner(false);
