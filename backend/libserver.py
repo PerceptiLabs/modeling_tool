@@ -317,7 +317,6 @@ class Message:
 
         elif action == "getCode":
             value=self.request.get("value")
-            print(value)
             # Id=value["Id"]
             # Type=value["Type"]
             # Properties=value["Properties"]
