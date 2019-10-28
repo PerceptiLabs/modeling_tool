@@ -384,11 +384,14 @@ const actions = {
       });
   },
 
-  API_getCode({dispatch, getters, rootGetters}, value) {
+  API_getCode({dispatch, getters, rootGetters}, layerId) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getCode',
-      value
+      value: {
+        Id: layerId,
+        Network: getters.GET_coreNetwork
+      }
     };
     return coreRequest(theData)
       .then((data)=> data)

@@ -79,7 +79,7 @@
     components: {ChartSwitch},
     data() {
       return {
-        tabset: ['Prediction', 'Accuracy', 'Loss', 'F1', 'Precision & Recall', 'ROC'],
+        tabset: {'Prediction':null, 'Accuracy':null, 'Loss':null, 'F1':null, 'Precision & Recall':null, 'ROC':null},
         optionLine1: null,
         option3d: data3d,
         optionHeat: null,

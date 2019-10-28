@@ -17,7 +17,9 @@
   import {filePCRead, folderPCDelete, deepCopy, projectPathModel}  from '@/core/helpers.js'
   import {mapState, mapGetters, mapMutations, mapActions} from 'vuex';
 
-  import basicTemplate1 from '@/core/basic-template/base-template-1.js'
+  import imageClassification    from '@/core/basic-template/image-classification.js'
+  import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
+  import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
 
   export default {
     name: 'PageProjects',
@@ -34,17 +36,17 @@
           {
             title: 'Image Classification',
             imgPath: './static/img/project-page/image-classification.svg',
-            template: basicTemplate1
+            template: imageClassification
           },
           {
             title: 'Timeseries Regression',
             imgPath: './static/img/project-page/time-series-regression.svg',
-            template: basicTemplate1
+            template: timeseriesRegression
           },
           {
             title: 'Reinforcement Learning',
             imgPath: './static/img/project-page/reinforcement-learning.svg',
-            template: basicTemplate1
+            template: reinforcementLearning
           },
         ]
       }
