@@ -76,13 +76,13 @@ export default {
   },
   methods: {
     getCode() {
-      const value = {
-        Id: this.currentEl.layerId,
-        Type: this.currentEl.componentName,
-        Properties: this.elSettings,
-        backward_connections: this.currentEl.connectionIn
-      };
-      this.$store.dispatch('mod_api/API_getCode', value)
+      // const value = {
+      //   Id: this.currentEl.layerId,
+      //   Type: this.currentEl.componentName,
+      //   Properties: this.elSettings,
+      //   backward_connections: this.currentEl.connectionIn
+      // };
+      this.$store.dispatch('mod_api/API_getCode', this.currentEl.layerId)
         .then((code)=> {
           this.setCode(code)
         })

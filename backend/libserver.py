@@ -323,12 +323,16 @@ class Message:
             # Con=value["backward_connections"]
             # layerInfo={"Info":{"Type":Type, "Id": Id, "Properties": Properties}, "Con":Con}
 
-            jsonNetwork=value['jsonNetwork']
+            jsonNetwork=value['Network']
             Id = value['Id']
-            graph=Graph(jsonNetwork)
-            graph_dict = graph.graphs
+            
 
-            layerInfo=graph_dict[Id]
+            if jsonNetwork[Id]["Type"] == "TrainReinforce":
+                graph=Graph(jsonNetwork)
+                graph_dict = graph.graphs
+                layerInfo=graph_dict[Id]
+            else:
+                layerInfo={"Info":{"Type":jsonNetwork[Id]["Type"], "Id": Id, "Properties": jsonNetwork[Id]['Properties']}, "Con":jsonNetwork[Id]["backward_connections"]}
 
             from codehq import CodeHqNew as CodeHq
             
@@ -773,4 +777,4 @@ class Message:
         for c in self.cores.values():
             c.Close()
             del c
-        sys.exit()
+        sys.exit(1)

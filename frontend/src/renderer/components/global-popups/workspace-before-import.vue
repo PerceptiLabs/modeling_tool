@@ -34,7 +34,7 @@
 
 
     template(slot="action")
-      button.btn.btn--dark-blue(type="button"
+      button.btn.btn--primary.btn--disabled(type="button"
         @click="closePopup"
         ) Cancel
       button.btn.btn--primary(type="button"
@@ -76,8 +76,8 @@ export default {
       sendParseModel:         'mod_api/API_parse',
     }),
     applySet() {
+      this.closePopup();
       this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
-      this.closePopup;
       this.sendParseModel(this.settings)
         .then(()=> { this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', false) })
         .catch(()=> {})

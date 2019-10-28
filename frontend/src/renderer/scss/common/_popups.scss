@@ -61,11 +61,13 @@
 .popup_foot {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	//justify-content: center;
+	justify-content: flex-end;
 	width: 100%;
 	padding: 0 $popup-indent-left $popup-indent-top;
 	 > * + * {
-		margin-left: 2rem;
+       margin-left: .8rem;
+		//margin-left: 2rem;
 	}
 }
 

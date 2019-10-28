@@ -1,4 +1,4 @@
-const basicTemplate1 = {
+const imageClassification = {
   "project": {},
   "network": {
     "networkName": "Image Classification",
@@ -47,8 +47,19 @@ const basicTemplate1 = {
         "layerId": "1564399777283",
         "layerName": "Reshape_1",
         "layerType": "Other",
-        "layerSettings": null,
-        "layerCode": "",
+        "layerSettings": {
+          "Shape": [
+            28,
+            28,
+            1
+          ],
+          "Permutation": [
+            0,
+            1,
+            2
+          ]
+        },
+        "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
         "layerMeta": {
@@ -60,7 +71,7 @@ const basicTemplate1 = {
             "left": 330
           },
           "OutputDim": "",
-          "InputDim": "",
+          "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
           "containerDiff": {
@@ -79,14 +90,29 @@ const basicTemplate1 = {
         ],
         "connectionArrow": [
           "1564399781738"
-        ]
+        ],
+        "layerSettingsTabName": "Settings"
       },
       "1564399781738": {
         "layerId": "1564399781738",
         "layerName": "Convolution_1",
         "layerType": "Other",
-        "layerSettings": null,
-        "layerCode": "",
+        "layerSettings": {
+          "Conv_dim": "2D",
+          "Patch_size": "3",
+          "Stride": "2",
+          "Padding": "'SAME'",
+          "Feature_maps": "8",
+          "Activation_function": "Sigmoid",
+          "Dropout": false,
+          "Keep_prob": "1",
+          "PoolBool": false,
+          "Pooling": "Max",
+          "Pool_area": "2",
+          "Pool_padding": "'SAME'",
+          "Pool_stride": "2"
+        },
+        "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
         "layerMeta": {
@@ -98,7 +124,7 @@ const basicTemplate1 = {
             "left": 470
           },
           "OutputDim": "",
-          "InputDim": "",
+          "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
           "containerDiff": {
@@ -117,14 +143,20 @@ const basicTemplate1 = {
         ],
         "connectionArrow": [
           "1564399782856"
-        ]
+        ],
+        "layerSettingsTabName": "Settings"
       },
       "1564399782856": {
         "layerId": "1564399782856",
         "layerName": "Fully Connected_1",
         "layerType": "Other",
-        "layerSettings": null,
-        "layerCode": "",
+        "layerSettings": {
+          "Neurons": "10",
+          "Activation_function": "Sigmoid",
+          "Dropout": false,
+          "Keep_prob": "1"
+        },
+        "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
         "layerMeta": {
@@ -136,7 +168,7 @@ const basicTemplate1 = {
             "left": 610
           },
           "OutputDim": "",
-          "InputDim": "",
+          "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
           "containerDiff": {
@@ -155,7 +187,8 @@ const basicTemplate1 = {
         ],
         "connectionArrow": [
           "1564399790363"
-        ]
+        ],
+        "layerSettingsTabName": "Settings"
       },
       "1564399786876": {
         "layerId": "1564399786876",
@@ -197,8 +230,10 @@ const basicTemplate1 = {
         "layerId": "1564399788744",
         "layerName": "OneHot_1",
         "layerType": "Other",
-        "layerSettings": null,
-        "layerCode": "",
+        "layerSettings": {
+          "N_class": "10"
+        },
+        "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
         "layerMeta": {
@@ -210,7 +245,7 @@ const basicTemplate1 = {
             "left": 390
           },
           "OutputDim": "",
-          "InputDim": "",
+          "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
           "containerDiff": {
@@ -229,14 +264,29 @@ const basicTemplate1 = {
         ],
         "connectionArrow": [
           "1564399790363"
-        ]
+        ],
+        "layerSettingsTabName": "Settings"
       },
       "1564399790363": {
         "layerId": "1564399790363",
         "layerName": "Normal_1",
         "layerType": "Training",
-        "layerSettings": null,
-        "layerCode": "",
+        "layerSettings": {
+          "Labels": "1564399788744",
+          "Epochs": "10",
+          "N_class": "1",
+          "Loss": "Quadratic",
+          "Class_weights": "1",
+          "Learning_rate": "0.001",
+          "Optimizer": "ADAM",
+          "Beta_1": "0.9",
+          "Beta_2": "0.999",
+          "Momentum": "0.9",
+          "Decay_steps": "100000",
+          "Decay_rate": "0.96",
+          "Training_iters": "20000"
+        },
+        "layerCode": null,
         "layerCodeError": null,
         "layerNone": false,
         "layerMeta": {
@@ -248,7 +298,7 @@ const basicTemplate1 = {
             "left": 610
           },
           "OutputDim": "",
-          "InputDim": "[, ]",
+          "InputDim": "[]",
           "layerContainerName": "",
           "layerBgColor": "",
           "containerDiff": {
@@ -264,10 +314,11 @@ const basicTemplate1 = {
           "1564399782856",
           "1564399788744"
         ],
-        "connectionArrow": []
+        "connectionArrow": [],
+        "layerSettingsTabName": "Settings"
       }
     }
   }
 };
 
-export default basicTemplate1
+export default imageClassification

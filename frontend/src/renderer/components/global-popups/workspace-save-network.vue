@@ -30,7 +30,7 @@
               span Save trained network
 
     template(slot="action")
-      button.btn.btn--primary(type="button"
+      button.btn.btn--primary.btn--disabled(type="button"
         @click="closePopup") Cancel
       button.btn.btn--primary(type="button"
         :disabled="!settings.projectPath.length"
