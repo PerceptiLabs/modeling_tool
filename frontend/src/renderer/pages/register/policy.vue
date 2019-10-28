@@ -5,51 +5,206 @@
       @click="backToRegister") Back
     article.policy_main
       header
-        h2 End-User License Agreement ("Agreement")
-        time Last updated: 11/20/2018
+        h2 END USER LICENSE AGREEMENT FOR PERCEPTILABS SOFTWARE
+        h2 IMPORTANT- READ CAREFULLY
+        time Last updated: 10/28/2019
         p
       .policy_intro
-        p Please read this End-User License Agreement ("Agreement") carefully before clicking the "I Agree" button, downloading or using Percepti ("Application").
-        p Perceptilabs AB ("PerceptiLabs") is a registered company (559112-8300) with headquarters in Stockholm, Sweden.
-        p By clicking the "I Agree" button, downloading or using the Application, you are agreeing to be bound by the terms and conditions of this Agreement.
-        p If you do not agree to the terms of this Agreement, do not click on the "I Agree" button and do not download or use the Application.
+        p PerceptiLabs AB (“PerceptiLabs”) is a Swedish corporation, located in Stockholm, Sweden. It is the author and owner of all rights in and to the computer program called PL Modelling Platform, and all versions and updates thereof. PL Modelling Platform is a drag-and-drop program that allows users to build complex AI/ML models simply, without the need to code, combining different operations in a pure dataflow driven manner."
+        p This End-User License Agreement ("EULA") formalizes the relationship between PerceptiLabs, as Licensor, and You, the Licensee. It is a contract. If you have accessed the Trial License version or full version on behalf of your employer or university or otherwise as an agent or contractor on behalf of another individual or entity, You represent and warrant that You have the authority to bind that employer or other entity to these terms and conditions and Your agreement to these terms and conditions will be treated as the agreement of Your employer or other individual or entity. PerceptiLabs is relying upon Your representation where the Software Product assists or supports the business or academic goals of your employer or other entity. Accordingly, references to “You” or “Your” means both You and Your employer or other entity.
+        p For purposes of this EULA, the term “Software Product” includes both PL Modelling Platform and any of its associated documentation, applications or services, libraries as well as any updates, add-on components, web services and/or supplements that PerceptiLabs may provide to You or make available in the future. To the extent that such items are not accompanied by a separate license agreement, the terms and conditions of this EULA shall apply.
+        p This EULA is a legal agreement between You, a single user, and PerceptiLabs, which sets forth the terms and conditions of Your use of the Software Product under the license being granted to You by PerceptiLabs. You understand and agree that by clicking the “I agree” button—or by otherwise installing, copying, adapting, distributing, using or accessing the Software Product—you will be bound by these terms and conditions.
+        p If You do not agree to the terms of this EULA, do not proceed further, other than what is necessary to uninstall/remove the Software Product from Your computer.
       .policy_article
-        h3 License
-        p PerceptiLabs grants you a revocable, non-exclusive, non-transferable, free limited license to download, install and use the Application solely for your personal, non-commercial purposes to test the Application internally within your company or at your own computer strictly in accordance with the terms of this Agreement.
-        h3 Restrictions
-        p You agree not to exploit or in any way commercializing the license, and you will not permit others to:
+        h3 1.	NATURE OF SOFTWARE PRODUCT
+        p The Software Product is protected by intellectual property laws and treaties. The Software Product is not freeware. It is licensed to You, not sold, for use subject to this EULA. Notwithstanding any license granted here, PerceptiLabs retains all right and title to the Software Product and all associated intellectual property rights.
+        h3 2.	LICENSE GRANT
+        p This Section of the EULA describes the limited rights PerceptiLabs is granting You to install, copy and implement the Software Product. The rights described in this Section are granted subject to all other terms and conditions of this EULA.
         ul
-          li a)	license, sell, rent, lease, assign, distribute, transmit, host, outsource, disclose or otherwise commercially exploit the Application or make the Application available to any third party.
-          li b)	decompile, reverse engineer, disassemble, attempt to derive the source code of, or decrypt the Application.
-          li c)	Make any modification, adaptation, improvement, enhancement, translation or derivative work from our Application.
-          li d)	Violate any applicable laws, rules or regulations in connection with Your access or use of the Application.
-          li e)	Remove, alter or obscure any proprietary notice (including any notice of copyright or trademark) of PerceptiLabs or its affiliates, partners, suppliers or the licensor of the Application.
-          li f)	Use the application for any purpose for which it is not designed or intended.
-          li g)	Making the application available over a network or other environment permitting access or use by multiple users.
-          li h)	Use the application for creating a product, service or software that is, directly or indirectly, competitive with or in any way a substitute for any service, product or software offered by PerceptiLabs.
-          li i)	Use the Application to send automated queries to any website or to send any unsolicited commercial E-mail.
-          li j)	Use any proprietary information or interfaces of PerceptiLabs or other intellectual property of PerceptiLabs in the design, development, manufacturing, licensing or distribution of any applications, accessories or devices for use with the Application.
+          li
+            p (a)	Limited Trial License
+            p PerceptiLabs grants You a revocable, scope limited, non-transferable, non-exclusive license (“Trial License”) to install and use one instance of the Software Product on a single computer, device, workstation, terminal, or other digital electronic or analog device ("Device") for the purpose of evaluating the functionality of the Software Product.
+            p The Trial License is without charge and allows You to use only limited features and functionality of the Software Product.
+            p The Trial License for the Software Product may not be shared, sold, assigned, transferred, re-licensed or sub-licensed. “Sharing” is defined as allowing another individual(s) to use the Software Product on your computer or another computer or device.
+            p Your continued right to use the Software Product during the term of the Trial License is expressly conditioned upon your adherence to the terms and conditions of this license and the limitations thereto. Any activity which exceeds the scope of the Trial License may result in revocation of the Trial License and may subject You to civil liability and damages.
+          li
+            p (b)	Full License to Use the Software Product
+            p In order to receive a license and make use of the Software Product in excess of the terms of the Trial License, i.e., full functionality, you must purchase an Authorized Registration Key from PerceptiLabs or from a third-party order-processing company authorized by PerceptiLabs to issue such keys. Once the Authorized Registration Key has been issued, the Software Product will be fully functional without the Trial License version limitations.
+            p In exchange for your purchasing or otherwise legally obtaining an Authorized Registration Key as above, PerceptiLabs grants You a revocable, limited, non-transferable, non-exclusive license (the “Full License”) to install and use one instance of the Software Product on a single computer, device, workstation, terminal, or other digital electronic or analog Device for the purpose of utilizing the Software Product on an ongoing basis.
+            p This Full License is effective from the time you purchase or otherwise legally obtain an Authorized Registration Key, except when revoked for violations of the terms and conditions of the license as per below.
+            p The Full License for the Software Product may not be shared, sold, assigned, transferred, re-licensed or sub-licensed.
+          li
+            p (c)	No Enterprise Licenses
+            p PerceptiLabs does not issue enterprise, company or seat licenses by way of this EULA. An enterprise or seat license is subject to negotiation and may be subject to a separate license agreement the terms and conditions of which are based on the nature and extent of the enterprise.
+          li
+            p (d)	Binding on Employer
+            p If you have acquired a license to the Software Product and entered into this EULA as an employee, contractor or other agent of a third party, You represent and warrant that you did so within the scope of your duties as an employee or within the scope of your actual or apparent authority as agent for either your employer or your principal, as the case may be. You further represent and warrant that You have the authority to bind Your employer or principal to these terms and conditions and Your agreement will be deemed as the agreement of that employer or principal.
+          li
+            p (e)	Adherence to EULA
+            p Your continued right to use the Software Program during the term of the Full License is expressly conditioned upon your adherence to the terms and conditions of this license and the limitations thereto. Any activity which exceeds the scope of the Full License may result in revocation of the Full License and may subject You to civil liability and damages.
+            p By executing this EULA, You acknowledge and agree that You find it to be a fair and reasonable license agreement that is not deceptive, untrue or misleading in any manner. You agree that You have read and considered all of the terms and conditions of the license and believe them to be just and equitable to terms.
+          li
+            p (f)	Revocation of License
+            p Your Trial License or Full License to install and use the Software Products may be revoked if You either exceed or violate the terms of this EULA, including doing any of the following:
+              ol
+                li Use of an illegally generated registration key to unlock the Software Product to unlimited use without the knowledge or consent of PerceptiLabs. (There are hackers who create fraudulent keys to locked software and the use of such keys is illegal.)
+                li Obtaining or using an instance of the Software Product that has been modified to bypass the limitations of the Trial License without Your acquiring an Authorized Registration Key from PerceptiLabs or one of its authorized third-party order-processing companies.
+                li Otherwise using one or more instances of the Software Product in such a manner as to exceed the terms of the License without acquiring an Authorized Registration Key from PerceptiLabs or one of its authorized third-party order- processing companies.
+                li Attempting to unlock, reverse engineer, decompile or disassemble the Software Product in violation of Section 3(a), below
+                li Renting, adapting, selling, lending or leasing the Software Product, and/or using it in connection with offering conversion services in violation applicable copyright laws.
+                li Reproducing, preparation of derivative works or distribution of the Software Product.
+                li Copying the Software Product or its elements beyond the limits set forth above in the Trial License or Full License.
+                li Using the Software Product to multiplex or pool connections or otherwise allow multiple users or multiple computer or devices to access or use the software indirectly through the licensed computer.
+          li (g)	All rights not expressly granted herein are reserved by PerceptiLabs.
 
-        h3 Modifications to Application
-        p PerceptiLabs reserves the right to modify, suspend or discontinue, temporarily or permanently, the Application or any service to which it connects, with or without notice and without liability to you.
+        h3 3.	OTHER RIGHTS AND LIMITATIONS
+        ul
+          li
+            p (a)	Reverse Engineering, etc.
+            p You may not reverse engineer, decompile, or disassemble, modify, or reproduce the Software Product, except and only to the extent that such activity is expressly permitted by applicable law not- withstanding this limitation.
+          li
+            p (b)	No Rental, Leasing or Lending.
+            p You may not rent, lease or lend the Software Product to third parties, nor use it for commercial hosting.
+          li
+            p (c)	Trademarks.
+            p This EULA does not grant You any rights in connection with any trademarks or service marks or other intellectual property of PerceptiLabs.
+          li
+            p (d)	Support Services.
+            p PerceptiLabs may provide You with support services related to the Software Product ("Support Services"). Any supplemental software code provided to You as part of Support Services is considered part of the Software Product and subject to the terms and conditions of this EULA. You agree that PerceptiLabs may use technical information that You provide as part of the Support Services for its business purposes, including for product support and development. PerceptiLabs will not utilize such technical information in a form that personally identifies You, except to the extent such is necessary in order to provide You with Support Services.
+          li
+            p (e)	Termination
+            p Without prejudice to any other rights, PerceptiLabs may revoke Your Trial License or Full License if You fail to comply with the terms and conditions of this EULA. In such event, You must remove, uninstall and delete all copies of the Software Product and all of its component parts in Your possession. You shall cease all use of the Software Product.
+        h3 4.	Upgrades.
+        ul
+          li An upgrade supplements or enhances a prior version of the Software Product. An upgrade generally contains most if not all of the features of the prior version of the Software Product. You must be properly licensed in order to be eligible to obtain and use an upgrade. You may use the resulting upgrade product only in accordance with the terms and conditions of this EULA. If the Software Product is an upgrade of a component of a package of software programs that was licensed as a single product, the Software Product may be used only as a part of that single product package and may not be separated for use on another device.
+        h3 5.	Intellectual property Rights.
+        ul
+          li All title and intellectual property rights in and to the Software Product (including any images, photographs, animations, video, audio, music, text, and "applets" incorporated into the Software Product), the accompanying printed materials, and any copies of the Software Product are owned by PerceptiLabs or its suppliers.
+        h3 6.	Back Up Copy
+        ul
+          li After lawful purchase of one copy of the Software Product pursuant to this EULA, you may keep the original media on which the Software Product was provided by PerceptiLabs solely for backup or archival purposes. If the original media is required to use the Software Product on a Device, you may make one copy of the Software Product solely for backup or archival purposes. Except as expressly provided in this EULA, you may not otherwise make copies of the Software Product or the printed materials accompanied therewith.
+        h3 7.	Applicable Law
+        ul
+          li This EULA and all disputes or controversies arising out of or relating to it shall be governed by and construed in accordance with the laws of Sweden if You use the Software Product in the EU, excluding its conflict of laws rules, or in accordance with the laws of the State of California, excluding its conflict of laws rules, if You use the Software Product anywhere else in the world.
+        h3 8.	BINDING ARBITRATION
+        ul
+          li
+            p (a)	Good Faith Effort
+            p We will make every reasonable effort to resolve any disagreements that You have with PerceptiLabs. If those efforts fail, by using the Software Product You agree that any claim, dispute, or controversy arising out of, relating to, or connected in any way with this Agreement and/or the Software Product, shall be resolved exclusively by final and binding arbitration, as defined in this Section 8.
+          li
+            p (b)	Notice
+            p The applicable statute of limitations shall be tolled upon any party requesting arbitration of the controversy by informing all other parties of its intent to arbitrate the dispute before a single mediator. Notice of intent to arbitrate shall be given by certified mail or by personal service through use of an express delivery service (FedEx, UPS, etc.) to the last known address of the recipient or its counsel. If the address of the other party or its counsel is unknown, notice of intent to mediate may be posted to the office of the applicable arbitration organization.
+          li
+            p (c)	No Prejudice
+            p The requirement for arbitration shall not be deemed a waiver by PerceptiLabs of any right of termination of the license granted by this EULA and the arbitrator is not empowered to act or make any award other than that based solely on the rights and obligations of the parties arising from this EULA.
+          li
+            p (d)	Single Arbitrator
+            p The arbitration shall be conducted by a single arbitrator. The single arbitrator may be chosen by mutual agreement of the parties. If the parties are unable to agree, the arbitrator shall be chosen by the applicable arbitration organization in accordance with its rules then in effect.
+          li
+            p (e)	Language of Proceedings
+            p All arbitration submissions, communications, and proceedings shall be made or conducted in English.
+          li
+            p (f)	Invalidity
+            p If any part of this arbitration provision is deemed to be invalid, unenforceable, or illegal, or otherwise conflicts with the applicable arbitration rules and procedures, then the balance of this arbitration provision shall remain in effect and shall be construed in accordance with its terms as if the invalid, unenforceable, illegal or conflicting provision were not contained herein.
+          li
+            p (g)	No Class Proceedings
+            p There shall be no authority for any claims to be arbitrated on a class or representative basis, arbitration can decide only Your and/or PerceptiLabs’ individual claims, and the arbitrator may not consolidate or join the claims of other persons or parties who may be similarly situated.
+          li
+            p (h)	Qualification of Arbitrator
+            p The single arbitrator shall satisfy the parties that he or she is reasonably knowledgeable in the legal and technical aspects of a software license and in computer technology generally.
+          li
+            p (i)	Expenses
+            p The arbitrator shall have authority to award a party its expense and legal fees based on a determination of which party is the prevailing party. in accordance with the Rules of Arbitration. Those expenses related to the compensation and expenses of the mediator and arbitrator shall be borne equally, subject to allocation by the arbitrator.
+          li
+            p (j)	Personal Jurisdiction
+            p The parties give up objections to the personal jurisdiction of the arbitration facility and consent to jurisdiction in the state of the arbitration organization.
+          li
+            p (k)	Confidentiality
+            p The content and result of the arbitration shall be held in confidence by all participants, each of whom will be bound by a confidentiality agreement.
+          li
+            p (l)	Judgment on Award
+            p Judgment on the award by the arbitrator may be entered in any court of general jurisdiction.
+          li
+            p (m)	For U.S.A. Residents
+            p If You are a resident of the United States of America, any such arbitration shall be administered by the American Arbitration Association (“AAA”) and conducted before a single arbitrator pursuant to the applicable rules and procedures established by the AAA. The arbitration shall be held at San Francisco, California, USA or at such other location as may be mutually agreed upon by You and PerceptiLabs The arbitrator shall apply California law, excluding its rules on conflicts of law, consistent with the Federal Arbitration Act and applicable statutes of limitations, and shall honor claims of privilege recognized at law.
+          li
+            p (n)	For non-USA Residents
+            p If You are a resident of any country other than the United States of America: (a) any such arbitration shall be administered by the Arbitration Institute of the Stockholm Chamber of Commerce (“SCC”) and conducted before a single arbitrator pursuant to the Rules of Arbitration of the SCC. The arbitration shall be held in Stockholm, Sweden, or at such other location as may be mutually agreed upon by You and PerceptiLabs. The arbitrator shall apply Swedish law, excluding its rules on conflicts of law, consistent with the SCC Rules of Arbitration and applicable statutes of limitations, and shall honor claims of privilege recognized at law.
+        h3 9.	LIMITED WARRANTY
+        ul
+          li
+            p (a)	Limited Warranty.
+            p PerceptiLabs warrants that the Software Product will perform substantially in accordance with the accompanying materials for a period of ninety (90) days from the date of purchase.
+            p If an implied warranty or condition is created by your jurisdiction, you also have an implied warranty or condition, BUT ONLY AS TO DEFECTS DISCOVERED DURING THE PERIOD OF THIS LIMITED WARRANTY (NINETY DAYS). AS TO ANY DEFECTS DISCOVERED AFTER THE NINETY (90) DAY PERIOD, THERE IS NO WARRANTY OR CONDITION OF ANY KIND.
+            p Any supplements or updates to the Software Product, including any service packs or hot fixes provided to you after expiration of the ninety (90) day Limited Warranty period are not covered by any warranty or condition, express, implied or statutory.
+          li
+            p (b)	LIMITATION ON REMEDIES.
+            p Your exclusive remedy for any breach of this Limited Warranty is as set forth below. Except for any refund elected by PerceptiLabs, YOU ARE NOT ENTITLED TO ANY DAMAGES, INCLUDING CONSEQUENTIAL DAMAGES, if the Software Product does not meet PerceptiLabs’s Limited Warranty, and, to the maximum extent allowed by applicable law, even if any remedy fails of its essential purpose.
+            p The terms of Section 11 below are also incorporated into this Limited Warranty.
+          li
+            p (c)	REFUND OR REPLACEMENT: PerceptiLabs and its suppliers' entire liability and your exclusive remedy shall be limited to: REFUND OF THE PRICE PAID FOR THE SOFTWARE PRODUCT ACCOMPANIED BY A COPY OF YOUR RECEIPT OF PURCHASE, OR, REPAIR OR REPLACEMENT OF THE SOFTWARE PRODUCT, THAT DOES NOT MEET THIS LIMITED WARRANTY AND THAT IS RETURNED TO PerceptiLabs WITH A COPY OF YOUR RECEIPT.
+            p You will receive the remedy without charge, except that you are responsible for any expenses you may incur (e.g. cost of shipping the Software Product to PerceptiLabs). This Limited Warranty is void if failure of the Software Product has resulted from accident, abuse, misapplication, abnormal use or a virus. Any replacement Software Product will be warranted for the remainder of the original warranty period or thirty (30) days, whichever is longer.
+        h3 10.	DISCLAIMER OF WARRANTIES.
+        ul
+          li
+            p THE LIMITED WARRANTY ABOVE IS THE ONLY EXPRESS WARRANTY MADE TO YOU AND IS PROVIDED IN LIEU OF ANY OTHER EXPRESS WARRANTIES (IF ANY) CREATED BY ANY DOCUMENTATION OR PACKAGING. EXCEPT FOR THE LIMITED WARRANTY AND TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, PerceptiLabs AND ITS SUPPLIERS PROVIDE THE SOFTWARE AND SUPPORT SERVICES AS IS, AND THEY HEREBY DISCLAIM ALL OTHER WARRANTIES AND CONDITIONS, EITHER EXPRESS, IMPLIED OR STATUTORY, INCLUDING, BUT NOT LIMITED TO, ANY IMPLIED WARRANTIES, DUTIES OR CONDITIONS OF MERCHANTABILITY, OF FITNESS FOR A PARTICULAR PURPOSE, OF ACCURACY OR COMPLETENESS OR RESPONSES, OF RESULTS, OF WORKMANLIKE EFFORT, OF LACK OF VIRUSES AND OF LACK OF NEGLIGENCE, ALL WITH REGARD TO THE SOFTWARE, AND THE PROVISION OF OR FAILURE TO PROVIDE SUPPORT SERVICES.
+        h3 11.	DAMAGE EXCLUSIONS.
+        ul
+          li
+            p TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, IN NO EVENT SHALL PerceptiLabs OR ITS SUPPLIERS BE LIABLE FOR ANY SPECIAL, INCIDENTAL, INDIRECT, OR CONSEQUENTIAL DAMAGES WHATSOEVER (INCLUDING DAMAGES FOR LOSS OF PROFITS OR CONFIDENTIAL OR OTHER INFORMATION, FOR BUSINESS INTERRUPTION, FOR LOSS OF PRIVACY, FOR FAILURE TO MEET ANY DUTY INCLUDING OF GOOD FAITH OR OF REASONABLE CARE, FOR NEGLIGENCE, AND FOR ANY OTHER PECUNIARY OR OTHER LOSS WHATSOEVER) ARISING OUT OF OR IN ANY WAY RELATED TO THE USE OF OR INABILITY TO USE THE SOFTWARE PRODUCT, INCLUDING, THE INABILITY TO REPRODUCE CODE, ADAPT CODE, OR DISTRIBUTE CODE TO THIRD PERSONS, THE PROVISION OF OR FAILURE TO PROVIDE SUPPORT SERVICES, OR OTHERWISE UNDER OR IN CONNECTION WITH ANY PROVISION OF THIS EULA, EVEN IN THE EVENT OF THE FAULT, TORT (INCLUDING NEGLIGENCE), STRICT LIABILITY, BREACH OF CONTRACT OR BREACH OF WARRANTY OF PerceptiLabs OR ANY SUPPLIER.
+        h3 12.	LIMITATION OF LIABILITY AND REMEDIES.
+        ul
+          li
+            p NOTWITHSTANDING ANY DAMAGES THAT YOU MIGHT INCUR FOR ANY REASON (INCLUDING ALL DAMAGES REFERENCED ABOVE AND ALL DIRECT OR GENERAL DAMAGES), THE ENTIRE LIABILITY OF PerceptiLabs AND ANY OF ITS SUPPLIERS UNDER ANY PROVISION OF THIS EULA AND YOUR EXCLUSIVE REMEDY FOR ALL OF THE FOREGOING (EXCEPT FOR ANY REMEDY OF REPAIR OR REPLACEMENT WITH RESPECT TO ANY BREACH OF THE LIMITED WARRANTY) SHALL BE LIMITED TO THE GREATER OF THE AMOUNT ACTUALLY PAID BY YOU FOR THE SOFTWARE OR SEK 100. THE FOREGOING LIMITATIONS, EXCLUSIONS AND DISCLAIMERS SHALL APPLY TO THE MAXIMUM EXTENT PERMITTED BY APPLICABLE LAW, EVEN IF ANY REMEDY FAILS ITS ESSENTIAL PURPOSE.
+        h3 13.	AUDIT RIGHTS
+        ul
+          li
+            p During the term of this EULA and for three (3) years after its termination or expiration You agree to maintain accurate records of Your installation and use of the Software, sufficient to provide evidence of compliance with the terms of this EULA. PerceptiLabs, or an independent third party designated by PerceptiLabs, may audit, upon written notice to You, Your books, records, and computing devices to determine your compliance with this EULA and your payment of the applicable license fees, if any, for the Software. PerceptiLabs may conduct no more than one (1) audit in any twelve (12) month period. In the event that any audit reveals an underpayment by You of more than five percent (5%) of the license amounts due to PerceptiLabs in the period being audited, or that You have breached any term of the EULA, then, in addition to paying to PerceptiLabs any underpayments for Software license fees and any other remedies PerceptiLabs may have, You will promptly pay to PerceptiLabs the audit costs
+        h3 14.	USAGE INFORMATION.
+        ul
+          li
+            p When You install, use, register or uninstall the Software Product (and on a periodic basis), the following information about the Software Product and Your computer is transmitted to PerceptiLabs and/or its authorized agent and recorded into a database maintained by PerceptiLabs or its agent: Product Name, Version, Registration Key, Computer Name, Computer’s Internal and Public IP addresses and host name, Username logged onto Computer, Operating System’s Registered Owner, Operating System’s Registered Organization, Name, Organization Name, Email Address (as entered on the registration screen of the Software Product), and installation date of the Software Product.
+            p PerceptiLabs and its agent will store and maintain the information collected by PerceptiLabs and its agent consistent with its Privacy Policy. By installing and/or registering and/or using the Software Product, you agree that PerceptiLabs and its agent shall not be held liable if the security of this information is compromised in any manner whatsoever. To the extent not prohibited by law, in no event will PerceptiLabs, its agents and licensors be liable for any lost revenue, profit or data, or for special, statutory, indirect, consequential, incidental or punitive damages, however caused regardless of the theory of liability, arising from the collection, maintenance and security of this information. Only install this software if You agree to have this information recorded by PerceptiLabs and/or its agent.
+        h3 15.	COLLECTION OF OTHER USER DATA
+        ul
+          li
+            p In the course of your using the Program, we will collect data, including error data, logs on how the program is operating and how users are using the program, and data samples.
+            p PerceptiLabs uses the data we collect to provide you with rich, interactive experiences. In particular, we use data to: (a) provide our products, which includes updating, securing, and troubleshooting (b) providing support (c) to improve and develop our products (d) personalize our products and make recommendations.
+            p We also use the data to operate our business, which includes analyzing our performance, meeting our legal obligations, and doing research.
+            p PerceptiLabs does not collect personal information other than as described in its Privacy Policy as posted on its website, nor do we share data with third parties.
+        h3 16.	COPYRIGHT INFRINGEMENT
+        ul
+          li
+            p You agree not to infringe PerceptiLabs's copyright of the Software Product. Reproduction, preparation of derivative works (adaptation), distribution or display of the software is prohibited, except to the extent permitted by this EULA. Any activity that exceeds the scope of this EULA is deemed to infringe the copyright of PerceptiLabs and will result in revocation of the license and may subject you to civil liability. Unauthorized reproduction, adaptation, distribution, or display and exceeding license counts represent examples of prohibited conduct.
+            p Using illegally generated keys to unlock the software is also a violation of PerceptiLabs's rights. You agree to only use registration keys generated online from PerceptiLabs's website, only use registration keys emailed to you by PerceptiLabs or our third-party order processing company. Using an illegal or fraudulent registration key to register or unlock the software or reverse engineering, decompiling or disassembling the software makes that software copy illegal and unauthorized and in violation of PerceptiLabs's rights pursuant to applicable copyright law. In the event of a copyright violation, you agree that you are liable for actual damages, or statutory damages, reasonable attorney fees, lost profits, diminution of value of the software, lost license fees, any or all of the aforementioned, including, but not limited to all other costs and expenses incurred by PerceptiLabs for the loss, according to law.
+        h3 17.	INDEMNITY
+        ul
+          li
+            p You agree to defend, indemnify, and hold harmless Outfit7 and its employees, contractors, officers, and directors from any and all claims, suits, damages, costs, lawsuits, fines, penalties, liabilities, expenses (including attorney's fees) that arise from Your use or misuse of the Application, violation of the EULA, or violation of any rights of a third party. Outfit7 reserves the right to assume the exclusive defense and control of any matter otherwise subject to indemnification by You, in which event You will cooperate in asserting any available defenses.
+        h3 18.	OPEN SOURCE LICENSES
+        ul
+          li
+            p The Software Product contains third-party technologies, whereas such third-party technologies may be subject to open-source software licenses. A list of open-source components can be found on PerceptiLabs’ website – www.perceptilabs.com.
+        h3 19.	ENFORCING RIGHTS.
+        ul
+          li
+            p The failure of PerceptiLabs to exercise or enforce any right or provision of this EULA shall not constitute a waiver of such right or provision. If any provision of these terms is found by a court of competent jurisdiction to be invalid, You nevertheless agree that the court should endeavor to give effect to the intentions of the parties as reflected in the provision, and that the other provisions of this EULA remain in full force and effect.
+        h3 20.	LANGUAGE
+        ul
+          li
+            p The original version of this EULA is written in English. Any translation of this EULA into any other language is done for local requirements and in the event of a dispute, inconsistency, or discrepancy between the English and any non-English version, the English version of this EULA shall govern, to the extent not prohibited by local law in Your jurisdiction.
+        h3 21.	PERMISSIVE LICENSES.
+        ul
+          li
+            p Certain parts of the Software Product contain software elements that are subject to permissive use by permission of the Apache Software Foundation, MIT License OSI and BSD and are subject to limited conditions by said organizations.
+        h3 22.	ENTIRE AGREEMENT.
+        ul
+          li
+            p This EULA (including any addendum or amendment to this EULA which is included with the Software Product) is the entire agreement between you and PerceptiLabs relating to the Software Product and support services (if any) and they supersede all prior or contemporaneous oral or written communications, proposals and representations with respect to the Software Product or any other subject matter covered by this EULA. To the extent the terms of any PerceptiLabs policies or programs for support services conflict with the terms of this EULA, the terms of this EULA shall control.
 
-        h3 Term and Termination
-        p This Agreement shall remain in effect for a test period of three (3) months or until terminated by PerceptiLabs.
-        p PerceptiLabs may, in its sole discretion, at any time and for any or no reason, suspend or terminate this Agreement with or without prior notice.
-        p This Agreement will terminate immediately, without prior notice from PerceptiLabs, in the event that you fail to comply with any provision of this Agreement.
-        p Upon termination of this Agreement, you shall cease all use of the Application and delete all copies of the Application from your device (including desktop).
-        h3 Severability
-        p If any provision of this Agreement is held to be unenforceable or invalid, such provision will be changed and interpreted to accomplish the objectives of such provision to the greatest extent possible under applicable law and the remaining provisions will continue in full force and effect.
-        h3 Limitations of Liability
-        p UNDER NO CIRCUMSTANCES SHALL PERCEPTILABS OR ITS AFFILIATED PARTNERS, SUPPLIERS OR LICENSORS BE LIABLE FOR ANY INDIRECT, INCIDENTAL, CONSQUENTIAL, SPECIAL OR EXAMPLARY DAMAGE ARISING OUT OF OR IN CONNECTION WITH YOUR ACCESS OR USE OF OR INABILITY TO ACCESS OR USE THE APPLICATION AND ANY THIRD PARTY CONTENT AND SERVICES. WHETHER OR NOT THE DAMAGE WERE FORSEEABLE AND WHETHER OR NOT PERCEPTILABS ADVICED OF THE POSSIBILITY OF SUCH DAMAGES. WITHOUT LIMITING THE GENERALITY OF THE FORGOING, PERCEPTILABS’S AGGREGATE LIABILITY TO YOU (WHETHER UNDER CONTRACT, TORT, STATUTE OR OTHERWISE) SHALL NOT EXCEED THE AMOUNT OF FIFTY DOLLARS ($50.00). THE FOREGOING LIMITATIONS WILL APPLY EVEN IF THE ABOVE STATED REMEDY FAILS OF ITS ESSENTIAL PURPOSE.
-        h3 Amendments to this Agreement
-        p PerceptiLabs reserves the right, at its sole discretion, to modify or replace this Agreement at any time.
-        h3 Intellectual Property Rights
-        p Copyright and other rights to the Application belong to PerceptiLabs AB. This Agreement does not imply that any other rights than the non-exclusive license to use the Application provided by the Agreement is transferred to you. This Agreement does not either imply that the ownership of the copy of the Application or the medium on which the Application has been delivered is transferred to you.
-        h3 Infringement Acknowledgement
-        p You and PerceptiLabs acknowledge and agree that, in the event of a third party claim that the Aplication or Your possession or use of the Application infringes any third party’s intellectual property rights, You (and not PerceptiLabs) will be responsible for the investigation, defense, settlement and discharge of any such claim of intellectual property infringement. You will, however, promptly notify PerceptiLabs in writing of such a claim.
-        h3 Law and Dispute Resolution
-        p A dispute will be handled by Swedish law (without regard to principles of conflict of laws) and the exclusive jurisdiction of the Swedish courts whereby the Stockholm District Court shall be the court of first instance. Swedish Procedural law shall be applied.
+        p You agree that You have read and considered all of the terms and conditions of the license and believe them to be just and equitable to You.
+
+        h2 END
         footer
           h3 Contact Information
           p If you have any questions about this Agreement, please contact us.
