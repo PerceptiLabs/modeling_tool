@@ -325,10 +325,14 @@ class Message:
 
             jsonNetwork=value['jsonNetwork']
             Id = value['Id']
-            graph=Graph(jsonNetwork)
-            graph_dict = graph.graphs
+            
 
-            layerInfo=graph_dict[Id]
+            if jsonNetwork[Id]["Type"] == "TrainReinforce":
+                graph=Graph(jsonNetwork)
+                graph_dict = graph.graphs
+                layerInfo=graph_dict[Id]
+            else:
+                layerInfo={"Info":{"Type":jsonNetwork[Id]["Type"], "Id": Id, "Properties": jsonNetwork[Id]}, "Con":jsonNetwork[Id]["backward_connections"]}
 
             from codehq import CodeHqNew as CodeHq
             
