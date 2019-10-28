@@ -248,12 +248,6 @@ class Message:
             scope.set_extra("value",self.request.get("value"))
             #Check what the request is for and then get the properties needed for that function
             if action in coreCalls:
-                # scope.set_extra("Core properties", core.core.__dict__)
-                # coreProperties=dict()
-                # for key, value in core.core.__dict__.items():
-                #     if type(value).__name__!="dict":
-                #         coreProperties[key]=value
-                # scope.set_extra("Core properties", coreProperties)
                 scope.set_extra("Saved Results Dict", core.savedResultsDict)
                 scope.set_extra("Network", core.network)
             
@@ -264,7 +258,6 @@ class Message:
             elif action in parseCalls:
                 pass
             else:
-                # scope.set_extra("Core properties", core.core.__dict__)
                 for dataId, dataValue in self.dataDict[reciever].items():
                     scope.set_extra("data object for layer: "+str(dataId), dataValue.__dict__)
 
@@ -315,13 +308,11 @@ class Message:
                 content={"content": "Deleted data on workspace " + str(reciever) + " with Id: " +str(value["Id"])+"."}
             else:
                 content={"content": "No such Id had saved data in that workspace"}
-            # print(self.dataDict)
 
         elif action == "removeReciever":
             for value in self.dataDict[reciever].values():
                 del value
             del self.dataDict[reciever]
-            # print(self.dataDict)
             content={"content": "All data on workspace " + str(reciever) + " has been deleted"}
 
         elif action == "getCode":
@@ -349,8 +340,6 @@ class Message:
             lw_core.run()
             
             content={}
-            # for Id, value in extras_reader.to_dict().items():
-            #     inShape[Id]=value["inShape"]
 
             extras_dict=extras_reader.to_dict()
             for Id, value in jsonNetwork.items():
@@ -433,6 +422,9 @@ class Message:
                 if LayerId in extrasDict:
                     sample = extrasDict[LayerId]["Sample"]
 
+            if isinstance(sample,tf.Variable):
+                sample=sample.numpy()
+
             if len(np.shape(sample))>1:
                 sample=np.squeeze(sample)
 
@@ -448,8 +440,7 @@ class Message:
             if self._is_jsonable(dataObject):
                 content = dataObject
             else:
-                content = ""
-
+                content = createDataObject([""])
 
 
         elif action == "getPreviewVariableList":
@@ -480,38 +471,38 @@ class Message:
         ####################################Parser###################################
         elif action == "Parse":
             value=self.request.get("value")
-            Paths=value["Paths"]
+            # Paths=value["Paths"]
+            if value["Pb"]:
+                pb=value["Pb"][0]
+            else:
+                pb=value["Pb"]
+
+            if value["Checkpoint"]:
+                ckpt=value["Checkpoint"][0]
+            else:
+                ckpt=value["Checkpoint"]
+
+            Paths = [pb, ckpt]
             trainableFlag=value["Trainable"]
             end_points=value["EndPoints"]
+            containers=value["Containers"]
             try:
-                containers=value["Containers"]
-            except:
-                pass
-            # Paths=value
-            # trainableFlag="All"
-            # end_points=""
-            correct_file_list=self.getParsingFiles(Paths)
-            # if correct_file_list[-1] not in self.checkpointDict:
-            #     self.checkpointDict[correct_file_list[-1]]=extractCheckpointInfo(*correct_file_list)
-            # try:
-            print("Files: " , correct_file_list)
+                correct_file_list=self.getParsingFiles(Paths)
+            except Exception as e:
+                content=e
+
             filteredValueDict=None
             try:
                 content, filteredValueDict=parse(trainableFlag, end_points, *correct_file_list)
             except Exception as e:
                 print(traceback.format_exc())
                 content="Could not parse the file.\n"+str(e)
+                errorList.append("Could not parse the file")
             if type(filteredValueDict) is dict:
                 self.checkpointDict[correct_file_list[-1]]=filteredValueDict
             else:
                 warningList.append("Could not load the variables, try changing the End Points.\n"+str(filteredValueDict))
             
-
-            # except Exception as e:
-            #     print("Error: ", e)
-            #     content={"content":"Parser crashed"}
-            #     errors.put("Parser crashed")
-
         ####################################Computing server#########################
         elif action == "Close":
             content="Shutting down app"

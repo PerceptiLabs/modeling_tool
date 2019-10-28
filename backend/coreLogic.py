@@ -174,10 +174,9 @@ class coreLogic():
             return {"content":"Save Failed.\nNo trained weights to Export."}
         try:
             if "all_tensors" not in self.saver:
-                raise Exception("'all_tensors' was not found so the Saver could not create any references to the expored checkpoints.\nTry adding 'api.data.store(all_tensors=api.data.get_tensors())' to your Training Layer.")
+                raise Exception("'all_tensors' was not found so the Saver could not create any references to the exported checkpoints.\nTry adding 'api.data.store(all_tensors=api.data.get_tensors())' to your Training Layer.")
             elif self.saver["all_tensors"]==[]:
                 raise Exception("'all_tensors' was found but contained no variables.")
-
             exporter = exportNetwork(self.saver)
             path=os.path.abspath(value["Location"][0])
             frontendNetwork=value["frontendNetwork"]
@@ -345,9 +344,7 @@ class coreLogic():
             # self.maxTestIter=self.maxTestIter
             self.batch_size=1
             self.resultDict=self.testList[self.testIter]
-            print(len(self.testList))
         except KeyError as e:
-            print(e)
             log.exception("Error in getTestingStatistics")            
             return {}
 
@@ -355,7 +352,6 @@ class coreLogic():
             layer_statistics = self.getLayerStatistics(value)
             return layer_statistics
         except Exception as e:
-            print(e)
             message = "Error in getTestingStatistics."
             if log.isEnabledFor(logging.DEBUG):
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)

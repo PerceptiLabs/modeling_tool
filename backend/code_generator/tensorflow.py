@@ -484,6 +484,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
         code += "\n"
         code += TrainLossCodeGenerator(self._output_layer, self._target_layer, self._loss_function, self._class_weights).get_loss_code()
+        code += "api.data.store(y_pred=y_pred)  #Needed for exporting the network\n"
         code += "# Gradients\n"
         code += "gradients = {}\n"
         code += "for var in tf.trainable_variables():\n"

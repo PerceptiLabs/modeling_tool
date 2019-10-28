@@ -995,8 +995,8 @@ if __name__ == "__main__":
 
    # graph_def_path = './mobilenetv1/mobilenet_v1_1.0_224_quant_frozen.pb' #path to your .pb file
    # graph_def_path = './1559636463459/1/saved_model.pb' #path to your .pb file
-   # graph_def_path = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/mobilenetv1/mobilenet_v1_1.0_224_quant_eval.pbtxt' #path to your .pbtxt file
-   # checkpoint='C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/mobilenetv1/mobilenet_v1_1.0_224_quant.ckpt'
+   graph_def_path = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/mobilenetv1/mobilenet_v1_1.0_224_quant_eval.pbtxt' #path to your .pbtxt file
+   checkpoint='C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/mobilenetv1/mobilenet_v1_1.0_224_quant.ckpt'
    
    # graph_def_path = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/mobilenetV2/mobilenet_v2_1.0_192_eval.pbtxt' #path to your .pbtxt file
    # checkpoint='C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/mobilenetV2/mobilenet_v2_1.0_192.ckpt'
@@ -1005,9 +1005,9 @@ if __name__ == "__main__":
    # graph_def_path = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/mobilenetV2_coral/mobilenet_v2_1.0_224_quant_eval.pbtxt' #path to your .pbtxt file
    # checkpoint='C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/mobilenetV2_coral/mobilenet_v2_1.0_224_quant.ckpt'
 
-   graph_def_path = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/faster_rcnn/graph.pbtxt' #path to your .pbtxt file
-   # graph_def_path = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/faster_rcnn/frozen_inference_graph.pb'
-   checkpoint='C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/faster_rcnn/model.ckpt-51249'
+   # graph_def_path = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/faster_rcnn/graph.pbtxt' #path to your .pbtxt file
+   # # graph_def_path = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/faster_rcnn/frozen_inference_graph.pb'
+   # checkpoint='C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/faster_rcnn/model.ckpt-51249'
    # checkpoint=None
 
 
@@ -1017,5 +1017,5 @@ if __name__ == "__main__":
    # constants=test.getDimensions(["MobilenetV1/Conv2d_1_depthwise/depthwise_weights"])
    # print(constants)
 
-   parsed=parse("All","all_refined_box_encodings,all_class_predictions_with_background",*[graph_def_path,checkpoint])
-   # parsed=parse("All","",*[graph_def_path,checkpoint])
+   # parsed=parse("All","all_refined_box_encodings,all_class_predictions_with_background",*[graph_def_path,checkpoint])
+   parsed=parse("All","",*[graph_def_path,checkpoint])

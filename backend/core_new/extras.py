@@ -28,14 +28,7 @@ class LayerExtrasReader:
         self._put_in_dict(layer_id,{'Sample': '', 'outShape': '', 'inShape': '', 'Variables': '', 'Default_var':''})
         
     def read(self, session, data_container):
-        outShape = ''
-        # Y = session.outputs.locals.get('Y')
-        # if isinstance(Y, tf.Tensor):
-        #     outShape = Y.shape.as_list()
-        #     outShape=outShape[1:]
-        #     if not outShape:
-        #         outShape=[1]
-                
+        outShape = ''                
         sample = ''
         inShape=''
         default_var=''

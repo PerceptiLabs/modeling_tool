@@ -56,7 +56,7 @@ def subsample(sample,endSize=500):
 
 def convertToList(npy):
     if np.any(npy.ravel()==None):
-        return None    
+        return ""    
     npy = np.atleast_1d(npy).tolist()
     return npy
     
