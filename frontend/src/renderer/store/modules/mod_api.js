@@ -458,18 +458,21 @@ const actions = {
       });
   },
 
-  API_exportData({rootGetters, getters, dispatch}, value) {
-    //const net = rootGetters['mod_workspace/GET_currentNetwork'];
+  API_exportData({rootGetters, getters, dispatch}, settings) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Export',
-      value: value
+      value: {
+        ...settings,
+        frontendNetwork: getters.GET_coreNetwork
+      }
     };
     const trackerData = {
       result: '',
       network: getters.GET_coreNetwork,
-      settings: value
+      settings
     };
+    console.log('Export', theData);
     coreRequest(theData)
       .then((data)=> {
         dispatch('globalView/GP_infoPopup', data, {root: true});

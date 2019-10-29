@@ -188,7 +188,6 @@ export default {
       set_statusNetworkZoom:'mod_workspace/SET_statusNetworkZoom',
 
       tutorialPointActivate:'mod_tutorials/pointActivate',
-      isTutorialMode:       'mod_tutorials/getIstutorialMode',
       offMainTutorial:      'mod_tutorials/offTutorial',
 
       saveLocalUserInfo:    'mod_user/UPDATE_LOCAL_userInfo',

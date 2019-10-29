@@ -83,7 +83,7 @@ const viewBoxMixin = {
       };
       coreRequest(theData)
         .then((data)=> {
-          if(data === 'Null') {
+          if(data === 'Null' || data === null) {
             return
           }
           Vue.nonreactive(data);

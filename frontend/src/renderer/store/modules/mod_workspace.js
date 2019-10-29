@@ -283,14 +283,18 @@ const mutations = {
     }
   },
   set_openTest(state, {dispatch, getters, value}) {
-    getters.GET_currentNetwork.networkMeta.openTest = value;
     if(value && getters.GET_statisticsIsOpen !== null) {
       getters.GET_currentNetwork.networkMeta.openStatistics = false;
     }
     if(value) {
+      getters.GET_currentNetwork.networkMeta.openTest = false;
       dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
+      setTimeout(()=> {
+        getters.GET_currentNetwork.networkMeta.openTest = true
+      }, 0)
       //dispatch('mod_events/EVENT_chartResize', null, {root: true});
     }
+    else getters.GET_currentNetwork.networkMeta.openTest = value;
   },
   set_statusNetworkCore(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.coreStatus = value;
