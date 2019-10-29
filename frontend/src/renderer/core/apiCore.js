@@ -9,6 +9,7 @@ const coreRequest = function (message, port, address) {
     let socketPort = port || 5000;
 
     socket.connect(socketPort, socketAddress, ()=> {
+      //console.log(message);
       const messageBuff = prepareCoreMessage(message);
       socket.write(messageBuff);
 
@@ -36,6 +37,7 @@ const coreRequest = function (message, port, address) {
             store.dispatch('mod_tracker/EVENT_coreWarning', obgData.warningMessage);
             console.warn('core warning', obgData.warningMessage);
           }
+          //console.log(message, obgData.content);
           resolve(obgData.content);
         }
         if (data.toString().endsWith('exit')) {

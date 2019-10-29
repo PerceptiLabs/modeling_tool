@@ -35,22 +35,42 @@ log.info("python_lib = " + python_lib)
 
 
 pathex = [working_dir,
-          python_lib+'/tensorflow']
+          python_lib+'/tensorflow',
+          python_lib+'/atari_py']
 
-binaries = [(working_dir+'/appServer.cpython-36m-darwin.so', '.'),
-            (python_lib+'/tensorflow/contrib/bigtable/python/ops/_bigtable.so', './tensorflow/contrib/bigtable/python/ops'),
-            (python_lib+'/tensorflow/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow/contrib/tpu/python/ops'),
-            (python_lib+'/tensorflow/contrib/rnn/python/ops/_gru_ops.so', './tensorflow/contrib/rnn/python/ops/'),
-            (python_lib+'/tensorflow/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow/contrib/tpu/python/ops'),
-            (python_lib+'/tensorflow/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', './tensorflow/contrib/input_pipeline/python/ops/'),
-            (python_lib+'/tensorflow/contrib/factorization/python/ops/_clustering_ops.so', './tensorflow/contrib/factorization/python/ops'),
-            (python_lib+'/tensorflow/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', './tensorflow/contrib/input_pipeline/python/ops/'),                       
-            (python_lib+'/tensorflow/contrib/rnn/python/ops/_lstm_ops.so', './tensorflow/contrib/rnn/python/ops/'),
-            (python_lib+'/tensorflow/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow/contrib/layers/python/ops/'),                       
-            (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops')]
+binaries = [
+    (working_dir+'/appServer.cpython-36m-darwin.so', '.'),
+    (python_lib+'/tensorflow/contrib/bigtable/python/ops/_bigtable.so', './tensorflow/contrib/bigtable/python/ops'),
+    (python_lib+'/tensorflow/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow/contrib/tpu/python/ops'),
+    (python_lib+'/tensorflow/contrib/rnn/python/ops/_gru_ops.so', './tensorflow/contrib/rnn/python/ops/'),
+    (python_lib+'/tensorflow/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow/contrib/tpu/python/ops'),
+    (python_lib+'/tensorflow/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', './tensorflow/contrib/input_pipeline/python/ops/'),
+    (python_lib+'/tensorflow/contrib/factorization/python/ops/_clustering_ops.so', './tensorflow/contrib/factorization/python/ops'),
+    (python_lib+'/tensorflow/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', './tensorflow/contrib/input_pipeline/python/ops/'),                       
+    (python_lib+'/tensorflow/contrib/rnn/python/ops/_lstm_ops.so', './tensorflow/contrib/rnn/python/ops/'),
+    (python_lib+'/tensorflow/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow/contrib/layers/python/ops/'),                       
+    (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops'),
+    (python_lib+'/atari_py/ale_interface/libale_c.so', './atari_py/ale_interface/')
+]
 
 
-datas=[(python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'), (python_lib+'/dask/dask.yaml', './dask/')]
+#contr_dir = python_lib+'/atari_py/'
+#for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
+#    p1 = str(p1)
+#    p2 = os.path.join('./atari_py/', os.path.dirname(p1[len(contr_dir):]))
+#    log.info("Appending binary path ('{}', '{}')".format(p1, p2))
+#    
+#    binaries.append((p1, p2))
+
+
+datas=[
+    (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'),
+    (python_lib+'/dask/dask.yaml', './dask/'),
+    (python_lib+'/atari_py/atari_roms/breakout.bin', './atari_py/atari_roms/'),
+    (python_lib+'/atari_py/atari_roms/bank_heist.bin', './atari_py/atari_roms/'),
+    (python_lib+'/atari_py/atari_roms/demon_attack.bin', './atari_py/atari_roms/')     
+]       
+
 
 hiddenimports = collect_submodules('skimage.io._plugins') \
 	      + collect_submodules('sentry_sdk')+ \

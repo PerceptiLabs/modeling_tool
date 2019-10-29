@@ -266,6 +266,9 @@ class Message:
             value=self.request.get("value")
             Id=value["Id"]
             jsonNetwork=value["Network"]
+            if "layerSettings" in value:
+                layerSettings = value["layerSettings"]
+                jsonNetwork[Id]["Properties"]=layerSettings
 
             lw_core, _, data_container = self._create_lw_core(jsonNetwork)
             lw_core.run()
@@ -288,6 +291,9 @@ class Message:
             value=self.request.get("value")
             Id=value["Id"]
             jsonNetwork=value["Network"]
+            if "layerSettings" in value:
+                layerSettings = value["layerSettings"]
+                jsonNetwork[Id]["Properties"]=layerSettings
 
             lw_core, _, data_container = self._create_lw_core(jsonNetwork)
             lw_core.run()
@@ -317,14 +323,11 @@ class Message:
 
         elif action == "getCode":
             value=self.request.get("value")
-            # Id=value["Id"]
-            # Type=value["Type"]
-            # Properties=value["Properties"]
-            # Con=value["backward_connections"]
-            # layerInfo={"Info":{"Type":Type, "Id": Id, "Properties": Properties}, "Con":Con}
-
             jsonNetwork=value['Network']
             Id = value['Id']
+            if "layerSettings" in value:
+                layerSettings = value["layerSettings"]
+                jsonNetwork[Id]["Properties"]=layerSettings
             
 
             if jsonNetwork[Id]["Type"] == "TrainReinforce":
@@ -402,7 +405,7 @@ class Message:
                         'Row': lw_core.error_handler[Id].error_line
                     }
                 else:
-                    content[Id]['Error'] = None                    
+                    content[Id]['Error'] = None                
 
         elif action == "getPreviewSample":
             value=self.request.get("value")

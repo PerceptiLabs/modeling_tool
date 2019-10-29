@@ -97,17 +97,17 @@ class coreLogic():
 
             try:
                 self.cThread=CoreThread(self.core.run,self.errorQueue)
-                # self.cThread.daemon = True
-                # self.cThread.start_with_traces()
-                self.cThread.start()
+                self.cThread.daemon = True
+                self.cThread.start_with_traces()
+                # self.cThread.start()
             except Exception as e:
                 self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
         else:
             try:
                 self.cThread=CoreThread(self.core.run,self.errorQueue)
-                # self.cThread.daemon = True
-                # self.cThread.start_with_traces()
-                self.cThread.start()
+                self.cThread.daemon = True
+                self.cThread.start_with_traces()
+                # self.cThread.start()
             except Exception as e:
                 self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
         self.status="Running"
@@ -131,8 +131,8 @@ class coreLogic():
         self.commandQ.put("headlessOff")
 
     def Close(self):
-        # if self.cThread and self.cThread.isAlive():
-        #     self.cThread.kill()
+        if self.cThread and self.cThread.isAlive():
+            self.cThread.kill()
         return {"content":"closing the core"}
 
     def Stop(self):
@@ -156,7 +156,10 @@ class coreLogic():
         try:
             exporter = exportNetwork(self.saver)
             if value["Type"]=="TFModel":
-                path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
+                if "frontendNetwork" in value:
+                    path=os.path.abspath(value["Location"]+"/"+value["frontendNetwork"])
+                else:
+                    path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
                 if value["Compressed"]:
                     exporter.asCompressedTfModel(path)
                 else:
@@ -304,7 +307,6 @@ class coreLogic():
 
             if "saver" in tmp:
                 self.saver=tmp.pop("saver")
-                # self.exporter = exportNetwork(saver)
 
             if "testDict" in tmp:
                 self.testList.append(tmp["testDict"])

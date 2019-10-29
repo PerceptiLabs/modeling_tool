@@ -2,8 +2,9 @@ EXCLUDED_FILES=(
     'minicodehq.py'
     'appOc.py'
     'a2cagent.py'
-    'frontend_data_code.py',
-    'core_test.py',
+    'frontend_data_code.py'
+    'core_test.py'
+    'serverInterface.py'
 )
 
 
@@ -68,6 +69,7 @@ ls -l
 
 echo "Running pyinstaller..."
 cp ../../backend/osx.spec .
+
 pyinstaller --clean -y osx.spec
 
 if [ -e dist/appServer/libpython3.6m.so.1.0 ]
@@ -76,7 +78,7 @@ then
     echo "libpython3.6m.so.1.0 exists, making defensive copy called libpython3.6m.so"
     cp dist/appServer/libpython3.6m.so.1.0 dist/appServer/libpython3.6m.so    
 fi
-
+exit
 chmod +x dist/appServer/appServer
 
 echo "copying dist to 'backend_out/'"

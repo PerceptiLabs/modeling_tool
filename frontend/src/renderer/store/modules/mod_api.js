@@ -212,7 +212,7 @@ const actions = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getEndResults',
     };
-    console.log('API_getResultInfo', theData);
+    //console.log('API_getResultInfo', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -295,7 +295,7 @@ const actions = {
       action: "SaveTrained",
       value:  {Location, frontendNetwork}
     };
-    console.log('SaveTrained', theData);
+    //console.log('SaveTrained', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -316,7 +316,7 @@ const actions = {
     //console.log('getNetworkInputDim request', theData);
     return coreRequest(theData)
       .then((data)=> {
-        console.log('getNetworkInputDim answer', data);
+        //console.log('getNetworkInputDim answer', data);
         if(data) return dispatch('mod_workspace/SET_elementInputDim', data, {root: true});
       })
       .catch((err)=> {
@@ -353,10 +353,10 @@ const actions = {
         Variable: varData
       }
     };
-    console.log('getPreviewSample', theData);
+    //console.log('getPreviewSample', theData);
     return coreRequest(theData)
       .then((data)=> {
-        console.log('getPreviewSample answer', data);
+        //console.log('getPreviewSample answer', data);
         return data
       })
       .catch((err)=> {
@@ -373,10 +373,10 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
-    console.log('getPreviewVariableList', theData);
+    //console.log('getPreviewVariableList', theData);
     return coreRequest(theData)
       .then((data)=> {
-        console.log('getPreviewVariableList answer', data);
+        //console.log('getPreviewVariableList answer', data);
         return data
       })
       .catch((err)=> {
@@ -384,15 +384,20 @@ const actions = {
       });
   },
 
-  API_getCode({dispatch, getters, rootGetters}, layerId) {
+  API_getCode({dispatch, getters, rootGetters}, {layerId, settings}) {
+    const net = getters.GET_coreNetwork;
+    if(settings) net[layerId].Properties = settings;
+
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getCode',
       value: {
         Id: layerId,
-        Network: getters.GET_coreNetwork
+        Network: net
       }
     };
+
+    //console.log(theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -425,10 +430,10 @@ const actions = {
         Network: getters.GET_coreNetwork
       }
     };
-    console.log('API_getDataMeta', theData);
+    //console.log('API_getDataMeta', theData);
     return coreRequest(theData)
       .then((data)=> {
-        console.log('API_getDataMeta ans', data);
+        //console.log('API_getDataMeta ans', data);
         return data
       })
       .catch((err)=> {
