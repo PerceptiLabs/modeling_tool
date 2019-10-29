@@ -124,6 +124,12 @@ class coreLogic():
         self.paused=False
         return {"content":"Unpaused"}
 
+    def headless(self, On):
+        if On:
+            self.commandQ.put("headlessOn")
+        else:
+            self.commandQ.put("headlessOff")
+
     def headlessOn(self):
         self.commandQ.put("headlessOn")
 

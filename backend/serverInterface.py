@@ -2,16 +2,13 @@ class webInterface():
     def __init__():
         pass
 
-class desktopInterface():
+class desktopInterface(Interface):
     def __init__():
         pass
 
     reciever=self.request.get("reciever")
     action = self.request.get("action")
     startTime=time.time()
-
-    #Check if the core exists, otherwise create one
-    
 
     if not reciever in self.dataDict:
         self.dataDict[reciever]=dict()
@@ -64,86 +61,132 @@ class desktopInterface():
     #####################################B4End###################################
     
 
+queue_function_translation=[("stop-request","stop-response", "Stop"),
+    ("start-request","start-response", "Start"),  #Might have to be a frontend call to cloud, where core then starts as soon as the VM is on
+    ("cloud-close-vm-request","cloud-close-vm-response", "empty"),
+    ("model-save-request","model-save-response", "saveTrained"),
+    ("update-results-request","update-results-response", "updateResults"),
+    ("get-status-request", "get-status-response", "getStatus"),    #TODO: Not yet exists as an endpoint!!!!
+    ("headless-request","headless-response", "headless"),
+    ("get-training-statistics-request","get-training-statistics-response", "getTrainingStatistics"),
+    ("get-testing-statistics-request","get-testing-statistics-response", "getTestingStatistics"),
+    ("start-test-request","start-test-response", "startTest"),
+    ("reset-test-request","reset-test-response", "resetTest"),
+    ("get-test-status-request","get-test-status-response", "getTestStatus"),
+    ("next-step-request","next-step-response", "nextStep"),
+    ("previous-step-request","previous-step-response", "previousStep"),
+    ("play-test-request","play-test-response", "playTest"),
+    ("pause-request","pause-response", "Pause"),
+    ("skip-validation-request","skip-validation-response", "SkipToValidation"),
+    ("check-core-request","check-core-response", "checkAlive"),
+    ("export-request","export-response", "Export")    #Might have to be moved to LW Core and let that one store all internal variables for open tabs
+]
 
 class azureInterface():
     def __init__():
         pass
 
 class Interface():
-    def __init__(self,core):
-        self.core=core
+    def __init__(self, core):
+        self._cores={}
+        self._core=None
+
+    def _addCore(self, reciever):
+        from coreLogic import coreLogic
+        core=coreLogic(reciever)
+        self._cores[reciever] = core
+
+    def setCore(self, reciever):
+        if reciever not in self._cores:
+            self._addCore(reciever)
+        self._core = self._cores[reciever]
+
+    def globalErrors(self):
+        errorList = []
+        errors = self._core.errorQueue
+        while not errors.empty():
+            message = errors.get(timeout=0.05)
+            errorList.append(message)
+        if errorList:
+            self._core.Close()
+        return errorList
+
+    def globalWarnings(self):
+        warningList = []
+        warnings = self._core.warningQueue
+        while not warnings.empty():
+            message = warnings.get(timeout=0.05)
+            warningList.append(message)
+        return warningList
 
     def get_action(self, action, value):
         if action == "getDataMeta":
             getDataMeta(value)
         elif action == "getPartitionSummary":
-
-        elif action == "deleteData":
-
-        elif action == "removeReciever":
-
+            getPartitionSummary()
         elif action == "getCode":
-
+            getCode()
         elif action == "getNetworkInputDim":
-
+            getNetworkInputDim()
         elif action == "getNetworkOutputDim":
-
+            getNetworkOutputDim()
         elif action == "getPreviewSample":
-
+            getPreviewSample()
         elif action == "getPreviewVariableList":
-
+            getPreviewVariableList()
         elif action == "Parse":
-
+            Parse()
         elif action == "Close":
-
+            Close()
         elif action == "updateResults":
-
+            self._core.updateResults()
         elif action == "checkCore":
-
+            self._core.checkCore()
         elif action == "headless":
-
+            On=value
+            self._core.headless(On)
         elif action == "getTrainingStatistics":
-
+            self._core.getTrainingStatistics()
         elif action == "getTestingStatistics":
-
+            self._core.getTestingStatistics()
         elif action == "getS3Keys":
-
+            self._core.getS3Keys()
         elif action == "Start":
-
-        elif action=="startTest":
-
-        elif action=="resetTest":
-
+            self._core.Start()
+        elif action == "startTest":
+            self._core.startTest()
+        elif action == "resetTest":
+            self._core.resetTest()
         elif action =="getTestStatus":
-
+            self._core.getTestStatus()
         elif action == "nextStep":
-
+            self._core.nextStep()
         elif action == "previousStep":
-
+            self._core.previousStep()
         elif action == "playTest":
-
+            self._core.playTest()
         elif action == "getIter":
-
+            self._core.getIter()
         elif action == "getEpoch":
-
+            self._core.getEpoch()
         elif action == "Stop":
-
+            self._core.Stop()
         elif action == "Pause":
-
+            self._core.Pause()
         elif action == "Unpause":
-
+            self._core.Unpause()
         elif action == "SkipToValidation":
-
+            self._core.SkipToValidation()
         elif action == "Export":
-
+            self._core.Export()
         elif action == "isTrained":
-
+            self._core.isTrained()
         elif action == "SaveTrained":
-
+            self._core.SaveTrained()
         elif action == "getEndResults":
-
+            self._core.getEndResults()
         elif action == "getStatus":
-
+            self._core.getStatus()
         else:
             raise LookupError("The requested action does not exist")
 
