@@ -464,7 +464,7 @@ const actions = {
       action: 'Export',
       value: {
         ...settings,
-        frontendNetwork: getters.GET_coreNetwork
+        frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
       }
     };
     const trackerData = {
@@ -472,7 +472,6 @@ const actions = {
       network: getters.GET_coreNetwork,
       settings
     };
-    console.log('Export', theData);
     coreRequest(theData)
       .then((data)=> {
         dispatch('globalView/GP_infoPopup', data, {root: true});
