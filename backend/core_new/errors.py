@@ -78,7 +78,7 @@ class LightweightErrorHandler(LayerErrorHandler):
                                              exception,
                                              exception.__traceback__)
 
-        descr = "".join(tbObj.format_exception_only()),
+        descr = "".join(tbObj.format_exception_only())
         self._dict[session.layer_id] = ErrorDescription(descr, str(tbObj.lineno) or "?")
         self._log_error(session, exception, int(tbObj.lineno))
         

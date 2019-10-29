@@ -156,7 +156,10 @@ class coreLogic():
         try:
             exporter = exportNetwork(self.saver)
             if value["Type"]=="TFModel":
-                path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
+                if "frontendNetwork" in value:
+                    path=os.path.abspath(value["Location"]+"/"+value["frontendNetwork"])
+                else:
+                    path=os.path.abspath(value["Location"]+"/"+str(self.networkName))
                 if value["Compressed"]:
                     exporter.asCompressedTfModel(path)
                 else:
@@ -304,7 +307,6 @@ class coreLogic():
 
             if "saver" in tmp:
                 self.saver=tmp.pop("saver")
-                # self.exporter = exportNetwork(saver)
 
             if "testDict" in tmp:
                 self.testList.append(tmp["testDict"])

@@ -70,7 +70,84 @@ class azureInterface():
         pass
 
 class Interface():
-    def get_action():
+    def __init__(self,core):
+        self.core=core
+
+    def get_action(self, action, value):
+        if action == "getDataMeta":
+            getDataMeta(value)
+        elif action == "getPartitionSummary":
+
+        elif action == "deleteData":
+
+        elif action == "removeReciever":
+
+        elif action == "getCode":
+
+        elif action == "getNetworkInputDim":
+
+        elif action == "getNetworkOutputDim":
+
+        elif action == "getPreviewSample":
+
+        elif action == "getPreviewVariableList":
+
+        elif action == "Parse":
+
+        elif action == "Close":
+
+        elif action == "updateResults":
+
+        elif action == "checkCore":
+
+        elif action == "headless":
+
+        elif action == "getTrainingStatistics":
+
+        elif action == "getTestingStatistics":
+
+        elif action == "getS3Keys":
+
+        elif action == "Start":
+
+        elif action=="startTest":
+
+        elif action=="resetTest":
+
+        elif action =="getTestStatus":
+
+        elif action == "nextStep":
+
+        elif action == "previousStep":
+
+        elif action == "playTest":
+
+        elif action == "getIter":
+
+        elif action == "getEpoch":
+
+        elif action == "Stop":
+
+        elif action == "Pause":
+
+        elif action == "Unpause":
+
+        elif action == "SkipToValidation":
+
+        elif action == "Export":
+
+        elif action == "isTrained":
+
+        elif action == "SaveTrained":
+
+        elif action == "getEndResults":
+
+        elif action == "getStatus":
+
+        else:
+            raise LookupError("The requested action does not exist")
+
+        
         
     if action == "getDataMeta":
         value=self.request.get("value")
