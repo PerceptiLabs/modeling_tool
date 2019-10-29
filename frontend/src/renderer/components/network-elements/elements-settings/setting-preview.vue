@@ -91,7 +91,7 @@ export default {
       this.api_getVariableList(this.layerId)
         .then((data)=> {
           this.previewValue = data.VariableName;
-          this.previewList = data.VariableList;
+          this.previewList = data.VariableList.length ? data.VariableList : [];
         })
     }
   }
