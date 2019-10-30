@@ -158,13 +158,13 @@ function createWindow () {
       };
       switch (process.platform) {
         case 'win32':
-          UpdateOpt.url = UpdateUrl + 'winDev/';
+          UpdateOpt.url = UpdateUrl + 'win/';
           break;
         case 'darwin':
-          UpdateOpt.url = UpdateUrl + 'iosDev/';
+          UpdateOpt.url = UpdateUrl + 'ios/';
           break;
         case 'linux':
-          UpdateOpt.url = UpdateUrl + 'linuxDev/';
+          UpdateOpt.url = UpdateUrl + 'linux/';
           break;
       }
       autoUpdater.setFeedURL(UpdateOpt);
