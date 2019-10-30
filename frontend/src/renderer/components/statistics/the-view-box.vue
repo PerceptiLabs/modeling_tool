@@ -74,9 +74,6 @@ export default {
       }
     }
   },
-  mounted() {
-    this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
-  },
   data() {
     return {
       currentBtn: '',

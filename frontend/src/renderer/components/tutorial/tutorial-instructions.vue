@@ -77,6 +77,9 @@ export default {
         svg.removeEventListener('click', this.hideTooltip);
         layersbar.removeEventListener('click', this.showHideTooltip);
       }
+    },
+    statisticsIsOpen(newVal) {
+      if(newVal) this.pointActivate({way: null, validation: this.activePoint.actions[0].id})
     }
   },
   computed: {
@@ -90,7 +93,8 @@ export default {
       activePoint:                'mod_tutorials/getActivePoint',
       activeAction:               'mod_tutorials/getActiveAction',
       isShowInstructions:         'mod_tutorials/getShowMainTutorialInstruction',
-      currentNetworkElementList:  'mod_workspace/GET_currentNetworkElementList'
+      currentNetworkElementList:  'mod_workspace/GET_currentNetworkElementList',
+      statisticsIsOpen:           'mod_workspace/GET_statisticsIsOpen',
     }),
     currentNetwork() {
       return this.$store.state.mod_workspace.currentNetwork
