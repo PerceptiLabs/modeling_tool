@@ -158,13 +158,13 @@ function createWindow () {
       };
       switch (process.platform) {
         case 'win32':
-          UpdateOpt.url = UpdateUrl + 'win/';
+          UpdateOpt.url = UpdateUrl + 'winDev/';
           break;
         case 'darwin':
-          UpdateOpt.url = UpdateUrl + 'ios/';
+          UpdateOpt.url = UpdateUrl + 'iosDev/';
           break;
         case 'linux':
-          UpdateOpt.url = UpdateUrl + 'linux/';
+          UpdateOpt.url = UpdateUrl + 'linuxDev/';
           break;
       }
       autoUpdater.setFeedURL(UpdateOpt);
@@ -182,21 +182,14 @@ app.on('ready', createWindow);
 //   if (process.platform !== 'darwin') closeApp()
 // });
 
-app.on('activate', ()=> {
-  if (mainWindow === null) createWindow()
+app.on('activate', () => {
+  if (mainWindow === null) {
+    createWindow()
+  }
 });
 
-function closeApp(pid) {
-  if(pid) {
-    mainWindow.hide();
-    setTimeout(() => {
-      try       { process.kill(pid) }
-      catch (e) { console.log(e) }
-      finally   { app.quit() }
-    }, 3000)
-  }
-  else app.quit()
-}
+
+
 /**
  * Auto Updater
  *
@@ -224,7 +217,7 @@ autoUpdater.on('download-progress', (progressObj)=> {
   mainWindow.webContents.send('update-downloading', progressObj.percent);
   mainWindow.setProgressBar(progressObj.percent / 100);
 });
-autoUpdater.on('update-downloaded', (event, info)=> {
+autoUpdater.on('update-downloaded', (event, info) => {
   mainWindow.webContents.send('update-completed', info);
 });
 
