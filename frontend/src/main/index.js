@@ -188,7 +188,17 @@ app.on('activate', () => {
   }
 });
 
-
+function closeApp(pid) {
+  if(pid) {
+    mainWindow.hide();
+    setTimeout(() => {
+      try       { process.kill(pid) }
+      catch (e) { console.log(e) }
+      finally   { app.quit() }
+    }, 3000)
+  }
+  else app.quit()
+}
 
 /**
  * Auto Updater
