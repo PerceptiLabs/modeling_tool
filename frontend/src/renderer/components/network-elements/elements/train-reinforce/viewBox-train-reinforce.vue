@@ -1,15 +1,5 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset(v-if="!testIsOpen")
-      li.statistics-box_tab(
-        v-for="(tab, i) in tabset"
-        :key="i"
-      )
-        button.btn.btn--tabs(
-          type="button"
-          @click="setTab(tab)"
-          :class="{'active': currentTab === tab}"
-        ) {{ tab }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row
         .statistics-box_col(v-if="!testIsOpen")
@@ -84,8 +74,32 @@
             Steps: null
           }
         },
-        currentTab: 'Prediction',
-        tabset: ['Prediction', 'Reward', 'Loss', 'Steps'],
+        btnList: {
+          'Prediction': {
+            btnInteractiveInfo: {
+              title: 'Prediction',
+              text: 'View the input, current accuracy and <br/> output prediction vs ground truth/labels'
+            }
+          },
+          'Reward': {
+            btnInteractiveInfo: {
+              title: 'Reward',
+              text: 'See the current and total <br/> accumulated Reward'
+            }
+          },
+          'Loss': {
+            btnInteractiveInfo: {
+              title: 'Loss',
+              text: 'See the Loss of the model'
+            }
+          },
+          'Steps': {
+            btnInteractiveInfo: {
+              title: 'Steps',
+              text: 'See how many Steps the model <br/> has taken before it gets a Done state'
+            }
+          },
+        },
         colorList: ['#6B8FF7', '#FECF73'],
       }
     },
@@ -95,10 +109,6 @@
       }
     },
     methods: {
-      setTab(name) {
-        this.currentTab = name;
-        this.setTabAction();
-      },
       getData() {
         switch (this.currentTab) {
           case 'Prediction':

@@ -36,6 +36,9 @@ Vue.use(VueHotkey);
 import './core/directives'
 Vue.directive('mask', mask);
 
+//- Use filters
+import './core/filters'
+
 //- Use component
 import '@/core/plugins/eCharts.js'
 Vue.component('base-checkbox', BaseCheckbox);

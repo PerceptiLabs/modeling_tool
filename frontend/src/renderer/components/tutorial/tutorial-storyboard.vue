@@ -54,7 +54,7 @@ export default {
         },
         {
           title: 'How does it work?',
-          text: 'AI learns to respond to information in a certain way, depending on what you train it for. It uses historical data and algorithms to generate a model that is able to make decisions and/or predictions.',
+          text: 'ML learns to respond to information in a certain way, depending on what you train it for. It uses historical data and algorithms to generate a model that is able to make decisions and/or predictions.',
           img: './static/img/tutorial/tutorial-1_step-2-icon.svg',
           lookEyesClass: 'look-bottom'
         },
@@ -142,6 +142,7 @@ export default {
     startMainTutorial() {
       if(!this.isTutorialMode) this.onMainTutorial(this);
       this.resetStoryBoard();
+      if(this.currentNetworkElementList) this.addNetwork();
     }
   }
 }

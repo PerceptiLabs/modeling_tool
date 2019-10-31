@@ -4,20 +4,7 @@
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
     @press-confirm="confirmSettings"
-    @press-update="updateCode"
     )
-    //-template(slot="Settings-content")
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
-          .form_label Reshape:
-          #tutorial_input-reshape.form_input(data-tutorial-hover-info)
-            triple-input.tutorial-relative(v-model="settings.Shape")
-
-      .settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
-          .form_label Transpose:
-          #tutorial_input-transpose.form_input(data-tutorial-hover-info)
-            triple-input(v-model="settings.Permutation")
     template(slot="Settings-content")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
@@ -26,13 +13,20 @@
             triple-input-element-reshape.tutorial-relative(
               v-model="settings.Shape"
               :axis-position="settings.Permutation"
+              :validate-sum="currentEl.layerMeta.InputDim"
               @swap12="swap12"
               @swap23="swap23"
               @swap13="swap13"
               )
 
       .settings-layer_section
-      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.reshape")
+          .form_label Transpose map:
+          .form_input
+            setting-reshape-image(
+              :axis-settings="settings.Shape"
+            )
+      //-.settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.transpose")
           .form_label Transpose:
           #tutorial_input-transpose.form_input(data-tutorial-hover-info)
@@ -41,6 +35,7 @@
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
 
@@ -50,12 +45,16 @@
   import mixinSet       from '@/core/mixins/net-element-settings.js';
   import TripleInput    from "@/components/base/triple-input";
   import TripleInputElementReshape    from "@/components/base/triple-input--element-reshape.vue";
+  import SettingReshapeImage    from "@/components/network-elements/elements-settings/setting-reshape-image.vue";
   import { mapActions, mapGetters } from 'vuex';
 
   export default {
     name: 'SetProcessReshape',
     mixins: [mixinSet],
-    components: { TripleInput, TripleInputElementReshape },
+    components: { TripleInput, TripleInputElementReshape, SettingReshapeImage },
+    mounted() {
+      this.$store.dispatch('mod_api/API_getInputDim');
+    },
     data() {
       return {
         settings: {
@@ -78,12 +77,6 @@
       ...mapGetters({
         isTutorialMode: 'mod_tutorials/getIstutorialMode'
       }),
-      codeDefault() {
-        return {
-          Output: `Y=tf.reshape(X['Y'], [-1]+[layer_output for layer_output in [${this.settings.Shape}]]);
-Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
-        }
-      }
     },
     watch: {
       'settings.Shape': {
@@ -136,7 +129,7 @@ Y=tf.transpose(Y,perm=[0]+[i+1 for i in [${this.settings.Permutation}]]);`
       },
       saveSettings(tabName) {
         this.applySettings(tabName);
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'})
+        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_input-reshape'}));
       },
     }
   }

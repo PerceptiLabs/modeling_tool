@@ -14,6 +14,7 @@
         )
           i.icon(:class="layer.iconClass")
         ul.layer_child-list#tutorial_layer_child-list(
+          :class="layer.childListClass"
           v-if="layer.networkElements"
         )
           li(
@@ -33,6 +34,7 @@
 
   import DataData             from '@/components/network-elements/elements/data-data/view-data-data.vue'
   import DataEnvironment      from '@/components/network-elements/elements/data-environment/view-data-environment.vue'
+  import DataCloud            from '@/components/network-elements/elements/data-cloud/view-data-cloud.vue'
 
   import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/view-deep-learning-fc.vue'
   import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/view-deep-learning-conv.vue'
@@ -49,6 +51,9 @@
   import TrainGenetic         from '@/components/network-elements/elements/train-genetic/view-train-genetic.vue'
   import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/view-train-dynamic.vue'
   import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/view-train-reinforce.vue'
+  import TrainLoss            from '@/components/network-elements/elements/train-loss/view-train-loss.vue'
+  import TrainOptimizer       from '@/components/network-elements/elements/train-optimizer/view-train-optimizer.vue'
+  import TrainGan             from '@/components/network-elements/elements/train-gan/view-train-gan.vue'
 
   import MathArgmax           from '@/components/network-elements/elements/math-argmax/view-math-argmax.vue'
   import MathMerge            from '@/components/network-elements/elements/math-merge/view-math-merge.vue'
@@ -68,10 +73,10 @@ export default {
   name: 'TheLayersbar',
   mixins: [clickOutside],
   components: {
-    DataData, DataEnvironment,
+    DataData, DataEnvironment, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainGan,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerCustom
@@ -87,8 +92,9 @@ export default {
           },
           layerClass: 'net-element-data',
           iconClass: 'icon-data',
+          childListClass: '',
           showEl: false,
-          networkElements: ['DataData', 'DataEnvironment'],
+          networkElements: ['DataData', 'DataEnvironment', 'DataCloud'],
           id:'tutorial_data'
           //networkElements: ['DataData']
         },
@@ -100,6 +106,7 @@ export default {
           },
           layerClass: 'net-element-process',
           iconClass: 'icon-settings',
+          childListClass: '',
           showEl: false,
           networkElements: ['process-reshape', 'process-embed', 'process-grayscale', 'ProcessOneHot', 'process-crop'],
           id:'tutorial_processing'
@@ -113,6 +120,7 @@ export default {
           },
           layerClass: 'net-element-learn-deep',
           iconClass: 'icon-network',
+          childListClass: '',
           showEl: false,
           //networkElements: ['LearnDeepConnect', 'LearnDeepConvolut', 'LearnDeepDeconvolut', 'LearnDeepRecurrent']
           networkElements: deepLearnElements,
@@ -126,10 +134,10 @@ export default {
           },
           layerClass: 'net-element-math',
           iconClass: 'icon-calc',
+          childListClass: '',
           showEl: false,
           networkElements: ['MathArgmax', 'MathMerge', 'MathSplit', 'MathSoftmax'],
           id:'tutorial_mathematics'
-          //networkElements: ['MathArgmax', 'MathMerge', 'MathSoftmax']
         },
         {
           tooltip: 'Training',
@@ -139,6 +147,7 @@ export default {
           },
           layerClass: 'net-element-train',
           iconClass: 'icon-training',
+          childListClass: 'layer_child-list--training',
           showEl: false,
           //networkElements: ['TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
           networkElements: trainingElements,
@@ -152,6 +161,7 @@ export default {
           },
           layerClass: 'net-element-learn-class',
           iconClass: 'icon-mind',
+          childListClass: '',
           showEl: false,
           networkElements: ['ClassicMLDbscans', 'ClassicMLKMeans', 'ClassicMLKNN', 'ClassicMLRandomForest', 'ClassicMLSVM'],
           id:'tutorial_classic-machine-learning'
@@ -253,7 +263,10 @@ export default {
     @media (max-height: 1000px) {
       .layer:nth-child(n+5) & {
         top: auto;
-        bottom: 0;
+        bottom: -$indent;
+        &.layer_child-list--training {
+          bottom: -135px;
+        }
       }
     }
     .active + & {
@@ -263,6 +276,13 @@ export default {
     }
     > li + li {
       padding-top: $indent;
+    }
+  }
+  ul.layer_child-list--training {
+    top: -137px;
+    > li:nth-child(2) {
+      border-bottom: 2px solid $bg-scroll;
+      padding-bottom: $indent;
     }
   }
 </style>

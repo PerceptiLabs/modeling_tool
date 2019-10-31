@@ -1,8 +1,9 @@
 'use strict';
 
-import { app, BrowserWindow, Menu, ipcMain, dialog }  from 'electron'
-import { autoUpdater }                        from 'electron-updater'
-import ua                                     from 'universal-analytics'
+import { app, BrowserWindow,
+  Menu, ipcMain, dialog} from 'electron'
+import { autoUpdater }   from 'electron-updater'
+import ua                from 'universal-analytics'
 
 autoUpdater.autoDownload = false;
 
@@ -23,7 +24,6 @@ else {
   });
 }
 
-
 /**
  * Set `__static` path to static files in production
  * https://simulatedgreg.gitbooks.io/electron-vue/content/en/using-static-assets.html
@@ -31,7 +31,6 @@ else {
 if (process.env.NODE_ENV !== 'development') {
   global.__static = require('path').join(__dirname, '/static').replace(/\\/g, '\\\\')
 }
-
 
 const winURL = process.env.NODE_ENV === 'development'
   ? `http://127.0.0.1:9080`
@@ -43,10 +42,10 @@ function createWindow () {
    */
   mainWindow = new BrowserWindow({
     frame: !!(process.platform === 'darwin'),
-    height: 600,
-    width: 800,
-    minHeight: 600,
-    minWidth: 800,
+    height: 650,
+    width: 940,
+    minHeight: 650,
+    minWidth: 940,
     useContentSize: true,
     titleBarStyle: "hidden",
     webPreferences: {
@@ -57,8 +56,7 @@ function createWindow () {
       //plugins: true,
     }
   });
-  //console.log('process.env.IS_DEBUG_MODE', process.env.IS_DEBUG_MODE);
-  if(process.env.IS_DEBUG_MODE) mainWindow.webContents.openDevTools();
+  //mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
@@ -67,18 +65,19 @@ function createWindow () {
   /**
    * listeners for the action button
    */
-  mainWindow.on('enter-full-screen', () => {
+  mainWindow.on('enter-full-screen', ()=> {
     mainWindow.webContents.send('show-mac-header', false);
   });
-  mainWindow.on('leave-full-screen', () => {
+  mainWindow.on('leave-full-screen', ()=> {
     mainWindow.webContents.send('show-mac-header', true);
   });
-  mainWindow.on('maximize', () => {
+  mainWindow.on('maximize', ()=> {
     mainWindow.webContents.send('show-restore-down-icon', true);
   });
-  mainWindow.on('unmaximize', () => {
+  mainWindow.on('unmaximize', ()=> {
     mainWindow.webContents.send('show-restore-down-icon', false);
   });
+
   /**
    * add custom menu
    */
@@ -86,51 +85,50 @@ function createWindow () {
     menuJson.forEach((menuItem)=> {
       if(menuItem.submenu.length) {
         menuItem.submenu.forEach((subMenuItem)=> {
-          subMenuItem.click = ()=> {mainWindow.webContents.send(`menu-event-${subMenuItem.label}`)}
+          if(!subMenuItem.role) subMenuItem.click = ()=> {mainWindow.webContents.send(`menu-event-${subMenuItem.label}`)}
         })
       }
     });
     const menuCustom = Menu.buildFromTemplate(menuJson);
     Menu.setApplicationMenu(menuCustom);
   });
-  
-
   /**
    * listeners for the renderer process
    */
-  ipcMain.on('open-dialog', (event, options) => {
+  ipcMain.on('open-dialog', (event, options)=> {
     dialog.showOpenDialog(mainWindow, options, (files) => {
       mainWindow.webContents.send('open-dialog_path', files);
     })
   });
-  ipcMain.on('open-save-dialog', (event, options) => {
+  ipcMain.on('open-save-dialog', (event, options)=> {
     dialog.showSaveDialog(mainWindow, options, (files) => {
       mainWindow.webContents.send('open-save-dialog_path', files);
     })
   });
-  ipcMain.on('app-close', (event, arg) => {
-    app.quit()
+  ipcMain.on('app-close', (event, pid)=> {
+    closeApp(pid)
   });
-  ipcMain.on('app-minimize', (event, arg) => {
+  ipcMain.on('app-minimize', (event, arg)=> {
     if(process.platform === 'darwin') {
-      mainWindow.minimize();
-    } else {
       mainWindow.isMaximized()
-          ? mainWindow.unmaximize()
-          : mainWindow.minimize()
+        ? mainWindow.unmaximize()
+        : mainWindow.minimize()
+    }
+    else {
+      mainWindow.minimize();
     }
   });
-  ipcMain.on('app-maximize', (event, arg) => {
+  ipcMain.on('app-maximize', (event, arg)=> {
     mainWindow.isMaximized()
       ? mainWindow.unmaximize()
       : mainWindow.maximize()
   });
-  ipcMain.on('app-ready', (event) => {
+  ipcMain.on('app-ready', (event)=> {
+    mainWindow.maximize();
     mainWindow.checkForUpdates();
     mainWindow.webContents.send('get-app-version', app.getVersion());
-    mainWindow.maximize();
   });
-  ipcMain.on('check-update', (event) => {
+  ipcMain.on('check-update', (event)=> {
     mainWindow.checkForUpdates();
   });
   ipcMain.on('update-start', (info)=> {
@@ -139,13 +137,11 @@ function createWindow () {
   ipcMain.on('restart-app-after-update', (info)=> {
     autoUpdater.quitAndInstall();
   });
-  
-
   /**
    * google analytics
    */
-  ipcMain.on('change-route', (event, arg) => {
-    visitor = ua('UA-114940346-1', arg.id, {strictCidFormat: false})
+  ipcMain.on('change-route', (event, arg)=> {
+    visitor = ua('UA-114940346-1', arg.id, {strictCidFormat: false});
     if (arg.path !== loginPage) visitor.pageview(arg.path).send();
   });
 
@@ -177,17 +173,14 @@ function createWindow () {
   }
 }
 
-
 /**
  * APP listeners
  */
 app.on('ready', createWindow);
 
-app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
-});
+// app.on('window-all-closed', ()=> {
+//   if (process.platform !== 'darwin') closeApp()
+// });
 
 app.on('activate', () => {
   if (mainWindow === null) {

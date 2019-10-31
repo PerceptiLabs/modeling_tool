@@ -25,7 +25,13 @@
               },
             }
           },
-          xAxis: { data: [] },
+          xAxis: {
+            data: [],
+            axisLabel: {
+              showMinLabel: true,
+              showMaxLabel: true
+            }
+          },
           yAxis: {},
           legend: {},
           series: []

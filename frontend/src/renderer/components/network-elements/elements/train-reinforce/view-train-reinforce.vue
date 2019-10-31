@@ -7,7 +7,7 @@
     v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
-    i.icon.icon-learning-reinforcement1
+    i.icon.icon-train-reinforce
 
 </template>
 
@@ -26,3 +26,9 @@ export default {
   }
 }
 </script>
+<style lang="scss" scoped>
+  @import "../../../../scss/base";
+  .icon {
+    transform: translateX(3px);
+  }
+</style>

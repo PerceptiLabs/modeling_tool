@@ -30,13 +30,9 @@ const actions = {
         const tokens = response.data.data;
         dispatch('mod_user/SET_userToken', tokens, {root: true});
         dispatch('mod_user/CHECK_LOCAL_usersList', null, {root: true});
-        dispatch('mod_tracker/TRACK_createUser', userInfo.Email, {root: true});
         return tokens
       })
-      // .catch((error)=> {
-      //   console.log(error);
-      //   throw (error);
-      // })
+      .catch((error)=> console.log('CloudAPI_userLogin', error) )
   },
   CloudAPI_userLogout({getters, rootState}) {
     const body = {
@@ -44,9 +40,7 @@ const actions = {
     };
     requestCloudApi('post', 'Customer/Logout', body)
       .then((response)=> {})
-      .catch((error)=> {
-        console.log('CloudAPI_userLogout', error);
-      })
+      .catch((error)=> console.log('CloudAPI_userLogout', error) )
   },
   CloudAPI_userCreate({dispatch}, userInfo) {
     return requestCloudApi('post', 'Customer/CreateGuest', userInfo)
@@ -56,11 +50,9 @@ const actions = {
           {root: true});
         return true
       })
-    // .catch((error)=> {
-    //   console.log(error);
-    //   throw (error);
-    // })
+      .catch((error)=> console.log('CloudAPI_userCreate', error) )
   },
+
   CloudAPI_userGetProfile({dispatch}) {
     return requestCloudApi('get', 'Customer/Profile')
       .then((response)=> {
@@ -68,21 +60,32 @@ const actions = {
         dispatch('mod_user/SET_userProfile', profile, {root: true});
         return true
       })
-      .catch((error)=> {
-        console.log('CloudAPI_userGetProfile', error);
-      })
+      .catch((error)=> console.log('CloudAPI_userGetProfile', error) )
+  },
+  CloudAPI_userForgotPassword({dispatch}, email) {
+    return requestCloudApi('post', 'Customer/ForgotPassword', `'${email}'`)
+      .then((response)=> response.status === 200 )
+      .catch((error)=> console.log('CloudAPI_userForgotPassword', error) )
   },
   CloudAPI_userSetProfile({dispatch}, user) {
     return requestCloudApi('post', 'Customer/Profile', user)
       .then((response)=> response.status === 200 )
+      .catch((error)=> console.log('CloudAPI_userSetProfile', error) )
   },
   CloudAPI_userChangeEmail({dispatch}, dataBody) {
     return requestCloudApi('post', 'Customer/ChangeEmail', dataBody)
       .then((response)=> response.status === 200 )
+      .catch((error)=> console.log('CloudAPI_userChangeEmail', error) )
   },
   CloudAPI_userChangePassword({dispatch}, dataBody) {
     return requestCloudApi('post', 'Customer/ChangePassword', dataBody)
       .then((response)=> response.status === 200 )
+      .catch((error)=> console.log('CloudAPI_userChangePassword', error) )
+  },
+  CloudAPI_checkStatus({dispatch}) {
+    return requestCloudApi('get', 'Customer/Profile')
+      .then((response)=> response )
+      .catch((error)=> console.log('CloudAPI_checkStatus', error) )
   },
 };
 

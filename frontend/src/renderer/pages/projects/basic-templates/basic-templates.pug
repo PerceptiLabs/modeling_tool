@@ -6,14 +6,13 @@ section.basic-templates_templates
       v-for="(temp, i) in basicTemplates"
       :key="temp.i"
       @click="openBasicTemplate(temp.template)"
-      :disabled="i > 0"
       )
       img(:src="temp.imgPath" alt="classification")
       span.template_title {{ temp.title }}
     
 section.basic-templates_crash-course
-  .page-projects_title
-    h2 Ai crash course
+  .page-projects_title.get-started-title-margin
+    h2 Get started
   .crash-course_elements 
     .elements_model
       .model_icon-box.i.icon.icon-data.icon-box--outline

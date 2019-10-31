@@ -11,10 +11,19 @@ npm install
 # serve with hot reload at localhost:9080
 npm run dev
 
+mac
+    sudo chmod -R 777 core // all access 'core' folder 
+    sudo spctl --master-disable //disable checking sign
+    sudo npm run dev
+
 # build electron application for production
 windows
     npm run build
 linux
+    start core
+        chmod +x appServer
+        ./appServer
+
     npm run build
 mac
     xattr -cr .
@@ -25,13 +34,12 @@ mac
 npm run lint
 
 # clone project
-git clone --depth=1 https://redmine-git.webssa.com/git/quantumnet
+git clone --depth=1 https://PerceptiLabs@dev.azure.com/PerceptiLabs/PerceptiLabs/_git/PerceptiLabs
 git remote set-branches origin '*'
 git fetch -v
-git checkout BRACH //dev, master, beta-testing, web
+git checkout BRACH //dev, stage, master, web-dev, web-master
 
 ```
 
 ---
 
-This project was generated with [electron-vue](https://github.com/SimulatedGREG/electron-vue)@[16fb2b9](https://github.com/SimulatedGREG/electron-vue/tree/16fb2b963f17318cd9ff17d2adfd1945bd7107a0) using [vue-cli](https://github.com/vuejs/vue-cli). Documentation about the original structure can be found [here](https://simulatedgreg.gitbooks.io/electron-vue/content/index.html).

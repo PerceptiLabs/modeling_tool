@@ -1,0 +1,41 @@
+.popup-global{
+  z-index: 13;
+}
+
+.popup-global .popup{
+  background: $bg-workspace;
+  border: 1px solid #495163;
+  box-shadow: 0 0 7px 3px #4a484880;
+}
+.popup_header{
+  background: transparent;
+  height: 5rem;
+  padding-top: 1.4rem;
+}
+.settings-layer_section {
+  display: flex;
+  margin-top: 1.3rem;
+}
+.section_attention {
+  color: #fff;
+  background: $color-6;
+  padding: .3rem 1.1rem;
+  font-weight: bold;
+  font-size: 1.6rem;
+  height: 1.7em;
+  width: 1.7em;
+  text-align: center;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.section_text {
+  margin: 0 1.5rem;
+}
+.header_attention--error {
+  background: $col-warning;
+}
+.popup_body p {
+  font-size: 1.5rem;
+}

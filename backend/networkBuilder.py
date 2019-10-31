@@ -1,5 +1,7 @@
-from codehq import CodeHQ
-from data import Data
+from codehq import CodeHqNew
+# from data import Data
+from dataKeeper import dataKeeper as Data
+from codeHQKeeper import codeHQKeeper
 from extractVariables import *
 
 import numpy as np
@@ -11,30 +13,30 @@ import logging
 log = logging.getLogger(__name__)
 
 class NetworkBuilder():
-    def buildNetwork(self,graphObj,jsonNetwork,randomSeed,keep_prob,checkpointDict,batch_size,warningQueue,errorQueue):
+    def buildNetwork(self,graphObj,jsonNetwork,randomSeed,keep_prob,checkpointDict,batch_size,dataDict,warningQueue,errorQueue):
         FLAG_DISTRIBUTED=False
         version="CPU" # The version of Modelling Platform the user has
         # Check if multiple GPUs and use MirroredStrategy if that is the case
         GPUs = GPUtil.getGPUs()
         num_gpus=len(GPUs)
         if num_gpus>1 and version=="GPU":
-            return self._buildNetworkDistributed(graphObj,jsonNetwork,randomSeed,keep_prob,checkpointDict,batch_size,warningQueue,errorQueue,FLAG_DISTRIBUTED,num_gpus)
+            return self._buildNetworkDistributed(graphObj,jsonNetwork,randomSeed,keep_prob,checkpointDict,batch_size,dataDict,warningQueue,errorQueue,FLAG_DISTRIBUTED,num_gpus)
         elif version=="MultipleMachines":
             # Set up TF_CONFIG and create MultiWorkerMirroredStrategy
             pass
         else:
-            return self._buildNetwork(graphObj,jsonNetwork,randomSeed,keep_prob,checkpointDict,batch_size,warningQueue,errorQueue,FLAG_DISTRIBUTED)
+            return self._buildNetwork(graphObj,jsonNetwork,randomSeed,keep_prob,checkpointDict,batch_size,dataDict,warningQueue,errorQueue,FLAG_DISTRIBUTED)
 
-    def _buildNetworkDistributed(self,graphObj,jsonNetwork,randomSeed,keep_prob,checkpointDict,batch_size,warningQueue,errorQueue,FLAG_DISTRIBUTED,num_gpus):
+    def _buildNetworkDistributed(self,graphObj,jsonNetwork,randomSeed,keep_prob,checkpointDict,batch_size,dataDict,warningQueue,errorQueue,FLAG_DISTRIBUTED,num_gpus):
         # cross_device_ops = tf.contrib.distribute.AllReduceCrossDeviceOps('hierarchical_copy', num_packs=num_gpus)
         # strategy = tf.distribute.MirroredStrategy(cross_device_ops=cross_device_ops)
         strategy = tf.distribute.MirroredStrategy()
         global_batch_size = batch_size * strategy.num_replicas_in_sync
         with strategy.scope():
             # Either send in FLAG to _buildNetwork or copy paste in here and edit
-            return self._buildNetwork(graphObj,jsonNetwork,randomSeed,keep_prob,batch_size,warningQueue,errorQueue,FLAG_DISTRIBUTED)
+            return self._buildNetwork(graphObj,jsonNetwork,randomSeed,keep_prob,batch_size,dataDict,warningQueue,errorQueue,FLAG_DISTRIBUTED)
 
-    def _buildNetwork(self,graphObj,jsonNetwork,randomSeed,keep_prob,checkpointDict,batch_size,warningQueue,errorQueue,FLAG_DISTRIBUTED):
+    def _buildNetwork(self,graphObj,jsonNetwork,randomSeed,keep_prob,checkpointDict,batch_size,dataDict,warningQueue,errorQueue,FLAG_DISTRIBUTED):
         FLAG_REINFORCE = False
         graph=graphObj.graphs   #graph has structure [id]->[id for id in backward_connections]
         end_points=graphObj.end_points
@@ -79,9 +81,10 @@ class NetworkBuilder():
         # print(safe_dict)
         # exec("print(keep_prob)",{"__builtins__":None},safe_dict)
         # error
-        codeHQ=CodeHQ()
+        codeHQ=None
         for Id in list(graph.keys()):
             content=graph[Id]['Info']
+            previousHash=[]
             log.info("Building network component of type {} with id {}".format(content["Type"], Id))
 
             #Check how many inputs the layer has and take input values from previous layers
@@ -89,9 +92,11 @@ class NetworkBuilder():
                 X=dict()
                 for i in graph[Id]['Con']:
                     X.update(dict.fromkeys([i, graph[i]['Info']["Name"]],outputVariables[i]))
+                    previousHash.append(dataDict[i].hash)
                     # Xvariables.update(dict.fromkeys([i, graph[i]['Info']["Name"]],outputVariables[i]))
             elif len(graph[Id]['Con'])==1:
                 X=outputVariables[graph[Id]['Con'][0]]
+                previousHash.append(dataDict[graph[Id]['Con'][0]].hash)
                 # Xvariables=outputVariables[graph[Id]['Con'][0]]
 
             #Check so it has previous layers (X exists)
@@ -102,18 +107,34 @@ class NetworkBuilder():
             #     safe_dict["Xvariables"]=Xvariables
 
             if content["Type"]=="DataData":
+                # if Id not in dataDict:
+                #     dataDict[Id]=Data(Id,content["Properties"]["accessProperties"])
+
+                # dataDict[Id].updateProperties(previousHash, content, globals_=safe_dict)
+                # safe_dict=dataDict[Id].locals_
+
+
+                content["Data"]=Data(Id,content["Properties"]["accessProperties"])
+                content["Data"].generateCode(seed=randomSeed)
+                safe_dict=content["Data"].executeCode(globals_=safe_dict)
+
+                outputDict[Id]=safe_dict["Y"]
+                outputVariables[Id]={ k : safe_dict[k] for k in set(safe_dict) - set(origionalSafeDict) }
+                safe_dict=origionalSafeDict.copy()
+
+
                 #Create a data object and put as a refence into content["code"]["data"]?
                 #We can then easily call .getData and have a reference to the placeholder from the object for the session.
                 # try:
-                content['Properties']['accessProperties']['Seed']=randomSeed
-                content["Data"]=Data(content["Properties"],jsonNetwork["Hyperparameters"])
+                # content['Properties']['accessProperties']['Seed']=randomSeed
+                # content["Data"]=Data(content["Properties"],jsonNetwork["Hyperparameters"])
                 # except:
                 #     errorQueue.put("The data was not read correctly, did you enter the correct data path?")
                 #     print("The data was not read correctly, did you enter the correct data path?")
                 #     return
-                placeholder=content["Data"].placeholder 
-                outputDict[Id]=placeholder
-                outputVariables[Id]={"Y":placeholder}
+                # placeholder=content["Data"].output 
+                # outputDict[Id]=placeholder
+                # outputVariables[Id]={"Y":placeholder}
                 
             elif content["Type"]=="DataEnvironment":
                 if "Batch_size" not in content["Properties"]["accessProperties"]:
@@ -228,12 +249,24 @@ class NetworkBuilder():
                         else:
                             content["Code"]["Output"]+=row+"\n" 
 
-                if content["Code"]["Output"]!="":
-                    codeString=content["Code"]["Output"]
-                else:
-                    codeString=codeHQ.get_code(content['Type'],content['Properties'],X)
+                # if content["Code"]["Output"]!="":
+                #     codeString=content["Code"]["Output"]
+                # else:
+                #     codeString=codeHQ.get_code(content['Type'],content['Properties'],X)
+                # if Id not in dataDict:
+                #     dataDict[Id]=codeHQKeeper(Id,content)
 
-                self._exec(codeString, safe_dict)
+                # dataDict[Id].updateProperties(previousHash, content, globals_=safe_dict)
+                # safe_dict=dataDict[Id].locals_
+
+                # if safe_dict is None:
+                #     raise ValueError("The component did not run correctly")
+
+                codeObj=codeHQKeeper(Id,content)
+                print(codeObj.generateCode())
+                safe_dict=codeObj.executeCode(globals_=safe_dict)
+
+                # self._exec(codeString, safe_dict)
                 #exec(codeString,{"__builtins__":None},safe_dict)
                 
                 outputDict[Id]=safe_dict["Y"]       #The variables run in exec are not added to local() but to the safe_dict

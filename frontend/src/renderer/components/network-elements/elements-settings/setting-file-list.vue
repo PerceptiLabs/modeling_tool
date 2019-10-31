@@ -28,7 +28,7 @@
 </template>
 
 <script>
-
+  import { deepCopy } from "@/core/helpers.js";
   import TripleInput    from "@/components/base/triple-input";
 export default {
   name: "SettingsFileList",
@@ -51,7 +51,7 @@ export default {
   watch: {
     value: {
       handler(newVal) {
-        this.fileList = JSON.parse(JSON.stringify(newVal))
+        this.fileList = deepCopy(newVal)
       },
       deep: true,
       immediate: true
@@ -99,7 +99,7 @@ export default {
     }
   }
   .file-settings_list {
-    height: 20rem;
+    max-height: 20rem;
     overflow-y: auto;
     background-color: $bg-input;
     margin: 0 (-$file-list-indent) .5rem;

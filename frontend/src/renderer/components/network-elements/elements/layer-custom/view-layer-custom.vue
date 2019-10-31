@@ -3,7 +3,7 @@
   data-component="LayerCustom"
   data-layer="Layer Custom"
   data-type="Other"
-  v-tooltip:right="'Layer Custom'"
+  v-tooltip:right="'Custom'"
   v-tooltip-interactive:right="interactiveInfo"
     :style="layerStyles"
   )
@@ -19,8 +19,8 @@ export default {
   data() {
     return {
       interactiveInfo: {
-        title: 'Layer Custom',
-        text: 'Layer Custom layer'
+        title: 'Custom',
+        text: 'Custom layer'
       }
     }
   }

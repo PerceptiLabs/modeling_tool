@@ -2,8 +2,9 @@ EXCLUDED_FILES=(
     'minicodehq.py'
     'appOc.py'
     'a2cagent.py'
-    'frontend_data_code.py',
+    'frontend_data_code.py'
     'core_test.py'
+    'serverInterface.py'
 )
 
 
@@ -41,9 +42,9 @@ mkdir backend_tmp
 mkdir backend_out
 mkdir frontend_out
 
-echo "Copying Python files files from ../../backend/"
+echo "Copying files files from ../../backend/"
 cd backend_tmp/
-cp ../../backend/*.py .
+cp -r ../../backend/* .
 
 for file in ${EXCLUDED_FILES[@]}
 do
@@ -68,6 +69,7 @@ ls -l
 
 echo "Running pyinstaller..."
 cp ../../backend/osx.spec .
+
 pyinstaller --clean -y osx.spec
 
 if [ -e dist/appServer/libpython3.6m.so.1.0 ]
@@ -76,7 +78,7 @@ then
     echo "libpython3.6m.so.1.0 exists, making defensive copy called libpython3.6m.so"
     cp dist/appServer/libpython3.6m.so.1.0 dist/appServer/libpython3.6m.so    
 fi
-
+exit
 chmod +x dist/appServer/appServer
 
 echo "copying dist to 'backend_out/'"

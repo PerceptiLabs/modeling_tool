@@ -21,6 +21,7 @@
       code-hq.code-wrap(
         v-if="theCode && currentTab !== 'error'"
         v-model="theCode[currentTab]"
+        ref="codeEditor"
         :error-row="errorRow"
         )
       .code-wrap(v-if="currentTab === 'error'")
@@ -30,28 +31,23 @@
 </template>
 
 <script>
-  import codeHq    from "@/components/network-elements/elements-settings/code-hq.vue";
+  import codeHq from "@/components/network-elements/elements-settings/code-hq.vue";
+  import { deepCopy } from "@/core/helpers.js";
 
 export default {
   name: "SettingsCode",
-  components: {codeHq},
+  components: { codeHq },
   props: {
-    // trainingMode: {
-    //   type: Boolean,
-    //   default: false
-    // },
-    currentEl: {
-      type: Object,
-    },
+    currentEl:  { type: Object },
+    elSettings: { type: Object },
     value: {
       type: [String, Object],
       default: ''
     },
   },
-  created () {
-    const code = this.currentEl.layerCode.length ? {'Output': this.currentEl.layerCode} : this.theCode;
-    const keys = Object.keys(code);
-    this.currentTab = keys[0];
+  mounted () {
+    if(this.currentEl.layerCode) this.setCode(this.currentEl.layerCode);
+    else this.getCode();
   },
   beforeDestroy() {
     this.closeFullView()
@@ -63,9 +59,6 @@ export default {
     }
   },
   computed: {
-    // isMultiTabs() {
-    //   return typeof this.theCode === 'string' ? false : true
-    // },
     theCode: {
       get: function() {
         return this.value
@@ -82,10 +75,25 @@ export default {
     }
   },
   methods: {
+    getCode() {
+      const value = {
+        layerId: this.currentEl.layerId,
+        settings: this.elSettings,
+      };
+      this.$store.dispatch('mod_api/API_getCode', value)
+        .then((code)=> {
+          this.setCode(code)
+        })
+    },
+    setCode(objCode) {
+      this.theCode = deepCopy(objCode);
+      this.currentTab = Object.keys(objCode)[0];
+    },
     toggleFullView() {
       this.fullView = !this.fullView;
       document.querySelector('.popup_body').classList.toggle("popup_body--show-code");
       document.querySelector('.network').classList.toggle("network--show-code");
+      this.$refs.codeEditor.refresh();
     },
     closeFullView() {
       this.fullView = false;
@@ -143,6 +151,7 @@ export default {
     flex: 1;
     flex-direction: column;
     width: 100%;
+    overflow: hidden;
     .code-wrap,
     .bookmark_content {
       height: 100%;
@@ -153,6 +162,7 @@ export default {
     font-size: 1.6rem;
   }
   .code-wrap_error-container {
+    padding: 1rem;
     overflow: scroll;
     height: 100%;
   }

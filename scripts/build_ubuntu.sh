@@ -3,7 +3,8 @@ EXCLUDED_FILES=(
     'appOc.py'
     'a2cagent.py'
     'frontend_data_code.py',
-    'core_test.py'
+    'core_test.py',
+    'serverInterface.py'
 )
 
 echo "Running build script."
@@ -35,14 +36,16 @@ mkdir backend_tmp
 mkdir backend_out
 mkdir frontend_out
 
-echo "Copying Python files files from ../../backend/"
+echo "Copying files files from ../../backend/"
 cd backend_tmp/
-cp ../../backend/*.py .
+cp -r ../../backend/* .
 
 for file in ${EXCLUDED_FILES[@]}
 do
+    echo "remove $file"
     rm $file
 done
+
 
 mv setup.py setup.pyx
 mv mainServer.py mainServer.pyx
@@ -60,9 +63,15 @@ echo "Listing contents of 'backend_tmp/'"
 ls -l
 
 
+
 echo "Running pyinstaller..."
+
 cp ../../backend/linux.spec .
+#cp ../../backend/common.spec common.py
+
 pyinstaller --clean -y linux.spec
+
+#mv ../../backend/common.py ../../backend/common.spec
 
 if [ -e dist/appServer/libpython3.6m.so.1.0 ]
 then
@@ -79,6 +88,7 @@ cp -r ../backend_tmp/dist .
 
 echo "Done building backend!"
 
+ exit
 # ----- Build frontend ----
 echo "----- Building frontend -----"
 

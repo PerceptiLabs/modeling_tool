@@ -34,22 +34,14 @@
 </template>
 
 <script>
-  import mixpanel           from 'mixpanel-browser'
-
-  import {requestCloudApi}  from '@/core/apiCloud.js'
   import { baseUrlSite }    from '@/core/constants.js'
-  import { goToLink }       from '@/core/helpers.js'
+  import { goToLink, encryptionData }       from '@/core/helpers.js'
 
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
 
 export default {
   name: 'PageLogin',
   components: { LogoutUserPageWrap },
-  // mounted() {
-  //   if(this.userIsLogin) {
-  //     this.loginUser()
-  //   }
-  // },
   data() {
     return {
       userEmail: '',
@@ -62,9 +54,6 @@ export default {
     isLoading() {
       return this.$store.state.mod_login.showLoader
     },
-    // userIsLogin() {
-    //   return this.$store.getters['mod_user/GET_userIsLogin']
-    // },
   },
   methods: {
     toLink(url) {
@@ -87,27 +76,10 @@ export default {
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
         .then((tokens)=> {
-          //console.log('then', tokens);
-          //encryptionData(tokens.accessToken);
-          if(this.saveToken) localStorage.setItem('currentUser', JSON.stringify(tokens));
-          //this.loginUser()
+          if(this.saveToken) this.$store.dispatch('mod_user/SET_userTokenLocal', tokens)
         })
-        //.catch((error)=> {console.log('catch Login');})
-        .finally(()=> {
-          //console.log('finally');
-          this.$store.commit('mod_login/SET_showLoader', false);
-        });
-    },
-    TRACKER_createUser() {
-      console.log('TRACKER_createUser');
-      mixpanel.people.set_once({
-        "$email": this.userEmail,
-        "$created": new Date(),
-        "$last_login": new Date(),
-      });
-    },
-    loginUser() {
-      this.$router.replace('/projects');
+        .catch((error)=> {console.log(error)})
+        .finally(()=>    {this.$store.commit('mod_login/SET_showLoader', false)});
     },
   }
 }

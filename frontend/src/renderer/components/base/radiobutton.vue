@@ -3,6 +3,7 @@
     input(type="radio"
       :name="groupName"
       :value="valueInput"
+      :disabled="disabled"
       v-model="checked"
       @change="onChange()"
       )
@@ -19,6 +20,10 @@ export default {
     groupName: {
       type: String,
       default: ''
+    },
+    disabled: {
+      type: Boolean,
+      default: false
     },
     value: {type: [Boolean, String]},
     valueInput: {String},
@@ -45,6 +50,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .custom-radio {
+    font-size: 1.2rem;
     display: inline-flex;
     align-items: center;
     padding: .5em 1em .5em 0;

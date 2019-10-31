@@ -112,15 +112,11 @@ export default {
       this.$store.commit('mod_login/SET_showLoader', true);
 
       this.$store.dispatch('mod_apiCloud/CloudAPI_userCreate', this.user)
-        .then((response)=>{
-          this.$router.replace('/login');
+        .then((response)=> this.$router.replace('/login'))
+        .catch((err)=> {
+          console.log(err)
         })
-        // .catch((error)=> {
-        //   this.$store.dispatch('globalView/GP_infoPopup', error);
-        // })
-        .finally(()=> {
-          this.$store.commit('mod_login/SET_showLoader', false);
-        });
+        .finally(()=> this.$store.commit('mod_login/SET_showLoader', false));
     },
     toPolicy() {
       this.isShowPolicy = true;
@@ -134,7 +130,7 @@ export default {
 
 <style lang="scss" scoped>
   @import '../../scss/base';
-  .policy-btn{
+  .policy-btn {
     margin-left: 1rem;
   }
 </style>

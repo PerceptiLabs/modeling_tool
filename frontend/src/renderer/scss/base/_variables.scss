@@ -52,10 +52,12 @@ $color-7:  #727EA6;
 $color-8:  #5D698D;
 $color-9:  #515972;
 $color-10: #6CF4D1;
+$color-11: #282d39;
 
 $bg-grad-cyan: linear-gradient($color-1, $color-2);
 $bg-grad-blue: linear-gradient($color-5, $color-6);
 $bg-grad-disable: linear-gradient($color-9, $color-8);
+$bg-grad-black: linear-gradient(90deg, $bg-window -41.67%, #2F3238 151.67%, #23252A 151.67%);
 
 
 $box-shad: 0 2px 7px 0px rgba(#000, .3);
@@ -85,7 +87,7 @@ $h-sidebar-layers-item: 3.357rem; //33px
 $h-sidebar-layers-indent: 1rem; //14px
 $sidebar-first-tab-indent: 1.5rem; //14px
 $w-sidebar: 30rem; //300px
-$h-toolbar: 4em; //56px
+$h-toolbar: 4rem; //56px
 $h-header-win: 30px;
 $h-header-mac: 22px;
 $h-header-linux: 51px;

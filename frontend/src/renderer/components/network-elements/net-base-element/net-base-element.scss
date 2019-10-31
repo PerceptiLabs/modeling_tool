@@ -1,0 +1,126 @@
+$arrows-start_size: .8rem;
+$clip-path_indent: $arrows-start_size/2;
+
+.net-element {
+  position: absolute;
+  box-sizing: border-box;
+  border-radius: .5rem;
+  background-color: $bg-workspace;
+  &:hover {
+    will-change: top, left;
+  }
+  .btn--layersbar {
+    width: 60px;
+    height: 60px;
+  }
+}
+.net-element_window {
+  position: absolute;
+  z-index: 10;
+  top: 0;
+  left: 100%;
+  padding-left: 10px;
+  padding-right: 10px;
+  &.net-element_window--left {
+    left: auto;
+    right: 100%;
+  }
+  &.net-element_window--top {
+    top: auto;
+    bottom: 0;
+  }
+}
+.net-element_btn {
+  position: relative;
+  z-index: 3;
+  margin: 0;
+  padding: 0;
+  background-color: transparent;
+  box-shadow: $layer-shad;
+}
+
+.net-element_be-for-end {
+  font-size: 1.2rem;
+  position: absolute;
+  top: -20px; //zoom need px!
+  left: 50%;
+  z-index: 2;
+  transform: translateX(-50%);
+  white-space: nowrap;
+  background-color: rgba($bg-workspace, .5);
+}
+.net-element_checkpoint-icon {
+  position: absolute;
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: $col-txt2;
+  top: 2px;
+  right: 2px;
+  width: 1.5rem;
+  height: 1.5rem;
+  background-color: rgba($col-txt, .85);
+  border-radius: 50%;
+  z-index: 4;
+  &:before {
+    content: 't';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+}
+.net-element_code-error {
+  position: absolute;
+  top: 0;
+  right: 0;
+  transform: translate(50%, -50%);
+  z-index: 4;
+  font-size: 1.4rem;
+}
+.net-element--hide-layer {
+  opacity: 0;
+  visibility: hidden;
+}
+.net-element_arrows-start {
+  position: absolute;
+  top: -$clip-path_indent;
+  left: 0;
+  right: 0;
+  bottom: 50%;
+  z-index: 4;
+  clip-path: polygon(50% 0%, 100% $clip-path_indent, 70% 65%, 30% 65%, 0 $clip-path_indent);
+  transform-origin: bottom;
+  &:hover .arrows-start_btn {
+    display: block;
+  }
+  &--left {
+    transform: rotate(-90deg);
+  }
+  &--right {
+    transform: rotate(90deg);
+  }
+  &--bottom {
+    transform: rotate(180deg);
+  }
+}
+.arrows-start_btn {
+  display: none;
+  position: absolute;
+  top: $clip-path_indent;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: $arrows-start_size;
+  height: $arrows-start_size;
+  background: #00C8D1;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  z-index: 4;
+  padding: 0;
+
+  .net-element--active & {
+    display: block;
+  }
+}
+.net-element--active {
+  z-index: 5;
+}

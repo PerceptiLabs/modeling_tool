@@ -1,22 +1,39 @@
 <template lang="pug">
   base-global-popup(
-    v-if="isShow"
     :tab-set="popupTitle"
     )
     template(slot="Choose what to save-content")
+      .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
+        .form_row
+          .form_label Project name:
+          .form_input
+            input(type="text"
+              v-model="settings.projectName"
+              :class="{'bg-error': !settings.projectName}"
+            )
+      .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
+        .form_row
+          .form_label Project path:
+          .form_input
+            input.ellipsis(type="text"
+              v-model="settings.projectPath"
+              :class="{'bg-error': !settings.projectPath}"
+              @click="loadPathProject"
+            )
       .settings-layer_section
         .form_row
+          .form_label Save settings:
           .form_input
-            base-radio(group-name="group" :value-input="false" v-model="isSaveTrainedModel")
+            base-radio(group-name="group" :value-input="false" v-model="settings.isSaveTrainedModel")
               span Save only model
-            base-radio(group-name="group" :value-input="true" v-model="isSaveTrainedModel")
+            base-radio(group-name="group" :value-input="true" v-model="settings.isSaveTrainedModel" :disabled="!existTrained")
               span Save trained network
-              //-Cross-Entropy
 
     template(slot="action")
-      button.btn.btn--primary(type="button"
+      button.btn.btn--primary.btn--disabled(type="button"
         @click="closePopup") Cancel
       button.btn.btn--primary(type="button"
+        :disabled="!settings.projectPath.length"
         @click="answerPopup") Continue
 
 
@@ -24,34 +41,80 @@
 
 <script>
 import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
+import { openLoadDialog, generateID } from '@/core/helpers.js'
+import { pathSlash }  from "@/core/constants.js";
 
 export default {
   name: "WorkspaceSaveNetwork",
   components: {BaseGlobalPopup},
+  props: {
+    popupSettings: {type: Object},
+  },
+  created() {
+    this.settings.projectName = this.currentNetwork.networkName;
+    if(this.popupSettings.isFreezeInfo) {
+      this.settings.projectPath = this.currentNetwork.networkRootFolder;
+    }
+    this.$store.dispatch('mod_api/API_checkTrainedNetwork')
+      .then((isTrained)=> {
+        this.settings.isSaveTrainedModel = isTrained;
+        this.existTrained = isTrained;
+      })
+  },
   data() {
     return {
-      isShow: false,
       popupTitle: ['Choose what to save'],
-      isSaveTrainedModel: true,
+      settings: {
+        projectName: '',
+        projectPath: '',
+        isSaveTrainedModel: true,
+      },
+      existTrained: false,
       promiseOk: null,
       promiseFail: null,
     }
   },
+  computed: {
+    currentNetwork() {
+      return this.$store.getters['mod_workspace/GET_currentNetwork']
+    },
+    isEmptyPath() {
+      return !!this.settings.projectPath.length
+    }
+  },
+  watch: {
+    'settings.projectName': {
+      handler(newVal) {
+        if(this.popupSettings.isSyncName)
+        this.$store.dispatch('mod_workspace/SET_networkName', newVal)
+      }
+    }
+  },
   methods: {
     openPopup() {
-      this.isShow = true;
       return new Promise((resolve, reject) => {
         this.promiseOk = resolve;
         this.promiseFail = reject;
       });
     },
     closePopup() {
-      this.isShow = false;
-      this.promiseFail()
+      this.promiseFail(false)
     },
     answerPopup() {
-      this.isShow = false;
-      this.promiseOk(this.isSaveTrainedModel);
+      if(!this.popupSettings.isFreezeInfo) {
+        this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
+      }
+      this.promiseOk(this.settings);
+    },
+    loadPathProject() {
+      if(this.settings.projectPath.length) return;
+      let opt = {
+        title:"The folder in which the project will be saved",
+        properties: ['openDirectory'],
+      };
+      openLoadDialog(opt)
+        .then((pathArr)=> { this.settings.projectPath = pathArr[0] })
+        .catch(()=> {})
     },
   }
 }

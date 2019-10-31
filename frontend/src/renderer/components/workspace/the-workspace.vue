@@ -3,7 +3,8 @@
     .workspace_tabset
       include ./tabset/workspace-tabset.pug
     .workspace_content.bookmark_content.js-workspace(
-      ref="workspaceNet" :class="{'workspace-relative' : showTrainingSpinner}"
+      ref="workspaceNet"
+      :class="{'workspace-relative' : showTrainingSpinner}"
       )
       .network(
         v-if="indexCurrentNetwork === i"
@@ -12,18 +13,22 @@
         :class="networkClass"
       )
         the-testing.the-testing(v-if="testIsOpen")
-        the-statistics.the-statistics(
+        //-the-statistics.the-statistics(
+          v-if="statisticsIsOpen || testIsOpen"
+          /:el-data="statisticsElSelected.statistics"
+          )
+        the-view-box#tutorial_statistics.the-statistics(
           v-if="statisticsIsOpen || testIsOpen"
           :el-data="statisticsElSelected.statistics"
-          )
-        the-view-box.the-view-box(
+          section-title="Statistics"
+        )
+        the-view-box#tutorial_view-box.the-view-box(
           v-if="statisticsIsOpen  || testIsOpen"
           :el-data="statisticsElSelected.viewBox"
+          section-title="ViewBox"
           )
         section.network_info-section.the-network-field
-          .info-section_head(
-            v-if="statisticsIsOpen || testIsOpen"
-            )
+          .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
           .info-section_main.js-info-section_main(
             @wheel.ctrl="scaleScroll($event)"
@@ -34,11 +39,15 @@
               :style="{zoom: scaleNet + '%'}"
             )
 
-        general-settings(v-if="showGlobalSet")
+        //-general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
         workspace-before-import(v-if="showWorkspaceBeforeImport")
-        workspace-save-network(ref="saveNetworkPopup")
+        workspace-save-network(
+          v-if="saveNetworkPopup.show"
+          ref="saveNetworkPopup"
+          :popup-settings="saveNetworkPopup"
+          )
 
       start-training-spinner(v-if="showTrainingSpinner")
 
