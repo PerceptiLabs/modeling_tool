@@ -1352,7 +1352,7 @@ const actions = {
   showHideTooltip({getters}) {
     if(getters.getIstutorialMode) {
       let element = document.getElementById(getters.getActiveAction.id);
-      if(element.parentNode.classList.contains('unlock-element')) {
+      if(element && element.parentNode.classList.contains('unlock-element')) {
         let activeTooltip = document.querySelector('.tooltip-tutorial');
         activeTooltip.classList.contains('tooltip-hide') ?
           activeTooltip.classList.remove('tooltip-hide') : activeTooltip.classList.add('tooltip-hide')

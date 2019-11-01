@@ -182,8 +182,10 @@ app.on('ready', createWindow);
 //   if (process.platform !== 'darwin') closeApp()
 // });
 
-app.on('activate', ()=> {
-  if (mainWindow === null) createWindow()
+app.on('activate', () => {
+  if (mainWindow === null) {
+    createWindow()
+  }
 });
 
 function closeApp(pid) {
@@ -197,6 +199,7 @@ function closeApp(pid) {
   }
   else app.quit()
 }
+
 /**
  * Auto Updater
  *
@@ -224,7 +227,7 @@ autoUpdater.on('download-progress', (progressObj)=> {
   mainWindow.webContents.send('update-downloading', progressObj.percent);
   mainWindow.setProgressBar(progressObj.percent / 100);
 });
-autoUpdater.on('update-downloaded', (event, info)=> {
+autoUpdater.on('update-downloaded', (event, info) => {
   mainWindow.webContents.send('update-completed', info);
 });
 

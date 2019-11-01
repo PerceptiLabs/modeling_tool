@@ -458,17 +458,19 @@ const actions = {
       });
   },
 
-  API_exportData({rootGetters, getters, dispatch}, value) {
-    //const net = rootGetters['mod_workspace/GET_currentNetwork'];
+  API_exportData({rootGetters, getters, dispatch}, settings) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Export',
-      value: value
+      value: {
+        ...settings,
+        frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
+      }
     };
     const trackerData = {
       result: '',
       network: getters.GET_coreNetwork,
-      settings: value
+      settings
     };
     coreRequest(theData)
       .then((data)=> {

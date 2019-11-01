@@ -12,6 +12,8 @@ npm install
 npm run dev
 
 mac
+    sudo chmod -R 777 core // all access 'core' folder 
+    sudo spctl --master-disable //disable checking sign
     sudo npm run dev
 
 # build electron application for production

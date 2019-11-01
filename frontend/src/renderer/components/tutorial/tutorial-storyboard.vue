@@ -142,6 +142,7 @@ export default {
     startMainTutorial() {
       if(!this.isTutorialMode) this.onMainTutorial(this);
       this.resetStoryBoard();
+      if(this.currentNetworkElementList) this.addNetwork();
     }
   }
 }
