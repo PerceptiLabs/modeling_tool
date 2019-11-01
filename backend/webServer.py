@@ -9,10 +9,8 @@ import traceback
 
 from coreLogic import coreLogic
 from propegateNetwork import lwNetwork
-from lw_data import lw_data
 from parse_pb import parse
 import time
-from sentry_sdk import configure_scope
 import numpy as np
 
 from dataKeeper import dataKeeper as lw_data
@@ -21,6 +19,8 @@ from createDataObject import createDataObject
 
 from core_new.core import *
 from core_new.history import SessionHistory
+from core_new.errors import LightweightErrorHandler
+from core_new.extras import LayerExtrasReader
 from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from graph import Graph
 from codehq import CodeHqNew as CodeHq
@@ -30,10 +30,10 @@ import pprint
 import logging
 
 class Message:
-    def __init__(self, cores, dataDict):
+    def __init__(self, cores, dataDict, checkpointDict):
         self.cores=cores
         self.dataDict=dataDict
-
+        self.checkpointDict=checkpointDict
 
     def _json_encode(self, obj, encoding):
         return json.dumps(obj, ensure_ascii=False).encode(encoding)
@@ -88,6 +88,88 @@ class Message:
             print("received" + str(jsonheader["content-type"]) + " request from")
 
         return request
+    
+    def _is_jsonable(self, x):
+        try:
+            json.dumps(x)
+            return True
+        except (TypeError, OverflowError):
+            return False
+
+    def add_to_checkpointDict(self, content):
+        if content["checkpoint"][-1] not in self.checkpointDict:
+            from extractVariables import extractCheckpointInfo
+            ckptObj=extractCheckpointInfo(content["endPoints"], *content["checkpoint"])
+            self.checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
+            ckptObj.close()
+
+    def _create_lw_core(self, jsonNetwork):
+        graph = Graph(jsonNetwork)
+        
+        graph_dict = graph.graphs
+
+        for value in graph_dict.values():
+            if "checkpoint" in value["Info"] and value["Info"]["checkpoint"]:
+                self.add_to_checkpointDict(value["Info"])
+
+        data_container = DataContainer()
+        
+        session_history_lw = SessionHistory()
+        extras_reader = LayerExtrasReader()
+
+        from codehq import CodeHqNew as CodeHq
+
+        module_provider = ModuleProvider()
+        module_provider.load('tensorflow', as_name='tf')
+        module_provider.load('numpy', as_name='np')
+        module_provider.load('pandas', as_name='pd')             
+        module_provider.load('gym')
+        module_provider.load('json')  
+        module_provider.load('os')   
+        module_provider.load('skimage')         
+
+        
+        for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
+            module_provider.install_hook(hook_target, hook_func)
+
+        error_handler = LightweightErrorHandler()
+            
+        lw_core = LightweightCore(CodeHq, graph_dict,
+                                  data_container, session_history_lw,
+                                  module_provider, error_handler,
+                                  extras_reader, checkpointValues=self.checkpointDict.copy())
+        
+        return lw_core, extras_reader, data_container
+
+    def getParsingFiles(self,fileList):
+        if len(fileList)==1 and "." not in fileList[0].split("/")[-1]:
+            #Then its a folder
+            return ""
+        elif len(fileList)==1:
+            if ".pb" in fileList[0]:
+                return [fileList[0],None]
+            else:
+                raise Exception("Only frozen .pb files can be parsed by themselves")
+        else:
+            graph_def_path=""
+            checkpoint=""
+            for _file in fileList:
+                if ".ckpt" in _file:
+                    path, fileName=os.path.split(_file)
+                    if "ckpt" in fileName.split(".")[-1]:
+                        checkpoint=_file
+                    else:
+                        newFileName=".".join(fileName.split(".")[0:-1])
+                        checkpoint=os.path.abspath(os.path.join(path, newFileName))
+                    
+                elif any([pb in _file for pb in [".pb", ".pbtxt"]]):
+                    graph_def_path=_file
+                else:
+                    raise Exception("File type not recognised")
+            if graph_def_path and checkpoint:
+                return [graph_def_path, checkpoint]
+            else:
+                return ""
 
     async def interface(self, websocket, path):
         request = await websocket.recv()
@@ -106,7 +188,7 @@ class Message:
             self.dataDict[reciever]=dict()
 
         if reciever not in self.cores:
-            core=coreLogic(reciever, self.dataDict[reciever])
+            core=coreLogic(reciever)
             self.cores[reciever]=core
         else:
             core=self.cores[reciever]
@@ -119,42 +201,14 @@ class Message:
 
         content=""
 
-        
-        coreCalls=["Close", "updateResults", "checkCore", "headless", "getTrainingStatistics", "getTestingStatistics", "Start", "startTest", "resetTest", "getTestStatus",
-        "nextStep", "previousStep", "playTest", "getIter", "getEpoch", "Stop", "Pause", "SkipToValidation", "Export", "getStatus"]
-        lwCalls=["getDataPlot", "getDataMeta", "deleteData", "removeReciever", "getNetworkData", "getNetworkInputDim", "getNetworkOutputDim", "getPreviewSample"]
-        parseCalls=["Parse"]
-        with configure_scope() as scope:
-            scope.set_extra("reciever",reciever)
-            scope.set_extra("action",action)
-            scope.set_extra("value",request.get("value"))
-            #Check what the request is for and then get the properties needed for that function
-            if action in coreCalls:
-                # scope.set_extra("Core properties", core.core.__dict__)
-                # coreProperties=dict()
-                # for key, value in core.core.__dict__.items():
-                #     if type(value).__name__!="dict":
-                #         coreProperties[key]=value
-                # scope.set_extra("Core properties", coreProperties)
-                scope.set_extra("Saved Results Dict", core.savedResultsDict)
-                scope.set_extra("Network", core.network)
-            
-
-            elif action in lwCalls:
-                for dataId, dataValue in self.dataDict[reciever].items():
-                    scope.set_extra("data object for layer: "+str(dataId), dataValue.__dict__)
-            elif action in parseCalls:
-                pass
-            else:
-                # scope.set_extra("Core properties", core.core.__dict__)
-                for dataId, dataValue in self.dataDict[reciever].items():
-                    scope.set_extra("data object for layer: "+str(dataId), dataValue.__dict__)
-
         #####################################B4End###################################
         if action == "getDataMeta":
-            value=self.request.get("value")
+            value=request.get("value")
             Id=value["Id"]
             jsonNetwork=value["Network"]
+            if "layerSettings" in value:
+                layerSettings = value["layerSettings"]
+                jsonNetwork[Id]["Properties"]=layerSettings
 
             lw_core, _, data_container = self._create_lw_core(jsonNetwork)
             lw_core.run()
@@ -174,9 +228,12 @@ class Message:
 
 
         elif action == "getPartitionSummary":
-            value=self.request.get("value")
+            value=request.get("value")
             Id=value["Id"]
             jsonNetwork=value["Network"]
+            if "layerSettings" in value:
+                layerSettings = value["layerSettings"]
+                jsonNetwork[Id]["Properties"]=layerSettings
 
             lw_core, _, data_container = self._create_lw_core(jsonNetwork)
             lw_core.run()
@@ -191,44 +248,46 @@ class Message:
 
 
         elif action == "deleteData":
-            value=self.request.get("value")
+            value=request.get("value")
             if value["Id"] in self.dataDict[reciever]:
                 del self.dataDict[reciever][value["Id"]]
                 content={"content": "Deleted data on workspace " + str(reciever) + " with Id: " +str(value["Id"])+"."}
             else:
                 content={"content": "No such Id had saved data in that workspace"}
-            # print(self.dataDict)
 
         elif action == "removeReciever":
             for value in self.dataDict[reciever].values():
                 del value
             del self.dataDict[reciever]
-            # print(self.dataDict)
             content={"content": "All data on workspace " + str(reciever) + " has been deleted"}
 
         elif action == "getCode":
-            value=self.request.get("value")
-            Id=value["Id"]
-            Type=value["Type"]
-            Properties=value["Properties"]
-            Con=value["backward_connections"]
-            content={"Info":{"Type":Type, "Id": Id, "Properties": Properties}, "Con":Con}
+            value=request.get("value")
+            jsonNetwork=value['Network']
+            Id = value['Id']
+            if "layerSettings" in value:
+                layerSettings = value["layerSettings"]
+                jsonNetwork[Id]["Properties"]=layerSettings
+            
+
+            if jsonNetwork[Id]["Type"] == "TrainReinforce":
+                graph=Graph(jsonNetwork)
+                graph_dict = graph.graphs
+                layerInfo=graph_dict[Id]
+            else:
+                layerInfo={"Info":{"Type":jsonNetwork[Id]["Type"], "Id": Id, "Properties": jsonNetwork[Id]['Properties']}, "Con":jsonNetwork[Id]["backward_connections"]}
 
             from codehq import CodeHqNew as CodeHq
             
-            content = {"Output": CodeHq.get_code_generator(Id,content).get_code()}
+            content = {"Output": CodeHq.get_code_generator(Id,layerInfo).get_code()}
 
         elif action == "getNetworkInputDim":
-            jsonNetwork=self.request.get("value")
-            
-            pprint.pprint(jsonNetwork)
+            jsonNetwork=request.get("value")
 
             lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)            
             lw_core.run()
             
             content={}
-            # for Id, value in extras_reader.to_dict().items():
-            #     inShape[Id]=value["inShape"]
 
             extras_dict=extras_reader.to_dict()
             for Id, value in jsonNetwork.items():
@@ -253,20 +312,19 @@ class Message:
 
                 # content[Id]={"inShape":str(extras_dict[jsonNetwork[Id]['backward_connections'][0]]) if len(jsonNetwork[Id]['backward_connections'])==1 else str([extras_dict[i] for i in jsonNetwork[Id]['backward_connections']]).replace("'","")}
                 # content[Id].update({"inShape":value["inShape"]})
-                if "errorMessage" in extras_value:
-                    print("ErrorMessage: ", extras_value['errorMessage'])
-                    content[Id].update({"Error": extras_value['errorMessage']})
-                    content[Id].update({"Row": extras_value['errorRow']})
-                else:
-                    content[Id].update({"Error": None})
-                    content[Id].update({"Row": None})
 
+                if Id in lw_core.error_handler:
+                    log.info("ErrorMessage: " + str(lw_core.error_handler[Id]))
+
+                    content[Id]['Error'] = {
+                        'Message': lw_core.error_handler[Id].error_message,
+                        'Row': lw_core.error_handler[Id].error_line
+                    }
+                else:
+                    content[Id]['Error'] = None
             
         elif action == "getNetworkOutputDim":
-            jsonNetwork=self.request.get("value")
-
-            
-            pprint.pprint(jsonNetwork)
+            jsonNetwork=request.get("value")
 
             lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                        
             lw_core.run()
@@ -278,17 +336,19 @@ class Message:
             for Id, value in extrasDict.items():
                 content[Id]={}
                 content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
-                if "errorMessage" in value:
-                    print("ErrorMessage: ", value['errorMessage'])
-                    content[Id].update({"Error": value['errorMessage']})
-                    content[Id].update({"Row": value['errorRow']})
-                else:
-                    content[Id].update({"Error": None})
-                    content[Id].update({"Row": None})
 
+                if Id in lw_core.error_handler:
+                    log.info("ErrorMessage: " + str(lw_core.error_handler[Id]))
+
+                    content[Id]['Error'] = {
+                        'Message': lw_core.error_handler[Id].error_message,
+                        'Row': lw_core.error_handler[Id].error_line
+                    }
+                else:
+                    content[Id]['Error'] = None                
 
         elif action == "getPreviewSample":
-            value=self.request.get("value")
+            value=request.get("value")
             jsonNetwork=value["Network"]
             LayerId=value["Id"]
 
@@ -310,6 +370,9 @@ class Message:
                 if LayerId in extrasDict:
                     sample = extrasDict[LayerId]["Sample"]
 
+            if isinstance(sample,tf.Variable):
+                sample=sample.numpy()
+
             if len(np.shape(sample))>1:
                 sample=np.squeeze(sample)
 
@@ -325,12 +388,11 @@ class Message:
             if self._is_jsonable(dataObject):
                 content = dataObject
             else:
-                content = ""
-
+                content = createDataObject([""])
 
 
         elif action == "getPreviewVariableList":
-            value=self.request.get("value")
+            value=request.get("value")
             jsonNetwork=value["Network"]
             LayerId=value["Id"]
 
@@ -343,47 +405,53 @@ class Message:
                     "VariableList": extrasDict[LayerId]["Variables"],
                     "VariableName": extrasDict[LayerId]["Default_var"],
                 }
-                if "errorMessage" in extrasDict[LayerId]:
-                    content.update({"Error": extrasDict[LayerId]['errorMessage']})
-                    content.update({"Row": extrasDict[LayerId]['errorRow']})
+
+                if LayerId in lw_core.error_handler:
+                    log.info("ErrorMessage: " + str(lw_core.error_handler[LayerId]))
+                    
+                    content['Error'] = {
+                        'Message': lw_core.error_handler[LayerId].error_message,
+                        'Row': lw_core.error_handler[LayerId].error_line
+                    }
             else:
                 content = ""
         
         ####################################Parser###################################
         elif action == "Parse":
-            value=self.request.get("value")
-            Paths=value["Paths"]
+            value=request.get("value")
+            # Paths=value["Paths"]
+            if value["Pb"]:
+                pb=value["Pb"][0]
+            else:
+                pb=value["Pb"]
+
+            if value["Checkpoint"]:
+                ckpt=value["Checkpoint"][0]
+            else:
+                ckpt=value["Checkpoint"]
+
+            Paths = [pb, ckpt]
             trainableFlag=value["Trainable"]
             end_points=value["EndPoints"]
+            containers=value["Containers"]
             try:
-                containers=value["Containers"]
-            except:
-                pass
-            # Paths=value
-            # trainableFlag="All"
-            # end_points=""
-            correct_file_list=self.getParsingFiles(Paths)
-            # if correct_file_list[-1] not in self.checkpointDict:
-            #     self.checkpointDict[correct_file_list[-1]]=extractCheckpointInfo(*correct_file_list)
-            # try:
-            print("Files: " , correct_file_list)
+                correct_file_list=self.getParsingFiles(Paths)
+            except Exception as e:
+                content=e
+                print(e)
+
             filteredValueDict=None
             try:
                 content, filteredValueDict=parse(trainableFlag, end_points, *correct_file_list)
             except Exception as e:
                 print(traceback.format_exc())
                 content="Could not parse the file.\n"+str(e)
+                errorList.append("Could not parse the file")
             if type(filteredValueDict) is dict:
                 self.checkpointDict[correct_file_list[-1]]=filteredValueDict
             else:
                 warningList.append("Could not load the variables, try changing the End Points.\n"+str(filteredValueDict))
             
-
-            # except Exception as e:
-            #     print("Error: ", e)
-            #     content={"content":"Parser crashed"}
-            #     errors.put("Parser crashed")
-
         ####################################Computing server#########################
         elif action == "Close":
             content="Shutting down app"
@@ -401,34 +469,37 @@ class Message:
             content=core.checkCore()
 
         elif action == "headless":
-            value=self.request.get("value")
+            value=request.get("value")
             if value:
                 content=core.headlessOn()
             else:
                 content=core.headlessOff()
 
         elif action == "getTrainingStatistics":
-            value=self.request.get("value")
+            value=request.get("value")
             content=core.getTrainingStatistics(value)
 
         elif action == "getTestingStatistics":
-            value=self.request.get("value")
+            value=request.get("value")
             content=core.getTestingStatistics(value)
         ################## Other ######################
         elif action == "getS3Keys":
-            value = self.request.get("value")
+            value = request.get("value")
             adapter = S3BucketAdapter(value['bucket'],
-                                        value['aws_access_key_id'], value['aws_secret_access_key'])
+                                      value['aws_access_key_id'], value['aws_secret_access_key'])
             content = adapter.get_keys(value['delimiter'], value['prefix'])                    
         ################## Deprecated ######################
         elif action == "getLayerStatistics":
-            value=self.request.get("value")
+            value=request.get("value")
             result=core.getLayerStatistics(value)
             content=result
 
         elif action == "Start":
-            value=self.request.get("value")
-            content=core.startCore(value)
+            network=request.get("value")
+            for value in network['Layers'].values():
+                if "checkpoint" in value and value["checkpoint"]:
+                    self.add_to_checkpointDict(value)
+            content=core.startCore(network, self.checkpointDict.copy())
 
         elif action=="startTest":
             content=core.startTest()
@@ -450,7 +521,7 @@ class Message:
 
         ################## OutDated ######################
         elif action == "getStatistics":
-            value=self.request.get("value")
+            value=request.get("value")
             content=core.getStatistics(value)
 
         elif action == "getIter":
@@ -472,19 +543,21 @@ class Message:
             content=core.skipToValidation()
 
         elif action == "Export":
-            value=self.request.get("value")
+            value=request.get("value")
             content=core.exportNetwork(value)
 
         elif action == "isTrained":
             content=core.isTrained()
 
         elif action == "SaveTrained":
-            value=self.request.get("value")
+            value=request.get("value")
             content=core.saveNetwork(value)
 
+        elif action == "getEndResults":
+            content=core.getEndResults()
+
         elif action == "getStatus":
-            answer=core.getStatus()
-            content=answer
+            content=core.getStatus()
 
         else:
             warningList.append("Invalid action " + str(action))
@@ -539,10 +612,13 @@ class Message:
 
 
 cores=dict()
+dataDict=dict()
+checkpointDict=dict()
 
 path='0.0.0.0'
 port=5000
-start_server = websockets.serve(interface, path, port)
+interface=Message(cores, dataDict, checkpointDict)
+start_server = websockets.serve(interface.interface, path, port)
 print("Trying to listen to: " + str(path) + " " + str(port))
 connected=False
 while not connected:

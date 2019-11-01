@@ -86,6 +86,6 @@ export default {
 <style lang="scss" scoped>
   @import '../../scss/base';
   .policy-btn {
-    margin-left: 1rem;
+    margin-left: .3em;
   }
 </style>

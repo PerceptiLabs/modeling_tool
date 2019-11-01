@@ -158,13 +158,13 @@ function createWindow () {
       };
       switch (process.platform) {
         case 'win32':
-          UpdateOpt.url = UpdateUrl + 'winDev/';
+          UpdateOpt.url = UpdateUrl + 'win/';
           break;
         case 'darwin':
-          UpdateOpt.url = UpdateUrl + 'iosDev/';
+          UpdateOpt.url = UpdateUrl + 'ios/';
           break;
         case 'linux':
-          UpdateOpt.url = UpdateUrl + 'linuxDev/';
+          UpdateOpt.url = UpdateUrl + 'linux/';
           break;
       }
       autoUpdater.setFeedURL(UpdateOpt);
@@ -188,7 +188,17 @@ app.on('activate', () => {
   }
 });
 
-
+function closeApp(pid) {
+  if(pid) {
+    mainWindow.hide();
+    setTimeout(() => {
+      try       { process.kill(pid) }
+      catch (e) { console.log(e) }
+      finally   { app.quit() }
+    }, 3000)
+  }
+  else app.quit()
+}
 
 /**
  * Auto Updater
