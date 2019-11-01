@@ -2,6 +2,7 @@
   net-base-settings(
     :current-el="currentEl"
     :show-preview="showPreview"
+    @press-apply="saveSettings($event)"
   )
     template(slot="Settings-content")
       .settings-layer_section
@@ -25,19 +26,19 @@
             //div
               button.btn.btn--primary(type="button") Custom
 
-      .settings-layer_section
+      //-.settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.timeSteps")
           .form_label Time steps:
           .form_input
             input(type="number" v-model="settings.Time_steps")
 
-      //-.settings-layer_section
-        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
-          .form_label Keep probability:
+      .settings-layer_section
+        .form_row
+          .form_label Return sequence:
           .form_input
-            base-radio(group-name="probability" :value-input="true"  v-model="settings.keep_prob")
+            base-radio(group-name="probability" :value-input="true"  v-model="settings.Return_sequence")
               span Yes
-            base-radio(group-name="probability" :value-input="false"  v-model="settings.keep_prob")
+            base-radio(group-name="probability" :value-input="false"  v-model="settings.Return_sequence")
               span No
 
       .settings-layer_section
@@ -89,7 +90,8 @@ export default {
         Version: "LSTM", //#LSTM, GRU, RNN
         Time_steps: "2",
         Dropout: false, //True, False
-        Keep_prob: '1'
+        Return_sequence: false, //True, False
+        Keep_prob: "1"
       },
       interactiveInfo: {
         neurons: {
