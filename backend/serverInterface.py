@@ -119,6 +119,51 @@ class Interface():
             warningList.append(message)
         return warningList
 
+    def add_to_checkpointDict(self, content):
+        if content["checkpoint"][-1] not in self.checkpointDict:
+            from extractVariables import extractCheckpointInfo
+            ckptObj=extractCheckpointInfo(content["endPoints"], *content["checkpoint"])
+            self.checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
+            ckptObj.close()
+
+    def _create_lw_core(self, jsonNetwork):
+        graph = Graph(jsonNetwork)
+        
+        graph_dict = graph.graphs
+
+        for value in graph_dict.values():
+            if "checkpoint" in value["Info"] and value["Info"]["checkpoint"]:
+                self.add_to_checkpointDict(value["Info"])
+
+        data_container = DataContainer()
+        
+        session_history_lw = SessionHistory()
+        extras_reader = LayerExtrasReader()
+
+        from codehq import CodeHqNew as CodeHq
+
+        module_provider = ModuleProvider()
+        module_provider.load('tensorflow', as_name='tf')
+        module_provider.load('numpy', as_name='np')
+        module_provider.load('pandas', as_name='pd')             
+        module_provider.load('gym')
+        module_provider.load('json')  
+        module_provider.load('os')   
+        module_provider.load('skimage')         
+
+        
+        for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
+            module_provider.install_hook(hook_target, hook_func)
+
+        error_handler = LightweightErrorHandler()
+            
+        lw_core = LightweightCore(CodeHq, graph_dict,
+                                  data_container, session_history_lw,
+                                  module_provider, error_handler,
+                                  extras_reader, checkpointValues=self.checkpointDict.copy())
+        
+        return lw_core, extras_reader, data_container
+
     def get_action(self, action, value):
         if action == "getDataMeta":
             getDataMeta(value)
