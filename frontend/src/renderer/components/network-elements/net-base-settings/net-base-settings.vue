@@ -2,11 +2,12 @@
   .popup
     ul.popup_tab-set
       template(v-if="tabSelected !== 'Preview'")
+        //-:disabled='isTutorial || disableSettings'
         button.popup_header(
           v-for="(tab, i) in tabSet"
           :key="tab.i"
           :class="{'disable': tabSelected != tab }"
-          :disabled='isTutorial || disableSettings'
+
           @click="setTab(tab)"
         )
           h4(v-html="tab")

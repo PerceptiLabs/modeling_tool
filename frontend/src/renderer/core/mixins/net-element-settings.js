@@ -15,7 +15,7 @@ const netElementSettings = {
   data() {
     return {
       settings: {},
-      coreCode: ''
+      coreCode: null
     }
   },
   computed: {

@@ -18,10 +18,8 @@ const netElementSettingsData = {
   methods: {
     coreRequest,
     Mix_settingsData_getDataMeta(layerId) {
-      this.applySettings('');
-      return this.$store.dispatch('mod_api/API_getDataMeta', layerId)
+      return this.$store.dispatch('mod_api/API_getDataMeta', {layerId, settings: this.settings})
         .then((data) => {
-          //console.log('Mix_settingsData_getDataMeta', data);
           if (data) {
             if(data.Action_space) this.Mix_settingsData_actionSpace = data.Action_space;
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
@@ -33,7 +31,7 @@ const netElementSettingsData = {
         });
     },
     Mix_settingsData_getPartitionSummary(layerId) {
-      return this.$store.dispatch('mod_api/API_getPartitionSummary', layerId)
+      return this.$store.dispatch('mod_api/API_getPartitionSummary', {layerId, settings: this.settings})
         .then((data) => {
           if (data) {
             this.Mix_settingsData_Partition_summary = data;

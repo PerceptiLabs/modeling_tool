@@ -397,7 +397,7 @@ const actions = {
       }
     };
 
-    //console.log(theData);
+    console.log('getCode', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -405,13 +405,16 @@ const actions = {
       });
   },
 
-  API_getPartitionSummary({getters, rootGetters}, layerId) {
+  API_getPartitionSummary({getters, rootGetters},  {layerId, settings}) {
+    const net = getters.GET_coreNetwork;
+    if(settings) net[layerId].Properties = settings;
+
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getPartitionSummary',
       value: {
         Id: layerId,
-        Network: getters.GET_coreNetwork
+        Network: net
       }
     };
     return coreRequest(theData)
@@ -421,13 +424,16 @@ const actions = {
       });
   },
 
-  API_getDataMeta({getters, rootGetters}, layerId) {
+  API_getDataMeta({getters, rootGetters}, {layerId, settings}) {
+    const net = getters.GET_coreNetwork;
+    if(settings) net[layerId].Properties = settings;
+
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getDataMeta',
       value: {
         Id: layerId,
-        Network: getters.GET_coreNetwork
+        Network: net
       }
     };
     //console.log('API_getDataMeta', theData);

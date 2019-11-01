@@ -270,7 +270,6 @@
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
       saveSettings(tabName) {
-        //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId);
         this.applySettings(tabName);
         this.checkPartitionList();
         this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'}))
