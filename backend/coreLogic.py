@@ -11,6 +11,7 @@ import os
 import threading
 import pprint
 import logging
+import skimage
 
 from networkExporter import exportNetwork
 from networkSaver import saveNetwork
@@ -82,7 +83,9 @@ class coreLogic():
         module_provider.load('numpy', as_name='np')
         module_provider.load('pandas', as_name='pd')
         module_provider.load('gym')
-        module_provider.load('json')           
+        module_provider.load('json')       
+        module_provider.load('os')  
+        module_provider.load('skimage')  
 
         session_history = SessionHistory()
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
@@ -536,9 +539,21 @@ class coreLogic():
                                                       {"color":"#6b8ff7"}])
                 output = {"Gradients": dataObj}
                 return output
-        elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "ProcessOneHot", "ProcessCrop", "ProcessReshape", "ProcessGrayscale"]:
+        elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "ProcessOneHot", "ProcessCrop", "ProcessReshape"]:
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
             output = createDataObject([D])
+            return {"Output":output}
+        elif layerType == "ProcessGrayscale":
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
+            if len(D.shape) == 3:
+                if D.shape[-1] == 1:
+                    output = createDataObject([D])
+                else:
+                    output = createDataObject([D[0]])
+            elif len(D.shape)>3:
+                output = createDataObject([D[0]])
+            else:
+                output = createDataObject([D])
             return {"Output":output}
         elif layerType=="TrainNormal":
             if view=="Prediction":
