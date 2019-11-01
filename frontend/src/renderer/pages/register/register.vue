@@ -48,13 +48,18 @@
           v-model="terms"
         )
           span Agree
-          button.btn.btn--link.policy-btn(@click="toPolicy" type="button") terms and policy
+          button.btn.btn--link.policy-btn(type="button"
+            @click="toPolicy"
+            ) terms and policy
         p.text-error(v-show="errors.has('terms')") {{ errors.first('terms') }}
 
       .form_holder.login-form_actions
         .form_row
           span
-          button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading || !terms") Register
+          button.btn.btn--dark-blue-rev(type="button"
+            :disabled="isLoading || !terms"
+            @click="validateForm"
+            ) Register
       .form_holder
         router-link.btn.btn--link(:to="{name: 'login'}") Already Have Account
 
@@ -130,6 +135,6 @@ export default {
 <style lang="scss" scoped>
   @import '../../scss/base';
   .policy-btn {
-    margin-left: 1rem;
+    margin-left: .3em;
   }
 </style>

@@ -39,7 +39,11 @@ export default {
     },
   },
   mounted() {
-    this.setTab(this.tabSet[0])
+    this.setTab(this.tabSet[0]);
+    this.$store.dispatch('mod_events/SET_enableCustomHotKey', false);
+  },
+  beforeDestroy() {
+    this.$store.dispatch('mod_events/SET_enableCustomHotKey', true);
   },
   data() {
     return {

@@ -11,6 +11,7 @@ class DataEnvironmentCodeGenerator(CodeGenerator):
         #code += "env = DummyEnv()\n" # TODO: REMOVE THIS WHEN NOT DEBUGGING!!!!
         code += "\n"
         code += "sample = env.reset()\n"
+        code += "_action_space = env.action_space.n\n"
         code += "history_length = %s\n" % self._hist_len
         code += "api.data.store(sample=sample)\n"        
         code += "state_tensor = tf.placeholder(tf.float32, \n"
