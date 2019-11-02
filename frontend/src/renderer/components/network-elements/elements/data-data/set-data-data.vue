@@ -28,8 +28,9 @@
           :input-multiple="true"
           :showPath="false"
         )
-          .btn.btn--dark-blue-rev
+          .btn.tutorial-relative
             i.icon.icon-open-file
+            span Choose files
 
       template(v-else)
         .settings-layer_section
@@ -114,6 +115,7 @@
         tabs: ['Computer', 'Code'],
         dataColumns: [],
         dataColumnsSelected: [],
+          disabledBtn: false,
         interactiveInfo: {
           folder: {
             title: 'Select Folder',
@@ -188,10 +190,10 @@
         //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
       //},
       'settings.accessProperties.PathFake': {
-        handler() {
-          console.log('DataData');
-          this.dataSettingsPlot('DataData');
-          this.settings.accessProperties.Path = ['./RedHats'];
+        handler(newPath) {
+            console.log(newPath);
+            console.log(newPath[0].name);
+            this.saveLoadFile([newPath[0].name], 'file', false);
         },
         //deep: true
       },
