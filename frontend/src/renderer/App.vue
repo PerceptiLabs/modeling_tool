@@ -166,13 +166,13 @@
       },
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {
-          ipcRenderer.send('change-route', {path, id: this.userId})
+          //ipcRenderer.send('change-route', {path, id: this.userId})
         }
       },
       appReady() {
         const splash = document.getElementById('splashscreen');
         setTimeout(()=> {
-          ipcRenderer.send('app-ready');
+          //ipcRenderer.send('app-ready');
           splash.remove();
           document.body.className = "";
           this.trackerAppStart();

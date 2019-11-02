@@ -3,7 +3,14 @@
   <component name="ChangeListManager">
     <list default="true" id="721fec01-281e-425f-962e-1f0b77c37ce4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/App.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/global-popups/update-popup/popup-info.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/global-popups/update-popup/popup-info.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/header/header-win.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/header/header-win.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/the-menu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/the-menu.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/web/upload-file.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/web/upload-file.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/core/apiWeb.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/core/apiWeb.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -43,6 +50,7 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="preferences.lookFeel" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -117,6 +125,7 @@
       <workItem from="1572517875730" duration="3964000" />
       <workItem from="1572709765494" duration="224000" />
       <workItem from="1572726600698" duration="27000" />
+      <workItem from="1572726741834" duration="3750000" />
     </task>
     <servers />
   </component>

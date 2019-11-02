@@ -6,7 +6,7 @@
       v-if="showPath"
       v-model="path"
       )
-    .btn
+    //-.btn
     label.upload-file_box(ref="inputFile")
       input.upload-file_input(type="file"
         :multiple="inputMultiple"
@@ -58,6 +58,9 @@
 
 <style lang="scss" scoped>
   @import "../../scss/base";
+  .upload-file {
+    margin-bottom: 1rem;
+  }
   .upload-file_input {
     width: 0.1px;
     height: 0.1px;
