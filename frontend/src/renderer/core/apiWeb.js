@@ -1,4 +1,5 @@
-const wsPathDef = 'ws://core-perceptilabs.apps.partners.rhsummit2019.cloud';
+// const wsPathDef = 'ws://core-perceptilabs.apps.partners.rhsummit2019.cloud';
+const wsPathDef = 'ws://localhost:5000';
 
 var webSocket = null;
 
