@@ -174,9 +174,9 @@ class Message:
     async def interface(self, websocket, path):
         request = await websocket.recv()
         print("request: ", request)
-        request, jsonheader_len=self.process_protoheader(request)
-        request, jsonheader=self.process_jsonheader(request,jsonheader_len)
-        message=self.process_request(request,jsonheader)
+        # request, jsonheader_len=self.process_protoheader(request)
+        # request, jsonheader=self.process_jsonheader(request,jsonheader_len)
+        # message=self.process_request(request,jsonheader)
 
         request=self._json_decode(request,"utf-8")
         
@@ -601,7 +601,7 @@ class Message:
 
         response=str(response)
 
-        # print("Response: "+str(response))
+        print("Response: "+str(response))
         await websocket.send(response)
 
     def shutDown(self):
