@@ -596,21 +596,20 @@ class Message:
 
         print("Content before string: ", content)
 
-        if type(content).__name__=="str":
-            content='"'+content+'"'
+        # if type(content).__name__=="str":
+        #     content='"'+content+'"'
 
         response = {
-            "length" : len(str(content)),
+            "length": len(json.dumps(content)),
             "body": content
         }
-        response=json.dumps(response)
-        # print("Test: ", test)
 
-        # response='{"length":'+str(len(str(content)))+',"body":'+str(content).replace("'",'"')+'}'
+        response = json.dumps(response)
 
-        # response=str(response)
+        test='{"length": '+str(len(str(content)))+', "body":'+str(content).replace("'",'"')+'}'
 
-        print("Response: "+response)
+        print("Response: ", response)
+
         await websocket.send(response)
 
     def shutDown(self):

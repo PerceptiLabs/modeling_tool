@@ -1,3 +1,6 @@
+import sys
+import os
+
 class webInterface():
     def __init__():
         pass
@@ -83,15 +86,17 @@ queue_function_translation=[("stop-request","stop-response", "Stop"),
 ]
 
 class azureInterface():
-    def __init__():
+    def __init__(self):
         pass
 
 from lwInterface import getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 class Interface():
-    def __init__(self, core):
-        self._cores={}
-        self._core=None
+    def __init__(self, core=None):
+        self._cores = {}
+        self._core = None
+        self._checkpointDict = {}
+        self._dataDict = {}
 
     def _addCore(self, reciever):
         from coreLogic import coreLogic
@@ -102,6 +107,12 @@ class Interface():
         if reciever not in self._cores:
             self._addCore(reciever)
         self._core = self._cores[reciever]
+
+    def shutDown(self):
+        for c in self._cores.values():
+            c.Close()
+            del c
+        sys.exit(1)
 
     def globalErrors(self):
         errorList = []
@@ -121,17 +132,25 @@ class Interface():
             warningList.append(message)
         return warningList
 
+    def getCheckpointDict(self):
+        return self._checkpointDict.copy()
+
     def add_to_checkpointDict(self, content):
-        if content["checkpoint"][-1] not in self.checkpointDict:
+        if content["checkpoint"][-1] not in self._checkpointDict:
             from extractVariables import extractCheckpointInfo
             ckptObj=extractCheckpointInfo(content["endPoints"], *content["checkpoint"])
-            self.checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
+            self._checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
             ckptObj.close()
 
     def _create_lw_core(self, jsonNetwork):
         from graph import Graph
-        from data import DataContainer
-        from 
+        from core_new.core import DataContainer
+        from core_new.history import SessionHistory
+        from core_new.errors import LightweightErrorHandler
+        from core_new.extras import LayerExtrasReader
+        from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
+        from modules import ModuleProvider
+
         graph = Graph(jsonNetwork)
         
         graph_dict = graph.graphs
@@ -165,7 +184,7 @@ class Interface():
         lw_core = LightweightCore(CodeHq, graph_dict,
                                   data_container, session_history_lw,
                                   module_provider, error_handler,
-                                  extras_reader, checkpointValues=self.checkpointDict.copy())
+                                  extras_reader, checkpointValues=self.getCheckpointDict())
         
         return lw_core, extras_reader, data_container
 
@@ -177,31 +196,89 @@ class Interface():
             if "layerSettings" in value:
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
-            return getDataMeta(Id, jsonNetwork, self._create_lw_core).exec()
+
+            return getDataMeta(id_=Id, 
+            network=jsonNetwork, 
+            lw_func=self._create_lw_core).exec()
 
         elif action == "getPartitionSummary":
-            getPartitionSummary()
+            Id=value["Id"]
+            jsonNetwork=value["Network"]
+            if "layerSettings" in value:
+                layerSettings = value["layerSettings"]
+                jsonNetwork[Id]["Properties"]=layerSettings
+
+            return getPartitionSummary(id_=Id, 
+            network=jsonNetwork, 
+            lw_func=self._create_lw_core).exec()
 
         elif action == "getCode":
-            getCode()
+            jsonNetwork=value['Network']
+            Id = value['Id']
+            if "layerSettings" in value:
+                layerSettings = value["layerSettings"]
+                jsonNetwork[Id]["Properties"]=layerSettings
+
+            return getCode(id_=Id, 
+            network=jsonNetwork).exec()
 
         elif action == "getNetworkInputDim":
-            getNetworkInputDim()
+            jsonNetwork=value
+
+            return getNetworkInputDim(network=jsonNetwork, 
+            lw_func=self._create_lw_core).exec()
 
         elif action == "getNetworkOutputDim":
-            getNetworkOutputDim()
+            jsonNetwork=value
+
+            return getNetworkOutputDim(network=jsonNetwork, 
+            lw_func=self._create_lw_core).exec()
 
         elif action == "getPreviewSample":
-            getPreviewSample()
+            LayerId=value["Id"]
+            jsonNetwork=value["Network"]
+            try:
+                Variable=value["Variable"]
+            except:
+                Variable=None
+
+            return getPreviewSample(id_=LayerId, 
+            network=jsonNetwork, 
+            lw_func=self._create_lw_core, 
+            variable=Variable).exec()
 
         elif action == "getPreviewVariableList":
-            getPreviewVariableList()
+            LayerId=value["Id"]
+            jsonNetwork=value["Network"]
+            
+            return getPreviewVariableList(id_=LayerId,
+            network=jsonNetwork, 
+            lw_func=self._create_lw_core).exec()
 
         elif action == "Parse":
-            Parse()
+            if value["Pb"]:
+                pb=value["Pb"][0]
+            else:
+                pb=value["Pb"]
+
+            if value["Checkpoint"]:
+                ckpt=value["Checkpoint"][0]
+            else:
+                ckpt=value["Checkpoint"]
+
+            trainableFlag=value["Trainable"]
+            end_points=value["EndPoints"]
+            containers=value["Containers"]
+
+            return Parse(pb=pb, 
+            checkpointDict=self._checkpointDict, 
+            checkpoint=ckpt, 
+            make_trainable=trainableFlag, 
+            end_points=end_points, 
+            containerize=containers).exec()
 
         elif action == "Close":
-            Close()
+            self.shutDown()
 
         elif action == "updateResults":
             self._core.updateResults()

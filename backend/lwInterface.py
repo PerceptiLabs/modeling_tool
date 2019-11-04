@@ -117,156 +117,156 @@ class getNetworkInputDim(LW_interface_base):
 
         return content
 
-    class getNetworkOutputDim(LW_interface_base):
-        def __init__(self, network, lw_func):
-            self._network = network
-            self._lw_func = lw_func
+class getNetworkOutputDim(LW_interface_base):
+    def __init__(self, network, lw_func):
+        self._network = network
+        self._lw_func = lw_func
 
-        def exec(self):
-            lw_core, extras_reader, _ = self._lw_func(self._network)                        
-            lw_core.run()
-            
-            extrasDict=extras_reader.to_dict()
-
-            content={}
-
-            for Id, value in extrasDict.items():
-                content[Id]={}
-                content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
-
-                if Id in lw_core.error_handler:
-                    log.info("ErrorMessage: " + str(lw_core.error_handler[Id]))
-
-                    content[Id]['Error'] = {
-                        'Message': lw_core.error_handler[Id].error_message,
-                        'Row': lw_core.error_handler[Id].error_line
-                    }
-                else:
-                    content[Id]['Error'] = None  
-
-            return content           
-
-    class getPreviewSample(LW_interface_base):
-        def __init__(self, id_, network, lw_func, variable=None):
-            self._id = id_
-            self._network = network
-            self._lw_func = lw_func
-            self._variable = variable
-
-        def _is_jsonable(self, x):
-            import json
-
-            try:
-                json.dumps(x)
-                return True
-            except (TypeError, OverflowError):
-                return False
-
-        def _reduceTo2d(self, data):
-                data_shape=np.shape(np.squeeze(data))
-                if len(data_shape)<=2 or (len(data_shape)==3 and (data_shape[-1]==3 or data_shape[-1]==1)):
-                    return data
-                else:
-                    return self._reduceTo2d(data[...,-1])
+    def exec(self):
+        lw_core, extras_reader, _ = self._lw_func(self._network)                        
+        lw_core.run()
         
-        def exec(self):
-            lw_core, extras_reader, data_container = self._lw_func(self._network)                                    
-            lw_core.run()
-            
-            sample=""
-            if self._variable:
-                dataContainerDict=data_container.to_dict()
-                if self._id in dataContainerDict:
-                    sample = dataContainerDict[self._id][self._variable]
+        extrasDict=extras_reader.to_dict()
+
+        content={}
+
+        for Id, value in extrasDict.items():
+            content[Id]={}
+            content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
+
+            if Id in lw_core.error_handler:
+                log.info("ErrorMessage: " + str(lw_core.error_handler[Id]))
+
+                content[Id]['Error'] = {
+                    'Message': lw_core.error_handler[Id].error_message,
+                    'Row': lw_core.error_handler[Id].error_line
+                }
             else:
-                extrasDict=extras_reader.to_dict()
-                if self._id in extrasDict:
-                    sample = extrasDict[self._id]["Sample"]
+                content[Id]['Error'] = None  
 
+        return content           
 
-            if isinstance(sample,tf.Variable):
-                sample=sample.numpy()
+class getPreviewSample(LW_interface_base):
+    def __init__(self, id_, network, lw_func, variable=None):
+        self._id = id_
+        self._network = network
+        self._lw_func = lw_func
+        self._variable = variable
 
-            if len(np.shape(sample))>1:
-                sample=np.squeeze(sample)
+    def _is_jsonable(self, x):
+        import json
 
-            
-            from createDataObject import createDataObject
-            dataObject=createDataObject([self._reduceTo2d(np.asarray(sample))])
-            
-            if self._is_jsonable(dataObject):
-                content = dataObject
+        try:
+            json.dumps(x)
+            return True
+        except (TypeError, OverflowError):
+            return False
+
+    def _reduceTo2d(self, data):
+            data_shape=np.shape(np.squeeze(data))
+            if len(data_shape)<=2 or (len(data_shape)==3 and (data_shape[-1]==3 or data_shape[-1]==1)):
+                return data
             else:
-                content = createDataObject([""])
-
-            return content
-
-    class getPreviewVariableList(LW_interface_base):
-        def __init__(self, id_, network, lw_func):
-            self._id = id_
-            self._network = network
-            self._lw_func = lw_func
-
-        def exec(self):
-            lw_core, extras_reader, _ = self._lw_func(self._network)                                                
-            lw_core.run()
-            
+                return self._reduceTo2d(data[...,-1])
+    
+    def exec(self):
+        lw_core, extras_reader, data_container = self._lw_func(self._network)                                    
+        lw_core.run()
+        
+        sample=""
+        if self._variable:
+            dataContainerDict=data_container.to_dict()
+            if self._id in dataContainerDict:
+                sample = dataContainerDict[self._id][self._variable]
+        else:
             extrasDict=extras_reader.to_dict()
             if self._id in extrasDict:
-                content = {
-                    "VariableList": extrasDict[self._id]["Variables"],
-                    "VariableName": extrasDict[self._id]["Default_var"],
+                sample = extrasDict[self._id]["Sample"]
+
+
+        if isinstance(sample,tf.Variable):
+            sample=sample.numpy()
+
+        if len(np.shape(sample))>1:
+            sample=np.squeeze(sample)
+
+        
+        from createDataObject import createDataObject
+        dataObject=createDataObject([self._reduceTo2d(np.asarray(sample))])
+        
+        if self._is_jsonable(dataObject):
+            content = dataObject
+        else:
+            content = createDataObject([""])
+
+        return content
+
+class getPreviewVariableList(LW_interface_base):
+    def __init__(self, id_, network, lw_func):
+        self._id = id_
+        self._network = network
+        self._lw_func = lw_func
+
+    def exec(self):
+        lw_core, extras_reader, _ = self._lw_func(self._network)                                                
+        lw_core.run()
+        
+        extrasDict=extras_reader.to_dict()
+        if self._id in extrasDict:
+            content = {
+                "VariableList": extrasDict[self._id]["Variables"],
+                "VariableName": extrasDict[self._id]["Default_var"],
+            }
+
+            if self._id in lw_core.error_handler:
+                log.info("ErrorMessage: " + str(lw_core.error_handler[self._id]))
+                
+                content['Error'] = {
+                    'Message': lw_core.error_handler[self._id].error_message,
+                    'Row': lw_core.error_handler[self._id].error_line
                 }
+        else:
+            content = ""
 
-                if self._id in lw_core.error_handler:
-                    log.info("ErrorMessage: " + str(lw_core.error_handler[self._id]))
-                    
-                    content['Error'] = {
-                        'Message': lw_core.error_handler[self._id].error_message,
-                        'Row': lw_core.error_handler[self._id].error_line
-                    }
-            else:
-                content = ""
+        return content
 
-            return content
+class Parse(LW_interface_base):
+    def __init__(self, pb, checkpointDict, checkpoint=None, make_trainable=True, end_points="", containerize=False):
+        self._pb = pb
+        self._checkpointDict = checkpointDict
+        self._checkpoint = checkpoint
+        self._make_trainable = make_trainable
+        self._end_points = end_points
+        self._containerize = containerize
 
-    class Parse(LW_interface_base):
-        def __init__(self, pb, checkpointDict, checkpoint=None, make_trainable=True, end_points="", containerize=False):
-            self._pb = pb
-            self._checkpointDict = checkpointDict
-            self._checkpoint = checkpoint
-            self._make_trainable = make_trainable
-            self._end_points = end_points
-            self._containerize = containerize
+    def _getParsingFiles(self, pb, checkpoint):
+        if ".pb" in pb:
+            return [pb, None]
+        elif ".pb" not in pb and not checkpoint:
+            raise Exception("Only frozen .pb files can be parsed by themselves")
 
-        def _getParsingFiles(self, pb, checkpoint):
-            if ".pb" in pb:
-                return [pb, None]
-            elif ".pb" not in pb and not checkpoint:
-                raise Exception("Only frozen .pb files can be parsed by themselves")
+        if checkpoint:
+            if "ckpt" not in checkpoint:
+                raise Exception("Wrong file type")
+            checkpoint = checkpoint.split("ckpt")[0]
+            return [pb, checkpoint]
 
-            if checkpoint:
-                if "ckpt" not in checkpoint:
-                    raise Exception("Wrong file type")
-                checkpoint = checkpoint.split("ckpt")[0]
-                return [pb, checkpoint]
+    def exec(self):
+        try:
+            correct_file_list=self._getParsingFiles(self._pb, self._checkpoint)
+        except Exception as e:
+            return e
 
-        def exec(self):
-            try:
-                correct_file_list=self._getParsingFiles(self._pb, self._checkpoint)
-            except Exception as e:
-                return e
-
-            filteredValueDict=None
-            try:
-                from parse_pb import parse
-                content, filteredValueDict=parse(self._make_trainable, self._end_points, *correct_file_list)
-            except Exception as e:
-                raise "Could not parse the file.\n"+str(e)
-            
-            if type(filteredValueDict) is dict:
-                self._checkpointDict[correct_file_list[-1]]=filteredValueDict
-            # else:
-                # warningList.append("Could not load the variables, try changing the End Points.\n"+str(filteredValueDict))
-            
-            return content
+        filteredValueDict=None
+        try:
+            from parse_pb import parse
+            content, filteredValueDict=parse(self._make_trainable, self._end_points, *correct_file_list)
+        except Exception as e:
+            raise "Could not parse the file.\n"+str(e)
+        
+        if type(filteredValueDict) is dict:
+            self._checkpointDict[correct_file_list[-1]]=filteredValueDict
+        # else:
+            # warningList.append("Could not load the variables, try changing the End Points.\n"+str(filteredValueDict))
+        
+        return content
