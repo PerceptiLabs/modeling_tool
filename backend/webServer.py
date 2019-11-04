@@ -635,7 +635,11 @@ while not connected:
         asyncio.get_event_loop().run_forever()
         print("Connected")
         connected=True
+    except KeyboardInterrupt:
+        break
+    # except SystemExit:
+        # Might not want SystemExit since that will happen whenever someone closes the web browser
+    #     break
     except:
         connected=False
-
     
