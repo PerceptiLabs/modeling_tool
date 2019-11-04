@@ -22,7 +22,7 @@ class SessionCache:
             log.debug("Creating new cache entry {} [{}]".format(key, value.__class__.__name__))
 
         entry = CacheEntry(inserting_layer=layer_id, value=value)
-        self._dict[key] = entry
+        #self._dict[key] = entry # TODO: temporary while we figure out new way of caching.
 
     def get(self, key):
         if not key in self:

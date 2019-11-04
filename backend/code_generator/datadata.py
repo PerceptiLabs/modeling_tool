@@ -37,17 +37,18 @@ class FileCsvStrategy(AbstractStrategy):
         
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         code  = "if '%s' not in api.cache:\n" % self._path        
-        code += "    df = pd.read_csv('%s')\n" % self._path
+        code += "    df = dd.read_csv('%s')\n" % self._path
         code += "    cols = list(df.columns)\n"
         if self._columns:
-            code += "    data_mat = df[%s].to_numpy().astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
+            code += "    data_mat = df[%s].values.astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
         else:
-            code += "    data_mat = df.to_numpy().astype(np.float32)\n"
+            code += "    data_mat = df.values.astype(np.float32)\n"
         code += "    api.cache.put('%s', data_mat)\n" % self._path            
         code += "else:\n"
-        code += "    data_mat = api.cache.get('%s')\n" % self._path        
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "    data_mat = api.cache.get('%s')\n" % self._path
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
     
@@ -69,8 +70,10 @@ class DirectoryImageStrategy(AbstractStrategy):
         code += "    data_mat_list.append(data_mat)\n"
         code += "\n"
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
 
@@ -87,12 +90,14 @@ class FileJsonStrategy(AbstractStrategy):
         code += "    api.cache.put('%s', data_mat)\n" % self._path
         code += "else:\n"
         code += "    data_mat = api.cache.get('%s')\n" % self._path
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
     
-class S3BucketImageStrategy(AbstractStrategy):
+class S3BucketImageStrategy(AbstractStrategy): # TODO: should look into simplifying this using dask
     def __init__(self, bucket, region_name, delimiter, prefix,
                  aws_access_key_id, aws_secret_access_key):
         self._bucket = bucket
@@ -123,12 +128,14 @@ class S3BucketImageStrategy(AbstractStrategy):
         code += "\n"
         code += "adapter.close()\n"                
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
     
-class S3BucketJsonStrategy(AbstractStrategy):
+class S3BucketJsonStrategy(AbstractStrategy):# TODO: should look into simplifying this using dask
     def __init__(self, bucket, region_name, delimiter, prefix,
                  aws_access_key_id, aws_secret_access_key):
         self._bucket = bucket
@@ -162,8 +169,10 @@ class S3BucketJsonStrategy(AbstractStrategy):
         code += "\n"
         code += "adapter.close()\n"        
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
 
