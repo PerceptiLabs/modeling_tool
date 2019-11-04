@@ -1,126 +1,7 @@
-const wsPathDef = 'ws://core-perceptilabs.apps.partners.rhsummit2019.cloud';
+//const wsPathDef = 'ws://core-perceptilabs.apps.partners.rhsummit2019.cloud';
+const wsPathDef = 'ws://localhost:5000';
 
 var webSocket = null;
-
-// function openWS(path) {
-//   return new Promise((resolve, reject) => {
-//     let wsPath = path || wsPathDef;
-//     webSocket = new WebSocket(wsPath);
-//     webSocket.onopen = (evt) => {
-//       console.log("CONNECTED");
-//       //websocket.send('WebSocket rocks')
-//       //console.log(data);
-//       resolve(evt);
-//     };
-//     webSocket.onerror = (error)=> {
-//       console.log(error.message);
-//       reject(error.message);
-//       closeWS();
-//     };
-//     webSocket.onclose = (event)=> {
-//       console.log("DISCONNECTED");
-//       console.log(event);
-//     };
-//   })
-// }
-//
-// function closeWS() {
-//   console.log('close');
-//   websocket.close();
-// }
-//
-// function coreRequest(message, no, non, name) {
-//   if(webSocket === null) return;
-//
-//   return new Promise((resolve, reject) => {
-//     console.log("SEND");
-//
-//     webSocket.onmessage = (messageAnswer) => {
-//       onMessage(messageAnswer)
-//     };
-//     webSocket.onerror = (error) => {
-//       console.log("error on coreRequest");
-//       reject(error.message);
-//     };
-//     //console.log('sent to core ', message);
-//     const header = {
-//       "byteorder": 'little',
-//       "content-type": 'text/json',
-//       "content-encoding": 'utf-8',
-//       "content-length": 0,
-//     };
-//     let dataJSON = JSON.stringify(message);
-//     //console.log('input data ', dataJSON);
-//     let dataByte = (new TextEncoder('utf-8').encode(dataJSON));
-//     let dataByteLength = dataByte.length;
-//
-//     header["content-length"] = dataByteLength;
-//
-//     let headerJSON = JSON.stringify(header);
-//     let headerByte = (new TextEncoder('utf-8').encode(headerJSON));
-//     let headerByteLength = headerByte.length;
-//
-//     let firstByte = 0;
-//     let secondByte = headerByteLength;
-//
-//     if (headerByteLength > 256) {
-//       firstByte = Math.floor(headerByteLength / 256);
-//       secondByte = headerByteLength % 256;
-//     }
-//     const messageByte = [
-//       firstByte, secondByte,
-//       ...headerByte,
-//       ...dataByte
-//     ];
-//     const messageBuff = Buffer.from(messageByte);
-//     webSocket.send(messageBuff);
-//
-//     // timeStopSend = new Date();
-//     // let answerDelaySend = timeStopSend - timeStartSend;
-//     // console.log(`sending ${name}`, `${answerDelaySend}ms`);
-//
-//
-//     function onMessage(data) {
-//       console.log("ANSWER");
-//
-//       // timeStartGet = new Date();
-//       // let answerDelayCore = timeStartGet - timeStopSend;
-//       // console.log(`core delay ${name}`, `${answerDelayCore}ms`);
-//
-//       let dataLength = '';
-//       let dataPart = '';
-//       //let dataString = data.toString();
-//       let dataString = data.data;
-//       //console.log(dataString);
-//       if (dataLength) {
-//         dataPart = dataPart + dataString;
-//       }
-//       if (!dataLength) {
-//         // console.log(dataString.indexOf('length'));
-//         // console.log(dataString.length);
-//         dataLength = +dataString.slice(dataString.indexOf('length') + 8, dataString.indexOf(','));
-//         dataPart = dataString.slice(dataString.indexOf('body') + 6, dataString.length);
-//         //console.log('dataLength: ', dataLength);
-//         //console.log('dataPart: ', dataPart);
-//       }
-//       if (dataPart.length === dataLength + 1) {
-//         let stringData = dataPart.slice(0, -1);
-//         //console.log('stringData ', stringData);
-//         if (stringData == 'None') {
-//           //console.log('None');
-//           reject(dataPart);
-//         } else {
-//           let obgData = JSON.parse(stringData);
-//           //console.log('output data ', obgData);
-//           // let stopRequest = new Date();
-//           // let answerDelay = stopRequest - timeStartGet;
-//           // console.log(`transmitting ${name}`, `${answerDelay}ms`);
-//           resolve(obgData);
-//         }
-//       }
-//     }
-//   })
-// }
 
 function calcTime(stop, start, name, nameComp) {
   let time = stop - start;
@@ -228,6 +109,7 @@ function coreRequest(data, path, no, name) {
           reject(dataPart);
         }
         else {
+          console.log(stringData);
           let obgData = JSON.parse(stringData);
           //console.log('output data ', obgData);
           // let stopRequest = new Date();
