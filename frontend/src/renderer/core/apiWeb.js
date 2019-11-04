@@ -38,11 +38,10 @@ function coreRequest(data, path, no, name) {
     websocket.onerror =   (evt)=> {
       reject(evt);
       websocket.close();
-    }
+    };
 
     function sendData(message) {
-      //console.log('sent to core ', message);
-
+      console.log('sent to core ', message);
 
       const header = {
         "byteorder": 'little',
@@ -82,6 +81,7 @@ function coreRequest(data, path, no, name) {
     }
 
     function onMessage(data) {
+      console.log('answer WS data', data);
       // timeStartAnswer = new Date();
       // calcTime(timeStartAnswer, timeStopSend, 'core delay', name);
 
@@ -89,7 +89,7 @@ function coreRequest(data, path, no, name) {
       let dataPart = '';
       //let dataString = data.toString();
       let dataString = data.data;
-      //console.log(dataString);
+      console.log(dataString);
       if (dataLength) {
         dataPart = dataPart + dataString;
       }
@@ -98,12 +98,13 @@ function coreRequest(data, path, no, name) {
         // console.log(dataString.length);
         dataLength = +dataString.slice(dataString.indexOf('length') + 8, dataString.indexOf(','));
         dataPart = dataString.slice(dataString.indexOf('body') + 6 , dataString.length);
-        //console.log('dataLength: ', dataLength);
-        //console.log('dataPart: ', dataPart);
+        console.log('dataLength: ', dataLength);
+        console.log('dataPart: ', dataPart);
       }
-      if(dataPart.length === dataLength + 1) {
+      console.log(dataPart.length, dataLength + 1);
+      if(dataPart.length === dataLength + 2) {
         let stringData = dataPart.slice(0, -1);
-        //console.log('stringData ', stringData);
+        console.log('stringData ', stringData);
         if(stringData == 'None') {
           //console.log('None');
           reject(dataPart);
@@ -111,7 +112,7 @@ function coreRequest(data, path, no, name) {
         else {
           console.log(stringData);
           let obgData = JSON.parse(stringData);
-          //console.log('output data ', obgData);
+          console.log('answer core data ', obgData);
           // let stopRequest = new Date();
           // calcTime(stopRequest, timeStartAnswer, 'transmitting', name);
           resolve(obgData);

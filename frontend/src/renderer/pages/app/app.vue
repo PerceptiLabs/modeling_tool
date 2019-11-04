@@ -26,7 +26,7 @@
     components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
       if(!this.workspaceContent.length) this.ADD_network();
-      this.DELETE_userWorkspace();
+      //this.DELETE_userWorkspace();
     },
     mounted() {
       this.showPage = true;
