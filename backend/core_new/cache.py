@@ -11,7 +11,8 @@ class SessionCache:
         self._dict = {}
 
     def __contains__(self, key):
-        return key in self._dict
+        #return key in self._dict
+        return False # TODO: temporary while we figure out new way of caching.
 
     def put(self, key, value, layer_id):
         if key in self:

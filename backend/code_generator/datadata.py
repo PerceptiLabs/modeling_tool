@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from code_generator import CodeGenerator
 from s3buckets import S3BucketAdapter
 
+
 class AbstractStrategy(ABC):
     @abstractmethod
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):    
@@ -22,8 +23,10 @@ class FileNumpyStrategy(AbstractStrategy):
         code += "    api.cache.put('%s', data_mat)\n" % self._path
         code += "else:\n"
         code += "    data_mat = api.cache.get('%s')\n" % self._path
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
     
@@ -185,19 +188,23 @@ class DataDataCodeGenerator(CodeGenerator):
             self._strategies.append(self._select_strategy(source))
         
     def get_code(self):
-        code = ''
-        code += 'np.random.seed(%d)\n\n' % self._seed
-        
-        # Split dataset function [TODO: optional if 100% in train set?]
-        code += 'def split(dataset, train_rate, test_rate, validation_rate):\n'
-        code += '    size = len(dataset)\n'
-        code += '    i1 = round(train_rate*size)\n'
-        code += '    i2 = i1 + round(test_rate*size)\n'
+        code  = 'def split(array, train_rate, test_rate, validation_rate):\n'
+        code += '    def generator(array, idx_from, idx_to):\n'
+        code += '        for x in array[idx_from:idx_to]:\n'
+        code += '            yield x.compute()\n'
         code += '    \n'
-        code += '    train = dataset[0:i1]\n'
-        code += '    validation = dataset[i1:i2]\n'
-        code += '    test = dataset[i2:]\n'
-        code += '    return train, validation, test\n'
+        code += '    array.compute_chunk_sizes()\n'
+        code += '    size = len(array)\n'
+        code += '    train_size = round(train_rate*size)\n'
+        code += '    validation_size = round(validation_rate*size)\n'
+        code += '    test_size = size - train_size - validation_size\n'
+        code += '    \n'
+        code += '    train_gen = generator(array, 0, train_size)\n'
+        code += '    validation_gen = generator(array, train_size, train_size+validation_size)        \n'
+        code += '    test_gen = generator(array, train_size+validation_size, size)\n'
+        code += '    return train_gen, test_gen, validation_gen, train_size, test_size, validation_size\n'
+        code += '\n'        
+        code += 'np.random.seed(%d)\n' % self._seed
         code += '\n'
 
         # Get remaining code using strategy
@@ -219,6 +226,16 @@ class DataDataCodeGenerator(CodeGenerator):
                                 rate_valid=partition[1],
                                 rate_test=partition[2])
         code += '\n'
+        code += '# Tensorflow wants generators wrapped in functions\n'
+        code += 'def wrap(gen):\n'
+        code += '    def func():\n'
+        code += '        return gen\n'
+        code += '    return func\n'
+        code += '\n'
+        code += 'X_train = wrap(X_train)\n'
+        code += 'X_validation = wrap(X_validation)\n'
+        code += 'X_test = wrap(X_test)\n'                
+        code += '\n'        
         code += self._get_code_common()
         return code
     
@@ -243,30 +260,24 @@ class DataDataCodeGenerator(CodeGenerator):
         list_str_trn = ", ".join([mask_trn.format(i) for i in range(n_sets)])
         list_str_val = ", ".join([mask_vld.format(i) for i in range(n_sets)])
         list_str_tst = ", ".join([mask_tst.format(i) for i in range(n_sets)])
-        code += "X_train = np.vstack([%s])\n" % list_str_trn
+        code += "X_train = np.vstack([%s])\n" % list_str_trn # TODO: should CHAIN these!
         code += "X_validation = np.vstack([%s])\n" % list_str_val
         code += "X_test = np.vstack([%s])\n" % list_str_tst
-        code += '\n'
+        code += '\n' # TODO: compute the cumulative sizes!
         code += self._get_code_common()
         return code
 
     def _get_code_common(self):
-        code  = "# Shapes, preview and batch sizes\n"
-        code += 'X_train_size = X_train.shape[0]\n'
-        code += "X_validation_size = X_validation.shape[0]\n"
-        code += "X_test_size = X_test.shape[0]\n"
-        code += '\n'
-        # code += "_sample = X_train[0]\n"
+        code  = '\n'
         code += "global _data_size\n"
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
         code += "_batch_size = %d\n" % int(self.batch_size)
-        # code += "api.data.store(sample=_sample)\n"        
         code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
-        code += 'X_train = tf.data.Dataset.from_tensor_slices(X_train)\n'
-        code += 'X_validation = tf.data.Dataset.from_tensor_slices(X_validation)\n'
-        code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
+        code += 'X_train = tf.data.Dataset.from_generator(X_train, output_types=np.float32)\n'
+        code += 'X_validation = tf.data.Dataset.from_generator(X_validation, output_types=np.float32)\n'
+        code += 'X_test = tf.data.Dataset.from_generator(X_test, output_types=np.float32)\n'        
         code += "\n"
         if self.shuffle:
             code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size)\n" % self._seed

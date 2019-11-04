@@ -201,7 +201,8 @@ class Message:
         module_provider.load('json')  
         module_provider.load('os')   
         module_provider.load('skimage')         
-
+        module_provider.load('dask.array', as_name='da')
+        module_provider.load('dask.dataframe', as_name='dd')                  
         
         for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
             module_provider.install_hook(hook_target, hook_func)

@@ -85,7 +85,9 @@ class coreLogic():
         module_provider.load('gym')
         module_provider.load('json')       
         module_provider.load('os')  
-        module_provider.load('skimage')  
+        module_provider.load('skimage')
+        module_provider.load('dask.array', as_name='da')
+        module_provider.load('dask.dataframe', as_name='dd')                  
 
         session_history = SessionHistory()
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
