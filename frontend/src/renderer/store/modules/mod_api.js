@@ -111,7 +111,10 @@ const actions = {
         value: ''
       };
       coreRequest(theData)
-        .then((data)=> { commit('SET_statusLocalCore', 'online') })
+        .then((data)=> {
+          //console.log('checkCore', data);
+          commit('SET_statusLocalCore', 'online')
+        })
         .catch((err)=> {  });
     }
     function coreOffline() {

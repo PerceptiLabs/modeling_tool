@@ -26,7 +26,7 @@
     components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
       if(!this.workspaceContent.length) this.ADD_network();
-      this.DELETE_userWorkspace();
+      //this.DELETE_userWorkspace();
     },
     mounted() {
       this.showPage = true;
@@ -109,6 +109,7 @@
         this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
       },
       dragStart(event) {
+        event.dataTransfer.setData('text/plain', event.target.outerHTML);
         if ( event.target.draggable
           && this.editIsOpen
           && event.target.className.includes('btn--layersbar')

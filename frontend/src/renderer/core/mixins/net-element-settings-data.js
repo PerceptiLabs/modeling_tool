@@ -1,4 +1,5 @@
-import coreRequest  from "@/core/apiCore.js";
+//import coreRequest  from "@/core/apiCore.js";
+import {coreRequest, openWS}  from "@/core/apiWeb.js";
 const netElementSettingsData = {
   data() {
     return {

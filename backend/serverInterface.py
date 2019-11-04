@@ -92,11 +92,17 @@ class azureInterface():
 from lwInterface import getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 class Interface():
+<<<<<<< HEAD
     def __init__(self, core=None):
         self._cores = {}
         self._core = None
         self._checkpointDict = {}
         self._dataDict = {}
+=======
+    def __init__(self, core):
+        self._cores={}
+        self._core=None
+>>>>>>> 84dc68dd055a69988d6295274ed65e73c29ac142
 
     def _addCore(self, reciever):
         from coreLogic import coreLogic
@@ -108,12 +114,15 @@ class Interface():
             self._addCore(reciever)
         self._core = self._cores[reciever]
 
+<<<<<<< HEAD
     def shutDown(self):
         for c in self._cores.values():
             c.Close()
             del c
         sys.exit(1)
 
+=======
+>>>>>>> 84dc68dd055a69988d6295274ed65e73c29ac142
     def globalErrors(self):
         errorList = []
         errors = self._core.errorQueue
@@ -132,6 +141,7 @@ class Interface():
             warningList.append(message)
         return warningList
 
+<<<<<<< HEAD
     def getCheckpointDict(self):
         return self._checkpointDict.copy()
 
@@ -151,6 +161,16 @@ class Interface():
         from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
         from modules import ModuleProvider
 
+=======
+    def add_to_checkpointDict(self, content):
+        if content["checkpoint"][-1] not in self.checkpointDict:
+            from extractVariables import extractCheckpointInfo
+            ckptObj=extractCheckpointInfo(content["endPoints"], *content["checkpoint"])
+            self.checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
+            ckptObj.close()
+
+    def _create_lw_core(self, jsonNetwork):
+>>>>>>> 84dc68dd055a69988d6295274ed65e73c29ac142
         graph = Graph(jsonNetwork)
         
         graph_dict = graph.graphs
@@ -184,13 +204,18 @@ class Interface():
         lw_core = LightweightCore(CodeHq, graph_dict,
                                   data_container, session_history_lw,
                                   module_provider, error_handler,
+<<<<<<< HEAD
                                   extras_reader, checkpointValues=self.getCheckpointDict())
+=======
+                                  extras_reader, checkpointValues=self.checkpointDict.copy())
+>>>>>>> 84dc68dd055a69988d6295274ed65e73c29ac142
         
         return lw_core, extras_reader, data_container
 
     def create_response(self, action, value):
         #Parse the value and send it to the correct function
         if action == "getDataMeta":
+<<<<<<< HEAD
             Id = value['Id']
             jsonNetwork = value['Network']
             if "layerSettings" in value:
@@ -353,5 +378,73 @@ class Interface():
         elif action == "getStatus":
             self._core.getStatus()
 
+=======
+            getDataMeta(value)
+        elif action == "getPartitionSummary":
+            getPartitionSummary()
+        elif action == "getCode":
+            getCode()
+        elif action == "getNetworkInputDim":
+            getNetworkInputDim()
+        elif action == "getNetworkOutputDim":
+            getNetworkOutputDim()
+        elif action == "getPreviewSample":
+            getPreviewSample()
+        elif action == "getPreviewVariableList":
+            getPreviewVariableList()
+        elif action == "Parse":
+            Parse()
+        elif action == "Close":
+            Close()
+        elif action == "updateResults":
+            self._core.updateResults()
+        elif action == "checkCore":
+            self._core.checkCore()
+        elif action == "headless":
+            On=value
+            self._core.headless(On)
+        elif action == "getTrainingStatistics":
+            self._core.getTrainingStatistics()
+        elif action == "getTestingStatistics":
+            self._core.getTestingStatistics()
+        elif action == "getS3Keys":
+            self._core.getS3Keys()
+        elif action == "Start":
+            self._core.Start()
+        elif action == "startTest":
+            self._core.startTest()
+        elif action == "resetTest":
+            self._core.resetTest()
+        elif action =="getTestStatus":
+            self._core.getTestStatus()
+        elif action == "nextStep":
+            self._core.nextStep()
+        elif action == "previousStep":
+            self._core.previousStep()
+        elif action == "playTest":
+            self._core.playTest()
+        elif action == "getIter":
+            self._core.getIter()
+        elif action == "getEpoch":
+            self._core.getEpoch()
+        elif action == "Stop":
+            self._core.Stop()
+        elif action == "Pause":
+            self._core.Pause()
+        elif action == "Unpause":
+            self._core.Unpause()
+        elif action == "SkipToValidation":
+            self._core.SkipToValidation()
+        elif action == "Export":
+            self._core.Export()
+        elif action == "isTrained":
+            self._core.isTrained()
+        elif action == "SaveTrained":
+            self._core.SaveTrained()
+        elif action == "getEndResults":
+            self._core.getEndResults()
+        elif action == "getStatus":
+            self._core.getStatus()
+>>>>>>> 84dc68dd055a69988d6295274ed65e73c29ac142
         else:
             raise LookupError("The requested action does not exist")
