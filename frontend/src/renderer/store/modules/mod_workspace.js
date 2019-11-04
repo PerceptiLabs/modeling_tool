@@ -337,7 +337,7 @@ const mutations = {
     let newEl = state.dragElement
       ? state.dragElement
       : createNetElement(event);
-    
+
     let top = newEl.layerMeta.position.top;
     let left = newEl.layerMeta.position.left;
     let zoom = getters.GET_currentNetwork.networkMeta.zoom;
@@ -513,6 +513,8 @@ const mutations = {
     }
   },
   set_elementOutputDim(state, {value}) {
+    //console.log('current net', state.workspaceContent[state.currentNetwork].networkElementList);
+    //console.log('core answer', value);
     for(let element in value) {
       currentElement(element).layerMeta.OutputDim = value[element].Dim;
       currentElement(element).layerCodeError = value[element].Error
@@ -775,16 +777,16 @@ const actions = {
   RESET_network({commit}) {
     commit('reset_network')
   },
-  CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
-    const timeRequest = time + 500;
-    const isLongRequest = timeRequest > rootState.globalView.timeIntervalDoRequest;
-    if(isLongRequest) {
-      const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
-      clearInterval(currentMeta.timerID);
-      dispatch('globalView/SET_timeIntervalDoRequest', timeRequest, {root: true});
-      dispatch('EVENT_startDoRequest', true);
-    }
-  },
+  // CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
+  //   const timeRequest = time + 500;
+  //   const isLongRequest = timeRequest > rootState.globalView.timeIntervalDoRequest;
+  //   if(isLongRequest) {
+  //     const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
+  //     clearInterval(currentMeta.timerID);
+  //     dispatch('globalView/SET_timeIntervalDoRequest', timeRequest, {root: true});
+  //     dispatch('EVENT_startDoRequest', true);
+  //   }
+  // },
   CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
     //console.log(`request -> can show`, `${time}ms`);
     const timeRequest = time + 500;
@@ -911,7 +913,7 @@ export default {
 function updateLayerName(el, net, n){
   const layerName = el.layerName;
   if (net !== null) {
-    let netArr = Object.values(net);    
+    let netArr = Object.values(net);
     if (findValue(netArr, layerName+'_'+n).length) {
       n++;
       updateLayerName(el, net, n);
@@ -920,10 +922,10 @@ function updateLayerName(el, net, n){
     }
     function findValue(arr, value) {
       return arr.filter(object => object.layerName.toLowerCase() === value.toLowerCase());
-    }   
+    }
   }else{
     el.layerName = layerName+'_'+n;
-  } 
+  }
 }
 
 function currentElement(id) {

@@ -6,8 +6,11 @@
     @press-apply="saveSettings($event)"
   )
     template(slot="Computer-content")
-      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
-
+      .settings-layer_section(v-if="testSelectFile")
+        .form_row
+          input(type="text" v-model="testPath")
+          button.btn.btn--primary(type="button" @click="TESTload") Load
+      //-.settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
         //-button.btn.tutorial-relative(type="button"
           @click="loadFile"
           id="tutorial_button-load"
@@ -22,12 +25,14 @@
           )
           i.icon.icon-open-folder
           span Choose folders
-        web-upload-file#tutorial_button-load.tutorial-relative(
+
+
+        //-web-upload-file#tutorial_button-load.tutorial-relative(
           v-model="settings.accessProperties.PathFake"
-          :input-disabled="disabledBtn"
-          :input-multiple="true"
-          :showPath="false"
-        )
+          /:input-disabled="disabledBtn"
+          /:input-multiple="true"
+          /:showPath="false"
+          )
           .btn.tutorial-relative
             i.icon.icon-open-file
             span Choose files
@@ -126,8 +131,11 @@
             text: 'Select a file that is the data'
           }
         },
+        testPath: '',
+        testSelectFile: true,
         settings: {
           Type: 'Data',
+          testInfoIsInput: true,//input  false - labels
           accessProperties: {
             Columns: [],
             Dataset_size: 3000,
@@ -159,6 +167,7 @@
       fileList: {
         get() {
           const path = this.settings.accessProperties.Sources;
+          //const path = [this.settings.accessProperties.Sources];
           const partitionList = this.settings.accessProperties.Partition_list;
           const fileArray = path.map((item, index)=> {
             return {
@@ -189,14 +198,14 @@
         //this.Mix_settingsData_getDataPlot('DataData')
         //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
       //},
-      'settings.accessProperties.PathFake': {
-        handler(newPath) {
-            console.log(newPath);
-            console.log(newPath[0].name);
-            this.saveLoadFile([newPath[0].name], 'file', false);
-        },
-        //deep: true
-      },
+      // 'settings.accessProperties.PathFake': {
+      //   handler(newPath) {
+      //       console.log(newPath);
+      //       console.log(newPath[0].name);
+      //       this.saveLoadFile([newPath[0].name], 'file', false);
+      //   },
+      //   //deep: true
+      // },
       fileList: {
         handler(newVal) {
           this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
@@ -245,6 +254,11 @@
         //openLoadDialog(optionDialog)
         //  .then((pathArr)=> this.saveLoadFile(pathArr, 'file', isAppend))
         //  .catch(()=> { })
+      },
+      TESTload() {
+        this.testSelectFile = false;
+        this.settings.accessProperties.Sources = [this.testPath];
+        this.saveLoadFile(this.settings.accessProperties.Sources, 'file', false);
       },
       loadFolder(isAppend) {
         //loadPathFolder()

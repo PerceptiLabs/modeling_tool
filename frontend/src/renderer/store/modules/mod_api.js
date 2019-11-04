@@ -112,7 +112,7 @@ const actions = {
       };
       coreRequest(theData)
         .then((data)=> {
-          console.log('checkCore', data);
+          //console.log('checkCore', data);
           commit('SET_statusLocalCore', 'online')
         })
         .catch((err)=> {  });
