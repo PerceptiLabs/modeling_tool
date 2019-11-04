@@ -109,6 +109,7 @@
         this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
       },
       dragStart(event) {
+        event.dataTransfer.setData('text/plain', event.target.outerHTML);
         if ( event.target.draggable
           && this.editIsOpen
           && event.target.className.includes('btn--layersbar')

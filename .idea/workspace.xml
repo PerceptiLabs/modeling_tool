@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="721fec01-281e-425f-962e-1f0b77c37ce4" name="Default Changelist" comment="">
+    <list default="true" id="38f20bbe-3d97-4773-a717-62c310058ca6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_events.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_events.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/pages/app/app.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/pages/app/app.vue" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
