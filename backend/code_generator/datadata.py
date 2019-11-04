@@ -254,16 +254,29 @@ class DataDataCodeGenerator(CodeGenerator):
                                           rate_valid=partition[1],                                          
                                           rate_test=partition[2])
         code += '\n'
+        code += 'def chain(*generators):\n'
+        code += '    def func():\n'
+        code += '        for g in generators:\n'
+        code += '            yield from g\n'
+        code += '    return func\n'
+        code += '\n'
             
         # Concatenation        
         n_sets = len(self._partitions)
         list_str_trn = ", ".join([mask_trn.format(i) for i in range(n_sets)])
         list_str_val = ", ".join([mask_vld.format(i) for i in range(n_sets)])
         list_str_tst = ", ".join([mask_tst.format(i) for i in range(n_sets)])
-        code += "X_train = np.vstack([%s])\n" % list_str_trn # TODO: should CHAIN these!
-        code += "X_validation = np.vstack([%s])\n" % list_str_val
-        code += "X_test = np.vstack([%s])\n" % list_str_tst
-        code += '\n' # TODO: compute the cumulative sizes!
+        code += "X_train = chain(%s)\n" % list_str_trn 
+        code += "X_validation = chain(%s)\n" % list_str_val
+        code += "X_test = chain(%s)\n" % list_str_tst
+        code += '\n'
+        list_str_trn = "_size, ".join([mask_trn.format(i) for i in range(n_sets)])+'_size'
+        list_str_val = "_size, ".join([mask_vld.format(i) for i in range(n_sets)])+'_size'
+        list_str_tst = "_size, ".join([mask_tst.format(i) for i in range(n_sets)])+'_size'
+        code += 'X_train_size = sum([%s])\n' % list_str_trn
+        code += 'X_validation_size = sum([%s])\n' % list_str_val
+        code += 'X_test_size = sum([%s])\n' % list_str_tst
+        code += '\n'        
         code += self._get_code_common()
         return code
 
