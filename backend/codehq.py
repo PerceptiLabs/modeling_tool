@@ -80,12 +80,13 @@ class CodeHqNew:
                                          activation=props["Activation_function"])
             return code_gen
         elif type_ == 'DeepLearningRecurrent':
-            code_gen = RecurrentCodeGenerator(version=props["Version"],
+            code_gen = RecurrentCodeGenerator(layer_id=id_,
+                                              version=props["Version"],
                                               time_steps=props["Time_steps"],
                                               neurons=props["Neurons"],
-                                              return_sequences=False, # TODO: return_sequences from frontend
+                                              return_sequences=props["Return_sequence"] if "Return_sequence" in props else False, # TODO: return_sequences from frontend
                                               dropout=props["Dropout"],
-                                              keep_prop=1) # TODO: where does this come from?
+                                              keep_prop=props["Keep_prob"]) # TODO: where does this come from?
             return code_gen
         elif type_ == 'ProcessCrop':
             code_gen = CropCodeGenerator(offset_values=props["Offset_width"], # TODO

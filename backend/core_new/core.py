@@ -177,6 +177,7 @@ class BaseCore:
         return globals_, locals_
     
     def _reset(self):
+        tf.reset_default_graph()
         self._data_container.reset()
         self._session_history.cache.invalidate(keep_layers=self._graph.keys())
         self._error_handler.reset()

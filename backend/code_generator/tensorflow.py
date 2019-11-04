@@ -26,8 +26,10 @@ class ReshapeCodeGenerator(CodeGenerator):
         self._permutation = permutation
         
     def get_code(self):
-        shape_text = ', '.join([str(i) for i in self._shape])
-        perm_text = ', '.join([str(i) for i in self._permutation])
+        shape = [i for i in self._shape if i != 0]
+        permutation = self._permutation[:len(shape)]
+        shape_text = ', '.join([str(i) for i in shape])
+        perm_text = ', '.join([str(i) for i in permutation])
         code = ""
         code += "Y=tf.reshape(X['Y'], [-1]+[layer_output for layer_output in [%s]])\n" % shape_text
         code += "Y=tf.transpose(Y,perm=[0]+[i+1 for i in [%s]])\n" % perm_text
@@ -35,7 +37,8 @@ class ReshapeCodeGenerator(CodeGenerator):
 
     
 class RecurrentCodeGenerator(CodeGenerator):
-    def __init__(self, version, time_steps, neurons, return_sequences=False, dropout=False, keep_prop=1):
+    def __init__(self, layer_id, version, time_steps, neurons, return_sequences=False, dropout=False, keep_prop=1):
+        self._id = layer_id
         self._version = version
         self._time_steps = time_steps
         self._neurons = neurons
@@ -46,14 +49,14 @@ class RecurrentCodeGenerator(CodeGenerator):
     def get_code(self):
         code = ''
         if self._version == 'LSTM':
-            code += "cell = tf.nn.rnn_cell.LSTMCell(%s, state_is_tuple=True)\n" % self._neurons
+            code += "cell = tf.nn.rnn_cell.LSTMCell(%s, state_is_tuple=True, name='%s')\n" % (self._neurons, self._id)
         elif self._version == 'GRU':
-            code += "cell = tf.nn.rnn_cell.GRUCell(%s, state_is_tuple=True)\n" % self._neurons
+            code += "cell = tf.nn.rnn_cell.GRUCell(%s, state_is_tuple=True, name='%s')\n" % (self._neurons, self._id)
         elif self._version == 'RNN':
-            code += "cell = tf.nn.rnn_cell.BasicRNNCell(%s, state_is_tuple=True)\n" % self._neurons
+            code += "cell = tf.nn.rnn_cell.BasicRNNCell(%s, state_is_tuple=True, name='%s')\n" % (self._neurons, self._id)
 
         if self._dropout:
-            code += "cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=%s)" % self._keep_prob
+            code += "cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob=%s)\n" % self._keep_prob
             
         code += "node = X['Y']\n"
         code += "rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype)\n"

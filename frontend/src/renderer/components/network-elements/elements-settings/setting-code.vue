@@ -40,12 +40,10 @@ export default {
   props: {
     currentEl:  { type: Object },
     elSettings: { type: Object },
-    value: {
-      type: [String, Object],
-      default: ''
-    },
+    value:      { type: Object },
   },
   mounted () {
+    //console.log(this.currentEl, this.currentEl.layerCode);
     if(this.currentEl.layerCode) this.setCode(this.currentEl.layerCode);
     else this.getCode();
   },
@@ -61,7 +59,8 @@ export default {
   computed: {
     theCode: {
       get: function() {
-        return this.value
+        if(this.value) return this.value;
+        else this.setCode({'Output': ''})
       },
       set: function(newValue) {
         this.$emit('input', newValue);
@@ -82,6 +81,7 @@ export default {
       };
       this.$store.dispatch('mod_api/API_getCode', value)
         .then((code)=> {
+          console.log('get code answer', code);
           this.setCode(code)
         })
     },

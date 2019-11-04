@@ -11,6 +11,7 @@ from parse_pb import parse
 import time
 from sentry_sdk import configure_scope
 import numpy as np
+import skimage
 # from datahandler_lw import DataHandlerLW
 # from lw_data import lw_data
 from dataKeeper import dataKeeper as lw_data
@@ -197,7 +198,9 @@ class Message:
         module_provider.load('numpy', as_name='np')
         module_provider.load('pandas', as_name='pd')             
         module_provider.load('gym')
-        module_provider.load('json')              
+        module_provider.load('json')  
+        module_provider.load('os')   
+        module_provider.load('skimage')         
 
         
         for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
@@ -498,6 +501,7 @@ class Message:
                 correct_file_list=self.getParsingFiles(Paths)
             except Exception as e:
                 content=e
+                print(e)
 
             filteredValueDict=None
             try:
