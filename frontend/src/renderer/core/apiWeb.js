@@ -117,7 +117,7 @@ function coreRequest(data, path, no, name) {
           // calcTime(stopRequest, timeStartAnswer, 'transmitting', name);
           resolve(obgData.content);
         }
-        websocket.close();
+        //websocket.close();
       }
     }
   });

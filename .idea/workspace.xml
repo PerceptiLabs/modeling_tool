@@ -3,13 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="38f20bbe-3d97-4773-a717-62c310058ca6" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/renderer/core/apiWeb.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/core/apiWeb.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/core/mixins/net-element-settings-data.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/core/mixins/net-element-settings-data.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/core/mixins/net-element-viewBox.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/core/mixins/net-element-viewBox.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
