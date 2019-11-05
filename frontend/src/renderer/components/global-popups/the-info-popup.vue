@@ -99,9 +99,12 @@
     width: 100%;
     max-width: 30rem;
     user-select: text;
-    &:selection {
-      background-color: cornflowerblue;
+    * {
+      user-select: inherit;
     }
+    /*&:selection {*/
+    /*  background-color: cornflowerblue;*/
+    /*}*/
   }
   .popup_clipboard {
     font-size: 1.6rem;
