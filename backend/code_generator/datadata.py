@@ -29,13 +29,49 @@ class FileNumpyStrategy(AbstractStrategy):
                                                                                            rate_train, rate_valid, rate_test)
         return code
 
+
+    
     
 class FileCsvStrategy(AbstractStrategy):
     def __init__(self, path, columns):
         self._path = path
         self._columns=columns
-        
+
+
+    def execute_old(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
+        code  = "if '%s' not in api.cache:\n" % self._path        
+        code += "    df = pd.read_csv('%s')\n" % self._path
+        code += "    cols = list(df.columns)\n"
+        if self._columns:
+            code += "    data_mat = df[%s].to_numpy().astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
+        else:
+            code += "    data_mat = df.to_numpy().astype(np.float32)\n"
+        code += "    api.cache.put('%s', data_mat)\n" % self._path            
+        code += "else:\n"
+        code += "    data_mat = api.cache.get('%s')\n" % self._path        
+        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                rate_train, rate_valid, rate_test)
+        return code
+
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
+        code  = "if '%s' not in api.cache:\n" % self._path        
+        code += "    df = pd.read_csv('%s')\n" % self._path
+        code += "    cols = list(df.columns)\n"
+        if self._columns:
+            code += "    data_mat = df[%s].to_numpy().astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
+        else:
+            code += "    data_mat = df.to_numpy().astype(np.float32)\n"
+        code += "    api.cache.put('%s', data_mat)\n" % self._path            
+        code += "else:\n"
+        code += "    data_mat = api.cache.get('%s')\n" % self._path        
+
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
+        return code
+        
+    def execute_new(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         code  = "if '%s' not in api.cache:\n" % self._path        
         code += "    df = dd.read_csv('%s')\n" % self._path
         code += "    cols = list(df.columns)\n"
