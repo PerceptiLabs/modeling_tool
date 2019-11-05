@@ -2,8 +2,12 @@ const notarize = require('electron-notarize').notarize;
 process.env.CSC_LINK = '../perceptilabs.p12'
 process.env.CSC_KEY_PASSWORD = 'com.perceptilabs.app'
 process.env.appleId = 'stetsenko.ant1@gmail.com'
-process.env.appleASP = 'tpms-dyrp-wfbj-xvay'
+process.env.appleASP = 'gvcc-xynd-weyn-uhym'
 console.log('Notarize');
+//xcrun altool --notarize-app --primary-bundle-id "perceptilabs.0.1.2" --username "stetsenko.ant1@gmail.com" --password "tpms-dyrp-wfbj-xvay" --asc-provider "com.perceptilabs.app" --file PerceptiLabs-0.1.2-mac.zip
+//xcrun altool --notarization-info 4567209d-fc37-4cc7-bee0-a5ceee3ea748 -u "stetsenko.ant1@gmail.com"
+
+
 // process.env.CSC_LINK = '../perceptilabs.p12'
 // process.env.CSC_KEY_PASSWORD = 'com.perceptilabs.app'
 // process.env.appleId = 'stetsenko.ant1@gmail.com'
