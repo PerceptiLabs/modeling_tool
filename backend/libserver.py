@@ -123,10 +123,10 @@ class Message:
         # # graph_def_path = 'C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/faster_rcnn/frozen_inference_graph.pb'
         # checkpoint='C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Parser/faster_rcnn/model.ckpt-51249'
         # return [graph_def_path,checkpoint]
-        if len(fileList)==1 and "." not in fileList[0].split("/")[-1]:
+        if fileList[1]=="" and "." not in fileList[0].split("/")[-1]:
             #Then its a folder
             return ""
-        elif len(fileList)==1:
+        elif fileList[1]=="":
             if ".pb" in fileList[0]:
                 return [fileList[0],None]
             else:

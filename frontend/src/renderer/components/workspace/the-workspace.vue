@@ -27,10 +27,10 @@
           :el-data="statisticsElSelected.viewBox"
           section-title="ViewBox"
           )
-        section.network_info-section.the-network-field
+        section#minimapwrap.network_info-section.the-network-field
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
-          .info-section_main.js-info-section_main(
+          #minimap.info-section_main.js-info-section_main(
             @wheel.ctrl="scaleScroll($event)"
             )
             network-field(
@@ -125,6 +125,7 @@
     overflow: auto;
   }
   .workspace_meta {
+    position: relative; //for minimap
     flex: 0 0 auto;
     background-color: $bg-workspace-2;
     display: flex;

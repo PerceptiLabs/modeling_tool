@@ -14,6 +14,7 @@ import WorkspaceSaveNetwork   from "@/components/global-popups/workspace-save-ne
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
+import TheMiniMap             from '@/components/different/the-mini-map.vue'
 var unwatch;
 export default {
   name: 'WorkspaceContent',
@@ -21,7 +22,8 @@ export default {
     NetworkField, TextEditable,
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork,
-    TheTesting, TheViewBox, StartTrainingSpinner
+    TheTesting, TheViewBox, StartTrainingSpinner,
+    TheMiniMap
   },
   created() {
     this.refreshSavePopup();
