@@ -231,6 +231,7 @@ def findComponentName(layer):
    return "ProcessEmbed"
 
 def getGraphDef(graph_def_path):
+   print(graph_def_path)
    type_pb=graph_def_path.split(".")[-1]=="pb"
    graph_def = tf.GraphDef()
    mode = "rb" if type_pb else "r"
