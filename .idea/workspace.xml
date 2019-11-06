@@ -2,8 +2,11 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a2cf221b-bc25-43df-b664-0982c448fc25" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/global-popups/the-info-popup.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/global-popups/the-info-popup.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-field/network-field.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-field/network-field.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/meta/workspace-meta.pug" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/meta/workspace-meta.pug" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/the-workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/the-workspace.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/the-workspace.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/the-workspace.vue" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -38,22 +41,22 @@
   <component name="ProjectId" id="1RHBH48qMZxi7o2dlFxqblBaSV6" />
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/deep-learning-recurrent" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/frontend/src/renderer/components/different" />
     <property name="list.type.of.created.stylesheet" value="SCSS" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\different" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\deep-learning-recurrent" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\core\basic-template" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\pages" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements" />
-      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\data-environment" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -115,7 +118,8 @@
       <workItem from="1572515676027" duration="720000" />
       <workItem from="1572516422085" duration="1415000" />
       <workItem from="1572517875730" duration="3964000" />
-      <workItem from="1572939251934" duration="4242000" />
+      <workItem from="1572939251934" duration="12685000" />
+      <workItem from="1573024957115" duration="921000" />
     </task>
     <servers />
   </component>
