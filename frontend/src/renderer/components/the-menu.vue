@@ -376,9 +376,9 @@ export default {
   .header-nav_item {
     color: $white;
     position: relative;
-    &:hover > .header-nav_sublist {
-      display: block;
-    }
+    /*&:hover > .header-nav_sublist {*/
+    /*  display: block;*/
+    /*}*/
   }
   .header-nav_btn {
     padding: 0 1rem;
