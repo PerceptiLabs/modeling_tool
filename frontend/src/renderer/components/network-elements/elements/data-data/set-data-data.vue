@@ -6,10 +6,23 @@
     @press-apply="saveSettings($event)"
   )
     template(slot="Computer-content")
-      .settings-layer_section(v-if="testSelectFile")
-        .form_row
-          input(type="text" v-model="testPath")
-          button.btn.btn--primary(type="button" @click="TESTload") Load
+      div(v-if="testSelectFile")
+        .settings-layer_section
+          .form_row
+            input(type="text" v-model="testPath")
+            button.btn.btn--primary(type="button"
+              :disabled="!testPath.length"
+              @click="TESTload") Load
+        .settings-layer_section
+          .form-row
+            input(type="file"
+              @input="getfolder($event)"
+              webkitdirectory
+              mozdirectory
+              msdirectory
+              odirectory
+              directory
+              multiple)
       //-.settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
         //-button.btn.tutorial-relative(type="button"
           @click="loadFile"
@@ -228,6 +241,13 @@
         // API_getPartitionSummary:'mod_api/API_getPartitionSummary',
         // API_getDataMeta:        'mod_api/API_getDataMeta',
       }),
+      getfolder(e) {
+        console.log(e);
+        var files = e.target.files;
+        var path = files[0].webkitRelativePath;
+        var Folder = path.split("/");
+        console.log(files, path, Folder);
+      },
       setPartitionList(list) {
         this.settings.accessProperties.Partition_list = list
       },
