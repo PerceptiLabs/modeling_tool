@@ -36,22 +36,8 @@ class FileCsvStrategy(AbstractStrategy):
         self._columns=columns
 
 
-    def execute_old(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
-        code  = "if '%s' not in api.cache:\n" % self._path        
-        code += "    df = pd.read_csv('%s')\n" % self._path
-        code += "    cols = list(df.columns)\n"
-        if self._columns:
-            code += "    data_mat = df[%s].to_numpy().astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
-        else:
-            code += "    data_mat = df.to_numpy().astype(np.float32)\n"
-        code += "    api.cache.put('%s', data_mat)\n" % self._path            
-        code += "else:\n"
-        code += "    data_mat = api.cache.get('%s')\n" % self._path        
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
-        return code
-        
-    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
+
+    def execute_(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         # TODO: do not use custom splitting for csvs. this is necessary for lazy generator atm
         code  = 'def split_(array, train_rate, test_rate, validation_rate):\n'
         code += '    def generator(array, idx_from, idx_to):\n'
@@ -87,6 +73,36 @@ class FileCsvStrategy(AbstractStrategy):
                                                                                            rate_train, rate_valid, rate_test)
         #code += "print('SPLIT SIZES!!!', %s_size, %s_size, %s_size)\n" % (var_train, var_valid, var_test)        
         return code
+
+    
+    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
+
+        code  = ""
+        code += "df = dd.read_csv('%s', blocksize='100MB')\n" % self._path
+        code += "cols = list(df.columns)\n"
+
+        if self._columns:
+            code +="df = df[%s]\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
+        
+        code += "df_train, df_validation, df_test = df.random_split([%f, %f, %f])\n" % (rate_train, rate_valid, rate_test)
+        code += "\n"
+        code += "def generator(df):\n"
+        code += "    for x in df.iterrows():\n"
+        code += "        y = x[1].values.squeeze()\n"
+        #code += "        print('GENERATE', type(y), y.shape, y)\n"
+        code += "        yield y\n"
+        code += "\n"
+        code += "%s = generator(df_train)\n" % var_train
+        code += "%s = generator(df_validation)\n" % var_valid
+        code += "%s = generator(df_test)\n" % var_test
+        code += "\n"
+        code += "# The size estimates are only used for visualizations\n"
+        code += "size = len(df.partitions[0])*df.npartitions\n"
+        #code += "size = len(df)\n"
+        code += "%s_size = round(%f*size)\n" % (var_train, rate_train)
+        code += "%s_size = round(%f*size)\n" % (var_valid, rate_valid)
+        code += "%s_size = size - %s_size - %s_size\n" % (var_test, var_train, var_valid)
+        return code        
 
     
 class DirectoryImageStrategy(AbstractStrategy):
@@ -237,7 +253,7 @@ class DataDataCodeGenerator(CodeGenerator):
         code  = 'def split(array, train_rate, test_rate, validation_rate):\n'
         code += '    def generator(array, idx_from, idx_to):\n'
         code += '        for x in array[idx_from:idx_to]:\n'
-        code += '            print("valshapa",x.shape)\n'        
+        #code += '            print("valshapa",x.shape)\n'        
         code += '            yield x.squeeze()\n'
         code += '    \n'
         code += '    array.compute_chunk_sizes()\n'
@@ -260,7 +276,7 @@ class DataDataCodeGenerator(CodeGenerator):
         elif len(self._strategies) > 1:
             code += self._get_code_multi_strategy()
         else:
-            raise ValueError
+            raise ValueError('negative number of strategies??')
 
         return code
     
@@ -279,6 +295,7 @@ class DataDataCodeGenerator(CodeGenerator):
         code += '        return gen\n'
         code += '    return func\n'
         code += '\n'
+        code += 'print("TYPE TYPE TYPE TYPE TYPE", X_train)\n'
         code += 'X_train = wrap(X_train)\n'
         code += 'X_validation = wrap(X_validation)\n'
         code += 'X_test = wrap(X_test)\n'                
