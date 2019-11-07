@@ -3,12 +3,9 @@
   <component name="ChangeListManager">
     <list default="true" id="a2cf221b-bc25-43df-b664-0982c448fc25" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/different/the-mini-map.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/different/the-mini-map.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-field/network-field.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-field/network-field.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/meta/workspace-meta.pug" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/meta/workspace-meta.pug" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/the-workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/the-workspace.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/the-workspace.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/the-workspace.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspaceHelpers.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspaceHelpers.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />

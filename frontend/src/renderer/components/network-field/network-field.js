@@ -238,14 +238,14 @@ export default {
       let offsetWidth = this.$refs.network.offsetWidth;
       const canvasHeight = scrollHeight + 40;
       const canvasWidth = scrollWidth + 40;
-      this.svgHeight = canvasHeight +'px';
-      this.svgWidth = canvasWidth +'px';
-      // scrollHeight > offsetHeight
-      //   ? this.svgHeight = canvasHeight +'px'
-      //   : this.svgHeight = '100%';
-      // scrollWidth > offsetWidth
-      //   ? this.svgWidth = canvasWidth +'px'
-      //   : this.svgWidth = '100%';
+      // this.svgHeight = canvasHeight +'px';
+      // this.svgWidth = canvasWidth +'px';
+      scrollHeight > offsetHeight
+        ? this.svgHeight = canvasHeight +'px'
+        : this.svgHeight = '100%';
+      scrollWidth > offsetWidth
+        ? this.svgWidth = canvasWidth +'px'
+        : this.svgWidth = '100%';
       this.SET_networkSize({height: canvasHeight, width: canvasWidth});
     },
     //-------------

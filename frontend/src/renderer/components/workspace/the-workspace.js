@@ -2,6 +2,7 @@ import {mapActions, mapGetters, mapMutations, mapState} from 'vuex';
 import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
+import helpersNet from './workspace-helpers.js'
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -16,7 +17,7 @@ import TheMiniMap             from '@/components/different/the-mini-map.vue'
 
 export default {
   name: 'WorkspaceContent',
-  mixins: [saveNet, scaleNet, spinnerNet],
+  mixins: [saveNet, scaleNet, spinnerNet, helpersNet],
   components: {
     NetworkField, TextEditable,
     GeneralResult, SelectCoreSide,
@@ -82,7 +83,6 @@ export default {
         this.event_startDoRequest(false);
       }
     },
-
     currentSelectedEl(newStatus) {
       if(newStatus.length > 0
         && this.isTutorialMode
