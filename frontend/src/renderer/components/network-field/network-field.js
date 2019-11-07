@@ -116,7 +116,6 @@ export default {
         width: this.svgWidth,
         height: this.svgHeight,
       };
-      this.SET_networkSize(deepCopy(size));
       return size
     },    
   },
@@ -143,7 +142,7 @@ export default {
   methods: {
     ...mapActions({
       tutorialPointActivate: 'mod_tutorials/pointActivate',
-      SET_networkSize: 'mod_workspaceHelpers/SET_networkSize',
+      SET_networkSize: 'mod_workspaceHelpers/SET_elementNetworkField',
     }),
     refNetworkMouseDown(ev) {
       const isLeftBtn = ev.buttons === 1;
@@ -237,12 +236,17 @@ export default {
       let scrollWidth = this.$refs.network.scrollWidth;
       let offsetHeight = this.$refs.network.offsetHeight;
       let offsetWidth = this.$refs.network.offsetWidth;
-      scrollHeight > offsetHeight
-        ? this.svgHeight = scrollHeight + 40 +'px'
-        : this.svgHeight = '100%';
-      scrollWidth > offsetWidth
-        ? this.svgWidth = scrollWidth + 40 +'px'
-        : this.svgWidth = '100%';
+      const canvasHeight = scrollHeight + 40;
+      const canvasWidth = scrollWidth + 40;
+      this.svgHeight = canvasHeight +'px';
+      this.svgWidth = canvasWidth +'px';
+      // scrollHeight > offsetHeight
+      //   ? this.svgHeight = canvasHeight +'px'
+      //   : this.svgHeight = '100%';
+      // scrollWidth > offsetWidth
+      //   ? this.svgWidth = canvasWidth +'px'
+      //   : this.svgWidth = '100%';
+      this.SET_networkSize({height: canvasHeight, width: canvasWidth});
     },
     //-------------
     //Arrow methods

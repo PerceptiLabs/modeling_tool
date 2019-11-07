@@ -3,7 +3,8 @@ import { deepCopy } from "@/core/helpers.js";
 const namespaced = true;
 
 const state = {
-  networkSize: null
+  elementNetworkField: null,
+  elementNetworkWindow: null
 };
 
 const getters = {
@@ -11,14 +12,20 @@ const getters = {
 };
 
 const mutations = {
-  set_networkSize(state, size) {
-    state.networkSize = deepCopy(size)
+  set_elementNetworkField(state, el) {
+    state.elementNetworkField = el
+  },
+  set_elementNetworkWindow(state, el) {
+    state.elementNetworkWindow = el
   }
 };
 
 const actions = {
-  SET_networkSize({commit, dispatch}, size) {
-    commit('set_networkSize', size);
+  SET_elementNetworkField({commit, dispatch}, el) {
+    commit('set_elementNetworkField', el);
+  },
+  SET_elementNetworkWindow({commit, dispatch}, el) {
+    commit('set_elementNetwork', el);
   },
 };
 

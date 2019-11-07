@@ -10,7 +10,7 @@
           )
       .mini-map_main
         network-field.mini-map_canvas(
-          :style="canvasSize"
+          :style="canvasStyle"
 
         )
 
@@ -36,9 +36,17 @@ export default {
       return this.$store.state.mod_workspaceHelpers.networkSize
     },
     canvasStyle() {
+      //30/20
+      const size = this.canvasSize;
+      console.log(size);
+      const width = 300 / size.width;
+      const height = 200 / size.height;
+      const scale = (width > height) ? height : width;
+      console.log(scale);
       return {
-        ...this.canvasSize,
-        transform: 'scale()'
+        width: size.width+'px',
+        height: size.height+'px',
+        transform: `scale(${scale})`
       }
     }
   },
@@ -93,6 +101,7 @@ export default {
   .mini-map_canvas {
     //background-color: #555;
     transform-origin: top left;
+    transform: scale(0.25);
     //transform: matrix(0.0820513, 0, 0, 0.0820513, -1790.5, -752.5);
   }
 </style>
