@@ -76,7 +76,6 @@ class FileCsvStrategy(AbstractStrategy):
 
     
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
-
         code  = ""
         code += "df = dd.read_csv('%s', blocksize='100MB')\n" % self._path
         code += "cols = list(df.columns)\n"
