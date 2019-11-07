@@ -96,7 +96,11 @@ class FileCsvStrategy(AbstractStrategy):
         code += "%s = generator(df_test)\n" % var_test
         code += "\n"
         code += "# The size estimates are only used for visualizations\n"
-        code += "size = len(df.partitions[0])*df.npartitions\n"
+        code += "if '%s_size' not in api.cache:\n" % self._path        
+        code += "    size = len(df.partitions[0])*df.npartitions\n"
+        code += "    api.cache.put('%s_size', data_mat)\n" % self._path        
+        code += "else:\n"
+        code += "    size = api.cache.get('%s_size')\n" % self._path        
         #code += "size = len(df)\n"
         code += "%s_size = round(%f*size)\n" % (var_train, rate_train)
         code += "%s_size = round(%f*size)\n" % (var_valid, rate_valid)
