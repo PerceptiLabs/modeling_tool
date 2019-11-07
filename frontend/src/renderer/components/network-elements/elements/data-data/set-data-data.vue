@@ -7,13 +7,34 @@
   )
     template(slot="Computer-content")
       div(v-if="testSelectFile")
-        .settings-layer_section
+        //-.settings-layer_section
           .form_row
-            input(type="text" v-model="testPath")
+            base-select(
+              v-model="serverListFileSelected"
+              /:select-options="serverListFile"
+              )
             button.btn.btn--primary(type="button"
-              :disabled="!testPath.length"
+              /:disabled="!serverListFile.length"
               @click="TESTload") Load
         .settings-layer_section
+          .form_row(
+            v-for="(path, i) in testPath"
+            :key="i"
+            )
+            input(type="text" v-model="testPath[i]")
+            button.btn.btn--icon.icon.icon-add(type="button"
+              v-if="i === testPath.length-1"
+              @click="addPath"
+            )
+            button.btn.btn--icon.icon.icon-minus(type="button"
+              v-else
+              @click="removePath(i)"
+            )
+          .form_row
+            button.btn.btn--primary(type="button"
+              :disabled="!testPath[0].length"
+              @click="TESTload") Load
+        //-.settings-layer_section
           .form-row
             input(type="file"
               @input="getfolder($event)"
@@ -144,7 +165,7 @@
             text: 'Select a file that is the data'
           }
         },
-        testPath: '',
+        testPath: [''],
         testSelectFile: true,
         settings: {
           Type: 'Data',
@@ -161,7 +182,9 @@
             Batch_size: 10,
             Shuffle_data: true,
           }
-        }
+        },
+        serverListFile: ['1', '2', '3'],
+        serverListFileSelected: '2',
       }
     },
     computed: {
@@ -241,6 +264,12 @@
         // API_getPartitionSummary:'mod_api/API_getPartitionSummary',
         // API_getDataMeta:        'mod_api/API_getDataMeta',
       }),
+      addPath() {
+        this.testPath.push('')
+      },
+      removePath(i) {
+        this.testPath.splice(i, 1);
+      },
       getfolder(e) {
         console.log(e);
         var files = e.target.files;
@@ -277,7 +306,7 @@
       },
       TESTload() {
         this.testSelectFile = false;
-        this.settings.accessProperties.Sources = [this.testPath];
+        this.settings.accessProperties.Sources = this.testPath;
         this.saveLoadFile(this.settings.accessProperties.Sources, 'file', false);
       },
       loadFolder(isAppend) {

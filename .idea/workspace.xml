@@ -45,15 +45,15 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\deep-learning-recurrent" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\core\basic-template" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\pages" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\data-environment" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -73,7 +73,7 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="721fec01-281e-425f-962e-1f0b77c37ce4" name="Default Changelist" comment="" />
+      <changelist id="a2cf221b-bc25-43df-b664-0982c448fc25" name="Default Changelist" comment="" />
       <created>1569314049218</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -115,6 +115,7 @@
       <workItem from="1572515676027" duration="720000" />
       <workItem from="1572516422085" duration="1415000" />
       <workItem from="1572517875730" duration="3964000" />
+      <workItem from="1573110076506" duration="3336000" />
     </task>
     <servers />
   </component>
