@@ -52,7 +52,27 @@ class FileCsvStrategy(AbstractStrategy):
         return code
         
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
-        code  = "if '%s' not in api.cache:\n" % self._path        
+        # TODO: do not use custom splitting for csvs. this is necessary for lazy generator atm
+        code  = 'def split_(array, train_rate, test_rate, validation_rate):\n'
+        code += '    def generator(array, idx_from, idx_to):\n'
+        code += '        df = dd.from_dask_array(array[idx_from:idx_to])\n'
+        code += '        for x in df.iterrows():\n'
+        code += '            print("valshape",x[1].values.shape)\n'
+        code += '            yield x[1].values.squeeze()\n'
+        code += '    \n'
+        code += '    array.compute_chunk_sizes()\n'
+        code += '    size = len(array)\n'
+        code += '    train_size = round(train_rate*size)\n'
+        code += '    validation_size = round(validation_rate*size)\n'
+        code += '    test_size = size - train_size - validation_size\n'
+        code += '    \n'
+        code += '    train_gen = generator(array, 0, train_size)\n'
+        code += '    validation_gen = generator(array, train_size, train_size+validation_size)        \n'
+        code += '    test_gen = generator(array, train_size+validation_size, size)\n'
+        code += '    return train_gen, test_gen, validation_gen, train_size, test_size, validation_size\n'
+        code += '\n'
+        
+        code += "if '%s' not in api.cache:\n" % self._path        
         code += "    df = dd.read_csv('%s')\n" % self._path
         code += "    cols = list(df.columns)\n"
         if self._columns:
@@ -62,7 +82,7 @@ class FileCsvStrategy(AbstractStrategy):
         code += "    api.cache.put('%s', data_mat)\n" % self._path            
         code += "else:\n"
         code += "    data_mat = api.cache.get('%s')\n" % self._path
-        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split_(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
                                                                                            var_train, var_valid, var_test,
                                                                                            rate_train, rate_valid, rate_test)
         #code += "print('SPLIT SIZES!!!', %s_size, %s_size, %s_size)\n" % (var_train, var_valid, var_test)        
@@ -217,7 +237,8 @@ class DataDataCodeGenerator(CodeGenerator):
         code  = 'def split(array, train_rate, test_rate, validation_rate):\n'
         code += '    def generator(array, idx_from, idx_to):\n'
         code += '        for x in array[idx_from:idx_to]:\n'
-        code += '            yield x.compute()\n'
+        code += '            print("valshapa",x.shape)\n'        
+        code += '            yield x.squeeze()\n'
         code += '    \n'
         code += '    array.compute_chunk_sizes()\n'
         code += '    size = len(array)\n'

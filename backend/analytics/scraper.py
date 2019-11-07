@@ -13,7 +13,8 @@ from analytics.handlers import *
 DEFAULT_HANDLERS = [
     CoreInitHandler(),
     CubeHandler(),
-    CpuAndMemHandler()
+    CpuAndMemHandler(),
+    SessionOnRenderHandler()
 ]
 
 log = logging.getLogger(__name__)
