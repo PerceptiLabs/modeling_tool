@@ -37,6 +37,7 @@ import LayerCustom          from '@/components/network-elements/elements/layer-c
 import SettingsArrow        from '@/components/network-elements/elements-settings/setting-arrow.vue'
 
 import { mapGetters, mapMutations, mapActions } from 'vuex';
+import { deepCopy } from "@/core/helpers.js";
 
 export default {
   name: 'NetworkField',
@@ -111,10 +112,12 @@ export default {
       return this.$store.state.mod_workspace.preArrow;
     },
     styleSvgArrow() {
-      return {
+      const size = {
         width: this.svgWidth,
         height: this.svgHeight,
-      }
+      };
+      this.SET_networkSize(deepCopy(size));
+      return size
     },    
   },
   watch: {
@@ -140,6 +143,7 @@ export default {
   methods: {
     ...mapActions({
       tutorialPointActivate: 'mod_tutorials/pointActivate',
+      SET_networkSize: 'mod_workspaceHelpers/SET_networkSize',
     }),
     refNetworkMouseDown(ev) {
       const isLeftBtn = ev.buttons === 1;
@@ -234,12 +238,11 @@ export default {
       let offsetHeight = this.$refs.network.offsetHeight;
       let offsetWidth = this.$refs.network.offsetWidth;
       scrollHeight > offsetHeight
-        ? this.svgHeight = scrollHeight + 'px'
+        ? this.svgHeight = scrollHeight + 40 +'px'
         : this.svgHeight = '100%';
       scrollWidth > offsetWidth
-        ? this.svgWidth = scrollWidth + 'px'
+        ? this.svgWidth = scrollWidth + 40 +'px'
         : this.svgWidth = '100%';
-
     },
     //-------------
     //Arrow methods

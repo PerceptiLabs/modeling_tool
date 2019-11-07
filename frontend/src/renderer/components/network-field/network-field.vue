@@ -1,5 +1,6 @@
 <template lang="pug">
-  .network-field(:style="styleSvgArrow"
+  .network-field(
+    :style="styleSvgArrow"
     ref="network"
     @mousedown="refNetworkMouseDown($event)"
   )
