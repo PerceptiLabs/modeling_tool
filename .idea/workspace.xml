@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="a2cf221b-bc25-43df-b664-0982c448fc25" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/net-base-element/net-base-element.scss" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/net-base-element/net-base-element.scss" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/net-base-element/net-base-element.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/net-base-element/net-base-element.vue" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -45,15 +46,15 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\deep-learning-recurrent" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\core\basic-template" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\pages" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\data-environment" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
     </key>
   </component>
   <component name="RunDashboard">
