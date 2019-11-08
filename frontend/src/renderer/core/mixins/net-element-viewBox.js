@@ -95,7 +95,6 @@ const viewBoxMixin = {
           let stopRequest = new Date();
           let answerDelay = stopRequest - this.startRequest;
           this.$store.dispatch('mod_workspace/CHECK_requestInterval', answerDelay);
-          console.log('chartData', this.chartData);
         })
         .catch((err)=> {
           console.error(err);
