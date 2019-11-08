@@ -2,7 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="a2cf221b-bc25-43df-b664-0982c448fc25" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-field/network-field.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-field/network-field.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_user.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_user.js" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -35,6 +36,9 @@
     </option>
   </component>
   <component name="ProjectId" id="1RHBH48qMZxi7o2dlFxqblBaSV6" />
+  <component name="ProjectLevelVcsManager">
+    <ConfirmationsSetting value="2" id="Add" />
+  </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$/frontend/src/renderer/components/workspace" />
