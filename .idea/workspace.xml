@@ -1,0 +1,188 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="a2cf221b-bc25-43df-b664-0982c448fc25" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-field/network-field.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-field/network-field.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/meta/workspace-meta.pug" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/meta/workspace-meta.pug" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/the-workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/workspace/the-workspace.js" afterDir="false" />
+    </list>
+    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Vue Single File Component" />
+        <option value="SCSS File" />
+        <option value="JavaScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="web-dev" />
+      </map>
+    </option>
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="IgnoredFileRootStore">
+    <option name="generatedRoots">
+      <set>
+        <option value="G:\progects\PerceptiLabs\.idea" />
+      </set>
+    </option>
+  </component>
+  <component name="ProjectId" id="1RHBH48qMZxi7o2dlFxqblBaSV6" />
+  <component name="PropertiesComponent">
+    <property name="WebServerToolWindowFactoryState" value="false" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/frontend/src/renderer/components/workspace" />
+    <property name="list.type.of.created.stylesheet" value="SCSS" />
+    <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
+    <property name="nodejs_npm_path_reset_for_default_project" value="true" />
+    <property name="nodejs_package_manager_path" value="npm" />
+  </component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\workspace" />
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store\modules" />
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\different" />
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\deep-learning-recurrent" />
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\core\basic-template" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
+    </key>
+  </component>
+  <component name="RunDashboard">
+    <option name="ruleStates">
+      <list>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
+      </list>
+    </option>
+  </component>
+  <component name="SvnConfiguration">
+    <configuration />
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="a2cf221b-bc25-43df-b664-0982c448fc25" name="Default Changelist" comment="" />
+      <created>1569314049218</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1569314049218</updated>
+      <workItem from="1569314050410" duration="1909000" />
+      <workItem from="1569317214670" duration="1434000" />
+      <workItem from="1569318902466" duration="20064000" />
+      <workItem from="1569401355146" duration="25077000" />
+      <workItem from="1569479721889" duration="22343000" />
+      <workItem from="1569572318085" duration="27825000" />
+      <workItem from="1569909792856" duration="3482000" />
+      <workItem from="1569915462641" duration="2918000" />
+      <workItem from="1569919872984" duration="17431000" />
+      <workItem from="1569995130918" duration="32296000" />
+      <workItem from="1570088277263" duration="24524000" />
+      <workItem from="1570176377720" duration="22585000" />
+      <workItem from="1570204746438" duration="329000" />
+      <workItem from="1570429426188" duration="26829000" />
+      <workItem from="1570528159985" duration="16303000" />
+      <workItem from="1570602632054" duration="24784000" />
+      <workItem from="1570689408296" duration="23417000" />
+      <workItem from="1570775731599" duration="28280000" />
+      <workItem from="1570808771210" duration="650000" />
+      <workItem from="1571125781816" duration="17322000" />
+      <workItem from="1571215029622" duration="27472000" />
+      <workItem from="1571297118161" duration="17425000" />
+      <workItem from="1571388502934" duration="33148000" />
+      <workItem from="1571637592898" duration="21113000" />
+      <workItem from="1571725691402" duration="28521000" />
+      <workItem from="1571813270172" duration="21637000" />
+      <workItem from="1571897487739" duration="23209000" />
+      <workItem from="1571989847536" duration="24203000" />
+      <workItem from="1572256939306" duration="16238000" />
+      <workItem from="1572337937537" duration="11713000" />
+      <workItem from="1572358184741" duration="5167000" />
+      <workItem from="1572369738445" duration="470000" />
+      <workItem from="1572427057486" duration="5371000" />
+      <workItem from="1572440066002" duration="1681000" />
+      <workItem from="1572515676027" duration="720000" />
+      <workItem from="1572516422085" duration="1415000" />
+      <workItem from="1572517875730" duration="3964000" />
+      <workItem from="1572939251934" duration="12685000" />
+      <workItem from="1573024957115" duration="921000" />
+    </task>
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="1" />
+  </component>
+  <component name="Vcs.Log.History.Properties">
+    <option name="COLUMN_ORDER">
+      <list>
+        <option value="0" />
+        <option value="2" />
+        <option value="3" />
+        <option value="1" />
+      </list>
+    </option>
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State>
+              <option name="FILTERS">
+                <map>
+                  <entry key="branch">
+                    <value>
+                      <list>
+                        <option value="web-dev" />
+                      </list>
+                    </value>
+                  </entry>
+                </map>
+              </option>
+              <option name="COLUMN_ORDER" />
+            </State>
+          </value>
+        </entry>
+      </map>
+    </option>
+    <option name="RECENT_FILTERS">
+      <map>
+        <entry key="Branch">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="web-dev" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+        <entry key="User">
+          <value>
+            <list>
+              <RecentGroup>
+                <option name="FILTER_VALUES">
+                  <option value="Anton S. Stetsenko" />
+                </option>
+              </RecentGroup>
+            </list>
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+</project>

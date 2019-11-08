@@ -27,7 +27,9 @@
           :el-data="statisticsElSelected.viewBox"
           section-title="ViewBox"
           )
-        section.network_info-section.the-network-field
+        section.network_info-section.the-network-field(
+          ref="networkWindow"
+          )
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
           .info-section_main.js-info-section_main(
@@ -125,6 +127,7 @@
     overflow: auto;
   }
   .workspace_meta {
+    position: relative; //for minimap
     flex: 0 0 auto;
     background-color: $bg-workspace-2;
     display: flex;
