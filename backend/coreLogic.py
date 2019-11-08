@@ -19,6 +19,7 @@ from networkSaver import saveNetwork
 from modules import ModuleProvider
 from core_new.core import *
 from core_new.data import DataContainer
+from core_new.cache import get_cache
 from core_new.errors import CoreErrorHandler
 from core_new.history import SessionHistory
 from analytics.scraper import get_scraper
@@ -89,7 +90,8 @@ class coreLogic():
         module_provider.load('dask.array', as_name='da')
         module_provider.load('dask.dataframe', as_name='dd')                  
 
-        session_history = SessionHistory()
+        cache = get_cache()
+        session_history = SessionHistory(cache)
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
         self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
                          error_handler, session_proc_handler, checkpointValues) 

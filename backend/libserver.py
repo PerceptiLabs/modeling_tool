@@ -19,6 +19,7 @@ from createDataObject import createDataObject
 
 from core_new.core import *
 from core_new.history import SessionHistory
+from core_new.cache import get_cache
 from core_new.errors import LightweightErrorHandler
 from core_new.extras import LayerExtrasReader
 from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
@@ -29,6 +30,7 @@ from modules import ModuleProvider
 import pprint
 import logging
 log = logging.getLogger(__name__)
+
 
 class Message:
     def __init__(self, selector, sock, addr, cores, dataDict, checkpointDict, lwNetworks):
@@ -47,6 +49,7 @@ class Message:
         self.checkpointDict=checkpointDict
         self.lwNetworks=lwNetworks
 
+        
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
         if mode == "r":
@@ -187,8 +190,9 @@ class Message:
                 self.add_to_checkpointDict(value["Info"])
 
         data_container = DataContainer()
-        
-        session_history_lw = SessionHistory()
+
+
+            
         extras_reader = LayerExtrasReader()
 
         from codehq import CodeHqNew as CodeHq
@@ -208,7 +212,10 @@ class Message:
             module_provider.install_hook(hook_target, hook_func)
 
         error_handler = LightweightErrorHandler()
-            
+        
+        global session_history_lw
+        cache = get_cache()
+        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!        
         lw_core = LightweightCore(CodeHq, graph_dict,
                                   data_container, session_history_lw,
                                   module_provider, error_handler,

@@ -43,7 +43,7 @@ class FileCsvStrategy(AbstractStrategy):
         code += '    def generator(array, idx_from, idx_to):\n'
         code += '        df = dd.from_dask_array(array[idx_from:idx_to])\n'
         code += '        for x in df.iterrows():\n'
-        code += '            print("valshape",x[1].values.shape)\n'
+        #code += '            print("valshape",x[1].values.shape)\n'
         code += '            yield x[1].values.squeeze()\n'
         code += '    \n'
         code += '    array.compute_chunk_sizes()\n'
@@ -77,13 +77,20 @@ class FileCsvStrategy(AbstractStrategy):
     
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
         code  = ""
-        code += "df = dd.read_csv('%s', blocksize='100MB')\n" % self._path
+        #code += "print('READING CSV')\n"
+        code += "if '%s' not in api.cache:\n" % self._path
+        #code += "    print('NOT FOUND IN CACHE: %s')\n" % self._path        
+        code += "    df = dd.read_csv('%s', blocksize='100MB')\n" % self._path
+        code += "    api.cache.put('%s', df)\n" % self._path        
+        code += "else:\n"
+        code += "    df = api.cache.get('%s')\n" % self._path        
         code += "cols = list(df.columns)\n"
 
         if self._columns:
             code +="df = df[%s]\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
-        
-        code += "df_train, df_validation, df_test = df.random_split([%f, %f, %f])\n" % (rate_train, rate_valid, rate_test)
+            
+        #code += "print('SPLITTING CSV')\n"                        
+        code += "df_train, df_validation, df_test = df.random_split([%f, %f, %f], random_state=0)\n" % (rate_train, rate_valid, rate_test)
         code += "\n"
         code += "def generator(df):\n"
         code += "    for x in df.iterrows():\n"
@@ -91,20 +98,24 @@ class FileCsvStrategy(AbstractStrategy):
         #code += "        print('GENERATE', type(y), y.shape, y)\n"
         code += "        yield y\n"
         code += "\n"
+        #code += "print('CREATING GENERATORS')\n"
         code += "%s = generator(df_train)\n" % var_train
         code += "%s = generator(df_validation)\n" % var_valid
         code += "%s = generator(df_test)\n" % var_test
         code += "\n"
         code += "# The size estimates are only used for visualizations\n"
-        code += "if '%s_size' not in api.cache:\n" % self._path        
+        #code += "print('GETTING SIZE')\n"        
+        code += "if '%s_size' not in api.cache:\n" % self._path
+        #code += "    print('NOT FOUND IN CACHE: %s_size')\n" % self._path
         code += "    size = len(df.partitions[0])*df.npartitions\n"
-        code += "    api.cache.put('%s_size', data_mat)\n" % self._path        
+        code += "    api.cache.put('%s_size', size)\n" % self._path        
         code += "else:\n"
         code += "    size = api.cache.get('%s_size')\n" % self._path        
         #code += "size = len(df)\n"
         code += "%s_size = round(%f*size)\n" % (var_train, rate_train)
         code += "%s_size = round(%f*size)\n" % (var_valid, rate_valid)
         code += "%s_size = size - %s_size - %s_size\n" % (var_test, var_train, var_valid)
+        #code += "print('DONE WITH CSV STRATEGY')\n"                
         return code        
 
     
@@ -279,7 +290,7 @@ class DataDataCodeGenerator(CodeGenerator):
         elif len(self._strategies) > 1:
             code += self._get_code_multi_strategy()
         else:
-            raise ValueError('negative number of strategies??')
+            raise ValueError('No strategies set for getting code')
 
         return code
     
@@ -298,7 +309,7 @@ class DataDataCodeGenerator(CodeGenerator):
         code += '        return gen\n'
         code += '    return func\n'
         code += '\n'
-        code += 'print("TYPE TYPE TYPE TYPE TYPE", X_train)\n'
+        code += 'print("WRAPPING GENERATORS")\n'
         code += 'X_train = wrap(X_train)\n'
         code += 'X_validation = wrap(X_validation)\n'
         code += 'X_test = wrap(X_test)\n'                
@@ -355,21 +366,25 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "_batch_size = %d\n" % int(self.batch_size)
         code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
+        code += "print('CREATING TF DATASETS')\n"
         code += 'X_train = tf.data.Dataset.from_generator(X_train, output_types=np.float32)\n'
         code += 'X_validation = tf.data.Dataset.from_generator(X_validation, output_types=np.float32)\n'
         code += 'X_test = tf.data.Dataset.from_generator(X_test, output_types=np.float32)\n'        
         code += "\n"
         if self.shuffle:
+            code += "print('SHUFFLING TF DATASETS')\n"
             code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size)\n" % self._seed
         else:
             code += "X_train=X_train.batch(_batch_size)\n"
         code += "X_validation=X_validation.batch(_batch_size)\n"
         code += "X_test=X_test.batch(1)\n"
         code += "\n"
+        code += "print('CREATING TF ITERATORS')\n"        
         code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
         code += "train_iterator = iterator.make_initializer(X_train, name='train_iterator_%s')\n" % self._layer_id
         code += "validation_iterator = iterator.make_initializer(X_validation, name='validation_iterator_%s')\n" % self._layer_id        
-        code += "test_iterator = iterator.make_initializer(X_test, name='test_iterator_%s')\n" % self._layer_id                
+        code += "test_iterator = iterator.make_initializer(X_test, name='test_iterator_%s')\n" % self._layer_id
+        code += "print('GETTING NEXT ELEMENT')\n"                
         code += "Y = next_elements = iterator.get_next()\n"
         return code        
 

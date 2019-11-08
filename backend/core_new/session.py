@@ -141,8 +141,10 @@ class LayerSession(ApiCallbackHandler):
             return self._cache.get(key)
 
     def on_cache_contains(self, key):
-        if self._cache is not None:        
+        if self._cache is not None:
             return key in self._cache
+        else:
+            return False
 
     @requires_process_handler
     def pause(self):
