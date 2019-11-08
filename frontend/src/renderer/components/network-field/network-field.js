@@ -53,6 +53,8 @@ export default {
   },
   mounted() {
     this.drawArrows();
+    //console.log(this.$refs.network);
+    //this.SET_elementNetworkField({...this.$refs.network})
   },
   beforeDestroy() {
     this.removeArrowListener();
@@ -141,8 +143,8 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate: 'mod_tutorials/pointActivate',
-      SET_networkSize: 'mod_workspaceHelpers/SET_elementNetworkField',
+      tutorialPointActivate:   'mod_tutorials/pointActivate',
+      SET_elementNetworkField: 'mod_workspaceHelpers/SET_elementNetworkField',
     }),
     refNetworkMouseDown(ev) {
       const isLeftBtn = ev.buttons === 1;
@@ -236,8 +238,8 @@ export default {
       let scrollWidth = this.$refs.network.scrollWidth;
       let offsetHeight = this.$refs.network.offsetHeight;
       let offsetWidth = this.$refs.network.offsetWidth;
-      const canvasHeight = scrollHeight + 40;
-      const canvasWidth = scrollWidth + 40;
+      // const canvasHeight = scrollHeight + 40;
+      // const canvasWidth = scrollWidth + 40;
       // this.svgHeight = canvasHeight +'px';
       // this.svgWidth = canvasWidth +'px';
       scrollHeight > offsetHeight
@@ -246,8 +248,8 @@ export default {
       scrollWidth > offsetWidth
         ? this.svgWidth = canvasWidth +'px'
         : this.svgWidth = '100%';
-      this.SET_networkSize({height: canvasHeight, width: canvasWidth});
     },
+
     //-------------
     //Arrow methods
     //--------------
