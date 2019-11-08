@@ -1,9 +1,9 @@
 import {mapActions} from "vuex";
 
 const workspaceScale = {
-  updated() {
-    console.log('updated');
-  },
+  // updated() {
+  //   console.log('updated');
+  // },
   computed: {
 
   },

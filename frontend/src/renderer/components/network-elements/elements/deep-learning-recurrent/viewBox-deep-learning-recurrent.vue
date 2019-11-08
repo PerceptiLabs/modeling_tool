@@ -35,7 +35,7 @@
     mixins: [viewBoxMixin],
     data() {
       return {
-        tabset: ['Output', 'Weights & Bias', 'Gradients'],
+        btnList: {'Output': null, 'Weights & Bias': null, 'Gradients': null},
         colorList: ['#83c1ff', '#0070d6', '#6b8ff7']
       }
     },

@@ -78,8 +78,8 @@ export default {
         },
 
         {
-          title: 'Now you know the basics of the program. Feel free to start building your first AI!',
-          text: `<span style="line-height: 1.8;">Remember, this is a Beta version, if you find any errors or have any suggestions, please click on </span>
+          title: 'Now you know the basics of the program. Feel free to start building your first model!',
+          text: `<span style="line-height: 1.8;">If you find any errors or have any suggestions, please click on </span>
                  <img src="./static/img/tutorial/report-button-img.png" style="width: 56px;position: relative;top: -5px;" ><br>
                  <span>Any feedback is highly appreciated!</span>`,
           button: {
