@@ -52,13 +52,13 @@ $clip-path_indent: $arrows-start_size/2;
 .net-element_checkpoint-icon {
   position: absolute;
   font-size: 1.4rem;
-  font-weight: 600;
-  color: $col-txt2;
+  font-weight: 500;
+  color: rgba($col-txt2, .9);
   top: 2px;
-  right: 2px;
+  left: 2px;
   width: 1.5rem;
   height: 1.5rem;
-  background-color: rgba($col-txt, .85);
+  //background-color: rgba($col-txt, .85);
   border-radius: 50%;
   z-index: 4;
   &:before {
