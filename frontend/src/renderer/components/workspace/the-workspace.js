@@ -25,6 +25,9 @@ export default {
     TheTesting, TheViewBox, StartTrainingSpinner,
     TheMiniMap
   },
+  mounted() {
+    console.log(this.$refs.networkField);
+  },
   data() {
     return {
       trainingWasPaused: false,
