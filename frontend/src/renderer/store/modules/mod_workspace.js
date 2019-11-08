@@ -390,16 +390,24 @@ const mutations = {
     deleteElement(arrSelect);
 
     for(let el in net) {
-      net[el].connectionOut = net[el].connectionOut.filter((connect)=>{
+      let element = net[el];
+      element.connectionOut = element.connectionOut.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
-      net[el].connectionArrow = net[el].connectionArrow.filter((connect)=>{
+      element.connectionArrow = element.connectionArrow.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
-      net[el].connectionIn  = net[el].connectionIn.filter((connect)=>{
+      element.connectionIn  = element.connectionIn.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
+
+      if(element.layerNone) {
+        delete element.containerLayersList[arrSelect[0].layerId];
+        let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
+        if (isLastContainerElement) delete net[el];
+      }
     }
+
     state.workspaceContent[state.currentNetwork].networkElementList = net;
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
     dispatch('mod_api/API_getOutputDim', null, {root: true});
@@ -688,6 +696,7 @@ const mutations = {
   ungroup_container(state, {dispatch, getters}) {
     let net = {...getters.GET_currentNetworkElementList};
     let container = getters.GET_currentSelectedEl[0];
+    console.log(container)
     dispatch('OPEN_container', container);
     for(let idEl in net) {
       let el = net[idEl];
