@@ -27,10 +27,12 @@
           :el-data="statisticsElSelected.viewBox"
           section-title="ViewBox"
           )
-        section#minimapwrap.network_info-section.the-network-field
+        section.network_info-section.the-network-field(
+          ref="networkWindow"
+          )
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
-          #minimap.info-section_main.js-info-section_main(
+          .info-section_main.js-info-section_main(
             @wheel.ctrl="scaleScroll($event)"
             )
             network-field(

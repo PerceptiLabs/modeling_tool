@@ -157,7 +157,7 @@ TYPE_TO_SPEC_FUNC = {TYPE_BAR: bar,
                      TYPE_PIE: pie}
 
 def getType(dataVec):
-    dataVec = np.asarray(dataVec)
+    dataVec = np.asarray(dataVec).squeeze()
     
     type_ = None
     shape = dataVec.shape

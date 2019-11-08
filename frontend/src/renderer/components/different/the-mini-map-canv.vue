@@ -9,18 +9,16 @@
           @click="closeMap"
           )
       .mini-map_main
-        network-field.mini-map_canvas(
-          :style="canvasStyle"
-
+        canvas.mini-map_canvas(
+          ref="miniMapCanvas"
         )
 
 </template>
 
 <script>
-  import NetworkField           from '@/components/network-field/network-field.vue'
+  import '@/core/plugins/mini-map.js'
 export default {
   name: "TheMiniMap",
-  components: {NetworkField},
   mounted() {
   },
   data() {
@@ -31,23 +29,6 @@ export default {
   computed: {
     currentNetList() {
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
-    },
-    canvasSize() {
-      return this.$store.state.mod_workspaceHelpers.networkSize
-    },
-    canvasStyle() {
-      //30/20
-      const size = this.canvasSize;
-      console.log(size);
-      const width = 300 / size.width;
-      const height = 200 / size.height;
-      const scale = (width > height) ? height : width;
-      console.log(scale);
-      return {
-        width: size.width+'px',
-        height: size.height+'px',
-        transform: `scale(${scale})`
-      }
     }
   },
   watch: {
@@ -67,7 +48,14 @@ export default {
       this.isShowMap = false
     },
     updateMiniMap() {
-
+      pagemap(this.$refs.miniMapCanvas, {
+        viewport: document.querySelector('#minimap'),
+        interval: null,
+        styles: { div: 'rgba(0,0,0,0.2)' },
+        //back: 'rgba(255,255,255,1)'
+        view: 'rgba(255,255,255,0.1)',
+        drag: 'rgba(255,255,255,0.2)',
+      });
     }
   }
 }
@@ -76,6 +64,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .mini-map-wrap {
+    //position: relative;
   }
   .mini-map-wrap_toggle {
 
@@ -84,9 +73,8 @@ export default {
     position: absolute;
     bottom: 130%;
     left: 10px;
-    width: 30rem;
-    height: 20rem;
-    overflow: hidden;
+    //width: 25rem;
+    //height: 15rem;
     border: 1px solid #383F50;
     z-index: 1000;
   }
@@ -95,13 +83,9 @@ export default {
     background-color: #383F50;
   }
   .mini-map_main {
-    //background-color: #23252A;
-    background-color: #555;
+    background-color: #23252A;
   }
   .mini-map_canvas {
-    //background-color: #555;
-    transform-origin: top left;
-    transform: scale(0.25);
-    //transform: matrix(0.0820513, 0, 0, 0.0820513, -1790.5, -752.5);
+    vertical-align: middle;
   }
 </style>

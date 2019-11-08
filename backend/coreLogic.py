@@ -505,40 +505,41 @@ class coreLogic():
                 output = {"Gradients": dataObj}
                 return output
         elif layerType=="DeepLearningRecurrent":
-            if view=="Output":
-                D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-                dataObject = createDataObject([D], typeList=['line'])                
-                dataObject = {"Output": dataObject}
-                return dataObject
+            
+            # if view=="Output":
+            D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
+            dataObject = createDataObject([D], typeList=['line'])                
+            dataObject = {"Output": dataObject}
+            return dataObject
 
-            if view=="Weights&Bias":
-                # w=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
-                # w=np.average(w,axis=0)
-                w=np.array([])
-                # b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
-                b=np.array([])
+            # if view=="Weights&Bias":
+            #     # w=self.getStatistics({"layerId":layerId,"variable":"W","innervariable":""})
+            #     # w=np.average(w,axis=0)
+            #     w=np.array([])
+            #     # b=self.getStatistics({"layerId":layerId,"variable":"b","innervariable":""})
+            #     b=np.array([])
                 
-                dataObjectWeights = createDataObject([w], typeList=['line'])
-                dataObjectBias = createDataObject([b], typeList=['line'])
+            #     dataObjectWeights = createDataObject([w], typeList=['line'])
+            #     dataObjectBias = createDataObject([b], typeList=['line'])
                 
-                output = {"Bias": dataObjectBias, "Weights": dataObjectWeights}
-                return output
-            if view=="Gradients":
-                # minD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Min"})
-                # maxD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Max"})
-                # avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
-                minD=np.array([])
-                maxD=np.array([])
-                avD=np.array([])
+            #     output = {"Bias": dataObjectBias, "Weights": dataObjectWeights}
+            #     return output
+            # if view=="Gradients":
+            #     # minD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Min"})
+            #     # maxD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Max"})
+            #     # avD=self.getStatistics({"layerId":layerId,"variable":"Gradient","innervariable":"Average"})
+            #     minD=np.array([])
+            #     maxD=np.array([])
+            #     avD=np.array([])
 
-                dataObj = createDataObject([minD, maxD, avD],
-                                           typeList=3*['line'],
-                                           nameList=['Min', 'Max', 'Average'],
-                                           styleList=[{"color":"#83c1ff"},
-                                                      {"color":"#0070d6"},
-                                                      {"color":"#6b8ff7"}])
-                output = {"Gradients": dataObj}
-                return output
+            #     dataObj = createDataObject([minD, maxD, avD],
+            #                                typeList=3*['line'],
+            #                                nameList=['Min', 'Max', 'Average'],
+            #                                styleList=[{"color":"#83c1ff"},
+            #                                           {"color":"#0070d6"},
+            #                                           {"color":"#6b8ff7"}])
+            #     output = {"Gradients": dataObj}
+                # return output
         elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "ProcessOneHot", "ProcessCrop", "ProcessReshape"]:
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
             output = createDataObject([D])
