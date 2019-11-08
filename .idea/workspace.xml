@@ -3,6 +3,7 @@
   <component name="ChangeListManager">
     <list default="true" id="a2cf221b-bc25-43df-b664-0982c448fc25" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/renderer/core/apiWeb.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/core/apiWeb.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" afterDir="false" />
     </list>

@@ -6,7 +6,7 @@
     @press-apply="saveSettings($event)"
   )
     template(slot="Computer-content")
-      div(v-if="testSelectFile")
+      div(v-if="!settings.accessProperties.Sources.length")
         //-.settings-layer_section
           .form_row
             base-select(
@@ -229,11 +229,11 @@
       }
     },
     watch: {
-      //dataColumnsSelected(newVal) {
-        //this.settings.accessProperties.Columns = newVal;
-        //this.Mix_settingsData_getDataPlot('DataData')
-        //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
-      //},
+      dataColumnsSelected(newVal) {
+        this.settings.accessProperties.Columns = newVal;
+        // this.Mix_settingsData_getDataPlot('DataData')
+        // this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
+      },
       // 'settings.accessProperties.PathFake': {
       //   handler(newPath) {
       //       console.log(newPath);
@@ -331,7 +331,7 @@
         this.Mix_settingsData_deleteDataMeta('DataData')
           .then(()=> {
             this.settings.accessProperties.Sources = [];
-            //this.getSettingsInfo()
+            this.getSettingsInfo()
           })
           .catch((err)=> console.log(err))
       },
@@ -340,7 +340,6 @@
 
           this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
             .then((data) => {
-              //console.log(data);
               if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
             });
 
@@ -348,7 +347,10 @@
       },
       createSelectArr(data) {
         let selectArr = [];
-        data.forEach((el, index)=> selectArr.push({text: el, value: index}));
+        data.forEach((el, index)=> {
+          selectArr.push({text: el, value: index});
+          //this.settings.accessProperties.Columns.push(index)
+        });
         this.dataColumns = [...selectArr];
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
@@ -418,7 +420,7 @@
       max-width: 2.8em;
     }
     .triple-input_input ~ .triple-input_input {
-      margin-left: 1em;
+      //margin-left: 1em;
     }
   }
   .settings-layer_section--data label.bigest-text {
