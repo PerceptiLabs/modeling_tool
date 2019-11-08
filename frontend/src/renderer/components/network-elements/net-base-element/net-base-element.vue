@@ -12,7 +12,7 @@
     )
     .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
     .net-element_checkpoint-icon(v-if="showCheckpoint")
-    //-.net-element_checkpoint-icon()
+
 
     .net-element_code-error(v-if="dataEl.layerCodeError")
       i.icon.icon-code-error
