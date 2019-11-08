@@ -13,9 +13,9 @@ const workspaceScale = {
     },
   },
   watch: {
-    indexCurrentNetwork() {
-      this.scaleNet.get()
-    },
+    // indexCurrentNetwork() {
+    //   this.scaleNet.get()
+    // },
   },
   methods: {
     ...mapActions({
