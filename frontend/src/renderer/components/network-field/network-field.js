@@ -238,8 +238,8 @@ export default {
       let scrollWidth = this.$refs.network.scrollWidth;
       let offsetHeight = this.$refs.network.offsetHeight;
       let offsetWidth = this.$refs.network.offsetWidth;
-      // const canvasHeight = scrollHeight + 40;
-      // const canvasWidth = scrollWidth + 40;
+      const canvasHeight = scrollHeight + 40;
+      const canvasWidth = scrollWidth + 40;
       // this.svgHeight = canvasHeight +'px';
       // this.svgWidth = canvasWidth +'px';
       scrollHeight > offsetHeight
