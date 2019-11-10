@@ -696,7 +696,6 @@ const mutations = {
   ungroup_container(state, {dispatch, getters}) {
     let net = {...getters.GET_currentNetworkElementList};
     let container = getters.GET_currentSelectedEl[0];
-    console.log(container)
     dispatch('OPEN_container', container);
     for(let idEl in net) {
       let el = net[idEl];
@@ -929,6 +928,7 @@ function currentElement(id) {
 const createNetElement = function (event) {
   return {
     layerId: generateID(),
+    copyId: event.target.dataset.copyId,
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: event.layerSettings ? event.layerSettings : null,
