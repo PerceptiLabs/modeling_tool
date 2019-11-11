@@ -466,6 +466,9 @@ const mutations = {
     currentElement(stopID).connectionIn = newConnectionIn;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
+  DELETE_copyId(state, id) {
+    state.workspaceContent[state.currentNetwork].networkElementList[id].copyId = null;
+  },
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {dispatch, settings}) {
@@ -928,7 +931,7 @@ function currentElement(id) {
 const createNetElement = function (event) {
   return {
     layerId: generateID(),
-    copyId: event.target.dataset.copyId,
+    copyId: event.target.dataset.copyId || null,
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: event.layerSettings ? event.layerSettings : null,

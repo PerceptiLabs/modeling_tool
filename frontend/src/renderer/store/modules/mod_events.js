@@ -166,28 +166,26 @@ const actions = {
   },
   EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}) {
     let buffer = rootState.mod_buffer.buffer;
+    const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
     if(rootGetters['mod_workspace/GET_enableHotKeyElement'] && buffer) {
       buffer.forEach((el) => {
         dispatch('mod_workspace/ADD_element', el, {root: true});
       });
-
-      const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
-
+      //copy all connections
       for(let key in netWorkList) {
-        const element = netWorkList[key];
-        const layerId = element.layerId;
-        const copyId = element.copyId;
+        const layerId = netWorkList[key].layerId;
+        const copyId = netWorkList[key].copyId;
         if(copyId) {
-          commit('mod_workspace/SET_startArrowID', layerId, {root: true});
           netWorkList[copyId].connectionOut.forEach(id => {
-            //console.log(id);
             for(let property in netWorkList) {
               if(Number(netWorkList[property].copyId) === Number(id)) {
+                commit('mod_workspace/SET_startArrowID', layerId, {root: true});
                 dispatch('mod_workspace/ADD_arrow', netWorkList[property].layerId, {root: true});
               }
             }
           })
         }
+        commit('mod_workspace/DELETE_copyId', layerId, {root: true});
       }
     }
   },
