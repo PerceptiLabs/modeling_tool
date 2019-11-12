@@ -1,4 +1,5 @@
-import coreRequest    from "@/core/apiCore.js";
+import {coreRequest, openWS}  from "@/core/apiWeb.js";
+//import coreRequest    from "@/core/apiCore.js";
 import { deepCopy }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 
@@ -77,24 +78,24 @@ const actions = {
     startCore();
 
     function startCore() {
-      coreIsStarting = true;
-      let openServer;
-      let platformPath = '';
-      switch (process.platform) {
-        case 'win32':
-          platformPath = 'core/appServer.exe';
-          break;
-        case 'darwin':
-        case 'linux':
-          process.env.NODE_ENV === 'production'
-            ? platformPath = path + 'core/appServer'
-            : platformPath = 'core/appServer';
-          break;
-      }
-      openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
-      commit('set_corePid', openServer.pid);
-      openServer.on('error', (err)=>  { coreOffline() });
-      openServer.on('close', (code)=> { coreOffline() });
+      // coreIsStarting = true;
+      // let openServer;
+      // let platformPath = '';
+      // switch (process.platform) {
+      //   case 'win32':
+      //     platformPath = 'core/appServer.exe';
+      //     break;
+      //   case 'darwin':
+      //   case 'linux':
+      //     process.env.NODE_ENV === 'production'
+      //       ? platformPath = path + 'core/appServer'
+      //       : platformPath = 'core/appServer';
+      //     break;
+      // }
+      // openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
+      // commit('set_corePid', openServer.pid);
+      // openServer.on('error', (err)=>  { coreOffline() });
+      // openServer.on('close', (code)=> { coreOffline() });
       waitOnlineCore()
     }
     function waitOnlineCore() {
@@ -110,7 +111,10 @@ const actions = {
         value: ''
       };
       coreRequest(theData)
-        .then((data)=> { commit('SET_statusLocalCore', 'online') })
+        .then((data)=> {
+          //console.log('checkCore', data);
+          commit('SET_statusLocalCore', 'online')
+        })
         .catch((err)=> {  });
     }
     function coreOffline() {

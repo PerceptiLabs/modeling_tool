@@ -594,14 +594,22 @@ class Message:
 
         endTime=time.time()
 
-        if type(content).__name__=="str":
-            content='"'+content+'"'
+        print("Content before string: ", content)
 
-        response='{"length":'+str(len(str(content)))+',"body":'+str(content).replace("'",'"')+'}'
+        # if type(content).__name__=="str":
+        #     content='"'+content+'"'
 
-        response=str(response)
+        response = {
+            "length": len(json.dumps(content)),
+            "body": content
+        }
 
-        # print("Response: "+str(response))
+        response = json.dumps(response)
+
+        test='{"length": '+str(len(str(content)))+', "body":'+str(content).replace("'",'"')+'}'
+
+        print("Response: ", response)
+
         await websocket.send(response)
 
     def shutDown(self):
@@ -627,7 +635,11 @@ while not connected:
         asyncio.get_event_loop().run_forever()
         print("Connected")
         connected=True
+    except KeyboardInterrupt:
+        break
+    # except SystemExit:
+        # Might not want SystemExit since that will happen whenever someone closes the web browser
+    #     break
     except:
         connected=False
-
     

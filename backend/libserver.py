@@ -216,6 +216,13 @@ class Message:
         return lw_core, extras_reader, data_container
 
     def _create_response_json_content(self):
+        # try:
+        #     return interface
+        # except:
+        #     return error
+
+
+
         reciever=self.request.get("reciever")
         action = self.request.get("action")
         startTime=time.time()
