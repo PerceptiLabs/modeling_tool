@@ -1,6 +1,6 @@
 <template lang="pug">
   #app
-    //header-win.app-header()
+    header-win.app-header()
     router-view.app-page
     the-info-popup(v-if="isShowPopup")
     confirm-popup

@@ -47,7 +47,8 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .app-header {
-    display: flex;
+    //display: flex;
+    display: none;
     align-items: center;
     height: $h-header-win;
     background: #272727;
