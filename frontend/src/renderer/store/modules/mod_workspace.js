@@ -388,7 +388,6 @@ const mutations = {
     let arrSelectID = [];
     let net = {...getters.GET_currentNetworkElementList};
     deleteElement(arrSelect);
-
     for(let el in net) {
       let element = net[el];
       element.connectionOut = element.connectionOut.filter((connect)=>{
@@ -401,10 +400,10 @@ const mutations = {
         return !arrSelectID.includes(connect)
       });
 
-      if(element.layerNone) {
-        delete element.containerLayersList[arrSelect[0].layerId];
-        let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
-        if (isLastContainerElement) delete net[el];
+      if(element.layerNone && element.containerLayersList) {
+         delete element.containerLayersList[arrSelect[0].layerId];
+         let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
+         if (isLastContainerElement) delete net[el];
       }
     }
 
@@ -466,8 +465,9 @@ const mutations = {
     currentElement(stopID).connectionIn = newConnectionIn;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
-  DELETE_copyId(state, id) {
+  DELETE_copyProperty(state, id) {
     state.workspaceContent[state.currentNetwork].networkElementList[id].copyId = null;
+    state.workspaceContent[state.currentNetwork].networkElementList[id].copyContainerElement = null;
   },
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
@@ -486,6 +486,7 @@ const mutations = {
     }
   },
   set_elementSelect(state, value) {
+
     currentElement(value.id).layerMeta.isSelected = value.setValue;
   },
   set_elementSelectAll(state, {getters}) {
@@ -932,6 +933,7 @@ const createNetElement = function (event) {
   return {
     layerId: generateID(),
     copyId: event.target.dataset.copyId || null,
+    copyContainerElement: event.target.dataset.copyContainerElement || null,
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: event.layerSettings ? event.layerSettings : null,
