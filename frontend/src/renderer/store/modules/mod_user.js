@@ -51,7 +51,7 @@ const mutations = {
     state.getLocalUserList = value
   },
   delete_userWorkspace (state, id) {
-    state.getLocalUserList[id].workspace = null
+   if(state.getLocalUserList[id]) state.getLocalUserList[id].workspace = null
   },
 };
 

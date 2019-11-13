@@ -388,18 +388,25 @@ const mutations = {
     let arrSelectID = [];
     let net = {...getters.GET_currentNetworkElementList};
     deleteElement(arrSelect);
-
     for(let el in net) {
-      net[el].connectionOut = net[el].connectionOut.filter((connect)=>{
+      let element = net[el];
+      element.connectionOut = element.connectionOut.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
-      net[el].connectionArrow = net[el].connectionArrow.filter((connect)=>{
+      element.connectionArrow = element.connectionArrow.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
-      net[el].connectionIn  = net[el].connectionIn.filter((connect)=>{
+      element.connectionIn  = element.connectionIn.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
+
+      if(element.layerNone && element.containerLayersList) {
+         delete element.containerLayersList[arrSelect[0].layerId];
+         let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
+         if (isLastContainerElement) delete net[el];
+      }
     }
+
     state.workspaceContent[state.currentNetwork].networkElementList = net;
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
     dispatch('mod_api/API_getOutputDim', null, {root: true});
@@ -458,6 +465,10 @@ const mutations = {
     currentElement(stopID).connectionIn = newConnectionIn;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
+  DELETE_copyProperty(state, id) {
+    state.workspaceContent[state.currentNetwork].networkElementList[id].copyId = null;
+    state.workspaceContent[state.currentNetwork].networkElementList[id].copyContainerElement = null;
+  },
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {dispatch, settings}) {
@@ -475,6 +486,7 @@ const mutations = {
     }
   },
   set_elementSelect(state, value) {
+
     currentElement(value.id).layerMeta.isSelected = value.setValue;
   },
   set_elementSelectAll(state, {getters}) {
@@ -920,6 +932,8 @@ function currentElement(id) {
 const createNetElement = function (event) {
   return {
     layerId: generateID(),
+    copyId: event.target.dataset.copyId || null,
+    copyContainerElement: event.target.dataset.copyContainerElement || null,
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: event.layerSettings ? event.layerSettings : null,
