@@ -5,6 +5,7 @@
     .workspace_content.bookmark_content.js-workspace(
       ref="workspaceNet"
       :class="{'workspace-relative' : showTrainingSpinner}"
+      @mousemove="checkCursorPosition"
       )
       .network(
         v-if="indexCurrentNetwork === i"
