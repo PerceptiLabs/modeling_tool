@@ -103,6 +103,8 @@ export default {
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
       delete_network:           'mod_workspace/DELETE_network',
       set_currentNetwork:       'mod_workspace/SET_currentNetwork',
+      set_cursorPosition:       'mod_workspace/SET_CopyCursorPosition',
+      set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
       set_hideSidebar:          'globalView/SET_hideSidebar',
     }),
     ...mapActions({
@@ -170,5 +172,17 @@ export default {
     trainingWaiting(index) {
       return this.workspace[index].networkMeta.coreStatus.Status === 'Waiting';
     },
+    checkCursorPosition(event) {
+      let borderline = 15;
+      this.set_cursorPosition({x: event.offsetX, y: event.offsetY});
+      this.set_cursorInsideWorkspace(true);
+      if(event.offsetX <= borderline ||
+        event.offsetY <= borderline ||
+        event.offsetY >= event.target.clientHeight - borderline ||
+        event.offsetX >= event.target.clientWidth - borderline)
+      {
+          this.set_cursorInsideWorkspace(false);
+      }
+    }
   }
 }
