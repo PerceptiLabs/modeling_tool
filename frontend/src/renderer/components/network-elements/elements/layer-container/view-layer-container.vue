@@ -6,7 +6,6 @@
     :style="layerStyles"
   )
     i.icon.icon-layer-net
-    i.icon.icon-layer-settings.openContainer
 
 </template>
 
@@ -24,15 +23,3 @@ export default {
   },
 }
 </script>
-
-<style scoped lang="scss">
-  @import "../../../../scss/base";
-  .icon.icon-layer-settings.openContainer {
-    position: absolute;
-    font-size: 1rem;
-    right: 0.5rem;
-    bottom: 0.5rem;
-    color: $color-9;
-    text-shadow: none;
-  }
-</style>
