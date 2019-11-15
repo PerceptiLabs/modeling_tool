@@ -2,6 +2,7 @@
   .net-element.js-clickout(tabindex="0"
     ref="rootBaseElement"
     :style="style"
+    :openLayerContainer="openLayerContainer"
     :id="dataEl.layerMeta.tutorialId"
     :class="classEl"
 
@@ -16,6 +17,11 @@
 
     .net-element_code-error(v-if="dataEl.layerCodeError")
       i.icon.icon-code-error
+
+    i.icon.icon-layer-settings.openContainer(
+      v-if="dataEl.componentName === 'LayerContainer'"
+      @click="openLayerContainer"
+      )
 
     .net-element_arrows-start(v-if="showDotsArrow")
       button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")

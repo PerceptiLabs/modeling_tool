@@ -138,6 +138,7 @@ export default {
     skipStoryBoard() {
       this.closeTutorial();
       this.onMainTutorial();
+      if(this.currentNetworkElementList) this.addNetwork();
     },
     startMainTutorial() {
       if(!this.isTutorialMode) this.onMainTutorial(this);
