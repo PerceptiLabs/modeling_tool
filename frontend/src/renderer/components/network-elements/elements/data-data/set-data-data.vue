@@ -203,6 +203,7 @@
         this.settings.accessProperties.Partition_list = list
       },
       loadFile(isAppend) {
+          console.log(123);
         let optionBasic = {
           title:"Load file or files",
           properties: ['openFile', 'multiSelections'],
@@ -221,8 +222,8 @@
             {name: 'All', extensions: ['npy']},
           ]
         };
-        let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
-        openLoadDialog(optionDialog)
+        //let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
+        openLoadDialog(optionBasic)
           .then((pathArr)=> this.saveLoadFile(pathArr, 'file', isAppend))
           .catch(()=> { })
       },
