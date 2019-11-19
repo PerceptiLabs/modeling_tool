@@ -25,9 +25,9 @@
           .form_label Save settings:
           .form_input
             base-radio(group-name="group" :value-input="false" v-model="settings.isSaveTrainedModel")
-              span Save only model
+              span Save model
             base-radio(group-name="group" :value-input="true" v-model="settings.isSaveTrainedModel" :disabled="!existTrained")
-              span Save trained network
+              span Save trained model
 
     template(slot="action")
       button.btn.btn--primary.btn--disabled(type="button"

@@ -16,6 +16,7 @@ import skimage
 # from lw_data import lw_data
 from dataKeeper import dataKeeper as lw_data
 from createDataObject import createDataObject
+from s3buckets import S3BucketAdapter
 
 from core_new.core import *
 from core_new.history import SessionHistory
