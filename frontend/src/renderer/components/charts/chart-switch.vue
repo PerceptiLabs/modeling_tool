@@ -90,17 +90,24 @@
       headerOff() {
         return this.$store.getters['mod_workspace/GET_testIsOpen'] || this.disableHeader;
       },
+      statusNetworkCore() {//mod_workspace/GET_networkCoreStatus
+        return this.$store.getters['mod_workspace/GET_networkCoreStatus'];
+      },
       chartPieInfo() {
         if(this.imgType === 'pie'
           && typeof this.chartData.series[0].data[0].value === 'number'
         ) {
           let waitInfo = this.$store.state.mod_statistics.piePercents;
-          return  waitInfo ? `${waitInfo}%` : `${this.chartData.series[0].data[0].value.toFixed()}%`
+          if(this.statusNetworkCore === 'Finished') return `${this.chartData.series[0].data[0].value.toFixed()}%`;
+          return  waitInfo ? `${waitInfo}%` : ''
         }
         return ''
       }
     },
     watch: {
+      statusNetworkCore(newVal) {
+        //console.log(newVal)
+      },
       chartData(newVal) {
         if(newVal) {
           this.imgType = newVal.series[0].type;
