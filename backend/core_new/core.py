@@ -124,6 +124,10 @@ class BaseCore:
         code_gen = self._codehq.get_code_generator(id_, content)
         log.debug(repr(code_gen))
 
+
+        #import pdb; pdb.set_trace()
+            
+        
         try:
             globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])  
         except HistoryInputException:
@@ -144,8 +148,8 @@ class BaseCore:
                                data_container=self._data_container,
                                process_handler=self._session_process_handler,
                                cache=self._session_history.cache)   
-
-        try:        
+        
+        try:
             session.run()
         except LayerSessionStop:
             raise # Not an error. Re-raise.
@@ -198,11 +202,18 @@ class BaseCore:
             log.info("No module hooks installed")
 
     def _should_skip_layer(self, layer_id, content):
-        if not (content["Info"]["Properties"] \
-                or ("Code" in content["Info"] and content["Info"]["Code"])):
+        layer_type = content["Info"]["Type"]
+        
+        if not content["Info"]["Properties"]:
+            log.info("Layer {} [{}] does not have 'Properties' set. Skipping.".format(layer_id, layer_type))
             return True
 
-        layer_type = content["Info"]["Type"]                
+        if "Code" in content["Info"] and content["Info"]["Code"]:
+            log.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
+           
+            return True
+
+
         if layer_type in self._skip_layers:
             log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
             return True
