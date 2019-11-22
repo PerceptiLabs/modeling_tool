@@ -93,8 +93,18 @@ class coreLogic():
         cache = get_cache()
         session_history = SessionHistory(cache)
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
-        self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
-                         error_handler, session_proc_handler, checkpointValues) 
+
+        distributed = True
+        if not distributed:
+        
+            self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
+                             error_handler, session_proc_handler, checkpointValues)
+
+        else:
+            from core_new.core_distr import DistributedCore
+            self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
+                                        error_handler, session_proc_handler, checkpointValues)
+            
 
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()
