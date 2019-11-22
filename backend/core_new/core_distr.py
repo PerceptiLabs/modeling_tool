@@ -15,6 +15,7 @@ from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer
 from core_new.core import Core
 from core_new.utils import set_tensorflow_mode
+from core_new.script import ScriptBuilder
 from core_new.extras import LayerExtrasReader
 from core_new.errors import LayerSessionAbort
 from core_new.history import SessionHistory, HistoryInputException
@@ -33,7 +34,10 @@ class DistributedCore(Core):
         
         set_tensorflow_mode('eager' if self._tf_eager else 'graph')
 
+        sb = ScriptBuilder()
 
+
+        
         full_code = ""
         
         for layer_id, content in self._graph.items():
@@ -46,18 +50,20 @@ class DistributedCore(Core):
             code_gen = self._codehq.get_code_generator(layer_id, content)            
             log.debug(repr(code_gen))
 
-            layer_code  = f"#--------- Layer {layer_id} [{layer_type}] ---------\n"
-            layer_code += code_gen.get_code()
-            layer_code += "\n\n"
-            layer_code = layer_code.replace("global ", "#global ")
+
+
+            sb.layer(f"{layer_id}",
+                     code_gen.get_code(),
+                     input_layers=content["Con"],
+                     checkpoint=None,
+                     layer_type=layer_type)
             
-            full_code += layer_code 
-
+        full_code = sb.build()
         print(full_code)
-
+        
         globals_, locals_ = self._get_globals_and_locals(input_layer_ids=[])
         
-        session = LayerSession(-1, content['Info']['Type'], full_code,
+        session = LayerSession("<no_id>", "<no_type>", full_code,
                                global_vars=globals_,
                                local_vars=locals_,
                                data_container=self._data_container,
@@ -71,26 +77,6 @@ class DistributedCore(Core):
         except Exception as e:
             self._error_handler.handle_run_error(session, e)
 
-        import pdb; pdb.set_trace()
-
-        if True:
-            return
-
-        while True:
-
-            log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
-            try:
-                self._run_layer(layer_id, content)
-            except LayerSessionStop:
-                log.info("Stop requested during session {}".format(layer_id))                
-                break
-            except LayerSessionAbort:
-                
-                log.info("Error handler aborted session {}".format(layer_id))
-                break
-            except Exception:
-                log.exception("Exception in %s" % layer_id)
-                raise
 
 
     
