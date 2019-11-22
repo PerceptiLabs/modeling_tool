@@ -11,7 +11,7 @@
         button.btn(type="button"
           @click="openAWSform"
         )
-          i.icon.icon-open-file
+          i.icon.icon-bucket
           span AWS Bucket
 
       template(v-else-if="settings.step === 'authorization'")
