@@ -13,6 +13,8 @@ $colorGrey: #727272;
 .template{
   background: none;
   text-align: center;
+  min-width: 160px;
+  white-space: nowrap;
 }
 .template_title {
   font-size: 1.5rem;
