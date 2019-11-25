@@ -433,12 +433,15 @@ const mutations = {
       });
 
       if(element.layerNone && element.containerLayersList) {
-         delete element.containerLayersList[arrSelect[0].layerId];
-         let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
-         if (isLastContainerElement) delete net[el];
+        arrSelect.forEach(select => {
+          element.layerNone = false;  // (close layersContainer) for remove elements from Layers
+          delete element.containerLayersList[select.layerId];
+          element.layerNone = true;
+          let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
+          if (isLastContainerElement) delete net[el];
+        });
       }
     }
-
     state.workspaceContent[state.currentNetwork].networkElementList = net;
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
     dispatch('mod_api/API_getOutputDim', null, {root: true});
