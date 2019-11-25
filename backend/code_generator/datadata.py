@@ -367,9 +367,10 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
         code += "print('CREATING TF DATASETS')\n"
-        code += 'X_train = tf.data.Dataset.from_generator(X_train, output_types=np.float32)\n'
-        code += 'X_validation = tf.data.Dataset.from_generator(X_validation, output_types=np.float32)\n'
-        code += 'X_test = tf.data.Dataset.from_generator(X_test, output_types=np.float32)\n'        
+        code += "_shape = next(X_train()).shape # Get the first element\n"
+        code += 'X_train = tf.data.Dataset.from_generator(X_train, output_types=np.float32, output_shapes=_shape)\n'
+        code += 'X_validation = tf.data.Dataset.from_generator(X_validation, output_types=np.float32, output_shapes=_shape)\n'
+        code += 'X_test = tf.data.Dataset.from_generator(X_test, output_types=np.float32, output_shapes=_shape)\n'        
         code += "\n"
         if self.shuffle:
             code += "print('SHUFFLING TF DATASETS')\n"

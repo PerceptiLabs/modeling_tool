@@ -631,7 +631,8 @@ class TrainNormalCodeGenerator(Jinja2CodeGenerator):
             input_data_layer='1564399775664', # TODO: no hardcoding!
             target_data_layer='1564399786876',             
             output_layer=self._output_layer,
-            target_layer=self._target_layer
+            target_layer=self._target_layer,
+            n_epochs=self._n_epochs
         )
         return code
 
