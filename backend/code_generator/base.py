@@ -1,3 +1,4 @@
+import jinja2
 import copy
 from abc import ABC, abstractmethod
 from collections import namedtuple
@@ -75,4 +76,13 @@ class CustomCodeGenerator(CodeGenerator):
             full_text += "{} {}".format(count, line)
             
         return full_text
-            
+
+
+class Jinja2CodeGenerator(CodeGenerator):
+    def _render(self, path, **kwargs):
+        if not hasattr(self, '_jenv'):
+            self._jenv = jinja2.Environment(loader=jinja2.FileSystemLoader('./code_generator/'),
+                                            trim_blocks=True,
+                                            lstrip_blocks=True)        
+        code = self._jenv.get_template(path).render(**kwargs)
+        return code

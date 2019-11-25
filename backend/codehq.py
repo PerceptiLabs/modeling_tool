@@ -131,7 +131,8 @@ class CodeHqNew:
                                                 decay_rate=props['Decay_rate'],
                                                 momentum=props['Momentum'], 
                                                 beta1=props['Beta_1'],
-                                                beta2=props['Beta_2'])
+                                                beta2=props['Beta_2'],
+                                                distributed=props['Distributed'])
             return code_gen
 
         elif type_ == 'TrainLoss':

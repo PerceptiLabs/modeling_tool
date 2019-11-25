@@ -96,10 +96,8 @@ class coreLogic():
 
         distributed = True
         if not distributed:
-        
             self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
                              error_handler, session_proc_handler, checkpointValues)
-
         else:
             from core_new.core_distr import DistributedCore
             self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
