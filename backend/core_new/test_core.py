@@ -56,7 +56,11 @@ if __name__ == "__main__":
         
         core.run()        
         print("resultQ size", resultQ.qsize())
-        assert resultQ.qsize() == 570        
+
+        assert resultQ.qsize() == 570
+
+
+        
     else:
         core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
                     error_handler, session_proc_handler, checkpointValues=None) 

@@ -68,7 +68,10 @@ class DistributedCore(Core):
             full_code_extra += 'import dask.array as da\n'
             full_code_extra += 'import dask.dataframe as dd\n'
             full_code_extra += 'from unittest.mock import MagicMock\n'
-            full_code_extra += 'api = MagicMock()\n'                        
+            full_code_extra += 'api = MagicMock()\n'
+            full_code_extra += 'api.data.get_tensors.return_value = []\n'
+            full_code_extra += 'api.ui.headless = False\n'
+            full_code_extra += 'api.ui.skip = False\n'                        
             
             full_code_extra += full_code
             
