@@ -95,7 +95,7 @@ class coreLogic():
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
 
         # TODO: NOT HARDCODED!
-        DISTRIBUTED = False
+        DISTRIBUTED = True
         network['Layers']['1564399790363']['Properties']['Distributed'] = DISTRIBUTED
         
 
