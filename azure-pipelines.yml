@@ -63,22 +63,22 @@ jobs:
   - job: build_windows
 #    dependsOn:
 #        ["test_ubuntu", "test_windows", "test_osx"]
-    pool:
-        #win-pool
-        vmImage: "windows-latest"
-    steps:
-    - script: |
-        cd scripts/
-        ./setup_windows.bat
-      displayName: 'Environment setup'
+    # pool:
+    #     #win-pool
+    #     vmImage: "windows-latest"
+    # steps:
+    # - script: |
+    #     cd scripts/
+    #     ./setup_windows.bat
+    #   displayName: 'Environment setup'
 
-    - script: |
-        cd scripts/
-        ./build_windows.bat
-      displayName: 'Build'
+    # - script: |
+    #     cd scripts/
+    #     ./build_windows.bat
+    #   displayName: 'Build'
     
-    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-      artifact: images_windows
+    # - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+    #   artifact: images_windows
 
 
 ### BUILD OSX ###
