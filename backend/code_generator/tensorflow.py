@@ -19,6 +19,51 @@ def get_activation_code(var_in, var_out, func=None):
         code = '%s = %s(%s)\n' % (var_out, func, var_in)        
     return code
 
+class RandomNoiseCodeGenerator(CodeGenerator):
+    def __init__(self, size, batch_size, distribution):
+        self._size = size
+        self._distribution = distribution
+        self._batch_size = batch_size
+        self._shape = list(self._batch_size)+list(size)
+    def get_code(self):
+        if self._distribution == 'normal':
+            code = self.get_code_normal(mean, std)
+        elif self._distribution == 'gamma':
+            code = self.get_code_gamma(alpha, beta)
+        elif self._distribution == 'uniform':
+            code = self.get_code_uniform()
+        elif self._distribution == 'poisson':
+            code = self.get_code_poisson(lam)
+        elif self._distribution == 'categorical':
+            code = self.get_code_categorical(logits)
+        return code
+
+    def get_code_normal(self, mean, std):
+        code = ""
+        code += "random_noise = tf.random.normal(%s, mean, std)\n"%self._shape
+        return code
+
+    def get_code_gamma(self, alpha, beta):
+        code = ""
+        code += "random_noise = tf.random.gamma(%s, alpha, beta)\n" %self._shape
+        return code
+
+    def get_code_categorical(self, logits, num_samples = self._shape):
+        code = ""
+        code += "random_noise = tf.random.categorical(logits, num_samples)\n"
+        return code
+
+    def get_code_poisson(self, lam):
+        code = ""
+        code += "random_noise = tf.random.poisson(lam, %s)\n"%self._shape
+        return code
+
+
+    def get_code_uniform(self, minval=0, maxval=None):
+        code = ""
+        code += "random_noise = tf.random.uniform(%s, minval, maxval)\n"%self._shape
+        return code
+
 
 class ReshapeCodeGenerator(CodeGenerator):
     def __init__(self, shape, permutation):
