@@ -56,6 +56,7 @@ ls -l
 
 echo "Compiling..."
 python setup.pyx develop --user
+if [ $? -ne 0 ]; then exit 1; fi
 rm *.py
 mv mainServer.pyx mainServer.py
 
@@ -70,6 +71,7 @@ cp ../../backend/linux.spec .
 #cp ../../backend/common.spec common.py
 
 pyinstaller --clean -y linux.spec
+if [ $? -ne 0 ]; then exit 1; fi
 
 #mv ../../backend/common.py ../../backend/common.spec
 
