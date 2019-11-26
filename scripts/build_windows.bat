@@ -28,13 +28,19 @@ move mainServer.py mainServer.pyx
 dir
 
 python setup.pyx develop --user
-#del *.py
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
+del /S /Q *.py
 move mainServer.pyx mainServer.py
 
 dir
 
 copy ..\..\backend\windows.spec .
 pyinstaller --clean -y windows.spec
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 
 exit /b
 

@@ -20,7 +20,7 @@ def get_activation_code(var_in, var_out, func=None):
     return code
 
 class RandomNoiseCodeGenerator(CodeGenerator):
-    def __init__(self, size, batch_size, distribution):
+    def __init__(self, size, batch_size, distribution, mean=0, std=0, alpha=0, beta=0, lam=0, logits=0):
         self._size = size
         self._distribution = distribution
         self._batch_size = batch_size
