@@ -132,7 +132,7 @@ class CodeHqNew:
                                                 momentum=props['Momentum'], 
                                                 beta1=props['Beta_1'],
                                                 beta2=props['Beta_2'],
-                                                distributed=props.get('Distributed') or True) # TODO: REMOVE THIS!
+                                                distributed=props['Distributed']) # TODO: REMOVE THIS!
             return code_gen
 
         elif type_ == 'TrainLoss':

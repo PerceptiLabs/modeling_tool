@@ -3,7 +3,7 @@
 
 
 if __name__ == "__main__":
-    DISTRIBUTED = True
+    DISTRIBUTED = False
     NET_PATH = 'the_net.json'
 
     import queue
@@ -28,6 +28,8 @@ if __name__ == "__main__":
 
     with open(NET_PATH, 'r') as f:
         network = json.load(f)
+
+    network['Layers']['1564399790363']['Properties']['Distributed'] = DISTRIBUTED
     
     graphObj = Graph(network['Layers'])
     graph_dict=graphObj.graphs
@@ -57,7 +59,7 @@ if __name__ == "__main__":
         core.run()        
         print("resultQ size", resultQ.qsize())
 
-        assert resultQ.qsize() == 570
+        assert resultQ.qsize() == 3000
 
 
         
@@ -68,7 +70,7 @@ if __name__ == "__main__":
 
 
         print("resultQ size", resultQ.qsize())
-        assert resultQ.qsize() == 570
+        assert resultQ.qsize() == 3000
     
 
         import pdb; pdb.set_trace()

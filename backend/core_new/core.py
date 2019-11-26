@@ -99,7 +99,7 @@ class BaseCore:
         self._print_basic_info()
         
         set_tensorflow_mode('eager' if self._tf_eager else 'graph')
-
+        
         for layer_id, content in self._graph.items():
             layer_type = content["Info"]["Type"]
 
