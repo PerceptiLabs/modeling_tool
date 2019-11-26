@@ -3,7 +3,7 @@
 
 
 if __name__ == "__main__":
-    DISTRIBUTED = False
+    DISTRIBUTED = True
     NET_PATH = 'the_net.json'
 
     import queue

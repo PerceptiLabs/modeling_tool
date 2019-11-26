@@ -35,153 +35,10 @@ strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_
 
 
 train_dataset = tf.data.Dataset.zip((datasets[input_data_layer][0], datasets[target_data_layer][0]))
-print("shps", datasets[input_data_layer][0].output_shapes, datasets[target_data_layer][0].output_shapes, train_dataset.output_shapes)
-import pdb; pdb.set_trace()
 
 train_iterator = tf.data.Iterator.from_structure(train_dataset.output_types, train_dataset.output_shapes)
 train_iterator_init = train_iterator.make_initializer(train_dataset)
 
-
-def input_fn1(input_context):
-    batch_size = input_context.get_per_replica_batch_size(GLOBAL_BATCH_SIZE)
-
-
-
-
-    def bla1():
-
-        def func():
-            for i in range(1, 10):
-                print(i)
-                x = np.ones((784, ))*i
-                yield x
-
-        return func()
-    
-    def bla2():
-
-        def func():
-            for i in range(1, 10):
-                x = np.squeeze(i)
-                yield x
-
-        return func()
-
-    
-    
-    #d = tf.data.Dataset.from_tensors(xx).batch(batch_size)
-
-    gg=bla1()
-
-    #import pdb; pdb.set_trace()                
-
-    d1 = tf.data.Dataset.from_generator(bla1, output_types=tf.float32,
-                                        output_shapes=(784,))
-
-
-    d2 = tf.data.Dataset.from_generator(bla2, output_types=tf.float32,
-                                        output_shapes=())
-
-    print("shps2", d1.output_shapes, d2.output_shapes)    
-    import pdb; pdb.set_trace()
-    
-    d= tf.data.Dataset.zip((d1, d2))
-
-    print("join!", d.output_shapes)
-    import pdb; pdb.set_trace()
-    #d = d1
-    
-    return d.shard(input_context.num_input_pipelines,
-                   input_context.input_pipeline_id)
-
-def input_fn2(input_context):
-    batch_size = input_context.get_per_replica_batch_size(GLOBAL_BATCH_SIZE)
-
-    def bla1():
-
-        def func():
-            for i in range(1, 10):
-                print(i)
-                x = np.ones((784, ))*i
-                yield x
-
-        return func()
-    
-    def bla2():
-
-        def func():
-            for i in range(1, 10):
-                x = np.squeeze(i)
-                yield x
-
-        return func()
-
-    
-    
-    #d = tf.data.Dataset.from_tensors(xx).batch(batch_size)
-
-    gg=bla1()
-
-    #import pdb; pdb.set_trace()                
-
-    d1 = tf.data.Dataset.from_generator(bla1, output_types=tf.float32,
-                                        output_shapes=(784,))
-
-
-    d2 = tf.data.Dataset.from_generator(bla2, output_types=tf.float32,
-                                        output_shapes=())
-
-    print("shps2", d1.output_shapes, d2.output_shapes)    
-    import pdb; pdb.set_trace()
-    
-    d= tf.data.Dataset.zip((d1, d2))
-
-    print("join!", d.output_shapes)
-    import pdb; pdb.set_trace()
-    #d = d1
-    
-    return d.shard(input_context.num_input_pipelines,
-                   input_context.input_pipeline_id)
-
-
-
-def input_fn1(input_context):
-
-    d = train_dataset
-
-    return d.shard(input_context.num_input_pipelines,
-                   input_context.input_pipeline_id)
-    
-
-
-
-'''
-X = train_iterator.get_next()
-
-sess.run(train_iterator_init)
-
-for i in range(5):
-    x = sess.run(X)
-    z=np.sum(np.sum(x))
-
-    print(x)
-    import pdb; pdb.set_trace()
-
-sess.run(train_iterator_init)
-
-
-for i in range(5):
-    x = sess.run(X)
-    y=np.sum(np.sum(x))
-
-
-    print(x)
-    import pdb; pdb.set_trace()
-
-print(z,y)
-    
-raise SystemExit
-'''
 
 
 
@@ -193,31 +50,6 @@ validation_dataset = validation_dataset.batch(GLOBAL_BATCH_SIZE)
 test_dataset = test_dataset.batch(1)
 
 
-
-'''
-
-#---
-fashion_mnist = tf.keras.datasets.fashion_mnist
-(train_images, train_labels), (test_images, test_labels) = fashion_mnist.load_data()
-
-train_labels = train_labels.astype(np.int32)
-test_labels = test_labels.astype(np.int32)
-
-train_images = train_images[..., None]
-test_images = test_images[..., None]
-
-train_images = train_images / np.float32(255)
-test_images = test_images / np.float32(255)
-
-buffer_size = len(train_images)
-
-train_dataset = tf.data.Dataset.from_tensor_slices((train_images, train_labels)).shuffle(buffer_size).batch(GLOBAL_BATCH_SIZE) 
-test_dataset = tf.data.Dataset.from_tensor_slices((test_images, test_labels)).batch(GLOBAL_BATCH_SIZE) 
-
-#---
-
-
-'''
 
 
 
@@ -256,51 +88,10 @@ def create_model():
 
 
 with strategy.scope():
-    #train_iterator = strategy.make_dataset_iterator(train_dataset)
-    #validation_iterator = strategy.make_dataset_iterator(validation_dataset)
-
-
-    train_iterator = strategy.make_input_fn_iterator(input_fn1)
-    validation_iterator = strategy.make_input_fn_iterator(input_fn2)    
-
-    '''
-    print("......")
-
-    def aa(inputs):
-        x, y = inputs
-        return tf.identity(x)
+    train_iterator = strategy.make_dataset_iterator(train_dataset)
+    validation_iterator = strategy.make_dataset_iterator(validation_dataset)
+    #test_iterator = strategy.make_dataset_iterator(test_dataset) # this can probably be ran on single g
     
-    bb = strategy.experimental_run(aa, train_iterator)
-
-
-
-    cc = bb.get('cpu:0')
-
-    train_iterator_init = train_iterator.initialize()
-    sess.run(train_iterator_init)
-
-    for i in range(2):
-        dd=sess.run(cc)
-        print("dd",dd)
-
-    print("RESET")
-    
-    sess.run(train_iterator_init)
-
-    for i in range(2):
-        dd=sess.run(cc)
-        print("dd",dd)
-    
-
-
-    print("....")
-    import pdb; pdb.set_trace()
-
-    '''
-
-    
-    
-    #test_iterator = strategy.make_dataset_iterator(test_dataset) # this can probably be ran on single g    
     model = create_model()
 
     train_iterator_init = train_iterator.initialize()
@@ -314,12 +105,7 @@ with strategy.scope():
     def train_step(inputs):
         # Each training step runs this custom function which calculates
         # gradients and updates weights.
-        print("in train step", inputs[0], inputs[1])
-
-        
         x, y = inputs
-
-        print("aaasdsads")
         y_pred, y_target = model(x, y)
 
         loss_value = tf.reduce_sum(tf.square(y_pred - y_target)) / GLOBAL_BATCH_SIZE
@@ -339,8 +125,6 @@ with strategy.scope():
             assert len(grads_) == 1
             grads_dict[name] = grads_[0]
 
-
-        print("HSASJASH")
         with tf.control_dependencies([update_vars]):
             return (tf.identity(loss_value), grads_dict)
 
@@ -355,11 +139,6 @@ with strategy.scope():
 
     if n_devices > 1:
         dist_loss, dist_grads_dict = strategy.experimental_run(train_step, train_iterator)
-
-        print("LAST")
-        import pdb; pdb.set_trace()
-
-        
 
         # Replace all per_replica objects with a dict of tensors instead.
         
