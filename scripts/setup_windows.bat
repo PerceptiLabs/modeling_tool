@@ -12,10 +12,13 @@ SET PATH=%PATH%;C:\tools\miniconda3\Scripts
 call C:\tools\miniconda3\condabin\conda.bat init cmd.exe
 call C:\tools\miniconda3\condabin\conda.bat config --set ssl_verify no
 call C:\tools\miniconda3\condabin\conda.bat env create --force --file "..\backend\environment.yml"
+call C:\tools\miniconda3\condabin\conda.bat info --envs
 call C:\tools\miniconda3\condabin\conda.bat activate py362_
 call C:\tools\miniconda3\condabin\conda.bat env list
 
 call C:\tools\miniconda3\condabin\conda.bat list
+
+call C:\tools\miniconda3\condabin\conda.bat pip list
 
 call node --version
 call npm --version
