@@ -4,9 +4,11 @@ trigger:
 - stage
 
 
-### TEST UBUNTU ###
+
 
 jobs:
+### TEST UBUNTU ###
+
 #  - job: test_ubuntu
 #    pool:
 #        vmImage: "ubuntu-16.04"
@@ -38,31 +40,31 @@ jobs:
 
 ### BUILD UBUNTU ###
 
-  - job: build_ubuntu
-#    dependsOn:
-#        ["test_ubuntu", "test_windows", "test_osx"] 
-    pool:
-        vmImage: "ubuntu-16.04"
-    steps:
-    - bash: |
-        cd scripts/
-        ./setup_ubuntu.sh
-      displayName: 'Environment setup'
+#   - job: build_ubuntu
+# #    dependsOn:
+# #        ["test_ubuntu", "test_windows", "test_osx"] 
+#     pool:
+#         vmImage: "ubuntu-16.04"
+#     steps:
+#     - bash: |
+#         cd scripts/
+#         ./setup_ubuntu.sh
+#       displayName: 'Environment setup'
     
-    - bash: |
-        cd scripts/
-        bash -i build_ubuntu.sh
-      displayName: 'Build'
+#     - bash: |
+#         cd scripts/
+#         bash -i build_ubuntu.sh
+#       displayName: 'Build'
     
-    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-      artifact: images_ubuntu
+#     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+#       artifact: images_ubuntu
 
 
 ### BUILD WINDOWS ###
 
   - job: build_windows
-   dependsOn:
-       ["test_ubuntu", "test_windows", "test_osx"]
+  #  dependsOn:
+  #      ["test_ubuntu", "test_windows", "test_osx"]
     pool:
         #win-pool
         vmImage: "windows-latest"
@@ -83,34 +85,34 @@ jobs:
 
 ### BUILD OSX ###
 
-  - job: build_osx
-#    dependsOn:
-#        ["test_ubuntu", "test_windows", "test_osx"]
-    pool:
-        vmImage: "macOS-10.14"
-    steps:
-    - bash: |
-        cd scripts/
-        ./setup_osx.sh
-      displayName: 'Environment setup'
+#   - job: build_osx
+# #    dependsOn:
+# #        ["test_ubuntu", "test_windows", "test_osx"]
+#     pool:
+#         vmImage: "macOS-10.14"
+#     steps:
+#     - bash: |
+#         cd scripts/
+#         ./setup_osx.sh
+#       displayName: 'Environment setup'
 
-    - bash: |
-        cd scripts/
-        bash -i build_osx.sh
-      displayName: 'Build'
+#     - bash: |
+#         cd scripts/
+#         bash -i build_osx.sh
+#       displayName: 'Build'
     
-    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-      artifact: images_osx
+#     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+#       artifact: images_osx
 
 
 ### PUBLISH SCRIPTS (for deployment purposes)
 
-  - job: publish_scripts
-    pool:
-        vmImage: "ubuntu-16.04"
-#    dependsOn:
-#      ["build_ubuntu", "test_windows", "test_osx"]
-    steps:
-      - publish: $(Build.Repository.LocalPath)/scripts/
-        artifact: scripts
+#   - job: publish_scripts
+#     pool:
+#         vmImage: "ubuntu-16.04"
+# #    dependsOn:
+# #      ["build_ubuntu", "test_windows", "test_osx"]
+#     steps:
+#       - publish: $(Build.Repository.LocalPath)/scripts/
+#         artifact: scripts
 
