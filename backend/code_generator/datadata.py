@@ -262,7 +262,87 @@ class DataDataCodeGenerator(CodeGenerator):
             partition = [partition[0]/100.0, partition[1]/100.0, partition[2]/100.0]
             self._partitions.append(partition)
             self._strategies.append(self._select_strategy(source))
+            
+    def get_code(self):
+        code  = 'def split(array__, train_rate, test_rate, validation_rate):\n'
+        code += '    def generator(array_, idx_from, idx_to):\n'
+        code += '        for x in array_[idx_from:idx_to]:\n'
+        #code += '            print("valshapa",x.shape)\n'        
+        code += '            yield x.squeeze().astype(np.float32)\n'
+        code += '    \n'
+        code += "    global array_%s, train_size_%s, validation_size_%s, size_%s\n" % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
+        code += "    array_%s=array__\n" % self._layer_id
+        code += '    array_%s.compute_chunk_sizes()\n' % self._layer_id
+        code += '    size_%s = len(array_%s)\n' % (self._layer_id, self._layer_id)
+        code += '    train_size_%s = round(train_rate*size_%s)\n' % (self._layer_id, self._layer_id)
+        code += '    validation_size_%s = round(validation_rate*size_%s)\n' % (self._layer_id, self._layer_id)
+        code += '    test_size_%s = size_%s - train_size_%s - validation_size_%s\n' % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
+        code += '    \n'
         
+        code += "    def train_gen():\n"
+        code += "        global array_%s, train_size_%s\n" % (self._layer_id, self._layer_id)
+        code += '        def generator(array_, idx_from, idx_to):\n'
+        code += '            for x in array_[idx_from:idx_to]:\n'     
+        code += '                yield x.squeeze().astype(np.float32)\n'
+        code += "        return generator(array_%s, 0, train_size_%s)\n" % (self._layer_id, self._layer_id)
+
+        code += "    def validation_gen():\n"
+        code += "        global array_%s, train_size_%s, validation_size_%s\n" % (self._layer_id, self._layer_id, self._layer_id)
+        code += '        def generator(array_, idx_from, idx_to):\n'
+        code += '            for x in array_[idx_from:idx_to]:\n'     
+        code += '                yield x.squeeze().astype(np.float32)\n'
+        code += "        return generator(array_%s, train_size_%s, train_size_%s+validation_size_%s)\n" % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
+
+        code += "    def test_gen():\n"
+        code += "        global array_%s, train_size_%s, validation_size_%s, size_%s\n" % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
+        code += '        def generator(array_, idx_from, idx_to):\n'
+        code += '            for x in array_[idx_from:idx_to]:\n'     
+        code += '                yield x.squeeze().astype(np.float32)\n'
+        code += "        return generator(array_%s, train_size_%s+validation_size_%s, size_%s)\n" % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
+
+        # code += "    def validation_gen():\n"
+        # code += "         return generator(array, train_size, train_size+validation_size) \n"
+        # code += "    def test_gen():\n"
+        # code += "         return generator(array, train_size+validation_size, size)\n"
+        code += '    return train_gen, validation_gen, test_gen, train_size_%s, validation_size_%s, test_size_%s\n' % (self._layer_id, self._layer_id, self._layer_id)
+        code += '\n'        
+        code += 'np.random.seed(%d)\n' % self._seed
+        code += '\n'
+
+        # Get remaining code using strategy
+        if len(self._strategies) == 1:
+            code += self._get_code_single_strategy()
+        elif len(self._strategies) > 1:
+            code += self._get_code_multi_strategy()
+        else:
+            raise ValueError('No strategies set for getting code')
+
+        return code
+    
+    def _get_code_single_strategy(self):
+        strategy, partition = self._strategies[0], self._partitions[0]
+        code = strategy.execute(var_train='X_train',
+                                var_valid='X_validation',
+                                var_test='X_test',
+                                rate_train=partition[0],
+                                rate_valid=partition[1],
+                                rate_test=partition[2])
+        code += '\n'
+        code += '# Tensorflow wants generators wrapped in functions\n'
+        # code += 'def wrap(gen):\n'
+        # code += '    def func():\n'
+        # code += '        return gen\n'
+        # code += '    return func\n'
+        # code += '\n'
+        # code += 'print("WRAPPING GENERATORS")\n'
+        # code += 'X_train = wrap(X_train)\n'
+        # code += 'X_validation = wrap(X_validation)\n'
+        # code += 'X_test = wrap(X_test)\n'                
+        code += '\n'        
+        code += self._get_code_common()
+        return code
+
+    """
     def get_code(self):
         code  = 'def split(array, train_rate, test_rate, validation_rate):\n'
         code += '    def generator(array, idx_from, idx_to):\n'
@@ -305,6 +385,7 @@ class DataDataCodeGenerator(CodeGenerator):
         code += '\n'
         code += '# Tensorflow wants generators wrapped in functions\n'
         code += 'def wrap(gen):\n'
+        code += '    print("NEW GENERATOR!")\n'
         code += '    def func():\n'
         code += '        return gen\n'
         code += '    return func\n'
@@ -316,7 +397,7 @@ class DataDataCodeGenerator(CodeGenerator):
         code += '\n'        
         code += self._get_code_common()
         return code
-    
+    """
     def _get_code_multi_strategy(self):
         mask_trn = 'X{}_train'
         mask_tst = 'X{}_test'
