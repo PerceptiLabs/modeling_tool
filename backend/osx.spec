@@ -40,6 +40,8 @@ pathex = [working_dir,
 
 binaries = [
     (working_dir+'/appServer.cpython-36m-darwin.so', '.'),
+    (working_dir+'/s3buckets.cpython-36m-darwin.so', '.'),
+    (working_dir+'/analytics/handlers.cpython-36m-darwin.so', './analytics'),        
     (python_lib+'/tensorflow/contrib/bigtable/python/ops/_bigtable.so', './tensorflow/contrib/bigtable/python/ops'),
     (python_lib+'/tensorflow/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow/contrib/tpu/python/ops'),
     (python_lib+'/tensorflow/contrib/rnn/python/ops/_gru_ops.so', './tensorflow/contrib/rnn/python/ops/'),
@@ -72,6 +74,8 @@ datas=[
 ]       
 
 
+hiddenimports=collect_submodules('skimage.io._plugins')+collect_submodules('tensorflow.contrib')+collect_submodules('sentry_sdk')+['pywt._extensions._cwt','databundle','core_new.data.policies','utils','core_new.networkCache','core_new.data.base','core_new.data','core_new.errors','core_new.extras','atari_py','gym','analytics.handlers','analytics.scraper','core_new','core_new.cache','core_new.api','core_new.control','modules','core_new.core','core_new.history','core_new.data','core_new.lightweight','core_new.execution','core_new.resuts','core_new.session','core_new.utils','code_generator.__init__','code_generator.base','code_generator.datadata','code_generator.dataenv','code_generator.tensorflow','core_new.history','s3buckets','S3BucketAdapter','boto3','tempfile','code_generator','codeHQKeeper','datadata_generator','dataKeeper','createDataObject','networkExporter','appQueue','networkSaver','GPUtil','networkBuilder','gym.envs.atari','azure.storage.blob','numpy', 'tensorflow', 'math', 'sys', 'ast', 'itertools', 'collections', 'operator', 'time', 'copy', 'queue', 'sklearn.cluster', 'socket', 'selectors', 'traceback', 'json', 'io', 'struct', 'threading', 'PIL', 'PIL.ImageTk', 'glob', 'random', 'os.path', 're', 'codehq', 'dask', 'skimage.io', 'coreCommunicator', 'CoreThread', 'funclib', 'core', 'coreLogic', 'data', 'datahandler', 'graph', 'parse_pb', 'functionParser', 'extractVariables', 'tensorflow.python', 'libserver', 'networkx', 'environmenthandler', 'appServer', 'qagent','qagent_unity','lw_graph','lw_data','datahandler_lw','propegateNetwork','tensorflow.python.eager.context','tensorflow.lite','tensorflow.lite.toco','tensorflow.lite.toco_convert','tensorflow_wrap_toco','tensorflow.lite.toco.python','tensorflow.python.platform','google.protobuf','tensorflow.core.protobuf','tensorflow.python.training','tensorflow.lite.toco.python.tensorflow_wrap_toco','_tensorflow_wrap_toco']
+'''
 hiddenimports = collect_submodules('skimage.io._plugins') \
 	      + collect_submodules('sentry_sdk')+ \
 	      ['pywt._extensions._cwt','atari_py','gym','gym.envs.atari','networkBuilder',
@@ -85,6 +89,7 @@ hiddenimports = collect_submodules('skimage.io._plugins') \
 	       'code_generator.__init__', 'code_generator.tensorflow', 'core_new.api',
 	       'core_new.cache', 'core_new.data.base', 'core_new.data.__init__',
 	       'core_new.data.policies', 'core_new.errors', 'core_new.extras', 'core_new.history',
+               'core_new.networkCache', 'core_new.core',
 	       'core_new.lightweight', 'core_new.session', 'core_new.utils', 's3buckets'
 	       'analytics.handlers', 'analytics.scraper', 'dataKeeper', 'codeHQKeeper',
 	       'networkExporter', 'appQueue', 'networkSaver', 'databundle', 'modules',
@@ -96,7 +101,7 @@ hiddenimports = collect_submodules('skimage.io._plugins') \
                'tensorflow.python', 'networkx', 'tensorflow.python.platform', 'google.protobuf',
                'tensorflow.core.protobuf', 'tensorflow.python.training', 'funclib',
                'tensorflow.lite.toco.python.tensorflow_wrap_toco', '_tensorflow_wrap_toco', 'boto3']
-
+'''
 log.info("pathex = {}".format(pformat(pathex)))
 log.info("binaries = {}".format(pformat(binaries)))
 log.info("datas = {}".format(pformat(datas)))
