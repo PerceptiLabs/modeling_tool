@@ -26,9 +26,12 @@ linux
 
     npm run build
 mac
+    start core
+        sudo spctl --master-disable
+        
     xattr -cr .
     sudo npm run build
-    node notarize.js
+    sudo node notarize.js
 
 # lint all JS/Vue component files in `src/`
 npm run lint
