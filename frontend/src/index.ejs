@@ -15,32 +15,33 @@
         require('module').globalPaths.push('<%= htmlWebpackPlugin.options.nodeModules.replace(/\\/g, '\\\\') %>')
       </script>
     <% } %>
+    <style>
+      body.show-splashscreen {
+        background-color: #27292F;
+        height: 100vh;
+        overflow: hidden;
+      }
+      #splashscreen {
+        display: none;
+        background: linear-gradient(343.77deg, #383F50 -1.14%, #383F50 41.05%, #23252A 103.46%);
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        top: 0;
+        z-index: 100;
+      }
+      .show-splashscreen #splashscreen {
+        display: flex;
+      }
+    </style>
   </head>
   <body class="show-splashscreen">
     <div id="app"></div>
     <div id="splashscreen">
-      <style>
-          body.show-splashscreen {
-              background-color: #27292F;
-              height: 100vh;
-              overflow: hidden;
-          }
-          #splashscreen {
-              display: none;
-          }
-          .show-splashscreen #splashscreen {
-              background: linear-gradient(343.77deg, #383F50 -1.14%, #383F50 41.05%, #23252A 103.46%);
-              display: flex;
-              align-items: center;
-              justify-content: center;
-              position: absolute;
-              left: 0;
-              right: 0;
-              bottom: 0;
-              top: 0;
-              z-index: 100;
-          }
-      </style>
+
         <?xml version="1.0" encoding="utf-8"?>
 <svg version="1.1" id="Layer_1"
    xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px" viewBox="0 0 280 300"
