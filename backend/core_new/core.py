@@ -81,7 +81,7 @@ class SessionProcessHandler:
 class BaseCore:    
     @scraper.monitor(tag='core_init')
     def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, error_handler, session_process_handler=None,
-                 layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpointValues=None): 
+                 layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpointValues=None, network_cache=None): 
         self._graph = graph_dict
         self._codehq = codehq
         self._data_container = data_container
@@ -93,6 +93,7 @@ class BaseCore:
         self._skip_layers = skip_layers or []
         self._module_provider = module_provider
         self._checkpointValues = checkpointValues
+        self._network_cache = network_cache
 
     def run(self):
         self._reset()        
@@ -105,6 +106,16 @@ class BaseCore:
 
             if self._should_skip_layer(layer_id, content):
                 continue
+
+            if self._network_cache is not None:
+                print(self._graph)
+                if layer_id in self._network_cache:
+                    print("Needs update: ", self._network_cache.needs_update(layer_id, self._graph))
+                if layer_id in self._network_cache and not self._network_cache.needs_update(layer_id, self._graph):
+                    print("Using cached layer")
+                    log.info("Using cached layer")
+                    self._use_cached_layer(layer_id, self._network_cache[layer_id])
+                    continue
 
             log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
             try:
@@ -144,6 +155,8 @@ class BaseCore:
                                data_container=self._data_container,
                                process_handler=self._session_process_handler,
                                cache=self._session_history.cache)   
+        
+        _save_cache=False
 
         try:        
             session.run()
@@ -151,13 +164,36 @@ class BaseCore:
             raise # Not an error. Re-raise.
         except Exception as e:
             self._error_handler.handle_run_error(session, e)
+        # else:
+        #     _save_cache=True
 
         self._session_history[id_] = session
 
         if self._layer_extras_reader is not None:
             self._layer_extras_reader.read(session, self._data_container)
+
+        if self._network_cache is not None:
+            self._network_cache.update(id_, self._graph, session, self._error_handler[id_] if id_ in self._error_handler.to_dict() else None)
             
         log.debug("Done running layer {}".format(id_))#. Locals:  {}".format(id_, session.outputs.locals))
+
+    def _use_cached_layer(self, id_, saved_layer):
+        if saved_layer.session._data_container[id_] is None:
+            if self._layer_extras_reader is not None:
+                self._layer_extras_reader.set_empty(id_)
+            return
+
+        session = saved_layer.session
+
+        self._session_history[id_] = session
+
+        self._data_container.store_value_in_root(id_, saved_layer.session._data_container[id_])
+
+        if self._layer_extras_reader is not None:
+            self._layer_extras_reader.read(session, self._data_container)
+
+        if saved_layer.error:
+            self._error_handler._dict[id_] = saved_layer.error
                   
     def _get_globals_and_locals(self, input_layer_ids):
         outputs = self._session_history.merge_session_outputs(input_layer_ids)

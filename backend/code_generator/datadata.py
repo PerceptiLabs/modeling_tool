@@ -6,6 +6,7 @@ from abc import ABC, abstractmethod
 from code_generator import CodeGenerator
 from s3buckets import S3BucketAdapter
 
+
 class AbstractStrategy(ABC):
     @abstractmethod
     def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):    
@@ -22,8 +23,10 @@ class FileNumpyStrategy(AbstractStrategy):
         code += "    api.cache.put('%s', data_mat)\n" % self._path
         code += "else:\n"
         code += "    data_mat = api.cache.get('%s')\n" % self._path
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
     
@@ -31,21 +34,113 @@ class FileCsvStrategy(AbstractStrategy):
     def __init__(self, path, columns):
         self._path = path
         self._columns=columns
+
+
+
+    def execute_(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
+        # TODO: do not use custom splitting for csvs. this is necessary for lazy generator atm
+        code  = 'def split_(array, train_rate, test_rate, validation_rate):\n'
+        code += '    def generator(array, idx_from, idx_to):\n'
+        code += '        df = dd.from_dask_array(array[idx_from:idx_to])\n'
+        code += '        for x in df.iterrows():\n'
+        #code += '            print("valshape",x[1].values.shape)\n'
+        code += '            yield x[1].values.squeeze()\n'
+        code += '    \n'
+        code += '    array.compute_chunk_sizes()\n'
+        code += '    size = len(array)\n'
+        code += '    train_size = round(train_rate*size)\n'
+        code += '    validation_size = round(validation_rate*size)\n'
+        code += '    test_size = size - train_size - validation_size\n'
+        code += '    \n'
+        code += '    train_gen = generator(array, 0, train_size)\n'
+        code += '    validation_gen = generator(array, train_size, train_size+validation_size)        \n'
+        code += '    test_gen = generator(array, train_size+validation_size, size)\n'
+        code += '    return train_gen, test_gen, validation_gen, train_size, test_size, validation_size\n'
+        code += '\n'
         
-    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
-        code  = "if '%s' not in api.cache:\n" % self._path        
-        code += "    df = pd.read_csv('%s')\n" % self._path
+        code += "if '%s' not in api.cache:\n" % self._path        
+        code += "    df = dd.read_csv('%s')\n" % self._path
         code += "    cols = list(df.columns)\n"
         if self._columns:
-            code += "    data_mat = df[%s].to_numpy().astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
+            code += "    data_mat = df[%s].values.astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
+            # code += "    data_mat = df[%s].values.astype(np.float32)\n" % str(["'%s'" % i for i in self._columns]).replace("'","")
         else:
-            code += "    data_mat = df.to_numpy().astype(np.float32)\n"
+            code += "    data_mat = df.values.astype(np.float32)\n"
         code += "    api.cache.put('%s', data_mat)\n" % self._path            
         code += "else:\n"
-        code += "    data_mat = api.cache.get('%s')\n" % self._path        
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "    data_mat = api.cache.get('%s')\n" % self._path
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split_(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
+        #code += "print('SPLIT SIZES!!!', %s_size, %s_size, %s_size)\n" % (var_train, var_valid, var_test)        
         return code
+
+    
+    def execute(self, var_train, var_valid, var_test, rate_train, rate_valid, rate_test):
+        code  = ""
+        #code += "print('READING CSV')\n"
+        code += "if '%s' not in api.cache:\n" % self._path
+        #code += "    print('NOT FOUND IN CACHE: %s')\n" % self._path        
+        code += "    df = dd.read_csv('%s', blocksize='100MB')\n" % self._path
+        code += "    api.cache.put('%s', df)\n" % self._path        
+        code += "else:\n"
+        code += "    df = api.cache.get('%s')\n" % self._path        
+        code += "cols = list(df.columns)\n"
+        if self._columns:
+            code +="df = df[%s]\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
+            # code +="df = df[%s]\n" % str(["'%s'" % i for i in self._columns]).replace("'","")
+            
+        #code += "print('SPLITTING CSV')\n" 
+        code += "global df_train, df_validation, df_test\n"                       
+        code += "df_train, df_validation, df_test = df.random_split([%f, %f, %f], random_state=0)\n" % (rate_train, rate_valid, rate_test)
+        code += "\n"
+        # code += "def generator(df):\n"
+        # code += "    for x in df.iterrows():\n"
+        # code += "        y = x[1].values.squeeze()\n"
+        # #code += "        print('GENERATE', type(y), y.shape, y)\n"
+        # code += "        yield y\n"
+        code += "\n"
+        # code += "import pdb; pdb.set_trace()\n"
+        #code += "print('CREATING GENERATORS')\n"
+        code += "def %s():\n" % var_train
+        code += "    global df_train\n"
+        code += "    def generator(df):\n"
+        code += "         for x in df.iterrows():\n"
+        code += "             y = x[1].values.squeeze()\n"
+        code += "             yield y\n"
+        code += "    return generator(df_train)\n"
+        code += "def %s():\n" % var_valid
+        code += "    global df_validation\n"
+        code += "    def generator(df):\n"
+        code += "         for x in df.iterrows():\n"
+        code += "             y = x[1].values.squeeze()\n"
+        code += "             yield y\n"
+        code += "    return generator(df_validation)\n"
+        code += "def %s():\n" % var_test
+        code += "    global df_test\n"
+        code += "    def generator(df):\n"
+        code += "         for x in df.iterrows():\n"
+        code += "             y = x[1].values.squeeze()\n"
+        code += "             yield y\n"
+        code += "    return generator(df_test)\n"
+        # code += "%s = generator(df_train)\n" % var_train
+        # code += "%s = generator(df_validation)\n" % var_valid
+        # code += "%s = generator(df_test)\n" % var_test
+        code += "\n"
+        code += "# The size estimates are only used for visualizations\n"
+        #code += "print('GETTING SIZE')\n"        
+        code += "if '%s_size' not in api.cache:\n" % self._path
+        #code += "    print('NOT FOUND IN CACHE: %s_size')\n" % self._path
+        code += "    size = len(df.partitions[0])*df.npartitions\n"
+        code += "    api.cache.put('%s_size', size)\n" % self._path        
+        code += "else:\n"
+        code += "    size = api.cache.get('%s_size')\n" % self._path        
+        #code += "size = len(df)\n"
+        code += "%s_size = round(%f*size)\n" % (var_train, rate_train)
+        code += "%s_size = round(%f*size)\n" % (var_valid, rate_valid)
+        code += "%s_size = size - %s_size - %s_size\n" % (var_test, var_train, var_valid)
+        #code += "print('DONE WITH CSV STRATEGY')\n"                
+        return code        
 
     
 class DirectoryImageStrategy(AbstractStrategy):
@@ -66,8 +161,10 @@ class DirectoryImageStrategy(AbstractStrategy):
         code += "    data_mat_list.append(data_mat)\n"
         code += "\n"
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
 
@@ -84,12 +181,14 @@ class FileJsonStrategy(AbstractStrategy):
         code += "    api.cache.put('%s', data_mat)\n" % self._path
         code += "else:\n"
         code += "    data_mat = api.cache.get('%s')\n" % self._path
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
     
-class S3BucketImageStrategy(AbstractStrategy):
+class S3BucketImageStrategy(AbstractStrategy): # TODO: should look into simplifying this using dask
     def __init__(self, bucket, region_name, delimiter, prefix,
                  aws_access_key_id, aws_secret_access_key):
         self._bucket = bucket
@@ -120,12 +219,14 @@ class S3BucketImageStrategy(AbstractStrategy):
         code += "\n"
         code += "adapter.close()\n"                
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
     
-class S3BucketJsonStrategy(AbstractStrategy):
+class S3BucketJsonStrategy(AbstractStrategy):# TODO: should look into simplifying this using dask
     def __init__(self, bucket, region_name, delimiter, prefix,
                  aws_access_key_id, aws_secret_access_key):
         self._bucket = bucket
@@ -159,8 +260,10 @@ class S3BucketJsonStrategy(AbstractStrategy):
         code += "\n"
         code += "adapter.close()\n"        
         code += "data_mat = np.array(data_mat_list).astype(np.float32)\n"
-        code += "%s, %s, %s = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
-                                                                rate_train, rate_valid, rate_test)
+        code += "data_mat = da.from_array(data_mat)\n"
+        code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
+                                                                                           var_train, var_valid, var_test,
+                                                                                           rate_train, rate_valid, rate_test)
         return code
 
 
@@ -185,19 +288,49 @@ class DataDataCodeGenerator(CodeGenerator):
             self._strategies.append(self._select_strategy(source))
         
     def get_code(self):
-        code = ''
-        code += 'np.random.seed(%d)\n\n' % self._seed
-        
-        # Split dataset function [TODO: optional if 100% in train set?]
-        code += 'def split(dataset, train_rate, test_rate, validation_rate):\n'
-        code += '    size = len(dataset)\n'
-        code += '    i1 = round(train_rate*size)\n'
-        code += '    i2 = i1 + round(test_rate*size)\n'
+        code  = 'def split(array__, train_rate, test_rate, validation_rate):\n'
+        code += '    def generator(array_, idx_from, idx_to):\n'
+        code += '        for x in array_[idx_from:idx_to]:\n'
+        #code += '            print("valshapa",x.shape)\n'        
+        code += '            yield x.squeeze().astype(np.float32)\n'
         code += '    \n'
-        code += '    train = dataset[0:i1]\n'
-        code += '    validation = dataset[i1:i2]\n'
-        code += '    test = dataset[i2:]\n'
-        code += '    return train, validation, test\n'
+        code += "    global array, train_size, validation_size, size\n"
+        code += "    array=array__\n"
+        code += '    array.compute_chunk_sizes()\n'
+        code += '    size = len(array)\n'
+        code += '    train_size = round(train_rate*size)\n'
+        code += '    validation_size = round(validation_rate*size)\n'
+        code += '    test_size = size - train_size - validation_size\n'
+        code += '    \n'
+        
+        code += "    def train_gen():\n"
+        code += "        global array, train_size\n"
+        code += '        def generator(array_, idx_from, idx_to):\n'
+        code += '            for x in array_[idx_from:idx_to]:\n'     
+        code += '                yield x.squeeze().astype(np.float32)\n'
+        code += "        return generator(array, 0, train_size)\n"
+
+        code += "    def validation_gen():\n"
+        code += "        global array, train_size, validation_size\n"
+        code += '        def generator(array_, idx_from, idx_to):\n'
+        code += '            for x in array_[idx_from:idx_to]:\n'     
+        code += '                yield x.squeeze().astype(np.float32)\n'
+        code += "        return generator(array, train_size, train_size+validation_size)\n"
+
+        code += "    def test_gen():\n"
+        code += "        global array, train_size, validation_size, size\n"
+        code += '        def generator(array_, idx_from, idx_to):\n'
+        code += '            for x in array_[idx_from:idx_to]:\n'     
+        code += '                yield x.squeeze().astype(np.float32)\n'
+        code += "        return generator(array, train_size+validation_size, size)\n"
+
+        # code += "    def validation_gen():\n"
+        # code += "         return generator(array, train_size, train_size+validation_size) \n"
+        # code += "    def test_gen():\n"
+        # code += "         return generator(array, train_size+validation_size, size)\n"
+        code += '    return train_gen, validation_gen, test_gen, train_size, validation_size, test_size\n'
+        code += '\n'        
+        code += 'np.random.seed(%d)\n' % self._seed
         code += '\n'
 
         # Get remaining code using strategy
@@ -206,7 +339,7 @@ class DataDataCodeGenerator(CodeGenerator):
         elif len(self._strategies) > 1:
             code += self._get_code_multi_strategy()
         else:
-            raise ValueError
+            raise ValueError('No strategies set for getting code')
 
         return code
     
@@ -219,6 +352,17 @@ class DataDataCodeGenerator(CodeGenerator):
                                 rate_valid=partition[1],
                                 rate_test=partition[2])
         code += '\n'
+        code += '# Tensorflow wants generators wrapped in functions\n'
+        # code += 'def wrap(gen):\n'
+        # code += '    def func():\n'
+        # code += '        return gen\n'
+        # code += '    return func\n'
+        # code += '\n'
+        # code += 'print("WRAPPING GENERATORS")\n'
+        # code += 'X_train = wrap(X_train)\n'
+        # code += 'X_validation = wrap(X_validation)\n'
+        # code += 'X_test = wrap(X_test)\n'                
+        code += '\n'        
         code += self._get_code_common()
         return code
     
@@ -237,36 +381,43 @@ class DataDataCodeGenerator(CodeGenerator):
                                           rate_valid=partition[1],                                          
                                           rate_test=partition[2])
         code += '\n'
+        code += 'def chain(*generators):\n'
+        code += '    def func():\n'
+        code += '        for g in generators:\n'
+        code += '            yield from g\n'
+        code += '    return func\n'
+        code += '\n'
             
         # Concatenation        
         n_sets = len(self._partitions)
         list_str_trn = ", ".join([mask_trn.format(i) for i in range(n_sets)])
         list_str_val = ", ".join([mask_vld.format(i) for i in range(n_sets)])
         list_str_tst = ", ".join([mask_tst.format(i) for i in range(n_sets)])
-        code += "X_train = np.vstack([%s])\n" % list_str_trn
-        code += "X_validation = np.vstack([%s])\n" % list_str_val
-        code += "X_test = np.vstack([%s])\n" % list_str_tst
+        code += "X_train = chain(%s)\n" % list_str_trn 
+        code += "X_validation = chain(%s)\n" % list_str_val
+        code += "X_test = chain(%s)\n" % list_str_tst
         code += '\n'
+        list_str_trn = "_size, ".join([mask_trn.format(i) for i in range(n_sets)])+'_size'
+        list_str_val = "_size, ".join([mask_vld.format(i) for i in range(n_sets)])+'_size'
+        list_str_tst = "_size, ".join([mask_tst.format(i) for i in range(n_sets)])+'_size'
+        code += 'X_train_size = sum([%s])\n' % list_str_trn
+        code += 'X_validation_size = sum([%s])\n' % list_str_val
+        code += 'X_test_size = sum([%s])\n' % list_str_tst
+        code += '\n'        
         code += self._get_code_common()
         return code
 
     def _get_code_common(self):
-        code  = "# Shapes, preview and batch sizes\n"
-        code += 'X_train_size = X_train.shape[0]\n'
-        code += "X_validation_size = X_validation.shape[0]\n"
-        code += "X_test_size = X_test.shape[0]\n"
-        code += '\n'
-        # code += "_sample = X_train[0]\n"
+        code  = '\n'
         code += "global _data_size\n"
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
         code += "_batch_size = %d\n" % int(self.batch_size)
-        # code += "api.data.store(sample=_sample)\n"        
         code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
-        code += 'X_train = tf.data.Dataset.from_tensor_slices(X_train)\n'
-        code += 'X_validation = tf.data.Dataset.from_tensor_slices(X_validation)\n'
-        code += 'X_test = tf.data.Dataset.from_tensor_slices(X_test)\n'
+        code += 'X_train = tf.data.Dataset.from_generator(X_train, output_types=np.float32)\n'
+        code += 'X_validation = tf.data.Dataset.from_generator(X_validation, output_types=np.float32)\n'
+        code += 'X_test = tf.data.Dataset.from_generator(X_test, output_types=np.float32)\n'        
         code += "\n"
         if self.shuffle:
             code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size)\n" % self._seed
@@ -274,19 +425,24 @@ class DataDataCodeGenerator(CodeGenerator):
             code += "X_train=X_train.batch(_batch_size)\n"
         code += "X_validation=X_validation.batch(_batch_size)\n"
         code += "X_test=X_test.batch(1)\n"
-        code += "\n"
+        code += "\n"       
         code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
         code += "train_iterator = iterator.make_initializer(X_train, name='train_iterator_%s')\n" % self._layer_id
         code += "validation_iterator = iterator.make_initializer(X_validation, name='validation_iterator_%s')\n" % self._layer_id        
-        code += "test_iterator = iterator.make_initializer(X_test, name='test_iterator_%s')\n" % self._layer_id                
+        code += "test_iterator = iterator.make_initializer(X_test, name='test_iterator_%s')\n" % self._layer_id            
         code += "Y = next_elements = iterator.get_next()\n"
         return code        
 
     def _select_strategy(self, source):
-        if source['type'] == 'file':
-            strategy = self._select_file_strategy(file_path=os.path.abspath(source['path']).replace("\\","\\\\"))
-        elif source['type'] == 'directory':
-            strategy = self._select_directory_strategy(directory_path=os.path.abspath(source['path']).replace("\\","\\\\"))
+        if source['type'] == 'file' or source['type'] == 'directory':
+            if os.path.isdir(os.path.abspath(source['path'])):
+                strategy = self._select_directory_strategy(directory_path=os.path.abspath(source['path']).replace("\\","\\\\"))
+            else:
+                strategy = self._select_file_strategy(file_path=os.path.abspath(source['path']).replace("\\","\\\\"))
+        # if source['type'] == 'file':
+        #     strategy = self._select_file_strategy(file_path=os.path.abspath(source['path']).replace("\\","\\\\"))
+        # elif source['type'] == 'directory':
+        #     strategy = self._select_directory_strategy(directory_path=os.path.abspath(source['path']).replace("\\","\\\\"))
         elif source['type'] == 's3bucket':
             strategy = self._select_s3bucket_strategy(bucket=source['bucket'],
                                                       region_name=source['region_name'],

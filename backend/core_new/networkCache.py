@@ -1,0 +1,38 @@
+import logging
+from collections import namedtuple
+
+CacheEntry = namedtuple('CacheEntry', ['hash', 'session', 'error'])
+
+log = logging.getLogger(__name__)
+
+class NetworkCache():
+    def __init__(self):
+        self._dict=dict()
+
+    def __contains__(self, key):
+        return key in self._dict
+
+    def __getitem__(self, key):
+        return self._dict[key]
+
+    def get_layers(self):
+        return self._dict.keys()
+
+    def remove_layer(self, id_):
+        del self._dict[id_]
+
+    def to_dict(self):
+        return self._dict
+
+    def needs_update(self, id_, content):
+        return self._dict[id_].hash != hash(str(content))
+
+    def update(self, id_, content, session, error):
+        if id_ in self._dict:
+            log.info("Updating layer " + str(id_))
+        hash_ = hash(str(content))
+        entry = CacheEntry(hash = hash_, session = session, error = error)
+        self._dict[id_] = entry
+        log.info("Cached layers: " + str(self._dict.keys()))
+
+    

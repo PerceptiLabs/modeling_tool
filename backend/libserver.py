@@ -16,23 +16,25 @@ import skimage
 # from lw_data import lw_data
 from dataKeeper import dataKeeper as lw_data
 from createDataObject import createDataObject
-from s3buckets import S3BucketAdapter
 
 from core_new.core import *
 from core_new.history import SessionHistory
+from core_new.cache import get_cache
 from core_new.errors import LightweightErrorHandler
 from core_new.extras import LayerExtrasReader
 from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from graph import Graph
 from codehq import CodeHqNew as CodeHq
 from modules import ModuleProvider
+from core_new.networkCache import NetworkCache
 
 import pprint
 import logging
 log = logging.getLogger(__name__)
 
+
 class Message:
-    def __init__(self, selector, sock, addr, cores, dataDict, checkpointDict, lwNetworks):
+    def __init__(self, selector, sock, addr, cores, dataDict, checkpointDict, lwDict):
         self.selector = selector
         self.sock = sock
         self.addr = addr
@@ -46,8 +48,9 @@ class Message:
         self.cores=cores
         self.dataDict=dataDict
         self.checkpointDict=checkpointDict
-        self.lwNetworks=lwNetworks
+        self.lwDict=lwDict
 
+        
     def _set_selector_events_mask(self, mode):
         """Set selector to listen for events: mode is 'r', 'w', or 'rw'."""
         if mode == "r":
@@ -178,7 +181,18 @@ class Message:
             self.checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
             ckptObj.close()
 
-    def _create_lw_core(self, jsonNetwork):
+    def _create_lw_core(self, jsonNetwork, reciever):
+        if reciever not in self.lwDict:
+            self.lwDict[reciever]=NetworkCache()
+        else:
+            deleteList=[]
+            for layer_id in self.lwDict[reciever].get_layers():
+                if layer_id not in jsonNetwork:
+                    deleteList.append(layer_id)
+            log.info("Deleting these layers: " + str(deleteList))
+            for layer_id in deleteList:
+                self.lwDict[reciever].remove_layer(layer_id)
+
         graph = Graph(jsonNetwork)
         
         graph_dict = graph.graphs
@@ -188,8 +202,9 @@ class Message:
                 self.add_to_checkpointDict(value["Info"])
 
         data_container = DataContainer()
-        
-        session_history_lw = SessionHistory()
+
+
+            
         extras_reader = LayerExtrasReader()
 
         from codehq import CodeHqNew as CodeHq
@@ -202,21 +217,36 @@ class Message:
         module_provider.load('json')  
         module_provider.load('os')   
         module_provider.load('skimage')         
-
+        module_provider.load('dask.array', as_name='da')
+        module_provider.load('dask.dataframe', as_name='dd')                  
         
         for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
             module_provider.install_hook(hook_target, hook_func)
 
         error_handler = LightweightErrorHandler()
-            
+        
+        global session_history_lw
+        cache = get_cache()
+        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!        
         lw_core = LightweightCore(CodeHq, graph_dict,
                                   data_container, session_history_lw,
                                   module_provider, error_handler,
-                                  extras_reader, checkpointValues=self.checkpointDict.copy())
+                                  extras_reader, checkpointValues=self.checkpointDict.copy(),
+                                  network_cache=self.lwDict[reciever])
         
         return lw_core, extras_reader, data_container
 
+    def _delete_lw_cach(self, reciever):
+        del self.lwDict[reciever]
+
     def _create_response_json_content(self):
+        # try:
+        #     return interface
+        # except:
+        #     return error
+
+
+
         reciever=self.request.get("reciever")
         action = self.request.get("action")
         startTime=time.time()
@@ -274,9 +304,10 @@ class Message:
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            lw_core, _, data_container = self._create_lw_core(jsonNetwork)
+            lw_core, _, data_container = self._create_lw_core(jsonNetwork, reciever)
             lw_core.run()
 
+            # import pdb; pdb.set_trace()
 
             def try_fetch(dict,variable):
                 try:
@@ -299,7 +330,7 @@ class Message:
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            lw_core, _, data_container = self._create_lw_core(jsonNetwork)
+            lw_core, _, data_container = self._create_lw_core(jsonNetwork, reciever)
             lw_core.run()
 
             def try_fetch(dict,variable):
@@ -309,6 +340,8 @@ class Message:
                     return ""
 
             content=try_fetch(data_container[Id],"_partition_summary")
+            # for id_ in lw_core.error_handler.to_dict().keys():
+            #     errorList.append(lw_core.error_handler[id_].error_message)
 
 
         elif action == "deleteData":
@@ -348,7 +381,7 @@ class Message:
         elif action == "getNetworkInputDim":
             jsonNetwork=self.request.get("value")
 
-            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)            
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork, reciever)            
             lw_core.run()
             
             content={}
@@ -390,7 +423,7 @@ class Message:
         elif action == "getNetworkOutputDim":
             jsonNetwork=self.request.get("value")
 
-            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                        
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork, reciever)                        
             lw_core.run()
             
             extrasDict=extras_reader.to_dict()
@@ -421,7 +454,7 @@ class Message:
             except:
                 Variable=None
 
-            lw_core, extras_reader, data_container = self._create_lw_core(jsonNetwork)                                    
+            lw_core, extras_reader, data_container = self._create_lw_core(jsonNetwork, reciever)                                    
             lw_core.run()
             
             sample=""
@@ -460,7 +493,7 @@ class Message:
             jsonNetwork=value["Network"]
             LayerId=value["Id"]
 
-            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                                                
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork, reciever)                                                
             lw_core.run()
             
             extrasDict=extras_reader.to_dict()
@@ -661,6 +694,8 @@ class Message:
         response = {
             "content": content
         }
+        # print("Request: ", self.request)
+        # print("Response: ", response)
         # print("Requst: %s\nResponse: %s" % (str(action), str(response)))
         # log.debug("Response: " + pprint.pformat(response, depth=6))        
         return response

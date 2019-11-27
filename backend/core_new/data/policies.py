@@ -90,19 +90,20 @@ class TrainValDataPolicy(DataPolicy):
                 if "saver" in self._data:
                     saver = self._data.pop('saver', None)
                 if saver:
-                    sess=saver[0]
-                    tf_saver=saver[1]
-                    network_outputs=self._data[id_].get("y_pred",None)
-                    input_id=None
-                    tmp_content=self._graph_dict[[i for i in content["Info"]["backward_connections"] if i!=self._graph_dict[content["Info"]["Properties"]["Labels"]]][0]]
-                    while tmp_content["Info"]["backward_connections"]!=[]:
-                        input_id=tmp_content["Info"]["backward_connections"][0]
-                        tmp_content=self._graph_dict[input_id]
-
-                    network_inputs=self._data[input_id]["Y"]
-                    saver={"sess":sess, "saver":tf_saver, "network_inputs":network_inputs, "network_outputs": network_outputs}
-                    if "all_tensors" in self._data[id_]:
-                        saver.update({"all_tensors":self._data[id_]["all_tensors"]})
+                    pass
+                    # sess=saver[0]
+                    # tf_saver=saver[1]
+                    # network_outputs=self._data[id_].get("y_pred",None)
+                    # input_id=None
+                    # tmp_content=self._graph_dict[[i for i in content["Info"]["backward_connections"] if i!=self._graph_dict[content["Info"]["Properties"]["Labels"]]][0]]
+                    # while tmp_content["Info"]["backward_connections"]!=[]:
+                    #     input_id=tmp_content["Info"]["backward_connections"][0]
+                    #     tmp_content=self._graph_dict[input_id]
+                    # #import pdb; pdb.set_trace()
+                    # network_inputs=self._data[input_id]["Y"]
+                    # saver={"sess":sess, "saver":tf_saver, "network_inputs":network_inputs, "network_outputs": network_outputs}
+                    # if "all_tensors" in self._data[id_]:
+                    #     saver.update({"all_tensors":self._data[id_]["all_tensors"]})
 
                 max_epoch = self._data[id_].get('max_epoch', -1)        
                 train_datasize = self._data[id_].get('train_datasize', -1)

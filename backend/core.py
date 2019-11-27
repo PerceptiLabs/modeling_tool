@@ -17,7 +17,7 @@ import queue
 import os
 import shutil
 import random
-from sentry_sdk import capture_exception
+# from sentry_sdk import capture_exception
 
 import pprint
 import logging

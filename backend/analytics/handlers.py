@@ -35,6 +35,18 @@ class CubeHandler(ScraperHandler):
     def _apply(self, meta: Dict[str, Any], values: Dict[str, Any]):
         return Entry('cube.txt', "{}, {}".format(meta['time'], values['x']))
 
+class SessionOnRenderHandler(ScraperHandler):
+    def is_applicable(self, meta: Dict[str, Any], values: Dict[str, Any]):
+        return meta.get('tag') == 'session_on_render'
+
+    def _apply(self, meta: Dict[str, Any], values: Dict[str, Any]):    
+        return Entry(
+            'session_on_render.txt',
+            '{}, {}'.format(
+                meta.get('time'),
+                values.get('dashboard')
+            )
+        )
     
 class CoreInitHandler(ScraperHandler):
     def is_applicable(self, meta: Dict[str, Any], values: Dict[str, Any]):

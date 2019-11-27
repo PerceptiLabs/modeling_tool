@@ -4,9 +4,10 @@ import logging
 import functools
 
 from core_new.api import ApiCallbackHandler, Api
+from analytics.scraper import get_scraper
 
 log = logging.getLogger(__name__)
-
+scraper = get_scraper()
 
 class LayerSessionStop(Exception):
     """ Used to break out of userland code when stop is pressed in the UI """
@@ -59,7 +60,7 @@ class LayerSession(ApiCallbackHandler):
 
     def run(self):
         global_vars, local_vars = self._get_input_vars(insert_api=True)
-
+        
         exec(self._code, global_vars, local_vars)
 
         for name, value in local_vars.items():
@@ -116,6 +117,7 @@ class LayerSession(ApiCallbackHandler):
         if self._data_container is not None:
             self._data_container.store_value_in_root("saver", (sess, saver))
 
+    @scraper.monitor(tag='session_on_render')
     def on_render(self, dashboard=None):
         if self._process_handler is None:
             return
@@ -139,8 +141,10 @@ class LayerSession(ApiCallbackHandler):
             return self._cache.get(key)
 
     def on_cache_contains(self, key):
-        if self._cache is not None:        
+        if self._cache is not None:
             return key in self._cache
+        else:
+            return False
 
     @requires_process_handler
     def pause(self):
