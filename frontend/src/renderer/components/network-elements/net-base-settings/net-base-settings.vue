@@ -106,7 +106,9 @@ export default {
     applySettings(name) {
       this.$emit('press-apply', name);
       //const elId = this.currentEl.layerId;
-      this.tabSelected = 'Preview';
+      if(name !== 'Cloud') {
+        this.tabSelected = 'Preview';this.tabSelected = 'Preview';
+      }
     },
     updateCode(name) {
       this.$emit('press-update')
