@@ -108,11 +108,7 @@ class BaseCore:
                 continue
 
             if self._network_cache is not None:
-                print(self._graph)
-                if layer_id in self._network_cache:
-                    print("Needs update: ", self._network_cache.needs_update(layer_id, self._graph))
                 if layer_id in self._network_cache and not self._network_cache.needs_update(layer_id, self._graph):
-                    print("Using cached layer")
                     log.info("Using cached layer")
                     self._use_cached_layer(layer_id, self._network_cache[layer_id])
                     continue
