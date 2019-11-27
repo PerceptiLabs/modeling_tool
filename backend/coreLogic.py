@@ -238,7 +238,10 @@ class coreLogic():
     def get_gpu(self):
         gpus = GPUtil.getGPUs()
         loadList = [gpu.load for gpu in gpus]
-        return np.max(loadList)
+        if loadList:
+            return np.max(loadList)
+        else:
+            return ""
         
     def getStatus(self):
         try:
