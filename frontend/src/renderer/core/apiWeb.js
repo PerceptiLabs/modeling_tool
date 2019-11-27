@@ -2,6 +2,7 @@ const wsPathDef = 'ws://perceptilabs-core-robertproject.apps.cluster-rdu-3950.rd
 //const wsPathDef = 'ws://localhost:5000';
 
 var webSocket = null;
+import store from '@/store'
 
 function calcTime(stop, start, name, nameComp) {
   let time = stop - start;
@@ -112,6 +113,15 @@ function coreRequest(data, path, no, name) {
         else {
           //console.log(stringData);
           let obgData = JSON.parse(stringData);
+          if(obgData.errorMessage && obgData.errorMessage.length) {
+            store.dispatch('globalView/GP_errorPopup', obgData.errorMessage);
+            store.dispatch('mod_tracker/EVENT_coreError', obgData.errorMessage);
+            store.dispatch('mod_workspace/EVENT_startDoRequest', false);
+            store.dispatch('mod_workspace/SET_openStatistics', null);
+            store.dispatch('mod_workspace/SET_openTest', null);
+            store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
+          }
+
           //console.log('answer core data ', obgData);
           // let stopRequest = new Date();
           // calcTime(stopRequest, timeStartAnswer, 'transmitting', name);
