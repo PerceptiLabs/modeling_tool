@@ -23,6 +23,8 @@ del frontend_data_code.py
 del core_test.py
 del serverInterface.py
 
+REM for /f %i in (..\..\..excluded_files.txt) do del %i
+
 move setup.py setup.pyx
 move mainServer.py mainServer.pyx
 

@@ -5,6 +5,9 @@ IF EXIST c:\tools\miniconda3 (
 
 choco install nodejs --yes --version 12.10.0
 choco install choco install microsoft-visual-cpp-build-tools --version 14.0.25420.1 --yes
+REM IF %ERRORLEVEL% NEQ 0 (
+REM   exit 1
+REM )
 choco install miniconda3 --force --yes --params"'/AddToPath /D:c:\tools'"
 
 
