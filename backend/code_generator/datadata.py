@@ -24,6 +24,7 @@ class FileNumpyStrategy(AbstractStrategy):
         code += "else:\n"
         code += "    data_mat = api.cache.get('%s')\n" % self._path
         code += "data_mat = da.from_array(data_mat)\n"
+        code += "types=tf.float32\n"
         code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
                                                                                            var_train, var_valid, var_test,
                                                                                            rate_train, rate_valid, rate_test)

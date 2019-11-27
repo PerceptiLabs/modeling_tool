@@ -61,10 +61,16 @@ class LayerSession(ApiCallbackHandler):
     def run(self):
         global_vars, local_vars = self._get_input_vars(insert_api=True)
         
-        exec(self._code, global_vars, local_vars)
+        try:
+            exec(self._code, global_vars, local_vars)
+        except:
+            raise
+        finally:
+            for name, value in local_vars.items():
+                self._data_container.store_value(self._layer_id, name, value)
 
-        for name, value in local_vars.items():
-            self._data_container.store_value(self._layer_id, name, value)
+        # for name, value in local_vars.items():
+        #     self._data_container.store_value(self._layer_id, name, value)
 
         self._set_output_vars(global_vars, local_vars)
 
