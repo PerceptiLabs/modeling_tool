@@ -24,11 +24,14 @@ SET
 
 PATH
 
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\ucrt"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.17134.0\ucrt"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\ucrt"
+REG QUERY "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0" /v ProductVersion
+REG QUERY "HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v10.0" /v ProductVersion
+
+REM dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt"
+REM dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\ucrt"
+REM dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.17134.0\ucrt"
+REM dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt"
+REM dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\ucrt"
 
 cd ..\frontend
 call npm install
