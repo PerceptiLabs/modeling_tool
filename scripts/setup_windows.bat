@@ -20,15 +20,7 @@ call C:\tools\miniconda3\condabin\conda.bat list
 call node --version
 call npm --version
 
-SET
-
-PATH
-
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.17134.0"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0"
+REG QUERY "HKEY_LOCAL_MACHINE\SOFTWARE\WOW6432Node\Microsoft\Microsoft SDKs\Windows\v10.0" /v ProductVersion
 
 cd ..\frontend
 call npm install
