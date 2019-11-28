@@ -411,14 +411,16 @@ class DataDataCodeGenerator(CodeGenerator):
     def _get_code_common(self):
         code  = '\n'
         code += "global _data_size\n"
+        code += '_sample = next(X_train())'
+        code += '_data_shape = np.shape(_sample)'
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
         code += "_batch_size = %d\n" % int(self.batch_size)
         code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
-        code += 'X_train = tf.data.Dataset.from_generator(X_train, output_types=np.float32)\n'
-        code += 'X_validation = tf.data.Dataset.from_generator(X_validation, output_types=np.float32)\n'
-        code += 'X_test = tf.data.Dataset.from_generator(X_test, output_types=np.float32)\n'        
+        code += 'X_train = tf.data.Dataset.from_generator(X_train, output_shapes=_data_shape, output_types=np.float32)\n'
+        code += 'X_validation = tf.data.Dataset.from_generator(X_validation, output_shapes=_data_shape, output_types=np.float32)\n'
+        code += 'X_test = tf.data.Dataset.from_generator(X_test, output_shapes=_data_shape, output_types=np.float32)\n'        
         code += "\n"
         if self.shuffle:
             code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size)\n" % self._seed
