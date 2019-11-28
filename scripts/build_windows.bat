@@ -6,10 +6,7 @@ call C:\tools\miniconda3\condabin\conda.bat list
 
 echo "Setting Path:"
 SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\ucrt
-
 path
-
-set
 
 cd ..
 rmdir /s /q build
