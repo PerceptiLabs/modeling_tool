@@ -60,6 +60,7 @@ ls -l
 
 echo "Compiling..."
 python setup.pyx build_ext --inplace
+if [ $? -ne 0 ]; then exit 1; fi
 rm *.py
 mv mainServer.pyx mainServer.py
 
@@ -71,6 +72,7 @@ echo "Running pyinstaller..."
 cp ../../backend/osx.spec .
 
 pyinstaller --clean -y osx.spec
+if [ $? -ne 0 ]; then exit 1; fi
 
 if [ -e dist/appServer/libpython3.6m.so.1.0 ]
 then
