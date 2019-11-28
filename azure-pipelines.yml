@@ -67,7 +67,7 @@ jobs:
   #      ["test_ubuntu", "test_windows", "test_osx"]
     pool:
         #win-pool
-        vmImage: "windows-latest"
+        vmImage: "vs2017-win2016"
     steps:
     - script: |
         cd scripts/

@@ -5,12 +5,12 @@ call C:\tools\miniconda3\condabin\conda.bat env list
 call C:\tools\miniconda3\condabin\conda.bat list
 
 echo "Setting Path:"
-SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt\io.h
-SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\ucrt\io.h
-SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.17134.0\ucrt\io.h
-SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt\io.h
-SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\ucrt\io.h
-path
+REM SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt\io.h
+REM SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\ucrt\io.h
+REM SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.17134.0\ucrt\io.h
+REM SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt\io.h
+REM SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\ucrt\io.h
+REM path
 
 cd ..
 rmdir /s /q build
