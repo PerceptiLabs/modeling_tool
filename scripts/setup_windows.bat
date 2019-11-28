@@ -24,11 +24,11 @@ SET
 
 PATH
 
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.17134.0"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0"
-dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0"
+dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt"
+dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\ucrt"
+dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.17134.0\ucrt"
+dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt"
+dir "C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\ucrt"
 
 cd ..\frontend
 call npm install
