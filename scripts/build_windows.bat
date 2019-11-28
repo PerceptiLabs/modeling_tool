@@ -4,6 +4,8 @@ call C:\tools\miniconda3\condabin\conda.bat activate py362_
 call C:\tools\miniconda3\condabin\conda.bat env list
 call C:\tools\miniconda3\condabin\conda.bat list
 
+SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\ucrt
+
 cd ..
 rmdir /s /q build
 mkdir build
