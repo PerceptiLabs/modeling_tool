@@ -69,9 +69,14 @@ jobs:
         #win-pool
         vmImage: "vs2017-win2016"
     steps:
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
     - script: |
         cd scripts/
-        ./setup_windows.bat
+        ./setup_windows_python.bat
       displayName: 'Environment setup'
 
     - script: |
