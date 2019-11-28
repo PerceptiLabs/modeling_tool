@@ -1,7 +1,7 @@
 from pprint import pprint
 
 
-datasets = X['datasets']
+datasets = {layer_id: wrapper(layer_id, None) for layer_id, wrapper in X['datasets'].items()}
 layer_calls = X['layer_calls']
 
 input_data_layer = '{{input_data_layer}}'
@@ -57,7 +57,7 @@ test_dataset = test_dataset.batch(1)
 
 train_iterator = strategy.make_dataset_iterator(train_dataset)
 validation_iterator = strategy.make_dataset_iterator(validation_dataset)
-#test_iterator = strategy.make_dataset_iterator(test_dataset) # this can probably be ran on single gpu
+#test_iterator = strategy.make_dataset_iterator(test_dataset) # batch size == 1 means no distribution.
 
 def create_model():
 
@@ -68,7 +68,7 @@ def create_model():
         }        
         
         for lc in layer_calls:
-            layer_id, func, input_layers = lc['layer_id'], lc['func'], lc['input_layers']
+            layer_id, wrapper, input_layers = lc['layer_id'], lc['wrapper'], lc['input_layers']
 
             if len(input_layers) == 1:
                 X = {'Y': layer_outputs[input_layers[0]]}
@@ -77,7 +77,7 @@ def create_model():
             else:
                 X = {}
             
-            Y = func(layer_id, X)            
+            Y = wrapper(layer_id, X)            
             layer_outputs[layer_id] = Y
 
         return layer_outputs[output_layer], layer_outputs[target_layer]
@@ -131,7 +131,6 @@ with strategy.scope():
 
         loss_value = tf.reduce_sum(tf.square(y_pred - y_target)) / GLOBAL_BATCH_SIZE
 
-
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_value, trainable_vars)        
 
@@ -160,8 +159,6 @@ with strategy.scope():
 
 
         dist_loss_validation, dist_grads_val = strategy.experimental_run(validation_step, validation_iterator)
-
-
         
         dist_loss_validation = dist_loss_validation.values
         loss_validation = tf.reduce_sum(dist_loss_validation) / n_devices
@@ -186,10 +183,20 @@ with strategy.scope():
 
     all_tensors = api.data.get_tensors()
     pprint(all_tensors)
-    print("all_tensors")
+    print("ALL_tensors")
 
+
+    remove = ['Y', 'initial', 'node', 'flat_node']
+    for k, v in all_tensors.items():
+
+        for x in remove:
+            if x in v:
+                del v[x]
+            
+        
+    
     import pdb;pdb.set_trace()
-    #all_tensors={}    
+    all_tensors={}    
     
     api.data.store(all_tensors=all_tensors)
     api.data.store(max_epoch={{n_epochs - 1}},
