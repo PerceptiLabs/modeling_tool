@@ -403,7 +403,7 @@ const actions = {
       }
     };
 
-    console.log('getCode', theData);
+    //console.log('getCode', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
