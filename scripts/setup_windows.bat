@@ -9,6 +9,10 @@ choco install miniconda3 --force --yes --params"'/AddToPath /D:c:\tools'"
 
 
 SET PATH=%PATH%;C:\tools\miniconda3\Scripts
+SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt
+SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\ucrt
+SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.17134.0\ucrt
+SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt
 SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\ucrt
 
 PATH
