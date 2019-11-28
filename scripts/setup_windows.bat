@@ -23,8 +23,7 @@ call C:\tools\miniconda3\condabin\conda.bat list
 call node --version
 call npm --version
 
-dir "C:\Program Files (x86)\Windows Kits\10\bin\x86"
-dir "C:\Program Files (x86)\Windows Kits\10\bin\x64"
+dir "C:\Program Files (x86)\Windows Kits\10\include"
 
 cd ..\frontend
 call npm install
