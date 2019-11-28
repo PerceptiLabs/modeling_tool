@@ -61,28 +61,35 @@ validation_iterator = strategy.make_dataset_iterator(validation_dataset)
 
 def create_model():
 
-    def model(x, y):
-        layer_outputs = {
-            input_data_layer: x,
-            target_data_layer: y
-        }        
+    class Model:
+        def __init__(self):
+            self._locals = {}
         
-        for lc in layer_calls:
-            layer_id, wrapper, input_layers = lc['layer_id'], lc['wrapper'], lc['input_layers']
-
-            if len(input_layers) == 1:
-                X = {'Y': layer_outputs[input_layers[0]]}
-            elif len(input_layers) > 1:
-                X = {input_id: {'Y': layer_outputs[input_id]} for input_id in input_layers}
-            else:
-                X = {}
+        def __call__(self, x, y):
+            layer_outputs = {
+                input_data_layer: x,
+                target_data_layer: y
+            }        
+        
+            for lc in layer_calls:
+                layer_id, wrapper, input_layers = lc['layer_id'], lc['wrapper'], lc['input_layers']
+                
+                if len(input_layers) == 1:
+                    X = {'Y': layer_outputs[input_layers[0]]}
+                elif len(input_layers) > 1:
+                    X = {input_id: {'Y': layer_outputs[input_id]} for input_id in input_layers}
+                else:
+                    X = {}
             
-            Y = wrapper(layer_id, X)            
-            layer_outputs[layer_id] = Y
+                Y = wrapper(layer_id, X)            
+                layer_outputs[layer_id] = Y
 
-        return layer_outputs[output_layer], layer_outputs[target_layer]
+                if layer_id not in self._locals:
+                    self._locals[layer_id] = wrapper._locals
+                    
+            return layer_outputs[output_layer], layer_outputs[target_layer]        
     
-    return model
+    return Model()
 
 
 
@@ -122,8 +129,20 @@ with strategy.scope():
             assert len(grads_) == 1
             grads_dict[name] = grads_[0]
 
+
+        locals_ = model._locals.copy()
+
+        #for layer_id, layer_locals in locals_.items():
+        #    for k, v in list(layer_locals.items()):
+        #        if isinstance(v, tf.Tensor):
+        #            layer_locals[k] = tf.identity(v)
+        #        x=12
+
+        print("train step")
+        import pdb; pdb.set_trace()
+
         with tf.control_dependencies([update_vars]):
-            return (tf.identity(loss_value), grads_dict)
+            return (tf.identity(loss_value), grads_dict, locals_)
 
     def validation_step(inputs):
         x, y = inputs
@@ -141,12 +160,16 @@ with strategy.scope():
             assert len(grads_) == 1
             grads_dict[name] = grads_[0]
             
-        return (tf.identity(loss_value), grads_dict)
+        return (tf.identity(loss_value), grads_dict, model._locals)
 
 
 
     if n_devices > 1:
-        dist_loss, dist_grads_train = strategy.experimental_run(train_step, train_iterator)
+        dist_loss, dist_grads_train, dist_locals_train = strategy.experimental_run(train_step, train_iterator)
+
+
+        #import pdb;pdb.set_trace()
+        
         dist_loss = [dist_loss.get(device) for device in dist_loss.devices]
         loss_train = tf.reduce_sum(dist_loss) / n_devices
 
@@ -158,7 +181,7 @@ with strategy.scope():
             dist_grads_train[variable] = tensors[0]
 
 
-        dist_loss_validation, dist_grads_val = strategy.experimental_run(validation_step, validation_iterator)
+        dist_loss_validation, dist_grads_val, dist_locals_val = strategy.experimental_run(validation_step, validation_iterator)
         
         dist_loss_validation = dist_loss_validation.values
         loss_validation = tf.reduce_sum(dist_loss_validation) / n_devices
@@ -171,12 +194,14 @@ with strategy.scope():
 
             assert len(tensors) == 1
             dist_grads_val[variable] = tensors[0]
-        
+
+
+
     else:
-        dist_loss, dist_grads_train = strategy.experimental_run(train_step, train_iterator)
+        #dist_loss, dist_grads_train, dist_locals = strategy.experimental_run(train_step, train_iterator)
         #dist_test = strategy.experimental_run(test_step, test_iterator) # TODO: implement this.
 
-
+        pass
 
         
     sess.run(tf.global_variables_initializer())
@@ -186,18 +211,24 @@ with strategy.scope():
     print("ALL_tensors")
 
 
-    remove = ['Y', 'initial', 'node', 'flat_node']
-    for k, v in all_tensors.items():
 
-        for x in remove:
-            if x in v:
-                del v[x]
-            
+    from boltons.iterutils import remap
+    from collections.abc import Iterable
+    def visit(p, k, v):
+        if isinstance(v, list) or isinstance(v, dict):
+            return len(v) > 0
+        else:
+            print('aa', p, k, type(v), tf.is_tensor(v))        
+            return tf.is_tensor(v)
         
     
-    import pdb;pdb.set_trace()
-    all_tensors={}    
+    all_tensors = remap(dist_locals_train, visit=visit)
+
+    import pdb; pdb.set_trace()
+
+        
     
+    #import pdb;pdb.set_trace()
     api.data.store(all_tensors=all_tensors)
     api.data.store(max_epoch={{n_epochs - 1}},
                    train_datasize=_data_size[0],
@@ -215,6 +246,9 @@ with strategy.scope():
                        acc_val_iter=[], loss_val_iter=[], f1_val_iter=[], auc_val_iter=[])
 
         sess.run(train_iterator_init)
+
+    
+        
         train_iter=0
         try:
             print("ENTER TRAIN LOOP!")
@@ -225,7 +259,13 @@ with strategy.scope():
                 else:
                     acc_train, loss_train_value, f1_train, auc_train, gradient_vals, all_evaled_tensors = sess.run([accuracy, loss_train, f1, auc, dist_grads_train, all_tensors])
                     api.data.store(all_evaled_tensors=all_evaled_tensors)
-        
+
+
+                    pprint(all_evaled_tensors)
+                    print("ZAASA")
+                    import pdb; pdb.set_trace()
+                    
+                    
                     new_gradient_vals={}
                     for gradName, gradValue in gradient_vals.items():
                          new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))
