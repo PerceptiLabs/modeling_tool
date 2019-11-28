@@ -411,8 +411,8 @@ class DataDataCodeGenerator(CodeGenerator):
     def _get_code_common(self):
         code  = '\n'
         code += "global _data_size\n"
-        code += '_sample = next(X_train())'
-        code += '_data_shape = np.shape(_sample)'
+        code += '_sample = next(X_train())\n'
+        code += '_data_shape = np.shape(_sample)\n'
         code += "_data_size=np.array([X_train_size, X_validation_size, X_test_size])\n"
         code += "_partition_summary = list(_data_size*100/sum(_data_size))\n"
         code += "_batch_size = %d\n" % int(self.batch_size)

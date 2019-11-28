@@ -110,9 +110,10 @@ class BaseCore:
             if self._network_cache is not None:
                 if layer_id in self._network_cache and not self._network_cache.needs_update(layer_id, self._graph):
                     log.info("Using cached layer")
+                    print("Using cached layer")
                     self._use_cached_layer(layer_id, self._network_cache[layer_id])
                     continue
-
+            print("Calculating new layer")
             log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
             try:
                 self._run_layer(layer_id, content)
@@ -174,6 +175,9 @@ class BaseCore:
         log.debug("Done running layer {}".format(id_))#. Locals:  {}".format(id_, session.outputs.locals))
 
     def _use_cached_layer(self, id_, saved_layer):
+        if saved_layer.error:
+            self._error_handler._dict[id_] = saved_layer.error
+
         if saved_layer.session._data_container[id_] is None:
             if self._layer_extras_reader is not None:
                 self._layer_extras_reader.set_empty(id_)
@@ -187,10 +191,7 @@ class BaseCore:
 
         if self._layer_extras_reader is not None:
             self._layer_extras_reader.read(session, self._data_container)
-
-        if saved_layer.error:
-            self._error_handler._dict[id_] = saved_layer.error
-                  
+           
     def _get_globals_and_locals(self, input_layer_ids):
         outputs = self._session_history.merge_session_outputs(input_layer_ids)
 
