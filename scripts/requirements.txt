@@ -1,7 +1,6 @@
 tensorflow==1.13.1
 numpy
 fsspec
-psutil
 pandas
 enum34
 dask[array]==2.1.0
