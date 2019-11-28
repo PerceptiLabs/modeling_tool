@@ -45,6 +45,7 @@
       this.readUserInfo();
     },
     mounted() {
+        this.appReady();
       this.updateOnlineStatus();
       /*Menu*/
       ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));
@@ -78,7 +79,7 @@
       this.checkLocalToken();
       this.$nextTick(()=> {
         //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
-        this.appReady();
+
         this.sendPathToAnalist(this.$route.fullPath);
       })
     },
@@ -177,7 +178,7 @@
           splash.remove();
           document.body.className = "";
           this.trackerAppStart();
-        }, 1000)
+        }, 2000)
       },
       calcAppPath() {
         let resPath = process.resourcesPath;

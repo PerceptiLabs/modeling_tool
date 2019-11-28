@@ -24,17 +24,12 @@
           span Choose folders
 
       template(v-else)
+        chart-spinner(v-if="showSpinner")
         .settings-layer_section
           .form_row
             button.btn.btn--link(type="button" @click="clearPath")
               i.icon.icon-backward
               span Back
-          .form_row(v-if="dataColumns.length")
-            base-select(
-              v-model="dataColumnsSelected"
-              :select-options="dataColumns"
-              :select-multiple="true"
-            )
         .settings-layer_section.settings-layer_section--data
           .form_row
             settings-file-list(
@@ -59,6 +54,13 @@
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
             base-checkbox.bigest-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
+        .settings-layer_section
+          .form_row(v-if="dataColumns.length")
+            base-select(
+              v-model="dataColumnsSelected"
+              :select-options="dataColumns"
+              :select-multiple="true"
+            )
         //-.settings-layer_foot
           button.btn.btn--primary(type="button") Apply
     //-template(slot="Cloud-content")
@@ -86,6 +88,7 @@
   import SettingsFileList  from '@/components/network-elements/elements-settings/setting-file-list.vue';
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
   import TripleInput    from "@/components/base/triple-input";
+  import ChartSpinner   from '@/components/charts/chart-spinner'
 
   import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
   import {mapActions, mapGetters}     from 'vuex';
@@ -93,7 +96,7 @@
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
-    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList },
+    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, ChartSpinner },
     mounted() {
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
@@ -128,7 +131,8 @@
             Batch_size: 10,
             Shuffle_data: true,
           }
-        }
+        },
+        showSpinner: false
       }
     },
     computed: {

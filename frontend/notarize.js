@@ -31,9 +31,9 @@ console.log('Notarize');
 
 // };
 async function nota(context) {
-    console.log(process.env);
+    //console.log(process.env);
     //const { electronPlatformName } = context;
-    if (electronPlatformName === 'darwin') {
+    //if (electronPlatformName === 'darwin') {
         try {
             console.log('Try notarize app');
             await notarize({
@@ -46,6 +46,6 @@ async function nota(context) {
         } catch (err) {
             console.log('Notarize app', err);
         }
-    }
+    //}
 };
 nota();
