@@ -9,6 +9,10 @@ choco install miniconda3 --force --yes --params"'/AddToPath /D:c:\tools'"
 
 
 SET PATH=%PATH%;C:\tools\miniconda3\Scripts
+SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\ucrt
+
+PATH
+
 call C:\tools\miniconda3\condabin\conda.bat init cmd.exe
 call C:\tools\miniconda3\condabin\conda.bat config --set ssl_verify no
 call C:\tools\miniconda3\condabin\conda.bat env create --force --file "..\backend\environment.yml"
