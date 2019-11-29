@@ -36,6 +36,14 @@ REM for /f %i in (..\..\..excluded_files.txt) do del %i
 move setup.py setup.pyx
 move mainServer.py mainServer.pyx
 
+cd code_generator
+move __init__.py __init__.pyx
+
+cd ../core_new/data
+move __init__.py __init__.pyx
+
+cd ../../
+
 dir
 
 python setup.pyx develop --user
@@ -43,7 +51,23 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 del /S /Q *.py
+del /S /Q *.c
+
 move mainServer.pyx mainServer.py
+
+cd code_generator
+move __init__.pyx __init__.py
+Xcopy /E /I /Y build/lib.win-amd64-3.6/code_generator .
+
+dir
+
+cd ../core_new/data
+move __init__.px __init__.py
+Xcopy /E /I /Y build/lib.win-amd64-3.6/data .
+
+dir
+
+cd ../../
 
 dir
 
