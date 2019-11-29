@@ -68,12 +68,14 @@ Xcopy /E /I /Y build/lib.win-amd64-3.6/code_generator .
 rmdir /s /q build
 ren __init__.pyx __init__.py
 del setup.pyx
+dir
 
 cd ../core_new
 python setup.pyx develop
 del *.c
 del *.py
 del setup.pyx
+dir
 
 cd data
 move __init__.py __init__.pyx
@@ -84,12 +86,14 @@ Xcopy /E /I /Y build/lib.win-amd64-3.6/data .
 rmdir /s /q build
 ren __init__.pyx __init__.py
 del setup.pyx
+dir
 
 cd ../../analytics
 python setup.pyx develop
 del *.c
 del *.py
 del setup.pyx
+dir
 
 cd ..
 move mainServer.py mainServer.pyx
