@@ -1,6 +1,6 @@
 from pprint import pprint
 
-
+self_layer_name = layer_name # this is passed as input
 datasets = {layer_id: wrapper(layer_id, None) for layer_id, wrapper in X['datasets'].items()}
 layer_calls = X['layer_calls']
 
@@ -8,7 +8,6 @@ input_data_layer = '{{input_data_layer}}'
 target_data_layer = '{{target_data_layer}}'
 output_layer = '{{output_layer}}'
 target_layer = '{{target_layer}}'
-
 
 
 # ---- temporary
@@ -135,6 +134,16 @@ with strategy.scope():
         
         locals_ = model._locals.copy()
 
+        locals_[input_data_layer] = {'Y': x} # output/preview. hack hack hack
+        locals_[target_data_layer] = {'Y': y} # this layer is not run here.....:/
+
+        locals_[self_layer_name] = {'X': {
+            output_layer: {'Y': y_target}, # inputs to this layer...
+            target_layer: {'Y': y_pred}
+        }}
+
+        
+
         #for layer_id, layer_locals in locals_.items():
         #    for k, v in list(layer_locals.items()):
         #        if isinstance(v, tf.Tensor):
@@ -217,6 +226,18 @@ with strategy.scope():
 
     from boltons.iterutils import remap
     from collections.abc import Iterable
+
+    all_tensors = dist_locals_train
+    
+    # CONVERT PERREPLICAS TO FIRST TENSOR
+    def visit(p, k, v):
+        if isinstance(v, tf.python.distribute.values.PerReplica):
+            return (k, v.get(v.devices[0]))
+        else:
+            return (k, v)
+    all_tensors = remap(all_tensors, visit=visit)
+
+    # RETAIN TENSORS ONLY!
     def visit(p, k, v):
         if isinstance(v, list) or isinstance(v, dict):
             return len(v) > 0
@@ -224,9 +245,12 @@ with strategy.scope():
             print('aa', p, k, type(v), tf.is_tensor(v))        
             return tf.is_tensor(v)
         
-    
-    all_tensors = remap(dist_locals_train, visit=visit)
+    all_tensors = remap(all_tensors, visit=visit)
 
+
+
+
+    
     #import pdb; pdb.set_trace()
 
         
@@ -293,9 +317,15 @@ with strategy.scope():
         except tf.errors.OutOfRangeError:
             print("out of range...")
 
-        # TEMPORARY
-        continue
-        
+
+
+        # these two are temporary until validation is fixed.
+        api.data.store(epoch=epoch)
+        api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train_value, f1_training_epoch=f1_train, auc_training_epoch=auc_train)
+
+
+            
+        '''
         sess.run(validation_iterator_init)        
         val_iter=0
         try:
@@ -329,12 +359,12 @@ with strategy.scope():
 
 
         print("BLAAZ")
-        
+
         api.data.store(epoch=epoch)
         api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train_value, f1_training_epoch=f1_train, auc_training_epoch=auc_train,
                        acc_validation_epoch=acc_val, loss_validation_epoch=loss_validation_value, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)
 
-            
+        '''            
     #import pdb; pdb.set_trace()
     
     print("DONE")

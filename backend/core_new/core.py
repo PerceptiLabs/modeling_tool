@@ -42,7 +42,7 @@ class SessionProcessHandler:
         
         self._result_queue.put(results_dict)
         # self._data_container.reset()
-        #log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=2))
+        log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=4))
         
     def _handle_commands(self, session):
         while not self._command_queue.empty():
