@@ -61,6 +61,16 @@ class ScriptBuilder:
         new_layer_code = new_layer_code.replace('api.cache.put(', 'api.override_layer_id(layer_name, api.cache.put)(')                        
         new_layer_code = new_layer_code.replace('global state_tensor, env', 'global state_tensor, env, history_length')
 
+        import re                                                                                            
+        def repl_fn(match):                                                                                  
+            text  = 'with tf.variable_scope("", reuse=tf.AUTO_REUSE):\n'                                     
+            text += '            %s = tf.get_variable(initializer=%s)' % match.groups()                              
+            return text                                                                                      
+        
+        PATTERN = r'([a-zA-Z]*) = tf.Variable\((.*)\)'                                                       
+        new_layer_code = re.sub(PATTERN, repl_fn, new_layer_code)   
+        
+
         # Remove iterators
         if layer_type == 'DataData':        
             new_layer_code = new_layer_code.replace('train_iterator = iterator.make_initializer', '#train_iterator = iterator.make_initializer')

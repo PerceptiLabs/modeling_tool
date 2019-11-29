@@ -162,8 +162,6 @@ with strategy.scope():
             assert len(grads_) == 1
             grads_dict[name] = grads_[0]
 
-
-
         locals_ = model._locals.copy()
         locals_[input_data_layer] = {'Y': x} # output/preview. hack hack hack
         locals_[target_data_layer] = {'Y': y} # this layer is not run here.....:/
@@ -177,7 +175,7 @@ with strategy.scope():
         #import pdb; pdb.set_trace()
 
             
-        return (tf.identity(loss_value), grads_dict, model._locals)
+        return (tf.identity(loss_value), grads_dict, locals_)
 
 
 
@@ -194,7 +192,7 @@ with strategy.scope():
             tensors = [per_replica_obj.get(device) for device in per_replica_obj.devices \
                        if per_replica_obj.get(device) is not None]
 
-            assert len(tensors) == 1
+            #assert len(tensors) == 1 
             dist_grads_train[variable] = tensors[0]
 
 
@@ -214,7 +212,7 @@ with strategy.scope():
             tensors = [per_replica_obj.get(device) for device in per_replica_obj.devices \
                        if per_replica_obj.get(device) is not None]
 
-            assert len(tensors) == 1
+            #assert len(tensors) == 1
             dist_grads_val[variable] = tensors[0]
 
     else:
@@ -284,6 +282,7 @@ with strategy.scope():
     
         
         train_iter=0
+        W_test = None
         try:
             print("ENTER TRAIN LOOP!")
             
@@ -304,6 +303,11 @@ with strategy.scope():
                     api.data.stack(**new_gradient_vals)
 
 
+                if W_test is None: # JUST TO VERIFY THAT WEIGHTS _DO_ CHANGE DURING TRAINING
+                    W_test = all_evaled_tensors['1564399782856']['W']
+                else:
+                    assert np.any(W_test != all_evaled_tensors['1564399782856']['W'])
+                
                     
                     #pprint(all_evaled_tensors)
                     #print("ZAASA")
@@ -339,6 +343,9 @@ with strategy.scope():
         #import pdb; pdb.set_trace()
         
         val_iter=0
+
+        W_test = None
+        
         try:
             while True:
 
@@ -362,6 +369,13 @@ with strategy.scope():
                          new_gradient_vals[gradName+':Average'] = np.average(gradValue)
                     api.data.stack(**new_gradient_vals)
 
+
+                if W_test is None: # JUST TO VERIFY THAT WEIGHTS _DONT_ CHANGE DURING VALIDATION
+                    #print("LOSSES:", loss_train_value, loss_validation_value)                    
+                    W_test = all_evaled_tensors['1564399782856']['W']
+                else:
+                    assert np.all(W_test == all_evaled_tensors['1564399782856']['W'])
+                
                 api.data.stack(acc_val_iter=acc_val, loss_val_iter=loss_validation_value, f1_val_iter=f1_val, auc_val_iter=auc_val)
                 api.data.store(iter_validation=val_iter)
                 api.ui.render(dashboard='train_val')
@@ -377,6 +391,7 @@ with strategy.scope():
         api.data.store(epoch=epoch)
         api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train_value, f1_training_epoch=f1_train, auc_training_epoch=auc_train,
                        acc_validation_epoch=acc_val, loss_validation_epoch=loss_validation_value, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)
+
 
     #import pdb; pdb.set_trace()
     
