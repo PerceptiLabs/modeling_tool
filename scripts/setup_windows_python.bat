@@ -22,7 +22,7 @@ call python -m pip install --upgrade pip setuptools
 call pip install -r requirements.txt
 call pip install dask[array] --upgrade
 
-call git clone https://github.com/pyinstaller/pyinstaller.git   (I have it already in Documents/pyinstaller)
+call git clone https://github.com/pyinstaller/pyinstaller.git
 cd pyinstaller
 call git pull origin +refs/pull/3024/merge
 call pip install .
