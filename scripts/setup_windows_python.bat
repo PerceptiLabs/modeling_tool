@@ -15,13 +15,14 @@ REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\SDK\Sco
 REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\SDK\ScopeCppSDK\SDK\
 
 
-SET PATH=%PATH%;C:\tools\miniconda3\Scripts
+SET PATH=%PATH%;C:\hostedtoolcache\windows\Python\3.6.8\x64\Scripts
 
 call python -m pip install --upgrade pip setuptools
 call pip install -r requirements.txt
 call pip install dask[array] --upgrade
 
 call where python
+call find "pyinstaller"
 REM where pyinstaller
 dir C:\hostedtoolcache\windows\Python\3.6.8\x64
 dir C:\hostedtoolcache\windows\Python\3.6.8\x64\Scripts
