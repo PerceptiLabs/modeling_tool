@@ -25,7 +25,7 @@ call pip install dask[array] --upgrade
 call git config --global user.email "robert.l@perceptilabs.com"
 git config --global user.name "Robert Lundberg"
 call git clone https://github.com/Rolun/pyinstallerWindows.git
-cd pyinstaller
+cd pyinstallerWindows
 REM echo pulling correct pyinstaller
 REM call git pull origin +refs/pull/3024/merge
 call pip install .
