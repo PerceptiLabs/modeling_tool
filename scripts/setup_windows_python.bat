@@ -26,8 +26,12 @@ call git config --global user.email "robert.l@perceptilabs.com"
 git config --global user.name "Robert Lundberg"
 call git clone https://github.com/pyinstaller/pyinstaller.git
 cd pyinstaller
+call git reset --hard
 call git pull origin +refs/pull/3024/merge
 call pip install .
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 cd ..
 echo Pyinstaller Version:
 call pyinstaller --version
