@@ -54,10 +54,10 @@ REM del /S /Q *.py
 REM del /S /Q *.c
 
 move setup.py setup.pyx
-copy /Y setup.pyx /code_generator
-copy /Y setup.pyx /core_new
-copy /Y setup.pyx /core_new/data
-copy /Y setup.pyx /analytics
+copy /Y setup.pyx code_generator
+copy /Y setup.pyx core_new
+copy /Y setup.pyx core_new/data
+copy /Y setup.pyx analytics
 
 cd code_generator
 move __init__.py __init__.pyx
