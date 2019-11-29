@@ -21,8 +21,8 @@ call python -m pip install --upgrade pip setuptools
 call pip install -r requirements.txt
 call pip install dask[array] --upgrade
 
-call where pyinstaller
-where pyinstaller
+call where python
+REM where pyinstaller
 
 call node --version
 call npm --version
