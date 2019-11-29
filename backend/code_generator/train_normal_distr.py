@@ -86,6 +86,8 @@ def create_model():
 
                 if layer_id not in self._locals:
                     self._locals[layer_id] = wrapper._locals
+                else:
+                    self._locals[layer_id].update(wrapper._locals)
                     
             return layer_outputs[output_layer], layer_outputs[target_layer]        
     
@@ -130,6 +132,7 @@ with strategy.scope():
             grads_dict[name] = grads_[0]
 
 
+        
         locals_ = model._locals.copy()
 
         #for layer_id, layer_locals in locals_.items():
@@ -138,8 +141,10 @@ with strategy.scope():
         #            layer_locals[k] = tf.identity(v)
         #        x=12
 
-        print("train step")
-        import pdb; pdb.set_trace()
+
+
+        print("train step")        
+        #import pdb; pdb.set_trace()
 
         with tf.control_dependencies([update_vars]):
             return (tf.identity(loss_value), grads_dict, locals_)
@@ -195,8 +200,6 @@ with strategy.scope():
             assert len(tensors) == 1
             dist_grads_val[variable] = tensors[0]
 
-
-
     else:
         #dist_loss, dist_grads_train, dist_locals = strategy.experimental_run(train_step, train_iterator)
         #dist_test = strategy.experimental_run(test_step, test_iterator) # TODO: implement this.
@@ -224,7 +227,7 @@ with strategy.scope():
     
     all_tensors = remap(dist_locals_train, visit=visit)
 
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
 
         
     
@@ -261,10 +264,6 @@ with strategy.scope():
                     api.data.store(all_evaled_tensors=all_evaled_tensors)
 
 
-                    pprint(all_evaled_tensors)
-                    print("ZAASA")
-                    import pdb; pdb.set_trace()
-                    
                     
                     new_gradient_vals={}
                     for gradName, gradValue in gradient_vals.items():
@@ -272,7 +271,18 @@ with strategy.scope():
                          new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))
                          new_gradient_vals[gradName+':Average'] = np.average(gradValue)
                     api.data.stack(**new_gradient_vals)
-        
+
+
+                    
+                    #pprint(all_evaled_tensors)
+                    #print("ZAASA")
+                    #import pdb; pdb.set_trace()
+                    
+                    
+
+                #print("bisrsia")
+                #import pdb; pdb.set_trace()
+                    
                 api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train_value, f1_train_iter=f1_train, auc_train_iter=auc_train)
                 api.data.store(iter_training=train_iter)
                 
@@ -283,6 +293,9 @@ with strategy.scope():
         except tf.errors.OutOfRangeError:
             print("out of range...")
 
+        # TEMPORARY
+        continue
+        
         sess.run(validation_iterator_init)        
         val_iter=0
         try:
