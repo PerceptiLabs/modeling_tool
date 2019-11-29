@@ -33,43 +33,87 @@ del serverInterface.py
 
 REM for /f %i in (..\..\..excluded_files.txt) do del %i
 
+REM move setup.py setup.pyx
+REM move mainServer.py mainServer.pyx
+
+REM cd code_generator
+REM move __init__.py __init__.pyx
+
+REM cd ../core_new/data
+REM move __init__.py __init__.pyx
+
+REM cd ../../
+
+REM dir
+
+REM python setup.pyx develop --user
+REM IF %ERRORLEVEL% NEQ 0 (
+REM   exit 1
+REM )
+REM del /S /Q *.py
+REM del /S /Q *.c
+
 move setup.py setup.pyx
-move mainServer.py mainServer.pyx
+copy /Y setup.pyx /code_generator
+copy /Y setup.pyx /core_new
+copy /Y setup.pyx /core_new/data
+copy /Y setup.pyx /analytics
 
 cd code_generator
 move __init__.py __init__.pyx
+python setup.pyx develop
+del *.c
+del *.py
+Xcopy /E /I /Y build/lib.win-amd64-3.6/code_generator .
+rmdir /s /q build
+ren __init__.pyx __init__.py
+del setup.pyx
 
-cd ../core_new/data
+cd ../core_new
+python setup.pyx develop
+del *.c
+del *.py
+del setup.pyx
+
+cd data
 move __init__.py __init__.pyx
+python setup.pyx develop
+del *.c
+del *.py
+Xcopy /E /I /Y build/lib.win-amd64-3.6/data .
+rmdir /s /q build
+ren __init__.pyx __init__.py
+del setup.pyx
 
-cd ../../
+cd ../../analytics
+python setup.pyx develop
+del *.c
+del *.py
+del setup.pyx
 
-dir
-
-python setup.pyx develop --user
-IF %ERRORLEVEL% NEQ 0 (
-  exit 1
-)
-del /S /Q *.py
-del /S /Q *.c
-
+cd ..
+move mainServer.py mainServer.pyx
+python setup.pyx develop
+del *.c
+del *.py
+del setup.pyx
 move mainServer.pyx mainServer.py
 
-cd code_generator
-move __init__.pyx __init__.py
-Xcopy /E /I /Y build/lib.win-amd64-3.6/code_generator .
+REM cd code_generator
+REM move __init__.pyx __init__.py
+REM Xcopy /E /I /Y build/lib.win-amd64-3.6/code_generator .
 
-dir
+REM dir
 
-cd ../core_new/data
-move __init__.px __init__.py
-Xcopy /E /I /Y build/lib.win-amd64-3.6/data .
+REM cd ../core_new/data
+REM move __init__.px __init__.py
+REM Xcopy /E /I /Y build/lib.win-amd64-3.6/data .
 
-dir
+REM dir
 
-cd ../../
+REM cd ../../
 
-dir
+REM dir
 
 copy ..\..\backend\windows.spec .
 pyinstaller --clean -y windows.spec
