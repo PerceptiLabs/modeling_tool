@@ -23,6 +23,9 @@ call pip install dask[array] --upgrade
 
 call where python
 REM where pyinstaller
+dir C:\hostedtoolcache\windows\Python\3.6.8\x64
+dir C:\hostedtoolcache\windows\Python\3.6.8\x64\Scripts
+dir C:\hostedtoolcache\windows\Python\3.6.8\x64\Scripts\pyinstaller.exe
 
 call node --version
 call npm --version

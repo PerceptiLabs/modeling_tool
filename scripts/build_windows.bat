@@ -60,8 +60,11 @@ copy /Y setup.pyx core_new/data
 copy /Y setup.pyx analytics
 
 cd code_generator
+mkdir code_generator
 REM move __init__.py __init__.pyx
 python setup.pyx develop
+mv code_generator/* .
+rm -rf code_generator
 del *.c
 del *.py
 REM Xcopy /E /I /Y build/lib.win-amd64-3.6/code_generator .
