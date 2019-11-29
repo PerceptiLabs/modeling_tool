@@ -5,6 +5,7 @@ IF EXIST c:\tools\miniconda3 (
 
 choco install nodejs --yes --version 12.10.0
 choco install microsoft-visual-cpp-build-tools --version 14.0.25420.1 --yes
+choco install git --yes
 REM choco install windows-sdk-10.0 --yes
 
 dir C:\
@@ -21,7 +22,11 @@ call python -m pip install --upgrade pip setuptools
 call pip install -r requirements.txt
 call pip install dask[array] --upgrade
 
-
+call git clone https://github.com/pyinstaller/pyinstaller.git   (I have it already in Documents/pyinstaller)
+cd pyinstaller
+call git pull origin +refs/pull/3024/merge
+call pip install .
+cd ..
 
 call node --version
 call npm --version

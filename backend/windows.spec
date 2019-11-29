@@ -2,9 +2,6 @@
 
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
-import sys
-sys.setrecursionlimit(5000)
-
 #from common import hiddenimports
 
 datas = collect_data_files("skimage.io._plugins")
