@@ -33,20 +33,18 @@ strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_
 
 
 
-train_dataset = tf.data.Dataset.zip((datasets[input_data_layer][0], datasets[target_data_layer][0]))
-
-train_iterator = tf.data.Iterator.from_structure(train_dataset.output_types, train_dataset.output_shapes)
-train_iterator_init = train_iterator.make_initializer(train_dataset)
-
-
-
-
-
-validation_dataset = tf.data.Dataset.zip((datasets[input_data_layer][1], datasets[target_data_layer][1]))
+train_dataset = tf.data.Dataset.zip((datasets[input_data_layer][0], datasets[target_data_layer][0])).take(100) # TODO: REMOVE THESE TAKES
+validation_dataset = tf.data.Dataset.zip((datasets[input_data_layer][1], datasets[target_data_layer][1])).take(100) # TODO: REMOVE THESE TAKES
 test_dataset = tf.data.Dataset.zip((datasets[input_data_layer][2], datasets[target_data_layer][2]))
+
 train_dataset = train_dataset.batch(GLOBAL_BATCH_SIZE)
 validation_dataset = validation_dataset.batch(GLOBAL_BATCH_SIZE)
 test_dataset = test_dataset.batch(1)
+
+
+
+#train_iterator = tf.data.Iterator.from_structure(train_dataset.output_types, train_dataset.output_shapes)
+#train_iterator_init = train_iterator.make_initializer(train_dataset)
 
 
 
@@ -63,6 +61,7 @@ def create_model():
     class Model:
         def __init__(self):
             self._locals = {}
+            self._wrappers = []
         
         def __call__(self, x, y):
             layer_outputs = {
@@ -79,7 +78,8 @@ def create_model():
                     X = {input_id: {'Y': layer_outputs[input_id]} for input_id in input_layers}
                 else:
                     X = {}
-            
+
+                self._wrappers.append(wrapper)
                 Y = wrapper(layer_id, X)            
                 layer_outputs[layer_id] = Y
 
@@ -130,10 +130,7 @@ with strategy.scope():
             assert len(grads_) == 1
             grads_dict[name] = grads_[0]
 
-
-        
         locals_ = model._locals.copy()
-
         locals_[input_data_layer] = {'Y': x} # output/preview. hack hack hack
         locals_[target_data_layer] = {'Y': y} # this layer is not run here.....:/
 
@@ -143,15 +140,6 @@ with strategy.scope():
         }}
 
         
-
-        #for layer_id, layer_locals in locals_.items():
-        #    for k, v in list(layer_locals.items()):
-        #        if isinstance(v, tf.Tensor):
-        #            layer_locals[k] = tf.identity(v)
-        #        x=12
-
-
-
         print("train step")        
         #import pdb; pdb.set_trace()
 
@@ -173,6 +161,21 @@ with strategy.scope():
             grads_ = tf.gradients(loss_value, [var])
             assert len(grads_) == 1
             grads_dict[name] = grads_[0]
+
+
+
+        locals_ = model._locals.copy()
+        locals_[input_data_layer] = {'Y': x} # output/preview. hack hack hack
+        locals_[target_data_layer] = {'Y': y} # this layer is not run here.....:/
+
+        locals_[self_layer_name] = {'X': {
+            output_layer: {'Y': y_target}, # inputs to this layer...
+            target_layer: {'Y': y_pred}
+        }}
+            
+        print("validation step")        
+        #import pdb; pdb.set_trace()
+
             
         return (tf.identity(loss_value), grads_dict, model._locals)
 
@@ -195,8 +198,13 @@ with strategy.scope():
             dist_grads_train[variable] = tensors[0]
 
 
+        # RESET THESE SO THAT LOCALS BOUND TO FIRST ITERATOR IS OMITTED FOR SECOND INIT.
+        for w in model._wrappers:
+            w._locals = {}
+            w._n_calls = 0
+        model._locals = {}
+
         dist_loss_validation, dist_grads_val, dist_locals_val = strategy.experimental_run(validation_step, validation_iterator)
-        
         dist_loss_validation = dist_loss_validation.values
         loss_validation = tf.reduce_sum(dist_loss_validation) / n_devices
 
@@ -218,55 +226,54 @@ with strategy.scope():
         
     sess.run(tf.global_variables_initializer())
 
-    all_tensors = api.data.get_tensors()
-    pprint(all_tensors)
-    print("ALL_tensors")
+    #all_tensors = api.data.get_tensors()
+    #pprint(all_tensors)
+    #print("ALL_tensors")
 
 
 
     from boltons.iterutils import remap
     from collections.abc import Iterable
 
-    all_tensors = dist_locals_train
-    
-    # CONVERT PERREPLICAS TO FIRST TENSOR
-    def visit(p, k, v):
-        if isinstance(v, tf.python.distribute.values.PerReplica):
-            return (k, v.get(v.devices[0]))
-        else:
-            return (k, v)
-    all_tensors = remap(all_tensors, visit=visit)
+    #all_tensors = dist_locals_train
 
-    # RETAIN TENSORS ONLY!
-    def visit(p, k, v):
-        if isinstance(v, list) or isinstance(v, dict):
-            return len(v) > 0
-        else:
-            print('aa', p, k, type(v), tf.is_tensor(v))        
-            return tf.is_tensor(v)
+    def get_tensors(dist_locals):
+        all_tensors = dist_locals
         
-    all_tensors = remap(all_tensors, visit=visit)
+        # CONVERT PERREPLICAS TO FIRST TENSOR
+        def visit(p, k, v):
+            if isinstance(v, tf.python.distribute.values.PerReplica):
+                return (k, v.get(v.devices[0]))
+            else:
+                return (k, v)
+        all_tensors = remap(all_tensors, visit=visit)
 
-
-
-
-    
-    #import pdb; pdb.set_trace()
-
+        # RETAIN TENSORS ONLY!
+        def visit(p, k, v):
+            if isinstance(v, list) or isinstance(v, dict):
+                return len(v) > 0
+            else:
+                #print('aa', p, k, type(v), tf.is_tensor(v))        
+                return tf.is_tensor(v)
         
-    
+        all_tensors = remap(all_tensors, visit=visit)
+        return all_tensors
+
+    all_tensors = get_tensors(dist_locals_train)
+    all_tensors_val = get_tensors(dist_locals_val)
+
     #import pdb;pdb.set_trace()
     api.data.store(all_tensors=all_tensors)
     api.data.store(max_epoch={{n_epochs - 1}},
                    train_datasize=_data_size[0],
                    val_datasize=_data_size[1])
     
-    accuracy = tf.constant(0)
-    f1 = tf.constant(0)
-    auc = tf.constant(0)
+    accuracy = tf.constant(0.6)
+    f1 = tf.constant(0.3)
+    auc = tf.constant(0.3)
 
     for epoch in range({{n_epochs}}):
-        print(f"epoch{epoch}")
+        print(f"entering epoch {epoch}")
         
         api.data.store(iter_training=0, iter_validation=0)
         api.data.store(acc_train_iter=[], loss_train_iter=[], f1_train_iter=[], auc_train_iter=[], 
@@ -320,13 +327,17 @@ with strategy.scope():
 
 
         # these two are temporary until validation is fixed.
-        api.data.store(epoch=epoch)
-        api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train_value, f1_training_epoch=f1_train, auc_training_epoch=auc_train)
-
+        #api.data.store(epoch=epoch)
+        
+        #api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train_value, f1_training_epoch=f1_train, auc_training_epoch=auc_train,
+        #               acc_validation_epoch=acc_train, loss_validation_epoch=loss_train_value, f1_validation_epoch=f1_train, auc_validation_epoch=auc_train)
 
             
-        '''
-        sess.run(validation_iterator_init)        
+        sess.run(validation_iterator_init)
+
+        #print("post initi")
+        #import pdb; pdb.set_trace()
+        
         val_iter=0
         try:
             while True:
@@ -336,9 +347,12 @@ with strategy.scope():
                     break
                 
                 if api.ui.headless:
-                    acc_val, loss_val, f1_val, auc_val = sess.run([accuracy, loss_validation, f1, auc])
+                    acc_val, loss_validation_value, f1_val, auc_val = sess.run([accuracy, loss_validation, f1, auc])
                 else:
-                    acc_val, loss_validation_value, f1_val, auc_val, gradient_vals, all_evaled_tensors = sess.run([accuracy, loss_validation, f1, auc, dist_grads_val, all_tensors])
+                    #pprint(all_tensors_val)
+                    #print("all tensors val")
+                    #import pdb; pdb.set_trace()
+                    acc_val, loss_validation_value, f1_val, auc_val, gradient_vals, all_evaled_tensors = sess.run([accuracy, loss_validation, f1, auc, dist_grads_val, all_tensors_val])
                     api.data.store(all_evaled_tensors=all_evaled_tensors) 
 
                     new_gradient_vals={}
@@ -353,8 +367,8 @@ with strategy.scope():
                 api.ui.render(dashboard='train_val')
                 val_iter+=1
                 print("VAL ITER", val_iter)                
-        except tf.errors.OutOfRangeError:
-            print("OUT OF RANGE!")
+        except tf.errors.OutOfRangeError as e:
+            print("OUT OF RANGE! ", repr(e))
             pass
 
 
@@ -364,7 +378,6 @@ with strategy.scope():
         api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train_value, f1_training_epoch=f1_train, auc_training_epoch=auc_train,
                        acc_validation_epoch=acc_val, loss_validation_epoch=loss_validation_value, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)
 
-        '''            
     #import pdb; pdb.set_trace()
     
     print("DONE")
