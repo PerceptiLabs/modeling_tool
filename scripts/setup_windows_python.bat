@@ -22,11 +22,15 @@ call python -m pip install --upgrade pip setuptools
 call pip install -r requirements.txt
 call pip install dask[array] --upgrade
 
+call git config --global user.email "robert.l@perceptilabs.com"
+git config --global user.name "Robert Lundberg"
 call git clone https://github.com/pyinstaller/pyinstaller.git
 cd pyinstaller
 call git pull origin +refs/pull/3024/merge
 call pip install .
 cd ..
+echo Pyinstaller Version:
+call pyinstaller --version
 
 call node --version
 call npm --version
