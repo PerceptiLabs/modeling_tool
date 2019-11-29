@@ -23,6 +23,7 @@ call pip install dask[array] --upgrade
 
 call where python
 call find "pyinstaller"
+call pip show pyinstaller
 REM where pyinstaller
 dir C:\hostedtoolcache\windows\Python\3.6.8\x64
 dir C:\hostedtoolcache\windows\Python\3.6.8\x64\Scripts
