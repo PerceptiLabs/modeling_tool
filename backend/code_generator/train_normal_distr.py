@@ -33,8 +33,8 @@ strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_
 
 
 
-train_dataset = tf.data.Dataset.zip((datasets[input_data_layer][0], datasets[target_data_layer][0])).take(100) # TODO: REMOVE THESE TAKES
-validation_dataset = tf.data.Dataset.zip((datasets[input_data_layer][1], datasets[target_data_layer][1])).take(100) # TODO: REMOVE THESE TAKES
+train_dataset = tf.data.Dataset.zip((datasets[input_data_layer][0], datasets[target_data_layer][0]))#.take(100) # TODO: REMOVE THESE TAKES
+validation_dataset = tf.data.Dataset.zip((datasets[input_data_layer][1], datasets[target_data_layer][1]))#.take(100) # TODO: REMOVE THESE TAKES
 test_dataset = tf.data.Dataset.zip((datasets[input_data_layer][2], datasets[target_data_layer][2]))
 
 train_dataset = train_dataset.batch(GLOBAL_BATCH_SIZE)
@@ -119,6 +119,7 @@ with strategy.scope():
         loss_value = tf.reduce_sum(tf.square(y_pred - y_target)) / GLOBAL_BATCH_SIZE
         #loss_value = tf.nn.compute_average_loss(loss_value, global_batch_size=GLOBAL_BATCH_SIZE)
 
+
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_value, trainable_vars)        
         update_vars = optimizer.apply_gradients(zip(grads, trainable_vars))
@@ -139,12 +140,22 @@ with strategy.scope():
             target_layer: {'Y': y_pred}
         }}
 
+
+        # TODO: aggregate tp/fp/tn/fn over all replicas and then derive these values for the total? for now, take average.
+        #accuracy, acc_op = tf.metrics.accuracy(y_target, y_pred)
+
+        correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_target,-1))
+        accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
+
+        #f1, f1_ops = tf.contrib.metrics.f1_score(y_target, y_pred)
+        f1 = tf.constant(0.123)
+        #auc, auc_op = tf.metrics.auc(labels=y_target, predictions=y_pred, curve='ROC')
         
         print("train step")        
         #import pdb; pdb.set_trace()
 
         with tf.control_dependencies([update_vars]):
-            return (tf.identity(loss_value), grads_dict, locals_)
+            return (tf.identity(loss_value), accuracy, grads_dict, locals_)
 
     def validation_step(inputs):
         x, y = inputs
@@ -152,6 +163,10 @@ with strategy.scope():
 
         loss_value = tf.reduce_sum(tf.square(y_pred - y_target)) / GLOBAL_BATCH_SIZE
 
+        # TODO: aggregate tp/fp/tn/fn over all replicas and then derive these values for the total? for now, take average.
+        correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_target,-1))
+        accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
+        
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_value, trainable_vars)        
 
@@ -175,18 +190,25 @@ with strategy.scope():
         #import pdb; pdb.set_trace()
 
             
-        return (tf.identity(loss_value), grads_dict, locals_)
+        return (tf.identity(loss_value), accuracy, grads_dict, locals_)
 
 
 
     if n_devices > 1:
-        dist_loss, dist_grads_train, dist_locals_train = strategy.experimental_run(train_step, train_iterator)
+        dist_loss, acc_train_, dist_grads_train, dist_locals_train = strategy.experimental_run(train_step, train_iterator)
 
 
-        #import pdb;pdb.set_trace()
         
         dist_loss = [dist_loss.get(device) for device in dist_loss.devices]
-        loss_train = tf.reduce_sum(dist_loss) / n_devices
+        loss_train = tf.reduce_sum(dist_loss)
+
+        acc_train_ = tf.reduce_mean(acc_train_.values*n_devices)
+        #f1_train_ = tf.reduce_mean(f1_train_.values)
+        #auc_train_ = tf.reduce_mean(auc_train_.values)                        
+
+
+        print("jjjjj")
+        import pdb;pdb.set_trace()
 
         for variable, per_replica_obj in dist_grads_train.items():
             tensors = [per_replica_obj.get(device) for device in per_replica_obj.devices \
@@ -202,9 +224,13 @@ with strategy.scope():
             w._n_calls = 0
         model._locals = {}
 
-        dist_loss_validation, dist_grads_val, dist_locals_val = strategy.experimental_run(validation_step, validation_iterator)
+        dist_loss_validation, acc_val_, dist_grads_val, dist_locals_val = strategy.experimental_run(validation_step, validation_iterator)
         dist_loss_validation = dist_loss_validation.values
-        loss_validation = tf.reduce_sum(dist_loss_validation) / n_devices
+        loss_validation = tf.reduce_sum(dist_loss_validation)
+
+        #acc_val_ = tf.reduce_mean(acc_val_.values)
+        #f1_val_ = tf.reduce_mean(f1_val_.values)
+        #auc_val_ = tf.reduce_mean(auc_val_.values)                        
 
         dist_grads_val = {k: v for k, v in dist_grads_val.items() if v is not None}
 
@@ -266,9 +292,9 @@ with strategy.scope():
                    train_datasize=_data_size[0],
                    val_datasize=_data_size[1])
     
-    accuracy = tf.constant(0.6)
-    f1 = tf.constant(0.3)
-    auc = tf.constant(0.3)
+    #acc_train_= tf.constant(0.6)
+    f1_train_ = tf.constant(0.3)
+    auc_train_ = tf.constant(0.3)
 
     for epoch in range({{n_epochs}}):
         print(f"entering epoch {epoch}")
@@ -288,9 +314,12 @@ with strategy.scope():
             
             while True:
                 if api.ui.headless:
-                    acc_train, loss_train_value, f1_train, auc_train = sess.run([accuracy, loss_train, f1, auc])
+                    acc_train, loss_train_value, f1_train, auc_train = sess.run([acc_train_, loss_train, f1_train_, auc_train_])
                 else:
-                    acc_train, loss_train_value, f1_train, auc_train, gradient_vals, all_evaled_tensors = sess.run([accuracy, loss_train, f1, auc, dist_grads_train, all_tensors])
+                    print("loop")
+                    import pdb; pdb.set_trace()
+                    
+                    acc_train, loss_train_value, f1_train, auc_train, gradient_vals, all_evaled_tensors = sess.run([acc_train_, loss_train, f1_train_, auc_train_, dist_grads_train, all_tensors])
                     api.data.store(all_evaled_tensors=all_evaled_tensors)
 
 
@@ -302,6 +331,7 @@ with strategy.scope():
                          new_gradient_vals[gradName+':Average'] = np.average(gradValue)
                     api.data.stack(**new_gradient_vals)
 
+                print("ACC TRAIN", acc_train)
 
                 if W_test is None: # JUST TO VERIFY THAT WEIGHTS _DO_ CHANGE DURING TRAINING
                     W_test = all_evaled_tensors['1564399782856']['W']
@@ -329,7 +359,6 @@ with strategy.scope():
             print("out of range...")
 
 
-
         # these two are temporary until validation is fixed.
         #api.data.store(epoch=epoch)
         
@@ -354,12 +383,12 @@ with strategy.scope():
                     break
                 
                 if api.ui.headless:
-                    acc_val, loss_validation_value, f1_val, auc_val = sess.run([accuracy, loss_validation, f1, auc])
+                    acc_val, loss_validation_value, f1_val, auc_val = sess.run([acc_val_, loss_validation, f1_val_, auc_val_])
                 else:
                     #pprint(all_tensors_val)
                     #print("all tensors val")
                     #import pdb; pdb.set_trace()
-                    acc_val, loss_validation_value, f1_val, auc_val, gradient_vals, all_evaled_tensors = sess.run([accuracy, loss_validation, f1, auc, dist_grads_val, all_tensors_val])
+                    acc_val, loss_validation_value, f1_val, auc_val, gradient_vals, all_evaled_tensors = sess.run([acc_val_, loss_validation, f1_val_, auc_val_, dist_grads_val, all_tensors_val])
                     api.data.store(all_evaled_tensors=all_evaled_tensors) 
 
                     new_gradient_vals={}
