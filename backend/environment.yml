@@ -1,7 +1,7 @@
 name: py362_
 dependencies:
   - python=3.6.2
-  # - nomkl=3.0  
+  - nomkl=3.0  
   - pip=19.0.3
   - pip:
     - tensorflow==1.13.1
