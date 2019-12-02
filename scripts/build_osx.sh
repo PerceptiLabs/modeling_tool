@@ -129,11 +129,6 @@ mv mainServer.pyx mainServer.py
 rm *.pyx
 ls -l
 
-
-echo "Listing contents of 'backend_tmp/'"
-ls -l
-
-
 echo "Running pyinstaller..."
 cp ../../backend/osx.spec .
 
@@ -175,11 +170,17 @@ mkdir build
 echo "copying contents of '../build/backend_out/dist/appServer/' to 'core/'"
 cp -r ../build/backend_out/dist/appServer/* core/ # DISABLE DURING QUICKER TESTING OF PIPELINE
 
+echo "content of 'frontend'"
+ls -l .
+
 echo "Contents of 'core/'"
 ls -l core/
 
 echo "Building.."
 npm run build
+
+echo "Notarizing.."
+sudo node notarize.js
 
 echo "ls of 'frontend/build/'"
 ls build/
@@ -188,6 +189,6 @@ echo "copying images to 'frontend_out/'"
 cp build/*.dmg ../build/frontend_out/
 
    
-	    
+    
 
 

@@ -61,7 +61,7 @@ copy /Y setup.pyx analytics
 
 cd code_generator
 mkdir code_generator
-REM move __init__.py __init__.pyx
+move __init__.py __init__.pyx
 python setup.pyx develop
 mv code_generator/* .
 rm -rf code_generator
@@ -69,7 +69,7 @@ del *.c
 del *.py
 REM Xcopy /E /I /Y build/lib.win-amd64-3.6/code_generator .
 REM rmdir /s /q build
-REM ren __init__.pyx __init__.py
+ren __init__.pyx __init__.py
 del setup.pyx
 dir
 
@@ -84,7 +84,7 @@ cd data
 cp ../../setup.pyx .
 dir
 mkdir data
-REM move __init__.py __init__.pyx
+move __init__.py __init__.pyx
 python setup.pyx develop
 mv data/* .
 rm -rf data
@@ -92,7 +92,7 @@ del *.c
 del *.py
 REM Xcopy /E /I /Y build/lib.win-amd64-3.6/data .
 REM rmdir /s /q build
-REM ren __init__.pyx __init__.py
+ren __init__.pyx __init__.py
 del setup.pyx
 dir
 
