@@ -139,18 +139,14 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
-exit /b
-
 cd ..\backend_out
 mkdir dist
 xcopy ..\backend_tmp\dist dist\ /sy 
 
 cd ..\..\frontend\
 
-rmdir /s /q build
 rmdir /s /q core
 mkdir core
-mkdir build
 
 xcopy ..\build\backend_out\dist\appServer core\ /sy 
 dir core
