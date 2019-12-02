@@ -72,12 +72,11 @@ rm lwInterface.py
 
 mv setup.py setup.pyx
 
-mv analytics/setup.py analytics/setup.pyx
-mv code_generator/setup.py code_generator/setup.pyx
-mv core_new/setup.py core_new/setup.pyx
-mv core_new/data/setup.py core_new/data/setup.pyx
+mv analytics/setup.pyx analytics/setup.pyx
+mv code_generator/setup.pyx code_generator/setup.pyx
+mv core_new/setup.pyx core_new/setup.pyx
+mv core_new/data/setup.pyx core_new/data/setup.pyx
 
-echo "Listing files to be included in build (contents of 'backend_tmp/')"
 ls -l
 
 # analytics
@@ -85,6 +84,7 @@ cd analytics
 python setup.pyx  build_ext --inplace
 if [ $? -ne 0 ]; then exit 1; fi
 rm *.py *.c *.pyx
+ls -l
 
 # code_generator
 cd ../code_generator
@@ -97,12 +97,14 @@ rm -rf code_generator
 rm *.py *.c
 mv __init__.pyx __init__.py
 rm *.pyx
+ls -l
 
 # core_new
 cd ../core_new/
 python setup.pyx  build_ext --inplace
 if [ $? -ne 0 ]; then exit 1; fi
 rm *.py *.c *.pyx
+ls -l
 
 # core_new.data
 cd data/
@@ -115,6 +117,7 @@ rm -rf data/
 rm *.py *.c
 mv __init__.pyx __init__.py
 rm *.pyx
+ls -l
 
 # root
 cd ../../
@@ -124,6 +127,7 @@ if [ $? -ne 0 ]; then exit 1; fi
 rm *.py *.c
 mv mainServer.pyx mainServer.py
 rm *.pyx
+ls -l
 
 
 echo "Listing contents of 'backend_tmp/'"
