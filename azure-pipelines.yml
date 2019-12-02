@@ -62,63 +62,63 @@ jobs:
 
 ### BUILD WINDOWS ###
 
-  - job: build_windows
-  #  dependsOn:
-  #      ["test_ubuntu", "test_windows", "test_osx"]
-    pool:
-        #win-pool
-        vmImage: "vs2017-win2016"
-    steps:
-    - task: UsePythonVersion@0
-      inputs: 
-        versionSpec: '3.6'
-        architecture: 'x64'
-        addToPath: true
-    - script: |
-        cd scripts/
-        ./setup_windows_python.bat
-      displayName: 'Environment setup'
+  # - job: build_windows
+  # #  dependsOn:
+  # #      ["test_ubuntu", "test_windows", "test_osx"]
+  #   pool:
+  #       #win-pool
+  #       vmImage: "vs2017-win2016"
+  #   steps:
+  #   - task: UsePythonVersion@0
+  #     inputs: 
+  #       versionSpec: '3.6'
+  #       architecture: 'x64'
+  #       addToPath: true
+  #   - script: |
+  #       cd scripts/
+  #       ./setup_windows_python.bat
+  #     displayName: 'Environment setup'
 
-    - script: |
-        cd scripts/
-        ./build_windows.bat
-      displayName: 'Build'
+  #   - script: |
+  #       cd scripts/
+  #       ./build_windows.bat
+  #     displayName: 'Build'
     
-    # Download secure file
-    # Download a secure file to the agent machine
-    - task: DownloadSecureFile@1
-      name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
-      inputs:
-        secureFile: WindowsCodeSign.pfx # The file name or GUID of the secure file
+  #   # Download secure file
+  #   # Download a secure file to the agent machine
+  #   - task: DownloadSecureFile@1
+  #     name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
+  #     inputs:
+  #       secureFile: WindowsCodeSign.pfx # The file name or GUID of the secure file
     
-    - script: |
-        "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "PerceptiLabs Setup 0.0.15.exe"
+  #   - script: |
+  #       "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "PerceptiLabs Setup 0.0.15.exe"
     
-    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-      artifact: images_windows
+  #   - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+  #     artifact: images_windows
     
 
 
 ### BUILD OSX ###
 
-#   - job: build_osx
-# #    dependsOn:
-# #        ["test_ubuntu", "test_windows", "test_osx"]
-#     pool:
-#         vmImage: "macOS-10.14"
-#     steps:
-#     - bash: |
-#         cd scripts/
-#         ./setup_osx.sh
-#       displayName: 'Environment setup'
+  - job: build_osx
+#    dependsOn:
+#        ["test_ubuntu", "test_windows", "test_osx"]
+    pool:
+        vmImage: "macOS-10.14"
+    steps:
+    - bash: |
+        cd scripts/
+        ./setup_osx.sh
+      displayName: 'Environment setup'
 
-#     - bash: |
-#         cd scripts/
-#         bash -i build_osx.sh
-#       displayName: 'Build'
+    - bash: |
+        cd scripts/
+        bash -i build_osx.sh
+      displayName: 'Build'
     
-#     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-#       artifact: images_osx
+    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+      artifact: images_osx
 
 
 ### PUBLISH SCRIPTS (for deployment purposes)
