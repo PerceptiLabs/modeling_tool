@@ -72,10 +72,10 @@ rm lwInterface.py
 
 mv setup.py setup.pyx
 
-mv analytics/setup.pyx analytics/setup.pyx
-mv code_generator/setup.pyx code_generator/setup.pyx
-mv core_new/setup.pyx core_new/setup.pyx
-mv core_new/data/setup.pyx core_new/data/setup.pyx
+cp setup.pyx analytics/
+cp setup.pyx code_generator/
+cp setup.pyx core_new/
+cp setup.pyx core_new/data/
 
 ls -l
 
