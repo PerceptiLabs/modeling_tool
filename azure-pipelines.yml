@@ -74,7 +74,7 @@ jobs:
   #   - task: DownloadSecureFile@1
   #     name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
   #     inputs:
-  #       secureFile: WindowsCodeSign.pfx # The file name or GUID of the secure file
+  #       secureFile: '$(signingCert.secureFilePath)'
 
   #   - task: PowerShell@2
   #     inputs:
@@ -134,7 +134,7 @@ jobs:
     steps:
     - task: InstallAppleCertificate@2
       inputs:
-        certSecureFile: '$(devAppCert.secureFilePath)'
+        certSecureFile: 'devIDapp.p12'
         certPwd: $(devAppCert.password)
     - bash: |
         cd scripts/
