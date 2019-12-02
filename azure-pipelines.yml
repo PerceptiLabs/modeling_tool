@@ -74,7 +74,7 @@ jobs:
     - task: DownloadSecureFile@1
       name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
       inputs:
-        secureFile: 'WindowsCodeSign.pfx'
+        secureFile: 'WindowsCodeSign.pfx' # Not able to reach $(signingCert.secureFilePath) here for some reason
 
     - task: PowerShell@2
       inputs:
@@ -108,12 +108,6 @@ jobs:
         cd scripts/
         ./build_windows.bat
       displayName: 'Build'
-    
-    # Download secure file
-    # Download a secure file to the agent machine
-    
-    # - script: |
-    #     "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "PerceptiLabs Setup 0.0.15.exe"
     
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
       artifact: images_windows

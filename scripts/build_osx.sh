@@ -162,10 +162,10 @@ echo "----- Building frontend -----"
 
 cd ../../frontend/
 rm -rf core
-rm -rf build
+# rm -rf build
 
 mkdir core
-mkdir build
+# mkdir build
 
 echo "copying contents of '../build/backend_out/dist/appServer/' to 'core/'"
 cp -r ../build/backend_out/dist/appServer/* core/ # DISABLE DURING QUICKER TESTING OF PIPELINE
@@ -175,6 +175,10 @@ ls -l .
 
 echo "Contents of 'core/'"
 ls -l core/
+
+echo "Pre building setup"
+sudo chmod -R 777 core
+xattr -cr .
 
 echo "Building.."
 npm run build
