@@ -108,12 +108,13 @@ class BaseCore:
                 continue
 
             if self._network_cache is not None:
-                if layer_id in self._network_cache and not self._network_cache.needs_update(layer_id, self._graph):
+                # if layer_id in self._network_cache and not self._network_cache.needs_update(layer_id, self._graph):
+                if layer_id in self._network_cache and not self._network_cache.needs_update(layer_id, content):
                     log.info("Using cached layer")
-                    print("Using cached layer")
+                    print("Using cached layer for layer " + layer_type)
                     self._use_cached_layer(layer_id, self._network_cache[layer_id])
                     continue
-            print("Calculating new layer")
+            print("Calculating new layer for layer " + layer_type)
             log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
             try:
                 self._run_layer(layer_id, content)
@@ -170,7 +171,7 @@ class BaseCore:
             self._layer_extras_reader.read(session, self._data_container)
 
         if self._network_cache is not None:
-            self._network_cache.update(id_, self._graph, session, self._error_handler[id_] if id_ in self._error_handler.to_dict() else None)
+            self._network_cache.update(id_, content, session, self._error_handler[id_] if id_ in self._error_handler.to_dict() else None)
             
         log.debug("Done running layer {}".format(id_))#. Locals:  {}".format(id_, session.outputs.locals))
 
