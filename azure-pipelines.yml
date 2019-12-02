@@ -74,7 +74,7 @@ jobs:
     - task: DownloadSecureFile@1
       name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
       inputs:
-        secureFile: '$(signingCert.secureFilePath)'
+        secureFile: 'WindowsCodeSign.pfx'
 
     - task: PowerShell@2
       inputs:
