@@ -133,8 +133,11 @@ IF %ERRORLEVEL% NEQ 0 (
   dir
   exit 1
 )
-
-call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "*.exe"
+echo Cert:
+call c:\cert\signtool.exe
+echo Windows kits
+call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe"
+call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "dist/appServer/*.exe"
 IF %ERRORLEVEL% NEQ 0 (
   dir
   exit 1
