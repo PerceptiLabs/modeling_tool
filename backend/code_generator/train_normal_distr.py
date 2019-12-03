@@ -18,6 +18,7 @@ config = tf.ConfigProto(device_count={"CPU": n_devices},
                         log_device_placement=True)
 
 sess = tf.Session(config=config)
+tf.keras.backend.set_session(sess) # since we use keras metrics
 # ----
 
 BATCH_SIZE_PER_REPLICA = 10
@@ -99,6 +100,9 @@ with strategy.scope():
     train_iterator = strategy.make_dataset_iterator(train_dataset)
     validation_iterator = strategy.make_dataset_iterator(validation_dataset)
     #test_iterator = strategy.make_dataset_iterator(test_dataset) # this can probably be ran on single g
+
+    auc_train = tf.keras.metrics.AUC(curve='ROC')
+
     
     model = create_model()
 
@@ -106,6 +110,8 @@ with strategy.scope():
     validation_iterator_init = validation_iterator.initialize()    
     
 
+
+    
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01*n_devices) # lr proportional to batch size per linear scaling rule
 
 
@@ -123,7 +129,8 @@ with strategy.scope():
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_value, trainable_vars)        
         update_vars = optimizer.apply_gradients(zip(grads, trainable_vars))
-
+        update_auc = auc_train.update_state(y_target, y_pred)
+        
         grads_dict = {}
         for var in tf.trainable_variables():
             name = 'grad-' + var.name
@@ -151,10 +158,11 @@ with strategy.scope():
         f1 = tf.constant(0.123)
         #auc, auc_op = tf.metrics.auc(labels=y_target, predictions=y_pred, curve='ROC')
         
+        
         print("train step")        
         #import pdb; pdb.set_trace()
 
-        with tf.control_dependencies([update_vars]):
+        with tf.control_dependencies([update_vars, update_auc]):
             return (tf.identity(loss_value), accuracy, grads_dict, locals_)
 
     def validation_step(inputs):
@@ -249,6 +257,7 @@ with strategy.scope():
 
         
     sess.run(tf.global_variables_initializer())
+    sess.run([v.initializer for v in auc_train.variables])    
 
     #all_tensors = api.data.get_tensors()
     #pprint(all_tensors)
@@ -294,7 +303,7 @@ with strategy.scope():
     
     #acc_train_= tf.constant(0.6)
     f1_train_ = tf.constant(0.3)
-    auc_train_ = tf.constant(0.3)
+    #auc_train_ = tf.constant(0.3)
 
     for epoch in range({{n_epochs}}):
         print(f"entering epoch {epoch}")
@@ -314,12 +323,12 @@ with strategy.scope():
             
             while True:
                 if api.ui.headless:
-                    acc_train, loss_train_value, f1_train, auc_train = sess.run([acc_train_, loss_train, f1_train_, auc_train_])
+                    acc_train, loss_train_value, f1_train = sess.run([acc_train_, loss_train, f1_train_])
                 else:
                     print("loop")
-                    import pdb; pdb.set_trace()
+                    #import pdb; pdb.set_trace()
                     
-                    acc_train, loss_train_value, f1_train, auc_train, gradient_vals, all_evaled_tensors = sess.run([acc_train_, loss_train, f1_train_, auc_train_, dist_grads_train, all_tensors])
+                    acc_train, loss_train_value, f1_train, gradient_vals, all_evaled_tensors = sess.run([acc_train_, loss_train, f1_train_, dist_grads_train, all_tensors])
                     api.data.store(all_evaled_tensors=all_evaled_tensors)
 
 
@@ -331,6 +340,12 @@ with strategy.scope():
                          new_gradient_vals[gradName+':Average'] = np.average(gradValue)
                     api.data.stack(**new_gradient_vals)
 
+                #import pdb; pdb.set_trace()
+
+                auc_train_val = sess.run(auc_train.result())
+                print("auc",auc_train_val)
+                import pdb;pdb.set_trace()
+                    
                 print("ACC TRAIN", acc_train)
 
                 if W_test is None: # JUST TO VERIFY THAT WEIGHTS _DO_ CHANGE DURING TRAINING
@@ -353,6 +368,11 @@ with strategy.scope():
                 
                 api.ui.render(dashboard='train_val')
 
+
+
+                auc_train.reset_states()
+
+                
                 train_iter+=1
                 print("TRAIN ITER", train_iter)
         except tf.errors.OutOfRangeError:
