@@ -8,7 +8,7 @@ choco install microsoft-visual-cpp-build-tools --version 14.0.25420.1 --yes
 choco install git --yes
 REM choco install windows-sdk-10.0 --yes
 
-dir "C:\Program Files (x86)\Microsoft Visual Studio\2017\"
+dir "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise"
 exit 1
 
 dir C:\
