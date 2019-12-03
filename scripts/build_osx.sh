@@ -144,8 +144,8 @@ fi
 # exit
 chmod +x dist/appServer/appServer
 
-./dist/appServer/appServer
-if [ $? -ne 0 ]; then exit 1; fi
+# ./dist/appServer/appServer
+# if [ $? -ne 0 ]; then exit 1; fi
 
 echo "copying dist to 'backend_out/'"
 cd ../backend_out/

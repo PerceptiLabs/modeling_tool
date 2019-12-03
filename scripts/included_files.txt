@@ -1,0 +1,51 @@
+# root
+mainServer.py
+appServer.py
+codehq.py
+coreLogic.py
+CoreThread.py
+createDataObject.py
+databundle.py
+extractVaribles.py
+funclib.py
+functionParser.py
+graph.py
+libserver.py
+lw_graph.py
+modules.py
+networkExporter.py
+networkSaver.py
+parse_pb.py
+s3buckets.py
+utils.py
+webServer.py
+
+setup.py
+
+# analytics
+analytics/handlers.py
+analytics/scraper.py
+
+# code_generator
+code_generator/__init__.py
+code_generator/base.py
+code_generator/datadata.py
+code_generator/dataenv.py
+code_generator/tensorflow.py
+
+# core_new
+core_new/api.py
+core_new/cache.py
+core_new/control.py
+core_new/core.py
+core_new/errors.py
+core_new/extras.py
+core_new/history.py
+core_new/lightweight.py
+core_new/session.py
+core_new/utils.py
+
+# core_new/data
+core_new/data/__init__.py
+core_new/data/base.py
+core_new/data/policies.py

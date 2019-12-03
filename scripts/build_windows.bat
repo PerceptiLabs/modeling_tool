@@ -4,14 +4,6 @@ REM call C:\tools\miniconda3\condabin\conda.bat activate py362_
 REM call C:\tools\miniconda3\condabin\conda.bat env list
 REM call C:\tools\miniconda3\condabin\conda.bat list
 
-REM echo "Setting Path:"
-REM SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.10240.0\ucrt\io.h
-REM SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.16299.0\ucrt\io.h
-REM SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.17134.0\ucrt\io.h
-REM SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.17763.0\ucrt\io.h
-REM SET PATH=%PATH%;C:\Program Files (x86)\Windows Kits\10\include\10.0.18362.0\ucrt\io.h
-REM path
-
 cd ..
 rmdir /s /q build
 mkdir build
@@ -31,33 +23,13 @@ del frontend_data_code.py
 del core_test.py
 del serverInterface.py
 
-REM for /f %i in (..\..\..excluded_files.txt) do del %i
-
-REM move setup.py setup.pyx
-REM move mainServer.py mainServer.pyx
-
-REM cd code_generator
-REM move __init__.py __init__.pyx
-
-REM cd ../core_new/data
-REM move __init__.py __init__.pyx
-
-REM cd ../../
-
-REM dir
-
-REM python setup.pyx develop --user
-REM IF %ERRORLEVEL% NEQ 0 (
-REM   exit 1
-REM )
-REM del /S /Q *.py
-REM del /S /Q *.c
-
 move setup.py setup.pyx
 copy /Y setup.pyx code_generator
 copy /Y setup.pyx core_new
 copy /Y setup.pyx core_new/data
 copy /Y setup.pyx analytics
+
+REM call for /R %x in (__init__.py) do ren "%x" __init__.pyx
 
 cd code_generator
 mkdir code_generator
@@ -67,8 +39,6 @@ mv code_generator/* .
 rm -rf code_generator
 del *.c
 del *.py
-REM Xcopy /E /I /Y build/lib.win-amd64-3.6/code_generator .
-REM rmdir /s /q build
 ren __init__.pyx __init__.py
 del setup.pyx
 dir
@@ -90,8 +60,6 @@ mv data/* .
 rm -rf data
 del *.c
 del *.py
-REM Xcopy /E /I /Y build/lib.win-amd64-3.6/data .
-REM rmdir /s /q build
 ren __init__.pyx __init__.py
 del setup.pyx
 dir
@@ -111,21 +79,7 @@ del *.py
 del setup.pyx
 move mainServer.pyx mainServer.py
 
-REM cd code_generator
-REM move __init__.pyx __init__.py
-REM Xcopy /E /I /Y build/lib.win-amd64-3.6/code_generator .
 
-REM dir
-
-REM cd ../core_new/data
-REM move __init__.px __init__.py
-REM Xcopy /E /I /Y build/lib.win-amd64-3.6/data .
-
-REM dir
-
-REM cd ../../
-
-REM dir
 
 copy ..\..\backend\windows.spec .
 pyinstaller --clean -y windows.spec
