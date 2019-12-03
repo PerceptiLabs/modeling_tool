@@ -59,6 +59,21 @@ log.info("binaries = {}".format(pformat(binaries)))
 log.info("datas = {}".format(pformat(datas)))
 log.info("hiddenimports = {}".format(pformat(hiddenimports)))
 
+#a = Analysis(['mainServer.py'],
+#             pathex=pathex,
+#             binaries=binaries,
+#             datas=datas,
+#             hiddenimports=hiddenimports,
+#             hookspath=[],
+#             runtime_hooks=[],
+#             excludes=['PyQt4','QtCore','PyQt5','Matplotlib', 'babel'],
+#             win_no_prefer_redirects=False,
+#             win_private_assemblies=False,
+#             cipher=block_cipher)
+#             
+#pyz = PYZ(a.pure, a.zipped_data,
+#             cipher=block_cipher)
+
 a = Analysis(['mainServer.py'],
              pathex=pathex,
              binaries=binaries,
@@ -68,11 +83,10 @@ a = Analysis(['mainServer.py'],
              runtime_hooks=[],
              excludes=['PyQt4','QtCore','PyQt5','Matplotlib', 'babel'],
              win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher)
+             win_private_assemblies=False)
              
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data)
+
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
