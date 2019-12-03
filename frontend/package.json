@@ -1,6 +1,6 @@
 {
   "name": "PerceptiLabs",
-  "version": "0.1.2",
+  "version": "0.1.6",
   "author": "PerceptiLabs <contact@perceptilabs.com>",
   "description": "PerceptiLabs is a cross-platform software that will make it easier to use Machine Learning, especially Deep Learning.",
   "homepage": "perceptilabs.com",
@@ -84,6 +84,8 @@
     }
   },
   "dependencies": {
+    "@sentry/browser": "^5.9.1",
+    "@sentry/integrations": "^5.8.0",
     "axios": "^0.18.1",
     "canvg": "^1.5.3",
     "codemirror": "^5.49.0",

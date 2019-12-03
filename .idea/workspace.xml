@@ -1,10 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="40739598-f05c-4231-a5ec-48ec8c4274ee" name="Default Changelist" comment="">
+    <list default="true" id="ffa9ad05-b196-4c26-bff9-1b8d5935a763" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,7 +21,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="web-dev" />
+        <entry key="$PROJECT_DIR$" value="stage" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -37,6 +36,11 @@
   <component name="ProjectId" id="1RHBH48qMZxi7o2dlFxqblBaSV6" />
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
+  </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
@@ -58,15 +62,15 @@
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\core\basic-template" />
     </key>
   </component>
-  <component name="RunDashboard">
-    <option name="ruleStates">
+  <component name="ServiceViewManager">
+    <option name="viewStates">
       <list>
-        <RuleState>
-          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
-        </RuleState>
-        <RuleState>
-          <option name="name" value="StatusDashboardGroupingRule" />
-        </RuleState>
+        <serviceView>
+          <treeState>
+            <expand />
+            <select />
+          </treeState>
+        </serviceView>
       </list>
     </option>
   </component>
@@ -75,7 +79,7 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="a2cf221b-bc25-43df-b664-0982c448fc25" name="Default Changelist" comment="" />
+      <changelist id="ffa9ad05-b196-4c26-bff9-1b8d5935a763" name="Default Changelist" comment="" />
       <created>1569314049218</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -120,6 +124,7 @@
       <workItem from="1572939251934" duration="12685000" />
       <workItem from="1573024957115" duration="921000" />
       <workItem from="1573206261933" duration="2324000" />
+      <workItem from="1575290205939" duration="2730000" />
     </task>
     <servers />
   </component>
@@ -142,17 +147,6 @@
         <entry key="MAIN">
           <value>
             <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="web-dev" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
               <option name="COLUMN_ORDER" />
             </State>
           </value>

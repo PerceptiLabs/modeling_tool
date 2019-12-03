@@ -67,11 +67,41 @@ jobs:
   #      ["test_ubuntu", "test_windows", "test_osx"]
     pool:
         #win-pool
-        vmImage: "windows-latest"
+        vmImage: "vs2017-win2016"
+    # variables:
+    #   - group: Windows-build
     steps:
+    - task: DownloadSecureFile@1
+      name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
+      inputs:
+        secureFile: 'WindowsCodeSign.pfx' # Not able to reach $(signingCert.secureFilePath) here for some reason
+
+    # - task: PowerShell@2
+    #   inputs:
+    #     targetType: 'inline'
+    #     script: |
+    #       Write-Host "Start adding the PFX file to the certificate store."
+
+    #       $pfxpath = '$(mySecureFile.secureFilePath)'
+    #       $password = '$(signingCert.password)'
+          
+    #       Add-Type -AssemblyName System.Security
+    #       $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+    #       $cert.Import($pfxpath, $password, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]"PersistKeySet")
+    #       $store = new-object system.security.cryptography.X509Certificates.X509Store -argumentlist "MY", CurrentUser
+    #       $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]"ReadWrite")
+    #       $store.Add($cert)
+    #       $store.Close()
+
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
+
     - script: |
         cd scripts/
-        ./setup_windows.bat
+        ./setup_windows_python.bat
       displayName: 'Environment setup'
 
     - script: |
@@ -79,18 +109,10 @@ jobs:
         ./build_windows.bat
       displayName: 'Build'
     
-    # Download secure file
-    # Download a secure file to the agent machine
-    - task: DownloadSecureFile@1
-      name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
-      inputs:
-        secureFile: WindowsCodeSign.pfx # The file name or GUID of the secure file
-    
-    - script: |
-        "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "PerceptiLabs Setup 0.0.15.exe"
-    
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
       artifact: images_windows
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: images_windows_core
     
 
 
@@ -101,7 +123,13 @@ jobs:
 # #        ["test_ubuntu", "test_windows", "test_osx"]
 #     pool:
 #         vmImage: "macOS-10.14"
+#     variables:
+#       - group: OSX-build
 #     steps:
+#     - task: InstallAppleCertificate@2
+#       inputs:
+#         certSecureFile: 'devIDapp.p12'
+#         certPwd: $(devAppCert.password)
 #     - bash: |
 #         cd scripts/
 #         ./setup_osx.sh
@@ -114,6 +142,8 @@ jobs:
     
 #     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
 #       artifact: images_osx
+#     - publish: $(Build.Repository.LocalPath)/build/backend_out/
+#       artifact: images_osx_core
 
 
 ### PUBLISH SCRIPTS (for deployment purposes)

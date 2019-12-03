@@ -12,8 +12,8 @@ npm install
 npm run dev
 
 mac
-    sudo chmod -R 777 core // all access 'core' folder 
-    sudo spctl --master-disable //disable checking sign
+    sudo chmod -R 777 core # all access 'core' folder 
+    sudo spctl --master-disable #disable checking sign
     sudo npm run dev
 
 # build electron application for production
@@ -26,9 +26,12 @@ linux
 
     npm run build
 mac
+    start core
+        sudo spctl --master-disable
+        
     xattr -cr .
     sudo npm run build
-    node notarize.js
+    sudo node notarize.js
 
 # lint all JS/Vue component files in `src/`
 npm run lint

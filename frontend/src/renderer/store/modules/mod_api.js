@@ -93,8 +93,14 @@ const actions = {
       }
       openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
       commit('set_corePid', openServer.pid);
-      openServer.on('error', (err)=>  { coreOffline() });
-      openServer.on('close', (code)=> { coreOffline() });
+      openServer.on('error', (err)=>  { 
+        console.log('core error', err)
+        coreOffline() 
+      });
+      openServer.on('close', (code)=> { 
+        console.log('core close', code)
+        coreOffline() 
+      });
       waitOnlineCore()
     }
     function waitOnlineCore() {
@@ -397,7 +403,7 @@ const actions = {
       }
     };
 
-    console.log('getCode', theData);
+    //console.log('getCode', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
