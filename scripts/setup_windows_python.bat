@@ -21,7 +21,7 @@ set OLDPWD=%cd%
 REM cd "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build"
 call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
 cd %VCINSTALLDIR%
-call for /R %f% in (*stdint.h) do set CL=-FI"%f%"
+call for /R %f in (*stdint.h) do set CL=-FI"%f"
 call pip install pycrypto
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
