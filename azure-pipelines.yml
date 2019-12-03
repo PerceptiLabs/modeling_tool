@@ -68,8 +68,8 @@ jobs:
     pool:
         #win-pool
         vmImage: "vs2017-win2016"
-    variables:
-      - group: Windows-build
+    # variables:
+    #   - group: Windows-build
     steps:
     - task: DownloadSecureFile@1
       name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
@@ -109,10 +109,10 @@ jobs:
         ./build_windows.bat
       displayName: 'Build'
     
-    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-      artifact: images_windows
-    - publish: $(Build.Repository.LocalPath)/build/backend_out/
-      artifact: images_windows_core
+    # - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+    #   artifact: images_windows
+    # - publish: $(Build.Repository.LocalPath)/build/backend_out/
+    #   artifact: images_windows_core
     
 
 
