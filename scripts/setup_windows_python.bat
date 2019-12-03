@@ -19,7 +19,7 @@ REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\SDK\Sco
 
 set OLDPWD=%cd%
 REM cd "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build"
-call C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat x86_amd64
+call "C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise\VC\Auxiliary\Build\vcvarsall.bat" x86_amd64
 cd %VCINSTALLDIR%
 for /R %f in (*stdint.h) do set CL=-FI"%f"
 call pip install pycrypto
