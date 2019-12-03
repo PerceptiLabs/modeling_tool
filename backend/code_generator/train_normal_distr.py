@@ -45,11 +45,8 @@ test_dataset = test_dataset.batch(1)
 
 
 #train_iterator = tf.data.Iterator.from_structure(train_dataset.output_types, train_dataset.output_shapes)
-#train_iterator_init = train_iterator.make_initializer(train_dataset)
-
-
-
-
+test_iterator = tf.data.Iterator.from_structure(test_dataset.output_types, test_dataset.output_shapes)
+test_iterator_init = test_iterator.make_initializer(test_dataset)
 
 
 
@@ -341,7 +338,8 @@ with strategy.scope():
     #f1_train_ = tf.constant(0.3)
     #auc_train_ = tf.constant(0.3)
 
-    for epoch in range({{n_epochs}}):
+    #for epoch in range({{n_epochs}}):
+    for epoch in range(2): # TMP     . use above
         print(f"entering epoch {epoch}")
         
         api.data.store(iter_training=0, iter_validation=0)
@@ -506,3 +504,22 @@ with strategy.scope():
 
 
     
+    api.data.store(max_iter_testing=_data_size[2])
+    sess.run(test_iterator_init)
+    iter = 0
+    try:
+        while True:
+            x, y = test_iterator.get_next()
+            y_pred, y_target = model(x, y)
+
+            y_pred_val, y_target_val = sess.run([y_pred, y_target])
+
+            #import pdb; pdb.set_trace()
+            
+            #all_evaled_tensors = sess.run(all_tensors)
+            #api.data.store(all_tensors=all_evaled_tensors)
+            api.data.store(iter_testing=iter)
+            iter+=1
+            api.ui.render(dashboard='testing')  
+    except tf.errors.OutOfRangeError:      
+        pass
