@@ -3,6 +3,10 @@ IF EXIST c:\tools\miniconda3 (
   rmdir /s /q c:\tools\miniconda3
 )
 
+dir
+call ls
+exit 1
+
 choco install nodejs --yes --version 12.10.0
 choco install microsoft-visual-cpp-build-tools --version 14.0.25420.1 --yes
 choco install git --yes
@@ -14,6 +18,12 @@ REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\
 REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\
 REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\SDK\ScopeCppSDK\
 REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\SDK\ScopeCppSDK\SDK\
+
+cd "C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\VC\Auxiliary\Build"
+call vcvarsall.bat x86_amd64
+cd %VCINSTALLDIR%
+for /R %f in (*stdint.h) do set CL=-FI"%f"
+call pip install pycrypto
 
 
 SET PATH=%PATH%;C:\hostedtoolcache\windows\Python\3.6.8\x64\Scripts
