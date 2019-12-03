@@ -103,6 +103,19 @@ with strategy.scope():
 
     auc_train = tf.keras.metrics.AUC(curve='ROC')
 
+    num_thresholds=200
+    epsilon = 1e-7
+    thresholds = [(i+0) * 1.0 / (num_thresholds - 1)
+                  for i in range(num_thresholds - 0)]
+    #thresholds = [0.0] + thresholds + [1.0]    
+    recall_train = tf.keras.metrics.Recall(thresholds=thresholds)
+    precision_train = tf.keras.metrics.Precision(thresholds=thresholds)
+
+    r = recall_train.result()
+    p = precision_train.result()
+
+    f1_train = tf.reduce_max(2*r*p/(r+p)) # TODO: create custom metric instead? make PR at tf?
+
     
     model = create_model()
 
@@ -130,6 +143,10 @@ with strategy.scope():
         grads = tf.gradients(loss_value, trainable_vars)        
         update_vars = optimizer.apply_gradients(zip(grads, trainable_vars))
         update_auc = auc_train.update_state(y_target, y_pred)
+        update_recall = recall_train.update_state(y_target, y_pred)
+        update_precision = precision_train.update_state(y_target, y_pred)
+
+        update_ops = [update_vars, update_auc, update_recall, update_precision]
         
         grads_dict = {}
         for var in tf.trainable_variables():
@@ -162,7 +179,7 @@ with strategy.scope():
         print("train step")        
         #import pdb; pdb.set_trace()
 
-        with tf.control_dependencies([update_vars, update_auc]):
+        with tf.control_dependencies(update_ops):
             return (tf.identity(loss_value), accuracy, grads_dict, locals_)
 
     def validation_step(inputs):
@@ -257,7 +274,9 @@ with strategy.scope():
 
         
     sess.run(tf.global_variables_initializer())
-    sess.run([v.initializer for v in auc_train.variables])    
+    sess.run([v.initializer for v in auc_train.variables])  # these need spec. treatment
+    sess.run([v.initializer for v in recall_train.variables])
+    sess.run([v.initializer for v in precision_train.variables])
 
     #all_tensors = api.data.get_tensors()
     #pprint(all_tensors)
@@ -302,7 +321,7 @@ with strategy.scope():
                    val_datasize=_data_size[1])
     
     #acc_train_= tf.constant(0.6)
-    f1_train_ = tf.constant(0.3)
+    #f1_train_ = tf.constant(0.3)
     #auc_train_ = tf.constant(0.3)
 
     for epoch in range({{n_epochs}}):
@@ -323,12 +342,12 @@ with strategy.scope():
             
             while True:
                 if api.ui.headless:
-                    acc_train, loss_train_value, f1_train = sess.run([acc_train_, loss_train, f1_train_])
+                    acc_train, loss_train_valuesess.run([acc_train_, loss_train])
                 else:
                     print("loop")
                     #import pdb; pdb.set_trace()
                     
-                    acc_train, loss_train_value, f1_train, gradient_vals, all_evaled_tensors = sess.run([acc_train_, loss_train, f1_train_, dist_grads_train, all_tensors])
+                    acc_train, loss_train_value, gradient_vals, all_evaled_tensors = sess.run([acc_train_, loss_train, dist_grads_train, all_tensors])
                     api.data.store(all_evaled_tensors=all_evaled_tensors)
 
 
@@ -343,7 +362,11 @@ with strategy.scope():
                 #import pdb; pdb.set_trace()
 
                 auc_train_val = sess.run(auc_train.result())
+                f1_train_val = sess.run(f1_train)                
+
+                
                 print("auc",auc_train_val)
+                print("f1",f1_train_val)                
                 import pdb;pdb.set_trace()
                     
                 print("ACC TRAIN", acc_train)
@@ -363,7 +386,7 @@ with strategy.scope():
                 #print("bisrsia")
                 #import pdb; pdb.set_trace()
                     
-                api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train_value, f1_train_iter=f1_train, auc_train_iter=auc_train)
+                api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train_value, f1_train_iter=f1_train_val, auc_train_iter=auc_train_val)
                 api.data.store(iter_training=train_iter)
                 
                 api.ui.render(dashboard='train_val')
@@ -371,6 +394,8 @@ with strategy.scope():
 
 
                 auc_train.reset_states()
+                recall_train.reset_states()
+                precision_train.reset_states()                                
 
                 
                 train_iter+=1
