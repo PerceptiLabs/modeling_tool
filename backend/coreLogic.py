@@ -1,5 +1,5 @@
 from CoreThread import CoreThread
-from core import core
+# from core import core
 from createDataObject import createDataObject
 import queue
 import numpy as np
