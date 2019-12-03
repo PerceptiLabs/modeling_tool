@@ -529,6 +529,9 @@ class Message:
         elif action == "updateResults":
             content=core.updateResults()
 
+        # elif action == "setLogLevel":
+        #     value = self.request.get("value")
+
         elif action == "checkCore":
             content=core.checkCore()
 
