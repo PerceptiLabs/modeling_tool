@@ -2,7 +2,8 @@ REM @"%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe" -NoProfile -I
 REM IF EXIST c:\tools\miniconda3 (
 REM   rmdir /s /q c:\tools\miniconda3
 REM )
-
+easy_install 
+exit 1
 choco install nodejs --yes --version 12.10.0
 choco install microsoft-visual-cpp-build-tools --version 14.0.25420.1 --yes
 choco install git --yes
