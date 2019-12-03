@@ -14,14 +14,6 @@ mkdir backend_out
 mkdir frontend_out 
 
 cd backend_tmp
-xcopy /s ..\..\backend . 
-
-del minicodehq.py
-del appOc.py
-del a2cagent.py
-del frontend_data_code.py
-del core_test.py
-del serverInterface.py
 
 move setup.py setup.pyx
 copy /Y setup.pyx code_generator
@@ -29,15 +21,20 @@ copy /Y setup.pyx core_new
 copy /Y setup.pyx core_new/data
 copy /Y setup.pyx analytics
 
+call for /R %x in (__init__.py) do ren "%x" __init__.pyx
+python setup_compact.pyx develop
+del /S *.c
+del /S *.py
+del /S setup_compact.pyx
+call for /R %x in (__init__.pyx) do ren "%x" __init__.py
+
 cd code_generator
 mkdir code_generator
-move __init__.py __init__.pyx
 python setup.pyx develop
 mv code_generator/* .
 rm -rf code_generator
 del *.c
 del *.py
-ren __init__.pyx __init__.py
 del setup.pyx
 dir
 
