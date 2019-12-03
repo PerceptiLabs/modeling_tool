@@ -6,7 +6,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 datas = collect_data_files("skimage.io._plugins")
 
-block_cipher = pyi_crypto.PyiBlockCipher()
+#block_cipher = pyi_crypto.PyiBlockCipher(key='sjdielskaospelsk')
 #('C:\\Users\\Robert\\Anaconda3\\Lib\\site-packages\\ale_c.cp36-win_amd64.dll','.'),
 
 

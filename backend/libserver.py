@@ -529,8 +529,15 @@ class Message:
         elif action == "updateResults":
             content=core.updateResults()
 
-        # elif action == "setLogLevel":
-        #     value = self.request.get("value")
+        elif action == "setLogLevel":
+            logLevel = self.request.get("value")
+            log.setLevel(logLevel)
+            content = "Logging has been set to " + logLevel
+
+        elif action == "setUser":
+            userInfo = self.request.get("value")
+            with configure_scope() as scope:
+                scope.user = userInfo
 
         elif action == "checkCore":
             content=core.checkCore()
