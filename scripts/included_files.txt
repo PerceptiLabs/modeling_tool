@@ -6,7 +6,7 @@ coreLogic.py
 CoreThread.py
 createDataObject.py
 databundle.py
-extractVaribles.py
+extractVariables.py
 funclib.py
 functionParser.py
 graph.py
