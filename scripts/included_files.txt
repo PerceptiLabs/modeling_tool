@@ -20,8 +20,6 @@ s3buckets.py
 utils.py
 webServer.py
 
-setup.py
-
 # analytics
 analytics/handlers.py
 analytics/scraper.py

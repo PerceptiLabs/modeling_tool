@@ -12,6 +12,10 @@ cd backend_tmp
 echo "Copying files"
 call SET fromfolder=../../backend
 FOR /F %%a IN (../../scripts/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%%a" "%%a"
+call cp ../../backend/setup_compact.pyx .
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 
 call for /R %x in (__init__.py) do ren "%x" __init__.pyx
 move mainServer.py mainServer.pyx
