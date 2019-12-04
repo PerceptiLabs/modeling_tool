@@ -20,7 +20,9 @@ echo "Scripts"
 dir "../../scripts"
 echo %fromfolder%
 dir "%fromfolder%"
-call FOR /F %a IN (../../scripts/included_files.txt) DO echo F|xcopy /e/h/y /z/i /k /f "%fromfolder%/%a" "%a"
+echo "Copying files"
+call FOR /F %a IN (../../scripts/included_files.txt) DO echo xcopy /h/y /z/i /k /f "%fromfolder%/%a" "%a"
+call FOR /F %a IN (../../scripts/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%a" "%a"
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )

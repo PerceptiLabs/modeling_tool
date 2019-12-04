@@ -42,6 +42,7 @@ core_new/errors.py
 core_new/extras.py
 core_new/history.py
 core_new/lightweight.py
+core_new/networkCache.py
 core_new/session.py
 core_new/utils.py
 

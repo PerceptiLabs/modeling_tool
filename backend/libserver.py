@@ -14,7 +14,7 @@ import numpy as np
 import skimage
 # from datahandler_lw import DataHandlerLW
 # from lw_data import lw_data
-from dataKeeper import dataKeeper as lw_data
+# from dataKeeper import dataKeeper as lw_data
 from createDataObject import createDataObject
 
 from core_new.core import *
