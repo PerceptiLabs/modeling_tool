@@ -1,6 +1,6 @@
 from pprint import pprint
 
-INCLUDE_KERAS_METRICS = False
+INCLUDE_KERAS_METRICS = True
 
 self_layer_name = layer_name # this is passed as input
 datasets = {layer_id: wrapper(layer_id, None) for layer_id, wrapper in X['datasets'].items()}
@@ -36,8 +36,8 @@ strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_
 
 
 
-train_dataset = tf.data.Dataset.zip((datasets[input_data_layer][0], datasets[target_data_layer][0])).take(40) # TODO: REMOVE THESE TAKES
-validation_dataset = tf.data.Dataset.zip((datasets[input_data_layer][1], datasets[target_data_layer][1])).take(40) # TODO: REMOVE THESE TAKES
+train_dataset = tf.data.Dataset.zip((datasets[input_data_layer][0], datasets[target_data_layer][0])).take(100) # TODO: REMOVE THESE TAKES
+validation_dataset = tf.data.Dataset.zip((datasets[input_data_layer][1], datasets[target_data_layer][1])).take(100) # TODO: REMOVE THESE TAKES
 test_dataset = tf.data.Dataset.zip((datasets[input_data_layer][2], datasets[target_data_layer][2]))
 
 train_dataset = train_dataset.batch(GLOBAL_BATCH_SIZE)
@@ -359,8 +359,8 @@ with strategy.scope():
         f1_train = tf.constant(-3)
         f1_val = tf.constant(-4)        
 
-    #for epoch in range({{n_epochs}}):
-    for epoch in range(2): # TMP     . use above
+    for epoch in range({{n_epochs}}):
+    #for epoch in range(10): # TMP     . use above
         print(f"entering epoch {epoch}")
         
         api.data.store(iter_training=0, iter_validation=0)
@@ -447,6 +447,9 @@ with strategy.scope():
         #api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train_value, f1_training_epoch=f1_train, auc_training_epoch=auc_train,
         #               acc_validation_epoch=acc_train, loss_validation_epoch=loss_train_value, f1_validation_epoch=f1_train, auc_validation_epoch=auc_train)
 
+
+        print("JAJAJ")
+        #import pdb; pdb.set_trace()
             
         sess.run(validation_iterator_init)
 
@@ -521,10 +524,10 @@ with strategy.scope():
 
     #import pdb; pdb.set_trace()
     
-    print("DONE")
+
             
 
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
 
 
     
