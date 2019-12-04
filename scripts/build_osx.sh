@@ -1,14 +1,3 @@
-EXCLUDED_FILES=(
-    'minicodehq.py'
-    'appOc.py'
-    'a2cagent.py'
-    'frontend_data_code.py'
-    'core_test.py'
-    'serverInterface.py'
-    'lwInterface.py'
-)
-
-
 echo "Running build script."
 echo "NOTE: Run this script in interactive mode: bash -i build.sh"
 
@@ -59,10 +48,7 @@ cp ../../backend/core_new/*.py core_new/
 mkdir core_new/data/
 cp ../../backend/core_new/data/*.py core_new/data/
 
-# for file in ${EXCLUDED_FILES[@]}
-# do
-#     rm $file
-# done
+
 rm minicodehq.py
 rm appOc.py
 rm a2cagent.py

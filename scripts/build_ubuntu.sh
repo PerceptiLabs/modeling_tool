@@ -1,12 +1,3 @@
-EXCLUDED_FILES=(
-    'minicodehq.py'
-    'appOc.py'
-    'a2cagent.py'
-    'frontend_data_code.py',
-    'core_test.py',
-    'serverInterface.py'
-)
-
 echo "Running build script."
 echo "NOTE: Run this script in interactive mode: bash -i build.sh"
 
@@ -75,6 +66,7 @@ mv core_new/data/__init__.py core_new/data/__init__.pyx
 # analytics
 cd analytics
 python setup.pyx develop --user
+if [ $? -ne 0 ]; then exit 1; fi
 rm *.py *.c
 mv __init__.pyx __init__.py
 rm *.pyx
@@ -83,6 +75,7 @@ rm *.pyx
 cd ../code_generator
 mkdir code_generator
 python setup.pyx develop --user
+if [ $? -ne 0 ]; then exit 1; fi
 mv code_generator/* .
 rm -rf code_generator
 rm *.py *.c
@@ -92,12 +85,14 @@ rm *.pyx
 # core_new
 cd ../core_new/
 python setup.pyx develop --user
+if [ $? -ne 0 ]; then exit 1; fi
 rm *.py *.c *.pyx
 
 # core_new.data
 cd data/
 mkdir data/
 python setup.pyx develop --user
+if [ $? -ne 0 ]; then exit 1; fi
 mv data/* .
 rm -rf data/
 rm *.py *.c
@@ -108,6 +103,7 @@ rm *.pyx
 # root
 cd ../../
 python setup.pyx develop --user
+if [ $? -ne 0 ]; then exit 1; fi
 
 rm *.py *.c
 mv mainServer.pyx mainServer.py
@@ -142,7 +138,6 @@ cp -r ../backend_tmp/dist .
 
 echo "Done building backend!"
 
- exit
 # ----- Build frontend ----
 echo "----- Building frontend -----"
 

@@ -3,7 +3,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 datas = collect_data_files("skimage.io._plugins")
 
-block_cipher = pyi_crypto.PyiBlockCipher(key='sjdielskaospelsk')
+#block_cipher = pyi_crypto.PyiBlockCipher(key='sjdielskaospelsk')
 
 #('/home/vagrant/.local/lib/python3.6/site-packages/tensorflow/contrib/rnn/python/ops/','/tensorflow/contrib/rnn/python/ops/'),('/home/vagrant/.local/lib/python3.6/site-packages/tensorflow/contrib/rnn/python/ops/_gru_ops.so','/tensorflow/contrib/rnn/python/ops/'),('/home/vagrant/.local/lib/python3.6/site-packages/tensorflow/contrib/coder/python/ops/_coder_ops.so','/tensorflow/contrib/coder/python/ops/'),('/home/vagrant/.local/lib/python3.6/site-packages/tensorflow/contrib/bigtable/python/ops/_bigtable.so','/tensorflow/contrib/bigtable/python/ops/'),
 import pathlib
@@ -135,12 +135,12 @@ a = Analysis(['mainServer.py'],
              runtime_hooks=[],
              excludes=[],
              win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher)
+             win_private_assemblies=False)
+#cipher=block_cipher
 
+pyz = PYZ(a.pure, a.zipped_data)
+#cipher=block_cipher
 
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,

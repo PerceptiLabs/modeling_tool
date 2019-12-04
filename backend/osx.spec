@@ -10,7 +10,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 datas = collect_data_files("skimage.io._plugins")
 
-block_cipher = pyi_crypto.PyiBlockCipher(key='sjdielskaospelsk')
+#block_cipher = pyi_crypto.PyiBlockCipher(key='sjdielskaospelsk')
 #block_cipher = None
 #('C:\\Users\\Robert\\Anaconda3\\Lib\\site-packages\\ale_c.cp36-win_amd64.dll','.'),
 #('C:/Users/Robert/Anaconda3/envs/baseCore/Lib/site-packages/dask/dask.yaml','./dask/'),('C:\\Users\\Robert\\Anaconda3\\envs\\baseCore\\Lib\\site-packages\\tensorflow\\lite\\toco\\python\\_tensorflow_wrap_toco.pyd','.')
@@ -97,11 +97,12 @@ a = Analysis(['mainServer.py'],
              runtime_hooks=[],
              excludes=['PyQt4','QtCore','PyQt5','Matplotlib', 'babel'],
              win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher)
+             win_private_assemblies=False)
+#cipher=block_cipher
              
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data)
+#cipher=block_cipher
+
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,
