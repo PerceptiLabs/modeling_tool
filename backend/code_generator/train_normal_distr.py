@@ -1,5 +1,7 @@
 from pprint import pprint
 
+INCLUDE_KERAS_METRICS = True
+
 self_layer_name = layer_name # this is passed as input
 datasets = {layer_id: wrapper(layer_id, None) for layer_id, wrapper in X['datasets'].items()}
 layer_calls = X['layer_calls']
@@ -99,31 +101,33 @@ with strategy.scope():
     #test_iterator = strategy.make_dataset_iterator(test_dataset) # this can probably be ran on single g
 
 
-
-    num_thresholds=200
-    epsilon = 1e-7
-    thresholds = [(i+0) * 1.0 / (num_thresholds - 1)
-                  for i in range(num_thresholds - 0)]
-    #thresholds = [0.0] + thresholds + [1.0]    
-    recall_train = tf.keras.metrics.Recall(thresholds=thresholds)
-    precision_train = tf.keras.metrics.Precision(thresholds=thresholds)
-
-    r = recall_train.result()
-    p = precision_train.result()
-
-    f1_train = tf.reduce_max(tf.math.divide_no_nan(2*r*p, r+p)) # TODO: create custom metric instead? make PR at tf?
-    auc_train = tf.keras.metrics.AUC(curve='ROC')
-
-
-    recall_val = tf.keras.metrics.Recall(thresholds=thresholds)
-    precision_val = tf.keras.metrics.Precision(thresholds=thresholds)
-
-    r = recall_val.result()
-    p = precision_val.result()
-
-    f1_val = tf.reduce_max(tf.math.divide_no_nan(2*r*p, r+p)) # TODO: create custom metric instead? make PR at tf?    
-    auc_val = tf.keras.metrics.AUC(curve='ROC')
-
+    if INCLUDE_KERAS_METRICS:
+        num_thresholds=200
+        epsilon = 1e-7
+        thresholds = [(i+0) * 1.0 / (num_thresholds - 1)
+                      for i in range(num_thresholds - 0)]
+        #thresholds = [0.0] + thresholds + [1.0]    
+        recall_train = tf.keras.metrics.Recall(thresholds=thresholds)
+        precision_train = tf.keras.metrics.Precision(thresholds=thresholds)
+        
+        r = recall_train.result()
+        p = precision_train.result()
+        
+        f1_train = tf.reduce_max(tf.math.divide_no_nan(2*r*p, r+p)) # TODO: create custom metric instead? make PR at tf?
+        auc_train = tf.keras.metrics.AUC(curve='ROC')
+        auc_train_tensor = auc_train.result()
+        
+        recall_val = tf.keras.metrics.Recall(thresholds=thresholds)
+        precision_val = tf.keras.metrics.Precision(thresholds=thresholds)
+        
+        r = recall_val.result()
+        p = precision_val.result()
+        
+        f1_val = tf.reduce_max(tf.math.divide_no_nan(2*r*p, r+p)) # TODO: create custom metric instead? make PR at tf?    
+        auc_val = tf.keras.metrics.AUC(curve='ROC')
+        auc_val_tensor = auc_val.result()
+        
+        
     model = create_model()
 
     train_iterator_init = train_iterator.initialize()
@@ -147,11 +151,15 @@ with strategy.scope():
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_value, trainable_vars)        
         update_vars = optimizer.apply_gradients(zip(grads, trainable_vars))
-        update_auc = auc_train.update_state(y_target, y_pred)
-        update_recall = recall_train.update_state(y_target, y_pred)
-        update_precision = precision_train.update_state(y_target, y_pred)
 
-        update_ops = [update_vars, update_auc, update_recall, update_precision]
+        if INCLUDE_KERAS_METRICS:
+            update_auc = auc_train.update_state(y_target, y_pred)
+            update_recall = recall_train.update_state(y_target, y_pred)
+            update_precision = precision_train.update_state(y_target, y_pred)
+            
+            update_ops = [update_vars, update_auc, update_recall, update_precision]
+        else:
+            update_ops = [update_vars]
         
         grads_dict = {}
         for var in tf.trainable_variables():
@@ -179,8 +187,8 @@ with strategy.scope():
         #f1, f1_ops = tf.contrib.metrics.f1_score(y_target, y_pred)
         #f1 = tf.constant(0.123)
         #auc, auc_op = tf.metrics.auc(labels=y_target, predictions=y_pred, curve='ROC')
-        
-        
+
+
         print("train step")        
         #import pdb; pdb.set_trace()
 
@@ -198,10 +206,14 @@ with strategy.scope():
         accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
 
 
-        #update_auc = auc_val.update_state(y_target, y_pred)
-        #update_recall = recall_val.update_state(y_target, y_pred)
-        #update_precision = precision_val.update_state(y_target, y_pred)
-        #update_ops = [update_auc, update_recall, update_precision]
+        if INCLUDE_KERAS_METRICS:
+            update_auc = auc_val.update_state(y_target, y_pred)
+            update_recall = recall_val.update_state(y_target, y_pred)
+            update_precision = precision_val.update_state(y_target, y_pred)
+            update_ops = [update_auc, update_recall, update_precision]
+        else:
+            update_ops = []
+                
         
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_value, trainable_vars)        
@@ -225,8 +237,8 @@ with strategy.scope():
         print("validation step")        
         #import pdb; pdb.set_trace()
 
-        #with tf.control_dependencies(update_ops):            
-        return (tf.identity(loss_value), accuracy, grads_dict, locals_)
+        with tf.control_dependencies(update_ops):            
+            return (tf.identity(loss_value), accuracy, grads_dict, locals_)
 
 
 
@@ -285,12 +297,14 @@ with strategy.scope():
 
         
     sess.run(tf.global_variables_initializer())
-    sess.run([v.initializer for v in auc_train.variables])  # these need spec. treatment
-    sess.run([v.initializer for v in recall_train.variables])
-    sess.run([v.initializer for v in precision_train.variables])
-    sess.run([v.initializer for v in auc_val.variables])  # these need spec. treatment
-    sess.run([v.initializer for v in recall_val.variables])
-    sess.run([v.initializer for v in precision_val.variables])
+    
+    if INCLUDE_KERAS_METRICS:
+        sess.run([v.initializer for v in auc_train.variables])  # these need spec. treatment
+        sess.run([v.initializer for v in recall_train.variables])
+        sess.run([v.initializer for v in precision_train.variables])
+        sess.run([v.initializer for v in auc_val.variables])  # these need spec. treatment
+        sess.run([v.initializer for v in recall_val.variables])
+        sess.run([v.initializer for v in precision_val.variables])
 
     #all_tensors = api.data.get_tensors()
     #pprint(all_tensors)
@@ -338,6 +352,13 @@ with strategy.scope():
     #f1_train_ = tf.constant(0.3)
     #auc_train_ = tf.constant(0.3)
 
+
+    if not INCLUDE_KERAS_METRICS:
+        auc_train_tensor = tf.constant(-1)
+        auc_val_tensor = tf.constant(-2)
+        f1_train = tf.constant(-3)
+        f1_val = tf.constant(-4)        
+
     #for epoch in range({{n_epochs}}):
     for epoch in range(2): # TMP     . use above
         print(f"entering epoch {epoch}")
@@ -357,7 +378,7 @@ with strategy.scope():
             
             while True:
                 if api.ui.headless:
-                    acc_train, loss_train_valuesess.run([acc_train_, loss_train])
+                    acc_train, loss_train_value=sess.run([acc_train_, loss_train])
                 else:
                     print("loop")
                     #import pdb; pdb.set_trace()
@@ -376,7 +397,7 @@ with strategy.scope():
 
                 #import pdb; pdb.set_trace()
 
-                auc_train_val = sess.run(auc_train.result())
+                auc_train_val = sess.run(auc_train_tensor)
                 f1_train_val = sess.run(f1_train)                
 
                 
@@ -408,9 +429,10 @@ with strategy.scope():
 
 
 
-                auc_train.reset_states()
-                recall_train.reset_states()
-                precision_train.reset_states()                                
+                if INCLUDE_KERAS_METRICS:
+                    auc_train.reset_states()
+                    recall_train.reset_states()
+                    precision_train.reset_states()                                
 
                 
                 train_iter+=1
@@ -461,7 +483,7 @@ with strategy.scope():
                     api.data.stack(**new_gradient_vals)
 
 
-                auc_val_val = sess.run(auc_val.result())
+                auc_val_val = sess.run(auc_val_tensor)
                 f1_val_val = sess.run(f1_val)
                 #f1_val_val = 0.1234
                     
@@ -477,9 +499,10 @@ with strategy.scope():
                 api.ui.render(dashboard='train_val')
 
 
-                auc_val.reset_states()
-                recall_val.reset_states()
-                precision_val.reset_states()                                
+                if INCLUDE_KERAS_METRICS:
+                    auc_val.reset_states()
+                    recall_val.reset_states()
+                    precision_val.reset_states()                                
 
                 
                 val_iter+=1
