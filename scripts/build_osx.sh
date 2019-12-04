@@ -150,7 +150,6 @@ ls -l dist/
 echo "Done building backend!"
 
 # EXIT FOR NOW! TEMPORARY FIX!
-exit
 
 
 # ----- Build frontend ----

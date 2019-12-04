@@ -22,6 +22,7 @@ del a2cagent.py
 del frontend_data_code.py
 del core_test.py
 del serverInterface.py
+del lwInterface.py
 
 move setup.py setup.pyx
 copy /Y setup.pyx code_generator
@@ -33,6 +34,10 @@ cd code_generator
 mkdir code_generator
 move __init__.py __init__.pyx
 python setup.pyx develop
+pyinstaller --clean -y windows.spec
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 mv code_generator/* .
 rm -rf code_generator
 del *.c
@@ -43,6 +48,10 @@ dir
 
 cd ../core_new
 python setup.pyx develop
+pyinstaller --clean -y windows.spec
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 del *.c
 del *.py
 del setup.pyx
@@ -54,6 +63,10 @@ dir
 mkdir data
 move __init__.py __init__.pyx
 python setup.pyx develop
+pyinstaller --clean -y windows.spec
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 mv data/* .
 rm -rf data
 del *.c
@@ -64,6 +77,10 @@ dir
 
 cd ../../analytics
 python setup.pyx develop
+pyinstaller --clean -y windows.spec
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 del *.c
 del *.py
 del setup.pyx
@@ -72,6 +89,10 @@ dir
 cd ..
 move mainServer.py mainServer.pyx
 python setup.pyx develop
+pyinstaller --clean -y windows.spec
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 del *.c
 del *.py
 del setup.pyx
