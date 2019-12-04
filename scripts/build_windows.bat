@@ -15,9 +15,15 @@ mkdir frontend_out
 
 cd backend_tmp
 
-call SET fromfolder=..\..\backend
+call SET fromfolder=../../backend
+echo "Scripts"
+dir ./../scripts
+echo fromfolder
+dir fromfolder
 call FOR /F %a IN (../../scripts/included_files.txt) DO echo F|xcopy /e/h/y /z/i /k /f "%fromfolder%/%a" "%a"
-
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 dir
 
 exit

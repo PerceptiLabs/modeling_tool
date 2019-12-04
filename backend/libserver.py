@@ -6,7 +6,7 @@ import os
 import struct
 import traceback
 from coreLogic import coreLogic
-from propegateNetwork import lwNetwork
+# from propegateNetwork import lwNetwork
 from parse_pb import parse
 import time
 from sentry_sdk import configure_scope
