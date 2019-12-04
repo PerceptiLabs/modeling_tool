@@ -4,6 +4,7 @@
 
 if __name__ == "__main__":
     DISTRIBUTED = True
+    EPOCHS = 2
     NET_PATH = 'the_net.json'
 
     import queue
@@ -30,6 +31,7 @@ if __name__ == "__main__":
         network = json.load(f)
 
     network['Layers']['1564399790363']['Properties']['Distributed'] = DISTRIBUTED
+    network['Layers']['1564399790363']['Properties']['Epochs'] = str(EPOCHS)    
     
     graphObj = Graph(network['Layers'])
     graph_dict=graphObj.graphs
@@ -61,7 +63,7 @@ if __name__ == "__main__":
 
         assert resultQ.qsize() == 3000
 
-
+        import pdb; pdb.set_trace()
         
     else:
         core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,

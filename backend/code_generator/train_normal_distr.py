@@ -342,7 +342,6 @@ with strategy.scope():
     all_tensors = get_tensors(dist_locals_train)
     all_tensors_val = get_tensors(dist_locals_val)
 
-    #import pdb;pdb.set_trace()
     api.data.store(all_tensors=all_tensors)
     api.data.store(max_epoch={{n_epochs - 1}},
                    train_datasize=_data_size[0],
@@ -359,8 +358,8 @@ with strategy.scope():
         f1_train = tf.constant(-3)
         f1_val = tf.constant(-4)        
 
-    for epoch in range({{n_epochs}}):
-    #for epoch in range(10): # TMP     . use above
+    #for epoch in range({{n_epochs}}):
+    for epoch in range(1): # TMP     . use above
         print(f"entering epoch {epoch}")
         
         api.data.store(iter_training=0, iter_validation=0)
@@ -529,24 +528,36 @@ with strategy.scope():
 
     #import pdb; pdb.set_trace()
 
-
+    for i in range(300):
+        print("ENTERING TEST!")
     
     api.data.store(max_iter_testing=_data_size[2])
     sess.run(test_iterator_init)
     iter = 0
     x, y = test_iterator.get_next()    
-    y_pred, y_target = model(x, y)    
+    y_pred, y_target = model(x, y)
+
+    # all tensors test
+    model._locals = {}
+    locals_ = model._locals.copy()
+    locals_[input_data_layer] = {'Y': x} # output/preview. hack hack hack
+    locals_[target_data_layer] = {'Y': y} # this layer is not run here.....:/
+    
+    locals_[self_layer_name] = {'X': {
+        output_layer: {'Y': y_target}, # inputs to this layer...
+        target_layer: {'Y': y_pred}
+    }}
+    all_tensors_test = get_tensors(locals_)
+    #import pdb; pdb.set_trace()
     try:
         while True:
-
-
-
-            y_pred_val, y_target_val = sess.run([y_pred, y_target])
-
+            print(f"iter {iter}")
+            #y_pred_val, y_target_val = sess.run([y_pred, y_target])
+            
             #import pdb; pdb.set_trace()
             
-            #all_evaled_tensors = sess.run(all_tensors)
-            #api.data.store(all_tensors=all_evaled_tensors)
+            all_evaled_tensors = sess.run(all_tensors_test)
+            api.data.store(all_tensors=all_evaled_tensors)
             api.data.store(iter_testing=iter)
             iter+=1
             api.ui.render(dashboard='testing')  
