@@ -1,6 +1,6 @@
 from pprint import pprint
 
-INCLUDE_KERAS_METRICS = True
+INCLUDE_KERAS_METRICS = False
 
 self_layer_name = layer_name # this is passed as input
 datasets = {layer_id: wrapper(layer_id, None) for layer_id, wrapper in X['datasets'].items()}
@@ -36,8 +36,8 @@ strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_
 
 
 
-train_dataset = tf.data.Dataset.zip((datasets[input_data_layer][0], datasets[target_data_layer][0])).take(100) # TODO: REMOVE THESE TAKES
-validation_dataset = tf.data.Dataset.zip((datasets[input_data_layer][1], datasets[target_data_layer][1])).take(100) # TODO: REMOVE THESE TAKES
+train_dataset = tf.data.Dataset.zip((datasets[input_data_layer][0], datasets[target_data_layer][0])).take(40) # TODO: REMOVE THESE TAKES
+validation_dataset = tf.data.Dataset.zip((datasets[input_data_layer][1], datasets[target_data_layer][1])).take(40) # TODO: REMOVE THESE TAKES
 test_dataset = tf.data.Dataset.zip((datasets[input_data_layer][2], datasets[target_data_layer][2]))
 
 train_dataset = train_dataset.batch(GLOBAL_BATCH_SIZE)
@@ -523,17 +523,20 @@ with strategy.scope():
     
     print("DONE")
             
-            
+
+    import pdb; pdb.set_trace()
 
 
     
     api.data.store(max_iter_testing=_data_size[2])
     sess.run(test_iterator_init)
     iter = 0
+    x, y = test_iterator.get_next()    
+    y_pred, y_target = model(x, y)    
     try:
         while True:
-            x, y = test_iterator.get_next()
-            y_pred, y_target = model(x, y)
+
+
 
             y_pred_val, y_target_val = sess.run([y_pred, y_target])
 
