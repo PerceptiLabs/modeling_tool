@@ -108,7 +108,7 @@ jobs:
 
     - script: |
         cd scripts/
-        ./build_windows.bat
+        ./build_windows_compact.bat
       displayName: 'Build'
     
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/

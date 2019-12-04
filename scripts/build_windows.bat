@@ -21,26 +21,16 @@ dir "../../scripts"
 echo %fromfolder%
 dir "%fromfolder%"
 echo "Copying files"
-call FOR /F %a IN (../../scripts/included_files.txt) DO (
-  call echo  "%a"
-  call echo "%fromfolder%/%a"
-  call echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%a" "%a"
-  )
-IF %ERRORLEVEL% NEQ 0 (
-  exit 1
-)
-dir
+FOR /F %%a IN (../../scripts/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%%a" "%%a"
 
-exit
-
-xcopy /s ..\..\backend . 
-del minicodehq.py
-del appOc.py
-del a2cagent.py
-del frontend_data_code.py
-del core_test.py
-del serverInterface.py
-del lwInterface.py
+REM xcopy /s ..\..\backend . 
+REM del minicodehq.py
+REM del appOc.py
+REM del a2cagent.py
+REM del frontend_data_code.py
+REM del core_test.py
+REM del serverInterface.py
+REM del lwInterface.py
 
 move setup.py setup.pyx
 copy /Y setup.pyx code_generator
