@@ -22,9 +22,9 @@ echo %fromfolder%
 dir "%fromfolder%"
 echo "Copying files"
 call FOR /F %a IN (../../scripts/included_files.txt) DO (
-  echo  "%a"
-  echo "%fromfolder%/%a"
-  echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%a" "%a"
+  call echo  "%a"
+  call echo "%fromfolder%/%a"
+  call echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%a" "%a"
   )
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
