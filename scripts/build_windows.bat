@@ -22,6 +22,7 @@ del a2cagent.py
 del frontend_data_code.py
 del core_test.py
 del serverInterface.py
+del lwInterface.py
 
 move setup.py setup.pyx
 copy /Y setup.pyx code_generator
