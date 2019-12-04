@@ -5,6 +5,7 @@ EXCLUDED_FILES=(
     'frontend_data_code.py'
     'core_test.py'
     'serverInterface.py'
+    'lwInterface.py'
 )
 
 
@@ -158,7 +159,13 @@ echo "listing backend_out/dist/"
 ls -l dist/
 
 
+
+
 echo "Done building backend!"
+
+# EXIT FOR NOW! TEMPORARY FIX!
+exit
+
 
 # ----- Build frontend ----
 echo "----- Building frontend -----"
