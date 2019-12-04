@@ -3,67 +3,51 @@
     :tab-set="dynamicTabs"
     :current-el="currentEl"
     id-set-btn="tutorial_button-apply"
-    @press-apply="saveSettings($event)"
+    @press-apply="login($event)"
     @press-confirm="confirmSettings"
   )
-    template(slot="Settings-content")
-      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
-
-        button.btn.tutorial-relative(type="button"
-          @click="loadFile"
-          id="tutorial_button-load"
-          v-tooltip-interactive:right="interactiveInfo.file"
+    template(slot="Cloud-content")
+      .settings-layer_section.section-data-select(v-if="settings.step === 'button'")
+        button.btn(type="button"
+          @click="openAWSform"
         )
-          i.icon.icon-open-file
+          i.icon.icon-bucket
           span AWS Bucket
 
-        //-button.btn.tutorial-relative(type="button"
-          @click="loadFolder"
-          v-tooltip-interactive:bottom="interactiveInfo.folder"
-          )
-          i.icon.icon-open-folder
-          span Choose folders
-
-      template(v-else)
+      template(v-else-if="settings.step === 'authorization'")
         .settings-layer_section
           .form_row
-            button.btn.btn--link(type="button" @click="clearPath")
-              i.icon.icon-backward
-              span Back
-          .form_row(v-if="dataColumns.length")
-            base-select(
-              v-model="dataColumnsSelected"
-              :select-options="dataColumns"
-              :select-multiple="true"
-            )
-        .settings-layer_section.settings-layer_section--data
+            .form_awd_label Bucket:
+            .form_holder.awd_bucket_input.long
+              input(type="text" placeholder="specify field entry")
+            .form_holder.awd_bucket_input.short
+              input(type="text" placeholder="optional tags")
+        .settings-layer_section
           .form_row
-            settings-file-list(
-              v-model="fileList"
-              :name-add-item="typeOpened"
-              @partition-list="setPartitionList"
-              @add-file="addFiles"
-              )
-            //
-          .form_row(v-if="settings.accessProperties.Sources.length > 1")
-            .form_label Summary:
-            .form_input
-              triple-input.file-list-item_settings(
-                v-model="Mix_settingsData_Partition_summary"
-                :disable-edit="true"
-                separate-sign="%"
-                )
-        .settings-layer_section.settings-layer_section--data
+            .form_holder
+              .form_label-full-width AWS Access Key ID
+              input(type="text")
           .form_row
-            .form_label Batch size:
-            .form_input
-              input(type="number" v-model="settings.accessProperties.Batch_size")
+            .form_holder
+              .form_label-full-width AWS Secret Access Key
+              input(type="text")
+
+      template(v-else-if="settings.step === 'settings'")
+        .settings-layer_section
           .form_row
-            base-checkbox(v-model="settings.accessProperties.Shuffle_data") Shuffle
-        //-.settings-layer_foot
-          button.btn.btn--primary(type="button") Apply
-    //-template(slot="Cloud-content")
-      //-settings-cloud
+            .form_holder.awd_bucket_input.short
+              .form_label Delimiter
+              input(type="text" placeholder="set delimiter")
+            .form_holder.awd_bucket_input.long
+              .form_label Prefix
+              input(type="text" placeholder="type prefix to search")
+          .form_holder
+            .form_label-full-width Matched File List:
+            ul.setting-app-list
+              li.setting-app-list_item(v-for="item in modelList")
+                base-checkbox(v-model="item.model") {{item.path}}
+
+
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
@@ -132,8 +116,27 @@
             Partition_list: [],
             Batch_size: 10,
             Shuffle_data: true,
+          },
+          step: 'button' // authorization //settings
+        },
+        modelList: [
+          {
+            path: 'metadata/name1',
+            model: ''
+          },
+          {
+            path: 'metadata/name2',
+            model: ''
+          },
+          {
+            path: 'metadata/name3',
+            model: ''
+          },
+          {
+            path: 'metadata/name4',
+            model: ''
           }
-        }
+        ]
       }
     },
     computed: {
@@ -142,7 +145,7 @@
         isTutorialMode: 'mod_tutorials/getIstutorialMode',
       }),
       dynamicTabs() {
-        return this.settings.accessProperties.Sources.length ? ['Computer', 'Code'] : ['Computer']
+        return this.settings.accessProperties.Sources.length ? ['Cloud', 'Code'] : ['Cloud']
       },
       typeOpened() {
         const path = this.settings.accessProperties.Sources;
@@ -206,34 +209,14 @@
       setPartitionList(list) {
         this.settings.accessProperties.Partition_list = list
       },
-      loadFile(isAppend) {
-        let optionBasic = {
-          title:"Load file or files",
-          properties: ['openFile', 'multiSelections'],
-          filters: [
-            {name: 'All',     extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz']},
-            {name: 'Images',  extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff']},
-            {name: 'Text',    extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
-          ]
-        };
-        let optionTutorial = {
-          title: "Load file",
-          buttonLabel: 'Load file',
-          defaultPath: `${this.appPath}basic-data`,
-          properties: ['openFile'],
-          filters: [
-            {name: 'All', extensions: ['npy']},
-          ]
-        };
-        let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
-        openLoadDialog(optionDialog)
-          .then((pathArr)=> this.saveLoadFile(pathArr, 'file', isAppend))
-          .catch(()=> { })
+      openAWSform() {
+        this.settings.step = 'authorization';
+        this.showBtn();
       },
-      loadFolder(isAppend) {
-        loadPathFolder()
-          .then((pathArr)=> this.saveLoadFile(pathArr, 'directory', isAppend))
-          .catch(()=> { })
+      login(tabName) {
+        this.settings.step = 'settings';
+        //this.applySettings(tabName);
+        //this.checkPartitionList()
       },
       addFiles() {
         if(this.typeOpened === 'file') this.loadFile(true);
@@ -273,11 +256,7 @@
         this.dataColumns = [...selectArr];
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
-      saveSettings(tabName) {
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
-        this.applySettings(tabName);
-        this.checkPartitionList()
-      },
+
       checkPartitionList() {
         this.settings.accessProperties.Partition_list.forEach((item)=> {
           if(item[0]+item[1]+item[2] !== 100) {
@@ -301,6 +280,41 @@
       background-color: #6E778C;
     }
   }
+  .setting-app-list {
+    border-radius: 5px;
+    font-size: 1.4rem;
+    width: 100%;
+    max-height: 20rem;
+    overflow-y: auto;
+  }
+  .setting-app-list_item {
+    background: $bg-input;
+    margin-bottom: 1px;
+    display: block;
+    padding: 0.7rem;
+  }
+  .form_label-full-width {
+    max-width: 100%;
+    margin-bottom: 0.5rem;
+    font-size: 1.4rem;
+  }
+  .form_awd_label {
+    font-size: 1.4rem;
+    margin-right: 1rem;
+  }
+  .awd_bucket_input {
+    margin: 0.5rem;
+    & input::-webkit-input-placeholder {
+      color: $bg-scroll;
+    }
+    &.short {
+      width: 45%;
+    }
+    &.long {
+      width: 55%;
+    }
+  }
+
   .section-data-select {
     font-size: 1.4rem;
     text-align: center;
@@ -337,4 +351,5 @@
       margin-left: 1em;
     }
   }
+
 </style>

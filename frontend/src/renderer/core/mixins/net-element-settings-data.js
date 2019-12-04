@@ -18,6 +18,7 @@ const netElementSettingsData = {
   methods: {
     coreRequest,
     Mix_settingsData_getDataMeta(layerId) {
+      this.showSpinner = true;
       return this.$store.dispatch('mod_api/API_getDataMeta', {layerId, settings: this.settings})
         .then((data) => {
           if (data) {
@@ -28,7 +29,8 @@ const netElementSettingsData = {
         })
         .catch((err) => {
           console.error('getDataMeta', err);
-        });
+        })
+        .finally(()=> this.showSpinner = false)
     },
     Mix_settingsData_getPartitionSummary(layerId) {
       return this.$store.dispatch('mod_api/API_getPartitionSummary', {layerId, settings: this.settings})

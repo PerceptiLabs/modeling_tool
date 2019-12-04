@@ -133,10 +133,12 @@ const actions = {
     commit('set_globalPressKey', 'esc');
   },
   EVENT_hotKeyCopy({rootGetters, dispatch, commit}) {
+    commit('mod_workspace/CLEAR_CopyElementsPosition', null, {root: true});
     if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
       let arrBuf = [];
       arrSelect.forEach((el) => {
+      commit('mod_workspace/SET_CopyElementsPosition', {left: el.layerMeta.position.left, top: el.layerMeta.position.top}, {root: true});
         if(el.componentName === 'LayerContainer') {
           for(let id in el.containerLayersList) {
             const element = el.containerLayersList[id];
@@ -194,7 +196,7 @@ const actions = {
         const layerId = netWorkList[key].layerId;
         const copyId = netWorkList[key].copyId;
         const isContainerElement = netWorkList[key].copyContainerElement;
-        if(copyId) {
+        if(copyId && netWorkList[copyId]) {
           if(isContainerElement) {
             dispatch('mod_workspace/SET_elementMultiSelect', {id: netWorkList[key].layerId, setValue: true}, {root: true});
           }

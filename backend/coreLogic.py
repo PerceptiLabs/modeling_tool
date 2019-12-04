@@ -1,5 +1,5 @@
 from CoreThread import CoreThread
-from core import core
+# from core import core
 from createDataObject import createDataObject
 import queue
 import numpy as np
@@ -12,6 +12,7 @@ import threading
 import pprint
 import logging
 import skimage
+import GPUtil
 
 from networkExporter import exportNetwork
 from networkSaver import saveNetwork
@@ -19,6 +20,7 @@ from networkSaver import saveNetwork
 from modules import ModuleProvider
 from core_new.core import *
 from core_new.data import DataContainer
+from core_new.cache import get_cache
 from core_new.errors import CoreErrorHandler
 from core_new.history import SessionHistory
 from analytics.scraper import get_scraper
@@ -85,9 +87,12 @@ class coreLogic():
         module_provider.load('gym')
         module_provider.load('json')       
         module_provider.load('os')  
-        module_provider.load('skimage')  
+        module_provider.load('skimage')
+        module_provider.load('dask.array', as_name='da')
+        module_provider.load('dask.dataframe', as_name='dd')                  
 
-        session_history = SessionHistory()
+        cache = get_cache()
+        session_history = SessionHistory(cache)
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
         self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
                          error_handler, session_proc_handler, checkpointValues) 
@@ -220,7 +225,6 @@ class coreLogic():
                 else:
                     return {"Status":self.status,"Iterations":self.testIter, "Progress": self.testIter/(self.savedResultsDict["maxTestIter"]-1)}
             else:
-                print("Max Test Iterations are 0")
                 return {"content":"Max Test Iterations are 0"}
         except KeyError:
             return {}
@@ -230,10 +234,19 @@ class coreLogic():
         mem = dict(psutil.virtual_memory()._asdict())["percent"]
         scraper.submit('cpu_and_mem', {'cpu': cpu, 'mem': mem})
         return cpu, mem
+
+    def get_gpu(self):
+        gpus = GPUtil.getGPUs()
+        loadList = [gpu.load for gpu in gpus]
+        if loadList:
+            return np.max(loadList)
+        else:
+            return ""
         
     def getStatus(self):
         try:
             cpu, mem = self.get_cpu_and_mem()
+            gpu = self.get_gpu()
             if self.status=="Running":
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 result = {
@@ -242,6 +255,7 @@ class coreLogic():
                     "Epoch": self.savedResultsDict["epoch"],
                     "Progress": progress,
                     "CPU": cpu,
+                    "GPU": gpu,
                     "Memory": mem
                 }
                 return result
@@ -253,6 +267,7 @@ class coreLogic():
                     "Epoch":self.savedResultsDict["epoch"],
                     "Progress": progress,
                     "CPU":cpu,
+                    "GPU": gpu,
                     "Memory":mem
                 }
         except KeyError:
@@ -508,7 +523,7 @@ class coreLogic():
             
             # if view=="Output":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-            dataObject = createDataObject([D], typeList=['line'])                
+            dataObject = createDataObject([D])                
             dataObject = {"Output": dataObject}
             return dataObject
 
@@ -542,7 +557,7 @@ class coreLogic():
                 # return output
         elif layerType in ["MathMerge", "MathSoftmax", "MathArgmax", "ProcessOneHot", "ProcessCrop", "ProcessReshape"]:
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-            output = createDataObject([D])
+            output = createDataObject([np.squeeze(D)])
             return {"Output":output}
         elif layerType == "ProcessGrayscale":
             D=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]

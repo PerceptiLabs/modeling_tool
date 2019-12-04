@@ -6,7 +6,7 @@ from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
 datas = collect_data_files("skimage.io._plugins")
 
-block_cipher = pyi_crypto.PyiBlockCipher(key='sjdielskaospelsk')
+#block_cipher = pyi_crypto.PyiBlockCipher(key='sjdielskaospelsk')
 #('C:\\Users\\Robert\\Anaconda3\\Lib\\site-packages\\ale_c.cp36-win_amd64.dll','.'),
 
 
@@ -28,7 +28,9 @@ pathex = [working_dir]
 binaries = [(python_lib+'/dask/dask.yaml','./dask/')]
 
 datas=[(python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'), (python_lib+'/dask/dask.yaml', './dask/')]
+hiddenimports = collect_submodules('skimage.io._plugins')+collect_submodules('tensorflow.contrib')+collect_submodules('sentry_sdk')+['pywt._extensions._cwt','databundle','core_new.data.policies','utils','core_new.networkCache','core_new.data.base','core_new.data','core_new.errors','core_new.extras','atari_py','gym','analytics.handlers','analytics.scraper','core_new','core_new.cache','core_new.api','core_new.control','modules','core_new.core','core_new.history','core_new.data','core_new.lightweight','core_new.execution','core_new.resuts','core_new.session','core_new.utils','code_generator.__init__','code_generator.base','code_generator.datadata','code_generator.dataenv','code_generator.tensorflow','core_new.history','s3buckets','S3BucketAdapter','boto3','tempfile','code_generator','codeHQKeeper','datadata_generator','dataKeeper','createDataObject','networkExporter','appQueue','networkSaver','GPUtil','networkBuilder','gym.envs.atari','azure.storage.blob','numpy', 'tensorflow', 'math', 'sys', 'ast', 'itertools', 'collections', 'operator', 'time', 'copy', 'queue', 'sklearn.cluster', 'socket', 'selectors', 'traceback', 'json', 'io', 'struct', 'threading', 'PIL', 'PIL.ImageTk', 'glob', 'random', 'os.path', 're', 'codehq', 'dask', 'skimage.io', 'coreCommunicator', 'CoreThread', 'funclib', 'core', 'coreLogic', 'data', 'datahandler', 'graph', 'parse_pb', 'functionParser', 'extractVariables', 'tensorflow.python', 'libserver', 'networkx', 'environmenthandler', 'appServer', 'qagent','qagent_unity','lw_graph','lw_data','datahandler_lw','propegateNetwork','tensorflow.python.eager.context','tensorflow.lite','tensorflow.lite.toco','tensorflow.lite.toco_convert','tensorflow_wrap_toco','tensorflow.lite.toco.python','tensorflow.python.platform','google.protobuf','tensorflow.core.protobuf','tensorflow.python.training','tensorflow.lite.toco.python.tensorflow_wrap_toco','_tensorflow_wrap_toco']
 
+'''
 hiddenimports = collect_submodules('skimage.io._plugins') \
 	      + collect_submodules('sentry_sdk')+ \
 	      ['pywt._extensions._cwt','atari_py','gym','gym.envs.atari','networkBuilder',
@@ -53,11 +55,27 @@ hiddenimports = collect_submodules('skimage.io._plugins') \
                'tensorflow.python', 'networkx', 'tensorflow.python.platform', 'google.protobuf',
                'tensorflow.core.protobuf', 'tensorflow.python.training', 'funclib',
                'tensorflow.lite.toco.python.tensorflow_wrap_toco', '_tensorflow_wrap_toco', 'boto3']
+'''
 
 log.info("pathex = {}".format(pformat(pathex)))
 log.info("binaries = {}".format(pformat(binaries)))
 log.info("datas = {}".format(pformat(datas)))
 log.info("hiddenimports = {}".format(pformat(hiddenimports)))
+
+#a = Analysis(['mainServer.py'],
+#             pathex=pathex,
+#             binaries=binaries,
+#             datas=datas,
+#             hiddenimports=hiddenimports,
+#             hookspath=[],
+#             runtime_hooks=[],
+#             excludes=['PyQt4','QtCore','PyQt5','Matplotlib', 'babel'],
+#             win_no_prefer_redirects=False,
+#             win_private_assemblies=False,
+#             cipher=block_cipher)
+#             
+#pyz = PYZ(a.pure, a.zipped_data,
+#             cipher=block_cipher)
 
 a = Analysis(['mainServer.py'],
              pathex=pathex,
@@ -68,11 +86,10 @@ a = Analysis(['mainServer.py'],
              runtime_hooks=[],
              excludes=['PyQt4','QtCore','PyQt5','Matplotlib', 'babel'],
              win_no_prefer_redirects=False,
-             win_private_assemblies=False,
-             cipher=block_cipher)
+             win_private_assemblies=False)
              
-pyz = PYZ(a.pure, a.zipped_data,
-             cipher=block_cipher)
+pyz = PYZ(a.pure, a.zipped_data)
+
 exe = EXE(pyz,
           a.scripts,
           exclude_binaries=True,

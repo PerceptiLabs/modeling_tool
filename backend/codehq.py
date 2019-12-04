@@ -38,7 +38,7 @@ class CodeHqNew:
             partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
 
             code_generator = DataDataCodeGenerator(sources, partitions,
-                                                   batch_size=props["accessProperties"]['Batch_size'], shuffle=props["accessProperties"]['Shuffle_data'],
+                                                   batch_size=props["accessProperties"]['Batch_size'], shuffle=False, #props["accessProperties"]['Shuffle_data']
                                                    seed=0, columns=props["accessProperties"]['Columns'],
                                                    layer_id=id_)
             return code_generator

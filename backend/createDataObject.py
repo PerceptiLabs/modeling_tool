@@ -142,8 +142,6 @@ def pie(dataVec, subSampleSize=None):
     try:
         list_ = [dict(name=n, value=float(v)) for n, v in dataVec]
     except Exception as e:
-        print(e)
-        print(dataVec)
         raise
     output = {"data": list_}
     return output
@@ -157,7 +155,7 @@ TYPE_TO_SPEC_FUNC = {TYPE_BAR: bar,
                      TYPE_PIE: pie}
 
 def getType(dataVec):
-    dataVec = np.asarray(dataVec).squeeze()
+    dataVec = np.asarray(dataVec)
     
     type_ = None
     shape = dataVec.shape

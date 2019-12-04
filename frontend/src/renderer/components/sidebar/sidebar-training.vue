@@ -53,7 +53,7 @@ export default {
   },
   watch: {
     statusNetworkInfo(newVal) {
-      console.log(newVal);
+      //console.log(newVal);
       this.isNeedWait
         ? this.buffer = newVal
         : this.currentData = newVal

@@ -15,6 +15,11 @@ const state = {
     start: {x: 0, y: 0},
     stop: {x: 0, y: 0},
   },
+  positionForCopyElement: {
+    cursor: {x: 0, y: 0},
+    elementsPosition: [],
+    cursorInsideWorkspace: true
+  },
   showStartTrainingSpinner: false,
   isOpenElement: false,
 };
@@ -100,6 +105,12 @@ const getters = {
   },
   GET_enableHotKeyElement(state, getters, rootState) {
     return !state.isOpenElement && getters.GET_networkIsOpen && rootState.mod_events.isEnableCustomHotKey
+  },
+  GET_positionForCopyElement(state) {
+    return state.positionForCopyElement;
+  },
+  GET_cursorInsideWorkspace(state) {
+    return state.positionForCopyElement.cursorInsideWorkspace;
   }
 };
 
@@ -329,11 +340,27 @@ const mutations = {
   //---------------
   //  NETWORK ELEMENTS
   //---------------
+  SET_CopyCursorPosition(state, position) {
+    state.positionForCopyElement.cursor.x = position.x;
+    state.positionForCopyElement.cursor.y = position.y;
+  },
+  SET_CopyElementsPosition(state, position) {
+    state.positionForCopyElement.elementsPosition.push({left: position.left, top: position.top});
+  },
+  SET_cursorInsideWorkspace(state, value) {
+    state.positionForCopyElement.cursorInsideWorkspace = value
+  },
+  CLEAR_CopyElementsPosition(state) {
+    state.positionForCopyElement.elementsPosition = [];
+  },
   SET_elementName(state, value) {
     currentElement(value.id).layerName = value.setValue
   },
   add_element(state, {getters, dispatch, event}) {
-    let duplicatePositionIndent = 30;
+    let duplicatePositionIndent = 60;
+    let cursorPosition = getters.GET_positionForCopyElement.cursor;
+    let firstCopyPositionElement = getters.GET_positionForCopyElement.elementsPosition[0];
+    let isCursorInsideWorkspace = getters.GET_cursorInsideWorkspace;
     let newEl = state.dragElement
       ? state.dragElement
       : createNetElement(event);
@@ -347,7 +374,12 @@ const mutations = {
     newEl.layerMeta.position.top = (event.offsetY - top)/zoom;
     newEl.layerMeta.position.left = (event.offsetX - left)/zoom;
     let depth = checkPosition(newEl, elementList);
-    if(depth > 0) {
+
+    if(isCursorInsideWorkspace && depth > 0) {
+      newEl.layerMeta.position.top =  (cursorPosition.y + newEl.layerMeta.position.top) - firstCopyPositionElement.top - duplicatePositionIndent;
+      newEl.layerMeta.position.left =  (cursorPosition.x + newEl.layerMeta.position.left) - firstCopyPositionElement.left - duplicatePositionIndent;
+    }
+    else {
       newEl.layerMeta.position.top = newEl.layerMeta.position.top + (duplicatePositionIndent * depth);
       newEl.layerMeta.position.left = newEl.layerMeta.position.left + (duplicatePositionIndent * depth);
     }
@@ -401,12 +433,15 @@ const mutations = {
       });
 
       if(element.layerNone && element.containerLayersList) {
-         delete element.containerLayersList[arrSelect[0].layerId];
-         let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
-         if (isLastContainerElement) delete net[el];
+        arrSelect.forEach(select => {
+          element.layerNone = false;  // (close layersContainer) for remove elements from Layers
+          delete element.containerLayersList[select.layerId];
+          element.layerNone = true;
+          let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
+          if (isLastContainerElement) delete net[el];
+        });
       }
     }
-
     state.workspaceContent[state.currentNetwork].networkElementList = net;
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
     dispatch('mod_api/API_getOutputDim', null, {root: true});
