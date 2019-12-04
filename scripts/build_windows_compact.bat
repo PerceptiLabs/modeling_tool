@@ -17,9 +17,12 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
-call for /R %x in (__init__.py) do ren "%x" __init__.pyx
+FOR /R %%x in (__init__.py) do ren "%%x" __init__.pyx
 move mainServer.py mainServer.pyx
 python setup_compact.pyx develop
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 del /S *.c
 del /S *.py
 del /S setup_compact.pyx
