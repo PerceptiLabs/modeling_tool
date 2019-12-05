@@ -53,7 +53,7 @@ class LayerExtrasReader:
                 sample = layer_dict['Y']
                 default_var = 'Y'
             else:
-                default_var = layer_dict.keys()[0]
+                default_var = list(layer_dict.keys())[0]
                 sample = layer_dict[default_var]
                 
 
