@@ -31,13 +31,6 @@ echo "Copying files files from ../../backend/"
 cd backend_tmp/
 
 rsync -a ../../backend --files-from=../../scripts/included_files.txt .
-# while read p; do
-#     echo "$p"
-#     cp "../../backend/$p" .
-#     # if [[ "__init__.py" == *"$p"*]]; then
-
-#     # fi
-# done <../../scripts/included_files.txt
 
 cp ../../backend/setup_compact.pyx .
 
@@ -52,89 +45,10 @@ if [ $? -ne 0 ]; then exit 1; fi
 find . -type f -name '*.c' -exec rm {} +
 find . -type f -name '*.py' -exec rm {} +
 rm setup_compact.pyx
+rm -r build
 
 mv mainServer.pyx mainServer.py
 find . -name "__init__.pyx" -exec rename -v 's/\.py$/\.py/i' {} \;
-
-# cp ../../backend/*.py .
-
-# mkdir analytics/
-# cp ../../backend/analytics/*.py analytics/
-
-# mkdir code_generator/
-# cp ../../backend/code_generator/*.py code_generator/
-
-# mkdir core_new/
-# cp ../../backend/core_new/*.py core_new/
-
-# mkdir core_new/data/
-# cp ../../backend/core_new/data/*.py core_new/data/
-
-# rm minicodehq.py
-# rm appOc.py
-# rm a2cagent.py
-# rm frontend_data_code.py
-# rm core_test.py
-# rm serverInterface.py
-# rm lwInterface.py
-
-# mv setup.py setup.pyx
-# mv mainServer.py mainServer.pyx
-
-# mv analytics/setup.py analytics/setup.pyx
-# mv code_generator/setup.py code_generator/setup.pyx
-# mv core_new/setup.py core_new/setup.pyx
-# mv core_new/data/setup.py core_new/data/setup.pyx
-
-# mv code_generator/__init__.py code_generator/__init__.pyx
-# mv core_new/data/__init__.py core_new/data/__init__.pyx
-
-# # analytics
-# cd analytics
-# python setup.pyx develop --user
-# if [ $? -ne 0 ]; then exit 1; fi
-# rm *.py *.c
-# mv __init__.pyx __init__.py
-# rm *.pyx
-
-# # code_generator
-# cd ../code_generator
-# mkdir code_generator
-# python setup.pyx develop --user
-# if [ $? -ne 0 ]; then exit 1; fi
-# mv code_generator/* .
-# rm -rf code_generator
-# rm *.py *.c
-# mv __init__.pyx __init__.py
-# rm *.pyx
-
-# # core_new
-# cd ../core_new/
-# python setup.pyx develop --user
-# if [ $? -ne 0 ]; then exit 1; fi
-# rm *.py *.c *.pyx
-
-# # core_new.data
-# cd data/
-# mkdir data/
-# python setup.pyx develop --user
-# if [ $? -ne 0 ]; then exit 1; fi
-# mv data/* .
-# rm -rf data/
-# rm *.py *.c
-# mv __init__.pyx __init__.py
-# rm *.pyx
-
-
-# # root
-# cd ../../
-# python setup.pyx develop --user
-# if [ $? -ne 0 ]; then exit 1; fi
-
-# rm *.py *.c
-# mv mainServer.pyx mainServer.py
-# rm *.pyx
-
 
 echo "Listing files to be included in build (contents of 'backend_tmp/')"
 ls -l

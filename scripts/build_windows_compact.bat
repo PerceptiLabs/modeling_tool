@@ -27,6 +27,7 @@ del /S *.c
 del /S *.py
 del /S setup_compact.pyx
 move mainServer.pyx mainServer.py
+rmdir /S /Q build
 FOR /R %%x in (__init__.pyx) do ren "%%x" __init__.py
 dir
 dir code_generator
