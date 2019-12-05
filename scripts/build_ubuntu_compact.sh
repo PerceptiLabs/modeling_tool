@@ -33,7 +33,7 @@ cd backend_tmp/
 # rsync -a ../../backend --files-from=../../scripts/included_files.txt .
 while read p; do
     echo "$p"
-    cp "$p" .
+    cp "../../backend/$p" .
     # if [[ "__init__.py" == *"$p"*]]; then
 
     # fi
