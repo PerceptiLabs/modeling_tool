@@ -36,11 +36,11 @@ IF %ERRORLEVEL% NEQ 0 (
   dir
   exit 1
 )
-call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "dist/appServer/*.exe"
-IF %ERRORLEVEL% NEQ 0 (
-  dir
-  exit 1
-)
+REM call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "dist/appServer/*.exe"
+REM IF %ERRORLEVEL% NEQ 0 (
+REM   dir
+REM   exit 1
+REM )
 
 cd ..\backend_out
 mkdir dist
@@ -61,10 +61,10 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 dir build
 
-call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "build/*.exe"
-IF %ERRORLEVEL% NEQ 0 (
-  exit 1
-)
+REM call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "build/*.exe"
+REM IF %ERRORLEVEL% NEQ 0 (
+REM   exit 1
+REM )
 
 copy build\*.exe ..\build\frontend_out\ 
 
