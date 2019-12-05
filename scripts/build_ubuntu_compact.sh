@@ -33,12 +33,6 @@ cd backend_tmp/
 rsync -a ../../backend --files-from=../../scripts/included_files.txt .
 cp ../../backend/setup_compact.pyx .
 
-ls
-ls analytics
-ls code_generator
-ls core_new
-ls core_new/data
-
 mv mainServer.py mainServer.pyx
 
 python setup_compact.pyx develop --user
@@ -49,8 +43,6 @@ find . -type f -name '*.py' -exec rm {} +
 rm setup_compact.pyx
 
 mv mainServer.pyx mainServer.py
-
-exit 1
 
 # cp ../../backend/*.py .
 

@@ -52,6 +52,10 @@ class LayerExtrasReader:
             elif 'Y' in layer_dict:
                 sample = layer_dict['Y']
                 default_var = 'Y'
+            else:
+                default_var = layer_dict.keys()[0]
+                sample = layer_dict[default_var]
+                
 
             if "X" in layer_dict and "Y" in layer_dict["X"]:
                 Xy = layer_dict["X"]["Y"]
