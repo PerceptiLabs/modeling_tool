@@ -34,6 +34,9 @@ rsync -a ../../backend --files-from=../../scripts/included_files.txt .
 cp ../../backend/setup_compact.pyx .
 
 mv mainServer.py mainServer.pyx
+find . -iname "__init__.py*" -exec rename .py .pyx '{}' \;
+
+ls -l
 
 python setup_compact.pyx develop --user
 if [ $? -ne 0 ]; then exit 1; fi
@@ -43,6 +46,7 @@ find . -type f -name '*.py' -exec rm {} +
 rm setup_compact.pyx
 
 mv mainServer.pyx mainServer.py
+find . -iname "__init__.py*" -exec rename .py .pyx '{}' \;
 
 # cp ../../backend/*.py .
 
