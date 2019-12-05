@@ -27,7 +27,7 @@ del /S *.c
 del /S *.py
 del /S setup_compact.pyx
 move mainServer.pyx mainServer.py
-call for /R %x in (__init__.pyx) do ren "%x" __init__.py
+call for /R %%x in (__init__.pyx) do ren "%%x" __init__.py
 
 copy ..\..\backend\windows.spec .
 pyinstaller --clean -y windows.spec
