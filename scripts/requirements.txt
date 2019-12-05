@@ -6,7 +6,7 @@ dask[array]==2.1.0
 psutil==5.6.3
 scikit-image==0.15.0
 scipy==1.3.0
-Cython==0.29.12
+Cython==0.29.14
 # pycrypto==2.6.1
 pycryptodome
 # cryptography
