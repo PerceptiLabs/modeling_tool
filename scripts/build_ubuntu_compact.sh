@@ -30,14 +30,14 @@ mkdir frontend_out
 echo "Copying files files from ../../backend/"
 cd backend_tmp/
 
-# rsync -a ../../backend --files-from=../../scripts/included_files.txt .
-while read p; do
-    echo "$p"
-    cp "../../backend/$p" .
-    # if [[ "__init__.py" == *"$p"*]]; then
+rsync -a ../../backend --files-from=../../scripts/included_files.txt .
+# while read p; do
+#     echo "$p"
+#     cp "../../backend/$p" .
+#     # if [[ "__init__.py" == *"$p"*]]; then
 
-    # fi
-done <../../scripts/included_files.txt
+#     # fi
+# done <../../scripts/included_files.txt
 
 cp ../../backend/setup_compact.pyx .
 
