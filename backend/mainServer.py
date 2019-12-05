@@ -25,4 +25,7 @@ def setup_logger():
     
 if __name__ == "__main__":
     setup_logger()
+    import tensorflow as tf
+    print("TF GPU Test: ")
+    tf.test.is_gpu_available()
     appServer.mainServer()

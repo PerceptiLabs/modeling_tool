@@ -38,9 +38,6 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
-echo "Does the exe exist?"
-dir "dist/appServer/appServer.exe"
-
 call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "dist/appServer/*.exe"
 IF %ERRORLEVEL% NEQ 0 (
   dir
