@@ -30,11 +30,19 @@ mkdir frontend_out
 echo "Copying files files from ../../backend/"
 cd backend_tmp/
 
-rsync -a ../../backend --files-from=../../scripts/included_files.txt .
+# rsync -a ../../backend --files-from=../../scripts/included_files.txt .
+while read p; do
+    echo "$p"
+    cp "$p" .
+    # if [[ "__init__.py" == *"$p"*]]; then
+
+    # fi
+done <../../scripts/included_files.txt
+
 cp ../../backend/setup_compact.pyx .
 
 mv mainServer.py mainServer.pyx
-find . -iname "__init__.py*" -exec rename .py .pyx '{}' \;
+find . -name "__init__.py" -exec rename -v 's/\.py$/\.pyx/i' {} \;
 
 ls -l
 
@@ -46,7 +54,7 @@ find . -type f -name '*.py' -exec rm {} +
 rm setup_compact.pyx
 
 mv mainServer.pyx mainServer.py
-find . -iname "__init__.py*" -exec rename .py .pyx '{}' \;
+find . -name "__init__.pyx" -exec rename -v 's/\.py$/\.py/i' {} \;
 
 # cp ../../backend/*.py .
 
