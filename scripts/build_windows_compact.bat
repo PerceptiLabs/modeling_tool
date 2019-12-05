@@ -28,7 +28,8 @@ del /S *.py
 del /S setup_compact.pyx
 move mainServer.pyx mainServer.py
 FOR /R %%x in (__init__.pyx) do ren "%%x" __init__.py
-
+dir
+dir code_generator
 
 copy ..\..\backend\windows.spec .
 pyinstaller --clean -y windows.spec
@@ -36,11 +37,15 @@ IF %ERRORLEVEL% NEQ 0 (
   dir
   exit 1
 )
-REM call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "dist/appServer/*.exe"
-REM IF %ERRORLEVEL% NEQ 0 (
-REM   dir
-REM   exit 1
-REM )
+
+echo "Does the exe exist?"
+dir dist/appServer/appServer.exe
+
+call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "dist/appServer/*.exe"
+IF %ERRORLEVEL% NEQ 0 (
+  dir
+  exit 1
+)
 
 cd ..\backend_out
 mkdir dist
@@ -61,10 +66,10 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 dir build
 
-REM call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "build/*.exe"
-REM IF %ERRORLEVEL% NEQ 0 (
-REM   exit 1
-REM )
+call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "build/*.exe"
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
 
 copy build\*.exe ..\build\frontend_out\ 
 
