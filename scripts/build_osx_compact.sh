@@ -44,7 +44,7 @@ find . -name "__init__.py" -exec rename -v 's/\.py$/\.pyx/i' {} \;
 
 ls -l
 
-python setup.pyx  build_ext --inplace
+python setup_compact.pyx  build_ext --inplace
 if [ $? -ne 0 ]; then exit 1; fi
 
 find . -type f -name '*.c' -exec rm {} +
