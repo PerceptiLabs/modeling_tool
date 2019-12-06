@@ -42,13 +42,7 @@ cp ../../backend/setup_compact.pyx .
 
 mv mainServer.py mainServer.pyx
 
-ls -l
-ls -l code_generator
-
 find . -name "__init__.py" -exec rename -v 's|__init__.py|__init__.pyx|' {} +
-ls -l code_generator
-exit 1
-
 
 python setup_compact.pyx  build_ext --inplace
 if [ $? -ne 0 ]; then exit 1; fi
