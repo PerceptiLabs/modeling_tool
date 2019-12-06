@@ -36,16 +36,17 @@ echo "Copying files files from ../../backend/"
 cd backend_tmp/
 
 rsync -a ../../backend --files-from=../../scripts/included_files.txt .
+ls -l code_generator
 
 cp ../../backend/setup_compact.pyx .
 
 mv mainServer.py mainServer.pyx
 
 ls -l
-ls -l analytics
-exit 1
-find . -name "__init__.py" -exec rename -v 's/\.py$/\.pyx/i' {} \;
+ls -l code_generator
 
+find . -name "__init__.py" -exec rename -v 's/\.py$/\.pyx/i' {} \;
+exit 1
 ls -l
 
 python setup_compact.pyx  build_ext --inplace
