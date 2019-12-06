@@ -48,7 +48,7 @@ rm setup_compact.pyx
 rm -r build
 
 mv mainServer.pyx mainServer.py
-find . -name "__init__.pyx" -exec rename -v 's/\.py$/\.py/i' {} \;
+find . -name "__init__.pyx" -exec rename -v 's/\.pyx$/\.py/i' {} \;
 
 echo "Listing files to be included in build (contents of 'backend_tmp/')"
 ls -l

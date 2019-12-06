@@ -45,7 +45,7 @@ mv mainServer.py mainServer.pyx
 ls -l
 ls -l code_generator
 
-find . -name "__init__.py" -exec mv -v 's/\.py$/\.pyx/i' {} \;
+find . -name "__init__.py" -exec rename -v 's|__init__.py|__init__.pyx|' {} +
 ls -l code_generator
 exit 1
 
@@ -59,7 +59,7 @@ rm setup_compact.pyx
 rm -r build
 
 mv mainServer.pyx mainServer.py
-find . -name "__init__.pyx" -exec mv -v 's/\.py$/\.py/i' {} \;
+find . -name "__init__.pyx" -exec rename -v 's|__init__.pyx|__init__.py|' {} +
 
 echo "Listing files to be included in build (contents of 'backend_tmp/')"
 ls -l
