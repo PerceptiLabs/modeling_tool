@@ -29,24 +29,20 @@ mkdir frontend_out
 
 echo "Copying files files from ../../backend/"
 cd backend_tmp/
-
 rsync -a ../../backend --files-from=../../scripts/included_files.txt .
-
 cp ../../backend/setup_compact.pyx .
 
+echo "C compiling"
 mv mainServer.py mainServer.pyx
 find . -name "__init__.py" -exec rename -v 's/\.py$/\.pyx/i' {} \;
-
-ls -l
-
 python setup_compact.pyx develop --user
 if [ $? -ne 0 ]; then exit 1; fi
 
+echo "Cleaning up after the compilation"
 find . -type f -name '*.c' -exec rm {} +
 find . -type f -name '*.py' -exec rm {} +
 rm setup_compact.pyx
 rm -r build
-
 mv mainServer.pyx mainServer.py
 find . -name "__init__.pyx" -exec rename -v 's/\.pyx$/\.py/i' {} \;
 
