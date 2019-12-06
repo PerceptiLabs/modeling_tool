@@ -3,6 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ffa9ad05-b196-4c26-bff9-1b8d5935a763" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/sidebar/sidebar-layers.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/sidebar/sidebar-layers.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -51,15 +53,15 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\workspace" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store\modules" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\different" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\deep-learning-recurrent" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\core\basic-template" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
     </key>
   </component>
   <component name="ServiceViewManager">
@@ -79,7 +81,11 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
+<<<<<<< Updated upstream
       <changelist id="ffa9ad05-b196-4c26-bff9-1b8d5935a763" name="Default Changelist" comment="" />
+=======
+      <changelist id="40739598-f05c-4231-a5ec-48ec8c4274ee" name="Default Changelist" comment="" />
+>>>>>>> Stashed changes
       <created>1569314049218</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -124,7 +130,11 @@
       <workItem from="1572939251934" duration="12685000" />
       <workItem from="1573024957115" duration="921000" />
       <workItem from="1573206261933" duration="2324000" />
+<<<<<<< Updated upstream
       <workItem from="1575290205939" duration="2730000" />
+=======
+      <workItem from="1575365973001" duration="1581000" />
+>>>>>>> Stashed changes
     </task>
     <servers />
   </component>
