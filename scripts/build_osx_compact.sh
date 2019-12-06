@@ -43,7 +43,7 @@ mv mainServer.py mainServer.pyx
 
 ls -l
 ls -l analytics
-
+exit 1
 find . -name "__init__.py" -exec rename -v 's/\.py$/\.pyx/i' {} \;
 
 ls -l
