@@ -40,6 +40,10 @@ rsync -a ../../backend --files-from=../../scripts/included_files.txt .
 cp ../../backend/setup_compact.pyx .
 
 mv mainServer.py mainServer.pyx
+
+ls -l
+ls -l analytics
+
 find . -name "__init__.py" -exec rename -v 's/\.py$/\.pyx/i' {} \;
 
 ls -l
