@@ -4,7 +4,6 @@
     <list default="true" id="ffa9ad05-b196-4c26-bff9-1b8d5935a763" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/index.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -131,7 +130,8 @@
       <workItem from="1575380893429" duration="165000" />
       <workItem from="1575386171156" duration="479000" />
       <workItem from="1575625465799" duration="3747000" />
-      <workItem from="1575637686189" duration="660000" />
+      <workItem from="1575637686189" duration="999000" />
+      <workItem from="1575639535781" duration="47000" />
     </task>
     <servers />
   </component>

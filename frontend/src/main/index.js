@@ -186,6 +186,9 @@ app.on('window-all-closed', ()=> {
   if (process.platform === 'darwin') {
     killProcess(corePid)
   }
+  if (process.platform === 'linux') {
+    closeApp(corePid)
+  }
 });
 
 app.on('activate', () => {
