@@ -187,7 +187,8 @@ app.on('window-all-closed', ()=> {
     killProcess(corePid)
   }
   if (process.platform === 'linux') {
-    closeApp(corePid)
+    killProcess(corePid);
+    app.quit()
   }
 });
 
