@@ -7,4 +7,4 @@ call pip install pylint
 cd ../backend
 
 echo "Running tests"
-python python_error_checks.py
+python python_error_checks.py develop
