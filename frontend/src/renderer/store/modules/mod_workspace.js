@@ -589,7 +589,7 @@ const mutations = {
     let newContainer = createClearContainer(arrSelect);
 
     updateLayerName(newContainer, elementList, 1);
-    console.log('add_container', parentContainerID);
+    //console.log('add_container', parentContainerID);
     if(parentContainerID) {
       Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[parentContainerID].containerLayersList, newContainer.layerId, newContainer);
       Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
@@ -600,19 +600,13 @@ const mutations = {
     }
     commit('close_container', {container: newContainer, parentContainer:containersArray[0],  getters, dispatch});
     commit('set_elementUnselect', {getters});
-    containersArray = [];
 
     function createClearContainer(selectList) {
       arrSelect.forEach(element => {
         if(selectList[0].parentContainerID) {
-          const parentContainerLayerList = state.workspaceContent[state.currentNetwork].networkElementList[element.parentContainerID].containerLayersList;
+          const parentContainerLayerList = state.workspaceContent[state.currentNetwork].networkElementList[selectList[0].parentContainerID].containerLayersList;
           for(const id in parentContainerLayerList) {
             delete parentContainerLayerList[element.layerId]
-          }
-          for(const id in elementList) {
-            if(elementList[id].layerId === element.parentContainerID){
-              containersArray.push(elementList[id]);
-            }
           }
         }
       });
@@ -630,13 +624,14 @@ const mutations = {
       };
       let container = createNetElement(fakeEvent);
       container.containerLayersList = {};
-      if(selectList[0].parentContainerID) container.parentContainerID = selectList[0].parentContainerID;
-      console.log('container', container.parentContainerID);
+      if(selectList[0].parentContainerID) {
+        if(selectList[selectList.length - 1].componentName === 'LayerContainer') selectList.splice(selectList.length - 1, 1);
+        container.parentContainerID = selectList[0].parentContainerID;
+      }
       selectList.forEach((el)=>{
         el.parentContainerID = container.layerId;
         container.containerLayersList[el.layerId] = el;
       });
-      console.log(container);
       return container
     }
   },
