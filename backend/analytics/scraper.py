@@ -115,6 +115,7 @@ class Scraper:
                 counter += 1
                 
         self._worker_thread = threading.Thread(target=run)
+        self._worker_thread.daemon = True
         self._worker_thread.start()
 
     def stop(self):

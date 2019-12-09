@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ffa9ad05-b196-4c26-bff9-1b8d5935a763" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -44,7 +45,7 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/frontend/src/renderer/components/workspace" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/../vue-spa" />
     <property name="list.type.of.created.stylesheet" value="SCSS" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -128,6 +129,9 @@
       <workItem from="1575373566150" duration="198000" />
       <workItem from="1575380893429" duration="165000" />
       <workItem from="1575386171156" duration="479000" />
+      <workItem from="1575625465799" duration="3747000" />
+      <workItem from="1575637686189" duration="999000" />
+      <workItem from="1575639535781" duration="1215000" />
     </task>
     <servers />
   </component>
@@ -182,5 +186,15 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="690" y="212" key="FileChooserDialogImpl" timestamp="1575637172931">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="690" y="212" key="FileChooserDialogImpl/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1575637172931" />
+    <state x="594" y="189" width="731" height="662" key="find.popup" timestamp="1575638194840">
+      <screen x="0" y="0" width="1920" height="1040" />
+    </state>
+    <state x="594" y="189" width="731" height="662" key="find.popup/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1575638194840" />
   </component>
 </project>

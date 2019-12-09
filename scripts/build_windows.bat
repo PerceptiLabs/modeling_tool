@@ -23,15 +23,6 @@ dir "%fromfolder%"
 echo "Copying files"
 FOR /F %%a IN (../../scripts/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%%a" "%%a"
 
-REM xcopy /s ..\..\backend . 
-REM del minicodehq.py
-REM del appOc.py
-REM del a2cagent.py
-REM del frontend_data_code.py
-REM del core_test.py
-REM del serverInterface.py
-REM del lwInterface.py
-
 move setup.py setup.pyx
 copy /Y setup.pyx code_generator
 copy /Y setup.pyx core_new

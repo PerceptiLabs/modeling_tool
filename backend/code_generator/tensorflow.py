@@ -186,7 +186,7 @@ class FullyConnectedCodeGenerator(CodeGenerator):
         code += "node = tf.matmul(flat_node, W)\n"
 
         if self._dropout:
-            code += "node=tf.nn.dropout(node, %f)\n" % self._keep_prob
+            code += "node=tf.nn.dropout(node, %s)\n" % str(self._keep_prob)
 
         code += "node = node + b\n"
         code += "\n"
