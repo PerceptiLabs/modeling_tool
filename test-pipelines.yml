@@ -24,7 +24,6 @@ jobs:
     - script: |
           cd script/
           ./test_windows.bat
-        displayName: 'Running tests'
 
 
 ### TEST OSX  ###
