@@ -3,6 +3,7 @@ import { deepCopy }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 
 const {spawn} = require('child_process');
+import { ipcRenderer }   from 'electron'
 
 const namespaced = true;
 //let pauseAction = 'Pause';
@@ -67,10 +68,14 @@ const mutations = {
 };
 
 const actions = {
+  SET_corePid({commit}, id) {
+    commit('set_corePid', id);
+    ipcRenderer.send('save-corePid', id)
+  },
   //---------------
   //  CORE
   //---------------
-  API_runServer({state, commit, rootGetters}) {
+  API_runServer({state, commit, dispatch, rootGetters}) {
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
@@ -92,14 +97,14 @@ const actions = {
           break;
       }
       openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
-      commit('set_corePid', openServer.pid);
-      openServer.on('error', (err)=>  { 
+      dispatch('SET_corePid', openServer.pid);
+      openServer.on('error', (err)=>  {
         console.log('core error', err)
-        coreOffline() 
+        coreOffline()
       });
-      openServer.on('close', (code)=> { 
+      openServer.on('close', (code)=> {
         console.log('core close', code)
-        coreOffline() 
+        coreOffline()
       });
       waitOnlineCore()
     }
