@@ -6,4 +6,6 @@ call pip install dask[array] --upgrade
 cd backend
 
 echo "Running tests"
+dir
+call ls -l
 python python_error_checks.py
