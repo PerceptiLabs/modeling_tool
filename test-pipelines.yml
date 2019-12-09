@@ -19,10 +19,8 @@ jobs:
        #win-pool
        vmImage: "vs2017-win2016"
    steps:
-    - powershell: |
-        Write-Host "test in windows"  
     - script: |
-          cd script/
+          cd scripts/
           ./test_windows.bat
 
 
