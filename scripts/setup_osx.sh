@@ -7,7 +7,7 @@ CONDA_ENV_FILE="../backend/environment.yml"
 echo "Updating Homebrew..."
 brew update --verbose
 
-
+brew install rename
 #echo "Installing wget..."
 #brew install wget
 

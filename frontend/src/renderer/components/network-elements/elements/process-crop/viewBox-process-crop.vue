@@ -5,7 +5,6 @@
         chart-label="Output"
         :chart-data="chartData.ProcessCrop"
       )
-
 </template>
 
 <script>

@@ -9,7 +9,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	height: 3.5rem;
+	height: 2.5rem;
     background: $bg-grad-blue;
 	box-shadow: $icon-shad;
 	&.disable {
@@ -52,6 +52,8 @@
 .popup_body {
 	display: flex;
 	flex-direction: column;
+    max-height: 75vh;
+    overflow-y: auto;
 	&.indent {
 		padding: $popup-indent-top $popup-indent-left;
 	}
@@ -59,11 +61,13 @@
 .popup_foot {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	//justify-content: center;
+	justify-content: flex-end;
 	width: 100%;
 	padding: 0 $popup-indent-left $popup-indent-top;
 	 > * + * {
-		margin-left: 2rem;
+       margin-left: .8rem;
+		//margin-left: 2rem;
 	}
 }
 

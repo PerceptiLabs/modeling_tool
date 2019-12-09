@@ -36,6 +36,7 @@ export default {
   },
   methods: {
     openEditMode() {
+      this.$store.dispatch('mod_events/SET_enableCustomHotKey', false);
       this.editMode = true;
       setTimeout( ()=> {
           this.$refs.titleInput.focus()
@@ -45,7 +46,8 @@ export default {
     closeEditMode() {
       this.editMode = false;
       if(!this.inputText) this.inputText = this.textTitle;
-      this.$emit('change-title', this.inputText)
+      this.$emit('change-title', this.inputText);
+      this.$store.dispatch('mod_events/SET_enableCustomHotKey', true);
     }
   }
 }

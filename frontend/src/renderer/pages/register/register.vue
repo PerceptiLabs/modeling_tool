@@ -48,13 +48,18 @@
           v-model="terms"
         )
           span Agree
-          button.btn.btn--link.policy-btn(@click="toPolicy" type="button") terms and policy
+          button.btn.btn--link.policy-btn(type="button"
+            @click="toPolicy"
+            ) terms and policy
         p.text-error(v-show="errors.has('terms')") {{ errors.first('terms') }}
 
       .form_holder.login-form_actions
         .form_row
           span
-          button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading || !terms") Register
+          button.btn.btn--dark-blue-rev(type="button"
+            :disabled="isLoading || !terms"
+            @click="validateForm"
+            ) Register
       .form_holder
         router-link.btn.btn--link(:to="{name: 'login'}") Already Have Account
 
@@ -111,15 +116,11 @@ export default {
       this.$store.commit('mod_login/SET_showLoader', true);
 
       this.$store.dispatch('mod_apiCloud/CloudAPI_userCreate', this.user)
-        .then((response)=>{
-          this.$router.replace('/login');
+        .then((response)=> this.$router.replace('/login'))
+        .catch((err)=> {
+          console.log(err)
         })
-        // .catch((error)=> {
-        //   this.$store.dispatch('globalView/GP_infoPopup', error);
-        // })
-        .finally(()=> {
-          this.$store.commit('mod_login/SET_showLoader', false);
-        });
+        .finally(()=> this.$store.commit('mod_login/SET_showLoader', false));
     },
     toPolicy() {
       this.isShowPolicy = true;
@@ -133,7 +134,7 @@ export default {
 
 <style lang="scss" scoped>
   @import '../../scss/base';
-  .policy-btn{
-    margin-left: 1rem;
+  .policy-btn {
+    margin-left: .3em;
   }
 </style>

@@ -1,13 +1,12 @@
 <template lang="pug">
   net-base-settings(
-    :tab-set="tabs"
+    :tab-set="dynamicTabs"
     :current-el="currentEl"
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
   )
     template(slot="Computer-content")
-      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Path.length")
+      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
 
         button.btn.tutorial-relative(type="button"
           @click="loadFile"
@@ -25,17 +24,12 @@
           span Choose folders
 
       template(v-else)
+        chart-spinner(v-if="showSpinner")
         .settings-layer_section
           .form_row
             button.btn.btn--link(type="button" @click="clearPath")
               i.icon.icon-backward
               span Back
-          .form_row(v-if="dataColumns.length")
-            base-select(
-              v-model="dataColumnsSelected"
-              :select-options="dataColumns"
-              :select-multiple="true"
-            )
         .settings-layer_section.settings-layer_section--data
           .form_row
             settings-file-list(
@@ -45,11 +39,11 @@
               @add-file="addFiles"
               )
             //
-          .form_row(v-if="settings.accessProperties.Path.length > 1")
+          .form_row(v-if="settings.accessProperties.Sources.length > 1")
             .form_label Summary:
             .form_input
               triple-input.file-list-item_settings(
-                v-model="Partition_summary"
+                v-model="Mix_settingsData_Partition_summary"
                 :disable-edit="true"
                 separate-sign="%"
                 )
@@ -59,15 +53,30 @@
             .form_input
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
-            base-checkbox(v-model="settings.accessProperties.Shuffle_data") Shuffle
-
-    template(slot="Cloud-content")
+            base-checkbox.bigest-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
+        .settings-layer_section
+          .form_row(v-if="dataColumns.length")
+            base-select(
+              v-model="dataColumnsSelected"
+              :select-options="dataColumns"
+              :select-multiple="true"
+            )
+        //-.settings-layer_foot
+          button.btn.btn--primary(type="button") Apply
+    //-template(slot="Cloud-content")
       //-settings-cloud
-
+    template(slot="Code-content")
+      settings-code(
+        :current-el="currentEl"
+        :el-settings="settings"
+        v-model="coreCode"
+      )
     template(slot="Computer-action")
 
-    template(slot="Cloud-action")
+    //-template(slot="Cloud-action")
       span
+    template(slot="Code-action")
+
 
 </template>
 
@@ -79,6 +88,7 @@
   import SettingsFileList  from '@/components/network-elements/elements-settings/setting-file-list.vue';
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
   import TripleInput    from "@/components/base/triple-input";
+  import ChartSpinner   from '@/components/charts/chart-spinner'
 
   import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
   import {mapActions, mapGetters}     from 'vuex';
@@ -86,21 +96,16 @@
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
-    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList },
+    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, ChartSpinner },
     mounted() {
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
       }
-      this.getDataMeta('DataData')
-        .then((data)=> {
-          if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
-          this.getDataPlot('DataData');
-        });
     },
     data() {
       return {
         //tabs: ['Computer', 'Cloud'],
-        tabs: ['Computer'],
+        tabs: ['Computer', 'Code'],
         dataColumns: [],
         dataColumnsSelected: [],
         interactiveInfo: {
@@ -120,12 +125,14 @@
             Dataset_size: 3000,
             Category:'Local',
             Type: 'Data',
-            Path: [],
+            //Path: [],
+            Sources: [], //{type: 'file'/'directory', path: 'PATH'}
             Partition_list: [],
             Batch_size: 10,
             Shuffle_data: true,
           }
-        }
+        },
+        showSpinner: false
       }
     },
     computed: {
@@ -133,20 +140,22 @@
         appPath:        'globalView/GET_appPath',
         isTutorialMode: 'mod_tutorials/getIstutorialMode',
       }),
+      dynamicTabs() {
+        return this.settings.accessProperties.Sources.length ? ['Computer', 'Code'] : ['Computer']
+      },
       typeOpened() {
-        const path = this.settings.accessProperties.Path;
-        if(path.length) {
-          return path[0].indexOf('.') > 0 ? 'files' : 'folders'
-        }
+        const path = this.settings.accessProperties.Sources;
+        if(path.length) return path[0].type;
         else return ''
       },
       fileList: {
         get() {
-          const path = this.settings.accessProperties.Path;
+          const path = this.settings.accessProperties.Sources;
           const partitionList = this.settings.accessProperties.Partition_list;
           const fileArray = path.map((item, index)=> {
             return {
-              path: item,
+              path: item.path,
+              type: item.type,
               settings: partitionList[index] || [70, 20, 10]
             };
           });
@@ -156,8 +165,12 @@
         },
         set(newVal) {
           const partitionList = newVal.map((item)=> item.settings);
-          const pathList =      newVal.map((item)=> item.path);
-          this.settings.accessProperties.Path = pathList;
+          const pathList =      newVal.map((item)=> {
+            return {
+              path: item.path,
+              type: item.type
+            }});
+          this.settings.accessProperties.Sources = pathList;
           this.settings.accessProperties.Partition_list = partitionList;
         }
       }
@@ -165,31 +178,30 @@
     watch: {
       dataColumnsSelected(newVal) {
         this.settings.accessProperties.Columns = newVal;
-        this.getDataPlot('DataData')
+        //this.Mix_settingsData_getDataPlot('DataData')
+        //this.Mix_settingsData_getPreviewVariableList(this.currentEl.layerId)
       },
       fileList: {
         handler(newVal) {
-          this.getPartitionSummary('DataData');
+          this.Mix_settingsData_getPartitionSummary(this.currentEl.layerId);
         },
         deep: true,
-        immediate: true
+        //immediate: true
       },
-      'settings.accessProperties.Path': {
+      'settings.accessProperties.Sources.length': {
         handler(newVal) {
-          if(newVal.length) this.showBtn();
-          else {
-            this.$nextTick(()=> {
-              this.hideBtn();
-            })
-          }
+          if(newVal) this.$nextTick(()=> { this.showBtn() });
+          else this.$nextTick(()=> { this.hideBtn() });
+          this.getSettingsInfo()
         },
-        deep: true,
         immediate: true
       }
     },
     methods: {
       ...mapActions({
-        tutorialPointActivate: 'mod_tutorials/pointActivate',
+        tutorialPointActivate:  'mod_tutorials/pointActivate',
+        // API_getPartitionSummary:'mod_api/API_getPartitionSummary',
+        // API_getDataMeta:        'mod_api/API_getDataMeta',
       }),
       setPartitionList(list) {
         this.settings.accessProperties.Partition_list = list
@@ -205,7 +217,8 @@
           ]
         };
         let optionTutorial = {
-          title:"Load file",
+          title: "Load file",
+          buttonLabel: 'Load file',
           defaultPath: `${this.appPath}basic-data`,
           properties: ['openFile'],
           filters: [
@@ -214,47 +227,44 @@
         };
         let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
         openLoadDialog(optionDialog)
-          .then((pathArr)=> this.saveLoadFile(pathArr, isAppend))
-          .catch(()=> {
-          })
+          .then((pathArr)=> this.saveLoadFile(pathArr, 'file', isAppend))
+          .catch(()=> { })
       },
       loadFolder(isAppend) {
         loadPathFolder()
-          .then((pathArr)=> this.saveLoadFile(pathArr, isAppend))
-          .catch(()=> {
-          })
+          .then((pathArr)=> this.saveLoadFile(pathArr, 'directory', isAppend))
+          .catch(()=> { })
       },
       addFiles() {
-        if(this.typeOpened === 'files') this.loadFile(true);
+        if(this.typeOpened === 'file') this.loadFile(true);
         else this.loadFolder(true)
       },
-      saveLoadFile(pathArr, isAppend) {
+      saveLoadFile(pathArr, type, isAppend) {
+        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'});
         if(isAppend) {
-          const allPath = [... this.settings.accessProperties.Path, ...pathArr];
-          this.settings.accessProperties.Path = [... new Set(allPath)]
+          const allPath = [... this.settings.accessProperties.Sources.map((el)=> el.path), ...pathArr];
+          this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources([... new Set(allPath)], type)
         }
-        else this.settings.accessProperties.Path = pathArr;
-        this.getSettingsInfo();
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'})
+        else this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
+        //this.getSettingsInfo();
       },
       clearPath() {
-        this.deleteDataMeta('DataData')
+        this.Mix_settingsData_deleteDataMeta('DataData')
           .then(()=> {
-            this.settings.accessProperties.Path = [];
-            this.getSettingsInfo()
+            this.settings.accessProperties.Sources = [];
+            //this.getSettingsInfo()
           })
-          .catch(()=> console.log('set-data-data 144 err'))
+          .catch((err)=> console.log(err))
       },
       getSettingsInfo() {
-        if(this.settings.accessProperties.Path.length) {
-          this.dataSettingsMeta('DataData')
-            .then((data)=>{
-              if (data.Columns.length) {
-                this.createSelectArr(data.Columns);
-                return data
-              }
-            })
-            .then(()=> this.getDataPlot('DataData'))
+        if(this.settings.accessProperties.Sources.length) {
+
+          this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
+            .then((data) => {
+              //console.log(data);
+              if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
+            });
+
         }
       },
       createSelectArr(data) {
@@ -264,9 +274,9 @@
         this.dataColumnsSelected.push(this.dataColumns[0].value);
       },
       saveSettings(tabName) {
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
         this.applySettings(tabName);
-        this.checkPartitionList()
+        this.checkPartitionList();
+        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'}))
       },
       checkPartitionList() {
         this.settings.accessProperties.Partition_list.forEach((item)=> {
@@ -276,10 +286,12 @@
         })
       },
       hideBtn() {
-        document.getElementById('js-hide-btn').style.cssText = 'display: none'
+        const btn = document.getElementById('js-hide-btn');
+        if(btn) btn.style.cssText = 'display: none'
       },
       showBtn() {
-        document.getElementById('js-hide-btn').style.cssText = ''
+        const btn = document.getElementById('js-hide-btn');
+        if(btn) btn.style.cssText = ''
       },
     }
   }
@@ -329,5 +341,8 @@
     .triple-input_input ~ .triple-input_input {
       margin-left: 1em;
     }
+  }
+  .settings-layer_section--data label.bigest-text {
+    font-size: 1.4rem
   }
 </style>

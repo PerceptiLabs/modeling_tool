@@ -2,6 +2,7 @@
   .net-element.js-clickout(tabindex="0"
     ref="rootBaseElement"
     :style="style"
+    :openLayerContainer="openLayerContainer"
     :id="dataEl.layerMeta.tutorialId"
     :class="classEl"
 
@@ -11,16 +12,28 @@
     @contextmenu.stop.prevent="openContext($event)"
     )
     .net-element_be-for-end(v-if="beForEnd") {{ beForEnd }}
-    .net-element_checkpoint-icon(v-if="showCheckpoint") t
-    .net-element_checkpoint-icon.net-element_code-error(v-if="dataEl.layerCodeError")
+    .net-element_checkpoint-icon(v-if="showCheckpoint")
+
+
+    .net-element_code-error(v-if="dataEl.layerCodeError")
       i.icon.icon-code-error
+
+    i.icon.icon-layer-settings.openContainer(
+      v-if="dataEl.componentName === 'LayerContainer'"
+      @click="openLayerContainer"
+      )
+
+    .net-element_arrows-start(v-if="showDotsArrow")
+      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
+    .net-element_arrows-start.net-element_arrows-start--right(v-if="showDotsArrow")
+      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
+    .net-element_arrows-start.net-element_arrows-start--bottom(v-if="showDotsArrow")
+      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
+    .net-element_arrows-start.net-element_arrows-start--left(v-if="showDotsArrow")
+      button.arrows-start_btn(type="button" @mousedown="startArrowPaint($event)")
+
     .net-element_btn(ref="BaseElement")
       slot
-    .net-element_arrows-start
-      button.arrows-start_btn.arrows-start_btn--top(type="button" @mousedown="startArrowPaint($event)")
-      button.arrows-start_btn.arrows-start_btn--right(type="button" @mousedown="startArrowPaint($event)")
-      button.arrows-start_btn.arrows-start_btn--bottom(type="button" @mousedown="startArrowPaint($event)")
-      button.arrows-start_btn.arrows-start_btn--left(type="button" @mousedown="startArrowPaint($event)")
 
     .net-element_window(
       v-if="settingsIsOpen"
@@ -42,408 +55,9 @@
 
 </template>
 
-<script>
-import ContextMenu        from '@/components/network-elements/net-context-menu/net-context-menu.vue';
-
-import baseNetDrag        from '@/core/mixins/base-net-drag.js';
-import baseNetPaintArrows from '@/core/mixins/base-net-paint-arrows.js';
-import mousedownOutside   from '@/core/mixins/mousedown-outside.js'
-import {mapGetters, mapActions}       from 'vuex';
-
-export default {
-  name: 'NetBaseElement',
-  mixins: [baseNetDrag, baseNetPaintArrows, mousedownOutside],
-  components: { ContextMenu },
-  props: {
-    layerContainer: {
-      type: Boolean,
-      default: false
-    },
-    dataEl: {
-      type: Object,
-      default: function () {
-        return {}
-      }
-    },
-  },
-  provide () {
-    return {
-      hideAllWindow: this.hideAllWindow
-    }
-  },
-  mounted() {
-    //this.$refs.rootBaseElement.addEventListener('mousedown', this.switchMousedownEvent);
-    this.$refs.rootBaseElement.addEventListener('touchstart', this.switchMousedownEvent);
-  },
-
-  beforeDestroy() {
-    //this.$refs.rootBaseElement.removeEventListener('mousedown', this.switchMousedownEvent);
-    this.$refs.rootBaseElement.removeEventListener('touchstart', this.switchMousedownEvent);
-    /*appMode*/
-    this.$parent.$parent.$el.removeEventListener('mousemove', this.arrowMovePaint);
-    this.$refs.rootBaseElement.removeEventListener('mouseup', this.$_paintArrow_arrowEndPaint);
-
-    this.$parent.$parent.$el.removeEventListener('touchmove', this.arrowMovePaint, true);
-    this.$refs.rootBaseElement.removeEventListener('touchend touchcancel', this.$_paintArrow_arrowEndPaint, true);
-    this.$refs.rootBaseElement.removeEventListener('touchstart', this.$_paintArrow_arrowEndPaint, true);
-    /*clickOutsideAction*/
-    document.removeEventListener('mousedown', this.mousedownOutside);
-  },
-  data() {
-    return {
-      contextIsOpen: false,
-      settingsIsOpen: false,
-      openWinPosition: {
-        left: false,
-        top: false,
-        offset: 0
-      }
-    }
-  },
-  computed: {
-    ...mapGetters({
-      tutorialActiveAction: 'mod_tutorials/getActiveAction',
-      isTutorialMode:       'mod_tutorials/getIstutorialMode',
-      isTraining:           'mod_workspace/GET_networkIsTraining',
-      editIsOpen:           'mod_workspace/GET_networkIsOpen',
-      currentSelectedEl:    'mod_workspace/GET_currentSelectedEl',
-      statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
-    }),
-    showCheckpoint() {
-      return this.dataEl.checkpoint && this.dataEl.checkpoint.length
-    },
-    currentId() {
-      return this.dataEl.layerId
-    },
-    beForEnd() {
-      //console.log('NetBaseElement beForEnd', this.dataEl.el.layerMeta);
-      return this.dataEl.layerMeta.OutputDim
-    },
-    isSelectedEl() {
-      return this.dataEl.layerMeta.isSelected
-    },
-    networkMode() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.netMode
-    },
-    wsZoom() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkMeta.zoom;
-    },
-    // hotKeyPressEsc() {
-    //   return this.$store.state.mod_events.globalPressKey.esc;
-    // },
-    // hotKeyPressDelete() {
-    //   return this.$store.state.mod_events.globalPressKey.del
-    // },
-    classEl() {
-      return {
-        'net-element--active': this.isSelectedEl,
-        'element--hidden': this.dataEl.layerMeta.isInvisible
-      }
-    },
-    classElWindow() {
-      return {
-        'net-element_window--left': this.openWinPosition.left,
-        'net-element_window--top': this.openWinPosition.top
-      }
-    },
-    styleElWindow() {
-      let style = {zoom: `${(100 / (this.wsZoom * 100)) * 100}%`};
-      let offsetWin = this.openWinPosition.offset;
-      if(offsetWin !== 0) {
-        this.openWinPosition.top
-          ? style.bottom = `-${offsetWin}px`
-          : style.top = `-${offsetWin}px`
-      }
-      return style
-    },
-  },
-  watch: {
-    isSelectedEl(newVal) {
-      newVal
-        ? this.mousedownOutsideBefore()
-        : null
-    },
-    '$store.state.mod_events.globalPressKey.esc': {
-      handler() {
-        if(!this.isTutorialMode) this.hideAllWindow();
-      }
-    },
-    '$store.state.mod_events.globalPressKey.del': {
-      handler() {
-        if(this.editIsOpen
-          && !this.settingsIsOpen
-          && this.isSelectedEl
-        ) {
-          this.$store.dispatch('mod_workspace/DELETE_element');
-        }
-      }
-    },
-    // hotKeyPressDelete() {
-    //   if(!this.settingsIsOpen) {
-    //     console.log('hotKeyPressDelete()', this.settingsIsOpen);
-    //     this.$store.dispatch('mod_workspace/DELETE_element');
-    //   }
-    // }
-  },
-  methods: {
-    ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
-      tutorialShowHideTooltip:  'mod_tutorials/showHideTooltip',
-      setNetMode:               'mod_workspace/SET_netMode',
-    }),
-    startArrowPaint(ev) {
-      document.addEventListener('mouseup', this.toEditMode);
-      this.$store.dispatch('mod_workspace/SET_netMode', 'addArrow');
-      this.$_paintArrow_arrowStartPaint(ev);
-    },
-    toEditMode() {
-      this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
-      document.removeEventListener('mouseup', this.toEditMode);
-    },
-    switchMousedownEvent(ev) {
-      if (this.isLock) return;
-      //console.log('switchMousedownEvent', ev);
-      if(this.networkMode === 'addArrow') this.$_paintArrow_arrowStartPaint(ev);
-
-      if(this.networkMode === 'edit'
-        && this.editIsOpen
-        && ev.button === 0
-      ) {
-        this.setFocusEl(ev);
-        this.bodyDown(ev)
-      }
-    },
-    switchClickEvent(ev) {
-      if (this.isLock) return;
-
-      if (!this.editIsOpen
-        && !this.layerContainer
-      ) {
-        this.$store.commit('mod_statistics/CHANGE_selectElArr', this.dataEl)
-      }
-    },
-    switchDblclick(event) {
-      if (this.isLock) return;
-      if(this.networkMode !== 'edit') {
-        this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
-        this.setFocusEl(event);
-      }
-      this.layerContainer
-        ? this.openLayerContainer()
-        : this.openSettings(event)
-    },
-    openLayerContainer() {
-      this.$emit('open-container')
-    },
-    openSettings(event) {
-      this.tutorialShowHideTooltip();
-      this.hideAllWindow();
-      if(!this.editIsOpen) return;
-      this.settingsIsOpen = true;
-
-      this.$nextTick(() => {
-        this.calcWindowPosition();
-        this.tutorialPointActivate({
-          way: 'next',
-          validation: this.tutorialSearchId(event)
-        })
-      })
-    },
-    openContext(event) {
-      if(!this.isTutorialMode) {
-        this.hideAllWindow();
-        if(!this.currentSelectedEl.length) {
-          this.setFocusEl(event);
-        }
-        //this.calcWindowPosition();
-        if(this.networkMode === 'edit' && this.editIsOpen) {
-          this.contextIsOpen = true;
-        }
-      }
-    },
-    calcWindowPosition(el) {
-      let windowWs = document.querySelector('.js-info-section_main');
-      let windowWsWidth = windowWs.clientWidth/this.wsZoom;
-      let windowWsHeight = windowWs.clientHeight/this.wsZoom;
-      let elementSettingsHeight = this.$refs.elementSettings.clientHeight/this.wsZoom;
-      let layerHeight = this.$refs.rootBaseElement.clientHeight;
-      let layerTop = this.dataEl.layerMeta.position.top;
-      let winCenterWidth = windowWs.scrollLeft + (windowWsWidth - layerHeight)/2;
-      let winCenterHeight = windowWs.scrollTop + (windowWsHeight - layerHeight)/2;
-
-      winCenterWidth < this.dataEl.layerMeta.position.left
-        ? this.openWinPosition.left = true
-        : this.openWinPosition.left = false;
-      winCenterHeight < layerTop
-        ? this.openWinPosition.top = true
-        : this.openWinPosition.top = false;
-
-      if(this.openWinPosition.top) {
-        if(layerTop < elementSettingsHeight) {
-          this.openWinPosition.offset = (elementSettingsHeight - layerTop - layerHeight + 10)*this.wsZoom
-        }
-      }
-      else {
-        if((windowWsHeight - layerTop) < elementSettingsHeight) {
-          this.openWinPosition.offset = (elementSettingsHeight - (windowWsHeight - layerTop) + 10)*this.wsZoom
-        }
-      }
-    },
-    setFocusEl(ev) {
-      ev.ctrlKey
-        ? this.$store.dispatch('mod_workspace/SET_elementMultiSelect', {id: this.currentId, setValue: true })
-        : this.$store.dispatch('mod_workspace/SET_elementSelect',      {id: this.currentId, setValue: true })
-    },
-    mousedownOutsideBefore() {
-      this.MousedownElementTracking = this.$refs.rootBaseElement;
-      document.addEventListener('mousedown', this.mousedownOutside);
-    },
-    mousedownOutsideAction() {
-      if (this.editIsOpen) this.deselect()
-    },
-    hideAllWindow() {
-      this.settingsIsOpen = false;
-      this.contextIsOpen = false;
-      this.openWinPosition = {
-        left: false,
-        top: false,
-        offset: 0
-      }
-    },
-    deselect() {
-      if(!this.isTutorialMode) this.hideAllWindow();
-      this.$store.dispatch('mod_workspace/SET_elementSelect', {id: this.currentId, setValue: false });
-      this.tutorialShowHideTooltip();
-    },
-    tutorialSearchId(event) {
-       return event.target.tagName === 'I'
-         ? event.target.parentNode.parentNode.parentNode.id
-         : event.target.parentNode.parentNode.id
-    }
-  }
-}
-</script>
+<script src="./net-base-element.js"></script>
 
 <style lang="scss" scoped>
   @import "../../../scss/base";
-  .net-element {
-    position: absolute;
-    box-sizing: border-box;
-    border-radius: .5rem;
-    background-color: $bg-workspace;
-    &:hover {
-      will-change: top, left;
-      .net-element_arrows-start {
-        display: block;
-      }
-    }
-    &.net-element--active {
-      .net-element_arrows-start {
-        display: block;
-      }
-    }
-    .btn--layersbar {
-      width: 60px;
-      height: 60px;
-    }
-  }
-  .net-element_window {
-    position: absolute;
-    z-index: 10;
-    top: 0;
-    left: 100%;
-    padding-left: 10px;
-    padding-right: 10px;
-    &.net-element_window--left {
-      left: auto;
-      right: 100%;
-    }
-    &.net-element_window--top {
-      top: auto;
-      bottom: 0;
-    }
-  }
-  .net-element_btn {
-    position: relative;
-    z-index: 3;
-    margin: 0;
-    padding: 0;
-    background-color: transparent;
-    box-shadow: $layer-shad;
-    /*<!--&:after {-->*/
-    /*<!--  content: '';-->*/
-    /*<!--  opacity: 0;-->*/
-    /*<!--  position: absolute;-->*/
-    /*<!--  left: -2px;-->*/
-    /*<!--  right: -2px;-->*/
-    /*<!--  top: -2px;-->*/
-    /*<!--  bottom: -2px;-->*/
-    /*<!--  border: 2px dotted #fff;-->*/
-    /*<!--  background: #000;-->*/
-    /*<!--  z-index: -1;-->*/
-    /*<!--  border-radius: $bdrs;-->*/
-    /*<!--}-->*/
-  }
-  /*.net-element--active .net-element_btn:after {*/
-  /*  opacity: 1;*/
-  /*}*/
-
-  .net-element_be-for-end {
-    font-size: 1.2rem;
-    position: absolute;
-    top: -20px; //zoom need px!
-    left: 50%;
-    z-index: 2;
-    transform: translateX(-50%);
-    white-space: nowrap;
-    background-color: rgba($bg-workspace, .5);
-  }
-  .net-element_checkpoint-icon {
-    position: absolute;
-    font-size: 1.4rem;
-    top: 2px;
-    right: 7px;
-    z-index: 4;
-  }
-  .net-element_code-error {
-    right: 2px;
-  }
-  .net-element--hide-layer {
-    opacity: 0;
-    visibility: hidden;
-  }
-  .net-element_arrows-start {
-    display: none;
-  }
-  .arrows-start_btn {
-    position: absolute;
-    width: .8rem;
-    height: .8rem;
-    background: #00C8D1;
-    border: 2px solid #fff;
-    border-radius: 50%;
-    display: block;
-    z-index: 4;
-    padding: 0;
-    &--top {
-      top: 0;
-      left: 50%;
-      transform: translate(-50%, -50%);
-    }
-    &--left {
-      left: 0;
-      top: 50%;
-      transform: translate(-50%, -50%);
-    }
-    &--right {
-      right: 0;
-      top: 50%;
-      transform: translate(50%, -50%);
-    }
-    &--bottom {
-      bottom: 0;
-      left: 50%;
-      transform: translate(-50%, 50%);
-    }
-  }
+  @import "./net-base-element";
 </style>

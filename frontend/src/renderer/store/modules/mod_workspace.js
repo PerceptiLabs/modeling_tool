@@ -1,4 +1,4 @@
-import { generateID, calcLayerPosition }  from "@/core/helpers.js";
+import { generateID, calcLayerPosition, deepCopy }  from "@/core/helpers.js";
 import { widthElement } from '@/core/constants.js'
 import Vue    from 'vue'
 import router from '@/router'
@@ -15,7 +15,13 @@ const state = {
     start: {x: 0, y: 0},
     stop: {x: 0, y: 0},
   },
+  positionForCopyElement: {
+    cursor: {x: 0, y: 0},
+    elementsPosition: [],
+    cursorInsideWorkspace: true
+  },
   showStartTrainingSpinner: false,
+  isOpenElement: false,
 };
 
 const getters = {
@@ -27,10 +33,10 @@ const getters = {
       ? state.workspaceContent[state.currentNetwork]
       : {networkID: '1'} //for the close ap when the empty workspace
   },
-  GET_currentNetworkSettings(state, getters) {
+  GET_currentNetworkId(state, getters) {
     return getters.GET_networkIsNotEmpty
-      ? state.workspaceContent[state.currentNetwork].networkSettings
-      : {}
+      ? state.workspaceContent[state.currentNetwork].networkID
+      : 0
   },
   GET_currentNetworkElementList(state, getters) {
     return getters.GET_networkIsNotEmpty
@@ -55,20 +61,13 @@ const getters = {
   GET_networkIsTraining(state, getters) {
     const coreStatus = getters.GET_networkCoreStatus;
     const statusList = ['Training', 'Validation', 'Paused'];
-    return statusList.includes(coreStatus) ? true : false
+    return !!statusList.includes(coreStatus)
   },
   GET_tutorialActiveId(state, getters, rootState, rootGetters) {
     if( rootGetters['mod_tutorials/getIstutorialMode'] && rootGetters['mod_tutorials/getActiveAction']) {
       return rootGetters['mod_tutorials/getActiveAction'].dynamic_id
     }
   },
-  // GET_networkCanEditLayers(state, getters) {
-  //   if(getters.GET_networkIsNotEmpty) {
-  //     let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
-  //     let openTest = getters.GET_currentNetwork.networkMeta.openTest;
-  //     return !(openStatistics || openTest) ? true : false;
-  //   }
-  // },
   GET_statisticsIsOpen(state, getters) {
     if(getters.GET_networkIsNotEmpty) {
       return getters.GET_currentNetwork.networkMeta.openStatistics;
@@ -83,7 +82,7 @@ const getters = {
     if(getters.GET_networkIsNotEmpty) {
       let openStatistics = getters.GET_currentNetwork.networkMeta.openStatistics;
       let openTest = getters.GET_currentNetwork.networkMeta.openTest;
-      return !(openStatistics || openTest) ? true : false;
+      return !(openStatistics || openTest);
     }
   },
   GET_networkWaitGlobalEvent(state, getters) {
@@ -104,11 +103,24 @@ const getters = {
   GET_showStartTrainingSpinner(state) {
     return state.showStartTrainingSpinner
   },
+  GET_enableHotKeyElement(state, getters, rootState) {
+    return !state.isOpenElement && getters.GET_networkIsOpen && rootState.mod_events.isEnableCustomHotKey
+  },
+  GET_positionForCopyElement(state) {
+    return state.positionForCopyElement;
+  },
+  GET_cursorInsideWorkspace(state) {
+    return state.positionForCopyElement.cursorInsideWorkspace;
+  }
 };
 
 const mutations = {
   reset_network(state) {
     state.workspaceContent = []
+  },
+  RESTORE_network(state, val) {
+    state.workspaceContent = val.workspaceContent;
+    state.currentNetwork = val.currentNetwork;
   },
   //---------------
   //  NETWORK
@@ -116,17 +128,19 @@ const mutations = {
   set_networkName(state, {getters, value}) {
     getters.GET_currentNetwork.networkName = value
   },
+  set_networkRootFolder(state, {getters, value}) {
+    getters.GET_currentNetwork.networkRootFolder = value
+  },
   add_network (state, network) {
     let workspace = state.workspaceContent;
     let newNetwork = {};
     //-- DEFAULT DATA
     const defaultNetwork = {
-      networkName: 'New_Network',
+      networkName: 'New_Model',
       networkID: '',
-      networkSettings: null,
       networkMeta: {},
       networkElementList: null,
-      networkRootFolder: []
+      networkRootFolder: ''
     };
     const defaultMeta = {
       openStatistics: null, //null - hide Statistics; false - close Statistics, true - open Statistics
@@ -156,7 +170,7 @@ const mutations = {
     //-- Check and create the position
     createPositionElements(newNetwork.networkElementList);
     //-- Add to workspace
-    workspace.push(JSON.parse(JSON.stringify(newNetwork)));
+    workspace.push(deepCopy(newNetwork));
     //-- Open last Network
     state.currentNetwork = workspace.length - 1;
     //-- Go to app page
@@ -252,12 +266,6 @@ const mutations = {
     state.workspaceContent.splice(index, 1);
   },
   //---------------
-  //  NETWORK SETTINGS
-  //---------------
-  set_networkSettings(state, {getters, value}) {
-    getters.GET_currentNetwork.networkSettings = value
-  },
-  //---------------
   //  LOADER FOR TRAINING
   //---------------
   SET_showStartTrainingSpinner(state, value) {
@@ -286,14 +294,18 @@ const mutations = {
     }
   },
   set_openTest(state, {dispatch, getters, value}) {
-    getters.GET_currentNetwork.networkMeta.openTest = value;
     if(value && getters.GET_statisticsIsOpen !== null) {
       getters.GET_currentNetwork.networkMeta.openStatistics = false;
     }
     if(value) {
+      getters.GET_currentNetwork.networkMeta.openTest = false;
       dispatch('mod_statistics/STAT_defaultSelect', null, {root: true});
+      setTimeout(()=> {
+        getters.GET_currentNetwork.networkMeta.openTest = true
+      }, 0)
       //dispatch('mod_events/EVENT_chartResize', null, {root: true});
     }
+    else getters.GET_currentNetwork.networkMeta.openTest = value;
   },
   set_statusNetworkCore(state, {getters, value}) {
     getters.GET_currentNetwork.networkMeta.coreStatus = value;
@@ -328,11 +340,27 @@ const mutations = {
   //---------------
   //  NETWORK ELEMENTS
   //---------------
+  SET_CopyCursorPosition(state, position) {
+    state.positionForCopyElement.cursor.x = position.x;
+    state.positionForCopyElement.cursor.y = position.y;
+  },
+  SET_CopyElementsPosition(state, position) {
+    state.positionForCopyElement.elementsPosition.push({left: position.left, top: position.top});
+  },
+  SET_cursorInsideWorkspace(state, value) {
+    state.positionForCopyElement.cursorInsideWorkspace = value
+  },
+  CLEAR_CopyElementsPosition(state) {
+    state.positionForCopyElement.elementsPosition = [];
+  },
   SET_elementName(state, value) {
     currentElement(value.id).layerName = value.setValue
   },
-  add_element(state, {getters, event}) {
-    let duplicatePositionIndent = 30;
+  add_element(state, {getters, dispatch, event}) {
+    let duplicatePositionIndent = 60;
+    let cursorPosition = getters.GET_positionForCopyElement.cursor;
+    let firstCopyPositionElement = getters.GET_positionForCopyElement.elementsPosition[0];
+    let isCursorInsideWorkspace = getters.GET_cursorInsideWorkspace;
     let newEl = state.dragElement
       ? state.dragElement
       : createNetElement(event);
@@ -346,7 +374,12 @@ const mutations = {
     newEl.layerMeta.position.top = (event.offsetY - top)/zoom;
     newEl.layerMeta.position.left = (event.offsetX - left)/zoom;
     let depth = checkPosition(newEl, elementList);
-    if(depth > 0) {
+
+    if(isCursorInsideWorkspace && depth > 0) {
+      newEl.layerMeta.position.top =  (cursorPosition.y + newEl.layerMeta.position.top) - firstCopyPositionElement.top - duplicatePositionIndent;
+      newEl.layerMeta.position.left =  (cursorPosition.x + newEl.layerMeta.position.left) - firstCopyPositionElement.left - duplicatePositionIndent;
+    }
+    else {
       newEl.layerMeta.position.top = newEl.layerMeta.position.top + (duplicatePositionIndent * depth);
       newEl.layerMeta.position.left = newEl.layerMeta.position.left + (duplicatePositionIndent * depth);
     }
@@ -357,6 +390,7 @@ const mutations = {
     if(!elementList) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
     state.dragElement = null;
+    dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
 
     function checkPosition(el, list) {
       let depth = 0;
@@ -386,17 +420,27 @@ const mutations = {
     let arrSelectID = [];
     let net = {...getters.GET_currentNetworkElementList};
     deleteElement(arrSelect);
-
     for(let el in net) {
-      net[el].connectionOut = net[el].connectionOut.filter((connect)=>{
+      let element = net[el];
+      element.connectionOut = element.connectionOut.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
-      net[el].connectionArrow = net[el].connectionArrow.filter((connect)=>{
+      element.connectionArrow = element.connectionArrow.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
-      net[el].connectionIn  = net[el].connectionIn.filter((connect)=>{
+      element.connectionIn  = element.connectionIn.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
+
+      if(element.layerNone && element.containerLayersList) {
+        arrSelect.forEach(select => {
+          element.layerNone = false;  // (close layersContainer) for remove elements from Layers
+          delete element.containerLayersList[select.layerId];
+          element.layerNone = true;
+          let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
+          if (isLastContainerElement) delete net[el];
+        });
+      }
     }
     state.workspaceContent[state.currentNetwork].networkElementList = net;
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
@@ -456,12 +500,18 @@ const mutations = {
     currentElement(stopID).connectionIn = newConnectionIn;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
+  DELETE_copyProperty(state, id) {
+    state.workspaceContent[state.currentNetwork].networkElementList[id].copyId = null;
+    state.workspaceContent[state.currentNetwork].networkElementList[id].copyContainerElement = null;
+  },
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
-  set_elementSettings(state, settings) {
+  set_elementSettings(state, {dispatch, settings}) {
+    //console.log('set_elementSettings', settings);
     currentElement(settings.elId).layerSettings = settings.set;
     currentElement(settings.elId).layerCode = settings.code;
     currentElement(settings.elId).layerSettingsTabName = settings.tabName;
+    dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
   },
 
   /*-- NETWORK ELEMENTS META --*/
@@ -471,6 +521,7 @@ const mutations = {
     }
   },
   set_elementSelect(state, value) {
+
     currentElement(value.id).layerMeta.isSelected = value.setValue;
   },
   set_elementSelectAll(state, {getters}) {
@@ -502,13 +553,14 @@ const mutations = {
     elPosition.top = value.top;
     elPosition.left = value.left;
   },
-  set_elementInputDim(state, {getters, value}) {
-    for(let element in getters.GET_currentNetworkElementList) {
-      currentElement(element).layerMeta.InputDim = value[element]
+  set_elementInputDim(state, value) {
+    for(let element in value) {
+      currentElement(element).layerMeta.InputDim = value[element].inShape;
+      currentElement(element).layerCodeError = value[element].Error
     }
   },
-  set_elementOutputDim(state, {getters, value}) {
-    for(let element in getters.GET_currentNetworkElementList) {
+  set_elementOutputDim(state, {value}) {
+    for(let element in value) {
       currentElement(element).layerMeta.OutputDim = value[element].Dim;
       currentElement(element).layerCodeError = value[element].Error
     }
@@ -718,6 +770,13 @@ const mutations = {
       stop: {x: 0, y: 0},
     }
   },
+  set_isOpenElement (state, value) {
+    state.isOpenElement = value
+  },
+  set_historyStep (state, {value, dispatch}) {
+    state.workspaceContent[state.currentNetwork].networkName = value.networkName;
+    state.workspaceContent[state.currentNetwork].networkElementList = value.networkElementList;
+  },
 };
 
 const actions = {
@@ -730,8 +789,8 @@ const actions = {
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
   },
-  SET_networkSettings({commit, getters}, value) {
-    commit('set_networkSettings', {getters, value})
+  SET_networkRootFolder({commit, getters}, value) {
+    commit('set_networkRootFolder', {getters, value})
   },
   SET_networkElementList({commit, getters}, value) {
     commit('set_networkElementList', {getters, value})
@@ -808,11 +867,11 @@ const actions = {
   //---------------
   //  NETWORK ELEMENTS
   //---------------
-  SET_elementSettings({commit}, settings) {
-    commit('set_elementSettings', settings)
+  SET_elementSettings({commit, dispatch}, settings) {
+    commit('set_elementSettings', {dispatch, settings})
   },
-  ADD_element({commit, getters}, event) {
-    commit('add_element', {getters, event})
+  ADD_element({commit, getters, dispatch}, event) {
+    commit('add_element', {getters, dispatch, event})
   },
   DELETE_element({commit, getters, dispatch}) {
     if(getters.GET_networkIsOpen) {
@@ -833,18 +892,18 @@ const actions = {
     commit('set_elementSelect', value)
   },
   SET_elementSelectAll({commit, getters}) {
-    commit('set_elementSelectAll', {getters})
+    if(getters.GET_enableHotKeyElement) commit('set_elementSelectAll', {getters})
   },
   SET_elementMultiSelect({commit}, value) {
     commit('set_elementMultiSelect', value)
   },
-  SET_elementInputDim({commit, getters}, value) {
-    commit('set_elementInputDim', {getters, value})
+  SET_elementInputDim({commit}, value) {
+    commit('set_elementInputDim', value)
   },
   SET_elementOutputDim({commit, getters}, value) {
     commit('set_elementOutputDim', {getters, value})
   },
-  CHANGE_elementPosition({commit, getters}, value) {
+  CHANGE_elementPosition({commit}, value) {
     commit('change_elementPosition', value)
   },
   //---------------
@@ -864,6 +923,15 @@ const actions = {
   },
   UNGROUP_container({commit, getters, dispatch}, container) {
     if(getters.GET_networkIsOpen) commit('ungroup_container', {container, dispatch, getters})
+  },
+  //---------------
+  //  OTHER
+  //---------------
+  SET_isOpenElement({commit}, value) {
+    commit('set_isOpenElement', value)
+  },
+  SET_historyStep({commit, dispatch}, value) {
+    commit('set_historyStep', {value, dispatch});
   },
 };
 
@@ -899,6 +967,8 @@ function currentElement(id) {
 const createNetElement = function (event) {
   return {
     layerId: generateID(),
+    copyId: event.target.dataset.copyId || null,
+    copyContainerElement: event.target.dataset.copyContainerElement || null,
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: event.layerSettings ? event.layerSettings : null,

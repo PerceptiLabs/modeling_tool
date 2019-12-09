@@ -6,7 +6,7 @@
         button.popup_header(
           v-for="(tab, i) in tabSet"
           :key="tab.i"
-          @click="setTab(i)"
+          @click="setTab(tab)"
           :class="{'disable': tabSelected != tab}"
         )
           h3(v-html="tab")
@@ -39,7 +39,11 @@ export default {
     },
   },
   mounted() {
-    this.setTab(this.tabSet[0])
+    this.setTab(this.tabSet[0]);
+    this.$store.dispatch('mod_events/SET_enableCustomHotKey', false);
+  },
+  beforeDestroy() {
+    this.$store.dispatch('mod_events/SET_enableCustomHotKey', true);
   },
   data() {
     return {
@@ -61,5 +65,7 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
+  .settings-layer_section {
+    width: 100%;
+  }
 </style>

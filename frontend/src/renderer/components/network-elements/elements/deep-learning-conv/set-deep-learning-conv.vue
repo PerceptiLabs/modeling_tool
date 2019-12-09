@@ -3,8 +3,6 @@
     :current-el="currentEl"
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-    @press-update="updateCode"
   )
     template(slot="Settings-content")
       .settings-layer_section
@@ -70,6 +68,11 @@
               span Yes
             base-radio(group-name="group5" :value-input="false"  v-model="settings.Dropout")
               span No
+      .settings-layer_section(v-if="settings.Dropout")
+        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
+          .form_label Keep probability:
+          .form_input
+            input(type="number" v-model="settings.Keep_prob")
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
           .form_label Pooling:
@@ -78,20 +81,6 @@
               span Yes
             base-radio(group-name="group6" :value-input="false"  v-model="settings.PoolBool")
               span No
-      //-.settings-layer_section
-        .form_row
-          .form_label Batch Normalization:
-          .form_input
-            base-radio(groupName="group6")
-              span Yes
-            base-radio(groupName="group6")
-              span No
-      //-.settings-layer_section
-        .form_row
-          .form_label Pooling:
-          .form_input
-            base-checkbox(valueInput="Pooling" v-model="settings.pooling")
-            //input(type="checkbox" :value="settings.pooling" @change="changeCheckbox($event)")
       template(v-if="settings.PoolBool")
         .settings-layer_section
           .form_row(v-tooltip-interactive:right="interactiveInfo.poolingType")
@@ -119,11 +108,13 @@
                 span SAME
               base-radio(group-name="Pool_padding" value-input="'VALID'" v-model="settings.Pool_padding")
                 span VALID
+
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
-        )
+      )
 
 </template>
 
@@ -147,6 +138,7 @@ export default {
         Feature_maps: "8",
         Activation_function: "Sigmoid", //Sigmoid, ReLU, Tanh, None
         Dropout: false, //True, False
+        Keep_prob: '1',
         PoolBool: false, //True, False
         Pooling: "Max", //Max, Mean
         Pool_area: "2",
@@ -208,95 +200,7 @@ export default {
   computed: {
     ...mapGetters({
       isTutorialMode:   'mod_tutorials/getIstutorialMode',
-    }),
-    codeDefault() {
-      let dim = '';
-      let activeFunc = '';
-      let pooling = '';
-      let switcherDim = calcSwitcher(this);
-      //console.log(switcherDim);
-      switch (switcherDim) {
-        case '1D':
-          dim = `shape=[${this.settings.Patch_size},${this.codeInputDim}[-1],${this.settings.Feature_maps}];
-initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Patch_size}**2 * ${this.settings.Feature_maps})));
-initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
-b=tf.Variable(initial);
-node = tf.nn.conv1d(X['Y'], W, ${this.settings.Stride}, padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
-node=node+b;`;
-          break;
-        case '2D':
-          dim = `shape=[${this.settings.Patch_size},${this.settings.Patch_size},${this.codeInputDim}[-1],${this.settings.Feature_maps}];
-initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Patch_size}**2 * ${this.settings.Feature_maps})));
-W = tf.Variable(initial);
-initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
-b=tf.Variable(initial);
-node = tf.nn.conv2d(X['Y'], W, strides=[1, ${this.settings.Stride},${this.settings.Stride}, 1], padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
-node=node+b;`;
-          break;
-        case '3D':
-          dim = `shape=[${this.settings.Patch_size},${this.settings.Patch_size},${this.settings.Patch_size},${this.codeInputDim}[-1],${this.settings.Feature_maps}];
-initial = tf.truncated_normal(shape, stddev=np.sqrt(2/(${this.settings.Patch_size}**2 * ${this.settings.Feature_maps})));
-W = tf.Variable(initial);
-initial = tf.constant(0.1, shape=[${this.settings.Feature_maps}]);
-b=tf.Variable(initial);
-node = tf.nn.conv3d(X['Y'], W, strides=[1, ${this.settings.Stride},
-${this.settings.Stride}, ${this.settings.Stride}, 1],
-padding=${this.settings.Padding})${this.settings.Dropout ? '\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
-node=node+b;`;
-          break;
-      }
-      switch (this.settings.Activation_function) {
-        case 'Sigmoid':
-          activeFunc = `Y=tf.sigmoid(node);`;
-          break;
-        case 'ReLU':
-          activeFunc = `Y=tf.nn.relu(node);`;
-          break;
-        case 'Tanh':
-          activeFunc = `Y=tf.tanh(node);`;
-          break;
-        case 'None':
-          activeFunc = `Y=node;`;
-          break;
-      }
-
-      if(this.settings.PoolBool) {
-        if (this.settings.Pooling === "Max") {
-          //pooling = `Y=max_pool(Y, ${this.settings.Pool_area}, ${this.settings.Stride},${this.settings.Padding},${this.settings.Conv_dim});`;
-          pooling = '';
-          var switcherPooling = calcSwitcher(this);
-          //console.log('switcherPooling ', switcherPooling);
-          switch (switcherPooling) {
-            case '1D':
-              pooling = `Y=tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding})`;
-              break;
-            case '2D':
-              pooling = `Y=tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding})`;
-              break;
-            case '3D':
-              pooling = `Y=tf.nn.max_pool(Y, ksize=[1, ${this.settings.Pool_area}, ${this.settings.Pool_area}, ${this.settings.Pool_area}, 1], strides=[1, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, ${this.settings.Pool_stride}, 1], padding=${this.settings.Pool_padding});`;
-              break;
-          }
-        } else {
-          pooling = `Y=tf.nn.pool(Y, window_shape=${this.settings.Pool_area},pooling_type='AVG',${this.settings.Pool_padding},strides=${this.settings.Pool_stride});`
-        }
-      }
-      return {
-        Output: `${dim}\n${activeFunc}\n${pooling}`
-      };
-
-      function calcSwitcher(ctx) {
-        var self = ctx;
-        if(!self.codeInputDim) return 'Empty Input Dim';
-        var switcher = '';
-        var codeInputDim = JSON.parse(self.codeInputDim);
-        if (self.settings.Conv_dim === 'Automatic') {
-          switcher = (codeInputDim.length - 1) + 'D'
-        }
-        else switcher = self.settings.Conv_dim;
-        return switcher
-      }
-    }
+    })
   },
   methods: {
     ...mapActions({
@@ -310,7 +214,7 @@ node=node+b;`;
     },
     saveSettings(tabName) {
       this.applySettings(tabName);
-      this.tutorialPointActivate({way:'next', validation: 'tutorial_patch-size'})
+      this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_patch-size'}));
     },
     focusFirstTutorialField() {
       this.$nextTick(()=> {

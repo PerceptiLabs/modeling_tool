@@ -19,10 +19,11 @@
         )
         p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
         .forgot-password-box
-          a.btn.btn--link-without-underline(
-            :href="`${baseUrlSite}/restore-account`"
+          //-a.btn.btn--link-without-underline(
+            /:href="`${baseUrlSite}/restore-account`"
             @click.prevent="toLink(`${baseUrlSite}/restore-account`)"
-          ) Forgot password?
+            ) Forgot password?
+          router-link.btn.btn--link-without-underline(:to="{name: 'restore-account'}") Forgot password?
 
       .form_holder.login-form_actions
         .form_row
@@ -42,11 +43,6 @@
 export default {
   name: 'PageLogin',
   components: { LogoutUserPageWrap },
-  // mounted() {
-  //   if(this.userIsLogin) {
-  //     this.loginUser()
-  //   }
-  // },
   data() {
     return {
       userEmail: '',
@@ -59,9 +55,6 @@ export default {
     isLoading() {
       return this.$store.state.mod_login.showLoader
     },
-    // userIsLogin() {
-    //   return this.$store.getters['mod_user/GET_userIsLogin']
-    // },
   },
   methods: {
     toLink(url) {
@@ -84,20 +77,11 @@ export default {
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
         .then((tokens)=> {
-          //console.log('then', tokens);
-          //encryptionData(tokens.accessToken);
-          if(this.saveToken) localStorage.setItem('currentUser', JSON.stringify(tokens));
-          //this.loginUser()
+          if(this.saveToken) this.$store.dispatch('mod_user/SET_userTokenLocal', tokens)
         })
-        //.catch((error)=> {console.log('catch Login');})
-        .finally(()=> {
-          //console.log('finally');
-          this.$store.commit('mod_login/SET_showLoader', false);
-        });
+        .catch((error)=> {console.log(error)})
+        .finally(()=>    {this.$store.commit('mod_login/SET_showLoader', false)});
     },
-    // loginUser() {
-    //   this.$router.replace('/projects');
-    // },
   }
 }
 </script>

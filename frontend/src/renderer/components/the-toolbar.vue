@@ -6,7 +6,7 @@
 
     ul.toolbar_list
       li
-        button.btn.btn--toolbar(
+        button.btn.btn--toolbar.btn--toolbar-home(
           type="button"
           @click="toHomePage"
           v-tooltip:bottom="'Home page'"
@@ -38,12 +38,16 @@
     ul.toolbar_list
       li
         button.btn.btn--toolbar(type="button"
+          @click="toPrevStepHistory"
+          :disabled="isDisabledPrevStep"
           v-tooltip:bottom="'Prev step'"
           v-tooltip-interactive:bottom="interactiveInfo.undo"
         )
           i.icon.icon-step-prev
       li
         button.btn.btn--toolbar(type="button"
+          @click="toNextStepHistory"
+          :disabled="isDisabledNextStep"
           v-tooltip:bottom="'Next step'"
           v-tooltip-interactive:bottom="interactiveInfo.redo"
         )
@@ -91,26 +95,34 @@
           i.icon.icon-box
 
     .toolbar_settings
-      //span.text-primary.middle-text(v-html="statusTestText")
-      //- button.btn.btn--primary(type="button" disabled="disabled"
-      //-   v-if="statusNetworkCore == 'Finished'"
-      //-   )
-      //-   span Run test
-      //-   i.icon.icon-circle-o
       span.text-primary.middle-text(v-html="statusTrainingText")
-      //- button.btn.btn--dark-blue-rev(type="button" disabled="disabled"
-      //-   @click="openStatistics"
-      //-   )
-      //-   span Layer Mode
-      //-   i.icon.icon-ellipse
-      button.btn.btn--tutorial(
+      button.btn.btn--dark.btn--toolbar-settings(
+        type="button"
+        :class="{'btn--tutorial-active': false}"
+        v-coming-soon="true"
+        v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
+      )
+        span Notebook
+        i.icon.icon-ellipse
+
+      button.btn.btn--dark.btn--toolbar-settings(
         type="button"
         :class="{'btn--tutorial-active': interactiveInfoStatus}"
         @click="toggleInteractiveInfo"
         v-tooltip-interactive:bottom="interactiveInfo.interactiveDoc"
       )
-        span ?
-      tutorial-instructions(v-tooltip-interactive:bottom="interactiveInfo.tutorial")
+        span Help
+        i.icon.icon-ellipse
+
+      tutorial-instructions(
+        ref="tutorialComponent"
+        v-tooltip-interactive:bottom="interactiveInfo.tutorial")
+        button.btn.btn--dark.btn--toolbar-settings(type="button"
+          @click="switchTutorialMode"
+          :class="{'btn--tutorial-active': isTutorialMode}"
+        )
+          span Tutorial
+          i.icon.icon-ellipse
 </template>
 
 <script>
@@ -126,69 +138,38 @@ export default {
       x: null,
       y: null,
       interactiveInfo: {
-        edit: {
-          title: 'Edit',
-          text: `Use this to being able to drag & ,<br/> drop, select, edit, etc`
-        },
-        arrow: {
-          title: 'Arrow',
-          text: `Use this to connect the <br/>layers and define the dataflow`
-        },
-        undo: {
-          title: 'Undo',
-          text: `Use this to connect the <br/>Undo`
-        },
-        redo: {
-          title: 'Redo',
-          text: `Redo`
-        },
-        runButton: {
-          title: 'Run/Stop',
-          text: `Start training/Stop training`
-        },
-        pause: {
-          title: 'Pause',
-          text: `Pause training/Unpause training`
-        },
-        skip: {
-          title: 'Skip',
-          text: `Skip validation`
-        },
-        hyperparameters: {
-          title: 'Generate Hyperparameters',
-          text: `Auto-generate the hyperparameters`
-        },
-        blackBox: {
-          title: 'BlackBox',
-          text: `Load the data and let our algorithm </br> build a model for you and train it`
-        },
-        interactiveDoc: {
-          title: 'Interactive documentation',
-          text: `Use this to find out what all </br> different operations and functions do`
-        },
-        tutorial: {
-          title: 'Tutorial',
-          text: `Choose an interactive tutorial`
-        }
+        edit:     {title: 'Edit',     text: `Use this to being able to drag & ,<br/> drop, select, edit, etc`},
+        arrow:    {title: 'Arrow',    text: `Use this to connect the <br/>layers and define the dataflow`},
+        undo:     {title: 'Undo',     text: `Use this to connect the <br/>Undo`},
+        redo:     {title: 'Redo',     text: `Redo`},
+        runButton:{title: 'Run/Stop', text: `Start training/Stop training`},
+        pause:    {title: 'Pause',    text: `Pause training/Unpause training`},
+        skip:     {title: 'Skip',     text: `Skip validation`},
+        hyperparameters: {title: 'Generate Hyperparameters',text: `Auto-generate the hyperparameters`},
+        blackBox: {title: 'BlackBox', text: `Load the data and let our algorithm </br> build a model for you and train it`},
+        interactiveDoc: {title: 'Interactive documentation', text: `Use this to find out what all </br> different operations and functions do`},
+        tutorial: {title: 'Tutorial', text: `Choose an interactive tutorial`}
       }
     }
   },
   computed: {
     ...mapGetters({
-      tutorialActiveAction:   'mod_tutorials/getActiveAction',
-      interactiveInfoStatus:  'mod_tutorials/getInteractiveInfo',
-      isTutorialMode:         'mod_tutorials/getIstutorialMode',
-      currentElList:          'mod_workspace/GET_currentNetworkElementList',
-      isTraining:             'mod_workspace/GET_networkIsTraining',
-      statusNetworkCore:      'mod_workspace/GET_networkCoreStatus',
-      statisticsIsOpen:       'mod_workspace/GET_statisticsIsOpen',
-      networkIsOpen:       'mod_workspace/GET_networkIsOpen',
+      tutorialActiveAction: 'mod_tutorials/getActiveAction',
+      interactiveInfoStatus:'mod_tutorials/getInteractiveInfo',
+      isTutorialMode:       'mod_tutorials/getIstutorialMode',
+      currentElList:        'mod_workspace/GET_currentNetworkElementList',
+      isTraining:           'mod_workspace/GET_networkIsTraining',
+      statusNetworkCore:    'mod_workspace/GET_networkCoreStatus',
+      statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
+      networkIsOpen:        'mod_workspace/GET_networkIsOpen',
+      networkHistory:       'mod_workspace-history/GET_currentNetHistory',
     }),
     statusStartBtn() {
       return {
         'bg-error':   this.statusTraining === 'training',
         'bg-warning': this.statusTraining === 'pause',
         'bg-success': this.statusTraining === 'finish',
+        //'bg-error': this.statusTraining === 'finish',
       }
     },
     statusTraining() {
@@ -246,26 +227,48 @@ export default {
     },
     activeStepStoryboard() {
       return this.$store.state.mod_tutorials.activeStepStoryboard
+    },
+    confirmPopupAnswer() {
+      return this.$store.state.globalView.confirmPopupAnswer
+    },
+    isDisabledPrevStep() {
+      const history = this.networkHistory;
+      return !!history && history.historyStep === history.historyNet.length - 1
+    },
+    isDisabledNextStep() {
+      const history = this.networkHistory;
+      return !!history && history.historyStep === 0
     }
   },
   watch: {
     networkIsOpen(newVal) {
-      if(!newVal) {
-        this.$store.dispatch('mod_workspace/SET_netMode', 'edit');
-      }
+      if(!newVal) this.set_netMode('edit');
     }
   },
   methods: {
     ...mapMutations({
-      setInteractiveInfo:        'mod_tutorials/SET_interactiveInfo',
-      set_showTrainingSpinner:   'mod_workspace/SET_showStartTrainingSpinner',
+      setInteractiveInfo:     'mod_tutorials/SET_interactiveInfo',
+      set_showTrainingSpinner:'mod_workspace/SET_showStartTrainingSpinner',
+      set_hideLayers:         'globalView/SET_hideLayers',
+      GP_showCoreSideSettings:'globalView/GP_showCoreSideSettings',
     }),
     ...mapActions({
-      tutorialPointActivate:    'mod_tutorials/pointActivate',
-      removeTooltip:            'mod_tutorials/removeTooltip',
-      pauseTraining:            'mod_api/API_pauseTraining',
-      offMainTutorial:          'mod_tutorials/offTutorial',
+      popupConfirm:         'globalView/GP_confirmPopup',
+      showInfoPopup:        'globalView/GP_infoPopup',
+      pauseTraining:        'mod_api/API_pauseTraining',
+      stopTraining:         'mod_api/API_stopTraining',
+      skipValidTraining:    'mod_api/API_skipValidTraining',
+      tutorialPointActivate:'mod_tutorials/pointActivate',
+      removeTooltip:        'mod_tutorials/removeTooltip',
+      offMainTutorial:      'mod_tutorials/offTutorial',
+      hideTooltip:          'mod_tutorials/hideTooltip',
+      set_netMode:          'mod_workspace/SET_netMode',
+      toPrevStepHistory:    'mod_workspace-history/TO_prevStepHistory',
+      toNextStepHistory:    'mod_workspace-history/TO_nextStepHistory',
     }),
+    switchTutorialMode() {
+      this.$refs.tutorialComponent.switchTutorialMode()
+    },
     onOffBtn() {
       if(this.isTraining) this.trainStop();
       else this.trainStart();
@@ -274,37 +277,35 @@ export default {
     trainStart() {
       let valid = this.validateNetwork();
       if (!valid) return;
-      this.$store.commit('mod_events/set_runNetwork', true);
-      this.$store.commit('globalView/GP_showNetGlobalSet', true);
+      this.GP_showCoreSideSettings(true);
     },
     trainStop() {
-      this.$store.dispatch('mod_api/API_stopTraining');
+      this.stopTraining();
     },
     trainPause() {
-      this.$store.dispatch('mod_api/API_pauseTraining');
+      this.pauseTraining();
       this.tutorialPointActivate({way:'next', validation: 'tutorial_pause-training'})
     },
     skipValid() {
-      this.$store.dispatch('mod_api/API_skipValidTraining');
+      this.skipValidTraining();
     },
     validateNetwork() {
-
       let net;
       if(this.currentElList) net = Object.values(this.currentElList);
       else {
-        this.$store.dispatch('globalView/GP_infoPopup', 'You can not train model without Data element and Training element');
+        this.showInfoPopup('You cannot Run without a Data element and a Training element');
         return false;
       }
 
       let typeData = net.find((element)=> element.layerType === 'Data');
       if(typeData === undefined) {
-        this.$store.dispatch('globalView/GP_infoPopup', 'Data element missing');
+        this.showInfoPopup('Data element missing');
         return false
       }
 
       let typeTraining = net.find((element)=> element.layerType === 'Training');
       if(typeTraining === undefined) {
-        this.$store.dispatch('globalView/GP_infoPopup', 'Classic Machine Learning or Training element missing');
+        this.showInfoPopup('Classic Machine Learning or Training element missing');
         return false
       }
       let trainingIncluded = net.find(element => trainingElements.includes(element.componentName));
@@ -313,29 +314,37 @@ export default {
         deepLearnIncluded = net.find(element => deepLearnElements.includes(element.componentName));
       }
       if(deepLearnIncluded === undefined) {
-        this.$store.dispatch('globalView/GP_infoPopup', 'If you use the Training elements, you must use the Deep Learn elements');
+        this.showInfoPopup('If you use the Training elements, you must use the Deep Learn elements');
         return false
       }
 
       return true;
     },
     toggleLayers () {
-      this.$store.commit('globalView/SET_hideLayers', !this.hideLayers)
+      this.set_hideLayers(!this.hideLayers)
     },
     setNetMode(type, tutorial_id) {
-      this.$store.dispatch('mod_workspace/SET_netMode', type);
+      this.set_netMode(type);
       this.tutorialPointActivate({way:'next', validation: tutorial_id})
-    },
-    openStatistics() {
-      //this.$store.commit('mod_workspace/SET_openStatistics', true)
     },
     toggleInteractiveInfo() {
       this.removeTooltip();
       this.setInteractiveInfo(!this.interactiveInfoStatus);
     },
     toHomePage() {
-      this.offMainTutorial();
-      this.$router.push({name: 'projects'});
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$router.push({name: 'projects'});
+            }
+          });
+      } else {
+        this.$router.push({name: 'projects'});
+      }
     }
   }
 }
@@ -350,6 +359,8 @@ export default {
     background-color: $bg-toolbar;
     position: relative;
     grid-area: toolbar;
+    z-index: 2;
+    height: $h-toolbar;
   }
   .toggle-wrap {
     width: $w-layersbar * .87;
@@ -382,6 +393,9 @@ export default {
     + .toolbar_list {
       border-left: 1px solid $toolbar-border;
     }
+  }
+  .btn--toolbar-home {
+    color: #7397fe;
   }
   .run-button {
     color: $col-txt2;
@@ -440,8 +454,8 @@ export default {
     align-items: center;
     margin-left: auto;
     > * + * {
-      margin-left: 1rem;
-      margin-right: 1rem;
+      margin-left: .4rem;
+      margin-right: .4rem;
     }
   }
   #tutorial_pointer {
@@ -455,7 +469,22 @@ export default {
     border-radius: 50%;
     margin: .4rem;
   }
+  .btn--toolbar-settings {
+    min-width: 0;
+    color: inherit;
+    padding-right: 1rem;
+    padding-left: 1rem;
+
+    .icon {
+      margin-left: .7rem;
+    }
+  }
   .btn--tutorial-active {
-    box-shadow: inset 0 0 1px 1px $color-1;
+    .icon {
+      color: $color-1;;
+    }
+  }
+  .btn-toolbar--home {
+    color: $color-5;
   }
 </style>

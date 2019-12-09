@@ -14,13 +14,18 @@
 
 </template>
 <script>
-  import {filePCRead, folderPCDelete}  from '@/core/helpers.js'
+  import {filePCRead, folderPCDelete, deepCopy, projectPathModel}  from '@/core/helpers.js'
   import {mapState, mapGetters, mapMutations, mapActions} from 'vuex';
 
-  import basicTemplate1 from '@/core/basic-template/base-template-1.js'
+  import imageClassification    from '@/core/basic-template/image-classification.js'
+  import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
+  import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
 
   export default {
     name: 'PageProjects',
+    mounted() {
+      this.checkCloudToken()
+    },
     data() {
       return {
         source: 'computer',
@@ -30,18 +35,18 @@
         basicTemplates: [
           {
             title: 'Image Classification',
-            imgPath: './static/img/imageClassification.svg',
-            template: basicTemplate1
+            imgPath: './static/img/project-page/image-classification.svg',
+            template: imageClassification
           },
           {
             title: 'Timeseries Regression',
-            imgPath: './static/img/timeSeriesRegression.svg',
-            template: basicTemplate1
+            imgPath: './static/img/project-page/time-series-regression.svg',
+            template: timeseriesRegression
           },
           {
             title: 'Reinforcement Learning',
-            imgPath: './static/img/reinforcementLearning.svg',
-            template: basicTemplate1
+            imgPath: './static/img/project-page/reinforcement-learning.svg',
+            template: reinforcementLearning
           },
         ]
       }
@@ -65,12 +70,12 @@
         handler() {
           if(!this.localUserInfo) return;
 
-          let localProjectsList = JSON.parse(JSON.stringify(this.localUserInfo.projectsList));
+          let localProjectsList = deepCopy(this.localUserInfo.projectsList);
           if (Array.isArray(localProjectsList)) {
             localProjectsList.forEach((el) => {
               el.notExist = false;
               el.isChecked = false;
-              filePCRead(el.pathModel)
+              filePCRead(projectPathModel(el.pathProject))
                 .then(() => { })
                 .catch((err) => {
                   el.notExist = true
@@ -86,11 +91,11 @@
         if(indexCheckedProj < 0) return;
 
         const selectedProject = this.projects[indexCheckedProj];
-        const isProjectNotExist = selectedProject.notExist;
-        const pathDelete = selectedProject.pathProject[0];
+        //const isProjectNotExist = selectedProject.notExist;
+        const pathDelete = selectedProject.pathProject;
         folderPCDelete(pathDelete)
           .then(()=> {
-            const newProjectsList = JSON.parse(JSON.stringify(this.localUserInfo.projectsList));
+            const newProjectsList = deepCopy(this.localUserInfo.projectsList);
             newProjectsList.splice(indexCheckedProj, 1);
             this.saveLocalUserInfo({key: 'projectsList', data: newProjectsList });
             this.$nextTick(()=> this.showInfoPopup("The project has been successfully deleted"))
@@ -100,16 +105,18 @@
     },
     methods: {
       ...mapMutations({
-        setTutorialMode:        'mod_tutorials/SET_isTutorialMode',
-        setTutorialStoryBoard:  'mod_tutorials/SET_showTutorialStoryBoard',
+        setTutorialMode:      'mod_tutorials/SET_isTutorialMode',
+        setTutorialStoryBoard:'mod_tutorials/SET_showTutorialStoryBoard',
+        restore_network:      'mod_workspace/RESTORE_network',
       }),
       ...mapActions({
-        openNetwork:        'mod_events/EVENT_openNetwork',
-        loadNetwork:        'mod_events/EVENT_loadNetwork',
-        beginTutorial:      'mod_tutorials/START_storyboard',
-        addNetwork:         'mod_workspace/ADD_network',
-        saveLocalUserInfo:  'mod_user/UPDATE_LOCAL_userInfo',
-        showInfoPopup:      'globalView/GP_infoPopup',
+        openNetwork:      'mod_events/EVENT_openNetwork',
+        loadNetwork:      'mod_events/EVENT_loadNetwork',
+        beginTutorial:    'mod_tutorials/START_storyboard',
+        addNetwork:       'mod_workspace/ADD_network',
+        saveLocalUserInfo:'mod_user/UPDATE_LOCAL_userInfo',
+        showInfoPopup:    'globalView/GP_infoPopup',
+        checkCloudToken:  'mod_apiCloud/CloudAPI_checkStatus',
       }),
       openTemplate(path) {
         this.loadNetwork(path)
@@ -124,6 +131,10 @@
       openBasicTemplate(net) {
         this.addNetwork(net.network)
       },
+      openLastWS() {
+        this.restore_network(this.localUserInfo.workspace);
+        this.goNextPage()
+      },
       goNextPage() {
         this.$router.push({name: 'app'});
       },
@@ -133,7 +144,7 @@
 <style lang="scss" scoped>
   @import '../../scss/base';
 
-  $section-indent: 5rem;
+  $section-indent: 6rem;
 
   @import './sidebar/sidebar';
   @import './basic-templates/basic-templates';
@@ -151,17 +162,16 @@
 
   .page-projects_sidebar {
     grid-area: sidebar;
-    padding: $section-indent 1rem 1rem 1rem;
+    padding: 2rem 1rem 1rem 1rem;
     background: $col-txt2;
     h3 {
       margin: 2rem 0;
     }
   }
   .projects-sidebar_link {
-    font-size: 1.6rem;
-    display: block;
-    width: 100%;
-    margin-bottom: 4rem;
+    font-size: 1.4rem;
+    width: 15rem;
+    margin-bottom: 2rem;
     text-align: center;
     font-weight: normal;
     > * {
@@ -195,7 +205,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-
+    &.get-started-title-margin {
+     margin-bottom: 7rem;
+    }
     h2 {
       display: flex;
       align-items: center;

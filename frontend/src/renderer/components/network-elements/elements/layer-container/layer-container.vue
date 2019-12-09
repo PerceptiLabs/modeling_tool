@@ -35,14 +35,11 @@
     props: {
       elementData: Object
     },
-    mounted() {
-      //console.log(this.elementData);
-    },
-    data() {
-      return {
-        //isOpenContainer: true
-      }
-    },
+    // data() {
+    //   return {
+    //     //isOpenContainer: true
+    //   }
+    // },
     computed: {
       containerStyle() {
         let arrTop = [];

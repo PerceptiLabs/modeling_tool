@@ -1,6 +1,7 @@
 import {ipcRenderer}  from 'electron'
 import router         from "@/router";
-import {filePCRead, openLoadDialog, loadPathFolder} from "@/core/helpers";
+import {filePCRead, loadPathFolder, projectPathModel} from "@/core/helpers";
+import { pathSlash } from "@/core/constants";
 
 const namespaced = true;
 
@@ -10,11 +11,11 @@ const state = {
   saveNetwork: 0,
   saveNetworkAs: 0,
   eventResize: 0,
-  runNetwork: false,
   globalPressKey: {
     del: 0,
     esc: 0
-  }
+  },
+  isEnableCustomHotKey: true
 };
 
 const mutations = {
@@ -30,11 +31,11 @@ const mutations = {
   set_eventResize(state) {
     state.eventResize++
   },
-  set_runNetwork(state, value) {
-    state.runNetwork = value
-  },
   set_globalPressKey(state, path) {
     state.globalPressKey[path]++
+  },
+  set_enableCustomHotKey(state, value) {
+    state.isEnableCustomHotKey = value
   },
 };
 
@@ -42,7 +43,8 @@ const actions = {
   EVENT_calcArray({commit}) {
     commit('set_calcArray')
   },
-  EVENT_loadNetwork({dispatch, rootGetters}, {pathRootFolder, pathFile}) {
+  EVENT_loadNetwork({dispatch, rootGetters}, pathProject) {
+    const pathFile = projectPathModel(pathProject);
     let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
     let pathIndex;
     if(localProjectsList.length) {
@@ -73,7 +75,6 @@ const actions = {
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
         }
-        net.networkRootFolder = pathRootFolder;
         dispatch('mod_workspace/ADD_network', net, {root: true});
       }
     );
@@ -83,12 +84,7 @@ const actions = {
       title:"Load Project Folder",
     };
     loadPathFolder(opt)
-      .then((pathArr)=> {
-        const pathRootFolder = pathArr[0];
-        const netId = pathRootFolder.slice(pathRootFolder.lastIndexOf('\\') + 1, pathRootFolder.length);
-        const pathFile = `${pathFolder}\\${netId}.json`;
-        dispatch('EVENT_loadNetwork', {pathRootFolder, pathFile})
-      })
+      .then((pathArr)=> dispatch('EVENT_loadNetwork', pathArr[0]))
       .catch((err)=> {});
   },
   EVENT_saveNetwork({commit}) {
@@ -102,15 +98,19 @@ const actions = {
     localStorage.removeItem('currentUser');
     dispatch('mod_user/RESET_userToken', null, {root: true});
     dispatch('mod_workspace/RESET_network', null, {root: true});
+    dispatch('mod_tutorials/offTutorial', null, {root: true});
     router.replace({name: 'login'});
   },
-  EVENT_appClose({dispatch, rootState}, event) {
+  EVENT_appClose({dispatch, rootState, rootGetters}, event) {
     if(event) event.preventDefault();
     dispatch('mod_tracker/EVENT_appClose', null, {root: true});
+    if(rootGetters['mod_user/GET_userIsLogin']) {
+      dispatch('mod_user/SAVE_LOCAL_workspace', null, {root: true});
+    }
     if(rootState.mod_api.statusLocalCore === 'online') {
       dispatch('mod_api/API_stopTraining', null, {root: true})
         .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
-        .then(()=> ipcRenderer.send('app-close'));
+        .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
     }
     else {
       ipcRenderer.send('app-close')
@@ -129,45 +129,93 @@ const actions = {
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)
   },
-  EVENT_hotKeyEsc({commit, rootGetters, dispatch}) {
+  EVENT_hotKeyEsc({commit}) {
     commit('set_globalPressKey', 'esc');
   },
-  EVENT_hotKeyCopy({rootGetters, dispatch}) {
-    if(rootGetters['mod_workspace/GET_networkIsOpen']) {
+  EVENT_hotKeyCopy({rootGetters, dispatch, commit}) {
+    commit('mod_workspace/CLEAR_CopyElementsPosition', null, {root: true});
+    if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
       let arrBuf = [];
       arrSelect.forEach((el) => {
-        let newEl = {
-          target: {
-            dataset: {
-              layer: el.layerName,
-              type: el.layerType,
-              component: el.componentName
+      commit('mod_workspace/SET_CopyElementsPosition', {left: el.layerMeta.position.left, top: el.layerMeta.position.top}, {root: true});
+        if(el.componentName === 'LayerContainer') {
+          for(let id in el.containerLayersList) {
+            const element = el.containerLayersList[id];
+            let newContainerEl = {
+              target: {
+                dataset: {
+                  layer: element.layerName,
+                  type: element.layerType,
+                  component: element.componentName,
+                  copyId: element.layerId,
+                  copyContainerElement: true
+                },
+                clientHeight: element.layerMeta.position.top * 2,
+                clientWidth: element.layerMeta.position.left * 2,
+              },
+              layerSettings: element.layerSettings,
+              offsetY: element.layerMeta.position.top * 2,
+              offsetX: element.layerMeta.position.left * 2
+            };
+            arrBuf.push(newContainerEl)
+          }
+        }
+        else {
+          let newEl = {
+            target: {
+              dataset: {
+                layer: el.layerName,
+                type: el.layerType,
+                component: el.componentName,
+                copyId: el.layerId
+              },
+              clientHeight: el.layerMeta.position.top * 2,
+              clientWidth: el.layerMeta.position.left * 2,
             },
-            clientHeight: el.layerMeta.position.top * 2,
-            clientWidth: el.layerMeta.position.left * 2,
-          },
-          layerSettings: el.layerSettings,
-          // connectionOut: el.connectionOut,
-          // connectionIn: el.connectionIn,
-          // connectionArrow: el.connectionArrow,
-          offsetY: el.layerMeta.position.top * 2,
-          offsetX: el.layerMeta.position.left * 2
-        };
-        arrBuf.push(newEl)
+            layerSettings: el.layerSettings,
+            offsetY: el.layerMeta.position.top * 2,
+            offsetX: el.layerMeta.position.left * 2
+          };
+          arrBuf.push(newEl)
+        }
       });
-
       dispatch('mod_buffer/SET_buffer', arrBuf, {root: true});
     }
   },
-  EVENT_hotKeyPaste({rootState, rootGetters, dispatch}) {
+  EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}) {
     let buffer = rootState.mod_buffer.buffer;
-    if(rootGetters['mod_workspace/GET_networkIsOpen'] && buffer) {
+    const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
+    dispatch('mod_workspace/SET_elementUnselect', null, {root: true});
+    if(rootGetters['mod_workspace/GET_enableHotKeyElement'] && buffer) {
       buffer.forEach((el) => {
         dispatch('mod_workspace/ADD_element', el, {root: true});
       });
-      //dispatch('mod_buffer/CLEAR_buffer', null, {root: true});
+      //copy all connections
+      for(let key in netWorkList) {
+        const layerId = netWorkList[key].layerId;
+        const copyId = netWorkList[key].copyId;
+        const isContainerElement = netWorkList[key].copyContainerElement;
+        if(copyId && netWorkList[copyId]) {
+          if(isContainerElement) {
+            dispatch('mod_workspace/SET_elementMultiSelect', {id: netWorkList[key].layerId, setValue: true}, {root: true});
+          }
+          netWorkList[copyId].connectionOut.forEach(id => {
+            for(let property in netWorkList) {
+              if(Number(netWorkList[property].copyId) === Number(id)) {
+                commit('mod_workspace/SET_startArrowID', layerId, {root: true});
+                dispatch('mod_workspace/ADD_arrow', netWorkList[property].layerId, {root: true});
+              }
+            }
+          })
+      }
+        commit('mod_workspace/DELETE_copyProperty', layerId, {root: true});
+      }
     }
+    dispatch('mod_workspace/ADD_container', null, {root: true});
+  },
+  SET_enableCustomHotKey({commit}, val) {
+    commit('set_enableCustomHotKey', val)
   },
 };
 

@@ -2,40 +2,7 @@
 	display: flex;
 	width: 100%;
 }
-.statistics-box--horizontally {
-	flex-direction: column;
-}
-.statistics-box--horizontally .statistics-box_tabset{
-	flex-wrap: nowrap;
-	max-width: 100%;
-	flex: 0 0 auto;
-	justify-content: flex-end;
-	position: absolute;
-	top: 0;
-	right: 0;
-	background: none;
-}
-.statistics-box_tabset {
-	display: flex;
-	flex: 0 0 10rem;
-	flex-wrap: wrap;
-	max-width: 10.4rem;
-	background-color: $bg-window;
 
-}
-.statistics-box_tab {
-	display: flex;
-	padding: 3px 3px 0 1px;
-	&:last-child {
-		padding-bottom: 3px;
-		.statistics-box--horizontally & {
-			padding-bottom: 0;
-		}
-	}
-	.btn {
-		flex: 1;
-	}
-}
 
 
 .statistics-box_main {

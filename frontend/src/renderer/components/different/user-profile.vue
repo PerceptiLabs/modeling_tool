@@ -1,104 +1,106 @@
 <template lang="pug">
-  .user-profile
-    base-switcher.sidebar_section(
-      :tab-set-data="switcherData"
-    )
+  .user-profile(v-if="user")
+    //-base-switcher.sidebar_section(
+      /:tab-set-data="switcherData"
+      )
       template(slot="firstTab")
-        ul.user-info_list(v-if="user")
-          li
-            .user-info_name First name
-            .user-info_data
-              text-editable(
-                :text-title="user.firstName"
-                @change-title="editFirstName"
-                )
-          li
-            .user-info_name Last name
-            .user-info_data
-              text-editable(
-                :text-title="user.lastName"
-                @change-title="editLastName"
-              )
-          li
-            .user-info_name Email
-            .user-info_data(@dblclick="toggleEmailForm") {{ user.email }}
-            form.user-info_edit(
-              v-show="isShowEmailForm"
-              data-vv-scope="formEmail"
-              )
-              .form_holder
-                input(type="email" placeholder="New email"
-                  v-model="email.newEmail"
-                  name="new email"
-                  v-validate="'required|email'"
-                  ref="newEmail"
-                )
-                p.text-error(
-                  v-show="errors.has('formEmail.new email')"
-                  ) {{ errors.first('formEmail.new email') }}
-
-              .form_holder
-                input(type="email" placeholder="Confirm new email"
-                  v-model="email.newEmailConfirm"
-                  name="confirm new email"
-                  v-validate="'required|confirmed:newEmail'"
-                )
-                p.text-error(
-                  v-show="errors.has('formEmail.confirm new email')"
-                  ) {{ errors.first('formEmail.confirm new email') }}
-          li
-            .user-info_name Password
-            .user-info_data(@dblclick="togglePasswordForm") {{ userPassword }}
-            form.user-info_edit(
-              v-show="isShowPasswordForm"
-              data-vv-scope="formPassword"
-              )
-              .form_holder
-                input(type="password" placeholder="Current password"
-                  v-model="password.oldPassword"
-                  name="password"
-                  v-validate="'required'"
-                )
-                p.text-error(
-                  v-show="errors.has('formPassword.password')"
-                  ) {{ errors.first('formPassword.password') }}
-              .form_holder
-                input(type="password" placeholder="New password"
-                  v-model="password.newPassword"
-                  name="new password"
-                  v-validate="{required: true, min: 6, is_not: password.oldPassword}"
-                  ref="userPass"
-                )
-                p.text-error(
-                  v-show="errors.has('formPassword.new password')"
-                  ) {{ errors.first('formPassword.new password') }}
-
-              .form_holder
-                input(type="password" placeholder="Confirm new password"
-                  v-model="password.newPasswordConfirmation"
-                  name="confirm new email"
-                  v-validate="'required|confirmed:userPass'"
-                  data-vv-as="new password"
-                )
-                p.text-error(
-                  v-show="errors.has('formPassword.confirm new email')"
-                  ) {{ errors.first('formPassword.confirm new email') }}
+        p first tab
 
       template(slot="secondTab")
         p secondTab
+    .sidebar_section
+      ul.user-info_list
+        li
+          .user-info_name First name
+          .user-info_data
+            text-editable(
+              :text-title="user.firstName"
+              @change-title="editFirstName"
+            )
+        li
+          .user-info_name Last name
+          .user-info_data
+            text-editable(
+              :text-title="user.lastName"
+              @change-title="editLastName"
+            )
+        li
+          .user-info_name Email
+          .user-info_data(@dblclick="toggleEmailForm") {{ user.email }}
+          form.user-info_edit(
+            v-show="isShowEmailForm"
+            data-vv-scope="formEmail"
+          )
+            .form_holder
+              input(type="email" placeholder="New email"
+                v-model="email.newEmail"
+                name="new email"
+                v-validate="'required|email'"
+                ref="newEmail"
+              )
+              p.text-error(
+                v-show="errors.has('formEmail.new email')"
+              ) {{ errors.first('formEmail.new email') }}
 
+            .form_holder
+              input(type="email" placeholder="Confirm new email"
+                v-model="email.newEmailConfirm"
+                name="confirm new email"
+                v-validate="'required|confirmed:newEmail'"
+              )
+              p.text-error(
+                v-show="errors.has('formEmail.confirm new email')"
+              ) {{ errors.first('formEmail.confirm new email') }}
+        li
+          .user-info_name Password
+          .user-info_data(@dblclick="togglePasswordForm") {{ userPassword }}
+          form.user-info_edit(
+            v-show="isShowPasswordForm"
+            data-vv-scope="formPassword"
+          )
+            .form_holder
+              input(type="password" placeholder="Current password"
+                v-model="password.oldPassword"
+                name="password"
+                v-validate="'required'"
+              )
+              p.text-error(
+                v-show="errors.has('formPassword.password')"
+              ) {{ errors.first('formPassword.password') }}
+            .form_holder
+              input(type="password" placeholder="New password"
+                v-model="password.newPassword"
+                name="new password"
+                v-validate="{required: true, min: 6, is_not: password.oldPassword}"
+                ref="userPass"
+              )
+              p.text-error(
+                v-show="errors.has('formPassword.new password')"
+              ) {{ errors.first('formPassword.new password') }}
+
+            .form_holder
+              input(type="password" placeholder="Confirm new password"
+                v-model="password.newPasswordConfirmation"
+                name="confirm new email"
+                v-validate="'required|confirmed:userPass'"
+                data-vv-as="new password"
+              )
+              p.text-error(
+                v-show="errors.has('formPassword.confirm new email')"
+              ) {{ errors.first('formPassword.confirm new email') }}
     .sidebar_action
-      button.btn.btn--primary(type="button"
+      button.btn.btn--link(type="button"
         @click="saveUserInfo"
         :disabled="isDisabledBtn") Save
 
 </template>
 
 <script>
-import BaseSwitcher      from "@/components/different/switcher.vue";
-import TextEditable      from '@/components/base/text-editable.vue'
+import BaseSwitcher from "@/components/different/switcher.vue";
+import TextEditable from '@/components/base/text-editable.vue'
 
 import { mapGetters, mapMutations, mapActions } from 'vuex';
+import { deepCopy } from "@/core/helpers.js";
 
 export default {
   name: "UserProfile",
@@ -141,12 +143,12 @@ export default {
       cloud_userChangePassword: 'mod_apiCloud/CloudAPI_userChangePassword',
     }),
     editFirstName(newVal) {
-      let newInfo = JSON.parse(JSON.stringify(this.user));
+      let newInfo = deepCopy(this.user);
       newInfo.firstName = newVal;
       this.setUserInfo(newInfo);
     },
     editLastName(newVal) {
-      let newInfo = JSON.parse(JSON.stringify(this.user));
+      let newInfo = deepCopy(this.user);
       newInfo.lastName = newVal;
       this.setUserInfo(newInfo);
     },
@@ -165,22 +167,27 @@ export default {
         newPasswordConfirmation: '',
       };
     },
-
     saveUserInfo() {
       Promise.all([ changeProfile(this), changeEmail(this), changePassword(this) ])
         .then((result)=> {
           let listInfo = [];
-          result.forEach((el)=> { if(el) listInfo.push(el) });
-          this.showInfoPopup(listInfo);
+          let emailValidation = result[1];
+          let passValidation = result[2];
+          if(emailValidation || passValidation) {
+            result.forEach((el)=> { if(el) listInfo.push(el) });
+            this.showInfoPopup(listInfo);
+          }
         })
-        .catch((error) => {});
+        .catch((error) => {
+          console.log(error)
+        });
 
 
       function changeProfile(ctx) {
         return ctx.cloud_userSetProfile(ctx.user)
           .then(()=> {
             return 'Your information has been changed'
-          })
+          });
       }
       function changeEmail(ctx) {
         if(ctx.isShowEmailForm && ctx.email.newEmail.length) {
@@ -194,10 +201,18 @@ export default {
                 };
                 return ctx.cloud_userChangeEmail(request)
               }
+              else {
+                return false;
+              }
             })
-            .then(()=> {
-              ctx.logout();
-              return `A confirmation has been sent to your old mail ${ctx.user.email}. Please follow the link and your mail will be changed. Otherwise, your old mail will act`;
+            .then((isValid)=> {
+              if (isValid) {
+                ctx.logout();
+                return `A confirmation has been sent to your old mail ${ctx.user.email}. Please follow the link and your mail will be changed. Otherwise, your old mail will act`;
+              }
+              else {
+                return false;
+              }
             })
         }
       }
@@ -244,7 +259,7 @@ export default {
     margin-bottom: 1rem;
   }
   .sidebar_action {
-    text-align: center;
+    text-align: right;
   }
   .user-info_edit {
     width: 100%;

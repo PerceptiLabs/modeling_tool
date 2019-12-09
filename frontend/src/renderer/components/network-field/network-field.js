@@ -1,5 +1,6 @@
 import DataData             from '@/components/network-elements/elements/data-data/data-data.vue'
 import DataEnvironment      from '@/components/network-elements/elements/data-environment/data-environment.vue'
+import DataCloud            from '@/components/network-elements/elements/data-cloud/data-cloud.vue'
 
 import DeepLearningFC       from '@/components/network-elements/elements/deep-learning-fc/deep-learning-fc.vue'
 import DeepLearningConv     from '@/components/network-elements/elements/deep-learning-conv/deep-learning-conv.vue'
@@ -16,6 +17,8 @@ import TrainNormal          from '@/components/network-elements/elements/train-n
 import TrainGenetic         from '@/components/network-elements/elements/train-genetic/train-genetic.vue'
 import TrainDynamic         from '@/components/network-elements/elements/train-dynamic/train-dynamic.vue'
 import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/train-reinforce.vue'
+import TrainLoss            from '@/components/network-elements/elements/train-loss/train-loss.vue'
+import TrainOptimizer       from '@/components/network-elements/elements/train-optimizer/train-optimizer.vue'
 
 import MathArgmax           from '@/components/network-elements/elements/math-argmax/math-argmax.vue'
 import MathMerge            from '@/components/network-elements/elements/math-merge/math-merge.vue'
@@ -34,14 +37,15 @@ import LayerCustom          from '@/components/network-elements/elements/layer-c
 import SettingsArrow        from '@/components/network-elements/elements-settings/setting-arrow.vue'
 
 import { mapGetters, mapMutations, mapActions } from 'vuex';
+import { deepCopy } from "@/core/helpers.js";
 
 export default {
   name: 'NetworkField',
   components: {
-    DataData, DataEnvironment,
+    DataData, DataEnvironment, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerContainer, LayerCustom,
@@ -49,6 +53,8 @@ export default {
   },
   mounted() {
     this.drawArrows();
+    //console.log(this.$refs.network);
+    //this.SET_elementNetworkField({...this.$refs.network})
   },
   beforeDestroy() {
     this.removeArrowListener();
@@ -108,10 +114,11 @@ export default {
       return this.$store.state.mod_workspace.preArrow;
     },
     styleSvgArrow() {
-      return {
+      const size = {
         width: this.svgWidth,
         height: this.svgHeight,
-      }
+      };
+      return size
     },    
   },
   watch: {
@@ -122,7 +129,7 @@ export default {
       this.calcSvgSize()
     },
     eventCalcArrow() {
-      this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
+      //this.tutorialPointActivate({way: 'next', validation: this.tutorialActiveAction.id});
       this.createArrowList()
     },
     hotKeyPressDelete() {
@@ -136,7 +143,8 @@ export default {
   },
   methods: {
     ...mapActions({
-      tutorialPointActivate: 'mod_tutorials/pointActivate',
+      tutorialPointActivate:   'mod_tutorials/pointActivate',
+      SET_elementNetworkField: 'mod_workspaceHelpers/SET_elementNetworkField',
     }),
     refNetworkMouseDown(ev) {
       const isLeftBtn = ev.buttons === 1;
@@ -230,14 +238,18 @@ export default {
       let scrollWidth = this.$refs.network.scrollWidth;
       let offsetHeight = this.$refs.network.offsetHeight;
       let offsetWidth = this.$refs.network.offsetWidth;
+      const canvasHeight = scrollHeight + 40;
+      const canvasWidth = scrollWidth + 40;
+      // this.svgHeight = canvasHeight +'px';
+      // this.svgWidth = canvasWidth +'px';
       scrollHeight > offsetHeight
-        ? this.svgHeight = scrollHeight + 'px'
+        ? this.svgHeight = canvasHeight +'px'
         : this.svgHeight = '100%';
       scrollWidth > offsetWidth
-        ? this.svgWidth = scrollWidth + 'px'
+        ? this.svgWidth = canvasWidth +'px'
         : this.svgWidth = '100%';
-
     },
+
     //-------------
     //Arrow methods
     //--------------

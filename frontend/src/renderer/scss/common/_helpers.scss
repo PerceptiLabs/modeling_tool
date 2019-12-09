@@ -215,7 +215,9 @@ $soc-list: (
 .w-66 {
   width: calc((100% * 2)/3 );
 }
-
+.w-100 {
+  width: 100%;
+}
 
 // clearfix
 .clearfix {
@@ -230,3 +232,37 @@ $soc-list: (
   display: flex;
 }
 
+.debug-top {
+  position: relative;
+  &:after, &:before {
+    content: '';
+    position: absolute;
+    left: -100vw;
+    right: -100vw;
+    height: 1px;
+    background: red;
+  }
+  &:after {
+    top: 0;
+  }
+  &:before {
+    bottom: 0;
+  }
+}
+.debug-side {
+  position: relative;
+  &:after, &:before {
+    content: '';
+    position: absolute;
+    top: -100vh;
+    bottom: -100vh;
+    height: 1px;
+    background: red;
+  }
+  &:after {
+    left: 0;
+  }
+  &:before {
+    right: 0;
+  }
+}

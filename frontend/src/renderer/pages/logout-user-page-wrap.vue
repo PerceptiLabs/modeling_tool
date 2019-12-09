@@ -1,7 +1,7 @@
 <template lang="pug">
   main.page_login
     .login_logo
-      img(src="./../../../static/img/percepti-labs-logo.svg" alt="PerceptiLabs logo")
+      img(src="./../../../static/img/perceptilabs-logo-icon.svg" alt="PerceptiLabs logo")
     view-loading
     .login_main
       h1(v-if="titlePage.length") {{ titlePage }}
@@ -57,6 +57,7 @@ export default {
   }
 
   .login_logo {
+    margin-top: 3rem;
     margin-bottom: 2rem;
   }
 

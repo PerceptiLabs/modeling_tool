@@ -12,7 +12,7 @@ ul.bookmark_tab-list
       i.icon.icon-close
     text-editable.tab_name(
       :text-title="tab.networkName"
-      @change-title="editNetName"
+      @change-title="set_networkName"
       )
     button.btn.btn--tabs.tab_statistics#tutorial_statistic-tab(type="button"
       v-if="tab.networkMeta.openStatistics !== null"
