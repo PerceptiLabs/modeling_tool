@@ -23,9 +23,6 @@ jobs:
         Write-Host "test in windows"  
     - script: |
           cd script/
-          ./setup_test_windows.bat
-    - script: |
-          cd scripts/
           ./test_windows.bat
         displayName: 'Running tests'
 

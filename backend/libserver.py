@@ -366,7 +366,6 @@ class Message:
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
             
-
             if jsonNetwork[Id]["Type"] == "TrainReinforce":
                 graph=Graph(jsonNetwork)
                 graph_dict = graph.graphs
@@ -707,7 +706,7 @@ class Message:
         # print("Request: ", self.request)
         # print("Response: ", response)
         # print("Requst: %s\nResponse: %s" % (str(action), str(response)))
-        # log.debug("Response: " + pprint.pformat(response, depth=6))        
+        # log.debug("Response: " + pprint.pformat(response, depth=6))    
         return response
 
     def _create_response_binary_content(self):
