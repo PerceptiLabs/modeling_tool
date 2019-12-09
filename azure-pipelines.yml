@@ -1,7 +1,7 @@
 trigger:
-# - master
+ - master
 # #- dev
-# - stage
+ - stage
 
 
 
