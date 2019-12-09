@@ -17,7 +17,6 @@ const mutations = {
 
 const actions = {
   TRACK_initMixPanel() {
-    //console.log('TRACK_initMixPanel');
     mixPanel.init(mixPanelToken);
   },
   TRACK_initMixPanelUser({}, id) {
@@ -27,6 +26,11 @@ const actions = {
     mixPanel.people.set_once({
       "$email": userEmail,
       "$created": new Date(),
+    });
+  },
+  TRACK_updateUser({}, userEmail) {
+    mixPanel.people.set({
+      "$email": userEmail,
       "$last_login": new Date(),
     });
   },

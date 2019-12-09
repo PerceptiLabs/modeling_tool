@@ -341,16 +341,40 @@ $folder: 'icomoon';
 .icon-swap-horiz:before {
   content: "\e937";
 }
-.icon-code-error:before {
-  content: "!";
-  font-size: 1.4rem;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.1em;
-  height: 1.1em;
-  background: $col-warning;
-  border-radius: 50%;
-  font-weight: bold;
-  color: #fff;
+.icon-clipboard-add:before {
+  content: "\e969";
+}
+.icon-data-cloud:before {
+  content: "\e96a";
+}
+.icon-train-loss:before {
+  content: "\e96b";
+}
+.icon-train-optimaze:before {
+  content: "\e96c";
+}
+.icon-train-reinforce:before {
+  content: "\e96d";
+}
+.icon-train-gan:before {
+  content: "\e96e";
+}
+.icon-bucket:before {
+  content: "\e96f";
+}
+.icon-code-error {
+  vertical-align: middle;
+  &:before {
+    content: "!";
+    font-size: 1.4rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 1.1em;
+    height: 1.1em;
+    background: $col-warning;
+    border-radius: 50%;
+    font-weight: bold;
+    color: #fff;
+  }
 }

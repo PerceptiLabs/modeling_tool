@@ -1,41 +1,43 @@
 <template lang="pug">
-  .triple-input
+  .triple-input.correct-input-reshape
+    button.triple-input_separate.btn(type="button" @click="swap13")
+      <
+      //i.icon.icon-shevron-right
     .triple-input_input-wrap
-      input.triple-input_input(type="number"
+      span.triple-input_input-axios {{axisName[0]}}
+      input.triple-input_input(type="number" name="field1" min="0"
         :disabled="disableEdit"
         v-model.number="value1"
-        name="field1"
         :class="{'bg-error': errors.has('field1') || isNotValidateSum}"
         v-validate="{required: true, between: [validateMin, validateMax]}"
       )
-      span.triple-input_input-axios {{axisName[0]}}
     //-p.text-error(
       v-show="errors.has('field1')"
       ) {{ errors.first('field1') }}
-    button.triple-input_separate.btn.btn--link(type="button" @click="swap12")
-      i.icon.icon-swap-horiz
+    button.triple-input_separate.btn(type="button" @click="swap12")
+      <>
+      //i.icon.icon-swap-horiz
     .triple-input_input-wrap
-      input.triple-input_input(type="number"
+      span.triple-input_input-axios {{axisName[1]}}
+      input.triple-input_input(type="number" name="field2" min="0"
         :disabled="disableEdit"
         v-model.number="value2"
-        name="field2"
-        :class="{'bg-error': errors.has('field2') || isNotValidateSum}"
+        :class="{'bg-error': errors.has('field2') || isNotValidateSum || (value2 > 0 && value1 === 0)}"
         v-validate="{required: true, between: [validateMin, validateMax]}"
       )
-      span.triple-input_input-axios {{axisName[1]}}
-    button.triple-input_separate.btn.btn--link(type="button" @click="swap23")
-      i.icon.icon-swap-horiz
+    button.triple-input_separate.btn(type="button" @click="swap23")
+      <>
+      //i.icon.icon-swap-horiz
     .triple-input_input-wrap
-      input.triple-input_input(type="number"
+      span.triple-input_input-axios {{axisName[2]}}
+      input.triple-input_input(type="number" name="field3" min="0"
         :disabled="disableEdit"
         v-model.number="value3"
-        name="field3"
-        :class="{'bg-error': errors.has('field3') || isNotValidateSum}"
+        :class="{'bg-error': errors.has('field3') || isNotValidateSum || (value3 > 0 && (value2 === 0 || value1 === 0))}"
         v-validate="{required: true, between: [validateMin, validateMax]}"
       )
-      span.triple-input_input-axios {{axisName[2]}}
-    button.triple-input_separate.btn.btn--link(type="button" @click="swap13")
-      i.icon.icon-swap-horiz
+    button.triple-input_separate.btn(type="button" @click="swap13") >
+      //i.icon.icon-swap-horiz
 </template>
 
 <script>
@@ -52,12 +54,20 @@ export default {
     disableEdit: { type: Boolean, default: false },
     validateMin: { type: Number, default: 0 },
     validateMax: { type: Number, default: 10000 },
-    validateSum: { type: Number, default: null },
+    validateSum: { type: String, default: '' },
     axisPosition: { type: Array },
   },
   computed: {
     isNotValidateSum() {
-      return (typeof this.validateSum === 'number') && (this.validateSum !== (this.value1 * this.value2 * this.value3))
+      if(this.value1 === 0) return true;
+      if(!!this.validateSum.length) {
+        const validate = JSON.parse(this.validateSum)[0];
+        const val1 = this.value1 > 0 ? this.value1 : 1;
+        const val2 = this.value2 > 0 ? this.value2 : 1;
+        const val3 = this.value3 > 0 ? this.value3 : 1;
+        return validate !== (val1 * val2 * val3)
+      }
+      else return false
     },
     value1: {
       get() {
@@ -111,11 +121,22 @@ export default {
   }
   .triple-input_input-axios {
     position: absolute;
-    top: 100%;
     left: 50%;
+    top: -2.1rem;
     transform: translateX(-50%);
-    color: $col-primary2;
-    font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.4rem;
+    text-transform: uppercase;
+
+  }
+  button.triple-input_separate {
+    background: $bg-grad-blue;
+    font-size: 1.2rem;
+    padding: 2px 2px 3px 3px;
+    letter-spacing: 1px;
+    font-weight: 500;
+  }
+  .correct-input-reshape {
+    right: 4rem;
+    margin-top: 1.5rem;
   }
 </style>

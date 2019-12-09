@@ -1,4 +1,4 @@
-from codehq import CodeHQ
+from codehq import CodeHqNew
 from networkBuilder import NetworkBuilder
 from networkExporter import exportNetwork
 
@@ -7,7 +7,7 @@ import tensorflow as tf
 from tensorflow.python.saved_model import tag_constants
 import math
 from graph import Graph
-from data import Data
+from dataKeeper import dataKeeper as Data
 from extractVariables import *
 
 import sys
@@ -17,7 +17,7 @@ import queue
 import os
 import shutil
 import random
-from sentry_sdk import capture_exception
+# from sentry_sdk import capture_exception
 
 import pprint
 import logging
@@ -66,9 +66,10 @@ class core():
 
         self.outputVariablesStructure=dict()
         
-    def startNetwork(self,warningQueue,errorQueue,commandQ,resultQ,jsonNetwork):
+    def startNetwork(self,warningQueue,errorQueue,commandQ,resultQ,dataDict,jsonNetwork):
+        dataDict=dataDict.copy()
         if log.isEnabledFor(logging.DEBUG):
-            log.debug("startNetwork with jsonNetwork: " + pprint.pformat(jsonNetwork))
+            pass#log.debug("startNetwork with jsonNetwork: " + pprint.pformat(jsonNetwork))
             
         #import json
         #with open('net.json', 'w') as f:
@@ -119,7 +120,7 @@ class core():
         # Build network/model
         # Either use FLAG_DISTRIBUTED and have if/else statement when doing sess.run for TensorFlow OR put whole startNetwork() content inside a with strategy.scope()
         try:
-            outputDict, outputVariables, self.FLAG_REINFORCE = NetworkBuilder().buildNetwork(self.graphObj,jsonNetwork,self.randomSeed,keep_prob,checkpointDict,self.batch_size,warningQueue,errorQueue)
+            outputDict, outputVariables, self.FLAG_REINFORCE = NetworkBuilder().buildNetwork(self.graphObj,jsonNetwork,self.randomSeed,keep_prob,checkpointDict,self.batch_size,dataDict,warningQueue,errorQueue)
         except Exception as e:
             self.resetVariables()
             # errorQueue.put("The network did not build correctly.")
@@ -150,10 +151,10 @@ class core():
                 self.trainingIterations=self.maxIter
                 self.batch_size=graph[i]['Info']["Data"].source_obj.batch_size
             elif graph[i]['Info']['Type']=="DataData":
-                self.maxIter=graph[i]['Info']["Data"].source_obj.maxIter
-                self.maxTestIter=graph[i]['Info']["Data"].source_obj.maxTestIter
-                self.batch_size=graph[i]['Info']["Data"].source_obj.batch_size
-                self.trainingIterations=graph[i]['Info']["Data"].source_obj.trainingIterations
+                self.maxIter=graph[i]['Info']["Data"].maxIter
+                self.maxTestIter=graph[i]['Info']["Data"].maxTestIter
+                self.batch_size=graph[i]['Info']["Data"].batch_size
+                self.trainingIterations=graph[i]['Info']["Data"].trainingIterations
 
 
         
@@ -494,7 +495,7 @@ class core():
             except:
                 return False
         
-        if type(thing) in [list, tuple, set]:
+        if type(thing) in [list, tuple, set, np.ndarray]:
             return all([self._isNumberOrNumberContainer(x) for x in thing])
         elif isinstance(thing, dict):
             return all([self._isNumberOrNumberContainer(x) for x in thing.values()])

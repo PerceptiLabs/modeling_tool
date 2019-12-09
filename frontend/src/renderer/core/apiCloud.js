@@ -4,29 +4,30 @@ import { baseUrlCloud } from '@/core/constants.js'
 
 
 const requestCloudApi = function (method, path, data, params) {
+  // if(!store.state.globalView.onlineStatus) {
+  //   return new Promise((resolve, reject) => resolve);
+  // }
   return httpRequest(method, path, data, params)
     .then((response)=> response)
     .catch((error)=> {
-      console.log(error.response);
       if(error.response.status === 401) { return 'updateToken' }
       else {
-        store.dispatch('mod_tracker/EVENT_cloudError', error);
+        store.dispatch('mod_tracker/EVENT_cloudError', {method, path, error});
         store.dispatch('globalView/GP_errorPopup', error.response.data);
-        throw (error);
+        throw(error.response)
       }
     })
-    .then((data)=> {
-      if(data === 'updateToken') {
+    .then((answer)=> {
+      if(answer === 'updateToken') {
         return CloudAPI_updateToken()
-          .then(()=> singleRequest(method, path, dataRequest))
-          .then((data)=> data)
+          .then(()=> httpRequest(method, path, data))
+          .then((answ)=> answ)
           .catch((error)=> {
-            throw (error)
+            throw(error)
           })
       }
-      else return data
+      else return answer
     })
-
 };
 
 function httpRequest(method, path, data, params) {
@@ -55,10 +56,15 @@ function CloudAPI_updateToken() {
   const body = {
     "refreshToken": store.state.mod_user.userTokenRefresh
   };
+  // console.log('CloudAPI_updateToken', body);
+  // console.log('user tokens', store.state.mod_user.userToken);
+  // console.log('token refresh', store.state.mod_user.userTokenRefresh);
   return httpRequest('post', 'Customer/UpdateToken', body)
     .then((response)=> {
+      //console.log('CloudAPI_updateToken answer', response);
       const tokens = response.data.data;
       store.dispatch('mod_user/SET_userToken', tokens, {root: true});
+      store.dispatch('mod_user/SET_userTokenLocal', tokens, {root: true});
       return tokens
     })
     .catch((error)=> {

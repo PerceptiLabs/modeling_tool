@@ -1,6 +1,7 @@
 const namespaced = true;
 
 const state = {
+  onlineStatus: true,
   hideLayers: true,
   hideSidebar: true,
   platform: process.platform,
@@ -11,13 +12,16 @@ const state = {
   timeIntervalDoRequest: 2500,
   requestCounter: 0,
   globalPopup: {
-    showNetSettings: false,
     showNetResult: false,
     showCoreSideSettings: false,
     showInfoPopup: false,
+    ComingSoonPopup: false,
     showErrorPopup: false,
     showWorkspaceBeforeImport: false,
+    showConfirmPopup: false,
   },
+  popupConfirmCancel: null,
+  popupConfirmOk: null,
 };
 const getters = {
   GET_appPath(state) {
@@ -27,6 +31,9 @@ const getters = {
 };
 
 const mutations = {
+  set_onlineStatus (state, value) {
+    state.onlineStatus = value
+  },
   SET_hideLayers (state, value) {
     state.hideLayers = value
   },
@@ -51,9 +58,6 @@ const mutations = {
   GP_showNetResult (state, value) {
     state.globalPopup.showNetResult = value
   },
-  GP_showNetGlobalSet (state, value) {
-    state.globalPopup.showNetSettings = value
-  },
   GP_showCoreSideSettings (state, value) {
     state.globalPopup.showCoreSideSettings = value
   },
@@ -62,6 +66,14 @@ const mutations = {
   },
   gp_infoPopup(state, value) {
     state.globalPopup.showInfoPopup = value
+  },
+  gp_ComingSoonPopup(state, value) {
+    state.globalPopup.ComingSoonPopup = value
+  },
+  gp_confirmPopup(state, value) {
+    state.globalPopup.showConfirmPopup = value.text;
+    state.popupConfirmCancel = value.cancel;
+    state.popupConfirmOk = value.ok;
   },
   gp_errorPopup(state, value) {
     state.globalPopup.showErrorPopup = value
@@ -86,11 +98,21 @@ const actions = {
     commit('GP_showNetResult', true);
     dispatch('mod_workspace/SET_openTest', false, {root: true});
   },
+  SET_onlineStatus({commit}, value) {
+    commit('set_onlineStatus', value);
+  },
   SET_timeIntervalDoRequest({commit, dispatch}, value) {
     commit('set_timeIntervalDoRequest', value);
   },
   GP_infoPopup({commit}, value) {
     commit('gp_infoPopup', value);
+  },
+  GP_ComingSoonPopup({commit}) {
+    commit('gp_infoPopup', 'a');
+    commit('gp_ComingSoonPopup', true);
+  },
+  GP_confirmPopup({commit}, value) {
+    commit('gp_confirmPopup', value);
   },
   GP_errorPopup({commit}, value) {
     commit('gp_errorPopup', value);

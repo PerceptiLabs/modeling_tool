@@ -54,7 +54,7 @@ export default {
         },
         {
           title: 'How does it work?',
-          text: 'AI learns to respond to information in a certain way, depending on what you train it for. It uses historical data and algorithms to generate a model that is able to make decisions and/or predictions.',
+          text: 'ML learns to respond to information in a certain way, depending on what you train it for. It uses historical data and algorithms to generate a model that is able to make decisions and/or predictions.',
           img: './static/img/tutorial/tutorial-1_step-2-icon.svg',
           lookEyesClass: 'look-bottom'
         },
@@ -78,8 +78,8 @@ export default {
         },
 
         {
-          title: 'Now you know the basics of the program. Feel free to start building your first AI!',
-          text: `<span style="line-height: 1.8;">Remember, this is a Beta version, if you find any errors or have any suggestions, please click on </span>
+          title: 'Now you know the basics of the program. Feel free to start building your first model!',
+          text: `<span style="line-height: 1.8;">If you find any errors or have any suggestions, please click on </span>
                  <img src="./static/img/tutorial/report-button-img.png" style="width: 56px;position: relative;top: -5px;" ><br>
                  <span>Any feedback is highly appreciated!</span>`,
           button: {
@@ -138,10 +138,12 @@ export default {
     skipStoryBoard() {
       this.closeTutorial();
       this.onMainTutorial();
+      if(this.currentNetworkElementList) this.addNetwork();
     },
     startMainTutorial() {
       if(!this.isTutorialMode) this.onMainTutorial(this);
       this.resetStoryBoard();
+      if(this.currentNetworkElementList) this.addNetwork();
     }
   }
 }

@@ -1,5 +1,7 @@
 <template lang="pug">
-  .loading-status.text-disable(:class="{'loading': isLoading}") Loading...
+  .loading-status(:class="{'loading': isLoading}")
+    .loading-status_box
+      .box_line
 </template>
 <script>
 export default {
@@ -12,14 +14,36 @@ export default {
 }
 </script>
 <style lang="scss" scoped>
+  @import "../../scss/base";
   .loading-status {
-    font-size: 5rem;
-    font-weight: 200;
     opacity: 0;
     margin-bottom: 1rem;
     &.loading {
       opacity: 1;
     }
+  }
+  .loading-status_box{
+    background: $col-txt2;
+    width: 49rem;
+    border-radius: 20px;
+    position: relative;
+    height: 0.4rem;
+  }
+  .box_line {
+    width: 0;
+    height: 100%;
+    position: absolute;
+    left: 0;
+    top: 0;
+    background: $color-6;
+    border-radius: 10px;
+    .loading & {
+      animation: loading 2s infinite;
+    }
+  }
+  @keyframes loading {
+    from {width: 0;}
+    to {width: 100%;}
   }
 </style>
 

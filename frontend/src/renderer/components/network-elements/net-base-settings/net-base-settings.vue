@@ -5,16 +5,16 @@
         button.popup_header(
           v-for="(tab, i) in tabSet"
           :key="tab.i"
-          :class="{'disable': tabSelected != tab }"
-          :disabled='isTutorial || disableSettings'
+          :class="{'disable': tabSelected != tab}"
+          :disabled="tab === 'Code' && isTutorial"
           @click="setTab(tab)"
         )
-          h3(v-html="tab")
+          h4(v-html="tab")
           i.icon.icon-code-error(
             v-if="tab === 'Code' && currentEl.layerCodeError"
           )
       .popup_header.disable(v-else)
-        h3 Preview
+        h4 Preview
     .popup_tab-body
       .popup_body.active(
         v-for="(tabContent, i) in tabSet"
@@ -25,6 +25,10 @@
           slot(:name="tabContent+'-content'")
         #js-hide-btn.settings-layer_foot
           slot(:name="tabContent+'-action'")
+            button.btn.btn--primary.btn--disabled(type="button"
+              @click="hideAllWindow"
+              :disabled="isTutorial"
+            ) Cancel
             button.btn.btn--primary(type="button"
               @click="applySettings(tabContent)"
               :id="idSetBtn"
@@ -34,31 +38,21 @@
               @click="updateCode"
               ) Update code
       .popup_body.active(v-if="tabSelected === 'Preview'")
-        .settings-layer_section
-          .settings-layer
-            .form_row
-              button.btn.btn--link(type="button" @click="toSettings")
-                i.icon.icon-backward
-                span Back
-            .form_row
-              chart-switch.data-settings_chart(
-                :disable-header="true"
-                :chart-data="imgData"
-              )
-        .settings-layer_foot
-          button#tutorial_button-confirm.btn.btn--primary(type="button"
-            @click="confirmSettings"
-          ) Confirm
+        settings-preview(
+          :current-el="currentEl"
+          @to-settings="toSettings"
+          )
+
 
 </template>
 
 <script>
   import coreRequest  from "@/core/apiCore.js";
-  import ChartSwitch  from "@/components/charts/chart-switch.vue";
-  import {mapActions} from 'vuex';
+  import SettingsPreview  from "@/components/network-elements/elements-settings/setting-preview.vue";
 export default {
   name: 'NetBaseSettings',
-  components: {ChartSwitch },
+  components: {SettingsPreview },
+  inject: ['hideAllWindow'],
   props: {
     tabSet: {
       type: Array,
@@ -73,29 +67,32 @@ export default {
       type: String,
       default: ''
     },
+    showPreview: {
+      type: Boolean,
+      default: false
+    }
   },
   mounted() {
     this.toSettings();
+    if(this.currentEl.layerCode || this.currentEl.layerSettings) this.tabSelected = 'Preview';
   },
   data() {
     return {
       tabSelected: '',
       disableSettings: false,
-      imgData: null
     }
   },
   computed: {
-    currentNetworkID() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork'].networkID
-    },
     isTutorial() {
       return this.$store.getters['mod_tutorials/getIstutorialMode']
     }
   },
+  watch: {
+    showPreview(newVal) {
+      if(newVal) this.tabSelected = 'Preview';
+    }
+  },
   methods: {
-    ...mapActions({
-      tutorialPointActivate: 'mod_tutorials/pointActivate',
-    }),
     coreRequest,
     toSettings() {
       let tab = this.currentEl.layerSettingsTabName || this.tabSet[0];
@@ -107,29 +104,18 @@ export default {
     },
     applySettings(name) {
       this.$emit('press-apply', name);
-      this.tabSelected = 'Preview';
-      this.$nextTick(()=> {
-        this.getPreviewSample();
-        this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-apply'});
-      })
+      //const elId = this.currentEl.layerId;
+      if(name !== 'Cloud') {
+        this.tabSelected = 'Preview';this.tabSelected = 'Preview';
+      }
     },
     updateCode(name) {
       this.$emit('press-update')
     },
-    confirmSettings() {
-      this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-confirm'});
-      this.$emit('press-confirm');
-    },
-    getPreviewSample() {
-      this.$store.dispatch('mod_api/API_getPreviewSample', this.currentEl.layerId)
-        .then((data)=> {
-          if(data) {
-            //console.log(data);
-            this.imgData = data;
-          }
-          else this.confirmSettings();
-        })
-    },
+    // confirmSettings() {
+    //   this.$emit('press-confirm');
+    // },
+
   }
 }
 </script>
@@ -160,6 +146,17 @@ export default {
     max-height: none;
     .settings-layer {
       max-height: none;
+      overflow: hidden;
+    }
+  }
+  .settings-layer_foot {
+    justify-content: flex-end;
+    .btn {
+      height: auto;
+      min-width: 7rem;
+    }
+    .btn + .btn {
+      margin-left: .8rem;
     }
   }
 </style>

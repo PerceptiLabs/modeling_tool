@@ -1,17 +1,5 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset(v-if="!testIsOpen")
-      li.statistics-box_tab(
-      v-for="(tab, i) in tabset"
-      :key="i"
-      )
-        button.btn.btn--tabs.tutorial-relative(
-        type="button"
-        v-tooltip-interactive:right="tab.interactiveInfo"
-        @click="setTab(tab.name, tab.id)"
-        :class="{'active': currentTab === tab.name}"
-        :id="tab.id"
-        ) {{ tab.name }}
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Prediction'")
       .statistics-box_row(v-if="!testIsOpen")
         .statistics-box_col
@@ -99,7 +87,7 @@
 <script>
   import ChartSwitch      from "@/components/charts/chart-switch";
   import viewBoxMixin   from "@/core/mixins/net-element-viewBox.js";
-  import { mapActions } from 'vuex';
+
 
   export default {
     name: "ViewBoxTrainNormal",
@@ -108,72 +96,49 @@
     data() {
       return {
         chartData: {
-          Prediction: {
-            Input: null,
-            PvG: null,
-            AveragePvG: null,
-            Accuracy: null,
-          },
-          Accuracy: {
-            Current: null,
-            Total: null,
-          },
-          Loss: {
-            Current: null,
-            Total: null,
-          },
-          F1: {
-            Current: null,
-            Total: null,
-          },
-          AUC: {
-            Current: null,
-            Total: null,
-          }
+          Prediction: { Input: null, PvG: null, AveragePvG: null, Accuracy: null },
+          Accuracy:   { Current: null, Total: null },
+          Loss:       { Current: null, Total: null },
+          F1:         { Current: null, Total: null },
+          AUC:        { Current: null, Total: null }
         },
-        currentTab: 'Prediction',
-        tabset: [
-          {
-            name: 'Prediction',
-            id: 'tutorial_prediction-tab',
-            interactiveInfo: {
+        btnList: {
+          'Prediction': {
+            btnId: 'tutorial_prediction-tab',
+            btnInteractiveInfo: {
               title: 'Prediction',
               text: 'View the input, current accuracy and <br/> output prediction vs ground truth/labels'
             }
           },
-          {
-            name: 'Accuracy',
-            id: 'tutorial_accuracy-tab',
-            interactiveInfo: {
+          'Accuracy': {
+            btnId: 'tutorial_accuracy-tab',
+            btnInteractiveInfo: {
               title: 'Accuracy',
               text: 'View the accuracy.'
             }
           },
-          {
-            name: 'Loss',
-            id: 'tutorial_loss-tab',
-            interactiveInfo: {
+          'Loss': {
+            btnId: 'tutorial_loss-tab',
+            btnInteractiveInfo: {
               title: 'Loss',
               text: 'View the loss.'
             }
           },
-          {
-            name: 'F1',
-            id: 'tutorial_f1-tab',
-            interactiveInfo: {
+          'F1': {
+            btnId: 'tutorial_f1-tab',
+            btnInteractiveInfo: {
               title: 'F1',
               text: 'View the F1 score.'
             }
           },
-          {
-            name: 'AUC',
-            id: 'tutorial_auc-tab',
-            interactiveInfo: {
+          'AUC': {
+            btnId: 'tutorial_auc-tab',
+            btnInteractiveInfo: {
               title: 'AUC',
               text: 'View the AUC.'
             }
           },
-        ],
+        },
         colorList: ['#6B8FF7', '#FECF73'],
         colorListAccuracy: ['#9173FF', '#6B8FF7'],
         colorPie: ['#6B8FF7', '#383F50'],
@@ -186,19 +151,11 @@
       }
     },
     watch: {
-      testIsOpen(newVal) {
-        newVal ? this.setTab('Prediction') : null
-      }
+      // testIsOpen(newVal) {
+      //   newVal ? this.setTab('Prediction') : null
+      // }
     },
     methods: {
-      ...mapActions({
-        tutorialPointActivate:    'mod_tutorials/pointActivate',
-      }),
-      setTab(name, id) {
-        this.currentTab = name;
-        this.setTabAction();
-        this.tutorialPointActivate({way: 'next', validation: id})
-      },
       getData() {
         switch (this.currentTab) {
           case 'Prediction':

@@ -1,16 +1,5 @@
 <template lang="pug">
   .statistics-box
-    ul.statistics-box_tabset(v-if="!testIsOpen")
-      li.statistics-box_tab(
-      v-for="(tab, i) in tabset"
-      :key="i"
-      )
-        button.btn.btn--tabs(
-        type="button"
-        @click="setTab(tab)"
-        :class="{'active': currentTab === tab}"
-        ) {{ tab }}
-      //&& chartData['Weights&Output']
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Weights & Output'")
       .statistics-box_row
         .statistics-box_col(v-if="!testIsOpen")
@@ -42,7 +31,7 @@
 </template>
 
 <script>
-  import ChartSwitch    from "@/components/charts/chart-switch";
+  import ChartSwitch  from "@/components/charts/chart-switch";
   import viewBoxMixin from "@/core/mixins/net-element-viewBox.js";
   export default {
     name: "ViewBoxDeepLearningDeconv",
@@ -61,26 +50,21 @@
           Gradients: {
             Gradients: null,
           }},
-        currentTab: 'Weights & Output',
-        tabset: ['Weights & Output', 'Bias', 'Gradients'],
+        btnList: {'Weights & Output': null, 'Bias': null, 'Gradients': null},
         colorList: ['#83c1ff', '#0070d6', '#6b8ff7']
       }
     },
     methods: {
-      setTab(name) {
-        this.currentTab = name;
-        this.setTabAction();
-      },
       getData() {
         switch (this.currentTab) {
           case 'Weights & Output':
-            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Weights&Output')
+            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Weights&Output');
             break;
           case 'Bias':
-            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Bias')
+            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Bias');
             break;
           case 'Gradients':
-            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Gradients')
+            this.chartRequest(this.boxElementID, 'DeepLearningDeconv', 'Gradients');
             break;
         }
       }

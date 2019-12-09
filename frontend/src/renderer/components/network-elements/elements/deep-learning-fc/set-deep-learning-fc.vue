@@ -4,7 +4,6 @@
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
     @press-confirm="confirmSettings"
-    @press-update="updateCode"
   )
     template(slot="Settings-content")
       .settings-layer_section
@@ -27,15 +26,21 @@
       .settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
           .form_label Dropout:
-          #tutorial_dropout.form_input(data-tutorial-hover-info)
-            base-radio(group-name="group2" :value-input="true" v-model="settings.Dropout")
+          .form_input
+            base-radio(group-name="group5" :value-input="true" v-model="settings.Dropout")
               span Yes
-            base-radio(group-name="group2" :value-input="false" v-model="settings.Dropout")
+            base-radio(group-name="group5" :value-input="false" v-model="settings.Dropout")
               span No
 
+      .settings-layer_section(v-if="settings.Dropout")
+        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
+          .form_label Keep probability:
+          .form_input
+            input(type="number" v-model="settings.Keep_prob")
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
 
@@ -57,6 +62,7 @@
           Neurons :"10",
           Activation_function: "Sigmoid",
           Dropout: false,
+          Keep_prob: '1',
         },
         interactiveInfo: {
           neurons: {
@@ -78,38 +84,6 @@
       ...mapGetters({
         isTutorialMode: 'mod_tutorials/getIstutorialMode'
       }),
-      codeDefault() {
-        let activeFunc = '';
-        switch (this.settings.Activation_function) {
-          case 'Sigmoid':
-            activeFunc = `Y=tf.sigmoid(node);`;
-            break;
-          case 'ReLU':
-            activeFunc = `Y=tf.nn.relu(node);`;
-            break;
-          case 'Tanh':
-            activeFunc = `Y=tf.tanh(node);`;
-            break;
-          case 'None':
-            activeFunc = `Y=node;`;
-            break;
-        }
-        //for element in X['Y'].get_shape().as_list()[1:]:
-        const fc = `input_size=1
-for element in ${this.codeInputDim}:
-  input_size*=element
-shape=[input_size,${this.settings.Neurons}];
-initial = tf.truncated_normal(shape, stddev=0.1);
-W=tf.Variable(initial);
-initial = tf.constant(0.1, shape=[${this.settings.Neurons}]);
-b=tf.Variable(initial);
-flat_node=tf.cast(tf.reshape(X['Y'],[-1,input_size]),dtype=tf.float32);
-node=tf.matmul(flat_node,W)${this.settings.Dropout ? ';\nnode=tf.nn.dropout(node, keep_prob);' : ';'}
-node=node+b;`;
-        return {
-          Output: `${fc}\n${activeFunc}`
-        }
-      }
     },
     watch: {
       'settings.Neurons': {
@@ -128,7 +102,7 @@ node=node+b;`;
       }),
       saveSettings(tabName) {
         this.applySettings(tabName);
-        this.tutorialPointActivate({way:'next', validation: 'tutorial_neurons'})
+        this.$nextTick(()=> this.tutorialPointActivate({way: 'next', validation: 'tutorial_neurons'}));
       }
     }
   }

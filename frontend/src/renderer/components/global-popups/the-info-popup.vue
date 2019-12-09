@@ -1,29 +1,42 @@
 <template lang="pug">
-  .popup-global(v-if="isShowPopup")
+  .popup-global
     .popup-global_overlay(@click="closePopup()")
     section.popup
-      .popup_tab-set
+      //.popup_tab-set
         .popup_header.active
-          .header_attention(:class="{'header_attention--error': !isInfo}") !
       .popup_body
-        .settings-layer_section
-          p.middle-text.text-center(v-if="isText") {{ popupText }}
-          ul(v-else)
-            li(
-              v-for="(text, i) in popupText"
-              :key="i"
-              ) {{ text }}
+        .settings-layer_section.big-text(:class="{'popup--error': !isInfo}")
+          .section_attention(:class="{'header_attention--error': !isInfo}") !
+          .section_text
+            p(v-if="isText && !comingSoonPopup") {{ popupText }}
+            p(v-else-if="isText && comingSoonPopup") This feature is coming soon. For suggestions on new features, hit us up on:&ensp;
+              button.btn.btn--link.text-primary(@click="goToLink('https://gitter.im/PerceptiLabs/PerceptiLabs')") gitter
+            ul.w-100(v-else)
+              li(
+                v-for="(text, i) in popupText"
+                :key="i"
+                ) {{ text }}
+
+          .popup_clipboard
+            button.btn.btn--icon.icon.icon-clipboard-add(type="button"
+              :class="styleClipboard"
+              @click="copyClipboard")
       .popup_foot
         button.btn-info-popup(type="button"
-        @click="closePopup()") OK
+        @click="closePopup") OK
 
 </template>
 
 <script>
+  import { goToLink }    from '@/core/helpers.js'
   export default {
     name: "TheInfoPopup",
     data() {
       return {
+        styleClipboard: {
+          'text-error': false,
+          'text-primary': false
+        }
       }
     },
     computed: {
@@ -32,6 +45,9 @@
       },
       errorPopup() {
         return this.$store.state.globalView.globalPopup.showErrorPopup
+      },
+      comingSoonPopup() {
+        return this.$store.state.globalView.globalPopup.ComingSoonPopup
       },
       isShowPopup() {
         return this.errorPopup.length || this.infoPopup.length
@@ -49,47 +65,51 @@
       }
     },
     methods: {
+      goToLink,
+      copyClipboard() {
+        navigator.clipboard.writeText(JSON.stringify(this.popupText))
+          .then((data)=> { this.styleClipboard['text-primary'] = true })
+          .catch((err)=> { this.styleClipboard['text-error'] = true })
+      },
       closePopup() {
         this.$store.commit('globalView/HIDE_allGlobalPopups');
-      }
+      },
     }
   }
 </script>
 
 <style scoped lang="scss">
   @import "../../scss/base";
-  .popup-global{
-    z-index: 13;
+  @import "../../scss/common/info-popup";
+  .popup_header {
+    position: relative;
   }
-
-  .popup-global .popup{
-    background: $bg-workspace;
-    border: 1px solid #495163;
-    box-shadow: 0 0 7px 3px #4a484880;
-  }
-  .popup_header{
-    background: transparent;
-    height: 5rem;
-    padding-top: 1.4rem;
-  }
-  .header_attention {
-    color: #fff;
-    background: $color-6;
-    padding: .3rem 1.1rem;
-    font-weight: bold;
-    font-size: 1.6rem;
-    height: 1.7em;
-    width: 1.7em;
-    text-align: center;
-    border-radius: 50%;
+  .settings-layer_section {
     display: flex;
-    align-items: center;
-    justify-content: center;
+    margin-top: 1.3rem;
+    &.popup--error {
+      .section_text {
+        max-width: none;
+      }
+      white-space: pre;
+    }
   }
-  .header_attention--error {
-    background: $col-warning;
+  .section_text {
+    margin: 0 1.5rem;
+    width: 100%;
+    max-width: 30rem;
+    user-select: text;
+    * {
+      user-select: inherit;
+    }
+    /*&:selection {*/
+    /*  background-color: cornflowerblue;*/
+    /*}*/
   }
-  .popup_body p{
-    font-size: 1.5rem;
+  .popup_clipboard {
+    font-size: 1.6rem;
+  }
+  .popup_foot {
+    justify-content: flex-end;
   }
 </style>

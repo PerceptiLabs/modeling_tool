@@ -126,6 +126,7 @@ export default {
       max-width: 50%;
     }
     .btn {
+      font-size: 1.2rem;
       color: $disable-txt;
       width: 100%;
       height: $h-toolbar;

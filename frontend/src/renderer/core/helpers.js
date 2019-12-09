@@ -2,7 +2,7 @@ import {shell, ipcRenderer }   from 'electron'
 import fs    from 'fs';
 import store from '@/store'
 
-import { workspaceGrid }   from '@/core/constants.js'
+import { workspaceGrid, pathSlash }   from '@/core/constants.js'
 
 /*modal window*/
 const openLoadDialog = function (options) {
@@ -16,7 +16,6 @@ const openLoadDialog = function (options) {
 };
 
 const openSaveDialog = function (options) {
-  //console.log('openSaveDialog', options);
   return new Promise((success, reject) => {
     ipcRenderer.on('open-save-dialog_path', (event, path) => {
       ipcRenderer.removeAllListeners('open-save-dialog_path');
@@ -28,11 +27,11 @@ const openSaveDialog = function (options) {
 
 const loadPathFolder = function (customOptions) {
   const optionsDefault = {
-    title:"Load folder",
+    title:"Select folder",
+    buttonLabel: "Select folder",
     properties: ['openDirectory']
   };
   let options = {...optionsDefault, ...customOptions};
-  //console.log(options);
   return openLoadDialog(options);
 };
 
@@ -53,30 +52,35 @@ const filePCSave = function (fileName, fileContent) {
         store.dispatch('globalView/GP_errorPopup', `An error occurred creating the file ${err.message}`);
         return reject(err);
       }
-      else {
-        return success(fileName)
-      }
+      else return success(fileName)
     });
+    return success(fileName)
   });
 };
-const projectPCSave = function (projectPathArr, fileContent) {
-  const projectPath = projectPathArr[0];
+
+const projectPCSave = function (fileContent) {
+  const projectPath = fileContent.networkRootFolder;
   if (!fs.existsSync(projectPath)){
     fs.mkdirSync(projectPath);
   }
-  const jsonPath = `${projectPath}\\${fileContent.networkID}.json`;
+  const jsonPath = projectPathModel(projectPath);
   return filePCSave(jsonPath, JSON.stringify(fileContent))
 };
+
+const projectPathModel = function (projectPath) {
+  return `${projectPath}${pathSlash}model.json`
+};
+
 const folderPCDelete = function (path) {
   return new Promise((success, reject) => {
     if (!fs.existsSync(path)) success();
     const files = fs.readdirSync(path);
     if (files.length > 0) {
       files.forEach(function(filename) {
-        if (fs.statSync(path + "/" + filename).isDirectory()) {
-          folderPCDelete(path + "/" + filename)
+        if (fs.statSync(path + pathSlash + filename).isDirectory()) {
+          folderPCDelete(path + pathSlash + filename)
         } else {
-          fs.unlinkSync(path + "/" + filename)
+          fs.unlinkSync(path + pathSlash + filename)
         }
       });
     }
@@ -84,6 +88,7 @@ const folderPCDelete = function (path) {
     success();
   });
 };
+
 /*encryption */
 const encryptionData = function (data) {
   return JSON.stringify(data).split('').reverse().join('');
@@ -106,7 +111,8 @@ const throttleEv = function (func, ms) {
   var isThrottled = false,
     savedArgs,
     savedThis;
-  let delay = 33 || ms; //30Hz
+  let delay = ms || 33; //30Hz
+
   function wrapper() {
 
     if (isThrottled) {
@@ -132,12 +138,22 @@ const throttleEv = function (func, ms) {
 };
 
 const goToLink = function (url) {
-  //console.log(url);
   shell.openExternal(url);
 };
 
 const deepCopy = function (object) {
   return JSON.parse(JSON.stringify(object))
+};
+
+const deepCloneNetwork = function (object) {
+  return JSON.parse(JSON.stringify(
+    object,
+    (key, val)=> {
+      if (key === 'calcAnchor') return undefined;
+      else return val;
+    },
+    ' ')
+  );
 };
 
 export {
@@ -147,6 +163,7 @@ export {
   filePCRead,
   filePCSave,
   projectPCSave,
+  projectPathModel,
   folderPCDelete,
   encryptionData,
   decryptionData,
@@ -154,5 +171,6 @@ export {
   calcLayerPosition,
   throttleEv,
   goToLink,
-  deepCopy
+  deepCopy,
+  deepCloneNetwork
 }

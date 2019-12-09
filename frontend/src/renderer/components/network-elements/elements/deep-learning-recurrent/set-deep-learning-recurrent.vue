@@ -1,9 +1,8 @@
 <template lang="pug">
   net-base-settings(
     :current-el="currentEl"
+    :show-preview="showPreview"
     @press-apply="saveSettings($event)"
-    @press-confirm="confirmSettings"
-    @press-update="updateCode"
   )
     template(slot="Settings-content")
       .settings-layer_section
@@ -27,17 +26,52 @@
             //div
               button.btn.btn--primary(type="button") Custom
 
-      .settings-layer_section
+      //-.settings-layer_section
         .form_row(v-tooltip-interactive:right="interactiveInfo.timeSteps")
           .form_label Time steps:
           .form_input
             input(type="number" v-model="settings.Time_steps")
 
+      .settings-layer_section
+        .form_row
+          .form_label Return sequence:
+          .form_input
+            base-radio(group-name="probability" :value-input="true"  v-model="settings.Return_sequence")
+              span Yes
+            base-radio(group-name="probability" :value-input="false"  v-model="settings.Return_sequence")
+              span No
+
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.dropout")
+          .form_label Dropout:
+          .form_input
+            base-radio(group-name="group5" :value-input="true" v-model="settings.Dropout")
+              span Yes
+            base-radio(group-name="group5" :value-input="false" v-model="settings.Dropout")
+              span No
+
+      .settings-layer_section(v-if="settings.Dropout")
+        .form_row(v-tooltip-interactive:right="interactiveInfo.pooling")
+          .form_label Keep probability:
+          .form_input
+            input(type="number" v-model="settings.Keep_prob")
+
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
+        :el-settings="settings"
         v-model="coreCode"
       )
+    template(slot="Settings-action")
+      button.btn.btn--primary(type="button"
+        v-coming-soon="true"
+      ) Custom
+      button.btn.btn--primary.btn--disabled(type="button"
+        @click="hideAllWindow"
+      ) Cancel
+      button.btn.btn--primary(type="button"
+        @click="applyRecurrentSettings"
+      ) Apply
 
 </template>
 
@@ -47,12 +81,17 @@ import mixinSet       from '@/core/mixins/net-element-settings.js';
 export default {
   name: 'SetDeepLearningRecurrent',
   mixins: [mixinSet],
+  inject: ['hideAllWindow'],
   data() {
     return {
+      showPreview: false,
       settings: {
         Neurons: "10",
         Version: "LSTM", //#LSTM, GRU, RNN
         Time_steps: "2",
+        Dropout: false, //True, False
+        Return_sequence: false, //True, False
+        Keep_prob: "1"
       },
       interactiveInfo: {
         neurons: {
@@ -70,32 +109,10 @@ export default {
       },
     }
   },
-  computed: {
-    codeDefault() {
-      let versionCode;
-      switch (this.settings.Version) {
-        case 'LSTM':
-          versionCode = `node=tf.reshape(X['Y'],[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
-cell = tf.nn.rnn_cell.LSTMCell(${this.settings.Neurons}, state_is_tuple=True);
-rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
-Y=tf.reshape(rnn_outputs,[-1,cell.output_size]);`
-          break;
-        case 'GRU':
-          versionCode = `node=tf.reshape(X['Y'],[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
-cell = tf.nn.rnn_cell.GRUCell(${this.settings.Neurons});
-rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
-Y=tf.reshape(rnn_outputs,[-1,cell.output_size]);`
-          break;
-        case 'RNN':
-          versionCode = `node=tf.reshape(X['Y'],[-1, ${this.settings.Time_steps}, np.prod(${this.codeInputDim})]);
-cell = tf.nn.rnn_cell.BasicRNNCell(${this.settings.Neurons});
-rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype);
-Y=tf.reshape(rnn_outputs,[-1,cell.output_size]);`
-          break;
-      }
-      return {
-        Output: versionCode
-      }
+  methods: {
+    applyRecurrentSettings() {
+      this.applySettings('Settings');
+      this.showPreview = true
     }
   }
 }
