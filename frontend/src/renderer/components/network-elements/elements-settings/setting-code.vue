@@ -45,7 +45,8 @@ export default {
   mounted () {
     //console.log(this.currentEl, this.currentEl.layerCode);
     if(this.currentEl.layerCode) this.setCode(this.currentEl.layerCode);
-    else this.getCode();
+    this.getCode()
+    //else this.getCode();
   },
   beforeDestroy() {
     this.closeFullView()
