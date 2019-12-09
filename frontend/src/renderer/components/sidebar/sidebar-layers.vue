@@ -54,7 +54,7 @@ export default {
             let delKeys = Object.keys(el.containerLayersList);
             if(!delKeys.length) continue;
             delKeys.forEach((id)=> {
-              if(newNet[id].componentName !== 'LayerContainer') delete newNet[id]
+              if(newNet[id] && newNet[id].componentName !== 'LayerContainer') delete newNet[id]
             });
           }
         }

@@ -573,18 +573,14 @@ const mutations = {
     let arrSelect = getters.GET_currentSelectedEl;
     let isValid = true;
     let elementList = getters.GET_currentNetworkElementList;
+    let containersArray = [];
+    let parentContainerID = arrSelect[0].parentContainerID;
     /* validations */
     if(arrSelect.length === 0) isValid = false;
     if(arrSelect.length === 1) {
       dispatch('globalView/GP_infoPopup', 'At least 2 elements are needed to create a group', {root: true});
       isValid = false;
     }
-    arrSelect.forEach((item)=> {
-      if(item.componentName === 'LayerContainer') {
-        dispatch('globalView/GP_infoPopup', 'You cannot create a Layer Container inside a Layer Container! Function in development', {root: true});
-        isValid = false;
-      }
-    });
     if(!isValid) {
       dispatch('SET_elementUnselect');
       return;
@@ -593,12 +589,33 @@ const mutations = {
     let newContainer = createClearContainer(arrSelect);
 
     updateLayerName(newContainer, elementList, 1);
-
-    Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
-    commit('close_container', {container: newContainer, getters, dispatch});
+    console.log('add_container', parentContainerID);
+    if(parentContainerID) {
+      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[parentContainerID].containerLayersList, newContainer.layerId, newContainer);
+      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
+      //Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[containersArray[0].layerId].containerLayersList[newContainer.layerId], 'parentContainerID', containersArray[0].layerId);
+      console.log('network', state.workspaceContent[state.currentNetwork].networkElementList);
+    } else {
+      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
+    }
+    commit('close_container', {container: newContainer, parentContainer:containersArray[0],  getters, dispatch});
     commit('set_elementUnselect', {getters});
+    containersArray = [];
 
     function createClearContainer(selectList) {
+      arrSelect.forEach(element => {
+        if(selectList[0].parentContainerID) {
+          const parentContainerLayerList = state.workspaceContent[state.currentNetwork].networkElementList[element.parentContainerID].containerLayersList;
+          for(const id in parentContainerLayerList) {
+            delete parentContainerLayerList[element.layerId]
+          }
+          for(const id in elementList) {
+            if(elementList[id].layerId === element.parentContainerID){
+              containersArray.push(elementList[id]);
+            }
+          }
+        }
+      });
       let fakeEvent = {
         timeStamp: generateID(),
         target: {
@@ -613,21 +630,34 @@ const mutations = {
       };
       let container = createNetElement(fakeEvent);
       container.containerLayersList = {};
+      if(selectList[0].parentContainerID) container.parentContainerID = selectList[0].parentContainerID;
+      console.log('container', container.parentContainerID);
       selectList.forEach((el)=>{
+        el.parentContainerID = container.layerId;
         container.containerLayersList[el.layerId] = el;
       });
+      console.log(container);
       return container
     }
   },
-  close_container(state, {container, getters, dispatch}) {
+  close_container(state, {container, parentContainer, getters, dispatch}) {
     let network = getters.GET_currentNetworkElementList;
     let layerCont = calcContainer(container, network);
     saveDifferentPosition(layerCont);
 
     for(let idEl in layerCont.containerLayersList) {
-      network[idEl].layerNone = true;
+      if(network[idEl].componentName !== 'LayerContainer') {
+        network[idEl].layerNone = true;
+      }
     }
     network[container.layerId].layerNone = false;
+/*    if(parentContainer) {
+      network[parentContainer.layerId].containerLayersList[container.layerId].layerNone = false;
+    }
+     else {
+
+    }*/
+
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
 
     function calcContainer(container, net) {
@@ -702,6 +732,13 @@ const mutations = {
         item.layerMeta.containerDiff.left = itemLeft - containerLeft;
       }
     }
+
+/*    for(const id in container.containerLayersList) {
+      if(container.containerLayersList[id].layerContainerID === container.layerId) {
+        console.log('ELEMENT:', container.containerLayersList[id])
+      }
+    }*/
+
   },
   open_container(state, {container, getters, dispatch}) {
     let net = getters.GET_currentNetworkElementList;
@@ -739,6 +776,7 @@ const mutations = {
     for(let idEl in net) {
       let el = net[idEl];
       el.connectionArrow = el.connectionArrow.filter((arrow)=> arrow !== container.layerId)
+      delete el.layerContainerID;
     }
     delete net[container.layerId];
     state.workspaceContent[state.currentNetwork].networkElementList = net;
@@ -1001,4 +1039,4 @@ const createNetElement = function (event) {
     connectionIn: [],
     connectionArrow: [],
   };
-}
+};

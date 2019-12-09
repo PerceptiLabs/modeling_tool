@@ -3,7 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ffa9ad05-b196-4c26-bff9-1b8d5935a763" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/main/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/main/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/sidebar/sidebar-layers.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/sidebar/sidebar-layers.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -45,22 +46,22 @@
   </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/../vue-spa" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/frontend/src/renderer/components/workspace" />
     <property name="list.type.of.created.stylesheet" value="SCSS" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
-    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\workspace" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store\modules" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\different" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\deep-learning-recurrent" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\core\basic-template" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
     </key>
   </component>
   <component name="ServiceViewManager">
@@ -80,7 +81,11 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
+<<<<<<< Updated upstream
       <changelist id="ffa9ad05-b196-4c26-bff9-1b8d5935a763" name="Default Changelist" comment="" />
+=======
+      <changelist id="40739598-f05c-4231-a5ec-48ec8c4274ee" name="Default Changelist" comment="" />
+>>>>>>> Stashed changes
       <created>1569314049218</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -125,13 +130,11 @@
       <workItem from="1572939251934" duration="12685000" />
       <workItem from="1573024957115" duration="921000" />
       <workItem from="1573206261933" duration="2324000" />
+<<<<<<< Updated upstream
       <workItem from="1575290205939" duration="2730000" />
-      <workItem from="1575373566150" duration="198000" />
-      <workItem from="1575380893429" duration="165000" />
-      <workItem from="1575386171156" duration="479000" />
-      <workItem from="1575625465799" duration="3747000" />
-      <workItem from="1575637686189" duration="999000" />
-      <workItem from="1575639535781" duration="1215000" />
+=======
+      <workItem from="1575365973001" duration="1581000" />
+>>>>>>> Stashed changes
     </task>
     <servers />
   </component>
@@ -186,15 +189,5 @@
         </entry>
       </map>
     </option>
-  </component>
-  <component name="WindowStateProjectService">
-    <state x="690" y="212" key="FileChooserDialogImpl" timestamp="1575637172931">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="690" y="212" key="FileChooserDialogImpl/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1575637172931" />
-    <state x="594" y="189" width="731" height="662" key="find.popup" timestamp="1575638194840">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="594" y="189" width="731" height="662" key="find.popup/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1575638194840" />
   </component>
 </project>
