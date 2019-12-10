@@ -27,7 +27,3 @@ conda env create --force --file $CONDA_ENV_FILE
 
 echo "which python"
 which python
-
-echo "Activating environment"
-source ~/miniconda/etc/profile.d/conda.sh
-conda activate py362_

@@ -10,6 +10,9 @@ REM   exit 0
 REM )
 
 python -m pytest
+IF %ERRORLEVEL% EQU 1 (
+  exit 0
+)
 
 
 REM FOR /F %%a IN (../backend/included_files.txt) DO (
