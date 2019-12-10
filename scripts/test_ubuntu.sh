@@ -23,6 +23,8 @@ cat "$CONDA_ENV_FILE"
 echo "Creating environment"
 conda env create --force --file $CONDA_ENV_FILE
 
+echo "Restart the shell after conda init to be able to activate the environment"
+exec bash
 conda activate py362_
 
 cd ../backend
@@ -30,3 +32,4 @@ cd ../backend
 echo "Running tests"
 python python_error_checks.py
 if [ $? -eq 2 ]; then exit 1; fi
+if [ $? -eq 1 ]; then exit 0; fi
