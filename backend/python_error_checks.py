@@ -12,6 +12,7 @@ def test_cython():
     from setuptools import setup, find_packages, Extension
     from Cython.Build import cythonize
     from distutils.command import build_ext
+    import traceback
 
     def scandir(dir, files=[]):
         if dir:
@@ -40,8 +41,8 @@ def test_cython():
     try:
         setup(name='tests',
             ext_modules=cythonize(extensions))
-    except:
-        raise
+    except Exception as e:
+        traceback.print_tb(e.__traceback__)
     finally:
         exit(2)
 
