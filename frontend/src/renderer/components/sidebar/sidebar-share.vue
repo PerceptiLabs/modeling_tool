@@ -20,7 +20,7 @@
     name: 'SidebarShare',
     data() {
       return {
-        reportLink: 'https://gitter.im/PerceptiLabs/PerceptiLabs?utm_source=share-link&utm_medium=link&utm_campaign=share-link'
+        reportLink: 'https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk'
       }
     },
     methods: {

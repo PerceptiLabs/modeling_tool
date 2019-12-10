@@ -10,7 +10,7 @@
           .section_text
             p(v-if="isText && !comingSoonPopup") {{ popupText }}
             p(v-else-if="isText && comingSoonPopup") This feature is coming soon. For suggestions on new features, hit us up on:&ensp;
-              button.btn.btn--link.text-primary(@click="goToLink('https://gitter.im/PerceptiLabs/PerceptiLabs')") gitter
+              button.btn.btn--link.text-primary(@click="goToLink('https://join.slack.com/t/perceptilabs-com/shared_invite/enQtODQ5NzAwNDkxOTExLWUxODAwZDk0MzA1MmM4OTViNWE4MmVjYjc2OTQwMTQ4N2NmM2ZlYmI5NjZjOWRiYjBkYjBjMTMzNjEyMDNiNDk')") slack
             ul.w-100(v-else)
               li(
                 v-for="(text, i) in popupText"
