@@ -8,8 +8,9 @@ jobs:
    pool:
        vmImage: "ubuntu-16.04"
    steps:
-   - bash: |
-       echo "Test in Ubuntu"
+    - bash: |
+        cd scripts/
+        bash -i test_ubuntu.sh
 
 
 ### TEST WINDOWS  ###
@@ -19,12 +20,9 @@ jobs:
        #win-pool
        vmImage: "vs2017-win2016"
    steps:
-    - powershell: |
-        Write-Host "test in windows"  
     - script: |
-          cd script/
+          cd scripts/
           ./test_windows.bat
-        displayName: 'Running tests'
 
 
 ### TEST OSX  ###
@@ -33,7 +31,8 @@ jobs:
    pool:
        vmImage: "macOS-10.14"
    steps:
-   - bash: |
-       echo "Test in osx" 
+    - bash: |
+        cd scripts/
+        bash -i test_osx.sh
 
 
