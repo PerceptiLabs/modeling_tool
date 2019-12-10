@@ -10,7 +10,7 @@ jobs:
    steps:
     - bash: |
         cd scripts/
-        ./setup_tests_ubuntu.sh
+        bash -i setup_tests_ubuntu.sh
       displayName: 'Environment setup'
 
     - bash: |
@@ -24,7 +24,6 @@ jobs:
 
  - job: test_windows
    pool:
-       #win-pool
        vmImage: "vs2017-win2016"
    steps:
     - script: |
@@ -46,11 +45,10 @@ jobs:
    steps:
     - bash: |
         cd scripts/
-        ./setup_tests_osx.sh
+        bash -i setup_tests_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
         cd scripts/
         bash -i test_osx.sh
       displayName: 'Python tests'
-

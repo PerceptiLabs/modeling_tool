@@ -5,9 +5,9 @@ python python_error_checks.py
 IF %ERRORLEVEL% EQU 2 (
   exit 1
 )
-IF %ERRORLEVEL% EQU 1 (
-  exit 0
-)
+REM IF %ERRORLEVEL% EQU 1 (
+REM   exit 0
+REM )
 
 python -m pytest
 
