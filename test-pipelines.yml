@@ -10,7 +10,14 @@ jobs:
    steps:
     - bash: |
         cd scripts/
+        ./setup_tests_ubuntu.sh
+      displayName: 'Environment setup'
+
+    - bash: |
+        cd scripts/
         bash -i test_ubuntu.sh
+      displayName: 'Python tests'
+
 
 
 ### TEST WINDOWS  ###
@@ -21,8 +28,14 @@ jobs:
        vmImage: "vs2017-win2016"
    steps:
     - script: |
-          cd scripts/
-          ./test_windows.bat
+        cd scripts/
+        ./setup_tests_windows.bat
+      displayName: 'Environment setup'
+
+    - script: |
+        cd scripts/
+        ./test_windows.bat
+      displayName: 'Python tests'
 
 
 ### TEST OSX  ###
@@ -33,6 +46,11 @@ jobs:
    steps:
     - bash: |
         cd scripts/
-        bash -i test_osx.sh
+        ./setup_tests_osx.sh
+      displayName: 'Environment setup'
 
+    - bash: |
+        cd scripts/
+        bash -i test_osx.sh
+      displayName: 'Python tests'
 
