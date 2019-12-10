@@ -7,16 +7,19 @@ call pip install pylint==2.4.3
 cd ../backend
 del *.c
 echo "Running tests"
-python python_error_checks.py
-IF %ERRORLEVEL% EQU 2 (
-  echo "Exiting from python error checks"
-  exit 1
-)
-IF %ERRORLEVEL% EQU 1 (
-  exit 0
-)
+REM python python_error_checks.py
+REM IF %ERRORLEVEL% EQU 2 (
+REM   echo "Exiting from python error checks"
+REM   exit 1
+REM )
 
-REM FOR /F %%a IN (../scripts/included_files.txt) DO cython %%a 
+
+FOR /F %%a IN (../backend/included_files.txt) DO (
+  cython %%a
+  IF %ERRORLEVEL% EQU 1 (
+    exit 0
+  )
+) 
 REM echo %ERRORLEVEL%
 
 

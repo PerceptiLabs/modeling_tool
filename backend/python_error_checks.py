@@ -1,7 +1,7 @@
 def test_pylint():
     from pylint import epylint as lint
 
-    with open('../scripts/included_files.txt') as f:
+    with open('../backend/included_files.txt') as f:
         for line in f:
             if "#" not in line and line.strip():
                 print("Checking %s" % line.strip())
