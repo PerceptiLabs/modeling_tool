@@ -42,6 +42,7 @@ def test_cython():
         setup(name='tests',
             ext_modules=cythonize(extensions))
     except Exception as e:
+        print("*************************************** " + str(e))
         traceback.print_tb(e.__traceback__)
     finally:
         exit(2)
