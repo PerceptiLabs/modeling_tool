@@ -10,7 +10,7 @@ jobs:
    steps:
     - bash: |
         cd scripts/
-        ./test_ubuntu.sh
+        bash -i test_ubuntu.sh
 
 
 ### TEST WINDOWS  ###
@@ -33,6 +33,6 @@ jobs:
    steps:
     - bash: |
         cd scripts/
-        ./test_osx.sh
+        bash -i test_osx.sh
 
 
