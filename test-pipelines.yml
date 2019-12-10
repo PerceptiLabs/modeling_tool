@@ -8,22 +8,33 @@ jobs:
    pool:
        vmImage: "ubuntu-16.04"
    steps:
-   - bash: |
-       echo "Test in Ubuntu"
+    - bash: |
+        cd scripts/
+        bash -i setup_tests_ubuntu.sh
+      displayName: 'Environment setup'
+
+    - bash: |
+        cd scripts/
+        bash -i test_ubuntu.sh
+      displayName: 'Python tests'
+
 
 
 ### TEST WINDOWS  ###
 
  - job: test_windows
    pool:
-       #win-pool
        vmImage: "vs2017-win2016"
    steps:
-    - powershell: |
-        Write-Host "test in windows"  
     - script: |
-          cd script/
-          ./test_windows.bat
+        cd scripts/
+        ./setup_tests_windows.bat
+      displayName: 'Environment setup'
+
+    - script: |
+        cd scripts/
+        ./test_windows.bat
+      displayName: 'Python tests'
 
 
 ### TEST OSX  ###
@@ -32,7 +43,12 @@ jobs:
    pool:
        vmImage: "macOS-10.14"
    steps:
-   - bash: |
-       echo "Test in osx" 
+    - bash: |
+        cd scripts/
+        bash -i setup_tests_osx.sh
+      displayName: 'Environment setup'
 
-
+    - bash: |
+        cd scripts/
+        bash -i test_osx.sh
+      displayName: 'Python tests'
