@@ -19,6 +19,7 @@ parse_pb.py
 s3buckets.py
 utils.py
 webServer.py
+processes.py
 
 # analytics
 analytics/handlers.py
