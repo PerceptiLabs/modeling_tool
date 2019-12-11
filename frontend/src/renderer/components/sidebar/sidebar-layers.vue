@@ -47,6 +47,10 @@ export default {
       var newNet = {...currentNet};
       clearContainer(currentNet);
 
+      const keysArrayNewNet = Object.keys(newNet);
+      const lastElement = newNet[keysArrayNewNet[keysArrayNewNet.length -1]];
+      console.log(lastElement);
+
       function clearContainer(net) {
         for(let idEl in net) {
           let el = net[idEl];
@@ -59,6 +63,10 @@ export default {
           }
         }
       }
+      console.log('newnet', newNet);
+/*      for(const id in newNet) {
+        if(newNet[id].)
+      }*/
       return newNet
     },
   },
@@ -83,6 +91,7 @@ export default {
       //   return item.meta.isSelected === true;
       // });
     }
+
   }
 }
 </script>

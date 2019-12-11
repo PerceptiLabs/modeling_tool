@@ -76,7 +76,10 @@ export default {
     },
     openContainer() {
       return this.itemData.layerNone
-    }
+    },
+    network() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
+    },
   },
   methods: {
     toggleOpen() {

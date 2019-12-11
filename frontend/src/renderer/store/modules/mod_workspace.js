@@ -592,7 +592,6 @@ const mutations = {
     if(parentContainerID) {
       Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[parentContainerID].containerLayersList, newContainer.layerId, newContainer);
       Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
-      console.log('network', state.workspaceContent[state.currentNetwork].networkElementList);
     }
     else {
       Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
@@ -741,12 +740,6 @@ const mutations = {
         item.layerMeta.containerDiff.left = itemLeft - containerLeft;
       }
     }
-
-/*    for(const id in container.containerLayersList) {
-      if(container.containerLayersList[id].layerContainerID === container.layerId) {
-        console.log('ELEMENT:', container.containerLayersList[id])
-      }
-    }*/
 
   },
   open_container(state, {container, getters, dispatch}) {
