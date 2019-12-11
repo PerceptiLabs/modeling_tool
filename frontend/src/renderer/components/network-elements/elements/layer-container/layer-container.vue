@@ -65,8 +65,7 @@
         return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
       },
       showChildContainer() {
-        if(this.elementData.layerContainerID && !this.currentNetList[this.elementData.layerContainerID].layerNone) return false;
-        return true;
+        return this.elementData.isShow;
       },
       isOpenContainer() {
         return !this.elementData.layerNone
