@@ -31,14 +31,3 @@ def test_frontend_watcher():
     proc1.join()
     proc2.join(timeout=1) 
     assert not proc2.is_alive()
-
-if __name__ == "__main__":
-    test_frontend_watcher()
-
-    
-
-
-
-    
-    
-

@@ -39,6 +39,12 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
+echo "Testing to start the core"
+call "dist/appServer/appServer.exe" -k=True -l="INFO"
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
+
 call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "dist/appServer/*.exe"
 IF %ERRORLEVEL% NEQ 0 (
   dir

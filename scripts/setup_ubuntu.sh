@@ -23,6 +23,9 @@ cat "$CONDA_ENV_FILE"
 echo "Creating environment"
 conda env create --force --file $CONDA_ENV_FILE
 
+echo "Environment:"
+conda list
+
 echo "Installing npm..."
 sudo apt install npm -y
 
