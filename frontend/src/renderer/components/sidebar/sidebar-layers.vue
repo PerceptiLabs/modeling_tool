@@ -49,7 +49,11 @@ export default {
 
       const keysArrayNewNet = Object.keys(newNet);
       const lastElement = newNet[keysArrayNewNet[keysArrayNewNet.length -1]];
-      console.log(lastElement);
+
+      if(lastElement && lastElement.componentName === 'LayerContainer' && lastElement.parentContainerID) {
+        const duplicateElement = document.getElementById(lastElement.layerId);
+        duplicateElement.classList.add('hide-duplicate-element');
+      }
 
       function clearContainer(net) {
         for(let idEl in net) {
@@ -63,10 +67,6 @@ export default {
           }
         }
       }
-      console.log('newnet', newNet);
-/*      for(const id in newNet) {
-        if(newNet[id].)
-      }*/
       return newNet
     },
   },
@@ -143,5 +143,8 @@ export default {
     input {
       box-shadow: $icon-shad;
     }
+  }
+  .hide-duplicate-element {
+    display: none;
   }
 </style>
