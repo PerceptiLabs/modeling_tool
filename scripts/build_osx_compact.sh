@@ -70,6 +70,7 @@ fi
 # exit
 chmod +x dist/appServer/appServer
 
+echo "*************************************************************************************************"
 echo "Testing to start the core"
 ./dist/appServer/appServer -k=True -l="INFO"
 if [ $? -ne 0 ]; then exit 1; fi

@@ -44,6 +44,7 @@ conda activate py362_
 
 echo "Environment:"
 conda list
+pip list
 
 echo "which python"
 which python
