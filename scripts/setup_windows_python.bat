@@ -42,6 +42,9 @@ cd ..
 echo Pyinstaller Version:
 call pyinstaller --version
 
+echo "Environemnt:"
+call pip list
+
 call node --version
 call npm --version
 

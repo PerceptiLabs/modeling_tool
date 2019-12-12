@@ -108,13 +108,12 @@ class BaseCore:
                 continue
 
             if self._network_cache is not None:
-                # if layer_id in self._network_cache and not self._network_cache.needs_update(layer_id, self._graph):
                 if layer_id in self._network_cache and not self._network_cache.needs_update(layer_id, content):
                     log.info("Using cached layer")
                     print("Using cached layer for layer " + layer_type)
                     self._use_cached_layer(layer_id, self._network_cache[layer_id])
                     continue
-            print("Calculating new layer for layer " + layer_type)
+            print("***Calculating new layer for layer " + layer_type)
             log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
             try:
                 self._run_layer(layer_id, content)

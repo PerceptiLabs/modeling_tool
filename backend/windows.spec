@@ -28,7 +28,7 @@ pathex = [working_dir]
 binaries = [(python_lib+'/dask/dask.yaml','./dask/')]
 
 python_files = []
-with open('../../scripts/included_files.txt') as f:
+with open('../../backend/included_files.txt') as f:
     for line in f:
         if "#" not in line and line.strip():
             python_files.append(".".join(line.strip().split(".")[:-1]).replace("/","."))

@@ -8,6 +8,7 @@ from tensorflow.python.platform import gfile
 from google.protobuf import text_format
 from tensorflow.python.framework import importer
 from tensorflow.python.framework import tensor_util
+import traceback
 
 class extractCheckpointInfo():
     def __init__(self, end_points=[], graph_def_path=None, input_checkpoint=None, sess=None):
@@ -289,11 +290,17 @@ class extractCheckpointInfo():
 
         found_variables = dict(zip(variable_dict_names, returned_variables))
         return found_variables
+    
+    def isPb(self, file):
+        return self.graph_def_path.split(".")[-1]=="pb"
 
     def getDimensions(self,variable_names):
         if not self.sess:
             if self.input_checkpoint and self.graph_def_path:
-                _=self.restoreSession()
+                if self.isPb(self.input_checkpoint):
+                    _=self.restoreSessionWithGraphDef()
+                else:
+                    _=self.restoreSession()
             elif self.graph_def_path:
                 _=self.restoreSessionWithGraphDef()
             else:

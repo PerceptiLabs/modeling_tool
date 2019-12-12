@@ -29,7 +29,7 @@ mkdir frontend_out
 
 echo "Copying files files from ../../backend/"
 cd backend_tmp/
-rsync -a ../../backend --files-from=../../scripts/included_files.txt .
+rsync -a ../../backend --files-from=../../backend/included_files.txt .
 cp ../../backend/setup_compact.pyx .
 
 echo "C compiling"
@@ -67,6 +67,10 @@ then
 fi
 
 chmod +x dist/appServer/appServer
+
+echo "Testing to start the core"
+./dist/appServer/appServer -k=True -l="INFO"
+if [ $? -ne 0 ]; then exit 1; fi
 
 echo "copying dist to 'backend_out/'"
 cd ../backend_out/
