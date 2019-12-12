@@ -12,6 +12,8 @@ def get_input_args():
                         help='Frontend process id.')
     parser.add_argument('-l','--log-level', default='WARNING', type=str,
                         help='Log level name.')
+    parser.add_argument('-k','--instantly-kill', default=False, type=bool,
+                        help="Set this to instantly kill the core, for test purposes")
     args = parser.parse_args()
     return args
 
@@ -42,4 +44,4 @@ if __name__ == "__main__":
     setup_logger(args.log_level)
     ProcessDependencyWatcher(args.frontend_pid).start()
     
-    appServer.mainServer()
+    appServer.mainServer(args.instantly_kill)
