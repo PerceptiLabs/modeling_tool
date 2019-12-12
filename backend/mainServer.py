@@ -13,7 +13,7 @@ def get_input_args():
     parser.add_argument('-l','--log-level', default='WARNING', type=str,
                         help='Log level name.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
-                        help="Set this to instantly kill the core, for test purposes")
+                        help="Set this to instantly kill the core, for test purposes.")
     args = parser.parse_args()
     return args
 
