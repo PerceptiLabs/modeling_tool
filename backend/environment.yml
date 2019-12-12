@@ -21,4 +21,5 @@ dependencies:
     - pandas==0.25.0
     - pylint==2.4.3
     - pytest==5.3.1
+    - astor==0.8.0
    

@@ -39,7 +39,8 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
-call "dist/appServer/appServer.exe" -k=True
+echo "Testing to start the core"
+call "dist/appServer/appServer.exe" -k=True -l="INFO"
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )

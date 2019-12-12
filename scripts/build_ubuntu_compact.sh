@@ -68,7 +68,8 @@ fi
 
 chmod +x dist/appServer/appServer
 
-./dist/appServer/appServer -k=True
+echo "Testing to start the core"
+./dist/appServer/appServer -k=True -l="INFO"
 if [ $? -ne 0 ]; then exit 1; fi
 
 echo "copying dist to 'backend_out/'"

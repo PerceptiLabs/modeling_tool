@@ -42,6 +42,9 @@ echo "Activating environment"
 source ~/miniconda/etc/profile.d/conda.sh
 conda activate py362_
 
+echo "Environment:"
+conda list
+
 echo "which python"
 which python
 
