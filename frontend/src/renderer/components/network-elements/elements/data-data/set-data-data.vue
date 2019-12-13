@@ -24,7 +24,7 @@
           span Choose folders
 
       template(v-else)
-        chart-spinner(v-if="showSpinner")
+        //-chart-spinner(v-if="showSpinner")
         .settings-layer_section
           .form_row
             button.btn.btn--link(type="button" @click="clearPath")
@@ -35,6 +35,7 @@
             settings-file-list(
               v-model="fileList"
               :name-add-item="typeOpened"
+              :show-spinner="showSpinner"
               @partition-list="setPartitionList"
               @add-file="addFiles"
               )

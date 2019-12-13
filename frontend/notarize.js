@@ -1,11 +1,11 @@
 const notarize = require('electron-notarize').notarize;
-process.env.CSC_LINK = '../perceptilabs.p12'
-process.env.CSC_KEY_PASSWORD = 'com.perceptilabs.app'
-process.env.appleId = 'stetsenko.ant1@gmail.com'
-process.env.appleASP = 'gvcc-xynd-weyn-uhym'
-
-async function nota(context) {
-  //if (electronPlatformName === 'darwin') {
+{
+  process.env.CSC_LINK = '../perceptilabs.p12'
+  process.env.CSC_KEY_PASSWORD = 'com.perceptilabs.app'
+  process.env.appleId = 'stetsenko.ant1@gmail.com'
+  process.env.appleASP = 'gvcc-xynd-weyn-uhym'
+}
+async function nota() {
     try {
       console.log('Try notarize app');
       await notarize({
@@ -17,8 +17,7 @@ async function nota(context) {
       console.log('Success notarize');
     }
     catch (err) {
-        console.log('Notarize app', err);
+      console.log('Notarize app', err);
     }
-  //}
 };
 nota();
