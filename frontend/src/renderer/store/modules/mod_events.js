@@ -110,7 +110,13 @@ const actions = {
     if(rootState.mod_api.statusLocalCore === 'online') {
       dispatch('mod_api/API_stopTraining', null, {root: true})
         .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
-        .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
+        .then((t)=> {
+          console.log('after close', t);
+          ipcRenderer.send('app-close', rootState.mod_api.corePid)
+        })
+        .catch((err)=> {
+          console.log(err);
+        })
     }
     else {
       ipcRenderer.send('app-close')
