@@ -98,10 +98,12 @@ ls -l core/
 echo "Building.."
 npm run build
 
+chmod +x build/*.AppImage
+
 echo "copying images to 'frontend_out/'"
 echo "ls:"
 ls build/*.AppImage
-cp build/*.AppImage ../build/frontend_out/
+cp -r build/* ../build/frontend_out/
 
    
 	    

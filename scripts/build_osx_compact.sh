@@ -126,7 +126,7 @@ echo "ls of 'frontend/build/'"
 ls build/
 
 echo "copying images to 'frontend_out/'"
-cp build/*.dmg ../build/frontend_out/
+cp -r build/* ../build/frontend_out/
 
    
     

@@ -76,7 +76,7 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
-copy build\*.exe ..\build\frontend_out\ 
+xcopy build\ ..\build\frontend_out\ 
 
 cd ..\scripts
 
