@@ -68,7 +68,9 @@ fi
 
 chmod +x dist/appServer/appServer
 
-./dist/appServer/appServer -k=True
+echo "*************************************************************************************************"
+echo "Testing to start the core"
+./dist/appServer/appServer -k=True -l="INFO"
 if [ $? -ne 0 ]; then exit 1; fi
 
 echo "copying dist to 'backend_out/'"
@@ -96,10 +98,12 @@ ls -l core/
 echo "Building.."
 npm run build
 
+chmod +x build/*.AppImage
+
 echo "copying images to 'frontend_out/'"
 echo "ls:"
 ls build/*.AppImage
-cp build/*.AppImage ../build/frontend_out/
+cp -r build/* ../build/frontend_out/
 
    
 	    

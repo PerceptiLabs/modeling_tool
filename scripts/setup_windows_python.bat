@@ -26,7 +26,7 @@ SET PATH=%PATH%;C:\hostedtoolcache\windows\Python\3.6.8\x64\Scripts
 
 call python -m pip install --upgrade pip setuptools
 call pip install -r requirements.txt
-call pip install dask[array] --upgrade
+REM call pip install dask[array] --upgrade
 
 call git config --global user.email "robert.l@perceptilabs.com"
 git config --global user.name "Robert Lundberg"
@@ -41,6 +41,9 @@ IF %ERRORLEVEL% NEQ 0 (
 cd ..
 echo Pyinstaller Version:
 call pyinstaller --version
+
+echo "Environemnt:"
+call pip list
 
 call node --version
 call npm --version

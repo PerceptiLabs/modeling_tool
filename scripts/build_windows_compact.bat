@@ -39,7 +39,9 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
-call "dist/appServer/appServer.exe" -k=True
+echo "*************************************************************************************************"
+echo "Testing to start the core"
+call "dist/appServer/appServer.exe" -k=True -l="INFO"
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
@@ -74,7 +76,7 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
-copy build\*.exe ..\build\frontend_out\ 
+xcopy build\ ..\build\frontend_out\ 
 
 cd ..\scripts
 
