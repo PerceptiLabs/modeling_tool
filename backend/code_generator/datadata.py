@@ -3,7 +3,7 @@ import numpy as np
 import os
 from abc import ABC, abstractmethod
 
-from code_generator import CodeGenerator
+from code_generator import CodeGenerator, Jinja2CodeGenerator
 from s3buckets import S3BucketAdapter
 
 
@@ -502,6 +502,38 @@ class DataDataCodeGenerator(CodeGenerator):
             raise NotImplementedError("Extension {} not implemented".format(ext))
 
         return strategy
+
+
+class DataDataCodeGenerator2(Jinja2CodeGenerator):
+    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=[], layer_id=None):
+        self._seed = seed
+        self.batch_size=batch_size
+        self.shuffle=shuffle
+        self.columns=columns
+        self._layer_id = layer_id
+        self.sources=sources
+        
+        self.partitions = []
+        for source, partition in zip(sources, partitions):
+            if sum(partition) != 100:
+                raise ValueError("Partition percentages do not sum to 100!")
+
+            partition = [partition[0]/100.0, partition[1]/100.0, partition[2]/100.0]
+            self.partitions.append(partition)
+
+    def get_code(self):
+        code = self._render(
+            'datadata.j2',
+            sources=self.sources,
+            columns=self.columns,
+            shuffle=self.shuffle,
+            batch_size=self.batch_size,
+            partitions=self.partitions,
+            layer_id=self._layer_id
+        )
+        return code
+                     
+        
 
 if __name__ == "__main__":
     def runrunrun(sources, partitions):

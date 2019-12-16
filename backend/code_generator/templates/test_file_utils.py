@@ -60,7 +60,7 @@ def test_npy_sample_shape_ok(globals_, npy_3000x784):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
 
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     shape = next(gen_fn(0, 3000)).shape
     
     assert shape == (784,)
@@ -70,7 +70,7 @@ def test_csv_sample_shape_ok(globals_, csv_3000x784):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
 
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     shape = next(gen_fn(0, 3000)).shape
     assert shape == (784,)
 
@@ -79,7 +79,7 @@ def test_csv_lazy_sample_shape_ok(globals_, csv_3000x784):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
 
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     shape = next(gen_fn(0, 3000)).shape
     
     assert shape == (784,)
@@ -104,7 +104,7 @@ def test_npy_slice_generator(globals_, npy_ordered):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
 
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     x = next(gen_fn(1000, 3000))
     assert x == 1000
 
@@ -113,7 +113,7 @@ def test_npy_slice_generator(globals_, npy_ordered):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
 
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     x = next(gen_fn(1000, 3000))
     assert x == 1000
     
@@ -122,7 +122,7 @@ def test_csv_slice_generator(globals_, csv_ordered):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
 
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     x = next(gen_fn(1000, 3000))
     assert x == 1000
 
@@ -131,7 +131,7 @@ def test_csv_lazy_slice_generator(globals_, csv_ordered):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
 
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     x = next(gen_fn(1000, 3000))
     assert x == 1000
 
@@ -140,7 +140,7 @@ def test_npy_all_data(globals_, npy_3000x784):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
 
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     assert len(list(gen_fn(0, 3000))) == 3000
     
 def test_csv_all_data(globals_, csv_3000x784):
@@ -148,7 +148,7 @@ def test_csv_all_data(globals_, csv_3000x784):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
 
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     assert len(list(gen_fn(0, 3000))) == 3000
 
 def test_csv_lazy_all_data_1_partition(globals_, csv_3000x784):
@@ -156,7 +156,7 @@ def test_csv_lazy_all_data_1_partition(globals_, csv_3000x784):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
     assert globals_['df_123'].npartitions == 1
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     assert len(list(gen_fn(0, 3000))) == 3000
     
 def test_csv_lazy_all_data_2_partition(globals_, csv_3000x784):
@@ -166,6 +166,6 @@ def test_csv_lazy_all_data_2_partition(globals_, csv_3000x784):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
     assert globals_['df_123'].npartitions == 2
-    gen_fn = locals_['generator_123']
+    gen_fn = globals_['generator_123']
     assert len(list(gen_fn(0, 3000))) == 3000
     
