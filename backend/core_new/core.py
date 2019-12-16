@@ -160,7 +160,8 @@ class BaseCore:
         log.debug("Done running layer {}".format(id_))#. Locals:  {}".format(id_, session.outputs.locals))
                   
     def _get_globals_and_locals(self, input_layer_ids):
-        outputs = self._session_history.merge_session_outputs(input_layer_ids)
+        input_layer_names = [self._graph[id_]['Info']['Name'] for id_ in input_layer_ids]
+        outputs = self._session_history.merge_session_outputs(input_layer_ids, input_layer_names)
 
         # Load globals.
         # Note that modules imported via module provider will overwrite in-code imports        
