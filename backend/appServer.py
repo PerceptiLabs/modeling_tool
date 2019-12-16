@@ -48,10 +48,11 @@ def mainServer(instantly_kill=False):
     lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Avoid bind() exception: OSError: [Errno 48] Address already in use
     lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    # try:
-    lsock.bind((host, port))
-    # except:
-    #     return 0
+    try:
+        lsock.bind((host, port))
+    except OSError as e:
+        log.exception(e)
+        return 0
     lsock.listen()
     log.info("listening on {}:{}".format(host, port))
     lsock.setblocking(False)

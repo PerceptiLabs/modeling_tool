@@ -96,6 +96,7 @@ const actions = {
             : platformPath = 'core/appServer';
           break;
       }
+      console.log('PID: ', process.pid)
       openServer = spawn(platformPath, ['-f', process.pid], {stdio: ['ignore', 'ignore', 'pipe']});
       dispatch('SET_corePid', openServer.pid);
       openServer.on('error', (err)=>  {
@@ -135,11 +136,9 @@ const actions = {
       action: 'Close',
       value: ''
     };
-    return coreRequest(theData)
-      .then((data)=> data )
-      .catch((err)=> {
-        console.error(err)
-      });
+    coreRequest(theData)
+      .then((data)=> { return })
+      .catch((err)=> { console.error(err) });
   },
 
 
@@ -195,13 +194,12 @@ const actions = {
       action: 'Stop',
       value: ''
     };
-    return coreRequest(theData)
+    coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
         dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
         dispatch('API_getStatus');
         dispatch('mod_tracker/EVENT_trainingStop', null, {root: true});
-        return true;
       })
       .catch((err)=> {
         console.error(err);
