@@ -92,7 +92,8 @@ class Jinja2CodeGenerator(CodeGenerator):
                 'range': range,
                 'round̈́': round,
                 'None': None,
-                'str': str
+                'str': str,
+                'type': type
             })
 
             def remove_lspaces(text, count):

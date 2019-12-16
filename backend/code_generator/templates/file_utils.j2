@@ -1,35 +1,50 @@
-{% macro load_numpy(path, tag) -%}
+{% macro load_npy(path, tag) -%}
 {% filter remove_lspaces(4) %}
     global matrix_{{tag}}
     matrix_{{tag}} = np.load("{{path}}").astype(np.float32)
     size_{{tag}} = len(matrix_{{tag}})
-    
-    def generator_{{tag}}():
-        global matrix_{{tag}}        
-        yield from matrix_{{tag}}
+
+    def generator_{{tag}}(idx_lo, idx_hi):
+        global matrix_{{tag}}
+        yield from matrix_{{tag}}[idx_lo:idx_hi].squeeze()
 {% endfilter %}
 {%- endmacro %}
 
-{% macro load_csv(path, tag, lazy=False) -%}
+{% macro load_csv(path, tag, lazy=False, blocksize='64MB') -%}
 {% filter remove_lspaces(8) %}
     {% if lazy %}
-        df_{{tag}} = dd.read_csv("{{path}}").astype(np.float32)
-        size_{{tag}} = len(df_{{tag}})
-        
-        def generator_{{tag}}():
-            global df_{{tag}}                    
-            for _, x in df_{{tag}}.iterrows():
-                yield x.values
+        global df_{{tag}}
+        df_{{tag}} = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
 
+        # Index the dataframe
+        df_{{tag}}['_idx'] = 1
+        df_{{tag}}['_idx'] = df_{{tag}}['_idx'].cumsum() - 1
+        df_{{tag}} = df_{{tag}}.set_index('_idx')
+        size_{{tag}} = df_{{tag}}.divisions[-1] + 1
+
+        def generator_{{tag}}(idx_lo, idx_hi):
+            global df_{{tag}}
+
+            # Calculate which partitions to use and which indices within them.
+            divs = df_{{tag}}.divisions
+            sub_divs = []
+            for p in range(len(divs)-1):
+                div_idx_lo = max(divs[p], idx_lo)
+                div_idx_hi = min(divs[p+1]+1, idx_hi)
+                if div_idx_lo < div_idx_hi:
+                    sub_divs.append((p, div_idx_lo, div_idx_hi))
+
+            for p, div_lo, div_hi in sub_divs:
+                df = df_{{tag}}.get_partition(p).compute()
+                yield from df.iloc[div_lo-divs[p]:div_hi-divs[p]].values.squeeze()
     {% else %}
         global df_{{tag}}    
         df_{{tag}} = pd.read_csv("{{path}}").astype(np.float32)
         size_{{tag}} = len(df_{{tag}})        
         
-        def generator_{{tag}}():
-            global df_{{tag}}                    
-            for _, x in df_{{tag}}.iterrows():
-                yield x.values        
+        def generator_{{tag}}(idx_lo, idx_hi):
+            global df_{{tag}}
+            yield from df_{{tag}}.iloc[idx_lo:idx_hi].values.squeeze()
     {% endif %}
 {% endfilter %}
 {%- endmacro %}
