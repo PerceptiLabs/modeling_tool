@@ -231,6 +231,14 @@ const actions = {
                 dispatch('mod_workspace/ADD_arrow', netWorkList[property].layerId, {root: true});
               }
             }
+          });
+          netWorkList[copyId].connectionIn.forEach(id => {
+            for(let property in netWorkList) {
+              if(Number(netWorkList[property].copyId) === Number(id)) {
+                commit('mod_workspace/SET_startArrowID', netWorkList[property].layerId, {root: true});
+                dispatch('mod_workspace/ADD_arrow', layerId, {root: true});
+              }
+            }
           })
       }
         commit('mod_workspace/DELETE_copyProperty', layerId, {root: true});
