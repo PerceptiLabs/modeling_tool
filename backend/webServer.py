@@ -6,6 +6,7 @@ import struct
 import io
 import time
 import traceback
+import os
 
 from coreLogic import coreLogic
 from propegateNetwork import lwNetwork
@@ -19,12 +20,14 @@ from createDataObject import createDataObject
 
 from core_new.core import *
 from core_new.history import SessionHistory
+from core_new.cache import get_cache
 from core_new.errors import LightweightErrorHandler
 from core_new.extras import LayerExtrasReader
 from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from graph import Graph
 from codehq import CodeHqNew as CodeHq
 from modules import ModuleProvider
+from core_new.networkCache import NetworkCache
 
 import pprint
 import logging
@@ -34,6 +37,7 @@ class Message:
         self.cores=cores
         self.dataDict=dataDict
         self.checkpointDict=checkpointDict
+        self.lwDict=dict()
 
     def _json_encode(self, obj, encoding):
         return json.dumps(obj, ensure_ascii=False).encode(encoding)
@@ -81,7 +85,6 @@ class Message:
         if jsonheader["content-type"] == "text/json":
             encoding = jsonheader["content-encoding"]
             request = self._json_decode(data, encoding)
-            print("received request", repr(request))
         else:
             # Binary or unknown content-type
             request = data
@@ -103,7 +106,31 @@ class Message:
             self.checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
             ckptObj.close()
 
-    def _create_lw_core(self, jsonNetwork):
+    # class dummyLW():
+    #     def run(self):
+    #         pass
+
+    # def create_lw_core(self, jsonNetwork):
+    #     jsonHash = hash(jsonNetwork)
+    #     id_ = jsonNetwork["Id"]
+    #     if id_ in self.jsonDict and self.jsonDict[id_].hash_ == jsonHash:
+    #         log.info("Using stored values of the lightweight network")
+    #         return self.dummyLW, self.jsonDict[id_].extras_reader, self.jsonDict[id_].data_container
+    #     else:
+    #         return self._create_lw_core
+
+    def _create_lw_core(self, jsonNetwork, reciever):
+        if reciever not in self.lwDict:
+            self.lwDict[reciever]=NetworkCache()
+        else:
+            deleteList=[]
+            for layer_id in self.lwDict[reciever].get_layers():
+                if layer_id not in jsonNetwork:
+                    deleteList.append(layer_id)
+            log.info("Deleting these layers: " + str(deleteList))
+            for layer_id in deleteList:
+                self.lwDict[reciever].remove_layer(layer_id)
+
         graph = Graph(jsonNetwork)
         
         graph_dict = graph.graphs
@@ -113,8 +140,7 @@ class Message:
                 self.add_to_checkpointDict(value["Info"])
 
         data_container = DataContainer()
-        
-        session_history_lw = SessionHistory()
+
         extras_reader = LayerExtrasReader()
 
         from codehq import CodeHqNew as CodeHq
@@ -127,19 +153,28 @@ class Message:
         module_provider.load('json')  
         module_provider.load('os')   
         module_provider.load('skimage')         
-
+        module_provider.load('dask.array', as_name='da')
+        module_provider.load('dask.dataframe', as_name='dd')                  
         
         for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
             module_provider.install_hook(hook_target, hook_func)
 
         error_handler = LightweightErrorHandler()
-            
+        
+        global session_history_lw
+        cache = get_cache()
+        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!        
         lw_core = LightweightCore(CodeHq, graph_dict,
                                   data_container, session_history_lw,
                                   module_provider, error_handler,
-                                  extras_reader, checkpointValues=self.checkpointDict.copy())
+                                  extras_reader, checkpointValues=self.checkpointDict.copy(),
+                                  network_cache=self.lwDict[reciever])
+
         
         return lw_core, extras_reader, data_container
+
+    def _delete_lw_cach(self, reciever):
+        del self.lwDict[reciever]
 
     def getParsingFiles(self,fileList):
         if len(fileList)==1 and "." not in fileList[0].split("/")[-1]:
@@ -173,7 +208,6 @@ class Message:
 
     async def interface(self, websocket, path):
         request = await websocket.recv()
-        print("request: ", request)
         request, jsonheader_len=self.process_protoheader(request)
         request, jsonheader=self.process_jsonheader(request,jsonheader_len)
         message=self.process_request(request,jsonheader)
@@ -210,7 +244,7 @@ class Message:
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            lw_core, _, data_container = self._create_lw_core(jsonNetwork)
+            lw_core, _, data_container = self._create_lw_core(jsonNetwork, reciever)
             lw_core.run()
 
 
@@ -235,7 +269,7 @@ class Message:
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            lw_core, _, data_container = self._create_lw_core(jsonNetwork)
+            lw_core, _, data_container = self._create_lw_core(jsonNetwork, reciever)
             lw_core.run()
 
             def try_fetch(dict,variable):
@@ -284,7 +318,7 @@ class Message:
         elif action == "getNetworkInputDim":
             jsonNetwork=request.get("value")
 
-            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)            
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork, reciever)            
             lw_core.run()
             
             content={}
@@ -326,14 +360,18 @@ class Message:
         elif action == "getNetworkOutputDim":
             jsonNetwork=request.get("value")
 
-            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                        
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork, reciever)                        
             lw_core.run()
+
+            graph=Graph(jsonNetwork).graphs
             
             extrasDict=extras_reader.to_dict()
 
             content={}
 
             for Id, value in extrasDict.items():
+                if graph[Id]["Copy"]:
+                    continue
                 content[Id]={}
                 content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
 
@@ -357,7 +395,7 @@ class Message:
             except:
                 Variable=None
 
-            lw_core, extras_reader, data_container = self._create_lw_core(jsonNetwork)                                    
+            lw_core, extras_reader, data_container = self._create_lw_core(jsonNetwork, reciever)                                    
             lw_core.run()
             
             sample=""
@@ -369,6 +407,8 @@ class Message:
                 extrasDict=extras_reader.to_dict()
                 if LayerId in extrasDict:
                     sample = extrasDict[LayerId]["Sample"]
+
+            # import pdb; pdb.set_trace()
 
             if isinstance(sample,tf.Variable):
                 sample=sample.numpy()
@@ -396,7 +436,7 @@ class Message:
             jsonNetwork=value["Network"]
             LayerId=value["Id"]
 
-            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                                                
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork, reciever)                                                
             lw_core.run()
             
             extrasDict=extras_reader.to_dict()
@@ -494,6 +534,9 @@ class Message:
             result=core.getLayerStatistics(value)
             content=result
 
+        elif action == "getFiles":
+            content=os.listdir("/")
+
         elif action == "Start":
             network=request.get("value")
             for value in network['Layers'].values():
@@ -502,6 +545,7 @@ class Message:
             content=core.startCore(network, self.checkpointDict.copy())
 
         elif action=="startTest":
+            self._delete_lw_cach(reciever)
             content=core.startTest()
 
         elif action=="resetTest":
@@ -563,7 +607,6 @@ class Message:
             warningList.append("Invalid action " + str(action))
 
         
-
         while not errors.empty():
             message=errors.get(timeout=0.05)
             errorList.append(message)
@@ -594,14 +637,18 @@ class Message:
 
         endTime=time.time()
 
-        if type(content).__name__=="str":
-            content='"'+content+'"'
+        # if type(content).__name__=="str":
+        #     content='"'+content+'"'
 
-        response='{"length":'+str(len(str(content)))+',"body":'+str(content).replace("'",'"')+'}'
+        response = {
+            "length": len(json.dumps(content)),
+            "body": content
+        }
 
-        response=str(response)
+        response = json.dumps(response)
 
-        # print("Response: "+str(response))
+        test='{"length": '+str(len(str(content)))+', "body":'+str(content).replace("'",'"')+'}'
+
         await websocket.send(response)
 
     def shutDown(self):
@@ -610,6 +657,12 @@ class Message:
             del c
         sys.exit(1)
 
+
+import logging        
+
+logging.basicConfig(stream=sys.stdout,
+                    format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
+                    level=logging.INFO)
 
 cores=dict()
 dataDict=dict()
@@ -620,14 +673,18 @@ port=5000
 interface=Message(cores, dataDict, checkpointDict)
 start_server = websockets.serve(interface.interface, path, port)
 print("Trying to listen to: " + str(path) + " " + str(port))
+print("Test3")
+# asyncio.get_event_loop().run_until_complete(start_server)
+# asyncio.get_event_loop().run_forever()
+
+
 connected=False
 while not connected:
     try:
+        print("Connected")
         asyncio.get_event_loop().run_until_complete(start_server)
         asyncio.get_event_loop().run_forever()
-        print("Connected")
         connected=True
     except:
         connected=False
-
     

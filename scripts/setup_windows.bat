@@ -5,14 +5,15 @@ IF EXIST c:\tools\miniconda3 (
 
 choco install nodejs --yes --version 12.10.0
 choco install microsoft-visual-cpp-build-tools --version 14.0.25420.1 --yes
-choco install windows-sdk-10.0 --yes
+REM choco install windows-sdk-10.0 --yes
 choco install miniconda3 --force --yes --params"'/AddToPath /D:c:\tools'"
 
-dir C:\Program Files (x86)\Microsoft Visual Studio 14.0\
-dir C:\Program Files (x86)\Microsoft Visual Studio 14.0\2017\
-dir C:\Program Files (x86)\Microsoft Visual Studio 14.0\2017\Professional\
-dir C:\Program Files (x86)\Microsoft Visual Studio 14.0\2017\Professional\SDK\ScopeCppSDK\
-dir C:\Program Files (x86)\Microsoft Visual Studio 14.0\2017\Professional\SDK\ScopeCppSDK\SDK
+REM dir C:\Program Files (x86)\
+REM dir C:\Program Files (x86)\Microsoft Visual Studio\
+REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\
+REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\
+REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\SDK\ScopeCppSDK\
+REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\SDK\ScopeCppSDK\SDK\
 
 
 SET PATH=%PATH%;C:\tools\miniconda3\Scripts

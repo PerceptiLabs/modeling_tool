@@ -308,10 +308,14 @@ const mutations = {
     else getters.GET_currentNetwork.networkMeta.openTest = value;
   },
   set_statusNetworkCore(state, {getters, value}) {
-    getters.GET_currentNetwork.networkMeta.coreStatus = value;
+    if(getters.GET_currentNetwork.networkMeta) {
+      getters.GET_currentNetwork.networkMeta.coreStatus = value;
+    }
   },
   set_statusNetworkCoreStatus(state, {getters, value}) {
-    getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
+    if(getters.GET_currentNetwork.networkMeta) {
+      getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
+    }
   },
   set_statusNetworkCoreStatusProgressClear(state, {getters}) {
     if(getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress) {
@@ -364,7 +368,7 @@ const mutations = {
     let newEl = state.dragElement
       ? state.dragElement
       : createNetElement(event);
-    
+
     let top = newEl.layerMeta.position.top;
     let left = newEl.layerMeta.position.left;
     let zoom = getters.GET_currentNetwork.networkMeta.zoom;
@@ -833,7 +837,7 @@ const actions = {
     }
   },
   EVENT_startDoRequest({dispatch, commit, rootState, getters, state}, isStart) {
-    const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
+    const currentMeta = getters.GET_currentNetwork.networkMeta;
     if(currentMeta === undefined) return;
     const timeInterval = rootState.globalView.timeIntervalDoRequest;
 
@@ -845,7 +849,7 @@ const actions = {
       commit('set_charts_timerID', {getters, timerId});
     }
     else {
-      clearInterval(currentMeta.timerID);
+      clearInterval(currentMeta.chartsRequest.timerID);
     }
   },
   EVENT_chartsRequest({dispatch, commit, rootState, getters, state}) {
@@ -946,7 +950,7 @@ export default {
 function updateLayerName(el, net, n){
   const layerName = el.layerName;
   if (net !== null) {
-    let netArr = Object.values(net);    
+    let netArr = Object.values(net);
     if (findValue(netArr, layerName+'_'+n).length) {
       n++;
       updateLayerName(el, net, n);
@@ -955,10 +959,10 @@ function updateLayerName(el, net, n){
     }
     function findValue(arr, value) {
       return arr.filter(object => object.layerName.toLowerCase() === value.toLowerCase());
-    }   
+    }
   }else{
     el.layerName = layerName+'_'+n;
-  } 
+  }
 }
 
 function currentElement(id) {

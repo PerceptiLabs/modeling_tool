@@ -3,6 +3,7 @@ import { deepCopy }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 
 const {spawn} = require('child_process');
+import { ipcRenderer }   from 'electron'
 
 const namespaced = true;
 //let pauseAction = 'Pause';
@@ -67,10 +68,14 @@ const mutations = {
 };
 
 const actions = {
+  SET_corePid({commit}, id) {
+    commit('set_corePid', id);
+    ipcRenderer.send('save-corePid', id)
+  },
   //---------------
   //  CORE
   //---------------
-  API_runServer({state, commit, rootGetters}) {
+  API_runServer({state, commit, dispatch, rootGetters}) {
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
@@ -91,15 +96,15 @@ const actions = {
             : platformPath = 'core/appServer';
           break;
       }
-      openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
-      commit('set_corePid', openServer.pid);
-      openServer.on('error', (err)=>  { 
+      openServer = spawn(platformPath, ['-f', process.pid], {stdio: ['ignore', 'ignore', 'pipe']});
+      dispatch('SET_corePid', openServer.pid);
+      openServer.on('error', (err)=>  {
         console.log('core error', err)
-        coreOffline() 
+        coreOffline()
       });
-      openServer.on('close', (code)=> { 
+      openServer.on('close', (code)=> {
         console.log('core close', code)
-        coreOffline() 
+        coreOffline()
       });
       waitOnlineCore()
     }
@@ -130,9 +135,11 @@ const actions = {
       action: 'Close',
       value: ''
     };
-    coreRequest(theData)
-      .then((data)=> { return })
-      .catch((err)=> { console.error(err) });
+    return coreRequest(theData)
+      .then((data)=> data )
+      .catch((err)=> {
+        console.error(err)
+      });
   },
 
 
@@ -188,12 +195,13 @@ const actions = {
       action: 'Stop',
       value: ''
     };
-    coreRequest(theData)
+    return coreRequest(theData)
       .then((data)=> {
         dispatch('mod_workspace/SET_statusNetworkCoreStatus', 'Stop', {root: true});
         dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
         dispatch('API_getStatus');
         dispatch('mod_tracker/EVENT_trainingStop', null, {root: true});
+        return true;
       })
       .catch((err)=> {
         console.error(err);

@@ -1,38 +1,38 @@
-from subprocvecenv import SubprocVecEnv
+# from subprocvecenv import SubprocVecEnv
 
-class A2CAgent():
-    def __init__(self, env, action_string, safe_dict, workerDict, outputVariables, graph):
-
-
-    def initBuffer(self, batch_size):
+# class A2CAgent():
+#     def __init__(self, env, action_string, safe_dict, workerDict, outputVariables, graph):
 
 
-    def putBuffer(self, batch_size, iter, sess):
+#     def initBuffer(self, batch_size):
 
 
-    def getBuffer(self, batch_size, valuekey, iter, sess):
+#     def putBuffer(self, batch_size, iter, sess):
 
 
-    def randomIdx(self, batch_size):
+#     def getBuffer(self, batch_size, valuekey, iter, sess):
 
 
-    def takeStep(self, action):
+#     def randomIdx(self, batch_size):
 
 
-    def getAction(self, iter, sess):
+#     def takeStep(self, action):
 
 
-    def randomAction(self):
+#     def getAction(self, iter, sess):
 
 
-    def predictedAction(self, sess):
+#     def randomAction(self):
 
 
-    def remember(self, state, action, reward, next_state, done=False):
+#     def predictedAction(self, sess):
 
 
-    def getActionSpace(self):
+#     def remember(self, state, action, reward, next_state, done=False):
 
 
-    def runTest(self,sess):
+#     def getActionSpace(self):
+
+
+#     def runTest(self,sess):
 

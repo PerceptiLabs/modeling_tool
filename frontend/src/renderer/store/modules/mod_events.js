@@ -110,7 +110,13 @@ const actions = {
     if(rootState.mod_api.statusLocalCore === 'online') {
       dispatch('mod_api/API_stopTraining', null, {root: true})
         .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
-        .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
+        .then((t)=> {
+          console.log('after close', t);
+          ipcRenderer.send('app-close', rootState.mod_api.corePid)
+        })
+        .catch((err)=> {
+          console.log(err);
+        })
     }
     else {
       ipcRenderer.send('app-close')
@@ -139,48 +145,66 @@ const actions = {
       let arrBuf = [];
       arrSelect.forEach((el) => {
       commit('mod_workspace/SET_CopyElementsPosition', {left: el.layerMeta.position.left, top: el.layerMeta.position.top}, {root: true});
-        if(el.componentName === 'LayerContainer') {
-          for(let id in el.containerLayersList) {
-            const element = el.containerLayersList[id];
-            let newContainerEl = {
-              target: {
-                dataset: {
-                  layer: element.layerName,
-                  type: element.layerType,
-                  component: element.componentName,
-                  copyId: element.layerId,
-                  copyContainerElement: true
-                },
-                clientHeight: element.layerMeta.position.top * 2,
-                clientWidth: element.layerMeta.position.left * 2,
-              },
-              layerSettings: element.layerSettings,
-              offsetY: element.layerMeta.position.top * 2,
-              offsetX: element.layerMeta.position.left * 2
-            };
-            arrBuf.push(newContainerEl)
-          }
-        }
-        else {
-          let newEl = {
+      if(el.componentName === 'LayerContainer') {
+        for(let id in el.containerLayersList) {
+          const element = el.containerLayersList[id];
+          let newContainerEl = {
             target: {
               dataset: {
-                layer: el.layerName,
-                type: el.layerType,
-                component: el.componentName,
-                copyId: el.layerId
+                layer: element.layerName,
+                type: element.layerType,
+                component: element.componentName,
+                copyId: element.layerId,
+                copyContainerElement: true
               },
-              clientHeight: el.layerMeta.position.top * 2,
-              clientWidth: el.layerMeta.position.left * 2,
+              clientHeight: element.layerMeta.position.top * 2,
+              clientWidth: element.layerMeta.position.left * 2,
             },
-            layerSettings: el.layerSettings,
-            offsetY: el.layerMeta.position.top * 2,
-            offsetX: el.layerMeta.position.left * 2
+            layerSettings: element.layerSettings,
+            offsetY: element.layerMeta.position.top * 2,
+            offsetX: element.layerMeta.position.left * 2
           };
-          arrBuf.push(newEl)
+          arrBuf.push(newContainerEl)
         }
+      }
+      else {
+        let newEl = {
+          target: {
+            dataset: {
+              layer: el.layerName,
+              type: el.layerType,
+              component: el.componentName,
+              copyId: el.layerId
+            },
+            clientHeight: el.layerMeta.position.top * 2,
+            clientWidth: el.layerMeta.position.left * 2,
+          },
+          layerSettings: el.layerSettings,
+          offsetY: el.layerMeta.position.top * 2,
+          offsetX: el.layerMeta.position.left * 2
+        };
+        arrBuf.push(newEl)
+      }
       });
       dispatch('mod_buffer/SET_buffer', arrBuf, {root: true});
+      const workSpace = document.querySelector('.workspace_content');
+      workSpace.addEventListener('mousemove',  startCursorListener);
+
+      function startCursorListener (event) {
+        const borderline = 15;
+        commit('mod_workspace/SET_CopyCursorPosition', {x: event.offsetX, y: event.offsetY}, {root: true});
+        commit('mod_workspace/SET_cursorInsideWorkspace', true, {root: true});
+        if(event.offsetX <= borderline ||
+            event.offsetY <= borderline ||
+            event.offsetY >= event.target.clientHeight - borderline ||
+            event.offsetX >= event.target.clientWidth - borderline)
+        {
+          commit('mod_workspace/SET_cursorInsideWorkspace', false, {root: true});
+        }
+      }
+      setTimeout(()=> {
+        workSpace.removeEventListener('mousemove',  startCursorListener);
+      }, 10000)
     }
   },
   EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}) {

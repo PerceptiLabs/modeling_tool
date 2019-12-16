@@ -13,7 +13,8 @@ from analytics.handlers import *
 DEFAULT_HANDLERS = [
     CoreInitHandler(),
     CubeHandler(),
-    CpuAndMemHandler()
+    CpuAndMemHandler(),
+    SessionOnRenderHandler()
 ]
 
 log = logging.getLogger(__name__)
@@ -31,7 +32,7 @@ class Scraper:
         
     def submit(self, tag: str, values_dict: Dict[str, Any]):
         if not self.is_running:
-            log.warning("Ignoring scraper submission. Scraper is not running.")
+            # log.warning("Ignoring scraper submission. Scraper is not running.")
             return
 
         log.debug("Submit called with tag '{}'".format(tag))
@@ -114,6 +115,7 @@ class Scraper:
                 counter += 1
                 
         self._worker_thread = threading.Thread(target=run)
+        self._worker_thread.daemon = True
         self._worker_thread.start()
 
     def stop(self):
