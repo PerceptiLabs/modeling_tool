@@ -23,7 +23,7 @@ class SessionHistory:
         for id_, session in self._sessions.items():
             yield id_, session
 
-    def merge_session_outputs(self, layer_ids, layer_names):
+    def merge_session_outputs(self, layer_ids):
         local_vars = {}
         global_vars = {}
 
@@ -44,13 +44,13 @@ class SessionHistory:
             locals_={'X':''}
                    
         elif len(layer_ids) > 1:
-            for i, id_ in enumerate(layer_ids):
+            for id_ in layer_ids:
                 session = self._sessions[id_]   
                 if session.outputs is None:
                     raise HistoryInputException("The input to this layer has not yet been computed")
                 locals_= session.outputs.locals 
                 locals_.pop('X',None)      
-                local_vars[layer_names[i]] = locals_
+                local_vars[id_] = locals_
                 global_vars.update(session.outputs.globals) # WARNING: may lead to race condition where global variables are updated depending on which layer is executed first.
             local_vars = {'X': local_vars}
 
