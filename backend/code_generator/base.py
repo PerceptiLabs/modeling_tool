@@ -83,6 +83,31 @@ class Jinja2CodeGenerator(CodeGenerator):
         if not hasattr(self, '_jenv'):
             self._jenv = jinja2.Environment(loader=jinja2.FileSystemLoader('./code_generator/'),
                                             trim_blocks=True,
-                                            lstrip_blocks=True)        
+                                            lstrip_blocks=True)
+            self._jenv.globals.update({
+                'zip': zip,
+                'len': len,
+                'range': range,
+                'round̈́': round,
+                'None': None,
+                'str': str
+            })
+
+            def remove_lspaces(text, count):
+                new_text = ''
+                lines = text.split('\n')
+                
+                for lineno, line in enumerate(lines):
+                    last = '\n' if lineno < len(lines) - 1 else ''
+                    if line.startswith(' '*count):
+                        new_text += line[count:] + last
+                    else:
+                        new_text += line + last
+                return new_text
+
+            self._jenv.filters['remove_lspaces'] = remove_lspaces
+                
+
+            
         code = self._jenv.get_template(path).render(**kwargs)
         return code

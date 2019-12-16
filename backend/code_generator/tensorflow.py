@@ -832,6 +832,19 @@ class TrainReinforceCodeGenerator(CodeGenerator):
 
         return code
 
+
+if __name__ == "__main__":
+
+    g = TrainNormalCodeGenerator('1234', '4567', 3, distributed=True)
+
+    with open('sdakds.py', 'w') as f:
+        code = g.get_code()
+        f.write(code)
+
+
+    
+    raise SystemExit
+    
     
 import gym
 import copy
@@ -1122,3 +1135,4 @@ if __name__ == "__main__":
         
     
     """
+

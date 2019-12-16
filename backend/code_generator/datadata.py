@@ -3,7 +3,7 @@ import numpy as np
 import os
 from abc import ABC, abstractmethod
 
-from code_generator import CodeGenerator
+from code_generator import CodeGenerator, Jinja2CodeGenerator
 from s3buckets import S3BucketAdapter
 
 
@@ -532,7 +532,81 @@ class DataDataCodeGenerator(CodeGenerator):
 
         return strategy
 
+
+class DataDataCodeGenerator2(Jinja2CodeGenerator):
+    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=None, layer_id=None):
+        self._seed = seed
+        self._batch_size=batch_size
+        self.shuffle=shuffle
+
+        if columns is not None:
+            self._columns = [str(x) for x in columns]
+        else:
+            self._columns = None
+        
+        self._layer_id = layer_id
+        
+        self._strategies = []
+        self._sources = sources
+
+        assert all(sum(p) == 100 for p in partitions)
+
+        self._partitions = []
+        for p in partitions:
+            px = (
+                round(p[0]/100, 5),
+                round(1-p[0]/100, 5),
+                round(p[1]/(p[1]+p[2]), 5),
+                round(1-p[1]/(p[1]+p[2]), 5)
+            )
+            print(px)
+            self._partitions.append(px)
+
+
+    def get_code(self):
+        code = self._render(
+            'datadata.j2',
+            sources=self._sources,
+            partitions=self._partitions,
+            batch_size=self._batch_size,
+            layer_id=self._layer_id,
+            columns=self._columns
+        )
+        return code
+
 if __name__ == "__main__":
+
+    sources = [{'type': 'file', 'path': '/home/anton/Data/mnist_split/mnist_input.npy'},
+               {'type': 'file', 'path': '/home/anton/Data/mnist_split/mnist_input.csv'}]
+
+    partitions = [(60, 30, 10), (60, 30, 10)]
+
+    cols = [str(x) for x in range(0, 784)]
+    #cols=None
+    x = DataDataCodeGenerator2(sources, partitions, 32, False, layer_id='1234', columns=cols)
+    code = x.get_code()
+    
+    for i, l in enumerate(code.split('\n')):
+        print(i, l)
+
+
+    import dask_ml
+    import dask_ml.model_selection    
+    import dask.array as da
+    import dask.dataframe as dd
+    import numpy as np
+    import tensorflow as tf
+    
+    globals_ = {'da': da, 'np': np, 'dask_ml': dask_ml, 'tf': tf, 'dd': dd}
+    locals_ = {}
+    exec(code, globals_, locals_)
+
+    raise SystemExit
+
+
+
+
+    
     def runrunrun(sources, partitions):
         cg = DataDataCodeGenerator(sources, partitions)
         code = cg.get_code()

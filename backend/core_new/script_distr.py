@@ -33,17 +33,12 @@ class ScriptBuilder:
         for line in split:
             new_layer_code += '        ' + line + '\n'
 
-
-        #new_layer_code += '        api.data.store_locals(locals())\n' # TODO: REMOVE???
-
         new_layer_code += '        locals_ = locals()\n'
-
         new_layer_code += '        if self._n_calls > 0:\n'
         new_layer_code += '            locals_ = {"%s/replica_%d" % (k, self._n_calls) : v \n'
         new_layer_code += '                       for k, v in locals_.items()}\n'
-        new_layer_code += '        self._locals = locals_\n'
+        new_layer_code += '        self._locals.update(locals_)\n'
 
-        new_layer_code += '        print("aa", repr(self),self._n_calls, locals_.keys())\n'        
         new_layer_code += '        self._n_calls += 1\n'
 
         if layer_type != 'DataData':
