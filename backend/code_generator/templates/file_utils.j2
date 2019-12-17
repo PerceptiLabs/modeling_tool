@@ -1,14 +1,14 @@
-{% macro load_npy(path, tag) -%}
-{% filter remove_lspaces(4) %}
-    global matrix_{{tag}}
-    matrix_{{tag}} = np.load("{{path}}").astype(np.float32)
-    size_{{tag}} = len(matrix_{{tag}})
-
-    def generator_{{tag}}(idx_lo, idx_hi):
+{% macro load_npy(path, tag) %}
+    {% filter remove_lspaces(8) %}
         global matrix_{{tag}}
-        yield from matrix_{{tag}}[idx_lo:idx_hi].squeeze()
-{% endfilter %}
-{%- endmacro %}
+        matrix_{{tag}} = np.load("{{path}}").astype(np.float32)
+        size_{{tag}} = len(matrix_{{tag}})
+
+        def generator_{{tag}}(idx_lo, idx_hi):
+            global matrix_{{tag}}
+            yield from matrix_{{tag}}[idx_lo:idx_hi].squeeze()
+    {% endfilter %}
+{% endmacro %}
 
 {% macro load_csv(path, tag, lazy=False, blocksize='64MB') -%}
 {% filter remove_lspaces(8) %}

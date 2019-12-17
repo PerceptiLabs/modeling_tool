@@ -7,15 +7,25 @@ trn_gens_args_{{layer_id}}, val_gens_args_{{layer_id}}, tst_gens_args_{{layer_id
     {% for idx, source, partition in zip(range(0, len(sources)), sources, partitions): %}
         {% set tag = str(layer_id)+'_'+str(idx) %}
 
-        {% filter remove_lspaces(8) %}        
-            {% if source['type'] == 'file' and source['ext'] == '.npy' %}
-                {{ load_npy(source['path'], tag) }}
-            {% elif source['type'] == 'file' and source['ext'] == '.csv' %}
-                {{ load_csv(source['path'], tag) }}
-            {% elif source['type'] == 'directory' and source['ext'] in ['.jpg', '.png', '.jpeg', '.tif', '.tiff'] %}
-                {{ load_img_dir(source['path'], tag) }}
-            {% endif %}
-        {% endfilter %}
+        {# The following block shows a quirk in Jinja: only the first line of a macro is indented with the parent document. #}
+        {# This is problematic for indented blocks that include macros.
+        {# Remedy: make the macro lines 'catch up' with the 1st line using 'indent' and then remove them together as necessary using 'remove_lspaces'. #}
+
+        if "{{source['path']}}" not in api.cache:
+            {% filter remove_lspaces(8) %}
+                {% if source['type'] == 'file' and source['ext'] == '.npy' %}
+                    {{ load_npy(source['path'], tag) | indent(width=20, first=False)}}
+                {% elif source['type'] == 'file' and source['ext'] == '.csv' %}
+                    {{ load_csv(source['path'], tag) | indent(width=20, first=False)}}
+                {% elif source['type'] == 'directory' and source['ext'] in ['.jpg', '.png', '.jpeg', '.tif', '.tiff'] %}
+                    {{ load_img_dir(source['path'], tag) | indent(width=20, first=False)}}
+                {% endif %}
+            {% endfilter %}
+
+            api.cache.put("{{source['path']}}", (generator_{{tag}}, size_{{tag}}))
+        else:
+            generator_{{tag}}, size_{{tag}} = api.cache.get("{{source['path']}}")
+
 
         trn_sz = round({{partition[0]}}*size_{{tag}})
         val_sz = round({{partition[1]}}*size_{{tag}})

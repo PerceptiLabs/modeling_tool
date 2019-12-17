@@ -51,7 +51,7 @@ def img_5x32x32x3():
             skimage.io.imsave(path, matrix)
         yield dir_path
         
-@pytest.fixture(scope='module', autouse=True)
+@pytest.fixture(autouse=True)
 def globals_():
     import os
     import numpy as np
@@ -61,8 +61,13 @@ def globals_():
     import tensorflow as tf
     import itertools
     import skimage
+    from unittest.mock import MagicMock
+
+    api = MagicMock()
+    api.__contains__.return_value = False
     
     return {
+        'api': api,
         'os': os,
         'np': np,
         'pd': pd,
@@ -202,9 +207,11 @@ def test_sample_size_ok(globals_, npy_30x784):
     partitions = [(70, 20, 10)]
     gen = DataDataCodeGenerator2(sources, partitions, batch_size=batch_size,
                                  shuffle=False, layer_id='abc')
+    
     locals_ = {}    
     exec(gen.get_code(), globals_, locals_)
 
+    
     assert locals_['_sample'].shape == (784,)
 
 def test_rows_appear_in_order_two_tf_datasets(globals_, npy_30x784, csv_30x784):    
@@ -251,4 +258,27 @@ def test_rows_appear_in_order_two_tf_datasets(globals_, npy_30x784, csv_30x784):
     assert np.all(all_rows2 == target_rows2)
     assert np.all(all_rows1 == target_rows1)
 
+
+def test_cache_called(globals_, npy_30x784):
+    api = globals_['api']
+    api.cache.__contains__.side_effect = [False, True]
+
+    batch_size = 16
+    sources = [
+        {'type': 'file', 'path': npy_30x784},
+        {'type': 'file', 'path': npy_30x784}        
+    ]
+    partitions = [(70, 20, 10), (70, 20, 10)]
+    gen = DataDataCodeGenerator2(sources, partitions, batch_size=batch_size,
+                                 shuffle=False, layer_id='abc')
+
+    try:
+        locals_ = {}    
+        exec(gen.get_code(), globals_, locals_)
+    except:
+        pass # .get will fail with an exception
+    finally:
+        assert api.cache.put.call_count == 1
+        assert api.cache.get.call_count == 1    
+        
 
