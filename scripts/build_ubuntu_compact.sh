@@ -68,6 +68,7 @@ fi
 
 chmod +x dist/appServer/appServer
 
+echo "*************************************************************************************************"
 echo "Testing to start the core"
 ./dist/appServer/appServer -k=True -l="INFO"
 if [ $? -ne 0 ]; then exit 1; fi
@@ -101,7 +102,8 @@ echo "copying images to 'frontend_out/'"
 echo "ls:"
 ls build/*.AppImage
 cp build/*.AppImage ../build/frontend_out/
+cp build/*.yml ../build/frontend_out/
+cp build/*.deb ../build/frontend_out/
 
-   
-	    
+chmod +x ../build/frontend_out/*.AppImage
 

@@ -45,7 +45,7 @@
       this.readUserInfo();
     },
     mounted() {
-        this.appReady();
+      this.appReady();
       this.updateOnlineStatus();
       /*Menu*/
       ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));

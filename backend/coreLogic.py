@@ -579,10 +579,9 @@ class coreLogic():
                 
                 X=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":""})
 
-                if type(X) is dict:
+                if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
                     for key,value in X.items():
                         try:
-                            int(key)
                             if key==self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
                                 Labels=value['Y']
                             else:
