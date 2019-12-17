@@ -1,4 +1,4 @@
-{% from 'file_utils.j2' import load_npy, load_csv %}
+{% from 'file_utils.j2' import load_npy, load_csv, load_img_dir %}
 
 global trn_gens_args_{{layer_id}}, val_gens_args_{{layer_id}}, tst_gens_args_{{layer_id}}
 trn_gens_args_{{layer_id}}, val_gens_args_{{layer_id}}, tst_gens_args_{{layer_id}} = [], [], []
@@ -8,21 +8,22 @@ trn_gens_args_{{layer_id}}, val_gens_args_{{layer_id}}, tst_gens_args_{{layer_id
         {% set tag = str(layer_id)+'_'+str(idx) %}
 
         {% filter remove_lspaces(8) %}        
-            {% if source['type'] == 'file' and source['path'].endswith('.npy') %}
+            {% if source['type'] == 'file' and source['ext'] == '.npy' %}
                 {{ load_npy(source['path'], tag) }}
-            {% elif source['type'] == 'file' and source['path'].endswith('.csv') %}
-                {{ load_csv(source['path'], tag) }}        
+            {% elif source['type'] == 'file' and source['ext'] == '.csv' %}
+                {{ load_csv(source['path'], tag) }}
+            {% elif source['type'] == 'directory' and source['ext'] in ['.jpg', '.png', '.jpeg', '.tif', '.tiff'] %}
+                {{ load_img_dir(source['path'], tag) }}
             {% endif %}
         {% endfilter %}
 
         trn_sz = round({{partition[0]}}*size_{{tag}})
         val_sz = round({{partition[1]}}*size_{{tag}})
         tst_sz = size_{{tag}} - trn_sz - val_sz
-
+        
         trn_gens_args_{{layer_id}}.append((generator_{{tag}}, 0, trn_sz))
         val_gens_args_{{layer_id}}.append((generator_{{tag}}, trn_sz, trn_sz+val_sz))
         tst_gens_args_{{layer_id}}.append((generator_{{tag}}, trn_sz+val_sz, trn_sz+val_sz+tst_sz))
-        
     {% endfor %}
 {% endfilter %}
     
@@ -51,6 +52,9 @@ def make_generator_tst_{{layer_id}}():
     return gen()
 
 
+shapes = [next(f(lo, hi)).shape for f, lo, hi in trn_gens_args_{{layer_id}}]
+if len(set(shapes)) > 1:
+    raise ValueError("Shape mismatch! Yielded shapes were: " + str(shapes))
 
 sample = _sample = next(make_generator_trn_{{layer_id}}())
 

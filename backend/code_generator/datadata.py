@@ -521,6 +521,18 @@ class DataDataCodeGenerator2(Jinja2CodeGenerator):
             partition = [partition[0]/100.0, partition[1]/100.0, partition[2]/100.0]
             self.partitions.append(partition)
 
+            if source['type'] == 'directory':
+                file_paths = os.listdir(source['path'])
+                extensions = [os.path.splitext(p)[1] for p in file_paths]
+                
+                if len(set(extensions)) != 1:
+                    raise ValueError("Can only contain one (and atleast one) type of file!")        
+            
+                source['ext'] = extensions[0]
+            else:
+                source['ext'] = os.path.splitext(source['path'])[1]
+                    
+
     def get_code(self):
         code = self._render(
             'datadata.j2',

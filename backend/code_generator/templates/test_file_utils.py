@@ -2,6 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 import tempfile
+import skimage
 import os
 
 from code_generator.utils import RunMacroCodeGenerator
@@ -16,7 +17,7 @@ def npy_3000x784():
 
 @pytest.fixture(scope='module', autouse=True)        
 def csv_3000x784():
-    np.random.seed(0)    
+    np.random.seed(123)    
     with tempfile.NamedTemporaryFile(mode='w', suffix='.csv') as f:
         mat = np.random.random((3000, 784))
         df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
@@ -25,7 +26,7 @@ def csv_3000x784():
 
 @pytest.fixture(scope='module', autouse=True)
 def npy_ordered():
-    np.random.seed(0)
+    np.random.seed(456)
     with tempfile.NamedTemporaryFile(mode='w', suffix='.npy') as f:
         mat = np.atleast_2d(np.arange(3000)).reshape(3000, 1)
         np.save(f.name, mat)
@@ -33,26 +34,38 @@ def npy_ordered():
         
 @pytest.fixture(scope='module', autouse=True)
 def csv_ordered():
-    np.random.seed(0)    
+    np.random.seed(789)    
     with tempfile.NamedTemporaryFile(mode='w', suffix='.csv') as f:
         mat = np.atleast_2d(np.arange(3000)).reshape(3000, 1)        
         df = pd.DataFrame.from_records(mat, columns=['1'])
         df.to_csv(f.name, index=False)
         yield f.name
 
-        
+@pytest.fixture(scope='module', autouse=True)
+def img_5x32x32x3():
+    with tempfile.TemporaryDirectory() as dir_path:
+        for i in range(5):
+            path = os.path.join(dir_path, str(i)+'.png')            
+            matrix = (np.ones((32, 32, 3))*0.1*i).astype(np.float32)
+            skimage.io.imsave(path, matrix)
+        yield dir_path
+            
 @pytest.fixture(autouse=True)
 def globals_():
     import numpy as np
     import pandas as pd
     import dask.array as da
     import dask.dataframe as dd
+    import skimage
+    import os
     
     return {
         'np': np,
         'pd': pd,
         'da': da,
-        'dd': dd
+        'dd': dd,
+        'os': os,
+        'skimage': skimage
     }
 
 def test_npy_sample_shape_ok(globals_, npy_3000x784):
@@ -169,3 +182,30 @@ def test_csv_lazy_all_data_2_partition(globals_, csv_3000x784):
     gen_fn = locals_['generator_123']
     assert len(list(gen_fn(0, 3000))) == 3000
     
+def test_img_dir_all_data(globals_, img_5x32x32x3):
+    gen = RunMacroCodeGenerator('file_utils.j2', 'load_img_dir', img_5x32x32x3, '123', lazy=False)
+    locals_ = {}
+    exec(gen.get_code(), globals_, locals_)
+
+    gen_fn = locals_['generator_123']
+    assert len(list(gen_fn(0, 5))) == 5
+
+def test_img_dir_slice_generator(globals_, img_5x32x32x3):
+    gen = RunMacroCodeGenerator('file_utils.j2', 'load_img_dir', img_5x32x32x3, '123', lazy=False)
+    locals_ = {}
+    exec(gen.get_code(), globals_, locals_)
+
+    gen_fn = locals_['generator_123']
+    x = next(gen_fn(1, 3))
+    target = skimage.io.imread(os.path.join(img_5x32x32x3, '1.png')).astype(np.float32)
+
+    assert np.all(x == target)
+    
+def test_img_dir_shape_ok(globals_, img_5x32x32x3):
+    gen = RunMacroCodeGenerator('file_utils.j2', 'load_img_dir', img_5x32x32x3, '123', lazy=False)
+    locals_ = {}
+    exec(gen.get_code(), globals_, locals_)
+
+    gen_fn = locals_['generator_123']
+    x = next(gen_fn(0, 5))
+    assert x.shape == (32, 32, 3)
