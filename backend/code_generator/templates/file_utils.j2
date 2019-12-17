@@ -1,6 +1,6 @@
 {% macro load_npy(path, tag) -%}
 {% filter remove_lspaces(4) %}
-    global matrix_{{tag}}, generator_{{tag}}
+    global matrix_{{tag}}
     matrix_{{tag}} = np.load("{{path}}").astype(np.float32)
     size_{{tag}} = len(matrix_{{tag}})
 
@@ -13,10 +13,11 @@
 {% macro load_csv(path, tag, lazy=False, blocksize='64MB') -%}
 {% filter remove_lspaces(8) %}
     {% if lazy %}
-        global df_{{tag}}, generator_{{tag}}
+        global df_{{tag}}
         df_{{tag}} = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
 
         # Index the dataframe
+        # TODO(anton): handle case where _idx already exists.
         df_{{tag}}['_idx'] = 1
         df_{{tag}}['_idx'] = df_{{tag}}['_idx'].cumsum() - 1
         df_{{tag}} = df_{{tag}}.set_index('_idx')
@@ -38,7 +39,7 @@
                 df = df_{{tag}}.get_partition(p).compute()
                 yield from df.iloc[div_lo-divs[p]:div_hi-divs[p]].values.squeeze()
     {% else %}
-        global df_{{tag}}, generator_{{tag}}    
+        global df_{{tag}}
         df_{{tag}} = pd.read_csv("{{path}}").astype(np.float32)
         size_{{tag}} = len(df_{{tag}})        
         
