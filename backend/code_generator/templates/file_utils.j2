@@ -10,18 +10,19 @@
     {% endfilter %}
 {% endmacro %}
 
-{% macro load_csv(path, tag, lazy=False, blocksize='64MB') -%}
+{% macro load_csv(path, tag, lazy=False, blocksize='64MB', selected_columns=none) -%}
 {% filter remove_lspaces(8) %}
     {% if lazy %}
         global df_{{tag}}
-        df_{{tag}} = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
-
+        df_{{tag}} = dd.read_csv("{{path}}", blocksize="{{blocksize}}", usecols={{selected_columns}}).astype(np.float32)
+            
         # Index the dataframe
         # TODO(anton): handle case where _idx already exists.
         df_{{tag}}['_idx'] = 1
         df_{{tag}}['_idx'] = df_{{tag}}['_idx'].cumsum() - 1
         df_{{tag}} = df_{{tag}}.set_index('_idx')
         size_{{tag}} = df_{{tag}}.divisions[-1] + 1
+        columns_{{tag}} = df_{{tag}}.columns.tolist()
 
         def generator_{{tag}}(idx_lo, idx_hi):
             global df_{{tag}}
@@ -40,8 +41,9 @@
                 yield from df.iloc[div_lo-divs[p]:div_hi-divs[p]].values.squeeze()
     {% else %}
         global df_{{tag}}
-        df_{{tag}} = pd.read_csv("{{path}}").astype(np.float32)
+        df_{{tag}} = pd.read_csv("{{path}}", usecols={{selected_columns}}).astype(np.float32)
         size_{{tag}} = len(df_{{tag}})        
+        columns_{{tag}} = df_{{tag}}.columns.tolist()
         
         def generator_{{tag}}(idx_lo, idx_hi):
             global df_{{tag}}
@@ -59,7 +61,7 @@
     {% else %}
         file_paths = sorted([os.path.join("{{path}}", n) for n in os.listdir("{{path}}")])
         size_{{tag}} = len(file_paths)
-
+        
         global matrices_{{tag}}
         matrices_{{tag}} = []
         for file_path in file_paths:

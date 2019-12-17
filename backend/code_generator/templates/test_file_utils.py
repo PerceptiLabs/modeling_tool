@@ -23,7 +23,24 @@ def csv_3000x784():
         df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
         df.to_csv(f.name, index=False)
         yield f.name
+        
+@pytest.fixture(scope='module', autouse=True)        
+def npy_30x784():
+    np.random.seed(0)
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.npy') as f:
+        mat = np.random.random((30, 784))
+        np.save(f.name, mat)
+        yield f.name
 
+@pytest.fixture(scope='module', autouse=True)        
+def csv_30x784():
+    np.random.seed(123)    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.csv') as f:
+        mat = np.random.random((30, 784))
+        df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
+        df.to_csv(f.name, index=False)
+        yield f.name
+        
 @pytest.fixture(scope='module', autouse=True)
 def npy_ordered():
     np.random.seed(456)
@@ -74,8 +91,7 @@ def test_npy_sample_shape_ok(globals_, npy_3000x784):
     exec(gen.get_code(), globals_, locals_)
 
     gen_fn = locals_['generator_123']
-    shape = next(gen_fn(0, 3000)).shape
-    
+    shape = next(gen_fn(0, 3000)).shape    
     assert shape == (784,)
     
 def test_csv_sample_shape_ok(globals_, csv_3000x784):
@@ -94,7 +110,6 @@ def test_csv_lazy_sample_shape_ok(globals_, csv_3000x784):
 
     gen_fn = locals_['generator_123']
     shape = next(gen_fn(0, 3000)).shape
-    
     assert shape == (784,)
 
 def test_npy_dataset_size_ok(globals_, npy_3000x784):
@@ -209,3 +224,44 @@ def test_img_dir_shape_ok(globals_, img_5x32x32x3):
     gen_fn = locals_['generator_123']
     x = next(gen_fn(0, 5))
     assert x.shape == (32, 32, 3)
+
+def test_csv_column_selection(globals_, csv_30x784):
+    gen = RunMacroCodeGenerator('file_utils.j2', 'load_csv', csv_30x784,
+                                '123', lazy=False, selected_columns=['1', '3'])
+    locals_ = {}
+    exec(gen.get_code(), globals_, locals_)
+
+    gen_fn = locals_['generator_123']
+    x = next(gen_fn(0, 30))
+
+    matrix = np.loadtxt(csv_30x784, delimiter=',', skiprows=1).astype(np.float32)
+    target = np.hstack([matrix[0, 1], matrix[0, 3]])
+    assert np.all(x == target)
+
+def test_csv_lazy_column_selection(globals_, csv_30x784):
+    gen = RunMacroCodeGenerator('file_utils.j2', 'load_csv', csv_30x784,
+                                '123', lazy=True, selected_columns=['1', '3'])
+    locals_ = {}
+    exec(gen.get_code(), globals_, locals_)
+
+    gen_fn = locals_['generator_123']
+    x = next(gen_fn(0, 30))
+
+    matrix = np.loadtxt(csv_30x784, delimiter=',', skiprows=1).astype(np.float32)
+    target = np.hstack([matrix[0, 1], matrix[0, 3]])
+    assert np.all(x == target)
+
+def test_csv_columns_ok(globals_, csv_30x784):
+    gen = RunMacroCodeGenerator('file_utils.j2', 'load_csv', csv_30x784,
+                                '123', lazy=False)
+    locals_ = {}
+    exec(gen.get_code(), globals_, locals_)
+    assert locals_['columns_123'] == [str(x) for x in range(784)]
+    
+def test_csv_lazy_columns_ok(globals_, csv_30x784):
+    gen = RunMacroCodeGenerator('file_utils.j2', 'load_csv', csv_30x784,
+                                '123', lazy=True)
+    locals_ = {}
+    exec(gen.get_code(), globals_, locals_)
+    assert locals_['columns_123'] == [str(x) for x in range(784)]
+    

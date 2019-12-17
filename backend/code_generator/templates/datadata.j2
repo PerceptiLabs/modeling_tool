@@ -1,24 +1,31 @@
 {% from 'file_utils.j2' import load_npy, load_csv, load_img_dir %}
 
-global trn_gens_args_{{layer_id}}, val_gens_args_{{layer_id}}, tst_gens_args_{{layer_id}}
+# Create file generators
+np.random.seed({{seed}})
+batch_size = {{batch_size}}
+
+global trn_gens_args_{{layer_id}}, val_gens_args_{{layer_id}}, tst_gens_args_{{layer_id}} # TODO(anton): once we stop using 'exec' we can get rid of all globals and layer id tags.
 trn_gens_args_{{layer_id}}, val_gens_args_{{layer_id}}, tst_gens_args_{{layer_id}} = [], [], []
+trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0
+columns = {}
 
 {% filter remove_lspaces(8) %}
     {% for idx, source, partition in zip(range(0, len(sources)), sources, partitions): %}
         {% set tag = str(layer_id)+'_'+str(idx) %}
 
-        {# The following block shows a quirk in Jinja: only the first line of a macro is indented with the parent document. #}
-        {# This is problematic for indented blocks that include macros.
+        {# The following block shows a quirk in Jinja:
+        {# only the 1st line in a macro is indent-aligned with the parent document, #}
+        {# which is problematic for indented blocks that include macros.
         {# Remedy: make the macro lines 'catch up' with the 1st line using 'indent' and then remove them together as necessary using 'remove_lspaces'. #}
 
         if "{{source['path']}}" not in api.cache:
             {% filter remove_lspaces(8) %}
-                {% if source['type'] == 'file' and source['ext'] == '.npy' %}
-                    {{ load_npy(source['path'], tag) | indent(width=20, first=False)}}
-                {% elif source['type'] == 'file' and source['ext'] == '.csv' %}
-                    {{ load_csv(source['path'], tag) | indent(width=20, first=False)}}
+                {% if source['type'] == 'file' and source['ext'] in ['.npy', '.npz'] %}
+                    {{ load_npy(source['path'], tag) | indent(width=20)}}
+                {% elif source['type'] == 'file' and source['ext'] in ['.csv', '.txt'] %}
+                    {{ load_csv(source['path'], tag, selected_columns) | indent(width=20)}} 
                 {% elif source['type'] == 'directory' and source['ext'] in ['.jpg', '.png', '.jpeg', '.tif', '.tiff'] %}
-                    {{ load_img_dir(source['path'], tag) | indent(width=20, first=False)}}
+                    {{ load_img_dir(source['path'], tag) | indent(width=20)}}
                 {% endif %}
             {% endfilter %}
 
@@ -26,20 +33,23 @@ trn_gens_args_{{layer_id}}, val_gens_args_{{layer_id}}, tst_gens_args_{{layer_id
         else:
             generator_{{tag}}, size_{{tag}} = api.cache.get("{{source['path']}}")
 
-
         trn_sz = round({{partition[0]}}*size_{{tag}})
         val_sz = round({{partition[1]}}*size_{{tag}})
         tst_sz = size_{{tag}} - trn_sz - val_sz
+
+        trn_sz_tot += trn_sz
+        val_sz_tot += val_sz
+        tst_sz_tot += tst_sz
         
         trn_gens_args_{{layer_id}}.append((generator_{{tag}}, 0, trn_sz))
         val_gens_args_{{layer_id}}.append((generator_{{tag}}, trn_sz, trn_sz+val_sz))
         tst_gens_args_{{layer_id}}.append((generator_{{tag}}, trn_sz+val_sz, trn_sz+val_sz+tst_sz))
     {% endfor %}
 {% endfilter %}
-    
+
+# Chain the generators together
 def make_generator_trn_{{layer_id}}():
     global trn_gens_args_{{layer_id}}
-
     def gen():
         for f, lo, hi in trn_gens_args_{{layer_id}}:
             yield from f(lo, hi)
@@ -47,7 +57,6 @@ def make_generator_trn_{{layer_id}}():
 
 def make_generator_val_{{layer_id}}():
     global val_gens_args_{{layer_id}}
-
     def gen():
         for f, lo, hi in val_gens_args_{{layer_id}}:
             yield from f(lo, hi)
@@ -55,47 +64,44 @@ def make_generator_val_{{layer_id}}():
 
 def make_generator_tst_{{layer_id}}():
     global tst_gens_args_{{layer_id}}
-
     def gen():
         for f, lo, hi in tst_gens_args_{{layer_id}}:
             yield from f(lo, hi)
     return gen()
 
-
 shapes = [next(f(lo, hi)).shape for f, lo, hi in trn_gens_args_{{layer_id}}]
 if len(set(shapes)) > 1:
     raise ValueError("Shape mismatch! Yielded shapes were: " + str(shapes))
 
+# Make some values available for the frontend            
 sample = _sample = next(make_generator_trn_{{layer_id}}())
+api.data.store(batch_size=batch_size)
 
 # Set up datasets
 X_trn = tf.data.Dataset.from_generator(make_generator_trn_{{layer_id}},
-                                         output_shapes=sample.shape,
-                                         output_types=np.float32)
+                                         output_shapes=sample.shape, output_types=np.float32)
 
 X_val = tf.data.Dataset.from_generator(make_generator_val_{{layer_id}},
-                                         output_shapes=sample.shape,
-                                         output_types=np.float32)
+                                         output_shapes=sample.shape, output_types=np.float32)
 
 X_tst = tf.data.Dataset.from_generator(make_generator_tst_{{layer_id}},
-                                        output_shapes=sample.shape,
-                                        output_types=np.float32)
+                                        output_shapes=sample.shape, output_types=np.float32)
 {% filter remove_lspaces(8) %}
     {% if shuffle and shuffle_buffer_size is none %}
-        X_trn = X_trn.shuffle(trn_size_{{layer_id}}, seed={{seed}}).batch({{batch_size}})
+        X_trn = X_trn.shuffle(trn_size_{{layer_id}}, seed={{seed}}).batch(batch_size)            
     {% elif shuffle and shuffle_buffer_size is not none %}
-        X_trn = X_trn.shuffle({{shuffle_buffer_size}}, seed={{seed}}).batch({{batch_size}})
+        X_trn = X_trn.shuffle({{shuffle_buffer_size}}, seed={{seed}}).batch(batch_size)            
+    {% else %}
+        X_trn = X_trn.batch(batch_size)            
     {% endif %}
 {% endfilter %}
-
-X_trn = X_trn.batch({{batch_size}})
-X_val = X_val.batch({{batch_size}})
+X_val = X_val.batch(batch_size)
 X_tst = X_tst.batch(1)
 
 # Create iterators
 iterator = tf.data.Iterator.from_structure(X_trn.output_types, X_trn.output_shapes)
-trn_init = iterator.make_initializer(X_trn, name='trn_iterator_{{layer_id}}')
-val_init = iterator.make_initializer(X_val, name='val_iterator_{{layer_id}}')
-tst_init = iterator.make_initializer(X_tst, name='tst_iterator_{{layer_id}}')
+trn_init = iterator.make_initializer(X_trn, name='train_iterator_{{layer_id}}')
+val_init = iterator.make_initializer(X_val, name='validation_iterator_{{layer_id}}')
+tst_init = iterator.make_initializer(X_tst, name='test_iterator_{{layer_id}}')
 
 Y = iterator.get_next()
