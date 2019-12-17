@@ -28,15 +28,6 @@ const getters = {
         const filePath = el.checkpoint[1].slice(0, el.checkpoint[1].length);
         checkpointPath[1] = rootPath + pathSlash + filePath;
       }
-
-      let namesConnectionOut = el.connectionOut.map((currentValue)=> {
-        return  network.networkElementList[currentValue].layerName
-      });
-
-      let namesConnectionIn = el.connectionIn.map((currentValue)=> {
-        return  network.networkElementList[currentValue].layerName
-      });
-
       /*prepare elements*/
       if(dataLayers.includes(el.componentName)) {
         layers[el.layerId] = {
@@ -46,11 +37,9 @@ const getters = {
           checkpoint: checkpointPath,
           endPoints: el.endPoints,
           //Code: el.coreCode,
-          backward_connections: namesConnectionIn,
-          forward_connections: namesConnectionOut
+          backward_connections: el.connectionIn,
+          forward_connections: el.connectionOut
         };
-        //console.log('1backward_connections', namesConnectionIn);
-        //console.log('1forward_connections', namesConnectionOut);
       }
       else {
         layers[el.layerId] = {
@@ -60,12 +49,10 @@ const getters = {
           endPoints: el.endPoints,
           Properties: el.layerSettings,
           Code: el.layerCode,
-          backward_connections: namesConnectionIn,
-          forward_connections: namesConnectionOut
+          backward_connections: el.connectionIn,
+          forward_connections: el.connectionOut
         };
       }
-      //console.log('2backward_connections', namesConnectionIn);
-      //console.log('2forward_connections', namesConnectionOut);
     }
     return layers
   }
