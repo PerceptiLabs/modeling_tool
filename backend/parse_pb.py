@@ -650,7 +650,7 @@ def parse(trainableFlag, end_points, graph_def_path, checkpoint=None):
    
    layers, name_graph_def, filtered_operations, name_spaces, name2idDict, id2nameDict, layerContainers=createGraph(graph_def)
 
-   # error
+
    print("Extracting info")
    info=extractCheckpointInfo(end_points,graph_def_path,checkpoint)
    
@@ -931,8 +931,11 @@ def parse(trainableFlag, end_points, graph_def_path, checkpoint=None):
 
          OutputDim=str(dim).replace("[","").replace("]","").replace(", ","x").replace("None","?")
       except Exception as e:
-         print("Error: ", e)
-         print("In operation: ", [layer["Operations"][-1].name])
+         import traceback
+         print("In operation %s :") %[layer["Operations"][-1].name]
+         traceback.print_exc()
+         # print("Error: ", e)
+         
          # print("With dim: ", dim)
          OutputDim=""
 

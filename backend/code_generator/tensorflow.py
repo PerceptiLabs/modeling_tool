@@ -19,59 +19,6 @@ def get_activation_code(var_in, var_out, func=None):
         code = '%s = %s(%s)\n' % (var_out, func, var_in)        
     return code
 
-class RandomNoiseCodeGenerator(CodeGenerator):
-    def __init__(self, size, batch_size, distribution, mean=0, std=0, alpha=0, beta=0, lam=0, logits=0, minval=0, maxval=None):
-        self._size = size
-        self._distribution = distribution
-        self._batch_size = batch_size
-        self._shape = list(self._batch_size)+list(size)
-        self._mean = mean
-        self._std = std
-        self._alpha = alpha
-        self._beta = beta
-        self._lam = lam
-        self._logits = logits
-        self._minval = minval
-        self._maxval = maxval
-
-    def get_code(self):
-        if self._distribution == 'normal':
-            code = self.get_code_normal()
-        elif self._distribution == 'gamma':
-            code = self.get_code_gamma()
-        elif self._distribution == 'uniform':
-            code = self.get_code_uniform()
-        elif self._distribution == 'poisson':
-            code = self.get_code_poisson()
-        elif self._distribution == 'categorical':
-            code = self.get_code_categorical()
-        return code
-
-    def get_code_normal(self):
-        code = ""
-        code += "random_noise = tf.random.normal(%s, mean=%d, std=%d)\n" % (self._shape, self._mean, self._std)
-        return code
-
-    def get_code_gamma(self):
-        code = ""
-        code += "random_noise = tf.random.gamma(%s, alpha=%d, beta=%d)\n" % (self._shape, self._alpha, self._beta)
-        return code
-
-    def get_code_categorical(self):
-        code = ""
-        code += "random_noise = tf.random.categorical(logits=%s, num_samples=%s)\n" % (self._logits, self._shape)
-        return code
-
-    def get_code_poisson(self):
-        code = ""
-        code += "random_noise = tf.random.poisson(%d, %s)\n" % (self._lam, self._shape)
-        return code
-
-    def get_code_uniform(self):
-        code = ""
-        code += "random_noise = tf.random.uniform(%s, minval=%d, maxval=%d)\n" % (self._shape, self._minval, self._maxval)
-        return code
-
 
 class ReshapeCodeGenerator(CodeGenerator):
     def __init__(self, shape, permutation):
@@ -239,7 +186,7 @@ class FullyConnectedCodeGenerator(CodeGenerator):
         code += "node = tf.matmul(flat_node, W)\n"
 
         if self._dropout:
-            code += "node=tf.nn.dropout(node, %f)\n" % self._keep_prob
+            code += "node=tf.nn.dropout(node, %s)\n" % str(self._keep_prob)
 
         code += "node = node + b\n"
         code += "\n"
@@ -550,7 +497,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += TrainOptimizerCodeGenerator(self._optimizer,self._learning_rate, self._decay_steps, self._decay_rate, self._momentum, self._beta1, self._beta2).get_optimizer_code()
 
         code += "\n"
-        code += "import time; start_time = time.time()\n"
         code += "# Metrics\n"
         code += "correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_label,-1))\n"
         code += "accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))\n"
@@ -568,10 +514,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "test_iterators = [op for op in ops if 'test_iterator' in op.name]\n" 
         code += "#tf variables to be evaluated and sent to the frontend\n"    
         code += "\n"
-        code += "config = tf.ConfigProto()\n"
-        code += "config.gpu_options.allow_growth = True  # dynamically grow the memory used on the GPU\n" 
-        # code += "config.log_device_placement = True\n"
-        # code += "sess = tf.InteractiveSession(config=config)\n"
         code += "sess = tf.InteractiveSession()\n"
         code += "saver = tf.train.Saver()\n"
         code += "api.data.setSaver(sess,saver)\n"
@@ -608,10 +550,7 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "                     new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
         code += "                     new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
         code += "                api.data.stack(**new_gradient_vals)\n"
-        code += "            if train_iter%30==0:\n"
-        code += "                elapsed_time = time.time() - start_time\n"
-        code += "                start_time = time.time()\n"
-        code += "                print('Time lapsed during one epoch: ', elapsed_time/30)\n"
+        
         code += "            api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train, f1_train_iter=f1_train, auc_train_iter=auc_train)\n"
         code += "            api.data.store(iter_training=train_iter)\n"
 
@@ -651,7 +590,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    api.data.store(epoch=epoch)\n"
         code += "    api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
         code += "                   acc_validation_epoch=acc_val, loss_validation_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
-        
         return code
 
 

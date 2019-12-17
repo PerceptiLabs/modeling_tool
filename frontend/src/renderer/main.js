@@ -2,6 +2,8 @@
 
 import Vue from 'vue'
 //- Global plugins
+import * as Sentry from '@sentry/browser';
+import * as Integrations from '@sentry/integrations';
 import axios        from 'axios'
 import VeeValidate  from 'vee-validate';
 import VueHotkey    from 'v-hotkey'
@@ -29,6 +31,10 @@ Vue.config.productionTip = isDevelopMode;
 Vue.config.performance = isDevelopMode;
 
 //- Use plugin
+Sentry.init({
+  dsn: 'https://2497f27009b24990b4c0f3feeda4d37d@sentry.io/1833551',
+  integrations: [new Integrations.Vue({Vue, attachProps: true})],
+});
 Vue.use(VeeValidate);
 Vue.use(VueHotkey);
 

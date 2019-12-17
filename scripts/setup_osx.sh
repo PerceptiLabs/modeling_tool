@@ -7,7 +7,7 @@ CONDA_ENV_FILE="../backend/environment.yml"
 echo "Updating Homebrew..."
 brew update --verbose
 
-
+brew install rename
 #echo "Installing wget..."
 #brew install wget
 
@@ -41,6 +41,10 @@ which python
 echo "Activating environment"
 source ~/miniconda/etc/profile.d/conda.sh
 conda activate py362_
+
+echo "Environment:"
+conda list
+pip list
 
 echo "which python"
 which python

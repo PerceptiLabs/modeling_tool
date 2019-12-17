@@ -14,10 +14,10 @@
         monitor-value-key="CPU"
         :monitor-value="currentData"
       )
-    sidebar-training-section(section-name="GPU")
+    //-sidebar-training-section(section-name="GPU")
       resource-monitor(
         monitor-value-key="GPU"
-        :monitor-value="currentData"
+        /:monitor-value="currentData"
       )
 
 </template>
@@ -53,6 +53,7 @@ export default {
   },
   watch: {
     statusNetworkInfo(newVal) {
+      //console.log(newVal);
       this.isNeedWait
         ? this.buffer = newVal
         : this.currentData = newVal

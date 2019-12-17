@@ -308,10 +308,14 @@ const mutations = {
     else getters.GET_currentNetwork.networkMeta.openTest = value;
   },
   set_statusNetworkCore(state, {getters, value}) {
-    getters.GET_currentNetwork.networkMeta.coreStatus = value;
+    if(getters.GET_currentNetwork.networkMeta) {
+      getters.GET_currentNetwork.networkMeta.coreStatus = value;
+    }
   },
   set_statusNetworkCoreStatus(state, {getters, value}) {
-    getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
+    if(getters.GET_currentNetwork.networkMeta) {
+      getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
+    }
   },
   set_statusNetworkCoreStatusProgressClear(state, {getters}) {
     if(getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress) {
@@ -847,7 +851,7 @@ const actions = {
     }
   },
   EVENT_startDoRequest({dispatch, commit, rootState, getters, state}, isStart) {
-    const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
+    const currentMeta = getters.GET_currentNetwork.networkMeta;
     if(currentMeta === undefined) return;
     const timeInterval = rootState.globalView.timeIntervalDoRequest;
 
@@ -859,7 +863,7 @@ const actions = {
       commit('set_charts_timerID', {getters, timerId});
     }
     else {
-      clearInterval(currentMeta.timerID);
+      clearInterval(currentMeta.chartsRequest.timerID);
     }
   },
   EVENT_chartsRequest({dispatch, commit, rootState, getters, state}) {

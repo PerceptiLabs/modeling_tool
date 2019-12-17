@@ -1,10 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="ChangeListManager">
-    <list default="true" id="40739598-f05c-4231-a5ec-48ec8c4274ee" name="Default Changelist" comment="">
+    <list default="true" id="ae4c30d3-78b4-43e9-92a3-25fa079cdaae" name="Default Changelist" comment="">
+      <change afterPath="$PROJECT_DIR$/frontend/src/renderer/components/different/spinner-upload-file.vue" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/build/entitlements.mac.inherit.plist" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/build/entitlements.mac.inherit.plist" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/notarize.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/notarize.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/App.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements-settings/setting-file-list.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements-settings/setting-file-list.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements/data-data/set-data-data.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_events.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_events.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
     </list>
-    <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -22,7 +30,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="web-dev" />
+        <entry key="$PROJECT_DIR$" value="stage" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -38,9 +46,14 @@
   <component name="ProjectLevelVcsManager">
     <ConfirmationsSetting value="2" id="Add" />
   </component>
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showExcludedFiles" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
   <component name="PropertiesComponent">
     <property name="WebServerToolWindowFactoryState" value="false" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$/frontend/src/renderer/components/workspace" />
+    <property name="last_opened_file_path" value="$PROJECT_DIR$/frontend/src/renderer/components/different" />
     <property name="list.type.of.created.stylesheet" value="SCSS" />
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
@@ -51,11 +64,11 @@
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
     </key>
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="D:\PROJECTS\PerceptiLabs\frontend\src\renderer\components\different" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\workspace" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store\modules" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\different" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\deep-learning-recurrent" />
-      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\core\basic-template" />
     </key>
   </component>
   <component name="RunDashboard">
@@ -75,7 +88,7 @@
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="a2cf221b-bc25-43df-b664-0982c448fc25" name="Default Changelist" comment="" />
+      <changelist id="ae4c30d3-78b4-43e9-92a3-25fa079cdaae" name="Default Changelist" comment="" />
       <created>1569314049218</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
@@ -120,6 +133,17 @@
       <workItem from="1572939251934" duration="12685000" />
       <workItem from="1573024957115" duration="921000" />
       <workItem from="1573206261933" duration="2324000" />
+      <workItem from="1575290205939" duration="2730000" />
+      <workItem from="1575373566150" duration="198000" />
+      <workItem from="1575380893429" duration="165000" />
+      <workItem from="1575386171156" duration="479000" />
+      <workItem from="1575625465799" duration="3747000" />
+      <workItem from="1575637686189" duration="999000" />
+      <workItem from="1575639535781" duration="1215000" />
+      <workItem from="1576067159172" duration="89000" />
+      <workItem from="1576142313792" duration="18693000" />
+      <workItem from="1576242189189" duration="2579000" />
+      <workItem from="1576246606387" duration="155000" />
     </task>
     <servers />
   </component>
@@ -142,17 +166,6 @@
         <entry key="MAIN">
           <value>
             <State>
-              <option name="FILTERS">
-                <map>
-                  <entry key="branch">
-                    <value>
-                      <list>
-                        <option value="web-dev" />
-                      </list>
-                    </value>
-                  </entry>
-                </map>
-              </option>
               <option name="COLUMN_ORDER" />
             </State>
           </value>
@@ -185,5 +198,17 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="WindowStateProjectService">
+    <state x="183" y="81" key="DiffContextDialog" />
+    <state x="183" y="81" key="DiffContextDialog/0.0.1920.1032@0.0.1920.1032" />
+    <state x="690" y="212" key="FileChooserDialogImpl" />
+    <state x="690" y="212" key="FileChooserDialogImpl/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" />
+    <state x="729" y="154" key="RollbackChangesDialog" />
+    <state x="729" y="154" key="RollbackChangesDialog/0.0.1920.1032@0.0.1920.1032" />
+    <state x="429" y="31" width="1169" height="935" key="find.popup" />
+    <state x="594" y="189" width="731" height="662" key="find.popup/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" />
+    <state x="429" y="31" width="1169" height="935" key="find.popup/0.0.1920.1032/0.-1080.1920.1080@0.0.1920.1032" />
+    <state x="429" y="31" width="1169" height="935" key="find.popup/0.0.1920.1032@0.0.1920.1032" />
   </component>
 </project>
