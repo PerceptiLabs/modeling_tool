@@ -1,5 +1,5 @@
 <template lang="pug">
-  .layer-item-wrap
+  .layer-item-wrap(:id="itemData.layerId")
     .layer-item.js-clickout(
       :class="{'selected': itemData.layerMeta.isSelected}"
       @click="setSelect($event)"
@@ -37,6 +37,7 @@
         v-for="(item, i) in itemData.containerLayersList"
         :key="item.i"
         :item-data="item"
+        :id="item.layerId"
         )
 
 
@@ -76,7 +77,10 @@ export default {
     },
     openContainer() {
       return this.itemData.layerNone
-    }
+    },
+    network() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
+    },
   },
   methods: {
     toggleOpen() {

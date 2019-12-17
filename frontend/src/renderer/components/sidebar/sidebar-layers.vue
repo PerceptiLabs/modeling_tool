@@ -47,6 +47,14 @@ export default {
       var newNet = {...currentNet};
       clearContainer(currentNet);
 
+      const keysArrayNewNet = Object.keys(newNet);
+      const lastElement = newNet[keysArrayNewNet[keysArrayNewNet.length -1]];
+
+      if(lastElement && lastElement.componentName === 'LayerContainer' && lastElement.parentContainerID) {
+        const duplicateElement = document.getElementById(lastElement.layerId);
+        duplicateElement.classList.add('hide-duplicate-element');
+      }
+
       function clearContainer(net) {
         for(let idEl in net) {
           let el = net[idEl];
@@ -54,7 +62,7 @@ export default {
             let delKeys = Object.keys(el.containerLayersList);
             if(!delKeys.length) continue;
             delKeys.forEach((id)=> {
-              if(newNet[id].componentName !== 'LayerContainer') delete newNet[id]
+              if(newNet[id] && newNet[id].componentName !== 'LayerContainer') delete newNet[id]
             });
           }
         }
@@ -83,6 +91,7 @@ export default {
       //   return item.meta.isSelected === true;
       // });
     }
+
   }
 }
 </script>
@@ -134,5 +143,8 @@ export default {
     input {
       box-shadow: $icon-shad;
     }
+  }
+  .hide-duplicate-element {
+    display: none;
   }
 </style>
