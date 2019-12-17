@@ -580,7 +580,7 @@ const mutations = {
     let isValid = true;
     let elementList = getters.GET_currentNetworkElementList;
     let containersArray = [];
-    let parentContainerID = arrSelect[0].parentContainerID;
+    let parentContainerID = arrSelect.length ? arrSelect[0].parentContainerID : null;
     /* validations */
     if(arrSelect.length === 0) isValid = false;
     if(arrSelect.length === 1) {
