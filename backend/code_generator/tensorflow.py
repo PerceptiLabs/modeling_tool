@@ -105,8 +105,15 @@ class CropCodeGenerator(CodeGenerator):
 
 class GrayscaleCodeGenerator(CodeGenerator):
     def get_code(self):
-        code  = "if X['Y'].get_shape().as_list()[-1] == 3:\n"
-        code += "    Y = tf.image.rgb_to_grayscale(X['Y'])\n"
+        code  = ""
+        code += "channels = X['Y'].get_shape().as_list()[-1]\n"
+        code += "if channels % 3==0:\n"
+        code += "    if channels>3:\n"
+        code += "        splits = tf.split(X['Y'], channels/3, -1)\n"
+        code += "        images = tf.image.rgb_to_grayscale(splits)\n"
+        code += "        Y = tf.stack(tf.squeeze(images),-1)\n"
+        code += "    else:\n"
+        code += "        Y = tf.image.rgb_to_grayscale(X['Y'])\n"
         code += 'else:\n'
         code += "    Y = X['Y']\n"
         return code
@@ -624,13 +631,13 @@ LayerPair = namedtuple('LayerPair', ['online_id', 'target_id'])
 
 class TrainReinforceCodeGenerator(CodeGenerator):
     def __init__(self, online_network_id, target_network_id, layer_pairs, n_episodes=20000, batch_size=32, learning_rate=0.1, discount_factor=0.99,
-                 replay_start_size=1000, replay_memory_size=300000,
+                 replay_start_size=60, replay_memory_size=300000,
                  initial_exploration=0.9, final_exploration=0.1, final_exporation_frame=500,
                  update_frequency=4, target_network_update_frequency=100,
                  n_steps_max=1000):
         self._batch_size = batch_size 
         self._n_episodes = n_episodes
-        self._replay_start_size = replay_start_size        
+        self._replay_start_size = batch_size*2        
         self._replay_memory_size = replay_memory_size
         self._learning_rate = learning_rate
         self._gamma = discount_factor
@@ -728,19 +735,22 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "for episode in range(n_episodes):\n"
         code += "    state = env.reset()\n"
         code += "    state_seq = [state]*history_length\n"
+        # code += "    import pdb; pdb.set_trace()\n"
         code += "    api.data.store(episode=episode)\n"
         code += "    \n"
         code += "    done = False\n"
         code += "    step_counter = 0\n"
         code += "    loss_list = []\n"
-        code += "    reward_list = []\n"        
+        code += "    reward_list = []\n"    
         code += "    while not done and step_counter < n_steps_max:\n"
         code += "        explore = np.random.random() < epsilon(episode) or iteration < replay_start_size\n"
         code += "        if explore:\n"
         code += "            action = env.action_space.sample()\n"
-        code += "            Q = Q_online.eval(feed_dict={state_tensor: [np.array(state_seq)]}).squeeze()\n"
+        # code += "            Q = Q_online.eval(feed_dict={state_tensor: [np.array(state_seq)]}).squeeze()\n"
+        code += "            Q = Q_online.eval(feed_dict={state_tensor: [np.concatenate(state_seq,-1)]}).squeeze()\n"
         code += "        else:\n"
-        code += "            Q = Q_online.eval(feed_dict={state_tensor: [np.array(state_seq)]}).squeeze()\n"
+        # code += "            Q = Q_online.eval(feed_dict={state_tensor: [np.array(state_seq)]}).squeeze()\n"
+        code += "            Q = Q_online.eval(feed_dict={state_tensor: [np.concatenate(state_seq,-1)]}).squeeze()\n"
         code += "            action = np.argmax(Q)\n"
         code += "        \n"
         code += "        new_state, reward, done, info = env.step(action)\n"
@@ -775,11 +785,11 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "            for i, t in enumerate(batch_transitions):\n"
         code += "                y_batch[i] = t['reward']\n"
         code += "                if not t['done']:\n"
-        code += "                    feed_dict = {state_tensor: [t['new_state_seq']]}\n"
+        code += "                    feed_dict = {state_tensor: [np.concatenate(t['new_state_seq'],-1)]}\n"
         code += "                    Q = Q_target.eval(feed_dict=feed_dict).squeeze()\n" 
         code += "                    y_batch[i] += gamma*np.amax(Q)\n"
         code += "                a_batch[i] = t['action']\n"
-        code += "                X_batch[i] = t['state_seq']\n"
+        code += "                X_batch[i] = np.concatenate(t['state_seq'],-1)\n"
         code += "            \n"
         code += "            feed_dict = {\n"
         code += "                         state_tensor: np.atleast_2d(X_batch),\n"
@@ -796,6 +806,18 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "                new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
         code += "                new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
         code += "                new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+
+        # code += "        else:\n"
+        # code += "            loss, gradient_vals, all_tensors_values = sess.run([loss_tensor, gradients, all_tensors])\n"
+        # code += "            loss_list.append(loss)\n"
+        # code += "            api.data.store(loss=loss_list)\n"
+        # code += "            api.data.store(all_tensors=all_tensors_values)\n"
+
+        # code += "            new_gradient_vals={}\n"
+        # code += "            for gradName, gradValue in gradient_vals.items():\n"
+        # code += "                new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+        # code += "                new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+        # code += "                new_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
 
         code += "        if new_gradient_vals is not None:\n"
         code += "            api.data.stack(**new_gradient_vals)\n"
