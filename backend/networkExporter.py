@@ -2,6 +2,9 @@ import os
 import tensorflow as tf
 import shutil
 
+from core_new.utils import set_tensorflow_mode
+
+
 class exportNetwork():
     def __init__(self,saverObj):
         self.sess=saverObj["sess"]
@@ -10,6 +13,7 @@ class exportNetwork():
         self.network_outputs=saverObj["network_outputs"]
 
     def asTfModel(self,path,epoch):
+        set_tensorflow_mode('graph')
         export_path=path
         if os.path.exists( export_path+"/1"):
             shutil.rmtree( export_path+"/1")
@@ -53,6 +57,7 @@ class exportNetwork():
     #     return os.path.abspath(self.saver.save(self.sess, path+'/model.ckpt', global_step=epoch))
 
     def asCompressedTfModel(self,path):
+        set_tensorflow_mode('graph')
         # graph=self.graphObj.graphs
 
         # start_nodes=self.graphObj.start_nodes

@@ -10,6 +10,7 @@ autoUpdater.autoDownload = false;
 let mainWindow;
 
 let visitor;
+let corePid;
 let loginPage = '/';
 
 const theFirstInstance = app.requestSingleInstanceLock();
@@ -56,7 +57,7 @@ function createWindow () {
       //plugins: true,
     }
   });
-  //mainWindow.webContents.openDevTools();
+ // mainWindow.webContents.openDevTools();
   mainWindow.loadURL(winURL);
 
   mainWindow.on('closed', () => {
@@ -137,6 +138,9 @@ function createWindow () {
   ipcMain.on('restart-app-after-update', (info)=> {
     autoUpdater.quitAndInstall();
   });
+  ipcMain.on('save-corePid', (event, id)=> {
+    corePid = id
+  });
   /**
    * google analytics
    */
@@ -178,9 +182,15 @@ function createWindow () {
  */
 app.on('ready', createWindow);
 
-// app.on('window-all-closed', ()=> {
-//   if (process.platform !== 'darwin') closeApp()
-// });
+app.on('window-all-closed', ()=> {
+  if (process.platform === 'darwin') {
+    killProcess(corePid)
+  }
+  if (process.platform === 'linux') {
+    killProcess(corePid);
+    app.quit()
+  }
+});
 
 app.on('activate', () => {
   if (mainWindow === null) {
@@ -199,7 +209,10 @@ function closeApp(pid) {
   }
   else app.quit()
 }
-
+function killProcess(pid) {
+  try       { process.kill(pid) }
+  catch (e) { console.log(e) }
+}
 /**
  * Auto Updater
  *

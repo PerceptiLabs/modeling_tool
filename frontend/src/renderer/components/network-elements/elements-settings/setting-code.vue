@@ -44,7 +44,10 @@ export default {
   },
   mounted () {
     //console.log(this.currentEl, this.currentEl.layerCode);
-    if(this.currentEl.layerCode) this.setCode(this.currentEl.layerCode);
+    if(this.currentEl.layerCode) {
+      this.setCode(this.currentEl.layerCode)
+    }
+
     else this.getCode();
   },
   beforeDestroy() {

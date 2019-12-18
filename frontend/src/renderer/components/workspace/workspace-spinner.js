@@ -20,10 +20,9 @@ const workspaceSpinner = {
       }
       else {
         unwatch();
-        if(this.isTutorialMode) this.pauseTraining();
+        setTimeout(()=> {if(this.isTutorialMode) this.pauseTraining();}, 5000) //pause for tutorial
       }
     },
-
   },
   methods: {
     ...mapActions({

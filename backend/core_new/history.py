@@ -6,12 +6,12 @@ class HistoryInputException(Exception):
     pass
 
 class SessionHistory:
-    def __init__(self):
+    def __init__(self, cache):
+        self._cache = cache
         self.reset()
 
     def reset(self):
         self._sessions = {}
-        self._cache = SessionCache()
 
     def __contains__(self, id_):
         return id_ in self._sessions

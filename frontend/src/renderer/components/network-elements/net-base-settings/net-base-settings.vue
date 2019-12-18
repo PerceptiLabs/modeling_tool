@@ -6,7 +6,7 @@
           v-for="(tab, i) in tabSet"
           :key="tab.i"
           :class="{'disable': tabSelected != tab}"
-          :disabled="tab === 'Code' && isTutorial"
+          :disabled="tab === 'Code' && isTutorial || disableSettings"
           @click="setTab(tab)"
         )
           h4(v-html="tab")
@@ -32,7 +32,7 @@
             button.btn.btn--primary(type="button"
               @click="applySettings(tabContent)"
               :id="idSetBtn"
-              ) Apply
+            ) Apply
             //-button.btn.btn--dark-blue-rev(type="button"
               v-if="showUpdateCode"
               @click="updateCode"
@@ -106,7 +106,11 @@ export default {
     applySettings(name) {
       this.$emit('press-apply', name);
       //const elId = this.currentEl.layerId;
-      this.tabSelected = 'Preview';
+      if(name !== 'Cloud') {
+        this.tabSelected = 'Preview';this.tabSelected = 'Preview';
+      }
+      let tab = this.currentEl.layerSettingsTabName || this.tabSet[0];
+      if(tab === 'Code') this.disableSettings = true;
     },
     updateCode(name) {
       this.$emit('press-update')

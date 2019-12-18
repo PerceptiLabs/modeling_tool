@@ -15,6 +15,11 @@ const state = {
     start: {x: 0, y: 0},
     stop: {x: 0, y: 0},
   },
+  positionForCopyElement: {
+    cursor: {x: 0, y: 0},
+    elementsPosition: [],
+    cursorInsideWorkspace: true
+  },
   showStartTrainingSpinner: false,
   isOpenElement: false,
 };
@@ -100,6 +105,12 @@ const getters = {
   },
   GET_enableHotKeyElement(state, getters, rootState) {
     return !state.isOpenElement && getters.GET_networkIsOpen && rootState.mod_events.isEnableCustomHotKey
+  },
+  GET_positionForCopyElement(state) {
+    return state.positionForCopyElement;
+  },
+  GET_cursorInsideWorkspace(state) {
+    return state.positionForCopyElement.cursorInsideWorkspace;
   }
 };
 
@@ -297,10 +308,14 @@ const mutations = {
     else getters.GET_currentNetwork.networkMeta.openTest = value;
   },
   set_statusNetworkCore(state, {getters, value}) {
-    getters.GET_currentNetwork.networkMeta.coreStatus = value;
+    if(getters.GET_currentNetwork.networkMeta) {
+      getters.GET_currentNetwork.networkMeta.coreStatus = value;
+    }
   },
   set_statusNetworkCoreStatus(state, {getters, value}) {
-    getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
+    if(getters.GET_currentNetwork.networkMeta) {
+      getters.GET_currentNetwork.networkMeta.coreStatus.Status = value;
+    }
   },
   set_statusNetworkCoreStatusProgressClear(state, {getters}) {
     if(getters.GET_currentNetwork.networkMeta.coreStatus.Status.Progress) {
@@ -329,11 +344,27 @@ const mutations = {
   //---------------
   //  NETWORK ELEMENTS
   //---------------
+  SET_CopyCursorPosition(state, position) {
+    state.positionForCopyElement.cursor.x = position.x;
+    state.positionForCopyElement.cursor.y = position.y;
+  },
+  SET_CopyElementsPosition(state, position) {
+    state.positionForCopyElement.elementsPosition.push({left: position.left, top: position.top});
+  },
+  SET_cursorInsideWorkspace(state, value) {
+    state.positionForCopyElement.cursorInsideWorkspace = value
+  },
+  CLEAR_CopyElementsPosition(state) {
+    state.positionForCopyElement.elementsPosition = [];
+  },
   SET_elementName(state, value) {
     currentElement(value.id).layerName = value.setValue
   },
   add_element(state, {getters, dispatch, event}) {
-    let duplicatePositionIndent = 30;
+    let duplicatePositionIndent = 60;
+    let cursorPosition = getters.GET_positionForCopyElement.cursor;
+    let firstCopyPositionElement = getters.GET_positionForCopyElement.elementsPosition[0];
+    let isCursorInsideWorkspace = getters.GET_cursorInsideWorkspace;
     let newEl = state.dragElement
       ? state.dragElement
       : createNetElement(event);
@@ -347,7 +378,12 @@ const mutations = {
     newEl.layerMeta.position.top = (event.offsetY - top)/zoom;
     newEl.layerMeta.position.left = (event.offsetX - left)/zoom;
     let depth = checkPosition(newEl, elementList);
-    if(depth > 0) {
+
+    if(isCursorInsideWorkspace && depth > 0) {
+      newEl.layerMeta.position.top =  (cursorPosition.y + newEl.layerMeta.position.top) - firstCopyPositionElement.top - duplicatePositionIndent;
+      newEl.layerMeta.position.left =  (cursorPosition.x + newEl.layerMeta.position.left) - firstCopyPositionElement.left - duplicatePositionIndent;
+    }
+    else {
       newEl.layerMeta.position.top = newEl.layerMeta.position.top + (duplicatePositionIndent * depth);
       newEl.layerMeta.position.left = newEl.layerMeta.position.left + (duplicatePositionIndent * depth);
     }
@@ -388,17 +424,27 @@ const mutations = {
     let arrSelectID = [];
     let net = {...getters.GET_currentNetworkElementList};
     deleteElement(arrSelect);
-
     for(let el in net) {
-      net[el].connectionOut = net[el].connectionOut.filter((connect)=>{
+      let element = net[el];
+      element.connectionOut = element.connectionOut.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
-      net[el].connectionArrow = net[el].connectionArrow.filter((connect)=>{
+      element.connectionArrow = element.connectionArrow.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
-      net[el].connectionIn  = net[el].connectionIn.filter((connect)=>{
+      element.connectionIn  = element.connectionIn.filter((connect)=>{
         return !arrSelectID.includes(connect)
       });
+
+      if(element.layerNone && element.containerLayersList) {
+        arrSelect.forEach(select => {
+          element.layerNone = false;  // (close layersContainer) for remove elements from Layers
+          delete element.containerLayersList[select.layerId];
+          element.layerNone = true;
+          let isLastContainerElement = Object.keys(element.containerLayersList).length <= 1;
+          if (isLastContainerElement) delete net[el];
+        });
+      }
     }
     state.workspaceContent[state.currentNetwork].networkElementList = net;
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
@@ -458,6 +504,10 @@ const mutations = {
     currentElement(stopID).connectionIn = newConnectionIn;
     dispatch('mod_events/EVENT_calcArray', null, {root: true})
   },
+  DELETE_copyProperty(state, id) {
+    state.workspaceContent[state.currentNetwork].networkElementList[id].copyId = null;
+    state.workspaceContent[state.currentNetwork].networkElementList[id].copyContainerElement = null;
+  },
 
   /*-- NETWORK ELEMENTS SETTINGS --*/
   set_elementSettings(state, {dispatch, settings}) {
@@ -475,6 +525,7 @@ const mutations = {
     }
   },
   set_elementSelect(state, value) {
+
     currentElement(value.id).layerMeta.isSelected = value.setValue;
   },
   set_elementSelectAll(state, {getters}) {
@@ -528,18 +579,14 @@ const mutations = {
     let arrSelect = getters.GET_currentSelectedEl;
     let isValid = true;
     let elementList = getters.GET_currentNetworkElementList;
+    let containersArray = [];
+    let parentContainerID = arrSelect.length ? arrSelect[0].parentContainerID : null;
     /* validations */
     if(arrSelect.length === 0) isValid = false;
     if(arrSelect.length === 1) {
       dispatch('globalView/GP_infoPopup', 'At least 2 elements are needed to create a group', {root: true});
       isValid = false;
     }
-    arrSelect.forEach((item)=> {
-      if(item.componentName === 'LayerContainer') {
-        dispatch('globalView/GP_infoPopup', 'You cannot create a Layer Container inside a Layer Container! Function in development', {root: true});
-        isValid = false;
-      }
-    });
     if(!isValid) {
       dispatch('SET_elementUnselect');
       return;
@@ -548,12 +595,25 @@ const mutations = {
     let newContainer = createClearContainer(arrSelect);
 
     updateLayerName(newContainer, elementList, 1);
-
-    Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
-    commit('close_container', {container: newContainer, getters, dispatch});
+    if(parentContainerID) {
+      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList[parentContainerID].containerLayersList, newContainer.layerId, newContainer);
+      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
+    }
+    else {
+      Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newContainer.layerId, newContainer);
+    }
+    commit('close_container', {container: newContainer,  getters, dispatch});
     commit('set_elementUnselect', {getters});
 
     function createClearContainer(selectList) {
+      arrSelect.forEach(element => {
+        if(selectList[0].parentContainerID) {
+          const parentContainerLayerList = state.workspaceContent[state.currentNetwork].networkElementList[selectList[0].parentContainerID].containerLayersList;
+          for(const id in parentContainerLayerList) {
+            delete parentContainerLayerList[element.layerId]
+          }
+        }
+      });
       let fakeEvent = {
         timeStamp: generateID(),
         target: {
@@ -568,7 +628,14 @@ const mutations = {
       };
       let container = createNetElement(fakeEvent);
       container.containerLayersList = {};
+      container.isShow = true;
+      if(selectList[0].parentContainerID) {
+        const last = selectList.length - 1;
+        if(selectList[last].componentName === 'LayerContainer') selectList.splice(last, 1);
+        container.parentContainerID = selectList[0].parentContainerID;
+      }
       selectList.forEach((el)=>{
+        el.parentContainerID = container.layerId;
         container.containerLayersList[el.layerId] = el;
       });
       return container
@@ -583,7 +650,29 @@ const mutations = {
       network[idEl].layerNone = true;
     }
     network[container.layerId].layerNone = false;
+
+    closeChildContainer(layerCont);
+
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
+
+
+    function closeChildContainer(container) {
+      const layerListKeys = Object.keys(container.containerLayersList);
+      layerListKeys.forEach(id => {
+        const element = container.containerLayersList[id];
+        if (element.componentName === 'LayerContainer') {
+          element.isShow = false;
+          for(let idEl in element.containerLayersList) {
+            const childElement = element.containerLayersList[idEl];
+            childElement.layerNone = true;
+            if(childElement.componentName === 'LayerContainer') {
+              childElement.isShow = false;
+            }
+          }
+          closeChildContainer(element)
+        }
+      });
+    }
 
     function calcContainer(container, net) {
       let el = container;
@@ -657,6 +746,7 @@ const mutations = {
         item.layerMeta.containerDiff.left = itemLeft - containerLeft;
       }
     }
+
   },
   open_container(state, {container, getters, dispatch}) {
     let net = getters.GET_currentNetworkElementList;
@@ -666,7 +756,20 @@ const mutations = {
       net[idEl].layerNone = false;
     }
     net[container.layerId].layerNone = true;
+
+    showChildContainer(container);
+
     dispatch('mod_events/EVENT_calcArray', null, {root: true});
+
+    function showChildContainer(container) {
+      const layerListKeys = Object.keys(container.containerLayersList);
+      layerListKeys.forEach(id => {
+        const element = container.containerLayersList[id];
+        if (element.componentName === 'LayerContainer') {
+          element.isShow = true;
+        }
+      });
+    }
 
     function calcLayerPosition(containerEl) {
       let listInside = containerEl.containerLayersList;
@@ -694,6 +797,7 @@ const mutations = {
     for(let idEl in net) {
       let el = net[idEl];
       el.connectionArrow = el.connectionArrow.filter((arrow)=> arrow !== container.layerId)
+      delete el.layerContainerID;
     }
     delete net[container.layerId];
     state.workspaceContent[state.currentNetwork].networkElementList = net;
@@ -800,7 +904,7 @@ const actions = {
     }
   },
   EVENT_startDoRequest({dispatch, commit, rootState, getters, state}, isStart) {
-    const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
+    const currentMeta = getters.GET_currentNetwork.networkMeta;
     if(currentMeta === undefined) return;
     const timeInterval = rootState.globalView.timeIntervalDoRequest;
 
@@ -812,7 +916,7 @@ const actions = {
       commit('set_charts_timerID', {getters, timerId});
     }
     else {
-      clearInterval(currentMeta.timerID);
+      clearInterval(currentMeta.chartsRequest.timerID);
     }
   },
   EVENT_chartsRequest({dispatch, commit, rootState, getters, state}) {
@@ -934,6 +1038,8 @@ function currentElement(id) {
 const createNetElement = function (event) {
   return {
     layerId: generateID(),
+    copyId: event.target.dataset.copyId || null,
+    copyContainerElement: event.target.dataset.copyContainerElement || null,
     layerName: event.target.dataset.layer,
     layerType: event.target.dataset.type,
     layerSettings: event.layerSettings ? event.layerSettings : null,
@@ -966,4 +1072,4 @@ const createNetElement = function (event) {
     connectionIn: [],
     connectionArrow: [],
   };
-}
+};

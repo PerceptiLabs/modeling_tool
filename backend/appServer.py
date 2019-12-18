@@ -16,7 +16,7 @@ from databundle import DataBundle, AzureUploader, AZURE_ACCOUNT_NAME_EU, AZURE_A
 log = logging.getLogger(__name__)
 scraper = get_scraper()
 
-def mainServer():
+def mainServer(instantly_kill=False):
     data_uploaders = [
         AzureUploader(AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU),
         AzureUploader(AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US)        
@@ -48,16 +48,19 @@ def mainServer():
     lsock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
     # Avoid bind() exception: OSError: [Errno 48] Address already in use
     lsock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    # try:
-    lsock.bind((host, port))
-    # except:
-    #     return 0
+    try:
+        lsock.bind((host, port))
+    except OSError as e:
+        log.exception(e)
+        return 0
     lsock.listen()
     log.info("listening on {}:{}".format(host, port))
     lsock.setblocking(False)
     sel.register(lsock, selectors.EVENT_READ, data=None)
         
     try:
+        if instantly_kill:
+            sys.exit(0)
         while True:
             events = sel.select(timeout=None)
             for key, mask in events:
@@ -82,12 +85,13 @@ def mainServer():
 
         log.info("Stopping scraper")
         scraper.stop()
-
-        log.info("Copying logfile to data bundle.")
-        try:
-            shutil.copyfile('backend.log', os.path.join(data_bundle.path, 'backend.log'))
-        except:
-            pass
         
-        log.info("Uploading data bundle...")
-        data_bundle.upload_and_clear()
+        if not instantly_kill:
+            log.info("Copying logfile to data bundle.")
+            try:
+                shutil.copyfile('backend.log', os.path.join(data_bundle.path, 'backend.log'))
+            except:
+                pass
+            
+            log.info("Uploading data bundle...")
+            data_bundle.upload_and_clear()

@@ -132,42 +132,113 @@ const actions = {
   EVENT_hotKeyEsc({commit}) {
     commit('set_globalPressKey', 'esc');
   },
-  EVENT_hotKeyCopy({rootGetters, dispatch}) {
+  EVENT_hotKeyCopy({rootGetters, dispatch, commit}) {
+    commit('mod_workspace/CLEAR_CopyElementsPosition', null, {root: true});
     if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
       let arrBuf = [];
       arrSelect.forEach((el) => {
+      commit('mod_workspace/SET_CopyElementsPosition', {left: el.layerMeta.position.left, top: el.layerMeta.position.top}, {root: true});
+      if(el.componentName === 'LayerContainer') {
+        for(let id in el.containerLayersList) {
+          const element = el.containerLayersList[id];
+          let newContainerEl = {
+            target: {
+              dataset: {
+                layer: element.layerName,
+                type: element.layerType,
+                component: element.componentName,
+                copyId: element.layerId,
+                copyContainerElement: true
+              },
+              clientHeight: element.layerMeta.position.top * 2,
+              clientWidth: element.layerMeta.position.left * 2,
+            },
+            layerSettings: element.layerSettings,
+            offsetY: element.layerMeta.position.top * 2,
+            offsetX: element.layerMeta.position.left * 2
+          };
+          arrBuf.push(newContainerEl)
+        }
+      }
+      else {
         let newEl = {
           target: {
             dataset: {
               layer: el.layerName,
               type: el.layerType,
-              component: el.componentName
+              component: el.componentName,
+              copyId: el.layerId
             },
             clientHeight: el.layerMeta.position.top * 2,
             clientWidth: el.layerMeta.position.left * 2,
           },
           layerSettings: el.layerSettings,
-          // connectionOut: el.connectionOut,
-          // connectionIn: el.connectionIn,
-          // connectionArrow: el.connectionArrow,
           offsetY: el.layerMeta.position.top * 2,
           offsetX: el.layerMeta.position.left * 2
         };
         arrBuf.push(newEl)
+      }
       });
-
       dispatch('mod_buffer/SET_buffer', arrBuf, {root: true});
+      const workSpace = document.querySelector('.workspace_content');
+      workSpace.addEventListener('mousemove',  startCursorListener);
+
+      function startCursorListener (event) {
+        const borderline = 15;
+        commit('mod_workspace/SET_CopyCursorPosition', {x: event.offsetX, y: event.offsetY}, {root: true});
+        commit('mod_workspace/SET_cursorInsideWorkspace', true, {root: true});
+        if(event.offsetX <= borderline ||
+            event.offsetY <= borderline ||
+            event.offsetY >= event.target.clientHeight - borderline ||
+            event.offsetX >= event.target.clientWidth - borderline)
+        {
+          commit('mod_workspace/SET_cursorInsideWorkspace', false, {root: true});
+        }
+      }
+      setTimeout(()=> {
+        workSpace.removeEventListener('mousemove',  startCursorListener);
+      }, 10000)
     }
   },
-  EVENT_hotKeyPaste({rootState, rootGetters, dispatch}) {
+  EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}) {
     let buffer = rootState.mod_buffer.buffer;
+    const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
+    dispatch('mod_workspace/SET_elementUnselect', null, {root: true});
     if(rootGetters['mod_workspace/GET_enableHotKeyElement'] && buffer) {
       buffer.forEach((el) => {
         dispatch('mod_workspace/ADD_element', el, {root: true});
       });
-      //dispatch('mod_buffer/CLEAR_buffer', null, {root: true});
+      //copy all connections
+      for(let key in netWorkList) {
+        const layerId = netWorkList[key].layerId;
+        const copyId = netWorkList[key].copyId;
+        const isContainerElement = netWorkList[key].copyContainerElement;
+        if(copyId && netWorkList[copyId]) {
+          if(isContainerElement) {
+            dispatch('mod_workspace/SET_elementMultiSelect', {id: netWorkList[key].layerId, setValue: true}, {root: true});
+          }
+          netWorkList[copyId].connectionOut.forEach(id => {
+            for(let property in netWorkList) {
+              if(Number(netWorkList[property].copyId) === Number(id)) {
+                commit('mod_workspace/SET_startArrowID', layerId, {root: true});
+                dispatch('mod_workspace/ADD_arrow', netWorkList[property].layerId, {root: true});
+              }
+            }
+          });
+          netWorkList[copyId].connectionIn.forEach(id => {
+            for(let property in netWorkList) {
+              if(Number(netWorkList[property].copyId) === Number(id)) {
+                commit('mod_workspace/SET_startArrowID', netWorkList[property].layerId, {root: true});
+                dispatch('mod_workspace/ADD_arrow', layerId, {root: true});
+              }
+            }
+          })
+      }
+        commit('mod_workspace/DELETE_copyProperty', layerId, {root: true});
+      }
     }
+    dispatch('mod_workspace/ADD_container', null, {root: true});
   },
   SET_enableCustomHotKey({commit}, val) {
     commit('set_enableCustomHotKey', val)

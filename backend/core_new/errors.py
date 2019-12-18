@@ -1,7 +1,7 @@
 from queue import Queue
 import logging
 import traceback
-import sentry_sdk
+# import sentry_sdk
 from collections import namedtuple
 from abc import ABC, abstractmethod
 import copy
@@ -109,7 +109,7 @@ class CoreErrorHandler(LayerErrorHandler):
 
         self._log_error(session, exception, line_number)
         self._put_message_on_queue(session, exception)
-        sentry_sdk.capture_exception(exception)
+        # sentry_sdk.capture_exception(exception)
 
         raise LayerSessionAbort() 
     
