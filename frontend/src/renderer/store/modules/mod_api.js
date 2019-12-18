@@ -39,7 +39,7 @@ const getters = {
 
       /*prepare elements*/
       if(dataLayers.includes(el.componentName)) {
-        layers[el.layerId] = {
+        el.layerName = {
           Name: el.layerName,
           Type: el.componentName,
           Properties: el.layerSettings,
@@ -51,7 +51,7 @@ const getters = {
         };
       }
       else {
-        layers[el.layerId] = {
+        el.layerName = {
           Name: el.layerName,
           Type: el.componentName,
           checkpoint: checkpointPath,

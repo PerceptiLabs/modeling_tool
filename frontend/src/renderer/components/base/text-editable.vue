@@ -38,17 +38,9 @@ export default {
     }
   },
   watch: {
-    textTitle(newText, oldText) {
-      for(const id in this.network) {
-        const element = this.network[id];
-        if(element.layerName !== newText) {
-          //this.inputText = newText;
-        } else {
-          console.log(`name ${newText} has already used!`);
-        }
-      }
+    textTitle(newText) {
+      this.inputText = newText;
     }
-
   },
   methods: {
     openEditMode() {
