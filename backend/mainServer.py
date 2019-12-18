@@ -14,7 +14,7 @@ def get_input_args():
                         help='Log level name.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
                         help="Set this to instantly kill the core, for test purposes.")
-    parser.add_argument('-u', '--user', default=None, type=str,
+    parser.add_argument('-u', '--user', default="dev@dev.com", type=str,
                         help="Set this to attach a user to all Sentry logs.")
     args = parser.parse_args()
     return args
