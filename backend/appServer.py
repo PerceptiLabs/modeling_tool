@@ -5,7 +5,7 @@ import shutil
 import logging
 import selectors
 import traceback
-import sentry_sdk
+from sentry_sdk import capture_exception
 
 
 import utils
@@ -27,8 +27,6 @@ def mainServer(instantly_kill=False):
 
     scraper.start()
     scraper.set_output_directory(data_bundle.path)
-    
-    sentry_sdk.init("https://9b884d2181284443b90c21db68add4d7@sentry.io/1512385")
 
     sel = selectors.DefaultSelector()
     cores=dict()
@@ -71,7 +69,7 @@ def mainServer(instantly_kill=False):
                     try:
                         message.process_events(mask)
                     except Exception:
-                        sentry_sdk.capture_exception()
+                        capture_exception()
                         log.error("main: error: exception for " + str(message.addr) + "\n" + str(traceback.format_exc()))
                         message.close()
     except KeyboardInterrupt:

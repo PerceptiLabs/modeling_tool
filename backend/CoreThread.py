@@ -1,7 +1,7 @@
 import threading
 import traceback
 import sys
-# from sentry_sdk import capture_exception
+from sentry_sdk import capture_exception
 # from sentry_sdk import configure_scope
 import logging
 from core_new.history import HistoryInputException
@@ -34,7 +34,7 @@ class CoreThread(threading.Thread):
       except HistoryInputException as e:
          self.errorQueue.put(str(e))
       except:
-         # capture_exception()         
+         capture_exception()       
          log.exception("Unexpected exception in CoreThread")
          self.errorQueue.put("Internal error in CoreThread!")
 
