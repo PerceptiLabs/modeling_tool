@@ -75,8 +75,13 @@ def globals_():
     import dask.dataframe as dd
     import skimage
     import os
+    from unittest.mock import MagicMock
+    
+    api = MagicMock()
+    api.cache.__contains__.return_value = False
     
     return {
+        'api': api,
         'np': np,
         'pd': pd,
         'da': da,
@@ -264,4 +269,23 @@ def test_csv_lazy_columns_ok(globals_, csv_30x784):
     locals_ = {}
     exec(gen.get_code(), globals_, locals_)
     assert locals_['columns_123'] == [str(x) for x in range(784)]
+    
+def test_csv_lazy_cache_called(globals_, csv_30x784):
+    api = globals_['api']
+    api.cache.__contains__.side_effect = [False, True]
+    
+    gen = RunMacroCodeGenerator('file_utils.j2', 'load_csv', csv_30x784,
+                                '123', lazy=True)
+    locals_ = {}
+    exec(gen.get_code(), globals_, locals_)
+    assert locals_['columns_123'] == [str(x) for x in range(784)]
+    
+    try:
+        locals_ = {}    
+        exec(gen.get_code(), globals_, locals_)
+    except:
+        pass # macro will likely fail on second call since the api is a mock
+    finally:
+        assert api.cache.put.call_count == 1
+        assert api.cache.get.call_count == 1    
     

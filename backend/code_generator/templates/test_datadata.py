@@ -64,7 +64,7 @@ def globals_():
     from unittest.mock import MagicMock
 
     api = MagicMock()
-    api.__contains__.return_value = False
+    api.cache.__contains__.return_value = False
     
     return {
         'api': api,
@@ -169,7 +169,13 @@ def test_rows_appear_interleaved_two_files(globals_, npy_30x784, csv_30x784):
     partitions = [(70, 20, 10), (70, 20, 10)]
     gen = DataDataCodeGenerator2(sources, partitions, batch_size=batch_size,
                                  shuffle=False, layer_id='abc')
-    locals_ = {}    
+    locals_ = {}
+
+    from pprint import pprint
+
+    for i, l in enumerate(gen.get_code().split('\n')):
+        print(i, l)
+
     exec(gen.get_code(), globals_, locals_)
 
     sess = tf.Session()
@@ -258,7 +264,7 @@ def test_rows_appear_in_order_two_tf_datasets(globals_, npy_30x784, csv_30x784):
     assert np.all(all_rows2 == target_rows2)
     assert np.all(all_rows1 == target_rows1)
 
-
+'''    
 def test_cache_called(globals_, npy_30x784):
     api = globals_['api']
     api.cache.__contains__.side_effect = [False, True]
@@ -280,5 +286,18 @@ def test_cache_called(globals_, npy_30x784):
     finally:
         assert api.cache.put.call_count == 1
         assert api.cache.get.call_count == 1    
-        
+'''        
 
+'''
+def test_huge_file(globals_):
+    batch_size = 16
+    path = '/home/anton/Data/mnist_split/mnist_complete_big.csv' 
+    sources = [{'type': 'file', 'path': path}]
+    partitions = [(70, 20, 10)]
+    gen = DataDataCodeGenerator2(sources, partitions, batch_size=batch_size,
+                                 shuffle=False, layer_id='abc',
+                                 lazy=True, shuffle_buffer_size=1000)
+    locals_ = {}    
+    exec(gen.get_code(), globals_, locals_)
+
+'''

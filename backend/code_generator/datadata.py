@@ -505,13 +505,15 @@ class DataDataCodeGenerator(CodeGenerator):
 
 
 class DataDataCodeGenerator2(Jinja2CodeGenerator):
-    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=[], layer_id=None):
+    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=None, layer_id=None, shuffle_buffer_size=None, lazy=False):
         self._seed = seed
         self.batch_size=batch_size
         self.shuffle=shuffle
-        self.columns=columns
+        self.selected_columns=columns
         self._layer_id = layer_id
         self.sources=sources
+        self.shuffle_buffer_size = shuffle_buffer_size
+        self.lazy = lazy
         
         self.partitions = []
         for source, partition in zip(sources, partitions):
@@ -537,11 +539,14 @@ class DataDataCodeGenerator2(Jinja2CodeGenerator):
         code = self._render(
             'datadata.j2',
             sources=self.sources,
-            columns=self.columns,
             shuffle=self.shuffle,
             batch_size=self.batch_size,
             partitions=self.partitions,
-            layer_id=self._layer_id
+            layer_id=self._layer_id,
+            selected_columns=self.selected_columns,
+            seed=self._seed,
+            shuffle_buffer_size=self.shuffle_buffer_size,
+            lazy=self.lazy
         )
         return code
                      

@@ -10,19 +10,34 @@
     {% endfilter %}
 {% endmacro %}
 
-{% macro load_csv(path, tag, lazy=False, blocksize='64MB', selected_columns=none) -%}
+{% macro load_csv(path, tag, lazy=False, selected_columns=none, blocksize='64MB') -%}
 {% filter remove_lspaces(8) %}
     {% if lazy %}
         global df_{{tag}}
-        df_{{tag}} = dd.read_csv("{{path}}", blocksize="{{blocksize}}", usecols={{selected_columns}}).astype(np.float32)
+
+        if "dask:{{path}}" not in api.cache:        
+            df_{{tag}} = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
             
-        # Index the dataframe
-        # TODO(anton): handle case where _idx already exists.
-        df_{{tag}}['_idx'] = 1
-        df_{{tag}}['_idx'] = df_{{tag}}['_idx'].cumsum() - 1
-        df_{{tag}} = df_{{tag}}.set_index('_idx')
-        size_{{tag}} = df_{{tag}}.divisions[-1] + 1
-        columns_{{tag}} = df_{{tag}}.columns.tolist()
+            # Index the dataframe
+            # TODO(anton): handle case where _idx already exists.
+            df_{{tag}}['_idx'] = 1
+            df_{{tag}}['_idx'] = df_{{tag}}['_idx'].cumsum() - 1
+            df_{{tag}} = df_{{tag}}.set_index('_idx')
+
+            api.cache.put("dask:{{path}}", df_{{tag}})
+        else:
+            df_{{tag}} = api.cache.get("dask:{{path}}")
+            
+        size_{{tag}} = df_{{tag}}.divisions[-1] + 1        
+
+        {% filter remove_lspaces(8) %}
+            {% if selected_columns is none %}
+                columns_{{tag}} = df_{{tag}}.columns.tolist()                
+            {% else %}
+                columns_{{tag}} = {{selected_columns}}
+                df_{{tag}} = df_{{tag}}[columns_{{tag}}]
+            {% endif %}
+        {% endfilter %}        
 
         def generator_{{tag}}(idx_lo, idx_hi):
             global df_{{tag}}
@@ -41,9 +56,17 @@
                 yield from df.iloc[div_lo-divs[p]:div_hi-divs[p]].values.squeeze()
     {% else %}
         global df_{{tag}}
-        df_{{tag}} = pd.read_csv("{{path}}", usecols={{selected_columns}}).astype(np.float32)
-        size_{{tag}} = len(df_{{tag}})        
-        columns_{{tag}} = df_{{tag}}.columns.tolist()
+        df_{{tag}} = pd.read_csv("{{path}}").astype(np.float32)
+        size_{{tag}} = len(df_{{tag}})
+
+        {% filter remove_lspaces(8) %}
+            {% if selected_columns is none %}
+                columns_{{tag}} = df_{{tag}}.columns.tolist()                
+            {% else %}
+                columns_{{tag}} = {{selected_columns}}
+                df_{{tag}} = df_{{tag}}[columns_{{tag}}]
+            {% endif %}
+        {% endfilter %}        
         
         def generator_{{tag}}(idx_lo, idx_hi):
             global df_{{tag}}
