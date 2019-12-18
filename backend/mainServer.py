@@ -1,7 +1,6 @@
 import logging
 import sys
 import argparse
-import sentry_sdk
 
 from processes import ProcessDependencyWatcher
 import appServer
@@ -41,32 +40,12 @@ def setup_logger(log_level):
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
                         level=logging.getLevelName(log_level))
 
-def setup_sentry(user):
-    def strip_unimportant_errors(event, hint):
-        log_ignores=['Error in getTestingStatistics', 'Error in getTrainingStatistics', ]
 
-        if 'log_record' in hint:
-            if hint['log_record'].msg in log_ignores:
-                return None
-
-        if 'exc_info' in hint:
-            from core_new.history import HistoryInputException
-            exc_type, exc_value, tb = hint['exc_info']
-            if isinstance(exc_value, HistoryInputException):
-                return None
-                
-        return event
-
-    sentry_sdk.init("https://9b884d2181284443b90c21db68add4d7@sentry.io/1512385", before_send=strip_unimportant_errors)
-    if user:
-        with sentry_sdk.configure_scope() as scope:
-            scope.user = {"email" : user}
     
 if __name__ == "__main__":
     args = get_input_args()
     
     setup_logger(args.log_level)
-    setup_sentry(args.user)
     ProcessDependencyWatcher(args.frontend_pid).start()
     
-    appServer.mainServer(args.instantly_kill)
+    appServer.mainServer(args.instantly_kill, args.user)
