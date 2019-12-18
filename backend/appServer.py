@@ -16,7 +16,28 @@ from databundle import DataBundle, AzureUploader, AZURE_ACCOUNT_NAME_EU, AZURE_A
 log = logging.getLogger(__name__)
 scraper = get_scraper()
 
-def mainServer(instantly_kill=False):
+def setup_sentry(user):
+    def strip_unimportant_errors(event, hint):
+        log_ignores=['Error in getTestingStatistics', 'Error in getTrainingStatistics', ]
+
+        if 'log_record' in hint:
+            if hint['log_record'].msg in log_ignores:
+                return None
+
+        if 'exc_info' in hint:
+            from core_new.history import HistoryInputException
+            exc_type, exc_value, tb = hint['exc_info']
+            if isinstance(exc_value, HistoryInputException):
+                return None
+                
+        return event
+
+    sentry_sdk.init("https://9b884d2181284443b90c21db68add4d7@sentry.io/1512385", before_send=strip_unimportant_errors)
+    if user:
+        with sentry_sdk.configure_scope() as scope:
+            scope.user = {"email" : user}
+
+def mainServer(instantly_kill=False, user=None):
     data_uploaders = [
         AzureUploader(AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU),
         AzureUploader(AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US)        
@@ -28,7 +49,7 @@ def mainServer(instantly_kill=False):
     scraper.start()
     scraper.set_output_directory(data_bundle.path)
     
-    sentry_sdk.init("https://9b884d2181284443b90c21db68add4d7@sentry.io/1512385")
+    setup_sentry(user)
 
     sel = selectors.DefaultSelector()
     cores=dict()

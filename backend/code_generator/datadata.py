@@ -289,7 +289,7 @@ class DataDataCodeGenerator(CodeGenerator):
             self._strategies.append(self._select_strategy(source))
         
     def get_code(self):
-        code  = 'def split(array__, train_rate, test_rate, validation_rate):\n'
+        code  = 'def split(array__, train_rate, validation_rate, test_rate):\n'
         code += '    def generator(array_, idx_from, idx_to):\n'
         code += '        for x in array_[idx_from:idx_to]:\n'
         #code += '            print("valshapa",x.shape)\n'        
