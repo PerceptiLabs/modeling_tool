@@ -509,12 +509,16 @@ class DataDataCodeGenerator2(Jinja2CodeGenerator):
         self._seed = seed
         self.batch_size=batch_size
         self.shuffle=shuffle
-        self.selected_columns=columns
         self._layer_id = layer_id
         self.sources=sources
         self.shuffle_buffer_size = shuffle_buffer_size
         self.lazy = lazy
-        
+
+        if columns is not None:
+            self.selected_column_indices=[i for i in columns] # convert to ints if necessary.
+        else:
+            self.selected_column_indices = None
+            
         self.partitions = []
         for source, partition in zip(sources, partitions):
             if sum(partition) != 100:
@@ -543,7 +547,7 @@ class DataDataCodeGenerator2(Jinja2CodeGenerator):
             batch_size=self.batch_size,
             partitions=self.partitions,
             layer_id=self._layer_id,
-            selected_columns=self.selected_columns,
+            selected_columns=self.selected_column_indices,
             seed=self._seed,
             shuffle_buffer_size=self.shuffle_buffer_size,
             lazy=self.lazy

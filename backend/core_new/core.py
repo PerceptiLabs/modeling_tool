@@ -1,5 +1,6 @@
 import sys
 import copy
+import time
 import pprint
 import logging
 import numpy as np
@@ -42,7 +43,9 @@ class SessionProcessHandler:
         
         self._result_queue.put(results_dict)
         # self._data_container.reset()
-        #log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=2))
+        #if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
+            #remapped_dict = boltons.iterutils.remap(results_dict, lambda p, k, v: str(type(v)))
+            #log.debug("Pushed results onto queue: " + pprint.pformat(remapped_dict, depth=10))
         
     def _handle_commands(self, session):
         while not self._command_queue.empty():
@@ -105,6 +108,7 @@ class BaseCore:
             layer_type = content["Info"]["Type"]
 
             if self._should_skip_layer(layer_id, content):
+                log.debug("Skipping layer {} []".format(layer_id, layer_type))
                 continue
 
             if self._network_cache is not None:
@@ -114,23 +118,32 @@ class BaseCore:
                     self._use_cached_layer(layer_id, self._network_cache[layer_id])
                     continue
             print("***Calculating new layer for layer " + layer_type)
-            log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
+            log.info("Preparing layer session for {} [{}]".format(layer_id, layer_type))
+            t_start = time.perf_counter()
             try:
                 self._run_layer(layer_id, content)
             except LayerSessionStop:
                 log.info("Stop requested during session {}".format(layer_id))                
                 break
             except LayerSessionAbort:
-                
                 log.info("Error handler aborted session {}".format(layer_id))
                 break
             except Exception:
                 log.exception("Exception in %s" % layer_id)
                 raise
+            finally:
+                log.info("Running layer {} [{}] took {} seconds".format(
+                    layer_id, layer_type,
+                    time.perf_counter() - t_start
+                ))
+            
 
     def _run_layer(self, id_, content):        
         code_gen = self._codehq.get_code_generator(id_, content)
-        log.debug(repr(code_gen))
+
+        log.info(repr(code_gen))        
+        if log.isEnabledFor(logging.DEBUG):        
+            log.debug(pprint.pprint(code_gen.get_code()))
 
         try:
             globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])  
@@ -158,8 +171,10 @@ class BaseCore:
         try:        
             session.run()
         except LayerSessionStop:
+            log.debug("Raised LayerSessionStop!")
             raise # Not an error. Re-raise.
         except Exception as e:
+            log.debug("Exception when running session: " + str(e) + " will be handled by error handler " + str(self._error_handler))
             self._error_handler.handle_run_error(session, e)
         # else:
         #     _save_cache=True
@@ -186,7 +201,6 @@ class BaseCore:
         session = saved_layer.session
 
         self._session_history[id_] = session
-
         self._data_container.store_value_in_root(id_, saved_layer.session._data_container[id_])
 
         if self._layer_extras_reader is not None:

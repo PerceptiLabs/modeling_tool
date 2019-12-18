@@ -3,7 +3,7 @@ import pprint
 import logging
 
 from code_generator import CustomCodeGenerator, CodePart
-from code_generator.datadata import DataDataCodeGenerator
+from code_generator.datadata import DataDataCodeGenerator2, DataDataCodeGenerator
 from code_generator.dataenv import DataEnvironmentCodeGenerator
 
 from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
@@ -37,10 +37,24 @@ class CodeHqNew:
             sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
             partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
 
-            code_generator = DataDataCodeGenerator(sources, partitions,
-                                                   batch_size=props["accessProperties"]['Batch_size'], shuffle=False, #props["accessProperties"]['Shuffle_data']
-                                                   seed=0, columns=props["accessProperties"]['Columns'],
-                                                   layer_id=id_)
+            #code_generator = DataDataCodeGenerator(sources, partitions,
+            #                                       batch_size=props["accessProperties"]['Batch_size'],
+            #                                       shuffle=False, #props["accessProperties"]['Shuffle_data']
+            #                                       seed=0, columns=props["accessProperties"]['Columns'],
+            #                                       layer_id=id_)
+
+            code_generator = DataDataCodeGenerator2(
+                sources,
+                partitions,
+                batch_size=props["accessProperties"]['Batch_size'],
+                shuffle=False,
+                #props["accessProperties"]['Shuffle_data']
+                seed=0,
+                columns=props["accessProperties"]['Columns'],
+                layer_id=id_,
+                lazy=False, # TODO: this should come from frontend :) 
+                shuffle_buffer_size=None
+            )            
             return code_generator
         elif type_ == 'DataEnvironment':
             env_name = props['accessProperties']["Atari"]+"-v0"

@@ -13,29 +13,45 @@
 {% macro load_csv(path, tag, lazy=False, selected_columns=none, blocksize='64MB') -%}
 {% filter remove_lspaces(8) %}
     {% if lazy %}
-        global df_{{tag}}
-
-        if "dask:{{path}}" not in api.cache:        
-            df_{{tag}} = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
+        if "dask:{{path}}" not in api.cache:
+            df = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
             
-            # Index the dataframe
-            # TODO(anton): handle case where _idx already exists.
-            df_{{tag}}['_idx'] = 1
-            df_{{tag}}['_idx'] = df_{{tag}}['_idx'].cumsum() - 1
-            df_{{tag}} = df_{{tag}}.set_index('_idx')
+            # Manually compute divisions.
+            '''
+            import multiprocessing
+            n_rows_per_partition = df.map_partitions(lambda df: df.shape[0]).compute(
+                scheduler='processes',
+                num_workers=multiprocessing.cpu_count(),
+            ).values.tolist()
 
-            api.cache.put("dask:{{path}}", df_{{tag}})
+            divisions = [0] + np.cumsum(n_rows_per_partition).tolist()
+            divisions[-1] -= 1
+            '''
+            
+            divisions = [0]
+            for i in range(df.npartitions):
+                #api.log.info(f"Reading partition {i}/{df.npartitions}")
+                n_rows = df.get_partition(i).shape[0].compute()
+                divisions.append(n_rows)
+
+            divisions = np.cumsum(divisions)
+            divisions[-1] -= 1
+
+            df.divisions = tuple(divisions)
+            
+            api.cache.put("dask:{{path}}", df)
         else:
-            df_{{tag}} = api.cache.get("dask:{{path}}")
-            
-        size_{{tag}} = df_{{tag}}.divisions[-1] + 1        
+            df = api.cache.get("dask:{{path}}")
+
+        columns_{{tag}} = df.columns.tolist()
+        size_{{tag}} = df.divisions[-1] + 1
+        
+        global df_{{tag}}        
+        df_{{tag}} = df
 
         {% filter remove_lspaces(8) %}
-            {% if selected_columns is none %}
-                columns_{{tag}} = df_{{tag}}.columns.tolist()                
-            {% else %}
-                columns_{{tag}} = {{selected_columns}}
-                df_{{tag}} = df_{{tag}}[columns_{{tag}}]
+            {% if selected_columns is not none %}
+                df_{{tag}} = df_{{tag}}.iloc[:, {{selected_columns}}]
             {% endif %}
         {% endfilter %}        
 
@@ -57,14 +73,12 @@
     {% else %}
         global df_{{tag}}
         df_{{tag}} = pd.read_csv("{{path}}").astype(np.float32)
-        size_{{tag}} = len(df_{{tag}})
-
+        columns_{{tag}} = df_{{tag}}.columns.tolist()        
+        size_{{tag}} = len(df_{{tag}})        
+        
         {% filter remove_lspaces(8) %}
-            {% if selected_columns is none %}
-                columns_{{tag}} = df_{{tag}}.columns.tolist()                
-            {% else %}
-                columns_{{tag}} = {{selected_columns}}
-                df_{{tag}} = df_{{tag}}[columns_{{tag}}]
+            {% if selected_columns is not none %}
+                df_{{tag}} = df_{{tag}}.iloc[:, {{selected_columns}}]
             {% endif %}
         {% endfilter %}        
         

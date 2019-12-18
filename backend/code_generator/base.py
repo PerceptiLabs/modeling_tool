@@ -99,7 +99,7 @@ class Jinja2CodeGenerator(CodeGenerator):
             def remove_lspaces(text, count):
                 new_text = ''
                 lines = text.split('\n')
-                
+
                 for lineno, line in enumerate(lines):
                     last = '\n' if lineno < len(lines) - 1 else ''
                     if line.startswith(' '*count):
