@@ -25,15 +25,18 @@ from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
 from graph import Graph
 from codehq import CodeHqNew as CodeHq
 from modules import ModuleProvider
+from core_new.cache import get_cache
+from core_new.networkCache import NetworkCache
 
 import pprint
 import logging
 
 class Message:
-    def __init__(self, cores, dataDict, checkpointDict):
+    def __init__(self, cores, dataDict, checkpointDict, lwDict):
         self.cores=cores
         self.dataDict=dataDict
         self.checkpointDict=checkpointDict
+        self.lwDict=lwDict
 
     def _json_encode(self, obj, encoding):
         return json.dumps(obj, ensure_ascii=False).encode(encoding)
@@ -103,7 +106,18 @@ class Message:
             self.checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
             ckptObj.close()
 
-    def _create_lw_core(self, jsonNetwork):
+    def _create_lw_core(self, jsonNetwork, reciever):
+        if reciever not in self.lwDict:
+            self.lwDict[reciever]=NetworkCache()
+        else:
+            deleteList=[]
+            for layer_id in self.lwDict[reciever].get_layers():
+                if layer_id not in jsonNetwork:
+                    deleteList.append(layer_id)
+            log.info("Deleting these layers: " + str(deleteList))
+            for layer_id in deleteList:
+                self.lwDict[reciever].remove_layer(layer_id)
+
         graph = Graph(jsonNetwork)
         
         graph_dict = graph.graphs
@@ -113,8 +127,9 @@ class Message:
                 self.add_to_checkpointDict(value["Info"])
 
         data_container = DataContainer()
-        
-        session_history_lw = SessionHistory()
+
+
+            
         extras_reader = LayerExtrasReader()
 
         from codehq import CodeHqNew as CodeHq
@@ -127,17 +142,22 @@ class Message:
         module_provider.load('json')  
         module_provider.load('os')   
         module_provider.load('skimage')         
-
+        module_provider.load('dask.array', as_name='da')
+        module_provider.load('dask.dataframe', as_name='dd')                  
         
         for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
             module_provider.install_hook(hook_target, hook_func)
 
         error_handler = LightweightErrorHandler()
-            
+        
+        global session_history_lw
+        cache = get_cache()
+        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!        
         lw_core = LightweightCore(CodeHq, graph_dict,
                                   data_container, session_history_lw,
                                   module_provider, error_handler,
-                                  extras_reader, checkpointValues=self.checkpointDict.copy())
+                                  extras_reader, checkpointValues=self.checkpointDict.copy(),
+                                  network_cache=self.lwDict[reciever])
         
         return lw_core, extras_reader, data_container
 
@@ -210,7 +230,7 @@ class Message:
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            lw_core, _, data_container = self._create_lw_core(jsonNetwork)
+            lw_core, _, data_container = self._create_lw_core(jsonNetwork, reciever)
             lw_core.run()
 
 
@@ -235,7 +255,7 @@ class Message:
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            lw_core, _, data_container = self._create_lw_core(jsonNetwork)
+            lw_core, _, data_container = self._create_lw_core(jsonNetwork, reciever)
             lw_core.run()
 
             def try_fetch(dict,variable):
@@ -284,7 +304,7 @@ class Message:
         elif action == "getNetworkInputDim":
             jsonNetwork=request.get("value")
 
-            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)            
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork, reciever)            
             lw_core.run()
             
             content={}
@@ -326,7 +346,7 @@ class Message:
         elif action == "getNetworkOutputDim":
             jsonNetwork=request.get("value")
 
-            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                        
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork, reciever)                        
             lw_core.run()
             
             extrasDict=extras_reader.to_dict()
@@ -357,7 +377,7 @@ class Message:
             except:
                 Variable=None
 
-            lw_core, extras_reader, data_container = self._create_lw_core(jsonNetwork)                                    
+            lw_core, extras_reader, data_container = self._create_lw_core(jsonNetwork, reciever)                                    
             lw_core.run()
             
             sample=""
@@ -396,7 +416,7 @@ class Message:
             jsonNetwork=value["Network"]
             LayerId=value["Id"]
 
-            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork)                                                
+            lw_core, extras_reader, _ = self._create_lw_core(jsonNetwork, reciever)                                                
             lw_core.run()
             
             extrasDict=extras_reader.to_dict()
@@ -622,10 +642,11 @@ class Message:
 cores=dict()
 dataDict=dict()
 checkpointDict=dict()
+lwDict=dict()
 
 path='0.0.0.0'
 port=5000
-interface=Message(cores, dataDict, checkpointDict)
+interface=Message(cores, dataDict, checkpointDict, lwDict)
 start_server = websockets.serve(interface.interface, path, port)
 print("Trying to listen to: " + str(path) + " " + str(port))
 connected=False

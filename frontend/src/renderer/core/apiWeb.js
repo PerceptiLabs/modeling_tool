@@ -1,5 +1,5 @@
-const wsPathDef = 'ws://perceptilabs-core-robertproject.apps.cluster-rdu-3950.rdu-3950.example.opentlc.com ';
-//const wsPathDef = 'ws://localhost:5000';
+// const wsPathDef = 'ws://perceptilabs-core-robertproject.apps.cluster-rdu-3950.rdu-3950.example.opentlc.com ';
+const wsPathDef = 'ws://localhost:5000';
 
 var webSocket = null;
 import store from '@/store'
