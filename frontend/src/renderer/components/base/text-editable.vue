@@ -29,10 +29,26 @@ export default {
       default: ''
     }
   },
-  watch: {
-    textTitle(newText) {
-      this.inputText = newText;
+  computed: {
+    network() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
+    },
+    setElementName() {
+      return this.$store.getters['mod_workspace/SET_elementName']
     }
+  },
+  watch: {
+    textTitle(newText, oldText) {
+      for(const id in this.network) {
+        const element = this.network[id];
+        if(element.layerName !== newText) {
+          //this.inputText = newText;
+        } else {
+          console.log(`name ${newText} has already used!`);
+        }
+      }
+    }
+
   },
   methods: {
     openEditMode() {
