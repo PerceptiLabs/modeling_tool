@@ -565,7 +565,7 @@ class coreLogic():
                 if D.shape[-1] == 1:
                     output = createDataObject([D])
                 else:
-                    output = createDataObject([D[0]])
+                    output = createDataObject([D[:,:,0]])
             elif len(D.shape)>3:
                 output = createDataObject([D[0]])
             else:
