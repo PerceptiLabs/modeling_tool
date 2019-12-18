@@ -92,8 +92,7 @@ def mainServer(instantly_kill=False, user=None):
                     try:
                         message.process_events(mask)
                     except Exception:
-                        sentry_sdk.capture_exception()
-                        log.error("main: error: exception for " + str(message.addr) + "\n" + str(traceback.format_exc()))
+                        log.exception("Main error")
                         message.close()
     except KeyboardInterrupt:
         log.info("caught keyboard interrupt, exiting")

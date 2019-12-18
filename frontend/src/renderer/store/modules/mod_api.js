@@ -98,7 +98,7 @@ const actions = {
           break;
       }
       console.log('PID: ', process.pid);
-      openServer = spawn(platformPath, ['-f', process.pid], {stdio: ['ignore', 'ignore', 'pipe']});
+      openServer = spawn(platformPath, ['-f', process.pid, '-u', userEmail], {stdio: ['ignore', 'ignore', 'pipe']});
       dispatch('SET_corePid', openServer.pid);
       openServer.on('error', (err)=>  {
         console.log('core error', err)
