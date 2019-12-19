@@ -107,11 +107,6 @@ class CropCodeGenerator(CodeGenerator):
 
 class GrayscaleCodeGenerator(CodeGenerator):
     def get_code(self):
-        code  = "if X['Y'].get_shape().as_list()[-1] == 3:\n"
-        code += "    Y = tf.image.rgb_to_grayscale(X['Y'])\n"
-        code += "    Y = tf.squeeze(Y,[0])"
-
-
         code  = ""
         code += "channels = X['Y'].get_shape().as_list()[-1]\n"
         code += "if channels % 3==0:\n"
@@ -127,7 +122,6 @@ class GrayscaleCodeGenerator(CodeGenerator):
         code += 'else:\n'
         code += "    Y = X['Y']\n"
         return code
-
 
 class ArgmaxCodeGenerator(CodeGenerator):
     def __init__(self, dim):
