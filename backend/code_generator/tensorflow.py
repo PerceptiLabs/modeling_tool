@@ -26,7 +26,7 @@ class ReshapeCodeGenerator(CodeGenerator):
         self._permutation = permutation
         
     def get_code(self):
-        shape = [i for i in self._shape if i != 0]
+        shape = [i for i in self._shape if i != 0] 
         permutation = self._permutation[:len(shape)]
         shape_text = ', '.join([str(i) for i in shape])
         perm_text = ', '.join([str(i) for i in permutation])
@@ -37,7 +37,7 @@ class ReshapeCodeGenerator(CodeGenerator):
 
     
 class RecurrentCodeGenerator(CodeGenerator):
-    def __init__(self, layer_id, version, time_steps, neurons, return_sequences=False, dropout=False, keep_prop=1):
+    def __init__(self, layer_id, version, time_steps, neurons, return_sequences=False, dropout=False, keep_prop=1, variable_scope = None):
         self._id = layer_id
         self._version = version
         self._time_steps = time_steps
@@ -45,6 +45,7 @@ class RecurrentCodeGenerator(CodeGenerator):
         self._return_sequences = return_sequences
         self._dropout=dropout
         self._keep_prob=keep_prop
+        self._variable_scope = variable_scope
 
     def get_code(self):
         code = ''
@@ -65,7 +66,8 @@ class RecurrentCodeGenerator(CodeGenerator):
             code += "Y = rnn_outputs\n"
         else:
             code += "Y = rnn_outputs[:, -1]\n"
-            
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
     
 
@@ -107,6 +109,21 @@ class GrayscaleCodeGenerator(CodeGenerator):
     def get_code(self):
         code  = "if X['Y'].get_shape().as_list()[-1] == 3:\n"
         code += "    Y = tf.image.rgb_to_grayscale(X['Y'])\n"
+        code += "    Y = tf.squeeze(Y,[0])"
+
+
+        code  = ""
+        code += "channels = X['Y'].get_shape().as_list()[-1]\n"
+        code += "if channels % 3==0:\n"
+        code += "    if channels>3:\n"
+        code += "        splits = tf.split(X['Y'], int(channels/3), -1)\n"
+        code += "        images=[]\n"
+        code += "        for split in splits:\n"
+        code += "            images.append(tf.image.rgb_to_grayscale(split))\n"
+        # code += "        images = tf.image.rgb_to_grayscale(splits)\n"
+        code += "        Y = tf.squeeze(tf.stack(images,-1),-2)\n"
+        code += "    else:\n"
+        code += "        Y = tf.image.rgb_to_grayscale(X['Y'])\n"
         code += 'else:\n'
         code += "    Y = X['Y']\n"
         return code
@@ -128,19 +145,24 @@ class SoftmaxCodeGenerator(CodeGenerator):
 
 
 class MergeCodeGenerator(CodeGenerator):
-    def __init__(self, type_, merge_dim):
+    def __init__(self, type_, merge_dim, sorted_layer_list = None):
         self._type = type_
         self._merge_dim = merge_dim
-
+        self._layer_list = sorted_layer_list
     def get_code(self):
         # TODO: in python version < 3.6 dicts aren't ordered. caution if we allow custom environments in the future.
         
         if self._type == 'Concat':
-            # Due to duplicate values in X['Y'], just take every other value.            
-            code  = "for i in range(0, len(list(X['Y'].values())), 2):\n"
-            code += "    if not Y:\n"
-            code += "        Y = list(X['Y'].values())[i]\n"
-            code += "    Y = tf.concat([Y, list(X['Y'].values())[i]], %s)\n" % self._merge_dim
+            # Due to duplicate values in X['Y'], just take every other value.     
+            #        
+            code  = "Y = None\n"
+            code  = "if %s is None:\n" %self._layer_list
+            code  = "    %s = X.keys()" %self._layer_list
+            code  = "for key in %s:\n"%self._layer_list
+            code += "    if Y is None:\n"
+            code += "        Y = X[key]['Y']\n"
+            code += "    else:\n"
+            code += "        Y = tf.concat([Y, X[key]['Y']], %s)\n"% self._merge_dim
             return code
         elif self._type == 'Add':
             code  = "for i in range(0, len(list(X['Y'].values())), 2):\n"
@@ -168,12 +190,13 @@ class MergeCodeGenerator(CodeGenerator):
             return code
 
 class FullyConnectedCodeGenerator(CodeGenerator):
-    def __init__(self, layer_id, n_neurons, activation=None, dropout=False, keep_prob=1.0):
+    def __init__(self, layer_id, n_neurons, activation=None, dropout=False, keep_prob=1.0, variable_scope = None):
         self._layer_id = layer_id
         self._n_neurons = n_neurons
         self._dropout = dropout
         self._keep_prob = keep_prob
         self._activation = activation
+        self._variable_scope = variable_scope
 
     def get_code(self):
         code  = "input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]\n"
@@ -191,11 +214,23 @@ class FullyConnectedCodeGenerator(CodeGenerator):
         code += "node = node + b\n"
         code += "\n"
         code += get_activation_code(var_out='Y', var_in='node', func=self._activation)
+        if self._variable_scope is not None:
+            code = Add_variable_scope(code, self._variable_scope).get_code()
         return code
+    
+class Add_variable_scope(CodeGenerator):
+    def __init__(self, code, variable_scope):
+        self._code = code
+        self._variable_scope = variable_scope
+    def get_code(self):
+        new_code = "with tf.variable_scope(%s,reuse=True):\n"%self._variable_scope
+        for line in self._code.splitlines():
+            new_code = new_code + "    " + str(line) + "\n"
+        return new_code
 
 class DeconvCodeGenerator(CodeGenerator):
     def __init__(self, layer_id, conv_dim, feature_maps, stride, padding,
-                 dropout=False, keep_prob=None, activation=None):
+                 dropout=False, keep_prob=None, activation=None, variable_scope = None):
         self._layer_id = layer_id
         self._conv_dim = conv_dim
         self._feature_maps = feature_maps
@@ -204,6 +239,7 @@ class DeconvCodeGenerator(CodeGenerator):
         self._dropout = dropout
         self._keep_prob = keep_prob
         self._activation = activation
+        self._variable_scope = variable_scope
 
     def get_code(self):
         code = ''
@@ -224,7 +260,8 @@ class DeconvCodeGenerator(CodeGenerator):
         # Activation
         code += "node = node + b\n"
         code += get_activation_code(var_out='Y', var_in='node', func=self._activation)
-       
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
     def _get_code_1d(self):
@@ -237,6 +274,8 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "\n"    
         code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
         code += "node = tf.nn.conv1d_transpose(X['Y'], W, output_shape, strides=%s, padding=%s)\n" % (self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
     def _get_code_2d(self):
@@ -249,6 +288,8 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "\n"        
         code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
         code += "node = tf.nn.conv2d_transpose(X['Y'], W, output_shape, strides=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
     def _get_code_3d(self):
@@ -261,6 +302,8 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "\n"        
         code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)
         code += "node = tf.nn.conv3d_transpose(X['Y'], W, output_shape, strides=[1, %s, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
     
     def _get_code_autodim(self):
@@ -274,6 +317,8 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "\n"    
         code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
         code += "node = tf.nn.conv2d(X['Y'], W, output_shape, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
 
@@ -281,7 +326,7 @@ class DeconvCodeGenerator(CodeGenerator):
 class ConvCodeGenerator(CodeGenerator):
     def __init__(self, layer_id, conv_dim, patch_size, feature_maps, stride, padding,
                  dropout=False, keep_prob=None, activation=None,
-                 pool=False, pooling=None, pool_area=None, pool_padding=None, pool_stride=None):
+                 pool=False, pooling=None, pool_area=None, pool_padding=None, pool_stride=None, variable_scope = None):
         self._layer_id = layer_id
         self._conv_dim = conv_dim
         self._patch_size = patch_size
@@ -296,6 +341,7 @@ class ConvCodeGenerator(CodeGenerator):
         self._pool_area = pool_area
         self._pool_padding = pool_padding
         self._pool_stride = pool_stride
+        self._variable_scope = variable_scope
 
     def get_code(self):
         code = ''
@@ -327,6 +373,8 @@ class ConvCodeGenerator(CodeGenerator):
             code += "Y = tf.nn.max_pool(Y, %s, %s, '%s', dim_str)" % (self._pool_area, self._pool_stride, self._pool_padding)
         if self._pool and self._pooling == "Mean":
             code += "Y = tf.nn.pool(Y, window_shape=%s, pooling_type='AVG', padding=%s, strides=%s)" % (self._pool_area, self._pool_padding, self._pool_stride)            
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
     def _get_code_1d(self):
@@ -338,6 +386,8 @@ class ConvCodeGenerator(CodeGenerator):
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id
         code += "\n"        
         code += "node = tf.nn.conv1d(X['Y'], W, %s, padding=%s)\n" % (self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
     def _get_code_2d(self):
@@ -349,6 +399,8 @@ class ConvCodeGenerator(CodeGenerator):
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id        
         code += "\n"        
         code += "node = tf.nn.conv2d(X['Y'], W, strides=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
     
     def _get_code_3d(self):
@@ -360,6 +412,8 @@ class ConvCodeGenerator(CodeGenerator):
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                
         code += "\n"        
         code += "node = tf.nn.conv3d(X['Y'], W, strides=[1, %s, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
     
     def _get_code_autodim(self):
@@ -372,6 +426,8 @@ class ConvCodeGenerator(CodeGenerator):
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                        
         code += "\n"        
         code += "node = tf.nn.conv2d(X['Y'], W, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
 class TrainLossCodeGenerator(CodeGenerator):
