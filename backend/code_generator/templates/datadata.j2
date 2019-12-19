@@ -89,7 +89,7 @@ if len(set(shapes)) > 1:
 sample = _sample = next(make_generator_trn_{{layer_id}}())
 cols = next(iter(columns.values()), []) # Just get the first (or empty) for now.
             
-global _data_size # apparently trainnormal depends on this...
+global _data_size # apparently trainnormal depends on this.
 _data_size = np.array([trn_sz_tot, val_sz_tot, tst_sz_tot])
 _partition_summary = list(_data_size*100/_data_size.sum())
 _data_size = _data_size.tolist()
@@ -107,7 +107,7 @@ X_tst = tf.data.Dataset.from_generator(make_generator_tst_{{layer_id}},
 
 {% filter remove_lspaces(8) %}
     {% if shuffle and shuffle_buffer_size is none %}
-        X_trn = X_trn.shuffle(trn_size_{{layer_id}}, seed={{seed}}).batch(batch_size)            
+        X_trn = X_trn.shuffle(trn_sz_tot, seed={{seed}}).batch(batch_size)            
     {% elif shuffle and shuffle_buffer_size is not none %}
         X_trn = X_trn.shuffle({{shuffle_buffer_size}}, seed={{seed}}).batch(batch_size)            
     {% else %}
