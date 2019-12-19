@@ -17,7 +17,7 @@
             df = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
             
             # Manually compute divisions.
-            '''
+
             import multiprocessing
             n_rows_per_partition = df.map_partitions(lambda df: df.shape[0]).compute(
                 scheduler='processes',
@@ -26,17 +26,7 @@
 
             divisions = [0] + np.cumsum(n_rows_per_partition).tolist()
             divisions[-1] -= 1
-            '''
             
-            divisions = [0]
-            for i in range(df.npartitions):
-                #api.log.info(f"Reading partition {i}/{df.npartitions}")
-                n_rows = df.get_partition(i).shape[0].compute()
-                divisions.append(n_rows)
-
-            divisions = np.cumsum(divisions)
-            divisions[-1] -= 1
-
             df.divisions = tuple(divisions)
             
             api.cache.put("dask:{{path}}", df)
