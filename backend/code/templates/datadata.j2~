@@ -1,0 +1,48 @@
+{% for idx, source, partition in zip(range(0, len(sources)), sources, partitions): %}
+{% filter remove_lspaces(12) %}
+    {% if source['type'] == 'file' %}
+        {% if source['path'].endswith('.npy') %}
+            {% from 'file_utils.j2' import load_npy %}
+            {{ load_npy(source['path'], str(layer_id)+'_'+str(idx)) }}        
+        {% endif %}
+    {% endif %}
+{% endfilter %}
+{% endfor %}
+
+{% filter remove_lspaces(4) %}
+{% if len(sources) == 1 %}
+
+    global train_size_{{layer_id}}, validation_size_{{layer_id}}, test_size_{{layer_id}}
+    train_size_{{layer_id}} = round({{partitions[0][0]}}*size_{{layer_id}}_0)
+    validation_size_{{layer_id}} = round({{partitions[0][1]}}*size_{{layer_id}}_0)
+    test_size_{{layer_id}} = size_{{layer_id}}_0 - train_size_{{layer_id}} - validation_size_{{layer_id}}
+
+    def make_generator_train_{{layer_id}}():
+        global generator_{{layer_id}}_0, train_size_{{layer_id}}
+        return generator_{{layer_id}}_0(0, train_size_{{layer_id}})
+
+    def make_generator_validation_{{layer_id}}():
+        global generator_{{layer_id}}_0, train_size_{{layer_id}}, validation_size_{{layer_id}}
+        return generator_0(train_size_{{layer_id}}, train_size_{{layer_id}}+validation_size_{{layer_id}})
+
+    def make_generator_test_{{layer_id}}():
+        global generator_{{layer_id}}_0, train_size_{{layer_id}}, validation_size_{{layer_id}}, test_size_{{layer_id}}
+        return generator_{{layer_id}}_0(train_size_{{layer_id}}+_validation_size_{{layer_id}}, train_size_{{layer_id}}+_validation_size_{{layer_id}}+test_size_{{layer_id}})
+    
+{% endif %}
+{% endfilter %}
+
+
+sample = next(make_generator_train_{{layer_id}}())
+
+X_train = tf.data.Dataset.from_generator(make_generator_train_{{layer_id}},
+                                         output_shapes=sample.shape,
+                                         output_types=np.float32)
+
+X_validation = tf.data.Dataset.from_generator(make_generator_validation_{{layer_id}},
+                                         output_shapes=sample.shape,
+                                         output_types=np.float32)
+
+X_test = tf.data.Dataset.from_generator(make_generator_test_{{layer_id}},
+                                        output_shapes=sample.shape,
+                                        output_types=np.float32)
