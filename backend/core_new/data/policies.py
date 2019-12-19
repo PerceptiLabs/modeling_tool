@@ -212,7 +212,6 @@ class TrainValDataPolicy(DataPolicy):
 class TrainReinforceDataPolicy(DataPolicy):
     def get_results(self):
         train_dict = {}
-       
         for id_, content in self._graph_dict.items():
             if id_ not in self._data:
                 continue

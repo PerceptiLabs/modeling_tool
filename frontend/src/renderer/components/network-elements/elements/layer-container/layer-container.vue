@@ -1,5 +1,5 @@
 <template lang="pug">
-  .layer-container
+  .layer-container(v-if="showChildContainer")
     base-net-el(
       v-if="isOpenContainer"
       :data-el="elementData"
@@ -13,7 +13,7 @@
         )
         h4.layer-container_title {{ elementData.layerName }}
         button.layer-container_btn-open.btn.btn--link.icon.icon-layer-settings(type="button"
-          @click="toggleContainer(true)"
+          @click.stop="toggleContainer(true)"
           )
       //-component(
         v-for="el in elementData.containerLayersList"
@@ -60,6 +60,12 @@
           top: minTop - padding + 'px',
           height: Math.max(...arrTop) - minTop + widthEl + padding*2 + 'px',
         }
+      },
+      currentNetList() {
+        return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
+      },
+      showChildContainer() {
+        return this.elementData.isShow;
       },
       isOpenContainer() {
         return !this.elementData.layerNone

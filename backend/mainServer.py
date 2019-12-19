@@ -14,6 +14,8 @@ def get_input_args():
                         help='Log level name.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
                         help="Set this to instantly kill the core, for test purposes.")
+    parser.add_argument('-u', '--user', default="dev@dev.com", type=str,
+                        help="Set this to attach a user to all Sentry logs.")
     args = parser.parse_args()
     return args
 
@@ -37,6 +39,8 @@ def setup_logger(log_level):
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
                         level=logging.getLevelName(log_level))
+
+
     
 if __name__ == "__main__":
     args = get_input_args()
@@ -44,4 +48,4 @@ if __name__ == "__main__":
     setup_logger(args.log_level)
     ProcessDependencyWatcher(args.frontend_pid).start()
     
-    appServer.mainServer(args.instantly_kill)
+    appServer.mainServer(args.instantly_kill, args.user)
