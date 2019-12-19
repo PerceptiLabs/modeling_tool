@@ -29,12 +29,17 @@ const getters = {
         checkpointPath[1] = rootPath + pathSlash + filePath;
       }
 
-      let namesConnectionOut = el.connectionOut.map((currentValue)=> {
-        return  network.networkElementList[currentValue].layerName
+      const namesConnectionOut = [];
+      const namesConnectionIn = [];
+
+      el.connectionOut.forEach(id => {
+        const name =  network.networkElementList[id].layerName;
+        namesConnectionOut.push([id, name])
       });
 
-      let namesConnectionIn = el.connectionIn.map((currentValue)=> {
-        return  network.networkElementList[currentValue].layerName
+      el.connectionIn.forEach(id => {
+        const name =  network.networkElementList[id].layerName;
+        namesConnectionIn.push([id, name])
       });
 
       /*prepare elements*/
