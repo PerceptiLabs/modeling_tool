@@ -29,7 +29,7 @@ class SessionHistory:
 
         if not set(layer_ids).issubset(self._sessions):
             diff = set(layer_ids) - set(self._sessions)
-            message = "No history available for layers {}. Histories are available for layers {}".format(', '.join(diff), self._sessions.keys())
+            message = "No history available for layers {}. Histories are available for layers {}".format(', '.join(diff), list(self._sessions.keys()))
             raise HistoryInputException(message)
         
         if len(layer_ids) == 1:

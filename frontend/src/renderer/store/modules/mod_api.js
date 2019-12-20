@@ -79,6 +79,7 @@ const actions = {
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
+    let userEmail = rootGetters['mod_user/GET_userEmail'];
     startCore();
 
     function startCore() {
@@ -96,8 +97,8 @@ const actions = {
             : platformPath = 'core/appServer';
           break;
       }
-      console.log('PID: ', process.pid)
-      openServer = spawn(platformPath, ['-f', process.pid], {stdio: ['ignore', 'ignore', 'pipe']});
+      console.log('PID: ', process.pid);
+      openServer = spawn(platformPath, ['-f', process.pid, '-u', userEmail], {stdio: ['ignore', 'ignore', 'pipe']});
       dispatch('SET_corePid', openServer.pid);
       openServer.on('error', (err)=>  {
         console.log('core error', err)
