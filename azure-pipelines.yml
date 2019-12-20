@@ -70,30 +70,30 @@ jobs:
     pool:
         #win-pool
         vmImage: "vs2017-win2016"
-    # variables:
-    #   - group: Windows-build
+    variables:
+      - group: Windows-build
     steps:
-    # - task: DownloadSecureFile@1
-    #   name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
-    #   inputs:
-    #     secureFile: 'WindowsCodeSign.pfx' # Not able to reach $(signingCert.secureFilePath) here for some reason
+    - task: DownloadSecureFile@1
+      name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
+      inputs:
+        secureFile: 'WindowsCodeSign.pfx' # Not able to reach $(signingCert.secureFilePath) here for some reason
 
-    # - task: PowerShell@2
-    #   inputs:
-    #     targetType: 'inline'
-    #     script: |
-    #       Write-Host "Start adding the PFX file to the certificate store."
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+          Write-Host "Start adding the PFX file to the certificate store."
 
-    #       $pfxpath = '$(mySecureFile.secureFilePath)'
-    #       $password = '$(signingCert.password)'
+          $pfxpath = '$(mySecureFile.secureFilePath)'
+          $password = '$(signingCert.password)'
           
-    #       Add-Type -AssemblyName System.Security
-    #       $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
-    #       $cert.Import($pfxpath, $password, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]"PersistKeySet")
-    #       $store = new-object system.security.cryptography.X509Certificates.X509Store -argumentlist "MY", CurrentUser
-    #       $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]"ReadWrite")
-    #       $store.Add($cert)
-    #       $store.Close()
+          Add-Type -AssemblyName System.Security
+          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+          $cert.Import($pfxpath, $password, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]"PersistKeySet")
+          $store = new-object system.security.cryptography.X509Certificates.X509Store -argumentlist "MY", CurrentUser
+          $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]"ReadWrite")
+          $store.Add($cert)
+          $store.Close()
 
     - task: UsePythonVersion@0
       inputs: 
