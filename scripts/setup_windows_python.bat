@@ -28,10 +28,10 @@ SET PATH=%PATH%;C:\msys64\mingw64\bin;C:\msys64\usr\bin
 REM SET PATH=%PATH%;C:\tools\msys64\mingw64\bin;C:\tools\msys64\usr\bin
 
 call python -m pip install --upgrade pip setuptools
-call pip install -U git+https://github.com/Kojoley/atari-py.git
 call pip install "gym[atari]" 
+call pip install --no-index -f https://github.com/Kojoley/atari-py/releases atari_py
 call pip install -r requirements.txt
-REM call pip install dask[array] --upgrade
+dir "c:\hostedtoolcache\windows\python\3.6.8\x64\Lib\site-packages\atari_py\"
 dir "c:\hostedtoolcache\windows\python\3.6.8\x64\Lib\site-packages\"
 exit 1
 
