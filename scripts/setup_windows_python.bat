@@ -30,6 +30,7 @@ call python -m pip install --upgrade pip setuptools
 call pip install -U git+https://github.com/Kojoley/atari-py.git
 call pip install -r requirements.txt
 REM call pip install dask[array] --upgrade
+call pip list
 
 call git config --global user.email "robert.l@perceptilabs.com"
 git config --global user.name "Robert Lundberg"
