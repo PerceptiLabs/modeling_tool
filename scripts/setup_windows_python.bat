@@ -32,6 +32,8 @@ call pip install -U git+https://github.com/Kojoley/atari-py.git
 call pip install "gym[atari]" 
 call pip install -r requirements.txt
 REM call pip install dask[array] --upgrade
+dir "c:\hostedtoolcache\windows\python\3.6.8\x64\Lib\site-packages\"
+exit 1
 
 call git config --global user.email "robert.l@perceptilabs.com"
 git config --global user.name "Robert Lundberg"
