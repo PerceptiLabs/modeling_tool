@@ -25,7 +25,7 @@ log.info("python_lib = " + python_lib)
 
 pathex = [working_dir]
 
-binaries = [(python_lib+'/dask/dask.yaml','./dask/')]
+binaries = [(python_lib+'ale_c.cp36-win_amd64.dll','.'), (python_lib+'/dask/dask.yaml','./dask/')]
 
 python_files = []
 with open('../../backend/included_files.txt') as f:
@@ -43,7 +43,7 @@ hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('
             'tensorflow.lite.toco_convert','tensorflow_wrap_toco','tensorflow.lite.toco.python','tensorflow.python.platform','google.protobuf','tensorflow.core.protobuf',
             'tensorflow.python.training','tensorflow.lite.toco.python.tensorflow_wrap_toco','_tensorflow_wrap_toco']
 
-datas=[(python_lib+'/atari_py','atari_py'), (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'), (python_lib+'/dask/dask.yaml', './dask/')]
+datas=[(python_lib+'/atari_py','atari_py'), (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/')]
 
 log.info("pathex = {}".format(pformat(pathex)))
 log.info("binaries = {}".format(pformat(binaries)))

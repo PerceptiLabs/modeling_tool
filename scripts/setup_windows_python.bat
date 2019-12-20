@@ -25,12 +25,13 @@ REM cd %OLDPWD%
 
 SET PATH=%PATH%;C:\hostedtoolcache\windows\Python\3.6.8\x64\Scripts
 SET PATH=%PATH%;C:\msys64\mingw64\bin;C:\msys64\usr\bin
+REM SET PATH=%PATH%;C:\tools\msys64\mingw64\bin;C:\tools\msys64\usr\bin
 
 call python -m pip install --upgrade pip setuptools
 call pip install -U git+https://github.com/Kojoley/atari-py.git
+call pip install "gym[atari]" 
 call pip install -r requirements.txt
 REM call pip install dask[array] --upgrade
-call pip list
 
 call git config --global user.email "robert.l@perceptilabs.com"
 git config --global user.name "Robert Lundberg"
