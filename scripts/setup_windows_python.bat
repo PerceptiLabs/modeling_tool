@@ -6,6 +6,7 @@ REM )
 choco install nodejs --yes --version 12.10.0
 choco install microsoft-visual-cpp-build-tools --version 14.0.25420.1 --yes
 choco install git --yes
+choco install msys2
 REM choco install windows-sdk-10.0 --yes
 
 REM dir C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional\SDK\ScopeCppSDK\SDK\
@@ -23,10 +24,12 @@ REM )
 REM cd %OLDPWD%
 
 SET PATH=%PATH%;C:\hostedtoolcache\windows\Python\3.6.8\x64\Scripts
+SET PATH=%PATH%;C:\msys64\mingw64\bin;C:\msys64\usr\bin
 
 call python -m pip install --upgrade pip setuptools
+call pip install -U git+https://github.com/Kojoley/atari-py.git
 call pip install -r requirements.txt
-call pip install dask[array] --upgrade
+REM call pip install dask[array] --upgrade
 
 call git config --global user.email "robert.l@perceptilabs.com"
 git config --global user.name "Robert Lundberg"
