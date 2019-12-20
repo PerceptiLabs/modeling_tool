@@ -33,7 +33,6 @@ call pip install --no-index -f https://github.com/Kojoley/atari-py/releases atar
 call pip install -r requirements.txt
 dir "c:\hostedtoolcache\windows\python\3.6.8\x64\Lib\site-packages\atari_py\"
 dir "c:\hostedtoolcache\windows\python\3.6.8\x64\Lib\site-packages\"
-exit 1
 
 call git config --global user.email "robert.l@perceptilabs.com"
 git config --global user.name "Robert Lundberg"
