@@ -26,7 +26,7 @@ SET PATH=%PATH%;C:\hostedtoolcache\windows\Python\3.6.8\x64\Scripts
 
 call python -m pip install --upgrade pip setuptools
 call pip install -r requirements.txt
-REM call pip install dask[array] --upgrade
+call pip install dask[array] --upgrade
 
 call git config --global user.email "robert.l@perceptilabs.com"
 git config --global user.name "Robert Lundberg"

@@ -671,8 +671,8 @@ class TrainReinforceCodeGenerator(CodeGenerator):
         code += "history_length = history_length #We use the global history_length from the Environment here\n"
         code += "replay_start_size = %d\n" % self._replay_start_size
         code += "n_actions = env.action_space.n\n"
-        code += "n_steps_max = %d\n" % self._n_steps_max
-        code += "n_episodes = %d\n" % self._n_episodes
+        code += "n_steps_max = %s\n" % self._n_steps_max
+        code += "n_episodes = %s\n" % self._n_episodes
         code += "api.data.store(n_steps_max=n_steps_max, n_episodes=n_episodes, batch_size=batch_size, n_actions=n_actions)\n"
         code += "\n"
         code += "# Exploration/exploitation tradeoff\n" # TODO: name
