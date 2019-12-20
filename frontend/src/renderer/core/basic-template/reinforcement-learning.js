@@ -152,7 +152,9 @@ const reinforcementLearning = {
           "Eps_min": "0.1",
           "Eps_decay": "0.2",
           "Learning_rate": "0.01",
-          "Optimizer": "SGD"
+          "Optimizer": "SGD",
+          "Max_steps": "1000",
+          "Episodes": "20000",
         },
         "layerCode": null,
         "layerCodeError": null,
