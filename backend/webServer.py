@@ -8,12 +8,10 @@ import time
 import traceback
 
 from coreLogic import coreLogic
-from propegateNetwork import lwNetwork
 from parse_pb import parse
 import time
 import numpy as np
 
-from dataKeeper import dataKeeper as lw_data
 from extractVariables import *
 from createDataObject import createDataObject
 

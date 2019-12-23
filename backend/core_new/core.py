@@ -137,8 +137,10 @@ class BaseCore:
         except HistoryInputException:
             if self._layer_extras_reader is not None:
                 self._layer_extras_reader.set_empty(id_)
-            log.exception("HistoryInputException for layer %s" % content['Info']['Type'])
-            return
+                log.exception("HistoryInputException for layer %s" % content['Info']['Type'])
+                return
+            else:
+                raise
 
         if content['Info']['checkpoint'] and type(code_gen).__name__ == "CustomCodeGenerator" and self._checkpointValues:
             locals_.update({"checkpoint":self._checkpointValues[content['Info']['checkpoint'][-1]]})

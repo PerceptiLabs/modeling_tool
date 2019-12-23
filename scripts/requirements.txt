@@ -11,7 +11,7 @@ Cython==0.29.14
 pycryptodome
 # cryptography
 GPUtil==1.4.0
-gym[atari]
+# gym[atari]
 sentry-sdk==0.10.2
 # pyinstaller==3.5
 boto==2.49.0
