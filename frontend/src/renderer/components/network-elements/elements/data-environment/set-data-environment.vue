@@ -108,16 +108,16 @@
         return `Action space: ${this.Mix_settingsData_actionSpace}`
       }
     },
-    // watch: {
-    //   'settings.accessProperties.Atari': {
-    //     handler(newVal) {
-    //       if(newVal) {
-    //         this.getPreviewSample();
-    //       }
-    //     },
-    //     //immediate: true
-    //   },
-    // },
+     watch: {
+       'settings.accessProperties.Atari': {
+         handler(newVal) {
+           if(newVal) {
+             this.Mix_settingsData_getDataMeta(this.currentEl.layerId);
+           }
+         },
+         //immediate: true
+       },
+     },
     methods: {
       // setTab(i) {
       //   this.tabSelected = i;
