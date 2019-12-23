@@ -13,17 +13,15 @@
             :select-options="selectOptions"
             v-tooltip-interactive:right="interactiveInfo.selectGame"
           )
+        .action_space(v-if="Mix_settingsData_actionSpace")
+          span Action space:
+          span {{Mix_settingsData_actionSpace}}
+
         set-data-environment-gym-img(
           :layer-settings="settings"
           :layer-id="currentEl.layerId"
           @apply-settings="applySettings"
         )
-        //-.form_row(v-tooltip-interactive:right="interactiveInfo.actionSpace")
-          chart-switch(
-            key="1"
-            /:chart-label="chartLabel"
-            /:chart-data="imgData"
-          )
         .form_row
           .form_label History length:
           .form_input
@@ -70,6 +68,9 @@
     // mounted() {
     //   this.getPreviewSample();
     // },
+    mounted() {
+      this.Mix_settingsData_getDataMeta(this.currentEl.layerId);
+    },
     data() {
       return {
         //tabs: ['Gym', `<i class='icon icon-search'></i> Unity`],
@@ -156,3 +157,16 @@
     },
   }
 </script>
+
+
+<style scoped lang="scss">
+  @import "../../../../scss/base";
+  .action_space {
+    position: relative;
+    background: $col-txt2;
+    top: 24px;
+    padding: 4px 10px;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>

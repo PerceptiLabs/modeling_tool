@@ -22,7 +22,9 @@ const netElementSettingsData = {
       return this.$store.dispatch('mod_api/API_getDataMeta', {layerId, settings: this.settings})
         .then((data) => {
           if (data) {
-            if(data.Action_space) this.Mix_settingsData_actionSpace = data.Action_space;
+            if(data.Action_space) {
+              this.Mix_settingsData_actionSpace = data.Action_space;
+            }
             this.settings.accessProperties = {...this.settings.accessProperties, ...data};
             return data;
           }
