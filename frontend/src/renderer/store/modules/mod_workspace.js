@@ -10,6 +10,7 @@ const state = {
   currentNetwork: 0,
   dragElement: null,
   startArrowID: null,
+  webLoadingDataFlag: false,
   preArrow: {
     show: false,
     start: {x: 0, y: 0},
@@ -570,6 +571,9 @@ const mutations = {
       currentElement(element).layerMeta.OutputDim = value[element].Dim;
       currentElement(element).layerCodeError = value[element].Error
     }
+  },
+  SET_webLoadingDataFlag(state, value) {
+    state.webLoadingDataFlag = value
   },
 
   //---------------

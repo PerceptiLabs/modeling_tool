@@ -19,6 +19,8 @@ const netElementSettingsData = {
   methods: {
     coreRequest,
     Mix_settingsData_getDataMeta(layerId) {
+      this.$store.commit('mod_workspace/SET_webLoadingDataFlag', true);
+      console.log(this.$store.state.mod_workspace.webLoadingDataFlag)
       this.showSpinner = true;
       return this.$store.dispatch('mod_api/API_getDataMeta', {layerId, settings: this.settings})
         .then((data) => {
@@ -31,7 +33,11 @@ const netElementSettingsData = {
         .catch((err) => {
           console.error('getDataMeta', err);
         })
-        .finally(()=> this.showSpinner = false)
+        .finally(()=> {
+          this.showSpinner = false;
+          this.$store.commit('mod_workspace/SET_webLoadingDataFlag', false);
+          console.log(this.$store.state.mod_workspace.webLoadingDataFlag)
+        } )
     },
     Mix_settingsData_getPartitionSummary(layerId) {
       return this.$store.dispatch('mod_api/API_getPartitionSummary', {layerId, settings: this.settings})
