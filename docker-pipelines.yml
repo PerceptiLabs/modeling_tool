@@ -5,7 +5,7 @@
 
 
 trigger:
-# - master
+# - web-dev
 
 pool:
   vmImage: 'ubuntu-16.04'
