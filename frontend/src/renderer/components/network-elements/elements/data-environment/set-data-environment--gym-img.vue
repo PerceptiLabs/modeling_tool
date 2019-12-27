@@ -53,10 +53,20 @@
         this.$emit('apply-settings');
         this.$store.dispatch('mod_api/API_getPreviewSample', {layerId: this.layerId, varData: 'sample'})
           .then((data)=> {
-            this.imgData = data
+            this.imgData = data;
           } )
       }
     },
+    getData() {
+      this.$store.dispatch('mod_api/API_getDataMeta', {layerId: this.layerId, settings: this.settings})
+        .then((data) => {
+            console.log(data);
+        })
+        .catch((err) => {
+          console.error('getDataMeta', err);
+        })
+        .finally(()=> this.showSpinner = false)
+    }
   }
 </script>
 

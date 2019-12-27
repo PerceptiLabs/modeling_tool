@@ -36,6 +36,16 @@
           .form_label Learning rate:
           .form_input
             input(type="text" v-model="settings.Learning_rate")
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
+          .form_label Max steps:
+          .form_input
+             input(type="text" v-model="settings.Max_steps")
+      .settings-layer_section
+        .form_row(v-tooltip-interactive:right="interactiveInfo.learningRate")
+           .form_label Episodes:
+           .form_input
+             input(type="text" v-model="settings.Episodes")
       //-.settings-layer_section
         .form_row
           .form_label Regularization:
@@ -78,6 +88,8 @@ export default {
         Eps_decay: '0.2',
         Learning_rate: '0.01',
         Optimizer: 'SGD',
+        Max_steps: '1000',
+        Episodes: '20000',
       },
       interactiveInfo: {
         method: {

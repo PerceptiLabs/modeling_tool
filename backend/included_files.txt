@@ -1,5 +1,6 @@
 # root
 mainServer.py
+webServer.py
 appServer.py
 codehq.py
 coreLogic.py
@@ -19,6 +20,7 @@ parse_pb.py
 s3buckets.py
 utils.py
 webServer.py
+processes.py
 
 # analytics
 analytics/handlers.py

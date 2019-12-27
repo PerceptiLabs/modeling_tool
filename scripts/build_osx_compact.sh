@@ -34,7 +34,7 @@ mkdir frontend_out
 
 echo "Copying files files from ../../backend/"
 cd backend_tmp/
-rsync -a ../../backend --files-from=../../scripts/included_files.txt .
+rsync -a ../../backend --files-from=../../backend/included_files.txt .
 ls -l code_generator
 cp ../../backend/setup_compact.pyx .
 
@@ -70,8 +70,10 @@ fi
 # exit
 chmod +x dist/appServer/appServer
 
-# ./dist/appServer/appServer
-# if [ $? -ne 0 ]; then exit 1; fi
+echo "*************************************************************************************************"
+echo "Testing to start the core"
+./dist/appServer/appServer -k=True -l="INFO"
+if [ $? -ne 0 ]; then exit 1; fi
 
 echo "copying dist to 'backend_out/'"
 cd ../backend_out/
@@ -125,7 +127,8 @@ ls build/
 
 echo "copying images to 'frontend_out/'"
 cp build/*.dmg ../build/frontend_out/
-
+cp build/*.zip ../build/frontend_out/
+cp build/*.yml ../build/frontend_out/
    
     
 

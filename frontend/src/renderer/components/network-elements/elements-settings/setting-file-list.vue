@@ -15,6 +15,7 @@
           .form_label
             button.btn.btn--icon.icon.icon-app-close(type="button" @click="deleteItem(i)")
             span.file-item_path {{ file.path }}
+            spinner-upload-file.spinner-upload-file(v-if="showSpinner")
           .form_input
             triple-input.file-list-item_settings(
               v-model="file.settings"
@@ -23,16 +24,18 @@
               :validate-max="98"
               :validate-sum="100"
             )
+
     button.btn.btn--link(type="button" @click="addFile") + Add {{ nameAddItem }}
 
 </template>
 
 <script>
   import { deepCopy } from "@/core/helpers.js";
-  import TripleInput    from "@/components/base/triple-input";
+  import TripleInput        from "@/components/base/triple-input";
+  import SpinnerUploadFile  from "@/components/different/spinner-upload-file.vue";
 export default {
   name: "SettingsFileList",
-  components: {TripleInput},
+  components: {TripleInput, SpinnerUploadFile},
   props: {
     value: {
       type: Array,
@@ -41,6 +44,9 @@ export default {
     nameAddItem: {
       type: String,
       default: ''
+    },
+    showSpinner: {
+      type: Boolean,
     }
   },
   data() {
@@ -108,9 +114,13 @@ export default {
   .file-list_item {
     padding: $file-list-indent;
     border-bottom: 1px solid $bg-toolbar;
+    .form_row {
+      align-items: stretch;
+    }
     .form_label {
       display: flex;
       overflow-y: hidden;
+      align-items: center;
     }
     .btn--icon {
       font-size: .75rem;
@@ -124,5 +134,14 @@ export default {
     text-overflow: ellipsis;
     white-space: nowrap;
     direction: rtl;
+  }
+  .form_label {
+    position: relative;
+  }
+  .spinner-upload-file {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
   }
 </style>

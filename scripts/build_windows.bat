@@ -21,7 +21,7 @@ dir "../../scripts"
 echo %fromfolder%
 dir "%fromfolder%"
 echo "Copying files"
-FOR /F %%a IN (../../scripts/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%%a" "%%a"
+FOR /F %%a IN (../../backend/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%%a" "%%a"
 
 move setup.py setup.pyx
 copy /Y setup.pyx code_generator

@@ -370,14 +370,18 @@ class coreLogic():
             # self.maxTestIter=self.maxTestIter
             self.batch_size=1
             self.resultDict=self.testList[self.testIter]
-        except KeyError as e:
+        except IndexError:
+            #TODO: There should never be able to be an index error here.
+            log.exception("Error in getTestingStatistics")
+            return {}
+        except KeyError:
             log.exception("Error in getTestingStatistics")            
             return {}
 
         try:
             layer_statistics = self.getLayerStatistics(value)
             return layer_statistics
-        except Exception as e:
+        except:
             message = "Error in getTestingStatistics."
             if log.isEnabledFor(logging.DEBUG):
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
@@ -565,7 +569,7 @@ class coreLogic():
                 if D.shape[-1] == 1:
                     output = createDataObject([D])
                 else:
-                    output = createDataObject([D[0]])
+                    output = createDataObject([D[:,:,0]])
             elif len(D.shape)>3:
                 output = createDataObject([D[0]])
             else:
@@ -579,10 +583,9 @@ class coreLogic():
                 
                 X=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":""})
 
-                if type(X) is dict:
+                if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
                     for key,value in X.items():
                         try:
-                            int(key)
                             if key==self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
                                 Labels=value['Y']
                             else:

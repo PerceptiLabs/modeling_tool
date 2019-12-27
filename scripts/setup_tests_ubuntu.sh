@@ -3,8 +3,8 @@ CONDA_ENV_FILE="../backend/environment.yml"
 
 # TODO: npm, gcc and conda versions should be explicitly declared to ensure reproducibility.
 
-echo "Installing gcc..."
-sudo apt install gcc -y
+# echo "Installing gcc..."
+# sudo apt install gcc -y
 
 echo "Downloading conda"
 wget $CONDA_URL -O conda_installer.sh
@@ -22,15 +22,3 @@ cat "$CONDA_ENV_FILE"
 
 echo "Creating environment"
 conda env create --force --file $CONDA_ENV_FILE
-
-echo "Environment:"
-conda list
-
-echo "Installing npm..."
-sudo apt install npm -y
-
-echo "Installing npm packages"
-cd ../frontend
-npm install
-
-

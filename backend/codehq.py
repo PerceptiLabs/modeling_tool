@@ -171,7 +171,9 @@ class CodeHqNew:
             target_net = content['Info']['ExtraInfo']['TargetNet']
             code_gen = TrainReinforceCodeGenerator(online_network_id=online_net,
                                                    target_network_id=target_net,
-                                                   layer_pairs=layer_pairs)
+                                                   layer_pairs=layer_pairs,
+                                                   n_episodes=props['Episodes'],
+                                                   n_steps_max=props['Max_steps'])
             return code_gen
         elif type_ == 'MathArgmax':
             code_gen = ArgmaxCodeGenerator(dim=props["Dim"])
