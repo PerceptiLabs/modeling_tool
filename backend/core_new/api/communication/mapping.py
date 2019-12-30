@@ -1,11 +1,18 @@
+import collections
 import threading
 import struct
 import queue
 import zmq
-from zmq.eventloop.ioloop import IOLoop
+from zmq.eventloop.ioloop import IOLoop, PeriodicCallback
 from zmq.eventloop.zmqstream import ZMQStream
 
+def int2bytes(x):
+    return struct.pack('!q', x)
 
+def bytes2int(x):
+    return struct.unpack('!q', x)[0]    
+
+'''
 class MappedMessage:
     def __init__(self, counter: int, key: bytes, body: bytes):
         assert isinstance(key, bytes)
@@ -18,9 +25,8 @@ class MappedMessage:
 
     @classmethod
     def recv(cls, socket, counter=None):
-        key, b_counter, body = socket.recv_multipart()
-        counter = counter or struct.unpack('!q', b_counter)[0]
-        return cls(counter, key=key, body=body)
+        raw_message = socket.recv_multipart()
+        return cls.from_raw_message(raw_message, counter)
 
     @classmethod
     def from_raw_message(cls, raw_message, counter=None):
@@ -46,79 +52,176 @@ class MappedMessage:
     @property
     def body(self):
         return self._body
-    
-    def store(self, target):
-        target[self._key] = self
 
     def __repr__(self):
         return f"key: {self._key}, seq: {self._counter}, body: {self._body}"
+'''
 
-    
+MappedMessage = collections.namedtuple(
+    'MappedMessage',
+    ['index', 'key', 'body']
+)
+
 class MapServer:
-    def __init__(self, router_port, pub_port, pull_port):
-        self.state = {}
-        self.counter = 0
+    POLL_INTERVAL = 1
+    
+    def __init__(self, router_addr, pub_addr, pull_addr):
+        self._reset()
+        self._router_addr = router_addr
+        self._pub_addr = pub_addr
+        self._pull_addr = pull_addr
         
-        self.ctx = zmq.Context()
-        self.loop = IOLoop.instance()
-
-        self.snapshot = self.ctx.socket(zmq.ROUTER)
-        self.publisher = self.ctx.socket(zmq.PUB)
-        self.collector = self.ctx.socket(zmq.PULL)
+    def _reset(self):
+        self._lock = threading.RLock()        
+        self._queue = None        
+        self._worker = None        
+        self._stop_event = None 
+        self._update_counter = 0
+        self._messages = {}
         
-        self.snapshot.bind("tcp://*:%d" % router_port)
-        self.publisher.bind("tcp://*:%d" % pub_port)
-        self.collector.bind("tcp://*:%d" % pull_port)
+    def _worker_func(self):
+        ctx = zmq.Context()        
+        snapshot_socket = ctx.socket(zmq.ROUTER)
+        publisher_socket = ctx.socket(zmq.PUB)
+        collector_socket = ctx.socket(zmq.PULL)
+        
+        snapshot_socket.bind(self._router_addr)
+        publisher_socket.bind(self._pub_addr)
+        collector_socket.bind(self._pull_addr)
+        
+        poller = zmq.Poller()
+        poller.register(snapshot_socket, zmq.POLLIN)
+        poller.register(collector_socket, zmq.POLLIN)        
 
-        # Wrap sockets in ZMQStreams for IOLoop handlers (in this context?)
-        self.snapshot = ZMQStream(self.snapshot)
-        self.publisher = ZMQStream(self.publisher)
-        self.collector = ZMQStream(self.collector)
+        while not self._stop_event.is_set():
+            items = dict(poller.poll(timeout=self.POLL_INTERVAL))
+            
+            if snapshot_socket in items:
+                self._on_snapshot(snapshot_socket)
+            if collector_socket in items:
+                self._on_update(collector_socket, publisher_socket)        
+                
+    def _on_snapshot(self, snapshot_socket):
+        identity, request = snapshot_socket.recv_multipart()
+        assert request == b'snapshot-get'
 
-        # Register our handlers with reactor
-        self.snapshot.on_recv(self.handle_snapshot)
-        self.collector.on_recv(self.handle_collect)
+        with self._lock:
+            for key, message in self._messages.items():
+                snapshot_socket.send_multipart([
+                    identity, b'snapshot-set',
+                    int2bytes(message.index),
+                    message.key, message.body
+                ])                
 
+            snapshot_socket.send_multipart([identity, b'snapshot-end', int2bytes(0), b'', b''])
+            
+    def _on_update(self, collector_socket, publisher_socket):
+        descr, _, key, body = collector_socket.recv_multipart()
+        assert descr in [b'update-set']
+        
+        with self._lock:
+            index = self._update_counter
+            publisher_socket.send_multipart([descr, int2bytes(index), key, body])
+            self._messages[key] = MappedMessage(index, key, body)
+            self._update_counter += 1
+            
     def start(self):
-        try:
-            self.loop.start()
-        except KeyboardInterrupt:
-            pass        
-
-    def handle_snapshot(self, raw_message):
-        identity, request = raw_message
-
-        if request == b'get-snapshot':
-            for key, message in self.state.items():
-                self.snapshot.send(identity, zmq.SNDMORE)
-                message.send(self.snapshot)
-
-            self.snapshot.send(identity, zmq.SNDMORE)
-            message = MappedMessage(-1, b'get-snapshot-end', None)
-            message.send(self.snapshot)                
-
-    def handle_collect(self, raw_message):
-        # pull update and then publish it
-        message = MappedMessage.from_raw_message(raw_message, self.counter)
-        self.counter += 1
+        self._stop_event = threading.Event()        
         
-        message.send(self.publisher)
-        message.store(self.state)
+        self._worker = threading.Thread(target=self._worker_func, daemon=True)
+        self._worker.start()
 
+    def stop(self):
+        if self._stop_event is not None:
+            self._stop_event.set()
+            self._worker.join()
+        self._reset()
 
+        
 class MapClient:
     POLL_INTERVAL = 1 # [ms]
     
-    def __init__(self, dealer_addr, sub_addr, push_addr, queue=None):
-        self._queue = queue
-        self._messages = {}
-        self._counter = 0
-        self._lock = threading.RLock()
+    def __init__(self, dealer_addr, sub_addr, push_addr):
+        self._reset()
+        self._dealer_addr = dealer_addr
+        self._sub_addr = sub_addr
+        self._push_addr = push_addr
         
+    def _reset(self):
+        self._lock = threading.RLock()                
+        self._queue = queue.Queue()        
+        self._worker = None        
+        self._stop_event = None 
+        self._index = 0
+        self._messages = {}
+
+    def _worker_func(self):
         ctx = zmq.Context()
-        self.snapshot = self._init_socket(ctx, zmq.DEALER, dealer_addr)
-        self.subscriber = self._init_socket(ctx, zmq.SUB, sub_addr, [(zmq.SUBSCRIBE, '')])
-        self.publisher = self._init_socket(ctx, zmq.PUSH, push_addr)        
+        snapshot_socket = self._init_socket(ctx, zmq.DEALER, self._dealer_addr)
+        subscriber_socket = self._init_socket(ctx, zmq.SUB, self._sub_addr, [(zmq.SUBSCRIBE, '')])
+        publisher_socket = self._init_socket(ctx, zmq.PUSH, self._push_addr)        
+
+        self._get_snapshot(snapshot_socket)
+        
+        if self._stop_event.is_set():
+            return
+
+        self._get_updates(subscriber_socket, publisher_socket)
+
+    def _get_updates(self, subscriber_socket, publisher_socket):
+        poller = zmq.Poller()
+        poller.register(subscriber_socket, zmq.POLLIN)
+        
+        while not self._stop_event.is_set():
+            items = dict(poller.poll(timeout=self.POLL_INTERVAL))
+
+            if subscriber_socket in items:
+                descr, index, key, body = subscriber_socket.recv_multipart()
+                index = bytes2int(index)
+                
+                with self._lock:
+                    if self._index != index:
+                        raise RuntimeError(f"Unexpected index. Expected {self._index + 1} but got {index}!")
+                    self._messages[key] = MappedMessage(index, key, body)                
+                    self._index += 1
+                    
+            if self._queue is not None and self._queue.qsize() > 0:
+                descr, key, body = self._queue.get()
+                assert descr in [b'update-set']
+                publisher_socket.send_multipart([descr, int2bytes(-1), key, body])
+
+    def _get_snapshot(self, snapshot_socket):
+        snapshot_socket.send_string('snapshot-get')
+        
+        new_messages = []
+        while not self._stop_event.is_set():
+            descr, index, key, body = snapshot_socket.recv_multipart()
+            index = bytes2int(index)
+            
+            if descr == b'snapshot-set':
+                message = MappedMessage(index, key, body)
+                new_messages.append(message)
+            elif descr == b'snapshot-end':
+                break
+            else:
+                raise ValueError(f"Unknown descriptor {descr} received over snapshot socket")
+            
+        with self._lock:
+            for message in new_messages:
+                self._messages[message.key] = message
+                self._index = max(self._index, message.index)
+
+                
+    def start(self):
+        self._stop_event = threading.Event()                        
+        self._worker = threading.Thread(target=self._worker_func, daemon=True)
+        self._worker.start()
+
+    def stop(self):
+        if self._stop_event is not None:
+            self._stop_event.set()
+            self._worker.join()
+        self._reset()
 
     def _init_socket(self, ctx, zmq_type, address, opts=None):
         socket = ctx.socket(zmq_type)
@@ -130,44 +233,6 @@ class MapClient:
 
         socket.connect(address)
         return socket    
-
-    def start(self):
-        self.snapshot.send_string("get-snapshot")
-
-        while True:
-            message = Message.recv(self.snapshot)
-            print(message.key, message.body, message.counter)
-            if message.key == b"get-snapshot-end":
-                break
-            else:
-                self._store_message(message)
-            
-        poller = zmq.Poller()
-        poller.register(self.subscriber, zmq.POLLIN)
-        
-        while True:
-            items = dict(poller.poll(timeout=self.POLL_INTERVAL))
-
-            if self.subscriber in items:
-                message = Message.recv(self.subscriber)
-                self._store_message(message)
-                
-            if self._queue is not None and self._queue.qsize() > 0:
-                key, value = q.get()
-                message = MappedMessage(-1, key, value)
-                message.send(self.publisher)
-            #else:
-            #    from pprint import pprint
-            #    pprint(self._messages)
-                
-    def _store_message(self, message):
-        with self._lock:
-            if message.counter == self._counter:
-                self._counter += 1
-                self._messages[message.key] = message
-            else:
-                raise RuntimeError(f"Expected counter value {self._counter}, "
-                                   f"but received message with value {message.counter}")
                 
     @property
     def messages(self):
@@ -175,5 +240,30 @@ class MapClient:
             messages = self._messages.copy()
         return messages
 
+    @property
+    def queue(self):
+        return self._queue
 
 
+class ByteMapping(collections.MutableMapping):
+    def __init__(self, client):
+        self._client = client
+    
+    def __getitem__(self, key):
+        raise NotImplementedError
+
+    def __setitem__(self, key, value):
+        raise NotImplementedError
+
+    def __delitem__(self, key):
+        raise NotImplementedError
+
+    def __iter__(self):
+        raise NotImplementedError
+
+    def __len__(self):
+        raise NotImplementedError
+
+    def __keytransform__(self, key):
+        raise NotImplementedError
+    
