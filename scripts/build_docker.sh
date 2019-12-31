@@ -50,7 +50,7 @@ echo "----- Building frontend -----"
 cd ../../frontend/src
 npm run build
 
-cp dist/* ../build/frontend_out/
+cp dist/* ../../build/frontend_out/
 
 ################### MOVING EVERYTHING TO CORRECT PLACES #######################
 cd ../../
