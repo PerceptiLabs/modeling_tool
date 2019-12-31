@@ -59,6 +59,18 @@ def test_client_server_stopped_client_is_empty(server, client):
     assert client.messages == {}
 
     
+def test_client_server_can_delete_message(server, client):
+    server.start(); client.start()
+    
+    client.put('update-set', b'key', b'value')
+    time.sleep(0.3)
+    assert client.messages != {}
+    
+    client.put('update-del', b'key')
+    time.sleep(0.3)
+    assert client.messages == {}
+
+    
 def test_client_server_restarted_client_catches_up(server, client):
     server.start(); client.start()
     
