@@ -50,12 +50,16 @@ echo "----- Building frontend -----"
 cd ../../frontend/src
 npm run build
 
-cp dist/* ../../build/frontend_out/
+cp -r dist/* ../../build/frontend_out/
 
 ################### MOVING EVERYTHING TO CORRECT PLACES #######################
 cd ../../
+ls -l
 cp Docker/Fronend/* build/frontend_out
 cp Docker/Core/* build/backend_out
 
+echo "Frontend folder"
 ls -l build/frontend_out
+
+echo "Core folder"
 ls -l build/backend_out
