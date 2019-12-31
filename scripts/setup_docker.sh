@@ -30,8 +30,8 @@ echo "Installing npm..."
 sudo apt install npm -y
 
 echo "Installing npm packages"
-ls -l
 cd ../frontend/src
+ls -l
 npm install
 ls -l
 
