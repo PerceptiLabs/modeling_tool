@@ -27,17 +27,16 @@ echo "Environment:"
 conda list
 
 echo "Installing npm..."
-sudo apt install npm=6.4.1 -y
+sudo apt install npm=6.9.0 -y
 
 echo "node version:"
 node -v
 
-echo "Installing npm packages"
-cd ../frontend/src
-ls -l
+echo "Installing general npm packages"
+cd ../frontend
 npm install
-echo "node version:"
-node -v
-ls -l
+echo "Installing browser packages"
+cd src
+npm install
 
 
