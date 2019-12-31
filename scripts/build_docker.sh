@@ -56,3 +56,6 @@ cp dist/* ../../build/frontend_out/
 cd ../../
 cp Docker/Fronend/* build/frontend_out
 cp Docker/Core/* build/backend_out
+
+ls -l build/frontend_out
+ls -l build/backend_out
