@@ -55,8 +55,8 @@ cp -r dist/* ../../build/frontend_out/
 ################### MOVING EVERYTHING TO CORRECT PLACES #######################
 cd ../../
 ls -l
-cp Docker/Fronend/* build/frontend_out
-cp Docker/Core/* build/backend_out
+cp -r Docker/Frontend/* build/frontend_out
+cp -r Docker/Core/* build/backend_out
 
 echo "Frontend folder"
 ls -l build/frontend_out
