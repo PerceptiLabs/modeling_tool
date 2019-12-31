@@ -13,7 +13,7 @@ pool:
 steps:
 - bash: |
     cd scripts/
-    ./setup_docker.sh
+    bash -i setup_docker.sh
   displayName: 'Environment setup'
 
 - bash: |
