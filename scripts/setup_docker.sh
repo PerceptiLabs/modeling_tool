@@ -27,7 +27,10 @@ echo "Environment:"
 conda list
 
 echo "Installing npm..."
-sudo apt install npm=6.9.0 -y
+sudo apt install npm -y
+
+echo "npm version:"
+npm -v
 
 echo "node version:"
 node -v
