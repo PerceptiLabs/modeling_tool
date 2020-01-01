@@ -29,7 +29,7 @@ rsync -a ../../backend --files-from=../../backend/included_files.txt .
 cp ../../backend/setup_compact.pyx .
 
 echo "C compiling"
-mv mainServer.py mainServer.pyx
+mv webServer.py webServer.pyx
 find . -name "__init__.py" -exec rename -v 's/\.py$/\.pyx/i' {} \;
 python setup_compact.pyx develop --user
 if [ $? -ne 0 ]; then exit 1; fi
@@ -39,7 +39,7 @@ find . -type f -name '*.c' -exec rm {} +
 find . -type f -name '*.py' -exec rm {} +
 rm setup_compact.pyx
 rm -r build
-mv mainServer.pyx mainServer.py
+mv webServer.pyx webServer.py
 find . -name "__init__.pyx" -exec rename -v 's/\.pyx$/\.py/i' {} \;
 
 echo "Listing files to be included in build (contents of 'backend_out/')"
