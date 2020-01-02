@@ -279,4 +279,7 @@ class ByteMap(collections.MutableMapping):
 
     def __keytransform__(self, key):
         raise key
+
+    def __repr__(self):
+        return '{}: {}'.format(self._name, repr(self._client.mapping))
     
