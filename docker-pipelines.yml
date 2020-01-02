@@ -4,8 +4,8 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
 
-# trigger:
-# - web-dev
+trigger:
+- web-dev
 
 pool:
   vmImage: 'ubuntu-16.04'
