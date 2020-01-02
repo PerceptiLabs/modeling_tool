@@ -237,10 +237,7 @@ class BaseCore:
     def _should_skip_layer(self, layer_id, content):
         if not (content["Info"]["Properties"] \
                 or ("Code" in content["Info"] and content["Info"]["Code"])):
-            if self._layer_extras_reader is not None:
-                return True
-            else:
-                raise Exception("Layer {} is empty and can therefore not run.\nMost likely it has not been properly Applied.".format(content["Info"]["Name"]))
+            return True
 
         layer_type = content["Info"]["Type"]                
         if layer_type in self._skip_layers:
