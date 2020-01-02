@@ -5,34 +5,32 @@
 
 
 trigger:
-# - master
-
-pool:
-  vmImage: 'ubuntu-16.04'
-
-steps:
-- bash: |
-    cd scripts/
-    ./setup_ubuntu.sh
-  displayName: 'Environment setup'
-
-- bash: |
-    cd scripts/
-    bash -i build_docker.sh
-  displayName: 'Build'
-
-- task: DockerCompose@0
-  inputs:
-    containerregistrytype: 'Azure Container Registry'
-    azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(1)(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
-    azureContainerRegistry: '{"loginServer":"perceptilabs.azurecr.io", "id" : "/subscriptions/d9d6ebad-f86e-4961-9964-5665aa01fcfc/resourceGroups/PerceptiLabs-America/providers/Microsoft.ContainerRegistry/registries/perceptilabs"}'
-    dockerComposeFile: '**/docker-compose.yml'
-    action: 'Build services'
-
-- task: DockerCompose@0
-  inputs:
-    containerregistrytype: 'Azure Container Registry'
-    azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(1)(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
-    azureContainerRegistry: '{"loginServer":"perceptilabs.azurecr.io", "id" : "/subscriptions/d9d6ebad-f86e-4961-9964-5665aa01fcfc/resourceGroups/PerceptiLabs-America/providers/Microsoft.ContainerRegistry/registries/perceptilabs"}'
-    dockerComposeFile: '**/docker-compose.yml'
-    action: 'Push services'
+  - web-dev
+  
+  pool:
+    vmImage: 'ubuntu-16.04'
+  
+  steps:
+  - bash: |
+      cd scripts/
+      bash -i setup_docker.sh
+    displayName: 'Environment setup'
+  
+  - bash: |
+      cd scripts/
+      bash -i build_docker.sh
+    displayName: 'Build'
+  
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'perceptilabs'
+      repository: 'core'
+      command: 'buildAndPush'
+      Dockerfile: 'build/backend_out/Dockerfile'
+  
+  - task: Docker@2
+    inputs:
+      containerRegistry: 'perceptilabs'
+      repository: 'frontend'
+      command: 'buildAndPush'
+      Dockerfile: 'build/frontend_out/Dockerfile'
