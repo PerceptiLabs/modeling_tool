@@ -45,8 +45,12 @@ class MapBase(ABC):
             self._is_running.clear()                        
             self._worker.join()
         self._reset()
-    
 
+    @property
+    def is_running(self):
+        return self._is_running.is_set()
+    
+        
 class MapServer(MapBase):
     POLL_INTERVAL = 1 # [ms]
     
@@ -79,11 +83,14 @@ class MapServer(MapBase):
                 self._on_update(collector_socket, publisher_socket)        
                 
     def _on_snapshot(self, snapshot_socket):
-        identity, request = snapshot_socket.recv_multipart()
+        identity, request, subtree = snapshot_socket.recv_multipart()
         assert request == b'snapshot-get'
-
+        
         with self._lock:
             for key, message in self._messages.items():
+                if not key.startswith(subtree):
+                    continue                
+                
                 snapshot_socket.send_multipart([
                     identity, b'snapshot-set',
                     int2bytes(message.index),
@@ -122,7 +129,7 @@ class MapClient(MapBase):
     def _worker_func(self):
         ctx = zmq.Context()
         snapshot_socket = self._init_socket(ctx, zmq.DEALER, self._dealer_addr)
-        subscriber_socket = self._init_socket(ctx, zmq.SUB, self._sub_addr, [(zmq.SUBSCRIBE, '')])
+        subscriber_socket = self._init_socket(ctx, zmq.SUB, self._sub_addr, [(zmq.SUBSCRIBE, self._subtree)])
         publisher_socket = self._init_socket(ctx, zmq.PUSH, self._push_addr)        
 
         self._get_snapshot(snapshot_socket)
@@ -145,9 +152,6 @@ class MapClient(MapBase):
                 index = bytes2int(index)
                 
                 with self._lock:
-                    if index != self._messages_received:
-                        raise RuntimeError(f"Unexpected index. "
-                                           f"Expected {self._messages_received} but got {index}!")
                     if op == 'update-set':
                         self._messages[key] = MappedMessage(index, key, body)
                     elif op == 'update-del':
@@ -156,7 +160,6 @@ class MapClient(MapBase):
                         raise RuntimeError(f"Unknown operation {op_str}")                        
 
                     self._messages_received += 1
-                    #self._index = max(self._index, index)
                     
             if self._queue.qsize() > 0:
                 op, key, body = self._queue.get()
@@ -164,7 +167,7 @@ class MapClient(MapBase):
                 publisher_socket.send_multipart([key, op.encode(), int2bytes(-1), body])
 
     def _get_snapshot(self, snapshot_socket):
-        snapshot_socket.send_string('snapshot-get')
+        snapshot_socket.send_multipart([b'snapshot-get', self._subtree.encode()])
         
         new_messages = []
         while self._is_running.is_set():
@@ -228,23 +231,39 @@ class MapClient(MapBase):
 
         
 class ByteMap(collections.MutableMapping):
-    def __init__(self, client: MapClient):
-        self._client = client
+    def __init__(self, name: str, dealer_addr: str, sub_addr: str, push_addr: str):    
+        self._client = MapClient(dealer_addr, sub_addr, push_addr, name)
+        self._client.start()
+        self._name = name
+
+    def start(self):
+        self._client.start()
+        
+    def stop(self):
+        self._client.stop()
+
+    @property
+    def is_running(self):
+        return self._client.is_running
+        
+    @property
+    def name(self):
+        return self._name
 
     def keys(self):
-        return self._client.messages.keys()
+        return self._client.mapping.keys()
     
     def items(self):
-        return self._client.messages.items()
+        return self._client.mapping.items()
     
     def values(self):
-        return self._client.messages.values()
+        return self._client.mapping.values()
 
     def __contains__(self, key):
-        return key in self._client.messages
+        return key in self._client.mapping
     
     def __getitem__(self, key):
-        return self._client.messages[key]
+        return self._client.mapping[key]
 
     def __setitem__(self, key, value):
         return self._client.put('update-set', key, value)
@@ -253,10 +272,10 @@ class ByteMap(collections.MutableMapping):
         return self._client.put('update-del', key)
 
     def __iter__(self):
-        return iter(self._client.messages)
+        return iter(self._client.mapping)
 
     def __len__(self):
-        return len(self._client.messages)
+        return len(self._client.mapping)
 
     def __keytransform__(self, key):
         raise key
