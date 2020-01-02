@@ -4,7 +4,7 @@ import time
 import zmq
 
 
-from mapping import MapServer, MapClient, ByteMap
+from core_new.api.mapping import MapServer, MapClient, ByteMap
 
 
 @pytest.fixture(autouse=True)
@@ -78,6 +78,18 @@ def map1():
     
 @pytest.fixture(autouse=True)    
 def map2():
+    map2 = ByteMap(
+        'map2',
+        'tcp://localhost:5556',
+        'tcp://localhost:5557',
+        'tcp://localhost:5558'
+    )
+    yield map2
+    map2.stop()
+
+    
+@pytest.fixture(autouse=True)    
+def map2_2():
     map2 = ByteMap(
         'map2',
         'tcp://localhost:5556',
@@ -163,7 +175,7 @@ def test_clients_with_different_subtree_are_disjoint(server, client3, client4):
     assert (b'key_1') not in client4.mapping    
 
 
-def test_byte_maps_are_disjoint(server, map1, map2):
+def test_byte_maps_with_different_names_are_disjoint(server, map1, map2):
     server.start(); map1.start(); map2.start()
     
     map1[b'key_1'] = b'value_1'
@@ -175,3 +187,15 @@ def test_byte_maps_are_disjoint(server, map1, map2):
     assert (b'key_2') not in map1
     assert (b'key_1') not in map2
 
+    
+def test_byte_maps_with_same_names_are_equal(server, map2, map2_2):
+    server.start(); map2.start(); map2_2.start()
+    
+    map2[b'key_1'] = b'value_1'
+    map2_2[b'key_2'] = b'value_2'
+    time.sleep(0.3)
+
+    assert (b'key_1') in map2
+    assert (b'key_2') in map2    
+    assert (b'key_1') in map2_2
+    assert (b'key_2') in map2_2    

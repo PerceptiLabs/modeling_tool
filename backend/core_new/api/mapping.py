@@ -204,9 +204,9 @@ class MapClient(MapBase):
         self._queue = queue.Queue()
                 
     @property
-    def mapping(self) -> Dict[str, bytes]:
+    def mapping(self) -> Dict[bytes, bytes]:
         with self._lock:
-            # Since bytes (and strings) are immutable, a shallow copy is enough.
+            # Since bytes are immutable, a shallow copy is enough.
             mapping = {}
             for key, mapped_message in self._messages.items():
                 key = key.split(b' ')[1]
@@ -283,3 +283,5 @@ class ByteMap(collections.MutableMapping):
     def __repr__(self):
         return '{}: {}'.format(self._name, repr(self._client.mapping))
     
+    def __dict__(self):
+        return self._client.mapping
