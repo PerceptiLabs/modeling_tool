@@ -128,16 +128,18 @@ class SoftmaxCodeGenerator(CodeGenerator):
 
 
 class MergeCodeGenerator(CodeGenerator):
-    def __init__(self, type_, merge_dim):
+    def __init__(self, type_, merge_dim, merge_order = None):
         self._type = type_
         self._merge_dim = merge_dim
-
+        self._merget_order = merge_order
     def get_code(self):
         # TODO: in python version < 3.6 dicts aren't ordered. caution if we allow custom environments in the future.
         
         if self._type == 'Concat':
-            # Due to duplicate values in X['Y'], just take every other value.            
-            code  = "for i in range(0, len(list(X['Y'].values())), 2):\n"
+            # Due to duplicate values in X['Y'], just take every other value.  
+            if self._merge_order is None:
+                self._merge_order = list(X['Y']).values()
+            code = "for i in range(0, %s, 2):\n" %len(self._merge_order)
             code += "    if not Y:\n"
             code += "        Y = list(X['Y'].values())[i]\n"
             code += "    Y = tf.concat([Y, list(X['Y'].values())[i]], %s)\n" % self._merge_dim
@@ -619,7 +621,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
 
 
 LayerPair = namedtuple('LayerPair', ['online_id', 'target_id'])
-
 
 
 class TrainReinforceCodeGenerator(CodeGenerator):
