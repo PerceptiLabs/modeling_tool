@@ -27,7 +27,7 @@ class MapBase(ABC):
         self._worker = None        
         self._lock = threading.RLock()
         self._messages = {}
-        self._index = 0
+        self._messages_received = 0
         self._is_running = threading.Event()
         self._is_running.clear()
 
@@ -95,9 +95,8 @@ class MapServer(MapBase):
     def _on_update(self, collector_socket, publisher_socket):
         key, op, _, body = collector_socket.recv_multipart()
         op_str = op.decode('utf-8')
-        
         with self._lock:
-            index = self._index
+            index = self._messages_received
             publisher_socket.send_multipart([key, op, int2bytes(index), body])
 
             if op_str == 'update-set':
@@ -107,7 +106,7 @@ class MapServer(MapBase):
             else:
                 raise RuntimeError(f"Unknown operation {op_str}")
             
-            self._index += 1
+            self._messages_received += 1
 
             
 class MapClient(MapBase):
@@ -146,16 +145,18 @@ class MapClient(MapBase):
                 index = bytes2int(index)
                 
                 with self._lock:
-                    if self._index != index:
-                        raise RuntimeError(f"Unexpected index. Expected {self._index} but got {index}!")
+                    if index != self._messages_received:
+                        raise RuntimeError(f"Unexpected index. "
+                                           f"Expected {self._messages_received} but got {index}!")
                     if op == 'update-set':
                         self._messages[key] = MappedMessage(index, key, body)
                     elif op == 'update-del':
                         del self._messages[key]
                     else:
                         raise RuntimeError(f"Unknown operation {op_str}")                        
-                        
-                    self._index += 1
+
+                    self._messages_received += 1
+                    #self._index = max(self._index, index)
                     
             if self._queue.qsize() > 0:
                 op, key, body = self._queue.get()
@@ -182,7 +183,7 @@ class MapClient(MapBase):
         with self._lock:
             for message in new_messages:
                 self._messages[message.key] = message
-                self._index = max(self._index, message.index)
+                self._messages_received += 1
 
     def _init_socket(self, ctx, zmq_type, address, options=None):
         socket = ctx.socket(zmq_type)
@@ -200,13 +201,19 @@ class MapClient(MapBase):
         self._queue = queue.Queue()
                 
     @property
-    def messages(self) -> Dict[str, bytes]:
+    def mapping(self) -> Dict[str, bytes]:
         with self._lock:
-            # Since bytes (and strings) are immutable, a shallow copy is enough.            
-            messages = self._messages.copy()
-        return messages
+            # Since bytes (and strings) are immutable, a shallow copy is enough.
+            mapping = {}
+            for key, mapped_message in self._messages.items():
+                key = key.split(b' ')[1]
+                mapping[key] = mapped_message.body                            
+        return mapping
 
     def put(self, operation: str, key: bytes, value: bytes=None) -> None:
+        if ' ' in key.decode('utf-8'):
+            raise ValueError("Keys cannot contain value \x20 (space)")
+        
         if operation == 'update-del':
             value = b''
         if not isinstance(operation, str):
@@ -216,7 +223,8 @@ class MapClient(MapBase):
         if not isinstance(value, bytes):
             raise TypeError("Value must be of type 'bytes'")
 
-        self._queue.put((operation, key, value))
+        full_key = bytes(self._subtree + ' ', encoding='utf-8') + key
+        self._queue.put((operation, full_key, value))
 
         
 class ByteMap(collections.MutableMapping):

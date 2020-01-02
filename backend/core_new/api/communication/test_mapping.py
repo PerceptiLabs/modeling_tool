@@ -36,6 +36,17 @@ def client2():
     yield client
     client.stop()
 
+@pytest.fixture(autouse=True)
+def client3():
+    client = MapClient(
+        'tcp://localhost:5556',
+        'tcp://localhost:5557',
+        'tcp://localhost:5558',
+        'subtree'
+    )    
+    yield client
+    client.stop()
+
     
 def test_client_server_queued_message_is_stored(server, client):
     server.start(); client.start()
@@ -43,9 +54,8 @@ def test_client_server_queued_message_is_stored(server, client):
     client.put('update-set', b'key', b'value')
     time.sleep(0.3)
     
-    assert (b'key') in client.messages
-    assert client.messages[b'key'].key == b'key'
-    assert client.messages[b'key'].body == b'value'
+    assert (b'key') in client.mapping
+    assert client.mapping[b'key'] == b'value'
 
     
 def test_client_server_stopped_client_is_empty(server, client):
@@ -53,10 +63,10 @@ def test_client_server_stopped_client_is_empty(server, client):
     
     client.put('update-set', b'key', b'value')
     time.sleep(0.3)
-    assert client.messages != {}
+    assert client.mapping != {}
     
     client.stop()
-    assert client.messages == {}
+    assert client.mapping == {}
 
     
 def test_client_server_can_delete_message(server, client):
@@ -64,11 +74,11 @@ def test_client_server_can_delete_message(server, client):
     
     client.put('update-set', b'key', b'value')
     time.sleep(0.3)
-    assert client.messages != {}
+    assert client.mapping != {}
     
     client.put('update-del', b'key')
     time.sleep(0.3)
-    assert client.messages == {}
+    assert client.mapping == {}
 
     
 def test_client_server_restarted_client_catches_up(server, client):
@@ -76,14 +86,14 @@ def test_client_server_restarted_client_catches_up(server, client):
     
     client.put('update-set', b'key', b'value')
     time.sleep(0.3)
-    assert client.messages != {}    
+    assert client.mapping != {}    
     
     client.stop()
-    assert client.messages == {}
+    assert client.mapping == {}
     
     client.start()
     time.sleep(0.3)
-    assert client.messages != {}
+    assert client.mapping != {}
 
 
 def test_second_client_receives_message(server, client, client2):
@@ -93,10 +103,25 @@ def test_second_client_receives_message(server, client, client2):
     client2.put('update-set', b'key_2', b'value_2')
     time.sleep(0.3)    
 
-    assert (b'key_1') in client.messages
-    assert (b'key_2') in client.messages    
-    assert (b'key_1') in client2.messages
-    assert (b'key_2') in client2.messages    
+    assert (b'key_1') in client.mapping
+    assert (b'key_2') in client.mapping    
+    assert (b'key_1') in client2.mapping
+    assert (b'key_2') in client2.mapping
+
+    
+def test_clients_with_different_subtree_dont_overlap(server, client, client3):
+    server.start(); client.start(); client3.start()
+
+    client.put('update-set', b'key_1', b'value_1')
+    client3.put('update-set', b'key_2', b'value_2')
+    time.sleep(0.3)    
+    '''
+    import pdb;pdb.set_trace()
+    
+    assert (b'key_1') in client.mapping
+    assert (b'key_2') in client.mapping    
+    assert (b'key_1') in client2.mapping
+    assert (b'key_2') in client2.mapping    
     
     
-    
+    '''
