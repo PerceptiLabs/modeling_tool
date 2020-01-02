@@ -1,9 +1,0 @@
-tensorflow
-numpy
-websockets
-dask
-scikit-image
-psutil
-GPUtil
-sentry-sdk
-scipy
