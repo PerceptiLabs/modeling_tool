@@ -93,12 +93,12 @@ class MapServer(MapBase):
             snapshot_socket.send_multipart([identity, b'snapshot-end', int2bytes(0), b'', b''])
             
     def _on_update(self, collector_socket, publisher_socket):
-        op, _, key, body = collector_socket.recv_multipart()
+        key, op, _, body = collector_socket.recv_multipart()
         op_str = op.decode('utf-8')
         
         with self._lock:
             index = self._index
-            publisher_socket.send_multipart([op, int2bytes(index), key, body])
+            publisher_socket.send_multipart([key, op, int2bytes(index), body])
 
             if op_str == 'update-set':
                 self._messages[key] = MappedMessage(index, key, body)
@@ -113,11 +113,12 @@ class MapServer(MapBase):
 class MapClient(MapBase):
     POLL_INTERVAL = 1 # [ms]
     
-    def __init__(self, dealer_addr: str, sub_addr: str, push_addr: str):
+    def __init__(self, dealer_addr: str, sub_addr: str, push_addr: str, subtree: str=''):
         self._reset()
         self._dealer_addr = dealer_addr
         self._sub_addr = sub_addr
         self._push_addr = push_addr
+        self._subtree = subtree
         
     def _worker_func(self):
         ctx = zmq.Context()
@@ -140,7 +141,7 @@ class MapClient(MapBase):
             items = dict(poller.poll(timeout=self.POLL_INTERVAL))
 
             if subscriber_socket in items:
-                op, index, key, body = subscriber_socket.recv_multipart()
+                key, op, index, body = subscriber_socket.recv_multipart()
                 op = op.decode('utf-8')
                 index = bytes2int(index)
                 
@@ -159,7 +160,7 @@ class MapClient(MapBase):
             if self._queue.qsize() > 0:
                 op, key, body = self._queue.get()
                 assert op in ['update-set', 'update-del']
-                publisher_socket.send_multipart([op.encode(), int2bytes(-1), key, body])
+                publisher_socket.send_multipart([key, op.encode(), int2bytes(-1), body])
 
     def _get_snapshot(self, snapshot_socket):
         snapshot_socket.send_string('snapshot-get')
