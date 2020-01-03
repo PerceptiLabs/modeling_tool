@@ -116,7 +116,8 @@ class MapServer(MapBase):
             if op_str == 'update-set':
                 self._messages[key] = MappedMessage(index, key, body)
             elif op_str == 'update-del':
-                del self._messages[key]
+                if key in self._messages:
+                    del self._messages[key]
             else:
                 raise RuntimeError(f"Unknown operation {op_str}")
             
@@ -126,9 +127,8 @@ class MapServer(MapBase):
 class MapClient(MapBase):
     POLL_INTERVAL = 1 # [ms]
     
-    def __init__(
-            self, dealer_addr: str, sub_addr: str, push_addr: str, subtree: str='',
-            on_set: Callable=None, on_delete: Callable=None):
+    def __init__(self, dealer_addr: str, sub_addr: str, push_addr: str, subtree: str='',
+                 on_set: Callable=None, on_delete: Callable=None):
         self._reset()
         self._dealer_addr = dealer_addr
         self._sub_addr = sub_addr
@@ -177,8 +177,9 @@ class MapClient(MapBase):
                         self._messages[key] = message
                         self._on_set_message(message)
                     elif op == 'update-del':
-                        self._on_del_message(self._messages[key])
-                        del self._messages[key]
+                        if key in self._messages:
+                            self._on_del_message(self._messages[key])
+                            del self._messages[key]
                     else:
                         raise RuntimeError(f"Unknown operation {op_str}")                        
                     
@@ -317,10 +318,10 @@ class ByteMap(collections.MutableMapping):
         return self._client.mapping[key]
 
     def __setitem__(self, key, value):
-        return self._client.put('update-set', key, value)
+        self._client.put('update-set', key, value)
 
     def __delitem__(self, key):
-        return self._client.put('update-del', key)
+        self._client.put('update-del', key)
 
     def __iter__(self):
         return iter(self._client.mapping)
@@ -339,7 +340,7 @@ class ByteMap(collections.MutableMapping):
 
 
 class ByteSequence():
-    def __init__(self, name: str, dealer_addr: str, sub_addr: str, push_addr: str):    
+    def __init__(self, name: str, dealer_addr: str, sub_addr: str, push_addr: str):
         self._client = MapClient(dealer_addr, sub_addr, push_addr, name)
         self._name = name
 
@@ -356,10 +357,6 @@ class ByteSequence():
     @property
     def name(self):
         return self._name
-    
-    def _get_unique_id():
-        identifier = uuid.uuid4()
-        return identifier.encode()
     
     def append(self, value: bytes):
         self._client.put('update-set', uuid.uuid4().hex.encode(), value)
@@ -387,3 +384,41 @@ class ByteSequence():
             
     def __repr__(self):
         return '{}: {}'.format(self._name, repr(list(self)))
+
+
+class EventBus:
+    def __init__(self, name: str, dealer_addr: str, sub_addr: str, push_addr: str,
+                 on_event: Callable=None):
+        self._client = MapClient(dealer_addr, sub_addr, push_addr, name)
+        self._client.set_callbacks(on_set=self._on_set_handler)
+        self._name = name
+
+    def set_on_event(self, on_event: Callable):
+        self._on_event = on_event
+
+    def start(self):
+        self._client.start()
+        
+    def stop(self):
+        self._client.stop()
+
+    @property
+    def is_running(self):
+        return self._client.is_running
+        
+    @property
+    def name(self):
+        return self._name
+
+    def post(self, value: bytes):
+        self._client.put('update-set', uuid.uuid4().hex.encode(), value)        
+
+    def _on_set_handler(self, key, index, value):
+        if self._on_event is not None:
+            self._on_event(value)
+        self._client.put('update-del', key)        
+
+    @property
+    def pending_messages(self):
+        return len(self._client.mapping)
+    

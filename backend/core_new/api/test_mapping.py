@@ -3,9 +3,9 @@ import pickle
 import queue
 import time
 import zmq
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, call
 
-from core_new.api.mapping import MapServer, MapClient, ByteMap, ByteSequence
+from core_new.api.mapping import MapServer, MapClient, ByteMap, ByteSequence, EventBus
 
 
 @pytest.fixture(autouse=True)
@@ -99,6 +99,7 @@ def map2_2():
     yield map2
     map2.stop()
 
+    
 @pytest.fixture(autouse=True)    
 def seq1():
     seq1 = ByteSequence(
@@ -110,6 +111,29 @@ def seq1():
     yield seq1
     seq1.stop()
 
+    
+@pytest.fixture(autouse=True)    
+def eb1():
+    eb1 = EventBus(
+        'eb1',
+        'tcp://localhost:5556',
+        'tcp://localhost:5557',
+        'tcp://localhost:5558'
+    )
+    yield eb1
+    eb1.stop()
+    
+@pytest.fixture(autouse=True)    
+def eb1_2():
+    eb1 = EventBus(
+        'eb1',
+        'tcp://localhost:5556',
+        'tcp://localhost:5557',
+        'tcp://localhost:5558'
+    )
+    yield eb1
+    eb1.stop()
+    
     
 def wait_for_condition(fn, timeout=5.0):
     t0 = time.perf_counter()
@@ -354,8 +378,85 @@ def test_byte_sequence_delete_moves_second_item_up(server, seq1):
     del list1[0]
     assert wait_for_condition(lambda _: list(seq1) == list1)    
 
+    
+def test_event_bus_post_generates_callback(server, eb1):
+    server.start()
+    eb1.start()
+    
+    callback = MagicMock()
+    eb1.set_on_event(callback)
+    eb1.post(b'hello')
 
+    assert wait_for_condition(lambda _: callback.called)
+    assert wait_for_condition(lambda _: callback.call_args_list == [call(b'hello')])    
 
     
+def test_event_bus_posted_messages_are_not_stored(server, eb1):
+    server.start()
+    eb1.start()
+    
+    callback = MagicMock()
+    eb1.set_on_event(callback)
+    eb1.post(b'hello')
+
+    assert wait_for_condition(lambda _: callback.called)
+    assert wait_for_condition(lambda _: eb1.pending_messages == 0)    
 
     
+def test_both_event_busses_receive_message(server, eb1, eb1_2):
+    server.start()
+    eb1.start()
+    eb1_2.start()    
+    
+    cb1 = MagicMock()
+    eb1.set_on_event(cb1)
+    
+    cb2 = MagicMock()
+    eb1_2.set_on_event(cb2)
+
+    eb1.post(b'hello')
+    
+    assert wait_for_condition(lambda _: cb1.called)
+    assert wait_for_condition(lambda _: cb2.called)    
+
+
+def test_both_event_busses_receive_but_do_not_store_messages(server, eb1, eb1_2):
+    server.start()
+    eb1.start()
+    eb1_2.start()    
+    
+    cb1 = MagicMock()
+    eb1.set_on_event(cb1)
+    
+    cb2 = MagicMock()
+    eb1_2.set_on_event(cb2)
+
+    eb1.post(b'hello')
+    
+    assert wait_for_condition(lambda _: cb1.called)
+    assert wait_for_condition(lambda _: cb2.called)    
+    assert wait_for_condition(lambda _: eb1.pending_messages == 0)
+    assert wait_for_condition(lambda _: eb1_2.pending_messages == 0)            
+
+
+def test_both_event_busses_receive_messages_in_the_same_order(server, eb1, eb1_2):
+    server.start()
+    eb1.start()
+    eb1_2.start()
+
+    l1, l2 = [], []
+    eb1.set_on_event(lambda x: l1.append(x))
+    eb1_2.set_on_event(lambda x: l2.append(x))    
+
+    n_values = 1000
+    values = [str(i).encode() for i in range(n_values)]
+
+    for counter in range(n_values):
+        value = str(counter).encode()
+        if counter % 2 == 0:
+            eb1.post(value)
+        else:
+            eb1_2.post(value)
+
+    assert wait_for_condition(lambda _: len(l1) == len(l2) == n_values)
+    assert l1 == l2
