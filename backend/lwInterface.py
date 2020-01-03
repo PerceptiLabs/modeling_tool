@@ -13,10 +13,11 @@ class LW_interface_base(ABC):
 
 
 class getDataMeta(LW_interface_base):
-    def __init__(self, id_, network, lw_func):
+    def __init__(self, id_, lwObj):
         self._id = id_
-        self._network = network
-        self._lw_func = lw_func
+        self.lwObj = lwObj
+        # self._network = network
+        # self._lw_func = lw_func
 
     def _try_fetch(self, dict, variable):
         try:
@@ -25,7 +26,7 @@ class getDataMeta(LW_interface_base):
             return ""
 
     def exec(self):
-        lw_core, _, data_container = self._lw_func(self._network)
+        lw_core, _, data_container = self.lwObj.create_lw_core()
         lw_core.run()
         content = {
             "Action_space": self._try_fetch(data_container[self._id], "_action_space"),

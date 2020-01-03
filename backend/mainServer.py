@@ -52,9 +52,9 @@ if __name__ == "__main__":
     cores=dict()
     dataDict=dict()
     checkpointDict=dict()
-    lwNetworks=dict()
+    lwDict=dict()
 
-    core_interface = Interface(cores, dataDict, checkpointDict, lwNetworks)
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict)
 
     server = Server(args.user)
     server.serve_desktop(core_interface, args.instantly_kill)

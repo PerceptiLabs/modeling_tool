@@ -1,5 +1,8 @@
 import sys
 import os
+import logging
+
+log = logging.getLogger(__name__)
 
 # class webInterface():
 #     def __init__():
@@ -89,14 +92,16 @@ import os
 #     def __init__(self):
 #         pass
 
+
+
 from lwInterface import getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 class Interface():
-    def __init__(self, cores, dataDict, checkpointDict, lwNetworks):
+    def __init__(self, cores, dataDict, checkpointDict, lwDict):
         self._cores=cores
         self._dataDict=dataDict
         self._checkpointDict=checkpointDict
-        self._lwNetworks=lwNetworks
+        self._lwDict=lwDict
 
     def _addCore(self, reciever):
         from coreLogic import coreLogic
@@ -114,95 +119,92 @@ class Interface():
             del c
         sys.exit(1)
 
-    # def globalErrors(self):
-    #     errorList = []
-    #     errors = self._core.errorQueue
-    #     while not errors.empty():
-    #         message = errors.get(timeout=0.05)
-    #         errorList.append(message)
-    #     if errorList:
-    #         self._core.Close()
-    #     return errorList
-
-    # def globalWarnings(self):
-    #     warningList = []
-    #     warnings = self._core.warningQueue
-    #     while not warnings.empty():
-    #         message = warnings.get(timeout=0.05)
-    #         warningList.append(message)
-    #     return warningList
-
     def getCheckpointDict(self):
         return self._checkpointDict.copy()
 
-    def add_to_checkpointDict(self, content):
+    def _add_to_checkpointDict(self, content):
         if content["checkpoint"][-1] not in self._checkpointDict:
             from extractVariables import extractCheckpointInfo
             ckptObj=extractCheckpointInfo(content["endPoints"], *content["checkpoint"])
             self._checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
             ckptObj.close()
 
-    def _create_lw_core(self, jsonNetwork):
-        from graph import Graph
-        from core_new.core import DataContainer
-        from core_new.history import SessionHistory
-        from core_new.errors import LightweightErrorHandler
-        from core_new.extras import LayerExtrasReader
-        from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
-        from modules import ModuleProvider
-        from core_new.cache import get_cache
+    class lwContainer():
+        def __init__(self, jsonNetwork, reciever, lwDict, checkpointDict):
+            self.jsonNetwork = jsonNetwork
+            self.reciever = reciever
+            self._lwDict = lwDict
+            self._checkpointDict = checkpointDict
 
-        if reciever not in self.lwDict:
-            self.lwDict[reciever]=NetworkCache()
-        else:
-            deleteList=[]
-            for layer_id in self.lwDict[reciever].get_layers():
-                if layer_id not in jsonNetwork:
-                    deleteList.append(layer_id)
-            log.info("Deleting these layers: " + str(deleteList))
-            for layer_id in deleteList:
-                self.lwDict[reciever].remove_layer(layer_id)
+        def _add_to_checkpointDict(self, content):
+            if content["checkpoint"][-1] not in self._checkpointDict:
+                from extractVariables import extractCheckpointInfo
+                ckptObj=extractCheckpointInfo(content["endPoints"], *content["checkpoint"])
+                self._checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
+                ckptObj.close()
 
-        graph = Graph(jsonNetwork)
-        
-        graph_dict = graph.graphs
+        def create_lw_core(self):
+            from graph import Graph
+            from core_new.core import DataContainer
+            from core_new.history import SessionHistory
+            from core_new.errors import LightweightErrorHandler
+            from core_new.extras import LayerExtrasReader
+            from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
+            from modules import ModuleProvider
+            from core_new.cache import get_cache
+            from core_new.networkCache import NetworkCache
 
-        for value in graph_dict.values():
-            if "checkpoint" in value["Info"] and value["Info"]["checkpoint"]:
-                self.add_to_checkpointDict(value["Info"])
+            if self.reciever not in self._lwDict:
+                self._lwDict[self.reciever]=NetworkCache()
+            else:
+                deleteList=[]
+                for layer_id in self._lwDict[self.reciever].get_layers():
+                    if layer_id not in self.jsonNetwork:
+                        deleteList.append(layer_id)
+                log.info("Deleting these layers: " + str(deleteList))
+                for layer_id in deleteList:
+                    self._lwDict[self.reciever].remove_layer(layer_id)
 
-        data_container = DataContainer()
+            graph = Graph(self.jsonNetwork)
             
-        extras_reader = LayerExtrasReader()
+            graph_dict = graph.graphs
 
-        from codehq import CodeHqNew as CodeHq
+            for value in graph_dict.values():
+                if "checkpoint" in value["Info"] and value["Info"]["checkpoint"]:
+                    self._add_to_checkpointDict(value["Info"])
 
-        module_provider = ModuleProvider()
-        module_provider.load('tensorflow', as_name='tf')
-        module_provider.load('numpy', as_name='np')
-        module_provider.load('pandas', as_name='pd')             
-        module_provider.load('gym')
-        module_provider.load('json')  
-        module_provider.load('os')   
-        module_provider.load('skimage')         
-        module_provider.load('dask.array', as_name='da')
-        module_provider.load('dask.dataframe', as_name='dd')                  
-        
-        for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
-            module_provider.install_hook(hook_target, hook_func)
+            data_container = DataContainer()
+                
+            extras_reader = LayerExtrasReader()
 
-        error_handler = LightweightErrorHandler()
-        
-        global session_history_lw
-        cache = get_cache()
-        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!        
-        lw_core = LightweightCore(CodeHq, graph_dict,
-                                  data_container, session_history_lw,
-                                  module_provider, error_handler,
-                                  extras_reader, checkpointValues=self.checkpointDict.copy(),
-                                  network_cache=self.lwDict[reciever])
-        
-        return lw_core, extras_reader, data_container
+            from codehq import CodeHqNew as CodeHq
+
+            module_provider = ModuleProvider()
+            module_provider.load('tensorflow', as_name='tf')
+            module_provider.load('numpy', as_name='np')
+            module_provider.load('pandas', as_name='pd')             
+            module_provider.load('gym')
+            module_provider.load('json')  
+            module_provider.load('os')   
+            module_provider.load('skimage')         
+            module_provider.load('dask.array', as_name='da')
+            module_provider.load('dask.dataframe', as_name='dd')                  
+            
+            for hook_target, hook_func in LW_ACTIVE_HOOKS.items():
+                module_provider.install_hook(hook_target, hook_func)
+
+            error_handler = LightweightErrorHandler()
+            
+            global session_history_lw
+            cache = get_cache()
+            session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!        
+            lw_core = LightweightCore(CodeHq, graph_dict,
+                                    data_container, session_history_lw,
+                                    module_provider, error_handler,
+                                    extras_reader, checkpointValues=self._checkpointDict.copy(),
+                                    network_cache=self._lwDict[self.reciever])
+            
+            return lw_core, extras_reader, data_container
 
     def create_response(self, request):
         reciever = request.get('reciever')
@@ -210,11 +212,11 @@ class Interface():
         value = request.get('value')
 
         self._setCore(reciever)
-        self._create_response(action, value)
+        self._create_response(reciever, action, value)
 
         return self._create_response, self._core.warningQueue, self._core.errorQueue
 
-    def _create_response(self, action, value):
+    def _create_response(self, reciever, action, value):
         #Parse the value and send it to the correct function
         if action == "getDataMeta":
             Id = value['Id']
@@ -223,9 +225,9 @@ class Interface():
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            return getDataMeta(id_=Id, 
-            network=jsonNetwork, 
-            lw_func=self._create_lw_core).exec()
+            lwObj = self.lwContainer(jsonNetwork, reciever, self._lwDict, self._checkpointDict)
+
+            return getDataMeta(id_=Id, lwObj=lwObj).exec()
 
         elif action == "getPartitionSummary":
             Id=value["Id"]
@@ -326,7 +328,12 @@ class Interface():
             self._core.getS3Keys()
 
         elif action == "Start":
-            self._core.Start()
+            network = value
+            for value in network['Layers'].values():
+                if "checkpoint" in value and value["checkpoint"]:
+                    self._add_to_checkpointDict(value)
+            content=self._core.startCore(network, self._checkpointDict.copy())
+            return content
 
         elif action == "startTest":
             self._core.startTest()
