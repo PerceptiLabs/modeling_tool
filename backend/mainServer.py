@@ -3,7 +3,8 @@ import sys
 import argparse
 
 from processes import ProcessDependencyWatcher
-import appServer
+from coreInterface import Interface
+from appServer import Server
 
 
 def get_input_args():
@@ -47,5 +48,13 @@ if __name__ == "__main__":
     
     setup_logger(args.log_level)
     ProcessDependencyWatcher(args.frontend_pid).start()
-    
-    appServer.mainServer(args.instantly_kill, args.user)
+
+    cores=dict()
+    dataDict=dict()
+    checkpointDict=dict()
+    lwNetworks=dict()
+
+    core_interface = Interface(cores, dataDict, checkpointDict, lwNetworks)
+
+    server = Server(args.user)
+    server.serve_desktop(core_interface, args.instantly_kill)
