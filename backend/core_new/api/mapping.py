@@ -52,7 +52,7 @@ class MapBase(ABC):
     
         
 class MapServer(MapBase):
-    POLL_INTERVAL = 1 # [ms]
+    POLL_INTERVAL = 0.01 # [ms]
     
     def __init__(self, router_addr: str, pub_addr: str, pull_addr: str):
         self._reset()
@@ -117,7 +117,7 @@ class MapServer(MapBase):
 
             
 class MapClient(MapBase):
-    POLL_INTERVAL = 1 # [ms]
+    POLL_INTERVAL = 0.1 # [ms]
     
     def __init__(self, dealer_addr: str, sub_addr: str, push_addr: str, subtree: str=''):
         self._reset()
@@ -125,6 +125,7 @@ class MapClient(MapBase):
         self._sub_addr = sub_addr
         self._push_addr = push_addr
         self._subtree = subtree
+        self._messages_sent = 0
         
     def _worker_func(self):
         ctx = zmq.Context()
@@ -165,6 +166,7 @@ class MapClient(MapBase):
                 op, key, body = self._queue.get()
                 assert op in ['update-set', 'update-del']
                 publisher_socket.send_multipart([key, op.encode(), int2bytes(-1), body])
+                self._messages_sent += 1
 
     def _get_snapshot(self, snapshot_socket):
         snapshot_socket.send_multipart([b'snapshot-get', self._subtree.encode()])
@@ -202,6 +204,7 @@ class MapClient(MapBase):
     def _reset(self):
         super()._reset()
         self._queue = queue.Queue()
+        self._messages_sent = 0
                 
     @property
     def mapping(self) -> Dict[bytes, bytes]:
@@ -233,7 +236,6 @@ class MapClient(MapBase):
 class ByteMap(collections.MutableMapping):
     def __init__(self, name: str, dealer_addr: str, sub_addr: str, push_addr: str):    
         self._client = MapClient(dealer_addr, sub_addr, push_addr, name)
-        self._client.start()
         self._name = name
 
     def start(self):
@@ -285,3 +287,5 @@ class ByteMap(collections.MutableMapping):
     
     def __dict__(self):
         return self._client.mapping
+
+    
