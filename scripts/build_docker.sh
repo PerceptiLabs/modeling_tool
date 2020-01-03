@@ -57,7 +57,6 @@ cd ../../
 ls -l
 cp -r Docker/Frontend/* build/frontend_out
 cp -r Docker/Core/* build/backend_out
-cp scripts/requirements.txt build/backend_out
 
 echo "Frontend folder"
 ls -l build/frontend_out
