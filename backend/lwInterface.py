@@ -11,47 +11,39 @@ class LW_interface_base(ABC):
     def exec(self):
         raise NotImplementedError
 
-
-class getDataMeta(LW_interface_base):
-    def __init__(self, id_, lwObj):
-        self._id = id_
-        self.lwObj = lwObj
-        # self._network = network
-        # self._lw_func = lw_func
-
     def _try_fetch(self, dict, variable):
         try:
             return dict[variable]
         except:
             return ""
 
+
+class getDataMeta(LW_interface_base):
+    def __init__(self, id_, lw_core, data_container):
+        self._id = id_
+        self.lw_core = lw_core
+        self.data_container = data_container
+
     def exec(self):
-        lw_core, _, data_container = self.lwObj.create_lw_core()
-        lw_core.run()
+        # lw_core, _, data_container = self.lwObj.create_lw_core()
+        self.lw_core.run()
         content = {
-            "Action_space": self._try_fetch(data_container[self._id], "_action_space"),
-            "Dataset_size": self._try_fetch(data_container[self._id], "_data_size"),
-            "Columns": self._try_fetch(data_container[self._id], "cols")
+            "Action_space": self._try_fetch(self.data_container[self._id], "_action_space"),
+            "Dataset_size": self._try_fetch(self.data_container[self._id], "_data_size"),
+            "Columns": self._try_fetch(self.data_container[self._id], "cols")
         }
         return content
 
 
 class getPartitionSummary(LW_interface_base):
-    def __init__(self, id_, network, lw_func):
+    def __init__(self, id_, lw_core, data_container):
         self._id = id_
-        self._network = network
-        self._lw_func = lw_func
-
-    def _try_fetch(self, dict, variable):
-        try:
-            return dict[variable]
-        except:
-            return ""
+        self.lw_core = lw_core
+        self.data_container = data_container
 
     def exec(self):
-        lw_core, _, data_container = self._lw_func(self._network)
-        lw_core.run()
-        content = self._try_fetch(data_container[self._id], "_action_space")
+        self.lw_core.run()
+        content = self._try_fetch(self.data_container[self._id], "_action_space")
         return content
 
 
@@ -79,17 +71,17 @@ class getCode(LW_interface_base):
         return content
 
 class getNetworkInputDim(LW_interface_base):
-    def __init__(self, network, lw_func):
+    def __init__(self, network, lw_core, extras_reader):
         self._network = network
-        self._lw_func = lw_func
+        self.lw_core = lw_core
+        self.extras_reader = extras_reader
 
     def exec(self):
-        lw_core, extras_reader, _ = self._lw_func(self._network)
-        lw_core.run()
+        self.lw_core.run()
 
         content={}
 
-        extras_dict=extras_reader.to_dict()
+        extras_dict=self.extras_reader.to_dict()
         for id_, value in self._network.items():
             content[id_]={}
 
@@ -106,12 +98,12 @@ class getNetworkInputDim(LW_interface_base):
 
                 content[id_].update({"inShape":str(tmp).replace("'","")})
 
-            if id_ in lw_core.error_handler:
-                log.info("ErrorMessage: " + str(lw_core.error_handler[id_]))
+            if id_ in self.lw_core.error_handler:
+                log.info("ErrorMessage: " + str(self.lw_core.error_handler[id_]))
 
                 content[id_]['Error'] = {
-                    'Message': lw_core.error_handler[id_].error_message,
-                    'Row': lw_core.error_handler[id_].error_line
+                    'Message': self.lw_core.error_handler[id_].error_message,
+                    'Row': self.lw_core.error_handler[id_].error_line
                 }
             else:
                 content[id_]['Error'] = None
@@ -119,15 +111,14 @@ class getNetworkInputDim(LW_interface_base):
         return content
 
 class getNetworkOutputDim(LW_interface_base):
-    def __init__(self, network, lw_func):
-        self._network = network
-        self._lw_func = lw_func
+    def __init__(self, lw_core, extras_reader):
+        self.lw_core = lw_core
+        self.extras_reader = extras_reader
 
-    def exec(self):
-        lw_core, extras_reader, _ = self._lw_func(self._network)                        
-        lw_core.run()
+    def exec(self):                      
+        self.lw_core.run()
         
-        extrasDict=extras_reader.to_dict()
+        extrasDict=self.extras_reader.to_dict()
 
         content={}
 
@@ -135,12 +126,12 @@ class getNetworkOutputDim(LW_interface_base):
             content[Id]={}
             content[Id].update({"Dim": str(value["outShape"]).replace("[","").replace("]","").replace(", ","x")})
 
-            if Id in lw_core.error_handler:
-                log.info("ErrorMessage: " + str(lw_core.error_handler[Id]))
+            if Id in self.lw_core.error_handler:
+                log.info("ErrorMessage: " + str(self.lw_core.error_handler[Id]))
 
                 content[Id]['Error'] = {
-                    'Message': lw_core.error_handler[Id].error_message,
-                    'Row': lw_core.error_handler[Id].error_line
+                    'Message': self.lw_core.error_handler[Id].error_message,
+                    'Row': self.lw_core.error_handler[Id].error_line
                 }
             else:
                 content[Id]['Error'] = None  
@@ -148,10 +139,11 @@ class getNetworkOutputDim(LW_interface_base):
         return content           
 
 class getPreviewSample(LW_interface_base):
-    def __init__(self, id_, network, lw_func, variable=None):
+    def __init__(self, id_, lw_core, extras_reader, data_container, variable=None):
         self._id = id_
-        self._network = network
-        self._lw_func = lw_func
+        self.lw_core = lw_core
+        self.extras_reader = extras_reader
+        self.data_container = data_container
         self._variable = variable
 
     def _is_jsonable(self, x):
@@ -170,17 +162,16 @@ class getPreviewSample(LW_interface_base):
             else:
                 return self._reduceTo2d(data[...,-1])
     
-    def exec(self):
-        lw_core, extras_reader, data_container = self._lw_func(self._network)                                    
-        lw_core.run()
+    def exec(self):                                
+        self.lw_core.run()
         
         sample=""
         if self._variable:
-            dataContainerDict=data_container.to_dict()
+            dataContainerDict=self.data_container.to_dict()
             if self._id in dataContainerDict:
                 sample = dataContainerDict[self._id][self._variable]
         else:
-            extrasDict=extras_reader.to_dict()
+            extrasDict=self.extras_reader.to_dict()
             if self._id in extrasDict:
                 sample = extrasDict[self._id]["Sample"]
 
@@ -203,28 +194,28 @@ class getPreviewSample(LW_interface_base):
         return content
 
 class getPreviewVariableList(LW_interface_base):
-    def __init__(self, id_, network, lw_func):
+    def __init__(self, id_, network, lw_core, extras_reader):
         self._id = id_
         self._network = network
-        self._lw_func = lw_func
+        self.lw_core = lw_core
+        self.extras_reader = extras_reader
 
-    def exec(self):
-        lw_core, extras_reader, _ = self._lw_func(self._network)                                                
-        lw_core.run()
+    def exec(self):                                            
+        self.lw_core.run()
         
-        extrasDict=extras_reader.to_dict()
+        extrasDict=self.extras_reader.to_dict()
         if self._id in extrasDict:
             content = {
                 "VariableList": extrasDict[self._id]["Variables"],
                 "VariableName": extrasDict[self._id]["Default_var"],
             }
 
-            if self._id in lw_core.error_handler:
-                log.info("ErrorMessage: " + str(lw_core.error_handler[self._id]))
+            if self._id in self.lw_core.error_handler:
+                log.info("ErrorMessage: " + str(self.lw_core.error_handler[self._id]))
                 
                 content['Error'] = {
-                    'Message': lw_core.error_handler[self._id].error_message,
-                    'Row': lw_core.error_handler[self._id].error_line
+                    'Message': self.lw_core.error_handler[self._id].error_message,
+                    'Row': self.lw_core.error_handler[self._id].error_line
                 }
         else:
             content = ""
@@ -241,16 +232,46 @@ class Parse(LW_interface_base):
         self._containerize = containerize
 
     def _getParsingFiles(self, pb, checkpoint):
-        if ".pb" in pb:
-            return [pb, None]
-        elif ".pb" not in pb and not checkpoint:
-            raise Exception("Only frozen .pb files can be parsed by themselves")
+        if checkpoint=="" and "." not in pb.split("/")[-1]:
+            #Then its a folder
+            raise Exception("Tried to parse a folder")
 
-        if checkpoint:
+        if ".pb" in pb and not checkpoint:
+            return [pb,None]
+        elif ".pb" not in pb:
+            raise Exception("Only frozen .pb files can be parsed by themselves")
+        else:
             if "ckpt" not in checkpoint:
                 raise Exception("Wrong file type")
             checkpoint = checkpoint.split("ckpt")[0]
             return [pb, checkpoint]
+
+        # else:
+        #     graph_def_path=""
+        #     checkpoint=""
+        #     for _file in fileList:
+        #         if ".ckpt" in _file:
+        #             path, fileName=os.path.split(_file)
+        #             if "ckpt" in fileName.split(".")[-1]:
+        #                 checkpoint=_file
+        #             else:
+        #                 newFileName=".".join(fileName.split(".")[0:-1])
+        #                 checkpoint=os.path.abspath(os.path.join(path, newFileName))
+                    
+        #         elif any([pb in _file for pb in [".pb", ".pbtxt"]]):
+        #             graph_def_path=_file
+        #         else:
+        #             raise Exception("File type not recognised")
+        #     if graph_def_path and checkpoint:
+        #         return [graph_def_path, checkpoint]
+        #     else:
+        #         return ""
+
+        # if checkpoint:
+        #     if "ckpt" not in checkpoint:
+        #         raise Exception("Wrong file type")
+        #     checkpoint = checkpoint.split("ckpt")[0]
+        #     return [pb, checkpoint]
 
     def exec(self):
         try:

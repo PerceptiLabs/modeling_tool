@@ -1,27 +1,3 @@
-reciever=self.request.get("reciever")
-action = self.request.get("action")
-startTime=time.time()
-
-#Check if the core exists, otherwise create one
-
-
-if not reciever in self.dataDict:
-    self.dataDict[reciever]=dict()
-
-if reciever not in self.cores:
-    core=coreLogic(reciever)
-    self.cores[reciever]=core
-else:
-    core=self.cores[reciever]
-
-warnings=core.warningQueue
-warningList=[]
-
-errors=core.errorQueue
-errorList=[]
-
-content=""
-
 
 coreCalls=["Close", "updateResults", "checkCore", "headless", "getTrainingStatistics", "getTestingStatistics", "Start", "startTest", "resetTest", "getTestStatus",
 "nextStep", "previousStep", "playTest", "getIter", "getEpoch", "Stop", "Pause", "SkipToValidation", "Export", "getStatus"]
