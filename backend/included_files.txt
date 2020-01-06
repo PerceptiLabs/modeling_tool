@@ -32,7 +32,6 @@ code_generator/base.py
 code_generator/datadata.py
 code_generator/dataenv.py
 code_generator/tensorflow.py
-code_generator/train_normal_distr.py
 
 # core_new
 core_new/api.py
