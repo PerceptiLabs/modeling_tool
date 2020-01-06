@@ -28,6 +28,7 @@ def client():
     )    
     yield client
     client.stop()
+
     
 @pytest.fixture(autouse=True)
 def client2():
@@ -410,10 +411,9 @@ def test_both_event_busses_receive_message(server, eb1, eb1_2):
     
     cb1 = MagicMock()
     eb1.set_on_event(cb1)
-    
     cb2 = MagicMock()
     eb1_2.set_on_event(cb2)
-
+    
     eb1.post(b'hello')
     
     assert wait_for_condition(lambda _: cb1.called)

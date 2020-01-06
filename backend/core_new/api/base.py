@@ -1,7 +1,7 @@
 from typing import Any, Tuple
 import dill
 
-from core_new.api._mapping import ByteMap
+from core_new.api.mapping import ByteMap
 
 
 class StateApi:
@@ -20,7 +20,7 @@ class StateApi:
         value_bytes = self._byte_map.get(key.encode())
         return dill.loads(value_bytes)
         
-    def delete(self, key: str) -> None:
+    def remove(self, key: str) -> None:
         del self._byte_map[key.encode()]
 
     def start(self):
