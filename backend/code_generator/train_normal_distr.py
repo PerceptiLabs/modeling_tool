@@ -13,20 +13,20 @@ target_layer = '{{target_layer}}'
 
 # ---- temporary: the enclosed part is only for simulating more than one device.
 n_devices = 2
-config = tf.ConfigProto(device_count={"CPU": n_devices},
-                        inter_op_parallelism_threads=n_devices,
-                        intra_op_parallelism_threads=1,
-                        log_device_placement=True)
+#config = tf.ConfigProto(device_count={"CPU": n_devices},
+#                        inter_op_parallelism_threads=n_devices,
+#                        intra_op_parallelism_threads=1,
+#                        log_device_placement=True)
 
 # ----
-sess = tf.Session(config=config)
+sess = tf.Session()#config=config)
 tf.keras.backend.set_session(sess) # since we use keras metrics
 
 
 BATCH_SIZE_PER_REPLICA = 10 # TODO: get from frontend/json network
 GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * n_devices
 
-strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
+strategy = tf.distribute.MirroredStrategy(devices=[f'/GPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
 
 train_dataset = tf.data.Dataset.zip((datasets[input_data_layer][0], datasets[target_data_layer][0]))
 validation_dataset = tf.data.Dataset.zip((datasets[input_data_layer][1], datasets[target_data_layer][1]))
