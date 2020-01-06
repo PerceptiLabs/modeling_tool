@@ -56,6 +56,7 @@ cp -r dist/* ../../build/frontend_out/
 cd ../../
 ls -l
 cp -r Docker/Frontend/* build/frontend_out
+cp backend/code_generator/train_normal_distr.py build/backend_out   #TODO: REMOVE
 cp -r Docker/Core/* build/backend_out
 
 echo "Frontend folder"
