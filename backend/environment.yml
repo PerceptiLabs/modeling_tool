@@ -15,6 +15,7 @@ dependencies:
     - Cython==0.29.14
     - pycrypto==2.6.1
     - GPUtil==1.4.0
+    - boltons==19.3.0
     - gym[atari]
     - sentry-sdk==0.10.2
     - pyinstaller==3.5

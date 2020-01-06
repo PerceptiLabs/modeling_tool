@@ -32,7 +32,7 @@ class Scraper:
         
     def submit(self, tag: str, values_dict: Dict[str, Any]):
         if not self.is_running:
-            # log.warning("Ignoring scraper submission. Scraper is not running.")
+            log.debug("Ignoring scraper submission. Scraper is not running.")
             return
 
         log.debug("Submit called with tag '{}'".format(tag))

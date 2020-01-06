@@ -36,7 +36,11 @@ def setup_logger(log_level):
     
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
+<<<<<<< HEAD
                         level=logging.getLevelName(log_level))
+=======
+                        level=logging.DEBUG)
+>>>>>>> lazy_data_distr_core
     
 if __name__ == "__main__":
     args = get_input_args()
