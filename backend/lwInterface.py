@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+import os
 
 import numpy as np
 import tensorflow as tf
@@ -243,35 +244,8 @@ class Parse(LW_interface_base):
         else:
             if "ckpt" not in checkpoint:
                 raise Exception("Wrong file type")
-            checkpoint = checkpoint.split("ckpt")[0]
+            checkpoint = checkpoint.split("ckpt")[0]         
             return [pb, checkpoint]
-
-        # else:
-        #     graph_def_path=""
-        #     checkpoint=""
-        #     for _file in fileList:
-        #         if ".ckpt" in _file:
-        #             path, fileName=os.path.split(_file)
-        #             if "ckpt" in fileName.split(".")[-1]:
-        #                 checkpoint=_file
-        #             else:
-        #                 newFileName=".".join(fileName.split(".")[0:-1])
-        #                 checkpoint=os.path.abspath(os.path.join(path, newFileName))
-                    
-        #         elif any([pb in _file for pb in [".pb", ".pbtxt"]]):
-        #             graph_def_path=_file
-        #         else:
-        #             raise Exception("File type not recognised")
-        #     if graph_def_path and checkpoint:
-        #         return [graph_def_path, checkpoint]
-        #     else:
-        #         return ""
-
-        # if checkpoint:
-        #     if "ckpt" not in checkpoint:
-        #         raise Exception("Wrong file type")
-        #     checkpoint = checkpoint.split("ckpt")[0]
-        #     return [pb, checkpoint]
 
     def exec(self):
         try:
@@ -284,7 +258,7 @@ class Parse(LW_interface_base):
             from parse_pb import parse
             content, filteredValueDict=parse(self._make_trainable, self._end_points, *correct_file_list)
         except Exception as e:
-            raise "Could not parse the file.\n"+str(e)
+            raise Exception("Could not parse the file.\n"+str(e))
         
         if type(filteredValueDict) is dict:
             self._checkpointDict[correct_file_list[-1]]=filteredValueDict
