@@ -12,7 +12,6 @@ import gym
 
 from graph import Graph
 from modules import ModuleProvider
-from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer
 from core_new.utils import set_tensorflow_mode
 from core_new.extras import LayerExtrasReader
