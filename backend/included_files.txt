@@ -35,6 +35,7 @@ code_generator/tensorflow.py
 # code
 code/__init__.py
 code/generators.py
+code/base.py
 
 # core_new
 core_new/api.py
