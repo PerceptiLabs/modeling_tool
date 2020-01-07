@@ -57,10 +57,7 @@ cd ../../
 ls -l
 cp -r Docker/Frontend/* build/frontend_out
 cp -r Docker/Core/* build/backend_out
-
-mkdir build/backend_out/code/templates
-cp backend/code/templates/*.j2 build/backend_out/code/templates/   #TODO: REMOVE
-
+cp backend/code_generator/train_normal_distr.py build/backend_out/code_generator   #TODO: REMOVE
 
 echo "Frontend folder"
 ls -l build/frontend_out
