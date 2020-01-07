@@ -48,7 +48,6 @@ class SessionProcessHandler:
         #if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
             #remapped_dict = boltons.iterutils.remap(results_dict, lambda p, k, v: str(type(v)))
             #log.debug("Pushed results onto queue: " + pprint.pformat(remapped_dict, depth=10))
-
         
     def _handle_commands(self, session):
         while not self._command_queue.empty():

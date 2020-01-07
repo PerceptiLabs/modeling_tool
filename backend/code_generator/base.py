@@ -114,4 +114,3 @@ class Jinja2CodeGenerator(CodeGenerator):
         return code
 '''
 from code.base import *
-
