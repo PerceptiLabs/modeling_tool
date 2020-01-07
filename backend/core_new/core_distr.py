@@ -56,26 +56,26 @@ class DistributedCore(Core):
         full_code = sb.build()
         print(full_code)
 
-        with open('thescript.py', 'w') as f:
+        # with open('thescript.py', 'w') as f:
 
-            full_code_extra  = 'import tensorflow as tf\n'
-            full_code_extra += 'import numpy as np\n'
-            full_code_extra += 'import pandas as pd\n'
-            full_code_extra += 'import gym\n'
-            full_code_extra += 'import json\n'
-            full_code_extra += 'import os\n'
-            full_code_extra += 'import os\n'
-            full_code_extra += 'import dask.array as da\n'
-            full_code_extra += 'import dask.dataframe as dd\n'
-            full_code_extra += 'from unittest.mock import MagicMock\n'
-            full_code_extra += 'api = MagicMock()\n'
-            full_code_extra += 'api.data.get_tensors.return_value = {}\n'
-            full_code_extra += 'api.ui.headless = False\n'
-            full_code_extra += 'api.ui.skip = False\n'                        
+        #     full_code_extra  = 'import tensorflow as tf\n'
+        #     full_code_extra += 'import numpy as np\n'
+        #     full_code_extra += 'import pandas as pd\n'
+        #     full_code_extra += 'import gym\n'
+        #     full_code_extra += 'import json\n'
+        #     full_code_extra += 'import os\n'
+        #     full_code_extra += 'import os\n'
+        #     full_code_extra += 'import dask.array as da\n'
+        #     full_code_extra += 'import dask.dataframe as dd\n'
+        #     full_code_extra += 'from unittest.mock import MagicMock\n'
+        #     full_code_extra += 'api = MagicMock()\n'
+        #     full_code_extra += 'api.data.get_tensors.return_value = {}\n'
+        #     full_code_extra += 'api.ui.headless = False\n'
+        #     full_code_extra += 'api.ui.skip = False\n'                        
             
-            full_code_extra += full_code
+        #     full_code_extra += full_code
             
-            f.write(full_code_extra)
+        #     f.write(full_code_extra)
         
         
         
