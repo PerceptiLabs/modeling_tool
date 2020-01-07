@@ -57,6 +57,8 @@ LABEL name="PerceptiLabs-Modelling-Backend" \
 
 COPY licenses /licenses
 
+#python3-libs?
+
 USER 0
 RUN yum -y --nodocs update && \
     yum -y --nodocs install ncurses-devel python36 python3-pip  python36-devel && \
