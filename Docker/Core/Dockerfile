@@ -1,4 +1,5 @@
-FROM registry.access.redhat.com/ubi8/python-36
+#FROM registry.access.redhat.com/ubi8/python-36
+FROM tensorflow/tensorflow:1.15.0-gpu-py3
 
 LABEL name="PerceptiLabs-Modelling-Backend" \
       vendor="PerceptiLabs" \
@@ -11,13 +12,16 @@ LABEL name="PerceptiLabs-Modelling-Backend" \
 COPY licenses /licenses
 
 
+#USER 0
+#RUN yum -y --nodocs update && \
+#    yum -y --nodocs install ncurses-devel && \
+#    yum clean all
+#USER 1001
+
 USER 0
-RUN yum -y --nodocs update && \
-    yum -y --nodocs install ncurses-devel && \
-    yum clean all
-USER 1001
-
-
+RUN apt-get update && \
+    apt-get install -y ncurses-devel
+USER 1001 
 
 ADD . /opt/app-root/src
 
