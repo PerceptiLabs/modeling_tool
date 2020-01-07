@@ -1,4 +1,6 @@
-'''
+import os
+from abc import ABC, abstractmethod
+
 import jinja2
 import copy
 from abc import ABC, abstractmethod
@@ -77,12 +79,14 @@ class CustomCodeGenerator(CodeGenerator):
             full_text += "{} {}".format(count, line)
             
         return full_text
-
+            
 
 class Jinja2CodeGenerator(CodeGenerator):
+    TEMPLATES_DIRECTORY = './code/templates/'
+    
     def _render(self, path, **kwargs):
         if not hasattr(self, '_jenv'):
-            self._jenv = jinja2.Environment(loader=jinja2.FileSystemLoader('./code_generator/'),
+            self._jenv = jinja2.Environment(loader=jinja2.FileSystemLoader(self.templates_directory),
                                             trim_blocks=True,
                                             lstrip_blocks=True)
             self._jenv.globals.update({
@@ -91,13 +95,14 @@ class Jinja2CodeGenerator(CodeGenerator):
                 'range': range,
                 'round̈́': round,
                 'None': None,
-                'str': str
+                'str': str,
+                'type': type
             })
 
             def remove_lspaces(text, count):
                 new_text = ''
                 lines = text.split('\n')
-                
+
                 for lineno, line in enumerate(lines):
                     last = '\n' if lineno < len(lines) - 1 else ''
                     if line.startswith(' '*count):
@@ -108,10 +113,60 @@ class Jinja2CodeGenerator(CodeGenerator):
 
             self._jenv.filters['remove_lspaces'] = remove_lspaces
                 
-
-            
         code = self._jenv.get_template(path).render(**kwargs)
         return code
-'''
-from code.base import *
 
+    @property
+    def templates_directory(self):
+        return self.TEMPLATES_DIRECTORY
+
+    
+class DataDataCodeGenerator2(Jinja2CodeGenerator):
+    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=None, layer_id=None, shuffle_buffer_size=None, lazy=False):
+        self._seed = seed
+        self.batch_size=batch_size
+        self.shuffle=shuffle
+        self._layer_id = layer_id
+        self.sources=sources
+        self.shuffle_buffer_size = shuffle_buffer_size
+        self.lazy = lazy
+
+        if columns is not None:
+            self.selected_column_indices=[i for i in columns] # convert to ints if necessary.
+        else:
+            self.selected_column_indices = None
+            
+        self.partitions = []
+        for source, partition in zip(sources, partitions):
+            if sum(partition) != 100:
+                raise ValueError("Partition percentages do not sum to 100!")
+
+            partition = [partition[0]/100.0, partition[1]/100.0, partition[2]/100.0]
+            self.partitions.append(partition)
+
+            if source['type'] == 'directory':
+                file_paths = os.listdir(source['path'])
+                extensions = [os.path.splitext(p)[1] for p in file_paths]
+                
+                if len(set(extensions)) != 1:
+                    raise ValueError("Can only contain one (and atleast one) type of file!")        
+            
+                source['ext'] = extensions[0]
+            else:
+                source['ext'] = os.path.splitext(source['path'])[1]                    
+
+    def get_code(self):
+        code = self._render(
+            'datadata.j2',
+            sources=self.sources,
+            shuffle=self.shuffle,
+            batch_size=self.batch_size,
+            partitions=self.partitions,
+            layer_id=self._layer_id,
+            selected_columns=self.selected_column_indices,
+            seed=self._seed,
+            shuffle_buffer_size=self.shuffle_buffer_size,
+            lazy=self.lazy
+        )
+        return code
+                     

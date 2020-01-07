@@ -636,7 +636,7 @@ class TrainNormalCodeGenerator(Jinja2CodeGenerator):
 
     def _get_code_distr(self):
         code  = self._render(
-            'train_normal_distr.py',
+            'train_normal_distr.j2',
             input_data_layer='1564399775664', # TODO: no hardcoding!
             target_data_layer='1564399786876',             
             output_layer=self._output_layer,
