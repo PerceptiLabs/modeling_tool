@@ -44,12 +44,12 @@ class ScriptBuilder:
         if layer_type != 'DataData':
             new_layer_code += '        return Y\n'
         else:
-            new_layer_code += '        return (X_trn_copy, X_val_copy, X_tst_copy)\n'
+            new_layer_code += '        return (X_train_copy, X_validation_copy, X_test_copy)\n'
 
         # TODO: these replaces shouldnt exist in later versions, but needed for now.
-        new_layer_code = new_layer_code.replace('X_trn = tf.data.Dataset', 'X_trn = X_trn_copy = tf.data.Dataset')
-        new_layer_code = new_layer_code.replace('X_val = tf.data.Dataset', 'X_val = X_val_copy = tf.data.Dataset')
-        new_layer_code = new_layer_code.replace('X_tst = tf.data.Dataset', 'X_tst = X_tst_copy = tf.data.Dataset')        
+        new_layer_code = new_layer_code.replace('X_train = tf.data.Dataset', 'X_train = X_train_copy = tf.data.Dataset')
+        new_layer_code = new_layer_code.replace('X_validation = tf.data.Dataset', 'X_validation = X_validation_copy = tf.data.Dataset')
+        new_layer_code = new_layer_code.replace('X_test = tf.data.Dataset', 'X_test = X_test_copy = tf.data.Dataset')        
         new_layer_code = new_layer_code.replace('api.data.store(', 'api.override_layer_id(layer_name, api.data.store)(')
         new_layer_code = new_layer_code.replace('api.data.stack(', 'api.override_layer_id(layer_name, api.data.stack)(')
         new_layer_code = new_layer_code.replace('api.data.store_locals(locals())', 'api.override_layer_id(layer_name, api.data.store_locals)({k:v for k, v in locals().items() if k != "X"})')
@@ -68,11 +68,11 @@ class ScriptBuilder:
 
         # Remove iterators
         if layer_type == 'DataData':        
-            new_layer_code = new_layer_code.replace('trn_init = iterator.make_initializer', '#trn_init = iterator.make_initializer')
-            new_layer_code = new_layer_code.replace('val_init = iterator.make_initializer', '#val_init = iterator.make_initializer')
-            new_layer_code = new_layer_code.replace('tst_init = iterator.make_initializer', '#tst_init = iterator.make_initializer')        
+            new_layer_code = new_layer_code.replace('train_iterator = iterator.make_initializer', '#train_iterator = iterator.make_initializer')
+            new_layer_code = new_layer_code.replace('validation_iterator = iterator.make_initializer', '#validation_iterator = iterator.make_initializer')
+            new_layer_code = new_layer_code.replace('test_iterator = iterator.make_initializer', '#test_iterator = iterator.make_initializer')        
             new_layer_code = new_layer_code.replace('iterator = tf.data.Iterator.from_structure', '#iterator = tf.data.Iterator.from_structure')
-            new_layer_code = new_layer_code.replace('Y = iterator.get_next()', '#Y = iterator.get_next()')
+            new_layer_code = new_layer_code.replace('Y = next_elements = iterator.get_next()', '#Y = next_elements = iterator.get_next()')
         
         descr = LayerDescr(layer_name, new_layer_code, input_layers, layer_type)
         self._layers.append(descr)

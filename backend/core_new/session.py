@@ -3,7 +3,7 @@ import copy
 import logging
 import functools
 
-from core_new.api.legacy import ApiCallbackHandler, Api
+from core_new.api import ApiCallbackHandler, Api
 from analytics.scraper import get_scraper
 
 log = logging.getLogger(__name__)

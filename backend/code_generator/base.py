@@ -1,4 +1,3 @@
-'''
 import jinja2
 import copy
 from abc import ABC, abstractmethod
@@ -112,5 +111,3 @@ class Jinja2CodeGenerator(CodeGenerator):
             
         code = self._jenv.get_template(path).render(**kwargs)
         return code
-'''
-from code.base import *

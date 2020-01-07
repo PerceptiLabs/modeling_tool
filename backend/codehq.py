@@ -6,8 +6,6 @@ from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
 from code_generator.dataenv import DataEnvironmentCodeGenerator
 
-from code.generators import DataDataCodeGenerator2
-
 from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
 log = logging.getLogger(__name__)
@@ -39,48 +37,10 @@ class CodeHqNew:
             sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
             partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
 
-            # WORKAROUND FOR FILE TYPES NOT YET SUPPORTED BY NEW CODE GENERATOR
-            def data_source_requires_legacy(source):
-                DATADATA2_SUPPORT = {
-                    'directory': ['.jpg', '.png', '.jpeg', '.tiff', '.tif'],
-                    'file': ['.csv', '.txt'],
-                    'file': ['npy', 'npz']
-                }
-
-                if source['type'] not in DATADATA2_SUPPORT:
-                    return False
-
-                if source['path'] not in DATADATA2_SUPPORT[source['type']]:
-                    return False
-
-                return True
-            
-            if any(data_source_requires_legacy(s) for s in sources):
-                log.warning(
-                    "One or more sources require legacy DataDataCodeGenerator." 
-                    "Sources are " + pprint.pformat(sources)
-                )
-                
-                code_generator = DataDataCodeGenerator(
-                    sources,
-                    partitions,
-                    batch_size=props["accessProperties"]['Batch_size'],
-                    shuffle=props["accessProperties"]['Shuffle_data'],
-                    seed=0, columns=props["accessProperties"]['Columns'],
-                    layer_id=id_
-                )
-            else:
-                code_generator = DataDataCodeGenerator2(
-                    sources,
-                    partitions,
-                    batch_size=props["accessProperties"]['Batch_size'],
-                    shuffle=props["accessProperties"]['Shuffle_data'],
-                    seed=0,
-                    columns=props["accessProperties"]['Columns'],
-                    layer_id=id_,
-                    lazy=False, # TODO: this should come from frontend :) 
-                    shuffle_buffer_size=None # TODO: this should come from frontend :) 
-                )            
+            code_generator = DataDataCodeGenerator(sources, partitions,
+                                                   batch_size=props["accessProperties"]['Batch_size'], shuffle=False, #props["accessProperties"]['Shuffle_data']
+                                                   seed=0, columns=props["accessProperties"]['Columns'],
+                                                   layer_id=id_)
             return code_generator
         elif type_ == 'DataEnvironment':
             env_name = props['accessProperties']["Atari"]+"-v0"

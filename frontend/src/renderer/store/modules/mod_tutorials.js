@@ -46,14 +46,14 @@ const state = {
           content: `In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Data</div> > Select and drop <div class="marker">Data</div> to workspace > Load dataset`,
           actions: [
             {
-              tooltip: 'Click to expand',
+              tooltip: 'Click to Data',
               position: 'right',
               id: 'tutorial_data',
               status: 'disabled',
               animation: true
             },
             {
-              tooltip: 'Drag the Data element onto the workspace',
+              tooltip: 'Drag & drop Data',
               position: 'right',
               id: 'tutorial_data-data',
               dynamic_id: 'tutorial_data-data-1',
@@ -66,7 +66,7 @@ const state = {
               animation: true
             },
             {
-              tooltip: `Double click to select <br> the MNIST dataset`,
+              tooltip: `Double click for select <br> MNIST dataset`,
               position: 'right',
               id: 'tutorial_data-data-1',
               status: 'disabled',
@@ -84,7 +84,7 @@ const state = {
               animation: true
             },
             {
-              tooltip: 'Click to load the MNIST input',
+              tooltip: 'Click to Apply loaded MNIST',
               position: 'right',
               id: 'tutorial_button-apply',
               status: 'disabled',
@@ -105,23 +105,23 @@ const state = {
             },
             {
               status:'disabled',
-              content: 'There are 3000 samples inside this mnist dataset, each representing a handwritten digit'
+              content: 'There are 3000 samples inside this mnist dataset, each of them representing a handwritten digit'
             }
           ]
         },
         {
           status:'disabled',
-          content: 'Repeat this step for your labeled data (your ground thruth) which are integers representing handwritten digits and are used to teach the model when it is correct',
+          content: 'Repeat this step for your labeled data (your ground thruth) which are integrals representing the handwritten digits and are used to teach the model when it is correct',
           actions: [
             {
-              tooltip: 'Click to expand',
+              tooltip: 'Click to Data',
               position: 'right',
               id: 'tutorial_data',
               status: 'disabled',
               animation: true,
             },
             {
-              tooltip: 'Drag the Data element onto the workspace',
+              tooltip: 'Drag & drop Data',
               position: 'right',
               id: 'tutorial_data-data',
               dynamic_id: 'tutorial_data-data-2',
@@ -134,21 +134,21 @@ const state = {
               animation: true,
             },
             {
-              tooltip: `Double click to select <br> the MNIST dataset`,
+              tooltip: `Double click for select <br> MNIST dataset`,
               position: 'right',
               id: 'tutorial_data-data-2',
               status: 'disabled',
               animation: true,
             },
             {
-              tooltip: `Click to select and <br> load mnist_labels.npy`,
+              tooltip: `Click for select and <br> load mnist_labels.npy`,
               position: 'right',
               id: 'tutorial_button-load',
               status: 'disabled',
               animation: true,
             },
             {
-              tooltip: 'Click to load the MNIST labels',
+              tooltip: 'Click to Apply loaded MNIST',
               position: 'right',
               id: 'tutorial_button-apply',
               status: 'disabled',
@@ -174,14 +174,14 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> drag out a <div class="marker">Reshape Layer</div> > Connect an input > Edit the settings',
           actions: [
             {
-              tooltip: 'Click to expand',
+              tooltip: 'Click to Processing',
               position: 'right',
               id: 'tutorial_processing',
               status: 'disabled',
               animation: true,
             },
             {
-              tooltip: 'Drag the Reshape element onto the workspace',
+              tooltip: 'Drag & drop Reshape',
               position: 'right',
               id: 'tutorial_process-reshape',
               dynamic_id: 'tutorial_process-reshape-1',
@@ -193,10 +193,17 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to create a connection',
+              position: 'right',
+              id: 'tutorial_list-arrow',
+              status: 'disabled',
+              check_prev_id: true
+            },*/
             {
-              tooltip: `If you hover your mouse over the sides
-                        </br> of some elements you'll see connection dots </br>
-                        Drag a connection between a dot on this element and
+              tooltip: `If you hover your mouse on one sides
+                        </br> of some element  you'll see connection dots </br>
+                        Do this and then make connection between
                         <div class="tooltip-tutorial_bold">Data and Process Reshape</div>`,
               position: 'bottom',
               id: 'tutorial_data-data-1',
@@ -208,6 +215,12 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to go back to work with items',
+              position: 'right',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },*/
             {
               tooltip: 'Double click to open settings',
               position: 'right',
@@ -215,6 +228,12 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to confirm',
+              position: 'right',
+              id: 'tutorial_button-confirm',
+              status: 'disabled'
+            }*/
           ],
           static_info: [
             {
@@ -230,7 +249,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           Reshape to 28x28x1 and
-                          <div class="tooltip-tutorial_bold">then click Apply <br></div>
+                          <div class="tooltip-tutorial_bold">then click Apply" <br> (Make only 28x28x1 and Apply fat style)</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_input-reshape',
@@ -278,7 +297,7 @@ const state = {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Dimension</div>
                           Choose which type of convolutional operation to use
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_dimension',
@@ -289,7 +308,7 @@ const state = {
                           This is the size of the filter.</br> 
                           E.g. with patch size 3, the </br> 
                           filter will be a square of size 3x3. </br> 
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_patch-size',
@@ -300,7 +319,7 @@ const state = {
                           This is the step size when </br>
                           we slide the filter over the input </br>
                           data to generate feature maps. </br>
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_stride'
@@ -309,13 +328,13 @@ const state = {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Feature Maps:</div>
                           The number of </br>
-                          feature maps corresponds to the </br>
+                          feature maps correspond to the </br>
                           number of different features to </br>
-                          look for in the input data. With </br>
+                          look for in the input data. i.e. with </br>
                           more complex data, it might be </br>
                           better to increase the number </br>
                           of feature maps. </br>
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_feature-maps',
@@ -323,8 +342,8 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Zero-padding</div>
-                          Choose whether Zero-padding should be used or not
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          Choose if Zero-padding should be used or not
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_zero-padding',
@@ -333,7 +352,7 @@ const state = {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Activation function</div>
                           Choose which activation function to use
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_activeFunc',
@@ -341,8 +360,8 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Dropout</div>
-                          Choose whether dropout should be used or not
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          Choose if dropout should be used or not
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_dropout',
@@ -350,8 +369,8 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Pooling</div>
-                          Choose whether pooling should be used or not
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          Choose if pooling should be used or not
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_pooling',
@@ -359,14 +378,14 @@ const state = {
           ],
           actions: [
             {
-              tooltip: 'Click to expand',
+              tooltip: 'Click to Deep Learning',
               position: 'right',
               id: 'tutorial_deep-learning', 
               status: 'disabled',
               animation: true,
             },
             {
-              tooltip: 'Drag the Convolution element onto the workspace',
+              tooltip: 'Drag & drop Convolution',
               position: 'right',
               id: 'tutorial_convolution',
               dynamic_id: 'tutorial_convolution-1',
@@ -378,6 +397,13 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to create a connection',
+              position: 'right',
+              id: 'tutorial_list-arrow',
+              status: 'disabled',
+              check_prev_id: true
+            },*/
             {
               tooltip: 'Connect the Reshape layer <br> with the Convolutional layer',
               position: 'bottom',
@@ -390,6 +416,12 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to go back to work with items',
+              position: 'right',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },*/
             {
               tooltip: 'Double click to open settings',
               position: 'right',
@@ -403,7 +435,7 @@ const state = {
                           This is the size of the filter.</br> 
                           E.g. with patch size 3, the </br> 
                           filter will be a square of size 3x3. </br> 
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                         <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_patch-size',
@@ -440,14 +472,14 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Deep Learning</div> > <div class="marker">Drag out a Fully Connected layer</div> > Connect an input > Set the number of neurons',
           actions: [
             {
-              tooltip: 'Click to expand',
+              tooltip: 'Click to Deep Learning',
               position: 'right',
               id: 'tutorial_deep-learning', 
               status: 'disabled',
               animation: true,
             },
             {
-              tooltip: 'Drag the Fully Connected element onto the workspace',
+              tooltip: 'Drag & drop Fully Connected',
               position: 'right',
               id: 'tutorial_fully-connected',
               dynamic_id: 'tutorial_fully-connected-1',
@@ -459,6 +491,13 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to create a connection',
+              position: 'right',
+              id: 'tutorial_list-arrow',
+              status: 'disabled',
+              check_prev_id: true
+            },*/
             {
               tooltip: 'Connect the Convolutional layer <br> with the Fully Connected layer',
               position: 'bottom',
@@ -471,6 +510,12 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to go back to work with items',
+              position: 'right',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },*/
             {
               tooltip: 'Double click to open settings',
               position: 'right',
@@ -493,22 +538,22 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           Set how many neurons to use
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_neurons',
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                         Choose the activation function for each neuron
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                         Choose activation function for each neuron
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_activation_function',
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          Choose whether dropout should be used or not
+                          Choose if dropout should be used or not
                           <div class="tooltip-tutorial_bold">click Apply</div>
                         </div>`,
               position: 'right',
@@ -519,7 +564,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           Set how many neurons to use
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_neurons',
@@ -546,14 +591,14 @@ const state = {
           content: 'In the <div class="marker">Operations Toolbar</div> go to <div class="marker">Processing</div> > <div class="marker">Drag out a One Hot layer</div> > Connect an input > Set classes',
           actions: [
             {
-              tooltip: 'Click to expand',
+              tooltip: 'Click to Processing',
               position: 'right',
               id: 'tutorial_processing', 
               status: 'disabled',
               animation: true,
             },
             {
-              tooltip: 'Drag the One Hot element onto the workspace',
+              tooltip: 'Drag & drop One Hot',
               position: 'right',
               id: 'tutorial_one-hot',
               dynamic_id: 'tutorial_one-hot-1',
@@ -565,6 +610,13 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to create a connection',
+              position: 'right',
+              id: 'tutorial_list-arrow',
+              status: 'disabled',
+              check_prev_id: true
+            },*/
             {
               tooltip: 'Connect the Data layer with <br> the One Hot layer',
               position: 'bottom',
@@ -577,6 +629,12 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to go back to work with items',
+              position: 'right',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },*/
             {
               tooltip: 'Double click to set classes',
               position: 'right',
@@ -585,7 +643,7 @@ const state = {
               animation: true,
             },
             {
-              tooltip: 'Make sure the number of classes is<br> set to 10 and then press Apply',
+              tooltip: 'Make sure the classes are <br> set to 10 and then press Apply',
               position: 'right',
               id: 'tutorial_number-of-classes',
               status: 'disabled',
@@ -623,7 +681,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           Choose which input connection <br> represents the labels (GT). <br> In this case, make sure OneHot_1 is selected. 
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_labels',
@@ -631,7 +689,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           Epochs 
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_epochs',
@@ -639,7 +697,7 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           Cost function 
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_cost-function',
@@ -647,15 +705,15 @@ const state = {
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           Choose which optimizer to use
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_optimizer',
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          Choose where to <br> split the chosen axis
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          Choose in which position to <br> split at the chosen axis
+                         <div class="tooltip-tutorial_bold">Hover on next input to see more <br> information and then click Apply</div>
                        </div>`,
               position: 'right',
               id: 'tutorial_learning_rate',
@@ -663,14 +721,14 @@ const state = {
           ],
           actions: [
             {
-              tooltip: 'Click to expand',
+              tooltip: 'Click to Training',
               position: 'right',
               id: 'tutorial_training', 
               status: 'disabled',
               animation: true,
             },
             {
-              tooltip: 'Drag the Normal element onto the workspace',
+              tooltip: 'Drag & drop Normal',
               position: 'right',
               id: 'tutorial_training-normal',
               dynamic_id: 'tutorial_training-normal-1',
@@ -682,6 +740,13 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to create a connection',
+              position: 'right',
+              id: 'tutorial_list-arrow',
+              status: 'disabled',
+              check_prev_id: true
+            },*/
             {
               tooltip: 'Connect the One Hot layer with <br> the Normal training layer',
               position: 'bottom',
@@ -707,6 +772,12 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: 'Click to go back to work with items',
+              position: 'right',
+              id: 'tutorial_pointer',
+              status: 'disabled'
+            },*/
             {
               tooltip: 'Double click to define parameters',
               position: 'right',
@@ -716,7 +787,7 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                        Choose which input connection</br> is represented by the labels. </br>
+                        Choose which input connection</br> is represent the labels. </br>
                         Then click Apply
                        </div>`,
               position: 'right',
@@ -749,10 +820,50 @@ const state = {
           class_style: 'list_subtitle',
           content: `In the <div class="marker">Top Toolbar</div> press <div class="marker">Run</div>`,
           hoverInfo: [
+/*            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_partition-training-input',
+            },*/
+/*            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_partition-validation-input',
+            },*/
+/*            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_partition-test-input',
+            },*/
+/*            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Batch size:</div> to make the training </br> more efficient, you can train on </br> multiples samples at the same time. </br>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_butch-size-input',
+            },*/
+/*            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          Choose to shuffle the data or not
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_shuffle_data',
+            },*/
             {
               tooltip: `<div class="tooltip-tutorial_italic">
                           <div class="tooltip-tutorial_bold">Epoch:</div> refers to the number of times </br> you want to run through your entire dataset. </br>
-                          <div class="tooltip-tutorial_bold">Hover over other inputs to see more information. <br> Click Apply when ready</div>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
                         </div>`,
               position: 'right',
               id: 'tutorial_epochs-input',
@@ -783,6 +894,25 @@ const state = {
               status: 'disabled',
               animation: true,
             },
+/*            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Partition:</div> is the percentage of data </br> that goes into training, validation, </br> and testing respectively. </br>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see more information</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_partition-training-input',
+              status: 'disabled'
+            },*/
+/*            {
+              tooltip: `<div class="tooltip-tutorial_italic">
+                          <div class="tooltip-tutorial_bold">Epoch:</div> refers to the number of times </br> you want to run through your entire dataset. </br>
+                          <div class="tooltip-tutorial_bold">Hover on next input to see <br> more information and click Apply</div>
+                        </div>`,
+              position: 'right',
+              id: 'tutorial_epochs-input',
+              status: 'disabled',
+              animation: true,
+            },*/
           ]
         },
       ]
@@ -828,13 +958,26 @@ const state = {
             }
           ]
         },
+/*        {
+          status:'disabled',
+          class_style: 'list_subtitle',
+          content: 'The <div class="marker">Pause</div> to learn  further details',
+          actions: [
+            {
+              tooltip: 'Click to pause',
+              position: 'bottom',
+              id: 'tutorial_pause-training',
+              status: 'disabled',
+            }
+          ]
+        },*/
         {
           status:'disabled',
           class_style: 'list_subtitle',
           content: 'Click <div class="marker">Reshape</div> in the <div class="marker">Map View</div> </br> Notice the corresponding display in the <div class="marker">ViewBox</div>',
           actions: [
             { 
-              tooltip: 'Click the Reshape element',
+              tooltip: 'Click the Reshape layer',
               position: 'right',
               id: 'tutorial_process-reshape-1',
               status: 'disabled',
@@ -894,7 +1037,7 @@ const state = {
             },
             {
               tooltip: `<div class="tooltip-tutorial_italic">
-                          <div class="tooltip-tutorial_bold">Click on Loss:</div> How much error there is in your predictions.
+                          <div class="tooltip-tutorial_bold">Click to Loss:</div> How much error there is in your predictions.
                         </div>`,
               position: 'right',
               id: 'tutorial_loss-tab',
@@ -966,6 +1109,22 @@ const state = {
         }
       ]
     },
+/*    save_and_export: {
+      title: `Step 10.`,
+      points: [
+        {
+          content:`You have now finished training a model and the tutorial is done. 
+                  If you wish to save the model you can do so from the File menu in the top left. 
+                  Or you can export it by clicking on the tab "Export" in the right menu.`,
+          status:'last step',
+          actions: [
+            {
+              status: 'disabled',
+            }
+          ]
+        }
+      ]
+    }*/
   }
 };
 
@@ -1133,6 +1292,9 @@ const actions = {
       let checkId = document.getElementById(getters.getActiveAction.id);
       let prevId = getters.getActiveAction.check_prev_id;
       if(prevId) checkId = document.getElementById(getters.getPrevActiveAction.dynamic_id);
+/*      if(!checkId) {
+        commit('SET_activeActionMainTutorial', 'prev');
+      }*/
       dispatch('createTooltip', {id: getters.getActiveAction.id, tooltip: getters.getActiveAction.tooltip});
       dispatch('removeSchematicElement');
       dispatch('drawSchematicElement', getters.getActiveAction.schematic);

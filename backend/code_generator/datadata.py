@@ -299,6 +299,7 @@ class DataDataCodeGenerator(CodeGenerator):
         code += '            for x in array_[idx_from:idx_to]:\n'     
         code += '                yield x.squeeze().astype(np.float32)\n'
         code += "        return generator(array_%s, train_size_%s+validation_size_%s, size_%s)\n" % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
+
         # code += "    def validation_gen():\n"
         # code += "         return generator(array, train_size, train_size+validation_size) \n"
         # code += "    def test_gen():\n"
@@ -448,6 +449,7 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "_batch_size = %d\n" % int(self.batch_size)
         code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
+        code += "print('CREATING TF DATASETS')\n"
         code += "_shape = next(X_train()).shape # Get the first element\n"
         code += 'X_train = tf.data.Dataset.from_generator(X_train, output_types=np.float32, output_shapes=_shape)\n'
         code += 'X_validation = tf.data.Dataset.from_generator(X_validation, output_types=np.float32, output_shapes=_shape)\n'
@@ -460,11 +462,11 @@ class DataDataCodeGenerator(CodeGenerator):
             code += "X_train=X_train.batch(_batch_size)\n"
         code += "X_validation=X_validation.batch(_batch_size)\n"
         code += "X_test=X_test.batch(1)\n"
-        code += "\n"
+        code += "\n"       
         code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
         code += "train_iterator = iterator.make_initializer(X_train, name='train_iterator_%s')\n" % self._layer_id
         code += "validation_iterator = iterator.make_initializer(X_validation, name='validation_iterator_%s')\n" % self._layer_id        
-        code += "test_iterator = iterator.make_initializer(X_test, name='test_iterator_%s')\n" % self._layer_id
+        code += "test_iterator = iterator.make_initializer(X_test, name='test_iterator_%s')\n" % self._layer_id            
         code += "Y = next_elements = iterator.get_next()\n"
         return code        
 
@@ -535,6 +537,47 @@ class DataDataCodeGenerator(CodeGenerator):
 
         return strategy
 
+
+class DataDataCodeGenerator2(Jinja2CodeGenerator):
+    def __init__(self, sources, partitions, batch_size, shuffle, seed=0, columns=None, layer_id=None):
+        self._seed = seed
+        self._batch_size=batch_size
+        self.shuffle=shuffle
+
+        if columns is not None:
+            self._columns = [str(x) for x in columns]
+        else:
+            self._columns = None
+        
+        self._layer_id = layer_id
+        
+        self._strategies = []
+        self._sources = sources
+
+        assert all(sum(p) == 100 for p in partitions)
+
+        self._partitions = []
+        for p in partitions:
+            px = (
+                round(p[0]/100, 5),
+                round(1-p[0]/100, 5),
+                round(p[1]/(p[1]+p[2]), 5),
+                round(1-p[1]/(p[1]+p[2]), 5)
+            )
+            print(px)
+            self._partitions.append(px)
+
+
+    def get_code(self):
+        code = self._render(
+            'datadata.j2',
+            sources=self._sources,
+            partitions=self._partitions,
+            batch_size=self._batch_size,
+            layer_id=self._layer_id,
+            columns=self._columns
+        )
+        return code
 
 if __name__ == "__main__":
 

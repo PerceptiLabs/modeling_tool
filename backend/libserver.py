@@ -251,12 +251,6 @@ class Message:
         action = self.request.get("action")
         startTime=time.time()
 
-        if log.isEnabledFor(logging.DEBUG):
-            log.debug("creating response for action: {}. \nFull request:\n{}".format(
-                action,
-                pprint.pformat(self.request, depth=3)
-            ))
-        
         #Check if the core exists, otherwise create one
         
 
@@ -313,13 +307,12 @@ class Message:
             lw_core, _, data_container = self._create_lw_core(jsonNetwork, reciever)
             lw_core.run()
 
+            # import pdb; pdb.set_trace()
+
             def try_fetch(dict,variable):
                 try:
                     return dict[variable]
                 except:
-                    log.exception(f"Exception when fetching variable {variable}")
-                    if log.isEnabledFor(logging.DEBUG):
-                        log.debug("Variable {} not present in dict:".format(variable, pprint.pformat(dict)))
                     return ""
 
             content={
