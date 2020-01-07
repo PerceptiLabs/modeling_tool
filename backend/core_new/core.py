@@ -42,7 +42,7 @@ class SessionProcessHandler:
         
         self._result_queue.put(results_dict)
         # self._data_container.reset()
-        #log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=2))
+        log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=4))
         
     def _handle_commands(self, session):
         while not self._command_queue.empty():
@@ -100,7 +100,7 @@ class BaseCore:
         self._print_basic_info()
         
         set_tensorflow_mode('eager' if self._tf_eager else 'graph')
-
+        
         for layer_id, content in self._graph.items():
             layer_type = content["Info"]["Type"]
 
@@ -132,6 +132,10 @@ class BaseCore:
         code_gen = self._codehq.get_code_generator(id_, content)
         log.debug(repr(code_gen))
 
+
+        #import pdb; pdb.set_trace()
+            
+        
         try:
             globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])  
         except HistoryInputException:
@@ -155,9 +159,7 @@ class BaseCore:
                                process_handler=self._session_process_handler,
                                cache=self._session_history.cache)   
         
-        _save_cache=False
-
-        try:        
+        try:
             session.run()
         except LayerSessionStop:
             raise # Not an error. Re-raise.
@@ -235,6 +237,7 @@ class BaseCore:
             log.info("No module hooks installed")
 
     def _should_skip_layer(self, layer_id, content):
+        layer_type = content["Info"]["Type"]        
         if not (content["Info"]["Properties"] \
                 or ("Code" in content["Info"] and content["Info"]["Code"])):
             if self._layer_extras_reader is not None:
@@ -242,7 +245,12 @@ class BaseCore:
             else:
                 raise Exception("Layer {} is empty and can therefore not run.\nMost likely it has not been properly Applied.".format(content["Info"]["Name"]))
 
-        layer_type = content["Info"]["Type"]                
+        if "Code" in content["Info"] and content["Info"]["Code"]:
+            log.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
+           
+            return True
+
+
         if layer_type in self._skip_layers:
             log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
             return True

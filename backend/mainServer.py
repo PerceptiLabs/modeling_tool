@@ -40,7 +40,6 @@ def setup_logger(log_level):
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
                         level=logging.getLevelName(log_level))
 
-
     
 if __name__ == "__main__":
     args = get_input_args()
