@@ -29,9 +29,9 @@ WORKDIR /opt/app-root/src
 RUN source scl_source enable rh-python36 && \
     python -m pip install --upgrade pip && \
     pip install --upgrade setuptools && \
-    pip install --no-cache-dir -r requirements.txt && \
-    pip install --no-cache-dir dask[array] --upgrade && \
-    pip install --no-cache-dir  --upgrade dask
+    pip install --no-cache-dir -r requirements.txt
+    # pip install --no-cache-dir dask[array] --upgrade && \
+    # pip install --no-cache-dir  --upgrade dask
     
 
 USER 1001

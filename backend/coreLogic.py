@@ -66,9 +66,9 @@ class coreLogic():
         self.setupLogic()
         self.network=network
 
-        import json
-        with open('net.json', 'w') as f:
-            json.dump(network, f, indent=4) 
+        # import json
+        # with open('net.json', 'w') as f:
+        #     json.dump(network, f, indent=4) 
 
         data_container = DataContainer()
 
