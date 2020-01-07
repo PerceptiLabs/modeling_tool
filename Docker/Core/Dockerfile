@@ -1,4 +1,5 @@
-FROM nvcr.io/nvidia/cuda:10.0-cudnn7-devel-ubi7
+# FROM nvcr.io/nvidia/cuda:10.0-cudnn7-devel-ubi7
+FROM nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubi8
 
 LABEL name="PerceptiLabs-Modelling-Backend" \
       vendor="PerceptiLabs" \
@@ -17,7 +18,8 @@ RUN yum -y update && \
 RUN  cd /opt/rh/rh-python36/root/usr/lib64 && \
      ln -s libpython3.6m.so.rh-python36-1.0 libpython3.6m.so.1.0
 
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.0/compat
+# ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.0/compat
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.1/compat
 
 ADD --chown=1001 . /opt/app-root/src
 
