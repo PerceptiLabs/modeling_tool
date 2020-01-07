@@ -1,78 +1,77 @@
-FROM registry.access.redhat.com/ubi8/python-36
-#FROM tensorflow/tensorflow:1.15.0-gpu-py3
+FROM nvcr.io/nvidia/cuda:10.0-cudnn7-devel-ubi7
 
 LABEL name="PerceptiLabs-Modelling-Backend" \
       vendor="PerceptiLabs" \
       version="1.0" \
       release="1" \
       summary="This is the free version of the backend of our modelling platform v1." \
-      description="This will build a server for you which will act as a backend for our modelling platform. It listens to port 5000 to communicate with the frontend." 
-
+      description="This will build a server for you which will act as a backend for our modelling platform. It listens to port 5000 to communicate with the frontend."
 
 COPY licenses /licenses
 
-
 USER 0
-RUN yum -y --nodocs update && \
-    yum -y --nodocs install ncurses-devel && \
+RUN yum -y update && \
+    yum -y install ncurses-devel rh-python36 rh-python36-pip rh-python36-python-devel rh-python36-python-libs && \
     yum clean all
-USER 1001
 
-#USER 0
-#RUN apt-get update && \
-#    apt-get install -y ncurses-devel
-#USER 1001 
+RUN  cd /opt/rh/rh-python36/root/usr/lib64 && \
+     ln -s libpython3.6m.so.rh-python36-1.0 libpython3.6m.so.1.0
 
-ADD . /opt/app-root/src
+ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.0/compat
 
-RUN pip install --upgrade pip && \
-    pip install -r requirements.txt && \
-    pip install --upgrade setuptools
+ADD --chown=1001 . /opt/app-root/src
+
+COPY entrypoint.sh /usr/bin/entrypoint.sh
+RUN chmod +x /usr/bin/entrypoint.sh
 
 WORKDIR /opt/app-root/src
 
+RUN source scl_source enable rh-python36 && \
+    python -m pip install --upgrade pip && \
+    pip install --upgrade setuptools && \
+    pip install --no-cache-dir -r requirements.txt && \
+    pip install --no-cache-dir dask[array] --upgrade && \
+    pip install --no-cache-dir  --upgrade dask
+    
+
+USER 1001
+
 EXPOSE 5000
+
+ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
 
 CMD ["python3.6", "-u", "webServer.py"]
 
-#######################################################################
-# FROM registry.access.redhat.com/ubi7-dev-preview/ubi
 
-# RUN yum update
 
-# RUN yum -y install gcc gcc-c++ make kernel-devel zlib-devel bzip2 bzip2-devel openssl-devel ncurses-devel sqlite-devel readline-devel tk-devel gdbm-devel db4-devel libpcap-devel xz-devel expat-devel wget
+####################################################################
 
-# RUN wget http://python.org/ftp/python/3.6.3/Python-3.6.3.tar.xz
-# RUN tar xf Python-3.6.3.tar.xz
-# WORKDIR /Python-3.6.3
+# FROM nvcr.io/nvidia/cuda:10.1-cudnn7-devel-ubi8
 
-# RUN ./configure --prefix=/usr/local --enable-shared LDFLAGS="-Wl,-rpath /usr/local/lib"
-# RUN make && make altinstall
+# LABEL name="PerceptiLabs-Modelling-Backend" \
+#       vendor="PerceptiLabs" \
+#       version="1.0" \
+#       release="1" \
+#       summary="This is the free version of the backend of our modelling platform v1." \
+#       description="This will build a server for you which will act as a backend for our modelling platform. It listens to port 5000 to communicate with the frontend."
 
-# RUN wget https://bootstrap.pypa.io/get-pip.py
-# RUN python3.6 get-pip.py
+# COPY licenses /licenses
 
-# ADD . /app
+# USER 0
+# RUN yum -y --nodocs update && \
+#     yum -y --nodocs install ncurses-devel python36 python3-pip  python36-devel && \
+#     yum clean all
 
-# RUN pip install -r /app/requirements.txt
-# RUN pip install --upgrade setuptools
+# ADD --chown=1001 . /opt/app-root/src
 
-# WORKDIR /app
+# WORKDIR /opt/app-root/src
 
-# # RUN  /usr/local/bin/python3.6 setup.pyx develop
+# RUN pip3 install --upgrade setuptools && \
+#     pip3 install --no-cache-dir -r requirements.txt && \
+#     pip3 install --no-cache-dir dask[array] --upgrade
 
-# # RUN rm *.py *.c
-
-# # RUN mv webServer.pyx webServer.py
+# USER 1001
 
 # EXPOSE 5000
 
-# CMD ["/usr/local/bin/python3.6", "-u", "webServer.py"]
-######################################################################
-# FROM tensorflow/tensorflow:latest-py3
-# # FROM python:3.6.8
-# ADD . /app
-# WORKDIR /app
-# EXPOSE 5000
-# RUN pip install -r requirements.txt
-# CMD ["python", "-u", "webServer.py"]
+# CMD ["python3.6", "-u", "webServer.py"]
