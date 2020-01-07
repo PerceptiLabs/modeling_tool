@@ -43,7 +43,7 @@ RUN yum -y update && \
 # ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
 
 # CMD ["python3.6", "-u", "webServer.py"]
-CMD ["bash"]
+CMD tail -f /dev/null
 
 
 
