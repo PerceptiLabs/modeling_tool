@@ -68,12 +68,12 @@ ADD --chown=1001 . /opt/app-root/src
 
 WORKDIR /opt/app-root/src
 
-# RUN pip3 install --upgrade setuptools && \
-#     pip3 install --no-cache-dir -r requirements.txt
+RUN pip3 install --upgrade pip && \
+    pip3 install --upgrade setuptools && \
+    pip3 install --no-cache-dir -r requirements.txt
 
 USER 1001
 
 EXPOSE 5000
 
-# CMD ["python3.6", "-u", "webServer.py"]
-CMD tail -f /dev/null
+CMD ["python3.6", "-u", "webServer.py"]
