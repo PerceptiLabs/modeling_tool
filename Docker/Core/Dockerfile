@@ -12,37 +12,37 @@ COPY licenses /licenses
 
 USER 0
 RUN yum -y update && \
-    yum -y install ncurses-devel rh-python36 rh-python36-pip rh-python36-python-devel rh-python36-python-libs && \
+    # yum -y install ncurses-devel rh-python36 rh-python36-pip rh-python36-python-devel rh-python36-python-libs && \
     yum clean all
 
-RUN  cd /opt/rh/rh-python36/root/usr/lib64 && \
-     ln -s libpython3.6m.so.rh-python36-1.0 libpython3.6m.so.1.0
+# RUN  cd /opt/rh/rh-python36/root/usr/lib64 && \
+#      ln -s libpython3.6m.so.rh-python36-1.0 libpython3.6m.so.1.0
 
-# ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.0/compat
-ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.1/compat
+# # ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.0/compat
+# ENV LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-10.1/compat
 
-ADD --chown=1001 . /opt/app-root/src
+# ADD --chown=1001 . /opt/app-root/src
 
-COPY entrypoint.sh /usr/bin/entrypoint.sh
-RUN chmod +x /usr/bin/entrypoint.sh
+# COPY entrypoint.sh /usr/bin/entrypoint.sh
+# RUN chmod +x /usr/bin/entrypoint.sh
 
-WORKDIR /opt/app-root/src
+# WORKDIR /opt/app-root/src
 
-RUN source scl_source enable rh-python36 && \
-    python -m pip install --upgrade pip && \
-    pip install --upgrade setuptools && \
-    pip install --no-cache-dir -r requirements.txt
-    # pip install --no-cache-dir dask[array] --upgrade && \
-    # pip install --no-cache-dir  --upgrade dask
+# RUN source scl_source enable rh-python36 && \
+#     python -m pip install --upgrade pip && \
+#     pip install --upgrade setuptools && \
+#     pip install --no-cache-dir -r requirements.txt
+#     # pip install --no-cache-dir dask[array] --upgrade && \
+#     # pip install --no-cache-dir  --upgrade dask
     
 
-USER 1001
+# USER 1001
 
-EXPOSE 5000
+# EXPOSE 5000
 
-ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
+# ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
 
-CMD ["python3.6", "-u", "webServer.py"]
+# CMD ["python3.6", "-u", "webServer.py"]
 
 
 
