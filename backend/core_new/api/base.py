@@ -1,13 +1,14 @@
 from typing import Any, Tuple
+from enum import Enum
 import dill
 
-from core_new.api.mapping import ByteMap
+from core_new.api.mapping import ByteMap, EventBus
 
 
 class StateApi:
-    def __init__(self, config):
+    def __init__(self, name, config):
         self._byte_map = ByteMap(
-            config['name'],
+            config['state_api_name'],
             config['dealer_address'],
             config['subscriber_address'],
             config['push_address']
@@ -31,23 +32,58 @@ class StateApi:
 
         
 class LogApi:
-    pass
+
+    class Handler:
+        # Should extend handler of standard logger
+
+            self._event_bus = EventBus(
+                event_bus_name,
+                config['dealer_address'],
+                config['subscriber_address'],
+                config['push_address']
+            )
+
+        def start(self):
+            self._client.start()
+        
+        def stop(self):
+            self._client.stop()
+    
+    @classmethod
+    def get_handler(cls, event_bus_name, config):
+        return cls.Handler()
+
+    
+class UiApi:
+    def __init__(self, name, config):
+        pass
 
 
 class Api:
-    def __init__(
-            self,
-            state_config: Dict[str, str, str, str]
-    ):
-        self._state = StateApi(state_config)
-        
+    def __init__(self, name, network_config):
+        self._state = StateApi('state-' + name, network_config)
+        self._log = LogApi('log-' + name, network_config)
+        self._ui = UiApi('ui-' + name, network_config)
+            
     def start(self):
         self._state.start()
+        self._log.start()
+        self._ui.start()
 
     def stop(self):
         self._state.stop()
+        self._log.stop()
+        self._ui.stop()
 
     @property
     def state(self):
         return self._state
+    
+    @property
+    def log(self):
+        return self._log
+    
+    @property
+    def ui(self):
+        return self._ui
     
