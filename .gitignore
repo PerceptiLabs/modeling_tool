@@ -2,6 +2,7 @@
 backend/*.pyc
 backend/*.pyo
 backend/net.json
+backend/venv/
 **/__pycache__/
 *.pyc
 *.py~
