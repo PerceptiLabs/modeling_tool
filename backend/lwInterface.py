@@ -8,7 +8,7 @@ import logging
 log = logging.getLogger(__name__)
 
 class LW_interface_base(ABC):
-    @abstractmethod
+    # @abstractmethod
     def exec(self):
         raise NotImplementedError
 
