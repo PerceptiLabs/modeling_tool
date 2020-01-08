@@ -19,8 +19,11 @@ n_devices = 2
 #                        log_device_placement=True)
 
 # ----
-sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, \
-                  log_device_placement=True))#config=config)
+# sess = tf.Session(config=tf.ConfigProto(allow_soft_placement=True, \
+#                   log_device_placement=True))#config=config)
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+sess = tf.Session(config=config)#config=config)
 tf.keras.backend.set_session(sess) # since we use keras metrics
 
 
