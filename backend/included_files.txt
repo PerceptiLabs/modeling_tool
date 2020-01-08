@@ -58,6 +58,4 @@ core_new/data/policies.py
 
 # core_new/api/
 core_new/api/__init__.py
-core_new/api/base.py
 core_new/api/legacy.py
-core_new/api/mapping.py
