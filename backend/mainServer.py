@@ -3,7 +3,7 @@ import sys
 import argparse
 
 from processes import ProcessDependencyWatcher
-from coreInterface import Interface
+from mainInterface import Interface
 from server.appServer import Server
 
 from main_setup import setup_scraper, setup_sentry, scraper
