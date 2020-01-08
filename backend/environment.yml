@@ -3,8 +3,8 @@ dependencies:
   - python=3.6.2
   - nomkl=3.0  
   - pip=19.0.3
+  - tensorflow=1.15  
   - pip:
-    - tensorflow==1.13.1
     - numpy==1.16.4
     - fsspec==0.6.0
     - pandas==0.25.0
@@ -25,4 +25,6 @@ dependencies:
     - pylint==2.4.3
     - pytest==5.3.1
     - astor==0.8.0
-    - pyzmq=18.1.1
+    - pyzmq==18.1.1
+    - Jinja2==2.10.3
+    - dill==0.3.1.1

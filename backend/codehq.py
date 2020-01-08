@@ -78,7 +78,7 @@ class CodeHqNew:
                     seed=0,
                     columns=props["accessProperties"]['Columns'],
                     layer_id=id_,
-                    lazy=False, # TODO: this should come from frontend :) 
+                    lazy=True, # TODO: this should come from frontend :) 
                     shuffle_buffer_size=None # TODO: this should come from frontend :) 
                 )            
             return code_generator

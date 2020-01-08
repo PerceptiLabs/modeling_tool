@@ -13,7 +13,9 @@ def set_tensorflow_mode(mode):
     if tf_version.startswith('1.15'):
         
         if mode == 'eager':
-            tf.enable_eager_execution()
+            config = tf.ConfigProto()
+            config.gpu_options.allow_growth = True
+            tf.enable_eager_execution(config)
         if mode == 'graph':
             tf.disable_eager_execution()
             
