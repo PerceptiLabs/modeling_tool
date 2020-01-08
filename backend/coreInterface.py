@@ -1,100 +1,28 @@
 import sys
 import os
 import logging
+from sentry_sdk import configure_scope
+from extractVariables import extractCheckpointInfo
+
+#coreLogic
+from coreLogic import coreLogic
+
+#Create LW Core
+from graph import Graph
+from core_new.core import DataContainer
+from core_new.history import SessionHistory
+from core_new.errors import LightweightErrorHandler
+from core_new.extras import LayerExtrasReader
+from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
+from modules import ModuleProvider
+from core_new.cache import get_cache
+from core_new.networkCache import NetworkCache
+from codehq import CodeHqNew as CodeHq
+
+#LW interface
+from lwInterface import getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
-
-# class webInterface():
-#     def __init__():
-#         pass
-
-# class desktopInterface(Interface):
-#     def __init__():
-#         pass
-
-#     reciever=self.request.get("reciever")
-#     action = self.request.get("action")
-#     startTime=time.time()
-
-#     if not reciever in self.dataDict:
-#         self.dataDict[reciever]=dict()
-
-#     if reciever not in self.cores:
-#         core=coreLogic(reciever)
-#         self.cores[reciever]=core
-#     else:
-#         core=self.cores[reciever]
-
-#     warnings=core.warningQueue
-#     warningList=[]
-
-#     errors=core.errorQueue
-#     errorList=[]
-
-#     content=""
-
-    
-#     coreCalls=["Close", "updateResults", "checkCore", "headless", "getTrainingStatistics", "getTestingStatistics", "Start", "startTest", "resetTest", "getTestStatus",
-#     "nextStep", "previousStep", "playTest", "getIter", "getEpoch", "Stop", "Pause", "SkipToValidation", "Export", "getStatus"]
-#     lwCalls=["getDataPlot", "getDataMeta", "deleteData", "removeReciever", "getNetworkData", "getNetworkInputDim", "getNetworkOutputDim", "getPreviewSample"]
-#     parseCalls=["Parse"]
-#     with configure_scope() as scope:
-#         scope.set_extra("reciever",reciever)
-#         scope.set_extra("action",action)
-#         scope.set_extra("value",self.request.get("value"))
-#         #Check what the request is for and then get the properties needed for that function
-#         if action in coreCalls:
-#             # scope.set_extra("Core properties", core.core.__dict__)
-#             # coreProperties=dict()
-#             # for key, value in core.core.__dict__.items():
-#             #     if type(value).__name__!="dict":
-#             #         coreProperties[key]=value
-#             # scope.set_extra("Core properties", coreProperties)
-#             scope.set_extra("Saved Results Dict", core.savedResultsDict)
-#             scope.set_extra("Network", core.network)
-        
-
-#         elif action in lwCalls:
-#             for dataId, dataValue in self.dataDict[reciever].items():
-#                 scope.set_extra("data object for layer: "+str(dataId), dataValue.__dict__)
-#         elif action in parseCalls:
-#             pass
-#         else:
-#             # scope.set_extra("Core properties", core.core.__dict__)
-#             for dataId, dataValue in self.dataDict[reciever].items():
-#                 scope.set_extra("data object for layer: "+str(dataId), dataValue.__dict__)
-
-#     #####################################B4End###################################
-    
-
-# queue_function_translation=[("stop-request","stop-response", "Stop"),
-#     ("start-request","start-response", "Start"),  #Might have to be a frontend call to cloud, where core then starts as soon as the VM is on
-#     ("cloud-close-vm-request","cloud-close-vm-response", "empty"),
-#     ("model-save-request","model-save-response", "saveTrained"),
-#     ("update-results-request","update-results-response", "updateResults"),
-#     ("get-status-request", "get-status-response", "getStatus"),    #TODO: Not yet exists as an endpoint!!!!
-#     ("headless-request","headless-response", "headless"),
-#     ("get-training-statistics-request","get-training-statistics-response", "getTrainingStatistics"),
-#     ("get-testing-statistics-request","get-testing-statistics-response", "getTestingStatistics"),
-#     ("start-test-request","start-test-response", "startTest"),
-#     ("reset-test-request","reset-test-response", "resetTest"),
-#     ("get-test-status-request","get-test-status-response", "getTestStatus"),
-#     ("next-step-request","next-step-response", "nextStep"),
-#     ("previous-step-request","previous-step-response", "previousStep"),
-#     ("play-test-request","play-test-response", "playTest"),
-#     ("pause-request","pause-response", "Pause"),
-#     ("skip-validation-request","skip-validation-response", "SkipToValidation"),
-#     ("check-core-request","check-core-response", "checkAlive"),
-#     ("export-request","export-response", "Export")    #Might have to be moved to LW Core and let that one store all internal variables for open tabs
-# ]
-
-# class azureInterface():
-#     def __init__(self):
-#         pass
-
-
-
-from lwInterface import getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 class Interface():
     def __init__(self, cores, dataDict, checkpointDict, lwDict):
@@ -104,7 +32,6 @@ class Interface():
         self._lwDict=lwDict
 
     def _addCore(self, reciever):
-        from coreLogic import coreLogic
         core=coreLogic(reciever)
         self._cores[reciever] = core
 
@@ -127,22 +54,11 @@ class Interface():
 
     def _add_to_checkpointDict(self, content):
         if content["checkpoint"][-1] not in self._checkpointDict:
-            from extractVariables import extractCheckpointInfo
             ckptObj=extractCheckpointInfo(content["endPoints"], *content["checkpoint"])
             self._checkpointDict[content["checkpoint"][-1]]=ckptObj.getVariablesAndConstants()
             ckptObj.close()
 
     def create_lw_core(self, reciever, jsonNetwork):
-        from graph import Graph
-        from core_new.core import DataContainer
-        from core_new.history import SessionHistory
-        from core_new.errors import LightweightErrorHandler
-        from core_new.extras import LayerExtrasReader
-        from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
-        from modules import ModuleProvider
-        from core_new.cache import get_cache
-        from core_new.networkCache import NetworkCache
-
         if reciever not in self._lwDict:
             self._lwDict[reciever]=NetworkCache()
         else:
@@ -165,8 +81,6 @@ class Interface():
         data_container = DataContainer()
             
         extras_reader = LayerExtrasReader()
-
-        from codehq import CodeHqNew as CodeHq
 
         module_provider = ModuleProvider()
         module_provider.load('tensorflow', as_name='tf')
@@ -199,6 +113,11 @@ class Interface():
         reciever = request.get('reciever')
         action = request.get('action')
         value = request.get('value')
+
+        with configure_scope() as scope:
+            scope.set_extra("reciever",reciever)
+            scope.set_extra("action",action)
+            scope.set_extra("value",value)
 
         self._setCore(reciever)
         response = self._create_response(reciever, action, value)
