@@ -38,7 +38,8 @@ IF %ERRORLEVEL% NEQ 0 (
   dir
   exit 1
 )
-
+echo "pyinstaller contents:"
+dir dist/appServer
 echo "*************************************************************************************************"
 echo "Testing to start the core"
 call "dist/appServer/appServer.exe" -k=True -l="INFO"
