@@ -64,7 +64,11 @@ for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
     binaries.append((p1, p2))
 
 
-datas=[(python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'), (python_lib+'/atari_py/', './atari_py/')]
+datas=[
+    (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'), 
+    (python_lib+'/atari_py/', './atari_py/'),
+    (working_dir+'/code/templates/', './code/templates/')
+]
 """
 hiddenimports = collect_submodules('skimage.io._plugins') \
 	      + collect_submodules('sentry_sdk')+ \
