@@ -259,8 +259,8 @@ class coreLogic():
         try:
             cpu, mem = self.get_cpu_and_mem()
             gpu = self.get_gpu()
+            progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
             if self.status=="Running":
-                progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 result = {
                     "Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],
                     "Iterations": self.savedResultsDict["iter"],
@@ -272,7 +272,6 @@ class coreLogic():
                 }
                 return result
             else:
-                progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
                 return {
                     "Status":self.status,
                     "Iterations":self.savedResultsDict["iter"],
