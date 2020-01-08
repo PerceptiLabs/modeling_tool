@@ -63,6 +63,7 @@ echo "Frontend folder"
 ls -l build/frontend_out
 
 echo "Core folder"
+tree build/backend_out
 ls -l build/backend_out
 
 ls -l build/backend_out/code_generator
