@@ -18,7 +18,7 @@ n_devices = 2
 #                        inter_op_parallelism_threads=n_devices,
 #                        intra_op_parallelism_threads=1,
 #                        log_device_placement=True)
-config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True)
+config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True, allow_soft_placement=True)
 # ----
 sess = tf.Session(config=config)
 tf.keras.backend.set_session(sess) # since we use keras metrics
