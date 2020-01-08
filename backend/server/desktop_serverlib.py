@@ -5,33 +5,14 @@ import io
 import os
 import struct
 import traceback
-from coreLogic import coreLogic
-# from propegateNetwork import lwNetwork
-from parse_pb import parse
+
 import time
 from sentry_sdk import configure_scope
-import numpy as np
-import skimage
-# from datahandler_lw import DataHandlerLW
-# from lw_data import lw_data
-# from dataKeeper import dataKeeper as lw_data
-from createDataObject import createDataObject
-
-from core_new.core import *
-from core_new.history import SessionHistory
-from core_new.cache import get_cache
-from core_new.errors import LightweightErrorHandler
-from core_new.extras import LayerExtrasReader
-from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
-from graph import Graph
-from codehq import CodeHqNew as CodeHq
-from modules import ModuleProvider
-from core_new.networkCache import NetworkCache
 
 import pprint
 import logging
-log = logging.getLogger(__name__)
 
+log = logging.getLogger(__name__)
 
 class Message:
     def __init__(self, selector, sock, addr, interface):
@@ -67,7 +48,7 @@ class Message:
             # Resource temporarily unavailable (errno EWOULDBLOCK)
             pass
         except ConnectionResetError:
-            self.shutDown()
+            self._interface.shutDown()
         else:
             if data:
                 self._recv_buffer += data

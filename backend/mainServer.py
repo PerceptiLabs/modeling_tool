@@ -4,7 +4,9 @@ import argparse
 
 from processes import ProcessDependencyWatcher
 from coreInterface import Interface
-from appServer import Server
+from server.appServer import Server
+
+from main_setup import setup_scraper, setup_sentry, scraper
 
 
 def get_input_args():
@@ -56,5 +58,8 @@ if __name__ == "__main__":
 
     core_interface = Interface(cores, dataDict, checkpointDict, lwDict)
 
-    server = Server(args.user)
+    data_bundle = setup_scraper()
+    setup_sentry()
+
+    server = Server(scraper, data_bundle)
     server.serve_desktop(core_interface, args.instantly_kill)
