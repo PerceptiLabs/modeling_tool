@@ -536,98 +536,98 @@ class DataDataCodeGenerator(CodeGenerator):
         return strategy
 
 
-if __name__ == "__main__":
+# if __name__ == "__main__":
 
-    sources = [{'type': 'file', 'path': '/home/anton/Data/mnist_split/mnist_input.npy'},
-               {'type': 'file', 'path': '/home/anton/Data/mnist_split/mnist_input.csv'}]
+#     sources = [{'type': 'file', 'path': '/home/anton/Data/mnist_split/mnist_input.npy'},
+#                {'type': 'file', 'path': '/home/anton/Data/mnist_split/mnist_input.csv'}]
 
-    partitions = [(60, 30, 10), (60, 30, 10)]
+#     partitions = [(60, 30, 10), (60, 30, 10)]
 
-    cols = [str(x) for x in range(0, 784)]
-    #cols=None
-    x = DataDataCodeGenerator2(sources, partitions, 32, False, layer_id='1234', columns=cols)
-    code = x.get_code()
+#     cols = [str(x) for x in range(0, 784)]
+#     #cols=None
+#     x = DataDataCodeGenerator2(sources, partitions, 32, False, layer_id='1234', columns=cols)
+#     code = x.get_code()
     
-    for i, l in enumerate(code.split('\n')):
-        print(i, l)
+#     for i, l in enumerate(code.split('\n')):
+#         print(i, l)
 
 
-    import dask_ml
-    import dask_ml.model_selection    
-    import dask.array as da
-    import dask.dataframe as dd
-    import numpy as np
-    import tensorflow as tf
+#     import dask_ml
+#     import dask_ml.model_selection    
+#     import dask.array as da
+#     import dask.dataframe as dd
+#     import numpy as np
+#     import tensorflow as tf
     
-    globals_ = {'da': da, 'np': np, 'dask_ml': dask_ml, 'tf': tf, 'dd': dd}
-    locals_ = {}
-    exec(code, globals_, locals_)
+#     globals_ = {'da': da, 'np': np, 'dask_ml': dask_ml, 'tf': tf, 'dd': dd}
+#     locals_ = {}
+#     exec(code, globals_, locals_)
 
-    raise SystemExit
+#     raise SystemExit
 
 
 
 
     
-    def runrunrun(sources, partitions):
-        cg = DataDataCodeGenerator(sources, partitions)
-        code = cg.get_code()
+#     def runrunrun(sources, partitions):
+#         cg = DataDataCodeGenerator(sources, partitions)
+#         code = cg.get_code()
         
-        import tensorflow as tf
-        import numpy as np
-        import os
-        import skimage
-        import json
-        import pandas as pd        
+#         import tensorflow as tf
+#         import numpy as np
+#         import os
+#         import skimage
+#         import json
+#         import pandas as pd        
         
-        globals_ = {'tf': tf,
-                    'os': os, #TODO: FARLIGT ATT GE ACCESS TILL OS?
-                    'skimage': skimage,
-                    'pd': pd,
-                    'json': json,
-                    'S3BucketAdapter': S3BucketAdapter,                    
-                    'np': np}        
-        locals_ = {}
+#         globals_ = {'tf': tf,
+#                     'os': os, #TODO: FARLIGT ATT GE ACCESS TILL OS?
+#                     'skimage': skimage,
+#                     'pd': pd,
+#                     'json': json,
+#                     'S3BucketAdapter': S3BucketAdapter,                    
+#                     'np': np}        
+#         locals_ = {}
         
-        print("Executing code:")
-        print("------------------")
-        print(code)
-        print("------------------")
-        exec(code, globals_, locals_)
+#         print("Executing code:")
+#         print("------------------")
+#         print(code)
+#         print("------------------")
+#         exec(code, globals_, locals_)
 
-        print("Local variables: ", locals_)
+#         print("Local variables: ", locals_)
         
-        import pdb; pdb.set_trace()
+#         import pdb; pdb.set_trace()
 
         
     
-    # List of files
-    sources = [{'type': 'file', 'path': 'mnist_split/mnist_input.npy'},
-               {'type': 'file', 'path': 'mnist_split/mnist_input.npy'}]
+#     # List of files
+#     sources = [{'type': 'file', 'path': 'mnist_split/mnist_input.npy'},
+#                {'type': 'file', 'path': 'mnist_split/mnist_input.npy'}]
 
-    partitions = [(70, 20, 10), (70, 20, 10)]
+#     partitions = [(70, 20, 10), (70, 20, 10)]
 
-    runrunrun(sources, partitions)
+#     runrunrun(sources, partitions)
     
 
     
-    # Image directory    
-    sources = [{'type': 'directory', 'path': 'rand_imgs/'}]
-    partitions = [(70, 20, 10)]
+#     # Image directory    
+#     sources = [{'type': 'directory', 'path': 'rand_imgs/'}]
+#     partitions = [(70, 20, 10)]
 
-    runrunrun(sources, partitions)
+#     runrunrun(sources, partitions)
 
     
-    # S3 bucket
-    sources = [{'type': 's3bucket',
-                'bucket': 'perceptitest',
-                'region_name': 'eu-north-1',
-                'delimiter': '',
-                'prefix': '',
-                'aws_access_key_id': "AKIAZYLA7ETUIOS73NHX",
-                'aws_secret_access_key': "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"}]
+#     # S3 bucket
+#     sources = [{'type': 's3bucket',
+#                 'bucket': 'perceptitest',
+#                 'region_name': 'eu-north-1',
+#                 'delimiter': '',
+#                 'prefix': '',
+#                 'aws_access_key_id': "AKIAZYLA7ETUIOS73NHX",
+#                 'aws_secret_access_key': "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"}]
 
-    partitions = [(70, 20, 10)]
+#     partitions = [(70, 20, 10)]
     
-    runrunrun(sources, partitions)
+#     runrunrun(sources, partitions)
 
