@@ -10,7 +10,7 @@ jobs:
    steps:
     - bash: |
         cd scripts/
-        bash -i setup_tests_ubuntu.sh
+        bash -i tests_setup_ubuntu.sh
       displayName: 'Environment setup'
 
     - bash: |
@@ -28,7 +28,7 @@ jobs:
    steps:
     - script: |
         cd scripts/
-        ./setup_tests_windows.bat
+        ./tests_setup_windows.bat
       displayName: 'Environment setup'
 
     - script: |
@@ -45,7 +45,7 @@ jobs:
    steps:
     - bash: |
         cd scripts/
-        bash -i setup_tests_osx.sh
+        bash -i tests_setup_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
