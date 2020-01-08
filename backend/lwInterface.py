@@ -8,8 +8,8 @@ import logging
 log = logging.getLogger(__name__)
 
 class LW_interface_base(ABC):
-    # @abstractmethod
-    def exec(self):
+    @abstractmethod
+    def run(self):
         raise NotImplementedError
 
     def _try_fetch(self, dict, variable):
@@ -25,7 +25,7 @@ class getDataMeta(LW_interface_base):
         self.lw_core = lw_core
         self.data_container = data_container
 
-    def exec(self):
+    def run(self):
         # lw_core, _, data_container = self.lwObj.create_lw_core()
         self.lw_core.run()
         content = {
@@ -42,7 +42,7 @@ class getPartitionSummary(LW_interface_base):
         self.lw_core = lw_core
         self.data_container = data_container
 
-    def exec(self):
+    def run(self):
         self.lw_core.run()
         content = self._try_fetch(self.data_container[self._id], "_action_space")
         return content
@@ -53,7 +53,7 @@ class getCode(LW_interface_base):
         self._id = id_
         self._network = network
 
-    def exec(self):
+    def run(self):
         if self._network[self._id]["Type"] == "TrainReinforce":
             from graph import Graph
             graph = Graph(self._network)
@@ -77,7 +77,7 @@ class getNetworkInputDim(LW_interface_base):
         self.lw_core = lw_core
         self.extras_reader = extras_reader
 
-    def exec(self):
+    def run(self):
         self.lw_core.run()
 
         content={}
@@ -116,7 +116,7 @@ class getNetworkOutputDim(LW_interface_base):
         self.lw_core = lw_core
         self.extras_reader = extras_reader
 
-    def exec(self):                      
+    def run(self):                      
         self.lw_core.run()
         
         extrasDict=self.extras_reader.to_dict()
@@ -163,7 +163,7 @@ class getPreviewSample(LW_interface_base):
             else:
                 return self._reduceTo2d(data[...,-1])
     
-    def exec(self):                                
+    def run(self):                                
         self.lw_core.run()
         
         sample=""
@@ -201,7 +201,7 @@ class getPreviewVariableList(LW_interface_base):
         self.lw_core = lw_core
         self.extras_reader = extras_reader
 
-    def exec(self):                                            
+    def run(self):                                            
         self.lw_core.run()
         
         extrasDict=self.extras_reader.to_dict()
@@ -247,7 +247,7 @@ class Parse(LW_interface_base):
             checkpoint = checkpoint.split("ckpt")[0]         
             return [pb, checkpoint]
 
-    def exec(self):
+    def run(self):
         try:
             correct_file_list=self._getParsingFiles(self._pb, self._checkpoint)
         except Exception as e:

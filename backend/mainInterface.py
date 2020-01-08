@@ -137,7 +137,7 @@ class Interface():
 
             return getDataMeta(id_=Id, 
                             lw_core=lw_core, 
-                            data_container=data_container).exec()
+                            data_container=data_container).run()
 
         elif action == "getPartitionSummary":
             Id=value["Id"]
@@ -150,7 +150,7 @@ class Interface():
 
             return getPartitionSummary(id_=Id, 
                                     lw_core=lw_core, 
-                                    data_container=data_container).exec()
+                                    data_container=data_container).run()
 
         elif action == "getCode":
             jsonNetwork=value['Network']
@@ -159,7 +159,7 @@ class Interface():
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            return getCode(id_=Id, network=jsonNetwork).exec()
+            return getCode(id_=Id, network=jsonNetwork).run()
 
         elif action == "getNetworkInputDim":
             jsonNetwork=value
@@ -168,7 +168,7 @@ class Interface():
 
             return getNetworkInputDim(network=jsonNetwork, 
                                     lw_core=lw_core, 
-                                    extras_reader=extras_reader).exec()
+                                    extras_reader=extras_reader).run()
 
         elif action == "getNetworkOutputDim":
             jsonNetwork=value
@@ -176,7 +176,7 @@ class Interface():
             lw_core, extras_reader, data_container = self.create_lw_core(reciever, jsonNetwork)
 
             return getNetworkOutputDim(lw_core=lw_core, 
-                                    extras_reader=extras_reader).exec()
+                                    extras_reader=extras_reader).run()
 
         elif action == "getPreviewSample":
             LayerId=value["Id"]
@@ -192,7 +192,7 @@ class Interface():
                                     lw_core=lw_core, 
                                     extras_reader=extras_reader, 
                                     data_container=data_container, 
-                                    variable=Variable).exec()
+                                    variable=Variable).run()
 
         elif action == "getPreviewVariableList":
             LayerId=value["Id"]
@@ -203,7 +203,7 @@ class Interface():
             return getPreviewVariableList(id_=LayerId, 
                                         network=jsonNetwork, 
                                         lw_core=lw_core, 
-                                        extras_reader=extras_reader).exec()
+                                        extras_reader=extras_reader).run()
 
         elif action == "Parse":
             if value["Pb"]:
@@ -226,7 +226,7 @@ class Interface():
                 checkpoint=ckpt, 
                 make_trainable=trainableFlag, 
                 end_points=end_points, 
-                containerize=containers).exec()
+                containerize=containers).run()
             except Exception as e:
                 return {"content":"Parser Failed","errorMessage":"Parser got this Exception:\n" + str(e)}
 
