@@ -3,6 +3,7 @@ import os
 import logging
 from sentry_sdk import configure_scope
 from extractVariables import extractCheckpointInfo
+from s3buckets import S3BucketAdapter
 
 #core interface
 from coreInterface import coreLogic
