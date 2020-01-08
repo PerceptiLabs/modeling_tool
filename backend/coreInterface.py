@@ -620,22 +620,23 @@ class coreLogic():
                         returnDict={"Input":D[0],"PvG":PvG,"AveragePvG":APvG,"Accuracy":Accuracy}
 
                     elif cType=="grayscale" or cType=="RGB" or cType=="heatmap":
-                        Network_output=self.subsample(Network_output)
-                        Labels=self.subsample(Labels)
-                        (height,width)=Network_output.shape[0:2]
-                        Mask = createDataObject([Network_output], typeList=['heatmap'])
-                        Prediction = createDataObject([Labels], typeList=['heatmap'])
+                        pass
+                        # Network_output=self.subsample(Network_output)
+                        # Labels=self.subsample(Labels)
+                        # (height,width)=Network_output.shape[0:2]
+                        # Mask = createDataObject([Network_output], typeList=['heatmap'])
+                        # Prediction = createDataObject([Labels], typeList=['heatmap'])
                         
-                        # PIE
-                        acc=self.getStatistics({"layerId":layerId,"variable":"accuracy","innervariable":""})
-                        try:
-                            lastAcc=acc[-1]
-                        except:
-                            lastAcc=acc
+                        # # PIE
+                        # acc=self.getStatistics({"layerId":layerId,"variable":"accuracy","innervariable":""})
+                        # try:
+                        #     lastAcc=acc[-1]
+                        # except:
+                        #     lastAcc=acc
 
-                        accList = [[('Accuracy', lastAcc*100.0), ('Empty', (1-lastAcc)*100.0)]]
-                        Accuracy = createDataObject(accList, typeList=['pie'])
-                        returnDict={"Input":D[0],"PvG":Mask,"AveragePvG":Prediction,"Accuracy":Accuracy}    
+                        # accList = [[('Accuracy', lastAcc*100.0), ('Empty', (1-lastAcc)*100.0)]]
+                        # Accuracy = createDataObject(accList, typeList=['pie'])
+                        # returnDict={"Input":D[0],"PvG":Mask,"AveragePvG":Prediction,"Accuracy":Accuracy}    
                                     
                 else:
                     chartType="line"
@@ -927,69 +928,69 @@ class coreLogic():
             result=np.asarray(result)
         return result
 
-    def subsample(self,sample):
-        endSize=500
-        if len(sample.shape)==1:
-            length=sample.size
-            if length>endSize:
-                lenRatio=length/endSize
-            else:
-                lenRatio=1
-            result=sample[::int(lenRatio)]
+    # def subsample(self,sample):
+    #     endSize=500
+    #     if len(sample.shape)==1:
+    #         length=sample.size
+    #         if length>endSize:
+    #             lenRatio=length/endSize
+    #         else:
+    #             lenRatio=1
+    #         result=sample[::int(lenRatio)]
 
-        elif len(sample.shape)>=2:
-            height,width=sample.shape[0:2]
-            if height>endSize or width>endSize:
-                if height>width:
-                    heightRatio=widthRatio=height/endSize
-                else:
-                    heightRatio=widthRatio=width/endSize
-            else:
-                heightRatio=widthRatio=1
-            result=sample[::int(np.ceil(heightRatio)),::int(np.ceil(widthRatio))]
-        else:
-            result=sample
+    #     elif len(sample.shape)>=2:
+    #         height,width=sample.shape[0:2]
+    #         if height>endSize or width>endSize:
+    #             if height>width:
+    #                 heightRatio=widthRatio=height/endSize
+    #             else:
+    #                 heightRatio=widthRatio=width/endSize
+    #         else:
+    #             heightRatio=widthRatio=1
+    #         result=sample[::int(np.ceil(heightRatio)),::int(np.ceil(widthRatio))]
+    #     else:
+    #         result=sample
 
-        return result
+    #     return result
 
     # def rgb2gray(rgb):
     #     return np.dot(rgb[...,:3], [0.299, 0.587, 0.114])
 
-    def convertToList(self,npy):
-        if len(npy.shape)==0:
-            if isinstance(npy, np.integer):
-                npy=[int(npy)]
-            elif isinstance(npy, np.floating):
-                npy=[float(npy)]
-        elif len(npy.shape)==1:
-            # npy=list(npy)
-            npy=npy.tolist()
-        elif len(npy.shape)>1:
-            npy=npy.tolist()
-        return npy
+    # def convertToList(self,npy):
+    #     if len(npy.shape)==0:
+    #         if isinstance(npy, np.integer):
+    #             npy=[int(npy)]
+    #         elif isinstance(npy, np.floating):
+    #             npy=[float(npy)]
+    #     elif len(npy.shape)==1:
+    #         # npy=list(npy)
+    #         npy=npy.tolist()
+    #     elif len(npy.shape)>1:
+    #         npy=npy.tolist()
+    #     return npy
 
-    def grayscale2RGBa(self,data):
-        data=np.squeeze(data)
-        (w,h)=np.shape(data)
-        newData=np.empty((w, h, 4))
+    # def grayscale2RGBa(self,data):
+    #     data=np.squeeze(data)
+    #     (w,h)=np.shape(data)
+    #     newData=np.empty((w, h, 4))
         
-        if data.max()!=0:
-            normalizedData=np.around((data/data.max())*255)
-        else:
-            normalizedData=data
-        newData[:, :, 0] = normalizedData
-        newData[:, :, 1] = newData[:, :, 2] = newData[:, :, 0]
-        newData[:,:,3]=255
-        flatData=np.reshape(newData,-1)
+    #     if data.max()!=0:
+    #         normalizedData=np.around((data/data.max())*255)
+    #     else:
+    #         normalizedData=data
+    #     newData[:, :, 0] = normalizedData
+    #     newData[:, :, 1] = newData[:, :, 2] = newData[:, :, 0]
+    #     newData[:,:,3]=255
+    #     flatData=np.reshape(newData,-1)
 
-        return flatData
+    #     return flatData
 
-    def RGB2RGBa(self,data):
-        data=np.squeeze(data)
-        (w,h,d)=np.shape(data)
-        newData=np.empty((w, h, 4))
-        normalizedData=np.around((data/data.max(0).max(0))*255)
-        newData[:, :, 0:3] = normalizedData
-        newData[:,:,3]=255
-        flatData=np.reshape(newData,-1)
-        return flatData
+    # def RGB2RGBa(self,data):
+    #     data=np.squeeze(data)
+    #     (w,h,d)=np.shape(data)
+    #     newData=np.empty((w, h, 4))
+    #     normalizedData=np.around((data/data.max(0).max(0))*255)
+    #     newData[:, :, 0:3] = normalizedData
+    #     newData[:,:,3]=255
+    #     flatData=np.reshape(newData,-1)
+    #     return flatData
