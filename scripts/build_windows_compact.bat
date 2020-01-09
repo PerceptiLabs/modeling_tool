@@ -39,13 +39,13 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 echo "pyinstaller contents:"
-ls -l dist/appServer/
-echo "*************************************************************************************************"
-echo "Testing to start the core"
-call "dist/appServer/appServer.exe" -k=True -l="INFO"
-IF %ERRORLEVEL% NEQ 0 (
-  exit 1
-)
+ls -R dist/appServer/
+REM echo "*************************************************************************************************"
+REM echo "Testing to start the core"
+REM call "dist/appServer/appServer.exe" -k=True -l="INFO"
+REM IF %ERRORLEVEL% NEQ 0 (
+REM   exit 1
+REM )
 
 call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "dist/appServer/*.exe"
 IF %ERRORLEVEL% NEQ 0 (
