@@ -238,6 +238,9 @@ class coreLogic():
     def get_gpu(self):
         gpus = GPUtil.getGPUs()
         loadList = [gpu.load*100 for gpu in gpus]
+        nameList = [gpu.name for gpu in gpus]
+        for i in range(len(nameList)):
+            print(str(nameList[i]) + " : " + str(loadList[i]) + "%")
         if loadList:
             return np.max(loadList)
         else:
@@ -247,7 +250,7 @@ class coreLogic():
         try:
             cpu, mem = self.get_cpu_and_mem()
             gpu = self.get_gpu()
-            print("GPU: ", gpu)
+            #For some reason, 0's are excluded from the frontend (presumably to make it more smooth)
             progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
             if self.status=="Running":
                 result = {
