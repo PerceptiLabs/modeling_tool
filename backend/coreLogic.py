@@ -237,7 +237,7 @@ class coreLogic():
 
     def get_gpu(self):
         gpus = GPUtil.getGPUs()
-        loadList = [gpu.load for gpu in gpus]
+        loadList = [gpu.load*100 for gpu in gpus]
         if loadList:
             return np.max(loadList)
         else:
@@ -247,6 +247,7 @@ class coreLogic():
         try:
             cpu, mem = self.get_cpu_and_mem()
             gpu = self.get_gpu()
+            print("GPU: ", gpu)
             progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
             if self.status=="Running":
                 result = {
