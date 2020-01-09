@@ -79,8 +79,9 @@ class coreLogic():
             else:
                 return layer_id
 
-        # TODO: NOT HARDCODED!
-        DISTRIBUTED = True
+        gpus = GPUtil.getGPUs()
+        if len(gpus)>1:     #TODO: Replace this with a frontend choice of how many GPUer (if any) they want to use
+            DISTRIBUTED = True
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal':
@@ -96,7 +97,7 @@ class coreLogic():
                     target_data_layer = backprop(labels)
                     layer['Properties']['InputDataId'] = input_data_layer
                     layer['Properties']['TargetDataId'] = target_data_layer
-                    
+
                 else:
                     layer['Properties']['InputDataId'] = ''
                     layer['Properties']['TargetDataId'] = ''
