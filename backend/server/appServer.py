@@ -106,7 +106,7 @@ class Server():
         if not instantly_kill:
             log.info("Copying logfile to data bundle.")
             try:
-                shutil.copyfile('backend.log', os.path.join(data_bundle.path, 'backend.log'))
+                shutil.copyfile('backend.log', os.path.join(self.data_bundle.path, 'backend.log'))
             except:
                 pass
             
