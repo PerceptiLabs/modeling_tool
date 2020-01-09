@@ -172,7 +172,9 @@ class CodeHqNew:
                                                 momentum=props['Momentum'], 
                                                 beta1=props['Beta_1'],
                                                 beta2=props['Beta_2'],
-                                                distributed=props['Distributed']) # TODO: REMOVE THIS!
+                                                distributed=props['Distributed'],   # TODO: REMOVE THIS!
+                                                input_data_layer=props['InputDataId'],
+                                                target_data_layer=props['TargetDataId']) 
             return code_gen
 
         elif type_ == 'TrainLoss':

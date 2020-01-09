@@ -72,6 +72,36 @@ class coreLogic():
 
         data_container = DataContainer()
 
+        def backprop(layer_id):
+            b_con = network['Layers'][layer_id]['backward_connections']
+            if b_con:
+                return backprop(b_con[0])
+            else:
+                return layer_id
+
+        # TODO: NOT HARDCODED!
+        DISTRIBUTED = True
+
+        for _id, layer in network['Layers'].items():
+            if layer['Type'] == 'TrainNormal':
+                layer['Properties']['Distributed'] = DISTRIBUTED
+                if DISTRIBUTED:
+                    labels = layer['Properties']['Labels']
+
+                    for b_con in layer['backward_connections']:
+                        if b_con != labels:
+                            pred = b_con
+
+                    input_data_layer = backprop(pred)
+                    target_data_layer = backprop(labels)
+                    layer['Properties']['InputDataId'] = input_data_layer
+                    layer['Properties']['TargetDataId'] = target_data_layer
+                    
+                else:
+                    layer['Properties']['InputDataId'] = ''
+                    layer['Properties']['TargetDataId'] = ''
+
+
         self.graphObj = Graph(network['Layers'])
         graph_dict=self.graphObj.graphs
 
@@ -79,7 +109,6 @@ class coreLogic():
 
         error_handler = CoreErrorHandler(self.errorQueue)
         
-
         module_provider = ModuleProvider()
         module_provider.load('tensorflow', as_name='tf')
         module_provider.load('numpy', as_name='np')
@@ -94,11 +123,6 @@ class coreLogic():
         cache = get_cache()
         session_history = SessionHistory(cache)
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
-
-        # TODO: NOT HARDCODED!
-        DISTRIBUTED = True
-        network['Layers']['1564399790363']['Properties']['Distributed'] = DISTRIBUTED
-        
 
         if not DISTRIBUTED:
             self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,

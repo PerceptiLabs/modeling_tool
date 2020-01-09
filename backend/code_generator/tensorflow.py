@@ -474,7 +474,8 @@ class TrainNormalCodeGenerator(Jinja2CodeGenerator):
     def __init__(self, output_layer, target_layer,
                  n_epochs,
                  loss_function='Quadratic', class_weights = 1,
-                 optimizer='ADAM', learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999, distributed=False):
+                 optimizer='ADAM', learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999, 
+                 distributed=False, input_data_layer='', target_data_layer=''):
         self._output_layer = output_layer
         self._target_layer = target_layer
         self._n_epochs = int(n_epochs)
@@ -489,7 +490,10 @@ class TrainNormalCodeGenerator(Jinja2CodeGenerator):
         self._momentum = momentum
         self._beta1 = beta1
         self._beta2 = beta2
+
         self._distributed = distributed
+        self._input_data_layer = input_data_layer
+        self._target_data_layer = target_data_layer
 
     def _get_training_code(self):
         code  = ""
@@ -637,8 +641,8 @@ class TrainNormalCodeGenerator(Jinja2CodeGenerator):
     def _get_code_distr(self):
         code  = self._render(
             'train_normal_distr.j2',
-            input_data_layer='1564399775664', # TODO: no hardcoding!
-            target_data_layer='1564399786876',             
+            input_data_layer=self._input_data_layer, # TODO: no hardcoding!
+            target_data_layer=self._target_data_layer,             
             output_layer=self._output_layer,
             target_layer=self._target_layer,
             n_epochs=self._n_epochs
