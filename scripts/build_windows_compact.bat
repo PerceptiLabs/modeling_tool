@@ -39,7 +39,7 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 echo "pyinstaller contents:"
-ls -R dist/appServer/
+ls -l dist/appServer/
 REM echo "*************************************************************************************************"
 REM echo "Testing to start the core"
 REM call "dist/appServer/appServer.exe" -k=True -l="INFO"
