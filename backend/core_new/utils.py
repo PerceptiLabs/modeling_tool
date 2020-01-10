@@ -9,7 +9,7 @@ def set_tensorflow_mode(mode):
     
     
     tf_version = tf.version.VERSION
-    
+    tf.GPUOptions.allow_growth=True
     if tf_version.startswith('1.15'):
         
         if mode == 'eager':
