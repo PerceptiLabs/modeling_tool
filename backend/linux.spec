@@ -18,7 +18,7 @@ working_dir = os.getcwd()
 
 python_lib = get_python_lib()
 log.info("python_lib = " + python_lib)
-
+#            (python_lib+'/tensorflow/contrib/bigtable/python/ops/_bigtable.so', './tensorflow/contrib/bigtable/python/ops'),
 
 pathex = [working_dir,
           python_lib+'/tensorflow']
@@ -26,7 +26,6 @@ pathex = [working_dir,
 binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
             (working_dir+'/appServer.cpython-36m-x86_64-linux-gnu.so', '.'),
             (working_dir+'/s3buckets.cpython-36m-x86_64-linux-gnu.so', '.'),            
-            (python_lib+'/tensorflow/contrib/bigtable/python/ops/_bigtable.so', './tensorflow/contrib/bigtable/python/ops'),
             (python_lib+'/tensorflow/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow/contrib/tpu/python/ops'),
             (python_lib+'/tensorflow/contrib/rnn/python/ops/_gru_ops.so', './tensorflow/contrib/rnn/python/ops/'),
             (python_lib+'/tensorflow/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow/contrib/tpu/python/ops'),
