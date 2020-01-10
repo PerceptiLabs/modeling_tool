@@ -34,25 +34,86 @@ mkdir frontend_out
 
 echo "Copying files files from ../../backend/"
 cd backend_tmp/
-rsync -a ../../backend --files-from=../../backend/included_files.txt .
-ls -l code_generator
-cp ../../backend/setup_compact.pyx .
+cp ../../backend/*.py .
 
-echo "C compiling"
-mv mainServer.py mainServer.pyx
-find . -name "__init__.py" -exec rename -v 's|__init__.py|__init__.pyx|' {} +
-python setup_compact.pyx  build_ext --inplace
+mkdir analytics/
+cp ../../backend/analytics/*.py analytics/
+
+mkdir code_generator/
+cp ../../backend/code_generator/*.py code_generator/
+
+mkdir core_new/
+cp ../../backend/core_new/*.py core_new/
+
+mkdir core_new/data/
+cp ../../backend/core_new/data/*.py core_new/data/
+
+
+rm minicodehq.py
+rm appOc.py
+rm a2cagent.py
+rm frontend_data_code.py
+rm core_test.py
+rm serverInterface.py
+rm lwInterface.py
+
+mv setup.py setup.pyx
+
+cp setup.pyx analytics/
+cp setup.pyx code_generator/
+cp setup.pyx core_new/
+cp setup.pyx core_new/data/
+
+ls -l
+
+# analytics
+cd analytics
+python setup.pyx  build_ext --inplace
 if [ $? -ne 0 ]; then exit 1; fi
+rm *.py *.c *.pyx
+ls -l
 
-echo "Cleaning up after the compilation"
-find . -type f -name '*.c' -exec rm {} +
-find . -type f -name '*.py' -exec rm {} +
-rm setup_compact.pyx
-rm -r build
+# code_generator
+cd ../code_generator
+mv __init__.py __init__.pyx
+mkdir code_generator
+python setup.pyx  build_ext --inplace
+if [ $? -ne 0 ]; then exit 1; fi
+mv code_generator/* .
+rm -rf code_generator
+rm *.py *.c
+mv __init__.pyx __init__.py
+rm *.pyx
+ls -l
+
+# core_new
+cd ../core_new/
+python setup.pyx  build_ext --inplace
+if [ $? -ne 0 ]; then exit 1; fi
+rm *.py *.c *.pyx
+ls -l
+
+# core_new.data
+cd data/
+mv __init__.py __init__.pyx
+mkdir data/
+python setup.pyx  build_ext --inplace
+if [ $? -ne 0 ]; then exit 1; fi
+mv data/* .
+rm -rf data/
+rm *.py *.c
+mv __init__.pyx __init__.py
+rm *.pyx
+ls -l
+
+# root
+cd ../../
+mv mainServer.py mainServer.pyx
+python setup.pyx  build_ext --inplace
+if [ $? -ne 0 ]; then exit 1; fi
+rm *.py *.c
 mv mainServer.pyx mainServer.py
-find . -name "__init__.pyx" -exec rename -v 's|__init__.pyx|__init__.py|' {} +
-
-echo "Listing files to be included in build (contents of 'backend_tmp/')"
+rm *.pyx
 ls -l
 
 echo "Running pyinstaller..."
@@ -70,10 +131,8 @@ fi
 # exit
 chmod +x dist/appServer/appServer
 
-echo "*************************************************************************************************"
-echo "Testing to start the core"
-./dist/appServer/appServer -k=True -l="INFO"
-if [ $? -ne 0 ]; then exit 1; fi
+# ./dist/appServer/appServer
+# if [ $? -ne 0 ]; then exit 1; fi
 
 echo "copying dist to 'backend_out/'"
 cd ../backend_out/
@@ -127,8 +186,7 @@ ls build/
 
 echo "copying images to 'frontend_out/'"
 cp build/*.dmg ../build/frontend_out/
-cp build/*.zip ../build/frontend_out/
-cp build/*.yml ../build/frontend_out/
+
    
     
 
