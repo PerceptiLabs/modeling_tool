@@ -22,6 +22,8 @@ def get_input_args():
                         help="Set this to attach a user to all Sentry logs.")
     parser.add_argument('-p','--platform', default='desktop', type=str, 
                         help="Sets what type of frontend you want to communicate with. Can be either 'desktop' or 'browser'.")
+    parser.add_argument('-e', '--error', default=False, type=bool, 
+                        help="Force an error to see that all the error logging works as it should")
     args = parser.parse_args()
     return args
 
@@ -53,6 +55,9 @@ if __name__ == "__main__":
 
     with open('app_variables.json', 'r') as f:
         app_variables = json.load(f)
+
+    commit_id = app_variables["BuildVariables"]["CommitId"]
+    log.info("Reporting errors with commit id: " + str(commit_id))
     
     setup_logger(args.log_level)
     ProcessDependencyWatcher(args.frontend_pid).start()
@@ -65,7 +70,10 @@ if __name__ == "__main__":
     core_interface = Interface(cores, dataDict, checkpointDict, lwDict)
 
     data_bundle = setup_scraper()
-    setup_sentry(args.user, app_variables["BuildVariables"]["CommitId"])
+    setup_sentry(args.user, commit_id)
+
+    if args.error:
+        raise Exception("Test error")
 
     server = Server(scraper, data_bundle)
     if args.platform == 'desktop':
