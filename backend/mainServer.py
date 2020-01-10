@@ -1,6 +1,7 @@
 import logging
 import sys
 import argparse
+import json
 
 from processes import ProcessDependencyWatcher
 from mainInterface import Interface
@@ -49,6 +50,9 @@ def setup_logger(log_level):
     
 if __name__ == "__main__":
     args = get_input_args()
+
+    with open('app_variables.json', 'r') as f:
+        app_variables = json.load(f)
     
     setup_logger(args.log_level)
     ProcessDependencyWatcher(args.frontend_pid).start()
@@ -61,7 +65,7 @@ if __name__ == "__main__":
     core_interface = Interface(cores, dataDict, checkpointDict, lwDict)
 
     data_bundle = setup_scraper()
-    setup_sentry(args.user)
+    setup_sentry(args.user, app_variables["BuildVariables"]["CommitId"])
 
     server = Server(scraper, data_bundle)
     if args.platform == 'desktop':

@@ -9,7 +9,7 @@ from databundle import DataBundle, AzureUploader, AZURE_ACCOUNT_NAME_EU, AZURE_A
 log = logging.getLogger(__name__)
 scraper = get_scraper()
 
-def setup_sentry(user=None):
+def setup_sentry(user=None, commit_id=None):
     def strip_unimportant_errors(event, hint):
         log_ignores=['Error in getTestingStatistics', 'Error in getTrainingStatistics', ]
 
@@ -25,10 +25,12 @@ def setup_sentry(user=None):
                 
         return event
 
-    sentry_sdk.init("https://9b884d2181284443b90c21db68add4d7@sentry.io/1512385", before_send=strip_unimportant_errors)
-    if user:
-        with sentry_sdk.configure_scope() as scope:
+    sentry_sdk.init("https://9b884d2181284443b90c21db68add4d7@sentry.io/1512385", before_send=strip_unimportant_errors, release=str(commit_id))
+
+    with sentry_sdk.configure_scope() as scope:
+        if user:
             scope.user = {"email" : user}
+
 
 def setup_scraper():
     data_uploaders = [

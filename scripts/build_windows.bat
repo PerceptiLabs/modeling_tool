@@ -33,6 +33,7 @@ dir
 dir code_generator
 
 copy ..\..\backend\windows.spec .
+copy ..\..\backend\app_variables.json .
 pyinstaller --clean -y windows.spec
 IF %ERRORLEVEL% NEQ 0 (
   dir

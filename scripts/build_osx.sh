@@ -57,6 +57,7 @@ ls -l
 
 echo "Running pyinstaller..."
 cp ../../backend/osx.spec .
+cp ../../backend/app_variables.json .
 
 pyinstaller --clean -y osx.spec
 if [ $? -ne 0 ]; then exit 1; fi

@@ -52,7 +52,7 @@ ls -l
 echo "Running pyinstaller..."
 
 cp ../../backend/linux.spec .
-#cp ../../backend/common.spec common.py
+cp ../../backend/app_variables.json .
 
 pyinstaller --clean -y linux.spec
 if [ $? -ne 0 ]; then exit 1; fi

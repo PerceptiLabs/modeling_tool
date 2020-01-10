@@ -65,7 +65,7 @@ for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
     binaries.append((p1, p2))
 
 
-datas=[(python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'), (python_lib+'/atari_py/', './atari_py/')]
+datas=[(python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'), (python_lib+'/atari_py/', './atari_py/'), ('app_variables.json','.')]
 
 python_files = []
 with open('../../backend/included_files.txt') as f:

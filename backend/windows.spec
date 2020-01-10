@@ -41,7 +41,7 @@ hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('
             'tensorflow.lite.toco_convert','tensorflow_wrap_toco','tensorflow.lite.toco.python','tensorflow.python.platform','google.protobuf','tensorflow.core.protobuf',
             'tensorflow.python.training','tensorflow.lite.toco.python.tensorflow_wrap_toco','_tensorflow_wrap_toco']
 
-datas=[(python_lib+'/atari_py','atari_py'), (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/')]
+datas=[(python_lib+'/atari_py','atari_py'), (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'), ('app_variables.json','.')]
 
 log.info("pathex = {}".format(pformat(pathex)))
 log.info("binaries = {}".format(pformat(binaries)))
