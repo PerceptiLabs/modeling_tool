@@ -65,7 +65,7 @@ class Message:
         else:
             # Binary or unknown content-type
             self.request = data
-            print("received" + str(self.jsonheader["content-type"]) + " request from")
+            log.info("received" + str(self.jsonheader["content-type"]) + " request from")
 
     def _add_errors_and_warnings(self, content, errors, warnings):
         errorList=[]

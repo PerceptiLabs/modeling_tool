@@ -57,16 +57,11 @@ class Message:
 
     def _write(self):
         if self._send_buffer:
-            #print("sending", repr(self._send_buffer), "to", self.addr)
             try:
-                # Should be ready to write
-                # print("*"*50)
-                # print(self._send_buffer)
-                # print("*"*50)
                 sent = self.sock.send(self._send_buffer)
             except BlockingIOError as e:
                 # Resource temporarily unavailable (errno EWOULDBLOCK)
-                print(e)
+                log.error("Resource temporarily unavailable")
                 pass
             else:
                 self._send_buffer = self._send_buffer[sent:]
@@ -183,7 +178,7 @@ class Message:
         try:
             self.selector.unregister(self.sock)
         except Exception as e:
-            print(
+            log.errpr(
                 f"error: selector.unregister() exception for",
                 f"{self.addr}: {repr(e)}",
             )
@@ -191,7 +186,7 @@ class Message:
         try:
             self.sock.close()
         except OSError as e:
-            print(
+            log.error(
                 f"error: socket.close() exception for",
                 f"{self.addr}: {repr(e)}",
             )
@@ -237,7 +232,7 @@ class Message:
         else:
             # Binary or unknown content-type
             self.request = data
-            print(
+            log.error(
                 f'received {self.jsonheader["content-type"]} request from',
                 self.addr,
             )
@@ -250,10 +245,6 @@ class Message:
         else:
             # Binary or unknown content-type
             response = self._create_response_binary_content()
-        # try:
         message = self._create_message(**response)
-        # except Exception as e:
-        #     print(response)
-        #     print(e)
         self.response_created = True
         self._send_buffer += message
