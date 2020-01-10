@@ -1,3 +1,4 @@
+import tensorflow as tf
 from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
 
 def set_tensorflow_mode(mode):
