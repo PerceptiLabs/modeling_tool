@@ -80,8 +80,10 @@ class coreLogic():
                 return layer_id
 
         gpus = GPUtil.getGPUs()
-        if len(gpus)>1:     #TODO: Replace this with a frontend choice of how many GPUer (if any) they want to use
+        if len(gpus)>1:     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
             DISTRIBUTED = True
+        else:
+            DISTRIBUTED = False
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal':
