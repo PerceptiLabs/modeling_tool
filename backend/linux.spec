@@ -49,7 +49,7 @@ binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
             (python_lib+'/tensorflow/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow/contrib/layers/python/ops/'),                       
             (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops')]
 
-binaries = [b for b in binaries if os.b[0] os.path.isfile(b[0])] # remove non existing
+binaries = [b for b in binaries if os.path.isfile(b[0])] # remove non existing
 
 
 contr_dir = python_lib+'/atari_py/'
