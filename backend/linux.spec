@@ -130,7 +130,7 @@ with open('../../backend/included_files.txt') as f:
             python_files.append(".".join(line.strip().split(".")[:-1]).replace("/","."))
 
 print("Found these python modules to include: " + str(python_files))
-hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('tensorflow') + collect_submodules('sentry_sdk') + python_files + \
+hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('tensorflow') + collect_submodules('tensorflow_core') + collect_submodules('sentry_sdk') + python_files + \
             ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor',
             'GPUtil','gym.envs.atari','azure.storage.blob','numpy', 'tensorflow', 'math', 'sys', 'ast', 'itertools', 
             'collections', 'operator', 'time', 'copy', 'queue', 'sklearn.cluster', 'socket', 'selectors', 'traceback', 'json', 'io', 'struct', 'threading', 'PIL',
