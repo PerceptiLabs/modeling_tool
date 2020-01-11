@@ -23,7 +23,7 @@ def set_tensorflow_mode(mode):
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
     
-        ctx = context(config=config)._eager_context
+        ctx = context()._eager_context
 
         if mode == 'eager':
             ctx.mode = EAGER_MODE
