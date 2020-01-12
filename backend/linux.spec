@@ -1,5 +1,5 @@
 # -*- mode: python -*-
-from PyInstaller.utils.hooks import collect_data_files, collect_submodules
+from PyInstaller.utils.hooks import collect_data_files, collect_submodules, collect_data_files
 
 datas = collect_data_files("skimage.io._plugins")
 
@@ -22,6 +22,13 @@ log.info("python_lib = " + python_lib)
 
 pathex = [working_dir,
           python_lib+'/tensorflow']
+
+#collect all tensorflow_core binareis
+tf_binaries = collect_data_files('tensorflow_core')
+tf_binaries = [b for b in tf_binaries if '.so' in b[0]]
+
+print("tf binaries: ")
+print(tf_binaries)
 
 binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
             (working_dir+'/appServer.cpython-36m-x86_64-linux-gnu.so', '.'),
@@ -47,8 +54,9 @@ binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
             (python_lib+'/tensorflow/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', './tensorflow/contrib/input_pipeline/python/ops/'),                       
             (python_lib+'/tensorflow/contrib/rnn/python/ops/_lstm_ops.so', './tensorflow/contrib/rnn/python/ops/'),
             (python_lib+'/tensorflow/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow/contrib/layers/python/ops/'),                       
-            (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops'),
-            (python_lib+'/tensorflow_core/lite/experimental/microfrontend/python/ops/_audio_microfrontend_op.so')]  #tf1.15
+            (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops')]
+
+binaries = binareis + tf_binaries
 
 binaries = [b for b in binaries if os.path.isfile(b[0])] # remove non existing
 
