@@ -24,11 +24,13 @@ pathex = [working_dir,
           python_lib+'/tensorflow']
 
 #collect all tensorflow_core binareis
-tf_binaries = collect_data_files('tensorflow_core')
-tf_binaries = [b for b in tf_binaries if '.so' in b[0]]
+#tf_binaries = collect_data_files('tensorflow_core')
+#tf_binaries = [b for b in tf_binaries if '.so' in b[0]]
 
-print("tf binaries: ")
-print(tf_binaries)
+tf_binaries = [(python_lib+'/tensorflow_core/compiler/tf2xla/ops/_xla_ops.so', 'tensorflow_core/compiler/tf2xla/ops'), (python_lib+'/tensorflow_core/contrib/boosted_trees/python/ops/_boosted_trees_ops.so', 'tensorflow_core/contrib/boosted_trees/python/ops'), (python_lib+'/tensorflow_core/contrib/factorization/python/ops/_factorization_ops.so', 'tensorflow_core/contrib/factorization/python/ops'), (python_lib+'/tensorflow_core/contrib/framework/python/ops/_variable_ops.so', 'tensorflow_core/contrib/framework/python/ops'), (python_lib+'/tensorflow_core/contrib/hadoop/_dataset_ops.so', 'tensorflow_core/contrib/hadoop'), (python_lib+'/tensorflow_core/contrib/image/python/ops/_distort_image_ops.so', 'tensorflow_core/contrib/image/python/ops'), (python_lib+'/tensorflow_core/contrib/image/python/ops/_image_ops.so', 'tensorflow_core/contrib/image/python/ops'), (python_lib+'/tensorflow_core/contrib/image/python/ops/_single_image_random_dot_stereograms.so', 'tensorflow_core/contrib/image/python/ops'), (python_lib+'/tensorflow_core/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', 'tensorflow_core/contrib/input_pipeline/python/ops'), (python_lib+'/tensorflow_core/contrib/layers/python/ops/_sparse_feature_cross_op.so', 'tensorflow_core/contrib/layers/python/ops'), (python_lib+'/tensorflow_core/contrib/libsvm/python/ops/_libsvm_ops.so', 'tensorflow_core/contrib/libsvm/python/ops'), (python_lib+'/tensorflow_core/contrib/memory_stats/python/ops/_memory_stats_ops.so', 'tensorflow_core/contrib/memory_stats/python/ops'), (python_lib+'/tensorflow_core/contrib/nearest_neighbor/python/ops/_nearest_neighbor_ops.so', 'tensorflow_core/contrib/nearest_neighbor/python/ops'), (python_lib+'/tensorflow_core/contrib/periodic_resample/python/ops/_periodic_resample_op.so', 'tensorflow_core/contrib/periodic_resample/python/ops'), (python_lib+'/tensorflow_core/contrib/reduce_slice_ops/python/ops/_reduce_slice_ops.so', 'tensorflow_core/contrib/reduce_slice_ops/python/ops'), (python_lib+'/tensorflow_core/contrib/resampler/python/ops/_resampler_ops.so', 'tensorflow_core/contrib/resampler/python/ops'), (python_lib+'/tensorflow_core/contrib/seq2seq/python/ops/_beam_search_ops.so', 'tensorflow_core/contrib/seq2seq/python/ops'), (python_lib+'/tensorflow_core/contrib/tensor_forest/hybrid/python/ops/_training_ops.so', 'tensorflow_core/contrib/tensor_forest/hybrid/python/ops'), (python_lib+'/tensorflow_core/contrib/tensor_forest/python/ops/_model_ops.so', 'tensorflow_core/contrib/tensor_forest/python/ops'), (python_lib+'/tensorflow_core/contrib/tensor_forest/python/ops/_stats_ops.so', 'tensorflow_core/contrib/tensor_forest/python/ops'), (python_lib+'/tensorflow_core/contrib/tensor_forest/python/ops/_tensor_forest_ops.so', 'tensorflow_core/contrib/tensor_forest/python/ops'), (python_lib+'/tensorflow_core/contrib/text/python/ops/_skip_gram_ops.so', 'tensorflow_core/contrib/text/python/ops'), (python_lib+'/tensorflow_core/lite/experimental/microfrontend/python/ops/_audio_microfrontend_op.so', 'tensorflow_core/lite/experimental/microfrontend/python/ops'), (python_lib+'/tensorflow_core/python/framework/fast_tensor_util.so', 'tensorflow_core/python/framework')]
+
+#print("tf binaries: ")
+#print(tf_binaries)
 
 binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
             (working_dir+'/appServer.cpython-36m-x86_64-linux-gnu.so', '.'),
@@ -56,7 +58,7 @@ binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
             (python_lib+'/tensorflow/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow/contrib/layers/python/ops/'),                       
             (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops')]
 
-binaries = binareis + tf_binaries
+binaries = binaries + tf_binaries
 
 binaries = [b for b in binaries if os.path.isfile(b[0])] # remove non existing
 
