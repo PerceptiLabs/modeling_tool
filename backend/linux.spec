@@ -35,10 +35,6 @@ tf_binaries = [(python_lib+'/tensorflow_core/compiler/tf2xla/ops/_xla_ops.so', '
 #Collect all extra tf datafiles
 tf_datas = collect_data_files('tensorflow_core', subdir=None, include_py_files=True)
 
-print("tf_datas: ")
-print(tf_datas)
-
-
 binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
             (working_dir+'/appServer.cpython-36m-x86_64-linux-gnu.so', '.'),
             (working_dir+'/s3buckets.cpython-36m-x86_64-linux-gnu.so', '.'),            
