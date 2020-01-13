@@ -1,6 +1,7 @@
 FROM registry.access.redhat.com/ubi8/python-36
 
 LABEL name="PerceptiLabs-Modelling-Backend" \
+      maintainer="contact@perceptilabs.com" \
       vendor="PerceptiLabs" \
       version="1.0" \
       release="1" \
