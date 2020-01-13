@@ -17,7 +17,7 @@
     sidebar-training-section(section-name="GPU")
       resource-monitor(
         monitor-value-key="GPU"
-        monitor-value="currentData"
+        :monitor-value="currentData"
       )
 
 </template>
