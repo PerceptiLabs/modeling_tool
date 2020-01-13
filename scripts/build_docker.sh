@@ -45,27 +45,6 @@ find . -name "__init__.pyx" -exec rename -v 's/\.pyx$/\.py/i' {} \;
 echo "Listing files to be included in build (contents of 'backend_out/')"
 ls -l
 
-####################### Pyintaller -- REMOVE LATER ######################
-
-echo "Running pyinstaller..."
-
-cp ../../backend/linux.spec .
-#cp ../../backend/common.spec common.py
-
-pyinstaller --clean -y linux.spec
-if [ $? -ne 0 ]; then exit 1; fi
-
-#mv ../../backend/common.py ../../backend/common.spec
-
-if [ -e dist/appServer/libpython3.6m.so.1.0 ]
-then
-    # Randomly needed at Microsoft hosted agents.
-    echo "libpython3.6m.so.1.0 exists, making defensive copy called libpython3.6m.so"
-    cp dist/appServer/libpython3.6m.so.1.0 dist/appServer/libpython3.6m.so    
-fi
-
-chmod +x dist/appServer/appServer
-
 ################### BUILD FRONTEND #######################
 echo "----- Building frontend -----"
 cd ../../frontend/src

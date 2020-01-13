@@ -29,8 +29,8 @@ WORKDIR /opt/app-root/src
 
 EXPOSE 5000
 
-# CMD ["python3.6", "-u", "webServer.py"]
-CMD tail -f /dev/null
+CMD ["python3.6", "-u", "webServer.py"]
+
 #######################################################################
 # FROM registry.access.redhat.com/ubi7-dev-preview/ubi
 
