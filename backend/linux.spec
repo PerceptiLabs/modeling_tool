@@ -36,8 +36,9 @@ tf_binaries = [(python_lib+'/tensorflow_core/compiler/tf2xla/ops/_xla_ops.so', '
 tf_datas = collect_data_files('tensorflow_core', subdir=None, include_py_files=True)
 
 
+
+*            (working_dir+'/appServer.cpython-36m-x86_64-linux-gnu.so', '.'),
 binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
-            (working_dir+'/appServer.cpython-36m-x86_64-linux-gnu.so', '.'),
             (working_dir+'/s3buckets.cpython-36m-x86_64-linux-gnu.so', '.'),            
             (python_lib+'/tensorflow_core/contrib/bigtable/python/ops/_bigtable.so', './tensorflow_core/contrib/bigtable/python/ops'),
             (python_lib+'/tensorflow_core/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow_core/contrib/tpu/python/ops'),
