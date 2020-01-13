@@ -1,9 +1,10 @@
 # root
 mainServer.py
-webServer.py
-appServer.py
+main_setup.py
 codehq.py
-coreLogic.py
+mainInterface.py
+coreInterface.py
+lwInterface.py
 CoreThread.py
 createDataObject.py
 databundle.py
@@ -11,7 +12,6 @@ extractVariables.py
 funclib.py
 functionParser.py
 graph.py
-libserver.py
 lw_graph.py
 modules.py
 networkExporter.py
@@ -19,8 +19,12 @@ networkSaver.py
 parse_pb.py
 s3buckets.py
 utils.py
-webServer.py
 processes.py
+
+# server
+server/appServer.py
+server/desktop_serverlib.py
+server/web_serverlib.py
 
 # analytics
 analytics/handlers.py
