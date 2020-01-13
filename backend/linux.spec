@@ -21,7 +21,7 @@ log.info("python_lib = " + python_lib)
 #            (python_lib+'/tensorflow/contrib/bigtable/python/ops/_bigtable.so', './tensorflow/contrib/bigtable/python/ops'),
 
 pathex = [working_dir,
-          python_lib+'/tensorflow']
+          python_lib+'/tensorflow_core']
 
 #collect all tensorflow_core binareis
 #tf_binaries = collect_data_files('tensorflow_core')
@@ -39,28 +39,28 @@ tf_datas = collect_data_files('tensorflow_core', subdir=None, include_py_files=T
 binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
             (working_dir+'/appServer.cpython-36m-x86_64-linux-gnu.so', '.'),
             (working_dir+'/s3buckets.cpython-36m-x86_64-linux-gnu.so', '.'),            
-            (python_lib+'/tensorflow/contrib/bigtable/python/ops/_bigtable.so', './tensorflow/contrib/bigtable/python/ops'),
-            (python_lib+'/tensorflow/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow/contrib/tpu/python/ops'),
-            (python_lib+'/tensorflow/contrib/rnn/python/ops/_gru_ops.so', './tensorflow/contrib/rnn/python/ops/'),
-            (python_lib+'/tensorflow/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow/contrib/tpu/python/ops'),
-            (python_lib+'/tensorflow/contrib/tensor_forest/python/ops/_tensor_forest_ops.so', './tensorflow/contrib/tensor_forest/python/ops/'),
-            (python_lib+'/tensorflow/contrib/tensor_forest/python/ops/_model_ops.so', './tensorflow/contrib/tensor_forest/python/ops/'),
-            (python_lib+'/tensorflow/contrib/tensor_forest/python/ops/_stats_ops.so', './tensorflow/contrib/tensor_forest/python/ops/'),                        
-            (python_lib+'/tensorflow/contrib/tensor_forest/libforestprotos.so', './tensorflow/contrib/tensor_forest/'),                                    
-            (python_lib+'/tensorflow/contrib/resampler/python/ops/_resampler_ops.so', './tensorflow/contrib/resampler/python/ops'),
-            (python_lib+'/tensorflow/contrib/seq2seq/python/ops/_beam_search_ops.so', './tensorflow/contrib/seq2seq/python/ops'),                        
-            (python_lib+'/tensorflow/contrib/memory_stats/python/ops/_memory_stats_ops.so', './tensorflow/contrib/memory_stats/python/ops'),
-            (python_lib+'/tensorflow/contrib/periodic_resample/python/ops/_periodic_resample_op.so', './tensorflow/contrib/periodic_resample/python/ops'),                        
-            (python_lib+'/tensorflow/contrib/image/python/ops/_distort_image_ops.so', './tensorflow/contrib/image/python/ops'),
-            (python_lib+'/tensorflow/contrib/image/python/ops/_image_ops.so', './tensorflow/contrib/image/python/ops'),
-            (python_lib+'/tensorflow/contrib/image/python/ops/_single_image_random_dot_stereograms.so', './tensorflow/contrib/image/python/ops'),                                    
-            (python_lib+'/tensorflow/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', './tensorflow/contrib/input_pipeline/python/ops/'),
-            (python_lib+'/tensorflow/contrib/factorization/python/ops/_clustering_ops.so', './tensorflow/contrib/factorization/python/ops'),
-            (python_lib+'/tensorflow/contrib/factorization/python/ops/_factorization_ops.so', './tensorflow/contrib/factorization/python/ops'),            
-            (python_lib+'/tensorflow/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', './tensorflow/contrib/input_pipeline/python/ops/'),                       
-            (python_lib+'/tensorflow/contrib/rnn/python/ops/_lstm_ops.so', './tensorflow/contrib/rnn/python/ops/'),
-            (python_lib+'/tensorflow/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow/contrib/layers/python/ops/'),                       
-            (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops')]
+            (python_lib+'/tensorflow_core/contrib/bigtable/python/ops/_bigtable.so', './tensorflow_core/contrib/bigtable/python/ops'),
+            (python_lib+'/tensorflow_core/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow_core/contrib/tpu/python/ops'),
+            (python_lib+'/tensorflow_core/contrib/rnn/python/ops/_gru_ops.so', './tensorflow_core/contrib/rnn/python/ops/'),
+            (python_lib+'/tensorflow_core/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow_core/contrib/tpu/python/ops'),
+            (python_lib+'/tensorflow_core/contrib/tensor_forest/python/ops/_tensor_forest_ops.so', './tensorflow_core/contrib/tensor_forest/python/ops/'),
+            (python_lib+'/tensorflow_core/contrib/tensor_forest/python/ops/_model_ops.so', './tensorflow_core/contrib/tensor_forest/python/ops/'),
+            (python_lib+'/tensorflow_core/contrib/tensor_forest/python/ops/_stats_ops.so', './tensorflow_core/contrib/tensor_forest/python/ops/'),                        
+            (python_lib+'/tensorflow_core/contrib/tensor_forest/libforestprotos.so', './tensorflow_core/contrib/tensor_forest/'),                                    
+            (python_lib+'/tensorflow_core/contrib/resampler/python/ops/_resampler_ops.so', './tensorflow_core/contrib/resampler/python/ops'),
+            (python_lib+'/tensorflow_core/contrib/seq2seq/python/ops/_beam_search_ops.so', './tensorflow_core/contrib/seq2seq/python/ops'),                        
+            (python_lib+'/tensorflow_core/contrib/memory_stats/python/ops/_memory_stats_ops.so', './tensorflow_core/contrib/memory_stats/python/ops'),
+            (python_lib+'/tensorflow_core/contrib/periodic_resample/python/ops/_periodic_resample_op.so', './tensorflow_core/contrib/periodic_resample/python/ops'),                        
+            (python_lib+'/tensorflow_core/contrib/image/python/ops/_distort_image_ops.so', './tensorflow_core/contrib/image/python/ops'),
+            (python_lib+'/tensorflow_core/contrib/image/python/ops/_image_ops.so', './tensorflow_core/contrib/image/python/ops'),
+            (python_lib+'/tensorflow_core/contrib/image/python/ops/_single_image_random_dot_stereograms.so', './tensorflow_core/contrib/image/python/ops'),                                    
+            (python_lib+'/tensorflow_core/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', './tensorflow_core/contrib/input_pipeline/python/ops/'),
+            (python_lib+'/tensorflow_core/contrib/factorization/python/ops/_clustering_ops.so', './tensorflow_core/contrib/factorization/python/ops'),
+            (python_lib+'/tensorflow_core/contrib/factorization/python/ops/_factorization_ops.so', './tensorflow_core/contrib/factorization/python/ops'),            
+            (python_lib+'/tensorflow_core/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', './tensorflow_core/contrib/input_pipeline/python/ops/'),                       
+            (python_lib+'/tensorflow_core/contrib/rnn/python/ops/_lstm_ops.so', './tensorflow_core/contrib/rnn/python/ops/'),
+            (python_lib+'/tensorflow_core/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow_core/contrib/layers/python/ops/'),                       
+            (python_lib+'/tensorflow_core/contrib/coder/python/ops/_coder_ops.so', './tensorflow_core/contrib/coder/python/ops')]
 
 binaries = binaries + tf_binaries
 
@@ -83,7 +83,7 @@ for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
 
 
 #, (python_lib+'/tensorflow_core/', './tensorflow_core/')
-datas=tf_datas + [(python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'), (python_lib+'/atari_py/', './atari_py/')]
+datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/contrib/'), (python_lib+'/atari_py/', './atari_py/')]
 
 python_files = []
 with open('../../backend/included_files.txt') as f:
