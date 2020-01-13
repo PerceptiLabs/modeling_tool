@@ -68,7 +68,7 @@ fi
 
 chmod +x dist/appServer/appServer
 
-ls -R -l dist/appServer/tensorflow_core
+ls -R dist/appServer/tensorflow_core
 
 echo "*************************************************************************************************"
 echo "Testing to start the core"
