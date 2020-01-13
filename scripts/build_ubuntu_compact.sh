@@ -84,28 +84,28 @@ echo "Done building backend!"
 # ----- Build frontend ----
 echo "----- Building frontend -----"
 
-cd ../../frontend/
-rm -rf core
-rm -rf build
+# cd ../../frontend/
+# rm -rf core
+# rm -rf build
 
-mkdir core
-mkdir build
+# mkdir core
+# mkdir build
 
-echo "copying contents of '../build/backend_out/dist/appServer/' to 'core/'"
-cp -r ../build/backend_out/dist/appServer/* core/
+# echo "copying contents of '../build/backend_out/dist/appServer/' to 'core/'"
+# cp -r ../build/backend_out/dist/appServer/* core/
 
-echo "Contents of 'core/'"
-ls -l core/
+# echo "Contents of 'core/'"
+# ls -l core/
 
-echo "Building.."
-npm run build
+# echo "Building.."
+# npm run build
 
-echo "copying images to 'frontend_out/'"
-echo "ls:"
-ls build/*.AppImage
-cp build/*.AppImage ../build/frontend_out/
-cp build/*.yml ../build/frontend_out/
-cp build/*.deb ../build/frontend_out/
+# echo "copying images to 'frontend_out/'"
+# echo "ls:"
+# ls build/*.AppImage
+# cp build/*.AppImage ../build/frontend_out/
+# cp build/*.yml ../build/frontend_out/
+# cp build/*.deb ../build/frontend_out/
 
-chmod +x ../build/frontend_out/*.AppImage
+# chmod +x ../build/frontend_out/*.AppImage
 
