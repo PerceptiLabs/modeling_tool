@@ -2,8 +2,6 @@
 
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
-#from common import hiddenimports
-
 datas = collect_data_files("skimage.io._plugins")
 
 #block_cipher = pyi_crypto.PyiBlockCipher(key='sjdielskaospelsk')
