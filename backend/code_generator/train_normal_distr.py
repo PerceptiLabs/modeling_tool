@@ -12,7 +12,7 @@ output_layer = '{{output_layer}}' # used to (1) define the outputs of the wrappe
 target_layer = '{{target_layer}}'
 
 # ---- temporary: the enclosed part is only for simulating more than one device.
-n_devices = 2
+n_devices = 4
 #config = tf.ConfigProto(device_count={"CPU": n_devices},
 #                        inter_op_parallelism_threads=n_devices,
 #                        intra_op_parallelism_threads=1,

@@ -289,6 +289,8 @@ class coreLogic():
         try:
             cpu, mem = self.get_cpu_and_mem()
             gpu = self.get_gpu()
+            if int(gpu) == 0:
+                gpu = 1
             progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
             if self.status=="Running":
                 result = {
