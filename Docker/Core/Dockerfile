@@ -1,6 +1,7 @@
 FROM nvcr.io/nvidia/cuda:10.0-cudnn7-devel-ubi7
 
 LABEL name="PerceptiLabs-Modelling-Backend" \
+      maintainer="contact@perceptilabs.com" \
       vendor="PerceptiLabs" \
       version="1.0" \
       release="1" \
