@@ -1,5 +1,5 @@
 CONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
-CONDA_ENV_FILE="../backend/environment.yml"
+CONDA_ENV_FILE="../backend/environment_osx.yml"
 
 #echo "Installing Homebrew..."
 #/usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"

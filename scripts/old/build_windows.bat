@@ -92,8 +92,6 @@ del *.py
 del setup.pyx
 move mainServer.pyx mainServer.py
 
-
-
 copy ..\..\backend\windows.spec .
 pyinstaller --clean -y windows.spec
 IF %ERRORLEVEL% NEQ 0 (

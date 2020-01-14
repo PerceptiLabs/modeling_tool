@@ -36,3 +36,4 @@ steps:
     azureContainerRegistry: '{"loginServer":"perceptilabs.azurecr.io", "id" : "/subscriptions/d9d6ebad-f86e-4961-9964-5665aa01fcfc/resourceGroups/PerceptiLabs-America/providers/Microsoft.ContainerRegistry/registries/perceptilabs"}'
     dockerComposeFile: '**/docker-compose.yml'
     action: 'Push services'
+

@@ -23,6 +23,8 @@ log.info("python_lib = " + python_lib)
 
 pathex = [working_dir]
 
+#, (python_lib+'/tensorflow/python/_pywrap_tensorflow_internal.pyd', '.')
+
 binaries = [(python_lib+'/ale_c.cp36-win_amd64.dll','.'), (python_lib+'/dask/dask.yaml','./dask/')]
 
 python_files = []
