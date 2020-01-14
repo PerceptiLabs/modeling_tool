@@ -4,7 +4,7 @@ dependencies:
   - nomkl=3.0  
   - pip=19.0.3
   - pip:
-    - tensorflow-gpu==1.15
+    - tensorflow==1.15
     - numpy==1.16.4
     - fsspec==0.6.0
     - pandas==0.25.0
