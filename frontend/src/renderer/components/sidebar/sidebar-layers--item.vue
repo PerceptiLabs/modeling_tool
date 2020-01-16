@@ -48,6 +48,7 @@
   import SidebarLayersColorPicker  from '@/components/sidebar/sidebar-layers--colorpicker.vue'
   import TextEditable       from '@/components/base/text-editable.vue'
   import clickOutside       from '@/core/mixins/click-outside.js'
+  import { mapActions } from 'vuex';
 
 export default {
   name: 'SidebarLayersItem',
@@ -82,7 +83,26 @@ export default {
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
     },
   },
+  watch: {
+    'itemData.layerName': {
+      handler(newText, oldText) {
+        const layersArray = [];
+        for(const id in this.network) {
+          const element = this.network[id];
+          layersArray.push(element.layerName);
+        }
+        const sameNames = layersArray.filter( layer => layer ===  newText);
+        if(sameNames.length > 1) {
+          this.infoPopup(`Name ${newText} already in use!`);
+          this.itemData.layerName = oldText;
+        }
+      }
+    },
+  },
   methods: {
+    ...mapActions({
+      infoPopup: 'globalView/GP_infoPopup',
+    }),
     toggleOpen() {
       this.$store.dispatch('mod_workspace/TOGGLE_container', {val: this.openContainer, container: this.itemData})
     },
