@@ -668,17 +668,17 @@ class TrainNormalCodeGenerator(CodeGenerator):
 LayerPair = namedtuple('LayerPair', ['online_id', 'target_id'])
 
 class GANLossCodeGenerator(CodeGenerator):
-    def __init__(self, discriminator_layer_id, class_weights = 1):  #generator_variable_scope, discriminator_variable_scope, 
-        self._discriminator_layer_id = discriminator_layer_id
+    def __init__(self, class_weights = 1):  #discriminator_layer_id, generator_variable_scope, discriminator_variable_scope, 
+        # self._discriminator_layer_id = discriminator_layer_id
         self._class_weights = str(class_weights)
         # self._generator_variable_scope = generator_variable_scope
         # self._discriminator_variable_scope = discriminator_variable_scope
 
     def get_loss_code(self):
         code = ""
-        code += "size = tf.size(X['%s']['Y'][:])\n" % self._discriminator_layer_id
-        code += "Y_real = X['%s']['Y'][:size/2]\n" % self._discriminator_layer_id
-        code += "Y_fake = X['%s']['Y'][size/2:]\n" % self._discriminator_layer_id
+        code += "size = X['Y'].shape[0]\n" #% self._discriminator_layer_id  ['%s']
+        code += "Y_real = X['Y'][:size/2,:]\n"# % self._discriminator_layer_id
+        code += "Y_fake = X['Y'][size/2:,:]\n" #% self._discriminator_layer_id
         code += "D_logits_real = tf.sigmoid(Y_real)\n"
         code += "D_logits_fake = tf.sigmoid(Y_fake)\n"
         code += "def D_loss(D_logits_real, D_logits_fake):\n"
@@ -711,10 +711,10 @@ class GANOptimizerCodeGenerator(CodeGenerator):
         return code
 
 class TrainGANCodeGenerator(CodeGenerator):
-    def __init__(self, generator_layer_id, discriminator_layer_id, generator_variable_scope, discriminator_variable_scope, n_epochs, class_weights = 1, optimizer='ADAM', 
-    learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999 ):
-        self._discriminator_layer = discriminator_layer_id
-        self._generator_layer = generator_layer_id
+    def __init__(self, generator_variable_scope, discriminator_variable_scope, n_epochs, class_weights = 1, optimizer='ADAM', 
+    learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999 ): # generator_layer_id, discriminator_layer_id,
+        # self._discriminator_layer = discriminator_layer_id
+        # self._generator_layer = generator_layer_id
         self._generator_variable_scope = generator_variable_scope
         self._discriminator_variable_scope = discriminator_variable_scope
         self._n_epochs = int(n_epochs)
@@ -739,7 +739,6 @@ class TrainGANCodeGenerator(CodeGenerator):
 
         code += "\n"
         code += GANLossCodeGenerator(self._discriminator_layer, self._generator_variable_scope, self._discriminator_variable_scope, self._class_weights).get_loss_code()
-        code += "api.data.store(y_pred=y_pred)  #Needed for exporting the network\n"
         code += "# Gradients\n"
         code += "gen_gradients = {}\n"
         code += "dis_gradients = {}\n"
