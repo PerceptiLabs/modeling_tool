@@ -46,13 +46,15 @@ rm -r build
 mv mainServer.pyx mainServer.py
 find . -name "__init__.pyx" -exec rename -v 's/\.pyx$/\.py/i' {} \;
 
+echo "Adding app_variables"
+cp ../../backend/app_variables.json .
+
 echo "Listing files to be included in build (contents of 'backend_tmp/')"
 ls -l
 
 echo "Running pyinstaller..."
 
 cp ../../backend/linux.spec .
-cp ../../backend/app_variables.json .
 
 pyinstaller --clean -y linux.spec
 if [ $? -ne 0 ]; then exit 1; fi
