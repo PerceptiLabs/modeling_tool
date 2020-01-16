@@ -48,10 +48,15 @@ def setup_logger(log_level):
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
                         level=logging.getLevelName(log_level))
 
-log = logging.getLogger(__name__)
+
     
 if __name__ == "__main__":
     args = get_input_args()
+
+    setup_logger(args.log_level)
+    ProcessDependencyWatcher(args.frontend_pid).start()
+
+    log = logging.getLogger(__name__)
 
     with open('app_variables.json', 'r') as f:
         app_variables = json.load(f)
@@ -59,9 +64,6 @@ if __name__ == "__main__":
     commit_id = app_variables["BuildVariables"]["CommitId"]
     log.info("Reporting errors with commit id: " + str(commit_id))
     
-    setup_logger(args.log_level)
-    ProcessDependencyWatcher(args.frontend_pid).start()
-
     cores=dict()
     dataDict=dict()
     checkpointDict=dict()
