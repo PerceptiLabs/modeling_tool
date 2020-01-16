@@ -643,7 +643,7 @@ checkpointDict=dict()
 lwDict=dict()
 
 path='0.0.0.0'
-port=5000
+port=443
 interface=Message(cores, dataDict, checkpointDict, lwDict)
 start_server = websockets.serve(interface.interface, path, port)
 print("Trying to listen to: " + str(path) + " " + str(port))
