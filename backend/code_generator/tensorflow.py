@@ -682,7 +682,7 @@ class GANLossCodeGenerator(CodeGenerator):
         code += "D_logits_real = tf.sigmoid(Y_real)\n"
         code += "D_logits_fake = tf.sigmoid(Y_fake)\n"
         code += "def D_loss(D_logits_real, D_logits_fake):\n"
-	    code += "    return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logits_real,labels=tf.ones_like(D_logits_real)*0.9)) + tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logits_fake,labels=tf.zeros_like(D_logits_real)))\n"
+        code += "    return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logits_real,labels=tf.ones_like(D_logits_real)*0.9)) + tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logits_fake,labels=tf.zeros_like(D_logits_real)))\n"
         code += "def G_loss(D_logits_fake):\n"
         code += "    return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logits_fake,labels=D_logits_fake))\n"
         code += "loss_funcs ={}\n"
@@ -795,11 +795,11 @@ class TrainGANCodeGenerator(CodeGenerator):
         code += "    try:\n"
         code += "        while True:\n"
         code += "            if api.ui.headless:\n"
-        code += "                _, gen_loss_train, gen_acc_train = sess.run([step_generator, generator_loss, generator_accuracy])\n"%
+        code += "                _, gen_loss_train, gen_acc_train = sess.run([step_generator, generator_loss, generator_accuracy])\n"
         code += "                _, dis_loss_train, dis_acc_train = sess.run([step_discriminator, discriminator_loss, dicriminstor_accuracy])\n"
 
         code += "            else:\n"
-        code += "                _, gen_loss_train, gen_acc_train, gen_gradient_vals = sess.run([step_generator, generator_loss, generator_accuracy, gen_gradients])\n"%
+        code += "                _, gen_loss_train, gen_acc_train, gen_gradient_vals = sess.run([step_generator, generator_loss, generator_accuracy, gen_gradients])\n"
         code += "                _, dis_loss_train, dis_acc_train, dis_gradient_vals = sess.run([step_discriminator, discriminator_loss, dicriminstor_accuracy, dis_gradients])\n"
         
         code += "                new_gen_gradient_vals={}\n"
@@ -834,11 +834,11 @@ class TrainGANCodeGenerator(CodeGenerator):
         code += "                break\n"
         code += "            \n"
         code += "            if api.ui.headless:\n"
-        code += "                _, gen_loss_val, gen_acc_val = sess.run([step_generator, generator_loss, generator_accuracy])\n"%
+        code += "                _, gen_loss_val, gen_acc_val = sess.run([step_generator, generator_loss, generator_accuracy])\n"
         code += "                _, dis_loss_val, dis_acc_val = sess.run([step_discriminator, discriminator_loss, dicriminstor_accuracy])\n"
 
         code += "            else:\n"
-        code += "                _, gen_loss_val, gen_acc_val, gen_gradient_vals = sess.run([step_generator, generator_loss, generator_accuracy, gen_gradients])\n"%
+        code += "                _, gen_loss_val, gen_acc_val, gen_gradient_vals = sess.run([step_generator, generator_loss, generator_accuracy, gen_gradients])\n"
         code += "                _, dis_loss_val, dis_acc_val, dis_gradient_vals = sess.run([step_discriminator, discriminator_loss, dicriminstor_accuracy, dis_gradients])\n"
         
         code += "                new_gen_gradient_vals={}\n"
