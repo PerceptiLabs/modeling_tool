@@ -58,6 +58,13 @@ core_new/data/__init__.py
 core_new/data/base.py
 core_new/data/policies.py
 
+
 # core_new/api/
 core_new/api/__init__.py
 core_new/api/legacy.py
+
+# insights/csv_ram_estimator
+insights/csv_ram_estimator/__init__.py
+insights/csv_ram_estimator/base.py
+insights/csv_ram_estimator/model_and_meta.pkl
+
