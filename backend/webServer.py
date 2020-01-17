@@ -82,7 +82,7 @@ class Message:
         if jsonheader["content-type"] == "text/json":
             encoding = jsonheader["content-encoding"]
             request = self._json_decode(data, encoding)
-            print("received request", repr(request))
+            # print("received request", repr(request))
         else:
             # Binary or unknown content-type
             request = data
@@ -191,7 +191,7 @@ class Message:
 
     async def interface(self, websocket, path):
         request = await websocket.recv()
-        print("request: ", request)
+        # print("request: ", request)
         request, jsonheader_len=self.process_protoheader(request)
         request, jsonheader=self.process_jsonheader(request,jsonheader_len)
         message=self.process_request(request,jsonheader)
@@ -612,7 +612,7 @@ class Message:
 
         endTime=time.time()
 
-        print("Content before string: ", content)
+        # print("Content before string: ", content)
 
         # if type(content).__name__=="str":
         #     content='"'+content+'"'
@@ -626,7 +626,7 @@ class Message:
 
         test='{"length": '+str(len(str(content)))+', "body":'+str(content).replace("'",'"')+'}'
 
-        print("Response: ", response)
+        # print("Response: ", response)
 
         await websocket.send(response)
 
@@ -658,7 +658,7 @@ def setup_logger(log_level):
                         level=logging.getLevelName(log_level))
 
 
-setup_logger("INFO")
+setup_logger("WARNING")
 
 cores=dict()
 dataDict=dict()
