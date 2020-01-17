@@ -15,6 +15,7 @@
     {% if lazy %}
         if "dask:{{path}}" not in api.cache:
             df = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
+            cols = list(df.columns)
             
             # Manually compute divisions.
 
@@ -62,15 +63,16 @@
                 yield from df.iloc[div_lo-divs[p]:div_hi-divs[p]].values.squeeze()
     {% else %}
         global df_{{tag}}
-        df_{{tag}} = pd.read_csv("{{path}}").astype(np.float32)
+        cols = pd.read_csv("{{path}}", nrows=1).columns.tolist()
+        df_{{tag}} = pd.read_csv("{{path}}", skipinitialspace=True, usecols={{selected_columns}}).astype(np.float32)
         columns_{{tag}} = df_{{tag}}.columns.tolist()        
         size_{{tag}} = len(df_{{tag}})        
         
-        {% filter remove_lspaces(8) %}
-            {% if selected_columns is not none %}
-                df_{{tag}} = df_{{tag}}.iloc[:, {{selected_columns}}]
-            {% endif %}
-        {% endfilter %}        
+        #{% filter remove_lspaces(8) %}
+        #    {% if selected_columns is not none %}
+        #        df_{{tag}} = df_{{tag}}.iloc[:, {{selected_columns}}]
+        #    {% endif %}
+        #{% endfilter %}        
         
         def generator_{{tag}}(idx_lo, idx_hi):
             global df_{{tag}}

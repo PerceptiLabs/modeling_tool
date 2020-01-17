@@ -87,7 +87,7 @@ if len(set(shapes)) > 1:
 # Make some values available for the frontend
 # TODO: Look over this. A proper interface would make this more robust
 sample = _sample = next(make_generator_trn_{{layer_id}}())
-cols = next(iter(columns.values()), []) # Just get the first (or empty) for now.
+#cols = next(iter(columns.values()), []) # Just get the first (or empty) for now.
             
 global _data_size # apparently trainnormal depends on this.
 _data_size = np.array([trn_sz_tot, val_sz_tot, tst_sz_tot])

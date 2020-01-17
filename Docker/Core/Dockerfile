@@ -37,7 +37,7 @@ RUN source scl_source enable rh-python36 && \
 
 USER 1001
 
-EXPOSE 443
+EXPOSE 5000
 
 ENTRYPOINT [ "/usr/bin/entrypoint.sh" ]
 
