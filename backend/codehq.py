@@ -65,7 +65,7 @@ class CodeHqNew:
                     sources,
                     partitions,
                     batch_size=props["accessProperties"]['Batch_size'],
-                    shuffle=props["accessProperties"]['Shuffle_data'],
+                    shuffle=False, #props["accessProperties"]['Shuffle_data'],
                     seed=0, columns=props["accessProperties"]['Columns'],
                     layer_id=id_
                 )
@@ -74,7 +74,7 @@ class CodeHqNew:
                     sources,
                     partitions,
                     batch_size=props["accessProperties"]['Batch_size'],
-                    shuffle=props["accessProperties"]['Shuffle_data'],
+                    shuffle=False, #props["accessProperties"]['Shuffle_data'],
                     seed=0,
                     columns=props["accessProperties"]['Columns'],
                     layer_id=id_,
