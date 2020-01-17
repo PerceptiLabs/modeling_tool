@@ -277,9 +277,7 @@ class coreLogic():
     def get_gpu(self):
         gpus = GPUtil.getGPUs()
         loadList = [gpu.load*100 for gpu in gpus]
-        nameList = [gpu.name for gpu in gpus]
-        for i in range(len(nameList)):
-            print(str(nameList[i]) + " : " + str(loadList[i]) + "%")
+        
         if loadList:
             return np.average(loadList)
         else:
