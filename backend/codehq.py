@@ -108,12 +108,13 @@ class CodeHqNew:
             
         elif type_ == 'TrainNormal':
             if 'Labels' in props:
-                target_layer = props['Labels']
+                target_layer_id = props['Labels']
+                target_layer = [x for x in content['Con'] if x[0] == target_layer_id][0][1]
             else:    
                 target_layer = "'Target layer here'"
 
             if len(content['Con'])>1:
-                output_layer = [x for x in content['Con'] if x != target_layer][0] # take the FIRST non-target layer as network output/prediction
+                output_layer = [x for x in content['Con'] if x != target_layer][0][1] # take the FIRST non-target layer as network output/prediction
             else:
                 output_layer = "'Output layer here'"
 
