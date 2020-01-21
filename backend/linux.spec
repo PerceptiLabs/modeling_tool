@@ -84,7 +84,7 @@ for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
 
 
 #, (python_lib+'/tensorflow_core/', './tensorflow_core/')
-datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/contrib/'), (python_lib+'/atari_py/', './atari_py/')]
+datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/contrib/'), (python_lib+'/atari_py/', './atari_py/'), (working_dir+'/code/templates/', './code/templates/')]
 
 python_files = []
 with open('../../backend/included_files.txt') as f:

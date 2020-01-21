@@ -1,6 +1,7 @@
 import sys
 import os
 import logging
+import pprint
 from sentry_sdk import configure_scope
 from extractVariables import extractCheckpointInfo
 from s3buckets import S3BucketAdapter
@@ -114,6 +115,12 @@ class Interface():
         reciever = request.get('reciever')
         action = request.get('action')
         value = request.get('value')
+
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug("creating response for action: {}. \nFull request:\n{}".format(
+                action,
+                pprint.pformat(request, depth=3)
+            ))
 
         with configure_scope() as scope:
             scope.set_extra("reciever",reciever)

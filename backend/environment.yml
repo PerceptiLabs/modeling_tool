@@ -15,6 +15,7 @@ dependencies:
     - Cython==0.29.14
     - pycrypto==2.6.1
     - GPUtil==1.4.0
+    - boltons==19.3.0
     - gym[atari]
     - sentry-sdk==0.10.2
     - pyinstaller==3.5
@@ -24,5 +25,6 @@ dependencies:
     - pylint==2.4.3
     - pytest==5.3.1
     - astor==0.8.0
-    
-   
+    - pyzmq==18.1.1
+    - Jinja2==2.10.3
+    - dill==0.3.1.1

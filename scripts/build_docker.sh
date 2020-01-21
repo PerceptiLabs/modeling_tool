@@ -57,9 +57,12 @@ cd ../../
 ls -l
 cp -r Docker/Frontend/* build/frontend_out
 cp -r Docker/Core/* build/backend_out
+cp -r backend/code/templates/ build/backend_out/code/ #TODO: REMOVE
 
 echo "Frontend folder"
 ls -l build/frontend_out
 
 echo "Core folder"
-ls -l build/backend_out
+ls -R build/backend_out
+
+#ls -l build/backend_out/code_generator

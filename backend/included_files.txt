@@ -37,8 +37,13 @@ code_generator/datadata.py
 code_generator/dataenv.py
 code_generator/tensorflow.py
 
+# code
+code/__init__.py
+code/generators.py
+code/utils.py
+code/base.py
+
 # core_new
-core_new/api.py
 core_new/cache.py
 core_new/control.py
 core_new/core.py
@@ -49,8 +54,14 @@ core_new/lightweight.py
 core_new/networkCache.py
 core_new/session.py
 core_new/utils.py
+core_new/core_distr.py
+core_new/script_distr.py
 
 # core_new/data
 core_new/data/__init__.py
 core_new/data/base.py
 core_new/data/policies.py
+
+# core_new/api/
+core_new/api/__init__.py
+core_new/api/legacy.py
