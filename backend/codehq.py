@@ -24,7 +24,8 @@ class CodeHqNew:
 
     @classmethod
     def _get_code_generator(cls, id_, content):        
-
+        # print('printing content .......\n')
+        # print(content)
         type_ = content["Info"]["Type"]
         props = content["Info"]["Properties"]
 
@@ -109,12 +110,13 @@ class CodeHqNew:
         elif type_ == 'TrainNormal':
             if 'Labels' in props:
                 target_layer_id = props['Labels']
-                target_layer = [x for x in content['Con'] if x[0] == target_layer_id][0][1]
+                target_layer = [x[1] for x in content['Info']['backward_connections'] if x[0] == target_layer_id][0]
             else:    
                 target_layer = "'Target layer here'"
 
             if len(content['Con'])>1:
-                output_layer = [x for x in content['Con'] if x != target_layer][0][1] # take the FIRST non-target layer as network output/prediction
+                output_layer_id = [x for x in content['Con'] if x != target_layer][0] # take the FIRST non-target layer as network output/prediction
+                output_layer = [x[1] for x in content['Info']['backward_connections'] if x[0] != target_layer_id][0]
             else:
                 output_layer = "'Output layer here'"
 
@@ -205,12 +207,14 @@ if __name__ == "__main__":
     generator_graph = dict()
 
     for id_, content in graph.graphs.items():
-        code_gen = CodeHqNew.get_code_generator(id_, content)
-        generator_graph[id_] = code_gen
-        print("-----------------")
-        print(code_gen)
-        print(code_gen.get_code())
-        print("-----------------")
+        print(id_)
+        print(content)
+        # code_gen = CodeHqNew.get_code_generator(id_, content)
+        # generator_graph[id_] = code_gen
+        # print("-----------------")
+        # print(code_gen)
+        # print(code_gen.get_code())
+        # print("-----------------")
 
 
 

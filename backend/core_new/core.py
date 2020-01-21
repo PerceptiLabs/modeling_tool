@@ -277,7 +277,7 @@ if __name__ == "__main__":
     else:
         path = 'net.json'
         
-    
+    path = '/Users/mukund/Desktop/templates/Image Classification/model.json'
     with open(path, 'r') as f:
         json_network = json.load(f)
 

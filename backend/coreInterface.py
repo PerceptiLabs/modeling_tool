@@ -65,10 +65,12 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.setupLogic()
         self.network=network
+        print('printing network .......\n')
 
-        # import json
-        # with open('net.json', 'w') as f:
-        #     json.dump(network, f) 
+        print(network)
+        import json
+        with open('network.json', 'w') as f:
+            json.dump(network, f) 
 
         data_container = DataContainer()
 
@@ -585,7 +587,8 @@ class coreLogic():
                 if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
                     for key,value in X.items():
                         try:
-                            if key==self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
+                            key_id = [x[0] for x in content['Info']['backward_connections'] if x[1] == key][0]
+                            if key_id == self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
                                 Labels=value['Y']
                             else:
                                 Network_output=value['Y']
