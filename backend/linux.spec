@@ -84,7 +84,10 @@ for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
 
 
 #, (python_lib+'/tensorflow_core/', './tensorflow_core/')
-datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/contrib/'), (python_lib+'/atari_py/', './atari_py/'), (working_dir+'/code/templates/', './code/templates/')]
+datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/contrib/'),
+(python_lib+'/atari_py/', './atari_py/'),
+(working_dir+'/code/templates/', './code/templates/'),
+(working_dir+'/insights/csv_ram_estimator/data_1579288530.csv', './insights/csv_ram_estimator/')]
 
 python_files = []
 with open('../../backend/included_files.txt') as f:

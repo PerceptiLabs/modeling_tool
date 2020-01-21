@@ -138,8 +138,10 @@ class BaseCore:
                 ))
             
 
-    def _run_layer(self, id_, content):        
+    def _run_layer(self, id_, content):    
+        clean_content=copy.deepcopy(content)
         code_gen = self._codehq.get_code_generator(id_, content)
+        
 
         log.info(repr(code_gen))        
         if log.isEnabledFor(logging.DEBUG):        
@@ -189,7 +191,7 @@ class BaseCore:
             self._layer_extras_reader.read(session, self._data_container)
 
         if self._network_cache is not None:
-            self._network_cache.update(id_, content, session, self._error_handler[id_] if id_ in self._error_handler.to_dict() else None)
+            self._network_cache.update(id_, clean_content, session, self._error_handler[id_] if id_ in self._error_handler.to_dict() else None)
             
         log.debug("Done running layer {}".format(id_))#. Locals:  {}".format(id_, session.outputs.locals))
 

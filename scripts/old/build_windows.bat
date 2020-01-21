@@ -5,6 +5,11 @@ REM call C:\tools\miniconda3\condabin\conda.bat env list
 REM call C:\tools\miniconda3\condabin\conda.bat list
 
 cd ..
+
+cd backend/insights/csv_ram_estimator/
+python train_model.py data_1579288530.csv
+cd ../../../
+
 rmdir /s /q build
 mkdir build
 cd build

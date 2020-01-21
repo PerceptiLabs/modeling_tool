@@ -1,6 +1,9 @@
 import os
 import pprint
 import logging
+import psutil
+
+from insights.csv_ram_estimator import get_instance as get_csv_ram_estimator
 
 from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
@@ -13,7 +16,33 @@ from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGener
 log = logging.getLogger(__name__)
 
 
+def should_use_lazy(sources):
+    MAX_RAM_RATE = 0.3
 
+    est_sz = 0
+    for source in sources:
+        path = source['path']
+
+        if path.endswith('csv'):
+            if get_csv_ram_estimator() is not None:
+                estimator = get_csv_ram_estimator()
+                est_sz += estimator(path)
+            else:
+                log.warning("csv ram estimator instance not available")
+                est_sz += 2*os.path.getsize(path) # 2 to give an arbitrary safety margin           
+        else:
+            est_sz += 2*os.path.getsize(path) # 2 to give an arbitrary safety margin
+
+    files = [s['path'] for s in sources]
+    total_ram = psutil.virtual_memory().total    
+    log.info(f"Estimated size of data files {files} is {est_sz/10**6} MB. Total memory: {total_ram/10**6} MB")
+
+    if total_ram * MAX_RAM_RATE < est_sz:
+        log.warning(f"Estimated size exceeds maximum allowed ram ({100*MAX_RAM_RATE}% of total ram). Setting lazy data handling to true.")
+        return True
+    else:
+        return False
+    
 
 class CodeHqNew:
     @classmethod
@@ -65,20 +94,22 @@ class CodeHqNew:
                     sources,
                     partitions,
                     batch_size=props["accessProperties"]['Batch_size'],
-                    shuffle=props["accessProperties"]['Shuffle_data'],
+                    shuffle=False, #props["accessProperties"]['Shuffle_data'],
                     seed=0, columns=props["accessProperties"]['Columns'],
                     layer_id=id_
                 )
             else:
+                lazy = should_use_lazy(sources)
+                    
                 code_generator = DataDataCodeGenerator2(
                     sources,
                     partitions,
                     batch_size=props["accessProperties"]['Batch_size'],
-                    shuffle=props["accessProperties"]['Shuffle_data'],
+                    shuffle=False, #props["accessProperties"]['Shuffle_data'],
                     seed=0,
                     columns=props["accessProperties"]['Columns'],
                     layer_id=id_,
-                    lazy=False, # TODO: this should come from frontend :) 
+                    lazy=lazy, # TODO: this should come from frontend :) 
                     shuffle_buffer_size=None # TODO: this should come from frontend :) 
                 )            
             return code_generator

@@ -5,13 +5,19 @@ conda activate py362_
 echo "Python location:"
 which python3
 
-
 echo "Conda list:"
 conda list
+cd ..
+
+# ---- Train models ----
+echo "Training models"
+cd backend/insights/csv_ram_estimator/
+python train_model.py data_1579288530.csv
+cd ../../../
 
 # ----- Build backend ----
 echo "----- Building backend -----"
-cd ..
+
 rm -rf build
 mkdir build
 cd build/
@@ -54,6 +60,7 @@ cp -r dist/* ../../build/frontend_out/
 
 ################### MOVING EVERYTHING TO CORRECT PLACES #######################
 cd ../../
+
 ls -l
 cp -r Docker/Frontend/* build/frontend_out
 cp -r Docker/Core/* build/backend_out
