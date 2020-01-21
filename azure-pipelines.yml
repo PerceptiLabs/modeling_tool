@@ -123,6 +123,7 @@ jobs:
         cd scripts/
         ./build_windows.bat
       displayName: 'Build'
+
     
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
       artifact: images_windows
@@ -161,6 +162,7 @@ jobs:
         cd scripts/
         bash -i build_osx.sh
       displayName: 'Build'
+
     
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
       artifact: images_osx
