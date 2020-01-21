@@ -259,10 +259,10 @@ class BaseCore:
             else:
                 raise Exception("Layer {} is empty and can therefore not run.\nMost likely it has not been properly Applied.".format(content["Info"]["Name"]))
 
-        if "Code" in content["Info"] and content["Info"]["Code"]:
-            log.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
+        # if "Code" in content["Info"] and content["Info"]["Code"]:
+        #     log.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
            
-            return True
+        #     return True
 
 
         if layer_type in self._skip_layers:

@@ -31,10 +31,10 @@ class CodeHqNew:
         props = content["Info"]["Properties"]
 
 
-        # if 'Code' in content["Info"] and content["Info"]['Code']:
-        #    code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
-        #    code_generator = CustomCodeGenerator(code_parts)
-        #    return code_generator
+        if 'Code' in content["Info"] and content["Info"]['Code']:
+           code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
+           code_generator = CustomCodeGenerator(code_parts)
+           return code_generator
         if type_ == 'DataData':
             sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
             partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
