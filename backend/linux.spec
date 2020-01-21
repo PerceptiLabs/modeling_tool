@@ -67,7 +67,8 @@ for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
 datas=[
     (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'), 
     (python_lib+'/atari_py/', './atari_py/'),
-    (working_dir+'/code/templates/', './code/templates/')
+    (working_dir+'/code/templates/', './code/templates/'),
+    (working_dir+'/insights/csv_ram_estimator/data_1579288530.csv', './insights/csv_ram_estimator/')    
 ]
 """
 hiddenimports = collect_submodules('skimage.io._plugins') \

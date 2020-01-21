@@ -1,4 +1,9 @@
 cd ..
+
+cd backend/insights/csv_ram_estimator/
+python train_model.py data_1579288530.csv
+cd ../../../
+
 rmdir /s /q build
 mkdir build
 cd build
