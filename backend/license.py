@@ -20,7 +20,7 @@ pl_key = "eZkaBCdeBg87CQyy6MI6WR0hpgL7-jT30tjM7T-nRZA="
 
 # TODO : use the output of this function to determine whether they have a license.
 def is_licensed():
-    access_key = os.environ.get("ACCESSKEY", "")
-    secret_key = os.environ.get("SECRETKEY", "")
+    access_key = os.environ.get("LICENSE_NAME", "")
+    secret_key = os.environ.get("LICENSE_VALUE", "")
 
     return _check(pl_key, access_key, secret_key)
