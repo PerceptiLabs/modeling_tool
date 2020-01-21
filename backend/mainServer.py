@@ -3,7 +3,10 @@ import sys
 import argparse
 
 from processes import ProcessDependencyWatcher
-import appServer
+from mainInterface import Interface
+from server.appServer import Server
+
+from main_setup import setup_scraper, setup_sentry, scraper
 
 
 def get_input_args():
@@ -14,6 +17,10 @@ def get_input_args():
                         help='Log level name.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
                         help="Set this to instantly kill the core, for test purposes.")
+    parser.add_argument('-u', '--user', default="dev@dev.com", type=str,
+                        help="Set this to attach a user to all Sentry logs.")
+    parser.add_argument('-p','--platform', default='desktop', type=str, 
+                        help="Sets what type of frontend you want to communicate with. Can be either 'desktop' or 'browser'.")
     args = parser.parse_args()
     return args
 
@@ -43,5 +50,19 @@ if __name__ == "__main__":
     
     setup_logger(args.log_level)
     ProcessDependencyWatcher(args.frontend_pid).start()
-    
-    appServer.mainServer(args.instantly_kill)
+
+    cores=dict()
+    dataDict=dict()
+    checkpointDict=dict()
+    lwDict=dict()
+
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict)
+
+    data_bundle = setup_scraper()
+    setup_sentry(args.user)
+
+    server = Server(scraper, data_bundle)
+    if args.platform == 'desktop':
+        server.serve_desktop(core_interface, args.instantly_kill)
+    elif args.platform == 'browser':
+        server.serve_web(core_interface, args.instantly_kill)

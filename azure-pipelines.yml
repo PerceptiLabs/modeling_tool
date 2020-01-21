@@ -53,7 +53,7 @@ jobs:
     
     - bash: |
         cd scripts/
-        bash -i build_ubuntu_compact.sh
+        bash -i build_ubuntu.sh
       displayName: 'Build'
     
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
@@ -103,13 +103,14 @@ jobs:
 
     - script: |
         cd scripts/
-        ./setup_windows_python.bat
+        ./setup_windows.bat
       displayName: 'Environment setup'
 
     - script: |
         cd scripts/
-        ./build_windows_compact.bat
+        ./build_windows.bat
       displayName: 'Build'
+
     
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
       artifact: images_windows
@@ -139,8 +140,9 @@ jobs:
 
     - bash: |
         cd scripts/
-        bash -i build_osx_compact.sh
+        bash -i build_osx.sh
       displayName: 'Build'
+
     
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
       artifact: images_osx

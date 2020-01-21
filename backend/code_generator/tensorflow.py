@@ -533,12 +533,12 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "all_tensors=api.data.get_tensors()\n" 
         code += "api.data.store(all_tensors=all_tensors)\n"
         code += "\n"
-        code += "api.data.store(max_epoch=%d,\n" % (self._n_epochs - 1)
+        code += "api.data.store(max_epoch=%d,\n" % (self._n_epochs)
         code += "               train_datasize=_data_size[0],\n"
         code += "               val_datasize=_data_size[1])\n"
         code += "\n"
         code += "for epoch in range(%d):\n" % self._n_epochs
-        # code += "    print(epoch)\n"
+        code += "    api.data.store(epoch=epoch)\n"
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
         code += "    #Setting the variables to empty as a way to reset them every epoch.\n"
@@ -578,9 +578,9 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "                break\n"
         code += "            \n"
         code += "            if api.ui.headless:\n"
-        code += "                _, acc_val, loss_val, f1_val, auc_val = sess.run([step, accuracy, loss, f1, auc])\n"
+        code += "                acc_val, loss_val, f1_val, auc_val = sess.run([accuracy, loss, f1, auc])\n"
         code += "            else:\n"
-        code += "                _, acc_val, loss_val, f1_val, auc_val, gradient_vals, all_evaled_tensors = sess.run([step, accuracy, loss, f1, auc, gradients, all_tensors])\n"
+        code += "                acc_val, loss_val, f1_val, auc_val, gradient_vals, all_evaled_tensors = sess.run([accuracy, loss, f1, auc, gradients, all_tensors])\n"
         code += "                api.data.store(all_evaled_tensors=all_evaled_tensors)\n"
         
         code += "                new_gradient_vals={}\n"
@@ -597,7 +597,6 @@ class TrainNormalCodeGenerator(CodeGenerator):
         code += "    except tf.errors.OutOfRangeError:\n"
         code += "        pass\n"    
         code += "    \n"
-        code += "    api.data.store(epoch=epoch)\n"
         code += "    api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train, f1_training_epoch=f1_train, auc_training_epoch=auc_train,\n"
         code += "                   acc_validation_epoch=acc_val, loss_validation_epoch=loss_val, f1_validation_epoch=f1_val, auc_validation_epoch=auc_val)\n"
         return code

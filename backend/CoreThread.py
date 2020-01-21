@@ -5,6 +5,7 @@ from sentry_sdk import capture_exception
 # from sentry_sdk import configure_scope
 import logging
 from core_new.history import HistoryInputException
+from core_new.errors import LayerSessionAbort
 
 log = logging.getLogger(__name__)
 
@@ -33,10 +34,12 @@ class CoreThread(threading.Thread):
          self.func()
       except HistoryInputException as e:
          self.errorQueue.put(str(e))
-      except:
+      except LayerSessionAbort:
+         pass
+      except Exception as e:
          # capture_exception()       
          log.exception("Unexpected exception in CoreThread")
-         self.errorQueue.put("Internal error in CoreThread!")
+         self.errorQueue.put(str(e))
 
    def globaltrace(self, frame, event, arg): 
       if event == 'call': 
