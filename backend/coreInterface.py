@@ -587,7 +587,7 @@ class coreLogic():
                 if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
                     for key,value in X.items():
                         try:
-                            key_id = [x[0] for x in content['Info']['backward_connections'] if x[1] == key][0]
+                            key_id = [x[0] for x in self.graphObj.graphs[layerId]['Info']['backward_connections'] if x[1] == key][0]
                             if key_id == self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
                                 Labels=value['Y']
                             else:
