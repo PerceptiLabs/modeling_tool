@@ -1,0 +1,268 @@
+{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) %}
+class {{layer_name}}(Tf1xClassificationLayer):
+    def __init__(self):
+        self._n_epochs = {{n_epochs}}
+        self._stopped = False
+        self._paused = False
+        self._status = 'created'
+        
+        self._loss_training = []
+        self._loss_validation = []
+        self._loss_testing = []        
+
+        self._accuracy_training = []
+        self._accuracy_validation = []
+        self._accuracy_testing = []        
+        
+    
+    def run(self, graph: Graph):
+        self._status = 'initializing'
+        
+        batch_size = 8
+        output_layer_id = '{{output_layer}}'
+        target_layer_id = '{{target_layer}}'
+        input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
+        label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
+
+        assert len(input_data_nodes) == 1
+        assert len(label_data_nodes) == 1
+        input_data_node = input_data_nodes[0]
+        label_data_node = label_data_nodes[0]
+
+        # Make training set
+        dataset_trn = tf.data.Dataset.zip((
+            tf.data.Dataset.from_generator(
+                input_data_node.layer_instance.make_generator_training,
+                output_shapes=input_data_node.layer_instance.sample.shape,
+                output_types=np.float32                
+            ),
+            tf.data.Dataset.from_generator(
+                label_data_node.layer_instance.make_generator_training,
+                output_shapes=label_data_node.layer_instance.sample.shape,
+                output_types=np.float32
+            )
+        ))
+
+        # Make validation set
+        dataset_val = tf.data.Dataset.zip((
+            tf.data.Dataset.from_generator(
+                input_data_node.layer_instance.make_generator_validation,
+                output_shapes=input_data_node.layer_instance.sample.shape,
+                output_types=np.float32                
+            ),
+            tf.data.Dataset.from_generator(
+                label_data_node.layer_instance.make_generator_validation,
+                output_shapes=label_data_node.layer_instance.sample.shape,
+                output_types=np.float32
+            )
+        ))
+
+        # Make testing set
+        dataset_tst = tf.data.Dataset.zip((
+            tf.data.Dataset.from_generator(
+                input_data_node.layer_instance.make_generator_testing,
+                output_shapes=input_data_node.layer_instance.sample.shape,
+                output_types=np.float32                
+            ),
+            tf.data.Dataset.from_generator(
+                label_data_node.layer_instance.make_generator_testing,
+                output_shapes=label_data_node.layer_instance.sample.shape,
+                output_types=np.float32
+            )
+        ))
+
+        dataset_trn = dataset_trn.batch(batch_size)
+        dataset_val = dataset_val.batch(batch_size)
+        dataset_tst = dataset_tst.batch(1)                
+
+        # Make initializers
+        iterator = tf.data.Iterator.from_structure(dataset_trn.output_types, dataset_trn.output_shapes)
+        trn_init = iterator.make_initializer(dataset_trn)
+        val_init = iterator.make_initializer(dataset_val)
+        tst_init = iterator.make_initializer(dataset_tst)        
+        input_tensor, label_tensor = iterator.get_next()
+
+        # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
+        layer_outputs = {
+            input_data_node.layer_id: input_tensor,
+            label_data_node.layer_id: label_tensor
+        }
+
+        for node in graph.inner_nodes:
+            args = []
+            for input_node in graph.get_input_nodes(node):
+                args.append(layer_outputs[input_node.layer_id])
+            y = node.layer_instance(*args)
+            layer_outputs[node.layer_id] = y
+
+        output_tensor = layer_outputs[output_layer_id]
+        target_tensor = layer_outputs[target_layer_id]
+
+        loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
+        correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
+        accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
+
+        trainable_vars = tf.trainable_variables()
+        grads = tf.gradients(loss_tensor, trainable_vars)
+        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars))        
+        
+        sess = tf.Session()
+        self._saver = tf.train.Saver()
+        sess.run(tf.global_variables_initializer())
+
+        def sleep_while_paused():
+            while self._paused:
+                time.sleep(1.0)
+
+        def train_step():
+            _, loss, acc = sess.run([update_weights, loss_tensor, accuracy_tensor])
+            self._accuracy_training.append(acc)
+            self._loss_training.append(loss)
+        
+        def validation_step():
+            loss, acc = sess.run([loss_tensor, accuracy_tensor])
+            self._accuracy_validation.append(acc)
+            self._loss_validation.append(loss)
+            
+        def test_step():
+            loss, acc = sess.run([loss_tensor, accuracy_tensor])
+            self._accuracy_testing.append(acc)
+            self._loss_testing.append(loss)            
+        
+        # Training loop
+        self._epoch = 0
+        while self._epoch < self._n_epochs:
+            self._iteration = 0
+            self._status = 'training'
+            sess.run(trn_init)
+                
+            try:
+                while not self._stopped:
+                    sleep_while_paused()
+                    train_step()
+                    self.send_state_updates(graph)
+                    self._iteration += 1
+            except tf.errors.OutOfRangeError:
+                pass
+
+            self._status = 'validation'
+            sess.run(val_init)                        
+            try:
+                while not self._stopped:
+                    sleep_while_paused()
+                    validation_step()
+                    self.send_state_updates(graph)                    
+                    self._iteration += 1
+            except tf.errors.OutOfRangeError:
+                pass
+
+            self._epoch += 1
+
+        # Test loop
+        self._iteration = 0
+        self._status = 'testing'
+        sess.run(tst_init)                                
+        try:
+            while not self._stopped:
+                sleep_while_paused()
+                test_step()
+                self.send_state_updates(graph)                                    
+                self._iteration += 1
+        except tf.errors.OutOfRangeError:
+            pass
+
+        self._status = 'done'                            
+
+    def on_pause(self):
+        self._paused = True
+
+    def on_resume(self):
+        self._paused = False
+
+    def on_stop(self):
+        self._stopped = True
+
+    def on_save(self):
+        # TODO: Call ._saver, verify thread-safety
+        pass
+
+    def on_load(self):
+        # TODO: for loading weights
+        pass
+
+    @property
+    def is_active(self):
+        return True
+
+    @property
+    def status(self):
+        # training, valdation, testing, etc.
+        pass
+    
+    @property
+    def epoch(self):
+        return self._epoch
+
+    @property
+    def iteration(self):
+        return self._iteration
+
+    @property
+    def variables(self):
+        return {}
+
+    @property
+    def sample(self) -> np.ndarray:
+        return None
+
+    @property
+    def size_training(self):
+        return 0
+
+    @property
+    def size_validation(self):
+        return 0
+
+    @property
+    def size_testing(self):
+        return 0
+
+    def make_generator_training(self):
+        # Simply call sess.run on the output & target tensors :)  #TODO: how to make generators generic? We have two datasets here, but not all datasets will be labeled. Distinguish between supervised/unsupervised data layers and instead require pairs of data layers for supervised?
+        yield from []
+        
+    def make_generator_validation(self):
+        yield from []
+        
+    def make_generator_testing(self):
+        yield from []
+
+    @property
+    def accuracy_training(self):
+        return self._accuracy_training
+    
+    @property
+    def accuracy_validation(self):
+        return self._accuracy_validation
+
+    @property
+    def accuracy_testing(self):
+        return self._accuracy_testing        
+    
+    @property
+    def loss_training(self):
+        return self._loss_training        
+
+    @property
+    def loss_validation(self):
+        return self._loss_validation        
+
+    @property
+    def loss_testing(self):
+        return self._loss_testing
+
+    @property
+    def status(self):
+        pass
+{% endmacro %}

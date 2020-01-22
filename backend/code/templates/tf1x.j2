@@ -1,0 +1,59 @@
+{% macro layer_tf1x_reshape(layer_name, shape, permutation) %}
+class {{layer_name}}(Tf1xLayer):
+    def __call__(self, x):
+        y = tf.reshape(x, [-1] + {{shape}})
+        y = tf.transpose(y, perm=[0] + [i+1 for i in {{permutation}}])
+        return y
+
+    @property
+    def variables(self):
+        return []
+
+    @property
+    def trainable_variables(self):
+        return []
+{% endmacro %}
+
+
+{% macro layer_tf1x_one_hot(layer_name, n_classes) %}
+class {{layer_name}}(Tf1xLayer):
+    def __call__(self, x):
+        y = tf.one_hot(tf.cast(x, dtype=tf.int32), {{n_classes}})        
+        return y
+
+    @property
+    def variables(self):
+        return []
+
+    @property
+    def trainable_variables(self):
+        return []
+{% endmacro %}
+
+
+{% macro layer_tf1x_fully_connected(layer_name, n_neurons, activation, dropout, keep_prob) %}
+class {{layer_name}}(Tf1xLayer):
+    def __init__(self):
+        self._n_neurons = 10
+        
+    def __call__(self, x):
+        n_neurons = {{n_neurons}}
+        n_inputs = np.prod(x.get_shape().as_list()[1:], dtype=np.int32)
+
+        initial = tf.truncated_normal((n_inputs, self._n_neurons), stddev=0.1)
+        W = tf.Variable(initial)
+        
+        initial = tf.constant(0.1, shape=[self._n_neurons])
+        b = tf.Variable(initial)
+        flat_node = tf.cast(tf.reshape(x, [-1, n_inputs]), dtype=tf.float32)
+        y = tf.matmul(flat_node, W) + b
+        return y
+
+    @property
+    def variables(self):
+        return []
+
+    @property
+    def trainable_variables(self):
+        return []
+{% endmacro %}
