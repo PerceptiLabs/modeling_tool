@@ -2,8 +2,6 @@
 
 from PyInstaller.utils.hooks import collect_data_files, collect_submodules
 
-#from common import hiddenimports
-
 datas = collect_data_files("skimage.io._plugins")
 
 #block_cipher = pyi_crypto.PyiBlockCipher(key='sjdielskaospelsk')
@@ -24,6 +22,8 @@ python_lib = get_python_lib()
 log.info("python_lib = " + python_lib)
 
 pathex = [working_dir]
+
+#, (python_lib+'/tensorflow/python/_pywrap_tensorflow_internal.pyd', '.')
 
 binaries = [(python_lib+'/ale_c.cp36-win_amd64.dll','.'), (python_lib+'/dask/dask.yaml','./dask/')]
 

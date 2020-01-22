@@ -9,7 +9,6 @@ def set_tensorflow_mode(mode):
     
     
     tf_version = tf.version.VERSION
-    
     if tf_version.startswith('1.15'):
         
         if mode == 'eager':
@@ -20,9 +19,10 @@ def set_tensorflow_mode(mode):
             tf.disable_eager_execution()
             
     elif tf_version.startswith('1.13'):
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
     
         ctx = context()._eager_context
-        
         if mode == 'eager':
             ctx.mode = EAGER_MODE
             ctx.is_eager = True
@@ -30,9 +30,7 @@ def set_tensorflow_mode(mode):
             ctx.mode = GRAPH_MODE        
             ctx.is_eager = False
 
-
-
-    
+            
 class LoopHook:
     def __init__(self, iterable, max_iter=None, on_create=None, on_iterated=None, on_destroy=None):
         self._iterable = iterable
