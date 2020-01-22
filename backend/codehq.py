@@ -167,12 +167,12 @@ class CodeHqNew:
                                                 class_weights = props['Class_weights'],
                                                 optimizer=props['Optimizer'],
                                                 learning_rate=props['Learning_rate'],
-                                                decay_steps=props['Decay_steps'],   #TODO: Send from frontend instead
+                                                decay_steps=props['Decay_steps'],  
                                                 decay_rate=props['Decay_rate'],
                                                 momentum=props['Momentum'], 
                                                 beta1=props['Beta_1'],
                                                 beta2=props['Beta_2'],
-                                                distributed=props['Distributed']) # TODO: REMOVE THIS!
+                                                distributed=props.get('Distributed', False)) # TODO: when frontend handles distributed, remove this default value
             return code_gen
 
         elif type_ == 'TrainLoss':
