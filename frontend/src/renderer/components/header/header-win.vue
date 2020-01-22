@@ -6,11 +6,11 @@
         img(src="./../../../../static/img/perceptilabs-logo-header.svg" alt="PerceptiLabs logo")
     the-menu
 
-    //-ul.app-header_actions
+    ul.app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
       button.btn.btn--app-full(type="button"
         @click="appMaximize"
-        /:class="{'icon-app-restore-down': showRestoreIcon, 'icon-app-resize': !showRestoreIcon}").i.icon
+        :class="{'icon-app-restore-down': showRestoreIcon, 'icon-app-resize': !showRestoreIcon}").i.icon
       button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close
 </template>
 
@@ -47,8 +47,7 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .app-header {
-    //display: flex;
-    display: none;
+    display: flex;
     align-items: center;
     height: $h-header-win;
     background: #272727;

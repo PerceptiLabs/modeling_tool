@@ -46,7 +46,7 @@
 </template>
 
 <script>
-  //import { ipcRenderer } from 'electron'
+  import { ipcRenderer } from 'electron'
   import { mapGetters, mapMutations, mapActions } from 'vuex';
   import { baseUrlSite } from '@/core/constants.js';
   import { goToLink }    from '@/core/helpers.js'
@@ -56,7 +56,7 @@ export default {
   mounted() {
     this.mainProcessListeners()
   },
-
+  
   data() {
     return {
       dataKeymap: {}
@@ -107,8 +107,8 @@ export default {
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
-            ...(this.isMac
-              ? []
+            ...(this.isMac 
+              ? [] 
               : [{label: 'Exit', accelerator: 'alt+f4', active: (e)=> this.appClose(e) }]
             )
           ]
@@ -124,7 +124,7 @@ export default {
             {type:  'separator'},
             {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
-
+            
           ]
         },
         {
@@ -138,14 +138,14 @@ export default {
           role: 'window',
           label: 'Window', visible: true,
           submenu: [
-            ...(this.isMac
+            ...(this.isMac 
               ? [
                   { role: 'minimize', active: ()=>{}},
                   { role: 'zoom',     active: ()=>{}},
                   { type: 'separator'},
                   { role: 'front',    active: ()=>{} },
                   { type: 'separator'},
-                ]
+                ] 
               : [
                   {label: 'Minimize', active: this.appMinimize },
                   {label: 'Zoom',     active: this.appMaximize },
@@ -160,8 +160,8 @@ export default {
             {label: 'Help',          enabled: false,                                  active: this.goToHelpPage },
             {label: 'About',                                                          active: this.goToAboutPage },
             {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
-            ...(this.isMac
-              ? []
+            ...(this.isMac 
+              ? [] 
               : [{label: 'Check for updates',                                         active: this.checkUpdate }]
             ),
             {type: 'separator'},
@@ -195,9 +195,9 @@ export default {
     },
   },
   watch: {
-/*    navMenu(newMenu) {
+    navMenu(newMenu) {
       if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
-    }*/
+    }
   },
   methods: {
     ...mapMutations({
@@ -228,18 +228,18 @@ export default {
         item.submenu.forEach((subItem) => {
           if(subItem.label) {
             if(isRemove) {
-              //ipcRenderer.removeAllListeners(`menu-event-${subItem.label}`);
+              ipcRenderer.removeAllListeners(`menu-event-${subItem.label}`);
             }
             else {
-              //ipcRenderer.on(`menu-event-${subItem.label}`, ()=> { subItem.active() });
+              ipcRenderer.on(`menu-event-${subItem.label}`, ()=> { subItem.active() });
             }
           }
         })
       });
     },
     checkUpdate() {
-/*      this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
-      ipcRenderer.send('check-update');*/
+      this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
+      ipcRenderer.send('check-update');
     },
     addNewNetwork() {
       if(this.isTutorialMode) {
@@ -376,9 +376,9 @@ export default {
   .header-nav_item {
     color: $white;
     position: relative;
-    /*&:hover > .header-nav_sublist {*/
-    /*  display: block;*/
-    /*}*/
+    &:hover > .header-nav_sublist {
+      display: block;
+    }
   }
   .header-nav_btn {
     padding: 0 1rem;

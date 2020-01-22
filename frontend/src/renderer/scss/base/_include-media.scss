@@ -143,7 +143,7 @@ $im-media-support: true !default;
 ///
 ///  /* No output */
 ///
-$im-no-media-breakpoint: '4k' !default;
+$im-no-media-breakpoint: 'large' !default;
 
 ///
 /// Selects which media expressions are allowed in an expression for it to be used when media queries
@@ -560,9 +560,9 @@ $im-no-media-expressions: ('screen', 'portrait', 'landscape') !default;
   } @else if ($im-media-support and length($conditions) > 0) {
     @media #{unquote(parse-expression(nth($conditions, 1)))} {
       // Recursive call
-/*      @include media(slice($conditions, 2)...) {
+      @include media(slice($conditions, 2)...) {
         @content;
-      }*/
+      }
     }
   }
 }

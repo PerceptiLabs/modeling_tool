@@ -10,7 +10,6 @@ import PageProjects from '@/pages/projects/projects.vue';
 Vue.use(Router);
 
 export default new Router({
-  mode: 'history',
   routes: [
     {path: '/',             name: 'login',    component: PageLogin},
     {path: '/app',          name: 'app',      component: PageApp},

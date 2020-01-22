@@ -1,9 +1,9 @@
-import {coreRequest, openWS}  from "@/core/apiWeb.js";
-//import coreRequest    from "@/core/apiCore.js";
+import coreRequest    from "@/core/apiCore.js";
 import { deepCopy }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 
 const {spawn} = require('child_process');
+import { ipcRenderer }   from 'electron'
 
 const namespaced = true;
 //let pauseAction = 'Pause';
@@ -68,34 +68,46 @@ const mutations = {
 };
 
 const actions = {
+  SET_corePid({commit}, id) {
+    commit('set_corePid', id);
+    ipcRenderer.send('save-corePid', id)
+  },
   //---------------
   //  CORE
   //---------------
-  API_runServer({state, commit, rootGetters}) {
+  API_runServer({state, commit, dispatch, rootGetters}) {
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
+    let userEmail = rootGetters['mod_user/GET_userEmail'];
     startCore();
 
     function startCore() {
-      // coreIsStarting = true;
-      // let openServer;
-      // let platformPath = '';
-      // switch (process.platform) {
-      //   case 'win32':
-      //     platformPath = 'core/appServer.exe';
-      //     break;
-      //   case 'darwin':
-      //   case 'linux':
-      //     process.env.NODE_ENV === 'production'
-      //       ? platformPath = path + 'core/appServer'
-      //       : platformPath = 'core/appServer';
-      //     break;
-      // }
-      // openServer = spawn(platformPath, [], {stdio: ['ignore', 'ignore', 'pipe']});
-      // commit('set_corePid', openServer.pid);
-      // openServer.on('error', (err)=>  { coreOffline() });
-      // openServer.on('close', (code)=> { coreOffline() });
+      coreIsStarting = true;
+      let openServer;
+      let platformPath = '';
+      switch (process.platform) {
+        case 'win32':
+          platformPath = 'core/appServer.exe';
+          break;
+        case 'darwin':
+        case 'linux':
+          process.env.NODE_ENV === 'production'
+            ? platformPath = path + 'core/appServer'
+            : platformPath = 'core/appServer';
+          break;
+      }
+      console.log('PID: ', process.pid);
+      openServer = spawn(platformPath, ['-f', process.pid, '-u', userEmail], {stdio: ['ignore', 'ignore', 'pipe']});
+      dispatch('SET_corePid', openServer.pid);
+      openServer.on('error', (err)=>  {
+        console.log('core error', err)
+        coreOffline()
+      });
+      openServer.on('close', (code)=> {
+        console.log('core close', code)
+        coreOffline()
+      });
       waitOnlineCore()
     }
     function waitOnlineCore() {
@@ -111,10 +123,7 @@ const actions = {
         value: ''
       };
       coreRequest(theData)
-        .then((data)=> {
-          //console.log('checkCore', data);
-          commit('SET_statusLocalCore', 'online')
-        })
+        .then((data)=> { commit('SET_statusLocalCore', 'online') })
         .catch((err)=> {  });
     }
     function coreOffline() {
@@ -401,7 +410,7 @@ const actions = {
       }
     };
 
-    console.log('getCode', theData);
+    //console.log('getCode', theData);
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {

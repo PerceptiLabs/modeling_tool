@@ -1,48 +1,12 @@
-
-/*
-$sidebar-indent: 10px;
-html {
-  font-size: $global-font-size;
-  box-sizing: border-box;
-  @include media('>=large') {
-    font-size: 10px;
-  }
-}
-*,
-*:before,
-*:after {
-  box-sizing: inherit;
-}
-* {
-  max-height: 1000000px;
-}
-body {
-  font-family: $base-font-sans-serif;
-  font-weight: normal;
-  line-height: $line-height-base;
-  color: $base-text-color;
-  overflow: hidden;
-  min-width: $base-min-width;
-  background: $base-background-color;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-*/
-
-
-
 $sidebar-indent: 10px;
 
 html {
 	font-size: $global-font-size;
 	box-sizing: border-box;
 
-  @include media('>=medium') {
-		font-size: 10px;
-	}
-  @include media('>=fullHD') {
-    font-size: .5209vw;
-  }
+//@include media('>=large') {
+//		font-size: 10px;
+//	}
 }
 
 *,
@@ -60,6 +24,8 @@ body {
 	font-weight: normal;
 	line-height: $line-height-base;
 	color: $base-text-color;
+	overflow: hidden;
+	min-width: $base-min-width;
 	background: $base-background-color;
 
 	-webkit-font-smoothing: antialiased;

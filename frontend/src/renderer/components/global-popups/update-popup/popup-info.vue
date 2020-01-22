@@ -4,7 +4,7 @@
       div.info_message(v-if="updateStatus === 'not update'") You are using the latest version of the application
       div.info_message(v-else-if="updateStatus === 'done'") A new version has been downloaded. Restart the application to apply the updates
       div.info_message(v-else) PerceptiLabs {{ updateInfo.version }} is now available!
-
+      
       template(v-if="updateStatus === 'before update' && releaseNotes")
         button.info_about-update-btn(type="button"
           @click="isShowUpdateList = !isShowUpdateList") What's new:
@@ -37,7 +37,7 @@
 
 </template>
 <script>
-//import {ipcRenderer}  from 'electron'
+import {ipcRenderer}  from 'electron'
 
 export default {
   name: 'PopupInfo',
@@ -60,13 +60,13 @@ export default {
   methods: {
     startUpdate() {
       this.$store.commit('mod_autoUpdate/SET_updateStatus', 'downloading');
-      //ipcRenderer.send('update-start')
+      ipcRenderer.send('update-start')
     },
     closeUpdatePopup() {
       this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', false)
     },
     restartApp () {
-      //ipcRenderer.send('restart-app-after-update')
+      ipcRenderer.send('restart-app-after-update')
     },
   }
 }

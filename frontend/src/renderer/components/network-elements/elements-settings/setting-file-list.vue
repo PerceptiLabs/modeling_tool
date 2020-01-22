@@ -15,7 +15,7 @@
           .form_label
             button.btn.btn--icon.icon.icon-app-close(type="button" @click="deleteItem(i)")
             span.file-item_path {{ file.path }}
-            spinner-upload-file.spinner-upload-file(v-if="loadingFlag")
+            spinner-upload-file.spinner-upload-file(v-if="showSpinner")
           .form_input
             triple-input.file-list-item_settings(
               v-model="file.settings"
@@ -33,10 +33,8 @@
   import { deepCopy } from "@/core/helpers.js";
   import TripleInput        from "@/components/base/triple-input";
   import SpinnerUploadFile  from "@/components/different/spinner-upload-file.vue";
-  import mixinData  from '@/core/mixins/net-element-settings-data.js';
 export default {
   name: "SettingsFileList",
-  mixins: [mixinData],
   components: {TripleInput, SpinnerUploadFile},
   props: {
     value: {
@@ -70,11 +68,6 @@ export default {
       },
       deep: true,
     }
-  },
-  computed: {
-    loadingFlag() {
-      return this.$store.state.mod_workspace.webLoadingDataFlag;
-    },
   },
   methods: {
     deleteItem(index) {

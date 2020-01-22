@@ -13,7 +13,7 @@
   @import "../../scss/base";
   // Progress Bar
   .progress {
-    //position: relative;
+    position: relative;
     height: 3px;
     display: block;
     width: 100%;

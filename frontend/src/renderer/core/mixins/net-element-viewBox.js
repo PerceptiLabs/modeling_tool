@@ -2,8 +2,8 @@ import VueNonreactive from 'vue-nonreactive/vue-nonreactive.js';
 import Vue from 'vue'
 Vue.use(VueNonreactive);
 
-//import coreRequest  from "@/core/apiCore.js";
-import {coreRequest, openWS}  from "@/core/apiWeb.js";
+import coreRequest  from "@/core/apiCore.js";
+
 const viewBoxMixin = {
   props: {
     currentTab: {type: String, default: ''}
