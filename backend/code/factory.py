@@ -40,12 +40,23 @@ class ScriptFactory:
 
         template += 'import tensorflow as tf\n'
         template += 'import numpy as np\n'
-        template += 'import dill\n'        
+        template += 'import dill\n'
+        template += 'import sys\n'
+        template += 'import logging\n'
+        template += '\n\n'
         template += 'from core_new.layers import *\n'
         template += 'from core_new.graph import Graph\n'
         template += 'from core_new.graph.builder import GraphBuilder\n'                
         template += 'from core_new.api.mapping import MapServer, ByteMap\n'
+        template += '\n\n'
 
+
+        template += 'logging.basicConfig(\n'
+        template += '    stream=sys.stdout,\n'
+        template += '    format="%(asctime)s - %(levelname)s - %(message)s",\n'
+        template += '    level=logging.INFO\n'
+        template += ')\n'
+        template += 'log = logging.getLogger(__name__)\n'
         
         # --- CALL LAYER MACROS ---
         template += '\n\n'
