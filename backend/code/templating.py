@@ -1,4 +1,19 @@
 import jinja2
+import logging
+
+
+log = logging.getLogger(__name__)
+
+
+def log_rendering_errors(func):
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except jinja2.TemplateSyntaxError as e:
+            log.error(f"{str(e)} when rendering jinja template. {e.filename}:{e.lineno} '{e.message}'")
+            raise
+    return wrapper
+
 
 class J2Engine:
     def __init__(self, templates_directory):
@@ -19,9 +34,6 @@ class J2Engine:
         self._jenv.filters['remove_lspaces'] = self.remove_lspaces
         self._jenv.filters['call_macro'] = self.call_macro
 
-
-
-
     @staticmethod
     @jinja2.contextfilter
     def call_macro(context, macro_name, *args, **kwargs):
@@ -41,10 +53,12 @@ class J2Engine:
                 new_text += line + last
             return new_text
 
+    @log_rendering_errors
     def render(self, path, **kwargs):
         text = self._jenv.get_template(path).render(**kwargs)
         return text
-        
+    
+    @log_rendering_errors        
     def render_string(self, code, **kwargs):
         text = self._jenv.from_string(code).render(**kwargs)
         return text

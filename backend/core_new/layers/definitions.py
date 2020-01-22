@@ -59,6 +59,25 @@ DEFINITION_TABLE = {
             'keep_prob': lambda specs: specs['Properties']['Keep_prob']
         }
     ),
+    'DeepLearningConv':  LayerDef(
+        Tf1xLayer,
+        'tf1x.j2',
+        'layer_tf1x_conv',
+        {
+            'conv_dim': lambda specs: specs['Properties']['Conv_dim'],
+            'patch_size': lambda specs: specs['Properties']['Patch_size'],
+            'feature_maps': lambda specs: specs['Properties']['Feature_maps'],
+            'stride': lambda specs: specs['Properties']['Stride'],
+            'padding': lambda specs: specs['Properties']['Padding'][1:-1],
+            'dropout': lambda specs: specs['Properties']['Dropout'],
+            'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
+            'activation': lambda specs: specs['Properties']['Activation_function'],
+            'pool': lambda specs: specs['Properties']['PoolBool'],
+            'pooling': lambda specs: specs['Properties']['Pooling'],
+            'pool_area': lambda specs: specs['Properties']['Pool_area'],
+            'pool_stride': lambda specs: specs['Properties']['Pool_stride'],            
+        }
+    ),
     'TrainNormal': LayerDef(
         Tf1xClassificationLayer,
         'tf1x_classification.j2',

@@ -66,6 +66,14 @@ class coreLogic():
             and the code will differ from the code visible in the frontend.
         """
         try:
+            graph_spec = copy.deepcopy(graph_spec)
+
+            for id_, layer in graph_spec['Layers'].items():
+                if layer['Type'] == 'TrainNormal' and 'Distributed' not in layer['Properties']:
+                    layer['Properties']['Distributed'] = False 
+            
+            
+            
             log.info("Creating deployment script...")            
             config = {'session_id': '1234567'}
             

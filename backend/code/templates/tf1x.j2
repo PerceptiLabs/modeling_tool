@@ -57,3 +57,42 @@ class {{layer_name}}(Tf1xLayer):
     def trainable_variables(self):
         return []
 {% endmacro %}
+
+
+{% macro layer_tf1x_conv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, pool, pooling, pool_area, pool_stride) %}
+class {{layer_name}}(Tf1xLayer):
+    def __init__(self):
+        # TODO: implement support for 1d and 3d conv, dropout, activation funcs, pooling, etc
+        self._patch_size = {{patch_size}}
+        self._feature_maps = {{feature_maps}}
+        self._padding = '{{padding}}'
+        self._stride = {{stride}}
+        
+    def __call__(self, x):
+        shape = [
+            self._patch_size,
+            self._patch_size,
+            x.get_shape().as_list()[-1],
+            self._feature_maps
+        ]
+
+        initial = tf.truncated_normal(
+            shape,
+            stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+        )
+        W = tf.Variable(initial)
+
+        initial = tf.constant(0.1, shape=[self._feature_maps])
+        b = tf.Variable(initial)
+
+        y = tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding)                            
+        return y
+
+    @property
+    def variables(self):
+        return []
+
+    @property
+    def trainable_variables(self):
+        return []
+{% endmacro %}
