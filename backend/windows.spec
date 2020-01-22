@@ -46,7 +46,8 @@ hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('
 datas  =[
     (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'),
     (python_lib+'/atari_py/', './atari_py/'),
-    (working_dir+'/insights/csv_ram_estimator/data_1579288530.csv', './insights/csv_ram_estimator/')
+    (working_dir+'/insights/csv_ram_estimator/data_1579288530.csv', './insights/csv_ram_estimator/'),
+    (working_dir+'/script/templates/', './script/templates/'),
 ]
 
 
