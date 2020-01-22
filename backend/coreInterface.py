@@ -59,6 +59,31 @@ class coreLogic():
         self.saver=None
 
         self.savedResultsDict={}
+
+    def _dump_deployment_script(self, target_file, graph_spec):
+        """
+            Export code to a file. Support is limited to image classification example
+            and the code will differ from the code visible in the frontend.
+        """
+        try:
+            log.info("Creating deployment script...")            
+            config = {'session_id': '1234567'}
+            
+            from core_new.graph.builder import ReplicatedGraphBuilder
+            from code.factory import ScriptFactory
+            
+            graph_builder = ReplicatedGraphBuilder(client=None)
+            graph = graph_builder.build(graph_spec, config)
+            
+            script_factory = ScriptFactory()        
+            code = script_factory.make(graph, config)
+            with open(target_file, 'w') as f:
+                f.write(code)
+            log.info("wrote deployment script to disk...")                            
+        except:
+            log.exception("Failed creating deployment script...")
+            
+        
         
 
     def startCore(self,network, checkpointValues):
@@ -95,7 +120,9 @@ class coreLogic():
         session_history = SessionHistory(cache)
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
         self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
-                         error_handler, session_proc_handler, checkpointValues) 
+                         error_handler, session_proc_handler, checkpointValues)
+
+        self._dump_deployment_script('deploy.py', network) 
 
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()
