@@ -122,6 +122,10 @@ class ScriptFactory:
         template += '    graph.training_nodes[0].layer_instance.run(graph)\n'
 
 
+        template += '\n\n'
+        template += 'if __name__ == "__main__":\n'
+        template += '    main()\n'
+        
         print("TEMPLATE ----------")
         for i, l in enumerate(template.split('\n')):
             print(i, l)
