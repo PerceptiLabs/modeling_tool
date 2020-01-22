@@ -79,7 +79,11 @@ class coreLogic():
             else:
                 return layer_id
 
-        gpus = GPUtil.getGPUs()
+        try:
+            gpus = GPUtil.getGPUs()
+        except:
+            log.error("No compatible nvidia GPU drivers available, defaulting to 0 GPUs")
+            gpus = []
         if len(gpus)>1:     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
             DISTRIBUTED = True
         else:
@@ -275,8 +279,11 @@ class coreLogic():
         return cpu, mem
 
     def get_gpu(self):
-        gpus = GPUtil.getGPUs()
-        loadList = [gpu.load*100 for gpu in gpus]
+        try:
+            gpus = GPUtil.getGPUs()
+            loadList = [gpu.load*100 for gpu in gpus]
+        except:
+            loadList = None
         if loadList:
             return np.average(loadList)
         else:
@@ -286,7 +293,7 @@ class coreLogic():
         try:
             cpu, mem = self.get_cpu_and_mem()
             gpu = self.get_gpu()
-            if int(gpu) == 0:
+            if gpu and int(gpu) == 0:
                 gpu = 1
             progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
             if self.status=="Running":
