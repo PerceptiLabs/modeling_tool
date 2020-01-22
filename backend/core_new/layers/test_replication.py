@@ -5,7 +5,7 @@ from unittest.mock import create_autospec, PropertyMock
 
 
 from core_new.layers import DataLayer, TrainingLayer
-from core_new.layers.replicas import DataLayerReplica, TrainingLayerReplica
+from core_new.layers.replicas import DataLayerReplica#, TrainingLayerReplica
 from core_new.layers.replicators import DataLayerReplicator, Tf1xClassificationLayerReplicator
 from core_new.layers.communication import ZmqServer, ZmqClient
 

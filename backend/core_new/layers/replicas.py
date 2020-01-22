@@ -13,25 +13,23 @@ class DataLayerReplica(DataLayer):
 
     @property
     def sample(self):
-        return dill.loads(self._sample)
+        return dill.loads(self._sample) if self._sample is not None else None
 
     @property
     def size_training(self):
-        return dill.loads(self._size_training)        
+        return dill.loads(self._size_training) if self._size_training is not None else None      
 
     @property
     def size_validation(self):
-        return dill.loads(self._size_validation)                
+        return dill.loads(self._size_validation) if self._size_validation is not None else None                
 
     @property
     def size_testing(self):
-        return dill.loads(self._size_testing)                        
-        return self._client.read(self._identifier, 'size_testing')                
+        return dill.loads(self._size_testing) if self._size_testing is not None else None                        
 
     @property        
     def variables(self):
-        return dill.loads(self._variables)                                
-
+        return dill.loads(self._variables) if self._variables is not None else None                                
     def make_generator_training(self):
         raise NotImplementedError
 
@@ -63,52 +61,51 @@ class Tf1xClassificationLayerReplica(TrainingLayer):
     
     @property
     def sample(self):
-        return dill.loads(self._sample)
+        return dill.loads(self._sample) if self._sample is not None else None
 
     @property
     def size_training(self):
-        return dill.loads(self._size_training)        
+        return dill.loads(self._size_training) if self._size_training is not None else None        
 
     @property
     def size_validation(self):
-        return dill.loads(self._size_validation)                
+        return dill.loads(self._size_validation) if self._size_validation is not None else None
 
     @property
     def size_testing(self):
-        return dill.loads(self._size_testing)                        
-        return self._client.read(self._identifier, 'size_testing')                
+        return dill.loads(self._size_testing) if self._size_testing is not None else None                        
 
     @property        
     def variables(self):
-        return dill.loads(self._variables)                                
+        return dill.loads(self._variables) if self._variables is not None else None                                
 
     @property
     def accuracy_training(self):
-        return dill.loads(self._accuracy_training)
+        return dill.loads(self._accuracy_training) if self._accuracy_training is not None else None
 
     @property
     def accuracy_testing(self):
-        return dill.loads(self._accuracy_testing)
+        return dill.loads(self._accuracy_testing) if self._accuracy_testing is not None else None
 
     @property
     def accuracy_validation(self):
-        return dill.loads(self._accuracy_validation)
+        return dill.loads(self._accuracy_validation) if self._accuracy_validation is not None else None
 
     @property
     def loss_training(self):
-        return dill.loads(self._loss_training)
+        return dill.loads(self._loss_training) if self._loss_training is not None else None
 
     @property
     def loss_testing(self):
-        return dill.loads(self._loss_testing)
+        return dill.loads(self._loss_testing) if self._loss_testing is not None else None
 
     @property
     def loss_validation(self):
-        return dill.loads(self._loss_validation)
+        return dill.loads(self._loss_validation) if self._loss_validation is not None else None
         
     @property
     def status(self):
-        return dill.loads(self._status)       
+        return dill.loads(self._status) if self._status is not None else None       
     
     def make_generator_training(self):
         raise NotImplementedError
@@ -124,22 +121,22 @@ class Tf1xClassificationLayerReplica(TrainingLayer):
 
     
         
-class Tf1xLayerReplica(BaseReplica, Tf1xLayer):
+class Tf1xLayerReplica(Tf1xLayer):
     def __init__(self, variables, trainable_variables):
         self._variables = variables
         self._trainable_variables = trainable_variables
     
     @property
     def trainable_variables(self):
-        return dill.loads(self._trainable_variables)                               
+        return dill.loads(self._trainable_variables) if self._trainable_variables is not None else None                               
 
     @property        
     def variables(self):
-        return dill.loads(self._variables)
+        return dill.loads(self._variables) if self._variables is not None else None
     
     @property        
     def trainable_variables(self):
-        return dill.loads(self._trainable_variables)                                
+        return dill.loads(self._trainable_variables) if self._trainable_variables is not None else None                                
 
     def __call__(self, x: tf.Tensor):
         raise NotImplementedError        

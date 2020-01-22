@@ -10,8 +10,8 @@ from core_new.graph import Graph, JsonNetwork
 from core_new.graph.builder import ReplicatedGraphBuilder, GraphBuilder
 from core_new.layers import TrainingLayer
 from core_new.layers.definitions import DEFINITION_TABLE
-from core_new.policies import DataPolicy
 from core_new.deployment import DeploymentPipe
+from core_new.api.mapping import ByteMap
 
             
 class Core:
@@ -29,7 +29,9 @@ class Core:
         graph = self._graph_builder.build(graph_spec, config)        
         self._deployment_pipe.deploy(graph, session_id)
 
-
+        self._graph_spec = graph_spec
+        self._config = config
+        
         self._state_map = ByteMap(
             session_id,
             'tcp://localhost:5556',
@@ -38,26 +40,40 @@ class Core:
         )
         
         self._state_map.start()            
-        
+        '''
         counter = 0
         while self._deployment_pipe.is_active or counter == 0:
             time.sleep(0.1)
             
-            self._handle_frontend_commands(graph)            
-            self._handle_userland_state(graph)
+            #self._handle_frontend_commands(graph)            
+            #self._handle_userland_state(graph)
             #self._handle_file_transfers()
 
-            s = graph.nodes[0].layer.sample
-            if s is not None:
-                print(counter, s.shape)
+            l = self.graph.nodes[-1].layer
+            print(l)
+
+            print(l.accuracy_training)
+            
+            #core.graph.training_nodes[0].layer.sample
+            #import pdb;pdb.set_trace()
+            #s = l.sample
+            #s = None
+            #if s is not None:
+            #    print(counter, s.shape)
 
             counter += 1
+        '''
 
+    def stop(self):
+        # TODO: deploy stop
+        self._state_map.stop()
+        
     @property
     def graph(self):
         graph = self._graph_builder.build(self._graph_spec, self._config, self._state_map)
         return graph    
 
+    '''
     def _handle_userland_state(self, graph: Graph):
         node = graph.active_training_node    
         policy = DEFINITION_TABLE.get(node.layer_type).data_policy()
@@ -84,7 +100,7 @@ class Core:
         else:
             # TODO: warning?
             pass
-    
+    '''
 
             
         

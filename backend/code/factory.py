@@ -37,12 +37,12 @@ class ScriptFactory:
             template += "{% from '" + file_name + "' import " + macros + " %}\n"
 
         template += 'import tensorflow as tf\n'
-        template += 'import numpy as np\n'        
+        template += 'import numpy as np\n'
+        template += 'import dill\n'        
         template += 'from core_new.layers import *\n'
         template += 'from core_new.graph import Graph\n'
         template += 'from core_new.graph.builder import GraphBuilder\n'                
-        template += 'from core_new.layers.api.mapping import MapServer, ByteMap\n'
-        template += 'from core_new.layers.replicators import *\n'
+        template += 'from core_new.api.mapping import MapServer, ByteMap\n'
 
         
         # --- CALL LAYER MACROS ---
@@ -71,16 +71,16 @@ class ScriptFactory:
         template += "}\n\n"
 
         template += "server = MapServer(\n"
-        template += "    'tcp://*:5556'\n"
-        template += "    'tcp://*:5557'\n"
+        template += "    'tcp://*:5556',\n"
+        template += "    'tcp://*:5557',\n"
         template += "    'tcp://*:5558'\n"        
         template += ")\n\n"
         template += "server.start()\n\n"
         
         template += "state_map = ByteMap(\n"
-        template += "    '" + session_config['session_id'] + "'\n"
-        template += "    'tcp://localhost:5556'\n"
-        template += "    'tcp://localhost:5557'\n"
+        template += "    '" + session_config['session_id'] + "',\n"
+        template += "    'tcp://localhost:5556',\n"
+        template += "    'tcp://localhost:5557',\n"
         template += "    'tcp://localhost:5558'\n"        
         template += ")\n\n"
         template += "state_map.start()\n\n"        
@@ -88,26 +88,28 @@ class ScriptFactory:
         template += "def synchronize_replicas(graph):\n"
         template += "    for node in graph.nodes:\n"
         template += "        l = node.layer\n"
+        template += "        lid = node.layer_id\n"        
         template += "        if isinstance(l, Tf1xClassificationLayer):\n"
-        template += "            state_map[l.id + '-sample'] = l.sample\n"
-        template += "            state_map[l.id + '-size_training'] = l.size_training\n"
-        template += "            state_map[l.id + '-size_validation'] = l.size_validation\n"
-        template += "            state_map[l.id + '-size_testing'] = l.size_testing\n"
-        template += "            state_map[l.id + '-variables'] = l.variables\n"
-        template += "            state_map[l.id + '-accuracy_training'] = l.accuracy_validation\n"
-        template += "            state_map[l.id + '-accuracy_testing'] = l.accuracy_testing\n"
-        template += "            state_map[l.id + '-loss_training'] = l.loss_training\n"
-        template += "            state_map[l.id + '-loss_validation'] = l.loss_validation\n"
-        template += "            state_map[l.id + '-loss_testing'] = l.loss_testing\n"
+        template += "            state_map[(lid + '-sample').encode()] = dill.dumps(l.sample)\n"
+        template += "            state_map[(lid + '-size_training').encode()] = dill.dumps(l.size_training)\n"
+        template += "            state_map[(lid + '-size_validation').encode()] = dill.dumps(l.size_validation)\n"
+        template += "            state_map[(lid + '-size_testing').encode()] = dill.dumps(l.size_testing)\n"
+        template += "            state_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
+        template += "            state_map[(lid + '-accuracy_training').encode()] = dill.dumps(l.accuracy_training)\n"
+        template += "            state_map[(lid + '-accuracy_validation').encode()] = dill.dumps(l.accuracy_validation)\n"        
+        template += "            state_map[(lid + '-accuracy_testing').encode()] = dill.dumps(l.accuracy_testing)\n"
+        template += "            state_map[(lid + '-loss_training').encode()] = dill.dumps(l.loss_training)\n"
+        template += "            state_map[(lid + '-loss_validation').encode()] = dill.dumps(l.loss_validation)\n"
+        template += "            state_map[(lid + '-loss_testing').encode()] = dill.dumps(l.loss_testing)\n"
         template += "        elif isinstance(l, DataLayer):\n"
-        template += "            state_map[l.id + '-sample'] = l.sample\n"
-        template += "            state_map[l.id + '-size_training'] = l.size_training\n"
-        template += "            state_map[l.id + '-size_validation'] = l.size_validation\n"
-        template += "            state_map[l.id + '-size_testing'] = l.size_testing\n"
-        template += "            state_map[l.id + '-variables'] = l.variables\n"
+        template += "            state_map[(lid + '-sample').encode()] = dill.dumps(l.sample)\n"
+        template += "            state_map[(lid + '-size_training').encode()] = dill.dumps(l.size_training)\n"
+        template += "            state_map[(lid + '-size_validation').encode()] = dill.dumps(l.size_validation)\n"
+        template += "            state_map[(lid + '-size_testing').encode()] = dill.dumps(l.size_testing)\n"
+        template += "            state_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
         template += "        elif isinstance(l, Tf1xLayer):\n"
-        template += "            state_map[l.id + '-variables'] = l.variables\n"
-        template += "            state_map[l.id + '-trainable_variables'] = l.trainable_variables\n"
+        template += "            state_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
+        template += "            state_map[(lid + '-trainable_variables').encode()] = dill.dumps(l.trainable_variables)\n"
         template += "\n\n"
         
         # --- CREATE MAIN FUNCTION ---
@@ -137,7 +139,7 @@ class ScriptFactory:
         for i, l in enumerate(code.split('\n')):
             print(i, l)
         print("ENDCODE ----------")
-        import pdb; pdb.set_trace()              
+        #import pdb; pdb.set_trace()              
         return code
 
         

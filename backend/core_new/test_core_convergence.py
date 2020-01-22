@@ -1,4 +1,5 @@
 import sys
+import time
 import pytest
 import tempfile
 import numpy as np
@@ -9,7 +10,6 @@ from core_new.core2 import Core
 from core_new.graph.builder import ReplicatedGraphBuilder
 from core_new.graph import Graph
 from core_new.layers import TrainingLayer
-from core_new.policies import DataPolicy
 from core_new.deployment import InProcessDeploymentPipe
 from core_new.layers.communication import ZmqClient
 
@@ -131,16 +131,15 @@ def graph_spec_binary_classification():
 
 @pytest.mark.slow
 def test_train_normal_converges(graph_spec_binary_classification):
-    client = ZmqClient()
     
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(interpreter=sys.executable,
                                               script_factory=script_factory)
 
-    graph_builder = ReplicatedGraphBuilder(client=client)    
+    graph_builder = ReplicatedGraphBuilder(client=None)    
     command_queue = Queue()
     result_queue = Queue()
-    client.start()
+    #client.start()
     
     core = Core(
         graph_builder,
@@ -151,5 +150,9 @@ def test_train_normal_converges(graph_spec_binary_classification):
 
     core.run(graph_spec_binary_classification)
 
-    client.stop()
-    import pdb; pdb.set_trace()
+    time.sleep(5)
+    accuracy = core.graph.nodes[-1].layer.accuracy_training
+    assert np.isclose(accuracy[-1], 1.000, atol=0.001)
+
+    
+    core.stop()    

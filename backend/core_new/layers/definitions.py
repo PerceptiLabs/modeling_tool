@@ -2,7 +2,6 @@ from collections import namedtuple
 from typing import Dict
 
 from core_new.layers import *
-from core_new.policies import *
 
 
 LayerDef = namedtuple(

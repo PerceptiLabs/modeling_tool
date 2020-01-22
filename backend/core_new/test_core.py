@@ -1,3 +1,4 @@
+'''
 import pytest
 from unittest.mock import MagicMock, call
 from core_new.core2 import Core
@@ -23,3 +24,4 @@ def test_deploys_with_identifier():
     
 
 
+'''

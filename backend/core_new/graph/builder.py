@@ -36,15 +36,14 @@ class GraphBuilder:
 class ReplicatedGraphBuilder:
     def __init__(self, client):
         self._client = client
-    
-   def build(self, graph_spec, session_config, state_maps=None):
-        state_maps = state_maps or {}
+        
+    def build(self, graph_spec, session_config, state_map=None):
+        state_map = state_map or {}
         graph_spec = graph_spec['Layers'] # TODO: remove!
-
+        
         nodes = {}
         for layer_id, layer_spec in graph_spec.items():
             layer_type = layer_spec['Type']
-            state_map = state_maps.get(layer_id, {})
             layer_instance = self._get_layer_instance(layer_id, layer_type, session_config['session_id'], state_map)
             node = Node(layer_id, layer_type, layer_instance, layer_spec)
             nodes[layer_id] = node
@@ -63,35 +62,36 @@ class ReplicatedGraphBuilder:
             
     def _get_layer_instance(self, layer_id, layer_type, session_id, state_map):
         layer_def = DEFINITION_TABLE.get(layer_type)
-        
+
         if layer_def is not None:
             if issubclass(layer_def.base_class, Tf1xClassificationLayer):
+
                 result = Tf1xClassificationLayerReplica(
-                    sample=state_map.get('sample'),
-                    size_training=state_map.get('size_training'),
-                    size_validation=state_map.get('size_validation'),
-                    size_testing=state_map.get('size_testing'),
-                    variables=state_map.get('variables'),
-                    accuracy_training=state_map.get('accuracy_training'),
-                    accuracy_testing=state_map.get('accuracy_testing'),
-                    accuracy_validation=state_map.get('accuracy_validation'),
-                    loss_training=state_map.get('loss_training'),
-                    loss_testing=state_map.get('loss_testing'),
-                    loss_validation=state_map.get('loss_validation'),
-                    status=state_map.get('status'),                    
+                    sample=state_map.get((layer_id + '-sample').encode()),
+                    size_training=state_map.get((layer_id + '-size_training').encode()),
+                    size_validation=state_map.get((layer_id + '-size_validation').encode()),
+                    size_testing=state_map.get((layer_id + '-size_testing').encode()),
+                    variables=state_map.get((layer_id + '-variables').encode()),
+                    accuracy_training=state_map.get((layer_id + '-accuracy_training').encode()),
+                    accuracy_testing=state_map.get((layer_id + '-accuracy_testing').encode()),
+                    accuracy_validation=state_map.get((layer_id + '-accuracy_validation').encode()),
+                    loss_training=state_map.get((layer_id + '-loss_training').encode()),
+                    loss_testing=state_map.get((layer_id + '-loss_testing').encode()),
+                    loss_validation=state_map.get((layer_id + '-loss_validation').encode()),
+                    status=state_map.get((layer_id + '-status').encode()),                    
                 )
             elif issubclass(layer_def.base_class, DataLayer):
                 result = DataLayerReplica(
-                    sample=state_map.get('sample'),
-                    size_training=state_map.get('size_training'),
-                    size_validation=state_map.get('size_validation'),
-                    size_testing=state_map.get('size_testing'),
-                    variables=state_map.get('variables'),
+                    sample=state_map.get((layer_id + '-sample').encode()),
+                    size_training=state_map.get((layer_id + '-size_training').encode()),
+                    size_validation=state_map.get((layer_id + '-size_validation').encode()),
+                    size_testing=state_map.get((layer_id + '-size_testing').encode()),
+                    variables=state_map.get((layer_id + '-variables').encode()),
                 )                
             elif issubclass(layer_def.base_class, Tf1xLayer):                
                 result = Tf1xLayerReplica(
-                    variables=state_map.get('variables'),
-                    trainable_variables=state_map.get('trainable_variables'),
+                    variables=state_map.get((layer_id + '-variables').encode()),
+                    trainable_variables=state_map.get((layer_id + '-trainable_variables').encode()),
                 )
         else:
             raise ValueError(f"Failed finding a replica class for layer type '{layer_type}'")

@@ -73,6 +73,10 @@ class InProcessDeploymentPipe(DeploymentPipe):
             f.write(code)
             f.flush()
 
+            import shutil
+            shutil.copy(f.name, 'deploy.py')
+            
+
             spec = importlib.util.spec_from_file_location("deployed_module", f.name)
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)

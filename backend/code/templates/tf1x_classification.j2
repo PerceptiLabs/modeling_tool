@@ -106,8 +106,10 @@ class {{layer_name}}(Tf1xClassificationLayer):
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_tensor, trainable_vars)
         update_weights = optimizer.apply_gradients(zip(grads, trainable_vars))        
-        
-        sess = tf.Session()
+
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        sess = tf.Session(config=config)
         self._saver = tf.train.Saver()
         sess.run(tf.global_variables_initializer())
 
