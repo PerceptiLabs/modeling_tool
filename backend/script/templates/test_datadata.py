@@ -7,7 +7,7 @@ import os
 import skimage
 
 
-from script import DataDataCodeGenerator2
+from script.generators import DataDataCodeGenerator2
 
 
 @pytest.fixture(scope='module', autouse=True)
