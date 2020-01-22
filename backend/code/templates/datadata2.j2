@@ -1,37 +1,100 @@
+{% from 'file_utils2.j2' import load_npy, load_csv, load_img_dir %}
+
 {% macro layer_datadata(layer_name, sources, partitions, batch_size, shuffle, columns, seed, lazy, shuffle_buffer_size) %}
 class {{layer_name}}(DataLayer):
     def __init__(self):
-        path = "{{sources[0]['path']}}"
-        self._data = np.load(path)
+        columns = {}
+        trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0        
+        trn_gens_args_{{layer_name}}, val_gens_args_{{layer_name}}, tst_gens_args_{{layer_name}} = [], [], []        
+        {% filter remove_lspaces(8) %}
+            {% for idx, source, partition in zip(range(0, len(sources)), sources, partitions): %}
+                {% set tag = str(layer_name) + '_' + str(idx) %}
+
+                {% set ext = source['path'][-4:] %}                
         
+                columns_{{tag}} = None
+                {# The following block highlights a quirk in Jinja2. The macro calls are indented by 24 spaces, #}
+                {# but only the first line of the macro will inherit that indent. #}
+                {# Solution: #}
+                {# Apply the 'indent' filter with 24 spaces. This will align the subsequent macro lines (it ignores the first #}
+                {# Now we can remove the spaces properly using the 'remove_lspaces' filter #}
+    
+                {% filter remove_lspaces(8) %}
+                    {% if source['type'] == 'file' and ext in ['.npy', '.npz'] %}
+                        {{ load_npy(source['path'], tag) | indent(width=24)}}
+                    {% elif source['type'] == 'file' and ext in ['.csv', '.txt'] %}
+                        {{ load_csv(source['path'], tag, lazy, selected_columns) | indent(width=24)}}
+                    {% elif source['type'] == 'directory' and ext in ['.jpg', '.png', '.jpeg', '.tif', '.tiff'] %}
+                        {{ load_img_dir(source['path'], tag) | indent(width=24)}}
+                    {% else %}
+                        raise NotImplementedError("No loader for file with extension {{ext}}")
+                    {% endif %}
+                {% endfilter %}
+        
+                if columns_{{tag}} is not None:
+                    columns["{{tag}}"] = columns_{{tag}}
+        
+                trn_sz = int(round({{partition[0]}}*size_{{tag}}))
+                val_sz = int(round({{partition[1]}}*size_{{tag}}))
+                tst_sz = int(size_{{tag}} - trn_sz - val_sz)
+        
+                trn_sz_tot += trn_sz
+                val_sz_tot += val_sz
+                tst_sz_tot += tst_sz
+                
+                trn_gens_args_{{layer_name}}.append((generator_{{tag}}, 0, trn_sz))
+                val_gens_args_{{layer_name}}.append((generator_{{tag}}, trn_sz, trn_sz+val_sz))
+                tst_gens_args_{{layer_name}}.append((generator_{{tag}}, trn_sz+val_sz, trn_sz+val_sz+tst_sz))
+            {% endfor %}
+        {% endfilter %}
+
+                    
+        self._trn_gens_args = trn_gens_args_{{layer_name}}
+        self._val_gens_args = val_gens_args_{{layer_name}}                                        
+        self._tst_gens_args = tst_gens_args_{{layer_name}}
+                    
+        self._trn_sz_tot = trn_sz_tot
+        self._val_sz_tot = val_sz_tot
+        self._tst_sz_tot = tst_sz_tot
+                    
     @property
     def variables(self):
         return {}
 
     @property
     def sample(self):
-        return self._data[0]
+        sample = next(self.make_generator_training())
+        return sample
 
     @property
     def size_training(self):
-        return round(len(self._data)*0.7)
+        return self._trn_sz_tot
 
     @property
     def size_validation(self):
-        return round(len(self._data)*0.2)
+        return self._val_sz_tot
 
     @property
     def size_testing(self):
-        return round(len(self._data)*0.1)
-
+        return self._tst_sz_tot
+                    
     def make_generator_training(self):
-        yield from self._data[0:self.size_training]
+        def gen():
+            for fn, lo, hi in self._trn_gens_args:
+                yield from fn(lo, hi)
+        return gen()
         
     def make_generator_validation(self):
-        yield from self._data[self.size_training:self.size_training+self.size_validation]
-        
+        def gen():
+            for fn, lo, hi in self._val_gens_args:
+                yield from fn(lo, hi)
+        return gen()
+
     def make_generator_testing(self):
-        yield from self._data[self.size_training+self.size_validation:]    
+        def gen():
+            for fn, lo, hi in self._tst_gens_args:
+                yield from fn(lo, hi)
+        return gen()
 
 {% endmacro %}
 

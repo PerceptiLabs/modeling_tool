@@ -13,6 +13,7 @@ from core_new.layers import TrainingLayer
 from core_new.deployment import InProcessDeploymentPipe
 from core_new.layers.communication import ZmqClient
 
+
 @pytest.fixture
 def graph_spec_binary_classification():
     n_classes = 10
@@ -29,6 +30,9 @@ def graph_spec_binary_classification():
     inputs_path = f1.name
     labels_path = f2.name    
 
+    #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
+    #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
+    
     json_network = {
         "Layers": {
             "1": {

@@ -1,5 +1,7 @@
 import copy
+import ast
 from typing import Dict
+
 
 from code.templating import J2Engine
 from core_new.graph import Graph
@@ -143,6 +145,10 @@ class ScriptFactory:
         for i, l in enumerate(code.split('\n')):
             print(i, l)
         print("ENDCODE ----------")
+
+
+        ast.parse(code)
+        
         #import pdb; pdb.set_trace()              
         return code
 

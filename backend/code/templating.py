@@ -44,14 +44,15 @@ class J2Engine:
     def remove_lspaces(text, count):
         new_text = ''
         lines = text.split('\n')
-    
+
         for lineno, line in enumerate(lines):
             last = '\n' if lineno < len(lines) - 1 else ''
             if line.startswith(' '*count):
                 new_text += line[count:] + last
             else:
                 new_text += line + last
-            return new_text
+                
+        return new_text
 
     @log_rendering_errors
     def render(self, path, **kwargs):
