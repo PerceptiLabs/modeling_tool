@@ -82,7 +82,7 @@ class CustomCodeGenerator(CodeGenerator):
             
 
 class Jinja2CodeGenerator(CodeGenerator):
-    TEMPLATES_DIRECTORY = './code/templates/'
+    TEMPLATES_DIRECTORY = './script/templates/'
     
     def _render(self, path, **kwargs):
         if not hasattr(self, '_jenv'):

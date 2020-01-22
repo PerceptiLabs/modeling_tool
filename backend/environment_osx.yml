@@ -24,5 +24,9 @@ dependencies:
     - pylint==2.4.3
     - pytest==5.3.1
     - astor==0.8.0
+    - pyzmq==18.1.1
+    - Jinja2==2.10.3
+    - dill==0.3.1.1
+    - scikit-learn==0.22.1 
     
    
