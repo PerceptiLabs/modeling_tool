@@ -111,7 +111,6 @@ class ScriptFactory:
         template += "            state_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
         template += "        elif isinstance(l, Tf1xLayer):\n"
         template += "            state_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
-        template += "            state_map[(lid + '-trainable_variables').encode()] = dill.dumps(l.trainable_variables)\n"
         template += "\n\n"
         
         # --- CREATE MAIN FUNCTION ---

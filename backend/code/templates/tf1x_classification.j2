@@ -14,7 +14,8 @@ class {{layer_name}}(Tf1xClassificationLayer):
         self._accuracy_validation = []
         self._accuracy_testing = []        
         
-    
+        self._variables = {}
+        
     def run(self, graph: Graph):
         self._status = 'initializing'
         
@@ -131,7 +132,8 @@ class {{layer_name}}(Tf1xClassificationLayer):
             loss, acc = sess.run([loss_tensor, accuracy_tensor])
             self._accuracy_testing.append(acc)
             self._loss_testing.append(loss)            
-        
+
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}                        
         # Training loop
         self._epoch = 0
         while self._epoch < self._n_epochs:
@@ -161,6 +163,8 @@ class {{layer_name}}(Tf1xClassificationLayer):
 
             self._epoch += 1
 
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}            
+            
         # Test loop
         self._iteration = 0
         self._status = 'testing'
@@ -174,7 +178,8 @@ class {{layer_name}}(Tf1xClassificationLayer):
         except tf.errors.OutOfRangeError:
             pass
 
-        self._status = 'done'                            
+        self._status = 'done'
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}                    
 
     def on_pause(self):
         self._paused = True
@@ -212,7 +217,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
 
     @property
     def variables(self):
-        return {}
+        return self._variables.copy()        
 
     @property
     def sample(self) -> np.ndarray:
@@ -231,7 +236,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
         return 0
 
     def make_generator_training(self):
-        # Simply call sess.run on the output & target tensors :)  #TODO: how to make generators generic? We have two datasets here, but not all datasets will be labeled. Distinguish between supervised/unsupervised data layers and instead require pairs of data layers for supervised?
+        # Simply call sess.run on the output & target tensors :)  #TODO: how to make generators generic? We have two datasets here, but not all datasets will be labeled. Distinguish between supervised/unsupervised data layers and instead REQUIRE pairs of data layers for supervised?
         yield from []
         
     def make_generator_validation(self):

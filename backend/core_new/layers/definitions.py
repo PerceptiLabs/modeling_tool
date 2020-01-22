@@ -25,7 +25,7 @@ DEFINITION_TABLE = {
             'partitions': lambda specs: specs['Properties']['accessProperties']['Partition_list'],
             'batch_size': lambda specs: specs['Properties']['accessProperties']['Batch_size'],
             'shuffle': lambda specs: specs['Properties']['accessProperties']['Shuffle_data'],
-            'columns': lambda specs: specs['Properties']['accessProperties']['Columns'],
+            'selected_columns': lambda specs: specs['Properties']['accessProperties']['Columns'],
             'seed': 0,
             'lazy': False,
             'shuffle_buffer_size': None,

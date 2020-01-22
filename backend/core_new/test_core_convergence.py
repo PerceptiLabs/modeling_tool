@@ -154,7 +154,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
 
     core.run(graph_spec_binary_classification)
 
-    time.sleep(5)
+    time.sleep(7)
     accuracy = core.graph.nodes[-1].layer.accuracy_training
     assert np.isclose(accuracy[-1], 1.000, atol=0.001)
 
