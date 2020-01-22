@@ -109,7 +109,7 @@ class BaseCore:
             layer_type = content["Info"]["Type"]
 
             if self._should_skip_layer(layer_id, content):
-                log.debug("Skipping layer {} []".format(layer_id, layer_type))
+                log.debug("Skipping layer {} [{}]".format(layer_id, layer_type))
                 continue
 
             if self._network_cache is not None:
