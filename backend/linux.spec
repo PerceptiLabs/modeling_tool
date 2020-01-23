@@ -92,8 +92,9 @@ datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/co
 python_files = []
 with open('../../backend/included_files.txt') as f:
     for line in f:
-        if "#" not in line and line.strip():
-            python_files.append(".".join(line.strip().split(".")[:-1]).replace("/","."))
+        tmp_line = line.strip()
+        if "#" not in tmp_line and tmp_line and tmp_line.endswith(.py):
+            python_files.append(".".join(tmp_line.split(".")[:-1]).replace("/","."))
 
 print("Found these python modules to include: " + str(python_files))
 
