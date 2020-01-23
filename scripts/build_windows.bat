@@ -26,8 +26,6 @@ IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
-echo D|xcopy /sy "../../backend/script/templates" "./script/templates"
-
 FOR /R %%x in (__init__.py) do ren "%%x" __init__.pyx
 move mainServer.py mainServer.pyx
 python setup_compact.pyx develop
