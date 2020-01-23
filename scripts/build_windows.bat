@@ -65,29 +65,29 @@ cd ..\backend_out
 mkdir dist
 xcopy ..\backend_tmp\dist dist\ /sy 
 
-cd ..\..\frontend\
+REM cd ..\..\frontend\
 
-rmdir /s /q core
-mkdir core
+REM rmdir /s /q core
+REM mkdir core
 
-xcopy ..\build\backend_out\dist\appServer core\ /sy 
-dir core
+REM xcopy ..\build\backend_out\dist\appServer core\ /sy 
+REM dir core
 
-call npm run build
-IF %ERRORLEVEL% NEQ 0 (
-  dir build
-  exit 1
-)
-dir build
+REM call npm run build
+REM IF %ERRORLEVEL% NEQ 0 (
+REM   dir build
+REM   exit 1
+REM )
+REM dir build
 
-call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "build/*.exe"
-IF %ERRORLEVEL% NEQ 0 (
-  exit 1
-)
+REM call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "build/*.exe"
+REM IF %ERRORLEVEL% NEQ 0 (
+REM   exit 1
+REM )
 
-copy build\*.exe ..\build\frontend_out\ 
-copy build\*.yml ..\build\frontend_out\ 
+REM copy build\*.exe ..\build\frontend_out\ 
+REM copy build\*.yml ..\build\frontend_out\ 
 
-cd ..\scripts
+REM cd ..\scripts
 
 
