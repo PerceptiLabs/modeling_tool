@@ -62,7 +62,7 @@ binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
             (python_lib+'/tensorflow_core/contrib/rnn/python/ops/_lstm_ops.so', './tensorflow_core/contrib/rnn/python/ops/'),
             (python_lib+'/tensorflow_core/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow_core/contrib/layers/python/ops/'),                       
             (python_lib+'/tensorflow_core/contrib/coder/python/ops/_coder_ops.so', './tensorflow_core/contrib/coder/python/ops'),
-            , (python_lib+'/sklearn/.libs/vcomp140.dll', './sklearn/.libs/')]
+            (python_lib+'/sklearn/.libs/vcomp140.dll', './sklearn/.libs/')]
 
 binaries = binaries + tf_binaries
 
