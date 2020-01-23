@@ -1,1 +1,1 @@
-from core_new.layers.base import *
+from perceptilabs.core_new.layers.base import *

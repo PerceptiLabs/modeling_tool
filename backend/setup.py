@@ -26,6 +26,8 @@ class MyBuildExt(build_ext):
         for ext in self.EXCLUDE_EXTENSIONS:
             paths = [f for f in glob.glob(build_dir + "/**/*" + ext, recursive=True)]
             for p in paths:
+                if p.endswith('__main__.py') or p.endswith('__init__.py'):
+                    continue                
                 os.remove(p)
                 
 setup(
