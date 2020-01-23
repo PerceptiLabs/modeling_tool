@@ -80,7 +80,7 @@ python_files = []
 with open('../../backend/included_files.txt') as f:
     for line in f:
         tmp_line = line.strip()
-        if "#" not in tmp_line and tmp_line and tmp_line.endswith(.py):
+        if "#" not in tmp_line and tmp_line and tmp_line.endswith(".py"):
             python_files.append(".".join(tmp_line.split(".")[:-1]).replace("/","."))
 
 print("Found these python modules to include: " + str(python_files))
