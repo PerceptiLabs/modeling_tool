@@ -40,26 +40,26 @@ jobs:
 
 ### BUILD UBUNTU ###
 
-#   - job: build_ubuntu
-# #    dependsOn:
-# #        ["test_ubuntu", "test_windows", "test_osx"] 
-#     pool:
-#         vmImage: "ubuntu-16.04"
-#     steps:
-#     - bash: |
-#         cd scripts/
-#         ./setup_ubuntu.sh
-#       displayName: 'Environment setup'
+  - job: build_ubuntu
+#    dependsOn:
+#        ["test_ubuntu", "test_windows", "test_osx"] 
+    pool:
+        vmImage: "ubuntu-16.04"
+    steps:
+    - bash: |
+        cd scripts/
+        ./setup_ubuntu.sh
+      displayName: 'Environment setup'
     
-#     - bash: |
-#         cd scripts/
-#         bash -i build_ubuntu.sh
-#       displayName: 'Build'
+    - bash: |
+        cd scripts/
+        bash -i build_ubuntu.sh
+      displayName: 'Build'
     
-#     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-#       artifact: images_ubuntu
-#     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-#       artifact: images_ubuntu_core
+    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+      artifact: images_ubuntu
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: images_ubuntu_core
 
 
 ### BUILD WINDOWS ###
@@ -121,33 +121,33 @@ jobs:
 
 ### BUILD OSX ###
 
-#   - job: build_osx
-# #    dependsOn:
-# #        ["test_ubuntu", "test_windows", "test_osx"]
-#     pool:
-#         vmImage: "macOS-10.14"
-#     variables:
-#       - group: OSX-build
-#     steps:
-#     - task: InstallAppleCertificate@2
-#       inputs:
-#         certSecureFile: 'devIDapp.p12'
-#         certPwd: $(devAppCert.password)
-#     - bash: |
-#         cd scripts/
-#         ./setup_osx.sh
-#       displayName: 'Environment setup'
+  - job: build_osx
+#    dependsOn:
+#        ["test_ubuntu", "test_windows", "test_osx"]
+    pool:
+        vmImage: "macOS-10.14"
+    variables:
+      - group: OSX-build
+    steps:
+    - task: InstallAppleCertificate@2
+      inputs:
+        certSecureFile: 'devIDapp.p12'
+        certPwd: $(devAppCert.password)
+    - bash: |
+        cd scripts/
+        ./setup_osx.sh
+      displayName: 'Environment setup'
 
-#     - bash: |
-#         cd scripts/
-#         bash -i build_osx.sh
-#       displayName: 'Build'
+    - bash: |
+        cd scripts/
+        bash -i build_osx.sh
+      displayName: 'Build'
 
     
-#     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-#       artifact: images_osx
-#     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-#       artifact: images_osx_core
+    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+      artifact: images_osx
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: images_osx_core
 
 
 ### PUBLISH SCRIPTS (for deployment purposes)

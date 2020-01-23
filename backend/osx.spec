@@ -51,7 +51,8 @@ binaries = [
     (python_lib+'/tensorflow/contrib/rnn/python/ops/_lstm_ops.so', './tensorflow/contrib/rnn/python/ops/'),
     (python_lib+'/tensorflow/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow/contrib/layers/python/ops/'),                       
     (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops'),
-    (python_lib+'/atari_py/ale_interface/libale_c.so', './atari_py/ale_interface/')
+    (python_lib+'/atari_py/ale_interface/libale_c.so', './atari_py/ale_interface/'),
+    , (python_lib+'/sklearn/.libs/vcomp140.dll', './sklearn/.libs/')
 ]
 
 
