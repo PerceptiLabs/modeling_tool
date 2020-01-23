@@ -25,7 +25,7 @@ pathex = [working_dir]
 
 #, (python_lib+'/tensorflow/python/_pywrap_tensorflow_internal.pyd', '.')
 
-binaries = [(python_lib+'/ale_c.cp36-win_amd64.dll','.'), (python_lib+'/dask/dask.yaml','./dask/'), (python_lib+'sklearn/.libs/vcomp140.dll', './sklearn/.libs/')]
+binaries = [(python_lib+'/ale_c.cp36-win_amd64.dll','.'), (python_lib+'/dask/dask.yaml','./dask/'), (python_lib+'/sklearn/.libs/vcomp140.dll', './sklearn/.libs/')]
 
 python_files = []
 with open('../../backend/included_files.txt') as f:
