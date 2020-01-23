@@ -1,7 +1,8 @@
 import dill
 import tensorflow as tf
 from typing import List, Callable
-from core_new.layers import DataLayer, TrainingLayer, Tf1xLayer
+
+from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer
 
 
 class DataLayerReplica(DataLayer):

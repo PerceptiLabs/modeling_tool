@@ -3,8 +3,8 @@ import networkx as nx
 from typing import Dict, List, Tuple
 
 
-from code.base import CodeGenerator
-from core_new.layers.base import BaseLayer, DataLayer, InnerLayer, TrainingLayer
+from perceptilabs.code.base import CodeGenerator
+from perceptilabs.core_new.layers.base import BaseLayer, DataLayer, InnerLayer, TrainingLayer
 
 class JsonNetwork(Dict):
     pass

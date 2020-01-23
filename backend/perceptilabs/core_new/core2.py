@@ -6,12 +6,12 @@ from queue import Queue
 from typing import Dict, List
 from abc import ABC, abstractmethod
 
-from core_new.graph import Graph, JsonNetwork
-from core_new.graph.builder import ReplicatedGraphBuilder, GraphBuilder
-from core_new.layers import TrainingLayer
-from core_new.layers.definitions import DEFINITION_TABLE
-from core_new.deployment import DeploymentPipe
-from core_new.api.mapping import ByteMap
+from perceptilabs.core_new.graph import Graph, JsonNetwork
+from perceptilabs.core_new.graph.builder import ReplicatedGraphBuilder, GraphBuilder
+from perceptilabs.core_new.layers import TrainingLayer
+from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
+from perceptilabs.core_new.deployment import DeploymentPipe
+from perceptilabs.core_new.api.mapping import ByteMap
 
             
 class Core:

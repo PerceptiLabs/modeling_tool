@@ -3,13 +3,13 @@ from typing import Dict, Tuple, Set
 from abc import ABC, abstractmethod
 import logging
 
-from core_new.layers.communication import BaseClient, BaseServer
-from core_new.layers.definitions import DEFINITION_TABLE
-from core_new.layers import *
-from core_new.layers.replicas import *
-from core_new.graph.utils import breadth_first_sort
-from core_new.graph.base import Graph, JsonNetwork, Node
-from core_new.layers.communication import BaseClient
+from perceptilabs.core_new.layers.communication import BaseClient, BaseServer
+from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
+from perceptilabs.core_new.layers import *
+from perceptilabs.core_new.layers.replicas import *
+from perceptilabs.core_new.graph.utils import breadth_first_sort
+from perceptilabs.core_new.graph.base import Graph, JsonNetwork, Node
+from perceptilabs.core_new.layers.communication import BaseClient
 
 
 log = logging.getLogger(__name__)

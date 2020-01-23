@@ -5,6 +5,10 @@ import numpy as np
 import tensorflow as tf
 
 import logging
+
+from perceptilabs.createDataObject import createDataObject
+
+
 log = logging.getLogger(__name__)
 
 class LW_interface_base(ABC):
@@ -184,7 +188,6 @@ class getPreviewSample(LW_interface_base):
             sample=np.squeeze(sample)
 
         
-        from createDataObject import createDataObject
         dataObject=createDataObject([self._reduceTo2d(np.asarray(sample))])
         
         if self._is_jsonable(dataObject):

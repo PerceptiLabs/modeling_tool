@@ -1,4 +1,4 @@
-from core_new.api.mapping import ByteMap, EventBus, MapServer
+from perceptilabs.core_new.api.mapping import ByteMap, EventBus, MapServer
 import dill
 
 

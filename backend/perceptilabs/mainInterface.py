@@ -2,26 +2,26 @@ import sys
 import os
 import logging
 from sentry_sdk import configure_scope
-from extractVariables import extractCheckpointInfo
-from s3buckets import S3BucketAdapter
+from perceptilabs.extractVariables import extractCheckpointInfo
+from perceptilabs.s3buckets import S3BucketAdapter
 
 #core interface
-from coreInterface import coreLogic
+from perceptilabs.coreInterface import coreLogic
 
 #Create LW Core
-from graph import Graph
-from core_new.core import DataContainer
-from core_new.history import SessionHistory
-from core_new.errors import LightweightErrorHandler
-from core_new.extras import LayerExtrasReader
-from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
-from modules import ModuleProvider
-from core_new.cache import get_cache
-from core_new.networkCache import NetworkCache
-from codehq import CodeHqNew as CodeHq
+from perceptilabs.graph import Graph
+from perceptilabs.core_new.core import DataContainer
+from perceptilabs.core_new.history import SessionHistory
+from perceptilabs.core_new.errors import LightweightErrorHandler
+from perceptilabs.core_new.extras import LayerExtrasReader
+from perceptilabs.core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
+from perceptilabs.modules import ModuleProvider
+from perceptilabs.core_new.cache import get_cache
+from perceptilabs.core_new.networkCache import NetworkCache
+from perceptilabs.codehq import CodeHqNew as CodeHq
 
 #LW interface
-from lwInterface import getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
 

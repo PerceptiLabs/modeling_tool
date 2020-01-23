@@ -1,1 +1,1 @@
-from core_new.deployment.base import *
+from perceptilabs.core_new.deployment.base import *

@@ -2,13 +2,13 @@ import os
 import pprint
 import logging
 
-from code_generator import CustomCodeGenerator, CodePart
-from code_generator.datadata import DataDataCodeGenerator
-from code_generator.dataenv import DataEnvironmentCodeGenerator
+from perceptilabs.code_generator import CustomCodeGenerator, CodePart
+from perceptilabs.code_generator.datadata import DataDataCodeGenerator
+from perceptilabs.code_generator.dataenv import DataEnvironmentCodeGenerator
 
-from code.generators import DataDataCodeGenerator2
+from perceptilabs.code.generators import DataDataCodeGenerator2
 
-from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
+from perceptilabs.code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
 log = logging.getLogger(__name__)
 

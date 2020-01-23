@@ -1,1 +1,1 @@
-from core_new.data.base import *
+from perceptilabs.core_new.data.base import *

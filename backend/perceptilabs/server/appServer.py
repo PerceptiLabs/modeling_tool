@@ -13,7 +13,7 @@ class Server():
     def serve_desktop(self, interface, instantly_kill=False): 
         import selectors
         import socket
-        from server.desktop_serverlib import Message
+        from perceptilabs.server.desktop_serverlib import Message
 
         sel = selectors.DefaultSelector()
 
@@ -79,7 +79,7 @@ class Server():
     def serve_web(self, interface, instantly_kill=False): 
         import websockets
         import asyncio
-        from server.web_serverlib import Message
+        from perceptilabs.server.web_serverlib import Message
 
         path='0.0.0.0'
         port=5000

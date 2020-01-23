@@ -3,8 +3,8 @@ import numpy as np
 import os
 from abc import ABC, abstractmethod
 
-from code_generator import CodeGenerator, Jinja2CodeGenerator
-from s3buckets import S3BucketAdapter
+from perceptilabs.code_generator import CodeGenerator, Jinja2CodeGenerator
+from perceptilabs.s3buckets import S3BucketAdapter
 
 
 class AbstractStrategy(ABC):
@@ -534,7 +534,7 @@ class DataDataCodeGenerator(CodeGenerator):
             raise NotImplementedError("Extension {} not implemented".format(ext))
 
         return strategy
-
+'''
 
 if __name__ == "__main__":
 
@@ -631,3 +631,4 @@ if __name__ == "__main__":
     
     runrunrun(sources, partitions)
 
+'''

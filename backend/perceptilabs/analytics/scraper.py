@@ -8,7 +8,7 @@ from queue import Queue
 from typing import Any, Dict, List
 from collections import namedtuple
 
-from analytics.handlers import *
+from perceptilabs.analytics.handlers import *
 
 DEFAULT_HANDLERS = [
     CoreInitHandler(),

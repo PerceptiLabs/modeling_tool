@@ -10,16 +10,16 @@ import pandas as pd
 from collections import namedtuple
 import gym
 
-from graph import Graph
-from modules import ModuleProvider
-from core_new.data import DataContainer
-from core_new.utils import set_tensorflow_mode
-from core_new.extras import LayerExtrasReader
-from core_new.errors import LayerSessionAbort
-from core_new.history import SessionHistory, HistoryInputException
-from core_new.session import LayerSession, LayerSessionStop, LayerIo
-from core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
-from analytics.scraper import get_scraper
+from perceptilabs.graph import Graph
+from perceptilabs.modules import ModuleProvider
+from perceptilabs.core_new.data import DataContainer
+from perceptilabs.core_new.utils import set_tensorflow_mode
+from perceptilabs.core_new.extras import LayerExtrasReader
+from perceptilabs.core_new.errors import LayerSessionAbort
+from perceptilabs.core_new.history import SessionHistory, HistoryInputException
+from perceptilabs.core_new.session import LayerSession, LayerSessionStop, LayerIo
+from perceptilabs.core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
+from perceptilabs.analytics.scraper import get_scraper
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()

@@ -1,5 +1,6 @@
 ''' Manually written example of scriptbuilder output '''
 
+import time
 import logging
 import numpy as np
 import tensorflow as tf
@@ -9,6 +10,8 @@ from code.layer import InnerLayer, TrainingLayer, DataLayer, Tf1xLayer
 from core_new.graph import Graph, Node
 from core_new.api.logging import CoreHandler
 from core_new.api.mapping import ByteMap, EventBus
+
+state_mapping = dict()
 
 
 ZMQ_DEALER_ADDRESS = ''

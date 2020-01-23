@@ -1,10 +1,12 @@
 import os
-import utils
+
 import logging
 import sentry_sdk
 
-from analytics.scraper import get_scraper
-from databundle import DataBundle, AzureUploader, AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU, AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US
+
+import perceptilabs.utils as utils
+from perceptilabs.analytics.scraper import get_scraper
+from perceptilabs.databundle import DataBundle, AzureUploader, AZURE_ACCOUNT_NAME_EU, AZURE_ACCOUNT_KEY_EU, AZURE_CONTAINER_EU, AZURE_ACCOUNT_NAME_US, AZURE_ACCOUNT_KEY_US, AZURE_CONTAINER_US
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()

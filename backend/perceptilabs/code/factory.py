@@ -3,9 +3,9 @@ import ast
 from typing import Dict
 
 
-from code.templating import J2Engine
-from core_new.graph import Graph
-from core_new.layers.definitions import DEFINITION_TABLE
+from perceptilabs.code.templating import J2Engine
+from perceptilabs.core_new.graph import Graph
+from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 
 class ScriptFactory:
     def __init__(self, mode='default'):
@@ -44,10 +44,10 @@ class ScriptFactory:
         template += 'import sys\n'
         template += 'import logging\n'
         template += '\n\n'
-        template += 'from core_new.layers import *\n'
-        template += 'from core_new.graph import Graph\n'
-        template += 'from core_new.graph.builder import GraphBuilder\n'                
-        template += 'from core_new.api.mapping import MapServer, ByteMap\n'
+        template += 'from perceptilabs.core_new.layers import *\n'
+        template += 'from perceptilabs.core_new.graph import Graph\n'
+        template += 'from perceptilabs.core_new.graph.builder import GraphBuilder\n'                
+        template += 'from perceptilabs.core_new.api.mapping import MapServer, ByteMap\n'
         template += '\n\n'
 
 

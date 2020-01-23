@@ -181,7 +181,7 @@ class MapClient(MapBase):
                             self._on_del_message(self._messages[key])
                             del self._messages[key]
                     else:
-                        raise RuntimeError(f"Unknown operation {op_str}")                        
+                        raise RuntimeError(f"Unknown operation {op}")                        
                     
             if self._queue.qsize() > 0:
                 op, key, body = self._queue.get()

@@ -6,7 +6,7 @@ from collections import namedtuple
 from abc import ABC, abstractmethod
 import copy
 
-from core_new.session import LayerSession
+from perceptilabs.core_new.session import LayerSession
 
 log = logging.getLogger(__name__)
 

@@ -7,29 +7,29 @@ import io
 import time
 import traceback
 
-from coreLogic import coreLogic
-from propegateNetwork import lwNetwork
-from parse_pb import parse
+from perceptilabs.coreLogic import coreLogic
+from perceptilabs.propegateNetwork import lwNetwork
+from perceptilabs.parse_pb import parse
 import time
 import numpy as np
 
-from dataKeeper import dataKeeper as lw_data
-from extractVariables import *
-from createDataObject import createDataObject
+from perceptilabs.dataKeeper import dataKeeper as lw_data
+from perceptilabs.extractVariables import *
+from perceptilabs.createDataObject import createDataObject
 
-from core_new.core import *
-from core_new.history import SessionHistory
-from core_new.errors import LightweightErrorHandler
-from core_new.extras import LayerExtrasReader
-from core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
-from graph import Graph
-from codehq import CodeHqNew as CodeHq
-from modules import ModuleProvider
+from perceptilabs.core_new.core import *
+from perceptilabs.core_new.history import SessionHistory
+from perceptilabs.core_new.errors import LightweightErrorHandler
+from perceptilabs.core_new.extras import LayerExtrasReader
+from perceptilabs.core_new.lightweight import LightweightCore, LW_ACTIVE_HOOKS
+from perceptilabs.graph import Graph
+from perceptilabs.codehq import CodeHqNew as CodeHq
+from perceptilabs.modules import ModuleProvider
 
 import pprint
 import logging
 
-from serverInterface import Interface
+from perceptilabs.serverInterface import Interface
 
 class Message:
     def __init__(self, cores, dataDict, checkpointDict):

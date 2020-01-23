@@ -1,3 +1,4 @@
+'''
 import time
 import pytest
 import numpy as np
@@ -74,3 +75,4 @@ def test_training_layer_events_are_replicated():
 
 
 
+'''

@@ -1,6 +1,3 @@
-from CoreThread import CoreThread
-# from core import core
-from createDataObject import createDataObject
 import queue
 import numpy as np
 import time
@@ -14,16 +11,19 @@ import logging
 import skimage
 import GPUtil
 
-from networkExporter import exportNetwork
-from networkSaver import saveNetwork
+from perceptilabs.networkExporter import exportNetwork
+from perceptilabs.networkSaver import saveNetwork
 
-from modules import ModuleProvider
-from core_new.core import *
-from core_new.data import DataContainer
-from core_new.cache import get_cache
-from core_new.errors import CoreErrorHandler
-from core_new.history import SessionHistory
-from analytics.scraper import get_scraper
+from perceptilabs.modules import ModuleProvider
+from perceptilabs.core_new.core import *
+from perceptilabs.core_new.data import DataContainer
+from perceptilabs.core_new.cache import get_cache
+from perceptilabs.core_new.errors import CoreErrorHandler
+from perceptilabs.core_new.history import SessionHistory
+from perceptilabs.analytics.scraper import get_scraper
+from perceptilabs.CoreThread import CoreThread
+from perceptilabs.createDataObject import createDataObject
+
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()
@@ -77,8 +77,8 @@ class coreLogic():
             log.info("Creating deployment script...")            
             config = {'session_id': '1234567'}
             
-            from core_new.graph.builder import ReplicatedGraphBuilder
-            from code.factory import ScriptFactory
+            from perceptilabs.core_new.graph.builder import ReplicatedGraphBuilder
+            from perceptilabs.code.factory import ScriptFactory
             
             graph_builder = ReplicatedGraphBuilder(client=None)
             graph = graph_builder.build(graph_spec, config)
@@ -108,7 +108,7 @@ class coreLogic():
         self.graphObj = Graph(network['Layers'])
         graph_dict=self.graphObj.graphs
 
-        from codehq import CodeHqNew as CodeHq
+        from perceptilabs.codehq import CodeHqNew as CodeHq
 
         error_handler = CoreErrorHandler(self.errorQueue)
         

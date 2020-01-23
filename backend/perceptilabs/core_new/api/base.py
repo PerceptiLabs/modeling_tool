@@ -2,7 +2,7 @@ from typing import Any, Tuple
 from enum import Enum
 import dill
 
-from core_new.api.mapping import ByteMap, EventBus
+from perceptilabs.core_new.api.mapping import ByteMap, EventBus
 
 
 class StateApi:
@@ -12,7 +12,7 @@ class StateApi:
             config['dealer_address'],
             config['subscriber_address'],
             config['push_address']
-        )
+    )
     
     def set(self, key: str, value: Any) -> None:
         self._byte_map[key.encode()] = dill.dumps(value)
@@ -29,19 +29,19 @@ class StateApi:
 
     def stop(self):
         self._byte_map.stop()
-
+'''
         
 class LogApi:
 
     class Handler:
         # Should extend handler of standard logger
 
-            self._event_bus = EventBus(
-                event_bus_name,
-                config['dealer_address'],
-                config['subscriber_address'],
-                config['push_address']
-            )
+        self._event_bus = EventBus(
+            event_bus_name,
+            config['dealer_address'],
+            config['subscriber_address'],
+            config['push_address']
+        )
 
         def start(self):
             self._client.start()
@@ -52,7 +52,7 @@ class LogApi:
     @classmethod
     def get_handler(cls, event_bus_name, config):
         return cls.Handler()
-
+'''
     
 class UiApi:
     def __init__(self, name, config):
@@ -62,7 +62,7 @@ class UiApi:
 class Api:
     def __init__(self, name, network_config):
         self._state = StateApi('state-' + name, network_config)
-        self._log = LogApi('log-' + name, network_config)
+        #self._log = LogApi('log-' + name, network_config)
         self._ui = UiApi('ui-' + name, network_config)
             
     def start(self):
