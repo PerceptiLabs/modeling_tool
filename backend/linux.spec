@@ -61,7 +61,8 @@ binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
             (python_lib+'/tensorflow_core/contrib/input_pipeline/python/ops/_input_pipeline_ops.so', './tensorflow_core/contrib/input_pipeline/python/ops/'),                       
             (python_lib+'/tensorflow_core/contrib/rnn/python/ops/_lstm_ops.so', './tensorflow_core/contrib/rnn/python/ops/'),
             (python_lib+'/tensorflow_core/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow_core/contrib/layers/python/ops/'),                       
-            (python_lib+'/tensorflow_core/contrib/coder/python/ops/_coder_ops.so', './tensorflow_core/contrib/coder/python/ops')]
+            (python_lib+'/tensorflow_core/contrib/coder/python/ops/_coder_ops.so', './tensorflow_core/contrib/coder/python/ops'),
+            (python_lib+'/sklearn/.libs/vcomp140.dll', './sklearn/.libs/')]
 
 binaries = binaries + tf_binaries
 
@@ -86,14 +87,16 @@ for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
 #, (python_lib+'/tensorflow_core/', './tensorflow_core/')
 datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/contrib/'),
 (python_lib+'/atari_py/', './atari_py/'),
-(working_dir+'/code/templates/', './code/templates/'),
-(working_dir+'/insights/csv_ram_estimator/data_1579288530.csv', './insights/csv_ram_estimator/')]
+(working_dir+'/script/templates/', './script/templates/'),
+(working_dir+'/insights/csv_ram_estimator/model_and_meta.pkl', './insights/csv_ram_estimator/'),
+('app_variables.json','.')]
 
 python_files = []
 with open('../../backend/included_files.txt') as f:
     for line in f:
-        if "#" not in line and line.strip():
-            python_files.append(".".join(line.strip().split(".")[:-1]).replace("/","."))
+        tmp_line = line.strip()
+        if "#" not in tmp_line and tmp_line and tmp_line.endswith(".py"):
+            python_files.append(".".join(tmp_line.split(".")[:-1]).replace("/","."))
 
 print("Found these python modules to include: " + str(python_files))
 
@@ -120,7 +123,7 @@ print(collect_submodules('tensorflow_core'))
 
 #+ tmp_tensorflow_core_modules
 hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('tensorflow') + collect_submodules('tensorflow_core') + tmp_tensorflow_core_modules + collect_submodules('sentry_sdk') + python_files + \
-            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor',
+            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor', 'jinja2',
             'GPUtil','gym.envs.atari','azure.storage.blob','numpy', 'tensorflow', 'math', 'sys', 'ast', 'itertools', 
             'collections', 'operator', 'time', 'copy', 'queue', 'sklearn.cluster', 'socket', 'selectors', 'traceback', 'json', 'io', 'struct', 'threading', 'PIL',
             'PIL.ImageTk', 'glob', 'random', 'os.path', 're', 'codehq', 'dask', 'skimage.io', 'tensorflow.python','networkx', 

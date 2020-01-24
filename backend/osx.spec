@@ -51,7 +51,8 @@ binaries = [
     (python_lib+'/tensorflow/contrib/rnn/python/ops/_lstm_ops.so', './tensorflow/contrib/rnn/python/ops/'),
     (python_lib+'/tensorflow/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow/contrib/layers/python/ops/'),                       
     (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops'),
-    (python_lib+'/atari_py/ale_interface/libale_c.so', './atari_py/ale_interface/')
+    (python_lib+'/atari_py/ale_interface/libale_c.so', './atari_py/ale_interface/'),
+    (python_lib+'/sklearn/.libs/vcomp140.dll', './sklearn/.libs/')
 ]
 
 
@@ -71,7 +72,8 @@ datas=[
     (python_lib+'/atari_py/atari_roms/bank_heist.bin', './atari_py/atari_roms/'),
     (python_lib+'/atari_py/atari_roms/demon_attack.bin', './atari_py/atari_roms/'),
     ('app_variables.json','.'),
-    (working_dir+'/insights/csv_ram_estimator/data_1579288530.csv', './insights/csv_ram_estimator/')    
+    (working_dir+'/insights/csv_ram_estimator/model_and_meta.pkl', './insights/csv_ram_estimator/'),
+    (working_dir+'/script/templates/', './script/templates/'),   
 ]       
 
 
@@ -79,12 +81,13 @@ datas=[
 python_files = []
 with open('../../backend/included_files.txt') as f:
     for line in f:
-        if "#" not in line and line.strip():
-            python_files.append(".".join(line.strip().split(".")[:-1]).replace("/","."))
+        tmp_line = line.strip()
+        if "#" not in tmp_line and tmp_line and tmp_line.endswith(".py"):
+            python_files.append(".".join(tmp_line.split(".")[:-1]).replace("/","."))
 
 print("Found these python modules to include: " + str(python_files))
 hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('tensorflow') + collect_submodules('sentry_sdk') + python_files + \
-            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor',
+            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor', 'jinja2',
             'GPUtil','gym.envs.atari','azure.storage.blob','numpy', 'tensorflow', 'math', 'sys', 'ast', 'itertools', 
             'collections', 'operator', 'time', 'copy', 'queue', 'sklearn.cluster', 'socket', 'selectors', 'traceback', 'json', 'io', 'struct', 'threading', 'PIL',
             'PIL.ImageTk', 'glob', 'random', 'os.path', 're', 'codehq', 'dask', 'skimage.io', 'tensorflow.python','networkx', 

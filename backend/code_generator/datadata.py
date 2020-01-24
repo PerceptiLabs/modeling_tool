@@ -259,6 +259,9 @@ class DataDataCodeGenerator(CodeGenerator):
             if sum(partition) != 100:
                 raise ValueError("Partition percentages do not sum to 100!")
 
+            #TODO: Replace?
+            source['path'] = source['path'].replace('\\', '/')
+
             partition = [partition[0]/100.0, partition[1]/100.0, partition[2]/100.0]
             self._partitions.append(partition)
             self._strategies.append(self._select_strategy(source))

@@ -53,7 +53,7 @@ model_and_meta = {
 
 pprint(model_and_meta)
 
-with open('model_and_meta.pkl', 'wb') as f:
+with open('./model_and_meta.pkl', 'wb') as f:
     pickle.dump(model_and_meta, f, protocol=2)
 
 raise SystemExit

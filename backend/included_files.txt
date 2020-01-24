@@ -37,11 +37,16 @@ code_generator/datadata.py
 code_generator/dataenv.py
 code_generator/tensorflow.py
 
-# code
-code/__init__.py
-code/generators.py
-code/utils.py
-code/base.py
+# script
+script/__init__.py
+script/generators.py
+script/utils.py
+script/base.py
+
+# script/templates/
+script/templates/datadata.j2
+script/templates/file_utils.j2
+script/templates/train_normal_distr.j2
 
 # core_new
 core_new/cache.py

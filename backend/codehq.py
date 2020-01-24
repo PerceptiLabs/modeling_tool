@@ -9,7 +9,7 @@ from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
 from code_generator.dataenv import DataEnvironmentCodeGenerator
 
-from code.generators import DataDataCodeGenerator2
+from script.generators import DataDataCodeGenerator2
 
 from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
