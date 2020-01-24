@@ -11,9 +11,17 @@ which python3
 echo "Conda list:"
 conda list
 
+cd ..
+
+# ---- Train models ----
+echo "Training models"
+cd backend/insights/csv_ram_estimator/
+python train_model.py data_1579288530.csv
+if [ $? -ne 0 ]; then exit 1; fi
+cd ../../../
+
 # ----- Build backend ----
 echo "----- Building backend -----"
-cd ..
 rm -rf build
 mkdir build
 cd build/
@@ -47,7 +55,7 @@ mv mainServer.pyx mainServer.py
 find . -name "__init__.pyx" -exec rename -v 's/\.pyx$/\.py/i' {} \;
 
 echo "Listing files to be included in build (contents of 'backend_tmp/')"
-ls -l
+ls -l -R
 
 echo "Running pyinstaller..."
 

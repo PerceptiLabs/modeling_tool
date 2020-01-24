@@ -1,4 +1,13 @@
 cd ..
+
+echo "Training models"
+cd backend/insights/csv_ram_estimator/
+python train_model.py data_1579288530.csv
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
+cd ../../../
+
 rmdir /s /q build
 mkdir build
 cd build
@@ -35,7 +44,7 @@ dir code_generator
 copy ..\..\backend\windows.spec .
 pyinstaller --clean -y windows.spec
 IF %ERRORLEVEL% NEQ 0 (
-  dir
+  ls -R -l
   exit 1
 )
 
@@ -48,7 +57,7 @@ IF %ERRORLEVEL% NEQ 0 (
 
 call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "dist/appServer/*.exe"
 IF %ERRORLEVEL% NEQ 0 (
-  dir
+  ls -R -l
   exit 1
 )
 

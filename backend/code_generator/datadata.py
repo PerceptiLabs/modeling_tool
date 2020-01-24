@@ -3,7 +3,7 @@ import numpy as np
 import os
 from abc import ABC, abstractmethod
 
-from code_generator import CodeGenerator
+from code_generator import CodeGenerator, Jinja2CodeGenerator
 from s3buckets import S3BucketAdapter
 
 
@@ -24,7 +24,6 @@ class FileNumpyStrategy(AbstractStrategy):
         code += "else:\n"
         code += "    data_mat = api.cache.get('%s')\n" % self._path
         code += "data_mat = da.from_array(data_mat)\n"
-        code += "types=tf.float32\n"
         code += "%s, %s, %s, %s_size, %s_size, %s_size = split(data_mat, %f, %f, %f)\n" % (var_train, var_valid, var_test,
                                                                                            var_train, var_valid, var_test,
                                                                                            rate_train, rate_valid, rate_test)
@@ -64,7 +63,6 @@ class FileCsvStrategy(AbstractStrategy):
         code += "    cols = list(df.columns)\n"
         if self._columns:
             code += "    data_mat = df[%s].values.astype(np.float32)\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
-            # code += "    data_mat = df[%s].values.astype(np.float32)\n" % str(["'%s'" % i for i in self._columns]).replace("'","")
         else:
             code += "    data_mat = df.values.astype(np.float32)\n"
         code += "    api.cache.put('%s', data_mat)\n" % self._path            
@@ -87,46 +85,23 @@ class FileCsvStrategy(AbstractStrategy):
         code += "else:\n"
         code += "    df = api.cache.get('%s')\n" % self._path        
         code += "cols = list(df.columns)\n"
+
         if self._columns:
             code +="df = df[%s]\n" % str(["cols[%d]" % i for i in self._columns]).replace("'","")
-            # code +="df = df[%s]\n" % str(["'%s'" % i for i in self._columns]).replace("'","")
             
-        #code += "print('SPLITTING CSV')\n" 
-        code += "global df_train, df_validation, df_test\n"                       
+        #code += "print('SPLITTING CSV')\n"                        
         code += "df_train, df_validation, df_test = df.random_split([%f, %f, %f], random_state=0)\n" % (rate_train, rate_valid, rate_test)
         code += "\n"
-        # code += "def generator(df):\n"
-        # code += "    for x in df.iterrows():\n"
-        # code += "        y = x[1].values.squeeze()\n"
-        # #code += "        print('GENERATE', type(y), y.shape, y)\n"
-        # code += "        yield y\n"
+        code += "def generator(df):\n"
+        code += "    for x in df.iterrows():\n"
+        code += "        y = x[1].values.squeeze()\n"
+        #code += "        print('GENERATE', type(y), y.shape, y)\n"
+        code += "        yield y\n"
         code += "\n"
-        # code += "import pdb; pdb.set_trace()\n"
         #code += "print('CREATING GENERATORS')\n"
-        code += "def %s():\n" % var_train
-        code += "    global df_train\n"
-        code += "    def generator(df):\n"
-        code += "         for x in df.iterrows():\n"
-        code += "             y = x[1].values.squeeze()\n"
-        code += "             yield y\n"
-        code += "    return generator(df_train)\n"
-        code += "def %s():\n" % var_valid
-        code += "    global df_validation\n"
-        code += "    def generator(df):\n"
-        code += "         for x in df.iterrows():\n"
-        code += "             y = x[1].values.squeeze()\n"
-        code += "             yield y\n"
-        code += "    return generator(df_validation)\n"
-        code += "def %s():\n" % var_test
-        code += "    global df_test\n"
-        code += "    def generator(df):\n"
-        code += "         for x in df.iterrows():\n"
-        code += "             y = x[1].values.squeeze()\n"
-        code += "             yield y\n"
-        code += "    return generator(df_test)\n"
-        # code += "%s = generator(df_train)\n" % var_train
-        # code += "%s = generator(df_validation)\n" % var_valid
-        # code += "%s = generator(df_test)\n" % var_test
+        code += "%s = generator(df_train)\n" % var_train
+        code += "%s = generator(df_validation)\n" % var_valid
+        code += "%s = generator(df_test)\n" % var_test
         code += "\n"
         code += "# The size estimates are only used for visualizations\n"
         #code += "print('GETTING SIZE')\n"        
@@ -284,10 +259,13 @@ class DataDataCodeGenerator(CodeGenerator):
             if sum(partition) != 100:
                 raise ValueError("Partition percentages do not sum to 100!")
 
+            #TODO: Replace?
+            source['path'] = source['path'].replace('\\', '/')
+
             partition = [partition[0]/100.0, partition[1]/100.0, partition[2]/100.0]
             self._partitions.append(partition)
             self._strategies.append(self._select_strategy(source))
-        
+            
     def get_code(self):
         code  = 'def split(array__, train_rate, validation_rate, test_rate):\n'
         code += '    def generator(array_, idx_from, idx_to):\n'
@@ -295,41 +273,40 @@ class DataDataCodeGenerator(CodeGenerator):
         #code += '            print("valshapa",x.shape)\n'        
         code += '            yield x.squeeze().astype(np.float32)\n'
         code += '    \n'
-        code += "    global array, train_size, validation_size, size\n"
-        code += "    array=array__\n"
-        code += '    array.compute_chunk_sizes()\n'
-        code += '    size = len(array)\n'
-        code += '    train_size = round(train_rate*size)\n'
-        code += '    validation_size = round(validation_rate*size)\n'
-        code += '    test_size = size - train_size - validation_size\n'
+        code += "    global array_%s, train_size_%s, validation_size_%s, size_%s\n" % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
+        code += "    array_%s=array__\n" % self._layer_id
+        code += '    array_%s.compute_chunk_sizes()\n' % self._layer_id
+        code += '    size_%s = len(array_%s)\n' % (self._layer_id, self._layer_id)
+        code += '    train_size_%s = round(train_rate*size_%s)\n' % (self._layer_id, self._layer_id)
+        code += '    validation_size_%s = round(validation_rate*size_%s)\n' % (self._layer_id, self._layer_id)
+        code += '    test_size_%s = size_%s - train_size_%s - validation_size_%s\n' % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
         code += '    \n'
         
         code += "    def train_gen():\n"
-        code += "        global array, train_size\n"
+        code += "        global array_%s, train_size_%s\n" % (self._layer_id, self._layer_id)
         code += '        def generator(array_, idx_from, idx_to):\n'
         code += '            for x in array_[idx_from:idx_to]:\n'     
         code += '                yield x.squeeze().astype(np.float32)\n'
-        code += "        return generator(array, 0, train_size)\n"
+        code += "        return generator(array_%s, 0, train_size_%s)\n" % (self._layer_id, self._layer_id)
 
         code += "    def validation_gen():\n"
-        code += "        global array, train_size, validation_size\n"
+        code += "        global array_%s, train_size_%s, validation_size_%s\n" % (self._layer_id, self._layer_id, self._layer_id)
         code += '        def generator(array_, idx_from, idx_to):\n'
         code += '            for x in array_[idx_from:idx_to]:\n'     
         code += '                yield x.squeeze().astype(np.float32)\n'
-        code += "        return generator(array, train_size, train_size+validation_size)\n"
+        code += "        return generator(array_%s, train_size_%s, train_size_%s+validation_size_%s)\n" % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
 
         code += "    def test_gen():\n"
-        code += "        global array, train_size, validation_size, size\n"
+        code += "        global array_%s, train_size_%s, validation_size_%s, size_%s\n" % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
         code += '        def generator(array_, idx_from, idx_to):\n'
         code += '            for x in array_[idx_from:idx_to]:\n'     
         code += '                yield x.squeeze().astype(np.float32)\n'
-        code += "        return generator(array, train_size+validation_size, size)\n"
-
+        code += "        return generator(array_%s, train_size_%s+validation_size_%s, size_%s)\n" % (self._layer_id, self._layer_id, self._layer_id, self._layer_id)
         # code += "    def validation_gen():\n"
         # code += "         return generator(array, train_size, train_size+validation_size) \n"
         # code += "    def test_gen():\n"
         # code += "         return generator(array, train_size+validation_size, size)\n"
-        code += '    return train_gen, validation_gen, test_gen, train_size, validation_size, test_size\n'
+        code += '    return train_gen, validation_gen, test_gen, train_size_%s, validation_size_%s, test_size_%s\n' % (self._layer_id, self._layer_id, self._layer_id)
         code += '\n'        
         code += 'np.random.seed(%d)\n' % self._seed
         code += '\n'
@@ -366,7 +343,63 @@ class DataDataCodeGenerator(CodeGenerator):
         code += '\n'        
         code += self._get_code_common()
         return code
+
+    """
+    def get_code(self):
+        code  = 'def split(array, train_rate, test_rate, validation_rate):\n'
+        code += '    def generator(array, idx_from, idx_to):\n'
+        code += '        for x in array[idx_from:idx_to]:\n'
+        #code += '            print("valshapa",x.shape)\n'        
+        code += '            yield x.squeeze()\n'
+        code += '    \n'
+        code += '    array.compute_chunk_sizes()\n'
+        code += '    size = len(array)\n'
+        code += '    train_size = round(train_rate*size)\n'
+        code += '    validation_size = round(validation_rate*size)\n'
+        code += '    test_size = size - train_size - validation_size\n'
+        code += '    \n'
+        code += '    train_gen = generator(array, 0, train_size)\n'
+        code += '    validation_gen = generator(array, train_size, train_size+validation_size)        \n'
+        code += '    test_gen = generator(array, train_size+validation_size, size)\n'
+        code += '    return train_gen, test_gen, validation_gen, train_size, test_size, validation_size\n'
+        code += '\n'        
+        code += 'np.random.seed(%d)\n' % self._seed
+        code += '\n'
+
+        # Get remaining code using strategy
+        if len(self._strategies) == 1:
+            code += self._get_code_single_strategy()
+        elif len(self._strategies) > 1:
+            code += self._get_code_multi_strategy()
+        else:
+            raise ValueError('No strategies set for getting code')
+
+        return code
     
+    def _get_code_single_strategy(self):
+        strategy, partition = self._strategies[0], self._partitions[0]
+        code = strategy.execute(var_train='X_train',
+                                var_valid='X_validation',
+                                var_test='X_test',
+                                rate_train=partition[0],
+                                rate_valid=partition[1],
+                                rate_test=partition[2])
+        code += '\n'
+        code += '# Tensorflow wants generators wrapped in functions\n'
+        code += 'def wrap(gen):\n'
+        code += '    print("NEW GENERATOR!")\n'
+        code += '    def func():\n'
+        code += '        return gen\n'
+        code += '    return func\n'
+        code += '\n'
+        code += 'print("WRAPPING GENERATORS")\n'
+        code += 'X_train = wrap(X_train)\n'
+        code += 'X_validation = wrap(X_validation)\n'
+        code += 'X_test = wrap(X_test)\n'                
+        code += '\n'        
+        code += self._get_code_common()
+        return code
+    """
     def _get_code_multi_strategy(self):
         mask_trn = 'X{}_train'
         mask_tst = 'X{}_test'
@@ -418,21 +451,23 @@ class DataDataCodeGenerator(CodeGenerator):
         code += "_batch_size = %d\n" % int(self.batch_size)
         code += "api.data.store(batch_size=_batch_size)\n"        
         code += "\n"
-        code += 'X_train = tf.data.Dataset.from_generator(X_train, output_shapes=_data_shape, output_types=np.float32)\n'
-        code += 'X_validation = tf.data.Dataset.from_generator(X_validation, output_shapes=_data_shape, output_types=np.float32)\n'
-        code += 'X_test = tf.data.Dataset.from_generator(X_test, output_shapes=_data_shape, output_types=np.float32)\n'        
+        code += "_shape = next(X_train()).shape # Get the first element\n"
+        code += 'X_train = tf.data.Dataset.from_generator(X_train, output_types=np.float32, output_shapes=_shape)\n'
+        code += 'X_validation = tf.data.Dataset.from_generator(X_validation, output_types=np.float32, output_shapes=_shape)\n'
+        code += 'X_test = tf.data.Dataset.from_generator(X_test, output_types=np.float32, output_shapes=_shape)\n'        
         code += "\n"
         if self.shuffle:
+            code += "print('SHUFFLING TF DATASETS')\n"
             code += "X_train=X_train.shuffle(X_train_size,seed=%d).batch(_batch_size)\n" % self._seed
         else:
             code += "X_train=X_train.batch(_batch_size)\n"
         code += "X_validation=X_validation.batch(_batch_size)\n"
         code += "X_test=X_test.batch(1)\n"
-        code += "\n"       
+        code += "\n"
         code += "iterator = tf.data.Iterator.from_structure(X_train.output_types, X_train.output_shapes)\n"
         code += "train_iterator = iterator.make_initializer(X_train, name='train_iterator_%s')\n" % self._layer_id
         code += "validation_iterator = iterator.make_initializer(X_validation, name='validation_iterator_%s')\n" % self._layer_id        
-        code += "test_iterator = iterator.make_initializer(X_test, name='test_iterator_%s')\n" % self._layer_id            
+        code += "test_iterator = iterator.make_initializer(X_test, name='test_iterator_%s')\n" % self._layer_id
         code += "Y = next_elements = iterator.get_next()\n"
         return code        
 
@@ -503,66 +538,99 @@ class DataDataCodeGenerator(CodeGenerator):
 
         return strategy
 
-if __name__ == "__main__":
-    def runrunrun(sources, partitions):
-        cg = DataDataCodeGenerator(sources, partitions)
-        code = cg.get_code()
-        
-        import tensorflow as tf
-        import numpy as np
-        import os
-        import skimage
-        import json
-        import pandas as pd        
-        
-        globals_ = {'tf': tf,
-                    'os': os, #TODO: FARLIGT ATT GE ACCESS TILL OS?
-                    'skimage': skimage,
-                    'pd': pd,
-                    'json': json,
-                    'S3BucketAdapter': S3BucketAdapter,                    
-                    'np': np}        
-        locals_ = {}
-        
-        print("Executing code:")
-        print("------------------")
-        print(code)
-        print("------------------")
-        exec(code, globals_, locals_)
 
-        print("Local variables: ", locals_)
+# if __name__ == "__main__":
+
+#     sources = [{'type': 'file', 'path': '/home/anton/Data/mnist_split/mnist_input.npy'},
+#                {'type': 'file', 'path': '/home/anton/Data/mnist_split/mnist_input.csv'}]
+
+#     partitions = [(60, 30, 10), (60, 30, 10)]
+
+#     cols = [str(x) for x in range(0, 784)]
+#     #cols=None
+#     x = DataDataCodeGenerator2(sources, partitions, 32, False, layer_id='1234', columns=cols)
+#     code = x.get_code()
+    
+#     for i, l in enumerate(code.split('\n')):
+#         print(i, l)
+
+
+#     import dask_ml
+#     import dask_ml.model_selection    
+#     import dask.array as da
+#     import dask.dataframe as dd
+#     import numpy as np
+#     import tensorflow as tf
+    
+#     globals_ = {'da': da, 'np': np, 'dask_ml': dask_ml, 'tf': tf, 'dd': dd}
+#     locals_ = {}
+#     exec(code, globals_, locals_)
+
+#     raise SystemExit
+
+
+
+
+    
+#     def runrunrun(sources, partitions):
+#         cg = DataDataCodeGenerator(sources, partitions)
+#         code = cg.get_code()
         
-        import pdb; pdb.set_trace()
+#         import tensorflow as tf
+#         import numpy as np
+#         import os
+#         import skimage
+#         import json
+#         import pandas as pd        
+        
+#         globals_ = {'tf': tf,
+#                     'os': os, #TODO: FARLIGT ATT GE ACCESS TILL OS?
+#                     'skimage': skimage,
+#                     'pd': pd,
+#                     'json': json,
+#                     'S3BucketAdapter': S3BucketAdapter,                    
+#                     'np': np}        
+#         locals_ = {}
+        
+#         print("Executing code:")
+#         print("------------------")
+#         print(code)
+#         print("------------------")
+#         exec(code, globals_, locals_)
+
+#         print("Local variables: ", locals_)
+        
+#         import pdb; pdb.set_trace()
 
         
     
-    # List of files
-    sources = [{'type': 'file', 'path': 'mnist_split/mnist_input.npy'},
-               {'type': 'file', 'path': 'mnist_split/mnist_input.npy'}]
+#     # List of files
+#     sources = [{'type': 'file', 'path': 'mnist_split/mnist_input.npy'},
+#                {'type': 'file', 'path': 'mnist_split/mnist_input.npy'}]
 
-    partitions = [(70, 20, 10), (70, 20, 10)]
+#     partitions = [(70, 20, 10), (70, 20, 10)]
 
-    runrunrun(sources, partitions)
+#     runrunrun(sources, partitions)
     
 
     
-    # Image directory    
-    sources = [{'type': 'directory', 'path': 'rand_imgs/'}]
-    partitions = [(70, 20, 10)]
+#     # Image directory    
+#     sources = [{'type': 'directory', 'path': 'rand_imgs/'}]
+#     partitions = [(70, 20, 10)]
 
-    runrunrun(sources, partitions)
+#     runrunrun(sources, partitions)
 
     
-    # S3 bucket
-    sources = [{'type': 's3bucket',
-                'bucket': 'perceptitest',
-                'region_name': 'eu-north-1',
-                'delimiter': '',
-                'prefix': '',
-                'aws_access_key_id': "AKIAZYLA7ETUIOS73NHX",
-                'aws_secret_access_key': "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"}]
+#     # S3 bucket
+#     sources = [{'type': 's3bucket',
+#                 'bucket': 'perceptitest',
+#                 'region_name': 'eu-north-1',
+#                 'delimiter': '',
+#                 'prefix': '',
+#                 'aws_access_key_id': "AKIAZYLA7ETUIOS73NHX",
+#                 'aws_secret_access_key': "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"}]
 
-    partitions = [(70, 20, 10)]
+#     partitions = [(70, 20, 10)]
     
-    runrunrun(sources, partitions)
+#     runrunrun(sources, partitions)
 

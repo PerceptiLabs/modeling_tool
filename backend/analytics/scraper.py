@@ -32,10 +32,10 @@ class Scraper:
         
     def submit(self, tag: str, values_dict: Dict[str, Any]):
         if not self.is_running:
-            # log.warning("Ignoring scraper submission. Scraper is not running.")
+            log.debug("Ignoring scraper submission. Scraper is not running.")
             return
 
-        log.debug("Submit called with tag '{}'".format(tag))
+        #log.debug("Submit called with tag '{}'".format(tag))
         
         meta_dict = {
             'tag': tag,
@@ -57,8 +57,8 @@ class Scraper:
                 self._entry_queue.put(e)
             count += len(entries)
 
-        if count > 0:
-            log.debug("Submit with tag '{}' queued {} new entries".format(meta['tag'], count))
+        #if count > 0:
+        #    log.debug("Submit with tag '{}' queued {} new entries".format(meta['tag'], count))
             
     def monitor(self, tag: str):
         def actual_decorator(func):
@@ -84,7 +84,7 @@ class Scraper:
 
         for entry in entries:
             file_path = os.path.join(self._output_directory, entry.file)
-            log.debug("Writing to file {}".format(file_path))
+            #log.debug("Writing to file {}".format(file_path))
 
             try:
                 self._lock.acquire()

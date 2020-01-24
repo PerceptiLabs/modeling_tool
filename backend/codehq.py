@@ -1,17 +1,48 @@
 import os
 import pprint
 import logging
+import psutil
+
+from insights.csv_ram_estimator import get_instance as get_csv_ram_estimator
 
 from code_generator import CustomCodeGenerator, CodePart
 from code_generator.datadata import DataDataCodeGenerator
 from code_generator.dataenv import DataEnvironmentCodeGenerator
+
+from script.generators import DataDataCodeGenerator2
 
 from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
 log = logging.getLogger(__name__)
 
 
+def should_use_lazy(sources):
+    MAX_RAM_RATE = 0.3
 
+    est_sz = 0
+    for source in sources:
+        path = source['path']
+
+        if path.endswith('csv'):
+            if get_csv_ram_estimator() is not None:
+                estimator = get_csv_ram_estimator()
+                est_sz += estimator(path)
+            else:
+                log.warning("csv ram estimator instance not available")
+                est_sz += 2*os.path.getsize(path) # 2 to give an arbitrary safety margin           
+        else:
+            est_sz += 2*os.path.getsize(path) # 2 to give an arbitrary safety margin
+
+    files = [s['path'] for s in sources]
+    total_ram = psutil.virtual_memory().total    
+    log.info(f"Estimated size of data files {files} is {est_sz/10**6} MB. Total memory: {total_ram/10**6} MB")
+
+    if total_ram * MAX_RAM_RATE < est_sz:
+        log.warning(f"Estimated size exceeds maximum allowed ram ({100*MAX_RAM_RATE}% of total ram). Setting lazy data handling to true.")
+        return True
+    else:
+        return False
+    
 
 class CodeHqNew:
     @classmethod
@@ -33,14 +64,54 @@ class CodeHqNew:
            code_parts = [CodePart(name, code) for name, code in content["Info"]["Code"].items()]
            code_generator = CustomCodeGenerator(code_parts)
            return code_generator
-        elif type_ == 'DataData':
+        if type_ == 'DataData':
             sources = content["Info"]["Properties"]["accessProperties"]["Sources"]
             partitions = content["Info"]["Properties"]["accessProperties"]["Partition_list"]
 
-            code_generator = DataDataCodeGenerator(sources, partitions,
-                                                   batch_size=props["accessProperties"]['Batch_size'], shuffle=False, #props["accessProperties"]['Shuffle_data']
-                                                   seed=0, columns=props["accessProperties"]['Columns'],
-                                                   layer_id=id_)
+            # WORKAROUND FOR FILE TYPES NOT YET SUPPORTED BY NEW CODE GENERATOR
+            def data_source_requires_legacy(source):
+                DATADATA2_SUPPORT = {
+                    'directory': ['.jpg', '.png', '.jpeg', '.tiff', '.tif'],
+                    'file': ['.csv', '.txt'],
+                    'file': ['npy', 'npz']
+                }
+
+                if source['type'] not in DATADATA2_SUPPORT:
+                    return False
+
+                if source['path'] not in DATADATA2_SUPPORT[source['type']]:
+                    return False
+
+                return True
+            
+            if any(data_source_requires_legacy(s) for s in sources):
+                log.warning(
+                    "One or more sources require legacy DataDataCodeGenerator." 
+                    "Sources are " + pprint.pformat(sources)
+                )
+                
+                code_generator = DataDataCodeGenerator(
+                    sources,
+                    partitions,
+                    batch_size=props["accessProperties"]['Batch_size'],
+                    shuffle=False, #props["accessProperties"]['Shuffle_data'],
+                    seed=0, columns=props["accessProperties"]['Columns'],
+                    layer_id=id_
+                )
+            else:
+                lazy = should_use_lazy(sources)
+                    
+                code_generator = DataDataCodeGenerator2(
+                    sources,
+                    partitions,
+                    batch_size=props["accessProperties"]['Batch_size'],
+                    shuffle=False, #props["accessProperties"]['Shuffle_data'],
+                    seed=0,
+                    columns=props["accessProperties"]['Columns'],
+                    layer_id=id_,
+                    lazy=lazy, # TODO: this should come from frontend :) 
+                    shuffle_buffer_size=None # TODO: this should come from frontend :) 
+                )            
             return code_generator
         elif type_ == 'DataEnvironment':
             env_name = props['accessProperties']["Atari"]+"-v0"
@@ -131,7 +202,10 @@ class CodeHqNew:
                                                 decay_rate=props['Decay_rate'],
                                                 momentum=props['Momentum'], 
                                                 beta1=props['Beta_1'],
-                                                beta2=props['Beta_2'])
+                                                beta2=props['Beta_2'],
+                                                distributed=props['Distributed'],   # TODO: REMOVE THIS!
+                                                input_data_layer=props['InputDataId'],
+                                                target_data_layer=props['TargetDataId']) 
             return code_gen
 
         elif type_ == 'TrainLoss':

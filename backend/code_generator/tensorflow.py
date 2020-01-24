@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from code_generator import CodeGenerator, CodePart
+from code_generator import CodeGenerator, CodePart, Jinja2CodeGenerator
 
 
 def get_activation_code(var_in, var_out, func=None):
@@ -470,11 +470,12 @@ class TrainOptimizerCodeGenerator(CodeGenerator):
         return code
 
 
-class TrainNormalCodeGenerator(CodeGenerator):
+class TrainNormalCodeGenerator(Jinja2CodeGenerator):
     def __init__(self, output_layer, target_layer,
                  n_epochs,
                  loss_function='Quadratic', class_weights = 1,
-                 optimizer='ADAM', learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999):
+                 optimizer='ADAM', learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999, 
+                 distributed=False, input_data_layer='', target_data_layer=''):
         self._output_layer = output_layer
         self._target_layer = target_layer
         self._n_epochs = int(n_epochs)
@@ -489,7 +490,10 @@ class TrainNormalCodeGenerator(CodeGenerator):
         self._momentum = momentum
         self._beta1 = beta1
         self._beta2 = beta2
-        
+
+        self._distributed = distributed
+        self._input_data_layer = input_data_layer
+        self._target_data_layer = target_data_layer
 
     def _get_training_code(self):
         code  = ""
@@ -618,12 +622,31 @@ class TrainNormalCodeGenerator(CodeGenerator):
         return code
 
     def get_code_parts(self):
-        cp1 = CodePart('training', self._get_training_code())
-        cp2 = CodePart('testing', self._get_testing_code())
+        if not self._distributed:
+            cp1 = CodePart('training', self._get_training_code())
+            cp2 = CodePart('testing', self._get_testing_code())
+        else:
+            raise NotImplementedError()
+            
         return [cp1, cp2] # TODO: Should probably be dicts?
 
     def get_code(self):
-        code = self._get_training_code() + '\n' + self._get_testing_code()
+        if not self._distributed:
+            code = self._get_training_code() + '\n' + self._get_testing_code()
+        else:
+            code = self._get_code_distr()
+        return code
+
+
+    def _get_code_distr(self):
+        code  = self._render(
+            'train_normal_distr.j2',
+            input_data_layer=self._input_data_layer, # TODO: no hardcoding!
+            target_data_layer=self._target_data_layer,             
+            output_layer=self._output_layer,
+            target_layer=self._target_layer,
+            n_epochs=self._n_epochs
+        )
         return code
 
 
@@ -837,6 +860,19 @@ class TrainReinforceCodeGenerator(CodeGenerator):
 
         return code
 
+
+if __name__ == "__main__":
+
+    g = TrainNormalCodeGenerator('1234', '4567', 3, distributed=True)
+
+    with open('sdakds.py', 'w') as f:
+        code = g.get_code()
+        f.write(code)
+
+
+    
+    raise SystemExit
+    
     
 import gym
 import copy
@@ -1127,3 +1163,4 @@ if __name__ == "__main__":
         
     
     """
+

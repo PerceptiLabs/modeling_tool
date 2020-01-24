@@ -11,9 +11,16 @@ which python3
 echo "Conda list:"
 conda list
 
+cd ..
+
+# ---- Train models ----
+echo "Training models"
+cd backend/insights/csv_ram_estimator/
+python train_model.py data_1579288530.csv
+cd ../../../
+
 # ----- Build backend ----
 echo "----- Building backend -----"
-cd ..
 rm -rf build
 mkdir build
 cd build/

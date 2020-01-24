@@ -64,28 +64,28 @@ jobs:
 
 ### BUILD WINDOWS ###
 
-  # - job: build_windows
-  # #  dependsOn:
-  # #      ["test_ubuntu", "test_windows", "test_osx"]
-  #   pool:
-  #       #win-pool
-  #       vmImage: "vs2017-win2016"
-  #   variables:
-  #     - group: Windows-build
-  #   steps:
-  #   - task: DownloadSecureFile@1
-  #     name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
-  #     inputs:
-  #       secureFile: 'WindowsCodeSign.pfx' # Not able to reach $(signingCert.secureFilePath) here for some reason
+  - job: build_windows
+  #  dependsOn:
+  #      ["test_ubuntu", "test_windows", "test_osx"]
+    pool:
+        #win-pool
+        vmImage: "vs2017-win2016"
+    variables:
+      - group: Windows-build
+    steps:
+    - task: DownloadSecureFile@1
+      name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
+      inputs:
+        secureFile: 'WindowsCodeSign.pfx' # Not able to reach $(signingCert.secureFilePath) here for some reason
 
-  #   - task: PowerShell@2
-  #     inputs:
-  #       targetType: 'inline'
-  #       script: |
-  #         Write-Host "Start adding the PFX file to the certificate store."
+    - task: PowerShell@2
+      inputs:
+        targetType: 'inline'
+        script: |
+          Write-Host "Start adding the PFX file to the certificate store."
 
-  #         $pfxpath = '$(mySecureFile.secureFilePath)'
-  #         $password = '$(signingCert.password)'
+          $pfxpath = '$(mySecureFile.secureFilePath)'
+          $password = '$(signingCert.password)'
           
           Add-Type -AssemblyName System.Security
           $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
@@ -112,10 +112,10 @@ jobs:
       displayName: 'Build'
 
     
-  #   - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-  #     artifact: images_windows
-  #   - publish: $(Build.Repository.LocalPath)/build/backend_out/
-  #     artifact: images_windows_core
+    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+      artifact: images_windows
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: images_windows_core
     
 
 
@@ -144,10 +144,10 @@ jobs:
       displayName: 'Build'
 
     
-#     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-#       artifact: images_osx
-#     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-#       artifact: images_osx_core
+    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+      artifact: images_osx
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: images_osx_core
 
 
 ### PUBLISH SCRIPTS (for deployment purposes)
