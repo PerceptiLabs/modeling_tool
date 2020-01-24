@@ -17,6 +17,8 @@ import GPUtil
 from networkExporter import exportNetwork
 from networkSaver import saveNetwork
 
+from license_checker import is_licensed
+
 from modules import ModuleProvider
 from core_new.core import *
 from core_new.data import DataContainer
@@ -85,7 +87,7 @@ class coreLogic():
         except:
             log.error("No compatible nvidia GPU drivers available, defaulting to 0 GPUs")
             gpus = []
-        if len(gpus)>1:     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
+        if len(gpus)>1 and is_licensed():     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
             DISTRIBUTED = True
         else:
             DISTRIBUTED = False
