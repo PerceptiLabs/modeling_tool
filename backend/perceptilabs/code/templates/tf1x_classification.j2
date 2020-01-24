@@ -102,11 +102,35 @@ class {{layer_name}}(Tf1xClassificationLayer):
         loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
         accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
+
+        global_step = None
+        {% filter remove_lspaces(8) %}        
+            {% if optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
+                optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
+            {% elif optimizer == 'tf.compat.v1.train.MomentumOptimizer' %}
+                global_step = tf.Variable(0)
+                learning_rate_momentum = tf.train.exponential_decay(
+                    learning_rate={{learning_rate}},
+                    global_step=global_step,
+                    decay_steps={{decay_steps}},
+                    decay_rate={{decay_rate}},
+                    staircase=True
+                )
+                optimizer = tf.train.MomentumOptimizer(learning_rate=learning_rate_momentum, momentum={{momentum}})
+            {% elif optimizer == 'tf.compat.v1.train.AdamOptimizer' %}
+                optimizer = tf.train.AdamOptimizer(learning_rate={{learning_rate}}, beta1={{beta1}}, beta2={{beta2}})
+            {% elif optimizer == 'tf.compat.v1.train.AdagradOptimizer' %}
+                optimizer = tf.compat.v1.train.AdagradOptimizer(learning_rate={{learning_rate}})            
+            {% elif optimizer == 'tf.compat.v1.train.RmsPropOptimizer' %}
+                optimizer = tf.compat.v1.train.RMSPropOptimizer(learning_rate={{learning_rate}})                        
+            {% else %}
+                raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
+            {% endif %}
+        {% endfilter %}
 
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_tensor, trainable_vars)
-        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars))        
+        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True

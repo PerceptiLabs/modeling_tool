@@ -110,7 +110,7 @@ def graph_spec_binary_classification():
                     "Loss": "Quadratic",
                     "Epochs": "100",
                     "Class_weights": "1",  # TODO: what's this?
-                    "Optimizer": "ADAM",
+                    "Optimizer": "SGD",
                     "Beta_1": "0.9",
                     "Beta_2": "0.999",
                     "Momentum": "0.9",

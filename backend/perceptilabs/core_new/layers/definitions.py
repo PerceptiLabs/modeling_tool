@@ -20,7 +20,7 @@ LayerDef = namedtuple(
 )
 
 
-def get_tf1x_activation(specs):
+def resolve_tf1x_activation_name(specs):
     table = {
         None: None,
         '': None,
@@ -36,6 +36,23 @@ def get_tf1x_activation(specs):
         log.warning(f"layer {layer_id} specified activation {activation}, but it was not found in tf1x activations table. No activation will be used for this layer")
 
     return func_name
+
+
+def resolve_tf1x_optimizer(specs):
+    table = {
+        'SGD': 'tf.compat.v1.train.GradientDescentOptimizer',
+        'Momentum': 'tf.compat.v1.train.MomentumOptimizer',
+        'ADAM': 'tf.compat.v1.train.AdamOptimizer',
+        'adagrad': 'tf.compat.v1.train.AdagradOptimizer',
+        'RMSprop': 'tf.compat.v1.train.RMSPropOptimizer',                       
+    }
+
+    optimizer = specs['Properties']['Optimizer']
+    optimizer_class = table.get(optimizer)
+    if optimizer not in table:
+        raise NotImplementedError(f"Optimizer {optimizer} is not yet implemented")        
+
+    return optimizer_class
 
 
 DEFINITION_TABLE = {
@@ -77,7 +94,7 @@ DEFINITION_TABLE = {
         'layer_tf1x_fully_connected',
         {
             'n_neurons': lambda specs: specs['Properties']['Neurons'],
-            'activation': get_tf1x_activation,
+            'activation': resolve_tf1x_activation_name,
             'dropout': lambda specs: specs['Properties']['Dropout'],
             'keep_prob': lambda specs: specs['Properties']['Keep_prob']
         }
@@ -94,7 +111,7 @@ DEFINITION_TABLE = {
             'padding': lambda specs: specs['Properties']['Padding'][1:-1],
             'dropout': lambda specs: specs['Properties']['Dropout'],
             'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
-            'activation': get_tf1x_activation,            
+            'activation': resolve_tf1x_activation_name,            
             'pool': lambda specs: specs['Properties']['PoolBool'],
             'pooling': lambda specs: specs['Properties']['Pooling'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],
@@ -111,7 +128,7 @@ DEFINITION_TABLE = {
             'n_epochs': lambda specs: specs['Properties']['Epochs'],
             'loss_function': lambda specs: specs['Properties']['Loss'],
             'class_weights': lambda specs: specs['Properties']['Class_weights'],
-            'optimizer': lambda specs: specs['Properties']['Optimizer'],
+            'optimizer': resolve_tf1x_optimizer,
             'learning_rate': lambda specs: specs['Properties']['Learning_rate'],
             'decay_steps': lambda specs: specs['Properties']['Decay_steps'],
             'decay_rate': lambda specs: specs['Properties']['Decay_rate'],
