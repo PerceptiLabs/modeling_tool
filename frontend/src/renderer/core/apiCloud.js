@@ -68,8 +68,8 @@ function CloudAPI_updateToken() {
       return tokens
     })
     .catch((error)=> {
-      store.dispatch('mod_events/EVENT_logOut', false, {root: true});
-      store.dispatch('globalView/GP_errorPopup', 'You have not worked with the application for a long time. Please login');
+      // store.dispatch('mod_events/EVENT_logOut', false, {root: true});
+      // store.dispatch('globalView/GP_errorPopup', 'You have not worked with the application for a long time. Please login');
       console.log(error);
     })
 }
