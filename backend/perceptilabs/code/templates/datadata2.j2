@@ -36,8 +36,8 @@ class {{layer_name}}(DataLayer):
                 if columns_{{tag}} is not None:
                     columns["{{tag}}"] = columns_{{tag}}
         
-                trn_sz = int(round({{partition[0]}}*size_{{tag}}))
-                val_sz = int(round({{partition[1]}}*size_{{tag}}))
+                trn_sz = int(round(0.01*{{partition[0]}}*size_{{tag}}))
+                val_sz = int(round(0.01*{{partition[1]}}*size_{{tag}}))
                 tst_sz = int(size_{{tag}} - trn_sz - val_sz)
         
                 trn_sz_tot += trn_sz

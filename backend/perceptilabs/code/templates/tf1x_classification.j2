@@ -157,7 +157,10 @@ class {{layer_name}}(Tf1xClassificationLayer):
             self._accuracy_testing.append(acc)
             self._loss_testing.append(loss)            
 
-        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}                        
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
+
+        log.info("Entering training loop")
+        
         # Training loop
         self._epoch = 0
         while self._epoch < self._n_epochs:
@@ -174,6 +177,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
             except tf.errors.OutOfRangeError:
                 pass
 
+            self._iteration = 0
             self._status = 'validation'
             sess.run(val_init)                        
             try:
@@ -185,6 +189,12 @@ class {{layer_name}}(Tf1xClassificationLayer):
             except tf.errors.OutOfRangeError:
                 pass
 
+            log.info(
+                f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
+                f"loss training, validation: {self.loss_training[-1]:.6f}, {self.loss_validation[-1]:.6f} - "
+                f"acc. training, validation: {self.accuracy_training[-1]:.6f}, {self.accuracy_validation[-1]:.6f}"
+            )
+            
             self._epoch += 1
 
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}            
