@@ -42,12 +42,13 @@ hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('
             'PIL.ImageTk', 'glob', 'random', 'os.path', 're', 'codehq', 'dask', 'skimage.io', 'tensorflow.python','networkx', 
             'tensorflow.python.eager.context','tensorflow.lite','tensorflow.lite.toco',
             'tensorflow.lite.toco_convert','tensorflow_wrap_toco','tensorflow.lite.toco.python','tensorflow.python.platform','google.protobuf','tensorflow.core.protobuf',
-            'tensorflow.python.training','tensorflow.lite.toco.python.tensorflow_wrap_toco','_tensorflow_wrap_toco']
+            'tensorflow.python.training','tensorflow.lite.toco.python.tensorflow_wrap_toco','_tensorflow_wrap_toco', 'pkg_resources.py2_warn']
 
 datas  =[
     (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'),
     (python_lib+'/atari_py/', './atari_py/'),
     (working_dir+'/insights/csv_ram_estimator/model_and_meta.pkl', './insights/csv_ram_estimator/'),
+    ('app_variables.json','.'),
     (working_dir+'/script/templates/', './script/templates/'),
 ]
 

@@ -71,8 +71,9 @@ datas=[
     (python_lib+'/atari_py/atari_roms/breakout.bin', './atari_py/atari_roms/'),
     (python_lib+'/atari_py/atari_roms/bank_heist.bin', './atari_py/atari_roms/'),
     (python_lib+'/atari_py/atari_roms/demon_attack.bin', './atari_py/atari_roms/'),
+    ('app_variables.json','.'),
     (working_dir+'/insights/csv_ram_estimator/model_and_meta.pkl', './insights/csv_ram_estimator/'),
-    (working_dir+'/script/templates/', './script/templates/'),    
+    (working_dir+'/script/templates/', './script/templates/'),   
 ]       
 
 

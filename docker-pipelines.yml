@@ -7,10 +7,19 @@
 trigger:
 - web-dev
 
+variables:
+  BuildVariables.CommitId : $(Build.SourceVersion)
+
 pool:
   vmImage: 'ubuntu-16.04'
 
 steps:
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/'
+    xmlTransformationRules: 
+    jsonTargetFiles: '**/app_variables.json'
+
 - bash: |
     cd scripts/
     bash -i setup_docker.sh

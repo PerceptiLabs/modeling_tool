@@ -3,7 +3,8 @@ trigger:
 # #- dev
  - stage
 
-
+variables:
+  BuildVariables.CommitId : $(Build.SourceVersion)
 
 
 jobs:
@@ -46,6 +47,12 @@ jobs:
     pool:
         vmImage: "ubuntu-16.04"
     steps:
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
+
     - bash: |
         cd scripts/
         ./setup_ubuntu.sh
@@ -77,6 +84,12 @@ jobs:
       name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
       inputs:
         secureFile: 'WindowsCodeSign.pfx' # Not able to reach $(signingCert.secureFilePath) here for some reason
+
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
 
     - task: PowerShell@2
       inputs:
@@ -133,6 +146,13 @@ jobs:
       inputs:
         certSecureFile: 'devIDapp.p12'
         certPwd: $(devAppCert.password)
+
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
+        
     - bash: |
         cd scripts/
         ./setup_osx.sh
