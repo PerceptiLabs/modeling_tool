@@ -1,6 +1,5 @@
-from perceptilabs import mainServer
+from perceptilabs.mainServer import main
 
-mainServer.main()
 
 
 

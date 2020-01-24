@@ -8,8 +8,11 @@ from Cython.Distutils import build_ext
 
 cython_targets = [
     x for x in glob.glob('perceptilabs' + '/**/*.py', recursive=True) 
-    if 'test_' not in x
+    if ('test_' not in x)
+    and (not x.endswith('__main__.py'))
 ]
+
+import pdb; pdb.set_trace()
 
 class MyBuildExt(build_ext):
     EXCLUDE_EXTENSIONS = ['.py', '.c']
@@ -26,7 +29,7 @@ class MyBuildExt(build_ext):
         for ext in self.EXCLUDE_EXTENSIONS:
             paths = [f for f in glob.glob(build_dir + "/**/*" + ext, recursive=True)]
             for p in paths:
-                if p.endswith('__main__.py') or p.endswith('__init__.py'):
+                if p.endswith('__main__.py'):# or p.endswith('__init__.py'):
                     continue                
                 os.remove(p)
                 
