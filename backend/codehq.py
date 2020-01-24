@@ -186,7 +186,6 @@ class CodeHqNew:
                 target_layer = "'Target layer here'"
 
             if len(content['Con'])>1:
-                output_layer_id = [x for x in content['Con'] if x != target_layer][0] # take the FIRST non-target layer as network output/prediction
                 output_layer = [x[1] for x in content['Info']['backward_connections'] if x[0] != target_layer_id][0]
             else:
                 output_layer = "'Output layer here'"
