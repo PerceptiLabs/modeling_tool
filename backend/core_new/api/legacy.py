@@ -81,6 +81,7 @@ class Api:
         self.__data = DataApi(session)
         self.__ui = UiApi(session)
         self.__cache = CacheApi(session)
+        self.__session = session
 
     @property
     def data(self):
@@ -94,5 +95,15 @@ class Api:
     def cache(self):
         return self.__cache
 
-    
+    def override_layer_id(self, new_layer_id, func):
 
+        def new_func(*args, **kwargs):
+            old_layer_id = self.__session._layer_id
+            self.__session._layer_id = new_layer_id
+            
+            ret_value = func(*args, **kwargs)
+
+            self.__session._layer_id = old_layer_id            
+            return ret_value
+        
+        return new_func

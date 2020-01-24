@@ -60,6 +60,9 @@
     <property name="nodejs_package_manager_path" value="npm" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="D:\PROJECTS\PerceptiLabs\frontend\src\renderer\components\different" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\workspace" />
@@ -67,19 +70,16 @@
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\different" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\network-elements\elements\deep-learning-recurrent" />
     </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
-    </key>
   </component>
-  <component name="ServiceViewManager">
-    <option name="viewStates">
+  <component name="RunDashboard">
+    <option name="ruleStates">
       <list>
-        <serviceView>
-          <treeState>
-            <expand />
-            <select />
-          </treeState>
-        </serviceView>
+        <RuleState>
+          <option name="name" value="ConfigurationTypeDashboardGroupingRule" />
+        </RuleState>
+        <RuleState>
+          <option name="name" value="StatusDashboardGroupingRule" />
+        </RuleState>
       </list>
     </option>
   </component>
@@ -200,23 +200,15 @@
     </option>
   </component>
   <component name="WindowStateProjectService">
-    <state x="183" y="81" key="DiffContextDialog" timestamp="1576246716900">
-      <screen x="0" y="0" width="1920" height="1032" />
-    </state>
-    <state x="183" y="81" key="DiffContextDialog/0.0.1920.1032@0.0.1920.1032" timestamp="1576246716900" />
-    <state x="690" y="212" key="FileChooserDialogImpl" timestamp="1575637172931">
-      <screen x="0" y="0" width="1920" height="1040" />
-    </state>
-    <state x="690" y="212" key="FileChooserDialogImpl/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1575637172931" />
-    <state x="729" y="154" key="RollbackChangesDialog" timestamp="1576246722612">
-      <screen x="0" y="0" width="1920" height="1032" />
-    </state>
-    <state x="729" y="154" key="RollbackChangesDialog/0.0.1920.1032@0.0.1920.1032" timestamp="1576246722612" />
-    <state x="429" y="31" width="1169" height="935" key="find.popup" timestamp="1576169309535">
-      <screen x="0" y="0" width="1920" height="1032" />
-    </state>
-    <state x="594" y="189" width="731" height="662" key="find.popup/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1575638194840" />
-    <state x="429" y="31" width="1169" height="935" key="find.popup/0.0.1920.1032/0.-1080.1920.1080@0.0.1920.1032" timestamp="1576169309535" />
-    <state x="429" y="31" width="1169" height="935" key="find.popup/0.0.1920.1032@0.0.1920.1032" timestamp="1576151497865" />
+    <state x="183" y="81" key="DiffContextDialog" />
+    <state x="183" y="81" key="DiffContextDialog/0.0.1920.1032@0.0.1920.1032" />
+    <state x="690" y="212" key="FileChooserDialogImpl" />
+    <state x="690" y="212" key="FileChooserDialogImpl/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" />
+    <state x="729" y="154" key="RollbackChangesDialog" />
+    <state x="729" y="154" key="RollbackChangesDialog/0.0.1920.1032@0.0.1920.1032" />
+    <state x="429" y="31" width="1169" height="935" key="find.popup" />
+    <state x="594" y="189" width="731" height="662" key="find.popup/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" />
+    <state x="429" y="31" width="1169" height="935" key="find.popup/0.0.1920.1032/0.-1080.1920.1080@0.0.1920.1032" />
+    <state x="429" y="31" width="1169" height="935" key="find.popup/0.0.1920.1032@0.0.1920.1032" />
   </component>
 </project>

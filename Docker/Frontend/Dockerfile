@@ -20,6 +20,7 @@
 FROM registry.access.redhat.com/ubi8
 
 LABEL name="PerceptiLabs-Modeling-Web-app" \
+      maintainer="dev@perceptilabs.com" \
       vendor="PerceptiLabs" \
       version="1.0" \
       release="1" \

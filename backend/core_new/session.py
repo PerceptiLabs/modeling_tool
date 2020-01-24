@@ -3,7 +3,7 @@ import copy
 import logging
 import functools
 
-from core_new.api import ApiCallbackHandler, Api
+from core_new.api.legacy import ApiCallbackHandler, Api
 from analytics.scraper import get_scraper
 
 log = logging.getLogger(__name__)
@@ -141,7 +141,7 @@ class LayerSession(ApiCallbackHandler):
     def on_cache_put(self, key, value):
         if self._cache is not None:
             self._cache.put(key, value, self._layer_id)
-
+            
     def on_cache_get(self, key):
         if self._cache is not None:
             return self._cache.get(key)

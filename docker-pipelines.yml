@@ -7,13 +7,22 @@
 trigger:
 - web-dev
 
+variables:
+  BuildVariables.CommitId : $(Build.SourceVersion)
+
 pool:
   vmImage: 'ubuntu-16.04'
 
 steps:
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/'
+    xmlTransformationRules: 
+    jsonTargetFiles: '**/app_variables.json'
+
 - bash: |
     cd scripts/
-    ./setup_ubuntu.sh
+    bash -i setup_docker.sh
   displayName: 'Environment setup'
 
 - bash: |
@@ -21,19 +30,16 @@ steps:
     bash -i build_docker.sh
   displayName: 'Build'
 
-- task: DockerCompose@0
+- task: Docker@2
   inputs:
-    containerregistrytype: 'Azure Container Registry'
-    azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(1)(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
-    azureContainerRegistry: '{"loginServer":"perceptilabs.azurecr.io", "id" : "/subscriptions/d9d6ebad-f86e-4961-9964-5665aa01fcfc/resourceGroups/PerceptiLabs-America/providers/Microsoft.ContainerRegistry/registries/perceptilabs"}'
-    dockerComposeFile: '**/docker-compose.yml'
-    action: 'Build services'
+    containerRegistry: 'perceptilabs'
+    repository: 'core'
+    command: 'buildAndPush'
+    Dockerfile: 'build/backend_out/Dockerfile'
 
-- task: DockerCompose@0
+- task: Docker@2
   inputs:
-    containerregistrytype: 'Azure Container Registry'
-    azureSubscription: 'XSP72180|MICROSOFT|XSP72180|XSP524371(1)(d9d6ebad-f86e-4961-9964-5665aa01fcfc)'
-    azureContainerRegistry: '{"loginServer":"perceptilabs.azurecr.io", "id" : "/subscriptions/d9d6ebad-f86e-4961-9964-5665aa01fcfc/resourceGroups/PerceptiLabs-America/providers/Microsoft.ContainerRegistry/registries/perceptilabs"}'
-    dockerComposeFile: '**/docker-compose.yml'
-    action: 'Push services'
-
+    containerRegistry: 'perceptilabs'
+    repository: 'frontend'
+    command: 'buildAndPush'
+    Dockerfile: 'build/frontend_out/Dockerfile'

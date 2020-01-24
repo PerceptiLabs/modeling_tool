@@ -99,6 +99,7 @@ class TrainValDataPolicy(DataPolicy):
                     while tmp_content["Info"]["backward_connections"]!=[]:
                         input_id=tmp_content["Info"]["backward_connections"][0][0]
                         tmp_content=self._graph_dict[input_id]
+
                     network_inputs=self._data[input_id]["Y"]
                     saver={"sess":sess, "saver":tf_saver, "network_inputs":network_inputs, "network_outputs": network_outputs}
                     if "all_tensors" in self._data[id_]:

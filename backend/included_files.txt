@@ -37,8 +37,18 @@ code_generator/datadata.py
 code_generator/dataenv.py
 code_generator/tensorflow.py
 
+# script
+script/__init__.py
+script/generators.py
+script/utils.py
+script/base.py
+
+# script/templates/
+script/templates/datadata.j2
+script/templates/file_utils.j2
+script/templates/train_normal_distr.j2
+
 # core_new
-core_new/api.py
 core_new/cache.py
 core_new/control.py
 core_new/core.py
@@ -49,8 +59,21 @@ core_new/lightweight.py
 core_new/networkCache.py
 core_new/session.py
 core_new/utils.py
+core_new/core_distr.py
+core_new/script_distr.py
 
 # core_new/data
 core_new/data/__init__.py
 core_new/data/base.py
 core_new/data/policies.py
+
+
+# core_new/api/
+core_new/api/__init__.py
+core_new/api/legacy.py
+
+# insights/csv_ram_estimator
+insights/csv_ram_estimator/__init__.py
+insights/csv_ram_estimator/base.py
+insights/csv_ram_estimator/model_and_meta.pkl
+
