@@ -5,7 +5,7 @@ import time
 import zmq
 from unittest.mock import MagicMock, call
 
-from core_new.api.mapping import MapServer, MapClient, ByteMap, ByteSequence, EventBus
+from perceptilabs.core_new.api.mapping import MapServer, MapClient, ByteMap, ByteSequence, EventBus
 
 
 @pytest.fixture(autouse=True)

@@ -5,13 +5,13 @@ import tempfile
 import numpy as np
 from queue import Queue
 
-from code.factory import ScriptFactory
-from core_new.core2 import Core
-from core_new.graph.builder import ReplicatedGraphBuilder
-from core_new.graph import Graph
-from core_new.layers import TrainingLayer
-from core_new.deployment import InProcessDeploymentPipe
-from core_new.layers.communication import ZmqClient
+from perceptilabs.code.factory import ScriptFactory
+from perceptilabs.core_new.core2 import Core
+from perceptilabs.core_new.graph.builder import ReplicatedGraphBuilder
+from perceptilabs.core_new.graph import Graph
+from perceptilabs.core_new.layers import TrainingLayer
+from perceptilabs.core_new.deployment import InProcessDeploymentPipe
+from perceptilabs.core_new.layers.communication import ZmqClient
 
 
 @pytest.fixture
@@ -19,11 +19,11 @@ def graph_spec_binary_classification():
     n_classes = 10
     n_samples = 30
 
-    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy')
+    f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
     mat = np.random.random((n_samples, 28*28*1))
     np.save(f1.name, mat)
 
-    f2 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy')
+    f2 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
     mat = np.random.randint(0, n_classes, (n_samples,))
     np.save(f2.name, mat)
     
@@ -116,7 +116,7 @@ def graph_spec_binary_classification():
                     "Momentum": "0.9",
                     "Decay_steps": "100000",
                     "Decay_rate": "0.96",
-                    "Learning_rate": "0.001",
+                    "Learning_rate": "0.5",
                     "Distributed": False
                 },
                 "backward_connections": ["4", "5"],
@@ -154,9 +154,13 @@ def test_train_normal_converges(graph_spec_binary_classification):
 
     core.run(graph_spec_binary_classification)
 
-    time.sleep(7)
-    accuracy = core.graph.nodes[-1].layer.accuracy_training
-    assert np.isclose(accuracy[-1], 1.000, atol=0.001)
+    for i in range(7):
+        time.sleep(1)
+        accuracy = core.graph.nodes[-1].layer.accuracy_training
+        loss = core.graph.nodes[-1].layer.loss_training
 
-    
+        if i > 1:
+            print(accuracy[-1], loss[-1])
+
+    assert accuracy[-1] == 1.0 or np.isclose(accuracy[-1], 1.000, atol=0.001)
     core.stop()    

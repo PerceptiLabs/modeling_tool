@@ -1,7 +1,7 @@
 import pytest
 from unittest.mock import MagicMock, PropertyMock
 
-from core_new.graph.base import Graph
+from perceptilabs.core_new.graph.base import Graph
 
 
 def test_execution_order_ok_for_branching_graph():

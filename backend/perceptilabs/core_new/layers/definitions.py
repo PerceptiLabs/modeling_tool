@@ -1,7 +1,12 @@
 from collections import namedtuple
 from typing import Dict
+import logging
+
 
 from perceptilabs.core_new.layers import *
+
+
+log = logging.getLogger(__name__)
 
 
 LayerDef = namedtuple(
@@ -13,6 +18,24 @@ LayerDef = namedtuple(
         'macro_parameters',
     ]
 )
+
+
+def get_tf1x_activation(specs):
+    table = {
+        None: None,
+        '': None,
+        'Sigmoid': 'tf.compat.v1.sigmoid',
+        'ReLU': 'tf.compat.v1.nn.relu',
+        'Tanh': 'tf.compat.v1.tanh'
+    }
+
+    activation = specs['Properties']['Activation_function']
+    func_name = table.get(activation)
+    if activation not in table:
+        layer_id = '<not implemented>'
+        log.warning(f"layer {layer_id} specified activation {activation}, but it was not found in tf1x activations table. No activation will be used for this layer")
+
+    return func_name
 
 
 DEFINITION_TABLE = {
@@ -54,7 +77,7 @@ DEFINITION_TABLE = {
         'layer_tf1x_fully_connected',
         {
             'n_neurons': lambda specs: specs['Properties']['Neurons'],
-            'activation': lambda specs: specs['Properties']['Activation_function'],
+            'activation': get_tf1x_activation,
             'dropout': lambda specs: specs['Properties']['Dropout'],
             'keep_prob': lambda specs: specs['Properties']['Keep_prob']
         }
@@ -71,7 +94,7 @@ DEFINITION_TABLE = {
             'padding': lambda specs: specs['Properties']['Padding'][1:-1],
             'dropout': lambda specs: specs['Properties']['Dropout'],
             'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
-            'activation': lambda specs: specs['Properties']['Activation_function'],
+            'activation': get_tf1x_activation,            
             'pool': lambda specs: specs['Properties']['PoolBool'],
             'pooling': lambda specs: specs['Properties']['Pooling'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],

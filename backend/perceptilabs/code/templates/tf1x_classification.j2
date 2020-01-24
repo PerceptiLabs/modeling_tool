@@ -102,7 +102,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
         loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
         accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01)
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate={{learning_rate}})
 
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_tensor, trainable_vars)

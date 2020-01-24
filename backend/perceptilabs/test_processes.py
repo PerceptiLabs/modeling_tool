@@ -1,8 +1,11 @@
 import pytest
-import processes
+
 import time
 import psutil
 from multiprocessing import Process
+
+
+import perceptilabs.processes
 
 def proc1_fn(duration):
     time.sleep(duration)

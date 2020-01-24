@@ -7,7 +7,7 @@ import os
 import skimage
 
 
-from code.generators import DataDataCodeGenerator2
+from perceptilabs.code.generators import DataDataCodeGenerator2
 
 
 @pytest.fixture(scope='module', autouse=True)
