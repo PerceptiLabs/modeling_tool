@@ -19,11 +19,10 @@
         )
         p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
         .forgot-password-box
-          //-a.btn.btn--link-without-underline(
-            /:href="`${baseUrlSite}/restore-account`"
+          a.btn.btn--link-without-underline(
+            :href="`${baseUrlSite}/restore-account`"
             @click.prevent="toLink(`${baseUrlSite}/restore-account`)"
-            ) Forgot password?
-          router-link.btn.btn--link-without-underline(:to="{name: 'restore-account'}") Forgot password?
+          ) Forgot password?
 
       .form_holder.login-form_actions
         .form_row

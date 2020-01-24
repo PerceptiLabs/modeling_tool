@@ -1,4 +1,5 @@
-import coreRequest  from "@/core/apiCore.js";
+//import coreRequest  from "@/core/apiCore.js";
+import {coreRequest, openWS}  from "@/core/apiWeb.js";
 const netElementSettingsData = {
   data() {
     return {
@@ -18,6 +19,7 @@ const netElementSettingsData = {
   methods: {
     coreRequest,
     Mix_settingsData_getDataMeta(layerId) {
+      this.$store.commit('mod_workspace/SET_webLoadingDataFlag', true);
       this.showSpinner = true;
       return this.$store.dispatch('mod_api/API_getDataMeta', {layerId, settings: this.settings})
         .then((data) => {
@@ -32,7 +34,10 @@ const netElementSettingsData = {
         .catch((err) => {
           console.error('getDataMeta', err);
         })
-        .finally(()=> this.showSpinner = false)
+        .finally(()=> {
+          this.showSpinner = false;
+          this.$store.commit('mod_workspace/SET_webLoadingDataFlag', false);
+        } )
     },
     Mix_settingsData_getPartitionSummary(layerId) {
       return this.$store.dispatch('mod_api/API_getPartitionSummary', {layerId, settings: this.settings})

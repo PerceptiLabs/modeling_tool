@@ -1,43 +1,20 @@
 <template lang="pug">
   #app
-    header-win.app-header(
-      v-if="platform === 'win32'"
-      @app-closed="appClose"
-      @app-minimized="appMinimize"
-      @app-maximized="appMaximize"
-    )
-    header-mac.app-header(
-      v-if="platform === 'darwin' && showMacHeader"
-    )
-    header-linux.app-header(
-      v-if="platform === 'linux'"
-      @app-closed="appClose"
-      @app-minimized="appMinimize"
-      @app-maximized="appMaximize"
-    )
+    header-win.app-header()
     router-view.app-page
-    update-popup
     the-info-popup(v-if="isShowPopup")
     confirm-popup
 </template>
 
 <script>
-  import {ipcRenderer}  from 'electron'
   import { mapMutations, mapActions } from 'vuex';
-
-  import HeaderLinux    from '@/components/header/header-linux.vue';
   import HeaderWin      from '@/components/header/header-win.vue';
-  import HeaderMac      from '@/components/header/header-mac.vue';
-  import UpdatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
   import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup   from "@/components/global-popups/confirm-popup.vue";
 
   export default {
     name: 'TheApp',
-    components: {
-      HeaderLinux, HeaderWin, HeaderMac,
-      UpdatePopup, TheInfoPopup, ConfirmPopup
-    },
+    components: { HeaderWin, TheInfoPopup, ConfirmPopup },
     created() {
       window.addEventListener('online',  this.updateOnlineStatus);
       window.addEventListener('offline', this.updateOnlineStatus);
@@ -45,43 +22,61 @@
       this.readUserInfo();
     },
     mounted() {
-      this.appReady();
       this.updateOnlineStatus();
-      /*Menu*/
-      ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));
+      //this.checkUserID();
+      // /*Menu*/
+      // ipcRenderer.on('get-app-version', (event, data) => {
+      //   this.$store.commit('globalView/SET_appVersion', data);
+      // });
+      //
+      // /*Auto update*/
+      // ipcRenderer.on('checking-for-update', (event, updateInfo) => {
+      //   //console.log('checking-for-update', updateInfo);
+      //   this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo)
+      // });
+      // ipcRenderer.on('update-available', (event, updateInfo) => {
+      //   //console.log('update-available', updateInfo);
+      //   this.$nextTick(()=>{
+      //     this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
+      //     this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo);
+      //   })
+      // });
+      // ipcRenderer.on('update-not-available', (event, update) => {
+      //   //console.log('update-not-available', update);
+      //   if(this.showNotAvailable) {
+      //     this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
+      //     this.$store.commit('mod_autoUpdate/SET_updateStatus', 'not update')
+      //   }
+      // });
+      // ipcRenderer.on('update-downloading', (event, percent) => {
+      //   //console.log('update-downloading', percent);
+      //   this.$store.commit('mod_autoUpdate/SET_updateProgress', Math.round(percent));
+      // });
+      // ipcRenderer.on('update-completed', (event, percent) => {
+      //   //console.log('update-completed', percent);
+      //   this.$store.commit('mod_autoUpdate/SET_updateStatus', 'done')
+      // });
+      // ipcRenderer.on('update-error', (event, error) => {
+      //   //console.log('update-error', error);
+      //   this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', false);
+      //   if(error.code) this.$store.dispatch('globalView/GP_infoPopup', error.code);
+      // });
+      //
+      // ipcRenderer.on('show-mac-header', (event, value) => { this.showMacHeader = value });
+      // ipcRenderer.on('info',            (event, data) => { console.log(data); });
+      // ipcRenderer.on('show-restore-down-icon', (event, value) => {
+      //   this.$store.commit('globalView/SET_appIsFullView', value);
+      // });
 
-      /*Auto update*/
-      ipcRenderer.on('checking-for-update', (event, updateInfo)=> this.SET_updateInfo(updateInfo));
-      ipcRenderer.on('update-available', (event, updateInfo)=> {
-        this.$nextTick(()=> {
-          this.SET_showPopupUpdates(true);
-          this.SET_updateInfo(updateInfo)
-        })
-      });
-      ipcRenderer.on('update-not-available', (event, update)=> {
-        if(this.showNotAvailable) {
-          this.SET_showPopupUpdates(true);
-          this.SET_updateStatus('not update')
-        }
-      });
-      ipcRenderer.on('update-downloading', (event, percent)=> this.SET_updateProgress(Math.round(percent)));
-      ipcRenderer.on('update-completed', (event, percent)=> this.SET_updateStatus('done'));
-      ipcRenderer.on('update-error', (event, error)=> {
-        this.SET_showPopupUpdates(false);
-        if(error) this.openErrorPopup(error);
-      });
-
-      ipcRenderer.on('show-mac-header', (event, value)=> { this.showMacHeader = value });
-      ipcRenderer.on('info',            (event, data)=> { /*console.log(data); */});
-      ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
-
-      this.calcAppPath();
+      //this.calcAppPath();
       this.checkLocalToken();
-      this.$nextTick(()=> {
-        //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
-
-        this.sendPathToAnalist(this.$route.fullPath);
-      })
+      // this.$nextTick(() =>{
+      //   if(this.userId === 'Guest') {
+      //     this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
+      //   }
+      //   //this.appReady();
+      //   //this.sendPathToAnalist(this.$route.fullPath);
+      // })
     },
     beforeDestroy() {
       window.removeEventListener('online',  this.updateOnlineStatus);
@@ -93,12 +88,15 @@
       }
     },
     computed: {
-      platform() {
-        return this.$store.state.globalView.platform
-      },
-      showNotAvailable() {
-        return this.$store.state.mod_autoUpdate.showNotAvailable
-      },
+      // platform() {
+      //   return this.$store.state.globalView.platform
+      // },
+      // showNotAvailable() {
+      //   return this.$store.state.mod_autoUpdate.showNotAvailable
+      // },
+      // userToken() {
+      //   return this.$store.state.mod_user.userToken
+      // },
       userId() {
         return this.$store.getters['mod_user/GET_userID']
       },
@@ -117,13 +115,13 @@
       },
     },
     watch: {
-      '$route': {
-        handler(to) {
+/*      '$route': {
+        handler(to, from) {
           this.sendPathToAnalist(to.fullPath)
         }
-      },
-      userId() {
-        this.initUser()
+      }, */
+      userId(newVal) {
+        this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
       }
     },
     methods: {
@@ -168,17 +166,17 @@
       },
       sendPathToAnalist(path) {
         if(process.env.NODE_ENV === 'production') {
-          ipcRenderer.send('change-route', {path, id: this.userId})
+          //ipcRenderer.send('change-route', {path, id: this.userId})
         }
       },
       appReady() {
         const splash = document.getElementById('splashscreen');
         setTimeout(()=> {
-          ipcRenderer.send('app-ready');
+          //ipcRenderer.send('app-ready');
           splash.remove();
           document.body.className = "";
           this.trackerAppStart();
-        }, 2000)
+        }, 1000)
       },
       calcAppPath() {
         let resPath = process.resourcesPath;
@@ -207,15 +205,15 @@
         else this.trackerInitUser(this.userId)
       },
       /*Header actions*/
-      appClose() {
-        this.eventAppClose();
-      },
-      appMinimize() {
-        this.eventAppMinimize();
-      },
-      appMaximize() {
-        this.eventAppMaximize();
-      },
+      // appClose() {
+      //   this.$store.dispatch('mod_events/EVENT_appClose');
+      // },
+      // appMinimize() {
+      //   this.$store.dispatch('mod_events/EVENT_appMinimize');
+      // },
+      // appMaximize() {
+      //   this.$store.dispatch('mod_events/EVENT_appMaximize');
+      // },
     },
   }
 </script>

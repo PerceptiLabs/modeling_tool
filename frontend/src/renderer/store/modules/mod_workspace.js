@@ -10,6 +10,7 @@ const state = {
   currentNetwork: 0,
   dragElement: null,
   startArrowID: null,
+  webLoadingDataFlag: false,
   preArrow: {
     show: false,
     start: {x: 0, y: 0},
@@ -564,10 +565,15 @@ const mutations = {
     }
   },
   set_elementOutputDim(state, {value}) {
+    //console.log('current net', state.workspaceContent[state.currentNetwork].networkElementList);
+    //console.log('core answer', value);
     for(let element in value) {
       currentElement(element).layerMeta.OutputDim = value[element].Dim;
       currentElement(element).layerCodeError = value[element].Error
     }
+  },
+  SET_webLoadingDataFlag(state, value) {
+    state.webLoadingDataFlag = value
   },
 
   //---------------
@@ -879,12 +885,24 @@ const actions = {
   RESET_network({commit}) {
     commit('reset_network')
   },
+  // CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
+  //   const timeRequest = time + 500;
+  //   const isLongRequest = timeRequest > rootState.globalView.timeIntervalDoRequest;
+  //   if(isLongRequest) {
+  //     const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
+  //     clearInterval(currentMeta.timerID);
+  //     dispatch('globalView/SET_timeIntervalDoRequest', timeRequest, {root: true});
+  //     dispatch('EVENT_startDoRequest', true);
+  //   }
+  // },
   CHECK_requestInterval({dispatch, commit, rootState, getters, state}, time) {
+    //console.log(`request -> can show`, `${time}ms`);
     const timeRequest = time + 500;
     const isLongRequest = timeRequest > rootState.globalView.timeIntervalDoRequest;
     if(isLongRequest) {
       const currentMeta = getters.GET_currentNetwork.networkMeta.chartsRequest;
       clearInterval(currentMeta.timerID);
+      console.log('new time', timeRequest);
       dispatch('globalView/SET_timeIntervalDoRequest', timeRequest, {root: true});
       dispatch('EVENT_startDoRequest', true);
     }

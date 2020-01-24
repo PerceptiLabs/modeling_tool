@@ -47,7 +47,8 @@
 </template>
 
 <script>
-  import coreRequest  from "@/core/apiCore.js";
+  //import coreRequest  from "@/core/apiCore.js";
+  import {coreRequest, openWS}  from "@/core/apiWeb.js";
   import SettingsPreview  from "@/components/network-elements/elements-settings/setting-preview.vue";
 export default {
   name: 'NetBaseSettings',
