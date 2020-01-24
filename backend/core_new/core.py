@@ -1,5 +1,6 @@
 import sys
 import copy
+import time
 import pprint
 import logging
 import numpy as np
@@ -11,7 +12,6 @@ import gym
 
 from graph import Graph
 from modules import ModuleProvider
-from core_new.api import Api, DataApi, UiApi
 from core_new.data import DataContainer
 from core_new.utils import set_tensorflow_mode
 from core_new.extras import LayerExtrasReader
@@ -42,7 +42,11 @@ class SessionProcessHandler:
         
         self._result_queue.put(results_dict)
         # self._data_container.reset()
-        #log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=2))
+        
+        #log.debug("Pushed results onto queue: " + pprint.pformat(results_dict, depth=4))
+        #if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
+            #remapped_dict = boltons.iterutils.remap(results_dict, lambda p, k, v: str(type(v)))
+            #log.debug("Pushed results onto queue: " + pprint.pformat(remapped_dict, depth=10))
         
     def _handle_commands(self, session):
         while not self._command_queue.empty():
@@ -100,38 +104,53 @@ class BaseCore:
         self._print_basic_info()
         
         set_tensorflow_mode('eager' if self._tf_eager else 'graph')
-
+        
         for layer_id, content in self._graph.items():
             layer_type = content["Info"]["Type"]
 
             if self._should_skip_layer(layer_id, content):
+                log.debug("Skipping layer {} []".format(layer_id, layer_type))
                 continue
 
             if self._network_cache is not None:
                 if layer_id in self._network_cache and not self._network_cache.needs_update(layer_id, content):
-                    log.info("Using cached layer")
-                    print("Using cached layer for layer " + layer_type)
+                    log.info("Using cached layer for layer " +layer_type)
                     self._use_cached_layer(layer_id, self._network_cache[layer_id])
                     continue
-            print("***Calculating new layer for layer " + layer_type)
-            log.info("Preparing layer session with id {} and type {}".format(layer_id, layer_type))
+
+            log.info("Preparing layer session for {} [{}]".format(layer_id, layer_type))
+            t_start = time.perf_counter()
             try:
                 self._run_layer(layer_id, content)
             except LayerSessionStop:
                 log.info("Stop requested during session {}".format(layer_id))                
                 break
             except LayerSessionAbort:
-                
                 log.info("Error handler aborted session {}".format(layer_id))
                 break
             except Exception:
                 log.exception("Exception in %s" % layer_id)
                 raise
+            finally:
+                log.info("Running layer {} [{}] took {} seconds".format(
+                    layer_id, layer_type,
+                    time.perf_counter() - t_start
+                ))
+            
 
-    def _run_layer(self, id_, content):        
+    def _run_layer(self, id_, content):    
+        clean_content=copy.deepcopy(content)
         code_gen = self._codehq.get_code_generator(id_, content)
-        log.debug(repr(code_gen))
+        
 
+        log.info(repr(code_gen))        
+        if log.isEnabledFor(logging.DEBUG):        
+            log.debug(pprint.pprint(code_gen.get_code()))
+
+
+        #import pdb; pdb.set_trace()
+            
+        
         try:
             globals_, locals_ = self._get_globals_and_locals(input_layer_ids=content['Con'])  
         except HistoryInputException:
@@ -155,13 +174,13 @@ class BaseCore:
                                process_handler=self._session_process_handler,
                                cache=self._session_history.cache)   
         
-        _save_cache=False
-
-        try:        
+        try:
             session.run()
         except LayerSessionStop:
+            log.debug("Raised LayerSessionStop!")
             raise # Not an error. Re-raise.
         except Exception as e:
+            log.debug("Exception when running session: " + str(e) + " will be handled by error handler " + str(self._error_handler))
             self._error_handler.handle_run_error(session, e)
         # else:
         #     _save_cache=True
@@ -172,7 +191,7 @@ class BaseCore:
             self._layer_extras_reader.read(session, self._data_container)
 
         if self._network_cache is not None:
-            self._network_cache.update(id_, content, session, self._error_handler[id_] if id_ in self._error_handler.to_dict() else None)
+            self._network_cache.update(id_, clean_content, session, self._error_handler[id_] if id_ in self._error_handler.to_dict() else None)
             
         log.debug("Done running layer {}".format(id_))#. Locals:  {}".format(id_, session.outputs.locals))
 
@@ -188,7 +207,6 @@ class BaseCore:
         session = saved_layer.session
 
         self._session_history[id_] = session
-
         self._data_container.store_value_in_root(id_, saved_layer.session._data_container[id_])
 
         if self._layer_extras_reader is not None:
@@ -235,6 +253,7 @@ class BaseCore:
             log.info("No module hooks installed")
 
     def _should_skip_layer(self, layer_id, content):
+        layer_type = content["Info"]["Type"]        
         if not (content["Info"]["Properties"] \
                 or ("Code" in content["Info"] and content["Info"]["Code"])):
             if self._layer_extras_reader is not None:
@@ -242,7 +261,12 @@ class BaseCore:
             else:
                 raise Exception("Layer {} is empty and can therefore not run.\nMost likely it has not been properly Applied.".format(content["Info"]["Name"]))
 
-        layer_type = content["Info"]["Type"]                
+        # if "Code" in content["Info"] and content["Info"]["Code"]:
+        #     log.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
+           
+        #     return True
+
+
         if layer_type in self._skip_layers:
             log.info("Layer {} [{}] in skip list. Skipping.".format(layer_id, layer_type))
             return True

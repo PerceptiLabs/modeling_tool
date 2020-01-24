@@ -9,7 +9,7 @@ def set_tensorflow_mode(mode):
     
     
     tf_version = tf.version.VERSION
-
+    
     if tf_version.startswith('1.15'):
         
         if mode == 'eager':
