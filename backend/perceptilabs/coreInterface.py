@@ -72,8 +72,6 @@ class coreLogic():
                 if layer['Type'] == 'TrainNormal' and 'Distributed' not in layer['Properties']:
                     layer['Properties']['Distributed'] = False 
             
-            
-            
             log.info("Creating deployment script...")            
             config = {'session_id': '1234567'}
             

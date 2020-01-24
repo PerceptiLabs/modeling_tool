@@ -1,7 +1,7 @@
 from collections import namedtuple
 from typing import Dict
 
-from core_new.layers import *
+from perceptilabs.core_new.layers import *
 
 
 LayerDef = namedtuple(

@@ -1,1 +1,2 @@
-from core_new.graph.base import *
+from perceptilabs.core_new.graph.base import *
+
