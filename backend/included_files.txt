@@ -20,6 +20,7 @@ parse_pb.py
 s3buckets.py
 utils.py
 processes.py
+license_checker.py
 
 # server
 server/appServer.py

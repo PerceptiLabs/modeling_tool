@@ -17,7 +17,7 @@ import GPUtil
 from networkExporter import exportNetwork
 from networkSaver import saveNetwork
 
-from license import is_licensed
+from license_checker import is_licensed
 
 from modules import ModuleProvider
 from core_new.core import *
