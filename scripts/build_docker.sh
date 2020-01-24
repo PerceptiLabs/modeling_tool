@@ -58,6 +58,7 @@ ls -l
 echo "----- Building frontend -----"
 cd ../../frontend/src
 npm run build
+if [ $? -ne 0 ]; then exit 1; fi
 
 cp -r dist/* ../../build/frontend_out/
 
