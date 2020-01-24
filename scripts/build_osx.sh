@@ -27,7 +27,6 @@ cd ../../../
 
 # ----- Build backend ----
 echo "----- Building backend -----"
-cd ..
 rm -rf build
 mkdir build
 cd build/
