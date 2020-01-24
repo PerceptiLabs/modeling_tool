@@ -21,6 +21,7 @@ frontend/node_modules/
 frontend/build/*
 !frontend/build/icons
 !frontend/build/*.plist
+!frontend/src/build/
 frontend/npm-debug.log
 frontend/npm-debug.log.*
 frontend/thumbs.db
