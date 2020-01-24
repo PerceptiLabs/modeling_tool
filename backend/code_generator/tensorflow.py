@@ -26,7 +26,7 @@ class ReshapeCodeGenerator(CodeGenerator):
         self._permutation = permutation
         
     def get_code(self):
-        shape = [i for i in self._shape if i != 0]
+        shape = [i for i in self._shape if i != 0] 
         permutation = self._permutation[:len(shape)]
         shape_text = ', '.join([str(i) for i in shape])
         perm_text = ', '.join([str(i) for i in permutation])
@@ -37,7 +37,7 @@ class ReshapeCodeGenerator(CodeGenerator):
 
     
 class RecurrentCodeGenerator(CodeGenerator):
-    def __init__(self, layer_id, version, time_steps, neurons, return_sequences=False, dropout=False, keep_prop=1):
+    def __init__(self, layer_id, version, time_steps, neurons, return_sequences=False, dropout=False, keep_prop=1, variable_scope = None):
         self._id = layer_id
         self._version = version
         self._time_steps = time_steps
@@ -45,6 +45,7 @@ class RecurrentCodeGenerator(CodeGenerator):
         self._return_sequences = return_sequences
         self._dropout=dropout
         self._keep_prob=keep_prop
+        self._variable_scope = variable_scope
 
     def get_code(self):
         code = ''
@@ -65,7 +66,8 @@ class RecurrentCodeGenerator(CodeGenerator):
             code += "Y = rnn_outputs\n"
         else:
             code += "Y = rnn_outputs[:, -1]\n"
-            
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
     
 
@@ -121,7 +123,6 @@ class GrayscaleCodeGenerator(CodeGenerator):
         code += "    Y = X['Y']\n"
         return code
 
-
 class ArgmaxCodeGenerator(CodeGenerator):
     def __init__(self, dim):
         self._dim = dim
@@ -138,16 +139,18 @@ class SoftmaxCodeGenerator(CodeGenerator):
 
 
 class MergeCodeGenerator(CodeGenerator):
-    def __init__(self, type_, merge_dim):
+    def __init__(self, type_, merge_dim, merge_order = None):
         self._type = type_
         self._merge_dim = merge_dim
-
+        self._merget_order = merge_order
     def get_code(self):
         # TODO: in python version < 3.6 dicts aren't ordered. caution if we allow custom environments in the future.
         
         if self._type == 'Concat':
-            # Due to duplicate values in X['Y'], just take every other value.            
-            code  = "for i in range(0, len(list(X['Y'].values())), 2):\n"
+            # Due to duplicate values in X['Y'], just take every other value.  
+            if self._merge_order is None:
+                self._merge_order = list(X['Y']).values()
+            code = "for i in range(0, %s, 2):\n" %len(self._merge_order)
             code += "    if not Y:\n"
             code += "        Y = list(X['Y'].values())[i]\n"
             code += "    Y = tf.concat([Y, list(X['Y'].values())[i]], %s)\n" % self._merge_dim
@@ -178,12 +181,13 @@ class MergeCodeGenerator(CodeGenerator):
             return code
 
 class FullyConnectedCodeGenerator(CodeGenerator):
-    def __init__(self, layer_id, n_neurons, activation=None, dropout=False, keep_prob=1.0):
+    def __init__(self, layer_id, n_neurons, activation=None, dropout=False, keep_prob=1.0, variable_scope = None):
         self._layer_id = layer_id
         self._n_neurons = n_neurons
         self._dropout = dropout
         self._keep_prob = keep_prob
         self._activation = activation
+        self._variable_scope = variable_scope
 
     def get_code(self):
         code  = "input_size = np.cumprod(X['Y'].get_shape().as_list()[1:])[-1]\n"
@@ -201,11 +205,23 @@ class FullyConnectedCodeGenerator(CodeGenerator):
         code += "node = node + b\n"
         code += "\n"
         code += get_activation_code(var_out='Y', var_in='node', func=self._activation)
+        if self._variable_scope is not None:
+            code = Add_variable_scope(code, self._variable_scope).get_code()
         return code
+    
+class Add_variable_scope(CodeGenerator):
+    def __init__(self, code, variable_scope):
+        self._code = code
+        self._variable_scope = variable_scope
+    def get_code(self):
+        new_code = "with tf.variable_scope(%s,reuse=True):\n"%self._variable_scope
+        for line in self._code.splitlines():
+            new_code = new_code + "    " + str(line) + "\n"
+        return new_code
 
 class DeconvCodeGenerator(CodeGenerator):
     def __init__(self, layer_id, conv_dim, feature_maps, stride, padding,
-                 dropout=False, keep_prob=None, activation=None):
+                 dropout=False, keep_prob=None, activation=None, variable_scope = None):
         self._layer_id = layer_id
         self._conv_dim = conv_dim
         self._feature_maps = feature_maps
@@ -214,6 +230,7 @@ class DeconvCodeGenerator(CodeGenerator):
         self._dropout = dropout
         self._keep_prob = keep_prob
         self._activation = activation
+        self._variable_scope = variable_scope
 
     def get_code(self):
         code = ''
@@ -234,7 +251,8 @@ class DeconvCodeGenerator(CodeGenerator):
         # Activation
         code += "node = node + b\n"
         code += get_activation_code(var_out='Y', var_in='node', func=self._activation)
-       
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
     def _get_code_1d(self):
@@ -247,6 +265,8 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "\n"    
         code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
         code += "node = tf.nn.conv1d_transpose(X['Y'], W, output_shape, strides=%s, padding=%s)\n" % (self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
     def _get_code_2d(self):
@@ -259,6 +279,8 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "\n"        
         code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
         code += "node = tf.nn.conv2d_transpose(X['Y'], W, output_shape, strides=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
     def _get_code_3d(self):
@@ -271,6 +293,8 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "\n"        
         code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)
         code += "node = tf.nn.conv3d_transpose(X['Y'], W, output_shape, strides=[1, %s, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
     
     def _get_code_autodim(self):
@@ -284,6 +308,8 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "\n"    
         code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
         code += "node = tf.nn.conv2d(X['Y'], W, output_shape, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
 
@@ -291,7 +317,7 @@ class DeconvCodeGenerator(CodeGenerator):
 class ConvCodeGenerator(CodeGenerator):
     def __init__(self, layer_id, conv_dim, patch_size, feature_maps, stride, padding,
                  dropout=False, keep_prob=None, activation=None,
-                 pool=False, pooling=None, pool_area=None, pool_padding=None, pool_stride=None):
+                 pool=False, pooling=None, pool_area=None, pool_padding=None, pool_stride=None, variable_scope = None):
         self._layer_id = layer_id
         self._conv_dim = conv_dim
         self._patch_size = patch_size
@@ -306,6 +332,7 @@ class ConvCodeGenerator(CodeGenerator):
         self._pool_area = pool_area
         self._pool_padding = pool_padding
         self._pool_stride = pool_stride
+        self._variable_scope = variable_scope
 
     def get_code(self):
         code = ''
@@ -337,6 +364,8 @@ class ConvCodeGenerator(CodeGenerator):
             code += "Y = tf.nn.max_pool(Y, %s, %s, '%s', dim_str)" % (self._pool_area, self._pool_stride, self._pool_padding)
         if self._pool and self._pooling == "Mean":
             code += "Y = tf.nn.pool(Y, window_shape=%s, pooling_type='AVG', padding=%s, strides=%s)" % (self._pool_area, self._pool_padding, self._pool_stride)            
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
     def _get_code_1d(self):
@@ -348,6 +377,8 @@ class ConvCodeGenerator(CodeGenerator):
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id
         code += "\n"        
         code += "node = tf.nn.conv1d(X['Y'], W, %s, padding=%s)\n" % (self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
     def _get_code_2d(self):
@@ -359,6 +390,8 @@ class ConvCodeGenerator(CodeGenerator):
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id        
         code += "\n"        
         code += "node = tf.nn.conv2d(X['Y'], W, strides=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
     
     def _get_code_3d(self):
@@ -370,6 +403,8 @@ class ConvCodeGenerator(CodeGenerator):
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                
         code += "\n"        
         code += "node = tf.nn.conv3d(X['Y'], W, strides=[1, %s, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
     
     def _get_code_autodim(self):
@@ -382,6 +417,8 @@ class ConvCodeGenerator(CodeGenerator):
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                        
         code += "\n"        
         code += "node = tf.nn.conv2d(X['Y'], W, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
+        if self._variable_scope is not None:
+            code = Add_variable_scope.get_code(code, self._variable_scope)
         return code
 
 class TrainLossCodeGenerator(CodeGenerator):
@@ -652,7 +689,210 @@ class TrainNormalCodeGenerator(Jinja2CodeGenerator):
 
 LayerPair = namedtuple('LayerPair', ['online_id', 'target_id'])
 
+class GANLossCodeGenerator(CodeGenerator):
+    def __init__(self, class_weights = 1):  #discriminator_layer_id, generator_variable_scope, discriminator_variable_scope, 
+        # self._discriminator_layer_id = discriminator_layer_id
+        self._class_weights = str(class_weights)
+        # self._generator_variable_scope = generator_variable_scope
+        # self._discriminator_variable_scope = discriminator_variable_scope
 
+    def get_loss_code(self):
+        code = ""
+        code += "size = X['Y'].shape[0]\n" #% self._discriminator_layer_id  ['%s']
+        code += "Y_real = X['Y'][:size/2,:]\n"# % self._discriminator_layer_id
+        code += "Y_fake = X['Y'][size/2:,:]\n" #% self._discriminator_layer_id
+        code += "D_logits_real = tf.sigmoid(Y_real)\n"
+        code += "D_logits_fake = tf.sigmoid(Y_fake)\n"
+        code += "def D_loss(D_logits_real, D_logits_fake):\n"
+        code += "    return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logits_real,labels=tf.ones_like(D_logits_real)*0.9)) + tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logits_fake,labels=tf.zeros_like(D_logits_real)))\n"
+        code += "def G_loss(D_logits_fake):\n"
+        code += "    return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=D_logits_fake,labels=D_logits_fake))\n"
+        code += "loss_funcs ={}\n"
+        code += "loss_funcs['generator'] = D_loss(D_logits_real, D_logits_fake)\n" #%self._discriminator_variable_scope
+        code += "loss_funcs['discriminator'] = G_loss(D_logits_fake)\n" #%self._generator_variable_scope
+        return code
+
+class GANOptimizerCodeGenerator(CodeGenerator):
+    def __init__(self, optimizer, learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999):
+        self._optimizer = optimizer
+        self._learning_rate = str(learning_rate)
+        self._decay_steps = str(decay_steps)
+        self._decay_rate = str(decay_rate)
+        self._momentum = str(momentum)
+        self._beta1 = str(beta1)
+        self._beta2 = str(beta2)
+        # self._var_lists = var_lists
+        # self._loss_funcs = loss_funcs
+    def get_optimizer_code(self):
+        code = ""
+        if self._optimizer == "ADAM":
+            for key in ['generator','discriminator']:
+                code += "step_%s = tf.train.AdamOptimizer(learning_rate=%s, beta1=%s, beta2=%s).minimize(loss_funcs['%s'], var_list = var_lists['%s'])\n" % (key, self._learning_rate, self._beta1, self._beta2, key, key)
+        else:
+            raise NotImplementedError("The Optimizer you tried to use is not yet implemented")
+        return code
+
+class TrainGANCodeGenerator(CodeGenerator):
+    def __init__(self, generator_variable_scope, discriminator_variable_scope, n_epochs, class_weights = 1, optimizer='ADAM', 
+    learning_rate=0.001, decay_steps=100000, decay_rate=0.96, momentum=0.9, beta1=0.9, beta2=0.999 ): # generator_layer_id, discriminator_layer_id,
+        # self._discriminator_layer = discriminator_layer_id
+        # self._generator_layer = generator_layer_id
+        self._generator_variable_scope = generator_variable_scope
+        self._discriminator_variable_scope = discriminator_variable_scope
+        self._n_epochs = int(n_epochs)
+        #Loss
+        self._class_weights = class_weights
+        #Optimizer
+        self._optimizer = optimizer
+        self._learning_rate = learning_rate
+        self._decay_steps = decay_steps
+        self._decay_rate = decay_rate
+        self._momentum = momentum
+        self._beta1 = beta1
+        self._beta2 = beta2
+
+    def get_code(self):
+        code = self._get_training_code() + '\n' + self._get_testing_code()
+        return code
+    
+    def _get_training_code(self):
+        code  = ""
+        code += "api.data.store_locals(locals())\n"
+
+        code += "\n"
+        code += GANLossCodeGenerator(self._discriminator_layer, self._generator_variable_scope, self._discriminator_variable_scope, self._class_weights).get_loss_code()
+        code += "# Gradients\n"
+        code += "gen_gradients = {}\n"
+        code += "dis_gradients = {}\n"
+        code += "for var in tf.trainable_variables():\n"
+        code += "    name = 'grad-' + var.name\n"
+        code += "    if %s in name:\n"%self._generator_variable_scope
+        code += "        gen_gradients[name] = tf.gradients(%s, [var])\n"%self._loss_funcs['generator']
+        code += "    else:\n"
+        code += "        dis_gradients[name] = tf.gradients(%s, [var])\n"%self._loss_funcs['discriminator']
+        code += "\n"
+        code += "var_lists = {}\n"
+        code += "var_lists['generator'] = [var for var in tf.trainable_variables() if %s in var.name]\n"%(self._generator_variable_scope) #self._generator_layer
+        code += "var_lists['discriminator'] = [var for var in tf.trainable_variables() if %s in var.name]\n"%(self._discriminator_variable_scope) #self._discriminator_layer, 
+        code += GANOptimizerCodeGenerator(self._optimizer, self._learning_rate, self._decay_steps, self._decay_rate, self._momentum, self._beta1, self._beta2).get_optimizer_code()
+
+        code += "\n"
+        code += "# Metrics\n"
+        code += "generator_loss = loss_funcs['generator']\n"
+        code += "discriminator_loss = loss_funcs['discriminator']\n"
+        code += "\n"
+        code += "generator_accuracy = D_logits_real\n"
+        code += "discriminator_accuracy = D_logits_fake\n"
+        code += "\n"
+        code += "# Get iterators\n"
+        code += "ops = tf.get_default_graph().get_operations()\n"
+        code += "train_iterators = [op for op in ops if 'train_iterator' in op.name]\n"
+        code += "validation_iterators = [op for op in ops if 'validation_iterator' in op.name]\n"
+        code += "test_iterators = [op for op in ops if 'test_iterator' in op.name]\n" 
+        code += "#tf variables to be evaluated and sent to the frontend\n"    
+        code += "\n"
+        code += "sess = tf.InteractiveSession()\n"
+        code += "saver = tf.train.Saver()\n"
+        code += "api.data.setSaver(sess,saver)\n"
+        code += "init = tf.group(tf.global_variables_initializer(), tf.local_variables_initializer())\n"
+        code += "sess.run(init)\n"
+        
+        # code += "all_tensors=api.data.get_tensors()\n" 
+        # code += "api.data.store(all_tensors=all_tensors)\n"
+        code += "\n"
+        code += "api.data.store(max_epoch=%d,\n" % (self._n_epochs - 1)
+        code += "               train_datasize=_data_size[0],\n"
+        code += "               val_datasize=_data_size[1])\n"
+        code += "\n"
+        code += "for epoch in range(%d):\n" % self._n_epochs
+        # code += "    print(epoch)\n"
+        code += "    sess.run(train_iterators)\n"
+        code += "    api.data.store(iter_training=0, iter_validation=0)\n"
+        code += "    #Setting the variables to empty as a way to reset them every epoch.\n"
+        code += "    api.data.store(gen_loss_train_iter=[], dis_loss_train_iter=[],\n" 
+        code += "                   gen_loss_val_iter=[], dis_loss_val_iter=[])\n"
+        code += "    \n"
+        code += "    train_iter=0\n"
+        code += "    try:\n"
+        code += "        while True:\n"
+        code += "            if api.ui.headless:\n"
+        code += "                _, gen_loss_train, gen_acc_train = sess.run([step_generator, generator_loss, generator_accuracy])\n"
+        code += "                _, dis_loss_train, dis_acc_train = sess.run([step_discriminator, discriminator_loss, dicriminstor_accuracy])\n"
+
+        code += "            else:\n"
+        code += "                _, gen_loss_train, gen_acc_train, gen_gradient_vals = sess.run([step_generator, generator_loss, generator_accuracy, gen_gradients])\n"
+        code += "                _, dis_loss_train, dis_acc_train, dis_gradient_vals = sess.run([step_discriminator, discriminator_loss, dicriminstor_accuracy, dis_gradients])\n"
+        
+        code += "                new_gen_gradient_vals={}\n"
+        code += "                for gradName, gradValue in gen_gradient_vals.items():\n"
+        code += "                     new_gen_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+        code += "                     new_gen_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+        code += "                     new_gen_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+        
+        code += "                new_dis_gradient_vals={}\n"
+        code += "                for gradName, gradValue in dis_gradient_vals.items():\n"
+        code += "                     new_dis_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+        code += "                     new_dis_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+        code += "                     new_dis_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+        code += "                api.data.stack(**new_gen_gradient_vals)\n"
+        code += "                api.data.stack(**new_dis_gradient_vals)\n"
+        
+        code += "            api.data.stack(gen_acc_train_iter=gen_acc_train, gen_loss_train_iter=gen_loss_train)\n"
+        code += "            api.data.stack(dis_acc_train_iter=dis_acc_train, dis_loss_train_iter=dis_loss_train)\n"
+        code += "            api.data.store(iter_training=train_iter)\n"
+
+        code += "            api.ui.render(dashboard='train_val')\n"
+        code += "            train_iter+=1\n"
+        code += "    except tf.errors.OutOfRangeError:\n"
+        code += "        pass\n"
+        code += "    \n"
+        code += "    sess.run(validation_iterators)\n"    
+        code += "    val_iter=0\n"    
+        code += "    try:\n"
+        code += "        while True:\n"
+        code += "            if api.ui.skip:\n"
+        code += "                api.ui.skip=False\n"
+        code += "                break\n"
+        code += "            \n"
+        code += "            if api.ui.headless:\n"
+        code += "                _, gen_loss_val, gen_acc_val = sess.run([step_generator, generator_loss, generator_accuracy])\n"
+        code += "                _, dis_loss_val, dis_acc_val = sess.run([step_discriminator, discriminator_loss, dicriminstor_accuracy])\n"
+
+        code += "            else:\n"
+        code += "                _, gen_loss_val, gen_acc_val, gen_gradient_vals = sess.run([step_generator, generator_loss, generator_accuracy, gen_gradients])\n"
+        code += "                _, dis_loss_val, dis_acc_val, dis_gradient_vals = sess.run([step_discriminator, discriminator_loss, dicriminstor_accuracy, dis_gradients])\n"
+        
+        code += "                new_gen_gradient_vals={}\n"
+        code += "                for gradName, gradValue in gen_gradient_vals.items():\n"
+        code += "                     new_gen_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+        code += "                     new_gen_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+        code += "                     new_gen_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+        code += "                api.data.stack(**new_gen_gradient_vals)\n"
+
+        code += "                new_dis_gradient_vals={}\n"
+        code += "                for gradName, gradValue in dis_gradient_vals.items():\n"
+        code += "                     new_dis_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))\n"
+        code += "                     new_dis_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))\n"
+        code += "                     new_dis_gradient_vals[gradName+':Average'] = np.average(gradValue)\n"
+        code += "                api.data.stack(**new_dis_gradient_vals)\n"
+        
+        code += "            api.data.stack(gen_acc_val_iter=gen_acc_train, gen_loss_val_iter=gen_loss_train)\n"
+        code += "            api.data.stack(dis_acc_val_iter=dis_acc_train, dis_loss_val_iter=dis_loss_train)\n"
+        code += "            api.data.store(iter_validation=val_iter)\n"
+        code += "            api.ui.render(dashboard='train_val')\n"
+        code += "            val_iter+=1\n" 
+        code += "    except tf.errors.OutOfRangeError:\n"
+        code += "        pass\n"    
+        code += "    \n"
+        code += "    api.data.store(epoch=epoch)\n"
+        code += "    api.data.stack(gen_acc_training_epoch=gen_acc_train, gen_loss_training_epoch=gen_loss_train, dis_acc_training_epoch=dis_acc_train, dis_loss_training_epoch=dis_loss_train\n"
+        code += "                   dis_acc_validation_epoch=dis_acc_val, dis_loss_validation_epoch=dis_loss_val, dis_acc_validation_epoch=dis_acc_val, dis_loss_validation_epoch=dis_loss_val)\n"
+        return code
+
+
+    def _get_testing_code(self):
+        code = " \n"
+        return code 
 
 class TrainReinforceCodeGenerator(CodeGenerator):
     def __init__(self, online_network_id, target_network_id, layer_pairs, n_episodes=20000, batch_size=32, learning_rate=0.1, discount_factor=0.99,
