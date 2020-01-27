@@ -64,6 +64,8 @@ class coreLogic():
         
 
     def startCore(self,network, checkpointValues):
+        is_licensed()
+
         #Start the backendthread and give it the network
         self.setupLogic()
         self.network=network
@@ -81,12 +83,15 @@ class coreLogic():
                 return backprop(b_con[0])
             else:
                 return layer_id
-
+        
         try:
             gpus = GPUtil.getGPUs()
         except:
             log.error("No compatible nvidia GPU drivers available, defaulting to 0 GPUs")
             gpus = []
+
+        print(f"GPU count: {len(gpus)}")
+
         if len(gpus)>1 and is_licensed():     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
             DISTRIBUTED = True
         else:

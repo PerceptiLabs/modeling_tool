@@ -1,16 +1,19 @@
 from cryptography.fernet import Fernet
 import sys
 import os
+import logging
+
+log = logging.getLogger(__name__)
 
 
-def _check(pl_key, access_key, secret_key):
+def _check(pl_key, license_name, license_value):
     try:
         bin_pl_key = pl_key.encode("ascii")
         fernet = Fernet(bin_pl_key)
-        bin_secret_key = secret_key.encode("ascii")
-        clear = fernet.decrypt(bin_secret_key)
-        bin_access_key = access_key.encode("ascii")
-        return clear == bin_access_key
+        bin_value = license_value.encode("ascii")
+        clear = fernet.decrypt(bin_value)
+        bin_name = license_name.encode("ascii")
+        return clear == bin_name
     except:
         return False
 
@@ -18,9 +21,16 @@ def _check(pl_key, access_key, secret_key):
 pl_key = "eZkaBCdeBg87CQyy6MI6WR0hpgL7-jT30tjM7T-nRZA="
 
 
-# TODO : use the output of this function to determine whether they have a license.
 def is_licensed():
-    access_key = os.environ.get("LICENSE_NAME", "")
-    secret_key = os.environ.get("LICENSE_VALUE", "")
+    license_name = os.environ.get("LICENSE_NAME", "")
+    log.debug(f"LICENSE_NAME: {license_name}")
+    license_value = os.environ.get("LICENSE_VALUE", "")
+    log.debug(f"LICENSE_VALUE: {license_value}")
 
-    return _check(pl_key, access_key, secret_key)
+    ret = _check(pl_key, license_name, license_value)
+    if ret:
+        log.info(f"License checks out.")
+    else:
+        log.warning(f"License doesn't check out.")
+
+    return ret
