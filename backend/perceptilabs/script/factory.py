@@ -13,7 +13,7 @@ class ScriptFactory:
         # if legacy, simply reuse codehq
         # if modern, use modern when possible if not try to wrap hq layers
 
-        templates_directory = pkg_resources.resource_filename('perceptilabs', 'code/templates/')
+        templates_directory = pkg_resources.resource_filename('perceptilabs', 'script/templates/')
         self._engine = J2Engine(templates_directory)
 
     def make(self, graph: Graph, session_config: Dict[str, str]):

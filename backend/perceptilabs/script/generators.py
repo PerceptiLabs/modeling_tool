@@ -83,8 +83,7 @@ class CustomCodeGenerator(CodeGenerator):
             
 
 class Jinja2CodeGenerator(CodeGenerator):
-    #TEMPLATES_DIRECTORY = './code/templates/'
-    TEMPLATES_DIRECTORY = pkg_resources.resource_filename('perceptilabs', 'code/templates/')    
+    TEMPLATES_DIRECTORY = pkg_resources.resource_filename('perceptilabs', 'script/templates/')    
     
     def _render(self, path, **kwargs):
         if not hasattr(self, '_jenv'):
@@ -145,6 +144,9 @@ class DataDataCodeGenerator2(Jinja2CodeGenerator):
 
             partition = [partition[0]/100.0, partition[1]/100.0, partition[2]/100.0]
             self.partitions.append(partition)
+
+            #TODO: Remove?
+            source['path'] = source['path'].replace('\\', '/')
 
             if source['type'] == 'directory':
                 file_paths = os.listdir(source['path'])

@@ -1,5 +1,6 @@
 import logging
 from collections import namedtuple
+import copy
 
 CacheEntry = namedtuple('CacheEntry', ['hash', 'session', 'error'])
 
@@ -24,7 +25,17 @@ class NetworkCache():
     def to_dict(self):
         return self._dict
 
+    def _clean_content(self, content):
+        clean_content = copy.deepcopy(content)
+        try:
+            del clean_content["Info"]["forward_connections"]
+        except:
+            pass
+        return clean_content
+
     def _calculate_hash(self, id_, content):
+        content = self._clean_content(content)
+
         hash_ = hash(str(content))
         for con in content["Con"]:
             if con in self._dict:

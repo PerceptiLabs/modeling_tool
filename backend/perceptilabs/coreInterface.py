@@ -96,12 +96,50 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.setupLogic()
         self.network=network
+        print('printing network .......\n')
 
         # import json
         # with open('net.json', 'w') as f:
-        #     json.dump(network, f) 
+        #     json.dump(network, f, indent=4) 
 
         data_container = DataContainer()
+
+        def backprop(layer_id):
+            b_con = network['Layers'][layer_id]['backward_connections']
+            if b_con:
+                return backprop(b_con[0])
+            else:
+                return layer_id
+
+        try:
+            gpus = GPUtil.getGPUs()
+        except:
+            log.error("No compatible nvidia GPU drivers available, defaulting to 0 GPUs")
+            gpus = []
+        if len(gpus)>1 and is_licensed():     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
+            DISTRIBUTED = True
+        else:
+            DISTRIBUTED = False
+
+        for _id, layer in network['Layers'].items():
+            if layer['Type'] == 'TrainNormal':
+                layer['Properties']['Distributed'] = DISTRIBUTED
+                if DISTRIBUTED:
+                    labels = layer['Properties']['Labels']
+
+                    for b_con in layer['backward_connections']:
+                        if b_con != labels:
+                            pred = b_con
+
+                    input_data_layer = backprop(pred)
+                    target_data_layer = backprop(labels)
+                    layer['Properties']['InputDataId'] = input_data_layer
+                    layer['Properties']['TargetDataId'] = target_data_layer
+
+                else:
+                    layer['Properties']['InputDataId'] = ''
+                    layer['Properties']['TargetDataId'] = ''
+
 
         self.graphObj = Graph(network['Layers'])
         graph_dict=self.graphObj.graphs
@@ -110,7 +148,6 @@ class coreLogic():
 
         error_handler = CoreErrorHandler(self.errorQueue)
         
-
         module_provider = ModuleProvider()
         module_provider.load('tensorflow', as_name='tf')
         module_provider.load('numpy', as_name='np')
@@ -125,11 +162,19 @@ class coreLogic():
         cache = get_cache()
         session_history = SessionHistory(cache)
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
-        self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
-                         error_handler, session_proc_handler, checkpointValues)
 
-        self._dump_deployment_script('deploy.py', network) 
 
+        #self._dump_deployment_script('deploy.py', network) 
+        
+
+        if not DISTRIBUTED:
+            self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
+                             error_handler, session_proc_handler, checkpointValues)
+        else:
+            from core_new.core_distr import DistributedCore
+            self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
+                                        error_handler, session_proc_handler, checkpointValues)
+            
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()
 
@@ -269,10 +314,13 @@ class coreLogic():
         return cpu, mem
 
     def get_gpu(self):
-        gpus = GPUtil.getGPUs()
-        loadList = [gpu.load for gpu in gpus]
+        try:
+            gpus = GPUtil.getGPUs()
+            loadList = [gpu.load*100 for gpu in gpus]
+        except:
+            loadList = None
         if loadList:
-            return np.max(loadList)
+            return np.average(loadList)
         else:
             return ""
         
@@ -280,6 +328,8 @@ class coreLogic():
         try:
             cpu, mem = self.get_cpu_and_mem()
             gpu = self.get_gpu()
+            if gpu and int(gpu) == 0:
+                gpu = 1
             progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
             if self.status=="Running":
                 result = {
@@ -618,7 +668,8 @@ class coreLogic():
                 if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
                     for key,value in X.items():
                         try:
-                            if key==self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
+                            key_id = [x[0] for x in self.graphObj.graphs[layerId]['Info']['backward_connections'] if x[1] == key][0]
+                            if key_id == self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
                                 Labels=value['Y']
                             else:
                                 Network_output=value['Y']

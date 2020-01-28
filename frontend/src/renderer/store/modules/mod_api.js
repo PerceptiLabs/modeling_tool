@@ -28,6 +28,20 @@ const getters = {
         const filePath = el.checkpoint[1].slice(0, el.checkpoint[1].length);
         checkpointPath[1] = rootPath + pathSlash + filePath;
       }
+
+      const namesConnectionOut = [];
+      const namesConnectionIn = [];
+
+      el.connectionOut.forEach(id => {
+        const name =  network.networkElementList[id].layerName;
+        namesConnectionOut.push([id, name])
+      });
+
+      el.connectionIn.forEach(id => {
+        const name =  network.networkElementList[id].layerName;
+        namesConnectionIn.push([id, name])
+      });
+
       /*prepare elements*/
       if(dataLayers.includes(el.componentName)) {
         layers[el.layerId] = {
@@ -37,8 +51,8 @@ const getters = {
           checkpoint: checkpointPath,
           endPoints: el.endPoints,
           //Code: el.coreCode,
-          backward_connections: el.connectionIn,
-          forward_connections: el.connectionOut
+          backward_connections: namesConnectionIn,
+          forward_connections: namesConnectionOut
         };
       }
       else {
@@ -49,8 +63,8 @@ const getters = {
           endPoints: el.endPoints,
           Properties: el.layerSettings,
           Code: el.layerCode,
-          backward_connections: el.connectionIn,
-          forward_connections: el.connectionOut
+          backward_connections: namesConnectionIn,
+          forward_connections: namesConnectionOut
         };
       }
     }

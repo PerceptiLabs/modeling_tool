@@ -94,10 +94,12 @@ class TrainValDataPolicy(DataPolicy):
                     tf_saver=saver[1]
                     network_outputs=self._data[id_].get("y_pred",None)
                     input_id=None
-                    tmp_content=self._graph_dict[[i for i in content["Info"]["backward_connections"] if i!=self._graph_dict[content["Info"]["Properties"]["Labels"]]][0]]
+                    # import pdb; pdb.set_trace()
+                    tmp_content=self._graph_dict[[i[0] for i in content["Info"]["backward_connections"] if i[0]!=self._graph_dict[content["Info"]["Properties"]["Labels"]]][0]]
                     while tmp_content["Info"]["backward_connections"]!=[]:
-                        input_id=tmp_content["Info"]["backward_connections"][0]
+                        input_id=tmp_content["Info"]["backward_connections"][0][0]
                         tmp_content=self._graph_dict[input_id]
+
                     network_inputs=self._data[input_id]["Y"]
                     saver={"sess":sess, "saver":tf_saver, "network_inputs":network_inputs, "network_outputs": network_outputs}
                     if "all_tensors" in self._data[id_]:

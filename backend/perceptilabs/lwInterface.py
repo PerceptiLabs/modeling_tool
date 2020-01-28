@@ -66,8 +66,12 @@ class getCode(LW_interface_base):
         else:
             layerInfo = {"Info": {
                                   "Type": self._network[self._id]["Type"], "Id": self._id,
-                                  "Properties": self._network[self._id]['Properties']}, 
-                                  "Con": self._network[self._id]["backward_connections"]
+                                  "Properties": self._network[self._id]['Properties'],
+                                  "backward_connections": self._network[self._id]["backward_connections"],
+                                  "forward_connections": self._network[self._id]["forward_connections"]
+                                  },
+                                  "Con": self._network[self._id]["backward_connections"],
+                                  
                                   }
 
         from codehq import CodeHqNew as CodeHq

@@ -109,7 +109,7 @@ class BaseCore:
             layer_type = content["Info"]["Type"]
 
             if self._should_skip_layer(layer_id, content):
-                log.debug("Skipping layer {} []".format(layer_id, layer_type))
+                log.debug("Skipping layer {} [{}]".format(layer_id, layer_type))
                 continue
 
             if self._network_cache is not None:
@@ -138,8 +138,10 @@ class BaseCore:
                 ))
             
 
-    def _run_layer(self, id_, content):        
+    def _run_layer(self, id_, content):    
+        clean_content=copy.deepcopy(content)
         code_gen = self._codehq.get_code_generator(id_, content)
+        
 
         log.info(repr(code_gen))        
         if log.isEnabledFor(logging.DEBUG):        
@@ -189,7 +191,7 @@ class BaseCore:
             self._layer_extras_reader.read(session, self._data_container)
 
         if self._network_cache is not None:
-            self._network_cache.update(id_, content, session, self._error_handler[id_] if id_ in self._error_handler.to_dict() else None)
+            self._network_cache.update(id_, clean_content, session, self._error_handler[id_] if id_ in self._error_handler.to_dict() else None)
             
         log.debug("Done running layer {}".format(id_))#. Locals:  {}".format(id_, session.outputs.locals))
 
@@ -211,9 +213,9 @@ class BaseCore:
             self._layer_extras_reader.read(session, self._data_container)
            
     def _get_globals_and_locals(self, input_layer_ids):
-        # input_layer_names = [self._graph[id_]['Info']['Name'] for id_ in input_layer_ids]
-        # outputs = self._session_history.merge_session_outputs(input_layer_ids, input_layer_names)
-        outputs = self._session_history.merge_session_outputs(input_layer_ids)
+        input_layer_names = [self._graph[id_]['Info']['Name'] for id_ in input_layer_ids]
+        outputs = self._session_history.merge_session_outputs(input_layer_ids, input_layer_names)
+        # outputs = self._session_history.merge_session_outputs(input_layer_ids)
 
         # Load globals.
         # Note that modules imported via module provider will overwrite in-code imports        
@@ -259,10 +261,10 @@ class BaseCore:
             else:
                 raise Exception("Layer {} is empty and can therefore not run.\nMost likely it has not been properly Applied.".format(content["Info"]["Name"]))
 
-        if "Code" in content["Info"] and content["Info"]["Code"]:
-            log.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
+        # if "Code" in content["Info"] and content["Info"]["Code"]:
+        #     log.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
            
-            return True
+        #     return True
 
 
         if layer_type in self._skip_layers:
@@ -299,7 +301,7 @@ if __name__ == "__main__":
     else:
         path = 'net.json'
         
-    
+    path = '/Users/mukund/Desktop/templates/Image Classification/model.json'
     with open(path, 'r') as f:
         json_network = json.load(f)
 
