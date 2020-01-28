@@ -70,7 +70,7 @@
 
       //this.calcAppPath();
       // this.checkLocalToken();
-      this.$store.dispatch('mod_api/API_runServer', null, {root: true})
+      this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$nextTick(() =>{
       //   if(this.userId === 'Guest') {
       //     this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
