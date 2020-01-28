@@ -52,7 +52,6 @@ binaries = [
     (python_lib+'/tensorflow/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow/contrib/layers/python/ops/'),                       
     (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops'),
     (python_lib+'/atari_py/ale_interface/libale_c.so', './atari_py/ale_interface/'),
-    (python_lib+'/sklearn/.libs/vcomp140.dll', './sklearn/.libs/')
 ]
 
 
@@ -87,7 +86,7 @@ with open('../../backend/included_files.txt') as f:
 
 print("Found these python modules to include: " + str(python_files))
 hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('tensorflow') + collect_submodules('sentry_sdk') + python_files + \
-            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor', 'jinja2',
+            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor', 'jinja2', 'pkg_resources.py2_warn', 'cryptography.fernet',
             'GPUtil','gym.envs.atari','azure.storage.blob','numpy', 'tensorflow', 'math', 'sys', 'ast', 'itertools', 
             'collections', 'operator', 'time', 'copy', 'queue', 'sklearn.cluster', 'socket', 'selectors', 'traceback', 'json', 'io', 'struct', 'threading', 'PIL',
             'PIL.ImageTk', 'glob', 'random', 'os.path', 're', 'codehq', 'dask', 'skimage.io', 'tensorflow.python','networkx', 
