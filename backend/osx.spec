@@ -37,7 +37,7 @@ pathex = [working_dir,
           python_lib+'/tensorflow',
           python_lib+'/atari_py']
 
-*    (working_dir+'/appServer.cpython-36m-darwin.so', '.'),
+#    (working_dir+'/appServer.cpython-36m-darwin.so', '.'),
 binaries = [
     (working_dir+'/s3buckets.cpython-36m-darwin.so', '.'),
     (working_dir+'/analytics/handlers.cpython-36m-darwin.so', './analytics'),        
