@@ -241,6 +241,9 @@ class Interface():
         elif action == "Close":
             self.shutDown()
 
+        elif action == "closeSession":
+            self.close_core(reciever)
+
         elif action == "updateResults":
             response = self._core.updateResults()
             return response
