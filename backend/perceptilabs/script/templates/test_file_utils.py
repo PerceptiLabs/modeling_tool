@@ -5,7 +5,7 @@ import tempfile
 import skimage
 import os
 
-from perceptilabs.code.utils import RunMacroCodeGenerator
+from perceptilabs.script.utils import RunMacroCodeGenerator
 
 
 @pytest.fixture(scope='module', autouse=True)

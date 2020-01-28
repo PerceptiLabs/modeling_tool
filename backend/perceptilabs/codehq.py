@@ -6,7 +6,7 @@ from perceptilabs.code_generator import CustomCodeGenerator, CodePart
 from perceptilabs.code_generator.datadata import DataDataCodeGenerator
 from perceptilabs.code_generator.dataenv import DataEnvironmentCodeGenerator
 
-from perceptilabs.code.generators import DataDataCodeGenerator2
+from perceptilabs.script.generators import DataDataCodeGenerator2
 
 from perceptilabs.code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 

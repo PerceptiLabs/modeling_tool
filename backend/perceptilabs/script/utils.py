@@ -1,7 +1,7 @@
 import os
 import tempfile
 
-from perceptilabs.code.generators import Jinja2CodeGenerator
+from perceptilabs.script.generators import Jinja2CodeGenerator
 
 class RunMacroCodeGenerator(Jinja2CodeGenerator):
     def __init__(self, template, macro, *args, **kwargs):

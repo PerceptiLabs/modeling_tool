@@ -76,7 +76,7 @@ class coreLogic():
             config = {'session_id': '1234567'}
             
             from perceptilabs.core_new.graph.builder import ReplicatedGraphBuilder
-            from perceptilabs.code.factory import ScriptFactory
+            from perceptilabs.script.factory import ScriptFactory
             
             graph_builder = ReplicatedGraphBuilder(client=None)
             graph = graph_builder.build(graph_spec, config)

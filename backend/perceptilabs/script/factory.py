@@ -4,7 +4,7 @@ import pkg_resources
 from typing import Dict
 
 
-from perceptilabs.code.templating import J2Engine
+from perceptilabs.script.templating import J2Engine
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 
