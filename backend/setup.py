@@ -6,13 +6,13 @@ from setuptools import setup, find_packages
 from Cython.Build import cythonize
 from Cython.Distutils import build_ext
 
+
 cython_targets = [
     x for x in glob.glob('perceptilabs' + '/**/*.py', recursive=True) 
     if ('test_' not in x)
     and (not x.endswith('__main__.py'))
 ]
 
-import pdb; pdb.set_trace()
 
 class MyBuildExt(build_ext):
     EXCLUDE_EXTENSIONS = ['.py', '.c']
