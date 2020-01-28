@@ -1,7 +1,7 @@
 // const wsPathDef = 'ws://perceptilabs-core-robertproject.apps.cluster-rdu-3950.rdu-3950.example.opentlc.com ';
-// const wsPathDef = ("ws://" + window.location.host).replace('perceptilabs-frontend', 'perceptilabs-core');
+const wsPathDef = ("ws://" + window.location.host).replace('perceptilabs-frontend', 'perceptilabs-core');
 // const wsPathDef = 'ws://perceptilabs-core:5000';
-const wsPathDef = 'ws://localhost:5000';
+// const wsPathDef = 'ws://localhost:5000';
 // const wsPathDef = "ws://" + window.location.host + ":443";
 
 
