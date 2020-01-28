@@ -64,7 +64,7 @@ class coreLogic():
         
 
     def startCore(self,network, checkpointValues):
-        is_licensed()
+        licensed = is_licensed()
 
         #Start the backendthread and give it the network
         self.setupLogic()
@@ -91,8 +91,9 @@ class coreLogic():
             gpus = []
 
         print(f"GPU count: {len(gpus)}")
+        print(f"Licensed?: {licensed}")
 
-        if len(gpus)>1 and is_licensed():     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
+        if len(gpus)>1 and licensed:     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
             DISTRIBUTED = True
         else:
             DISTRIBUTED = False
