@@ -1,6 +1,3 @@
-from CoreThread import CoreThread
-# from core import core
-from createDataObject import createDataObject
 import queue
 import numpy as np
 import time
@@ -14,18 +11,19 @@ import logging
 import skimage
 import GPUtil
 
-from networkExporter import exportNetwork
-from networkSaver import saveNetwork
+from perceptilabs.networkExporter import exportNetwork
+from perceptilabs.networkSaver import saveNetwork
 
-from license_checker import is_licensed
+from perceptilabs.modules import ModuleProvider
+from perceptilabs.core_new.core import *
+from perceptilabs.core_new.data import DataContainer
+from perceptilabs.core_new.cache import get_cache
+from perceptilabs.core_new.errors import CoreErrorHandler
+from perceptilabs.core_new.history import SessionHistory
+from perceptilabs.analytics.scraper import get_scraper
+from perceptilabs.CoreThread import CoreThread
+from perceptilabs.createDataObject import createDataObject
 
-from modules import ModuleProvider
-from core_new.core import *
-from core_new.data import DataContainer
-from core_new.cache import get_cache
-from core_new.errors import CoreErrorHandler
-from core_new.history import SessionHistory
-from analytics.scraper import get_scraper
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()
@@ -61,6 +59,37 @@ class coreLogic():
         self.saver=None
 
         self.savedResultsDict={}
+
+    def _dump_deployment_script(self, target_file, graph_spec):
+        """
+            Export code to a file. Support is limited to image classification example
+            and the code will differ from the code visible in the frontend.
+        """
+        try:
+            graph_spec = copy.deepcopy(graph_spec)
+
+            for id_, layer in graph_spec['Layers'].items():
+                if layer['Type'] == 'TrainNormal' and 'Distributed' not in layer['Properties']:
+                    layer['Properties']['Distributed'] = False 
+            
+            log.info("Creating deployment script...")            
+            config = {'session_id': '1234567'}
+            
+            from perceptilabs.core_new.graph.builder import ReplicatedGraphBuilder
+            from perceptilabs.script.factory import ScriptFactory
+            
+            graph_builder = ReplicatedGraphBuilder(client=None)
+            graph = graph_builder.build(graph_spec, config)
+            
+            script_factory = ScriptFactory()        
+            code = script_factory.make(graph, config)
+            with open(target_file, 'w') as f:
+                f.write(code)
+            log.info("wrote deployment script to disk...")                            
+        except:
+            log.exception("Failed creating deployment script...")
+            
+        
         
 
     def startCore(self,network, checkpointValues):
@@ -115,7 +144,7 @@ class coreLogic():
         self.graphObj = Graph(network['Layers'])
         graph_dict=self.graphObj.graphs
 
-        from codehq import CodeHqNew as CodeHq
+        from perceptilabs.codehq import CodeHqNew as CodeHq
 
         error_handler = CoreErrorHandler(self.errorQueue)
         
@@ -134,6 +163,10 @@ class coreLogic():
         session_history = SessionHistory(cache)
         session_proc_handler = SessionProcessHandler(graph_dict, data_container, self.commandQ, self.resultQ)
 
+
+        #self._dump_deployment_script('deploy.py', network) 
+        
+
         if not DISTRIBUTED:
             self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
                              error_handler, session_proc_handler, checkpointValues)
@@ -142,7 +175,6 @@ class coreLogic():
             self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
                                         error_handler, session_proc_handler, checkpointValues)
             
-
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()
 

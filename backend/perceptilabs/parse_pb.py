@@ -13,9 +13,11 @@ from google.protobuf import text_format
 # from tensorflow.core.protobuf import saver_pb2
 # from tensorflow.python.training import saver as saver_lib
 from tensorflow.python.saved_model import tag_constants
-from extractVariables import *
-from functionParser import explain
-from lw_graph import Graph
+
+from perceptilabs.extractVariables import *
+from perceptilabs.functionParser import explain
+from perceptilabs.lw_graph import Graph
+
 from functools import reduce
 import operator
 import collections

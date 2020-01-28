@@ -1,4 +1,5 @@
 import os
+import pkg_resources
 from abc import ABC, abstractmethod
 
 import jinja2
@@ -82,7 +83,7 @@ class CustomCodeGenerator(CodeGenerator):
             
 
 class Jinja2CodeGenerator(CodeGenerator):
-    TEMPLATES_DIRECTORY = './script/templates/'
+    TEMPLATES_DIRECTORY = pkg_resources.resource_filename('perceptilabs', 'script/templates/')    
     
     def _render(self, path, **kwargs):
         if not hasattr(self, '_jenv'):

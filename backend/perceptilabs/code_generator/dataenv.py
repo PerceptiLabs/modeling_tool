@@ -1,4 +1,4 @@
-from code_generator import CodeGenerator
+from perceptilabs.code_generator import CodeGenerator
 
 
 class DataEnvironmentCodeGenerator(CodeGenerator):

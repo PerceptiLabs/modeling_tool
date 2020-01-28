@@ -3,15 +3,14 @@ import pprint
 import logging
 import psutil
 
-from insights.csv_ram_estimator import get_instance as get_csv_ram_estimator
+from perceptilabs.insights.csv_ram_estimator import get_instance as get_csv_ram_estimator
 
-from code_generator import CustomCodeGenerator, CodePart
-from code_generator.datadata import DataDataCodeGenerator
-from code_generator.dataenv import DataEnvironmentCodeGenerator
+from perceptilabs.code_generator import CustomCodeGenerator, CodePart
+from perceptilabs.code_generator.datadata import DataDataCodeGenerator
+from perceptilabs.code_generator.dataenv import DataEnvironmentCodeGenerator
+from perceptilabs.script.generators import DataDataCodeGenerator2
 
-from script.generators import DataDataCodeGenerator2
-
-from code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
+from perceptilabs.code_generator.tensorflow import FullyConnectedCodeGenerator, ConvCodeGenerator, DeconvCodeGenerator, RecurrentCodeGenerator, CropCodeGenerator, WordEmbeddingCodeGenerator, GrayscaleCodeGenerator, OneHotCodeGenerator, ReshapeCodeGenerator, ArgmaxCodeGenerator, MergeCodeGenerator, SoftmaxCodeGenerator, TrainNormalCodeGenerator, TrainLossCodeGenerator, TrainOptimizerCodeGenerator, TrainReinforceCodeGenerator, LayerPair
 
 log = logging.getLogger(__name__)
 
@@ -200,7 +199,7 @@ class CodeHqNew:
                                                 class_weights = props['Class_weights'],
                                                 optimizer=props['Optimizer'],
                                                 learning_rate=props['Learning_rate'],
-                                                decay_steps=props['Decay_steps'],   #TODO: Send from frontend instead
+                                                decay_steps=props['Decay_steps'],  
                                                 decay_rate=props['Decay_rate'],
                                                 momentum=props['Momentum'], 
                                                 beta1=props['Beta_1'],

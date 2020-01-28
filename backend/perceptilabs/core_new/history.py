@@ -1,5 +1,5 @@
-from core_new.cache import SessionCache
-from core_new.session import LayerIo
+from perceptilabs.core_new.cache import SessionCache
+from perceptilabs.core_new.session import LayerIo
 
 class HistoryInputException(Exception):
     """ Used to not run a layer if there are no inputs """

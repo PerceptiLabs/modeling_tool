@@ -4,8 +4,10 @@ import sys
 from sentry_sdk import capture_exception
 # from sentry_sdk import configure_scope
 import logging
-from core_new.history import HistoryInputException
-from core_new.errors import LayerSessionAbort
+
+
+from perceptilabs.core_new.history import HistoryInputException
+from perceptilabs.core_new.errors import LayerSessionAbort
 
 log = logging.getLogger(__name__)
 

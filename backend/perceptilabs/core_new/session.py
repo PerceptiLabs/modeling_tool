@@ -3,8 +3,8 @@ import copy
 import logging
 import functools
 
-from core_new.api.legacy import ApiCallbackHandler, Api
-from analytics.scraper import get_scraper
+from perceptilabs.core_new.api.legacy import ApiCallbackHandler, Api
+from perceptilabs.analytics.scraper import get_scraper
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()

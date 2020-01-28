@@ -3,11 +3,11 @@ import sys
 import argparse
 import json
 
-from processes import ProcessDependencyWatcher
-from mainInterface import Interface
-from server.appServer import Server
+from perceptilabs.processes import ProcessDependencyWatcher
+from perceptilabs.mainInterface import Interface
+from perceptilabs.server.appServer import Server
 
-from main_setup import setup_scraper, setup_sentry, scraper
+from perceptilabs.main_setup import setup_scraper, setup_sentry, scraper
 
 
 def get_input_args():
@@ -48,7 +48,7 @@ def setup_logger(log_level):
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
                         level=logging.getLevelName(log_level))
     
-if __name__ == "__main__":
+def main():
     args = get_input_args()
 
     setup_logger(args.log_level)
@@ -80,3 +80,7 @@ if __name__ == "__main__":
         server.serve_desktop(core_interface, args.instantly_kill)
     elif args.platform == 'browser':
         server.serve_web(core_interface, args.instantly_kill)
+
+
+if __name__ == "__main__":
+    main()

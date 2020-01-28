@@ -1,6 +1,6 @@
 from collections import namedtuple
 
-from code_generator import CodeGenerator, CodePart, Jinja2CodeGenerator
+from perceptilabs.code_generator import CodeGenerator, CodePart, Jinja2CodeGenerator
 
 
 def get_activation_code(var_in, var_out, func=None):

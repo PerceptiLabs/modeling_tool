@@ -1,7 +1,8 @@
 import re
 import json
-from functionParser import explain
-from codehq import CodeHqNew as CodeHq
+
+from perceptilabs.functionParser import explain
+from perceptilabs.codehq import CodeHqNew as CodeHq
 
 def getVariableLibrary(variable):
     try:

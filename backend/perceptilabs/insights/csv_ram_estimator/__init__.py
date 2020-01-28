@@ -1,1 +1,1 @@
-from insights.csv_ram_estimator.base import *
+from perceptilabs.insights.csv_ram_estimator.base import *

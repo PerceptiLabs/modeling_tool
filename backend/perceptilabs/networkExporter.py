@@ -2,7 +2,7 @@ import os
 import tensorflow as tf
 import shutil
 
-from core_new.utils import set_tensorflow_mode
+from perceptilabs.core_new.utils import set_tensorflow_mode
 
 
 class exportNetwork():

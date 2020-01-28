@@ -1,7 +1,7 @@
 import ast
 from collections import namedtuple
 
-from code_generator.base import CodeGenerator
+from perceptilabs.code_generator.base import CodeGenerator
 
 LayerDescr = namedtuple('LayerDescr', ['name', 'code', 'input_layers', 'layer_type'])
 ImportDescr = namedtuple('ImportDescr', ['module_name', 'as_name'])

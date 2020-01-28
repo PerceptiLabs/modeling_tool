@@ -1,7 +1,7 @@
 import numpy as np
 import tensorflow as tf
 
-from core_new.core import BaseCore
+from perceptilabs.core_new.core import BaseCore
 
 def placeholder_hook_1(func, globals_, locals_, dtype, shape=None, name=None):    
     if shape is None:

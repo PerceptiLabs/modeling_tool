@@ -1,5 +1,5 @@
-from script.generators import CodePart, CodeGenerator, CustomCodeGenerator, Jinja2CodeGenerator
-from code_generator.datadata import DataDataCodeGenerator
-from code_generator.dataenv import DataEnvironmentCodeGenerator
+from perceptilabs.script.generators import CodePart, CodeGenerator, CustomCodeGenerator, Jinja2CodeGenerator
+from perceptilabs.code_generator.datadata import DataDataCodeGenerator
+from perceptilabs.code_generator.dataenv import DataEnvironmentCodeGenerator
 
 

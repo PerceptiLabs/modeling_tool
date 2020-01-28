@@ -1,7 +1,7 @@
 from azure.storage.queue import QueueService
 from azure.storage.queue.models import QueueMessageFormat
 import json
-from coreLogic import coreLogic
+from perceptilabs.coreLogic import coreLogic
 
 
 def start(core,value):
