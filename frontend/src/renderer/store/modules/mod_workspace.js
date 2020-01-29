@@ -154,9 +154,13 @@ const mutations = {
       const networkID = key.replace('_network.', '');
 
       if (networkIDs.includes(networkID)) {
-        const network = JSON.parse(localStorage.getItem(key));
-
-        state.workspaceContent.push(network);
+        const networkIsLoaded = state.workspaceContent
+          .some(networkInWorkspace => networkInWorkspace.networkID === networkID)
+        
+        if (!networkIsLoaded) {
+          const network = JSON.parse(localStorage.getItem(key));
+          state.workspaceContent.push(network);
+        }
       } else {
         // Clear items that are not found in the _network.networkIDs list
         localStorage.removeItem(key);
@@ -888,20 +892,14 @@ const actions = {
   //---------------
   ADD_network({commit, dispatch}, network) {
     commit('add_network', network);
-
-    if (isStorageAvailable()) {
-      commit('set_workspacesInLocalStorage');
-    }
   },
   DELETE_network({commit}, index) {
     commit('delete_network', index);
-    
-    if (isStorageAvailable()) {
-      commit('set_workspacesInLocalStorage');
-    }
   },
   GET_workspacesFromLocalStorage({commit}) {
-    commit('add_workspacesFromLocalStorage');
+    return new Promise(resolve => {
+      commit('add_workspacesFromLocalStorage');
+    });
   },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
