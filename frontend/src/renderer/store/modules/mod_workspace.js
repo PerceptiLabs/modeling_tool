@@ -138,7 +138,7 @@ const mutations = {
         localStorage.setItem(`_network.${network.networkID}`, stringifyNetworkObjects(network));
       });
       
-      localStorage.setItem('_network.ids', JSON.stringify(networkIDs));
+      localStorage.setItem('_network.ids', JSON.stringify(networkIDs.sort()));
     } catch (error) {
       // console.error('Error persisting networks to localStorage', error);
     }
