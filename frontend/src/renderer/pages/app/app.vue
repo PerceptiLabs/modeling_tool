@@ -44,6 +44,7 @@
     },
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
+      window.removeEventListener('beforeunload', this.saveWorkspaces);
       this.removeDragListeners();
       this.set_appIsOpen(false);
     },
@@ -89,9 +90,10 @@
     },
     methods: {
       ...mapMutations({
-        setShowStoryboard:'mod_tutorials/SET_showTutorialStoryBoard',
-        set_appIsOpen:    'globalView/SET_appIsOpen',
-        add_dragElement:  'mod_workspace/ADD_dragElement',
+        setShowStoryboard:            'mod_tutorials/SET_showTutorialStoryBoard',
+        set_appIsOpen:                'globalView/SET_appIsOpen',
+        add_dragElement:              'mod_workspace/ADD_dragElement',
+        set_workspacesInLocalStorage: 'mod_workspace/set_workspacesInLocalStorage',
       }),
       ...mapActions({
         tutorialPointActivate:'mod_tutorials/pointActivate',
@@ -105,6 +107,9 @@
       },
       removeDragListeners() {
         this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
+      },
+      saveWorkspaces() {
+        this.set_workspacesInLocalStorage();
       },
       offDragListener() {
         this.$refs.layersbar.removeEventListener("dragend", this.dragEnd, false);
