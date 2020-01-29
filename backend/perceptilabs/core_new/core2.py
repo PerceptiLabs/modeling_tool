@@ -32,14 +32,16 @@ class Core:
         self._graph_spec = graph_spec
         self._config = config
         
-        self._state_map = ByteMap(
-            session_id,
-            'tcp://localhost:5556',
-            'tcp://localhost:5557',
-            'tcp://localhost:5558'
-        )
-        
-        self._state_map.start()            
+        #self._state_map = ByteMap(
+        #    session_id,
+        #    'tcp://localhost:5556',
+        #    'tcp://localhost:5557',
+        #    'tcp://localhost:5558'
+        #)
+
+
+        self._graph = self._graph_builder.build(self._graph_spec, self._config, {})        
+        #self._state_map.start()            
         '''
         counter = 0
         while self._deployment_pipe.is_active or counter == 0:
@@ -68,10 +70,29 @@ class Core:
         # TODO: deploy stop
         self._state_map.stop()
         
+    def get_graph(self):
+        #print("GRAPH")
+        import urllib
+        import zlib
+        import dill
+
+        try:
+            with urllib.request.urlopen("http://localhost:5678/state/") as url:
+                buf = url.read().decode()
+            
+            buf = bytes.fromhex(buf)
+            buf = zlib.decompress(buf)
+            state_map = dill.loads(buf) 
+            self._graph = self._graph_builder.build(self._graph_spec, self._config, state_map)
+        except Exception as e:
+            print(repr(e))
+        finally:
+            return self._graph
+
     @property
-    def graph(self):
-        graph = self._graph_builder.build(self._graph_spec, self._config, self._state_map)
-        return graph    
+    def is_running(self):
+        return self._deployment_pipe.is_active # for now... maybe need direct pipe to script?
+
 
     '''
     def _handle_userland_state(self, graph: Graph):

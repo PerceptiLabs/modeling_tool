@@ -153,14 +153,17 @@ def test_train_normal_converges(graph_spec_binary_classification):
     )
 
     core.run(graph_spec_binary_classification)
+    
+    while core.is_running:
+        time.sleep(0.5)
 
-    for i in range(7):
-        time.sleep(1)
-        accuracy = core.graph.nodes[-1].layer.accuracy_training
-        loss = core.graph.nodes[-1].layer.loss_training
+        
+    graph = core.get_graph()
+    accuracy = graph.nodes[-1].layer.accuracy_training
+    loss = graph.nodes[-1].layer.loss_training
 
-        if i > 1:
-            print(accuracy[-1], loss[-1])
+    #if accuracy is not None and loss is not None:
+    #        print(accuracy[-1], loss[-1], len(accuracy))
 
     assert accuracy[-1] == 1.0 or np.isclose(accuracy[-1], 1.000, atol=0.001)
     core.stop()    

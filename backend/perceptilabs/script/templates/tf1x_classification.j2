@@ -194,6 +194,14 @@ class {{layer_name}}(Tf1xClassificationLayer):
                 f"loss training, validation: {self.loss_training[-1]:.6f}, {self.loss_validation[-1]:.6f} - "
                 f"acc. training, validation: {self.accuracy_training[-1]:.6f}, {self.accuracy_validation[-1]:.6f}"
             )
+
+
+            print(
+                f"Finished epoch {self._epoch+1}/{self._n_epochs} - " + \
+                f"loss training, validation: {self.loss_training[-1]:.6f}, {self.loss_validation[-1]:.6f} - " +  \
+                f"acc. training, validation: {self.accuracy_training[-1]:.6f}, {self.accuracy_validation[-1]:.6f}"
+            )
+
             
             self._epoch += 1
 
@@ -209,7 +217,9 @@ class {{layer_name}}(Tf1xClassificationLayer):
                 test_step()
                 self.send_state_updates(graph)                                    
                 self._iteration += 1
+                print("test iter", self._iteration)
         except tf.errors.OutOfRangeError:
+            print("self._iteration", self._iteration)
             pass
 
         self._status = 'done'
@@ -289,8 +299,8 @@ class {{layer_name}}(Tf1xClassificationLayer):
 
     @property
     def accuracy_testing(self):
-        return self._accuracy_testing        
-    
+        return self._accuracy_testing
+
     @property
     def loss_training(self):
         return self._loss_training        

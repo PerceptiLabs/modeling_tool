@@ -4,7 +4,7 @@ import pkg_resources
 from typing import Dict
 
 
-from perceptilabs.script.templating import J2Engine
+from perceptilabs.script.templates import J2Engine
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 
@@ -44,7 +44,11 @@ class ScriptFactory:
         template += 'import numpy as np\n'
         template += 'import dill\n'
         template += 'import sys\n'
+        template += 'import json\n'
+        template += 'import zlib\n'        
         template += 'import logging\n'
+        template += 'import threading\n'
+        template += 'from flask import Flask, jsonify\n'
         template += '\n\n'
         template += 'from perceptilabs.core_new.layers import *\n'
         template += 'from perceptilabs.core_new.graph import Graph\n'
@@ -85,49 +89,88 @@ class ScriptFactory:
                 template += "    ('" + from_id + "', '" + to_id + "'),\n"
         template += "}\n\n"
 
-        template += "server = MapServer(\n"
-        template += "    'tcp://*:5556',\n"
-        template += "    'tcp://*:5557',\n"
-        template += "    'tcp://*:5558'\n"        
-        template += ")\n\n"
-        template += "server.start()\n\n"
+        template += "state_map = {}\n"
+        template += "state_lock = threading.Lock()\n"        
+        template += "\n"
         
-        template += "state_map = ByteMap(\n"
-        template += "    '" + session_config['session_id'] + "',\n"
-        template += "    'tcp://localhost:5556',\n"
-        template += "    'tcp://localhost:5557',\n"
-        template += "    'tcp://localhost:5558'\n"        
-        template += ")\n\n"
-        template += "state_map.start()\n\n"        
+        template += "app = Flask(__name__)\n"
+        template += "app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True\n"
+        template += "\n"
+        template += "@app.route('/state')\n"
+        template += "def endpoint_state():\n"
+        template += "    import base64\n"
+        template += "    decode = lambda x: zlib.compress(dill.dumps(x)).hex()\n"
+        template += "    try:\n"        
+        template += "        with state_lock:\n"
+        template += "            tmp_state = dill.dumps(state_map)\n"
+        template += "        tmp_state = zlib.compress(tmp_state)\n"
+        template += "        return tmp_state.hex()\n"
+        template += "    except Exception as e:\n"
+        template += "         print(e)\n"
+        template += "         raise\n"
+
+        template += "\n"
+        template += "@app.route('/pretty_state')\n"
+        template += "def endpoint_pretty_state():\n"
+        template += "    import pprint\n"
+        template += "    try:\n"        
+        template += "        with state_lock:\n"
+        template += "            tmp_state = {k: repr(v) for k, v in state_map.items()}\n"        
+        template += "            return jsonify(tmp_state)\n"
+        template += "    except Exception as e:\n"
+        template += "         print(e)\n"
+        template += "         raise\n"
+
         
+        #template += "server = MapServer(\n"
+        #template += "    'tcp://*:5556',\n"
+        #template += "    'tcp://*:5557',\n"
+        #template += "    'tcp://*:5558'\n"        
+        #template += ")\n\n"
+        #template += "server.start()\n\n"
+        
+        #template += "state_map = ByteMap(\n"
+        #template += "    '" + session_config['session_id'] + "',\n"
+        #template += "    'tcp://localhost:5556',\n"
+        #template += "    'tcp://localhost:5557',\n"
+        #template += "    'tcp://localhost:5558'\n"        
+        #template += ")\n\n"
+        #template += "state_map.start()\n\n"
+
         template += "def synchronize_replicas(graph):\n"
+        template += "    tmp_map = {}\n"
         template += "    for node in graph.nodes:\n"
         template += "        l = node.layer\n"
         template += "        lid = node.layer_id\n"        
         template += "        if isinstance(l, Tf1xClassificationLayer):\n"
-        template += "            state_map[(lid + '-sample').encode()] = dill.dumps(l.sample)\n"
-        template += "            state_map[(lid + '-size_training').encode()] = dill.dumps(l.size_training)\n"
-        template += "            state_map[(lid + '-size_validation').encode()] = dill.dumps(l.size_validation)\n"
-        template += "            state_map[(lid + '-size_testing').encode()] = dill.dumps(l.size_testing)\n"
-        template += "            state_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
-        template += "            state_map[(lid + '-accuracy_training').encode()] = dill.dumps(l.accuracy_training)\n"
-        template += "            state_map[(lid + '-accuracy_validation').encode()] = dill.dumps(l.accuracy_validation)\n"        
-        template += "            state_map[(lid + '-accuracy_testing').encode()] = dill.dumps(l.accuracy_testing)\n"
-        template += "            state_map[(lid + '-loss_training').encode()] = dill.dumps(l.loss_training)\n"
-        template += "            state_map[(lid + '-loss_validation').encode()] = dill.dumps(l.loss_validation)\n"
-        template += "            state_map[(lid + '-loss_testing').encode()] = dill.dumps(l.loss_testing)\n"
+        template += "            tmp_map[(lid + '-sample').encode()] = dill.dumps(l.sample)\n"
+        template += "            tmp_map[(lid + '-size_training').encode()] = dill.dumps(l.size_training)\n"
+        template += "            tmp_map[(lid + '-size_validation').encode()] = dill.dumps(l.size_validation)\n"
+        template += "            tmp_map[(lid + '-size_testing').encode()] = dill.dumps(l.size_testing)\n"
+        template += "            tmp_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
+        template += "            tmp_map[(lid + '-accuracy_training').encode()] = dill.dumps(l.accuracy_training)\n"
+        template += "            tmp_map[(lid + '-accuracy_validation').encode()] = dill.dumps(l.accuracy_validation)\n"        
+        template += "            tmp_map[(lid + '-accuracy_testing').encode()] = dill.dumps(l.accuracy_testing)\n"
+        template += "            tmp_map[(lid + '-loss_training').encode()] = dill.dumps(l.loss_training)\n"
+        template += "            tmp_map[(lid + '-loss_validation').encode()] = dill.dumps(l.loss_validation)\n"
+        template += "            tmp_map[(lid + '-loss_testing').encode()] = dill.dumps(l.loss_testing)\n"
         template += "        elif isinstance(l, DataLayer):\n"
-        template += "            state_map[(lid + '-sample').encode()] = dill.dumps(l.sample)\n"
-        template += "            state_map[(lid + '-size_training').encode()] = dill.dumps(l.size_training)\n"
-        template += "            state_map[(lid + '-size_validation').encode()] = dill.dumps(l.size_validation)\n"
-        template += "            state_map[(lid + '-size_testing').encode()] = dill.dumps(l.size_testing)\n"
-        template += "            state_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
+        template += "            tmp_map[(lid + '-sample').encode()] = dill.dumps(l.sample)\n"
+        template += "            tmp_map[(lid + '-size_training').encode()] = dill.dumps(l.size_training)\n"
+        template += "            tmp_map[(lid + '-size_validation').encode()] = dill.dumps(l.size_validation)\n"
+        template += "            tmp_map[(lid + '-size_testing').encode()] = dill.dumps(l.size_testing)\n"
+        template += "            tmp_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
         template += "        elif isinstance(l, Tf1xLayer):\n"
-        template += "            state_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
-        template += "\n\n"
+        template += "            tmp_map[(lid + '-variables').encode()] = dill.dumps(l.variables)\n"
+        template += "    \n"
+        template += "    global state_lock, state_map\n"
+        template += "    with state_lock:\n"
+        template += "        state_map = {k.decode(): dill.loads(v) for k, v in tmp_map.items()}\n"        
+        template += "    \n\n"
         
         # --- CREATE MAIN FUNCTION ---
         template += 'def main():\n'
+        template += '    threading.Thread(target=app.run, kwargs={"port": 5678}, daemon=True).start()\n'
         template += '    graph_builder = GraphBuilder()\n'
         template += '    graph = graph_builder.build(LAYERS, EDGES)\n'
         template += '    \n'

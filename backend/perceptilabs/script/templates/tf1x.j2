@@ -70,6 +70,7 @@ class {{layer_name}}(Tf1xLayer):
     def trainable_variables(self):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='{{layer_name}}')
         return variables
+                       
 {% endmacro %}
 
 
