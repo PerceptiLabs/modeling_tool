@@ -182,6 +182,16 @@ const isStorageAvailable = function () {
   }
 }
 
+const stringifyNetworkObjects = function (network) {
+  return JSON.stringify(
+    network,
+    (key, val)=> {
+      if (key === 'calcAnchor') return undefined;
+      else return val;
+    },
+    ' ');
+}
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -199,5 +209,6 @@ export {
   goToLink,
   deepCopy,
   deepCloneNetwork,
-  isStorageAvailable
+  isStorageAvailable,
+  stringifyNetworkObjects
 }
