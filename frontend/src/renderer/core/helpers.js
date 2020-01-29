@@ -158,7 +158,7 @@ const deepCloneNetwork = function (object) {
   );
 };
 
-const isStorageAvailable = function () {
+const isLocalStorageAvailable = function () {
   try {
       var storage = window['localStorage'],
           x = '__storage_test__';
@@ -209,6 +209,6 @@ export {
   goToLink,
   deepCopy,
   deepCloneNetwork,
-  isStorageAvailable,
+  isLocalStorageAvailable,
   stringifyNetworkObjects
 }

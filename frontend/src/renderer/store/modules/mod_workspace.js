@@ -1,4 +1,4 @@
-import { generateID, calcLayerPosition, deepCopy, isStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
+import { generateID, calcLayerPosition, deepCopy, isLocalStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
 import { widthElement } from '@/core/constants.js'
 import Vue    from 'vue'
 import router from '@/router'
@@ -127,7 +127,7 @@ const mutations = {
   //  LOCALSTORAGE
   //---------------
   set_workspacesInLocalStorage(state) {
-    if (!isStorageAvailable()) { return; }
+    if (!isLocalStorageAvailable()) { return; }
 
     try {    
       const networkIDs = [];
@@ -145,7 +145,7 @@ const mutations = {
     }
   },
   add_workspacesFromLocalStorage(state) {
-    if (!isStorageAvailable()) { return; }
+    if (!isLocalStorageAvailable()) { return; }
 
     const networkIDs = localStorage.getItem('_network.ids') || [];
     const keys = Object.keys(localStorage).filter(key => key.startsWith('_network.') && key !== '_network.ids');
