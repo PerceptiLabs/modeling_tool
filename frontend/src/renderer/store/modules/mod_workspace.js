@@ -143,7 +143,7 @@ const mutations = {
       // console.error('Error persisting networks to localStorage', error);
     }
   },
-  add_workspacesFromLocalStorage(state) {
+  get_workspacesFromLocalStorage(state) {
     if (!isLocalStorageAvailable()) { return; }
 
     const networkIDs = localStorage.getItem('_network.ids') || [];
@@ -901,7 +901,8 @@ const actions = {
   },
   GET_workspacesFromLocalStorage({commit}) {
     return new Promise(resolve => {
-      commit('add_workspacesFromLocalStorage');
+      commit('get_workspacesFromLocalStorage');
+      resolve();
     });
   },
   SET_networkName({commit, getters}, value) {
