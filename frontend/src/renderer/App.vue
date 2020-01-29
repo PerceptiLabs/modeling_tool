@@ -117,11 +117,11 @@
       },
     },
     watch: {
-/*      '$route': {
-        handler(to, from) {
-          this.sendPathToAnalist(to.fullPath)
-        }
-      }, */
+      // '$route': {
+      //   handler(to, from) {
+      //     this.sendPathToAnalist(to.fullPath)
+      //   }
+      // },
       userId(newVal) {
         this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
       }
