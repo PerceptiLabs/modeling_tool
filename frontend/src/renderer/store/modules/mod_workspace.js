@@ -259,7 +259,7 @@ const mutations = {
       }
     }
   },
-  DELETE_network(state, index) {
+  delete_network(state, index) {
     if(state.currentNetwork >= index) {
       const index = state.currentNetwork - 1;
       state.currentNetwork = index < 0 ? 0 : index
@@ -848,6 +848,12 @@ const actions = {
   //---------------
   ADD_network({commit, dispatch}, network) {
     commit('add_network', network)
+  },
+  DELETE_network({commit, dispatch}, index) {
+    const networkID = state.workspaceContent[index].networkID;
+
+    commit('delete_network', index);
+    dispatch('mod_api/API_closeSession', networkID, { root: true });
   },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
