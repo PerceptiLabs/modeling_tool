@@ -893,9 +893,11 @@ const actions = {
   //---------------
   ADD_network({commit, dispatch}, network) {
     commit('add_network', network);
+    commit('set_workspacesInLocalStorage');
   },
   DELETE_network({commit}, index) {
     commit('delete_network', index);
+    commit('set_workspacesInLocalStorage');
   },
   GET_workspacesFromLocalStorage({commit}) {
     return new Promise(resolve => {
