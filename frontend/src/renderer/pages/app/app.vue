@@ -25,13 +25,18 @@
     name: 'pageQuantum',
     components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
-      if(!this.workspaceContent.length) this.ADD_network();
+
+      this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
+        .then(_ => {
+          if(!this.workspaceContent.length) this.ADD_network();
+        });
       //this.DELETE_userWorkspace();
     },
     mounted() {
       this.showPage = true;
       this.set_appIsOpen(true);
       window.addEventListener("resize",  this.resizeEv, false);
+      window.addEventListener('beforeunload', this.saveWorkspaces);
       this.$nextTick(()=> {
         this.addDragListeners();
         if(this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
