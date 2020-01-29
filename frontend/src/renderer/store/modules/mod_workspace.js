@@ -140,7 +140,6 @@ const mutations = {
       
       localStorage.setItem('_network.ids', JSON.stringify(networkIDs));
     } catch (error) {
-      // Not enough space in the localStorage
       // console.error('Error persisting networks to localStorage', error);
     }
   },
@@ -148,7 +147,9 @@ const mutations = {
     if (!isLocalStorageAvailable()) { return; }
 
     const networkIDs = localStorage.getItem('_network.ids') || [];
-    const keys = Object.keys(localStorage).filter(key => key.startsWith('_network.') && key !== '_network.ids');
+    const keys = Object.keys(localStorage)
+      .filter(key => key.startsWith('_network.') && key !== '_network.ids')
+      .sort();
 
     for(const key of keys) {
       const networkID = key.replace('_network.', '');
