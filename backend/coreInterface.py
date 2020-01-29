@@ -209,6 +209,9 @@ class coreLogic():
     def checkCore(self):
         return {"content":"Alive"}
 
+    def isRunning(self):
+        return self.cThread.isAlive()
+
     def isTrained(self,):
         if self.saver:
             return {"content":True}

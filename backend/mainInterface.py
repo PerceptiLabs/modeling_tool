@@ -248,6 +248,10 @@ class Interface():
             response = self._core.updateResults()
             return response
 
+        elif action == "isRunning":
+            response = self._core.isRunning()
+            return response
+
         elif action == "checkCore":
             response = self._core.checkCore()
             return response
