@@ -1,4 +1,4 @@
-import { generateID, calcLayerPosition, deepCopy }  from "@/core/helpers.js";
+import { generateID, calcLayerPosition, deepCopy, isStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
 import { widthElement } from '@/core/constants.js'
 import Vue    from 'vue'
 import router from '@/router'
@@ -122,6 +122,46 @@ const mutations = {
   RESTORE_network(state, val) {
     state.workspaceContent = val.workspaceContent;
     state.currentNetwork = val.currentNetwork;
+  },
+  //---------------
+  //  LOCALSTORAGE
+  //---------------
+  set_workspacesInLocalStorage(state) {
+    if (!isStorageAvailable()) { return; }
+
+    try {    
+      const networkIDs = [];
+
+      state.workspaceContent.forEach(network => {
+        networkIDs.push(network.networkID);
+
+        localStorage.setItem(`_network.${network.networkID}`, stringifyNetworkObjects(network));
+      });
+      
+      localStorage.setItem('_network.ids', JSON.stringify(networkIDs));
+    } catch (error) {
+      // Not enough space in the localStorage
+      // console.error('Error persisting networks to localStorage', error);
+    }
+  },
+  add_workspacesFromLocalStorage(state) {
+    if (!isStorageAvailable()) { return; }
+
+    const networkIDs = localStorage.getItem('_network.ids') || [];
+    const keys = Object.keys(localStorage).filter(key => key.startsWith('_network.') && key !== '_network.ids');
+
+    for(const key of keys) {
+      const networkID = key.replace('_network.', '');
+
+      if (networkIDs.includes(networkID)) {
+        const network = JSON.parse(localStorage.getItem(key));
+
+        state.workspaceContent.push(network);
+      } else {
+        // Clear items that are not found in the _network.networkIDs list
+        localStorage.removeItem(key);
+      }
+    }
   },
   //---------------
   //  NETWORK
@@ -259,7 +299,7 @@ const mutations = {
       }
     }
   },
-  DELETE_network(state, index) {
+  delete_network(state, index) {
     if(state.currentNetwork >= index) {
       const index = state.currentNetwork - 1;
       state.currentNetwork = index < 0 ? 0 : index
@@ -847,7 +887,21 @@ const actions = {
   //  NETWORK
   //---------------
   ADD_network({commit, dispatch}, network) {
-    commit('add_network', network)
+    commit('add_network', network);
+
+    if (isStorageAvailable()) {
+      commit('set_workspacesInLocalStorage');
+    }
+  },
+  DELETE_network({commit}, index) {
+    commit('delete_network', index);
+    
+    if (isStorageAvailable()) {
+      commit('set_workspacesInLocalStorage');
+    }
+  },
+  GET_workspacesFromLocalStorage({commit}) {
+    commit('add_workspacesFromLocalStorage');
   },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
