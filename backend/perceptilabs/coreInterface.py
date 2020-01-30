@@ -23,6 +23,7 @@ from perceptilabs.core_new.history import SessionHistory
 from perceptilabs.analytics.scraper import get_scraper
 from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
+from perceptilabs.core_new.core_distr import DistributedCore
 
 
 log = logging.getLogger(__name__)
@@ -171,7 +172,6 @@ class coreLogic():
             self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
                              error_handler, session_proc_handler, checkpointValues)
         else:
-            from core_new.core_distr import DistributedCore
             self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
                                         error_handler, session_proc_handler, checkpointValues)
             
