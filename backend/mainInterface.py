@@ -51,6 +51,7 @@ class Interface():
     def close_core(self, reciever):
         if reciever in self._cores:
             self._cores[reciever].Close()
+            del self._cores[reciever]
 
     def getCheckpointDict(self):
         return self._checkpointDict.copy()
@@ -243,8 +244,7 @@ class Interface():
             self.shutDown()
 
         elif action == "closeSession":
-            self.close_core(reciever)
-            return "closed"
+            return self.close_core(reciever)
 
         elif action == "updateResults":
             response = self._core.updateResults()

@@ -199,7 +199,7 @@ class coreLogic():
     def Close(self):
         if self.cThread and self.cThread.isAlive():
             self.cThread.kill()
-        return {"content":"closing the core"}
+        return {"content":"closed core %s" % str(self.networkName)} 
 
     def Stop(self):
         self.status="Stop"
