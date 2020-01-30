@@ -295,6 +295,20 @@ const actions = {
   //---------------
   //  NETWORK SAVE
   //---------------
+
+  API_checkNetworkRunning({rootGetters}, receiver) {
+    const theData = {
+      reciever: receiver,
+      action: "isRunning",
+      value: ""
+    };
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error('isRunning answer', err);
+      });
+  },
+
   API_checkTrainedNetwork({rootGetters}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
