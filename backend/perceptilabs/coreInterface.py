@@ -23,10 +23,16 @@ from perceptilabs.core_new.history import SessionHistory
 from perceptilabs.analytics.scraper import get_scraper
 from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
+from perceptilabs.utils import DictWrapper
 
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()
+
+
+DEFAULT_CORE_MODE = 'normal' # normal or compability
+#DEFAULT_CORE_MODE = 'compability' 
+
 
 class coreLogic():
     def __init__(self,networkName):
@@ -96,7 +102,7 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.setupLogic()
         self.network=network
-        print('printing network .......\n')
+        log.debug('printing network .......\n')
 
         # import json
         # with open('net.json', 'w') as f:
@@ -111,20 +117,19 @@ class coreLogic():
             else:
                 return layer_id
 
+        core_mode = DEFAULT_CORE_MODE
         try:
             gpus = GPUtil.getGPUs()
         except:
             log.error("No compatible nvidia GPU drivers available, defaulting to 0 GPUs")
             gpus = []
         if len(gpus)>1 and is_licensed():     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
-            DISTRIBUTED = True
-        else:
-            DISTRIBUTED = False
+            core_mode = 'distributed'            
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal':
-                layer['Properties']['Distributed'] = DISTRIBUTED
-                if DISTRIBUTED:
+                layer['Properties']['Distributed'] = core_mode == 'distributed'
+                if core_mode == 'distributed':
                     labels = layer['Properties']['Labels']
 
                     for b_con in layer['backward_connections']:
@@ -167,13 +172,27 @@ class coreLogic():
         #self._dump_deployment_script('deploy.py', network) 
         
 
-        if not DISTRIBUTED:
+
+        if core_mode == 'normal':
             self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
                              error_handler, session_proc_handler, checkpointValues)
-        else:
-            from core_new.core_distr import DistributedCore
+        elif core_mode == 'distributed':
+            from perceptilabs.core_new.core_distr import DistributedCore
             self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
                                         error_handler, session_proc_handler, checkpointValues)
+        elif core_mode == 'compability':
+            from perceptilabs.core_new.compability import CompabilityCore
+            from perceptilabs.core_new.graph.builder import ReplicatedGraphBuilder
+            from perceptilabs.core_new.deployment import InProcessDeploymentPipe
+            from perceptilabs.script.factory import ScriptFactory
+         
+            
+            script_factory = ScriptFactory()
+            deployment_pipe = InProcessDeploymentPipe(script_factory)
+            graph_builder = ReplicatedGraphBuilder(client=None)                
+            
+            self.core = CompabilityCore(self.commandQ, self.resultQ, graph_builder, deployment_pipe, network)
+            
             
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()
@@ -181,21 +200,29 @@ class coreLogic():
             while self.cThread.isAlive():
                 time.sleep(0.05)
 
+                
             try:
+                log.debug("Starting core..." + repr(self.core))                
                 self.cThread=CoreThread(self.core.run,self.errorQueue)
                 self.cThread.daemon = True
                 self.cThread.start_with_traces()
                 # self.cThread.start()
             except Exception as e:
-                self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
+                message = "Could not boot up the new thread to run the computations on because of: " + str(e)
+                self.errorQueue.put(message)
+                log.exception(message)                
         else:
             try:
+                log.debug("Starting core..." + repr(self.core))                                
                 self.cThread=CoreThread(self.core.run,self.errorQueue)
                 self.cThread.daemon = True
                 self.cThread.start_with_traces()
                 # self.cThread.start()
             except Exception as e:
-                self.errorQueue.put("Could not boot up the new thread to run the computations on because of: ", str(e))
+                message = "Could not boot up the new thread to run the computations on because of: " + str(e)
+                self.errorQueue.put(message)
+                log.exception(message)
+                
         self.status="Running"
             
         return {"content":"core started"}
@@ -400,6 +427,18 @@ class coreLogic():
         return {"content": "Play started"}
 
     def updateResults(self):
+                
+        def add_error_handling(_dict):
+            _dict=DictWrapper('resultDict', _dict)
+            if 'testDict' in _dict:
+                _dict['testDict'] = DictWrapper('testDict', _dict['testDict'])
+            if 'trainDict' in _dict:
+                _dict['trainDict'] = DictWrapper('trainDict', _dict['trainDict'])
+            if 'saver' in _dict:
+                _dict['saver'] = DictWrapper('saver', _dict['saver'])
+            
+            return _dict
+        
         # if not self.resultQ.empty():
         #     self.savedResultsDict.update(self.resultQ.get())
         #     with self.resultQ.mutex:
@@ -409,7 +448,11 @@ class coreLogic():
         tmp=None
 
         while not self.resultQ.empty():
-            tmp=self.resultQ.get()
+            tmp = self.resultQ.get()
+
+            if log.isEnabledFor(logging.DEBUG):
+                tmp = add_error_handling(tmp)
+            
 
             if "saver" in tmp:
                 self.saver=tmp.pop("saver")
@@ -419,7 +462,8 @@ class coreLogic():
                 if not self.maxTestIter:
                     self.maxTestIter = tmp['maxTestIter']
         if tmp:
-            self.savedResultsDict.update(tmp)
+            self.savedResultsDict = tmp
+            
 
         return {"content":"Results saved"}
 
