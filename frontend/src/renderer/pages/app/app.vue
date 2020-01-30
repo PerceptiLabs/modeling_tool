@@ -28,7 +28,8 @@
 
       this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
         .then(_ => {
-          if(!this.workspaceContent.length) this.ADD_network();
+
+          if(!this.workspaceContent.length) { this.ADD_network(); }
         });
       //this.DELETE_userWorkspace();
     },
