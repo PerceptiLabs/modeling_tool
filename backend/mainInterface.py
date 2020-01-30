@@ -51,6 +51,7 @@ class Interface():
     def close_core(self, reciever):
         if reciever in self._cores:
             self._cores[reciever].Close()
+            del self._cores[reciever]
 
     def getCheckpointDict(self):
         return self._checkpointDict.copy()
