@@ -17,7 +17,7 @@ import GPUtil
 from networkExporter import exportNetwork
 from networkSaver import saveNetwork
 
-from license_checker import is_licensed
+from license_checker import LicenseV2
 
 from modules import ModuleProvider
 from core_new.core import *
@@ -64,7 +64,7 @@ class coreLogic():
         
 
     def startCore(self,network, checkpointValues):
-        licensed = is_licensed()
+        license = LicenseV2()
 
         #Start the backendthread and give it the network
         self.setupLogic()
@@ -91,12 +91,11 @@ class coreLogic():
             gpus = []
 
         print(f"GPU count: {len(gpus)}")
-        print(f"Licensed?: {licensed}")
+        print(f"Core limit: {license.core_limit()}")
+        print(f"GPU limit: {license.gpu_limit()}")
 
-        if len(gpus)>1 and licensed:     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
-            DISTRIBUTED = True
-        else:
-            DISTRIBUTED = False
+        # TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
+        DISTRIBUTED = len(gpus) > 1 and license.core_limit() > 1
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal':
