@@ -209,10 +209,12 @@ const actions = {
         console.error(err);
       });
   },
+  API_stopTraining({dispatch, rootGetters}, reciever = null) {
 
-  API_stopTraining({dispatch, rootGetters}) {
+    console.log('API_stopTraining - reciever', reciever);
+
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      reciever: reciever || rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Stop',
       value: ''
     };
