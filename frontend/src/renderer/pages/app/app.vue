@@ -28,8 +28,12 @@
 
       this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
         .then(_ => {
-
           if(!this.workspaceContent.length) { this.ADD_network(); }
+
+          // request charts if the page has been refreshed, and 
+          // the current tab is the first one
+
+          this.SET_chartRequests(this.workspaceContent[0].networkID);
         });
       //this.DELETE_userWorkspace();
     },
@@ -101,6 +105,7 @@
         eventResize:          'mod_events/EVENT_eventResize',
         ADD_network:          'mod_workspace/ADD_network',
         ADD_element:          'mod_workspace/ADD_element',
+        SET_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
         DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace'
       }),
       addDragListeners() {

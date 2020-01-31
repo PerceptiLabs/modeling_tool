@@ -115,6 +115,7 @@ export default {
       set_elementUnselect:  'mod_workspace/SET_elementUnselect',
       set_networkName:      'mod_workspace/SET_networkName',
       event_startDoRequest: 'mod_workspace/EVENT_startDoRequest',
+      set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
       tutorialPointActivate:'mod_tutorials/pointActivate',
       offMainTutorial:      'mod_tutorials/offTutorial',
     }),
@@ -133,6 +134,10 @@ export default {
       if(this.testIsOpen !== null) this.set_openTest(false);
       this.set_currentNetwork(index);
       this.set_elementUnselect();
+
+      // request charts if the page has been refreshed, and 
+      // the requested tab not being the first
+      this.set_chartRequests(this.workspace[index].networkID);
     },
     deleteTabNetwork(index) {
       if(this.isTutorialMode) {

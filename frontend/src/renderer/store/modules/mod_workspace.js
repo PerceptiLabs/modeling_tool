@@ -144,29 +144,41 @@ const mutations = {
     }
   },
   get_workspacesFromLocalStorage(state) {
-    if (!isLocalStorageAvailable()) { return; }
+    // this function is invoked when the pageQuantum (workspace) component is created
+    // the networks that were saved in the localStorage are hydrated
 
-    const networkIDs = localStorage.getItem('_network.ids') || [];
-    const keys = Object.keys(localStorage)
-      .filter(key => key.startsWith('_network.') && key !== '_network.ids')
-      .sort();
+    const activeNetworkIDs = localStorage.getItem('_network.ids') || [];
+      const keys = Object.keys(localStorage)
+        .filter(key => key.startsWith('_network.') && key !== '_network.ids')
+        .sort();
 
-    for(const key of keys) {
-      const networkID = key.replace('_network.', '');
+      for(const key of keys) {
+        const networkID = key.replace('_network.', '');
 
-      if (networkIDs.includes(networkID)) {
+        // _network.<networkID> entries in localStorage are only cleared on load
+        if (!activeNetworkIDs.includes(networkID)) {
+          localStorage.removeItem(key);
+          continue;
+        }
+
         const networkIsLoaded = state.workspaceContent
           .some(networkInWorkspace => networkInWorkspace.networkID === networkID)
         
         if (!networkIsLoaded) {
           const network = JSON.parse(localStorage.getItem(key));
+          
+          // clears the handle of the setInterval function
+          // this value is used to determine if a new setInterval call should be made
+          network.networkMeta.chartsRequest.timerID = null;
+
+          // force focus on the main network tab, even if the stats and test subtabs
+          // have been opened before
+          if (network.networkMeta.openStatistics) { network.networkMeta.openStatistics = false; }
+          if (network.networkMeta.openTest) { network.networkMeta.openTest = false; }
+
           state.workspaceContent.push(network);
         }
-      } else {
-        // Clear items that are not found in the _network.networkIDs list
-        localStorage.removeItem(key);
       }
-    }
   },
   //---------------
   //  NETWORK
@@ -895,14 +907,49 @@ const actions = {
     commit('add_network', network);
     commit('set_workspacesInLocalStorage');
   },
-  DELETE_network({commit}, index) {
+  DELETE_network({commit, dispatch}, index) {
+    const network = state.workspaceContent[index];
+
+    // if (network.networkMeta.coreStatus.Status !== 'Waiting' &&
+    //   network.networkMeta.coreStatus.Status !== 'Finished') {
+    //   dispatch('mod_api/API_stopTraining', network.networkID, { root: true });
+    // }
+    dispatch('mod_api/API_closeSession', network.networkID, { root: true });
+
     commit('delete_network', index);
     commit('set_workspacesInLocalStorage');
   },
   GET_workspacesFromLocalStorage({commit}) {
     return new Promise(resolve => {
+      if (!isLocalStorageAvailable()) { resolve(); }
+
       commit('get_workspacesFromLocalStorage');
       resolve();
+    });
+  },
+  SET_chartsRequestsIfNeeded({state, dispatch}, networkID) {
+    // This function is used to determine if the page has been refreshed after the training 
+    // has started, but before it is completed.
+
+    const network = state.workspaceContent.find(network => network.networkID === networkID);
+
+    // skip if:
+    // network never trained before
+    // if there's already a valid timerID
+    if (!network ||
+      network.networkMeta.openStatistics == null || 
+      network.networkMeta.chartsRequest.timerID) { return; }
+    
+    dispatch('mod_api/API_checkNetworkRunning', networkID, {root: true})
+      .then((isRunning) => {
+      // console.log('API_checkNetworkRunning - isRunning', isRunning);
+      // console.log('API_checkNetworkRunning - coreStatus', network.networkMeta.coreStatus.Status);
+
+      if (isRunning || network.networkMeta.coreStatus.Status === 'Paused') {
+        dispatch('EVENT_startDoRequest', true);
+      } else {
+        dispatch('EVENT_onceDoRequest', true);
+      }
     });
   },
   SET_networkName({commit, getters}, value) {
