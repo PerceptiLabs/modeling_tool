@@ -189,13 +189,18 @@ const actions = {
       action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause', // Pause and Unpause
       value: ''
     };
-    //console.log('API_pauseTraining', theData);
+    
+    console.group('%c API_pauseTraining', 'background: #222; color: #bada55');
+    console.log('action - ', rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause');
+    console.log('currentNetwork  - waitGlobalEvent', rootGetters['mod_workspace/GET_currentNetwork'].networkMeta.chartsRequest.waitGlobalEvent);
+    console.groupEnd();
+
     coreRequest(theData)
       .then((data)=> {
         if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
           dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
           dispatch('API_getStatus');
-        }
+          }
         else {
           dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
         }
