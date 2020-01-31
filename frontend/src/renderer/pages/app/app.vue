@@ -44,7 +44,7 @@
       window.addEventListener('beforeunload', this.saveWorkspaces);
       this.$nextTick(()=> {
         this.addDragListeners();
-        if(this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
+        if(this.getLocalUserInfo && this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
       })
     },
     beforeDestroy() {
