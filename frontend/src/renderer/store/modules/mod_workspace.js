@@ -942,10 +942,11 @@ const actions = {
     
     dispatch('mod_api/API_checkNetworkRunning', networkID, {root: true})
       .then((isRunning) => {
-      // console.log('API_checkNetworkRunning - isRunning', isRunning);
-      // console.log('API_checkNetworkRunning - coreStatus', network.networkMeta.coreStatus.Status);
 
-      if (isRunning || network.networkMeta.coreStatus.Status === 'Paused') {
+      if (network.networkMeta.coreStatus.Status === 'Paused') {
+        dispatch('EVENT_onceDoRequest', true);
+      }
+      else if (isRunning) {
         dispatch('EVENT_startDoRequest', true);
       } else {
         dispatch('EVENT_onceDoRequest', true);
