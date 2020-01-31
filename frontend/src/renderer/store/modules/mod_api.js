@@ -136,6 +136,17 @@ const actions = {
     }
   },
 
+  API_closeSession(context, reciever) {
+    const theData = {
+      reciever: reciever,
+      action: 'closeSession',
+      value: ''
+    };
+    coreRequest(theData)
+      .then((data)=> { return })
+      .catch((err)=> { console.error(err) });
+  },
+  
   API_CLOSE_core() {
     const theData = {
       reciever: 'server',
