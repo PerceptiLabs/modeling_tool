@@ -915,11 +915,36 @@ const actions = {
     commit('delete_network', index);
     commit('set_workspacesInLocalStorage');
   },
-  GET_workspacesFromLocalStorage({commit}) {
+  GET_workspacesFromLocalStorage({commit, dispatch}) {
     return new Promise(resolve => {
       if (!isLocalStorageAvailable()) { resolve(); }
 
       commit('get_workspacesFromLocalStorage');
+
+      // removing stats and test tabs if there aren't any trained models
+      // this happens when the core is restarted
+      const networks = state.workspaceContent;
+      
+      networks.forEach(network => {
+        const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
+        const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
+        Promise.all([isRunningPromise, isTrainedPromise])
+          .then(([isRunning, isTrained]) => {
+            // console.log('Promise all values', isRunning, isTrained);
+
+            if (isRunning && isTrained) {
+              network.networkMeta.openStatistics = false;
+              network.networkMeta.openTest = null;
+            } else if (!isRunning && isTrained) {
+              network.networkMeta.openStatistics = false;
+              network.networkMeta.openTest = false;
+            } else {
+              network.networkMeta.openStatistics = null;
+              network.networkMeta.openTest = null;
+            }
+          });
+      });
+
       resolve();
     });
   },
