@@ -954,6 +954,12 @@ const actions = {
 
     const network = state.workspaceContent.find(network => network.networkID === networkID);
 
+    // console.group('SET_chartsRequestsIfNeeded');
+    // console.log('stats tab', network.networkMeta.openStatistics);
+    // console.log('test tab', network.networkMeta.openTest);
+    // console.log('networkWaitGlobalEvent', network.networkMeta.chartsRequest.waitGlobalEvent);
+    // console.groupEnd();
+
     // skip if:
     // network never trained before
     // if there's already a valid timerID
