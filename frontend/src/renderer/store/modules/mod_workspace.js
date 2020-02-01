@@ -171,10 +171,6 @@ const mutations = {
           // this value is used to determine if a new setInterval call should be made
           network.networkMeta.chartsRequest.timerID = null;
 
-          // force focus on the main network tab, even if the stats and test subtabs
-          // have been opened before
-          if (network.networkMeta.openStatistics) { network.networkMeta.openStatistics = false; }
-          if (network.networkMeta.openTest) { network.networkMeta.openTest = false; }
 
           state.workspaceContent.push(network);
         }
