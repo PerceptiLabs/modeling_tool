@@ -327,9 +327,9 @@ const actions = {
       });
   },
 
-  API_checkTrainedNetwork({rootGetters}) {
+  API_checkTrainedNetwork({rootGetters}, receiver = null) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      reciever: receiver || rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "isTrained"
     };
     return coreRequest(theData)
