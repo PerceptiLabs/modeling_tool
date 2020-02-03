@@ -88,7 +88,7 @@ for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
 datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/contrib/'),
 (python_lib+'/atari_py/', './atari_py/'),
 (working_dir+'/script/templates/', './script/templates/'),
-(working_dir+'/insights/csv_ram_estimator/model_and_meta.pkl', './insights/csv_ram_estimator/'),
+(working_dir+'/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl', './perceptilabs/insights/csv_ram_estimator/'),
 ('app_variables.json','.')]
 
 python_files = []
