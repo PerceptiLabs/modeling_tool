@@ -79,6 +79,18 @@ export default {
   },
   watch: {
     statusNetworkCore(newStatus) {
+      // function for showing the global training results popup
+      
+      // added statisticsIsOpen null check
+      // it is possible that the status is 'Finished' and both 
+      // testIsOpen and statisticsIsOpen to be null
+
+      // this happens when the core is restarted and no longer has 
+      // any information about the stats, making training impossible
+      if (this.statisticsIsOpen === null) {
+        return;
+      }
+
       if(newStatus === 'Finished'
         && this.testIsOpen === null
       ) {
