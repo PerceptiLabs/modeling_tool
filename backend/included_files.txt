@@ -2,6 +2,7 @@
 main.py
 
 # perceptilabs
+perceptilabs/__init__.py
 perceptilabs/mainServer.py
 perceptilabs/main_setup.py
 perceptilabs/codehq.py
