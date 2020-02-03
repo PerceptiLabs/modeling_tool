@@ -101,7 +101,6 @@ export default {
   methods: {
     ...mapMutations({
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
-      delete_network:           'mod_workspace/DELETE_network',
       set_currentNetwork:       'mod_workspace/SET_currentNetwork',
       set_cursorPosition:       'mod_workspace/SET_CopyCursorPosition',
       set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
@@ -110,6 +109,7 @@ export default {
     ...mapActions({
       popupConfirm:         'globalView/GP_confirmPopup',
       net_trainingDone:     'globalView/NET_trainingDone',
+      delete_network:       'mod_workspace/DELETE_network',
       set_openStatistics:   'mod_workspace/SET_openStatistics',
       set_openTest:         'mod_workspace/SET_openTest',
       set_elementUnselect:  'mod_workspace/SET_elementUnselect',
