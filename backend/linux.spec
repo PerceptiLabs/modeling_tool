@@ -138,7 +138,7 @@ log.info("binaries = {}".format(pformat(binaries)))
 log.info("datas = {}".format(pformat(datas)))
 log.info("hiddenimports = {}".format(pformat(hiddenimports)))
 
-a = Analysis(['mainServer.py'],
+a = Analysis(['main.py'],
              pathex=pathex,
              binaries=binaries,
              datas=binaries,

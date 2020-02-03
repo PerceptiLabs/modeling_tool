@@ -1,80 +1,83 @@
 # root
-mainServer.py
-main_setup.py
-codehq.py
-mainInterface.py
-coreInterface.py
-lwInterface.py
-CoreThread.py
-createDataObject.py
-databundle.py
-extractVariables.py
-funclib.py
-functionParser.py
-graph.py
-lw_graph.py
-modules.py
-networkExporter.py
-networkSaver.py
-parse_pb.py
-s3buckets.py
-utils.py
-processes.py
-license_checker.py
+main.py
 
-# server
-server/appServer.py
-server/desktop_serverlib.py
-server/web_serverlib.py
+# perceptilabs
+perceptilabs/mainServer.py
+perceptilabs/main_setup.py
+perceptilabs/codehq.py
+perceptilabs/mainInterface.py
+perceptilabs/coreInterface.py
+perceptilabs/lwInterface.py
+perceptilabs/CoreThread.py
+perceptilabs/createDataObject.py
+perceptilabs/databundle.py
+perceptilabs/extractVariables.py
+perceptilabs/funclib.py
+perceptilabs/functionParser.py
+perceptilabs/graph.py
+perceptilabs/lw_graph.py
+perceptilabs/modules.py
+perceptilabs/networkExporter.py
+perceptilabs/networkSaver.py
+perceptilabs/parse_pb.py
+perceptilabs/s3buckets.py
+perceptilabs/utils.py
+perceptilabs/processes.py
+perceptilabs/license_checker.py
 
-# analytics
-analytics/handlers.py
-analytics/scraper.py
+# perceptilabs/server
+perceptilabs/server/appServer.py
+perceptilabs/server/desktop_serverlib.py
+perceptilabs/server/web_serverlib.py
 
-# code_generator
-code_generator/__init__.py
-code_generator/base.py
-code_generator/datadata.py
-code_generator/dataenv.py
-code_generator/tensorflow.py
+# perceptilabs/analytics
+perceptilabs/analytics/handlers.py
+perceptilabs/analytics/scraper.py
 
-# script
-script/__init__.py
-script/generators.py
-script/utils.py
-script/base.py
+# perceptilabs/code_generator
+perceptilabs/code_generator/__init__.py
+perceptilabs/code_generator/base.py
+perceptilabs/code_generator/datadata.py
+perceptilabs/code_generator/dataenv.py
+perceptilabs/code_generator/tensorflow.py
 
-# script/templates/
-script/templates/datadata.j2
-script/templates/file_utils.j2
-script/templates/train_normal_distr.j2
+# perceptilabs/script
+perceptilabs/script/__init__.py
+perceptilabs/script/generators.py
+perceptilabs/script/utils.py
+perceptilabs/script/base.py
 
-# core_new
-core_new/cache.py
-core_new/control.py
-core_new/core.py
-core_new/errors.py
-core_new/extras.py
-core_new/history.py
-core_new/lightweight.py
-core_new/networkCache.py
-core_new/session.py
-core_new/utils.py
-core_new/core_distr.py
-core_new/script_distr.py
+# perceptilabs/script/templates/
+perceptilabs/script/templates/datadata.j2
+perceptilabs/script/templates/file_utils.j2
+perceptilabs/script/templates/train_normal_distr.j2
 
-# core_new/data
-core_new/data/__init__.py
-core_new/data/base.py
-core_new/data/policies.py
+# perceptilabs/core_new
+perceptilabs/core_new/cache.py
+perceptilabs/core_new/control.py
+perceptilabs/core_new/core.py
+perceptilabs/core_new/errors.py
+perceptilabs/core_new/extras.py
+perceptilabs/core_new/history.py
+perceptilabs/core_new/lightweight.py
+perceptilabs/core_new/networkCache.py
+perceptilabs/core_new/session.py
+perceptilabs/core_new/utils.py
+perceptilabs/core_new/core_distr.py
+perceptilabs/core_new/script_distr.py
+
+# perceptilabs/core_new/data
+perceptilabs/core_new/data/__init__.py
+perceptilabs/core_new/data/base.py
+perceptilabs/core_new/data/policies.py
 
 
-# core_new/api/
-core_new/api/__init__.py
-core_new/api/legacy.py
+# perceptilabs/core_new/api/
+perceptilabs/core_new/api/__init__.py
+perceptilabs/core_new/api/legacy.py
 
-# insights/csv_ram_estimator
-insights/csv_ram_estimator/__init__.py
-insights/csv_ram_estimator/base.py
-insights/csv_ram_estimator/model_and_meta.pkl
+# perceptilabs/insights/csv_ram_estimator
+perceptilabs/insights/csv_ram_estimator/__init__.py
+perceptilabs/insights/csv_ram_estimator/base.py
+perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl
 

@@ -47,7 +47,7 @@ ls -l code_generator
 cp ../../backend/setup_compact.pyx .
 
 echo "C compiling"
-mv mainServer.py mainServer.pyx
+mv main.py main.pyx
 find . -name "__init__.py" -exec rename -v 's|__init__.py|__init__.pyx|' {} +
 python setup_compact.pyx  build_ext --inplace
 if [ $? -ne 0 ]; then exit 1; fi
@@ -57,7 +57,7 @@ find . -type f -name '*.c' -exec rm {} +
 find . -type f -name '*.py' -exec rm {} +
 rm setup_compact.pyx
 rm -r build
-mv mainServer.pyx mainServer.py
+mv main.pyx main.py
 find . -name "__init__.pyx" -exec rename -v 's|__init__.pyx|__init__.py|' {} +
 
 echo "Adding app_variables"

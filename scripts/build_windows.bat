@@ -27,7 +27,7 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 FOR /R %%x in (__init__.py) do ren "%%x" __init__.pyx
-move mainServer.py mainServer.pyx
+move main.py main.pyx
 python setup_compact.pyx develop
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
@@ -35,7 +35,7 @@ IF %ERRORLEVEL% NEQ 0 (
 del /S *.c
 del /S *.py
 del /S setup_compact.pyx
-move mainServer.pyx mainServer.py
+move main.pyx main.py
 rmdir /S /Q build
 FOR /R %%x in (__init__.pyx) do ren "%%x" __init__.py
 dir
