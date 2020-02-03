@@ -880,8 +880,8 @@ const mutations = {
   //---------------
   //  OTHER
   //---------------
-  SET_currentNetwork(state, value) {
-    state.currentNetwork = value
+  set_currentNetwork(state, tabIndex) {
+    state.currentNetwork = tabIndex;
   },
   ADD_dragElement(state, event) {
     state.dragElement = createNetElement(event);
