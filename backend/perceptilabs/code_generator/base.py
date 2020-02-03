@@ -113,4 +113,4 @@ class Jinja2CodeGenerator(CodeGenerator):
         code = self._jenv.get_template(path).render(**kwargs)
         return code
 '''
-from code.base import *
+from perceptilabs.script.base import *
