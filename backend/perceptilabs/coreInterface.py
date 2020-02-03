@@ -30,7 +30,7 @@ scraper = get_scraper()
 
 
 DEFAULT_CORE_MODE = 'normal' # normal or compability
-#DEFAULT_CORE_MODE = 'compability' 
+DEFAULT_CORE_MODE = 'compability' 
 
 
 class coreLogic():
@@ -103,9 +103,10 @@ class coreLogic():
         self.network=network
         log.debug('printing network .......\n')
 
-        # import json
-        # with open('net.json', 'w') as f:
-        #     json.dump(network, f, indent=4) 
+        if log.isEnabledFor(logging.DEBUG):        
+            import json
+            with open('net.json_', 'w') as f:
+                json.dump(network, f, indent=4) 
 
         data_container = DataContainer()
 
@@ -434,6 +435,7 @@ class coreLogic():
         #TODO: Look from the back and go forward if we find a test instead of going through all of them
         tmp=None
 
+        count = 0
         while not self.resultQ.empty():
             tmp = self.resultQ.get()
 
@@ -444,6 +446,11 @@ class coreLogic():
                 self.testList.append(tmp["testDict"])
                 if not self.maxTestIter:
                     self.maxTestIter = tmp['maxTestIter']
+            count += 1
+
+        if count > 0:
+            log.debug(f"Got {count} items from resultQ. len(tmp) == {len(tmp)}")        
+            
         if tmp:
             self.savedResultsDict.update(tmp)
             
@@ -451,6 +458,10 @@ class coreLogic():
         return {"content":"Results saved"}
 
     def getTrainingStatistics(self,value):
+        layer_id = value["layerId"]
+        layer_type = value["layerType"]
+        view = value["view"]
+        
         try:
             self.iter=self.savedResultsDict["iter"]
             self.epoch=self.savedResultsDict["epoch"]
@@ -460,21 +471,28 @@ class coreLogic():
             self.trainingIterations=self.savedResultsDict["trainingIterations"]
             self.resultDict=self.savedResultsDict["trainDict"]
         except KeyError:
-            log.exception("Error in getTrainingStatistics")                        
+            message = "Error in getTrainingStatistics."
+            if log.isEnabledFor(logging.DEBUG):
+                message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
+            log.exception(message)
             return {}
 
 
         try:
-            layer_statistics = self.getLayerStatistics(value)
+            layer_statistics = self.getLayerStatistics(layer_id, layer_type, view)
             return layer_statistics
         except:
-            message = "Error in getTrainingStatistics."
+            message = f"Error in getTrainingStatistics. layer_id = {layer_id}, layer_type = {layer_type}, view = {view}."
             if log.isEnabledFor(logging.DEBUG):
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
             log.exception(message)
 
 
     def getTestingStatistics(self,value):
+        layer_id = value["layerId"]
+        layer_type = value["layerType"]
+        view = value["view"]
+        
         try:
             # self.maxTestIter=self.maxTestIter
             self.batch_size=1
@@ -488,10 +506,10 @@ class coreLogic():
             return {}
 
         try:
-            layer_statistics = self.getLayerStatistics(value)
+            layer_statistics = self.getLayerStatistics(layer_id, layer_type, view)            
             return layer_statistics
         except:
-            message = "Error in getTestingStatistics."
+            message = f"Error in getTestingStatistics. layer_id = {layer_id}, layer_type = {layer_type}, view = {view}."            
             if log.isEnabledFor(logging.DEBUG):
                 message += " savedResultsDict: " + pprint.pformat(self.savedResultsDict)
             log.exception(message)
@@ -510,17 +528,10 @@ class coreLogic():
         return end_results
 
     
-    def getLayerStatistics(self,value):
-        layerId=value["layerId"]
-        layerType=value["layerType"]
-        view=value["view"]
+    def getLayerStatistics(self, layerId, layerType, view):
         log.info("getLayerStatistics for layer {} with type {}. View: {}".format(layerId,
                                                                                  layerType,
                                                                                  view))
-        ##########################################
-        value["viewId"]="0"
-        ##########################################
-
         if layerType=="DataEnvironment":
             state = self.getStatistics({"layerId":layerId,"variable":"state","innervariable":""})
             dataObj = createDataObject([state])
@@ -570,7 +581,7 @@ class coreLogic():
                     weights=np.average(weights[:,:,:,:,-1],3)
 
                 outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-                outputs=outputs[:,:,int(value["viewId"])]
+                outputs=outputs[:, :, 0]
                     
                 dataObjWeights = createDataObject([weights], typeList=['heatmap'])
                 dataObjOutput = createDataObject([outputs])                
@@ -607,7 +618,7 @@ class coreLogic():
                     weights=np.average(weights[:,:,:,:,-1],3)
 
                 outputs=self.getStatistics({"layerId":layerId,"variable":"Y","innervariable":""})[-1]
-                outputs=outputs[:,:,int(value["viewId"])]
+                outputs=outputs[:, :, 0]
                     
                 dataObjWeights = createDataObject([weights], typeList=['heatmap'])
                 dataObjOutput = createDataObject([outputs])                
@@ -690,10 +701,34 @@ class coreLogic():
                 inputs=[self.getStatistics({"layerId":i,"variable":"Y","innervariable":""})[-1] for i in self.graphObj.start_nodes]
                 D = [createDataObject([input_]) for input_ in inputs]
                 
-                X=self.getStatistics({"layerId":layerId,"variable":"X","innervariable":""})
+                X = self.getStatistics({"layerId": layerId, "variable":"X", "innervariable":""})
 
                 if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
-                    for key,value in X.items():
+
+                    input1_name, input2_name = X.keys()
+                    
+                    bw_cons = {name: id_ for id_, name in self.graphObj.graphs[layerId]['Info']['backward_connections']}                    
+                    input1_id = bw_cons[input1_name]
+                    input2_id = bw_cons[input2_name]
+
+                    if input1_id == self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
+                        labels = X[input1_name]['Y']
+                        network_output = X[input2_name]['Y']
+                    else:
+                        network_output = X[input1_name]['Y']
+                        labels = X[input2_name]['Y']                        
+                    
+                    '''
+                    for input_name, input_value in X.items():
+                        input_id = next((bw_con_id for bw_con_id, bw_con_name in backward_cons if bw_con_name == input_name), None)
+
+                        if input_id is None:
+                            log.error("
+                        
+                        if input_id == labels_id
+
+                    
+                    for key, value in X.items():
                         try:
                             key_id = [x[0] for x in self.graphObj.graphs[layerId]['Info']['backward_connections'] if x[1] == key][0]
                             if key_id == self.graphObj.graphs[layerId]["Info"]["Properties"]["Labels"]:
@@ -701,15 +736,22 @@ class coreLogic():
                             else:
                                 Network_output=value['Y']
                         except:
-                            pass
+                            log.exception("Error when matching training layer inputs to assigned labels")
+                            if log.isEnabledFor(logging.DEBUG):
+                                
+                                log.debug(
+                                    f'X = {pprint.pformat(X))}'
+                                    f'key = {key}'                                    
+                                    f'backward_connections = {self.graphObj.graphs[layerId]["Info"]["backward_connections"]}'
+                    '''
                         
-                    cType=self.getPlot(Network_output[-1])
+                    cType=self.getPlot(network_output[-1])
                     if cType=="bar" or cType=="line" or cType=='scatter':
-                        PvG = createDataObject([Network_output[-1], Labels[-1]], nameList=['Prediction', 'Ground Truth'])                        
+                        PvG = createDataObject([network_output[-1], labels[-1]], nameList=['Prediction', 'Ground Truth'])                        
 
                         # average over samples
-                        network_average=np.average(Network_output,axis=0)
-                        labels_average = np.average(Labels, axis=0)
+                        network_average=np.average(network_output,axis=0)
+                        labels_average = np.average(labels, axis=0)
                         APvG = createDataObject([network_average, labels_average], nameList=['Prediction', 'Ground Truth'])
                         
                         # PIE
@@ -732,11 +774,11 @@ class coreLogic():
 
                     elif cType=="grayscale" or cType=="RGB" or cType=="heatmap":
                         pass
-                        # Network_output=self.subsample(Network_output)
-                        # Labels=self.subsample(Labels)
-                        # (height,width)=Network_output.shape[0:2]
-                        # Mask = createDataObject([Network_output], typeList=['heatmap'])
-                        # Prediction = createDataObject([Labels], typeList=['heatmap'])
+                        # network_output=self.subsample(network_output)
+                        # Labels=self.subsample(labels)
+                        # (height,width)=network_output.shape[0:2]
+                        # Mask = createDataObject([network_output], typeList=['heatmap'])
+                        # Prediction = createDataObject([labels], typeList=['heatmap'])
                         
                         # # PIE
                         # acc=self.getStatistics({"layerId":layerId,"variable":"accuracy","innervariable":""})
@@ -1035,9 +1077,37 @@ class coreLogic():
             self.warningQueue.put("There are no results to fetch")
             result=[]
 
+        if log.isEnabledFor(logging.DEBUG):
+            self._get_statistics_debug_info(layerId, variable, innervariable, result)
+            
         if type(result).__name__!='dict':
             result=np.asarray(result)
+
         return result
+
+    def _get_statistics_debug_info(self, layer_id, variable, innervariable, result):
+        layer_type = self.graphObj.graphs[layer_id]["Info"]["Type"]            
+        layer_name = self.graphObj.graphs[layer_id]["Info"]["Name"]
+        
+        message = f"getStatistics called with:\n" \
+                  f"    layerId       = '{layer_id}' [{layer_name}: {layer_type}]\n"\
+                  f"    variable      = '{variable}'\n"\
+                  f"    innervariable = '{innervariable}'\n "
+        
+        if isinstance(result, np.ndarray):
+            message += f"output: ndarray of shape {result.shape} and dtype {result.dtype}"
+        elif isinstance(result, dict):
+            type_map = {k: type(v) for k, v in result.items()}            
+            message += f"output: dict with keys and types: {type_map}"
+        elif isinstance(result, list):
+            len_ = len(result)
+            type_ = type(result[0]) if len_ > 0 else '<unknown>'
+            message += f"output: list with length {len_} and types: {type_}"
+        else:
+            message += f"output: {type(result)}"
+            
+        log.debug(message)
+        
 
     # def subsample(self,sample):
     #     endSize=500

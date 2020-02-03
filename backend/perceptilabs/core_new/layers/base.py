@@ -13,7 +13,7 @@ class BaseLayer(ABC):
     @abstractmethod
     def variables(self):
         pass
-
+    
     
 class DataLayer(BaseLayer):
     @abstractmethod    
@@ -122,3 +122,19 @@ class Tf1xClassificationLayer(TrainingLayer):
     @abstractmethod
     def loss_testing(self):
         pass
+
+    @property
+    @abstractmethod    
+    def layer_gradients(self):
+        pass
+
+    @property
+    @abstractmethod    
+    def layer_weights(self):
+        pass
+
+    @property
+    @abstractmethod    
+    def layer_outputs(self):
+        pass
+    

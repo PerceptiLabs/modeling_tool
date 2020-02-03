@@ -4,7 +4,7 @@ import logging
 
 
 from perceptilabs.core_new.layers import *
-
+from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 log = logging.getLogger(__name__)
 
@@ -123,8 +123,8 @@ DEFINITION_TABLE = {
         'tf1x_classification.j2',
         'layer_tf1x_classification',
         {
-            'output_layer': lambda specs: [x for x in specs['backward_connections'] if x != specs['Properties']['Labels']][0],
-            'target_layer': lambda specs: specs['Properties']['Labels'],
+            'output_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id != specs['Properties']['Labels']][0],
+            'target_layer': lambda specs: [sanitize_layer_name(x) for true_id, x in specs['backward_connections'] if true_id == specs['Properties']['Labels']][0],
             'n_epochs': lambda specs: specs['Properties']['Epochs'],
             'loss_function': lambda specs: specs['Properties']['Loss'],
             'class_weights': lambda specs: specs['Properties']['Class_weights'],

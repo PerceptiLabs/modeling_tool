@@ -59,7 +59,12 @@ class {{layer_name}}(DataLayer):
         self._val_sz_tot = val_sz_tot
         self._tst_sz_tot = tst_sz_tot
 
-        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}                                
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
+
+    @property
+    def output(self):
+        return 0
+    
     @property
     def variables(self):
         return self._variables
@@ -84,19 +89,25 @@ class {{layer_name}}(DataLayer):
     def make_generator_training(self):
         def gen():
             for fn, lo, hi in self._trn_gens_args:
-                yield from fn(lo, hi)
+                for x in fn(lo, hi):
+                    self._output = x
+                    yield x
         return gen()
         
     def make_generator_validation(self):
         def gen():
             for fn, lo, hi in self._val_gens_args:
-                yield from fn(lo, hi)
+                for x in fn(lo, hi):
+                    self._output = x
+                    yield x
         return gen()
 
     def make_generator_testing(self):
         def gen():
             for fn, lo, hi in self._tst_gens_args:
-                yield from fn(lo, hi)
+                for x in fn(lo, hi):
+                    self._output = x
+                    yield x
         return gen()
 
 {% endmacro %}

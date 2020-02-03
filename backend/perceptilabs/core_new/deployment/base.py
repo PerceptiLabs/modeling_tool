@@ -59,9 +59,8 @@ class LocalEnvironmentPipe(DeploymentPipe):
 '''    
 
 class InProcessDeploymentPipe(DeploymentPipe):
-    def __init__(self, interpreter: str, script_factory):
+    def __init__(self, script_factory):
         self._script_factory = script_factory        
-        self._interpreter = interpreter
 
     def deploy(self, graph, session_id: str):
         code = self._script_factory.make(
@@ -86,7 +85,8 @@ class InProcessDeploymentPipe(DeploymentPipe):
 
     @property
     def is_active(self):
-        return self._thread.is_alive()
+        #return self._thread.is_alive()
+        return True
 
     def get_session_config(self, session_id: str) -> Dict[str, str]:
         return {
