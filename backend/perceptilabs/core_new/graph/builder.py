@@ -69,12 +69,11 @@ class ReplicatedGraphBuilder:
 
         if layer_def is not None:
             if issubclass(layer_def.base_class, Tf1xClassificationLayer):
-
                 result = Tf1xClassificationLayerReplica(
                     sample=state_map.get(layer_id + '-sample'),
                     size_training=state_map.get(layer_id + '-size_training'),
                     size_validation=state_map.get(layer_id + '-size_validation'),
-                    size_testing=state_map.get(layer_id + '-size_testing'),
+                    size_testing=state_map.get(layer_id + '-size_testing'),                    
                     variables=state_map.get(layer_id + '-variables'),
                     accuracy_training=state_map.get(layer_id + '-accuracy_training'),
                     accuracy_testing=state_map.get(layer_id + '-accuracy_testing'),
@@ -85,8 +84,13 @@ class ReplicatedGraphBuilder:
                     status=state_map.get(layer_id + '-status'),
                     layer_weights=state_map.get(layer_id + '-layer_weights'),
                     layer_outputs=state_map.get(layer_id + '-layer_outputs'),
-                    layer_gradients=state_map.get(layer_id + '-layer_gradients'),                                                            
-                )
+                    layer_gradients=state_map.get(layer_id + '-layer_gradients'),
+                    batch_size=state_map.get(layer_id + '-batch_size'),
+                    is_paused=state_map.get(layer_id + '-is_paused'),
+                    training_iteration=state_map.get(layer_id + '-training_iteration'),
+                    validation_iteration=state_map.get(layer_id + '-validation_iteration'),
+                    testing_iteration=state_map.get(layer_id + '-testing_iteration'),
+                    progress=state_map.get(layer_id + '-progress'),                                                 )
             elif issubclass(layer_def.base_class, DataLayer):
                 result = DataLayerReplica(
                     sample=state_map.get(layer_id + '-sample'),
@@ -94,7 +98,7 @@ class ReplicatedGraphBuilder:
                     size_validation=state_map.get(layer_id + '-size_validation'),
                     size_testing=state_map.get(layer_id + '-size_testing'),
                     variables=state_map.get(layer_id + '-variables'),
-                )                
+                )
             elif issubclass(layer_def.base_class, Tf1xLayer):                
                 result = Tf1xLayerReplica(
                     variables=state_map.get(layer_id + '-variables'),

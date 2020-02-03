@@ -10,27 +10,29 @@ class DataLayerReplica(DataLayer):
         self._sample = sample
         self._size_training = size_training
         self._size_validation = size_validation
+        self._size_testing = size_testing
         self._variables = variables
 
     @property
     def sample(self):
-        return self._sample if self._sample is not None else None
+        return self._sample 
 
     @property
     def size_training(self):
-        return self._size_training if self._size_training is not None else None      
+        return self._size_training 
 
     @property
     def size_validation(self):
-        return self._size_validation if self._size_validation is not None else None                
+        return self._size_validation
 
     @property
     def size_testing(self):
-        return self._size_testing if self._size_testing is not None else None                        
+        return self._size_testing 
 
     @property        
     def variables(self):
-        return self._variables if self._variables is not None else None                                
+        return self._variables if self._variables is not None else None
+    
     def make_generator_training(self):
         raise NotImplementedError
 
@@ -44,7 +46,8 @@ class DataLayerReplica(DataLayer):
 class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
     def __init__(self, sample, size_training, size_validation, size_testing, variables,
                  accuracy_training, accuracy_testing, accuracy_validation,
-                 loss_training, loss_testing, loss_validation, status, layer_weights, layer_gradients, layer_outputs):
+                 loss_training, loss_testing, loss_validation, status, layer_weights, layer_gradients, layer_outputs,
+                 batch_size, is_paused, training_iteration, validation_iteration, testing_iteration, progress):
         self._sample = sample
         self._size_training = size_training
         self._size_validation = size_validation
@@ -61,7 +64,17 @@ class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
         self._layer_gradients = layer_gradients or {}
         self._layer_outputs = layer_outputs or {}
 
+        self._batch_size = batch_size
+        self._is_paused = is_paused
+        self._training_iteration = training_iteration
+        self._validation_iteration = validation_iteration
+        self._testing_iteration = testing_iteration
+        self._progress = progress
         
+    @property
+    def batch_size(self):
+        return self._batch_size
+    
     @property
     def sample(self):
         return self._sample 
@@ -117,6 +130,14 @@ class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
     @property
     def layer_gradients(self):
         return self._layer_gradients
+
+    @property
+    def batch_size(self):
+        return self._batch_size
+
+    @property
+    def is_paused(self):
+        return self._is_paused
     
     @property
     def layer_outputs(self):
@@ -134,7 +155,22 @@ class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
     def on_pause(self):
         raise NotImplementedError        
 
-    
+    @property
+    def training_iteration(self):
+        return self._training_iteration
+
+    @property
+    def validation_iteration(self):
+        return self._validation_iteration
+
+    @property
+    def testing_iteration(self):
+        return self._testing_iteration
+
+    @property
+    def progress(self):
+        return self._progress
+
         
 class Tf1xLayerReplica(Tf1xLayer):
     def __init__(self, variables, trainable_variables):
@@ -158,3 +194,6 @@ class Tf1xLayerReplica(Tf1xLayer):
     def __call__(self, x: List[tf.Tensor]):
         raise NotImplementedError                
     
+    @property        
+    def progress(self):
+        return self._progress

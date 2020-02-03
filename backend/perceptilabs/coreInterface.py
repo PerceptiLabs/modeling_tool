@@ -358,7 +358,15 @@ class coreLogic():
             gpu = self.get_gpu()
             if gpu and int(gpu) == 0:
                 gpu = 1
-            progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
+
+            progress = self.savedResultsDict.get('progress') 
+            if progress is None:
+                progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
+
+            for i in range(10):
+                print("PROGRESS", progress)
+
+                
             if self.status=="Running":
                 result = {
                     "Status":"Paused" if self.paused else self.savedResultsDict["trainingStatus"],

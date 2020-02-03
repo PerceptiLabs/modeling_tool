@@ -138,3 +138,13 @@ class Tf1xClassificationLayer(TrainingLayer):
     def layer_outputs(self):
         pass
     
+    @property
+    @abstractmethod    
+    def batch_size(self):
+        pass
+
+    @property
+    @abstractmethod    
+    def progress(self) -> float:
+        pass
+    

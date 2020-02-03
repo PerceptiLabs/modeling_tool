@@ -2,6 +2,8 @@
 class {{layer_name}}(Tf1xClassificationLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
+        self._batch_size = 10 # TODO: {{batch_size}}?
+
         self._stopped = False
         self._paused = False
         self._status = 'created'
@@ -17,22 +19,33 @@ class {{layer_name}}(Tf1xClassificationLayer):
         self._variables = {}
         self._layer_outputs = {}
         self._layer_weights = {}
-        self._layer_gradients = {}        
+        self._layer_gradients = {}
+
+        self._training_iteration = 0
+        self._validation_iteration = 0
+        self._testing_iteration = 0
+
+        self._trn_sz_tot = 0
+        self._val_sz_tot = 0
+        self._tst_sz_tot = 0        
         
     def run(self, graph: Graph):
-        self._status = 'initializing'
-        
-        batch_size = 8
+        self._status = 'initializing'        
+
         output_layer_id = '{{output_layer}}'
         target_layer_id = '{{target_layer}}'
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
-
+        
         assert len(input_data_nodes) == 1
         assert len(label_data_nodes) == 1
         input_data_node = input_data_nodes[0]
         label_data_node = label_data_nodes[0]
 
+        self._trn_sz_tot = input_data_node.layer.size_training
+        self._val_sz_tot = input_data_node.layer.size_validation
+        self._tst_sz_tot = input_data_node.layer.size_testing
+        
         # Make training set
         dataset_trn = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(
@@ -75,8 +88,8 @@ class {{layer_name}}(Tf1xClassificationLayer):
             )
         ))
 
-        dataset_trn = dataset_trn.batch(batch_size)
-        dataset_val = dataset_val.batch(batch_size)
+        dataset_trn = dataset_trn.batch(self._batch_size)
+        dataset_val = dataset_val.batch(self._batch_size)
         dataset_tst = dataset_tst.batch(1)                
 
         # Make initializers
@@ -161,26 +174,30 @@ class {{layer_name}}(Tf1xClassificationLayer):
             while self._paused:
                 time.sleep(1.0)
 
-        def train_step():
+        def train_step(accuracy_list, loss_list, f1_list, auc_list):
             _, loss, acc, self._layer_outputs, self._layer_weights, layer_gradients = sess.run([
                 update_weights, loss_tensor, accuracy_tensor,
                 layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
             ])
-            self._accuracy_training.append(acc)
-            self._loss_training.append(loss)
+            accuracy_list.append(acc)
+            loss_list.append(loss)
+            f1_list.append(123)
+            auc_list.append(456)
 
             for layer_id, gradients in layer_gradients.items():
                 for name, value in gradients.items():
                     self._layer_gradients[layer_id][name].append(value)
             
-        def validation_step():
+        def validation_step(accuracy_list, loss_list, f1_list, auc_list):
             loss, acc, self._layer_outputs, self._layer_weights, layer_gradients = sess.run([
                 loss_tensor, accuracy_tensor,
                 layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
             ])
-            self._accuracy_validation.append(acc)
-            self._loss_validation.append(loss)
-
+            accuracy_list.append(acc)
+            loss_list.append(loss)
+            f1_list.append(200)
+            auc_list.append(300)
+            
             for layer_id, gradients in layer_gradients.items():
                 for name, value in gradients.items():
                     self._layer_gradients[layer_id][name].append(value)
@@ -190,8 +207,6 @@ class {{layer_name}}(Tf1xClassificationLayer):
                 loss_tensor, accuracy_tensor,
                 layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
             ])
-            self._accuracy_testing.append(acc)
-            self._loss_testing.append(loss)
 
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
 
@@ -200,51 +215,65 @@ class {{layer_name}}(Tf1xClassificationLayer):
         # Training loop
         self._epoch = 0
         while self._epoch < self._n_epochs:
-            self._iteration = 0
+            self._training_iteration = 0
             self._status = 'training'
+            accuracy_list, loss_list, f1_list, auc_list = [], [], [], []
+            self._accuracy_training.append(accuracy_list)
+            self._loss_training.append(loss_list)
+            #self._f1_training.append(f1_list)
+            #self._auc_training.append(auc_list)
+            
             sess.run(trn_init)
-                
+            
             try:
                 while not self._stopped:
                     sleep_while_paused()
-                    train_step()
+                    train_step(accuracy_list, loss_list, f1_list, auc_list)
                     self.send_state_updates(graph)
-                    self._iteration += 1
+                    self._training_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
 
-            self._iteration = 0
+
+            self._validation_iteration = 0
             self._status = 'validation'
-            sess.run(val_init)                        
+            accuracy_list, loss_list, f1_list, auc_list = [], [], [], []
+            self._accuracy_validation.append(accuracy_list)
+            self._loss_validation.append(loss_list)
+            #self._f1_validation.append(f1_list)
+            #self._auc_validation.append(auc_list)
+            
+            sess.run(val_init)
+            
             try:
                 while not self._stopped:
                     sleep_while_paused()
-                    validation_step()
+                    validation_step(accuracy_list, loss_list, f1_list, auc_list)
                     self.send_state_updates(graph)                    
-                    self._iteration += 1
+                    self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
+
 
             log.info(
                 f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
-                f"loss training, validation: {self.loss_training[-1]:.6f}, {self.loss_validation[-1]:.6f} - "
-                f"acc. training, validation: {self.accuracy_training[-1]:.6f}, {self.accuracy_validation[-1]:.6f}"
+                f"loss training, validation: {self.loss_training[-1][-1]:.6f}, {self.loss_validation[-1][-1]:.6f} - "
+                f"acc. training, validation: {self.accuracy_training[-1][-1]:.6f}, {self.accuracy_validation[-1][-1]:.6f}"
             )
 
 
             print(
-                f"Finished epoch {self._epoch+1}/{self._n_epochs} - " + \
-                f"loss training, validation: {self.loss_training[-1]:.6f}, {self.loss_validation[-1]:.6f} - " +  \
-                f"acc. training, validation: {self.accuracy_training[-1]:.6f}, {self.accuracy_validation[-1]:.6f}"
+                f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
+                f"loss training, validation: {self.loss_training[-1][-1]:.6f}, {self.loss_validation[-1][-1]:.6f} - "
+                f"acc. training, validation: {self.accuracy_training[-1][-1]:.6f}, {self.accuracy_validation[-1][-1]:.6f}"
             )
 
-            
             self._epoch += 1
 
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}            
             
         # Test loop
-        self._iteration = 0
+        self._testing_iteration = 0
         self._status = 'testing'
         sess.run(tst_init)                                
         try:
@@ -252,13 +281,11 @@ class {{layer_name}}(Tf1xClassificationLayer):
                 sleep_while_paused()
                 test_step()
                 self.send_state_updates(graph)                                    
-                self._iteration += 1
-                print("test iter", self._iteration)
+                self._testing_iteration += 1
         except tf.errors.OutOfRangeError:
-            print("self._iteration", self._iteration)
             pass
 
-        self._status = 'done'
+        self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
         self.send_state_updates(graph)        
 
@@ -284,6 +311,14 @@ class {{layer_name}}(Tf1xClassificationLayer):
         return True
 
     @property
+    def is_paused(self):
+        return self._paused
+
+    @property
+    def batch_size(self):
+        return self._batch_size
+
+    @property
     def status(self):
         # training, valdation, testing, etc.
         return self._status
@@ -306,15 +341,15 @@ class {{layer_name}}(Tf1xClassificationLayer):
 
     @property
     def size_training(self):
-        return 0
+        return self._trn_sz_tot
 
     @property
     def size_validation(self):
-        return 0
+        return self._val_sz_tot
 
     @property
     def size_testing(self):
-        return 0
+        return self._tst_sz_tot
 
     def make_generator_training(self):
         # Simply call sess.run on the output & target tensors :)  #TODO: how to make generators generic? We have two datasets here, but not all datasets will be labeled. Distinguish between supervised/unsupervised data layers and instead REQUIRE pairs of data layers for supervised?
@@ -362,7 +397,31 @@ class {{layer_name}}(Tf1xClassificationLayer):
     def layer_outputs(self):
         return self._layer_outputs
 
+    @property
+    def training_iteration(self):
+        return self._training_iteration
 
+    @property
+    def validation_iteration(self):
+        return self._validation_iteration
+
+    @property
+    def testing_iteration(self):
+        return self._testing_iteration
+    
+    @property
+    def progress(self):
+        n_iterations_per_epoch = np.ceil(self.size_training / self.batch_size) + \
+                                 np.ceil(self.size_validation / self.batch_size)
+        n_iterations_total = self._n_epochs * n_iterations_per_epoch
+
+        iteration = self.epoch * n_iterations_per_epoch + \
+                    self.training_iteration + self.validation_iteration
+        
+        progress = min(iteration/(n_iterations_total - 1), 1) 
+        return progress
+        
+        
     
 
 {% endmacro %}

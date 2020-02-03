@@ -162,7 +162,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
     graph = core.graph
     accuracy = graph.nodes[-1].layer.accuracy_training
     loss = graph.nodes[-1].layer.loss_training
-    import pdb; pdb.set_trace()
+    #import pdb; pdb.set_trace()
     
     assert np.mean(accuracy[-10:]) >= 0.9 
 

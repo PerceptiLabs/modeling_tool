@@ -48,19 +48,17 @@ class CompabilityCore:
             return {}
 
         training_layer = graph.active_training_node.layer
-
         import numpy as np
 
         itr = 0
         max_itr = 0
         epoch = 0
-        max_epoch = 0
-        batch_size = 0
+        max_epoch = -1
+        batch_size = training_layer.batch_size
         itr_trn = 0
 
         log.debug("layer_outputs: " + pprint.pformat(training_layer.layer_outputs))
         train_dict = {}
-        
         for node in graph.nodes:
             layer = node.layer
             layer_id = node.layer_id
@@ -88,46 +86,93 @@ class CompabilityCore:
                 input_name = self._sanitized_to_name[input_node.layer_id]
                 input_value = training_layer.layer_outputs.get(input_node.layer_id)
                 data['X'][input_name] = {'Y': input_value}
-                
+                                
             if isinstance(layer, Tf1xClassificationLayer):
                 x = np.random.random((60,))
                 y = np.random.random((10,))
-                data['acc_train_iter'] = x
-                data['loss_train_iter'] = x
-                data['f1_train_iter'] = x
-                data['auc_train_iter'] = x
                 
-                data['acc_val_iter'] = x
-                data['loss_val_iter'] = x
-                data['f1_val_iter'] = x
-                data['auc_val_iter'] = x
+                if len(layer.accuracy_training) > 0 and len(layer.loss_training) > 0:
+                    data['acc_train_iter'] = np.array(layer.accuracy_training[-1])
+                    data['loss_train_iter'] = np.array(layer.loss_training[-1])
+                    data['f1_train_iter'] = x
+                    data['auc_train_iter'] = x
 
-                data['acc_training_epoch'] = y
-                data['loss_training_epoch'] = y
-                data['f1_training_epoch'] = y
-                data['auc_training_epoch'] = y
-                
-                data['acc_validation_epoch'] = y 
-                data['loss_validation_epoch'] = y
-                data['f1_validation_epoch'] = y
-                data['auc_validation_epoch'] = y            
+                if len(layer.accuracy_training) > 1 and len(layer.loss_training) > 1:                    
+                    data['acc_training_epoch'] = np.array([epoch_list[-1] for epoch_list in layer.accuracy_training])
+                    data['loss_training_epoch'] = np.array([epoch_list[-1] for epoch_list in layer.loss_training])
+                    data['f1_training_epoch'] = y
+                    data['auc_training_epoch'] = y
+
+                if len(layer.accuracy_validation) > 0 and len(layer.loss_validation) > 0:                    
+                    
+                    data['acc_val_iter'] = np.array(layer.accuracy_validation[-1])
+                    data['loss_val_iter'] = np.array(layer.loss_training[-1])
+                    data['f1_val_iter'] = x
+                    data['auc_val_iter'] = x
+                    
+                if len(layer.accuracy_validation) > 1 and len(layer.loss_validation) > 1:                                        
+                    data['acc_validation_epoch'] = np.array([epoch_list[-1] for epoch_list in layer.accuracy_validation])
+                    data['loss_validation_epoch'] = np.array([epoch_list[-1] for epoch_list in layer.loss_validation])
+                    data['f1_validation_epoch'] = y
+                    data['auc_validation_epoch'] = y
+
+
+
+                    
+            elif isinstance(layer, DataLayer): # using elif since training layers are also datalayers. this need to be generalized.
+                # TODO: get_active_data_node() instead?
+                max_itr_trn = -1
+                max_itr_val = -1
+                max_itr = -1
+
+                if layer.size_training and layer.size_validation and batch_size:
+                    max_itr_trn = np.ceil(layer.size_training/batch_size)
+                    max_itr_val = np.ceil(layer.size_validation/batch_size)
+                    max_itr = max_itr_trn + max_itr_val
 
             train_dict[true_id] = data
 
-        training_status = ''
-        status = ''
+        if training_layer.is_paused:
+            status = 'Paused'
+        else:
+            status = 'Running'
 
+        training_status = 'Waiting'
+        if training_layer.status == 'created':
+            training_status = 'Waiting'
+        elif training_layer.status in ['initializing', 'training']:
+            training_status = 'Training'
+        elif training_layer.status == 'validation':
+            training_status = 'Validation'
+        elif training_layer.status == 'finished':
+            training_status = 'Finished'
+
+        if training_layer.training_iteration is not None and training_layer.validation_iteration is not None:
+            itr = training_layer.training_iteration + training_layer.validation_iteration
+        else:
+            itr = 0
+
+
+        print("hdhasjheshdashdshadshehehejhejhejhej", training_layer.progress) 
+        
         result_dict = {
             "iter": itr,
             "maxIter": max_itr,
             "epoch": epoch,
             "maxEpochs": max_epoch,
             "batch_size": batch_size,
-            "trainingIterations": itr_trn,
+            "trainingIterations": training_layer.training_iteration,
             "trainDict": train_dict,
             "trainingStatus": training_status,  
-            "status": status
+            "status": status,
+            "progress": training_layer.progress
         }
+
+        print(training_layer.training_iteration, training_layer.validation_iteration)
+        print(training_status, itr, max_itr, epoch, max_epoch, batch_size, itr_trn,
+              training_layer.progress)
+
+        
         return result_dict
 
 
