@@ -851,7 +851,6 @@ const actions = {
   },
   DELETE_network({commit, dispatch}, index) {
     const networkID = state.workspaceContent[index].networkID;
-
     commit('delete_network', index);
     dispatch('mod_api/API_closeSession', networkID, { root: true });
   },
