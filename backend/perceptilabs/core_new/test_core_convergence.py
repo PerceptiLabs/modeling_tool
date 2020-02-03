@@ -48,7 +48,7 @@ def graph_spec_binary_classification():
                     },
                 },
                 "backward_connections": [],
-                "forward_connections": ["3"],
+                "forward_connections": [["3", "reshape"]],
                 "Code": ""
             },
             "2": {
@@ -65,7 +65,7 @@ def graph_spec_binary_classification():
                     },
                 },
                 "backward_connections": [],
-                "forward_connections": ["5"],
+                "forward_connections": [["5", "one_hot"]],
                 "Code": ""
             },
             "3": {
@@ -75,8 +75,8 @@ def graph_spec_binary_classification():
                     "Shape": [28, 28, 1],
                     "Permutation": [0, 1, 2]
                 },
-                "backward_connections": ["1"],
-                "forward_connections": ["4"],
+                "backward_connections": [["1", "data_inputs"]],
+                "forward_connections": [["4", "fc"]],
                 "Code": ""
             },
             "4": {
@@ -88,8 +88,8 @@ def graph_spec_binary_classification():
                     "Dropout": False,
                     "Keep_prob": "1"
                 },
-                "backward_connections": ["3"],
-                "forward_connections": ["6"],
+                "backward_connections": [["3", "reshape"]],
+                "forward_connections": [["6", "training"]],
                 "Code": ""
             },
             "5": {
@@ -98,8 +98,8 @@ def graph_spec_binary_classification():
                 "Properties": {
                     "N_class": n_classes
                 },
-                "backward_connections": ["2"],
-                "forward_connections": ["6"],
+                "backward_connections": [["2", "data_labels"]],
+                "forward_connections": [["6", "training"]],
                 "Code": ""
             },
             "6": {
@@ -119,7 +119,7 @@ def graph_spec_binary_classification():
                     "Learning_rate": "0.5",
                     "Distributed": False
                 },
-                "backward_connections": ["4", "5"],
+                "backward_connections": [["4", "fc"], ["5", "one_hot"]],
                 "forward_connections": [],
                 "Code": ""
             }
@@ -137,33 +137,33 @@ def graph_spec_binary_classification():
 def test_train_normal_converges(graph_spec_binary_classification):
     
     script_factory = ScriptFactory()
-    deployment_pipe = InProcessDeploymentPipe(interpreter=sys.executable,
-                                              script_factory=script_factory)
+    deployment_pipe = InProcessDeploymentPipe(script_factory)
 
     graph_builder = ReplicatedGraphBuilder(client=None)    
-    command_queue = Queue()
-    result_queue = Queue()
-    #client.start()
     
     core = Core(
         graph_builder,
         deployment_pipe,
-        command_queue,
-        result_queue,
     )
 
     core.run(graph_spec_binary_classification)
+
+    print("POST RUN CALL")
     
     while core.is_running:
-        time.sleep(0.5)
+
+        graph = core.graph
+        #print("aaaa", graph)
+        print(graph.active_training_node.layer.layer_gradients.keys())
+    
+        time.sleep(1)
 
         
-    graph = core.get_graph()
+    graph = core.graph
     accuracy = graph.nodes[-1].layer.accuracy_training
     loss = graph.nodes[-1].layer.loss_training
+    import pdb; pdb.set_trace()
+    
+    assert np.mean(accuracy[-10:]) >= 0.9 
 
-    #if accuracy is not None and loss is not None:
-    #        print(accuracy[-1], loss[-1], len(accuracy))
-
-    assert accuracy[-1] == 1.0 or np.isclose(accuracy[-1], 1.000, atol=0.001)
-    core.stop()    
+    core.stop()

@@ -114,6 +114,8 @@ class Graph:
 
     def get_node_by_id(self, layer_id: str):
         target_nodes = [x for x in self.nodes if x.layer_id == layer_id]
+        print(layer_id, target_nodes)
+        
         assert len(target_nodes) == 1
         return target_nodes[0]
     
@@ -151,6 +153,10 @@ class Graph:
                 
         return result
 
+    @property
+    def active_training_node(self):
+        return self.nodes[-1] # TODO : adapt this for split graph
+    
 
 
 

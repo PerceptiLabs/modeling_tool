@@ -7,6 +7,8 @@ from typing import Dict
 from perceptilabs.script.templates import J2Engine
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
+from perceptilabs.core_new.graph.utils import sanitize_layer_name
+
 
 class ScriptFactory:
     def __init__(self, mode='default'):
@@ -85,8 +87,8 @@ class ScriptFactory:
         template += "EDGES = {\n"
         for node in graph.nodes:
             from_id = node.layer_id
-            for to_id in node.layer_spec['forward_connections']:
-                template += "    ('" + from_id + "', '" + to_id + "'),\n"
+            for _, to_id in node.layer_spec['forward_connections']:
+                template += "    ('" + from_id + "', '" + sanitize_layer_name(to_id) + "'),\n"
         template += "}\n\n"
 
         template += "state_map = {}\n"
@@ -98,8 +100,6 @@ class ScriptFactory:
         template += "\n"
         template += "@app.route('/state')\n"
         template += "def endpoint_state():\n"
-        template += "    import base64\n"
-        template += "    decode = lambda x: zlib.compress(dill.dumps(x)).hex()\n"
         template += "    try:\n"        
         template += "        with state_lock:\n"
         template += "            tmp_state = dill.dumps(state_map)\n"
@@ -110,8 +110,8 @@ class ScriptFactory:
         template += "         raise\n"
 
         template += "\n"
-        template += "@app.route('/pretty_state')\n"
-        template += "def endpoint_pretty_state():\n"
+        template += "@app.route('/state_pretty')\n"
+        template += "def endpoint_state_pretty():\n"
         template += "    import pprint\n"
         template += "    try:\n"        
         template += "        with state_lock:\n"
@@ -154,6 +154,10 @@ class ScriptFactory:
         template += "            tmp_map[(lid + '-loss_training').encode()] = dill.dumps(l.loss_training)\n"
         template += "            tmp_map[(lid + '-loss_validation').encode()] = dill.dumps(l.loss_validation)\n"
         template += "            tmp_map[(lid + '-loss_testing').encode()] = dill.dumps(l.loss_testing)\n"
+        template += "            tmp_map[(lid + '-status').encode()] = dill.dumps(l.status)\n"
+        template += "            tmp_map[(lid + '-layer_gradients').encode()] = dill.dumps(l.layer_gradients)\n"
+        template += "            tmp_map[(lid + '-layer_weights').encode()] = dill.dumps(l.layer_weights)\n"
+        template += "            tmp_map[(lid + '-layer_outputs').encode()] = dill.dumps(l.layer_outputs)\n"                
         template += "        elif isinstance(l, DataLayer):\n"
         template += "            tmp_map[(lid + '-sample').encode()] = dill.dumps(l.sample)\n"
         template += "            tmp_map[(lid + '-size_training').encode()] = dill.dumps(l.size_training)\n"

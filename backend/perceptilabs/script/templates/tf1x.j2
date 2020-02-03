@@ -12,7 +12,6 @@ class {{layer_name}}(Tf1xLayer):
     @property
     def trainable_variables(self):
         return {}
-
 {% endmacro %}
 
 
@@ -24,12 +23,11 @@ class {{layer_name}}(Tf1xLayer):
 
     @property
     def variables(self):
-        return []
+        return {}
 
     @property
     def trainable_variables(self):
         return {}
-
 {% endmacro %}
 
 
@@ -58,7 +56,6 @@ class {{layer_name}}(Tf1xLayer):
                 {% endif %}
             {% endfilter %}
             
-            
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}            
         return y
 
@@ -69,8 +66,8 @@ class {{layer_name}}(Tf1xLayer):
     @property
     def trainable_variables(self):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='{{layer_name}}')
+        variables = {v.name: v for v in variables}
         return variables
-                       
 {% endmacro %}
 
 
@@ -119,6 +116,7 @@ class {{layer_name}}(Tf1xLayer):
     @property
     def trainable_variables(self):
         variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='{{layer_name}}')
-        return variables
+        variables = {v.name: v for v in variables}
+        return variables        
 
 {% endmacro %}

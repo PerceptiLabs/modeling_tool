@@ -16,3 +16,11 @@ def breadth_first_sort(graph, start_nodes):
             for neighbor in neighbors:
                 queue.append(neighbor)
     return visited
+
+
+def sanitize_layer_name(name):
+    name = name.replace(' ', '_')
+    name = '_' + name
+    return name
+    
+    

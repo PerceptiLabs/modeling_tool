@@ -10,7 +10,7 @@ from perceptilabs.core_new.layers.replicas import *
 from perceptilabs.core_new.graph.utils import breadth_first_sort
 from perceptilabs.core_new.graph.base import Graph, JsonNetwork, Node
 from perceptilabs.core_new.layers.communication import BaseClient
-
+from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 log = logging.getLogger(__name__)
 
@@ -42,15 +42,19 @@ class ReplicatedGraphBuilder:
         graph_spec = graph_spec['Layers'] # TODO: remove!
         
         nodes = {}
-        for layer_id, layer_spec in graph_spec.items():
+        for layer_spec in graph_spec.values():
             layer_type = layer_spec['Type']
+            layer_id = sanitize_layer_name(layer_spec['Name'])
             layer_instance = self._get_layer_instance(layer_id, layer_type, session_config['session_id'], state_map)
             node = Node(layer_id, layer_type, layer_instance, layer_spec)
             nodes[layer_id] = node
 
+        print(nodes)
         edges = set()
-        for from_id, layer_spec in graph_spec.items():
-            fwd_cons = layer_spec['forward_connections']
+        for layer_spec in graph_spec.values():
+            from_id = sanitize_layer_name(layer_spec['Name'])
+            fwd_cons = [sanitize_layer_name(layer_id)
+                        for _, layer_id in layer_spec['forward_connections']]
 
             from_node = nodes[from_id]
             for to_id in fwd_cons:
@@ -78,7 +82,10 @@ class ReplicatedGraphBuilder:
                     loss_training=state_map.get(layer_id + '-loss_training'),
                     loss_testing=state_map.get(layer_id + '-loss_testing'),
                     loss_validation=state_map.get(layer_id + '-loss_validation'),
-                    status=state_map.get(layer_id + '-status'),                    
+                    status=state_map.get(layer_id + '-status'),
+                    layer_weights=state_map.get(layer_id + '-layer_weights'),
+                    layer_outputs=state_map.get(layer_id + '-layer_outputs'),
+                    layer_gradients=state_map.get(layer_id + '-layer_gradients'),                                                            
                 )
             elif issubclass(layer_def.base_class, DataLayer):
                 result = DataLayerReplica(

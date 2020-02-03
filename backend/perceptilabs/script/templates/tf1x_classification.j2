@@ -15,6 +15,9 @@ class {{layer_name}}(Tf1xClassificationLayer):
         self._accuracy_testing = []        
         
         self._variables = {}
+        self._layer_outputs = {}
+        self._layer_weights = {}
+        self._layer_gradients = {}        
         
     def run(self, graph: Graph):
         self._status = 'initializing'
@@ -84,7 +87,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
         input_tensor, label_tensor = iterator.get_next()
 
         # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
-        layer_outputs = {
+        layer_output_tensors = {
             input_data_node.layer_id: input_tensor,
             label_data_node.layer_id: label_tensor
         }
@@ -92,12 +95,12 @@ class {{layer_name}}(Tf1xClassificationLayer):
         for node in graph.inner_nodes:
             args = []
             for input_node in graph.get_input_nodes(node):
-                args.append(layer_outputs[input_node.layer_id])
+                args.append(layer_output_tensors[input_node.layer_id])
             y = node.layer_instance(*args)
-            layer_outputs[node.layer_id] = y
+            layer_output_tensors[node.layer_id] = y
 
-        output_tensor = layer_outputs[output_layer_id]
-        target_tensor = layer_outputs[target_layer_id]
+        output_tensor = layer_output_tensors[output_layer_id]
+        target_tensor = layer_output_tensors[target_layer_id]
 
         loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
@@ -128,6 +131,22 @@ class {{layer_name}}(Tf1xClassificationLayer):
             {% endif %}
         {% endfilter %}
 
+        layer_weight_tensors = {}
+        layer_gradient_tensors = {}
+        for node in graph.inner_nodes:
+            trainable_vars = node.layer.trainable_variables
+            if len(trainable_vars) > 0:
+                layer_weight_tensors[node.layer_id] = trainable_vars
+
+                gradients = {}
+                for name, tensor in trainable_vars.items():
+                    grad_tensor = tf.gradients(loss_tensor, tensor)
+                    if any(x is None for x in grad_tensor):
+                        grad_tensor = tf.constant(0)
+                    gradients[name] = grad_tensor
+                layer_gradient_tensors[node.layer_id] = gradients
+                self._layer_gradients[node.layer_id] = {name: [] for name in trainable_vars.keys()}
+        
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_tensor, trainable_vars)
         update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
@@ -143,19 +162,36 @@ class {{layer_name}}(Tf1xClassificationLayer):
                 time.sleep(1.0)
 
         def train_step():
-            _, loss, acc = sess.run([update_weights, loss_tensor, accuracy_tensor])
+            _, loss, acc, self._layer_outputs, self._layer_weights, layer_gradients = sess.run([
+                update_weights, loss_tensor, accuracy_tensor,
+                layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
+            ])
             self._accuracy_training.append(acc)
             self._loss_training.append(loss)
-        
+
+            for layer_id, gradients in layer_gradients.items():
+                for name, value in gradients.items():
+                    self._layer_gradients[layer_id][name].append(value)
+            
         def validation_step():
-            loss, acc = sess.run([loss_tensor, accuracy_tensor])
+            loss, acc, self._layer_outputs, self._layer_weights, layer_gradients = sess.run([
+                loss_tensor, accuracy_tensor,
+                layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
+            ])
             self._accuracy_validation.append(acc)
             self._loss_validation.append(loss)
+
+            for layer_id, gradients in layer_gradients.items():
+                for name, value in gradients.items():
+                    self._layer_gradients[layer_id][name].append(value)
             
         def test_step():
-            loss, acc = sess.run([loss_tensor, accuracy_tensor])
+            loss, acc, self._layer_outputs, self._layer_weights, layer_gradients = sess.run([
+                loss_tensor, accuracy_tensor,
+                layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
+            ])
             self._accuracy_testing.append(acc)
-            self._loss_testing.append(loss)            
+            self._loss_testing.append(loss)
 
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
 
@@ -223,7 +259,8 @@ class {{layer_name}}(Tf1xClassificationLayer):
             pass
 
         self._status = 'done'
-        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}                    
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
+        self.send_state_updates(graph)        
 
     def on_pause(self):
         self._paused = True
@@ -249,7 +286,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
     @property
     def status(self):
         # training, valdation, testing, etc.
-        pass
+        return self._status
     
     @property
     def epoch(self):
@@ -314,6 +351,18 @@ class {{layer_name}}(Tf1xClassificationLayer):
         return self._loss_testing
 
     @property
-    def status(self):
-        pass
+    def layer_weights(self):
+        return self._layer_weights
+    
+    @property
+    def layer_gradients(self):
+        return self._layer_gradients
+    
+    @property
+    def layer_outputs(self):
+        return self._layer_outputs
+
+
+    
+
 {% endmacro %}
