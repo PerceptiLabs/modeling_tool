@@ -354,6 +354,9 @@ class coreLogic():
         self.testIter=0
         return {"content":"Test is now back to iter 1"}
 
+    def isTestPlaying(self):
+        return self.playing
+
     def increaseStep(self):
         while self.testIter<self.maxTestIter:
             if not self.playing:
