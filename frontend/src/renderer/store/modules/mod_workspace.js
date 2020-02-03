@@ -171,7 +171,6 @@ const mutations = {
           // this value is used to determine if a new setInterval call should be made
           network.networkMeta.chartsRequest.timerID = null;
 
-
           state.workspaceContent.push(network);
         }
       }
