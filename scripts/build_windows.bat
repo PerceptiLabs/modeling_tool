@@ -6,7 +6,7 @@ python train_model.py data_1579288530.csv
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
-cd ../../../
+cd ../../../../
 
 rmdir /s /q build
 mkdir build
