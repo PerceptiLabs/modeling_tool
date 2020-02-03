@@ -21,7 +21,7 @@ cd ..
 # ---- Train models ----
 echo "Training models"
 cd backend/perceptilabs/insights/csv_ram_estimator/
-python perceptilabs/insights/csv_ram_estimator/train_model.py data_1579288530.csv
+python train_model.py data_1579288530.csv
 if [ $? -ne 0 ]; then exit 1; fi
 cd ../../../
 
