@@ -148,32 +148,51 @@ const mutations = {
     // the networks that were saved in the localStorage are hydrated
 
     const activeNetworkIDs = localStorage.getItem('_network.ids') || [];
-      const keys = Object.keys(localStorage)
-        .filter(key => key.startsWith('_network.') && key !== '_network.ids')
+    const keys = Object.keys(localStorage)
+      .filter(key => 
+        key.startsWith('_network.') && 
+        key !== '_network.ids'&& 
+        key !== '_network.lastActiveNetworkID')
         .sort();
 
-      for(const key of keys) {
-        const networkID = key.replace('_network.', '');
+    for(const key of keys) {
+      const networkID = key.replace('_network.', '');
 
-        // _network.<networkID> entries in localStorage are only cleared on load
-        if (!activeNetworkIDs.includes(networkID)) {
-          localStorage.removeItem(key);
-          continue;
-        }
-
-        const networkIsLoaded = state.workspaceContent
-          .some(networkInWorkspace => networkInWorkspace.networkID === networkID)
-        
-        if (!networkIsLoaded) {
-          const network = JSON.parse(localStorage.getItem(key));
-          
-          // clears the handle of the setInterval function
-          // this value is used to determine if a new setInterval call should be made
-          network.networkMeta.chartsRequest.timerID = null;
-
-          state.workspaceContent.push(network);
-        }
+      // _network.<networkID> entries in localStorage are only cleared on load
+      if (!activeNetworkIDs.includes(networkID)) {
+        localStorage.removeItem(key);
+        continue;
       }
+
+      const networkIsLoaded = state.workspaceContent
+        .some(networkInWorkspace => networkInWorkspace.networkID === networkID)
+      
+      if (!networkIsLoaded) {
+        const network = JSON.parse(localStorage.getItem(key));
+        
+        // clears the handle of the setInterval function
+        // this value is used to determine if a new setInterval call should be made
+        network.networkMeta.chartsRequest.timerID = null;
+
+        state.workspaceContent.push(network);
+      }
+    }
+  },
+  set_lastActiveTabInLocalStorage(state, networkID) {
+    if (!isLocalStorageAvailable()) { return; }
+
+    localStorage.setItem('_network.lastActiveNetworkID', JSON.stringify(networkID));
+  },
+  get_lastActiveTabFromLocalStorage(state) {
+    // function for remembering the last active tab
+    const activeNetworkIDs = localStorage.getItem('_network.ids') || [];
+    const currentNetworkID = JSON.parse(localStorage.getItem('_network.lastActiveNetworkID'));
+    
+    const index = JSON.parse(activeNetworkIDs).findIndex((el) => el === currentNetworkID);
+
+    if (index > 0) {
+      state.currentNetwork = index; 
+    }
   },
   //---------------
   //  NETWORK
