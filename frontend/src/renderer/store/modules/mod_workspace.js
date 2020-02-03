@@ -919,17 +919,21 @@ const actions = {
   //---------------
   ADD_network({commit, dispatch}, network) {
     commit('add_network', network);
+    
+    const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
+    commit('set_lastActiveTabInLocalStorage', lastNetworkID);
     commit('set_workspacesInLocalStorage');
   },
   DELETE_network({commit, dispatch}, index) {
+    // API_closeSession stops the process in the core
     const network = state.workspaceContent[index];
-
-    // if (network.networkMeta.coreStatus.Status !== 'Waiting' &&
-    //   network.networkMeta.coreStatus.Status !== 'Finished') {
-    //   dispatch('mod_api/API_stopTraining', network.networkID, { root: true });
-    // }
     dispatch('mod_api/API_closeSession', network.networkID, { root: true });
 
+    if (index === state.currentNetwork) {
+      const nextIndex = Math.max(index - 1, 0);
+      commit('set_lastActiveTabInLocalStorage', state.workspaceContent[nextIndex].networkID);
+    }
+    
     commit('delete_network', index);
     commit('set_workspacesInLocalStorage');
   },
@@ -938,7 +942,8 @@ const actions = {
       if (!isLocalStorageAvailable()) { resolve(); }
 
       commit('get_workspacesFromLocalStorage');
-
+      commit('get_lastActiveTabFromLocalStorage');
+      
       // removing stats and test tabs if there aren't any trained models
       // this happens when the core is restarted
       const networks = state.workspaceContent;
@@ -1008,6 +1013,10 @@ const actions = {
         dispatch('EVENT_onceDoRequest', true);
       }
     });
+  },
+  SET_currentNetwork({commit}, index){
+    commit('set_currentNetwork', index);
+    commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index].networkID);
   },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})
