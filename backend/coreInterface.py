@@ -198,7 +198,7 @@ class coreLogic():
     def Close(self):
         if self.cThread and self.cThread.isAlive():
             self.cThread.kill()
-        return {"content":"closing the core"}
+        return {"content":"closed core %s" % str(self.networkName)} 
 
     def Stop(self):
         self.status="Stop"
@@ -356,6 +356,9 @@ class coreLogic():
     def resetTest(self):
         self.testIter=0
         return {"content":"Test is now back to iter 1"}
+
+    def isTestPlaying(self):
+        return self.playing
 
     def increaseStep(self):
         while self.testIter<self.maxTestIter:
