@@ -58,7 +58,7 @@ def main():
 
     from os import path
     basepath = path.dirname(__file__)
-    filepath = path.abspath(path.join(basepath, "..", "app_variables.json"))
+    filepath = path.abspath(path.join(basepath, "app_variables.json"))
 
     with open(filepath, 'r') as f:
         app_variables = json.load(f)

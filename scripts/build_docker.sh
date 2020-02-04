@@ -49,7 +49,7 @@ mv main.pyx main.py
 find . -name "__init__.pyx" -exec rename -v 's/\.pyx$/\.py/i' {} \;
 
 echo "Adding app_variables"
-cp ../../backend/app_variables.json .
+cp ../../backend/perceptilabs/app_variables.json ./perceptilabs/
 
 echo "Listing files to be included in build (contents of 'backend_out/')"
 ls -l
