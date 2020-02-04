@@ -954,7 +954,9 @@ const actions = {
       // this happens when the core is restarted
       const networks = state.workspaceContent;
       
-      networks.forEach(network => {
+      networks
+        .filter(network => network.networkElementList !== null) // don't need to check if no elements
+        .forEach(network => {
         const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
         const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
         Promise.all([isRunningPromise, isTrainedPromise])
@@ -972,7 +974,7 @@ const actions = {
               network.networkMeta.openTest = null;
             }
           });
-      });
+        });
 
       resolve();
     });
