@@ -56,7 +56,7 @@ def main():
 
     log = logging.getLogger(__name__)
 
-    with open('../../app_variables.json', 'r') as f:
+    with open('../app_variables.json', 'r') as f:
         app_variables = json.load(f)
 
     commit_id = app_variables["BuildVariables"]["CommitId"]
