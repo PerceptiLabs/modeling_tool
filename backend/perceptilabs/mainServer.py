@@ -56,7 +56,11 @@ def main():
 
     log = logging.getLogger(__name__)
 
-    with open('app_variables.json', 'r') as f:
+    from os import path
+    basepath = path.dirname(__file__)
+    filepath = path.abspath(path.join(basepath, "..", "app_variables.json"))
+
+    with open(filepath, 'r') as f:
         app_variables = json.load(f)
 
     commit_id = app_variables["BuildVariables"]["CommitId"]
