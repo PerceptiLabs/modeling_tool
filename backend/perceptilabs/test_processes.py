@@ -5,15 +5,13 @@ import psutil
 from multiprocessing import Process
 
 
-import perceptilabs.processes
+from perceptilabs.processes import ProcessDependencyWatcher
 
 def proc1_fn(duration):
     time.sleep(duration)
 
 def proc2_fn(pid):
-    fm = processes.ProcessDependencyWatcher(pid=pid,
-                                            sleep_period=0.1,
-                                            grace_period=0.1)
+    fm = ProcessDependencyWatcher(pid=pid, sleep_period=0.1, grace_period=0.1)
     fm.start()
 
     while True: # Infinite loop. This process must be killed to terminate.
