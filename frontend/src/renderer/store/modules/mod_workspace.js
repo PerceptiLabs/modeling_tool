@@ -930,8 +930,14 @@ const actions = {
     dispatch('mod_api/API_closeSession', network.networkID, { root: true });
 
     if (index === state.currentNetwork) {
-      const nextIndex = Math.max(index - 1, 0);
-      commit('set_lastActiveTabInLocalStorage', state.workspaceContent[nextIndex].networkID);
+      
+      if (state.workspaceContent.length === 1) {
+        commit('set_lastActiveTabInLocalStorage', '');
+      } else if (index === 0) {
+        commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
+      } else {
+        commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
+      }
     }
     
     commit('delete_network', index);
