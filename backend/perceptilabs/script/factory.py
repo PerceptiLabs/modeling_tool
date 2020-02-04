@@ -157,6 +157,7 @@ class ScriptFactory:
         template += "            tmp_map[(lid + '-status').encode()] = l.status\n"
         template += "            tmp_map[(lid + '-layer_gradients').encode()] = l.layer_gradients\n"
         template += "            tmp_map[(lid + '-layer_weights').encode()] = l.layer_weights\n"
+        template += "            tmp_map[(lid + '-layer_biases').encode()] = l.layer_biases\n"        
         template += "            tmp_map[(lid + '-layer_outputs').encode()] = l.layer_outputs\n"
         template += "            tmp_map[(lid + '-batch_size').encode()] = l.batch_size\n"
         template += "            tmp_map[(lid + '-is_paused').encode()] = l.is_paused\n"

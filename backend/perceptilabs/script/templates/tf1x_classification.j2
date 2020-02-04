@@ -19,6 +19,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
         self._variables = {}
         self._layer_outputs = {}
         self._layer_weights = {}
+        self._layer_biases = {}        
         self._layer_gradients = {}
 
         self._training_iteration = 0
@@ -145,20 +146,21 @@ class {{layer_name}}(Tf1xClassificationLayer):
         {% endfilter %}
 
         layer_weight_tensors = {}
+        layer_bias_tensors = {}        
         layer_gradient_tensors = {}
         for node in graph.inner_nodes:
-            trainable_vars = node.layer.trainable_variables
-            if len(trainable_vars) > 0:
-                layer_weight_tensors[node.layer_id] = trainable_vars
-
+            layer_weight_tensors[node.layer_id] = node.layer.weights
+            layer_bias_tensors[node.layer_id] = node.layer.biases            
+            
+            if len(node.layer.trainable_variables) > 0:
                 gradients = {}
-                for name, tensor in trainable_vars.items():
+                for name, tensor in node.layer.trainable_variables.items():
                     grad_tensor = tf.gradients(loss_tensor, tensor)
                     if any(x is None for x in grad_tensor):
                         grad_tensor = tf.constant(0)
                     gradients[name] = grad_tensor
                 layer_gradient_tensors[node.layer_id] = gradients
-                self._layer_gradients[node.layer_id] = {name: [] for name in trainable_vars.keys()}
+                self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()}
         
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_tensor, trainable_vars)
@@ -175,9 +177,10 @@ class {{layer_name}}(Tf1xClassificationLayer):
                 time.sleep(1.0)
 
         def train_step(accuracy_list, loss_list, f1_list, auc_list):
-            _, loss, acc, self._layer_outputs, self._layer_weights, layer_gradients = sess.run([
-                update_weights, loss_tensor, accuracy_tensor,
-                layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
+            _, loss, acc, self._layer_outputs, self._layer_weights, self._layer_biases, \
+                layer_gradients = sess.run([
+                    update_weights, loss_tensor, accuracy_tensor,
+                    layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
             ])
             accuracy_list.append(acc)
             loss_list.append(loss)
@@ -189,9 +192,10 @@ class {{layer_name}}(Tf1xClassificationLayer):
                     self._layer_gradients[layer_id][name].append(value)
             
         def validation_step(accuracy_list, loss_list, f1_list, auc_list):
-            loss, acc, self._layer_outputs, self._layer_weights, layer_gradients = sess.run([
-                loss_tensor, accuracy_tensor,
-                layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
+            loss, acc, self._layer_outputs, self._layer_weights, self._layer_biases, \
+                layer_gradients = sess.run([
+                    loss_tensor, accuracy_tensor,
+                    layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
             ])
             accuracy_list.append(acc)
             loss_list.append(loss)
@@ -388,6 +392,10 @@ class {{layer_name}}(Tf1xClassificationLayer):
     @property
     def layer_weights(self):
         return self._layer_weights
+
+    @property
+    def layer_biases(self):
+        return self._layer_biases
     
     @property
     def layer_gradients(self):

@@ -70,6 +70,17 @@ class Tf1xLayer(InnerLayer):
     @abstractmethod
     def __call__(self, x: List[tf.Tensor]):
         pass
+
+    @property
+    @abstractmethod
+    def weights(self):
+        pass
+    
+    @property
+    @abstractmethod
+    def biases(self):
+        pass
+        
     
     
 class Tf2xLayer(InnerLayer):
@@ -133,6 +144,11 @@ class Tf1xClassificationLayer(TrainingLayer):
     def layer_weights(self):
         pass
 
+    @property
+    @abstractmethod    
+    def layer_biases(self):
+        pass
+    
     @property
     @abstractmethod    
     def layer_outputs(self):

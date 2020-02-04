@@ -9,6 +9,7 @@ from perceptilabs.core_new.utils import set_tensorflow_mode
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.layers import *
+from perceptilabs.core_new.layers.replicas import NotReplicatedError
 
 log = logging.getLogger(__name__)
 
@@ -43,9 +44,19 @@ class CompabilityCore:
         pass
     
     def _get_results_dict(self, graph):
+        try:
+            return self._get_results_dict_internal(graph)
+        except:
+            log.exception('Error when getting results dict')
+            return {}
+                
+    
+    def _get_results_dict_internal(self, graph):
         if graph is None:
             log.debug("graph is None, returning empty results")
             return {}
+
+        self._print_debug_info(graph)
 
         training_layer = graph.active_training_node.layer
         import numpy as np
@@ -57,7 +68,6 @@ class CompabilityCore:
         batch_size = training_layer.batch_size
         itr_trn = 0
 
-        log.debug("layer_outputs: " + pprint.pformat(training_layer.layer_outputs))
         train_dict = {}
         for node in graph.nodes:
             layer = node.layer
@@ -66,14 +76,18 @@ class CompabilityCore:
             data = {}
 
             data['Y'] = training_layer.layer_outputs.get(layer_id) # OUTPUT: ndarrays of layer-specific dims
-            data['W'] = np.random.random((10, 28, 28)) # WEIGHTS, ndarray, variable dim 
-            data['b'] = np.random.random((10)) # BIAS, ndarray, variable dim
+            w = next(iter(training_layer.layer_weights.get(layer_id, {}).values()), None)
+            if w is not None:
+                data['W'] = w
+
+            b = next(iter(training_layer.layer_biases.get(layer_id, {}).values()), None)                            
+            if b is not None:
+                data['b'] = b
             
             gradient_dict = training_layer.layer_gradients.get(layer_id, {})
             
             for name, grad in gradient_dict.items():
-                grad = np.random.random((500, 123)) # TEMPORARY! 
-                
+                grad = np.asarray(grad)
                 axis = tuple(range(1, grad.ndim))
                 data['Gradient'] = {
                     'Min': np.min(grad, axis=axis).tolist(),
@@ -152,9 +166,6 @@ class CompabilityCore:
         else:
             itr = 0
 
-
-        print("hdhasjheshdashdshadshehehejhejhejhej", training_layer.progress) 
-        
         result_dict = {
             "iter": itr,
             "maxIter": max_itr,
@@ -167,16 +178,49 @@ class CompabilityCore:
             "status": status,
             "progress": training_layer.progress
         }
-
-        print(training_layer.training_iteration, training_layer.validation_iteration)
-        print(training_status, itr, max_itr, epoch, max_epoch, batch_size, itr_trn,
-              training_layer.progress)
-
-        
         return result_dict
+
+    def _print_debug_info(self, graph):
+        if not log.isEnabledFor(logging.DEBUG):
+            return
+
+        text = ""
+        for node in graph.nodes:
+            layer = node.layer
+            attr_names = sorted(dir(layer))
+            n_chars = max(len(n) for n in attr_names)
+            
+            text += f"{node.layer_id} [{type(layer.__class__.__name__)}]\n"
+            for attr_name in attr_names:
+                if hasattr(layer.__class__, attr_name) and isinstance(getattr(layer.__class__, attr_name), property):
+                    name = attr_name.ljust(n_chars, ' ')
+                    try:
+                        value = getattr(layer, attr_name)
+                        value_str = str(value).replace('\n', '')
+                        if len(value_str) > 70:
+                            value_str = value_str[0:70] + '...'
+                        value_str = f'{value_str} [{type(value).__name__}]'
+                    except NotReplicatedError:
+                        value_str = '<not replicated>'
+                    except Exception as e:
+                        value_str = f'<error: {repr(e)}>'
+                    finally:
+                        text += f"    {name}: {value_str}\n"                        
+            text += '\n'
+
+        log.debug(text)
+                    
+
 
 
 if __name__ == "__main__":
+    import sys
+    logging.basicConfig(stream=sys.stdout,
+                        format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
+                        level=logging.DEBUG)
+
+
+    
     import json
     import queue
     from perceptilabs.core_new.compability import CompabilityCore

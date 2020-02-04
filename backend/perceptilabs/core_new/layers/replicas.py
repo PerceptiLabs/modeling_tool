@@ -2,7 +2,12 @@ import dill
 import tensorflow as tf
 from typing import List, Callable
 
+
 from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, Tf1xClassificationLayer
+
+
+class NotReplicatedError(Exception):
+    pass
 
 
 class DataLayerReplica(DataLayer):
@@ -31,23 +36,26 @@ class DataLayerReplica(DataLayer):
 
     @property        
     def variables(self):
-        return self._variables if self._variables is not None else None
+        return self._variables 
     
     def make_generator_training(self):
-        raise NotImplementedError
+        raise NotReplicatedError
 
     def make_generator_validation(self):
-        raise NotImplementedError        
+        raise NotReplicatedError        
 
     def make_generator_testing(self):
-        raise NotImplementedError
+        raise NotReplicatedError
 
     
 class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
     def __init__(self, sample, size_training, size_validation, size_testing, variables,
                  accuracy_training, accuracy_testing, accuracy_validation,
-                 loss_training, loss_testing, loss_validation, status, layer_weights, layer_gradients, layer_outputs,
-                 batch_size, is_paused, training_iteration, validation_iteration, testing_iteration, progress):
+                 loss_training, loss_testing, loss_validation,
+                 status, layer_weights, layer_biases, layer_gradients, layer_outputs,
+                 batch_size, is_paused, training_iteration, validation_iteration,
+                 testing_iteration, progress):
+        
         self._sample = sample
         self._size_training = size_training
         self._size_validation = size_validation
@@ -61,6 +69,7 @@ class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
         self._status = status
 
         self._layer_weights = layer_weights or {}
+        self._layer_biases = layer_biases or {}        
         self._layer_gradients = layer_gradients or {}
         self._layer_outputs = layer_outputs or {}
 
@@ -128,6 +137,10 @@ class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
         return self._layer_weights
     
     @property
+    def layer_biases(self):
+        return self._layer_biases
+    
+    @property
     def layer_gradients(self):
         return self._layer_gradients
 
@@ -144,16 +157,16 @@ class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
         return self._layer_outputs
 
     def make_generator_training(self):
-        raise NotImplementedError
+        raise NotReplicatedError
 
     def make_generator_validation(self):
-        raise NotImplementedError        
+        raise NotReplicatedError        
 
     def make_generator_testing(self):
-        raise NotImplementedError
+        raise NotReplicatedError
     
     def on_pause(self):
-        raise NotImplementedError        
+        raise NotReplicatedError        
 
     @property
     def training_iteration(self):
@@ -173,27 +186,27 @@ class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
 
         
 class Tf1xLayerReplica(Tf1xLayer):
-    def __init__(self, variables, trainable_variables):
+    def __init__(self, variables):
         self._variables = variables
-        self._trainable_variables = trainable_variables
-        
-    @property
-    def trainable_variables(self):
-        return self._trainable_variables if self._trainable_variables is not None else None          
 
     @property        
     def variables(self):
-        return self._variables if self._variables is not None else None
-    
+        return self._variables
+
     @property        
     def trainable_variables(self):
-        return self._trainable_variables if self._trainable_variables is not None else None                                
-    def __call__(self, x: tf.Tensor):
-        raise NotImplementedError        
-
-    def __call__(self, x: List[tf.Tensor]):
-        raise NotImplementedError                
+        raise NotReplicatedError        
     
     @property        
-    def progress(self):
-        return self._progress
+    def weights(self):
+        raise NotReplicatedError        
+    
+    @property        
+    def biases(self):
+        raise NotReplicatedError        
+    
+    def __call__(self, x: tf.Tensor):
+        raise NotReplicatedError        
+
+    def __call__(self, x: List[tf.Tensor]):
+        raise NotReplicatedError

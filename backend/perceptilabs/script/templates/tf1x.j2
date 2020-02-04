@@ -12,6 +12,14 @@ class {{layer_name}}(Tf1xLayer):
     @property
     def trainable_variables(self):
         return {}
+
+    @property
+    def weights(self):
+        return {}
+
+    @property
+    def biases(self):
+        return {}        
 {% endmacro %}
 
 
@@ -28,12 +36,21 @@ class {{layer_name}}(Tf1xLayer):
     @property
     def trainable_variables(self):
         return {}
+
+    @property
+    def weights(self):
+        return {}
+
+    @property
+    def biases(self):
+        return {}    
 {% endmacro %}
 
 
 {% macro layer_tf1x_fully_connected(layer_name, n_neurons, activation, dropout, keep_prob) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
+        self._scope = '{{layer_name}}'
         self._n_neurons = 10
         self._variables = {}
         
@@ -41,7 +58,7 @@ class {{layer_name}}(Tf1xLayer):
         n_neurons = {{n_neurons}}
         n_inputs = np.prod(x.get_shape().as_list()[1:], dtype=np.int32)
 
-        with tf.compat.v1.variable_scope('{{layer_name}}', reuse=tf.compat.v1.AUTO_REUSE):        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):        
             initial = tf.random.truncated_normal((n_inputs, self._n_neurons), stddev=0.1)
             W = tf.compat.v1.get_variable('W', initializer=initial)
         
@@ -65,15 +82,29 @@ class {{layer_name}}(Tf1xLayer):
 
     @property
     def trainable_variables(self):
-        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='{{layer_name}}')
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
         variables = {v.name: v for v in variables}
         return variables
+
+    @property
+    def weights(self):
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            w = tf.compat.v1.get_variable('W')
+            return {w.name: w}
+
+    @property
+    def biases(self):
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            b = tf.compat.v1.get_variable('b')
+            return {b.name: b}
+    
 {% endmacro %}
 
 
 {% macro layer_tf1x_conv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation, pool, pooling, pool_area, pool_stride) %}
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
+        self._scope = '{{layer_name}}'        
         # TODO: implement support for 1d and 3d conv, dropout, funcs, pooling, etc
         self._patch_size = {{patch_size}}
         self._feature_maps = {{feature_maps}}
@@ -90,7 +121,7 @@ class {{layer_name}}(Tf1xLayer):
             self._feature_maps
         ]
 
-        with tf.compat.v1.variable_scope('{{layer_name}}', reuse=tf.compat.v1.AUTO_REUSE):
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
             initial = tf.random.truncated_normal(
                 shape,
                 stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
@@ -99,7 +130,7 @@ class {{layer_name}}(Tf1xLayer):
             
             initial = tf.constant(0.1, shape=[self._feature_maps])
             b = tf.compat.v1.get_variable('b', initializer=initial)
-            y = tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding)
+            y = tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding) + b
             {% filter remove_lspaces(8) %}
                 {% if activation is not none %}
                     y = {{activation}}(y)
@@ -115,8 +146,19 @@ class {{layer_name}}(Tf1xLayer):
 
     @property
     def trainable_variables(self):
-        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope='{{layer_name}}')
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
         variables = {v.name: v for v in variables}
         return variables        
 
+    @property
+    def weights(self):
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            w = tf.compat.v1.get_variable('W')
+            return {w.name: w}
+
+    @property
+    def biases(self):
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            b = tf.compat.v1.get_variable('b')
+            return {b.name: b}
 {% endmacro %}

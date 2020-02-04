@@ -83,6 +83,7 @@ class ReplicatedGraphBuilder:
                     loss_validation=state_map.get(layer_id + '-loss_validation'),
                     status=state_map.get(layer_id + '-status'),
                     layer_weights=state_map.get(layer_id + '-layer_weights'),
+                    layer_biases=state_map.get(layer_id + '-layer_biases'),                    
                     layer_outputs=state_map.get(layer_id + '-layer_outputs'),
                     layer_gradients=state_map.get(layer_id + '-layer_gradients'),
                     batch_size=state_map.get(layer_id + '-batch_size'),
@@ -102,7 +103,6 @@ class ReplicatedGraphBuilder:
             elif issubclass(layer_def.base_class, Tf1xLayer):                
                 result = Tf1xLayerReplica(
                     variables=state_map.get(layer_id + '-variables'),
-                    trainable_variables=state_map.get(layer_id + '-trainable_variables'),
                 )
         else:
             raise ValueError(f"Failed finding a replica class for layer type '{layer_type}'")
