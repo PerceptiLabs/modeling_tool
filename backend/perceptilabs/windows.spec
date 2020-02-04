@@ -36,7 +36,7 @@ with open('../../backend/included_files.txt') as f:
 
 print("Found these python modules to include: " + str(python_files))
 hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('tensorflow.contrib') + collect_submodules('sentry_sdk') + python_files + \
-            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile','jinja2','pkg_resources.py2_warn',
+            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile','jinja2','pkg_resources.py2_warn', 'cryptography.fernet',
             'GPUtil','gym.envs.atari','azure.storage.blob','numpy', 'tensorflow', 'math', 'sys', 'ast', 'itertools', 
             'collections', 'operator', 'time', 'copy', 'queue', 'sklearn.cluster', 'socket', 'selectors', 'traceback', 'json', 'io', 'struct', 'threading', 'PIL',
             'PIL.ImageTk', 'glob', 'random', 'os.path', 're', 'codehq', 'dask', 'skimage.io', 'tensorflow.python','networkx', 
@@ -47,9 +47,9 @@ hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('
 datas  =[
     (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'),
     (python_lib+'/atari_py/', './atari_py/'),
-    (working_dir+'/insights/csv_ram_estimator/model_and_meta.pkl', './insights/csv_ram_estimator/'),
-    ('app_variables.json','.'),
-    (working_dir+'/script/templates/', './script/templates/'),
+    (working_dir+'/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl', './perceptilabs/insights/csv_ram_estimator/'),
+    (working_dir+'/perceptilabs/app_variables.json','.'),
+    (working_dir+'/perceptilabs/script/templates/', './perceptilabs/script/templates/'),
 ]
 
 
@@ -58,7 +58,7 @@ log.info("binaries = {}".format(pformat(binaries)))
 log.info("datas = {}".format(pformat(datas)))
 log.info("hiddenimports = {}".format(pformat(hiddenimports)))
 
-a = Analysis(['mainServer.py'],
+a = Analysis(['main.py'],
              pathex=pathex,
              binaries=binaries,
              datas=datas,

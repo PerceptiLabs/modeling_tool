@@ -37,10 +37,10 @@ pathex = [working_dir,
           python_lib+'/tensorflow',
           python_lib+'/atari_py']
 
-*    (working_dir+'/appServer.cpython-36m-darwin.so', '.'),
-binaries = [
-    (working_dir+'/s3buckets.cpython-36m-darwin.so', '.'),
-    (working_dir+'/analytics/handlers.cpython-36m-darwin.so', './analytics'),        
+#    (working_dir+'/appServer.cpython-36m-darwin.so', '.'),
+#    (working_dir+'/s3buckets.cpython-36m-darwin.so', '.'),
+#    (working_dir+'/analytics/handlers.cpython-36m-darwin.so', './analytics'),
+binaries = [        
     (python_lib+'/tensorflow/contrib/bigtable/python/ops/_bigtable.so', './tensorflow/contrib/bigtable/python/ops'),
     (python_lib+'/tensorflow/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow/contrib/tpu/python/ops'),
     (python_lib+'/tensorflow/contrib/rnn/python/ops/_gru_ops.so', './tensorflow/contrib/rnn/python/ops/'),
@@ -52,7 +52,6 @@ binaries = [
     (python_lib+'/tensorflow/contrib/layers/python/ops/_sparse_feature_cross_op.so', './tensorflow/contrib/layers/python/ops/'),                       
     (python_lib+'/tensorflow/contrib/coder/python/ops/_coder_ops.so', './tensorflow/contrib/coder/python/ops'),
     (python_lib+'/atari_py/ale_interface/libale_c.so', './atari_py/ale_interface/'),
-    (python_lib+'/sklearn/.libs/vcomp140.dll', './sklearn/.libs/')
 ]
 
 
@@ -71,9 +70,9 @@ datas=[
     (python_lib+'/atari_py/atari_roms/breakout.bin', './atari_py/atari_roms/'),
     (python_lib+'/atari_py/atari_roms/bank_heist.bin', './atari_py/atari_roms/'),
     (python_lib+'/atari_py/atari_roms/demon_attack.bin', './atari_py/atari_roms/'),
-    ('app_variables.json','.'),
-    (working_dir+'/insights/csv_ram_estimator/model_and_meta.pkl', './insights/csv_ram_estimator/'),
-    (working_dir+'/script/templates/', './script/templates/'),   
+    (working_dir+'/perceptilabs/app_variables.json','.'),
+    (working_dir+'/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl', './perceptilabs/insights/csv_ram_estimator/'),
+    (working_dir+'/perceptilabs/script/templates/', './perceptilabs/script/templates/'),   
 ]       
 
 
@@ -87,7 +86,7 @@ with open('../../backend/included_files.txt') as f:
 
 print("Found these python modules to include: " + str(python_files))
 hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('tensorflow') + collect_submodules('sentry_sdk') + python_files + \
-            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor', 'jinja2',
+            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor', 'jinja2', 'pkg_resources.py2_warn', 'cryptography.fernet',
             'GPUtil','gym.envs.atari','azure.storage.blob','numpy', 'tensorflow', 'math', 'sys', 'ast', 'itertools', 
             'collections', 'operator', 'time', 'copy', 'queue', 'sklearn.cluster', 'socket', 'selectors', 'traceback', 'json', 'io', 'struct', 'threading', 'PIL',
             'PIL.ImageTk', 'glob', 'random', 'os.path', 're', 'codehq', 'dask', 'skimage.io', 'tensorflow.python','networkx', 
@@ -102,7 +101,7 @@ log.info("datas = {}".format(pformat(datas)))
 log.info("hiddenimports = {}".format(pformat(hiddenimports)))
    
 
-a = Analysis(['mainServer.py'],
+a = Analysis(['main.py'],
              pathex=pathex,
 	     binaries=binaries,
              datas=datas,

@@ -37,9 +37,9 @@ tf_datas = collect_data_files('tensorflow_core', subdir=None, include_py_files=T
 
 
 
-*            (working_dir+'/appServer.cpython-36m-x86_64-linux-gnu.so', '.'),
+#            (working_dir+'/appServer.cpython-36m-x86_64-linux-gnu.so', '.'),
+#            (working_dir+'/s3buckets.cpython-36m-x86_64-linux-gnu.so', '.'),  
 binaries = [(python_lib+'/dask/dask.yaml','./dask/'),
-            (working_dir+'/s3buckets.cpython-36m-x86_64-linux-gnu.so', '.'),            
             (python_lib+'/tensorflow_core/contrib/bigtable/python/ops/_bigtable.so', './tensorflow_core/contrib/bigtable/python/ops'),
             (python_lib+'/tensorflow_core/contrib/tpu/python/ops/_tpu_ops.so', './tensorflow_core/contrib/tpu/python/ops'),
             (python_lib+'/tensorflow_core/contrib/rnn/python/ops/_gru_ops.so', './tensorflow_core/contrib/rnn/python/ops/'),
@@ -86,10 +86,10 @@ for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
 
 #, (python_lib+'/tensorflow_core/', './tensorflow_core/')
 datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/contrib/'),
-(python_lib+'/atari_py/', './atari_py/'),
-(working_dir+'/script/templates/', './script/templates/'),
-(working_dir+'/insights/csv_ram_estimator/model_and_meta.pkl', './insights/csv_ram_estimator/'),
-('app_variables.json','.')]
+                (python_lib+'/atari_py/', './atari_py/'),
+                (working_dir+'/perceptilabs/script/templates/', './perceptilabs/script/templates/'),
+                (working_dir+'/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl', './perceptilabs/insights/csv_ram_estimator/'),
+                (working_dir+'/perceptilabs/app_variables.json','.')]
 
 python_files = []
 with open('../../backend/included_files.txt') as f:
@@ -121,9 +121,8 @@ tmp_tensorflow_core_modules = ['tensorflow_core.contrib.distribute.python.monito
 print("tf submodules: ")
 print(collect_submodules('tensorflow_core'))
 
-#+ tmp_tensorflow_core_modules
 hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('tensorflow') + collect_submodules('tensorflow_core') + tmp_tensorflow_core_modules + collect_submodules('sentry_sdk') + python_files + \
-            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor', 'jinja2',
+            ['pywt._extensions._cwt','databundle','atari_py','gym','boto3','tempfile', 'astor', 'jinja2', 'pkg_resources.py2_warn', 'cryptography.fernet',
             'GPUtil','gym.envs.atari','azure.storage.blob','numpy', 'tensorflow', 'math', 'sys', 'ast', 'itertools', 
             'collections', 'operator', 'time', 'copy', 'queue', 'sklearn.cluster', 'socket', 'selectors', 'traceback', 'json', 'io', 'struct', 'threading', 'PIL',
             'PIL.ImageTk', 'glob', 'random', 'os.path', 're', 'codehq', 'dask', 'skimage.io', 'tensorflow.python','networkx', 
@@ -138,7 +137,7 @@ log.info("binaries = {}".format(pformat(binaries)))
 log.info("datas = {}".format(pformat(datas)))
 log.info("hiddenimports = {}".format(pformat(hiddenimports)))
 
-a = Analysis(['mainServer.py'],
+a = Analysis(['main.py'],
              pathex=pathex,
              binaries=binaries,
              datas=binaries,

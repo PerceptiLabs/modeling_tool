@@ -49,7 +49,12 @@ class Interface():
         sys.exit(1)
 
     def close_core(self, reciever):
-        self._cores[reciever].Close()
+        if reciever in self._cores:
+            msg = self._cores[reciever].Close()
+            del self._cores[reciever]
+            return msg
+        else:
+            return "No core called %s" %reciever
 
     def getCheckpointDict(self):
         return self._checkpointDict.copy()
@@ -241,8 +246,15 @@ class Interface():
         elif action == "Close":
             self.shutDown()
 
+        elif action == "closeSession":
+            return self.close_core(reciever)
+
         elif action == "updateResults":
             response = self._core.updateResults()
+            return response
+
+        elif action == "isRunning":
+            response = self._core.isRunning()
             return response
 
         elif action == "checkCore":
@@ -279,6 +291,9 @@ class Interface():
         elif action == "startTest":
             response = self._core.startTest()
             return response
+
+        elif action == "isTestPlaying":
+            return self._core.isTestPlaying()
 
         elif action == "resetTest":
             response = self._core.resetTest()

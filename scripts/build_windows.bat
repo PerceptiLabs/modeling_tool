@@ -1,12 +1,12 @@
 cd ..
 
 echo "Training models"
-cd backend/insights/csv_ram_estimator/
+cd backend/perceptilabs/insights/csv_ram_estimator/
 python train_model.py data_1579288530.csv
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
-cd ../../../
+cd ../../../../
 
 rmdir /s /q build
 mkdir build
@@ -27,7 +27,7 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 FOR /R %%x in (__init__.py) do ren "%%x" __init__.pyx
-move mainServer.py mainServer.pyx
+move main.py main.pyx
 python setup_compact.pyx develop
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
@@ -35,14 +35,14 @@ IF %ERRORLEVEL% NEQ 0 (
 del /S *.c
 del /S *.py
 del /S setup_compact.pyx
-move mainServer.pyx mainServer.py
+move main.pyx main.py
 rmdir /S /Q build
 FOR /R %%x in (__init__.pyx) do ren "%%x" __init__.py
 dir
 dir code_generator
 
 copy ..\..\backend\windows.spec .
-copy ..\..\backend\app_variables.json .
+cp ..\..\backend\perceptilabs\app_variables.json ./perceptilabs/
 pyinstaller --clean -y windows.spec
 IF %ERRORLEVEL% NEQ 0 (
   ls -R -l

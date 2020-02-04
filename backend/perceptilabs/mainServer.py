@@ -2,6 +2,7 @@ import logging
 import sys
 import argparse
 import json
+import pkg_resources
 
 from perceptilabs.processes import ProcessDependencyWatcher
 from perceptilabs.mainInterface import Interface
@@ -56,7 +57,7 @@ def main():
 
     log = logging.getLogger(__name__)
 
-    with open('app_variables.json', 'r') as f:
+    with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
         app_variables = json.load(f)
 
     commit_id = app_variables["BuildVariables"]["CommitId"]

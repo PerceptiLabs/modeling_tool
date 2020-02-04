@@ -13,39 +13,42 @@ from perceptilabs.script.generators import DataDataCodeGenerator2
 @pytest.fixture(scope='module', autouse=True)
 def npy_3000x784():
     np.random.seed(0)
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.npy') as f:
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
         mat = np.random.random((3000, 784))
         np.save(f.name, mat)
         yield f.name
-
+        f.close()
         
 @pytest.fixture(scope='module', autouse=True)        
 def csv_3000x784():
     np.random.seed(789)    
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.csv') as f:
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
         mat = np.random.random((3000, 784))
         df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
         df.to_csv(f.name, index=False)
         yield f.name
+        f.close()
 
         
 @pytest.fixture(scope='module', autouse=True)
 def npy_30x784():
     np.random.seed(123)
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.npy') as f:
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
         mat = np.random.random((30, 784))
         np.save(f.name, mat)
         yield f.name
+        f.close()
 
         
 @pytest.fixture(scope='module', autouse=True)
 def csv_30x784():
     np.random.seed(456)
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.csv') as f:
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
         mat = np.random.random((30, 784))
         df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
         df.to_csv(f.name, index=False)
         yield f.name
+        f.close()
 
         
 @pytest.fixture(scope='module', autouse=True)
