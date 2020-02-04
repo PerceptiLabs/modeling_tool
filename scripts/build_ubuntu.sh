@@ -15,10 +15,10 @@ cd ..
 
 # ---- Train models ----
 echo "Training models"
-cd backend/insights/csv_ram_estimator/
+cd backend/perceptilabs/insights/csv_ram_estimator/
 python train_model.py data_1579288530.csv
 if [ $? -ne 0 ]; then exit 1; fi
-cd ../../../
+cd ../../../../
 
 # ----- Build backend ----
 echo "----- Building backend -----"
@@ -41,7 +41,7 @@ rsync -a ../../backend --files-from=../../backend/included_files.txt .
 cp ../../backend/setup_compact.pyx .
 
 echo "C compiling"
-mv mainServer.py mainServer.pyx
+mv main.py main.pyx
 find . -name "__init__.py" -exec rename -v 's/\.py$/\.pyx/i' {} \;
 python setup_compact.pyx develop --user
 if [ $? -ne 0 ]; then exit 1; fi
@@ -51,11 +51,11 @@ find . -type f -name '*.c' -exec rm {} +
 find . -type f -name '*.py' -exec rm {} +
 rm setup_compact.pyx
 rm -r build
-mv mainServer.pyx mainServer.py
+mv main.pyx main.py
 find . -name "__init__.pyx" -exec rename -v 's/\.pyx$/\.py/i' {} \;
 
 echo "Adding app_variables"
-cp ../../backend/app_variables.json .
+cp ../../backend/perceptilabs/app_variables.json ./perceptilabs/
 
 echo "Listing files to be included in build (contents of 'backend_tmp/')"
 ls -l -R

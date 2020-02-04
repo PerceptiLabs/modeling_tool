@@ -47,9 +47,9 @@ hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('
 datas  =[
     (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'),
     (python_lib+'/atari_py/', './atari_py/'),
-    (working_dir+'/insights/csv_ram_estimator/model_and_meta.pkl', './insights/csv_ram_estimator/'),
-    ('app_variables.json','.'),
-    (working_dir+'/script/templates/', './script/templates/'),
+    (working_dir+'/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl', './perceptilabs/insights/csv_ram_estimator/'),
+    (working_dir+'/perceptilabs/app_variables.json','.'),
+    (working_dir+'/perceptilabs/script/templates/', './perceptilabs/script/templates/'),
 ]
 
 
@@ -58,7 +58,7 @@ log.info("binaries = {}".format(pformat(binaries)))
 log.info("datas = {}".format(pformat(datas)))
 log.info("hiddenimports = {}".format(pformat(hiddenimports)))
 
-a = Analysis(['mainServer.py'],
+a = Analysis(['main.py'],
              pathex=pathex,
              binaries=binaries,
              datas=datas,
