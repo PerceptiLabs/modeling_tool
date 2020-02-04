@@ -950,31 +950,59 @@ const actions = {
       commit('get_workspacesFromLocalStorage');
       commit('get_lastActiveTabFromLocalStorage');
       
-      // removing stats and test tabs if there aren't any trained models
-      // this happens when the core is restarted
-      const networks = state.workspaceContent;
-      
-      networks
-        .filter(network => network.networkElementList !== null) // don't need to check if no elements
-        .forEach(network => {
-        const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
-        const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
-        Promise.all([isRunningPromise, isTrainedPromise])
-          .then(([isRunning, isTrained]) => {
-            // console.log('Promise all values', isRunning, isTrained);
+      processNonActiveWorkspaces();
+      processActiveWorkspaces();
 
+      function processNonActiveWorkspaces() {
+        // removing stats and test tabs if there aren't any trained models
+        // this happens when the core is restarted
+        const networks = state.workspaceContent.filter(network => 
+          network.networkElementList !== null &&
+          network.networkID !== state.workspaceContent[state.currentNetwork].networkID);
+        
+        for(let network of networks) {
+          const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
+          const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
+          Promise.all([isRunningPromise, isTrainedPromise])
+            .then(([isRunning, isTrained]) => {
+              // console.log('Promise all values', isRunning, isTrained);
+              if (isRunning && isTrained) {
+                network.networkMeta.openStatistics = false;
+                network.networkMeta.openTest = null;
+              } else if (!isRunning && isTrained) {
+                network.networkMeta.openStatistics = false;
+                network.networkMeta.openTest = false;
+              } else {
+                network.networkMeta.openStatistics = null;
+                network.networkMeta.openTest = null;
+              }
+            });
+        }
+      }
+
+      function processActiveWorkspaces() {
+        const network = state.workspaceContent.find(network => 
+          network.networkID === state.workspaceContent[state.currentNetwork].networkID);
+  
+          const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
+          const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
+          Promise.all([isRunningPromise, isTrainedPromise])
+            .then(([isRunning, isTrained]) => {
+  
             if (isRunning && isTrained) {
-              network.networkMeta.openStatistics = false;
-              network.networkMeta.openTest = null;
+              dispatch('SET_openStatistics', network.networkMeta.openStatistics);
+              dispatch('SET_openTest', null);
+              dispatch('SET_chartsRequestsIfNeeded', network.networkID);
             } else if (!isRunning && isTrained) {
-              network.networkMeta.openStatistics = false;
-              network.networkMeta.openTest = false;
+              dispatch('SET_openStatistics', network.networkMeta.openStatistics);
+              dispatch('SET_openTest', network.networkMeta.openTest);
+              dispatch('SET_chartsRequestsIfNeeded', network.networkID);
             } else {
-              network.networkMeta.openStatistics = null;
-              network.networkMeta.openTest = null;
+              dispatch('SET_openStatistics', null);
+              dispatch('SET_openTest', null);
             }
-          });
         });
+      }
 
       resolve();
     });
