@@ -43,6 +43,6 @@ setup(
         ],
     },
     ext_modules=cythonize(cy_extensions),
-    cmdclass = {'build_py': build_py},    
+    cmdclass={'build_py': build_py},    
 )
 
