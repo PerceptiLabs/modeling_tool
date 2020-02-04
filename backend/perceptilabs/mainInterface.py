@@ -292,6 +292,9 @@ class Interface():
             response = self._core.startTest()
             return response
 
+        elif action == "isTestPlaying":
+            return self._core.isTestPlaying()
+
         elif action == "resetTest":
             response = self._core.resetTest()
             return response

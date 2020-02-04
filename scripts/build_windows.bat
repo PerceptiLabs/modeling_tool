@@ -42,7 +42,7 @@ dir
 dir code_generator
 
 copy ..\..\backend\windows.spec .
-copy ..\..\backend\app_variables.json .
+cp ..\..\backend\perceptilabs\app_variables.json ./perceptilabs/
 pyinstaller --clean -y windows.spec
 IF %ERRORLEVEL% NEQ 0 (
   ls -R -l

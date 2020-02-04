@@ -15,6 +15,7 @@ class RunMacroCodeGenerator(Jinja2CodeGenerator):
         all_args = []
         for arg in self.args:
             if isinstance(arg, str):
+                arg=arg.replace('\\', '/')
                 arg = '"%s"' % arg
             all_args.append(arg)
             
@@ -28,10 +29,12 @@ class RunMacroCodeGenerator(Jinja2CodeGenerator):
         tmp_template  = '{%'+ 'from "%s" import %s' % (self.template, self.macro) +'%}\n'
         tmp_template += '{{%s(%s)}}' % (self.macro, args_str)
             
-        with tempfile.NamedTemporaryFile(mode='w', dir=self.templates_directory) as f:
+        with tempfile.NamedTemporaryFile(mode='w', dir=self.templates_directory, delete=False) as f:
             f.write(tmp_template)
             f.flush()
             tmp_name = os.path.basename(f.name)
             code = self._render(tmp_name)
+            f.close()
+            os.remove(f.name)
         
         return code
