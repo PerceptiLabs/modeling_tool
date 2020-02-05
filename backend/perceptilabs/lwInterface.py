@@ -59,7 +59,7 @@ class getCode(LW_interface_base):
 
     def run(self):
         if self._network[self._id]["Type"] == "TrainReinforce":
-            from graph import Graph
+            from perceptilabs.graph import Graph
             graph = Graph(self._network)
             graph_dict = graph.graphs
             layerInfo = graph_dict[self._id]
@@ -74,7 +74,7 @@ class getCode(LW_interface_base):
                                   
                                   }
 
-        from codehq import CodeHqNew as CodeHq
+        from perceptilabs.codehq import CodeHqNew as CodeHq
 
         content = {"Output": CodeHq.get_code_generator(self._id,layerInfo).get_code()}
         return content
