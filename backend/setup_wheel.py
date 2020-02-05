@@ -5,7 +5,17 @@ from setuptools import setup, Extension, find_packages
 from setuptools.command.build_py import build_py as _build_py
 
 
-included_files = glob.glob('perceptilabs/**/*.py', recursive=True)
+# included_files = glob.glob('perceptilabs/**/*.py', recursive=True)
+
+included_files = []
+with open('included_files.txt') as f:
+    for line in f:
+        tmp_line = line.strip()
+        if "#" not in tmp_line and tmp_line and tmp_line.endswith(".py"):
+            included_files.append(tmp_line)
+            # included_files.append(".".join(tmp_line.split(".")[:-1]).replace("/","."))
+
+print("Found these python modules to include: " + str(included_files))
 
 
 cy_extensions = []

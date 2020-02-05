@@ -59,7 +59,6 @@ perceptilabs/script/templates/train_normal_distr.j2
 # perceptilabs/core_new
 perceptilabs/core_new/__init__.py
 perceptilabs/core_new/cache.py
-perceptilabs/core_new/control.py
 perceptilabs/core_new/core.py
 perceptilabs/core_new/errors.py
 perceptilabs/core_new/extras.py
