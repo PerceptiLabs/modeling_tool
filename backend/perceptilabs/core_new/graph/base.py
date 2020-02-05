@@ -155,6 +155,10 @@ class Graph:
     @property
     def active_training_node(self):
         return self.nodes[-1] # TODO : adapt this for split graph
+
+    @property
+    def edges(self):
+        return self._nx_graph.edges    
     
     def clone(self):
         layers = {n.layer_id: node.layer.__class__() for n in self.nodes}

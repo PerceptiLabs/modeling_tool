@@ -16,7 +16,14 @@ log = logging.getLogger(__name__)
 
 
 class GraphBuilder:
+    def __init__(self, replica_by_name=None):
+        self._replica_by_name = replica_by_name    
+    
     def build(self, layer_map: Dict[str, BaseLayer], edges_by_id: Set[Tuple[str, str]]):
+        # TODO: remove this method?
+        return self.build_from_layers_and_edges(layer_map, edges_by_id)
+    
+    def build_from_layers_and_edges(self, layer_map: Dict[str, BaseLayer], edges_by_id: Set[Tuple[str, str]]):        
         nodes = {}
         for layer_id, layer_instance in layer_map.items():
             node = Node(layer_id, None, layer_instance, None)
@@ -31,7 +38,102 @@ class GraphBuilder:
         graph = Graph(list(nodes.values()), edges)
         return graph
 
+    def build_from_snapshot(self, snapshot):
+        if self._replica_by_name is None:
+            raise RuntimeError("replica_by_name must be set in order to build from snapshot")
+
+        replicas = {}
+        for layer_id, layer_dict in snapshot['layers'].items():
+            replica = self._build_replica(layer_dict)
+            replicas[layer_id] = replica
+
+        graph = self.build_from_layers_and_edges(replicas, snapshot['edges'])
+        return graph
         
+    def _build_replica(self, layer_dict):
+        replica_class = self._replica_by_name.get(layer_dict['replica_class'])
+
+        if replica_class is None:
+            raise ValueError(f'No replica with name {layer_dict["replica_class"]} in. Check base_to_replica_map.')
+
+        kwargs = {}
+        for unique_key, value in layer_dict['properties'].items():
+            _, key = unique_key.split('-')
+            kwargs[key] = value        
+
+        replica = replica_class(**kwargs)
+        return replica
+    
+
+class SnapshotBuilder:
+    def __init__(self, base_to_replica_map, replicated_properties_table, fn_can_serialize=None):
+        self._base_to_replica_map = base_to_replica_map
+        self._replicated_properties_table = replicated_properties_table
+        self._fn_can_serialize = fn_can_serialize
+        
+        # TODO: inject compression, caching and that kind of stuff?
+        
+    def build_snapshot(self, graph):
+        layers_dict = {}
+        for node in graph.nodes:
+            layer_dict = self._build_layer_dict(node)
+            layers_dict[node.layer_id] = layer_dict
+
+        edges_list = []
+        for edge in graph.edges:
+            edge_tuple = (edge.node1.layer_id, edge_node2.layer_id)
+            edges_list.append(edge_tuple)
+        
+        snapshot_dict = {
+            'layers': layers_dict,
+            'edges': edges_list
+        }
+        
+        if (self._fn_can_serialize is not None) and (not self._fn_can_serialize(snapshot_dict)):
+            raise RuntimeError("Serialization test failed")
+        
+        return snapshot_dict
+            
+    def _build_layer_dict(self, node):
+        layer_dict = None
+        for base_class, replica_class in self._base_to_replica_map.items():
+            if isinstance(node.layer, base_class):
+                layer_dict = self._build_layer_dict_internal(node, base_class, replica_class)
+                break
+            
+        if layer_dict is None:
+            raise ValueError(f'Layer class {type(node.layer)} not found in base_to_replica_map')
+        return layer_dict
+
+    def _build_layer_dict_internal(self, node, base_class, replica_class):
+        replicated_props = self._replicated_properties_table.get(base_class)
+        if replicated_props is None:
+            raise ValueError(f'Base class {base_class} not found in replicated_properties_table')
+
+        properties = {}
+        for repl_prop in replicated_props:
+            properties.update(self._get_replicated_property(node, repl_prop))
+
+        result = {
+            'replica_class': replica_class.__name__,
+            'properties': properties
+        }
+        return result
+
+    def _get_replicated_property(self, node, repl_prop):
+        unique_key = f'{node.layer_id}-{repl_prop.name}'
+
+        if not hasattr(node.layer, repl_prop.name):
+            # TODO: log warning
+            value = repl_prop.default if callable(repl_prop.default) else repl_prop.default
+
+        value = getattr(node.layer, repl_prop.name)
+        if not isinstance(value, repl_prop.type):
+            # TODO: log warning        
+            value = repl_prop.default if callable(repl_prop.default) else repl_prop.default        
+
+        return {unique_key: value}
+    
 
 class ReplicatedGraphBuilder:
     def __init__(self, client):
