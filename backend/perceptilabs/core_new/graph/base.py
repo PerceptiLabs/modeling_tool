@@ -135,7 +135,6 @@ class Graph:
             # TODO: can we use ancesotrs instead?
             simple_paths = list(nx.all_simple_paths(self._nx_graph, data_node, target_node))
 
-
             if len(simple_paths) > 0:
                 immediate = True # Assume all connections are immediate and then verify that.
                 for path in simple_paths:
@@ -157,9 +156,13 @@ class Graph:
     def active_training_node(self):
         return self.nodes[-1] # TODO : adapt this for split graph
     
+    def clone(self):
+        layers = {n.layer_id: node.layer.__class__() for n in self.nodes}
+        new_graph = self._builder.build(layers, self._nx_graph.edges)
+        return new_graph
 
-
-
+    
+        
 """
 
 class Node:
