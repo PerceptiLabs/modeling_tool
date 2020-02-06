@@ -41,8 +41,8 @@ cp ../../backend/perceptilabs/app_variables.json ./perceptilabs/
 echo "Listing files to be included in build (contents of 'backend_tmp/')"
 ls -l -R
 
-python setup.py  build_ext bdist_wheel
+python setup.py build_ext bdist_wheel
 if [ $? -ne 0 ]; then exit 1; fi
 
 cd ../backend_out
-cp -r ../backend_tmp/dist .
+cp ../backend_tmp/dist/* .

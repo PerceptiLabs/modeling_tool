@@ -28,7 +28,7 @@ jobs:
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-      artifact: linux_3.6_wheel
+      artifact: wheels
 
 
   - job: build_ubuntu_py37
@@ -52,7 +52,7 @@ jobs:
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-      artifact: linux_3.7_wheel
+      artifact: wheels
 
 
 ### BUILD WINDOWS ###
@@ -86,7 +86,7 @@ jobs:
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-      artifact: windows_3.6_wheel
+      artifact: wheels
 
 
   - job: build_windows_py37
@@ -118,7 +118,7 @@ jobs:
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-      artifact: windows_3.7_wheel
+      artifact: wheels
     
 
 
@@ -146,7 +146,7 @@ jobs:
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-      artifact: osx_3.6_wheel
+      artifact: wheels
 
 
   - job: build_osx_py37
@@ -172,4 +172,4 @@ jobs:
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-      artifact: osx_3.7_wheel
+      artifact: wheels
