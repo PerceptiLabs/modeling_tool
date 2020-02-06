@@ -3,17 +3,12 @@ import glob
 from Cython.Build import cythonize
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_py import build_py as _build_py
+from setuptools.command.install import install
+from subprocess import check_call
 
 
 included_files = glob.glob('perceptilabs/**/*.py', recursive=True)
 
-# included_files = []
-# with open('included_files.txt') as f:
-#     for line in f:
-#         tmp_line = line.strip()
-#         if "#" not in tmp_line and tmp_line and tmp_line.endswith(".py"):
-#             included_files.append(tmp_line)
-#             # included_files.append(".".join(tmp_line.split(".")[:-1]).replace("/","."))
 
 print("Found these python modules to include: " + str(included_files))
 
@@ -28,7 +23,6 @@ for path in included_files:
     cy_extensions.append(ext)
     print(f"Created cython extension for module {module} [{path}]")
         
-
         
 class build_py(_build_py):
     def find_package_modules(self, package, package_dir):
@@ -87,6 +81,8 @@ setup(
         ],
     },
     ext_modules=cythonize(cy_extensions),
-    cmdclass={'build_py': build_py},    
+    cmdclass={
+        'build_py': build_py,
+    },    
 )
 
