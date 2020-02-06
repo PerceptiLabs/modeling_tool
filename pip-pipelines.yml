@@ -36,7 +36,7 @@ jobs:
         vmImage: "ubuntu-16.04"
     steps:
     - task: FileTransform@2
-    inputs:
+      inputs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
@@ -44,15 +44,15 @@ jobs:
     - bash: |
         cd scripts/
         ./setup_ubuntu-py3.7.sh
-    displayName: 'Environment setup'
+      displayName: 'Environment setup'
     
     - bash: |
         cd scripts/
         bash -i build_ubuntu_wheel.sh
-    displayName: 'Build'
+      displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-    artifact: linux_3.7_wheel
+      artifact: linux_3.7_wheel
 
 
 ### BUILD WINDOWS ###
@@ -96,13 +96,13 @@ jobs:
     - group: Windows-build
     steps:
     - task: FileTransform@2
-    inputs:
+      inputs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
 
     - task: UsePythonVersion@0
-    inputs: 
+      inputs: 
         versionSpec: '3.7'
         architecture: 'x64'
         addToPath: true
@@ -110,15 +110,15 @@ jobs:
     - script: |
         cd scripts/
         ./setup_windows.bat
-    displayName: 'Environment setup'
+      displayName: 'Environment setup'
 
     - script: |
         cd scripts/
         ./build_windows_wheel.bat
-    displayName: 'Build'
+      displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-    artifact: windows_3.7_wheel
+      artifact: windows_3.7_wheel
     
 
 
@@ -156,7 +156,7 @@ jobs:
     - group: OSX-build
     steps:
     - task: FileTransform@2
-    inputs:
+      inputs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
@@ -164,12 +164,12 @@ jobs:
     - bash: |
         cd scripts/
         ./setup_osx-py3.7.sh
-    displayName: 'Environment setup'
+      displayName: 'Environment setup'
 
     - bash: |
         cd scripts/
         bash -i build_osx_wheel.sh
-    displayName: 'Build'
+      displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
-    artifact: osx_3.7_wheel
+      artifact: osx_3.7_wheel
