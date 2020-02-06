@@ -84,15 +84,16 @@ class Graph(object):
                                 self.copykeys.append(str(maxId+int(Id)))
                     newGraph.pop(endId)
                     newGraph[endId]=graph[endId]
-
+                    online_net = None
+                    target_net = None
                     layer_pairs = []
                     for id_ in newGraph:
                         copied_id = newGraph[id_].get('CopyOf')
                         if copied_id is None:
-                            copied_id_name = ''
-                            id_name = ''
-                            online_net = copied_id_name
-                            target_net = id_name
+                            # copied_id_name = ''
+                            # id_name = ''
+                            # online_net = copied_id_name
+                            # target_net = id_name
                             continue
                         copied_id_name = graph[copied_id]['Info']['Name'] 
                         id_name = newGraph[id_]['Info']['Name'] 
@@ -103,6 +104,9 @@ class Graph(object):
                             target_net = id_name
                             newGraph[endId]['Con'].append(id_) # TODO: is backwards connections needed too?
                     
+                    if online_net is None:
+                        online_net = 'missing incoming connections'
+                        target_net = 'missing incoming connections'
                     newGraph[endId]['Info']['ExtraInfo'] = dict()
                     newGraph[endId]['Info']['ExtraInfo']['Pairs'] = layer_pairs
                     newGraph[endId]['Info']['ExtraInfo']['OnlineNet'] = online_net
