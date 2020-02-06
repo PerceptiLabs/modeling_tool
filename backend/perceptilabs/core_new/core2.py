@@ -62,8 +62,9 @@ class Core:
         while self._is_running.is_set():
             self._fetch_graph(graph_spec, config)
 
-            #if self.graph.nodes[-1].layer.status == 'done':
-            #    self._is_running.clear()
+            graphs = self.graphs
+            if len(graphs) > 0 and graphs[-1].nodes[-1].layer.status == 'finished':
+                self._is_running.clear()
 
             if counter % 10 == 0:
                 log.debug(f"Session {session_id} worker uptime: {time.time() - time_start}s")
@@ -86,20 +87,27 @@ class Core:
             with self._lock:            
                 graph_count = len(self._graphs)
             log.info(f"{snapshot_count} snapshots available at remote, {graph_count} graphs available locally.")
-            
             if graph_count > 0:
                 with self._lock:
                     epoch = self._graphs[-1].active_training_node.layer.epoch
                     log.info(f"Latest graph epoch: {epoch}")                
 
-
-            for i in range(graph_count, min(snapshot_count, graph_count + 50)):
-                log.debug(f"Collecting graph {i}/{snapshot_count}")
+            diff = snapshot_count - graph_count
+            n_fetch = min(diff, 50)
+                    
+            sz_tot_buffer = 0
+            sz_tot_decompressed = 0
+            for i in range(graph_count, graph_count + n_fetch):
+                log.debug(f"Collecting graph {i-graph_count}/{n_fetch}")
                 with urllib.request.urlopen(f"http://localhost:5678/snapshot?index={i}") as url:
-                    buf = url.read().decode()
-            
-                buf = bytes.fromhex(buf)
+                    buf = url.read()
+                    sz_tot_buffer += len(buf)
+                    
+                hex_str = buf.decode()
+                buf = bytes.fromhex(hex_str)
                 buf = zlib.decompress(buf)
+                sz_tot_decompressed += len(buf)
+                
                 snapshot = dill.loads(buf)
                 graph = self._graph_builder.build_from_snapshot(snapshot)
                 
@@ -110,6 +118,13 @@ class Core:
             
                 with self._lock:
                     self._graphs.append(graph)
+
+            if n_fetch > 0:
+                log.info(
+                    f"Collected {n_fetch}. "
+                    f"Average download size: {sz_tot_buffer/n_fetch} bytes, "
+                    f"average decompressed size {sz_tot_decompressed/n_fetch} bytes."
+                )
                     
         except Exception as e:
             log.exception("Error while fetching graph")
