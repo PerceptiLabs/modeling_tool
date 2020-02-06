@@ -7,7 +7,7 @@ variables:
 
 jobs:
 ### BUILD UBUNTU ###
-  - job: build_ubuntu-py3.6
+  - job: build_ubuntu_py36
     pool:
         vmImage: "ubuntu-16.04"
     steps:
@@ -31,7 +31,7 @@ jobs:
       artifact: linux_3.6_wheel
 
 
-  - job: build_ubuntu-py3.7
+  - job: build_ubuntu_py37
     pool:
         vmImage: "ubuntu-16.04"
     steps:
@@ -57,7 +57,7 @@ jobs:
 
 ### BUILD WINDOWS ###
 
-  - job: build_windows-py3.6
+  - job: build_windows_py36
     pool:
         vmImage: "vs2017-win2016"
     variables:
@@ -89,7 +89,7 @@ jobs:
       artifact: windows_3.6_wheel
 
 
-  - job: build_windows-py3.7
+  - job: build_windows_py37
     pool:
         vmImage: "vs2017-win2016"
     variables:
@@ -123,7 +123,7 @@ jobs:
 
 
 ### BUILD OSX ###
-  - job: build_osx-py3.6
+  - job: build_osx_py36
     pool:
         vmImage: "macOS-10.14"
     variables:
@@ -149,7 +149,7 @@ jobs:
       artifact: osx_3.6_wheel
 
 
-  - job: build_osx-py3.7
+  - job: build_osx_py37
     pool:
         vmImage: "macOS-10.14"
     variables:
