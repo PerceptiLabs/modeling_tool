@@ -43,7 +43,7 @@ jobs:
 
     - bash: |
         cd scripts/
-        ./setup_ubuntu-py3.7.sh
+        bash -i setup_ubuntu-py37.sh
       displayName: 'Environment setup'
     
     - bash: |
@@ -163,7 +163,7 @@ jobs:
         
     - bash: |
         cd scripts/
-        ./setup_osx-py3.7.sh
+        bash -i setup_osx-py37.sh
       displayName: 'Environment setup'
 
     - bash: |
