@@ -47,17 +47,19 @@ class ScriptFactory:
         template += 'import dill\n'
         template += 'import sys\n'
         template += 'import json\n'
+        template += 'import time\n'        
         template += 'import zlib\n'        
         template += 'import logging\n'
         template += 'import threading\n'
-        template += 'from flask import Flask, jsonify\n'
+        template += 'from flask import Flask, jsonify\n'#, request\n'
+        template += 'import flask'
         template += '\n\n'
         template += 'from perceptilabs.core_new.layers import *\n'
+        template += 'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE\n'        
         template += 'from perceptilabs.core_new.graph import Graph\n'
-        template += 'from perceptilabs.core_new.graph.builder import GraphBuilder\n'                
+        template += 'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder\n'                
         template += 'from perceptilabs.core_new.api.mapping import MapServer, ByteMap\n'
         template += '\n\n'
-
 
         template += 'logging.basicConfig(\n'
         template += '    stream=sys.stdout,\n'
@@ -91,35 +93,48 @@ class ScriptFactory:
                 template += "    ('" + from_id + "', '" + sanitize_layer_name(to_id) + "'),\n"
         template += "}\n\n"
 
+
+
         template += "state_map = {}\n"
-        template += "state_lock = threading.Lock()\n"        
+        template += "state_lock = threading.Lock()\n"
+        template += "snapshots = []\n"
+        template += "snapshot_lock = threading.Lock()\n"        
         template += "\n"
         
         template += "app = Flask(__name__)\n"
         template += "app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True\n"
         template += "\n"
-        template += "@app.route('/state')\n"
-        template += "def endpoint_state():\n"
+        template += "@app.route('/snapshot_count')\n"
+        template += "def endpoint_count():\n"
+        template += "    return str(len(snapshots))\n"
+        
+        template += "@app.route('/snapshot')\n"
+        template += "def endpoint_snapshot():\n"
+        #template += "    request = flask.globals._request_ctx_stack.top\n"
+        template += "    from flask import request\n"
+        template += "    index = int(request.args.get('index'))\n"
         template += "    try:\n"        
         template += "        with state_lock:\n"
-        template += "            tmp_state = dill.dumps(state_map)\n"
-        template += "        tmp_state = zlib.compress(tmp_state)\n"
-        template += "        return tmp_state.hex()\n"
+        template += "            pickled_snapshot = dill.dumps(snapshots[index])\n"
+        template += "        compressed_snapshot = zlib.compress(pickled_snapshot)\n"
+        template += "        hex_snapshot = compressed_snapshot.hex()\n"
+        template += "        print('request snapshot', index, len(pickled_snapshot), len(compressed_snapshot), len(hex_snapshot))\n"
+        template += "        return hex_snapshot\n"
         template += "    except Exception as e:\n"
         template += "         print(e)\n"
         template += "         raise\n"
 
-        template += "\n"
-        template += "@app.route('/state_pretty')\n"
-        template += "def endpoint_state_pretty():\n"
-        template += "    import pprint\n"
-        template += "    try:\n"        
-        template += "        with state_lock:\n"
-        template += "            tmp_state = {k: repr(v) for k, v in state_map.items()}\n"        
-        template += "            return jsonify(tmp_state)\n"
-        template += "    except Exception as e:\n"
-        template += "         print(e)\n"
-        template += "         raise\n"
+        #template += "\n"
+        #template += "@app.route('/state_pretty')\n"
+        #template += "def endpoint_state_pretty():\n"
+        #template += "    import pprint\n"
+        #template += "    try:\n"        
+        #template += "        with state_lock:\n"
+        #template += "            tmp_state = {k: repr(v) for k, v in state_map.items()}\n"        
+        #template += "            return jsonify(tmp_state)\n"
+        #template += "    except Exception as e:\n"
+        #template += "         print(e)\n"
+        #template += "         raise\n"
 
         
         #template += "server = MapServer(\n"
@@ -137,47 +152,58 @@ class ScriptFactory:
         #template += ")\n\n"
         #template += "state_map.start()\n\n"
 
-        template += "def synchronize_replicas(graph):\n"
-        template += "    tmp_map = {}\n"
-        template += "    for node in graph.nodes:\n"
-        template += "        l = node.layer\n"
-        template += "        lid = node.layer_id\n"        
-        template += "        if isinstance(l, Tf1xClassificationLayer):\n"
-        template += "            tmp_map[(lid + '-sample').encode()] = l.sample\n"
-        template += "            tmp_map[(lid + '-size_training').encode()] = l.size_training\n"
-        template += "            tmp_map[(lid + '-size_validation').encode()] = l.size_validation\n"
-        template += "            tmp_map[(lid + '-size_testing').encode()] = l.size_testing\n"
-        template += "            tmp_map[(lid + '-variables').encode()] = l.variables\n"
-        template += "            tmp_map[(lid + '-accuracy_training').encode()] = l.accuracy_training\n"
-        template += "            tmp_map[(lid + '-accuracy_validation').encode()] = l.accuracy_validation\n"       
-        template += "            tmp_map[(lid + '-accuracy_testing').encode()] = l.accuracy_testing\n"
-        template += "            tmp_map[(lid + '-loss_training').encode()] = l.loss_training\n"
-        template += "            tmp_map[(lid + '-loss_validation').encode()] = l.loss_validation\n"
-        template += "            tmp_map[(lid + '-loss_testing').encode()] = l.loss_testing\n"
-        template += "            tmp_map[(lid + '-status').encode()] = l.status\n"
-        template += "            tmp_map[(lid + '-layer_gradients').encode()] = l.layer_gradients\n"
-        template += "            tmp_map[(lid + '-layer_weights').encode()] = l.layer_weights\n"
-        template += "            tmp_map[(lid + '-layer_biases').encode()] = l.layer_biases\n"        
-        template += "            tmp_map[(lid + '-layer_outputs').encode()] = l.layer_outputs\n"
-        template += "            tmp_map[(lid + '-batch_size').encode()] = l.batch_size\n"
-        template += "            tmp_map[(lid + '-is_paused').encode()] = l.is_paused\n"
-        template += "            tmp_map[(lid + '-training_iteration').encode()] = l.training_iteration\n"
-        template += "            tmp_map[(lid + '-validation_iteration').encode()] = l.validation_iteration\n"
-        template += "            tmp_map[(lid + '-testing_iteration').encode()] = l.testing_iteration\n"
-        template += "            tmp_map[(lid + '-progress').encode()] = l.progress\n"                                                       
-        template += "        elif isinstance(l, DataLayer):\n"
-        template += "            tmp_map[(lid + '-sample').encode()] = l.sample\n"
-        template += "            tmp_map[(lid + '-size_training').encode()] = l.size_training\n"
-        template += "            tmp_map[(lid + '-size_validation').encode()] = l.size_validation\n"
-        template += "            tmp_map[(lid + '-size_testing').encode()] = l.size_testing\n"
-        template += "            tmp_map[(lid + '-variables').encode()] = l.variables\n"
-        template += "        elif isinstance(l, Tf1xLayer):\n"
-        template += "            tmp_map[(lid + '-variables').encode()] = l.variables\n"
-        template += "    \n"
-        template += "    global state_lock, state_map\n"
-        template += "    with state_lock:\n"
-        template += "        state_map = {k.decode(): v for k, v in tmp_map.items()}\n"        
-        template += "    \n\n"
+        #template += "def synchronize_replicas(graph):\n"
+        #template += "    tmp_map = {}\n"
+        #template += "    for node in graph.nodes:\n"
+        #template += "        l = node.layer\n"
+        #template += "        lid = node.layer_id\n"        
+        #template += "        if isinstance(l, Tf1xClassificationLayer):\n"
+        #template += "            tmp_map[(lid + '-sample').encode()] = l.sample\n"
+        #template += "            tmp_map[(lid + '-size_training').encode()] = l.size_training\n"
+        #template += "            tmp_map[(lid + '-size_validation').encode()] = l.size_validation\n"
+        #template += "            tmp_map[(lid + '-size_testing').encode()] = l.size_testing\n"
+        #template += "            tmp_map[(lid + '-variables').encode()] = l.variables\n"
+        #template += "            tmp_map[(lid + '-accuracy_training').encode()] = l.accuracy_training\n"
+        #template += "            tmp_map[(lid + '-accuracy_validation').encode()] = l.accuracy_validation\n"       
+        #template += "            tmp_map[(lid + '-accuracy_testing').encode()] = l.accuracy_testing\n"
+        #template += "            tmp_map[(lid + '-loss_training').encode()] = l.loss_training\n"
+        #template += "            tmp_map[(lid + '-loss_validation').encode()] = l.loss_validation\n"
+        #template += "            tmp_map[(lid + '-loss_testing').encode()] = l.loss_testing\n"
+        #template += "            tmp_map[(lid + '-status').encode()] = l.status\n"
+        #template += "            tmp_map[(lid + '-layer_gradients').encode()] = l.layer_gradients\n"
+        #template += "            tmp_map[(lid + '-layer_weights').encode()] = l.layer_weights\n"
+        #template += "            tmp_map[(lid + '-layer_biases').encode()] = l.layer_biases\n"        
+        #template += "            tmp_map[(lid + '-layer_outputs').encode()] = l.layer_outputs\n"
+        #template += "            tmp_map[(lid + '-batch_size').encode()] = l.batch_size\n"
+        #template += "            tmp_map[(lid + '-is_paused').encode()] = l.is_paused\n"
+        #template += "            tmp_map[(lid + '-training_iteration').encode()] = l.training_iteration\n"
+        #template += "            tmp_map[(lid + '-validation_iteration').encode()] = l.validation_iteration\n"
+        #template += "            tmp_map[(lid + '-testing_iteration').encode()] = l.testing_iteration\n"
+        #template += "            tmp_map[(lid + '-progress').encode()] = l.progress\n"                                                       
+        #template += "        elif isinstance(l, DataLayer):\n"
+        #template += "            tmp_map[(lid + '-sample').encode()] = l.sample\n"
+        #template += "            tmp_map[(lid + '-size_training').encode()] = l.size_training\n"
+        #template += "            tmp_map[(lid + '-size_validation').encode()] = l.size_validation\n"
+        #template += "            tmp_map[(lid + '-size_testing').encode()] = l.size_testing\n"
+        #template += "            tmp_map[(lid + '-variables').encode()] = l.variables\n"
+        #template += "        elif isinstance(l, Tf1xLayer):\n"
+        #template += "            tmp_map[(lid + '-variables').encode()] = l.variables\n"
+        #template += "    \n"
+        #template += "    global state_lock, state_map\n"
+        #template += "    with state_lock:\n"
+        #template += "        state_map = {k.decode(): v for k, v in tmp_map.items()}\n"        
+        #template += "    \n\n"
+
+        template += "snapshot_builder = SnapshotBuilder(\n"
+        template += "    BASE_TO_REPLICA_MAP, \n"
+        template += "    REPLICATED_PROPERTIES_TABLE\n"
+        template += ")\n"
+        template += "\n"
+        template += "def make_snapshot(graph):\n"
+        template += "    global snapshot_lock, snapshots\n"        
+        template += "    with snapshot_lock:\n"
+        template += "        snapshot = snapshot_builder.build(graph)\n"
+        template += "        snapshots.append(snapshot)\n"
         
         # --- CREATE MAIN FUNCTION ---
         template += 'def main():\n'
@@ -186,8 +212,11 @@ class ScriptFactory:
         template += '    graph = graph_builder.build(LAYERS, EDGES)\n'
         template += '    \n'
         template += '    print(graph.training_nodes)\n'
-        template += '    graph.training_nodes[0].layer_instance.send_state_updates = synchronize_replicas\n'
+        #template += '    graph.training_nodes[0].layer_instance.send_state_updates = synchronize_replicas\n'
+        template += '    graph.training_nodes[0].layer_instance.send_state_updates = make_snapshot\n'
+        
         template += '    graph.training_nodes[0].layer_instance.run(graph)\n'
+        template += '    time.sleep(10)\n' # TODO: remove        
 
 
         template += '\n\n'

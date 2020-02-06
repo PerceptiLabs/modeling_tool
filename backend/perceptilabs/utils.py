@@ -68,7 +68,7 @@ def stringify(obj, max_len=70, new_lines=False, indent=0, sort=False):
     n_chars = max(len(p) for p, _ in pairs)
 
     if sort:
-        pairs = sorted(pairs, key=lambda x: x[1])
+        pairs = sorted(pairs, key=lambda x: x[0])
     
     for path, value in pairs:
         text += ' '*indent + path.ljust(n_chars, ' ') + ' : ' + value + '\n'

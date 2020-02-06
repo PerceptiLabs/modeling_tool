@@ -59,6 +59,13 @@ class {{layer_name}}(DataLayer):
         self._val_sz_tot = val_sz_tot
         self._tst_sz_tot = tst_sz_tot
 
+        #print("AJIHASHSIJHSIA",locals())
+                    
+        #for k, v in locals().items():
+        #    print(k, v, dill.pickles(v))p
+
+                    
+                    
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
 
     @property

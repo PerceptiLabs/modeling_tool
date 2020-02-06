@@ -8,13 +8,13 @@ class {{layer_name}}(Tf1xClassificationLayer):
         self._paused = False
         self._status = 'created'
         
-        self._loss_training = []
-        self._loss_validation = []
-        self._loss_testing = []        
+        self._loss_training = 0.0
+        self._loss_validation = 0.0
+        self._loss_testing = 0.0      
 
-        self._accuracy_training = []
-        self._accuracy_validation = []
-        self._accuracy_testing = []        
+        self._accuracy_training = 0.0
+        self._accuracy_validation = 0.0
+        self._accuracy_testing = 0.0      
         
         self._variables = {}
         self._layer_outputs = {}
@@ -160,7 +160,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
                         grad_tensor = tf.constant(0)
                     gradients[name] = grad_tensor
                 layer_gradient_tensors[node.layer_id] = gradients
-                self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()}
+                self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize it.
         
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_tensor, trainable_vars)
@@ -176,41 +176,34 @@ class {{layer_name}}(Tf1xClassificationLayer):
             while self._paused:
                 time.sleep(1.0)
 
-        def train_step(accuracy_list, loss_list, f1_list, auc_list):
-            _, loss, acc, self._layer_outputs, self._layer_weights, self._layer_biases, \
-                layer_gradients = sess.run([
+        def train_step():
+            _, self._loss_training, self._accuracy_training, \
+                self._layer_outputs, self._layer_weights, self._layer_biases, \
+                self._layer_gradients \
+                = sess.run([
                     update_weights, loss_tensor, accuracy_tensor,
                     layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
-            ])
-            accuracy_list.append(acc)
-            loss_list.append(loss)
-            f1_list.append(123)
-            auc_list.append(456)
-
-            for layer_id, gradients in layer_gradients.items():
-                for name, value in gradients.items():
-                    self._layer_gradients[layer_id][name].append(value)
+                ])
             
-        def validation_step(accuracy_list, loss_list, f1_list, auc_list):
-            loss, acc, self._layer_outputs, self._layer_weights, self._layer_biases, \
-                layer_gradients = sess.run([
+        def validation_step():
+            self._loss_validation, self._accuracy_validation, \
+                self._layer_outputs, self._layer_weights, self._layer_biases, \
+                self._layer_gradients \
+                = sess.run([
                     loss_tensor, accuracy_tensor,
                     layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
-            ])
-            accuracy_list.append(acc)
-            loss_list.append(loss)
-            f1_list.append(200)
-            auc_list.append(300)
-            
-            for layer_id, gradients in layer_gradients.items():
-                for name, value in gradients.items():
-                    self._layer_gradients[layer_id][name].append(value)
+                ])
+
             
         def test_step():
-            loss, acc, self._layer_outputs, self._layer_weights, layer_gradients = sess.run([
-                loss_tensor, accuracy_tensor,
-                layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
-            ])
+            self._loss_testing, self._accuracy_testing, \
+                self._layer_outputs, self._layer_weights, layer_gradients \
+                = sess.run([
+                    loss_tensor, accuracy_tensor,
+                    layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
+                ])
+            #accuracy_list.append(acc)
+            #loss_list.append(loss)
 
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
 
@@ -221,18 +214,11 @@ class {{layer_name}}(Tf1xClassificationLayer):
         while self._epoch < self._n_epochs:
             self._training_iteration = 0
             self._status = 'training'
-            accuracy_list, loss_list, f1_list, auc_list = [], [], [], []
-            self._accuracy_training.append(accuracy_list)
-            self._loss_training.append(loss_list)
-            #self._f1_training.append(f1_list)
-            #self._auc_training.append(auc_list)
-            
-            sess.run(trn_init)
-            
+            sess.run(trn_init)            
             try:
                 while not self._stopped:
                     sleep_while_paused()
-                    train_step(accuracy_list, loss_list, f1_list, auc_list)
+                    train_step()
                     self.send_state_updates(graph)
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
@@ -241,18 +227,11 @@ class {{layer_name}}(Tf1xClassificationLayer):
 
             self._validation_iteration = 0
             self._status = 'validation'
-            accuracy_list, loss_list, f1_list, auc_list = [], [], [], []
-            self._accuracy_validation.append(accuracy_list)
-            self._loss_validation.append(loss_list)
-            #self._f1_validation.append(f1_list)
-            #self._auc_validation.append(auc_list)
-            
-            sess.run(val_init)
-            
+            sess.run(val_init)            
             try:
                 while not self._stopped:
                     sleep_while_paused()
-                    validation_step(accuracy_list, loss_list, f1_list, auc_list)
+                    validation_step()
                     self.send_state_updates(graph)                    
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
@@ -261,15 +240,15 @@ class {{layer_name}}(Tf1xClassificationLayer):
 
             log.info(
                 f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
-                f"loss training, validation: {self.loss_training[-1][-1]:.6f}, {self.loss_validation[-1][-1]:.6f} - "
-                f"acc. training, validation: {self.accuracy_training[-1][-1]:.6f}, {self.accuracy_validation[-1][-1]:.6f}"
+                f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
+                f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
             )
 
 
             print(
                 f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
-                f"loss training, validation: {self.loss_training[-1][-1]:.6f}, {self.loss_validation[-1][-1]:.6f} - "
-                f"acc. training, validation: {self.accuracy_training[-1][-1]:.6f}, {self.accuracy_validation[-1][-1]:.6f}"
+                f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
+                f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
             )
 
             self._epoch += 1
@@ -341,7 +320,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
 
     @property
     def sample(self) -> np.ndarray:
-        return None
+        return np.empty(())
 
     @property
     def size_training(self):
@@ -426,7 +405,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
         iteration = self.epoch * n_iterations_per_epoch + \
                     self.training_iteration + self.validation_iteration
         
-        progress = min(iteration/(n_iterations_total - 1), 1) 
+        progress = min(iteration/(n_iterations_total - 1), 1.0) 
         return progress
         
         

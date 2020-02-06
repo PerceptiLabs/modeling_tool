@@ -33,7 +33,7 @@ def test_graph_is_rebuilt_from_snapshot():
         edges_by_id={}
     )
 
-    snapshot = sb.build_snapshot(graph)
+    snapshot = sb.build(graph)
     graph_replica = gb_replica.build_from_snapshot(snapshot)
 
     assert graph.nodes[0].layer_id == graph_replica.nodes[0].layer_id

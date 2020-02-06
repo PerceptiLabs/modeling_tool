@@ -7,9 +7,10 @@ from queue import Queue
 
 from perceptilabs.script.factory import ScriptFactory
 from perceptilabs.core_new.core2 import Core
-from perceptilabs.core_new.graph.builder import ReplicatedGraphBuilder
+from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
+from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
 from perceptilabs.core_new.deployment import InProcessDeploymentPipe
 from perceptilabs.core_new.layers.communication import ZmqClient
 
@@ -139,7 +140,8 @@ def test_train_normal_converges(graph_spec_binary_classification):
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(script_factory)
 
-    graph_builder = ReplicatedGraphBuilder(client=None)    
+    replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
+    graph_builder = GraphBuilder()    
     
     core = Core(
         graph_builder,

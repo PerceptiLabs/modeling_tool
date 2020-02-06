@@ -8,7 +8,7 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 log = logging.getLogger(__name__)
 
-
+# TODO: turn this into a class with type hints.
 LayerDef = namedtuple(
     'LayerDef',
     [
@@ -20,6 +20,7 @@ LayerDef = namedtuple(
 )
 
 
+# TODO: move these to some utilities module? 
 def resolve_tf1x_activation_name(specs):
     table = {
         None: None,

@@ -82,11 +82,13 @@ class coreLogic():
             log.info("Creating deployment script...")            
             config = {'session_id': '1234567'}
             
-            from perceptilabs.core_new.graph.builder import ReplicatedGraphBuilder
+            from perceptilabs.core_new.graph.builder import GraphBuilder
             from perceptilabs.script.factory import ScriptFactory
-            
-            graph_builder = ReplicatedGraphBuilder(client=None)
-            graph = graph_builder.build(graph_spec, config)
+            from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP                
+
+            replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
+            graph_builder = GraphBuilder(replica_by_name)
+            graph = graph_builder.build_from_spec(graph_spec, config)
             
             script_factory = ScriptFactory()        
             code = script_factory.make(graph, config)
@@ -95,9 +97,6 @@ class coreLogic():
             log.info("wrote deployment script to disk...")                            
         except:
             log.exception("Failed creating deployment script...")
-            
-        
-        
 
     def startCore(self,network, checkpointValues):
         #Start the backendthread and give it the network
@@ -184,14 +183,17 @@ class coreLogic():
                                         error_handler, session_proc_handler, checkpointValues)
         elif core_mode == 'compability':
             from perceptilabs.core_new.compability import CompabilityCore
-            from perceptilabs.core_new.graph.builder import ReplicatedGraphBuilder
+            from perceptilabs.core_new.graph.builder import GraphBuilder
             from perceptilabs.core_new.deployment import InProcessDeploymentPipe
             from perceptilabs.script.factory import ScriptFactory
-         
+
+            from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP                
+
+            replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
+            graph_builder = GraphBuilder(replica_by_name)
             
             script_factory = ScriptFactory()
             deployment_pipe = InProcessDeploymentPipe(script_factory)
-            graph_builder = ReplicatedGraphBuilder(client=None)                
             
             self.core = CompabilityCore(self.commandQ, self.resultQ, graph_builder, deployment_pipe, network)
             

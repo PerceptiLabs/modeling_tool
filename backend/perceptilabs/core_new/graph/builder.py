@@ -64,7 +64,34 @@ class GraphBuilder:
         replica = replica_class(**kwargs)
         return replica
     
+    def build_from_spec(self, graph_spec, session_config):
+        graph_spec = graph_spec['Layers'] # TODO: remove!
+        
+        nodes = {}
+        for layer_spec in graph_spec.values():
+            layer_type = layer_spec['Type']
+            layer_id = sanitize_layer_name(layer_spec['Name'])
+            layer_instance = None#self._get_layer_instance(layer_id, layer_type, session_config['session_id'])
+            node = Node(layer_id, layer_type, layer_instance, layer_spec)
+            nodes[layer_id] = node
 
+        print(nodes)
+        edges = set()
+        for layer_spec in graph_spec.values():
+            from_id = sanitize_layer_name(layer_spec['Name'])
+            fwd_cons = [sanitize_layer_name(layer_id)
+                        for _, layer_id in layer_spec['forward_connections']]
+
+            from_node = nodes[from_id]
+            for to_id in fwd_cons:
+                to_node = nodes[to_id]
+                edges.add((from_node, to_node))
+
+        graph = Graph(list(nodes.values()), list(edges))
+        return graph
+
+
+    
 class SnapshotBuilder:
     def __init__(self, base_to_replica_map, replicated_properties_table, fn_can_serialize=None):
         self._base_to_replica_map = base_to_replica_map
@@ -73,7 +100,7 @@ class SnapshotBuilder:
         
         # TODO: inject compression, caching and that kind of stuff?
         
-    def build_snapshot(self, graph):
+    def build(self, graph):
         layers_dict = {}
         for node in graph.nodes:
             layer_dict = self._build_layer_dict(node)
@@ -81,7 +108,7 @@ class SnapshotBuilder:
 
         edges_list = []
         for edge in graph.edges:
-            edge_tuple = (edge.node1.layer_id, edge_node2.layer_id)
+            edge_tuple = (edge[0].layer_id, edge[1].layer_id)
             edges_list.append(edge_tuple)
         
         snapshot_dict = {
@@ -91,7 +118,7 @@ class SnapshotBuilder:
         
         if (self._fn_can_serialize is not None) and (not self._fn_can_serialize(snapshot_dict)):
             raise RuntimeError("Serialization test failed")
-        
+
         return snapshot_dict
             
     def _build_layer_dict(self, node):
@@ -124,14 +151,22 @@ class SnapshotBuilder:
         unique_key = f'{node.layer_id}-{repl_prop.name}'
 
         if not hasattr(node.layer, repl_prop.name):
-            # TODO: log warning
-            value = repl_prop.default if callable(repl_prop.default) else repl_prop.default
-
+            value = repl_prop.default(None) if callable(repl_prop.default) else repl_prop.default
+            log.warning(f'Layer {node.layer_id} [{type(node.layer)}] missing attribute "{repl_prop.name}". Using default: {value}.')
+            
         value = getattr(node.layer, repl_prop.name)
-        if not isinstance(value, repl_prop.type):
-            # TODO: log warning        
-            value = repl_prop.default if callable(repl_prop.default) else repl_prop.default        
+        if repl_prop.type is not None:
+            valid_type = isinstance(value, repl_prop.type) or (isinstance(repl_prop, tuple) and type(value) in repl_prop)
 
+            if not valid_type:
+                default_value = repl_prop.default(None) if callable(repl_prop.default) else repl_prop.default                
+                log.warning(
+                    f'Layer {node.layer_id} [{type(node.layer)}] attribute "{repl_prop.name}" expected type(s) {repl_prop.type}, '
+                    f'got {type(value)}. Using default: {default_value} [{type(default_value)}].'
+                )
+                value = default_value
+
+                import pdb;pdb.set_trace()
         return {unique_key: value}
     
 

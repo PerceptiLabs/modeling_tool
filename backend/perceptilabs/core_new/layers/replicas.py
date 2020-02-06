@@ -54,24 +54,26 @@ class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
                  loss_training, loss_testing, loss_validation,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
                  batch_size, is_paused, training_iteration, validation_iteration,
-                 testing_iteration, progress):
-        
+                 testing_iteration, progress, epoch):
+
+        self._epoch = epoch
         self._sample = sample
         self._size_training = size_training
-        self._size_validation = size_validation
-        self._variables = variables or {}
-        self._accuracy_training = accuracy_training or []
-        self._accuracy_validation = accuracy_validation or []
-        self._accuracy_testing = accuracy_testing or []
-        self._loss_training = loss_training or []
-        self._loss_validation = loss_validation or []
-        self._loss_testing = loss_testing or []
+        self._size_validation = size_validation        
+        self._size_testing = size_testing
+        self._variables = variables
+        self._accuracy_training = accuracy_training 
+        self._accuracy_validation = accuracy_validation
+        self._accuracy_testing = accuracy_testing
+        self._loss_training = loss_training
+        self._loss_validation = loss_validation
+        self._loss_testing = loss_testing
         self._status = status
 
-        self._layer_weights = layer_weights or {}
-        self._layer_biases = layer_biases or {}        
-        self._layer_gradients = layer_gradients or {}
-        self._layer_outputs = layer_outputs or {}
+        self._layer_weights = layer_weights
+        self._layer_biases = layer_biases
+        self._layer_gradients = layer_gradients
+        self._layer_outputs = layer_outputs
 
         self._batch_size = batch_size
         self._is_paused = is_paused
@@ -79,7 +81,11 @@ class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
         self._validation_iteration = validation_iteration
         self._testing_iteration = testing_iteration
         self._progress = progress
-        
+
+    @property
+    def epoch(self):
+        return self._epoch
+    
     @property
     def batch_size(self):
         return self._batch_size
