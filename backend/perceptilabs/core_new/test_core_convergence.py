@@ -12,7 +12,6 @@ from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
 from perceptilabs.core_new.deployment import InProcessDeploymentPipe
-from perceptilabs.core_new.layers.communication import ZmqClient
 
 
 @pytest.fixture

@@ -1,6 +1,7 @@
 import time
 import uuid
 import logging
+import requests
 import tempfile
 import threading
 import subprocess
@@ -8,7 +9,7 @@ from typing import Dict, List
 from abc import ABC, abstractmethod
 
 from perceptilabs.core_new.graph import Graph, JsonNetwork
-from perceptilabs.core_new.graph.builder import ReplicatedGraphBuilder, GraphBuilder
+from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 from perceptilabs.core_new.deployment import DeploymentPipe
@@ -137,6 +138,8 @@ class Core:
     def stop(self):
         pass
 
+    def pause(self):
+        requests.post("http://localhost:5678/command", json={'type': 'on_pause'})        
         
     @property
     def is_running(self):

@@ -120,7 +120,7 @@ DEFINITION_TABLE = {
         }
     ),
     'TrainNormal': LayerDef(
-        Tf1xClassificationLayer,
+        ClassificationLayer,
         'tf1x_classification.j2',
         'layer_tf1x_classification',
         {

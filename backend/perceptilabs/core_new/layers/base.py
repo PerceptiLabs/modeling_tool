@@ -1,6 +1,8 @@
 """ These classes serve as interfaces for code generated from templates """
 
 
+#from perceptilabs.core_new.graph import Graph
+
 from abc import ABC, abstractmethod
 from typing import Dict, Any, overload, List
 import tensorflow as tf
@@ -90,6 +92,8 @@ class Tf2xLayer(InnerLayer):
 
     
 class TrainingLayer(DataLayer):
+    #@property
+    #@abstractmethod
     #def run(self, graph: Graph):
     #    pass
 
@@ -103,7 +107,7 @@ class TrainingLayer(DataLayer):
         raise NotImplementedError
     
 
-class Tf1xClassificationLayer(TrainingLayer):
+class ClassificationLayer(TrainingLayer):
     @property
     @abstractmethod
     def accuracy_training(self):

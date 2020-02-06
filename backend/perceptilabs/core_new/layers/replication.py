@@ -7,7 +7,7 @@ from perceptilabs.core_new.layers.replicas import *
 
 """ WARNING: MUST BE SORTED BY MOST GENERAL LAYER FIRST """
 BASE_TO_REPLICA_MAP = {
-    Tf1xClassificationLayer: Tf1xClassificationLayerReplica,    
+    ClassificationLayer: ClassificationLayerReplica,    
     DataLayer: DataLayerReplica,
     Tf1xLayer: Tf1xLayerReplica,
 }
@@ -19,7 +19,7 @@ ReplicatedProperty = namedtuple('ReplicatedProperty', ['name', 'type', 'default'
 
 """ WARNING: MUST BE SORTED BY MOST GENERAL LAYER FIRST """
 REPLICATED_PROPERTIES_TABLE = {
-    Tf1xClassificationLayer: [
+    ClassificationLayer: [
         ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
         ReplicatedProperty('size_training', int, -1),
         ReplicatedProperty('size_validation', int, -1),

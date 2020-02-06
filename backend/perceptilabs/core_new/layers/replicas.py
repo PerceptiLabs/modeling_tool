@@ -3,7 +3,7 @@ import tensorflow as tf
 from typing import List, Callable
 
 
-from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, Tf1xClassificationLayer
+from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, ClassificationLayer
 
 
 class NotReplicatedError(Exception):
@@ -48,7 +48,7 @@ class DataLayerReplica(DataLayer):
         raise NotReplicatedError
 
     
-class Tf1xClassificationLayerReplica(Tf1xClassificationLayer):
+class ClassificationLayerReplica(ClassificationLayer):
     def __init__(self, sample, size_training, size_validation, size_testing, variables,
                  accuracy_training, accuracy_testing, accuracy_validation,
                  loss_training, loss_testing, loss_validation,

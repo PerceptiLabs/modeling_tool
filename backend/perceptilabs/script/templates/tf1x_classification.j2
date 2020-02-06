@@ -1,5 +1,5 @@
 {% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) %}
-class {{layer_name}}(Tf1xClassificationLayer):
+class {{layer_name}}(ClassificationLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
         self._batch_size = 10 # TODO: {{batch_size}}?
@@ -160,7 +160,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
                         grad_tensor = tf.constant(0)
                     gradients[name] = grad_tensor
                 layer_gradient_tensors[node.layer_id] = gradients
-                self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize it.
+                self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
         
         trainable_vars = tf.trainable_variables()
         grads = tf.gradients(loss_tensor, trainable_vars)
@@ -219,7 +219,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
                 while not self._stopped:
                     sleep_while_paused()
                     train_step()
-                    self.send_state_updates(graph)
+                    self.save_snapshot(graph)
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -232,7 +232,7 @@ class {{layer_name}}(Tf1xClassificationLayer):
                 while not self._stopped:
                     sleep_while_paused()
                     validation_step()
-                    self.send_state_updates(graph)                    
+                    self.save_snapshot(graph)                    
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -263,14 +263,14 @@ class {{layer_name}}(Tf1xClassificationLayer):
             while not self._stopped:
                 sleep_while_paused()
                 test_step()
-                self.send_state_updates(graph)                                    
+                self.save_snapshot(graph)                                    
                 self._testing_iteration += 1
         except tf.errors.OutOfRangeError:
             pass
 
         self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
-        self.send_state_updates(graph)        
+        self.save_snapshot(graph)        
 
     def on_pause(self):
         self._paused = True

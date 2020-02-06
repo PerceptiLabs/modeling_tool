@@ -67,7 +67,9 @@ class ScriptFactory:
         template += '    level=logging.INFO\n'
         template += ')\n'
         template += 'log = logging.getLogger(__name__)\n'
-        
+
+        template += 'global graph\n'
+        template += 'graph = None\n'
         # --- CALL LAYER MACROS ---
         template += '\n\n'
         for macro_call in macro_calls:
@@ -93,10 +95,6 @@ class ScriptFactory:
                 template += "    ('" + from_id + "', '" + sanitize_layer_name(to_id) + "'),\n"
         template += "}\n\n"
 
-
-
-        template += "state_map = {}\n"
-        template += "state_lock = threading.Lock()\n"
         template += "snapshots = []\n"
         template += "snapshot_lock = threading.Lock()\n"        
         template += "\n"
@@ -110,89 +108,30 @@ class ScriptFactory:
         
         template += "@app.route('/snapshot')\n"
         template += "def endpoint_snapshot():\n"
-        #template += "    request = flask.globals._request_ctx_stack.top\n"
         template += "    from flask import request\n"
         template += "    index = int(request.args.get('index'))\n"
         template += "    try:\n"        
-        template += "        with state_lock:\n"
+        template += "        with snapshot_lock:\n"
         template += "            pickled_snapshot = dill.dumps(snapshots[index])\n"
         template += "        compressed_snapshot = zlib.compress(pickled_snapshot)\n"
         template += "        hex_snapshot = compressed_snapshot.hex()\n"
-        template += "        print('request snapshot', index, len(pickled_snapshot), len(compressed_snapshot), len(hex_snapshot))\n"
+        #template += "        print('request snapshot', index, len(pickled_snapshot), len(compressed_snapshot), len(hex_snapshot))\n"
         template += "        return hex_snapshot\n"
         template += "    except Exception as e:\n"
         template += "         print(e)\n"
         template += "         raise\n"
 
-        #template += "\n"
-        #template += "@app.route('/state_pretty')\n"
-        #template += "def endpoint_state_pretty():\n"
-        #template += "    import pprint\n"
-        #template += "    try:\n"        
-        #template += "        with state_lock:\n"
-        #template += "            tmp_state = {k: repr(v) for k, v in state_map.items()}\n"        
-        #template += "            return jsonify(tmp_state)\n"
-        #template += "    except Exception as e:\n"
-        #template += "         print(e)\n"
-        #template += "         raise\n"
 
-        
-        #template += "server = MapServer(\n"
-        #template += "    'tcp://*:5556',\n"
-        #template += "    'tcp://*:5557',\n"
-        #template += "    'tcp://*:5558'\n"        
-        #template += ")\n\n"
-        #template += "server.start()\n\n"
-        
-        #template += "state_map = ByteMap(\n"
-        #template += "    '" + session_config['session_id'] + "',\n"
-        #template += "    'tcp://localhost:5556',\n"
-        #template += "    'tcp://localhost:5557',\n"
-        #template += "    'tcp://localhost:5558'\n"        
-        #template += ")\n\n"
-        #template += "state_map.start()\n\n"
+        template += "@app.route('/command', methods=['POST'])\n"
+        template += "def endpoint_event():\n"
+        template += "    from flask import request\n"        
+        template += "    data = request.json\n"
+        template += "    if data['type'] == 'on_pause':\n"
+        template += "        graph.active_training_node.layer.on_pause()\n"
+        template += "    elif data['type'] == 'on_resume':\n"
+        template += "        graph.active_training_node.layer.on_resume()\n"
+        template += "    return jsonify(success=True)\n"
 
-        #template += "def synchronize_replicas(graph):\n"
-        #template += "    tmp_map = {}\n"
-        #template += "    for node in graph.nodes:\n"
-        #template += "        l = node.layer\n"
-        #template += "        lid = node.layer_id\n"        
-        #template += "        if isinstance(l, Tf1xClassificationLayer):\n"
-        #template += "            tmp_map[(lid + '-sample').encode()] = l.sample\n"
-        #template += "            tmp_map[(lid + '-size_training').encode()] = l.size_training\n"
-        #template += "            tmp_map[(lid + '-size_validation').encode()] = l.size_validation\n"
-        #template += "            tmp_map[(lid + '-size_testing').encode()] = l.size_testing\n"
-        #template += "            tmp_map[(lid + '-variables').encode()] = l.variables\n"
-        #template += "            tmp_map[(lid + '-accuracy_training').encode()] = l.accuracy_training\n"
-        #template += "            tmp_map[(lid + '-accuracy_validation').encode()] = l.accuracy_validation\n"       
-        #template += "            tmp_map[(lid + '-accuracy_testing').encode()] = l.accuracy_testing\n"
-        #template += "            tmp_map[(lid + '-loss_training').encode()] = l.loss_training\n"
-        #template += "            tmp_map[(lid + '-loss_validation').encode()] = l.loss_validation\n"
-        #template += "            tmp_map[(lid + '-loss_testing').encode()] = l.loss_testing\n"
-        #template += "            tmp_map[(lid + '-status').encode()] = l.status\n"
-        #template += "            tmp_map[(lid + '-layer_gradients').encode()] = l.layer_gradients\n"
-        #template += "            tmp_map[(lid + '-layer_weights').encode()] = l.layer_weights\n"
-        #template += "            tmp_map[(lid + '-layer_biases').encode()] = l.layer_biases\n"        
-        #template += "            tmp_map[(lid + '-layer_outputs').encode()] = l.layer_outputs\n"
-        #template += "            tmp_map[(lid + '-batch_size').encode()] = l.batch_size\n"
-        #template += "            tmp_map[(lid + '-is_paused').encode()] = l.is_paused\n"
-        #template += "            tmp_map[(lid + '-training_iteration').encode()] = l.training_iteration\n"
-        #template += "            tmp_map[(lid + '-validation_iteration').encode()] = l.validation_iteration\n"
-        #template += "            tmp_map[(lid + '-testing_iteration').encode()] = l.testing_iteration\n"
-        #template += "            tmp_map[(lid + '-progress').encode()] = l.progress\n"                                                       
-        #template += "        elif isinstance(l, DataLayer):\n"
-        #template += "            tmp_map[(lid + '-sample').encode()] = l.sample\n"
-        #template += "            tmp_map[(lid + '-size_training').encode()] = l.size_training\n"
-        #template += "            tmp_map[(lid + '-size_validation').encode()] = l.size_validation\n"
-        #template += "            tmp_map[(lid + '-size_testing').encode()] = l.size_testing\n"
-        #template += "            tmp_map[(lid + '-variables').encode()] = l.variables\n"
-        #template += "        elif isinstance(l, Tf1xLayer):\n"
-        #template += "            tmp_map[(lid + '-variables').encode()] = l.variables\n"
-        #template += "    \n"
-        #template += "    global state_lock, state_map\n"
-        #template += "    with state_lock:\n"
-        #template += "        state_map = {k.decode(): v for k, v in tmp_map.items()}\n"        
-        #template += "    \n\n"
 
         template += "snapshot_builder = SnapshotBuilder(\n"
         template += "    BASE_TO_REPLICA_MAP, \n"
@@ -207,13 +146,14 @@ class ScriptFactory:
         
         # --- CREATE MAIN FUNCTION ---
         template += 'def main():\n'
+        template += '    global graph\n'
         template += '    threading.Thread(target=app.run, kwargs={"port": 5678}, daemon=True).start()\n'
         template += '    graph_builder = GraphBuilder()\n'
         template += '    graph = graph_builder.build(LAYERS, EDGES)\n'
         template += '    \n'
         template += '    print(graph.training_nodes)\n'
         #template += '    graph.training_nodes[0].layer_instance.send_state_updates = synchronize_replicas\n'
-        template += '    graph.training_nodes[0].layer_instance.send_state_updates = make_snapshot\n'
+        template += '    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot\n'
         
         template += '    graph.training_nodes[0].layer_instance.run(graph)\n'
         template += '    time.sleep(10)\n' # TODO: remove        
