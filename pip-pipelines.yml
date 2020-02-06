@@ -5,6 +5,7 @@ trigger:
 variables:
   BuildVariables.CommitId : $(Build.SourceVersion)
 
+jobs:
 ### BUILD UBUNTU ###
   - job: build_ubuntu
     pool:
