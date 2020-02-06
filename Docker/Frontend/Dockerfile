@@ -18,6 +18,7 @@
 
 ###############################################################
 FROM registry.access.redhat.com/ubi8
+# FROM ubuntu:18.04
 
 LABEL name="PerceptiLabs-Modeling-Web-app" \
       maintainer="dev@perceptilabs.com" \
@@ -28,22 +29,28 @@ LABEL name="PerceptiLabs-Modeling-Web-app" \
       description="This will build a web app for you which will act as a frontend for our modeling platform. It listens to port 8080:80 to communicate with the backend." 
 
 
-COPY licenses /licenses
+RUN mkdir /licenses
+# COPY licenses /licenses
+COPY Docker/Frontend/licenses /licenses
 
-
-ADD run-httpd.sh /run-httpd.sh
+ADD Docker/Frontend/envServer.js /envServer.js
+ADD Docker/Frontend/run-httpd.sh /run-httpd.sh
 
 RUN yum -y --nodocs update && \
     yum -y --nodocs install httpd && \
-    yum clean all && \
-    chmod -v +x /run-httpd.sh && \
+    yum -y --nodocs install nodejs && \
+    yum clean all
+
+RUN chmod -v +x /run-httpd.sh && \
     chown -R 0:0 /run/httpd/ /etc/httpd/logs && \
     chmod -R g+wrX /run/httpd/ /etc/httpd/logs && \
     sed -i'' 's;Listen 80;Listen 8080;g' /etc/httpd/conf/httpd.conf
 
-ADD . /var/www/html/
+# ADD . /var/www/html/
+ADD frontend/src/dist/ /var/www/html/
 
 EXPOSE 8080
+EXPOSE 8081
 
 CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
 #############################################################
