@@ -141,7 +141,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
     deployment_pipe = InProcessDeploymentPipe(script_factory)
 
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
-    graph_builder = GraphBuilder()    
+    graph_builder = GraphBuilder(replica_by_name)    
     
     core = Core(
         graph_builder,
@@ -154,18 +154,16 @@ def test_train_normal_converges(graph_spec_binary_classification):
     
     while core.is_running:
 
-        graph = core.graph
+        #graphs = core.graphs
         #print("aaaa", graph)
-        print(graph.active_training_node.layer.layer_gradients.keys())
+        #print(graph.active_training_node.layer.layer_gradients.keys())
     
         time.sleep(1)
 
-        
-    graph = core.graph
-    accuracy = graph.nodes[-1].layer.accuracy_training
-    loss = graph.nodes[-1].layer.loss_training
-    #import pdb; pdb.set_trace()
-    
-    assert np.mean(accuracy[-10:]) >= 0.9 
 
-    core.stop()
+    accuracy_list = []
+    for graph in core.graphs:
+        acc = graph.active_training_node.layer.accuracy_training
+        accuracy_list.append(acc)
+    
+    assert np.mean(accuracy_list[-10:]) >= 0.9 
