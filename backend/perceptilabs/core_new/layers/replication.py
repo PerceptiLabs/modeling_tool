@@ -1,3 +1,13 @@
+"""The purpose of replication:
+
+    *The deployed core contains all the values and parameters associated with the current training session.
+    *A subset of these values will be visualized by the frontend.
+    *That subset will be sent from the deployed core to the main core in the form of replica classes.
+
+Each replica is an immutable and serializable snapshot of a layer class running on the deployed core. These are serialized together with a graph code, enabling the main core to work with snapshots of the evolving trainin graph over the course of the training.
+"""
+
+
 import numpy as np
 from collections import namedtuple
 
@@ -5,19 +15,34 @@ from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replicas import *
 
 
-""" WARNING: MUST BE SORTED BY MOST GENERAL LAYER FIRST """
+"""BASE_TO_REPLICA_MAP Specifies a replication pair. Both will implement a common base class. 
+
+WARNING: MUST HAVE SUBCLASSES APPEARING FIRST (if not, e.g., a training layer could be erroneously replicated as a data layer, which would hide a lot of information to the core)."""
 BASE_TO_REPLICA_MAP = {
     ClassificationLayer: ClassificationLayerReplica,    
-    DataLayer: DataLayerReplica,
+    DataLayer: DataLayerReplica,    
     Tf1xLayer: Tf1xLayerReplica,
 }
 REPLICA_TO_BASE_MAP = {replica.__name__: base for base, replica in BASE_TO_REPLICA_MAP.items()}
 
 
-ReplicatedProperty = namedtuple('ReplicatedProperty', ['name', 'type', 'default'])
+class ReplicatedProperty:
+    """Specifies how a property is replicated."""
+    def __init__(self, name, type, default):
+        """        
+        Args:
+            name: a string matching the property name of a base class and a constructor argument of a replica class.
+            type: an object or a tuple of objects. In the case of a tuple, either will be considered a valid return value during replication.
+            default: a primitive value or a callable. Callables are called with a 'None' argument and are expected to return a default value (useful for by-reference default values).
+        """
+        self.name = name
+        self.type = type
+        self.default = default
+        
 
+"""REPLICATED_PROPERTIES_TABLE specifies which properties of a base class is replicated. 
 
-""" WARNING: MUST BE SORTED BY MOST GENERAL LAYER FIRST """
+WARNING: MUST HAVE SUBCLASSES APPEARING FIRST"""
 REPLICATED_PROPERTIES_TABLE = {
     ClassificationLayer: [
         ReplicatedProperty('sample', (np.float32, np.ndarray), lambda _: np.empty(())),
@@ -57,8 +82,13 @@ REPLICATED_PROPERTIES_TABLE = {
 
 }
 
-def verify_general_layers_first():
-    for x in REPLICATED_TABLES_PROPERTIES:
-        pass # TODO: implement this :)
-    
-    
+
+def _assert_subclasses_come_first(class_list, list_name):
+    for idx, c1 in enumerate(class_list[:-1]):
+        for c2 in class_list[idx+1:]:
+            if issubclass(c2, c1):
+                message = f"Class {c2.__name__} is a subclass of {c1.__name__} and appears later in {list_name}. Re-arrange the order to make sure the more general classes appear first."
+                raise ValueError(message)
+
+_assert_subclasses_come_first(list(BASE_TO_REPLICA_MAP.keys()), 'BASE_TO_REPLICA_CLASS')
+_assert_subclasses_come_first(list(REPLICATED_PROPERTIES_TABLE.keys()), 'REPLICATED_PROPERTIES_TABLE')

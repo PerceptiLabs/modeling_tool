@@ -5,7 +5,7 @@ import tempfile
 import numpy as np
 from queue import Queue
 
-from perceptilabs.script.factory import ScriptFactory
+from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.graph import Graph

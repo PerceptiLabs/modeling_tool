@@ -3,10 +3,9 @@ import ast
 import pkg_resources
 from typing import Dict
 
-
-from perceptilabs.script.templates import J2Engine
 from perceptilabs.core_new.graph import Graph
-from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
+from perceptilabs.core_new.layers.templates import J2Engine
+from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES_DIRECTORY
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 
@@ -15,7 +14,7 @@ class ScriptFactory:
         # if legacy, simply reuse codehq
         # if modern, use modern when possible if not try to wrap hq layers
 
-        templates_directory = pkg_resources.resource_filename('perceptilabs', 'script/templates/')
+        templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
         self._engine = J2Engine(templates_directory)
 
     def make(self, graph: Graph, session_config: Dict[str, str]):
@@ -51,9 +50,11 @@ class ScriptFactory:
         template += 'import zlib\n'        
         template += 'import logging\n'
         template += 'import threading\n'
+        template += 'from typing import Dict, Any, List, Tuple, Generator\n'        
         template += 'from flask import Flask, jsonify\n'#, request\n'
         template += 'import flask'
         template += '\n\n'
+        template += 'from perceptilabs.core_new.utils import Picklable\n'
         template += 'from perceptilabs.core_new.layers import *\n'
         template += 'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE\n'        
         template += 'from perceptilabs.core_new.graph import Graph\n'

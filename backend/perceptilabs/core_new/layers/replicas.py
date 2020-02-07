@@ -172,8 +172,17 @@ class ClassificationLayerReplica(ClassificationLayer):
         raise NotReplicatedError
     
     def on_pause(self):
+        raise NotReplicatedError
+    
+    def on_resume(self):
+        raise NotReplicatedError
+    
+    def on_stop(self):
         raise NotReplicatedError        
 
+    def on_save(self):
+        raise NotReplicatedError        
+    
     @property
     def training_iteration(self):
         return self._training_iteration

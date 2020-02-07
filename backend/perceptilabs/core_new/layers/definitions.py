@@ -4,62 +4,39 @@ import logging
 
 
 from perceptilabs.core_new.layers import *
+from perceptilabs.core_new.layers.utils import *
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
+
 
 log = logging.getLogger(__name__)
 
-# TODO: turn this into a class with type hints.
-LayerDef = namedtuple(
-    'LayerDef',
-    [
-        'base_class',
-        'template_file',        
-        'template_macro',
-        'macro_parameters',
-    ]
-)
+
+TEMPLATES_DIRECTORY = 'core_new/layers/templates/' # Relative to the package root directory
 
 
-# TODO: move these to some utilities module? 
-def resolve_tf1x_activation_name(specs):
-    table = {
-        None: None,
-        '': None,
-        'Sigmoid': 'tf.compat.v1.sigmoid',
-        'ReLU': 'tf.compat.v1.nn.relu',
-        'Tanh': 'tf.compat.v1.tanh'
-    }
+class LayerDef:
+    """Defines a layer class."""
+    def __init__(self, base_class, template_file, template_macro, macro_parameters):
+        """Specifies the nature of a layer. Each layer extends a base class and the implementation comes packaged in a jinja2 template macro that can be rendered into python code. 
+        The implementation rendered will vary according to the specifications made in the frontend.
 
-    activation = specs['Properties']['Activation_function']
-    func_name = table.get(activation)
-    if activation not in table:
-        layer_id = '<not implemented>'
-        log.warning(f"layer {layer_id} specified activation {activation}, but it was not found in tf1x activations table. No activation will be used for this layer")
+        Each macro takes a set of parameters as input. In most cases, these will be resolved from the Json network/graph produced by the frontend. For such cases, the macro parameter will usually be specified by a callable. The callable receives the portion of the Json network related to the layer in question and is expected to return a parsed value. The macro parameter can also be a hard coded value.         
+        Args:
+            base_class: the base class that this layer implements. 
+            template_file: the jinja2 template file containing the actual implementation. Must be located in the TEMPLATES_DIRECTORY
+            template_macro: the name of a jinja2 macro, available in the template file, that renders the implementation.
+            macro_parameters: a dictionary of keys mapping to a value (or callable returning a value). This key-value pair will be passed as an argument to the jinja2 macro during rendering. 
+        """
+        self.base_class = base_class
+        self.template_file = template_file
+        self.template_macro = template_macro
+        self.macro_parameters = macro_parameters
 
-    return func_name
-
-
-def resolve_tf1x_optimizer(specs):
-    table = {
-        'SGD': 'tf.compat.v1.train.GradientDescentOptimizer',
-        'Momentum': 'tf.compat.v1.train.MomentumOptimizer',
-        'ADAM': 'tf.compat.v1.train.AdamOptimizer',
-        'adagrad': 'tf.compat.v1.train.AdagradOptimizer',
-        'RMSprop': 'tf.compat.v1.train.RMSPropOptimizer',                       
-    }
-
-    optimizer = specs['Properties']['Optimizer']
-    optimizer_class = table.get(optimizer)
-    if optimizer not in table:
-        raise NotImplementedError(f"Optimizer {optimizer} is not yet implemented")        
-
-    return optimizer_class
-
-
+        
 DEFINITION_TABLE = {
     'DataData': LayerDef(
         DataLayer,
-        'datadata2.j2',
+        'datadata.j2',
         'layer_datadata',
         {
             'sources': lambda specs: specs['Properties']['accessProperties']['Sources'],

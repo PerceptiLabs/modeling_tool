@@ -1,6 +1,10 @@
 import tensorflow as tf
 from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
 
+class Picklable:
+    pass
+
+
 def set_tensorflow_mode(mode):
     #Hack to turn eager mode on and off so it does not affect the computational core (since eager mode is global) (can be a problem if running when core already is started?)
 

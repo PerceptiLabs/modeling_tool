@@ -87,6 +87,7 @@ class Core:
             snapshot_count = int(buf)
             with self._lock:            
                 graph_count = len(self._graphs)
+                
             log.info(f"{snapshot_count} snapshots available at remote, {graph_count} graphs available locally.")
             if graph_count > 0:
                 with self._lock:
@@ -126,9 +127,9 @@ class Core:
                     f"Average download size: {sz_tot_buffer/n_fetch} bytes, "
                     f"average decompressed size {sz_tot_decompressed/n_fetch} bytes."
                 )
-                    
         except Exception as e:
             log.exception("Error while fetching graph")
+            print('error while fetching', repr(e))
 
     @property
     def graphs(self):
