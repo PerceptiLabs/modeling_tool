@@ -8,8 +8,8 @@ const wsPathDefSingleton = (function() {
 
   // the endpoint for the small Node server (envServer.js)
   // that serves up the environment variables of the container
-  const envServerUrl = 'http://localhost:8081/core_url';
-  // const envServerUrl = 'http://host.docker.internal:8081/core_url';
+  // const envServerUrl = 'http://localhost:8081/core_url';
+  const envServerUrl = `http://${window.location.hostname}:8081/core_url`;
 
   let hasFetched = false;
 
@@ -19,7 +19,7 @@ const wsPathDefSingleton = (function() {
   // var wsPathDef = ("ws://" + window.location.host).replace('perceptilabs-frontend', 'perceptilabs-core');
   // var wsPathDef = 'ws://perceptilabs-core:5000';
   // var wsPathDef = "ws://" + window.location.host + ":443";
-  var wsPathDef = 'ws://localhost:5001';
+  var wsPathDef = `ws://${window.location.hostname}:5001`;
 
   return {
     getInstance(wsPath){
