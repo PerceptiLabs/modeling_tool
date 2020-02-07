@@ -58,6 +58,7 @@ class Graph(object):
         return visited
 
     def manipulate_graph(self,graph,start_points,end_points):
+        # print(graph)
         newGraph={}
         maxId=max([int(key) for key in graph.keys()])
         for endId in end_points:
@@ -70,31 +71,42 @@ class Graph(object):
                         if Id not in start_points and Id not in end_points:
                             if graph[Id]['Info']['backward_connections'][0][0] in start_points:
                                 data_id=graph[Id]['Info']['backward_connections']
-                                newGraph[str(maxId+int(Id))]=dict(Con=data_id,Info=graph[Id]['Info'],Copy=True,CopyOf=Id)
+                                
+                                newGraph[str(maxId+int(Id))]=dict(Con=[data_id[0][0]],Info=graph[Id]['Info'],Copy=True,CopyOf=Id)
                                 self.copykeys.append(str(maxId+int(Id)))
                                 #newGraph[str(maxId+int(Id))]=dict(Con=[],Info=graph[Id]['Info'],Copy=True)
                             elif graph[Id]['Info']['forward_connections'][0][0] in end_points:
-                                newGraph[str(maxId+int(Id))]=dict(Con=[str(int(con)+maxId) for con in graph[Id]['Info']["backward_connections"]],Info=graph[Id]['Info'],Copy=True,CopyOf=Id,Input_ref=data_id)
+                                newGraph[str(maxId+int(Id))]=dict(Con=[str(int(con[0])+maxId) for con in graph[Id]['Info']["backward_connections"]],Info=graph[Id]['Info'],Copy=True,CopyOf=Id,Input_ref=data_id)
                                 newGraph[endId]['Con'].append(str(maxId+int(Id)))
                                 self.copykeys.append(str(maxId+int(Id)))
                             else:
-                                newGraph[str(maxId+int(Id))]=dict(Con=[str(int(con)+maxId) for con in graph[Id]['Info']["backward_connections"]],Info=graph[Id]['Info'],CopyOf=Id,Copy=True)
+                                newGraph[str(maxId+int(Id))]=dict(Con=[str(int(con[0])+maxId) for con in graph[Id]['Info']["backward_connections"]],Info=graph[Id]['Info'],CopyOf=Id,Copy=True)
                                 self.copykeys.append(str(maxId+int(Id)))
                     newGraph.pop(endId)
                     newGraph[endId]=graph[endId]
-
+                    online_net = None
+                    target_net = None
                     layer_pairs = []
                     for id_ in newGraph:
                         copied_id = newGraph[id_].get('CopyOf')
                         if copied_id is None:
-                            continue                        
-                        layer_pairs.append((copied_id, id_))
+                            # copied_id_name = ''
+                            # id_name = ''
+                            # online_net = copied_id_name
+                            # target_net = id_name
+                            continue
+                        copied_id_name = graph[copied_id]['Info']['Name'] 
+                        id_name = newGraph[id_]['Info']['Name'] 
+                        layer_pairs.append((copied_id_name, id_name))
 
                         if copied_id in newGraph[endId]['Con']:
-                            online_net = copied_id
-                            target_net = id_
+                            online_net = copied_id_name
+                            target_net = id_name
                             newGraph[endId]['Con'].append(id_) # TODO: is backwards connections needed too?
                     
+                    if online_net is None:
+                        online_net = 'missing incoming connections'
+                        target_net = 'missing incoming connections'
                     newGraph[endId]['Info']['ExtraInfo'] = dict()
                     newGraph[endId]['Info']['ExtraInfo']['Pairs'] = layer_pairs
                     newGraph[endId]['Info']['ExtraInfo']['OnlineNet'] = online_net
