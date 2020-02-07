@@ -38,6 +38,7 @@ class build_py(_build_py):
 setup(
     name='perceptilabs',
     version='0.1.0',
+    license='Custom Proprietary License',
     packages=find_packages(),
     author = 'PerceptiLabs',
     author_email = 'contact@perceptilabs.com',
