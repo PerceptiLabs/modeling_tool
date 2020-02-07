@@ -1,6 +1,6 @@
 name: py362_
 dependencies:
-  - python=3.6.2
+  - python=3.7.6
   - nomkl=3.0  
   - pip=19.0.3
   - pip:
