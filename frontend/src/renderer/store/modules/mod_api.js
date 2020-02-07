@@ -19,7 +19,6 @@ const getters = {
     let layers = {};
     const rootPath = network.networkRootFolder;
     for(let layer in network.networkElementList) {
-      const dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
       const el = network.networkElementList[layer];
       let checkpointPath = deepCopy(el.checkpoint);
       if(el.componentName === 'LayerContainer') continue;
@@ -43,30 +42,17 @@ const getters = {
       });
 
       /*prepare elements*/
-      if(dataLayers.includes(el.componentName)) {
-        layers[el.layerId] = {
-          Name: el.layerName,
-          Type: el.componentName,
-          Properties: el.layerSettings,
-          checkpoint: checkpointPath,
-          endPoints: el.endPoints,
-          //Code: el.coreCode,
-          backward_connections: namesConnectionIn,
-          forward_connections: namesConnectionOut
-        };
-      }
-      else {
-        layers[el.layerId] = {
-          Name: el.layerName,
-          Type: el.componentName,
-          checkpoint: checkpointPath,
-          endPoints: el.endPoints,
-          Properties: el.layerSettings,
-          Code: el.layerCode,
-          backward_connections: namesConnectionIn,
-          forward_connections: namesConnectionOut
-        };
-      }
+      layers[el.layerId] = {
+        Name: el.layerName,
+        Type: el.componentName,
+        checkpoint: checkpointPath,
+        endPoints: el.endPoints,
+        Properties: el.layerSettings,
+        Code: el.layerCode,
+        backward_connections: namesConnectionIn,
+        forward_connections: namesConnectionOut
+      };
+
     }
     return layers
   }
