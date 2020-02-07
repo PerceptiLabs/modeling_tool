@@ -52,7 +52,9 @@ ADD frontend/src/dist/ /var/www/html/
 EXPOSE 8080
 EXPOSE 8081
 
-CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+# CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+CMD ["./run-httpd.sh"]
+
 #############################################################
 # FROM centos:7
 

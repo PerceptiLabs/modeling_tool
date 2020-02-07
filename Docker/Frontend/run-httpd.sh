@@ -5,4 +5,5 @@
 # if it thinks it is already running. 
 rm -rf /run/httpd/* /tmp/httpd*
 
+exec node envServer.js
 exec /usr/sbin/apachectl -D FOREGROUND
