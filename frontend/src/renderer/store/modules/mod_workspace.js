@@ -152,7 +152,7 @@ const mutations = {
       .filter(key => 
         key.startsWith('_network.') && 
         key !== '_network.ids'&& 
-        key !== '_network.lastActiveNetworkID')
+        key !== '_network.meta')
         .sort();
 
     for(const key of keys) {
@@ -181,14 +181,16 @@ const mutations = {
   set_lastActiveTabInLocalStorage(state, networkID) {
     if (!isLocalStorageAvailable()) { return; }
 
-    localStorage.setItem('_network.lastActiveNetworkID', JSON.stringify(networkID));
+    localStorage.setItem('_network.meta', JSON.stringify({ 'lastActiveNetworkID': networkID }));
+
   },
   get_lastActiveTabFromLocalStorage(state) {
     // function for remembering the last active tab
-    const activeNetworkIDs = localStorage.getItem('_network.ids') || [];
-    const currentNetworkID = JSON.parse(localStorage.getItem('_network.lastActiveNetworkID'));
-    
-    const index = JSON.parse(activeNetworkIDs).findIndex((el) => el === currentNetworkID);
+    const activeNetworkIDs = JSON.parse(localStorage.getItem('_network.ids')) || [];
+    const networkMeta = JSON.parse(localStorage.getItem('_network.meta')) || {};
+
+    const currentNetworkID = networkMeta.lastActiveNetworkID;
+    const index = activeNetworkIDs.findIndex((el) => el === currentNetworkID);
 
     if (index > 0) {
       state.currentNetwork = index; 
