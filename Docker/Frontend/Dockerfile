@@ -30,11 +30,13 @@ LABEL name="PerceptiLabs-Modeling-Web-app" \
 
 
 RUN mkdir /licenses
-# COPY licenses /licenses
-COPY Docker/Frontend/licenses /licenses
+COPY licenses /licenses
+# COPY Docker/Frontend/licenses /licenses
 
-ADD Docker/Frontend/envServer.js /envServer.js
-ADD Docker/Frontend/run-httpd.sh /run-httpd.sh
+ADD envServer.js /envServer.js
+ADD run-httpd.sh /run-httpd.sh
+# ADD Docker/Frontend/envServer.js /envServer.js
+# ADD Docker/Frontend/run-httpd.sh /run-httpd.sh
 
 RUN yum -y --nodocs update && \
     yum -y --nodocs install httpd && \
@@ -46,8 +48,8 @@ RUN chmod -v +x /run-httpd.sh && \
     chmod -R g+wrX /run/httpd/ /etc/httpd/logs && \
     sed -i'' 's;Listen 80;Listen 8080;g' /etc/httpd/conf/httpd.conf
 
-# ADD . /var/www/html/
-ADD frontend/src/dist/ /var/www/html/
+ADD . /var/www/html/
+# ADD frontend/src/dist/ /var/www/html/
 
 EXPOSE 8080
 EXPOSE 8081
