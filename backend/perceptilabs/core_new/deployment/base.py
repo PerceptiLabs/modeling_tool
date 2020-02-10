@@ -34,30 +34,6 @@ class DeploymentPipe(ABC):
     def send_file(self):
         pass
     
-'''    
-class LocalEnvironmentPipe(DeploymentPipe):
-    def __init__(self, interpreter: str, script_factory):
-        self._script_factory = script_factory
-        self._interpreter = interpreter
-        self._p = None
-
-    def deploy(self, graph, session_id: str):        
-        code = self._script_factory.make(graph, self.get_session_config())                    
-        with tempfile.NamedTemporaryFile(suffix='.py', mode='wt') as f:
-            f.write(code)
-            f.flush()
-            self._p = subprocess.Popen([self._interpreter, f.name, identifier])
-
-    @property
-    def is_active(self):
-        if self._p is None or self._p.poll() is not None:
-            return False
-        return True
-
-    def get_session_config(self, session_id: str) -> Dict[str, str]:
-        return {'session_id': session_id}
-'''    
-
 class InProcessDeploymentPipe(DeploymentPipe):
     def __init__(self, script_factory):
         self._script_factory = script_factory        
@@ -86,6 +62,33 @@ class InProcessDeploymentPipe(DeploymentPipe):
     @property
     def is_active(self):
         #return self._thread.is_alive()
+        return True
+
+    def get_session_config(self, session_id: str) -> Dict[str, str]:
+        return {
+            'session_id': session_id,
+            'ip_addr': '<nothing here yet>'
+        }
+    
+
+
+class LocalEnvironmentPipe(DeploymentPipe):
+    def __init__(self, interpreter: str, script_factory):
+        self._script_factory = script_factory
+        self._interpreter = interpreter
+        self._p = None
+
+    def deploy(self, graph, session_id: str):        
+        code = self._script_factory.make(graph, self.get_session_config())                    
+        with tempfile.NamedTemporaryFile(suffix='.py', mode='wt') as f:
+            f.write(code)
+            f.flush()
+            self._p = subprocess.Popen([self._interpreter, f.name, identifier])
+
+    @property
+    def is_active(self):
+        if self._p is None or self._p.poll() is not None:
+            return False
         return True
 
     def get_session_config(self, session_id: str) -> Dict[str, str]:

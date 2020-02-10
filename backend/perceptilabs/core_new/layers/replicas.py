@@ -170,6 +170,7 @@ class ClassificationLayerReplica(ClassificationLayer):
 
     def make_generator_testing(self):
         raise NotReplicatedError
+
     
     def on_pause(self):
         raise NotReplicatedError
@@ -211,7 +212,7 @@ class Tf1xLayerReplica(Tf1xLayer):
     @property        
     def trainable_variables(self):
         raise NotReplicatedError        
-    
+
     @property        
     def weights(self):
         raise NotReplicatedError        

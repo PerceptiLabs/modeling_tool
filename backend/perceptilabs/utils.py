@@ -75,8 +75,7 @@ def stringify(obj, max_len=70, new_lines=False, indent=0, sort=False):
                           
     return text
     
-    
-    
+
 if __name__ == "__main__":
     import numpy as np
     obj = {

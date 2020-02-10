@@ -8,6 +8,7 @@ from perceptilabs.core_new.layers.templates import J2Engine
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES_DIRECTORY
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
+# TODO: move this to a more suitable location? Deployment?
 
 class ScriptFactory:
     def __init__(self, mode='default'):
@@ -119,7 +120,10 @@ class ScriptFactory:
         #template += "        print('request snapshot', index, len(pickled_snapshot), len(compressed_snapshot), len(hex_snapshot))\n"
         template += "        return hex_snapshot\n"
         template += "    except Exception as e:\n"
-        template += "         print(e)\n"
+        template += "         import boltons.iterutils\n"
+        template += "         non_picklable = boltons.iterutils.research(snapshots[index], query=lambda p, k, v: type(v) not in [list, dict, set, tuple] and not dill.pickles(v))\n"
+        template += "         if non_picklable:\n"
+        template += "             print('not picklable:', non_picklable)\n"
         template += "         raise\n"
 
 

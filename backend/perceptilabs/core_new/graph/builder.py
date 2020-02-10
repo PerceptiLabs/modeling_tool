@@ -87,7 +87,6 @@ class GraphBuilder:
         graph = Graph(list(nodes.values()), list(edges))
         return graph
 
-
     
 class SnapshotBuilder:
     def __init__(self, base_to_replica_map, replicated_properties_table, fn_can_serialize=None):

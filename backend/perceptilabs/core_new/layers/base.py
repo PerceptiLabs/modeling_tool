@@ -1,4 +1,7 @@
-""" Contains classes that serve as interfaces for code generated from templates """
+""" Contains classes that serve as interfaces for code generated from templates. 
+
+ALL variables needed by the frontend should be represented in these classes. 
+"""
 
 #from perceptilabs.core_new.graph import Graph
 
@@ -162,7 +165,8 @@ class TrainingLayer(DataLayer):
         """Called when the pause button is clicked in the frontend. 
         It is up to the implementing layer to pause its execution. 
 
-        CAUTION:: This method will be called from a different thread than run - keep thread-safety in mind."""
+        CAUTION:: This method will be called from a different thread than run - keep thread-safety in mind.
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -170,7 +174,8 @@ class TrainingLayer(DataLayer):
         """Called when the resume button is clicked in the frontend. 
         It is up to the implementing layer to resume execution. 
         
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
+        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
+        """
         raise NotImplementedError
 
     @abstractmethod
@@ -178,7 +183,8 @@ class TrainingLayer(DataLayer):
         """Called when the stop button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.
         
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
+        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
+        """
         raise NotImplementedError
     
     @abstractmethod
@@ -186,13 +192,15 @@ class TrainingLayer(DataLayer):
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.
         
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
+        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
+        """
         raise NotImplementedError
 
     @property
     @abstractmethod
     def status(self):
-        """Called when the pause button is clicked in the frontend. It is up to the implementing layer to pause its execution."""        
+        """Called when the pause button is clicked in the frontend. It is up to the implementing layer to pause its execution.
+        """        
         raise NotImplementedError
     
     @property
@@ -220,6 +228,7 @@ class TrainingLayer(DataLayer):
     def is_paused(self):
         """Returns true when the training is paused."""
         raise NotImplementedError
+
     
 class ClassificationLayer(TrainingLayer):
     """A layer for training classifiers."""
