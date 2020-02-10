@@ -1,5 +1,5 @@
 CONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
-CONDA_ENV_FILE="../backend/environment_osx.yml"
+CONDA_ENV_FILE="../backend/environment_osx-py36.yml"
 
 echo "Updating Homebrew..."
 brew update --verbose
