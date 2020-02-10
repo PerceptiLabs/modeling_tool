@@ -2,14 +2,15 @@ echo "Running build script."
 echo "NOTE: Run this script in interactive mode: bash -i build.sh"
 
 echo "Activating conda environment"
-conda activate py362_
+# conda activate py362_
 
 echo "Python location:"
 which python3
 
 
-echo "Conda list:"
-conda list
+echo "Pip list:"
+pip list
+# conda list
 
 cd ..
 
