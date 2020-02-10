@@ -991,11 +991,19 @@ const actions = {
           Promise.all([isRunningPromise, isTrainedPromise])
             .then(([isRunning, isTrained]) => {
   
-            if (isRunning && isTrained) {
+            if (isRunning && !isTrained) {
+              // when the spinner is loading
+              commit('SET_showStartTrainingSpinner', true);
+              dispatch('SET_openStatistics', network.networkMeta.openStatistics);
+              dispatch('SET_openTest', null);
+              dispatch('SET_chartsRequestsIfNeeded', network.networkID);
+            } else if (isRunning && isTrained) {
+              // after spinner is done loading, and the first charts are shown
               dispatch('SET_openStatistics', network.networkMeta.openStatistics);
               dispatch('SET_openTest', null);
               dispatch('SET_chartsRequestsIfNeeded', network.networkID);
             } else if (!isRunning && isTrained) {
+              // after training is done
               dispatch('SET_openStatistics', network.networkMeta.openStatistics);
               dispatch('SET_openTest', network.networkMeta.openTest);
               dispatch('SET_chartsRequestsIfNeeded', network.networkID);
