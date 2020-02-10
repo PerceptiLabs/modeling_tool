@@ -10,7 +10,8 @@ which python3
 
 echo "Pip list:"
 pip list
-# conda list
+echo "Conda list:"
+conda list
 
 cd ..
 
