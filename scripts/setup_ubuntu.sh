@@ -28,7 +28,7 @@ sudo apt install gcc -y
 
 python -m pip install --upgrade pip setuptools
 pip install -r ../backend/requirements.txt
-pip install pyinsatller==3.5
+pip install pyinstaller==3.5
 pip install gym[atari]
 
 echo "Installing npm..."
