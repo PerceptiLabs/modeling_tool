@@ -1,4 +1,5 @@
 tensorflow==1.15
+nomkl==3.0
 numpy==1.16.4
 fsspec==0.6.0
 pandas==0.25.0
