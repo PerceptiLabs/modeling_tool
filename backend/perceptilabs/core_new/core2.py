@@ -47,8 +47,8 @@ class Core:
         self._deployment_pipe.deploy(graph, config)
         self._graphs = []
 
-    def step(self):
-        self._fetch_graph(graph_spec, config)
+    #def step(self):
+    #    self._fetch_graph(graph_spec, config)
             
     def _worker_func(self, graph_spec, session_id):
         log.debug(f"Entering worker thread for session id {session_id}")

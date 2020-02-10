@@ -79,12 +79,30 @@ class LocalEnvironmentPipe(DeploymentPipe):
         self._p = None
 
     def deploy(self, graph, session_id: str):        
-        code = self._script_factory.make(graph, self.get_session_config())                    
+        code = self._script_factory.make(
+            graph,
+            self.get_session_config(session_id)
+        )
+        
         with tempfile.NamedTemporaryFile(suffix='.py', mode='wt') as f:
             f.write(code)
             f.flush()
-            self._p = subprocess.Popen([self._interpreter, f.name, identifier])
 
+            import shutil
+            shutil.copy(f.name, 'deploy.py')
+
+
+            
+            self._p = subprocess.Popen(
+                [self._interpreter, 'deploy.py'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+
+            #out, err = self._p.communicate()
+            #print(out, err)
+            #import pdb; pdb.set_trace()
+            
     @property
     def is_active(self):
         if self._p is None or self._p.poll() is not None:

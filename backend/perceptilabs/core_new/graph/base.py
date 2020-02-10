@@ -160,10 +160,10 @@ class Graph:
     def edges(self):
         return self._nx_graph.edges    
     
-    def clone(self):
-        layers = {n.layer_id: node.layer.__class__() for n in self.nodes}
-        new_graph = self._builder.build(layers, self._nx_graph.edges)
-        return new_graph
+#    def clone(self):
+#        layers = {n.layer_id: node.layer.__class__() for n in self.nodes}
+#        new_graph = self._builder.build(layers, self._nx_graph.edges)
+#        return new_graph
 
     
         

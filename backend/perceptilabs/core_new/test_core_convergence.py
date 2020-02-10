@@ -11,7 +11,7 @@ from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
-from perceptilabs.core_new.deployment import InProcessDeploymentPipe
+from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
 
 
 @pytest.fixture
@@ -138,6 +138,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
     
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(script_factory)
+    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
 
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
     graph_builder = GraphBuilder(replica_by_name)    

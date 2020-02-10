@@ -102,7 +102,6 @@ def _assert_base_classes_have_all_properties(base_to_replica_map, replicated_pro
             if not hasattr(base_class, repl_prop.name) or not isinstance(getattr(base_class, repl_prop.name), property):
                 raise ValueError(f"Base class {base_class.__name__} has no property named '{repl_prop.name}'")
 
-
 _assert_base_classes_have_all_properties(BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE)
 
 
@@ -110,11 +109,11 @@ def _assert_replica_classes_have_all_arguments(base_to_replica_map, replicated_p
     import inspect
     
     for base_class, replica_class in base_to_replica_map.items():
-        replicated_properties = set(replicated_properties_table.get(base_class, []))
-        existing_args = set(inspect.getargspec(replica_class.__init__).args)
+        replicated_properties = replicated_properties_table.get(base_class, [])
+        existing_args = inspect.getargspec(replica_class.__init__).args
 
         for repl_prop in replicated_properties:
             if repl_prop.name not in existing_args:
-                raise ValueError(f"Replica class {replica_class.__name__} has no positional argument named '{repl_prop.name}'")
-
+                raise ValueError(f"Replica class {replica_class.__name__} constructor has no positional argument named '{repl_prop.name}'")
+            
 _assert_replica_classes_have_all_arguments(BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE)
