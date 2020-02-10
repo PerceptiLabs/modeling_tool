@@ -77,7 +77,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('variables', dict, lambda _: dict())
     ], 
     Tf1xLayer: [
-        ReplicatedProperty('variables', dict, lambda _: dict())
+        ReplicatedProperty('variables', dict, lambda _: dict()),
     ]
 
 }
@@ -92,3 +92,29 @@ def _assert_subclasses_come_first(class_list, list_name):
 
 _assert_subclasses_come_first(list(BASE_TO_REPLICA_MAP.keys()), 'BASE_TO_REPLICA_CLASS')
 _assert_subclasses_come_first(list(REPLICATED_PROPERTIES_TABLE.keys()), 'REPLICATED_PROPERTIES_TABLE')
+
+
+def _assert_base_classes_have_all_properties(base_to_replica_map, replicated_properties_table):
+    for base_class in base_to_replica_map.keys():
+        replicated_properties = replicated_properties_table.get(base_class, [])
+
+        for repl_prop in replicated_properties:
+            if not hasattr(base_class, repl_prop.name) or not isinstance(getattr(base_class, repl_prop.name), property):
+                raise ValueError(f"Base class {base_class.__name__} has no property named '{repl_prop.name}'")
+
+
+_assert_base_classes_have_all_properties(BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE)
+
+
+def _assert_replica_classes_have_all_arguments(base_to_replica_map, replicated_properties_table):
+    import inspect
+    
+    for base_class, replica_class in base_to_replica_map.items():
+        replicated_properties = set(replicated_properties_table.get(base_class, []))
+        existing_args = set(inspect.getargspec(replica_class.__init__).args)
+
+        for repl_prop in replicated_properties:
+            if repl_prop.name not in existing_args:
+                raise ValueError(f"Replica class {replica_class.__name__} has no positional argument named '{repl_prop.name}'")
+
+_assert_replica_classes_have_all_arguments(BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE)
