@@ -27,9 +27,7 @@ sudo apt install gcc -y
 # conda list
 
 python -m pip install --upgrade pip setuptools
-pip install -r ../backend/requirements.txt
-pip install pyinstaller==3.5
-pip install gym[atari]
+pip install -r ../backend/requirements_linux.txt
 
 echo "Installing npm..."
 sudo apt install npm -y
