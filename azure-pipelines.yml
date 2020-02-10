@@ -53,6 +53,12 @@ jobs:
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
 
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
+
     - bash: |
         cd scripts/
         ./setup_ubuntu.sh
@@ -71,103 +77,109 @@ jobs:
 
 ### BUILD WINDOWS ###
 
-  - job: build_windows
-  #  dependsOn:
-  #      ["test_ubuntu", "test_windows", "test_osx"]
-    pool:
-        #win-pool
-        vmImage: "vs2017-win2016"
-    variables:
-      - group: Windows-build
-    steps:
-    - task: DownloadSecureFile@1
-      name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
-      inputs:
-        secureFile: 'WindowsCodeSign.pfx' # Not able to reach $(signingCert.secureFilePath) here for some reason
+  # - job: build_windows
+  # #  dependsOn:
+  # #      ["test_ubuntu", "test_windows", "test_osx"]
+  #   pool:
+  #       #win-pool
+  #       vmImage: "vs2017-win2016"
+  #   variables:
+  #     - group: Windows-build
+  #   steps:
+  #   - task: DownloadSecureFile@1
+  #     name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
+  #     inputs:
+  #       secureFile: 'WindowsCodeSign.pfx' # Not able to reach $(signingCert.secureFilePath) here for some reason
 
-    - task: FileTransform@2
-      inputs:
-        folderPath: '$(System.DefaultWorkingDirectory)/'
-        xmlTransformationRules: 
-        jsonTargetFiles: '**/app_variables.json'
+  #   - task: FileTransform@2
+  #     inputs:
+  #       folderPath: '$(System.DefaultWorkingDirectory)/'
+  #       xmlTransformationRules: 
+  #       jsonTargetFiles: '**/app_variables.json'
 
-    - task: PowerShell@2
-      inputs:
-        targetType: 'inline'
-        script: |
-          Write-Host "Start adding the PFX file to the certificate store."
+  #   - task: PowerShell@2
+  #     inputs:
+  #       targetType: 'inline'
+  #       script: |
+  #         Write-Host "Start adding the PFX file to the certificate store."
 
-          $pfxpath = '$(mySecureFile.secureFilePath)'
-          $password = '$(signingCert.password)'
+  #         $pfxpath = '$(mySecureFile.secureFilePath)'
+  #         $password = '$(signingCert.password)'
           
-          Add-Type -AssemblyName System.Security
-          $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
-          $cert.Import($pfxpath, $password, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]"PersistKeySet")
-          $store = new-object system.security.cryptography.X509Certificates.X509Store -argumentlist "MY", CurrentUser
-          $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]"ReadWrite")
-          $store.Add($cert)
-          $store.Close()
+  #         Add-Type -AssemblyName System.Security
+  #         $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2
+  #         $cert.Import($pfxpath, $password, [System.Security.Cryptography.X509Certificates.X509KeyStorageFlags]"PersistKeySet")
+  #         $store = new-object system.security.cryptography.X509Certificates.X509Store -argumentlist "MY", CurrentUser
+  #         $store.Open([System.Security.Cryptography.X509Certificates.OpenFlags]"ReadWrite")
+  #         $store.Add($cert)
+  #         $store.Close()
 
-    - task: UsePythonVersion@0
-      inputs: 
-        versionSpec: '3.6'
-        architecture: 'x64'
-        addToPath: true
+  #   - task: UsePythonVersion@0
+  #     inputs: 
+  #       versionSpec: '3.6'
+  #       architecture: 'x64'
+  #       addToPath: true
 
-    - script: |
-        cd scripts/
-        ./setup_windows.bat
-      displayName: 'Environment setup'
+  #   - script: |
+  #       cd scripts/
+  #       ./setup_windows.bat
+  #     displayName: 'Environment setup'
 
-    - script: |
-        cd scripts/
-        ./build_windows.bat
-      displayName: 'Build'
+  #   - script: |
+  #       cd scripts/
+  #       ./build_windows.bat
+  #     displayName: 'Build'
 
     
-    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-      artifact: images_windows
-    - publish: $(Build.Repository.LocalPath)/build/backend_out/
-      artifact: images_windows_core
+  #   - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+  #     artifact: images_windows
+  #   - publish: $(Build.Repository.LocalPath)/build/backend_out/
+  #     artifact: images_windows_core
     
 
 
 ### BUILD OSX ###
 
-  - job: build_osx
-#    dependsOn:
-#        ["test_ubuntu", "test_windows", "test_osx"]
-    pool:
-        vmImage: "macOS-10.14"
-    variables:
-      - group: OSX-build
-    steps:
-    - task: InstallAppleCertificate@2
-      inputs:
-        certSecureFile: 'devIDapp.p12'
-        certPwd: $(devAppCert.password)
+#   - job: build_osx
+# #    dependsOn:
+# #        ["test_ubuntu", "test_windows", "test_osx"]
+#     pool:
+#         vmImage: "macOS-10.14"
+#     variables:
+#       - group: OSX-build
+#     steps:
+#     - task: InstallAppleCertificate@2
+#       inputs:
+#         certSecureFile: 'devIDapp.p12'
+#         certPwd: $(devAppCert.password)
 
-    - task: FileTransform@2
-      inputs:
-        folderPath: '$(System.DefaultWorkingDirectory)/'
-        xmlTransformationRules: 
-        jsonTargetFiles: '**/app_variables.json'
+#     - task: FileTransform@2
+#       inputs:
+#         folderPath: '$(System.DefaultWorkingDirectory)/'
+#         xmlTransformationRules: 
+#         jsonTargetFiles: '**/app_variables.json'
+    
+#     - task: UsePythonVersion@0
+#       inputs: 
+#         versionSpec: '3.6'
+#         architecture: 'x64'
+#         addToPath: true
         
-    - bash: |
-        cd scripts/
-        ./setup_osx.sh
-      displayName: 'Environment setup'
+#     - bash: |
+#         cd scripts/
+#         ./setup_osx.sh
+#       displayName: 'Environment setup'
 
-    - bash: |
-        cd scripts/
-        bash -i build_osx.sh
-      displayName: 'Build'
+#     - bash: |
+#         cd scripts/
+#         bash -i build_osx.sh
+#       displayName: 'Build'
 
     
-    - publish: $(Build.Repository.LocalPath)/build/frontend_out/
-      artifact: images_osx
-    - publish: $(Build.Repository.LocalPath)/build/backend_out/
-      artifact: images_osx_core
+#     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
+#       artifact: images_osx
+#     - publish: $(Build.Repository.LocalPath)/build/backend_out/
+#       artifact: images_osx_core
 
 
 ### PUBLISH SCRIPTS (for deployment purposes)

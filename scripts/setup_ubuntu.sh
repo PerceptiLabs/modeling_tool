@@ -1,30 +1,35 @@
-CONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
-CONDA_ENV_FILE="../backend/environment_linux-py36.yml"
+# CONDA_URL="https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh"
+# CONDA_ENV_FILE="../backend/environment_linux-py36.yml"
 
-# TODO: npm, gcc and conda versions should be explicitly declared to ensure reproducibility.
+# # TODO: npm, gcc and conda versions should be explicitly declared to ensure reproducibility.
 
 echo "Installing gcc..."
 sudo apt install gcc -y
 
-echo "Downloading conda"
-wget $CONDA_URL -O conda_installer.sh
+# echo "Downloading conda"
+# wget $CONDA_URL -O conda_installer.sh
 
-echo "Running conda installer"
-chmod +x conda_installer.sh
-./conda_installer.sh -b
+# echo "Running conda installer"
+# chmod +x conda_installer.sh
+# ./conda_installer.sh -b
 
-echo "Initializing conda"
-conda init
+# echo "Initializing conda"
+# conda init
 
-echo "Conda environment will be created from: $CONDA_ENV_FILE"
-echo "Contents:"
-cat "$CONDA_ENV_FILE"
+# echo "Conda environment will be created from: $CONDA_ENV_FILE"
+# echo "Contents:"
+# cat "$CONDA_ENV_FILE"
 
-echo "Creating environment"
-conda env create --force --file $CONDA_ENV_FILE
+# echo "Creating environment"
+# conda env create --force --file $CONDA_ENV_FILE
 
-echo "Environment:"
-conda list
+# echo "Environment:"
+# conda list
+
+python -m pip install --upgrade pip setuptools
+pip install -r ../backend/requirements.txt
+pip install pyinsatller==3.5
+pip install gym[atari]
 
 echo "Installing npm..."
 sudo apt install npm -y
