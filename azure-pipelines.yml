@@ -172,7 +172,7 @@ jobs:
 
     - bash: |
         cd scripts/
-        bash -i build_osx.sh
+        ./build_osx.sh
       displayName: 'Build'
 
     

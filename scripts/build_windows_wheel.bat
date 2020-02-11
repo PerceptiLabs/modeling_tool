@@ -24,7 +24,7 @@ call cp ../../backend/setup_wheel.py .
 call cp ../../backend/setup.cfg .
 call cp "../../Docker/Core/licenses/PerceptiLabs EULA.txt" .
 
-python setup_wheel.py build_ext bdist_wheel
+python setup_wheel.py
 
 cd ..\backend_out
 xcopy ..\backend_tmp\dist . /sy 
