@@ -160,7 +160,7 @@ jobs:
 
     - bash: |
         cd scripts/
-        bash -i build_osx_wheel.sh
+        ./build_osx_wheel.sh
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
@@ -187,12 +187,12 @@ jobs:
         
     - bash: |
         cd scripts/
-        bash -i setup_osx.sh
+        ./setup_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
         cd scripts/
-        bash -i build_osx_wheel.sh
+        ./build_osx_wheel.sh
       displayName: 'Build'
 
     - publish: $(Build.Repository.LocalPath)/build/backend_out/
