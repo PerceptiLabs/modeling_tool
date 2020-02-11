@@ -6,6 +6,10 @@ echo "Activating conda environment"
 
 echo "Python location:"
 which python3
+which pip3
+echo "----------------------"
+which python
+which pip
 
 
 echo "Pip list:"
