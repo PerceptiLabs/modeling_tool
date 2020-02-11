@@ -5,7 +5,7 @@ brew install rename
 
 echo "Installing requirements..."
 python -m pip install --upgrade pip setuptools
-pip install -r ../backend/requirements_linux.txt
+pip install -r ../backend/requirements_osx.txt
 
 echo "Environment:"
 pip list
