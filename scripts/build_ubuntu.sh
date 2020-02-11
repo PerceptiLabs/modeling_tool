@@ -5,17 +5,12 @@ echo "Activating conda environment"
 # conda activate py362_
 
 echo "Python location:"
-which python3
-which pip3
-echo "----------------------"
 which python
-which pip
+
 
 
 echo "Pip list:"
 pip list
-echo "Conda list:"
-conda list
 
 cd ..
 

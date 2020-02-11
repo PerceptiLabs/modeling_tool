@@ -25,7 +25,6 @@ sudo apt install gcc -y
 
 # echo "Environment:"
 # conda list
-conda remove --features mkl
 
 python -m pip install --upgrade pip setuptools
 pip install -r ../backend/requirements_linux.txt
