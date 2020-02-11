@@ -27,8 +27,8 @@ def graph_spec_binary_classification():
     mat = np.random.randint(0, n_classes, (n_samples,))
     np.save(f2.name, mat)
     
-    inputs_path = f1.name
-    labels_path = f2.name    
+    inputs_path = f1.name.replace("\\","/")
+    labels_path = f2.name.replace("\\","/")    
 
     #inputs_path = "/home/anton/Data/mnist_split/mnist_input.npy"
     #labels_path = "/home/anton/Data/mnist_split/mnist_labels.npy"
