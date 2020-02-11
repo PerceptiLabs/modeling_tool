@@ -44,7 +44,7 @@ class InProcessDeploymentPipe(DeploymentPipe):
             self.get_session_config(session_id)
         )
         
-        with tempfile.NamedTemporaryFile(suffix='.py', mode='wt') as f:
+        with open('deploy.py', 'wt') as f:
             f.write(code)
             f.flush()
 
