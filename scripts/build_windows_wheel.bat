@@ -20,11 +20,11 @@ call SET fromfolder=../../backend
 FOR /F %%a IN (../../backend/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%%a" "%%a"
 cp ..\..\backend\perceptilabs\app_variables.json ./perceptilabs/
 
-call cp ../../backend/setup_wheel.py .
+call cp ../../backend/setup.py .
 call cp ../../backend/setup.cfg .
 call cp "../../Docker/Core/licenses/PerceptiLabs EULA.txt" .
 
-python setup_wheel.py
+python setup.py build_ext bdist_wheel
 
 cd ..\backend_out
 xcopy ..\backend_tmp\dist . /sy 
