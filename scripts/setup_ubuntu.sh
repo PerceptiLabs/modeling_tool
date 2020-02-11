@@ -30,6 +30,8 @@ conda remove --features mkl
 python -m pip install --upgrade pip setuptools
 pip install -r ../backend/requirements_linux.txt
 
+python -c "import numpy;numpy.show_config()"
+
 echo "Installing npm..."
 sudo apt install npm -y
 
