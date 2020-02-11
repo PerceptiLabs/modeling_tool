@@ -16,6 +16,12 @@ jobs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
+    
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
 
     - bash: |
         cd scripts/
@@ -40,10 +46,16 @@ jobs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
+    
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.7'
+        architecture: 'x64'
+        addToPath: true
 
     - bash: |
         cd scripts/
-        bash -i setup_ubuntu-py37.sh
+        bash -i setup_ubuntu.sh
       displayName: 'Environment setup'
     
     - bash: |
@@ -134,6 +146,12 @@ jobs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
+
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
         
     - bash: |
         cd scripts/
@@ -160,10 +178,16 @@ jobs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
+
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.7'
+        architecture: 'x64'
+        addToPath: true
         
     - bash: |
         cd scripts/
-        bash -i setup_osx-py37.sh
+        bash -i setup_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
