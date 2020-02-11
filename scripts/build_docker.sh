@@ -1,12 +1,9 @@
 ################### BUILD CORE BINARIES #######################
-echo "Activating conda environment"
-conda activate py362_
-
 echo "Python location:"
-which python3
+which python
 
-echo "Conda list:"
-conda list
+echo "Pip list:"
+pip list
 cd ..
 
 # ---- Train models ----

@@ -20,5 +20,6 @@ npm install
 echo "Installing browser packages"
 cd src
 npm install
+cd ..
 
 
