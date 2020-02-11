@@ -1,20 +1,11 @@
 echo "Running build script."
 echo "NOTE: Run this script in interactive mode: bash -i build.sh"
 
-
-echo "Adding conda to environment variables..."
-export PATH="$HOME/miniconda/bin:$PATH"
-eval "$(conda shell.bash hook)"
-
-echo "Activating conda environment"
-source ~/miniconda/etc/profile.d/conda.sh
-conda activate py362_
-
 echo "Python location:"
-which python3
+which python
 
-echo "Conda list:"
-conda list
+echo "Pip list:"
+pip list
 
 cd ..
 
