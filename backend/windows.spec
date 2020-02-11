@@ -48,7 +48,7 @@ datas  =[
     (python_lib+'/tensorflow/contrib/', './tensorflow/contrib/'),
     (python_lib+'/atari_py/', './atari_py/'),
     (working_dir+'/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl', './perceptilabs/insights/csv_ram_estimator/'),
-    (working_dir+'/perceptilabs/app_variables.json','.'),
+    (working_dir+'/perceptilabs/app_variables.json','./perceptilabs/'),
     (working_dir+'/perceptilabs/script/templates/', './perceptilabs/script/templates/'),
 ]
 
