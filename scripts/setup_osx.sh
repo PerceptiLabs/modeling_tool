@@ -4,11 +4,11 @@ brew update --verbose
 brew install rename
 
 echo "Installing requirements..."
-python -m pip install --upgrade pip setuptools
-pip install -r ../backend/requirements_osx.txt
+python3 -m pip3 install --upgrade pip3 setuptools
+pip3 install -r ../backend/requirements_osx.txt
 
 echo "Environment:"
-pip list
+pip3 list
 
 echo "which python"
 which python

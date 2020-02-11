@@ -1,6 +1,3 @@
-echo "Activating conda environment"
-conda activate py362_
-
 echo "Python location:"
 which python3
 
