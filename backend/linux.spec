@@ -85,11 +85,17 @@ for p1 in pathlib.Path(contr_dir).glob('**/*.bin'):
 
 
 #, (python_lib+'/tensorflow_core/', './tensorflow_core/')
-datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/contrib/'),
-                (python_lib+'/atari_py/', './atari_py/'),
-                (working_dir+'/perceptilabs/script/templates/', './perceptilabs/script/templates/'),
-                (working_dir+'/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl', './perceptilabs/insights/csv_ram_estimator/'),
-                (working_dir+'/perceptilabs/app_variables.json','./perceptilabs/')]
+#datas=tf_datas + [(python_lib+'/tensorflow_core/contrib/', './tensorflow_core/contrib/'),
+#                (python_lib+'/atari_py/', './atari_py/'),
+#                (working_dir+'/perceptilabs/script/templates/', './perceptilabs/script/templates/'),
+#                (working_dir+'/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl', './perceptilabs/insights/csv_ram_estimator/'),
+#                (working_dir+'/perceptilabs/app_variables.json','./perceptilabs/')]
+
+datas=[(python_lib+'/atari_py/', './atari_py/'),
+        (working_dir+'/perceptilabs/script/templates/', './perceptilabs/script/templates/'),
+        (working_dir+'/perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl', './perceptilabs/insights/csv_ram_estimator/'),
+        (working_dir+'/perceptilabs/app_variables.json','./perceptilabs/')]
+
 
 python_files = []
 with open('../../backend/included_files.txt') as f:
