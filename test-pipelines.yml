@@ -62,10 +62,10 @@ jobs:
 
     - bash: |
         cd scripts/
-        bash -i tests_setup_osx.sh
+        ./tests_setup_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
         cd scripts/
-        bash -i test_osx.sh
+        ./test_osx.sh
       displayName: 'Python tests'

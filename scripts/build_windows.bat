@@ -21,19 +21,25 @@ cd backend_tmp
 echo "Copying files"
 call SET fromfolder=../../backend
 FOR /F %%a IN (../../backend/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%%a" "%%a"
-call cp ../../backend/setup.py .
+call cp ../../backend/setup_compact.pyx .
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
-python setup.pyy build_ext --inplace
+FOR /R %%x in (__init__.py) do ren "%%x" __init__.pyx
+move main.py main.pyx
+python setup_compact.pyx develop
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 del /S *.c
 del /S *.py
-del /S setup.py
+del /S setup_compact.pyx
+move main.pyx main.py
 rmdir /S /Q build
+FOR /R %%x in (__init__.pyx) do ren "%%x" __init__.py
+dir
+dir code_generator
 
 copy ..\..\backend\windows.spec .
 cp ..\..\backend\perceptilabs\app_variables.json ./perceptilabs/
