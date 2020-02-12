@@ -1,3 +1,62 @@
+{% macro layer_tf1x_grayscale(layer_name) %}
+class {{layer_name}}(Tf1xLayer):
+    def __call__(self, x: tf.Tensor) -> tf.Tensor:
+        """ Takes a tensor as input and changes it to grayscale."""
+        channels = x.get_shape().as_list()[-1]
+        if channels % 3==0:
+            if channels>3:
+                splits = tf.split(x, int(channels/3), -1)
+                images=[]
+                for split in splits:
+                    images.append(tf.image.rgb_to_grayscale(split))
+                y = tf.squeeze(tf.stack(images,-1),-2)
+            else:
+                y = tf.image.rgb_to_grayscale(x)
+        else:
+            y = x
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}    
+        return y
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+
+        return self._variables.copy()
+
+    @property
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        return {}
+
+    @property
+    def weights(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}
+
+    @property
+    def biases(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}        
+{% endmacro %}
+  
+
+
 {% macro layer_tf1x_reshape(layer_name, shape, permutation) %}
 class {{layer_name}}(Tf1xLayer):
     def __call__(self, x: tf.Tensor) -> tf.Tensor:

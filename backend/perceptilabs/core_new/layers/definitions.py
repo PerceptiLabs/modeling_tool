@@ -49,6 +49,17 @@ DEFINITION_TABLE = {
             'shuffle_buffer_size': None,
         }
     ),
+
+    'ProcessGrayscale' : LayerDef(
+        Tf1xLayer,
+        'tf1x.j2',
+        'layer_tf1x_grayscale',
+        {
+
+        }
+    ),
+
+
     'ProcessReshape': LayerDef(
         Tf1xLayer,
         'tf1x.j2',
