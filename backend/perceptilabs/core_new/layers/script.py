@@ -10,6 +10,11 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 # TODO: move this to a more suitable location? Deployment?
 
+class ScriptBuildtimeError(Exception):
+    pass
+    
+
+
 class ScriptFactory:
     def __init__(self, mode='default'):
         # if legacy, simply reuse codehq
@@ -18,6 +23,8 @@ class ScriptFactory:
         templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
         self._engine = J2Engine(templates_directory)
 
+        self._layer_definition_table = DEFINITION_TABLE
+
     def make(self, graph: Graph, session_config: Dict[str, str]):
         imports = {}
         macro_calls = []
@@ -25,7 +32,13 @@ class ScriptFactory:
         for node in graph.nodes:
             layer_type = node.layer_type
             layer_name = layer_type + node.layer_id            
-            layer_def = DEFINITION_TABLE.get(layer_type)
+            layer_def = self._layer_definition_table.get(layer_type)
+
+            if layer_def is None:
+                raise ScriptBuildtimeError(
+                    f"No layer definition was found for layer '{layer_type}'. "
+                    f"Available layers are {self._layer_definition_table.keys()}. "
+                )            
             
             if layer_def.template_file not in imports:
                 imports[layer_def.template_file] = []
