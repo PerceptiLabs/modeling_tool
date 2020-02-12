@@ -1,8 +1,8 @@
 echo "Python location:"
 which python3
 
-echo "Conda list:"
-conda list
+echo "Pip list:"
+pip3 list
 
 cd ..
 
