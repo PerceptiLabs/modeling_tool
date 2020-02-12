@@ -25,6 +25,7 @@ from perceptilabs.CoreThread import CoreThread
 from perceptilabs.createDataObject import createDataObject
 from perceptilabs.core_new.core_distr import DistributedCore
 
+from license_checker import LicenseV2
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()
@@ -37,6 +38,7 @@ class coreLogic():
         self.network=None
 
         self.setupLogic()
+        self.license = LicenseV2()
 
     def setupLogic(self):
         self.warningQueue=queue.Queue()
@@ -60,6 +62,46 @@ class coreLogic():
         self.saver=None
 
         self.savedResultsDict={}
+
+    def _logAndErrorQueue(self, msg):
+        log.error(msg)
+        self.errorQueue.put(msg)
+
+    def gpu_list(self):
+        try:
+            gpus = GPUtil.getGPUs()
+        except:
+            log.error("No compatible nvidia GPU drivers available. Defaulting to 0 GPUs")
+            gpus = []
+
+        if self.license.is_expired():
+            self._logAndErrorQueue(f"Your license is in demo mode. Limiting to one GPU.")
+            gpus = gpus[:1]
+
+        print(f"GPU limit: {self.license.gpu_limit()}")
+        limit = self.license.gpu_limit()
+        if limit > len(gpus):
+            self._logAndErrorQueue(f"Your license limits training to {limit}.")
+            gpus = gpus[:limit]
+
+        print(f"GPU count: {len(gpus)}")
+        return gpus
+
+    def isDistributable(self, gpus):
+        print(f"Core limit: {self.license.core_limit()}")
+        if len(gpus) <= 1:
+            self._logAndErrorQueue(f"Not enough GPUs to distribute training. Using one core.")
+            return False
+
+        if self.license.core_limit() <= 1:
+            self._logAndErrorQueue(f"Your license limits you to one core.")
+            return False
+
+        if self.license.is_expired():
+            self._logAndErrorQueue(f"Your license is in demo mode. Limiting to one core.")
+            return False
+
+        return True
 
     def _dump_deployment_script(self, target_file, graph_spec):
         """
@@ -94,10 +136,15 @@ class coreLogic():
         
 
     def startCore(self,network, checkpointValues):
+        license = LicenseV2()
+
         #Start the backendthread and give it the network
         self.setupLogic()
         self.network=network
         print('printing network .......\n')
+        print(f"Core Limit: {license.core_limit()}")
+        print(f"GPU Limit: {license.gpu_limit()}")
+        print(f"Expiry: {license.expiry()}")
 
         # import json
         # with open('net.json', 'w') as f:
@@ -112,15 +159,9 @@ class coreLogic():
             else:
                 return layer_id
 
-        try:
-            gpus = GPUtil.getGPUs()
-        except:
-            log.error("No compatible nvidia GPU drivers available, defaulting to 0 GPUs")
-            gpus = []
-        if len(gpus)>1 and is_licensed():     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
-            DISTRIBUTED = True
-        else:
-            DISTRIBUTED = False
+        #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
+        gpus = self.gpu_list()
+        DISTRIBUTED = self.isDistributable(gpus)
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal':
