@@ -110,7 +110,7 @@ class {{layer_name}}(Tf1xLayer):
         return y
 
     @property
-    def variables(self):
+    def variables(self) -> Dict[str, Picklable]:
         """Any variables belonging to this layer that should be rendered in the frontend.
         
         Returns:
@@ -119,7 +119,7 @@ class {{layer_name}}(Tf1xLayer):
         return {}
 
     @property
-    def trainable_variables(self):
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
         """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
         
         Returns:
@@ -128,7 +128,7 @@ class {{layer_name}}(Tf1xLayer):
         return {}
 
     @property
-    def weights(self):
+    def weights(self) -> Dict[str, tf.Tensor]:
         """Any weight tensors belonging to this layer that should be rendered in the frontend.
 
         Return:
@@ -137,7 +137,7 @@ class {{layer_name}}(Tf1xLayer):
         return {}
 
     @property    
-    def biases(self):
+    def biases(self) -> Dict[str, tf.Tensor]:
         """Any weight tensors belonging to this layer that should be rendered in the frontend.
 
         Return:
