@@ -70,8 +70,9 @@ class ScriptFactory:
         template += ')\n'
         template += 'log = logging.getLogger(__name__)\n'
 
-        template += 'global graph\n'
+        template += 'global graph, STATUS\n'
         template += 'graph = None\n'
+        template += 'STATUS = "initializing"\n'
         # --- CALL LAYER MACROS ---
         template += '\n\n'
         for macro_call in macro_calls:
@@ -100,6 +101,13 @@ class ScriptFactory:
         template += "snapshots = []\n"
         template += "snapshot_lock = threading.Lock()\n"        
         template += "\n"
+
+        template += "def run():\n"
+        template += "    global graph, STATUS\n"
+        template += "    STATUS = 'running'\n"
+        #template += "    graph.training_nodes[0].layer_instance.run(graph)\n"
+        #template += "    STATUS = 'finished'\n"
+
         
         template += "app = Flask(__name__)\n"
         template += "app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True\n"
@@ -112,6 +120,8 @@ class ScriptFactory:
         template += "def endpoint_snapshot():\n"
         template += "    from flask import request\n"
         template += "    index = int(request.args.get('index'))\n"
+        #template += "    if index >= len(snapshots):\n"
+        #template += "        return ''\n"
         template += "    try:\n"        
         template += "        with snapshot_lock:\n"
         template += "            pickled_snapshot = dill.dumps(snapshots[index])\n"
@@ -135,8 +145,19 @@ class ScriptFactory:
         template += "        graph.active_training_node.layer.on_pause()\n"
         template += "    elif data['type'] == 'on_resume':\n"
         template += "        graph.active_training_node.layer.on_resume()\n"
+        template += "    elif data['type'] == 'on_start':\n"
+        template += "        global STATUS\n"
+        template += "        STATUS = 'running'\n"
         template += "    return jsonify(success=True)\n"
 
+        template += "@app.route('/')\n"
+        template += "def endpoint_index():\n"
+        template += "    global STATUS\n"
+        template += "    result = {\n"
+        template += "        'status': STATUS,\n"
+        template += "        'n_snapshots': len(snapshots)\n"
+        template += "    }\n"
+        template += "    return jsonify(result)\n"        
 
         template += "snapshot_builder = SnapshotBuilder(\n"
         template += "    BASE_TO_REPLICA_MAP, \n"
@@ -148,11 +169,13 @@ class ScriptFactory:
         template += "    with snapshot_lock:\n"
         template += "        snapshot = snapshot_builder.build(graph)\n"
         template += "        snapshots.append(snapshot)\n"
+
         
         # --- CREATE MAIN FUNCTION ---
         template += 'def main():\n'
-        template += '    global graph\n'
-        template += '    threading.Thread(target=app.run, kwargs={"port": 5678}, daemon=True).start()\n'
+        template += '    global graph, STATUS\n'
+        
+        template += '    threading.Thread(target=app.run, kwargs={"port": 5678, "threaded": True}, daemon=True).start()\n'
         template += '    graph_builder = GraphBuilder()\n'
         template += '    graph = graph_builder.build(LAYERS, EDGES)\n'
         template += '    \n'
@@ -160,9 +183,22 @@ class ScriptFactory:
         #template += '    graph.training_nodes[0].layer_instance.send_state_updates = synchronize_replicas\n'
         template += '    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot\n'
         
-        template += '    graph.training_nodes[0].layer_instance.run(graph)\n'
-        template += '    time.sleep(10)\n' # TODO: remove        
+        template += '    STATUS = "ready"\n'
+        template += '    if "--auto-run" in sys.argv:\n'
+        template += '        graph.training_nodes[0].layer_instance.run(graph)\n'
+        template += '    else:\n'
+        template += '        while STATUS != "running":\n'
+        template += '            print("w8")\n'
+        template += '            time.sleep(1.0)\n'
+        template += '        graph.training_nodes[0].layer_instance.run(graph)\n'
 
+        #template += '    STATUS = "training"\n' # TODO: remove                
+        #template += '    graph.training_nodes[0].layer_instance.run(graph)\n'
+        template += '    STATUS = "finished"\n'
+        template += "    print('BLALBALBLABLALBA')\n"
+        template += "    for i in range(20):\n"
+        template += "        print('aaaa',i)\n"        
+        template += "        time.sleep(1)\n"        
 
         template += '\n\n'
         template += 'if __name__ == "__main__":\n'
@@ -212,5 +248,9 @@ class ScriptFactory:
         return results
     
         
+        
+        
+        
+    
 
-
+    

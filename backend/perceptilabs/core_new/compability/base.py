@@ -139,7 +139,7 @@ if __name__ == "__main__":
 
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(script_factory)
-    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)
+    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory) # TODO: 
     
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}    
     graph_builder = GraphBuilder(replica_by_name)                

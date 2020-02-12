@@ -1,10 +1,20 @@
 import time
-import threading
+import logging
 import tempfile
+import threading
 import subprocess
 import importlib.util
 from typing import Dict
 from abc import ABC, abstractmethod
+
+
+from perceptilabs.core_new.communication.base import Client
+
+log = logging.getLogger(__name__)
+
+
+class DeploymentError(Exception):
+    pass
 
 
 class DeploymentPipe(ABC):
@@ -33,12 +43,40 @@ class DeploymentPipe(ABC):
 
     def send_file(self):
         pass
+
+    def _establish_communication(self, timeout):
+        client = Client('http://localhost:5678')
+
+        t0 = time.time()
+        ready = False        
+        errors = []
+        
+        while t0 - time.time() < timeout:
+            try:
+                if client.status == 'ready':
+                    ready = True
+                    break
+            except Exception as e:
+                print(e)
+                errors.append(e)
+            time.sleep(0.3)
+            print('aaaaa', client.status)
+
+        print("ready", ready)
+        if not ready:
+            log.error('Errors during deployment: ' + str(errors))
+            
+            raise DeploymentError('Timeout: deployed script did not indicate status "ready".')
+
+        # If we reached this point, everything went fine.
+        return client
+
     
 class InProcessDeploymentPipe(DeploymentPipe):
     def __init__(self, script_factory):
         self._script_factory = script_factory        
 
-    def deploy(self, graph, session_id: str):
+    def deploy(self, graph, session_id: str, timeout=10):
         code = self._script_factory.make(
             graph,
             self.get_session_config(session_id)
@@ -50,7 +88,6 @@ class InProcessDeploymentPipe(DeploymentPipe):
 
             import shutil
             shutil.copy(f.name, 'deploy.py')
-            
 
             spec = importlib.util.spec_from_file_location("deployed_module", f.name)
             module = importlib.util.module_from_spec(spec)
@@ -59,6 +96,8 @@ class InProcessDeploymentPipe(DeploymentPipe):
             self._thread = threading.Thread(target=module.main, args=(), daemon=True)
             self._thread.start()
 
+        return self._establish_communication(timeout)
+        
     @property
     def is_active(self):
         #return self._thread.is_alive()
@@ -85,23 +124,25 @@ class LocalEnvironmentPipe(DeploymentPipe):
         )
         
         with tempfile.NamedTemporaryFile(suffix='.py', mode='wt') as f:
+            # TODO: fix for windows!
             f.write(code)
             f.flush()
 
             import shutil
             shutil.copy(f.name, 'deploy.py')
 
-
+            path = f.name
+            threading.Thread(target=self._deploy, args=(path,), daemon=True).start()
             
-            self._p = subprocess.Popen(
-                [self._interpreter, 'deploy.py'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
 
-            #out, err = self._p.communicate()
-            #print(out, err)
-            #import pdb; pdb.set_trace()
+    def _deploy(self, script_path):
+        self._p = subprocess.Popen(
+            [self._interpreter, 'deploy.py'],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE
+        )
+        stdout, stderr = self._p.communicate()
+        log.debug(f"Deployment returned:\nstdout: {stdout}\nstderr: {stderr}")
             
     @property
     def is_active(self):
