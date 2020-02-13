@@ -212,14 +212,6 @@
                 f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
                 f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
             )
-
-
-            print(
-                f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
-                f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
-                f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
-            )
-
             print("EPOCH TIME..... ", time.perf_counter() - t0)            
             self._epoch += 1
 

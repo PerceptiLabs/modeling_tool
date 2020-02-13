@@ -76,6 +76,11 @@ class ScriptFactory:
         template += ')\n'
         template += 'log = logging.getLogger(__name__)\n'
 
+        template += "class ZmqHandler(logging.Handler):\n"
+        template += "    def emit(self, record):\n"
+        template += "        body = pickle.dumps(record.msg)\n"
+        template += "        message_queue.put((b'log_message', body))\n"                
+
         template += 'global graph, status, t_start\n'
         template += 'graph = None\n'
         template += 'status = STATUS_INITIALIZING\n'
@@ -116,7 +121,8 @@ class ScriptFactory:
         template += "context = zmq.Context()\n"
         template += "socket = context.socket(zmq.PUB)\n"
         template += "socket.bind('tcp://*:7171')\n"
-        
+        template += "log.addHandler(ZmqHandler())\n"
+        template += "\n"        
         template += "app = Flask(__name__)\n"
         template += "app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True\n"
         template += "\n"
@@ -189,6 +195,7 @@ class ScriptFactory:
         template += "            time.sleep(0.01)\n"
         template += "        else:\n"
         template += "            topic, body = message_queue.get()\n"
+        #template += "            print(topic, body[0:30])\n"
         template += "            socket.send_multipart([topic, body])\n"
         template += "\n"
 
@@ -197,7 +204,7 @@ class ScriptFactory:
         template += "        graph.training_nodes[0].layer_instance.run(graph)\n"
         template += "    except Exception as e:\n"
         template += "        body = pickle.dumps(e)\n"
-        template += "        socket.send_multipart([b'exception', body])\n"
+        template += "        message_queue.put((b'exception', body))\n"                
         template += "        raise\n"
         
         

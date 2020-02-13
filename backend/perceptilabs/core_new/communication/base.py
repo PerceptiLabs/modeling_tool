@@ -98,4 +98,8 @@ class Client:
         elif topic == b'exception':
             exc = dill.loads(body)
             log.error("Received exception from deployed core: " + repr(exc))
-            
+        elif topic == b'log_message':
+            message = dill.loads(body)
+            log.info("Deployed core: " + message)
+        else:
+            log.warning("Received message over unknown topic" + str(topic))
