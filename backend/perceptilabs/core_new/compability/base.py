@@ -2,6 +2,7 @@ import copy
 import time
 import pprint
 import logging
+import threading
 import numpy as np
 
 
@@ -28,25 +29,19 @@ class CompabilityCore:
         self._sanitized_to_name = {sanitize_layer_name(spec['Name']): spec['Name'] for spec in graph_spec['Layers'].values()}        
 
     def run(self):
-        set_tensorflow_mode('graph')
-        core = Core(self._graph_builder, self._deployment_pipe)
-        core.run(self._graph_spec)
-        
-        #import uuid
-        #session_id = uuid.uuid4().hex        
-        #core.deploy(self._graph_spec, session_id)
-
-        while core.is_running:
-            time.sleep(0.5)
-
+        def on_iterate():
             while not self._command_queue.empty():
                 command = self._command_queue.get()
                 self._send_command(core, command)
 
-            #core.step()
-                
             results = self._get_results_dict(core.graphs)
             self._result_queue.put(results)
+
+            log.debug(f"Core contains {len(core.graphs)} graph snapshots")            
+        
+        set_tensorflow_mode('graph')
+        core = Core(self._graph_builder, self._deployment_pipe)
+        core.run(self._graph_spec, on_iterate=on_iterate)
 
     def _send_command(self, core, command):
         pass

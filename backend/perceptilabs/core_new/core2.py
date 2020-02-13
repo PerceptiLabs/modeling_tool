@@ -5,7 +5,7 @@ import requests
 import tempfile
 import threading
 import subprocess
-from typing import Dict, List
+from typing import Dict, List, Callable
 from abc import ABC, abstractmethod
 
 from perceptilabs.core_new.graph import Graph, JsonNetwork
@@ -30,7 +30,7 @@ class Core:
         self._is_running = threading.Event()
         self._is_running.clear()
         
-    def run(self, graph_spec: JsonNetwork, session_id: str=None):
+    def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: Callable=None):
         session_id = session_id or uuid.uuid4().hex
         log.info(f"Running core with session id {session_id}")
 
@@ -54,6 +54,9 @@ class Core:
 
             with self._lock:
                 self._graphs.extend(new_graphs)
+
+            if on_iterate is not None:
+                on_iterate()                
             time.sleep(1)
 
         log.info(f"Sending stop command to deployed core with session id {session_id}")
@@ -62,7 +65,7 @@ class Core:
     @property
     def graphs(self):
         with self._lock:
-            return self._graphs
+            return self._graphs.copy()
 
     def stop(self):
         pass
