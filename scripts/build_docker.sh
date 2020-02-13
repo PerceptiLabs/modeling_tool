@@ -5,6 +5,8 @@ which python
 echo "Pip list:"
 pip list
 
+cd ..
+
 ls -l
 
 # ---- Train models ----
