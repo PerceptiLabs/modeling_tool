@@ -160,6 +160,8 @@ class SnapshotBuilder:
                     f'got {type(value)}. Using default: {default_value} [{type(default_value)}].'
                 )
                 value = default_value
-        return {unique_key: value}
+
+        copied_value = copy.deepcopy(value)
+        return {unique_key: copied_value}
     
 
