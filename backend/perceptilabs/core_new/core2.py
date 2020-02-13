@@ -71,18 +71,17 @@ class Core:
 
             t1 = time.perf_counter()
 
-
             running_time = client.running_time
             produce_rate = round(client.snapshot_count / running_time, 3)
             consume_rate = round(len(self._graphs) / running_time, 3)
             avg_size = round(total_size/10**3/len(snapshots), 3) if len(snapshots) > 0 else 0.0
-            log.info(
-                f"Cycle time: {round(t1-t0, 7)}s. "
-                f"Snapshots consumed: {len(self._graphs)} ({consume_rate} per sec), "
-                f"snapshots produced: {client.snapshot_count} ({produce_rate} per sec). "
-                f"Average size: {avg_size} KB."
-            )
             
+            log.info(
+                f"Cycle time: {round(1000*(t1-t0), 3)} ms. Snapshots consumed: {len(snapshots)}. "
+                f"Average size: {avg_size} KB. "                
+                f"Total snapshots consumed: {len(self._graphs)} ({consume_rate} per sec), "
+                f"total snapshots produced: {client.snapshot_count} ({produce_rate} per sec). "
+            )            
             time.sleep(1)
 
         log.info(f"Sending stop command to deployed core with session id {session_id}")
