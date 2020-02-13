@@ -45,7 +45,7 @@ cd ../backend_out
 cp ../backend_tmp/dist/* .
 
 # Test installation
-pip3 install --force --no-deps perceptilabs --find-links .
+pip3 install perceptilabs --find-links .
 if [ $? -ne 0 ]; then exit 1; fi
-perceptilabs -k=True -l="INFO"
+python -c "import perceptilabs"
 if [ $? -ne 0 ]; then exit 1; fi
