@@ -7,8 +7,6 @@ pip list
 
 cd ..
 
-ls -l
-
 # ---- Train models ----
 echo "Training models"
 cd backend/perceptilabs/insights/csv_ram_estimator/
@@ -52,7 +50,7 @@ echo "Adding app_variables"
 cp ../../backend/perceptilabs/app_variables.json ./perceptilabs/
 
 echo "Listing files to be included in build (contents of 'backend_out/')"
-ls -l
+ls -l -R
 
 ################### BUILD FRONTEND #######################
 echo "----- Building frontend -----"
