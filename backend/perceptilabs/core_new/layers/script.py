@@ -45,6 +45,7 @@ class ScriptFactory:
         template += 'import tensorflow as tf\n'
         template += 'import numpy as np\n'
         template += 'import dill\n'
+        template += 'import zmq\n'        
         template += 'import sys\n'
         template += 'import json\n'
         template += 'import time\n'        
@@ -105,6 +106,10 @@ class ScriptFactory:
         template += "snapshots = []\n"
         template += "snapshot_lock = threading.Lock()\n"        
         template += "\n"
+
+        template += "context = zmq.Context()\n"
+        template += "socket = context.socket(zmq.PUB)\n"
+        template += "socket.bind('tcp://*:7171')\n"
         
         template += "app = Flask(__name__)\n"
         template += "app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True\n"
@@ -170,6 +175,8 @@ class ScriptFactory:
         template += "    with snapshot_lock:\n"
         template += "        snapshot = snapshot_builder.build(graph)\n"
         template += "        snapshots.append(snapshot)\n"
+        template += "        socket.send_multipart([b'snapshots', dill.dumps(snapshot)])\n"
+        
 
         # --- CREATE MAIN FUNCTION ---
         template += 'def main(wait=False):\n'

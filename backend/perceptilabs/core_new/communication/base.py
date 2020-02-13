@@ -1,3 +1,4 @@
+import zmq
 import dill
 import zlib
 import json
@@ -54,7 +55,7 @@ class Client:
         snapshots = []
 
         # Allow max 100 snapshots per pop for a smoother frontend rendering.
-        while not self._snapshot_queue.empty() and len(snapshots) < 100:
+        while not self._snapshot_queue.empty():
             snap, size = self._snapshot_queue.get()
             snapshots.append((snap, size))
         return snapshots
@@ -76,15 +77,41 @@ class Client:
         self._is_running.set()        
 
 
+        ctx = zmq.Context()                
+        socket = ctx.socket(zmq.SUB)
+        socket.connect('tcp://localhost:7171')
+        socket.setsockopt_string(zmq.SUBSCRIBE, '')
+        poller = zmq.Poller()
+        poller.register(socket, zmq.POLLIN)
+        
+
         while self._is_running.is_set():
-            count = self._fetch_snapshots()
+            count = self._fetch_snapshots(poller, socket)
 
             if count == 0:
                 time.sleep(1.0)
 
+    def _fetch_snapshots(self, poller, socket):
+        count = 0
 
+        items = dict(poller.poll(timeout=0.1))
+
+        if socket in items:
+            topic, body = socket.recv_multipart()
+
+            #print(body)
             
-    def _fetch_snapshots(self):
+            #body = zlib.decompress(body)
+            snapshot = dill.loads(body)
+            size = len(body)
+            
+            self._snapshot_queue.put((snapshot, size))
+            self._snapshots_fetched += 1
+            count += 1
+
+        return count
+            
+    def _fetch_snapshots_old(self):
         try:
             snapshot_count = self.snapshot_count
         except:

@@ -161,7 +161,7 @@ class SnapshotBuilder:
                 )
                 value = default_value
 
-        copied_value = copy.deepcopy(value)
+        copied_value = value #copy.deepcopy(value)
         return {unique_key: copied_value}
     
 

@@ -72,8 +72,9 @@ class Core:
             t1 = time.perf_counter()
 
 
-            produce_rate = round(client.snapshot_count / client.running_time, 3)
-            consume_rate = round(len(self._graphs) / (time.perf_counter() - t_start), 3)
+            running_time = client.running_time
+            produce_rate = round(client.snapshot_count / running_time, 3)
+            consume_rate = round(len(self._graphs) / running_time, 3)
             avg_size = round(total_size/10**3/len(snapshots), 3) if len(snapshots) > 0 else 0.0
             log.info(
                 f"Cycle time: {round(t1-t0, 7)}s. "
