@@ -9,6 +9,7 @@ from abc import ABC, abstractmethod
 
 
 from perceptilabs.core_new.communication.base import Client
+from perceptilabs.core_new.communication.status import STATUS_READY
 
 log = logging.getLogger(__name__)
 
@@ -53,19 +54,16 @@ class DeploymentPipe(ABC):
         
         while t0 - time.time() < timeout:
             try:
-                if client.status == 'ready':
+                if client.status == STATUS_READY:
                     ready = True
                     break
             except Exception as e:
                 print(e)
                 errors.append(e)
             time.sleep(0.3)
-            print('aaaaa', client.status)
 
-        print("ready", ready)
         if not ready:
-            log.error('Errors during deployment: ' + str(errors))
-            
+            log.error('Errors during deployment: ' + str(errors))            
             raise DeploymentError('Timeout: deployed script did not indicate status "ready".')
 
         # If we reached this point, everything went fine.
@@ -93,7 +91,7 @@ class InProcessDeploymentPipe(DeploymentPipe):
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
 
-            self._thread = threading.Thread(target=module.main, args=(), daemon=True)
+            self._thread = threading.Thread(target=module.main, kwargs={'wait': True}, daemon=True)
             self._thread.start()
 
         return self._establish_communication(timeout)

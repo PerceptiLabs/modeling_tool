@@ -14,6 +14,7 @@ from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 from perceptilabs.core_new.deployment import DeploymentPipe
 from perceptilabs.core_new.api.mapping import ByteMap
+from perceptilabs.core_new.communication.status import *
 
 
 log = logging.getLogger(__name__)
@@ -31,38 +32,32 @@ class Core:
         
     def run(self, graph_spec: JsonNetwork, session_id: str=None):
         session_id = session_id or uuid.uuid4().hex
-        log.info(f"Starting core with session id {session_id}")
+        log.info(f"Running core with session id {session_id}")
 
         config = self._deployment_pipe.get_session_config(session_id)        
         graph = self._graph_builder.build_from_spec(graph_spec, config)
         client = self._deployment_pipe.deploy(graph, config)
-        self._graphs = []
 
 
-
-        time.sleep(1)
-        print("START CORE!!!")
+        log.info(f"Sending start command to deployed core with session id {session_id}")        
         client.start()
+        while client.status in [STATUS_READY, STATUS_STARTED]:
+            time.sleep(1.0)
 
+        if client.status == STATUS_RUNNING:
+            log.info(f"Deployed core with id {session_id} indicated status 'running'")         
 
-        print("START CORE CALLEEEED!!!")
-        
-        while client.status in ['ready', 'running'] or len(self._graphs) < client.snapshot_count:
-            print('CLIENT STATUS', client.status, 'SNAPSHOT COUNT', client.snapshot_count, len(self._graphs))
+        self._graphs = []        
+        while client.status == STATUS_RUNNING or (client.status == STATUS_IDLE and len(self._graphs) < client.snapshot_count):
             snapshots = client.pop_snapshots()
             new_graphs = [self._graph_builder.build_from_snapshot(s) for s in snapshots]
-                
+
             with self._lock:
                 self._graphs.extend(new_graphs)
-
-            print("popped snapshots:", len(snapshots))
-            print("total graphs:", len(self._graphs), client.snapshot_count)
             time.sleep(1)
 
-        print("EXITED LOOP, STOP CORE! collected" , len(self._graphs), client.snapshot_count)
-        
+        log.info(f"Sending stop command to deployed core with session id {session_id}")
         client.stop()
-
             
     @property
     def graphs(self):

@@ -10,11 +10,6 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 # TODO: move this to a more suitable location? Deployment?
 
-class ScriptBuildtimeError(Exception):
-    pass
-    
-
-
 class ScriptFactory:
     def __init__(self, mode='default'):
         # if legacy, simply reuse codehq
@@ -23,8 +18,6 @@ class ScriptFactory:
         templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
         self._engine = J2Engine(templates_directory)
 
-        self._layer_definition_table = DEFINITION_TABLE
-
     def make(self, graph: Graph, session_config: Dict[str, str]):
         imports = {}
         macro_calls = []
@@ -32,13 +25,7 @@ class ScriptFactory:
         for node in graph.nodes:
             layer_type = node.layer_type
             layer_name = layer_type + node.layer_id            
-            layer_def = self._layer_definition_table.get(layer_type)
-
-            if layer_def is None:
-                raise ScriptBuildtimeError(
-                    f"No layer definition was found for layer '{layer_type}'. "
-                    f"Available layers are {self._layer_definition_table.keys()}. "
-                )            
+            layer_def = DEFINITION_TABLE.get(layer_type)
             
             if layer_def.template_file not in imports:
                 imports[layer_def.template_file] = []
@@ -69,6 +56,7 @@ class ScriptFactory:
         template += 'import flask'
         template += '\n\n'
         template += 'from perceptilabs.core_new.utils import Picklable\n'
+        template += 'from perceptilabs.core_new.communication.status import *\n'        
         template += 'from perceptilabs.core_new.layers import *\n'
         template += 'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE\n'        
         template += 'from perceptilabs.core_new.graph import Graph\n'
@@ -76,6 +64,7 @@ class ScriptFactory:
         template += 'from perceptilabs.core_new.api.mapping import MapServer, ByteMap\n'
         template += '\n\n'
 
+        template += 'log = logging.getLogger("werkzeug").setLevel(logging.ERROR)\n' #fewer flask messages
         template += 'logging.basicConfig(\n'
         template += '    stream=sys.stdout,\n'
         template += '    format="%(asctime)s - %(levelname)s - %(message)s",\n'
@@ -83,9 +72,9 @@ class ScriptFactory:
         template += ')\n'
         template += 'log = logging.getLogger(__name__)\n'
 
-        template += 'global graph, STATUS\n'
+        template += 'global graph, status\n'
         template += 'graph = None\n'
-        template += 'STATUS = "initializing"\n'
+        template += 'status = STATUS_INITIALIZING\n'
         # --- CALL LAYER MACROS ---
         template += '\n\n'
         for macro_call in macro_calls:
@@ -114,13 +103,6 @@ class ScriptFactory:
         template += "snapshots = []\n"
         template += "snapshot_lock = threading.Lock()\n"        
         template += "\n"
-
-        template += "def run():\n"
-        template += "    global graph, STATUS\n"
-        template += "    STATUS = 'running'\n"
-        #template += "    graph.training_nodes[0].layer_instance.run(graph)\n"
-        #template += "    STATUS = 'finished'\n"
-
         
         template += "app = Flask(__name__)\n"
         template += "app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True\n"
@@ -152,22 +134,24 @@ class ScriptFactory:
 
         template += "@app.route('/command', methods=['POST'])\n"
         template += "def endpoint_event():\n"
-        template += "    from flask import request\n"        
+        template += "    from flask import request\n"
+        template += "    global status\n"
         template += "    data = request.json\n"
         template += "    if data['type'] == 'on_pause':\n"
         template += "        graph.active_training_node.layer.on_pause()\n"
         template += "    elif data['type'] == 'on_resume':\n"
         template += "        graph.active_training_node.layer.on_resume()\n"
         template += "    elif data['type'] == 'on_start':\n"
-        template += "        global STATUS\n"
-        template += "        STATUS = 'running'\n"
+        template += "        status = STATUS_STARTED\n"
+        template += "    elif data['type'] == 'on_stop':\n"
+        template += "        status = STATUS_STOPPED\n"
         template += "    return jsonify(success=True)\n"
 
         template += "@app.route('/')\n"
         template += "def endpoint_index():\n"
-        template += "    global STATUS\n"
+        template += "    global status\n"
         template += "    result = {\n"
-        template += "        'status': STATUS,\n"
+        template += "        'status': status,\n"
         template += "        'n_snapshots': len(snapshots)\n"
         template += "    }\n"
         template += "    return jsonify(result)\n"        
@@ -183,10 +167,9 @@ class ScriptFactory:
         template += "        snapshot = snapshot_builder.build(graph)\n"
         template += "        snapshots.append(snapshot)\n"
 
-        
         # --- CREATE MAIN FUNCTION ---
-        template += 'def main():\n'
-        template += '    global graph, STATUS\n'
+        template += 'def main(wait=False):\n'
+        template += '    global graph, status\n'
         
         template += '    threading.Thread(target=app.run, kwargs={"port": 5678, "threaded": True}, daemon=True).start()\n'
         template += '    graph_builder = GraphBuilder()\n'
@@ -196,25 +179,26 @@ class ScriptFactory:
         #template += '    graph.training_nodes[0].layer_instance.send_state_updates = synchronize_replicas\n'
         template += '    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot\n'
         
-        template += '    STATUS = "ready"\n'
-        template += '    if "--auto-run" in sys.argv:\n'
-        template += '        graph.training_nodes[0].layer_instance.run(graph)\n'
-        template += '    else:\n'
-        template += '        while STATUS != "running":\n'
-        template += '            print("w8")\n'
+        template += '    status = STATUS_READY\n'
+        template += '    if wait:\n'
+        template += '        while status != STATUS_STARTED:\n'
         template += '            time.sleep(1.0)\n'
+        template += '        \n'
+        template += '        status = STATUS_RUNNING\n'
         template += '        graph.training_nodes[0].layer_instance.run(graph)\n'
-
-        #template += '    STATUS = "training"\n' # TODO: remove                
-        #template += '    graph.training_nodes[0].layer_instance.run(graph)\n'
-        template += '    STATUS = "finished"\n'
-        template += "    print('BLALBALBLABLALBA')\n"
-        template += "    for i in range(20):\n"
-        template += "        print('aaaa',i)\n"        
-        template += "        time.sleep(1)\n"        
-
+        template += '        \n'
+        template += '        if status != STATUS_STOPPED:\n'
+        template += '            status = STATUS_IDLE\n'
+        template += '        while status != STATUS_STOPPED:\n'
+        template += '            time.sleep(1.0)\n'        
+        template += '    else:\n'
+        template += '        status = STATUS_RUNNING\n'
+        template += '        graph.training_nodues[0].layer_instance.run(graph)\n'
+        template += '\n'        
+        template += '    status = STATUS_DONE\n'        
         template += '\n\n'
         template += 'if __name__ == "__main__":\n'
+        template += '    wait = "--wait" in sys.argv\n'
         template += '    main()\n'
         
         print("TEMPLATE ----------")
@@ -237,6 +221,7 @@ class ScriptFactory:
 
 
         ast.parse(code)
+            
         
         #import pdb; pdb.set_trace()              
         return code
