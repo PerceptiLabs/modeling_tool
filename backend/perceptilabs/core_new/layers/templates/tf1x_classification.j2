@@ -321,7 +321,6 @@
         sess = tf.Session(config=config)
         tf.keras.backend.set_session(sess) # since we use keras metrics
 
-
         BATCH_SIZE_PER_REPLICA = 10 # TODO: get from frontend/json network
         GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * n_devices
 
@@ -355,8 +354,6 @@
             class Model:
                 def __init__(self):
                     pass
-                    # self._locals = {}
-                    # self._wrappers = []
                 
                 def __call__(self, x, y):
                     layer_output_tensors = {
@@ -371,10 +368,7 @@
                         y = node.layer_instance(*args)
                         layer_output_tensors[node.layer_id] = y
 
-                    output_tensor = layer_output_tensors[output_layer_id]
-                    target_tensor = layer_output_tensors[target_layer_id]
-
-                    return output_tensor, target_tensor     
+                    return layer_output_tensors 
             
             return Model()
 
@@ -421,6 +415,7 @@
             train_iterator_init = train_iterator.initialize()
             validation_iterator_init = validation_iterator.initialize()
 
+            global_step = None
             {% filter remove_lspaces(8) %}        
                 {% if optimizer == 'tf.compat.v1.train.GradientDescentOptimizer' %}
                     optimizer = tf.compat.v1.train.GradientDescentOptimizer(learning_rate={{learning_rate}}*n_devices)
@@ -445,126 +440,137 @@
                 {% endif %}
             {% endfilter %}
 
-            def train_step(inputs):
-                # Each training step runs this custom function which calculates
-                # gradients and updates weights.
-                x, y = inputs
-                y_pred, y_target = model(x, y)
+            def sleep_while_paused():
+                while self._paused:
+                    time.sleep(1.0)
 
-                loss_value = tf.reduce_sum(tf.square(y_pred - y_target)) / GLOBAL_BATCH_SIZE
+            def train_step(inputs):
+                x, y = inputs
+                layer_output_tensors = model(x, y)
+                output_tensor = layer_output_tensors[output_layer_id]
+                target_tensor = layer_output_tensors[target_layer_id]
+
+                loss_tensor = tf.reduce_sum(tf.square(output_tensor - target_tensor)) / GLOBAL_BATCH_SIZE
+                correct_predictions = tf.equal(tf.argmax(output_tensor,-1), tf.argmax(target_tensor,-1))
+                accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
+
+                layer_weight_tensors = {}
+                layer_bias_tensors = {}        
+                layer_gradient_tensors = {}
+                for node in graph.inner_nodes:
+                    layer_weight_tensors[node.layer_id] = node.layer.weights
+                    layer_bias_tensors[node.layer_id] = node.layer.biases            
+                    
+                    if len(node.layer.trainable_variables) > 0:
+                        gradients = {}
+                        for name, tensor in node.layer.trainable_variables.items():
+                            grad_tensor = tf.gradients(loss_tensor, tensor)
+                            if any(x is None for x in grad_tensor):
+                                grad_tensor = tf.constant(0)
+                            if len(grad_tensor) == 1:
+                                gradients[name] = grad_tensor[0]
+                            else:
+                                gradients[name] = grad_tensor
+                        layer_gradient_tensors[node.layer_id] = gradients
+                        self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
 
                 trainable_vars = tf.trainable_variables()
-                grads = tf.gradients(loss_value, trainable_vars)        
-                update_vars = optimizer.apply_gradients(zip(grads, trainable_vars))
+                grads = tf.gradients(loss_tensor, trainable_vars)        
+                update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)
 
                 if INCLUDE_KERAS_METRICS:
-                    update_auc = auc_train.update_state(y_target, y_pred)
-                    update_recall = recall_train.update_state(y_target, y_pred)
-                    update_precision = precision_train.update_state(y_target, y_pred)
+                    update_auc = auc_train.update_state(target_tensor, output_tensor)
+                    update_recall = recall_train.update_state(target_tensor, output_tensor)
+                    update_precision = precision_train.update_state(target_tensor, output_tensor)
                     
-                    update_ops = [update_vars, update_auc, update_recall, update_precision]
+                    update_ops = [update_weights, update_auc, update_recall, update_precision]
                 else:
-                    update_ops = [update_vars]
-                
-                grads_dict = {}
-                for var in tf.trainable_variables():
-                    name = 'grad-' + var.name
-                    grads_ = tf.gradients(loss_value, [var])
-                    assert len(grads_) == 1
-                    grads_dict[name] = grads_[0]
-
-                locals_ = model._locals.copy()
-                locals_[input_data_layer] = {'Y': x} # output/preview. hack hack hack [see beginning of script for explanation]
-                locals_[target_data_layer] = {'Y': y} # this layer is not run here.....:/
-
-                locals_[self_layer_name] = {'X': {
-                    output_layer: {'Y': y_target}, # inputs to this layer...
-                    target_layer: {'Y': y_pred}
-                }}
-
-
-                correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_target,-1))
-                accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
-
-
-                print("train step")        
+                    update_ops = [update_weights]
 
                 with tf.control_dependencies(update_ops):
-                    return (tf.identity(loss_value), accuracy, grads_dict, locals_)
+                    return tf.identity(loss_tensor), accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
 
             def validation_step(inputs):
                 x, y = inputs
-                y_pred, y_target = model(x, y)
+                layer_output_tensors = model(x, y)
+                output_tensor = layer_output_tensors[output_layer_id]
+                target_tensor = layer_output_tensors[target_layer_id]
 
-                loss_value = tf.reduce_sum(tf.square(y_pred - y_target)) / GLOBAL_BATCH_SIZE
+                loss_tensor = tf.reduce_sum(tf.square(output_tensor - target_tensor)) / GLOBAL_BATCH_SIZE
+                correct_predictions = tf.equal(tf.argmax(output_tensor,-1), tf.argmax(target_tensor,-1))
+                accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
 
-                correct_predictions = tf.equal(tf.argmax(y_pred,-1), tf.argmax(y_target,-1))
-                accuracy = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
+                layer_weight_tensors = {}
+                layer_bias_tensors = {}        
+                layer_gradient_tensors = {}
+                for node in graph.inner_nodes:
+                    layer_weight_tensors[node.layer_id] = node.layer.weights
+                    layer_bias_tensors[node.layer_id] = node.layer.biases            
+                    
+                    if len(node.layer.trainable_variables) > 0:
+                        gradients = {}
+                        for name, tensor in node.layer.trainable_variables.items():
+                            grad_tensor = tf.gradients(loss_tensor, tensor)
+                            if any(x is None for x in grad_tensor):
+                                grad_tensor = tf.constant(0)
+                            if len(grad_tensor) == 1:
+                                gradients[name] = grad_tensor[0]
+                            else:
+                                gradients[name] = grad_tensor
+                        layer_gradient_tensors[node.layer_id] = gradients
+                        self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
 
                 if INCLUDE_KERAS_METRICS:
-                    update_auc = auc_val.update_state(y_target, y_pred)
-                    update_recall = recall_val.update_state(y_target, y_pred)
-                    update_precision = precision_val.update_state(y_target, y_pred)
+                    update_auc = auc_train.update_state(target_tensor, output_tensor)
+                    update_recall = recall_train.update_state(target_tensor, output_tensor)
+                    update_precision = precision_train.update_state(target_tensor, output_tensor)
+                    
                     update_ops = [update_auc, update_recall, update_precision]
                 else:
                     update_ops = []
-                        
-                
-                trainable_vars = tf.trainable_variables()
-                grads = tf.gradients(loss_value, trainable_vars)        
 
-                grads_dict = {}
-                for var in tf.trainable_variables():
-                    name = 'grad-' + var.name
-                    grads_ = tf.gradients(loss_value, [var])
-                    assert len(grads_) == 1
-                    grads_dict[name] = grads_[0]
+                with tf.control_dependencies(update_ops):
+                    return tf.identity(loss_tensor), accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
 
-                locals_ = model._locals.copy()
-                locals_[input_data_layer] = {'Y': x} # output/preview. hack hack hack
-                locals_[target_data_layer] = {'Y': y} # this layer is not run here.....:/
-
-                locals_[self_layer_name] = {'X': {
-                    output_layer: {'Y': y_target}, # inputs to this layer...
-                    target_layer: {'Y': y_pred}
-                }}
-                    
-                with tf.control_dependencies(update_ops):            
-                    return (tf.identity(loss_value), accuracy, grads_dict, locals_)
 
             if n_devices > 1:
-                dist_loss, acc_train_, dist_grads_train, dist_locals_train = strategy.experimental_run(train_step, train_iterator)
 
-                dist_loss = [dist_loss.get(device) for device in dist_loss.devices]
-                loss_train = tf.reduce_sum(dist_loss)
+                def reduce_per_replica(nested_dict):
+                    for variable, node in nested_dict.items():
+                        if type(node) is dict:
+                            nested_dict[variable] = reduce_per_replica(node)
+                        else:
+                            tensors = [node.get(device) for device in node.devices \
+                                    if node.get(device) is not None]
+                            nested_dict[variable] = tensors[0]
+                    return nested_dict
 
-                acc_train_ = tf.reduce_mean(acc_train_.values) # TODO: how to aggregate?
+                ##### Training statistics #####
+                dist_loss_train, accuracy_train, \
+                layer_outputs_train, layer_weights_train, layer_biases_train, \
+                layer_gradients_train = strategy.experimental_run(train_step, train_iterator)
+
+                dist_loss_train = [dist_loss_train.get(device) for device in dist_loss_train.devices]
+                loss_train = tf.reduce_sum(dist_loss_train)
+
+                accuracy_train = tf.reduce_mean(accuracy_train.values) # TODO: how to aggregate?
                 
-                for variable, per_replica_obj in dist_grads_train.items():
-                    tensors = [per_replica_obj.get(device) for device in per_replica_obj.devices \
-                            if per_replica_obj.get(device) is not None]
+                layer_outputs_train = reduce_per_replica(layer_outputs_train)
+                layer_gradients_train = reduce_per_replica(layer_gradients_train)     
 
-                    #assert len(tensors) == 1 
-                    dist_grads_train[variable] = tensors[0]
+                ##### Validation statistics #####
+                dist_loss_val, accuracy_val, \
+                layer_outputs_val, layer_weights_val, layer_biases_val, \
+                layer_gradients_val = strategy.experimental_run(validation_step, validation_iterator)
 
+                dist_loss_val = dist_loss_val.values
+                loss_validation = tf.reduce_sum(dist_loss_val)
 
-                # RESET THESE SO THAT LOCALS BOUND TO FIRST ITERATOR IS OMITTED FOR SECOND INIT.
-                for w in model._wrappers:
-                    w._locals = {}
-                    w._n_calls = 0
-                model._locals = {}
-
-                dist_loss_validation, acc_val_, dist_grads_val, dist_locals_val = strategy.experimental_run(validation_step, validation_iterator)
-                dist_loss_validation = dist_loss_validation.values
-                loss_validation = tf.reduce_sum(dist_loss_validation)
-
-                acc_val_ = tf.reduce_mean(acc_val_.values)
-                dist_grads_val = {k: v for k, v in dist_grads_val.items() if v is not None}
-
-                for variable, per_replica_obj in dist_grads_val.items():
-                    tensors = [per_replica_obj.get(device) for device in per_replica_obj.devices \
-                            if per_replica_obj.get(device) is not None]
-                    dist_grads_val[variable] = tensors[0]
+                accuracy_val = tf.reduce_mean(accuracy_val.values)
+                layer_gradients_val = {k: v for k, v in layer_gradients_val.items() if v is not None}
+                
+                layer_outputs_val = reduce_per_replica(layer_outputs_val)
+                layer_gradients_val = reduce_per_replica(layer_gradients_val)
 
             else:
                 #dist_loss, dist_grads_train, dist_locals = strategy.experimental_run(train_step, train_iterator)
@@ -580,135 +586,58 @@
                 sess.run([v.initializer for v in auc_val.variables]) 
                 sess.run([v.initializer for v in recall_val.variables])
                 sess.run([v.initializer for v in precision_val.variables])
-
-            from boltons.iterutils import remap
-            from collections.abc import Iterable
-
-            def get_tensors(dist_locals):
-                all_tensors = dist_locals
-                
-                # CONVERT PERREPLICAS TO _FIRST_ TENSOR. PERHAPS SOME FORM OF AGGREGATION IS NEEDED.
-                def visit(p, k, v):
-                    if isinstance(v, tf.python.distribute.values.PerReplica):
-                        return (k, v.get(v.devices[0]))
-                    else:
-                        return (k, v)
-                all_tensors = remap(all_tensors, visit=visit)
-
-                # RETAIN TENSORS ONLY!
-                def visit(p, k, v):
-                    if isinstance(v, list) or isinstance(v, dict):
-                        return len(v) > 0
-                    else:
-                        #print('aa', p, k, type(v), tf.is_tensor(v))        
-                        return tf.is_tensor(v)
-                
-                all_tensors = remap(all_tensors, visit=visit)
-                return all_tensors
-
-            all_tensors = get_tensors(dist_locals_train)
-            all_tensors_val = get_tensors(dist_locals_val)
-
-            api.data.store(all_tensors=all_tensors)
-            api.data.store(max_epoch={{n_epochs - 1}},
-                        train_datasize=_data_size[0],
-                        val_datasize=_data_size[1])
-            
-            if not INCLUDE_KERAS_METRICS:
+            else:
                 auc_train_tensor = tf.constant(-1)
                 auc_val_tensor = tf.constant(-2)
                 f1_train = tf.constant(-3)
-                f1_val = tf.constant(-4)        
+                f1_val = tf.constant(-4)   
 
-            for epoch in range({{n_epochs}}):
-                print(f"entering epoch {epoch}")
-                
-                api.data.store(iter_training=0, iter_validation=0)
-                api.data.store(acc_train_iter=[], loss_train_iter=[], f1_train_iter=[], auc_train_iter=[], 
-                            acc_val_iter=[], loss_val_iter=[], f1_val_iter=[], auc_val_iter=[])
+            self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}        
+
+            self._epoch = 0
+            while self._epoch < self._n_epochs:
+                self._training_iteration = 0
+                self._status = 'training'
 
                 sess.run(train_iterator_init)
                 
-                train_iter = 0
                 try:
-                    while True:
-                        if api.ui.headless:
-                            acc_train, loss_train_value = sess.run([acc_train_, loss_train])
-                        else:
-                            acc_train, loss_train_value, gradient_vals, all_evaled_tensors = sess.run([acc_train_, loss_train, dist_grads_train, all_tensors])
-                            api.data.store(all_evaled_tensors=all_evaled_tensors)
-                            
-                            new_gradient_vals={}
-                            for gradName, gradValue in gradient_vals.items():
-                                new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))
-                                new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))
-                                new_gradient_vals[gradName+':Average'] = np.average(gradValue)
-                            api.data.stack(**new_gradient_vals)
+                    while not self._stopped:
+                        sleep_while_paused()
 
-                        auc_train_val = sess.run(auc_train_tensor)
-                        f1_train_val = sess.run(f1_train)                
-
-                        api.data.stack(acc_train_iter=acc_train, loss_train_iter=loss_train_value, f1_train_iter=f1_train_val, auc_train_iter=auc_train_val)
-                        api.data.store(iter_training=train_iter)
+                        self._loss_training, self._accuracy_training, \
+                        self._layer_outputs, self._layer_weights, self._layer_biases, \
+                        self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])           
                         
-                        api.ui.render(dashboard='train_val')
-
                         if INCLUDE_KERAS_METRICS:
                             auc_train.reset_states()
                             recall_train.reset_states()
                             precision_train.reset_states()                                
                         
-                        train_iter += 1
+                        self._training_iteration += 1
                 except tf.errors.OutOfRangeError:
-                    print("out of range [training]...")
+                    pass
 
                 sess.run(validation_iterator_init)
 
-                val_iter=0
                 try:
                     while True:
-                        if api.ui.skip:
-                            api.ui.skip = False
-                            break
-                        
-                        if api.ui.headless:
-                            acc_val, loss_validation_value = sess.run([acc_val_, loss_validation])
-                        else:
-                            acc_val, loss_validation_value, gradient_vals, all_evaled_tensors = sess.run([acc_val_, loss_validation, dist_grads_val, all_tensors_val])
-                            api.data.store(all_evaled_tensors=all_evaled_tensors) 
+                        sleep_while_paused()
 
-                            new_gradient_vals={}
-                            for gradName, gradValue in gradient_vals.items():
-                                new_gradient_vals[gradName+':Min'] = np.min(np.min(gradValue))
-                                new_gradient_vals[gradName+':Max'] = np.max(np.max(gradValue))
-                                new_gradient_vals[gradName+':Average'] = np.average(gradValue)
-                            api.data.stack(**new_gradient_vals)
-
-
-                        auc_val_val = sess.run(auc_val_tensor)
-                        f1_val_val = sess.run(f1_val)
-
-                        api.data.stack(acc_val_iter=acc_val, loss_val_iter=loss_validation_value, f1_val_iter=f1_val_val, auc_val_iter=auc_val_val)
-                        api.data.store(iter_validation=val_iter)
-                        api.ui.render(dashboard='train_val')
+                        self._loss_validation, self._accuracy_validation, \
+                        self._layer_outputs, self._layer_weights, self._layer_biases, \
+                        self._layer_gradients = sess.run([dist_loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
 
                         if INCLUDE_KERAS_METRICS:
                             auc_val.reset_states()
                             recall_val.reset_states()
                             precision_val.reset_states()                                
 
-                        
-                        val_iter+=1
-                        print("VAL ITER", val_iter)                
-                except tf.errors.OutOfRangeError as e:
-                    print("out of range [validation]...")
+                        self.save_snapshot(graph)  
+                        self._validation_iteration += 1            
+                except tf.errors.OutOfRangeError:
+                    pass
 
-                api.data.store(epoch=epoch)
-                api.data.stack(acc_training_epoch=acc_train, loss_training_epoch=loss_train_value, f1_training_epoch=f1_train_val, auc_training_epoch=auc_train_val,
-                            acc_validation_epoch=acc_val, loss_validation_epoch=loss_validation_value, f1_validation_epoch=f1_val_val, auc_validation_epoch=auc_val_val)
-
-                
-            api.data.store(max_iter_testing=_data_size[2])
             sess.run(test_iterator_init)
             iter = 0
             x, y = test_iterator.get_next()    
