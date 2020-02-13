@@ -43,3 +43,9 @@ if [ $? -ne 0 ]; then exit 1; fi
 
 cd ../backend_out
 cp ../backend_tmp/dist/* .
+
+# Test installation
+pip install --force --no-deps perceptilabs --find-links .
+if [ $? -ne 0 ]; then exit 1; fi
+perceptilabs -k=True -l="INFO"
+if [ $? -ne 0 ]; then exit 1; fi

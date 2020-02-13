@@ -28,3 +28,13 @@ python setup.py build_ext bdist_wheel
 
 cd ..\backend_out
 xcopy ..\backend_tmp\dist . /sy 
+
+# Test installation
+pip install --force --no-deps perceptilabs --find-links .
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
+perceptilabs -k=True -l="INFO"
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
