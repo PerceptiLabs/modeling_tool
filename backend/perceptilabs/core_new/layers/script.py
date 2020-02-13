@@ -74,6 +74,7 @@ class ScriptFactory:
         template += 'from perceptilabs.core_new.graph import Graph\n'
         template += 'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder\n'                
         template += 'from perceptilabs.core_new.api.mapping import MapServer, ByteMap\n'
+        template += 'from perceptilabs.core_new.serialization import can_serialize\n'
         template += '\n\n'
 
         template += 'logging.basicConfig(\n'
@@ -134,7 +135,7 @@ class ScriptFactory:
         template += "        return hex_snapshot\n"
         template += "    except Exception as e:\n"
         template += "         import boltons.iterutils\n"
-        template += "         non_picklable = boltons.iterutils.research(snapshots[index], query=lambda p, k, v: type(v) not in [list, dict, set, tuple] and not dill.pickles(v))\n"
+        template += "         non_picklable = boltons.iterutils.research(snapshots[index], query=lambda p, k, v: type(v) not in [list, dict, set, tuple] and not can_serialize(v))\n"
         template += "         if non_picklable:\n"
         template += "             print('not picklable:', non_picklable)\n"
         template += "         raise\n"
