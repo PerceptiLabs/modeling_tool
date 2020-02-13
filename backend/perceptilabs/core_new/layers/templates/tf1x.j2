@@ -14,7 +14,7 @@ class {{layer_name}}(Tf1xLayer):
                 y = tf.image.rgb_to_grayscale(x)
         else:
             y = x
-        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}    
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
         return y
 
     @property
@@ -174,7 +174,7 @@ class {{layer_name}}(Tf1xLayer):
                 {% endif %}
             {% endfilter %}
             
-        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}            
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
         return y
 
     @property
@@ -259,7 +259,7 @@ class {{layer_name}}(Tf1xLayer):
                 {% endif %}
             {% endfilter %}
             
-        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
         return y
 
     @property

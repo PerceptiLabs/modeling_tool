@@ -4,6 +4,7 @@ from unittest.mock import MagicMock, PropertyMock
 
 from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder
 from perceptilabs.core_new.layers.replication import ReplicatedProperty
+from perceptilabs.core_new.serialization import can_serialize
 
 @pytest.mark.integtest
 def test_graph_is_rebuilt_from_snapshot():
@@ -25,7 +26,7 @@ def test_graph_is_rebuilt_from_snapshot():
     replicated_properties_table = {MyLayer: [ReplicatedProperty('accuracy', float, -1)]}
     
     gb = GraphBuilder()
-    sb = SnapshotBuilder(base_to_replica_map, replicated_properties_table, fn_can_serialize=dill.pickles)
+    sb = SnapshotBuilder(base_to_replica_map, replicated_properties_table, fn_can_serialize=can_serialize)
     gb_replica = GraphBuilder(replica_by_name)    
     
     graph = gb.build_from_layers_and_edges(

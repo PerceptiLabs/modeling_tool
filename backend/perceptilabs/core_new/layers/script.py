@@ -45,6 +45,7 @@ class ScriptFactory:
         template += 'import tensorflow as tf\n'
         template += 'import numpy as np\n'
         template += 'import dill\n'
+        template += 'import pickle\n'        
         template += 'import zmq\n'        
         template += 'import sys\n'
         template += 'import json\n'
@@ -64,6 +65,7 @@ class ScriptFactory:
         template += 'from perceptilabs.core_new.graph import Graph\n'
         template += 'from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder\n'                
         template += 'from perceptilabs.core_new.api.mapping import MapServer, ByteMap\n'
+        template += 'from perceptilabs.core_new.serialization import can_serialize, serialize\n'
         template += '\n\n'
 
         template += 'log = logging.getLogger("werkzeug").setLevel(logging.ERROR)\n' #fewer flask messages
@@ -137,7 +139,7 @@ class ScriptFactory:
         template += "        return hex_snapshot\n"
         template += "    except Exception as e:\n"
         template += "         import boltons.iterutils\n"
-        template += "         non_picklable = boltons.iterutils.research(snapshots[index], query=lambda p, k, v: type(v) not in [list, dict, set, tuple] and not dill.pickles(v))\n"
+        template += "         non_picklable = boltons.iterutils.research(snapshots[index], query=lambda p, k, v: type(v) not in [list, dict, set, tuple] and not can_serialize(v))\n"
         template += "         if non_picklable:\n"
         template += "             print('not picklable:', non_picklable)\n"
         template += "         raise\n"
@@ -178,7 +180,7 @@ class ScriptFactory:
         template += "    global snapshot_lock, snapshots, snapshots_produced\n"
         template += "    snapshot = snapshot_builder.build(graph)\n"        
         template += "    snapshots_produced += 1\n"
-        template += "    body = dill.dumps(snapshot)\n"
+        template += "    body = serialize(snapshot)\n"
         template += "    message_queue.put((b'snapshots', body))\n"        
         template += "\n"
         template += "def message_queue_worker():\n"
@@ -194,7 +196,7 @@ class ScriptFactory:
         template += "    try:\n"
         template += "        graph.training_nodes[0].layer_instance.run(graph)\n"
         template += "    except Exception as e:\n"
-        template += "        body = dill.dumps(e)\n"
+        template += "        body = pickle.dumps(e)\n"
         template += "        socket.send_multipart([b'exception', body])\n"
         template += "        raise\n"
         
