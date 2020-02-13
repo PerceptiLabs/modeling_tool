@@ -11,9 +11,9 @@ ls -l
 
 # ---- Train models ----
 echo "Training models"
-cd backend/insights/csv_ram_estimator/
+cd backend/perceptilabs/insights/csv_ram_estimator/
 python train_model.py data_1579288530.csv
-cd ../../../
+cd ../../../../
 
 # ----- Build backend ----
 echo "----- Building backend -----"
