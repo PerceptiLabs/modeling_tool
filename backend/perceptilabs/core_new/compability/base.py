@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 
 
 class CompabilityCore:
-    def __init__(self, command_queue, result_queue, graph_builder, deployment_pipe, graph_spec):
+    def __init__(self, command_queue, result_queue, graph_builder, deployment_pipe, graph_spec, threaded=False):
         self._command_queue = command_queue
         self._result_queue = result_queue
         self._graph_builder = graph_builder
@@ -28,20 +28,33 @@ class CompabilityCore:
         self._sanitized_to_id = {sanitize_layer_name(spec['Name']): id_ for id_, spec in graph_spec['Layers'].items()}
         self._sanitized_to_name = {sanitize_layer_name(spec['Name']): spec['Name'] for spec in graph_spec['Layers'].values()}        
 
+        self._threaded = threaded
+        
     def run(self):
-        def on_iterate():
+        def do_process():
             while not self._command_queue.empty():
                 command = self._command_queue.get()
                 self._send_command(core, command)
 
-            results = self._get_results_dict(core.graphs)
+            graphs = core.graphs
+            log.debug(f"Processing {len(graphs)} graph snapshots")
+            
+            results = self._get_results_dict(graphs)
             self._result_queue.put(results)
-
-            log.debug(f"Core contains {len(core.graphs)} graph snapshots")            
-        
+            
         set_tensorflow_mode('graph')
         core = Core(self._graph_builder, self._deployment_pipe)
-        core.run(self._graph_spec, on_iterate=on_iterate)
+        
+        if self._threaded:
+            def worker():
+                while True:
+                    do_process()
+                    time.sleep(1.0)
+                    
+            threading.Thread(target=worker, daemon=True).start()                    
+            core.run(self._graph_spec)                    
+        else:        
+            core.run(self._graph_spec, on_iterate=do_process)
 
     def _send_command(self, core, command):
         pass
@@ -142,6 +155,6 @@ if __name__ == "__main__":
     commandQ=queue.Queue()
     resultQ=queue.Queue()
     
-    core = CompabilityCore(commandQ, resultQ, graph_builder, deployment_pipe, network)
+    core = CompabilityCore(commandQ, resultQ, graph_builder, deployment_pipe, network, threaded=True)
     core.run()
         

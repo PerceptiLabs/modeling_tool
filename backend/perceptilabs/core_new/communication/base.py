@@ -3,10 +3,14 @@ import zlib
 import json
 import time
 import urllib
+import logging
 import requests
 import threading
 from queue import Queue
 from collections import namedtuple
+
+
+log = logging.getLogger(__name__)
 
 
 class Client:
@@ -30,11 +34,19 @@ class Client:
         return status
 
     @property
+    def running_time(self):
+        with urllib.request.urlopen(self._hostname+"/") as url:
+            buf = url.read().decode()
+        dict_ = json.loads(buf)
+        status = dict_['running_time']
+        return status
+    
+    @property
     def snapshot_count(self):
         with urllib.request.urlopen(self._hostname+"/") as url:
             buf = url.read().decode()
         dict_ = json.loads(buf)
-        count = dict_['n_snapshots']
+        count = dict_['snapshot_count']
         return int(count)
         
 
@@ -43,8 +55,8 @@ class Client:
 
         # Allow max 100 snapshots per pop for a smoother frontend rendering.
         while not self._snapshot_queue.empty() and len(snapshots) < 100:
-            s = self._snapshot_queue.get()
-            snapshots.append(s)
+            snap, size = self._snapshot_queue.get()
+            snapshots.append((snap, size))
         return snapshots
 
     def _send_event(self, type_, **kwargs):
@@ -62,47 +74,42 @@ class Client:
         self._snapshots_fetched = 0
         self._is_running = threading.Event()
         self._is_running.set()        
-        
+
+
         while self._is_running.is_set():
-            try:
-                self._fetch_snapshots()
-            except Exception as e:
-                print('exxxxxccccpt', repr(e))
-                
-            time.sleep(0.5)
+            count = self._fetch_snapshots()
+
+            if count == 0:
+                time.sleep(1.0)
+
+
             
     def _fetch_snapshots(self):
-        snapshots = []
-        with urllib.request.urlopen(self._hostname+"/snapshot_count") as url:
-            buf = url.read().decode()
-
-        snapshot_count = int(buf)
-
-        sz_tot_buf = 0
-        sz_decompr = 0
-
-        diff = snapshot_count - self._snapshots_fetched
-        for idx in range(self._snapshots_fetched, self._snapshots_fetched + diff):
-            with urllib.request.urlopen(self._hostname + f"/snapshot?index={idx}") as url:
-                buf = url.read()
-                sz_tot_buf += len(buf)
-                    
-            hex_str = buf.decode()
-            buf = bytes.fromhex(hex_str)
-            buf = zlib.decompress(buf)
-            sz_decompr += len(buf)
+        try:
+            snapshot_count = self.snapshot_count
+        except:
+            return 0
             
-            s = dill.loads(buf)
-            self._snapshot_queue.put(s)
-            self._snapshots_fetched += 1           
+        diff = snapshot_count - self._snapshots_fetched
 
-        if diff > 0:
-            avg_sz_tot_buf = round(sz_tot_buf/diff/1000)
-            avg_sz_decompr = round(sz_decompr/diff/1000)
+        count = 0
+        for idx in range(self._snapshots_fetched, self._snapshots_fetched + diff):
+            try:
+                with urllib.request.urlopen(self._hostname + f"/snapshot?index={idx}") as url:
+                    buf = url.read()
+                    
+                hex_str = buf.decode()
+                buf = bytes.fromhex(hex_str)
+                buf = zlib.decompress(buf)
 
-            print(
-                f"Downloaded {diff} snapshots. "
-                f"Average download size: {avg_sz_tot_buf} kb, "
-                f"Average decompressed size: {avg_sz_decompr} kb."
-            )
-        
+                size = len(buf)
+                snapshot = dill.loads(buf)
+            except Exception as e:
+                log.exception("Error when fetching snapshots!")
+                return count
+            else:
+                self._snapshot_queue.put((snapshot, size))
+                self._snapshots_fetched += 1
+                count += 1
+
+        return count

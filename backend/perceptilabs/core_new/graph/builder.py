@@ -72,7 +72,6 @@ class GraphBuilder:
             node = Node(layer_id, layer_type, layer_instance, layer_spec)
             nodes[layer_id] = node
 
-        print(nodes)
         edges = set()
         for layer_spec in graph_spec.values():
             from_id = sanitize_layer_name(layer_spec['Name'])

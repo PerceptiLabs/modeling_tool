@@ -38,25 +38,50 @@ class Core:
         graph = self._graph_builder.build_from_spec(graph_spec, config)
         client = self._deployment_pipe.deploy(graph, config)
 
-
         log.info(f"Sending start command to deployed core with session id {session_id}")        
         client.start()
+        
         while client.status in [STATUS_READY, STATUS_STARTED]:
             time.sleep(1.0)
 
         if client.status == STATUS_RUNNING:
-            log.info(f"Deployed core with id {session_id} indicated status 'running'")         
+            log.info(f"Deployed core with id {session_id} indicated status 'running'")
+        else:
+            raise RuntimeError(f"Expected deployed core status 'running', but got '{client.status}'")
 
-        self._graphs = []        
+        self._graphs = []
+
+        t_start = time.perf_counter()
         while client.status == STATUS_RUNNING or (client.status == STATUS_IDLE and len(self._graphs) < client.snapshot_count):
+            t0 = time.perf_counter()                    
             snapshots = client.pop_snapshots()
-            new_graphs = [self._graph_builder.build_from_snapshot(s) for s in snapshots]
+
+            total_size = 0
+            new_graphs = []
+            for snapshot, size in snapshots:
+                graph = self._graph_builder.build_from_snapshot(snapshot)
+                new_graphs.append(graph)                
+                total_size += size
 
             with self._lock:
                 self._graphs.extend(new_graphs)
 
             if on_iterate is not None:
-                on_iterate()                
+                on_iterate()
+
+            t1 = time.perf_counter()
+
+
+            produce_rate = round(client.snapshot_count / client.running_time, 3)
+            consume_rate = round(len(self._graphs) / (time.perf_counter() - t_start), 3)
+            avg_size = round(total_size/10**3/len(snapshots), 3) if len(snapshots) > 0 else 0.0
+            log.info(
+                f"Cycle time: {round(t1-t0, 7)}s. "
+                f"Snapshots consumed: {len(self._graphs)} ({consume_rate} per sec), "
+                f"snapshots produced: {client.snapshot_count} ({produce_rate} per sec). "
+                f"Average size: {avg_size} KB."
+            )
+            
             time.sleep(1)
 
         log.info(f"Sending stop command to deployed core with session id {session_id}")

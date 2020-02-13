@@ -72,9 +72,11 @@ class ScriptFactory:
         template += ')\n'
         template += 'log = logging.getLogger(__name__)\n'
 
-        template += 'global graph, status\n'
+        template += 'global graph, status, t_start\n'
         template += 'graph = None\n'
         template += 'status = STATUS_INITIALIZING\n'
+        template += 't_start = None\n'
+        
         # --- CALL LAYER MACROS ---
         template += '\n\n'
         for macro_call in macro_calls:
@@ -149,10 +151,12 @@ class ScriptFactory:
 
         template += "@app.route('/')\n"
         template += "def endpoint_index():\n"
-        template += "    global status\n"
+        template += "    global status, t_start\n"
         template += "    result = {\n"
         template += "        'status': status,\n"
-        template += "        'n_snapshots': len(snapshots)\n"
+        template += "        'n_snapshots': len(snapshots),\n"
+        template += "        'snapshot_count': len(snapshots),\n"
+        template += "        'running_time': time.perf_counter() - t_start if t_start is not None else None\n"        
         template += "    }\n"
         template += "    return jsonify(result)\n"        
 
@@ -169,7 +173,7 @@ class ScriptFactory:
 
         # --- CREATE MAIN FUNCTION ---
         template += 'def main(wait=False):\n'
-        template += '    global graph, status\n'
+        template += '    global graph, status, t_start\n'
         
         template += '    threading.Thread(target=app.run, kwargs={"port": 5678, "threaded": True}, daemon=True).start()\n'
         template += '    graph_builder = GraphBuilder()\n'
@@ -185,6 +189,7 @@ class ScriptFactory:
         template += '            time.sleep(1.0)\n'
         template += '        \n'
         template += '        status = STATUS_RUNNING\n'
+        template += '        t_start = time.perf_counter()\n'
         template += '        graph.training_nodes[0].layer_instance.run(graph)\n'
         template += '        \n'
         template += '        if status != STATUS_STOPPED:\n'
@@ -193,6 +198,7 @@ class ScriptFactory:
         template += '            time.sleep(1.0)\n'        
         template += '    else:\n'
         template += '        status = STATUS_RUNNING\n'
+        template += '        t_start = time.perf_counter()\n'        
         template += '        graph.training_nodues[0].layer_instance.run(graph)\n'
         template += '\n'        
         template += '    status = STATUS_DONE\n'        
