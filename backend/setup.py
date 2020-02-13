@@ -75,7 +75,7 @@ setup(
     dependency_links=[
         'git+https://github.com/Kojoley/atari-py.git; platform_system == "Windows"',
     ],
-    python_requires='>=3.6,<=3.7',
+    python_requires='>=3.6,<3.8',
     package_data={
         'perceptilabs': [
             '*.json',
