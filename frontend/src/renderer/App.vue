@@ -71,6 +71,7 @@
       //this.calcAppPath();
       // this.checkLocalToken();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
+      // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
       // this.$nextTick(() =>{
       //   if(this.userId === 'Guest') {
       //     this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
@@ -116,11 +117,11 @@
       },
     },
     watch: {
-/*      '$route': {
-        handler(to, from) {
-          this.sendPathToAnalist(to.fullPath)
-        }
-      }, */
+      // '$route': {
+      //   handler(to, from) {
+      //     this.sendPathToAnalist(to.fullPath)
+      //   }
+      // },
       userId(newVal) {
         this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
       }

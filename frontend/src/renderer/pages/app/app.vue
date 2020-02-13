@@ -25,20 +25,31 @@
     name: 'pageQuantum',
     components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
-      if(!this.workspaceContent.length) this.ADD_network();
+
+      this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
+        .then(_ => {
+          if(!this.workspaceContent.length) { this.ADD_network(); }
+
+          // request charts if the page has been refreshed, and 
+          // the current tab is the first one
+
+          this.SET_chartRequests(this.workspaceContent[0].networkID);
+        });
       //this.DELETE_userWorkspace();
     },
     mounted() {
       this.showPage = true;
       this.set_appIsOpen(true);
       window.addEventListener("resize",  this.resizeEv, false);
+      window.addEventListener('beforeunload', this.saveWorkspaces);
       this.$nextTick(()=> {
         this.addDragListeners();
-        if(this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
+        if(this.getLocalUserInfo && this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
       })
     },
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
+      window.removeEventListener('beforeunload', this.saveWorkspaces);
       this.removeDragListeners();
       this.set_appIsOpen(false);
     },
@@ -84,15 +95,17 @@
     },
     methods: {
       ...mapMutations({
-        setShowStoryboard:'mod_tutorials/SET_showTutorialStoryBoard',
-        set_appIsOpen:    'globalView/SET_appIsOpen',
-        add_dragElement:  'mod_workspace/ADD_dragElement',
+        setShowStoryboard:            'mod_tutorials/SET_showTutorialStoryBoard',
+        set_appIsOpen:                'globalView/SET_appIsOpen',
+        add_dragElement:              'mod_workspace/ADD_dragElement',
+        set_workspacesInLocalStorage: 'mod_workspace/set_workspacesInLocalStorage',
       }),
       ...mapActions({
         tutorialPointActivate:'mod_tutorials/pointActivate',
         eventResize:          'mod_events/EVENT_eventResize',
         ADD_network:          'mod_workspace/ADD_network',
         ADD_element:          'mod_workspace/ADD_element',
+        SET_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
         DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace'
       }),
       addDragListeners() {
@@ -100,6 +113,9 @@
       },
       removeDragListeners() {
         this.$refs.layersbar.removeEventListener("dragstart", this.dragStart, false);
+      },
+      saveWorkspaces() {
+        this.set_workspacesInLocalStorage();
       },
       offDragListener() {
         this.$refs.layersbar.removeEventListener("dragend", this.dragEnd, false);
