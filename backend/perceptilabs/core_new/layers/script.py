@@ -49,7 +49,8 @@ class ScriptFactory:
         template += 'import sys\n'
         template += 'import json\n'
         template += 'import time\n'        
-        template += 'import zlib\n'        
+        template += 'import zlib\n'
+        template += 'from queue import Queue\n'                
         template += 'import logging\n'
         template += 'import threading\n'
         template += 'from typing import Dict, Any, List, Tuple, Generator\n'        
@@ -103,9 +104,12 @@ class ScriptFactory:
                 template += "    ('" + from_id + "', '" + sanitize_layer_name(to_id) + "'),\n"
         template += "}\n\n"
 
+        template += "global snapshots_produced\n"
+        template += "snapshots_produced = 0\n"
         template += "snapshots = []\n"
         template += "snapshot_lock = threading.Lock()\n"        
         template += "\n"
+        template += "message_queue = Queue()\n"        
 
         template += "context = zmq.Context()\n"
         template += "socket = context.socket(zmq.PUB)\n"
@@ -156,11 +160,11 @@ class ScriptFactory:
 
         template += "@app.route('/')\n"
         template += "def endpoint_index():\n"
-        template += "    global status, t_start\n"
+        template += "    global status, t_start, snapshots_produced\n"
         template += "    result = {\n"
         template += "        'status': status,\n"
-        template += "        'n_snapshots': len(snapshots),\n"
-        template += "        'snapshot_count': len(snapshots),\n"
+        template += "        'n_snapshots': snapshots_produced,\n"
+        template += "        'snapshot_count': snapshots_produced,\n"
         template += "        'running_time': time.perf_counter() - t_start if t_start is not None else None\n"        
         template += "    }\n"
         template += "    return jsonify(result)\n"        
@@ -171,18 +175,30 @@ class ScriptFactory:
         template += ")\n"
         template += "\n"
         template += "def make_snapshot(graph):\n"
-        template += "    global snapshot_lock, snapshots\n"        
-        template += "    with snapshot_lock:\n"
-        template += "        snapshot = snapshot_builder.build(graph)\n"
-        template += "        snapshots.append(snapshot)\n"
-        template += "        socket.send_multipart([b'snapshots', dill.dumps(snapshot)])\n"
-        
+        template += "    global snapshot_lock, snapshots, snapshots_produced\n"
+        template += "    snapshot = snapshot_builder.build(graph)\n"        
+        #template += "    with snapshot_lock:\n"
+        #template += "        snapshots.append(snapshot)\n"
+        template += "    snapshots_produced += 1\n"
+        template += "    message_queue.put((b'snapshots', snapshot))\n"        
+        template += "\n"
 
+        template += "def message_queue_worker():\n"
+        template += "    while True:\n"
+        template += "        if message_queue.empty():\n"
+        template += "            time.sleep(0.01)\n"
+        template += "        else:\n"
+        template += "            topic, value = message_queue.get()\n"
+        template += "            body = dill.dumps(value)\n"
+        template += "            socket.send_multipart([topic, body])\n"        
+        template += "\n"
+        
         # --- CREATE MAIN FUNCTION ---
         template += 'def main(wait=False):\n'
         template += '    global graph, status, t_start\n'
         
         template += '    threading.Thread(target=app.run, kwargs={"port": 5678, "threaded": True}, daemon=True).start()\n'
+        template += '    threading.Thread(target=message_queue_worker, daemon=True).start()\n'        
         template += '    graph_builder = GraphBuilder()\n'
         template += '    graph = graph_builder.build(LAYERS, EDGES)\n'
         template += '    \n'
