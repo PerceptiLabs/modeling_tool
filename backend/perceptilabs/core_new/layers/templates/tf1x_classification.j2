@@ -212,7 +212,7 @@
                 f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
                 f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
             )
-            print("EPOCH TIME..... ", time.perf_counter() - t0)            
+            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
             self._epoch += 1
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
