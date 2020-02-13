@@ -33,14 +33,12 @@ RUN mkdir /licenses
 COPY licenses /licenses
 # COPY Docker/Frontend/licenses /licenses
 
-ADD envServer.js /envServer.js
 ADD run-httpd.sh /run-httpd.sh
-# ADD Docker/Frontend/envServer.js /envServer.js
+# ADD Docker/Frontend/.htaccess /.htaccess
 # ADD Docker/Frontend/run-httpd.sh /run-httpd.sh
 
 RUN yum -y --nodocs update && \
     yum -y --nodocs install httpd && \
-    yum -y --nodocs install nodejs && \
     yum clean all
 
 RUN chmod -v +x /run-httpd.sh && \
@@ -52,10 +50,10 @@ ADD . /var/www/html/
 # ADD frontend/src/dist/ /var/www/html/
 
 EXPOSE 8080
-EXPOSE 8081
 
-# CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
-CMD ["./run-httpd.sh"]
+CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+# USER apache
+# CMD ["./run-httpd.sh"]
 
 #############################################################
 # FROM centos:7
