@@ -177,21 +177,27 @@ class ScriptFactory:
         template += "def make_snapshot(graph):\n"
         template += "    global snapshot_lock, snapshots, snapshots_produced\n"
         template += "    snapshot = snapshot_builder.build(graph)\n"        
-        #template += "    with snapshot_lock:\n"
-        #template += "        snapshots.append(snapshot)\n"
         template += "    snapshots_produced += 1\n"
-        template += "    message_queue.put((b'snapshots', snapshot))\n"        
+        template += "    body = dill.dumps(snapshot)\n"
+        template += "    message_queue.put((b'snapshots', body))\n"        
         template += "\n"
-
         template += "def message_queue_worker():\n"
         template += "    while True:\n"
         template += "        if message_queue.empty():\n"
         template += "            time.sleep(0.01)\n"
         template += "        else:\n"
-        template += "            topic, value = message_queue.get()\n"
-        template += "            body = dill.dumps(value)\n"
-        template += "            socket.send_multipart([topic, body])\n"        
+        template += "            topic, body = message_queue.get()\n"
+        template += "            socket.send_multipart([topic, body])\n"
         template += "\n"
+
+        template += "def run_training():\n"
+        template += "    try:\n"
+        template += "        graph.training_nodes[0].layer_instance.run(graph)\n"
+        template += "    except Exception as e:\n"
+        template += "        body = dill.dumps(e)\n"
+        template += "        socket.send_multipart([b'exception', body])\n"
+        template += "        raise\n"
+        
         
         # --- CREATE MAIN FUNCTION ---
         template += 'def main(wait=False):\n'
@@ -203,7 +209,6 @@ class ScriptFactory:
         template += '    graph = graph_builder.build(LAYERS, EDGES)\n'
         template += '    \n'
         template += '    print(graph.training_nodes)\n'
-        #template += '    graph.training_nodes[0].layer_instance.send_state_updates = synchronize_replicas\n'
         template += '    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot\n'
         
         template += '    status = STATUS_READY\n'
@@ -213,7 +218,7 @@ class ScriptFactory:
         template += '        \n'
         template += '        status = STATUS_RUNNING\n'
         template += '        t_start = time.perf_counter()\n'
-        template += '        graph.training_nodes[0].layer_instance.run(graph)\n'
+        template += "        run_training()\n"
         template += '        \n'
         template += '        if status != STATUS_STOPPED:\n'
         template += '            status = STATUS_IDLE\n'
@@ -221,8 +226,8 @@ class ScriptFactory:
         template += '            time.sleep(1.0)\n'        
         template += '    else:\n'
         template += '        status = STATUS_RUNNING\n'
-        template += '        t_start = time.perf_counter()\n'        
-        template += '        graph.training_nodues[0].layer_instance.run(graph)\n'
+        template += '        t_start = time.perf_counter()\n'
+        template += "        run_training()\n"        
         template += '\n'        
         template += '    status = STATUS_DONE\n'        
         template += '\n\n'

@@ -217,6 +217,10 @@ class {{layer_name}}(ClassificationLayer):
         # Training loop
         self._epoch = 0
         while self._epoch < self._n_epochs:
+            if self._epoch == 2:
+                raise ValueError("HELLO!")
+            
+            t0 = time.perf_counter()
             self._training_iteration = 0
             self._status = 'training'
             sess.run(trn_init)            
@@ -256,6 +260,7 @@ class {{layer_name}}(ClassificationLayer):
                 f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
             )
 
+            print("EPOCH TIME..... ", time.perf_counter() - t0)            
             self._epoch += 1
 
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}            

@@ -14,6 +14,9 @@ from collections import namedtuple
 log = logging.getLogger(__name__)
 
 
+class ClientError(Exception):
+    pass
+
 class Client:
     MAX_SNAPSHOTS_PER_ITERATION = 10
     
@@ -21,7 +24,6 @@ class Client:
         self._hostname = hostname
         
         self._snapshot_queue = None
-        self._snapshots_fetched = 0
 
         self._snapshot_worker_thread = threading.Thread(target=self._snapshot_worker, daemon=True)
         self._snapshot_worker_thread.start()
@@ -72,10 +74,8 @@ class Client:
     
     def _snapshot_worker(self):
         self._snapshot_queue = Queue()
-        self._snapshots_fetched = 0
         self._is_running = threading.Event()
         self._is_running.set()        
-
 
         ctx = zmq.Context()                
         socket = ctx.socket(zmq.SUB)
@@ -84,59 +84,18 @@ class Client:
         poller = zmq.Poller()
         poller.register(socket, zmq.POLLIN)
         
-
         while self._is_running.is_set():
-            count = self._fetch_snapshots(poller, socket)
+            items = dict(poller.poll(timeout=0.1))
+            if socket in items:
+                topic, body = socket.recv_multipart()                
+                self._handle_message(topic, body)
 
-            if count == 0:
-                time.sleep(1.0)
-
-    def _fetch_snapshots(self, poller, socket):
-        count = 0
-
-        items = dict(poller.poll(timeout=0.1))
-
-        if socket in items:
-            topic, body = socket.recv_multipart()
-
-            #print(body)
-            
-            #body = zlib.decompress(body)
+    def _handle_message(self, topic, body):
+        if topic == b'snapshots':
             snapshot = dill.loads(body)
             size = len(body)
-            
             self._snapshot_queue.put((snapshot, size))
-            self._snapshots_fetched += 1
-            count += 1
-
-        return count
+        elif topic == b'exception':
+            exc = dill.loads(body)
+            log.error("Received exception from deployed core: " + repr(exc))
             
-    def _fetch_snapshots_old(self):
-        try:
-            snapshot_count = self.snapshot_count
-        except:
-            return 0
-            
-        diff = snapshot_count - self._snapshots_fetched
-
-        count = 0
-        for idx in range(self._snapshots_fetched, self._snapshots_fetched + diff):
-            try:
-                with urllib.request.urlopen(self._hostname + f"/snapshot?index={idx}") as url:
-                    buf = url.read()
-                    
-                hex_str = buf.decode()
-                buf = bytes.fromhex(hex_str)
-                buf = zlib.decompress(buf)
-
-                size = len(buf)
-                snapshot = dill.loads(buf)
-            except Exception as e:
-                log.exception("Error when fetching snapshots!")
-                return count
-            else:
-                self._snapshot_queue.put((snapshot, size))
-                self._snapshots_fetched += 1
-                count += 1
-
-        return count

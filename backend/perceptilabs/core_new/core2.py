@@ -78,9 +78,7 @@ class Core:
             
             log.info(
                 f"Cycle time: {round(1000*(t1-t0), 3)} ms. Snapshots consumed: {len(snapshots)}. "
-                f"Average size: {avg_size} KB. "
-            )
-            log.info(                
+                f"Average size: {avg_size} KB. \n"
                 f"Total snapshots consumed: {len(self._graphs)} ({consume_rate} per sec), "
                 f"total snapshots produced: {client.snapshot_count} ({produce_rate} per sec). "
             )            
