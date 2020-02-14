@@ -167,11 +167,13 @@ jobs:
         
     - bash: |
         cd scripts/
+        chmod 755 setup_osx.sh
         ./setup_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
         cd scripts/
+        chmod 755 build_osx.sh
         ./build_osx.sh
       displayName: 'Build'
 
