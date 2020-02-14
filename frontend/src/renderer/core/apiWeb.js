@@ -17,11 +17,10 @@ const wsPathDefSingleton = (function() {
   // var wsPathDef = ("ws://" + window.location.host).replace('perceptilabs-frontend', 'perceptilabs-core');
   // var wsPathDef = 'ws://perceptilabs-core:5000';
   // var wsPathDef = "ws://" + window.location.host + ":443";
-  var wsPathDef = `ws://${window.location.hostname}:5001`;
+  var wsPathDef = `ws://${window.location.hostname}:5000`;
 
   return {
     getInstance(wsPath){
-
       return new Promise(resolve => {
         if (!hasFetched) {
           
@@ -35,7 +34,7 @@ const wsPathDefSingleton = (function() {
             } else if (envVar && !envVar.startsWith('ws://')) {
               wsPathDef = 'ws://' + envVar;
             }
-            console.log('wsPathDefSingleton - new', wsPathDef);
+            // console.log('core_url', wsPathDef);
             resolve(wsPathDef);
           })
           .catch(error => {
