@@ -23,8 +23,9 @@ class RemoteError(Exception):
 class Client:
     MAX_SNAPSHOTS_PER_ITERATION = 10
     
-    def __init__(self, hostname):
-        self._hostname = hostname
+    def __init__(self, config):
+        self._flask_address = config['addr_flask']
+        self._zmq_address = config['addr_zmq']        
         
         self._snapshot_queue = None
         self._error_queue = None        
@@ -34,7 +35,7 @@ class Client:
 
     @property
     def status(self):
-        with urllib.request.urlopen(self._hostname+"/") as url:
+        with urllib.request.urlopen(self._flask_address+"/") as url:
             buf = url.read().decode()
         dict_ = json.loads(buf)
         status = dict_['status']
@@ -42,7 +43,7 @@ class Client:
 
     @property
     def running_time(self):
-        with urllib.request.urlopen(self._hostname+"/") as url:
+        with urllib.request.urlopen(self._flask_address+"/") as url:
             buf = url.read().decode()
         dict_ = json.loads(buf)
         status = dict_['running_time']
@@ -50,7 +51,7 @@ class Client:
     
     @property
     def snapshot_count(self):
-        with urllib.request.urlopen(self._hostname+"/") as url:
+        with urllib.request.urlopen(self._flask_address+"/") as url:
             buf = url.read().decode()
         dict_ = json.loads(buf)
         count = dict_['snapshot_count']
@@ -75,7 +76,7 @@ class Client:
 
     def send_event(self, type_, **kwargs):
         json_dict = {'type': type_, **kwargs}
-        requests.post(self._hostname+"/command", json=json_dict)                
+        requests.post(self._flask_address+"/command", json=json_dict)                
         
     def stop(self):
         self._is_running.clear()
@@ -88,7 +89,7 @@ class Client:
 
         ctx = zmq.Context()                
         socket = ctx.socket(zmq.SUB)
-        socket.connect('tcp://localhost:7171')
+        socket.connect(self._zmq_address)
         socket.setsockopt_string(zmq.SUBSCRIBE, '')
         poller = zmq.Poller()
         poller.register(socket, zmq.POLLIN)

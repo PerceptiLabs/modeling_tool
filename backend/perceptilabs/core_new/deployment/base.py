@@ -45,8 +45,8 @@ class DeploymentPipe(ABC):
     def send_file(self):
         pass
 
-    def _establish_communication(self, timeout):
-        client = Client('http://localhost:5678')
+    def _establish_communication(self, config, timeout):
+        client = Client(config)
 
         t0 = time.time()
         ready = False        
@@ -75,10 +75,9 @@ class InProcessDeploymentPipe(DeploymentPipe):
         self._script_factory = script_factory        
 
     def deploy(self, graph, session_id: str, timeout=10):
-        code, line_to_node_map = self._script_factory.make(
-            graph,
-            self.get_session_config(session_id)
-        )
+        config = self.get_session_config(session_id)
+        code, line_to_node_map = self._script_factory.make(graph, config)
+
 
         self._line_to_node_map = line_to_node_map # TODO: inject script_factory instead of exposing this here
         
@@ -95,7 +94,7 @@ class InProcessDeploymentPipe(DeploymentPipe):
             self._thread = threading.Thread(target=module.main, kwargs={'wait': True}, daemon=True)
             self._thread.start()
 
-        return self._establish_communication(timeout)
+        return self._establish_communication(config, timeout)
         
     @property
     def is_active(self):
@@ -105,10 +104,12 @@ class InProcessDeploymentPipe(DeploymentPipe):
     def get_session_config(self, session_id: str) -> Dict[str, str]:
         return {
             'session_id': session_id,
-            'ip_addr': '<nothing here yet>'
+            'addr_flask': 'http://localhost:5678',
+            'port_flask': '5678',            
+            'addr_zmq': 'tcp://localhost:7171',
+            'addr_zmq_deploy': 'tcp://*:7171'            
         }
     
-
 
 class LocalEnvironmentPipe(DeploymentPipe):
     def __init__(self, interpreter: str, script_factory):
@@ -152,6 +153,7 @@ class LocalEnvironmentPipe(DeploymentPipe):
     def get_session_config(self, session_id: str) -> Dict[str, str]:
         return {
             'session_id': session_id,
-            'ip_addr': '<nothing here yet>'
+            'addr_flask': 'http://localhost:5678',
+            'addr_zmq': 'http://localhost:7171'
         }
     

@@ -138,7 +138,7 @@ class ScriptFactory:
 
         template += "context = zmq.Context()\n"
         template += "socket = context.socket(zmq.PUB)\n"
-        template += "socket.bind('tcp://*:7171')\n"
+        template += "socket.bind('" + session_config['addr_zmq_deploy'] + "')\n"
         template += "log.addHandler(ZmqHandler())\n"
         template += "\n"        
         template += "app = Flask(__name__)\n"
@@ -233,7 +233,7 @@ class ScriptFactory:
         template += 'def main(wait=False):\n'
         template += '    global graph, status, t_start\n'
         
-        template += '    threading.Thread(target=app.run, kwargs={"port": 5678, "threaded": True}, daemon=True).start()\n'
+        template += '    threading.Thread(target=app.run, kwargs={"port": "'+session_config['port_flask']+'", "threaded": True}, daemon=True).start()\n'
         template += '    threading.Thread(target=message_queue_worker, daemon=True).start()\n'        
         template += '    graph_builder = GraphBuilder()\n'
         template += '    graph = graph_builder.build(LAYERS, EDGES)\n'
