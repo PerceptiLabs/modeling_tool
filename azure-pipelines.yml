@@ -53,6 +53,12 @@ jobs:
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
 
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
+
     - bash: |
         cd scripts/
         ./setup_ubuntu.sh
@@ -152,15 +158,23 @@ jobs:
         folderPath: '$(System.DefaultWorkingDirectory)/'
         xmlTransformationRules: 
         jsonTargetFiles: '**/app_variables.json'
+    
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
         
     - bash: |
         cd scripts/
+        chmod 755 setup_osx.sh
         ./setup_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
         cd scripts/
-        bash -i build_osx.sh
+        chmod 755 build_osx.sh
+        ./build_osx.sh
       displayName: 'Build'
 
     

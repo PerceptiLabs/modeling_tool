@@ -3,6 +3,7 @@ main.py
 
 # perceptilabs
 perceptilabs/__init__.py
+perceptilabs/__main__.py
 perceptilabs/mainServer.py
 perceptilabs/main_setup.py
 perceptilabs/codehq.py
@@ -27,11 +28,13 @@ perceptilabs/processes.py
 perceptilabs/license_checker.py
 
 # perceptilabs/server
+perceptilabs/server/__init__.py
 perceptilabs/server/appServer.py
 perceptilabs/server/desktop_serverlib.py
 perceptilabs/server/web_serverlib.py
 
 # perceptilabs/analytics
+perceptilabs/analytics/__init__.py
 perceptilabs/analytics/handlers.py
 perceptilabs/analytics/scraper.py
 
@@ -54,8 +57,8 @@ perceptilabs/script/templates/file_utils.j2
 perceptilabs/script/templates/train_normal_distr.j2
 
 # perceptilabs/core_new
+perceptilabs/core_new/__init__.py
 perceptilabs/core_new/cache.py
-perceptilabs/core_new/control.py
 perceptilabs/core_new/core.py
 perceptilabs/core_new/errors.py
 perceptilabs/core_new/extras.py
@@ -78,6 +81,7 @@ perceptilabs/core_new/api/__init__.py
 perceptilabs/core_new/api/legacy.py
 
 # perceptilabs/insights/csv_ram_estimator
+perceptilabs/insights/__init__.py
 perceptilabs/insights/csv_ram_estimator/__init__.py
 perceptilabs/insights/csv_ram_estimator/base.py
 perceptilabs/insights/csv_ram_estimator/model_and_meta.pkl
