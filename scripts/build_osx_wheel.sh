@@ -1,15 +1,15 @@
 echo "Python location:"
-which python3
+which python
 
 echo "Pip list:"
-pip3 list
+pip list
 
 cd ..
 
 # ---- Train models ----
 echo "Training models"
 cd backend/perceptilabs/insights/csv_ram_estimator/
-python3 train_model.py data_1579288530.csv
+python train_model.py data_1579288530.csv
 if [ $? -ne 0 ]; then exit 1; fi
 cd ../../../../
 
@@ -38,7 +38,7 @@ cp ../../backend/perceptilabs/app_variables.json ./perceptilabs/
 echo "Listing files to be included in build (contents of 'backend_tmp/')"
 ls -l -R
 
-python3 setup.py build_ext bdist_wheel
+python setup.py build_ext bdist_wheel
 if [ $? -ne 0 ]; then exit 1; fi
 
 cd ../backend_out
