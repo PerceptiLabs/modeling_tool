@@ -73,13 +73,10 @@ class Client:
             errors.append(error)
         return errors    
 
-    def _send_event(self, type_, **kwargs):
+    def send_event(self, type_, **kwargs):
         json_dict = {'type': type_, **kwargs}
         requests.post(self._hostname+"/command", json=json_dict)                
         
-    def start(self):
-        self._send_event('on_start')    
-
     def stop(self):
         self._is_running.clear()
     

@@ -34,6 +34,7 @@ class Core:
         self._lock = threading.Lock()        
         self._is_running = threading.Event()
         self._is_running.clear()
+        self._client = None
         
     def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: Callable=None):
         session_id = session_id or uuid.uuid4().hex
@@ -41,32 +42,34 @@ class Core:
 
         config = self._deployment_pipe.get_session_config(session_id)        
         graph = self._graph_builder.build_from_spec(graph_spec, config)
-        client = self._deployment_pipe.deploy(graph, config)
+        self._client = self._deployment_pipe.deploy(graph, config)
 
         line_to_node_map = self._deployment_pipe._line_to_node_map # TODO: inject script_factory to deployment pipe instead retrieving the map like this.
 
         log.info(f"Sending start command to deployed core with session id {session_id}")        
-        client.start()
+        self._client.send_event('on_start')
         
-        while client.status in [STATUS_READY, STATUS_STARTED]:
+        while self._client.status in [STATUS_READY, STATUS_STARTED]:
             time.sleep(1.0)
 
-        if client.status == STATUS_RUNNING:
+        if self._client.status == STATUS_RUNNING:
             log.info(f"Deployed core with id {session_id} indicated status 'running'")
         else:
-            raise RuntimeError(f"Expected deployed core status 'running', but got '{client.status}'")
+            raise RuntimeError(f"Expected deployed core status 'running', but got '{self._client.status}'")
 
         self._graphs = []
 
         t_start = time.perf_counter()
-        while client.status == STATUS_RUNNING or (client.status == STATUS_IDLE and len(self._graphs) < client.snapshot_count):
+        while self._client.status == STATUS_RUNNING or (self._client.status == STATUS_IDLE and len(self._graphs) < self._client.snapshot_count):
             t0 = time.perf_counter()
-            errors = client.pop_errors()
+            errors = self._client.pop_errors()
 
             if errors:
-                self._handle_errors(client, errors, line_to_node_map)
-            
-            snapshots = client.pop_snapshots()
+                self._handle_errors(errors, line_to_node_map)
+                log.info('Breaking out of core main loop due to remote errors: ' + ', '.join(repr(e) for e, _ in errors))                
+                break
+
+            snapshots = self._client.pop_snapshots()
 
             total_size = 0
             new_graphs = []
@@ -83,23 +86,22 @@ class Core:
 
             t1 = time.perf_counter()
 
-            running_time = client.running_time
-            produce_rate = round(client.snapshot_count / running_time, 3)
+            running_time = self._client.running_time
+            produce_rate = round(self._client.snapshot_count / running_time, 3)
             consume_rate = round(len(self._graphs) / running_time, 3)
             avg_size = round(total_size/10**3/len(snapshots), 3) if len(snapshots) > 0 else 0.0
             
             log.info(
                 f"Consumed {len(snapshots)} snapshots in {round(1000*(t1-t0), 3)} ms (mean size: {avg_size} KB). "
-                f"Total consumed (produced): {len(self._graphs)} ({client.snapshot_count}). "
+                f"Total consumed (produced): {len(self._graphs)} ({self._client.snapshot_count}). "
                 f"Consumption (production) rate: {consume_rate} ({produce_rate}) per sec."
             )            
             time.sleep(1)
 
-        log.info(f"Sending stop command to deployed core with session id {session_id}")
-        client.stop()
+        log.info(f"Stopping core with session id {session_id}")
+        self.stop()
 
-    def _handle_errors(self, client, errors: List, line_to_node_map):
-
+    def _handle_errors(self, errors: List, line_to_node_map):
         errors_repr = []
         for _, traceback_frames in errors:
             message = ''
@@ -118,9 +120,6 @@ class Core:
             log.error('Remote error:\n' + message)
             if self._error_queue is not None:
                 self._error_queue.put(message)          
-
-        client.stop()
-        raise RemoteError('Remote errors: ' + ', '.join(repr(e) for e, _ in errors))
             
     @property
     def graphs(self) -> List[Graph]:
@@ -128,12 +127,21 @@ class Core:
             return self._graphs.copy()
 
     def stop(self):
+        if self._client is not None:
+            self._client.send_event('on_stop')
+            self._client.stop()
+            log.info(f"Sent stop command to deployed core")                        
+            
         self._is_running.clear()
-
-    def pause(self):
-        #requests.post("http://localhost:5678/command", json={'type': 'on_pause'})
-        pass
         
+    def pause(self):
+        if self._client is not None:
+            self._client.send_event('on_pause')
+
+    def unpause(self):
+        if self._client is not None:        
+            self._client.send_event('on_resume')        
+
     @property
     def is_running(self):
         return self._is_running.is_set() 

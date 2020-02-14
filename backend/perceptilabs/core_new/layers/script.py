@@ -174,6 +174,7 @@ class ScriptFactory:
         template += "    from flask import request\n"
         template += "    global status\n"
         template += "    data = request.json\n"
+        template += "    log.info('Received command. Data: ' + str(data))\n"
         template += "    if data['type'] == 'on_pause':\n"
         template += "        graph.active_training_node.layer.on_pause()\n"
         template += "    elif data['type'] == 'on_resume':\n"

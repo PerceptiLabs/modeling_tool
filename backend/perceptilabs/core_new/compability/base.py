@@ -40,10 +40,11 @@ class CompabilityCore:
                 self._send_command(core, command)
 
             graphs = core.graphs
-            log.debug(f"Processing {len(graphs)} graph snapshots")
-            
-            results = self._get_results_dict(graphs)
-            self._result_queue.put(results)
+
+            if len(graphs) > 0:
+                log.debug(f"Processing {len(graphs)} graph snapshots")
+                results = self._get_results_dict(graphs)
+                self._result_queue.put(results)
             
         set_tensorflow_mode('graph')
         core = Core(self._graph_builder, self._deployment_pipe, self._error_queue)
@@ -67,8 +68,13 @@ class CompabilityCore:
             raise     
 
     def _send_command(self, core, command):
-        pass
-    
+        if command == 'pause':
+            core.pause()
+        elif command == 'unpause':
+            core.unpause()
+        elif command == 'stop':
+            core.stop()
+            
     def _get_results_dict(self, graphs):
         self._print_graph_debug_info(graphs)
         
