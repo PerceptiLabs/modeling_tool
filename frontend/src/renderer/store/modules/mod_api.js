@@ -146,7 +146,7 @@ const actions = {
       .then((data)=> { return })
       .catch((err)=> { console.error(err) });
   },
-
+  
   API_CLOSE_core() {
     const theData = {
       reciever: 'server',
@@ -189,13 +189,13 @@ const actions = {
       action: rootGetters['mod_workspace/GET_networkCoreStatus'] === 'Paused' ? 'Unpause' : 'Pause', // Pause and Unpause
       value: ''
     };
-    //console.log('API_pauseTraining', theData);
+
     coreRequest(theData)
       .then((data)=> {
         if(rootGetters['mod_workspace/GET_networkWaitGlobalEvent']) {
           dispatch('mod_workspace/EVENT_startDoRequest', false, {root: true});
           dispatch('API_getStatus');
-        }
+          }
         else {
           dispatch('mod_workspace/EVENT_startDoRequest', true, {root: true});
         }
@@ -204,10 +204,10 @@ const actions = {
         console.error(err);
       });
   },
+  API_stopTraining({dispatch, rootGetters}, reciever = null) {
 
-  API_stopTraining({dispatch, rootGetters}) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      reciever: reciever || rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'Stop',
       value: ''
     };
@@ -306,9 +306,23 @@ const actions = {
   //---------------
   //  NETWORK SAVE
   //---------------
-  API_checkTrainedNetwork({rootGetters}) {
+
+  API_checkNetworkRunning({rootGetters}, receiver) {
     const theData = {
-      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      reciever: receiver,
+      action: "isRunning",
+      value: ""
+    };
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error('isRunning answer', err);
+      });
+  },
+
+  API_checkTrainedNetwork({rootGetters}, receiver = null) {
+    const theData = {
+      reciever: receiver || rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "isTrained"
     };
     return coreRequest(theData)

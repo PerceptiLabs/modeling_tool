@@ -1,4 +1,4 @@
-import { generateID, calcLayerPosition, deepCopy }  from "@/core/helpers.js";
+import { generateID, calcLayerPosition, deepCopy, isLocalStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
 import { widthElement } from '@/core/constants.js'
 import Vue    from 'vue'
 import router from '@/router'
@@ -122,6 +122,79 @@ const mutations = {
   RESTORE_network(state, val) {
     state.workspaceContent = val.workspaceContent;
     state.currentNetwork = val.currentNetwork;
+  },
+  //---------------
+  //  LOCALSTORAGE
+  //---------------
+  set_workspacesInLocalStorage(state) {
+    if (!isLocalStorageAvailable()) { return; }
+
+    try {    
+      const networkIDs = [];
+
+      state.workspaceContent.forEach(network => {
+        networkIDs.push(network.networkID);
+
+        localStorage.setItem(`_network.${network.networkID}`, stringifyNetworkObjects(network));
+      });
+      
+      localStorage.setItem('_network.ids', JSON.stringify(networkIDs.sort()));
+    } catch (error) {
+      // console.error('Error persisting networks to localStorage', error);
+    }
+  },
+  get_workspacesFromLocalStorage(state) {
+    // this function is invoked when the pageQuantum (workspace) component is created
+    // the networks that were saved in the localStorage are hydrated
+
+    const activeNetworkIDs = localStorage.getItem('_network.ids') || [];
+    const keys = Object.keys(localStorage)
+      .filter(key => 
+        key.startsWith('_network.') && 
+        key !== '_network.ids'&& 
+        key !== '_network.meta')
+        .sort();
+
+    for(const key of keys) {
+      const networkID = key.replace('_network.', '');
+
+      // _network.<networkID> entries in localStorage are only cleared on load
+      if (!activeNetworkIDs.includes(networkID)) {
+        localStorage.removeItem(key);
+        continue;
+      }
+
+      const networkIsLoaded = state.workspaceContent
+        .some(networkInWorkspace => networkInWorkspace.networkID === networkID)
+      
+      if (!networkIsLoaded) {
+        const network = JSON.parse(localStorage.getItem(key));
+        
+        // clears the handle of the setInterval function
+        // this value is used to determine if a new setInterval call should be made
+        network.networkMeta.chartsRequest.timerID = null;
+
+        state.workspaceContent.push(network);
+      }
+    }
+  },
+  set_lastActiveTabInLocalStorage(state, networkID) {
+    if (!isLocalStorageAvailable()) { return; }
+
+    localStorage.setItem('_network.meta', JSON.stringify({ 'lastActiveNetworkID': networkID }));
+
+  },
+  get_lastActiveTabFromLocalStorage(state) {
+    // function for remembering the last active tab
+    const activeNetworkIDs = JSON.parse(localStorage.getItem('_network.ids')) || [];
+    const networkMeta = JSON.parse(localStorage.getItem('_network.meta')) || {};
+
+    const currentNetworkID = networkMeta.lastActiveNetworkID;
+    const index = activeNetworkIDs.findIndex((el) => el === currentNetworkID);
+
+    if (index > 0) {
+      state.currentNetwork = index; 
+    }
   },
   //---------------
   //  NETWORK
@@ -809,8 +882,8 @@ const mutations = {
   //---------------
   //  OTHER
   //---------------
-  SET_currentNetwork(state, value) {
-    state.currentNetwork = value
+  set_currentNetwork(state, tabIndex) {
+    state.currentNetwork = tabIndex;
   },
   ADD_dragElement(state, event) {
     state.dragElement = createNetElement(event);
@@ -847,12 +920,149 @@ const actions = {
   //  NETWORK
   //---------------
   ADD_network({commit, dispatch}, network) {
-    commit('add_network', network)
+    commit('add_network', network);
+    
+    const lastNetworkID = state.workspaceContent[state.currentNetwork].networkID;
+    commit('set_lastActiveTabInLocalStorage', lastNetworkID);
+    commit('set_workspacesInLocalStorage');
   },
   DELETE_network({commit, dispatch}, index) {
-    const networkID = state.workspaceContent[index].networkID;
+    // API_closeSession stops the process in the core
+    const network = state.workspaceContent[index];
+    dispatch('mod_api/API_closeSession', network.networkID, { root: true });
+
+    if (index === state.currentNetwork) {
+      
+      if (state.workspaceContent.length === 1) {
+        commit('set_lastActiveTabInLocalStorage', '');
+      } else if (index === 0) {
+        commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
+      } else {
+        commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
+      }
+    }
+    
     commit('delete_network', index);
-    dispatch('mod_api/API_closeSession', networkID, { root: true });
+    commit('set_workspacesInLocalStorage');
+  },
+  GET_workspacesFromLocalStorage({commit, dispatch}) {
+    return new Promise(resolve => {
+      if (!isLocalStorageAvailable()) { resolve(); }
+
+      commit('get_workspacesFromLocalStorage');
+      commit('get_lastActiveTabFromLocalStorage');
+      
+      processNonActiveWorkspaces();
+      processActiveWorkspaces();
+
+      function processNonActiveWorkspaces() {
+        // removing stats and test tabs if there aren't any trained models
+        // this happens when the core is restarted
+        const networks = state.workspaceContent.filter(network => 
+          network.networkElementList !== null &&
+          network.networkID !== state.workspaceContent[state.currentNetwork].networkID);
+        
+        for(let network of networks) {
+          const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
+          const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
+          Promise.all([isRunningPromise, isTrainedPromise])
+            .then(([isRunning, isTrained]) => {
+              // console.log('Promise all values', isRunning, isTrained);
+              if (isRunning && isTrained) {
+                network.networkMeta.openStatistics = false;
+                network.networkMeta.openTest = null;
+              } else if (!isRunning && isTrained) {
+                network.networkMeta.openStatistics = false;
+                network.networkMeta.openTest = false;
+              } else {
+                network.networkMeta.openStatistics = null;
+                network.networkMeta.openTest = null;
+              }
+            });
+        }
+      }
+
+      function processActiveWorkspaces() {
+        const network = state.workspaceContent.find(network => 
+          network.networkID === state.workspaceContent[state.currentNetwork].networkID);
+  
+          const isRunningPromise = dispatch('mod_api/API_checkNetworkRunning', network.networkID, { root: true });
+          const isTrainedPromise = dispatch('mod_api/API_checkTrainedNetwork', network.networkID, { root: true });
+          Promise.all([isRunningPromise, isTrainedPromise])
+            .then(([isRunning, isTrained]) => {
+  
+            if (isRunning && !isTrained) {
+              // when the spinner is loading
+              commit('SET_showStartTrainingSpinner', true);
+              dispatch('SET_openStatistics', network.networkMeta.openStatistics);
+              dispatch('SET_openTest', null);
+              dispatch('SET_chartsRequestsIfNeeded', network.networkID);
+            } else if (isRunning && isTrained) {
+              // after spinner is done loading, and the first charts are shown
+              dispatch('SET_openStatistics', network.networkMeta.openStatistics);
+              dispatch('SET_openTest', null);
+              dispatch('SET_chartsRequestsIfNeeded', network.networkID);
+            } else if (!isRunning && isTrained) {
+              // after training is done
+              dispatch('SET_openStatistics', network.networkMeta.openStatistics);
+              dispatch('SET_openTest', network.networkMeta.openTest);
+              dispatch('SET_chartsRequestsIfNeeded', network.networkID);
+            } else {
+              dispatch('SET_openStatistics', null);
+              dispatch('SET_openTest', null);
+            }
+        });
+      }
+
+      resolve();
+    });
+  },
+  SET_chartsRequestsIfNeeded({state, dispatch}, networkID) {
+    // This function is used to determine if the page has been refreshed after the training 
+    // has started, but before it is completed.
+
+    const network = state.workspaceContent.find(network => network.networkID === networkID);
+
+    // console.group('SET_chartsRequestsIfNeeded');
+    // console.log('stats tab', network.networkMeta.openStatistics);
+    // console.log('test tab', network.networkMeta.openTest);
+    // console.log('networkWaitGlobalEvent', network.networkMeta.chartsRequest.waitGlobalEvent);
+    // console.groupEnd();
+
+    // skip if:
+    // network never trained before
+    // if there's already a valid timerID
+    if (!network ||
+      network.networkMeta.openStatistics == null || 
+      network.networkMeta.chartsRequest.timerID) { return; }
+    
+    // this check is only for the statistics tab
+    dispatch('mod_api/API_checkNetworkRunning', networkID, {root: true})
+      .then((isRunning) => {
+
+      if (network.networkMeta.coreStatus.Status === 'Paused') {
+        //statistics still being computed and paused
+        dispatch('EVENT_onceDoRequest', true);
+      } else if (isRunning) { 
+        //statistics still being computed and NOT paused
+        dispatch('EVENT_startDoRequest', true);
+      } else if (network.networkMeta.coreStatus.Status === 'Finished' &&
+        network.networkMeta.coreStatus.Progress < 1 && 
+        network.networkMeta.chartsRequest.waitGlobalEvent) {
+        // statistics done, tests have started
+        dispatch('EVENT_startDoRequest', true);
+      } else if (network.networkMeta.coreStatus.Status === 'Finished' &&
+        network.networkMeta.coreStatus.Progress >= 1) {
+        // statistics done, tests done
+        dispatch('mod_api/API_postTestMove', 'nextStep', {root: true});
+      } else {
+        dispatch('EVENT_onceDoRequest', true);
+      }
+    });
+  },
+  SET_currentNetwork({commit}, index){
+    commit('set_currentNetwork', index);
+    commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index].networkID);
   },
   SET_networkName({commit, getters}, value) {
     commit('set_networkName', {getters, value})

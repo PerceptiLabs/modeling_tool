@@ -23,6 +23,9 @@
 
   export default {
     name: 'PageProjects',
+    created() {
+      this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+    },
     mounted() {
       this.checkCloudToken()
     },

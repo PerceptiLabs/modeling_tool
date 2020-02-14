@@ -79,6 +79,18 @@ export default {
   },
   watch: {
     statusNetworkCore(newStatus) {
+      // function for showing the global training results popup
+      
+      if (this.statisticsIsOpen === null) {
+        // added statisticsIsOpen null check
+        // it is possible that the status is 'Finished' and both 
+        // testIsOpen and statisticsIsOpen to be null
+  
+        // this happens when the core is restarted and no longer has 
+        // any information about the stats, making training impossible
+        return;
+      }
+
       if(newStatus === 'Finished'
         && this.testIsOpen === null
       ) {
@@ -101,7 +113,6 @@ export default {
   methods: {
     ...mapMutations({
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
-      set_currentNetwork:       'mod_workspace/SET_currentNetwork',
       set_cursorPosition:       'mod_workspace/SET_CopyCursorPosition',
       set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
       set_hideSidebar:          'globalView/SET_hideSidebar',
@@ -114,7 +125,9 @@ export default {
       set_openTest:         'mod_workspace/SET_openTest',
       set_elementUnselect:  'mod_workspace/SET_elementUnselect',
       set_networkName:      'mod_workspace/SET_networkName',
+      set_currentNetwork:   'mod_workspace/SET_currentNetwork',
       event_startDoRequest: 'mod_workspace/EVENT_startDoRequest',
+      set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
       tutorialPointActivate:'mod_tutorials/pointActivate',
       offMainTutorial:      'mod_tutorials/offTutorial',
     }),
@@ -133,6 +146,10 @@ export default {
       if(this.testIsOpen !== null) this.set_openTest(false);
       this.set_currentNetwork(index);
       this.set_elementUnselect();
+
+      // request charts if the page has been refreshed, and 
+      // the requested tab not being the first
+      this.set_chartRequests(this.workspace[index].networkID);
     },
     deleteTabNetwork(index) {
       if(this.isTutorialMode) {
