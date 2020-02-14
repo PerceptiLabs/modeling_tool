@@ -8,6 +8,7 @@ import logging
 
 from perceptilabs.core_new.history import HistoryInputException
 from perceptilabs.core_new.errors import LayerSessionAbort
+from perceptilabs.core_new.core2 import RemoteError
 
 log = logging.getLogger(__name__)
 
@@ -38,10 +39,13 @@ class CoreThread(threading.Thread):
          self.errorQueue.put(str(e))
       except LayerSessionAbort:
          pass
+      except RemoteError:
+         log.exception("Remote error in core")      
       except Exception as e:
          # capture_exception()       
          log.exception("Unexpected exception in CoreThread")
          self.errorQueue.put(str(e))
+         
 
    def globaltrace(self, frame, event, arg): 
       if event == 'call': 

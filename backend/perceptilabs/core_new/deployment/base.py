@@ -75,10 +75,12 @@ class InProcessDeploymentPipe(DeploymentPipe):
         self._script_factory = script_factory        
 
     def deploy(self, graph, session_id: str, timeout=10):
-        code = self._script_factory.make(
+        code, line_to_node_map = self._script_factory.make(
             graph,
             self.get_session_config(session_id)
         )
+
+        self._line_to_node_map = line_to_node_map # TODO: inject script_factory instead of exposing this here
         
         with open('deploy.py', 'wt') as f:
             f.write(code)

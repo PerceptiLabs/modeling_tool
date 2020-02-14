@@ -14,8 +14,11 @@ from collections import namedtuple
 log = logging.getLogger(__name__)
 
 
-class ClientError(Exception):
-    pass
+class RemoteError(Exception):
+    def __init__(self, message, original_exception):
+        super().__init__(message)
+        self.original_exception = original_exception
+        
 
 class Client:
     MAX_SNAPSHOTS_PER_ITERATION = 10
@@ -24,6 +27,7 @@ class Client:
         self._hostname = hostname
         
         self._snapshot_queue = None
+        self._error_queue = None        
 
         self._snapshot_worker_thread = threading.Thread(target=self._snapshot_worker, daemon=True)
         self._snapshot_worker_thread.start()
@@ -56,11 +60,18 @@ class Client:
     def pop_snapshots(self):
         snapshots = []
 
-        # Allow max 100 snapshots per pop for a smoother frontend rendering.
         while not self._snapshot_queue.empty():
             snap, size = self._snapshot_queue.get()
             snapshots.append((snap, size))
         return snapshots
+
+    def pop_errors(self):
+        errors = []
+
+        while not self._error_queue.empty():
+            error = self._error_queue.get()
+            errors.append(error)
+        return errors    
 
     def _send_event(self, type_, **kwargs):
         json_dict = {'type': type_, **kwargs}
@@ -73,6 +84,7 @@ class Client:
         self._is_running.clear()
     
     def _snapshot_worker(self):
+        self._error_queue = Queue()        
         self._snapshot_queue = Queue()
         self._is_running = threading.Event()
         self._is_running.set()        
@@ -96,8 +108,11 @@ class Client:
             size = len(body)
             self._snapshot_queue.put((snapshot, size))
         elif topic == b'exception':
-            exc = dill.loads(body)
-            log.error("Received exception from deployed core: " + repr(exc))
+            error = dill.loads(body)
+            #log.error("Received exception from deployed core: " + repr(exc))
+
+            self._error_queue.put(error)
+            #raise RemoteError("Received exception from deployed core" + repr(exc), exc)            
         elif topic == b'log_message':
             message = dill.loads(body)
             log.info("Deployed core: " + message)

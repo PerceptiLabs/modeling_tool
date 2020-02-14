@@ -18,19 +18,22 @@ log = logging.getLogger(__name__)
 
 
 class CompabilityCore:
-    def __init__(self, command_queue, result_queue, graph_builder, deployment_pipe, graph_spec, threaded=False):
+    def __init__(self, command_queue, result_queue, graph_builder, deployment_pipe, graph_spec, threaded=False, error_queue=None):
         self._command_queue = command_queue
         self._result_queue = result_queue
         self._graph_builder = graph_builder
         self._deployment_pipe = deployment_pipe
         self._graph_spec = copy.deepcopy(graph_spec)
+        self._error_queue = error_queue
 
         self._sanitized_to_id = {sanitize_layer_name(spec['Name']): id_ for id_, spec in graph_spec['Layers'].items()}
         self._sanitized_to_name = {sanitize_layer_name(spec['Name']): spec['Name'] for spec in graph_spec['Layers'].values()}        
 
         self._threaded = threaded
+        self._running = False
         
     def run(self):
+        self._running = True
         def do_process():
             while not self._command_queue.empty():
                 command = self._command_queue.get()
@@ -43,18 +46,25 @@ class CompabilityCore:
             self._result_queue.put(results)
             
         set_tensorflow_mode('graph')
-        core = Core(self._graph_builder, self._deployment_pipe)
+        core = Core(self._graph_builder, self._deployment_pipe, self._error_queue)
         
         if self._threaded:
             def worker():
-                while True:
+                while self._running:
                     do_process()
                     time.sleep(1.0)
                     
             threading.Thread(target=worker, daemon=True).start()                    
-            core.run(self._graph_spec)                    
-        else:        
-            core.run(self._graph_spec, on_iterate=do_process)
+            self._run_core(core, self._graph_spec)
+        else:
+            self._run_core(core, self._graph_spec, on_iterate=do_process)            
+
+    def _run_core(self, core, graph_spec, on_iterate=None):
+        try:
+            core.run(self._graph_spec, on_iterate=on_iterate)
+        except:
+            self._running = False            
+            raise     
 
     def _send_command(self, core, command):
         pass

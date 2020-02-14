@@ -162,7 +162,7 @@ class {{layer_name}}(Tf1xLayer):
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):        
             initial = tf.random.truncated_normal((n_inputs, self._n_neurons), stddev=0.1)
             W = tf.compat.v1.get_variable('W', initializer=initial)
-        
+            
             initial = tf.constant(0.1, shape=[self._n_neurons])
             b = tf.compat.v1.get_variable('b', initializer=initial)
             flat_node = tf.cast(tf.reshape(x, [-1, n_inputs]), dtype=tf.float32)

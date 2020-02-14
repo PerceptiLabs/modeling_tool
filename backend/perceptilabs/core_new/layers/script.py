@@ -10,6 +10,11 @@ from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 # TODO: move this to a more suitable location? Deployment?
 
+
+class ScriptBuildError(Exception):
+    pass
+
+
 class ScriptFactory:
     def __init__(self, mode='default'):
         # if legacy, simply reuse codehq
@@ -17,30 +22,31 @@ class ScriptFactory:
 
         templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
         self._engine = J2Engine(templates_directory)
+        self._definition_table = DEFINITION_TABLE
 
     def make(self, graph: Graph, session_config: Dict[str, str]):
-        imports = {}
-        macro_calls = []
+        #imports = {}
+        #macro_calls = []
 
-        for node in graph.nodes:
-            layer_type = node.layer_type
-            layer_name = layer_type + node.layer_id            
-            layer_def = DEFINITION_TABLE.get(layer_type)
-            
-            if layer_def.template_file not in imports:
-                imports[layer_def.template_file] = []
-            imports[layer_def.template_file].append(layer_def.template_macro)
-
-            kwargs = self._fetch_parameters(node.layer_spec, layer_def.macro_parameters)
-            macro_calls.append((layer_def.template_macro, layer_name, kwargs))
+        #for node in graph.nodes:
+        #    layer_type = node.layer_type
+        #    layer_name = layer_type + node.layer_id            
+        #    layer_def = DEFINITION_TABLE.get(layer_type)
+        #    
+        #    if layer_def.template_file not in imports:
+        #        imports[layer_def.template_file] = []
+        #    imports[layer_def.template_file].append(layer_def.template_macro)
+        #
+        #    kwargs = self._fetch_parameters(node.layer_spec, layer_def.macro_parameters)
+        #    macro_calls.append((layer_def.template_macro, layer_name, kwargs))
 
         # TODO: IMPORT MACROS ACCORDING TO THIS INSTEAD OF USING STRINGS http://codyaray.com/2015/05/auto-load-jinja2-macros
 
         # --- IMPORT LAYER MACROS ---
         template  = ''
-        for file_name, macro_names in imports.items():
-            macros = ', '.join(macro_names)
-            template += "{% from '" + file_name + "' import " + macros + " %}\n"
+        #for file_name, macro_names in imports.items():
+        #    macros = ', '.join(macro_names)
+        #    template += "{% from '" + file_name + "' import " + macros + " %}\n"
 
         template += 'import tensorflow as tf\n'
         template += 'import numpy as np\n'
@@ -88,15 +94,27 @@ class ScriptFactory:
         
         # --- CALL LAYER MACROS ---
         template += '\n\n'
-        for macro_call in macro_calls:
-            macro_name = macro_call[0]
-            layer_name = macro_call[1]
+        #for macro_call in macro_calls:
+        #    macro_name = macro_call[0]
+        #    layer_name = macro_call[1]
+        #
+        #    kwargs = macro_call[2]
+        #    kwargs['layer_name'] = "'"+layer_name+"'"
+        #    
+        #    arg_str = ', '.join(f"{k}={v}" for k, v in kwargs.items())
+        #    template += "{{ " + macro_name + "(" + arg_str + ")}}\n\n"
 
-            kwargs = macro_call[2]
-            kwargs['layer_name'] = "'"+layer_name+"'"
+
+        line_to_node_map = {}
+        for node in graph.nodes:
+            layer_code = self.render_layer_macro(node)
+
+            offset = len(template.split('\n')) - 1
+            n_lines = len(layer_code.split('\n'))
+            line_to_node_map.update({offset+line: (node, line) for line in range(n_lines)})
+            template += layer_code + '\n'
             
-            arg_str = ', '.join(f"{k}={v}" for k, v in kwargs.items())
-            template += "{{ " + macro_name + "(" + arg_str + ")}}\n\n"
+        template += '\n'        
 
         template += "LAYERS = {\n"
         for node in graph.nodes:
@@ -203,7 +221,9 @@ class ScriptFactory:
         template += "    try:\n"
         template += "        graph.training_nodes[0].layer_instance.run(graph)\n"
         template += "    except Exception as e:\n"
-        template += "        body = pickle.dumps(e)\n"
+        template += "        import traceback\n"        
+        template += "        tb_list = traceback.extract_tb(e.__traceback__)\n"
+        template += "        body = pickle.dumps((e, tb_list))\n"
         template += "        message_queue.put((b'exception', body))\n"                
         template += "        raise\n"
         
@@ -250,10 +270,11 @@ class ScriptFactory:
         print("ENDTEMPLATE ----------")
 
         
-        #import pdb; pdb.set_trace()
+
+
         
         
-        code = self._engine.render_string(template)
+        code = template#self._engine.render_string(template)
 
 
         
@@ -262,13 +283,32 @@ class ScriptFactory:
             print(i, l)
         print("ENDCODE ----------")
 
-
+        #import pdb; pdb.set_trace()
         ast.parse(code)
             
         
         #import pdb; pdb.set_trace()              
-        return code
+        return code, line_to_node_map
 
+
+
+    def render_layer_macro(self, node):
+        """ Creates a Jinja2 template that imports the layer macro and renders it """
+        def_ = self._definition_table.get(node.layer_type)
+
+        if def_ is None:
+            raise ScriptBuildError(f"No layer definition found for layer of type '{node.layer_type}'")
+        layer_name = node.layer_type + node.layer_id
+        
+        kwargs = self._fetch_parameters(node.layer_spec, def_.macro_parameters)
+        kwargs['layer_name'] = "'" + layer_name + "'"
+        arg_str = ', '.join(f"{k}={v}" for k, v in kwargs.items())
+
+
+        template  = "{% from '" + def_.template_file + "' import " + def_.template_macro + " %}\n"
+        template += "{{ " + def_.template_macro + "(" + arg_str + ")}}"
+        code = self._engine.render_string(template)
+        return code    
         
     def _fetch_parameters(self, layer_spec, macro_parameters):
         results = {}
@@ -276,7 +316,7 @@ class ScriptFactory:
         for key, value in macro_parameters.items():
             if key == 'layer_name':
                 # Reserved. Always present.
-                continue
+                raise ScriptBuildError("Cannot use reserved name 'layer_name' for macro parameter")
             
             if callable(value):
                 value = value(layer_spec)

@@ -7,6 +7,7 @@ import threading
 import subprocess
 from typing import Dict, List, Callable
 from abc import ABC, abstractmethod
+from queue import Queue
 
 from perceptilabs.core_new.graph import Graph, JsonNetwork
 from perceptilabs.core_new.graph.builder import GraphBuilder
@@ -19,12 +20,16 @@ from perceptilabs.core_new.communication.status import *
 
 log = logging.getLogger(__name__)
 
+class RemoteError(Exception):
+    pass
+
 
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe):
+    def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, error_queue: Queue=None):
         self._graph_builder = graph_builder
         self._deployment_pipe = deployment_pipe
         self._graphs = []
+        self._error_queue = error_queue
         
         self._lock = threading.Lock()        
         self._is_running = threading.Event()
@@ -37,6 +42,8 @@ class Core:
         config = self._deployment_pipe.get_session_config(session_id)        
         graph = self._graph_builder.build_from_spec(graph_spec, config)
         client = self._deployment_pipe.deploy(graph, config)
+
+        line_to_node_map = self._deployment_pipe._line_to_node_map # TODO: inject script_factory to deployment pipe instead retrieving the map like this.
 
         log.info(f"Sending start command to deployed core with session id {session_id}")        
         client.start()
@@ -53,7 +60,12 @@ class Core:
 
         t_start = time.perf_counter()
         while client.status == STATUS_RUNNING or (client.status == STATUS_IDLE and len(self._graphs) < client.snapshot_count):
-            t0 = time.perf_counter()                    
+            t0 = time.perf_counter()
+            errors = client.pop_errors()
+
+            if errors:
+                self._handle_errors(client, errors, line_to_node_map)
+            
             snapshots = client.pop_snapshots()
 
             total_size = 0
@@ -77,23 +89,46 @@ class Core:
             avg_size = round(total_size/10**3/len(snapshots), 3) if len(snapshots) > 0 else 0.0
             
             log.info(
-                f"Cycle time: {round(1000*(t1-t0), 3)} ms. Snapshots consumed: {len(snapshots)}. "
-                f"Average size: {avg_size} KB. \n"
-                f"Total snapshots consumed: {len(self._graphs)} ({consume_rate} per sec), "
-                f"total snapshots produced: {client.snapshot_count} ({produce_rate} per sec). "
+                f"Consumed {len(snapshots)} snapshots in {round(1000*(t1-t0), 3)} ms (mean size: {avg_size} KB). "
+                f"Total consumed (produced): {len(self._graphs)} ({client.snapshot_count}). "
+                f"Consumption (production) rate: {consume_rate} ({produce_rate}) per sec."
             )            
             time.sleep(1)
 
         log.info(f"Sending stop command to deployed core with session id {session_id}")
         client.stop()
+
+    def _handle_errors(self, client, errors: List, line_to_node_map):
+
+        errors_repr = []
+        for _, traceback_frames in errors:
+            message = ''
+
+            for frame in traceback_frames:
+                node, true_lineno = line_to_node_map.get(frame.lineno, (None, None))
+
+                if frame.filename == 'deploy.py' and node is not None:
+                    message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}, ' + \
+                               f'origin {node.layer_id}:{true_lineno} [{node.layer_type}]\n' +\
+                               f'  {frame.line}\n'
+                else:
+                    message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
+                               f'  {frame.line}\n'
+
+            log.error('Remote error:\n' + message)
+            if self._error_queue is not None:
+                self._error_queue.put(message)          
+
+        client.stop()
+        raise RemoteError('Remote errors: ' + ', '.join(repr(e) for e, _ in errors))
             
     @property
-    def graphs(self):
+    def graphs(self) -> List[Graph]:
         with self._lock:
             return self._graphs.copy()
 
     def stop(self):
-        pass
+        self._is_running.clear()
 
     def pause(self):
         #requests.post("http://localhost:5678/command", json={'type': 'on_pause'})
