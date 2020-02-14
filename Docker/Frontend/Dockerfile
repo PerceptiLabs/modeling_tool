@@ -34,7 +34,6 @@ COPY licenses /licenses
 # COPY Docker/Frontend/licenses /licenses
 
 ADD run-httpd.sh /run-httpd.sh
-# ADD Docker/Frontend/.htaccess /.htaccess
 # ADD Docker/Frontend/run-httpd.sh /run-httpd.sh
 
 RUN yum -y --nodocs update && \
@@ -52,7 +51,6 @@ ADD . /var/www/html/
 EXPOSE 8080
 
 CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
-# USER apache
 # CMD ["./run-httpd.sh"]
 
 #############################################################
