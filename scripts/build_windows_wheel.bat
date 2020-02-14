@@ -29,7 +29,7 @@ python setup.py build_ext bdist_wheel
 cd ..\backend_out
 xcopy ..\backend_tmp\dist . /sy 
 
-pip3 install perceptilabs --find-links .
+pip install perceptilabs --find-links .
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )

@@ -1,5 +1,6 @@
 import os
 import glob
+import sys
 from Cython.Build import cythonize
 from setuptools import setup, Extension, find_packages
 from setuptools.command.build_py import build_py as _build_py
@@ -34,6 +35,19 @@ class build_py(_build_py):
                 kept_modules.append((pkg, mod, file_))
                 
         return kept_modules
+
+# install_requires = []
+
+# if sys.platform == 'win32':
+#     requirements = '../../backend/requirements.txt'
+# elif sys.platform == 'linux':
+#     requirements = '../../backend/requirements_linux.txt'
+# elif sys.platform == 'darwin':
+#     requirements = '../../backend/requirements_osx.txt'
+
+# with open('../../backend/requirements.txt') as f:
+#     for line in f:
+#         install_requires.append(line)
                                     
 setup(
     name='perceptilabs',
