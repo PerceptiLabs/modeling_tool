@@ -257,6 +257,10 @@
         input_data_node = input_data_nodes[0]
         label_data_node = label_data_nodes[0]
 
+        self._trn_sz_tot = input_data_node.layer.size_training
+        self._val_sz_tot = input_data_node.layer.size_validation
+        self._tst_sz_tot = input_data_node.layer.size_testing
+
         # Set Devices and Distribution Strategy
         n_devices = 4
         config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0},
@@ -889,6 +893,5 @@ class {{layer_name}}(ClassificationLayer):
                     self.training_iteration + self.validation_iteration
         
         progress = min(iteration/(n_iterations_total - 1), 1.0) 
-        import pdb; pdb.set_trace()
         return progress
 {% endmacro %}
