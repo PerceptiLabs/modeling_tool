@@ -1,5 +1,5 @@
-trigger:
-- dev
+# trigger:
+# - dev
 
 jobs:
 ### TEST UBUNTU ###
@@ -8,6 +8,11 @@ jobs:
    pool:
        vmImage: "ubuntu-16.04"
    steps:
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
     - bash: |
         cd scripts/
         bash -i tests_setup_ubuntu.sh
@@ -26,6 +31,12 @@ jobs:
    pool:
        vmImage: "vs2017-win2016"
    steps:
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
+
     - script: |
         cd scripts/
         ./tests_setup_windows.bat
@@ -43,12 +54,20 @@ jobs:
    pool:
        vmImage: "macOS-10.14"
    steps:
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
+
     - bash: |
         cd scripts/
-        bash -i tests_setup_osx.sh
+        chmod 755 tests_setup_osx.sh
+        ./tests_setup_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
         cd scripts/
-        bash -i test_osx.sh
+        chmod 755 test_osx.sh
+        ./test_osx.sh
       displayName: 'Python tests'
