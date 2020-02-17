@@ -64,12 +64,11 @@ class CompabilityCore:
             return result_dict                
     
     def _get_results_dict_internal(self, graph):
-        if graph is None:
+        if not graph:
             log.debug("graph is None, returning empty results")
             return {}
 
         # TODO: if isinstance(training_layer, Classification) etc
-        
         result_dict = policy_classification(graph, self._sanitized_to_name, self._sanitized_to_id)
         return result_dict
 

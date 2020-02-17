@@ -451,7 +451,7 @@
                             grad_tensor = tf.gradients(loss_tensor, tensor)
                             if any(x is None for x in grad_tensor):
                                 grad_tensor = tf.constant(0)
-                            if len(grad_tensor) == 1:
+                            if type(grad_tensor) is list and len(grad_tensor) == 1:
                                 gradients[name] = grad_tensor[0]
                             else:
                                 gradients[name] = grad_tensor
@@ -497,7 +497,7 @@
                             grad_tensor = tf.gradients(loss_tensor, tensor)
                             if any(x is None for x in grad_tensor):
                                 grad_tensor = tf.constant(0)
-                            if len(grad_tensor) == 1:
+                            if type(grad_tensor) is list and len(grad_tensor) == 1:
                                 gradients[name] = grad_tensor[0]
                             else:
                                 gradients[name] = grad_tensor
@@ -591,16 +591,14 @@
 
                         self._loss_training, self._accuracy_training, \
                         self._layer_outputs, self._layer_weights, self._layer_biases, \
-                        self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])  
-
-                        print("Training Acc: ", self._accuracy_training)         
+                        self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])         
                         
                         if INCLUDE_KERAS_METRICS:
                             auc_train.reset_states()
                             recall_train.reset_states()
                             precision_train.reset_states()     
 
-                        # self.save_snapshot(graph)                            
+                        self.save_snapshot(graph)                            
                         
                         self._training_iteration += 1
                 except tf.errors.OutOfRangeError:
@@ -618,14 +616,12 @@
                         self._layer_outputs, self._layer_weights, self._layer_biases, \
                         self._layer_gradients = sess.run([loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
 
-                        print("Val Acc: ", self._accuracy_validation)
-
                         if INCLUDE_KERAS_METRICS:
                             auc_val.reset_states()
                             recall_val.reset_states()
                             precision_val.reset_states()                                
 
-                        # self.save_snapshot(graph) 
+                        self.save_snapshot(graph) 
 
                         self._validation_iteration += 1            
                 except tf.errors.OutOfRangeError:
@@ -699,7 +695,7 @@ class {{layer_name}}(ClassificationLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
-        {% if distributed -%}
+        {% if True -%}
             {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) }}
         {% else -%}
             {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) }}
@@ -893,5 +889,6 @@ class {{layer_name}}(ClassificationLayer):
                     self.training_iteration + self.validation_iteration
         
         progress = min(iteration/(n_iterations_total - 1), 1.0) 
+        import pdb; pdb.set_trace()
         return progress
 {% endmacro %}
