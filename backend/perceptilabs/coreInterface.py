@@ -141,9 +141,6 @@ class coreLogic():
         self.setupLogic()
         self.network=network
         print('printing network .......\n')
-        print(f"Core Limit: {license.core_limit()}")
-        print(f"GPU Limit: {license.gpu_limit()}")
-        print(f"Expiry: {license.expiry()}")
 
         # import json
         # with open('net.json', 'w') as f:
