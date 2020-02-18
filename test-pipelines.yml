@@ -1,5 +1,5 @@
-# trigger:
-# - dev
+trigger:
+- none
 
 jobs:
 ### TEST UBUNTU ###
