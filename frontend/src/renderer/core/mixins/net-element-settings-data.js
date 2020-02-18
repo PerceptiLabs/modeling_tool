@@ -1,4 +1,7 @@
 import coreRequest  from "@/core/apiCore.js";
+
+import { fixFilepathSeparator } from '@/core/helpers';
+
 const netElementSettingsData = {
   data() {
     return {
@@ -83,7 +86,7 @@ const netElementSettingsData = {
     Mix_settingsData_prepareSources(pathArr, type) {
       return pathArr.map((el)=> { return {
         type,
-        "path": el
+        "path": fixFilepathSeparator(el)
       }})
     }
   }
