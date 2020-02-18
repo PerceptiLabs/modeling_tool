@@ -39,6 +39,15 @@ class getDataMeta(LW_interface_base):
         }
         return content
 
+class getGraphOrder(LW_interface_base):
+    def __init__(self, jsonNetwork):
+        self.jsonNetwork = jsonNetwork
+
+    def run(self):
+        from perceptilabs.graph import Graph
+        graph = Graph(self.jsonNetwork)
+        graph_dict = graph.graphs
+        return list(graph_dict.keys())
 
 class getPartitionSummary(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):

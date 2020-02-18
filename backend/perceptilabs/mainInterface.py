@@ -22,7 +22,7 @@ from perceptilabs.core_new.networkCache import NetworkCache
 from perceptilabs.codehq import CodeHqNew as CodeHq
 
 #LW interface
-from perceptilabs.lwInterface import getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getGraphOrder, getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
 
@@ -242,6 +242,10 @@ class Interface():
                 containerize=containers).run()
             except Exception as e:
                 return {"content":"Parser Failed","errorMessage":"Parser got this Exception:\n" + str(e)}
+
+        elif action == "getGraphOrder":
+            jsonNetwork = value
+            return getGraphOrder(jsonNetwork=jsonNetwork).run()         
 
         elif action == "Close":
             self.shutDown()
