@@ -10,7 +10,8 @@ backend/.venv/
 *.zip
 *#*#
 build/
-.vscode/
+.vscode/*
+.vscode/settings.json
 backend/.vscode/
 #Frontend ignores
 frontend/.DS_Store
