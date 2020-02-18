@@ -205,4 +205,5 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
         acc = graph.active_training_node.layer.accuracy_training
         accuracy_list.append(acc)
     
-    assert np.mean(accuracy_list[-10:]) >= 0.9 
+    assert np.mean(accuracy_list[-10:]) >= 0.9
+

@@ -20,7 +20,6 @@ class J2Engine:
         self._jenv = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_directory),
                                         trim_blocks=True,
                                         lstrip_blocks=True)
-
         self._jenv.globals.update({
             'zip': zip,
             'len': len,
@@ -54,12 +53,12 @@ class J2Engine:
                 
         return new_text
 
-    @log_rendering_errors
+    #@log_rendering_errors
     def render(self, path, **kwargs):
         text = self._jenv.get_template(path).render(**kwargs)
         return text
     
-    @log_rendering_errors        
+    #@log_rendering_errors        
     def render_string(self, code, **kwargs):
         text = self._jenv.from_string(code).render(**kwargs)
         return text

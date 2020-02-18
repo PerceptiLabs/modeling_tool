@@ -197,8 +197,15 @@ class coreLogic():
             #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)
 
             
-            self.core = CompabilityCore(self.commandQ, self.resultQ, graph_builder, deployment_pipe, network)
-            
+            self.core = CompabilityCore(
+                self.commandQ,
+                self.resultQ,
+                graph_builder,
+                deployment_pipe,
+                network,
+                threaded=True,
+                error_queue=self.errorQueue
+            )            
             
         if self.cThread is not None and self.cThread.isAlive():
             self.Stop()
