@@ -5,7 +5,8 @@
 
 
 trigger:
-- web-dev
+# - web-dev
+- none
 
 variables:
   BuildVariables.CommitId : $(Build.SourceVersion)
@@ -19,6 +20,12 @@ steps:
     folderPath: '$(System.DefaultWorkingDirectory)/'
     xmlTransformationRules: 
     jsonTargetFiles: '**/app_variables.json'
+
+- task: UsePythonVersion@0
+  inputs: 
+    versionSpec: '3.6'
+    architecture: 'x64'
+    addToPath: true
 
 - bash: |
     cd scripts/
