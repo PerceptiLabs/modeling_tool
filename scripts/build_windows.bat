@@ -1,10 +1,13 @@
-
-REM call C:\tools\miniconda3\condabin\conda.bat init cmd.exe
-REM call C:\tools\miniconda3\condabin\conda.bat activate py362_
-REM call C:\tools\miniconda3\condabin\conda.bat env list
-REM call C:\tools\miniconda3\condabin\conda.bat list
-
 cd ..
+
+echo "Training models"
+cd backend/perceptilabs/insights/csv_ram_estimator/
+python train_model.py data_1579288530.csv
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
+cd ../../../../
+
 rmdir /s /q build
 mkdir build
 cd build
@@ -15,94 +18,46 @@ mkdir frontend_out
 
 cd backend_tmp
 
-call SET fromfolder=../../backend
-echo "Scripts"
-dir "../../scripts"
-echo %fromfolder%
-dir "%fromfolder%"
 echo "Copying files"
+call SET fromfolder=../../backend
 FOR /F %%a IN (../../backend/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%%a" "%%a"
-
-move setup.py setup.pyx
-copy /Y setup.pyx code_generator
-copy /Y setup.pyx core_new
-copy /Y setup.pyx core_new/data
-copy /Y setup.pyx analytics
-
-cd code_generator
-mkdir code_generator
-move __init__.py __init__.pyx
-python setup.pyx develop
+call cp ../../backend/setup.py .
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
-mv code_generator/* .
-rm -rf code_generator
-del *.c
-del *.py
-ren __init__.pyx __init__.py
-del setup.pyx
-dir
 
-cd ../core_new
-python setup.pyx develop
+FOR /R %%x in (__init__.py) do ren "%%x" __init__.pyx
+move main.py main.pyx
+python setup.py build_ext --inplace
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
-del *.c
-del *.py
-del setup.pyx
+del /S *.c
+del /S *.py
+move main.pyx main.py
+rmdir /S /Q build
+FOR /R %%x in (__init__.pyx) do ren "%%x" __init__.py
 dir
-
-cd data
-cp ../../setup.pyx .
-dir
-mkdir data
-move __init__.py __init__.pyx
-python setup.pyx develop
-IF %ERRORLEVEL% NEQ 0 (
-  exit 1
-)
-mv data/* .
-rm -rf data
-del *.c
-del *.py
-ren __init__.pyx __init__.py
-del setup.pyx
-dir
-
-cd ../../analytics
-python setup.pyx develop
-IF %ERRORLEVEL% NEQ 0 (
-  exit 1
-)
-del *.c
-del *.py
-del setup.pyx
-dir
-
-cd ..
-move mainServer.py mainServer.pyx
-python setup.pyx develop
-IF %ERRORLEVEL% NEQ 0 (
-  exit 1
-)
-del *.c
-del *.py
-del setup.pyx
-move mainServer.pyx mainServer.py
-
-
+dir code_generator
 
 copy ..\..\backend\windows.spec .
+cp ..\..\backend\perceptilabs\app_variables.json ./perceptilabs/
 pyinstaller --clean -y windows.spec
 IF %ERRORLEVEL% NEQ 0 (
-  dir
+  ls -R -l
   exit 1
 )
+
+echo "*************************************************************************************************"
+echo "Testing to start the core"
+call "dist/appServer/appServer.exe" -k=True -l="INFO"
+IF %ERRORLEVEL% NEQ 0 (
+  exit 1
+)
+
 call "C:/Program Files (x86)/Windows Kits/10/bin/10.0.17763.0/x86/signtool.exe" sign /tr http://timestamp.digicert.com /td sha256 /fd sha256 "dist/appServer/*.exe"
 IF %ERRORLEVEL% NEQ 0 (
-  dir
+  ls -R -l
   exit 1
 )
 
@@ -131,6 +86,7 @@ IF %ERRORLEVEL% NEQ 0 (
 )
 
 copy build\*.exe ..\build\frontend_out\ 
+copy build\*.yml ..\build\frontend_out\ 
 
 cd ..\scripts
 

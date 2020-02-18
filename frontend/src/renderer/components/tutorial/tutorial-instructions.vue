@@ -123,7 +123,6 @@ export default {
       goToFirstStep:              'mod_tutorials/SET_activeActionMainTutorial',
       setShowInstructions:        'mod_tutorials/SET_showMainTutorialInstruction',
       setInteractiveInfo:         'mod_tutorials/SET_interactiveInfo',
-      deleteNetwork:              'mod_workspace/DELETE_network'
     }),
     ...mapActions({
       pointActivate:              'mod_tutorials/pointActivate',
@@ -138,6 +137,7 @@ export default {
       onTutorial:                 'mod_tutorials/onTutorial',
       setNetworkCoreStatus:       'mod_workspace/SET_statusNetworkCoreStatus',
       addNetwork:                 'mod_workspace/ADD_network',
+      deleteNetwork:              'mod_workspace/DELETE_network',
       popupInfo:                  'globalView/GP_infoPopup',
       trackerTutorialStart:       'mod_tracker/EVENT_tutorialModeStart',
       trackerTutorialFinished:    'mod_tracker/EVENT_tutorialModeFinished'

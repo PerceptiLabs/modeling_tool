@@ -29,6 +29,14 @@ export default {
       default: ''
     }
   },
+  computed: {
+    network() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList']
+    },
+    setElementName() {
+      return this.$store.getters['mod_workspace/SET_elementName']
+    }
+  },
   watch: {
     textTitle(newText) {
       this.inputText = newText;

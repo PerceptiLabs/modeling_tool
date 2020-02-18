@@ -1,0 +1,52 @@
+# ASP.NET Core
+# Build and test ASP.NET Core projects targeting .NET Core.
+# Add steps that run tests, create a NuGet package, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+
+trigger:
+# - web-dev
+- none
+
+variables:
+  BuildVariables.CommitId : $(Build.SourceVersion)
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+steps:
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(System.DefaultWorkingDirectory)/'
+    xmlTransformationRules: 
+    jsonTargetFiles: '**/app_variables.json'
+
+- task: UsePythonVersion@0
+  inputs: 
+    versionSpec: '3.6'
+    architecture: 'x64'
+    addToPath: true
+
+- bash: |
+    cd scripts/
+    bash -i setup_docker.sh
+  displayName: 'Environment setup'
+
+- bash: |
+    cd scripts/
+    bash -i build_docker.sh
+  displayName: 'Build'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'perceptilabs'
+    repository: 'core'
+    command: 'buildAndPush'
+    Dockerfile: 'build/backend_out/Dockerfile'
+
+- task: Docker@2
+  inputs:
+    containerRegistry: 'perceptilabs'
+    repository: 'frontend'
+    command: 'buildAndPush'
+    Dockerfile: 'build/frontend_out/Dockerfile'

@@ -1,11 +1,3 @@
-echo "Adding conda to environment variables..."
-export PATH="$HOME/miniconda/bin:$PATH"
-eval "$(conda shell.bash hook)"
-
-echo "Activating conda environment"
-source ~/miniconda/etc/profile.d/conda.sh
-conda activate py362_
-
 cd ../backend
 
 echo "Running tests"
