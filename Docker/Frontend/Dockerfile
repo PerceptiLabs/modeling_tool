@@ -18,6 +18,7 @@
 
 ###############################################################
 FROM registry.access.redhat.com/ubi8
+# FROM ubuntu:18.04
 
 LABEL name="PerceptiLabs-Modeling-Web-app" \
       maintainer="dev@perceptilabs.com" \
@@ -28,8 +29,8 @@ LABEL name="PerceptiLabs-Modeling-Web-app" \
       description="This will build a web app for you which will act as a frontend for our modeling platform. It listens to port 8080:80 to communicate with the backend." 
 
 
+RUN mkdir /licenses
 COPY licenses /licenses
-
 
 ADD run-httpd.sh /run-httpd.sh
 
@@ -46,6 +47,8 @@ ADD . /var/www/html/
 EXPOSE 8080
 
 CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+# CMD ["./run-httpd.sh"]
+
 #############################################################
 # FROM centos:7
 
