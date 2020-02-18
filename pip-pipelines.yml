@@ -1,6 +1,7 @@
 trigger:
- - master
- - stage
+- none
+#  - master
+#  - stage
 
 variables:
   BuildVariables.CommitId : $(Build.SourceVersion)
