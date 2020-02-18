@@ -19,7 +19,6 @@ const getters = {
     let layers = {};
     const rootPath = network.networkRootFolder;
     for(let layer in network.networkElementList) {
-      const dataLayers = ['DataData', 'DataEnvironment', 'TrainReinforce'];
       const el = network.networkElementList[layer];
       let checkpointPath = deepCopy(el.checkpoint);
       if(el.componentName === 'LayerContainer') continue;
@@ -28,31 +27,32 @@ const getters = {
         const filePath = el.checkpoint[1].slice(0, el.checkpoint[1].length);
         checkpointPath[1] = rootPath + pathSlash + filePath;
       }
+
+      const namesConnectionOut = [];
+      const namesConnectionIn = [];
+
+      el.connectionOut.forEach(id => {
+        const name =  network.networkElementList[id].layerName;
+        namesConnectionOut.push([id, name])
+      });
+
+      el.connectionIn.forEach(id => {
+        const name =  network.networkElementList[id].layerName;
+        namesConnectionIn.push([id, name])
+      });
+
       /*prepare elements*/
-      if(dataLayers.includes(el.componentName)) {
-        layers[el.layerId] = {
-          Name: el.layerName,
-          Type: el.componentName,
-          Properties: el.layerSettings,
-          checkpoint: checkpointPath,
-          endPoints: el.endPoints,
-          //Code: el.coreCode,
-          backward_connections: el.connectionIn,
-          forward_connections: el.connectionOut
-        };
-      }
-      else {
-        layers[el.layerId] = {
-          Name: el.layerName,
-          Type: el.componentName,
-          checkpoint: checkpointPath,
-          endPoints: el.endPoints,
-          Properties: el.layerSettings,
-          Code: el.layerCode,
-          backward_connections: el.connectionIn,
-          forward_connections: el.connectionOut
-        };
-      }
+      layers[el.layerId] = {
+        Name: el.layerName,
+        Type: el.componentName,
+        checkpoint: checkpointPath,
+        endPoints: el.endPoints,
+        Properties: el.layerSettings,
+        Code: el.layerCode,
+        backward_connections: namesConnectionIn,
+        forward_connections: namesConnectionOut
+      };
+
     }
     return layers
   }
@@ -129,6 +129,17 @@ const actions = {
     function coreOffline() {
       commit('SET_statusLocalCore', 'offline');
     }
+  },
+
+  API_closeSession(context, reciever) {
+    const theData = {
+      reciever: reciever,
+      action: 'closeSession',
+      value: ''
+    };
+    coreRequest(theData)
+      .then((data)=> { return })
+      .catch((err)=> { console.error(err) });
   },
 
   API_CLOSE_core() {

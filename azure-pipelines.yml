@@ -1,9 +1,11 @@
 trigger:
- - master
-# #- dev
- - stage
+- none
+#  - master
+# # #- dev
+#  - stage
 
-
+variables:
+  BuildVariables.CommitId : $(Build.SourceVersion)
 
 
 jobs:
@@ -46,6 +48,18 @@ jobs:
     pool:
         vmImage: "ubuntu-16.04"
     steps:
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
+
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
+
     - bash: |
         cd scripts/
         ./setup_ubuntu.sh
@@ -53,7 +67,7 @@ jobs:
     
     - bash: |
         cd scripts/
-        bash -i build_ubuntu_compact.sh
+        bash -i build_ubuntu.sh
       displayName: 'Build'
     
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
@@ -77,6 +91,12 @@ jobs:
       name: mySecureFile # The name with which to reference the secure file's path on the agent, like $(mySecureFile.secureFilePath)
       inputs:
         secureFile: 'WindowsCodeSign.pfx' # Not able to reach $(signingCert.secureFilePath) here for some reason
+
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
 
     - task: PowerShell@2
       inputs:
@@ -103,13 +123,14 @@ jobs:
 
     - script: |
         cd scripts/
-        ./setup_windows_python.bat
+        ./setup_windows.bat
       displayName: 'Environment setup'
 
     - script: |
         cd scripts/
-        ./build_windows_compact.bat
+        ./build_windows.bat
       displayName: 'Build'
+
     
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
       artifact: images_windows
@@ -132,15 +153,31 @@ jobs:
       inputs:
         certSecureFile: 'devIDapp.p12'
         certPwd: $(devAppCert.password)
+
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
+    
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
+        
     - bash: |
         cd scripts/
+        chmod 755 setup_osx.sh
         ./setup_osx.sh
       displayName: 'Environment setup'
 
     - bash: |
         cd scripts/
-        bash -i build_osx_compact.sh
+        chmod 755 build_osx.sh
+        ./build_osx.sh
       displayName: 'Build'
+
     
     - publish: $(Build.Repository.LocalPath)/build/frontend_out/
       artifact: images_osx

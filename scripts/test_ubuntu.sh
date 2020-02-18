@@ -1,5 +1,3 @@
-conda activate py362_
-
 cd ../backend
 
 echo "Running critical error python tests"
