@@ -1,0 +1,204 @@
+trigger:
+- none
+#  - master
+#  - stage
+
+variables:
+  BuildVariables.CommitId : $(Build.SourceVersion)
+
+jobs:
+### BUILD UBUNTU ###
+  - job: build_ubuntu_py36
+    pool:
+        vmImage: "ubuntu-16.04"
+    steps:
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
+    
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
+
+    - bash: |
+        cd scripts/
+        ./setup_ubuntu.sh
+      displayName: 'Environment setup'
+    
+    - bash: |
+        cd scripts/
+        bash -i build_ubuntu_wheel.sh
+      displayName: 'Build'
+
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: linux_3.6_wheel
+
+
+  - job: build_ubuntu_py37
+    pool:
+        vmImage: "ubuntu-16.04"
+    steps:
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
+    
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.7'
+        architecture: 'x64'
+        addToPath: true
+
+    - bash: |
+        cd scripts/
+        bash -i setup_ubuntu.sh
+      displayName: 'Environment setup'
+    
+    - bash: |
+        cd scripts/
+        bash -i build_ubuntu_wheel.sh
+      displayName: 'Build'
+
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: linux_3.7_wheel
+
+
+# ### BUILD WINDOWS ###
+
+  - job: build_windows_py36
+    pool:
+        vmImage: "vs2017-win2016"
+    variables:
+      - group: Windows-build
+    steps:
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
+
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
+
+    - script: |
+        cd scripts/
+        ./setup_windows.bat
+      displayName: 'Environment setup'
+
+    - script: |
+        cd scripts/
+        ./build_windows_wheel.bat
+      displayName: 'Build'
+
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: windows_3.6_wheel
+
+
+  - job: build_windows_py37
+    pool:
+        vmImage: "vs2017-win2016"
+    variables:
+    - group: Windows-build
+    steps:
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
+
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.7'
+        architecture: 'x64'
+        addToPath: true
+
+    - script: |
+        cd scripts/
+        ./setup_windows.bat
+      displayName: 'Environment setup'
+
+    - script: |
+        cd scripts/
+        ./build_windows_wheel.bat
+      displayName: 'Build'
+
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: windows_3.7_wheel
+    
+
+
+### BUILD OSX ###
+  - job: build_osx_py36
+    pool:
+        vmImage: "macOS-10.14"
+    variables:
+      - group: OSX-build
+    steps:
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
+
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.6'
+        architecture: 'x64'
+        addToPath: true
+        
+    - bash: |
+        cd scripts/
+        chmod 755 setup_osx.sh
+        ./setup_osx.sh
+      displayName: 'Environment setup'
+
+    - bash: |
+        cd scripts/
+        chmod 755 build_osx_wheel.sh
+        ./build_osx_wheel.sh
+      displayName: 'Build'
+
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: osx_3.6_wheel
+
+
+  - job: build_osx_py37
+    pool:
+        vmImage: "macOS-10.14"
+    variables:
+    - group: OSX-build
+    steps:
+    - task: FileTransform@2
+      inputs:
+        folderPath: '$(System.DefaultWorkingDirectory)/'
+        xmlTransformationRules: 
+        jsonTargetFiles: '**/app_variables.json'
+
+    - task: UsePythonVersion@0
+      inputs: 
+        versionSpec: '3.7'
+        architecture: 'x64'
+        addToPath: true
+        
+    - bash: |
+        cd scripts/
+        chmod 755 setup_osx.sh
+        ./setup_osx.sh
+      displayName: 'Environment setup'
+
+    - bash: |
+        cd scripts/
+        chmod 755 build_osx_wheel.sh
+        ./build_osx_wheel.sh
+      displayName: 'Build'
+
+    - publish: $(Build.Repository.LocalPath)/build/backend_out/
+      artifact: osx_3.7_wheel

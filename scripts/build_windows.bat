@@ -1,12 +1,12 @@
 cd ..
 
 echo "Training models"
-cd backend/insights/csv_ram_estimator/
+cd backend/perceptilabs/insights/csv_ram_estimator/
 python train_model.py data_1579288530.csv
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
-cd ../../../
+cd ../../../../
 
 rmdir /s /q build
 mkdir build
@@ -21,28 +21,27 @@ cd backend_tmp
 echo "Copying files"
 call SET fromfolder=../../backend
 FOR /F %%a IN (../../backend/included_files.txt) DO echo F|xcopy /h/y /z/i /k /f "%fromfolder%/%%a" "%%a"
-call cp ../../backend/setup_compact.pyx .
+call cp ../../backend/setup.py .
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 
 FOR /R %%x in (__init__.py) do ren "%%x" __init__.pyx
-move mainServer.py mainServer.pyx
-python setup_compact.pyx develop
+move main.py main.pyx
+python setup.py build_ext --inplace
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )
 del /S *.c
 del /S *.py
-del /S setup_compact.pyx
-move mainServer.pyx mainServer.py
+move main.pyx main.py
 rmdir /S /Q build
 FOR /R %%x in (__init__.pyx) do ren "%%x" __init__.py
 dir
 dir code_generator
 
 copy ..\..\backend\windows.spec .
-copy ..\..\backend\app_variables.json .
+cp ..\..\backend\perceptilabs\app_variables.json ./perceptilabs/
 pyinstaller --clean -y windows.spec
 IF %ERRORLEVEL% NEQ 0 (
   ls -R -l
