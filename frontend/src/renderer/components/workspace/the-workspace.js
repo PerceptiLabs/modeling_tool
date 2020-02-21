@@ -13,7 +13,8 @@ import WorkspaceSaveNetwork   from "@/components/global-popups/workspace-save-ne
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
-import TheMiniMap             from '@/components/different/the-mini-map.vue'
+import TheMiniMap             from '@/components/different/the-mini-map.vue';
+import Notebook               from '@/components/notebooks/notebook.vue';
 
 export default {
   name: 'WorkspaceContent',
@@ -23,7 +24,7 @@ export default {
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheMiniMap
+    TheMiniMap, Notebook
   },
   mounted() {
     console.log(this.$refs.networkField);
@@ -41,6 +42,7 @@ export default {
       statisticsIsOpen:   'mod_workspace/GET_statisticsIsOpen',
 
       isTutorialMode:     'mod_tutorials/getIstutorialMode',
+      isNotebookMode:     'mod_notebook/getNotebookMode',
       tutorialActiveStep: 'mod_tutorials/getActiveStep',
     }),
     ...mapState({
