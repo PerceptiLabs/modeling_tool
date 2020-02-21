@@ -451,7 +451,8 @@ const actions = {
 
     return coreRequest(theData)
       .then((data)=> {
-        return data
+        console.log('API_getGraphOrder data', data);
+        return data;
       })
       .catch((err)=> {
         console.log('API_getGraphOrder error');
