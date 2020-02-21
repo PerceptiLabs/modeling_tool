@@ -418,9 +418,6 @@ class coreLogic():
             if progress is None:
                 progress = (self.savedResultsDict["epoch"]*self.savedResultsDict["maxIter"]+self.savedResultsDict["iter"])/(max(self.savedResultsDict["maxEpochs"]*self.savedResultsDict["maxIter"],1))
 
-            for i in range(10):
-                print("PROGRESS", progress)
-
                 
             if self.status=="Running":
                 result = {
