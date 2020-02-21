@@ -156,6 +156,17 @@ const deepCloneNetwork = function (object) {
   );
 };
 
+const fixFilepathSeparator = function fileUrl(filepath) {
+  if (!filepath) { return filepath; }
+
+  if (filepath.startsWith('\\\\')) {
+    // if it's a network share, we have to keep the \\\\
+    return '\\\\' + filepath.substring(2).replace(/\\/g, '/');
+  }
+
+  return filepath.replace(/\\/g, '/');
+};
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -172,5 +183,6 @@ export {
   throttleEv,
   goToLink,
   deepCopy,
-  deepCloneNetwork
+  deepCloneNetwork,
+  fixFilepathSeparator
 }
