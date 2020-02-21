@@ -2,7 +2,7 @@
     iframe#notebook(
         ref='notebook-iframe'
         @load="onIFrameLoad"
-        :src="iframeSource",
+        :src="notebookUrl",
         width='100%', 
         height='100%', 
         frameBorder="0")
@@ -17,7 +17,7 @@ export default {
     name: 'Notebook',
     data() {
         return {
-            notebookUrl: '',
+            notebookUrl: 'http://192.168.180.136:8000/user/test/notebooks/Documents/Untitled.ipynb?token=f8c7dac1af8643ffb68f1d7e2869cf7a',
             jupyterNotebookManager: 'http://localhost:9000',
             networkCode: []
         };
@@ -117,17 +117,20 @@ export default {
             console.log('currentNetwork', this.$store.getters['mod_workspace/GET_currentNetwork']);
             return this.$store.getters['mod_workspace/GET_currentNetwork'];
         },
-        iframeSource() {
-            return this.jupyterHubBaseUrl + '/user/test/notebooks/Documents/Untitled.ipynb';
-        },
     },
     mounted(){
         this.fetchNetworkCode();
 
-        this.$store.dispatch('mod_api/API_getGraphOrder', {layerId: this.currentNetwork.networkID})
-        .then(response => {
-            console.log('API_getGraphOrder', response);
-        });
+        // console.log('notebook mounted');
+        // this.$store.dispatch('mod_api/API_getGraphOrder', {layerId: this.currentNetwork.networkID})
+        // .then(response => {
+        //     console.log('API_getGraphOrder', response);
+        // });
+
+        const url = this.jupyterNotebookManager + '/notebookurl';
+        fetch(url)
+        .then(response => response.json())
+        .then(url => this.notebookUrl = url);
 
     }
 }
