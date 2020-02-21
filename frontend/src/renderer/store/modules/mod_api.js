@@ -426,10 +426,35 @@ const actions = {
       }
     };
 
-    console.log('getCode', theData);
+    // console.log('getCode', theData);
     return coreRequest(theData)
-      .then((data)=> data)
+      .then((data)=> {
+        // console.log('coreRequest data', data);
+        return data
+      })
       .catch((err)=> {
+        console.log('API_getCode error');
+        console.error(err);
+      });
+  },
+
+  API_getGraphOrder({dispatch, getters, rootGetters}, {layerId}) {
+
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'getGraphOrder',
+      value: {
+        // Id: layerId,
+        // Network: getters.GET_coreNetwork
+      }
+    };
+
+    return coreRequest(theData)
+      .then((data)=> {
+        return data
+      })
+      .catch((err)=> {
+        console.log('API_getGraphOrder error');
         console.error(err);
       });
   },
