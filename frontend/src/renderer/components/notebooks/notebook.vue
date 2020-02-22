@@ -12,6 +12,7 @@
 
 // import Vue from 'vue';
 import { mapGetters } from 'vuex';
+import { promiseWithTimeout } from '@/core/helpers';
 
 export default {
     name: 'Notebook',
@@ -37,12 +38,21 @@ export default {
             // console.groupEnd();
         },
         updateNotebook(){
-            this.fetchNotebookJson()
-            .then(notebookJson => {
-                const newNotebookJson = this.createNotebookDataToInject(notebookJson, this.networkCode);
-                this.injectNotebookJson(newNotebookJson);
-                this.fetchNotebookUrl();
-            });
+            
+            // console.log('this.fetchNotebookJson()', this.fetchNotebookJson());
+            // console.log('this.fetchNetworkCode()', this.fetchNetworkCode());
+
+            Promise.all([this.fetchNotebookJson(), this.fetchNetworkCode()])
+                .then(([notebookJson, networkCodes]) => {
+                    
+                    // console.log('notebookJson', notebookJson);
+                    // console.log('networkCode', networkCodes);
+
+                    const validNetworkCodes = networkCodes.filter(nc => nc);
+                    const newNotebookJson = this.createNotebookDataToInject(notebookJson, validNetworkCodes);
+                    this.injectNotebookJson(newNotebookJson);
+                    this.fetchNotebookUrl();
+                });
         },
         fetchNotebookJson(){
 
@@ -52,11 +62,11 @@ export default {
 
             const url = this.jupyterNotebookManager + '/notebook';
             return fetch(url)
-            .then(response => response.json())
-            .then(notebookJson => {
-                return notebookJson;
-            })
-            .catch(error => console.error('fetchNotebookJson - error', error));
+                .then(response => response.json())
+                .then(notebookJson => {
+                    return notebookJson;
+                })
+                .catch(error => console.error('fetchNotebookJson - error', error));
         },
         createNotebookDataToInject(notebookJson, networkCode) {
             const newNotebookJson = JSON.parse(JSON.stringify(notebookJson));
@@ -68,7 +78,7 @@ export default {
                     execution_count: null,
                     metadata: {trusted: true},
                     outputs: [],
-                    source: codeSnippet.Output,
+                    source: codeSnippet,
                 }
 
                 newNotebookJson.content.cells.push(notebookCellJson);
@@ -98,9 +108,9 @@ export default {
 
         },
         fetchNetworkCode() {
-            if (!this.currentNetwork || !this.currentNetwork.networkElementList) {
-                return [];
-            }
+            if (!this.currentNetwork || !this.currentNetwork.networkElementList) { return []; }
+
+            const fetchCodePromises = [];
 
             for(let networkElement of Object.entries(this.currentNetwork.networkElementList)) {
                 // networkElement[0] is just the layerId
@@ -110,15 +120,15 @@ export default {
                     settings: networkInformation.layerSettings,
                 };
 
-                this.$store.dispatch('mod_api/API_getCode', payload)
-                    .then(code => {
-                        // console.log('get code answer', networkElement.layerId, code);
-                        this.networkCode.push(code);
-                    })
-                    .catch(error => {
-                        console.log('error', error);
-                    });
+                const promise = this.$store.dispatch('mod_api/API_getCode', payload);
+                
+                fetchCodePromises.push(promiseWithTimeout(200, promise));
             }
+
+            return Promise.all(fetchCodePromises)
+                .then(code => {
+                    return code.filter(c => c).map(c => c.Output);
+                });
         },
         fetchNotebookUrl() {
 
@@ -135,10 +145,6 @@ export default {
         ...mapGetters({
             currentNetwork: 'mod_workspace/GET_currentNetwork'
         })
-        // currentNetwork() {
-        //     console.log('currentNetwork', this.$store.getters['mod_workspace/GET_currentNetwork']);
-        //     return this.$store.getters['mod_workspace/GET_currentNetwork'];
-        // },
     },
     watch: {
         currentNetwork: {
@@ -146,11 +152,13 @@ export default {
             handler(newValue) {
                 console.log('New currentNetwork', newValue);
                 this.updateNotebook();
+                
             }
         }
     },
     mounted(){
-        // this.fetchNetworkCode();
+        // const a = this.fetchNetworkCode();
+        // a.then(val => console.log('------------', val));
 
         // console.log('notebook mounted');
         // this.$store.dispatch('mod_api/API_getGraphOrder', {layerId: this.currentNetwork.networkID})

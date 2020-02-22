@@ -202,6 +202,18 @@ const fixFilepathSeparator = function fileUrl(filepath) {
   return filepath.replace(/\\/g, '/');
 };
 
+const promiseWithTimeout = function (timeout, promise) {
+  const timeoutPromise = new Promise((resolve, reject) =>
+      setTimeout(
+          // () => reject(`Timed out after ${timeout} ms.`),
+          () => resolve(),
+          timeout));
+  return Promise.race([
+      promise,
+      timeoutPromise
+  ]);
+}
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -221,5 +233,6 @@ export {
   deepCloneNetwork,
   isLocalStorageAvailable,
   stringifyNetworkObjects,
-  fixFilepathSeparator
+  fixFilepathSeparator,
+  promiseWithTimeout
 }
