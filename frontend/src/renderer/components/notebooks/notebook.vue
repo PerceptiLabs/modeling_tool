@@ -25,29 +25,8 @@ export default {
     methods: {
         onIFrameLoad(){
 
-            this.fetchNotebookJson()
-            .then(notebookJson => {
+            // this.updateNotebook();
 
-                
-                // console.log('onIframeLoad - b', notebookJson);
-                notebookJson.content.cells = [];
-
-                for (let codeSnippet of this.networkCode) {
-                    let notebookCellJson = {
-                        cell_type: 'code',
-                        execution_count: null,
-                        metadata: {trusted: true},
-                        outputs: [],
-                        source: codeSnippet.Output,
-                    }
-
-                    notebookJson.content.cells.push(notebookCellJson);
-                }
-
-                // console.log('onIframeLoad - a', notebookJson);
-                this.injectNotebookJson(notebookJson);
-            });
-            
             // let iframe = this.$refs['notebook-iframe'];
             // console.log('iframe loaded', iframe);
             // let innerDoc = iframe.contentDocument.document;
@@ -57,20 +36,45 @@ export default {
             // console.log('innerDoc.querySelector', app);
             // console.groupEnd();
         },
+        updateNotebook(){
+            this.fetchNotebookJson()
+            .then(notebookJson => {
+                const newNotebookJson = this.createNotebookDataToInject(notebookJson, this.networkCode);
+                this.injectNotebookJson(newNotebookJson);
+                this.fetchNotebookUrl();
+            });
+        },
         fetchNotebookJson(){
 
             // http://192.168.180.133:8000/user/test/api/contents/Documents/Untitled.ipynb
             // const url = this.jupyterHubBaseUrl + '/user/test/api/contents/Documents/Untitled.ipynb';
-            console.log('fetchNotebookJson');
+            // console.log('fetchNotebookJson');
 
             const url = this.jupyterNotebookManager + '/notebook';
             return fetch(url)
             .then(response => response.json())
             .then(notebookJson => {
                 return notebookJson;
-            });
+            })
+            .catch(error => console.error('fetchNotebookJson - error', error));
         },
-        
+        createNotebookDataToInject(notebookJson, networkCode) {
+            const newNotebookJson = JSON.parse(JSON.stringify(notebookJson));
+            newNotebookJson.content.cells = [];
+
+            for (let codeSnippet of networkCode) {
+                let notebookCellJson = {
+                    cell_type: 'code',
+                    execution_count: null,
+                    metadata: {trusted: true},
+                    outputs: [],
+                    source: codeSnippet.Output,
+                }
+
+                newNotebookJson.content.cells.push(notebookCellJson);
+            }
+            return newNotebookJson;
+        },
         injectNotebookJson(notebookJson){
             // console.log('injectNotebookJson', notebookJson);
             if (!notebookJson) { return; }
@@ -86,7 +90,12 @@ export default {
                 })
             })
             .then(response => response.json())
-            .then(notebookResponse => console.log('injectNotebookJson', notebookResponse));
+            .then(notebookResponse => {
+                // console.log('injectNotebookJson', notebookResponse);
+                // this.fetchNotebookUrl
+            })
+            .catch(error => console.error('injectNotebookJson - error', error));
+
         },
         fetchNetworkCode() {
             if (!this.currentNetwork || !this.currentNetwork.networkElementList) {
@@ -110,28 +119,44 @@ export default {
                         console.log('error', error);
                     });
             }
+        },
+        fetchNotebookUrl() {
+
+            this.notebookUrl = '';
+
+            const url = this.jupyterNotebookManager + '/notebookurl';
+            fetch(url)
+            .then(response => response.text())
+            .then(url => this.notebookUrl = url)
+            .catch(error => console.error('notebookurl - error', error));
         }
     },
     computed: {
-        currentNetwork() {
-            console.log('currentNetwork', this.$store.getters['mod_workspace/GET_currentNetwork']);
-            return this.$store.getters['mod_workspace/GET_currentNetwork'];
-        },
+        ...mapGetters({
+            currentNetwork: 'mod_workspace/GET_currentNetwork'
+        })
+        // currentNetwork() {
+        //     console.log('currentNetwork', this.$store.getters['mod_workspace/GET_currentNetwork']);
+        //     return this.$store.getters['mod_workspace/GET_currentNetwork'];
+        // },
+    },
+    watch: {
+        currentNetwork: {
+            immediate: true,
+            handler(newValue) {
+                console.log('New currentNetwork', newValue);
+                this.updateNotebook();
+            }
+        }
     },
     mounted(){
-        this.fetchNetworkCode();
+        // this.fetchNetworkCode();
 
         // console.log('notebook mounted');
         // this.$store.dispatch('mod_api/API_getGraphOrder', {layerId: this.currentNetwork.networkID})
         // .then(response => {
         //     console.log('API_getGraphOrder', response);
         // });
-
-        const url = this.jupyterNotebookManager + '/notebookurl';
-        fetch(url)
-        .then(response => response.json())
-        .then(url => this.notebookUrl = url);
-
     }
 }
 </script>
