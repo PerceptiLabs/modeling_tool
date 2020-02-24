@@ -3,8 +3,8 @@
         ref='notebook-iframe'
         @load="onIFrameLoad"
         :src="notebookUrl",
-        width='100%', 
-        height='100%', 
+        width='100%',
+        height='100%',
         frameBorder="0")
 </template>
 
@@ -12,7 +12,7 @@
 
 // import Vue from 'vue';
 import { mapGetters } from 'vuex';
-import { promiseWithTimeout } from '@/core/helpers';
+import { stringifyNetworkObjects, promiseWithTimeout } from '@/core/helpers';
 
 export default {
     name: 'Notebook',
@@ -38,20 +38,25 @@ export default {
             // console.groupEnd();
         },
         updateNotebook(){
-            
+
             // console.log('this.fetchNotebookJson()', this.fetchNotebookJson());
             // console.log('this.fetchNetworkCode()', this.fetchNetworkCode());
 
-            Promise.all([this.fetchNotebookJson(), this.fetchNetworkCode()])
-                .then(([notebookJson, networkCodes]) => {
-                    
+            Promise.all([
+                    this.fetchNotebookJson(),
+                    this.fetchNetworkCode(),
+                    this.fetchNetworkCodeOrder()
+                ])
+                .then(([notebookJson, networkCodes, networkCodeOrder]) => {
+
                     // console.log('notebookJson', notebookJson);
                     // console.log('networkCode', networkCodes);
+                    // console.log('networkCodeOrder', networkCodeOrder);
 
-                    const validNetworkCodes = networkCodes.filter(nc => nc);
-                    const newNotebookJson = this.createNotebookDataToInject(notebookJson, validNetworkCodes);
-                    this.injectNotebookJson(newNotebookJson);
-                    this.fetchNotebookUrl();
+                    // const validNetworkCodes = networkCodes.filter(nc => nc);
+                    // const newNotebookJson = this.createNotebookDataToInject(notebookJson, validNetworkCodes);
+                    // this.injectNotebookJson(newNotebookJson);
+                    // this.fetchNotebookUrl();
                 });
         },
         fetchNotebookJson(){
@@ -92,8 +97,8 @@ export default {
             // const url = this.jupyterHubBaseUrl + '/user/test/api/contents/Documents/Untitled.ipynb';
 
             const url = this.jupyterNotebookManager + '/notebook';
-            fetch(url, { 
-                method: 'PUT', 
+            fetch(url, {
+                method: 'PUT',
                 body: JSON.stringify(notebookJson),
                 headers: new Headers({
                     'Content-Type': 'application/json',
@@ -121,13 +126,21 @@ export default {
                 };
 
                 const promise = this.$store.dispatch('mod_api/API_getCode', payload);
-                
+
                 fetchCodePromises.push(promiseWithTimeout(200, promise));
             }
 
             return Promise.all(fetchCodePromises)
                 .then(code => {
+
+                    console.log('code', code);
                     return code.filter(c => c).map(c => c.Output);
+                });
+        },
+        fetchNetworkCodeOrder() {
+            return this.$store.dispatch('mod_api/API_getGraphOrder', this.coreNetwork)
+                .then(codeOrder => {
+                    return codeOrder;
                 });
         },
         fetchNotebookUrl() {
@@ -143,7 +156,9 @@ export default {
     },
     computed: {
         ...mapGetters({
-            currentNetwork: 'mod_workspace/GET_currentNetwork'
+            currentNetwork: 'mod_workspace/GET_currentNetwork',
+            coreNetwork: 'mod_api/GET_coreNetwork'
+
         })
     },
     watch: {
@@ -152,7 +167,7 @@ export default {
             handler(newValue) {
                 console.log('New currentNetwork', newValue);
                 this.updateNotebook();
-                
+
             }
         }
     },
@@ -160,11 +175,11 @@ export default {
         // const a = this.fetchNetworkCode();
         // a.then(val => console.log('------------', val));
 
+        // console.log('json network ', this.currentNetwork.networkElementList);
+        // console.log('coreNetwork', this.coreNetwork);
+
         // console.log('notebook mounted');
-        // this.$store.dispatch('mod_api/API_getGraphOrder', {layerId: this.currentNetwork.networkID})
-        // .then(response => {
-        //     console.log('API_getGraphOrder', response);
-        // });
+
     }
 }
 </script>
