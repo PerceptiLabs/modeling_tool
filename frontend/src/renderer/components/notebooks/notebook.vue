@@ -1,7 +1,6 @@
 <template lang="pug">
     iframe#notebook(
         ref='notebook-iframe'
-        @load="onIFrameLoad"
         :src="notebookUrl",
         width='100%',
         height='100%',
@@ -24,23 +23,7 @@ export default {
         };
     },
     methods: {
-        onIFrameLoad(){
-
-            // this.updateNotebook();
-
-            // let iframe = this.$refs['notebook-iframe'];
-            // console.log('iframe loaded', iframe);
-            // let innerDoc = iframe.contentDocument.document;
-            // console.log('iframe.contentDocument', innerDoc);
-            // let app = innerDoc.querySelector('.notebook_app');
-            // console.log('iframe.contentWindow', iframe.contentWindow);
-            // console.log('innerDoc.querySelector', app);
-            // console.groupEnd();
-        },
         updateNotebook(){
-
-            // console.log('this.fetchNotebookJson()', this.fetchNotebookJson());
-            // console.log('this.fetchNetworkCode()', this.fetchNetworkCode());
 
             Promise.all([
                     this.fetchNotebookJson(),
@@ -90,7 +73,7 @@ export default {
             }
             return newNotebookJson;
         },
-        injectNotebookJson(notebookJson){
+        injectNotebookJson(notebookJson) {
             // console.log('injectNotebookJson', notebookJson);
             if (!notebookJson) { return; }
 
@@ -165,22 +148,11 @@ export default {
         currentNetwork: {
             immediate: true,
             handler(newValue) {
-                console.log('New currentNetwork', newValue);
                 this.updateNotebook();
-
             }
         }
     },
-    mounted(){
-        // const a = this.fetchNetworkCode();
-        // a.then(val => console.log('------------', val));
 
-        // console.log('json network ', this.currentNetwork.networkElementList);
-        // console.log('coreNetwork', this.coreNetwork);
-
-        // console.log('notebook mounted');
-
-    }
 }
 </script>
 
