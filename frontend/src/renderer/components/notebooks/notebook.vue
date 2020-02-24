@@ -36,18 +36,15 @@ export default {
                     // console.log('networkCode', networkCodes);
                     // console.log('networkCodeOrder', networkCodeOrder);
 
-                    // const validNetworkCodes = networkCodes.filter(nc => nc);
-                    // const newNotebookJson = this.createNotebookDataToInject(notebookJson, validNetworkCodes);
-                    // this.injectNotebookJson(newNotebookJson);
-                    // this.fetchNotebookUrl();
+
+                    const validNetworkCodes = networkCodes.filter(nc => nc);
+                    const sortedCode = this.sortNetworkCode(validNetworkCodes, networkCodeOrder);
+                    const newNotebookJson = this.createNotebookDataToInject(notebookJson, sortedCode);
+                    this.injectNotebookJson(newNotebookJson);
+                    this.fetchNotebookUrl();
                 });
         },
         fetchNotebookJson(){
-
-            // http://192.168.180.133:8000/user/test/api/contents/Documents/Untitled.ipynb
-            // const url = this.jupyterHubBaseUrl + '/user/test/api/contents/Documents/Untitled.ipynb';
-            // console.log('fetchNotebookJson');
-
             const url = this.jupyterNotebookManager + '/notebook';
             return fetch(url)
                 .then(response => response.json())
@@ -55,6 +52,21 @@ export default {
                     return notebookJson;
                 })
                 .catch(error => console.error('fetchNotebookJson - error', error));
+        },
+        sortNetworkCode(array, sortOrder = null) {
+            if (!array || !sortOrder) { return; }
+
+            // current sort is O(n^2), will use Map if most networks have many elements
+
+            const sortedArray = [];
+            for (let sortKey of sortOrder) {
+
+                let targetCode = array.find(element => element.layerId === sortKey);
+                if (targetCode) {
+                    sortedArray.push(targetCode.Output);
+                }
+            }
+            return sortedArray;
         },
         createNotebookDataToInject(notebookJson, networkCode) {
             const newNotebookJson = JSON.parse(JSON.stringify(notebookJson));
@@ -101,6 +113,20 @@ export default {
             const fetchCodePromises = [];
 
             for(let networkElement of Object.entries(this.currentNetwork.networkElementList)) {
+
+                const promise = addIdToLayerCode.call(this, networkElement);
+                fetchCodePromises.push(promiseWithTimeout(200, promise));
+            }
+
+            return Promise.all(fetchCodePromises)
+                .then(code => {
+                    return code.filter(c => c).map(c => c);
+                });
+
+            function addIdToLayerCode(networkElement) {
+                // wrote this litte function because we want a layerId key with the code
+                // this is to help with the sorting in the next step
+
                 // networkElement[0] is just the layerId
                 const networkInformation = networkElement[1];
                 const payload = {
@@ -108,23 +134,17 @@ export default {
                     settings: networkInformation.layerSettings,
                 };
 
-                const promise = this.$store.dispatch('mod_api/API_getCode', payload);
-
-                fetchCodePromises.push(promiseWithTimeout(200, promise));
+                return this.$store.dispatch('mod_api/API_getCode', payload)
+                    .then(result => {
+                        result.layerId = networkInformation.layerId;
+                        return result;
+                    })
             }
-
-            return Promise.all(fetchCodePromises)
-                .then(code => {
-
-                    console.log('code', code);
-                    return code.filter(c => c).map(c => c.Output);
-                });
         },
         fetchNetworkCodeOrder() {
             return this.$store.dispatch('mod_api/API_getGraphOrder', this.coreNetwork)
-                .then(codeOrder => {
-                    return codeOrder;
-                });
+                .then(codeOrder => codeOrder)
+                .catch(error => []);
         },
         fetchNotebookUrl() {
 
@@ -132,9 +152,9 @@ export default {
 
             const url = this.jupyterNotebookManager + '/notebookurl';
             fetch(url)
-            .then(response => response.text())
-            .then(url => this.notebookUrl = url)
-            .catch(error => console.error('notebookurl - error', error));
+                .then(response => response.text())
+                .then(url => this.notebookUrl = url)
+                .catch(error => console.error('notebookurl - error', error));
         }
     },
     computed: {
