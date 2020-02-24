@@ -77,7 +77,8 @@ export default {
         x: 0,       y: 0,
         width: 0,   height: 0
       },
-      currentFocusedArrow: null
+      currentFocusedArrow: null,
+      currentFocusedArrowData: null,
     }
   },
   computed: {
@@ -119,7 +120,7 @@ export default {
         height: this.svgHeight,
       };
       return size
-    },    
+    },
   },
   watch: {
     statisticsIsOpen() {
@@ -264,12 +265,18 @@ export default {
       this.$store.dispatch('mod_workspace/DELETE_arrow', connection);
       this.$store.dispatch('mod_api/API_getOutputDim');
       focusArray.blur();
-      this.currentFocusedArrow = null;
+      this.clearArrowFocus();
     },
-    focusArrow(ev) {
+    focusArrow(ev, arrow) {
+      this.currentFocusedArrowData = arrow;
       this.currentFocusedArrow = ev.target;
     },
     blurArrow() {
+      this.clearArrowFocus();
+    },
+
+    clearArrowFocus() {
+      this.currentFocusedArrowData = null;
       this.currentFocusedArrow = null;
     },
     drawArrows() {
@@ -471,7 +478,7 @@ export default {
             });
           }
           else {
-           
+
             let sortGorSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
               return a.layerMeta.position.left - b.layerMeta.position.left;
             });
@@ -499,7 +506,7 @@ export default {
           }
           itemEl.correctPosition.stop = calcValuePosition(itemEl.sideEnd, sideEndLength, indexSidePositionEnd);
         })
-        
+
       }
       function calcValuePosition(side, lengthSide, indexSide) {
         switch(side) {
@@ -561,6 +568,10 @@ export default {
       }
       if (!arrow.l1.layerMeta.OutputDim || arrow.l1.layerCodeError) {
         result.push('svg-arrow_line--empty');
+      }
+
+      if(this.currentFocusedArrowData === arrow) {
+        result.push('is-focused');
       }
       return result;
     },
