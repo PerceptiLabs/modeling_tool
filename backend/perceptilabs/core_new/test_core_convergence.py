@@ -165,6 +165,8 @@ def test_train_normal_converges(graph_spec_binary_classification):
     for graph in core.graphs:
         acc = graph.active_training_node.layer.accuracy_training
         accuracy_list.append(acc)
+
+    print("Accuracy: ", np.mean(accuracy_list[-10:]))
     
     assert np.mean(accuracy_list[-10:]) >= 0.9 
 

@@ -585,9 +585,7 @@
 
                         self._loss_training, self._accuracy_training, \
                         self._layer_outputs, self._layer_weights, self._layer_biases, \
-                        self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])  
-
-                        print("Training Acc: ", self._accuracy_training)         
+                        self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])   
                         
                         if INCLUDE_KERAS_METRICS:
                             auc_train.reset_states()
@@ -611,8 +609,6 @@
                         self._loss_validation, self._accuracy_validation, \
                         self._layer_outputs, self._layer_weights, self._layer_biases, \
                         self._layer_gradients = sess.run([loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
-
-                        print("Val Acc: ", self._accuracy_validation)
 
                         if INCLUDE_KERAS_METRICS:
                             auc_val.reset_states()
