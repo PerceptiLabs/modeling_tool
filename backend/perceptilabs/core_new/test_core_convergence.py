@@ -17,7 +17,7 @@ from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvir
 @pytest.fixture
 def graph_spec_binary_classification():
     n_classes = 10
-    n_samples = 30
+    n_samples = 300
 
     f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
     mat = np.random.random((n_samples, 28*28*1))

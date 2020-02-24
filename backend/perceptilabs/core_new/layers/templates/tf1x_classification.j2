@@ -182,6 +182,7 @@
         while self._epoch < self._n_epochs:
             t0 = time.perf_counter()
             self._training_iteration = 0
+            self._validation_iteration = 0
             self._status = 'training'
             sess.run(trn_init)            
             try:
@@ -193,8 +194,6 @@
             except tf.errors.OutOfRangeError:
                 pass
 
-
-            self._validation_iteration = 0
             self._status = 'validation'
             sess.run(val_init)            
             try:
@@ -250,6 +249,10 @@
         assert len(label_data_nodes) == 1
         input_data_node = input_data_nodes[0]
         label_data_node = label_data_nodes[0]
+
+        self._trn_sz_tot = input_data_node.layer.size_training
+        self._val_sz_tot = input_data_node.layer.size_validation
+        self._tst_sz_tot = input_data_node.layer.size_testing
 
         # Set Devices and Distribution Strategy
         n_devices = 4
@@ -445,7 +448,7 @@
                             grad_tensor = tf.gradients(loss_tensor, tensor)
                             if any(x is None for x in grad_tensor):
                                 grad_tensor = tf.constant(0)
-                            if len(grad_tensor) == 1:
+                            if type(grad_tensor) is list and len(grad_tensor) == 1:
                                 gradients[name] = grad_tensor[0]
                             else:
                                 gradients[name] = grad_tensor
@@ -491,7 +494,7 @@
                             grad_tensor = tf.gradients(loss_tensor, tensor)
                             if any(x is None for x in grad_tensor):
                                 grad_tensor = tf.constant(0)
-                            if len(grad_tensor) == 1:
+                            if type(grad_tensor) is list and len(grad_tensor) == 1:
                                 gradients[name] = grad_tensor[0]
                             else:
                                 gradients[name] = grad_tensor
@@ -575,6 +578,7 @@
             self._epoch = 0
             while self._epoch < self._n_epochs:
                 self._training_iteration = 0
+                self._validation_iteration = 0
                 self._status = 'training'
 
                 sess.run(train_iterator_init)
@@ -585,25 +589,25 @@
 
                         self._loss_training, self._accuracy_training, \
                         self._layer_outputs, self._layer_weights, self._layer_biases, \
-                        self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])   
+                        self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])         
                         
                         if INCLUDE_KERAS_METRICS:
                             auc_train.reset_states()
                             recall_train.reset_states()
                             precision_train.reset_states()     
 
-                        # self.save_snapshot(graph)                            
+                        self.save_snapshot(graph)                            
                         
-                        self._training_iteration += 1
+                        self._training_iteration += 1 * n_devices
                 except tf.errors.OutOfRangeError:
                     pass
 
                 sess.run(validation_iterator_init)
 
-                self._validation_iteration = 0
+                
                 self._status = 'validation'
                 try:
-                    while True:
+                    while not self._stopped:
                         sleep_while_paused()
 
                         self._loss_validation, self._accuracy_validation, \
@@ -615,38 +619,31 @@
                             recall_val.reset_states()
                             precision_val.reset_states()                                
 
-                        # self.save_snapshot(graph) 
+                        self.save_snapshot(graph) 
 
-                        self._validation_iteration += 1            
+                        self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
                     pass
 
-            sess.run(test_iterator_init)
-            iter = 0
-            x, y = test_iterator.get_next()    
-            y_pred, y_target = model(x, y)
+                self._epoch+=1
 
-            # all tensors test
-            model._locals = {}
-            locals_ = model._locals.copy()
-            locals_[input_data_layer] = {'Y': x} # output/preview. hack hack hack
-            locals_[target_data_layer] = {'Y': y} # this layer is not run here.....:/
-            
-            locals_[self_layer_name] = {'X': {
-                output_layer: {'Y': y_target}, # inputs to this layer...
-                target_layer: {'Y': y_pred}
-            }}
-            
-            all_tensors_test = get_tensors(locals_)
+            self._testing_iteration = 0
+            self._status = 'testing'
+            sess.run(test_iterator_init)
+            x, y = test_iterator.get_next()    
+            layer_output_tensors = model(x, y)
+
             try:
-                while True:
-                    all_evaled_tensors = sess.run(all_tensors_test)
-                    api.data.store(all_tensors=all_evaled_tensors)
-                    api.data.store(iter_testing=iter)
-                    iter+=1
-                    api.ui.render(dashboard='testing')  
-            except tf.errors.OutOfRangeError:      
+                while not self._stopped:
+                    self._layer_outputs = sess.run(layer_outputs_val)
+                    self.save_snapshot(graph)                                    
+                    self._testing_iteration += 1
+            except tf.errors.OutOfRangeError:
                 pass
+
+            self._status = 'finished'
+            self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+            self.save_snapshot(graph)
 {% endmacro %}
 
 
@@ -689,7 +686,7 @@ class {{layer_name}}(ClassificationLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
-        {% if distributed -%}
+        {% if True -%}
             {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) }}
         {% else -%}
             {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) }}

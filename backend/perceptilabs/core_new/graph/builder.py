@@ -67,6 +67,18 @@ class GraphBuilder:
         nodes = {}
         for layer_spec in graph_spec.values():
             layer_type = layer_spec['Type']
+
+            #TODO: Remove this if-case when frontend is sending back correct file path on Windows
+            if layer_type == "DataData":
+                sources = layer_spec['Properties']['accessProperties']['Sources']
+                new_sources = []
+                for source in sources:
+                    tmp = source
+                    if tmp["path"]:
+                        tmp["path"] = tmp["path"].replace("\\","/")
+                    new_sources.append(tmp)
+                layer_spec['Properties']['accessProperties']['Sources'] = new_sources
+
             layer_id = sanitize_layer_name(layer_spec['Name'])
             layer_instance = None#self._get_layer_instance(layer_id, layer_type, session_config['session_id'])
             node = Node(layer_id, layer_type, layer_instance, layer_spec)
