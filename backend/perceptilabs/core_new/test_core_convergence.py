@@ -17,7 +17,7 @@ from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvir
 @pytest.fixture
 def graph_spec_binary_classification():
     n_classes = 10
-    n_samples = 300
+    n_samples = 30
 
     f1 = tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False)
     mat = np.random.random((n_samples, 28*28*1))
@@ -116,7 +116,7 @@ def graph_spec_binary_classification():
                     "Momentum": "0.9",
                     "Decay_steps": "100000",
                     "Decay_rate": "0.96",
-                    "Learning_rate": "0.5",
+                    "Learning_rate": "0.05",
                     "Distributed": False
                 },
                 "backward_connections": [["4", "fc"], ["5", "one_hot"]],
@@ -206,6 +206,7 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
     for graph in core.graphs:
         acc = graph.active_training_node.layer.accuracy_training
         accuracy_list.append(acc)
+        print(acc)
     
     assert np.mean(accuracy_list[-10:]) >= 0.9
 
