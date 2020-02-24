@@ -438,24 +438,21 @@ const actions = {
       });
   },
 
-  API_getGraphOrder({dispatch, getters, rootGetters}, {layerId}) {
+  API_getGraphOrder({ rootGetters }, jsonNetwork) {
 
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: 'getGraphOrder',
-      value: {
-        // Id: layerId,
-        // Network: getters.GET_coreNetwork
-      }
+      value: jsonNetwork
     };
 
     return coreRequest(theData)
       .then((data)=> {
-        console.log('API_getGraphOrder data', data);
+        // console.log('API_getGraphOrder data', data);
         return data;
       })
       .catch((err)=> {
-        console.log('API_getGraphOrder error');
+        // console.log('API_getGraphOrder error');
         console.error(err);
       });
   },
