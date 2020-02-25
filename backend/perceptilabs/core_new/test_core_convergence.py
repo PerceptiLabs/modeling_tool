@@ -168,7 +168,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
 
     print("Accuracy: ", np.mean(accuracy_list[-10:]))
     
-    assert np.mean(accuracy_list[-10:]) >= 0.9 
+    assert np.mean(accuracy_list[-10:]) >= 0.8 
 
 
 @pytest.mark.slow
@@ -208,5 +208,5 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
         accuracy_list.append(acc)
         print(acc)
     
-    assert np.mean(accuracy_list[-10:]) >= 0.9
+    assert np.mean(accuracy_list[-10:]) >= 0.8
 
