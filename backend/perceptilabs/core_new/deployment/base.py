@@ -69,7 +69,8 @@ class DeploymentPipe(ABC):
         # If we reached this point, everything went fine.
         return client
 
-    
+flask_counter = 5678
+zmq_counter = 7171
 class InProcessDeploymentPipe(DeploymentPipe):
     def __init__(self, script_factory):
         self._script_factory = script_factory        
@@ -102,12 +103,15 @@ class InProcessDeploymentPipe(DeploymentPipe):
         return True
 
     def get_session_config(self, session_id: str) -> Dict[str, str]:
+        global flask_counter, zmq_counter
+        flask_counter+=1
+        zmq_counter+=1
         return {
             'session_id': session_id,
-            'addr_flask': 'http://localhost:5678',
-            'port_flask': '5678',            
-            'addr_zmq': 'tcp://localhost:7171',
-            'addr_zmq_deploy': 'tcp://*:7171'            
+            'addr_flask': f'http://localhost:{flask_counter}',
+            'port_flask': f'{flask_counter}',            
+            'addr_zmq': f'tcp://localhost:{zmq_counter}',
+            'addr_zmq_deploy': f'tcp://*:{zmq_counter}'            
         }
     
 

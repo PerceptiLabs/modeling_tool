@@ -4,11 +4,7 @@ import argparse
 import json
 import pkg_resources
 
-from perceptilabs.processes import ProcessDependencyWatcher
-from perceptilabs.mainInterface import Interface
-from perceptilabs.server.appServer import Server
 
-from perceptilabs.main_setup import setup_scraper, setup_sentry, scraper
 
 
 def get_input_args():
@@ -44,7 +40,6 @@ def setup_logger(log_level):
     """
     FORMAT = '%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s'
     FILE_NAME = 'backend.log'
-    
     logging.basicConfig(stream=sys.stdout,
                         format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
                         level=logging.getLevelName(log_level))
@@ -53,10 +48,17 @@ def main():
     args = get_input_args()
 
     setup_logger(args.log_level)
-    ProcessDependencyWatcher(args.frontend_pid).start()
-
+    
     log = logging.getLogger(__name__)
 
+    from perceptilabs.processes import ProcessDependencyWatcher
+    from perceptilabs.mainInterface import Interface
+    from perceptilabs.server.appServer import Server
+
+    from perceptilabs.main_setup import setup_scraper, setup_sentry, scraper
+
+    ProcessDependencyWatcher(args.frontend_pid).start()
+    
     with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
         app_variables = json.load(f)
 
