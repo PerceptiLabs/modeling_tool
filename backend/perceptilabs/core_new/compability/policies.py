@@ -151,6 +151,11 @@ def policy_classification(graphs, sanitized_to_name, sanitized_to_id):
         return data
 
     current_graph = graphs[-1]
+
+    test_graphs = []
+    for graph in graphs:
+        if graph.active_training_node.layer.status == 'testing':
+            test_graphs.append(graph)
     
     trn_node = current_graph.active_training_node
     if trn_node.layer.status != 'testing':
@@ -222,46 +227,54 @@ def policy_classification(graphs, sanitized_to_name, sanitized_to_id):
             "progress": trn_node.layer.progress
         }
         return result_dict
-    elif trn_node.layer.status == 'testing':
-        test_dict = {}
-        for node in current_graph.nodes:
-            data = {}
-            true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
-            data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
-            test_dict[true_id] = data
-        
-        training_status = 'Finished'
-        status='Running'
-        test_status='Waiting'
 
-        max_itr_tst = 0
-        if trn_node.layer.size_testing and trn_node.layer.batch_size:
-            max_itr_tst = np.ceil(trn_node.layer.size_training/trn_node.layer.batch_size)
+    if len(test_graphs) > 0:
+        test_dicts = []
+        print("Test dicts found: ", len(test_graphs))
+        for current_graph in test_graphs:
+            test_dict = {}
+            for node in current_graph.nodes:
+                data = {}
+                true_id = sanitized_to_id[node.layer_id] # nodes use spec names for layer ids
+                data.update(get_layer_inputs_and_outputs(current_graph, node, trn_node))
+                test_dict[true_id] = data
+            
+            training_status = 'Finished'
+            status='Running'
+            test_status='Waiting'
 
-        true_id = sanitized_to_id[trn_node.layer_id]            
-        test_dict[true_id]['acc_training_epoch'] = 0
-        test_dict[true_id]['f1_training_epoch'] = 0
-        test_dict[true_id]['auc_training_epoch'] = 0
-                
-        test_dict[true_id]['acc_validation_epoch'] = 0
-        test_dict[true_id]['f1_validation_epoch'] = 0
-        test_dict[true_id]['auc_validation_epoch'] = 0
+            # if trn_node.layer.size_testing and trn_node.layer.batch_size:
+            max_itr_tst = trn_node.layer.size_testing
 
-        test_dict[true_id]['acc_train_iter'] = 0
-        test_dict[true_id]['f1_train_iter'] = 0
-        test_dict[true_id]['auc_train_iter'] = 0
-                
-        test_dict[true_id]['acc_val_iter'] = 0
-        test_dict[true_id]['f1_val_iter'] = 0
-        test_dict[true_id]['auc_val_iter'] = 0
+            true_id = sanitized_to_id[trn_node.layer_id]            
+            test_dict[true_id]['acc_training_epoch'] = 0
+            test_dict[true_id]['f1_training_epoch'] = 0
+            test_dict[true_id]['auc_training_epoch'] = 0
+                    
+            test_dict[true_id]['acc_validation_epoch'] = 0
+            test_dict[true_id]['f1_validation_epoch'] = 0
+            test_dict[true_id]['auc_validation_epoch'] = 0
 
+            test_dict[true_id]['acc_train_iter'] = 0
+            test_dict[true_id]['f1_train_iter'] = 0
+            test_dict[true_id]['auc_train_iter'] = 0
+                    
+            test_dict[true_id]['acc_val_iter'] = 0
+            test_dict[true_id]['f1_val_iter'] = 0
+            test_dict[true_id]['auc_val_iter'] = 0
+
+            test_dicts.append(test_dict)
+
+        import pdb; pdb.set_trace()
         result_dict = {
             "maxTestIter": max_itr_tst,
-            "testDict": test_dict,
+            "testDicts": test_dicts,
             "trainingStatus": training_status,
             "testStatus": test_status,           
             "status": status
         }
+
+
         return result_dict
 
 

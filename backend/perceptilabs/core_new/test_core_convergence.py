@@ -171,42 +171,42 @@ def test_train_normal_converges(graph_spec_binary_classification):
     assert np.mean(accuracy_list[-10:]) >= 0.9 
 
 
-# @pytest.mark.slow
-# def test_train_normal_distributed_converges(graph_spec_binary_classification):
+@pytest.mark.slow
+def test_train_normal_distributed_converges(graph_spec_binary_classification):
     
-#     script_factory = ScriptFactory()
-#     deployment_pipe = InProcessDeploymentPipe(script_factory)
-#     #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
+    script_factory = ScriptFactory()
+    deployment_pipe = InProcessDeploymentPipe(script_factory)
+    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
 
-#     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
-#     graph_builder = GraphBuilder(replica_by_name)    
+    replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
+    graph_builder = GraphBuilder(replica_by_name)    
     
-#     core = Core(
-#         graph_builder,
-#         deployment_pipe,
-#     )
+    core = Core(
+        graph_builder,
+        deployment_pipe,
+    )
 
-#     json_network = graph_spec_binary_classification
-#     json_network['Layers']['6']['Properties']['Distributed'] = True
+    json_network = graph_spec_binary_classification
+    json_network['Layers']['6']['Properties']['Distributed'] = True
 
-#     core.run(json_network)
+    core.run(json_network)
 
-#     print("POST RUN CALL")
+    print("POST RUN CALL")
     
-#     while core.is_running:
+    while core.is_running:
 
-#         #graphs = core.graphs
-#         #print("aaaa", graph)
-#         #print(graph.active_training_node.layer.layer_gradients.keys())
+        #graphs = core.graphs
+        #print("aaaa", graph)
+        #print(graph.active_training_node.layer.layer_gradients.keys())
     
-#         time.sleep(1)
+        time.sleep(1)
 
 
-#     accuracy_list = []
-#     for graph in core.graphs:
-#         acc = graph.active_training_node.layer.accuracy_training
-#         accuracy_list.append(acc)
-#         print(acc)
+    accuracy_list = []
+    for graph in core.graphs:
+        acc = graph.active_training_node.layer.accuracy_training
+        accuracy_list.append(acc)
+        print(acc)
     
-#     assert np.mean(accuracy_list[-10:]) >= 0.9
+    assert np.mean(accuracy_list[-10:]) >= 0.9
 

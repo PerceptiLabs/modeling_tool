@@ -513,6 +513,11 @@ class coreLogic():
                 self.testList.append(tmp["testDict"])
                 if not self.maxTestIter:
                     self.maxTestIter = tmp['maxTestIter']
+
+            if 'testDicts' in tmp:
+                self.testList = tmp["testDicts"]
+                self.maxTestIter = tmp['maxTestIter']
+
             count += 1
 
         if count > 0:
@@ -561,7 +566,6 @@ class coreLogic():
         view = value["view"]
         
         try:
-            # self.maxTestIter=self.maxTestIter
             self.batch_size=1
             self.resultDict=self.testList[self.testIter]
         except IndexError:

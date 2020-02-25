@@ -40,7 +40,7 @@ class CompabilityCore:
                 self._send_command(core, command)
 
             graphs = core.graphs
-
+            
             if len(graphs) > 0:
                 log.debug(f"Processing {len(graphs)} graph snapshots")
                 results = self._get_results_dict(graphs)
@@ -54,7 +54,8 @@ class CompabilityCore:
                 while self._running:
                     do_process()
                     time.sleep(1.0)
-                    
+                do_process()    #One extra for good measure
+
             threading.Thread(target=worker, daemon=True).start()                    
             self._run_core(core, self._graph_spec)
         else:
@@ -170,6 +171,6 @@ if __name__ == "__main__":
     commandQ=queue.Queue()
     resultQ=queue.Queue()
     
-    core = CompabilityCore(commandQ, resultQ, graph_builder, deployment_pipe, network, threaded=True)
+    core = CompabilityCore(commandQ, resultQ, graph_builder, deployment_pipe, network, threaded=False)
     core.run()
         
