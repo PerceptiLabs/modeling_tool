@@ -32,7 +32,7 @@
           )
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
-          .info-section_main.js-info-section_main(
+          perfect-scrollbar.info-section_main.js-info-section_main(
             @wheel.ctrl="scaleScroll($event)"
             )
             network-field(

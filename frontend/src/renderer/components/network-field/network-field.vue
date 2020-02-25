@@ -20,7 +20,7 @@
             orient="auto"
           )
           polyline(points="0,0 0,4 3.5,2")
-          
+
           //-marker#svg-arrow_start.svg-arrow_marker(
             viewBox="0 0 28 16"
             refX="0" refY="7"

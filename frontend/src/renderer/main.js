@@ -19,6 +19,9 @@ import BaseCheckbox     from '@/components/base/checkbox.vue'
 import BaseRadiobutton  from '@/components/base/radiobutton.vue'
 import BaseSelect       from '@/components/base/select.vue'
 import BaseRange        from '@/components/base/range.vue'
+import PerfectScrollBar from 'vue2-perfect-scrollbar';
+
+import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
 
 //- Global directives
 import {mask} from 'vue-the-mask' // page registration dont use now
@@ -37,7 +40,7 @@ Sentry.init({
 });
 Vue.use(VeeValidate);
 Vue.use(VueHotkey);
-
+Vue.use(PerfectScrollBar);
 //- Use directives
 import './core/directives'
 Vue.directive('mask', mask);
