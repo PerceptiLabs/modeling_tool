@@ -28,35 +28,33 @@ class Client:
         self._zmq_address = config['addr_zmq']        
         
         self._snapshot_queue = None
-        self._error_queue = None        
+        self._error_queue = None     
+
+        self._is_running = threading.Event()
+        self._is_running.set()   
 
         self._snapshot_worker_thread = threading.Thread(target=self._snapshot_worker, daemon=True)
         self._snapshot_worker_thread.start()
 
+        self._flask_worker_thread = threading.Thread(target=self._flask_worker, daemon=True)
+        self._flask_worker_thread.start()
+
+        self._flask_status = dict()
+
     @property
     def status(self):
-        with urllib.request.urlopen(self._flask_address+"/") as url:
-            buf = url.read().decode()
-        dict_ = json.loads(buf)
-        status = dict_['status']
+        status = self._flask_status['status']
         return status
 
     @property
     def running_time(self):
-        with urllib.request.urlopen(self._flask_address+"/") as url:
-            buf = url.read().decode()
-        dict_ = json.loads(buf)
-        status = dict_['running_time']
+        status = self._flask_status['running_time']
         return status
     
     @property
     def snapshot_count(self):
-        with urllib.request.urlopen(self._flask_address+"/") as url:
-            buf = url.read().decode()
-        dict_ = json.loads(buf)
-        count = dict_['snapshot_count']
+        count = self._flask_status['snapshot_count']
         return int(count)
-        
 
     def pop_snapshots(self):
         snapshots = []
@@ -80,12 +78,18 @@ class Client:
         
     def stop(self):
         self._is_running.clear()
+
+    def _flask_worker(self):
+        while self._is_running.is_set():
+            with urllib.request.urlopen(self._flask_address+"/") as url:
+                buf = url.read().decode()
+                dict_ = json.loads(buf)
+                self._flask_status = dict_.copy()
+                time.sleep(0.5)
     
     def _snapshot_worker(self):
         self._error_queue = Queue()        
-        self._snapshot_queue = Queue()
-        self._is_running = threading.Event()
-        self._is_running.set()        
+        self._snapshot_queue = Queue()  
 
         ctx = zmq.Context()                
         socket = ctx.socket(zmq.SUB)

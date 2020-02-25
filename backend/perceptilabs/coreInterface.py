@@ -124,10 +124,12 @@ class coreLogic():
         except:
             log.error("No compatible nvidia GPU drivers available, defaulting to 0 GPUs")
             gpus = []
-        if len(gpus)>1 and is_licensed():     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
+        if len(gpus)>1:     #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
             core_mode = 'distributed'            
 
         for _id, layer in network['Layers'].items():
+            if layer['Type'] == 'DataData':
+                layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
             if layer['Type'] == 'TrainNormal':
                 layer['Properties']['Distributed'] = core_mode == 'distributed'
                 if core_mode == 'distributed':

@@ -90,11 +90,12 @@ class Core:
             produce_rate = round(self._client.snapshot_count / running_time, 3)
             consume_rate = round(len(self._graphs) / running_time, 3)
             avg_size = round(total_size/10**3/len(snapshots), 3) if len(snapshots) > 0 else 0.0
-            
+            print("Loglevel: ", log.level)
             log.info(
                 f"Consumed {len(snapshots)} snapshots in {round(1000*(t1-t0), 3)} ms (mean size: {avg_size} KB). "
                 f"Total consumed (produced): {len(self._graphs)} ({self._client.snapshot_count}). "
-                f"Consumption (production) rate: {consume_rate} ({produce_rate}) per sec."
+                f"Consumption (production) rate: {consume_rate} ({produce_rate}) per sec. "
+                f"Current time: {time.time()}."
             )            
             time.sleep(1)
 
