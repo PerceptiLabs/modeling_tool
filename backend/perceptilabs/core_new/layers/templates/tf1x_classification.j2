@@ -630,12 +630,11 @@
             self._testing_iteration = 0
             self._status = 'testing'
             sess.run(test_iterator_init)
-            x, y = test_iterator.get_next()    
+            x, y = test_iterator.get_next()
             layer_output_tensors = model(x, y)
-
             try:
                 while not self._stopped:
-                    self._layer_outputs = sess.run(layer_outputs_val)
+                    self._layer_outputs = sess.run(layer_output_tensors)
                     self.save_snapshot(graph)                                    
                     self._testing_iteration += 1
             except tf.errors.OutOfRangeError:

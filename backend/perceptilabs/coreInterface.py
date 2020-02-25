@@ -32,7 +32,7 @@ scraper = get_scraper()
 
 
 DEFAULT_CORE_MODE = 'normal' # normal or compability
-# DEFAULT_CORE_MODE = 'compability' 
+DEFAULT_CORE_MODE = 'compability' 
 
 
 
