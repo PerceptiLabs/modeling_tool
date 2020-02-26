@@ -7,13 +7,24 @@
   )
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
-        button.btn.tutorial-relative(type="button"
-          @click="loadFile"
+        //- button.btn.tutorial-relative(type="button"
+        //-   @click="loadFile"
+        //-   id="tutorial_button-load"
+        //-   v-tooltip-interactive:right="interactiveInfo.file"
+        //-   )
+            
+
+        label.btn.tutorial-relative(type="button"
           id="tutorial_button-load"
           v-tooltip-interactive:right="interactiveInfo.file"
           )
             i.icon.icon-open-file
             span Choose files
+
+            input(type="file"
+              @change="loadFile"
+              ref="file-chooser"
+              webkitdirectory="")
 
         button.btn.tutorial-relative(type="button"
           @click="loadFolder"
@@ -261,10 +272,20 @@
             {name: 'All', extensions: ['npy']},
           ]
         };
-        //let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
-        //openLoadDialog(optionDialog)
-        //  .then((pathArr)=> this.saveLoadFile(pathArr, 'file', isAppend))
-        //  .catch(()=> { })
+
+        console.log('file-chooser', this.$refs["file-chooser"].files);
+
+        [...this.$refs["file-chooser"].files].forEach(element => {
+          console.log(element.webkitRelativePath);
+        });
+
+        // let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
+        // openLoadDialog(optionDialog)
+        //   .then((pathArr)=> {
+        //     console.log('pathArr', pathArr);
+        //     // this.saveLoadFile(pathArr, 'file', isAppend)
+        //   })
+        //   .catch(()=> { })
       },
       TESTload() {
         this.testSelectFile = false;
@@ -370,6 +391,9 @@
       }
       &:hover {
         box-shadow: inset 0 0 1px 1px $color-5;
+      }
+      input[type="file"] {
+        display: none;
       }
     }
   }
