@@ -352,7 +352,7 @@
     /*justify-content: center;*/
     font-size: 1.4rem;
     text-align: center;
-    padding-bottom: 0;
+    // padding-bottom: 0;
     .btn {
       display: inline-flex;
       align-items: center;
