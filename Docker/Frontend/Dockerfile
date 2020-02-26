@@ -32,7 +32,6 @@ LABEL name="PerceptiLabs-Modeling-Web-app" \
 RUN mkdir /licenses
 COPY licenses /licenses
 
-ADD .htaccess /.htaccess
 ADD run-httpd.sh /run-httpd.sh
 
 RUN yum -y --nodocs update && \
