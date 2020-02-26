@@ -4,6 +4,9 @@ backend/*.pyo
 backend/net.json
 backend/venv/
 backend/.venv/
+backend/venv-user/
+backend/dist/
+backend/deploy.py
 **/__pycache__/
 *.pyc
 *.py~

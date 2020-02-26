@@ -161,6 +161,16 @@ def test_npy_slice_generator(globals_, npy_ordered):
     assert x == 1000
 
     
+def test_npy_slice_generator(globals_, npy_ordered):
+    gen = RunMacroCodeGenerator('file_utils.j2', 'load_npy', npy_ordered, '123')
+    locals_ = {}
+    exec(gen.get_code(), globals_, locals_)
+
+    gen_fn = locals_['generator_123']
+    x = next(gen_fn(1000, 3000))
+    assert x == 1000
+
+    
 def test_csv_slice_generator(globals_, csv_ordered):
     gen = RunMacroCodeGenerator('file_utils.j2', 'load_csv', csv_ordered, '123')
     locals_ = {}
