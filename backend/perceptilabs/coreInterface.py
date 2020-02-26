@@ -325,6 +325,15 @@ class coreLogic():
             return {"content":False}
 
     def exportNetwork(self,value):
+        if self._core_mode == 'v1':
+            return self.exportNetworkV1(value)
+        else:
+            path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName))
+            path = os.path.abspath(path)            
+            self.core.export(path)
+            return {"content": f"Export requested to path {path}"}
+        
+    def exportNetworkV1(self,value):        
         if self.saver is None:
             self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
             return {"content":"Export Failed.\nNo trained weights to Export."}

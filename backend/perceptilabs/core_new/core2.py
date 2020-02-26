@@ -38,6 +38,16 @@ class Core:
         self._client = None
         
     def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: Callable=None):
+        try:
+            self._run_internal(graph_spec, session_id, on_iterate)
+        except Exception as e:
+            log.exception("Exception in core.run")
+            raise
+        finally:
+            log.info(f"Stopping core with session id {session_id}")
+            self.stop()                
+        
+    def _run_internal(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: Callable=None):        
         session_id = session_id or uuid.uuid4().hex
         log.info(f"Running core with session id {session_id}")
 
@@ -101,8 +111,6 @@ class Core:
             )            
             time.sleep(1)
 
-        log.info(f"Stopping core with session id {session_id}")
-        self.stop()
 
     def _handle_errors(self, errors: List, line_to_node_map):
         errors_repr = []
@@ -143,7 +151,11 @@ class Core:
 
     def unpause(self):
         if self._client is not None:        
-            self._client.send_event('on_resume')        
+            self._client.send_event('on_resume')
+
+    def export(self, path):
+        if self._client is not None:        
+            self._client.send_event('on_export', path=path)
 
     @property
     def is_running(self):

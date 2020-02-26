@@ -84,6 +84,9 @@
         output_tensor = layer_output_tensors[output_layer_id]
         target_tensor = layer_output_tensors[target_layer_id]
 
+        self._input_tensor = input_tensor
+        self._output_tensor = output_tensor
+        
         loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
         accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
@@ -179,7 +182,7 @@
 
         # Training loop
         self._epoch = 0
-        while self._epoch < self._n_epochs:
+        while self._epoch < self._n_epochs and not self._stopped:
             t0 = time.perf_counter()
             self._training_iteration = 0
             self._validation_iteration = 0
@@ -204,8 +207,7 @@
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
-
-
+            
             log.info(
                 f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
                 f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
@@ -556,7 +558,7 @@
             else:
                 #dist_loss, dist_grads_train, dist_locals = strategy.experimental_run(train_step, train_iterator)
                 #dist_test = strategy.experimental_run(test_step, test_iterator) # TODO: implement this.
-                pass
+                raise NotImplementedError
 
             sess.run(tf.global_variables_initializer())
             
@@ -576,7 +578,7 @@
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}        
 
             self._epoch = 0
-            while self._epoch < self._n_epochs:
+            while self._epoch < self._n_epochs and not self._stopped:
                 self._training_iteration = 0
                 self._validation_iteration = 0
                 self._status = 'training'
@@ -706,7 +708,22 @@ class {{layer_name}}(ClassificationLayer):
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
         self._paused = False
 
-    def on_save(self):
+    def on_export(self, path: str) -> None:
+        """Called when the resume button is clicked in the frontend. 
+        It is up to the implementing layer to save the model to disk.
+        
+        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
+        Args:
+            path: the directory where the exported model will be stored."""
+        
+        tf.compat.v1.saved_model.simple_save(
+            self._sess,
+            path,
+            inputs={'input': None},
+            outputs={'output': None}
+        )
+
+    def on_save(self) -> None:
         """Called when the resume button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.
         
@@ -714,7 +731,7 @@ class {{layer_name}}(ClassificationLayer):
         # TODO: Call ._saver, verify thread-safety
         pass
 
-    def on_stop(self):
+    def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.
         
@@ -722,7 +739,7 @@ class {{layer_name}}(ClassificationLayer):
         self._stopped = True
 
     @property
-    def is_paused(self):
+    def is_paused(self) -> None:
         """Returns true when the training is paused."""        
         return self._paused
 

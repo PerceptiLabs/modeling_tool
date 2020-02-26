@@ -186,6 +186,9 @@ class ScriptFactory:
         template += "        status = STATUS_STARTED\n"
         template += "    elif data['type'] == 'on_stop':\n"
         template += "        status = STATUS_STOPPED\n"
+        template += "        graph.active_training_node.layer.on_stop()\n"        
+        template += "    elif data['type'] == 'on_export':\n"
+        template += "        pass\n"
         template += "    return jsonify(success=True)\n"
 
         template += "@app.route('/')\n"
