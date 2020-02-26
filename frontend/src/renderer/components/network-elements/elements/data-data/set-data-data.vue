@@ -6,59 +6,21 @@
     @press-apply="saveSettings($event)"
   )
     template(slot="Computer-content")
-      div(v-if="!settings.accessProperties.Sources.length")
-        //-.settings-layer_section
-          .form_row
-            base-select(
-              v-model="serverListFileSelected"
-              /:select-options="serverListFile"
-              )
-            button.btn.btn--primary(type="button"
-              /:disabled="!serverListFile.length"
-              @click="TESTload") Load
-        .settings-layer_section
-          .form_row(
-            v-for="(path, i) in testPath"
-            :key="i"
-            )
-            input(type="text" v-model="testPath[i]")
-            button.btn.btn--icon.icon.icon-add(type="button"
-              v-if="i === testPath.length-1"
-              @click="addPath"
-            )
-            button.btn.btn--icon.icon.icon-minus(type="button"
-              v-else
-              @click="removePath(i)"
-            )
-          .form_row
-            button.btn.btn--primary(type="button"
-              :disabled="!testPath[0].length"
-              @click="TESTload") Load
-        //-.settings-layer_section
-          .form-row
-            input(type="file"
-              @input="getfolder($event)"
-              webkitdirectory
-              mozdirectory
-              msdirectory
-              odirectory
-              directory
-              multiple)
-      //-.settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
-        //-button.btn.tutorial-relative(type="button"
+      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
+        button.btn.tutorial-relative(type="button"
           @click="loadFile"
           id="tutorial_button-load"
           v-tooltip-interactive:right="interactiveInfo.file"
           )
-          i.icon.icon-open-file
-          span Choose files
+            i.icon.icon-open-file
+            span Choose files
 
-        //-button.btn.tutorial-relative(type="button"
+        button.btn.tutorial-relative(type="button"
           @click="loadFolder"
           v-tooltip-interactive:bottom="interactiveInfo.folder"
           )
-          i.icon.icon-open-folder
-          span Choose folders
+            i.icon.icon-open-folder
+            span Choose folders
 
 
         //-web-upload-file#tutorial_button-load.tutorial-relative(
