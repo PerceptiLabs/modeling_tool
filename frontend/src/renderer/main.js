@@ -31,10 +31,12 @@ Vue.config.productionTip = isDevelopMode;
 Vue.config.performance = isDevelopMode;
 
 //- Use plugin
-Sentry.init({
-  dsn: 'https://2497f27009b24990b4c0f3feeda4d37d@sentry.io/1833551',
-  integrations: [new Integrations.Vue({Vue, attachProps: true})],
-});
+if (!Vue.config.devtools) {
+  Sentry.init({
+    dsn: 'https://2497f27009b24990b4c0f3feeda4d37d@sentry.io/1833551',
+    integrations: [new Integrations.Vue({Vue, attachProps: true})],
+  });
+}
 Vue.use(VeeValidate);
 Vue.use(VueHotkey);
 
