@@ -157,8 +157,8 @@ def policy_classification(graphs, sanitized_to_name, sanitized_to_id):
         if graph.active_training_node.layer.status == 'testing':
             test_graphs.append(graph)
     
-    trn_node = current_graph.active_training_node
-    if trn_node.layer.status != 'testing':
+    if len(test_graphs)==0:
+        trn_node = current_graph.active_training_node
         train_dict = {}        
 
         # ----- Get layer specific data.
@@ -228,10 +228,10 @@ def policy_classification(graphs, sanitized_to_name, sanitized_to_id):
         }
         return result_dict
 
-    if len(test_graphs) > 0:
+    else:
         test_dicts = []
-        print("Test dicts found: ", len(test_graphs))
         for current_graph in test_graphs:
+            trn_node = current_graph.active_training_node
             test_dict = {}
             for node in current_graph.nodes:
                 data = {}
@@ -265,7 +265,6 @@ def policy_classification(graphs, sanitized_to_name, sanitized_to_id):
 
             test_dicts.append(test_dict)
 
-        import pdb; pdb.set_trace()
         result_dict = {
             "maxTestIter": max_itr_tst,
             "testDicts": test_dicts,
