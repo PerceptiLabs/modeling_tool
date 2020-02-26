@@ -19,6 +19,10 @@ class DeploymentError(Exception):
 
 
 class DeploymentPipe(ABC):
+
+    PORT_OFFSET = 5678
+    config_table = {}
+    
     # Should have a worker thread that takes care of uploading/downloading files [exported models, weight files, checkpoints, etc]    
     
     @abstractmethod
@@ -28,10 +32,6 @@ class DeploymentPipe(ABC):
     @property
     @abstractmethod
     def is_active(self) -> bool:
-        pass
-
-    @abstractmethod
-    def get_session_config(self, session_id: str) -> Dict[str, str]:
         pass
 
     def on_receive_file(self):
@@ -69,8 +69,25 @@ class DeploymentPipe(ABC):
         # If we reached this point, everything went fine.
         return client
 
-flask_counter = 5678
-zmq_counter = 7171
+
+    def get_session_config(self, session_id: str) -> Dict[str, str]:
+
+        print(session_id, type(session_id), self.config_table)
+
+        if session_id not in self.config_table:
+            n_sessions = len(self.config_table)
+            flask_port = self.PORT_OFFSET + 2 * n_sessions
+            zmq_port = self.PORT_OFFSET + 2 * n_sessions + 1            
+            
+            self.config_table[session_id] = {
+                'session_id': session_id,
+                'addr_flask': f'http://localhost:{flask_port}',
+                'port_flask': f'{flask_port}',            
+                'addr_zmq': f'tcp://localhost:{zmq_port}',
+                'addr_zmq_deploy': f'tcp://*:{zmq_port}'            
+            }            
+        return self.config_table[session_id].copy()
+
 class InProcessDeploymentPipe(DeploymentPipe):
     def __init__(self, script_factory):
         self._script_factory = script_factory        
@@ -102,17 +119,6 @@ class InProcessDeploymentPipe(DeploymentPipe):
         #return self._thread.is_alive()
         return True
 
-    def get_session_config(self, session_id: str) -> Dict[str, str]:
-        global flask_counter, zmq_counter
-        flask_counter+=1
-        zmq_counter+=1
-        return {
-            'session_id': session_id,
-            'addr_flask': f'http://localhost:{flask_counter}',
-            'port_flask': f'{flask_counter}',            
-            'addr_zmq': f'tcp://localhost:{zmq_counter}',
-            'addr_zmq_deploy': f'tcp://*:{zmq_counter}'            
-        }
     
 
 class LocalEnvironmentPipe(DeploymentPipe):
@@ -154,10 +160,3 @@ class LocalEnvironmentPipe(DeploymentPipe):
             return False
         return True
 
-    def get_session_config(self, session_id: str) -> Dict[str, str]:
-        return {
-            'session_id': session_id,
-            'addr_flask': 'http://localhost:5678',
-            'addr_zmq': 'http://localhost:7171'
-        }
-    

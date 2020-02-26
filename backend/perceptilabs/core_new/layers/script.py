@@ -1,5 +1,6 @@
 import copy
 import ast
+import logging
 import pkg_resources
 from typing import Dict
 
@@ -9,6 +10,8 @@ from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES
 from perceptilabs.core_new.graph.utils import sanitize_layer_name
 
 # TODO: move this to a more suitable location? Deployment?
+
+log = logging.getLogger(__name__)
 
 
 class ScriptBuildError(Exception):
@@ -265,30 +268,18 @@ class ScriptFactory:
         template += '    wait = "--wait" in sys.argv\n'
         template += '    main()\n'
         
-        print("TEMPLATE ----------")
-        for i, l in enumerate(template.split('\n')):
-            print(i, l)
-        print("ENDTEMPLATE ----------")
-
-        
-
-
-        
-        
         code = template#self._engine.render_string(template)
 
 
         
-        print("CODE ----------")
-        for i, l in enumerate(code.split('\n')):
-            print(i, l)
-        print("ENDCODE ----------")
-
-        #import pdb; pdb.set_trace()
+        if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
+            message = 'Deployment script code: \n'
+            for line_no, line_txt in enumerate(code.split('\n')):
+                message += str(line_no + 1).rjust(5, ' ') + ' ' + line_txt + '\n'
+            log.debug(message)
+                
         ast.parse(code)
             
-        
-        #import pdb; pdb.set_trace()              
         return code, line_to_node_map
 
 

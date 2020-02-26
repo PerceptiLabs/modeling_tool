@@ -30,14 +30,13 @@ from perceptilabs.license_checker import LicenseV2
 log = logging.getLogger(__name__)
 scraper = get_scraper()
 
-
-DEFAULT_CORE_MODE = 'normal' # normal or compability
-# DEFAULT_CORE_MODE = 'compability' 
-
-
-
 class coreLogic():
-    def __init__(self,networkName):
+    def __init__(self,networkName, core_mode='v1'):
+        log.info(f"Created coreLogic for network '{networkName}' with core mode '{core_mode}'")
+        
+        assert core_mode in ['v1', 'v2']
+        self._core_mode = core_mode
+        
         self.networkName=networkName
         self.cThread=None
         self.status="Created"
@@ -163,15 +162,14 @@ class coreLogic():
 
         #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
         gpus = self.gpu_list()
-        DISTRIBUTED = self.isDistributable(gpus)
-        core_mode = DEFAULT_CORE_MODE     
+        distributed = self.isDistributable(gpus)
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'DataData':
                 layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
             if layer['Type'] == 'TrainNormal':
-                layer['Properties']['Distributed'] = DISTRIBUTED
-                if DISTRIBUTED:
+                layer['Properties']['Distributed'] = distributed
+                if distributed:
                     labels = layer['Properties']['Labels']
 
                     for b_con in layer['backward_connections']:
@@ -215,15 +213,15 @@ class coreLogic():
         
 
 
-        if core_mode == 'normal':
-            if not DISTRIBUTED:
+        if self._core_mode == 'v1':
+            if not distributed:
                 self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
                                 error_handler, session_proc_handler, checkpointValues)
             else:
                 from perceptilabs.core_new.core_distr import DistributedCore
                 self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
                                             error_handler, session_proc_handler, checkpointValues)
-        elif core_mode == 'compability':
+        elif self._core_mode == 'v2':
             from perceptilabs.core_new.compability import CompabilityCore
             from perceptilabs.core_new.graph.builder import GraphBuilder
             from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
@@ -535,7 +533,7 @@ class coreLogic():
         view = value["view"]
         
         try:
-            self.iter=self.savedResultsDict["iter"]
+            self.iter=self.savedResultsDict.get("iter", -1)
             self.epoch=self.savedResultsDict["epoch"]
             self.maxIter=self.savedResultsDict["maxIter"]
             self.maxEpochs=self.savedResultsDict["maxEpochs"]
@@ -600,9 +598,8 @@ class coreLogic():
 
     
     def getLayerStatistics(self, layerId, layerType, view):
-        log.info("getLayerStatistics for layer {} with type {}. View: {}".format(layerId,
-                                                                                 layerType,
-                                                                                 view))
+        log.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
+        
         if layerType=="DataEnvironment":
             state = self.getStatistics({"layerId":layerId,"variable":"state","innervariable":""})
             dataObj = createDataObject([state])

@@ -24,6 +24,9 @@ class Client:
     MAX_SNAPSHOTS_PER_ITERATION = 10
     
     def __init__(self, config):
+
+        print('CONNNNNNNNN', config)
+        
         self._flask_address = config['addr_flask']
         self._zmq_address = config['addr_zmq']        
         

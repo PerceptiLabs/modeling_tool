@@ -2,6 +2,7 @@
 backend/*.pyc
 backend/*.pyo
 backend/net.json
+backend/net.json_
 backend/venv/
 backend/.venv/
 backend/venv-user/

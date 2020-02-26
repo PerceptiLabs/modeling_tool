@@ -1,5 +1,6 @@
 import time
 import uuid
+import pprint
 import logging
 import requests
 import tempfile
@@ -40,9 +41,11 @@ class Core:
         session_id = session_id or uuid.uuid4().hex
         log.info(f"Running core with session id {session_id}")
 
-        config = self._deployment_pipe.get_session_config(session_id)        
+        config = self._deployment_pipe.get_session_config(session_id)
+        log.debug(f"Session {session_id} config: {pprint.pformat(config)}")
+        
         graph = self._graph_builder.build_from_spec(graph_spec, config)
-        self._client = self._deployment_pipe.deploy(graph, config)
+        self._client = self._deployment_pipe.deploy(graph, session_id)
 
         line_to_node_map = self._deployment_pipe._line_to_node_map # TODO: inject script_factory to deployment pipe instead retrieving the map like this.
 
@@ -95,7 +98,6 @@ class Core:
                 f"Consumed {len(snapshots)} snapshots in {round(1000*(t1-t0), 3)} ms (mean size: {avg_size} KB). "
                 f"Total consumed (produced): {len(self._graphs)} ({self._client.snapshot_count}). "
                 f"Consumption (production) rate: {consume_rate} ({produce_rate}) per sec. "
-                f"Current time: {time.time()}."
             )            
             time.sleep(1)
 

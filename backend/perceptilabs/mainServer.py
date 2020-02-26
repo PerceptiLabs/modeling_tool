@@ -11,8 +11,10 @@ def get_input_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f','--frontend-pid', default=None, type=int,
                         help='Frontend process id.')
-    parser.add_argument('-l','--log-level', default='WARNING', type=str,
+    parser.add_argument('-l','--log-level', default='INFO', type=str,
                         help='Log level name.')
+    parser.add_argument('-m','--core-mode', default='v1', type=str, choices=['v1', 'v2'],
+                        help='Core compability mode.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
                         help="Set this to instantly kill the core, for test purposes.")
     parser.add_argument('-u', '--user', default="dev@dev.com", type=str,
@@ -69,8 +71,8 @@ def main():
     dataDict=dict()
     checkpointDict=dict()
     lwDict=dict()
-
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict)
+    
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, args.core_mode)
 
     data_bundle = setup_scraper()
     setup_sentry(args.user, commit_id)

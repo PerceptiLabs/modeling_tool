@@ -27,14 +27,15 @@ from perceptilabs.lwInterface import getGraphOrder, getDataMeta, getPartitionSum
 log = logging.getLogger(__name__)
 
 class Interface():
-    def __init__(self, cores, dataDict, checkpointDict, lwDict):
+    def __init__(self, cores, dataDict, checkpointDict, lwDict, core_mode):
         self._cores=cores
         self._dataDict=dataDict
         self._checkpointDict=checkpointDict
         self._lwDict=lwDict
+        self._core_mode = core_mode
 
     def _addCore(self, reciever):
-        core=coreLogic(reciever)
+        core=coreLogic(reciever, self._core_mode)
         self._cores[reciever] = core
 
     def _setCore(self, reciever):
