@@ -40,7 +40,9 @@ RUN yum -y --nodocs update && \
     chmod -v +x /run-httpd.sh && \
     chown -R 0:0 /run/httpd/ /etc/httpd/logs && \
     chmod -R g+wrX /run/httpd/ /etc/httpd/logs && \
-    sed -i'' 's;Listen 80;Listen 8080;g' /etc/httpd/conf/httpd.conf
+    sed -i'' 's;Listen 80;Listen 8080;g' /etc/httpd/conf/httpd.conf && \
+    sed -i'' 's;AllowOverride None;AllowOverride All;g' /etc/httpd/conf/httpd.conf && \
+    sed -i'' 's;Require all denied;Require all granted;g' /etc/httpd/conf/httpd.conf
 
 ADD . /var/www/html/
 
