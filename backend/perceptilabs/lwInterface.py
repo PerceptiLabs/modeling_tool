@@ -23,6 +23,20 @@ class LW_interface_base(ABC):
             return ""
 
 
+class getFolderContent(LW_interface_base):
+    def __init__(self, current_path):
+        self._current_path = current_path
+
+    def run(self):
+        if not self._current_path:
+            self._current_path = os.path.abspath('')
+        
+        return {
+            "current_path" : self._current_path,
+            "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(x)],
+            "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(x)],
+        }
+
 class getDataMeta(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
         self._id = id_
