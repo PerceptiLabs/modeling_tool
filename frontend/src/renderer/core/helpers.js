@@ -2,7 +2,12 @@
 //import fs    from 'fs';
 import store from '@/store'
 
-import { workspaceGrid, pathSlash }   from '@/core/constants.js'
+import {
+  workspaceGrid,
+  pathSlash,
+  hideSidebarOnBreakpoint,
+  sidebarNavCoefficientScaleCalculateFromHeight
+} from '@/core/constants.js'
 
 /*modal window*/
 const openLoadDialog = function (options) {
@@ -192,6 +197,17 @@ const stringifyNetworkObjects = function (network) {
     ' ');
 }
 
+const shouldHideSidebar = () => {
+  return window.innerWidth <= hideSidebarOnBreakpoint;
+};
+
+const calculateSidebarScaleCoefficient = () => {
+  const pageHeight = document.documentElement.clientHeight;
+  if(pageHeight <= sidebarNavCoefficientScaleCalculateFromHeight) {
+    document.documentElement.style.setProperty('--sidebar-scale-coefficient', (pageHeight / sidebarNavCoefficientScaleCalculateFromHeight).toString());
+  }
+};
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -210,5 +226,7 @@ export {
   deepCopy,
   deepCloneNetwork,
   isLocalStorageAvailable,
-  stringifyNetworkObjects
+  stringifyNetworkObjects,
+  shouldHideSidebar,
+  calculateSidebarScaleCoefficient
 }

@@ -125,6 +125,9 @@ const actions = {
   },
   CLEAR_requestCounter({commit}) {
     commit('clear_requestCounter');
+  },
+  hideSidebarAction({commit}, value) {
+    commit('SET_hideSidebar', value)
   }
 };
 

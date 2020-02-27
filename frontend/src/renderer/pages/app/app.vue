@@ -20,6 +20,7 @@
   import TheSidebar         from '@/components/the-sidebar.vue'
   import TheWorkspace       from '@/components/workspace/the-workspace.vue'
   import TheTutorialStoryboard from "@/components/tutorial/tutorial-storyboard.vue";
+  import {shouldHideSidebar, calculateSidebarScaleCoefficient } from "../../core/helpers";
 
   export default {
     name: 'pageQuantum',
@@ -30,7 +31,7 @@
         .then(_ => {
           if(!this.workspaceContent.length) { this.ADD_network(); }
 
-          // request charts if the page has been refreshed, and 
+          // request charts if the page has been refreshed, and
           // the current tab is the first one
 
           this.SET_chartRequests(this.workspaceContent[0].networkID);
@@ -45,7 +46,12 @@
       this.$nextTick(()=> {
         this.addDragListeners();
         if(this.getLocalUserInfo && this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
-      })
+      });
+
+      if(shouldHideSidebar()) {
+        this.setSidebarStateAction(false);
+      }
+      calculateSidebarScaleCoefficient();
     },
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
@@ -106,7 +112,8 @@
         ADD_network:          'mod_workspace/ADD_network',
         ADD_element:          'mod_workspace/ADD_element',
         SET_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
-        DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace'
+        DELETE_userWorkspace: 'mod_user/DELETE_userWorkspace',
+        setSidebarStateAction: 'globalView/hideSidebarAction',
       }),
       addDragListeners() {
         this.$refs.layersbar.addEventListener("dragstart", this.dragStart, false);

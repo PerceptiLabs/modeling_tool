@@ -2,6 +2,7 @@
 import router         from "@/router";
 import {filePCRead, loadPathFolder, projectPathModel} from "@/core/helpers";
 import { pathSlash } from "@/core/constants";
+import { shouldHideSidebar, calculateSidebarScaleCoefficient } from "../../core/helpers";
 
 const namespaced = true;
 
@@ -122,10 +123,22 @@ const actions = {
   // EVENT_appMaximize() {
   //   ipcRenderer.send('app-maximize')
   // },
-  // EVENT_eventResize({commit}) {
-  //   commit('set_eventResize');
-  //
-  // },
+  EVENT_eventResize({commit, dispatch, rootState}) {
+    //
+    calculateSidebarScaleCoefficient();
+
+    // toggle automatically right side on width change
+    const sidebarState = rootState.globalView.hideSidebar;
+
+    if(shouldHideSidebar() && sidebarState) {
+      dispatch('globalView/hideSidebarAction', false, { root: true});
+    } else if (!shouldHideSidebar() && !sidebarState) {
+      dispatch('globalView/hideSidebarAction', true, { root: true});
+    }
+
+    commit('set_eventResize');
+
+  },
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)
   },
