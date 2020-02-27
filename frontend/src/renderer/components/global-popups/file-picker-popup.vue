@@ -1,45 +1,48 @@
 <template lang="pug">
     base-global-popup(:tab-set="popupTitle")
-        template(slot="Parser-content")
+        template(slot=slotContentName)
 
-        .filepicker
-            .directory-breadcrumb
-                .breadcrumb(
-                    @click="calcBreadcrumbPath(pIdx)"
-                    v-for="(p, pIdx) in currentPath" 
-                    :key="p") 
-                    span {{ p }}
+            .filepicker
+                .directory-breadcrumb
+                    .breadcrumb(
+                        @click="calcBreadcrumbPath(pIdx)"
+                        v-for="(p, pIdx) in currentPath" 
+                        :key="p") 
+                        span {{ p }}
 
-            .selectable-list
-                .list-item(
-                    @click="calcFolderPath(dIdx)"
-                    v-for="(d,dIdx) in directories" 
-                    :key="d") 
-                    img(src="/static/file-picker/folder.svg") 
-                    span {{ d }}
+                .selectable-list
+                    .list-item(
+                        @click="calcFolderPath(dIdx)"
+                        v-for="(d,dIdx) in directories" 
+                        :key="d") 
+                        img(src="/static/file-picker/folder.svg") 
+                        span {{ d }}
 
-                .list-item(
-                    :class="{selected:isSelected(f)}"
-                    @click="toggleSelectedFile(f)"
-                    v-for="f in files" 
-                    :key="f")
-                    img(src="/static/file-picker/file.svg")
-                    span {{ f }}
+                    .list-item(
+                        :class="{selected:isSelected(f)}"
+                        @click="toggleSelectedFile(f)"
+                        v-for="f in files" 
+                        :key="f")
+                        img(src="/static/file-picker/file.svg")
+                        span {{ f }}
 
         template(slot="action")
-        button.btn.btn--primary.btn--disabled(type="button"
-            @click="closePopup"
-            ) Cancel
-        button.btn.btn--primary(type="button"
-            @click="applySet"
-            ) Confirm
+            button.btn.btn--primary.btn--disabled(type="button"
+                @click="closePopup"
+                ) Cancel
+            button.btn.btn--primary(type="button"
+                @click="applySet"
+                ) Confirm
 
 </template>
 
 <script>
-import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
+import BaseGlobalPopup  from '@/components/global-popups/base-global-popup';
+
+import { coreRequest } from '@/core/apiWeb.js';
 
 export default {
+    name: 'FilePicker',
     components: {BaseGlobalPopup},
     data() {
         return {
@@ -82,24 +85,25 @@ export default {
 
             console.log('request', theData);
 
-            // coreRequest(theData)
-            // .then(jsonData => {
-            //     console.log('response', jsonData);
-            //     this.currentPath = jsonData.current_path.split('/').filter(el => el);   
-            //     this.directories = jsonData.dirs;
-            //     this.files = jsonData.files;
-            // })
+            coreRequest(theData)
+            .then(jsonData => {
+                console.log('response', jsonData);
+                this.currentPath = jsonData.current_path.split('/').filter(el => el);   
+                this.directories = jsonData.dirs;
+                this.files = jsonData.files;
+            })
         },
         applySet() {
             this.closePopup();
-            this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', true);
-            this.sendParseModel(this.settings)
-                .then(()=> { this.$store.commit('mod_workspace/SET_showStartTrainingSpinner', false) })
-                .catch(()=> {})
-            },
+        },
         closePopup() {
             this.$store.commit('globalView/HIDE_allGlobalPopups');
         },
+    },
+    computed: {
+        slotContentName() {
+            return this.popupTitle.first() + '-content';
+        }
     },
     mounted() {
         this.fetchPathInformation('');
