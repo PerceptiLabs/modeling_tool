@@ -44,6 +44,7 @@ RUN yum -y --nodocs update && \
     sed -i'' 's;AllowOverride None;AllowOverride All;g' /etc/httpd/conf/httpd.conf && \
     sed -i'' 's;Require all denied;Require all granted;g' /etc/httpd/conf/httpd.conf
 
+ADD htaccess /var/www/html/.htaccess
 ADD . /var/www/html/
 
 EXPOSE 8080
