@@ -33,8 +33,8 @@ class getFolderContent(LW_interface_base):
         
         return {
             "current_path" : self._current_path,
-            "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(x)],
-            "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(x)],
+            "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(os.path.join(self._current_path,x))],
+            "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(os.path.join(self._current_path,x))],
         }
 
 class getDataMeta(LW_interface_base):
