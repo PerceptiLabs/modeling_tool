@@ -1,22 +1,30 @@
 <template lang="pug">
     base-global-popup(:tab-set="popupTitle")
         template(slot="Parser-content")
-        .form_row
-            .form_label Trainable:
-            .form_input
-        .form_row
-            .form_label Create containers:
-            .form_input
-        .form_row
-            .form_label End points:
-            .form_input
-        .form_row
-            .form_label Pb or pbtxt:
-            .form_input
-        .form_row
-            .form_label Checkpoint:
-            .form_input
 
+        .filepicker
+            .directory-breadcrumb
+                .breadcrumb(
+                    @click="calcBreadcrumbPath(pIdx)"
+                    v-for="(p, pIdx) in currentPath" 
+                    :key="p") 
+                    span {{ p }}
+
+            .selectable-list
+                .list-item(
+                    @click="calcFolderPath(dIdx)"
+                    v-for="(d,dIdx) in directories" 
+                    :key="d") 
+                    img(src="/static/file-picker/folder.svg") 
+                    span {{ d }}
+
+                .list-item(
+                    :class="{selected:isSelected(f)}"
+                    @click="toggleSelectedFile(f)"
+                    v-for="f in files" 
+                    :key="f")
+                    img(src="/static/file-picker/file.svg")
+                    span {{ f }}
 
         template(slot="action")
         button.btn.btn--primary.btn--disabled(type="button"
