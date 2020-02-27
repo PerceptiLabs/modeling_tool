@@ -1,25 +1,24 @@
-import logging
 import sys
-import argparse
 import json
+import logging
+import argparse
+import threading
 import pkg_resources
-
-
 
 
 def get_input_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f','--frontend-pid', default=None, type=int,
                         help='Frontend process id.')
-    parser.add_argument('-l','--log-level', default='INFO', type=str,
+    parser.add_argument('-l','--log-level', default='INFO', type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Log level name.')
     parser.add_argument('-m','--core-mode', default='v1', type=str, choices=['v1', 'v2'],
-                        help='Core compability mode.')
+                        help='Specifies which version of the core to run.')
     parser.add_argument('-k','--instantly-kill', default=False, type=bool,
                         help="Set this to instantly kill the core, for test purposes.")
     parser.add_argument('-u', '--user', default="dev@dev.com", type=str,
                         help="Set this to attach a user to all Sentry logs.")
-    parser.add_argument('-p','--platform', default='desktop', type=str, 
+    parser.add_argument('-p','--platform', default='desktop', type=str, choices=['desktop', 'browser'],
                         help="Sets what type of frontend you want to communicate with. Can be either 'desktop' or 'browser'.")
     parser.add_argument('-e', '--error', default=False, type=bool, 
                         help="Force an error to see that all the error logging works as it should")
@@ -50,16 +49,18 @@ def main():
     args = get_input_args()
 
     setup_logger(args.log_level)
-    
     log = logging.getLogger(__name__)
 
-    from perceptilabs.processes import ProcessDependencyWatcher
     from perceptilabs.mainInterface import Interface
     from perceptilabs.server.appServer import Server
-
+    from perceptilabs.utils import frontend_watcher
     from perceptilabs.main_setup import setup_scraper, setup_sentry, scraper
 
-    ProcessDependencyWatcher(args.frontend_pid).start()
+    if args.frontend_pid is not None:
+        log.info(f"Frontend process id = {args.frontend_pid} specified. Backend will self terminate if frontend is shutdown unexpectedly.")        
+        threading.Thread(target=frontend_watcher, args=(args.frontend_pid,), kwargs={'log': log}, daemon=True).start()
+    else:
+        log.warning("No frontend process id specified. Backend will not self terminate if frontend is shutdown unexpectedly.")
     
     with open(pkg_resources.resource_filename('perceptilabs', 'app_variables.json'), 'r') as f:
         app_variables = json.load(f)
