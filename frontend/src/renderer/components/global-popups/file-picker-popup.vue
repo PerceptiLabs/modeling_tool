@@ -15,7 +15,7 @@
             @click="calcFolderPath(dIdx)"
             v-for="(d,dIdx) in directories" 
             :key="d") 
-            img(src="/static/file-picker/folder.svg") 
+            img(src="/static/img/file-picker/folder.svg" class="svg-icon") 
             span {{ d }}
 
           .list-item(
@@ -23,7 +23,7 @@
             @click="toggleSelectedFile(f)"
             v-for="f in files" 
             :key="f")
-            img(src="/static/file-picker/file.svg")
+            img(src="/static/img/file-picker/file.svg" class="svg-icon")
             span {{ f }}
 
     template(slot="action")
@@ -147,8 +147,9 @@ export default {
     align-items: center;
     padding: 0 1rem;
 
-    img {
+    .svg-icon {
       margin-right: 1rem;
+      filter: invert(100%);
     }
 
     &:hover {
