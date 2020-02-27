@@ -52,6 +52,7 @@ export default {
       showGlobalResult:           state => state.globalView.globalPopup.showNetResult,
       showWorkspaceBeforeImport:  state => state.globalView.globalPopup.showWorkspaceBeforeImport,
       showCoreSide:               state => state.globalView.globalPopup.showCoreSideSettings,
+      showFilePicker:             state => state.globalView.globalPopup.showFilePicker,
     }),
 
     hasStatistics() {
