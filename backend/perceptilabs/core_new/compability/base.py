@@ -31,6 +31,11 @@ class CompabilityCore:
 
         self._threaded = threaded
         self._running = False
+        self._core = None
+
+    @property
+    def core_v2(self):
+        return self._core        
         
     def run(self):
         self._running = True
@@ -48,6 +53,7 @@ class CompabilityCore:
             
         set_tensorflow_mode('graph')
         core = Core(self._graph_builder, self._deployment_pipe, self._error_queue)
+        self._core = core
         
         if self._threaded:
             def worker():

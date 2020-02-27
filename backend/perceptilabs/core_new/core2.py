@@ -153,9 +153,9 @@ class Core:
         if self._client is not None:        
             self._client.send_event('on_resume')
 
-    def export(self, path):
+    def export(self, path: str, mode: str):
         if self._client is not None:        
-            self._client.send_event('on_export', path=path)
+            self._client.send_event('on_export', path=path, mode=mode)
 
     @property
     def is_running(self):

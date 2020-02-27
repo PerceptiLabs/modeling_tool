@@ -2,6 +2,7 @@ import queue
 import numpy as np
 import time
 import psutil
+import shutil
 import copy
 import traceback
 import os
@@ -328,10 +329,22 @@ class coreLogic():
         if self._core_mode == 'v1':
             return self.exportNetworkV1(value)
         else:
-            path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName))
-            path = os.path.abspath(path)            
-            self.core.export(path)
-            return {"content": f"Export requested to path {path}"}
+            return self.exportNetworkV2(value)            
+
+    def exportNetworkV2(self, value):
+        path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName), '1')
+        path = os.path.abspath(path)
+            
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+        mode = 'TFModel+checkpoint' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
+        if value["Compressed"]:
+            mode = 'TFLite+checkpoint'         
+            
+        self.core.core_v2.export(path, mode) 
+        return {"content": f"Exporting model to path {path}"}
+        
         
     def exportNetworkV1(self,value):        
         if self.saver is None:

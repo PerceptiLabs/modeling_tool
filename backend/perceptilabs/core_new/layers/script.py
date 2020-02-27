@@ -54,6 +54,7 @@ class ScriptFactory:
         template += 'import tensorflow as tf\n'
         template += 'import numpy as np\n'
         template += 'import dill\n'
+        template += 'import os\n'        
         template += 'import pickle\n'        
         template += 'import zmq\n'        
         template += 'import sys\n'
@@ -65,6 +66,7 @@ class ScriptFactory:
         template += 'import threading\n'
         template += 'from typing import Dict, Any, List, Tuple, Generator\n'        
         template += 'from flask import Flask, jsonify\n'#, request\n'
+        template += 'from tensorflow.python.training.tracking.base import Trackable\n'
         template += 'import flask'
         template += '\n\n'
         template += 'from perceptilabs.core_new.utils import Picklable\n'
@@ -137,7 +139,8 @@ class ScriptFactory:
         template += "snapshots = []\n"
         template += "snapshot_lock = threading.Lock()\n"        
         template += "\n"
-        template += "message_queue = Queue()\n"        
+        template += "message_queue = Queue()\n"
+        template += "event_queue = Queue()\n"                
 
         template += "context = zmq.Context()\n"
         template += "socket = context.socket(zmq.PUB)\n"
@@ -177,18 +180,19 @@ class ScriptFactory:
         template += "    from flask import request\n"
         template += "    global status\n"
         template += "    data = request.json\n"
-        template += "    log.info('Received command. Data: ' + str(data))\n"
-        template += "    if data['type'] == 'on_pause':\n"
-        template += "        graph.active_training_node.layer.on_pause()\n"
-        template += "    elif data['type'] == 'on_resume':\n"
-        template += "        graph.active_training_node.layer.on_resume()\n"
-        template += "    elif data['type'] == 'on_start':\n"
-        template += "        status = STATUS_STARTED\n"
-        template += "    elif data['type'] == 'on_stop':\n"
-        template += "        status = STATUS_STOPPED\n"
-        template += "        graph.active_training_node.layer.on_stop()\n"        
-        template += "    elif data['type'] == 'on_export':\n"
-        template += "        pass\n"
+        template += "    event_queue.put(data)\n"
+        #template += "    log.info('Received command. Data: ' + str(data))\n"
+        #template += "    if data['type'] == 'on_pause':\n"
+        #template += "        graph.active_training_node.layer.on_pause()\n"
+        #template += "    elif data['type'] == 'on_resume':\n"
+        #template += "        graph.active_training_node.layer.on_resume()\n"
+        #template += "    elif data['type'] == 'on_start':\n"
+        #template += "        status = STATUS_STARTED\n"
+        #template += "    elif data['type'] == 'on_stop':\n"
+        #template += "        status = STATUS_STOPPED\n"
+        #template += "        graph.active_training_node.layer.on_stop()\n"        
+        #template += "    elif data['type'] == 'on_export':\n"
+        #template += "        graph.active_training_node.layer.on_export(data['path'], data['mode'])\n"                
         template += "    return jsonify(success=True)\n"
 
         template += "@app.route('/')\n"
@@ -205,14 +209,34 @@ class ScriptFactory:
         template += "snapshot_builder = SnapshotBuilder(\n"
         template += "    BASE_TO_REPLICA_MAP, \n"
         template += "    REPLICATED_PROPERTIES_TABLE\n"
-        template += ")\n"
+        template += ")\n"        
+        template += "\n"
+        template += "def process_events(graph):\n"
+        template += "    global status\n"
+        template += "    while not event_queue.empty():\n"
+        template += "        event_data = event_queue.get()\n"
+        template += "        event_type = event_data['type']\n"
+        template += "        print('PROC EVENTS', event_type)\n"        
+        template += "        \n"
+        template += "        if event_type == 'on_pause':\n"
+        template += "            graph.active_training_node.layer.on_pause()\n"
+        template += "        elif event_type == 'on_resume':\n"
+        template += "            graph.active_training_node.layer.on_resume()\n"
+        template += "        elif event_type == 'on_start':\n"
+        template += "            status = STATUS_STARTED\n"        
+        template += "        elif event_type == 'on_stop':\n"
+        template += "            status = STATUS_STOPPED\n"
+        template += "            graph.active_training_node.layer.on_stop()\n"        
+        template += "        elif event_type == 'on_export':\n"
+        template += "            graph.active_training_node.layer.on_export(event_data['path'], event_data['mode'])\n"                
         template += "\n"
         template += "def make_snapshot(graph):\n"
         template += "    global snapshot_lock, snapshots, snapshots_produced\n"
         template += "    snapshot = snapshot_builder.build(graph)\n"        
         template += "    snapshots_produced += 1\n"
         template += "    body = serialize(snapshot)\n"
-        template += "    message_queue.put((b'snapshots', body))\n"        
+        template += "    message_queue.put((b'snapshots', body))\n"
+        template += "    process_events(graph)\n"
         template += "\n"
         template += "def message_queue_worker():\n"
         template += "    while True:\n"
@@ -250,6 +274,7 @@ class ScriptFactory:
         template += '    status = STATUS_READY\n'
         template += '    if wait:\n'
         template += '        while status != STATUS_STARTED:\n'
+        template += "            process_events(graph)\n"
         template += '            time.sleep(1.0)\n'
         template += '        \n'
         template += '        status = STATUS_RUNNING\n'
@@ -259,6 +284,7 @@ class ScriptFactory:
         template += '        if status != STATUS_STOPPED:\n'
         template += '            status = STATUS_IDLE\n'
         template += '        while status != STATUS_STOPPED:\n'
+        template += "            process_events(graph)\n"        
         template += '            time.sleep(1.0)\n'        
         template += '    else:\n'
         template += '        status = STATUS_RUNNING\n'
@@ -280,8 +306,16 @@ class ScriptFactory:
             for line_no, line_txt in enumerate(code.split('\n')):
                 message += str(line_no + 1).rjust(5, ' ') + ' ' + line_txt + '\n'
             log.debug(message)
-                
-        ast.parse(code)
+
+        try:
+            ast.parse(code)
+        except SyntaxError as e:
+            node, line = line_to_node_map[e.lineno]
+            # TODO: make the error look more like the original syntax error.
+            raise ScriptBuildError(
+                f"Syntax error parsing line {line} in layer {node.layer_id} [{node.layer_type}]:\n"
+                f"{e.text}"
+            )
             
         return code, line_to_node_map
 

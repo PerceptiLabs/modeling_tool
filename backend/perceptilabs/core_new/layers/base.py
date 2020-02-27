@@ -197,14 +197,14 @@ class TrainingLayer(DataLayer):
         raise NotImplementedError
 
     @abstractmethod
-    def on_export(self, path: str) -> None:
+    def on_export(self, path: str, mode: str) -> None:
         """Called when the export model button is clicked in the frontend. 
         It is up to the implementing layer to export the model to disk.
         
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
         Args:
             path: the path to a directory where the model will be stored.
-        """
+            mode: how to export the model. Made available to frontend via 'export_modes' property."""
         raise NotImplementedError
     
     @property
@@ -240,7 +240,12 @@ class TrainingLayer(DataLayer):
         """Returns true when the training is paused."""
         raise NotImplementedError
 
+    @property
+    def export_modes(self) -> List[str]:
+        """Returns the possible modes of exporting a model."""
+        raise NotImplementedError
     
+
 class ClassificationLayer(TrainingLayer):
     """A layer for training classifiers."""
     

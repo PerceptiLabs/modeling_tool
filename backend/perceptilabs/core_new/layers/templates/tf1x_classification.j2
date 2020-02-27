@@ -133,14 +133,21 @@
                 layer_gradient_tensors[node.layer_id] = gradients
                 self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
 
-        trainable_vars = tf.trainable_variables()
+        trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
         grads = tf.gradients(loss_tensor, trainable_vars)
         update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = tf.Session(config=config)
-        self._saver = tf.train.Saver()
+        self._sess = sess
+
+
+        trackable_variables = {}
+        trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
+        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)})
+
+        self._checkpoint = tf.train.Checkpoint(**trackable_variables)
         sess.run(tf.global_variables_initializer())
 
         def sleep_while_paused():
@@ -266,6 +273,7 @@
 
         sess = tf.Session(config=config)
         tf.keras.backend.set_session(sess) # since we use keras metrics
+        self._sess = sess
 
         strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
 
@@ -679,7 +687,9 @@ class {{layer_name}}(ClassificationLayer):
 
         self._trn_sz_tot = 0
         self._val_sz_tot = 0
-        self._tst_sz_tot = 0        
+        self._tst_sz_tot = 0
+
+        self._checkpoint = None
         
     def run(self, graph: Graph):
         """Called as the main entry point for training. Responsible for training the model.
@@ -708,28 +718,45 @@ class {{layer_name}}(ClassificationLayer):
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
         self._paused = False
 
-    def on_export(self, path: str) -> None:
+    def on_export(self, path: str, mode: str) -> None:
         """Called when the resume button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.
         
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
+
         Args:
-            path: the directory where the exported model will be stored."""
+            path: the directory where the exported model will be stored.
+            mode: how to export the model. Made available to frontend via 'export_modes' property."""
+
+
+        print("ON EXPORT", path, mode)
         
-        tf.compat.v1.saved_model.simple_save(
-            self._sess,
-            path,
-            inputs={'input': None},
-            outputs={'output': None}
-        )
+        # Export non-compressed model
+        if mode in ['TFModel', 'TFModel+checkpoint']:
+            tf.compat.v1.saved_model.simple_save(self._sess, path, inputs={'input': self._input_tensor}, outputs={'output': self._output_tensor})
+
+        # Export compressed model
+        if mode in ['TFLite', 'TFLite+checkpoint']:
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor], [self._output_tensor])
+            converter.post_training_quantize = True
+            tflite_model = converter.convert()
+            open(path, "wb").write(tflite_model)
+
+        # Export checkpoint
+        if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
+            self._checkpoint.save(file_prefix=os.path.join(path, 'checkpoints'), session=self._sess)
 
     def on_save(self) -> None:
         """Called when the resume button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.
         
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
-        # TODO: Call ._saver, verify thread-safety
-        pass
+
+        path = ''
+        self.on_export(path, 'TFModel+checkpoint')
+
+        # TODO: Should json_network also be saved here, or is it better to keep that in the coreInterface?
+
 
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
@@ -738,6 +765,16 @@ class {{layer_name}}(ClassificationLayer):
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
         self._stopped = True
 
+    @property
+    def export_modes(self) -> List[str]:
+        """Returns the possible modes of exporting a model."""        
+        return [
+            'TFModel',
+            'TFLite'
+            'TFModel+checkpoint',
+            'TFLite+checkpoint',            
+        ]
+        
     @property
     def is_paused(self) -> None:
         """Returns true when the training is paused."""        

@@ -54,8 +54,9 @@ class ClassificationLayerReplica(ClassificationLayer):
                  loss_training, loss_testing, loss_validation,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
                  batch_size, is_paused, training_iteration, validation_iteration,
-                 testing_iteration, progress, epoch):
+                 testing_iteration, progress, epoch, export_modes):
 
+        self._export_modes = export_modes
         self._epoch = epoch
         self._sample = sample
         self._size_training = size_training
@@ -171,7 +172,6 @@ class ClassificationLayerReplica(ClassificationLayer):
     def make_generator_testing(self):
         raise NotReplicatedError
 
-    
     def on_pause(self):
         raise NotReplicatedError
     
@@ -180,8 +180,11 @@ class ClassificationLayerReplica(ClassificationLayer):
     
     def on_stop(self):
         raise NotReplicatedError        
-
+    
     def on_save(self):
+        raise NotReplicatedError        
+
+    def on_export(self, path):
         raise NotReplicatedError        
     
     @property
@@ -200,7 +203,11 @@ class ClassificationLayerReplica(ClassificationLayer):
     def progress(self):
         return self._progress
 
-        
+    @property
+    def export_modes(self):
+        return self._export_modes
+
+    
 class Tf1xLayerReplica(Tf1xLayer):
     def __init__(self, variables):
         self._variables = variables
