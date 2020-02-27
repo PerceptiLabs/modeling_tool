@@ -198,7 +198,7 @@ const stringifyNetworkObjects = function (network) {
 }
 
 const shouldHideSidebar = () => {
-  return window.innerWidth <= hideSidebarOnBreakpoint;
+  return document.documentElement.clientWidth <= hideSidebarOnBreakpoint;
 };
 
 const calculateSidebarScaleCoefficient = () => {
