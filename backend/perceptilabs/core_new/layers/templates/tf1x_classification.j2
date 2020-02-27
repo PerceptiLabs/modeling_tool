@@ -142,10 +142,9 @@
         sess = tf.Session(config=config)
         self._sess = sess
 
-
         trackable_variables = {}
         trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
-        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)})
+        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
 
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
         sess.run(tf.global_variables_initializer())

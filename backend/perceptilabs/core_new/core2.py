@@ -154,6 +154,8 @@ class Core:
             self._client.send_event('on_resume')
 
     def export(self, path: str, mode: str):
+        log.debug(f"Export path: {path}, mode: {mode}, client: {self._client}")
+        
         if self._client is not None:        
             self._client.send_event('on_export', path=path, mode=mode)
 

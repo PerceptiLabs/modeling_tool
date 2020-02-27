@@ -1,3 +1,4 @@
+import json
 import queue
 import numpy as np
 import time
@@ -319,11 +320,12 @@ class coreLogic():
     def isRunning(self):
         return self.cThread.isAlive()
 
-    def isTrained(self,):
-        if self.saver:
-            return {"content":True}
-        else:
-            return {"content":False}
+    def isTrained(self):
+        is_trained = (
+            (self._core_mode == 'v1' and self.saver is not None) or
+            (self._core_mode == 'v2' and self.core is not None and len(self.core.core_v2.graphs) > 0)
+        )
+        return {"content": is_trained}
 
     def exportNetwork(self,value):
         if self._core_mode == 'v1':
@@ -344,7 +346,6 @@ class coreLogic():
             
         self.core.core_v2.export(path, mode) 
         return {"content": f"Exporting model to path {path}"}
-        
         
     def exportNetworkV1(self,value):        
         if self.saver is None:
@@ -369,7 +370,32 @@ class coreLogic():
             log.exception("Export failed")
             return {"content":"Export Failed with this error: " + str(e)}
 
-    def saveNetwork(self,value):
+    def saveNetwork(self, value):
+        print("saveNetwork called!!!!!!!!!!")
+        if self._core_mode == 'v1':
+            return self.saveNetworkV1(value)
+        else:
+            return self.saveNetworkV2(value)            
+
+    def saveNetworkV2(self, value):
+        """ Saves json network to disk and exports tensorflow model+checkpoints. """
+        path = os.path.abspath(value["Location"][0])
+        
+        if not os.path.exists(path):   
+            os.mkdir(path)
+
+        json_network = value['frontendNetwork']        
+        with open(os.path.join(path, 'model.json'), 'w') as json_file:
+            json.dump(json_network, json_file, indent=4)        
+
+        print("SELF CORE!", self.core)
+        if self.isTrained():
+            export_path = os.path.join(path, '1')            
+            self.core.core_v2.export(export_path, mode='TFModel+checkpoint') # TODO: will all types of graphs support this?
+
+        return {"content": f"Saving to: {path}"}            
+        
+    def saveNetworkV1(self, value):
         if self.saver is None:
             self.warningQueue.put("Save failed.\nMake sure you have started running the network before you try to Export it.")
             return {"content":"Save Failed.\nNo trained weights to Export."}

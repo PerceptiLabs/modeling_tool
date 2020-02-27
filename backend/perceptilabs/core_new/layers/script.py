@@ -216,7 +216,7 @@ class ScriptFactory:
         template += "    while not event_queue.empty():\n"
         template += "        event_data = event_queue.get()\n"
         template += "        event_type = event_data['type']\n"
-        template += "        print('PROC EVENTS', event_type)\n"        
+        #template += "        print('PROC EVENTS', event_type)\n"        
         template += "        \n"
         template += "        if event_type == 'on_pause':\n"
         template += "            graph.active_training_node.layer.on_pause()\n"
