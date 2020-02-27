@@ -10,7 +10,7 @@ def get_input_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f','--frontend-pid', default=None, type=int,
                         help='Frontend process id.')
-    parser.add_argument('-l','--log-level', default='INFO', type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
+    parser.add_argument('-l','--log-level', default=None, type=str, choices=['DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'],
                         help='Log level name.')
     parser.add_argument('-m','--core-mode', default='v1', type=str, choices=['v1', 'v2'],
                         help='Specifies which version of the core to run.')
@@ -26,7 +26,7 @@ def get_input_args():
     return args
 
 
-def setup_logger(log_level):
+def setup_logger(log_level, core_mode):
     """ Sets up logging for the application.
 
     In other modules, simply call log = logging.getLogger(__name__) after importing logging. 
@@ -39,6 +39,12 @@ def setup_logger(log_level):
         ERROR: More serious problem, the software is not able to perform some function. 
         CRITICAL: A serious error, the program itself may be unable to continue running. 
     """
+
+    if log_level is None and core_mode == 'v1':
+        log_level = 'WARNING'
+    elif log_level is None:
+        log_level = 'INFO'            
+    
     FORMAT = '%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s'
     FILE_NAME = 'backend.log'
     logging.basicConfig(stream=sys.stdout,
@@ -48,7 +54,7 @@ def setup_logger(log_level):
 def main():
     args = get_input_args()
 
-    setup_logger(args.log_level)
+    setup_logger(args.log_level, args.core_mode)
     log = logging.getLogger(__name__)
 
     from perceptilabs.mainInterface import Interface
