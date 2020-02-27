@@ -4,6 +4,7 @@ import logging
 import pkg_resources
 from typing import Dict
 
+from perceptilabs.utils import add_line_numbering
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers.templates import J2Engine
 from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES_DIRECTORY
@@ -300,12 +301,7 @@ class ScriptFactory:
         code = template#self._engine.render_string(template)
 
 
-        
-        if log.isEnabledFor(logging.DEBUG): # TODO: remove this when done
-            message = 'Deployment script code: \n'
-            for line_no, line_txt in enumerate(code.split('\n')):
-                message += str(line_no + 1).rjust(5, ' ') + ' ' + line_txt + '\n'
-            log.debug(message)
+        log.debug('Deployment script code: \n' + add_line_numbering(code))
 
         try:
             ast.parse(code)
@@ -332,10 +328,18 @@ class ScriptFactory:
         kwargs = self._fetch_parameters(node.layer_spec, def_.macro_parameters)
         kwargs['layer_name'] = "'" + layer_name + "'"
         arg_str = ', '.join(f"{k}={v}" for k, v in kwargs.items())
-
-
+        
         template  = "{% from '" + def_.template_file + "' import " + def_.template_macro + " %}\n"
         template += "{{ " + def_.template_macro + "(" + arg_str + ")}}"
+
+        log.debug(
+            f"Rendered macro for layer {node.layer_id} [{node.layer_type}]:\n"
+            f"---------\n"            
+            f"{add_line_numbering(template)}\n"
+            f"---------\n"            
+            f"kwargs: {repr(kwargs)}.\n"
+        )
+
         code = self._engine.render_string(template)
         return code    
         
@@ -346,7 +350,7 @@ class ScriptFactory:
             if key == 'layer_name':
                 # Reserved. Always present.
                 raise ScriptBuildError("Cannot use reserved name 'layer_name' for macro parameter")
-            
+
             if callable(value):
                 value = value(layer_spec)
             value = copy.deepcopy(value)
@@ -355,6 +359,10 @@ class ScriptFactory:
                 value = f"'{value}'"
             results[key] = value
             
+            import pprint
+            print('FETCH PARAMETERS', pprint.pformat(layer_spec), value) 
+            
+
         return results
     
         

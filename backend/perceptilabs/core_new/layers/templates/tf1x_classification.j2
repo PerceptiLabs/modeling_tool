@@ -1,4 +1,4 @@
-{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) %}
+{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
         self._status = 'initializing'
 
         output_layer_id = '{{output_layer}}'
@@ -145,10 +145,17 @@
         trackable_variables = {}
         trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
         trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
-
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
         sess.run(tf.global_variables_initializer())
-
+        
+        {% filter remove_lspaces(8) %}
+            {% if export_directory is not none %}        
+                path = tf.train.latest_checkpoint('{{export_directory}}')
+                status = self._checkpoint.restore(path)
+                status.assert_consumed().run_restore_ops(session=self._sess)                
+            {% endif %}
+        {% endfilter %}                    
+        
         def sleep_while_paused():
             while self._paused:
                 time.sleep(1.0)
@@ -244,7 +251,7 @@
 {% endmacro %}
 
 #################################################### Distributed Training #################################################
-{% macro run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) %}
+{% macro run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
         INCLUDE_KERAS_METRICS = False
 
         self_layer_name = '{{layer_name}}' # this is passed as input
@@ -656,7 +663,7 @@
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) %}
+{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
 class {{layer_name}}(ClassificationLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
@@ -697,9 +704,9 @@ class {{layer_name}}(ClassificationLayer):
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
         {% if False -%}
-            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) }}
+            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
         {% else -%}
-            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) }}
+            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
         {% endif %}
                 
 
@@ -727,9 +734,6 @@ class {{layer_name}}(ClassificationLayer):
             path: the directory where the exported model will be stored.
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
 
-
-        print("ON EXPORT", path, mode)
-        
         # Export non-compressed model
         if mode in ['TFModel', 'TFModel+checkpoint']:
             tf.compat.v1.saved_model.simple_save(self._sess, path, inputs={'input': self._input_tensor}, outputs={'output': self._output_tensor})
@@ -743,20 +747,18 @@ class {{layer_name}}(ClassificationLayer):
 
         # Export checkpoint
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
-            self._checkpoint.save(file_prefix=os.path.join(path, 'checkpoints'), session=self._sess)
+            self._checkpoint.save(file_prefix=os.path.join(path, 'ckpt'), session=self._sess)
 
-    def on_save(self) -> None:
-        """Called when the resume button is clicked in the frontend. 
-        It is up to the implementing layer to save the model to disk.
+    def on_restore(self, path: str) -> None:
+        """ Restore model from a checkpoint
         
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
+        Args:
+            path: path to checkpoint file."""
 
-        path = ''
-        self.on_export(path, 'TFModel+checkpoint')
+        print("ON_RESTORE!!!!!!", path)
 
-        # TODO: Should json_network also be saved here, or is it better to keep that in the coreInterface?
-
-
+        status.assert_consumed().run_restore_ops(session=self._sess)
+        
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.

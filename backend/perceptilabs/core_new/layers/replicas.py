@@ -181,10 +181,10 @@ class ClassificationLayerReplica(ClassificationLayer):
     def on_stop(self):
         raise NotReplicatedError        
     
-    def on_save(self):
-        raise NotReplicatedError        
-
     def on_export(self, path):
+        raise NotReplicatedError
+    
+    def on_restore(self, path):
         raise NotReplicatedError        
     
     @property

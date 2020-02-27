@@ -62,3 +62,37 @@ class J2Engine:
     def render_string(self, code, **kwargs):
         text = self._jenv.from_string(code).render(**kwargs)
         return text
+
+
+if __name__ == "__main__":
+
+
+    text  = "{% macro hello(x, y) %}\n"
+    text += "    {% filter remove_lspaces(8) %}\n"
+    text += "        {% if x is not none %}\n"
+    text += "            print('hello {{x}}')\n"
+    text += "        {% endif %}\n"
+    text += "    {% endfilter %}\n"
+    text += "    print('bye {{x}}, {{y}}')\n"    
+    text += "{% endmacro %}\n"    
+    text += "\n"
+    text += "{{ hello(x='None', y='bbb')}}\n"
+
+    
+    #text  = "{% from 'tf1x_classification.j2' import layer_tf1x_classification %}\n"
+    #text += "{{ layer_tf1x_classification(output_layer='_Fully_Connected_1', target_layer='_OneHot_1', #n_epochs='10', loss_function='Quadratic', class_weights='1', optimizer='tf.compat.v1.train.AdamOpti#mizer', learning_rate='0.001', decay_steps='100000', decay_rate='0.96', momentum='0.9', beta1='0.9', beta2='0.999', distributed=False, export_directory=None, layer_name='TrainNormal_Normal_1')}}\n"
+
+    import pkg_resources
+    from perceptilabs.utils import add_line_numbering
+    from perceptilabs.core_new.layers.templates import J2Engine
+    from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE, TEMPLATES_DIRECTORY
+
+    templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)
+    engine = J2Engine(templates_directory)
+
+    code = engine.render_string(text)
+
+    print(add_line_numbering(code))
+    
+    import pdb; pdb.set_trace()
+    

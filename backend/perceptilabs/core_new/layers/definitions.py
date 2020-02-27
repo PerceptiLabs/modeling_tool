@@ -32,6 +32,13 @@ class LayerDef:
         self.template_macro = template_macro
         self.macro_parameters = macro_parameters
 
+def resolve_checkpoint_path(specs):
+    import os
+    if len(specs['checkpoint']) >= 3:
+        return os.path.join(specs['checkpoint'][2], '1')
+    else:
+        return None
+        
         
 DEFINITION_TABLE = {
     'DataData': LayerDef(
@@ -49,17 +56,12 @@ DEFINITION_TABLE = {
             'shuffle_buffer_size': None,
         }
     ),
-
     'ProcessGrayscale' : LayerDef(
         Tf1xLayer,
         'tf1x.j2',
         'layer_tf1x_grayscale',
-        {
-
-        }
+        {}
     ),
-
-
     'ProcessReshape': LayerDef(
         Tf1xLayer,
         'tf1x.j2',
@@ -124,7 +126,8 @@ DEFINITION_TABLE = {
             'momentum': lambda specs: specs['Properties']['Momentum'],
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
-            'distributed': lambda specs: specs['Properties']['Distributed']
+            'distributed': lambda specs: specs['Properties']['Distributed'],
+            'export_directory': resolve_checkpoint_path
         }
     )
 }

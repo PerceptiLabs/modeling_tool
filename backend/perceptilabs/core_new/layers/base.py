@@ -188,15 +188,6 @@ class TrainingLayer(DataLayer):
         raise NotImplementedError
     
     @abstractmethod
-    def on_save(self) -> None:
-        """Called when the save model button is clicked in the frontend. 
-        It is up to the implementing layer to save the model to disk.
-        
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def on_export(self, path: str, mode: str) -> None:
         """Called when the export model button is clicked in the frontend. 
         It is up to the implementing layer to export the model to disk.
@@ -206,6 +197,15 @@ class TrainingLayer(DataLayer):
             path: the path to a directory where the model will be stored.
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
         raise NotImplementedError
+
+    @abstractmethod    
+    def on_restore(self, path: str) -> None:
+        """ Restore model state from a checkpoint
+        
+        Args:
+            path: the directory where the exported model is stored."""
+        
+        raise NotImplementedError    
     
     @property
     @abstractmethod

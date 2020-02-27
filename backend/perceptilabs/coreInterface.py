@@ -142,8 +142,9 @@ class coreLogic():
             log.exception("Failed creating deployment script...")
 
     def startCore(self,network, checkpointValues):
-
         #Start the backendthread and give it the network
+
+
         self.setupLogic()
         self.network=network
         log.debug('printing network .......\n')
@@ -371,7 +372,6 @@ class coreLogic():
             return {"content":"Export Failed with this error: " + str(e)}
 
     def saveNetwork(self, value):
-        print("saveNetwork called!!!!!!!!!!")
         if self._core_mode == 'v1':
             return self.saveNetworkV1(value)
         else:
@@ -383,16 +383,20 @@ class coreLogic():
         
         if not os.path.exists(path):   
             os.mkdir(path)
+            
+        frontend_network = value['frontendNetwork'].copy()
 
-        json_network = value['frontendNetwork']        
-        with open(os.path.join(path, 'model.json'), 'w') as json_file:
-            json.dump(json_network, json_file, indent=4)        
-
-        print("SELF CORE!", self.core)
         if self.isTrained():
             export_path = os.path.join(path, '1')            
             self.core.core_v2.export(export_path, mode='TFModel+checkpoint') # TODO: will all types of graphs support this?
 
+            # The following is used to restore the checkpoint when the saved network is loaded again.. networkElementList is the usual json_network, but with some extra frontend stuff.
+            for id_ in frontend_network['networkElementList'].keys():
+                frontend_network['networkElementList'][id_]['checkpoint'] = [None, export_path, path]
+
+        with open(os.path.join(path, 'model.json'), 'w') as json_file:
+            json.dump(frontend_network, json_file, indent=4)        
+            
         return {"content": f"Saving to: {path}"}            
         
     def saveNetworkV1(self, value):
@@ -579,9 +583,12 @@ class coreLogic():
         layer_id = value["layerId"]
         layer_type = value["layerType"]
         view = value["view"]
+
+        if not self.savedResultsDict:
+            return {}
         
         try:
-            self.iter=self.savedResultsDict.get("iter", -1)
+            self.iter=self.savedResultsDict["iter"]
             self.epoch=self.savedResultsDict["epoch"]
             self.maxIter=self.savedResultsDict["maxIter"]
             self.maxEpochs=self.savedResultsDict["maxEpochs"]

@@ -83,7 +83,7 @@ class Interface():
         graph_dict = graph.graphs
 
         for value in graph_dict.values():
-            if "checkpoint" in value["Info"] and value["Info"]["checkpoint"]:
+            if "checkpoint" in value["Info"] and value["Info"]["checkpoint"] and self._core_mode == 'v1':
                 self._add_to_checkpointDict(value["Info"])
 
         data_container = DataContainer()
@@ -288,7 +288,7 @@ class Interface():
         elif action == "Start":
             network = value
             for value in network['Layers'].values():
-                if "checkpoint" in value and value["checkpoint"]:
+                if "checkpoint" in value and value["checkpoint"] and self._core_mode == 'v1':
                     self._add_to_checkpointDict(value)
             response = self._core.startCore(network, self._checkpointDict.copy())
             return response
