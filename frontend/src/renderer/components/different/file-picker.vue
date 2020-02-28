@@ -11,11 +11,12 @@
 
       .selectable-list
         .list-item(
-          @click="calcFolderPath(index)"
+          :class="{selected:isSelected(directory)}"
+          @click="toggleSelectedDirectory(directory)"
           v-for="(directory, index) in directories"
           :key="index")
           img(src="/static/img/file-picker/folder.svg" class="svg-icon")
-          span {{ directory }}
+          span(@click="calcFolderPath(index)") {{ directory }}
 
         .list-item(
           :class="{selected:isSelected(f)}"
@@ -45,6 +46,7 @@ export default {
   props: {
     filePickerType: {
       type: String,
+      default: 'file' // can also be 'folder'
     },
     fileTypeFilter: {
       type: Array,
@@ -58,6 +60,7 @@ export default {
       directories: [],
       files: [],
       selectedFiles: [],
+      selectedDirectories: [],
       osPathPrefix: isOsWindows() ? '' : '/',
       osPathSuffix: isOsWindows() && this.filePickerType === 'folder' ? '/' : '', // on windows folder should end with `/`
     }
@@ -67,7 +70,7 @@ export default {
   },
   methods: {
     isSelected(name) {
-      return (this.selectedFiles.includes(name));
+      return (this.selectedFiles.includes(name)) || (this.selectedDirectories.includes(name));
     },
     calcBreadcrumbPath(pathIdx) {
       let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;
@@ -79,12 +82,20 @@ export default {
       this.fetchPathInformation(folderPath);
     },
     toggleSelectedFile(fileName) {
+      if (this.filePickerType !== 'file') { return; }
       if (this.selectedFiles.includes(fileName)) {
           const idxToRemove = this.selectedFiles.findIndex(el => el === fileName);
           this.selectedFiles.splice(idxToRemove, 1);
       } else {
           this.selectedFiles.push(fileName);
       }
+    },
+    toggleSelectedDirectory(dirName) {
+      if (this.filePickerType !== 'folder') { return; }
+
+      // ensuring that only one directory can be chosen
+      this.selectedDirectories = [];
+      this.selectedDirectories.push(dirName);
     },
     fetchPathInformation(path) {
       this.selectedFiles = [];
@@ -110,9 +121,17 @@ export default {
     },
     onConfirm() {
         console.log('Clicked OK', this.selectedFiles);
-        this.$emit(
-          'files-selected',
-          this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f));
+
+        let emitPayload;
+        
+        if (this.filePickerType === 'file') {
+          emitPayload = this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
+        } else if (this.filePickerType === 'folder') {
+          emitPayload = this.selectedDirectories.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
+          console.log('onConfirm emitPayload', emitPayload);
+        }
+
+        this.$emit('confirm-selection', emitPayload);
     },
     onCancel() {
         this.$emit('close');

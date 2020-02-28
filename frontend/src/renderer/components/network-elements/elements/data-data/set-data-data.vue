@@ -33,7 +33,7 @@
           file-picker(
             :filePickerType="filePickerType"
             :fileTypeFilter="validFileExtensions"
-            @files-selected="onFilesSelected"
+            @confirm-selection="confirmFilePickerSelection"
             @close="clearPath")
 
         //-web-upload-file#tutorial_button-load.tutorial-relative(
@@ -273,24 +273,24 @@
         this.showFilePicker = true;
         this.filePickerType = 'file';
 
-        let optionBasic = {
-          title:"Load file or files",
-          properties: ['openFile', 'multiSelections'],
-          filters: [
-            {name: 'All',     extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz']},
-            {name: 'Images',  extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff']},
-            {name: 'Text',    extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
-          ]
-        };
-        let optionTutorial = {
-          title: "Load file",
-          buttonLabel: 'Load file',
-          defaultPath: `${this.appPath}basic-data`,
-          properties: ['openFile'],
-          filters: [
-            {name: 'All', extensions: ['npy']},
-          ]
-        };
+        // let optionBasic = {
+        //   title:"Load file or files",
+        //   properties: ['openFile', 'multiSelections'],
+        //   filters: [
+        //     {name: 'All',     extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz']},
+        //     {name: 'Images',  extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff']},
+        //     {name: 'Text',    extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
+        //   ]
+        // };
+        // let optionTutorial = {
+        //   title: "Load file",
+        //   buttonLabel: 'Load file',
+        //   defaultPath: `${this.appPath}basic-data`,
+        //   properties: ['openFile'],
+        //   filters: [
+        //     {name: 'All', extensions: ['npy']},
+        //   ]
+        // };
 
         // let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
         // openLoadDialog(optionDialog)
@@ -373,10 +373,16 @@
         const btn = document.getElementById('js-hide-btn');
         if(btn) btn.style.cssText = ''
       },
-      onFilesSelected(selectedFiles) {
+      confirmFilePickerSelection(selectedItems) {
         this.showFilePicker = false;
-        // console.log('onFilesSelected', selectedFiles);
-        this.saveLoadFile(selectedFiles, 'file', false);
+        console.log('confirmFilePickerSelection', selectedItems);
+
+        if (this.filePickerType === 'file') {
+          this.saveLoadFile(selectedItems, 'file', false);
+        } else if (this.filePickerType === 'folder') {
+          this.saveLoadFile(selectedItems, 'directory', false)
+        }
+        
       }
     }
   }
