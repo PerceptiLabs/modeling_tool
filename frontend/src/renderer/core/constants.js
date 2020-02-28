@@ -15,6 +15,9 @@ const widthElement = 60;
 const workspaceGrid = 10;
 const pathSlash = process.platform === 'win32' ? '\\' : '/';
 
+const hideSidebarOnBreakpoint = 1280;
+const sidebarNavCoefficientScaleCalculateFromHeight = 920;
+
 export {
   isDevelopMode,
   trainingElements,
@@ -24,5 +27,7 @@ export {
   workspaceGrid,
   baseUrlCloud,
   baseUrlSite,
-  pathSlash
+  pathSlash,
+  hideSidebarOnBreakpoint,
+  sidebarNavCoefficientScaleCalculateFromHeight,
 }
