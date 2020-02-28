@@ -42,6 +42,7 @@ RUN yum -y --nodocs update && \
     chmod -R g+wrX /run/httpd/ /etc/httpd/logs && \
     sed -i'' 's;Listen 80;Listen 8080;g' /etc/httpd/conf/httpd.conf && \
     sed -i'' 's;AllowOverride None;AllowOverride All;g' /etc/httpd/conf/httpd.conf && \
+    sed -i'' 's;#LoadModule rewrite_module modules/mod_rewrite.so;LoadModule rewrite_module modules/mod_rewrite.so;g' /etc/httpd/conf/httpd.conf && \
     sed -i'' 's;Require all denied;Require all granted;g' /etc/httpd/conf/httpd.conf
 
 ADD . /var/www/html/
