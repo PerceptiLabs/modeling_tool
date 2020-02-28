@@ -3,23 +3,25 @@
     .filepicker
       .directory-breadcrumb
         .breadcrumb(
-          @click="calcBreadcrumbPath(pIdx)"
-          v-for="(p, pIdx) in currentPath"
-          :key="p")
-          span {{ p }}
+          @click="calcBreadcrumbPath(pathIndex)"
+          v-for="(pathName, pathIndex) in currentPath"
+          v-if="pathIndex >= currentPath.length - 3"
+          :key="pathIndex")
+          span {{ pathName }}
 
       .selectable-list
         .list-item(
-          @click="calcFolderPath(dIdx)"
-          v-for="(d,dIdx) in directories"
-          :key="d")
+          @click="calcFolderPath(index)"
+          v-for="(directory, index) in directories"
+          :key="index")
           img(src="/static/img/file-picker/folder.svg" class="svg-icon")
-          span {{ d }}
+          span {{ directory }}
 
         .list-item(
           :class="{selected:isSelected(f)}"
           @click="toggleSelectedFile(f)"
           v-for="f in files"
+          v-if="filePickerType === 'file'"
           :key="f")
           img(src="/static/img/file-picker/file.svg" class="svg-icon")
           span {{ f }}
@@ -40,6 +42,11 @@ import { isOsWindows } from '@/core/helpers.js';
 
 export default {
   name: 'FilePicker',
+  props: {
+    filePickerType: {
+      type: String,
+    }
+  },
   data() {
     return {
       popupTitle: ['Load files'],
@@ -48,8 +55,11 @@ export default {
       files: [],
       selectedFiles: [],
       osPathPrefix: isOsWindows() ? '' : '/',
-      osPathSuffix: isOsWindows() ? '/' : ''
+      osPathSuffix: isOsWindows() && this.filePickerType === 'folder' ? '/' : '', // on windows folder should end with `/`
     }
+  },
+  mounted() {
+    this.fetchPathInformation('');
   },
   methods: {
     isSelected(name) {
@@ -97,9 +107,6 @@ export default {
         this.$emit('close');
     },
   },
-  mounted() {
-    this.fetchPathInformation('');
-  }
 }
 </script>
 

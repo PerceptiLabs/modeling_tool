@@ -31,6 +31,7 @@
               i.icon.icon-backward
               span Back
           file-picker(
+            :filePickerType="filePickerType"
             @files-selected="onFilesSelected"
             @close="clearPath")
 
@@ -155,7 +156,8 @@
         },
         serverListFile: ['1', '2', '3'],
         serverListFileSelected: '2',
-        showFilePicker: false
+        showFilePicker: false,
+        filePickerType: 'file',
       }
     },
     computed: {
@@ -262,6 +264,7 @@
         // this.$store.commit('globalView/gp_filePickerPopup', true);
 
         this.showFilePicker = true;
+        this.filePickerType = 'file';
 
         let optionBasic = {
           title:"Load file or files",
@@ -296,6 +299,8 @@
         this.saveLoadFile(this.settings.accessProperties.Sources, 'file', false);
       },
       loadFolder(isAppend) {
+        this.showFilePicker = true;
+        this.filePickerType = 'folder';
         //loadPathFolder()
         //  .then((pathArr)=> this.saveLoadFile(pathArr, 'directory', isAppend))
         //  .catch(()=> { })
