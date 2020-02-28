@@ -6,11 +6,12 @@
     @press-apply="saveSettings($event)"
   )
     template(slot="Computer-content")
-      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
+      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length && !showFilePicker")
         button.btn.tutorial-relative(type="button"
           @click="loadFile"
           id="tutorial_button-load"
           v-tooltip-interactive:right="interactiveInfo.file"
+          v-if="!showFilePicker"
           )
             i.icon.icon-open-file
             span Choose files
@@ -22,6 +23,13 @@
             i.icon.icon-open-folder
             span Choose folders
 
+      template(v-else-if="showFilePicker")
+        .settings-layer_section
+          .form_row
+            button.btn.btn--link(type="button" @click="clearPath")
+              i.icon.icon-backward
+              span Back
+          file-picker
 
         //-web-upload-file#tutorial_button-load.tutorial-relative(
           v-model="settings.accessProperties.PathFake"
@@ -97,6 +105,7 @@
   import ChartSwitch    from "@/components/charts/chart-switch.vue";
   import TripleInput    from "@/components/base/triple-input";
   import WebUploadFile  from "@/components/web/upload-file.vue";
+  import FilePicker     from "@/components/different/file-picker.vue";
 
   import {openLoadDialog, loadPathFolder} from '@/core/helpers.js'
   import {mapActions, mapGetters}     from 'vuex';
@@ -104,7 +113,7 @@
   export default {
     name: 'SetDataData',
     mixins: [mixinSet, mixinData],
-    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, WebUploadFile },
+    components: {ChartSwitch, SettingsCloud, TripleInput, SettingsFileList, WebUploadFile, FilePicker },
     mounted() {
       if(this.settings.accessProperties.Columns.length) {
         this.dataColumnsSelected = this.settings.accessProperties.Columns;
@@ -147,6 +156,7 @@
         },
         serverListFile: ['1', '2', '3'],
         serverListFileSelected: '2',
+        showFilePicker: false
       }
     },
     computed: {
@@ -250,7 +260,9 @@
       },
       loadFile(isAppend) {
 
-        this.$store.commit('globalView/gp_filePickerPopup', true);
+        // this.$store.commit('globalView/gp_filePickerPopup', true);
+
+        this.showFilePicker = true;
 
         let optionBasic = {
           title:"Load file or files",
@@ -303,6 +315,7 @@
         //this.getSettingsInfo();
       },
       clearPath() {
+        this.showFilePicker = false;
         this.Mix_settingsData_deleteDataMeta('DataData')
           .then(()=> {
             this.settings.accessProperties.Sources = [];
