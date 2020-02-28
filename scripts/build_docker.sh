@@ -63,7 +63,7 @@ cp -r dist/* ../../build/frontend_out/
 cd ../../
 
 ls -l -a Docker/Frontend
-cp -r Docker/Frontend/* build/frontend_out
+cp -r Docker/Frontend/. build/frontend_out
 cp -r Docker/Core/* build/backend_out
 cp -r backend/code/templates/ build/backend_out/code/ #TODO: REMOVE
 
