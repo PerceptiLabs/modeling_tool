@@ -30,12 +30,25 @@ class getFolderContent(LW_interface_base):
     def run(self):
         if not self._current_path:
             self._current_path = os.path.abspath('')
+
+        drives = []
+        if self._current_path == '.':
+            import win32api
+            drives = win32api.GetLogicalDriveStrings()
+            drives = drives.split('\000')[:-1]
         
-        return {
-            "current_path" : self._current_path,
-            "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(os.path.join(self._current_path,x))],
-            "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(os.path.join(self._current_path,x))],
-        }
+        if not drives:
+            return {
+                "current_path" : self._current_path.replace('\\','/'),
+                "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(os.path.join(self._current_path,x))],
+                "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(os.path.join(self._current_path,x))],
+            }
+        else:
+            return {
+                "current_path" : self._current_path.replace('\\','/'),
+                "dirs" : drives,
+                "files" :  [],
+            }
 
 class getDataMeta(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):

@@ -53,11 +53,11 @@ export default {
       return (this.selectedFiles.includes(name));
     },
     calcBreadcrumbPath(pathIdx) {
-      let breadcrumbPath = '/' + this.currentPath.slice(0,pathIdx + 1).join('/');
+      let breadcrumbPath = this.currentPath.slice(0,pathIdx + 1).join('/');
       this.fetchPathInformation(breadcrumbPath);
     },
     calcFolderPath(folderIndex) {
-      let folderPath = '/' + this.currentPath.join('/') + '/' + this.directories[folderIndex];
+      let folderPath = this.currentPath.join('/') + '/' + this.directories[folderIndex];
       console.log(folderPath);
       this.fetchPathInformation(folderPath);
     },
@@ -89,7 +89,7 @@ export default {
         console.log('Clicked OK', this.selectedFiles);
         this.$emit(
           'files-selected', 
-          this.selectedFiles.map(f => '/' + this.currentPath.join('/') + '/' + f));
+          this.selectedFiles.map(f => this.currentPath.join('/') + '/' + f));
     },
     onCancel() {
         this.$emit('close');
