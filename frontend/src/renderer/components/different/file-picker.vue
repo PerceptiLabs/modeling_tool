@@ -26,10 +26,10 @@
 
     .button-group
       button.btn.btn--primary.btn--disabled(type="button"
-        @click="closePopup"
+        @click="onCancel"
         ) Cancel
       button.btn.btn--primary(type="button"
-        @click="applySet"
+        @click="onConfirm"
         ) Confirm
 </template>
 
@@ -85,15 +85,14 @@ export default {
           this.files = jsonData.files;
       });
     },
-    applySet() {
-    //   this.$store.dispatch('mod_filepicker/SET_selectedFilePaths', this.selectedFiles);
-    //   this.closePopup();
+    onConfirm() {
         console.log('Clicked OK', this.selectedFiles);
+        this.$emit(
+          'files-selected', 
+          this.selectedFiles.map(f => '/' + this.currentPath.join('/') + '/' + f));
     },
-    closePopup() {
-      // this.$store.commit('globalView/HIDE_allGlobalPopups');
-    //   this.$store.commit('globalView/gp_filePickerPopup', false);
-        console.log('Clicked Cancel');
+    onCancel() {
+        this.$emit('close');
     },
   },
   mounted() {

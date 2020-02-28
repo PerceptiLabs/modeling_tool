@@ -29,7 +29,9 @@
             button.btn.btn--link(type="button" @click="clearPath")
               i.icon.icon-backward
               span Back
-          file-picker
+          file-picker(
+            @files-selected="onFilesSelected"
+            @close="clearPath")
 
         //-web-upload-file#tutorial_button-load.tutorial-relative(
           v-model="settings.accessProperties.PathFake"
@@ -77,10 +79,6 @@
               input(type="number" v-model="settings.accessProperties.Batch_size")
           .form_row
             base-checkbox.bigest-text(v-model="settings.accessProperties.Shuffle_data") Shuffle
-        //-.settings-layer_foot
-          button.btn.btn--primary(type="button") Apply
-    //-template(slot="Cloud-content")
-      //-settings-cloud
     template(slot="Code-content")
       settings-code(
         :current-el="currentEl"
@@ -362,6 +360,11 @@
         const btn = document.getElementById('js-hide-btn');
         if(btn) btn.style.cssText = ''
       },
+      onFilesSelected(selectedFiles) {
+        this.showFilePicker = false;
+        // console.log('onFilesSelected', selectedFiles);
+        this.saveLoadFile(selectedFiles, 'file', false);
+      }
     }
   }
 </script>
