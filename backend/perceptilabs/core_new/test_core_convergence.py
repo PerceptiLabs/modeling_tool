@@ -49,7 +49,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [],
                 "forward_connections": [["3", "reshape"]],
-                "Code": ""
+                "Code": "",
+                "checkpoint": []
             },
             "2": {
                 "Name": "data_labels",
@@ -66,7 +67,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [],
                 "forward_connections": [["5", "one_hot"]],
-                "Code": ""
+                "Code": "",
+                "checkpoint": []
             },
             "3": {
                 "Name": "reshape",
@@ -77,7 +79,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["1", "data_inputs"]],
                 "forward_connections": [["4", "fc"]],
-                "Code": ""
+                "Code": "",
+                "checkpoint": []
             },
             "4": {
                 "Name": "fc",
@@ -90,7 +93,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["3", "reshape"]],
                 "forward_connections": [["6", "training"]],
-                "Code": ""
+                "Code": "",
+                "checkpoint": []
             },
             "5": {
                 "Name": "one_hot",
@@ -100,7 +104,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["2", "data_labels"]],
                 "forward_connections": [["6", "training"]],
-                "Code": ""
+                "Code": "",
+                "checkpoint": []
             },
             "6": {
                 "Name": "training",
@@ -121,7 +126,8 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["4", "fc"], ["5", "one_hot"]],
                 "forward_connections": [],
-                "Code": ""
+                "Code": "",
+                "checkpoint": []
             }
         }
     }
@@ -150,7 +156,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
 
     core.run(graph_spec_binary_classification)
 
-    print("POST RUN CALL")
+    #print("POST RUN CALL")
     
     while core.is_running:
 
@@ -191,7 +197,7 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
 
     core.run(json_network)
 
-    print("POST RUN CALL")
+    #print("POST RUN CALL")
     
     while core.is_running:
 
@@ -206,7 +212,7 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
     for graph in core.graphs:
         acc = graph.active_training_node.layer.accuracy_training
         accuracy_list.append(acc)
-        print(acc)
+        #print(acc)
     
     assert np.mean(accuracy_list[-10:]) >= 0.8
 
