@@ -7,24 +7,13 @@
   )
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length")
-        //- button.btn.tutorial-relative(type="button"
-        //-   @click="loadFile"
-        //-   id="tutorial_button-load"
-        //-   v-tooltip-interactive:right="interactiveInfo.file"
-        //-   )
-            
-
-        label.btn.tutorial-relative(type="button"
+        button.btn.tutorial-relative(type="button"
+          @click="loadFile"
           id="tutorial_button-load"
           v-tooltip-interactive:right="interactiveInfo.file"
           )
             i.icon.icon-open-file
             span Choose files
-
-            input(type="file"
-              @change="loadFile"
-              ref="file-chooser"
-              webkitdirectory="")
 
         button.btn.tutorial-relative(type="button"
           @click="loadFolder"
@@ -162,8 +151,9 @@
     },
     computed: {
       ...mapGetters({
-        appPath:        'globalView/GET_appPath',
-        isTutorialMode: 'mod_tutorials/getIstutorialMode',
+        appPath:            'globalView/GET_appPath',
+        selectedFilePaths:  'mod_filepicker/get_selectedFilePaths',
+        isTutorialMode:     'mod_tutorials/getIstutorialMode',
       }),
       dynamicTabs() {
         return this.settings.accessProperties.Sources.length ? ['Computer', 'Code'] : ['Computer']
@@ -229,6 +219,11 @@
           this.getSettingsInfo()
         },
         immediate: true
+      },
+      selectedFilePaths: {
+        handler(newValue) {
+          console.log('selectedFilePaths', newValue);
+        }
       }
     },
     methods: {
@@ -254,6 +249,9 @@
         this.settings.accessProperties.Partition_list = list
       },
       loadFile(isAppend) {
+
+        this.$store.commit('globalView/gp_filePickerPopup', true);
+
         let optionBasic = {
           title:"Load file or files",
           properties: ['openFile', 'multiSelections'],
@@ -272,12 +270,6 @@
             {name: 'All', extensions: ['npy']},
           ]
         };
-
-        console.log('file-chooser', this.$refs["file-chooser"].files);
-
-        [...this.$refs["file-chooser"].files].forEach(element => {
-          console.log(element.webkitRelativePath);
-        });
 
         // let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
         // openLoadDialog(optionDialog)
