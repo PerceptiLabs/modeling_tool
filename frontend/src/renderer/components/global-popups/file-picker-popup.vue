@@ -16,6 +16,7 @@
             v-for="(d,dIdx) in directories" 
             :key="d") 
             img(src="/static/img/file-picker/folder.svg" class="svg-icon") 
+            //- i.icon.icon-folder
             span {{ d }}
 
           .list-item(
@@ -83,21 +84,20 @@ export default {
           value: path
       };
 
-      console.log('request', theData);
-
       coreRequest(theData)
       .then(jsonData => {
-          console.log('response', jsonData);
           this.currentPath = jsonData.current_path.split('/').filter(el => el);   
           this.directories = jsonData.dirs;
           this.files = jsonData.files;
       });
     },
     applySet() {
+      this.$store.dispatch('mod_filepicker/SET_selectedFilePaths', this.selectedFiles);
       this.closePopup();
     },
     closePopup() {
-      this.$store.commit('globalView/HIDE_allGlobalPopups');
+      // this.$store.commit('globalView/HIDE_allGlobalPopups');
+      this.$store.commit('globalView/gp_filePickerPopup', false);
     },
   },
   computed: {
@@ -119,7 +119,7 @@ export default {
 .filepicker {
 //   background-color: $bg-window;
   height: 24rem;
-  width: 48rem;
+  min-width: 28rem;
   margin: 2rem;
   overflow-y: auto;
   font-size: 1.1rem;
@@ -141,6 +141,8 @@ export default {
 
 .selectable-list {
 
+  width: 100%;
+
   .list-item { 
     display: flex;
     justify-content: left;
@@ -153,11 +155,11 @@ export default {
     }
 
     &:hover {
-      background-color: powderblue;
+      background-color: $bg-workspace;
     }
 
     &.selected {
-      background-color: powderblue;
+      background-color: $bg-workspace;
     }
   }
   
