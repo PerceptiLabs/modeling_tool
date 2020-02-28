@@ -47,7 +47,8 @@ export default {
       directories: [],
       files: [],
       selectedFiles: [],
-      osPathPrefix: isOsWindows() ? '' : '/'
+      osPathPrefix: isOsWindows() ? '' : '/',
+      osPathSuffix: isOsWindows() ? '/' : ''
     }
   },
   methods: {
@@ -55,11 +56,11 @@ export default {
       return (this.selectedFiles.includes(name));
     },
     calcBreadcrumbPath(pathIdx) {
-      let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/');
+      let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;
       this.fetchPathInformation(breadcrumbPath);
     },
     calcFolderPath(folderIndex) {
-      let folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + this.directories[folderIndex];
+      let folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + this.directories[folderIndex] + this.osPathSuffix ;
       console.log(folderPath);
       this.fetchPathInformation(folderPath);
     },
@@ -90,7 +91,7 @@ export default {
         console.log('Clicked OK', this.selectedFiles);
         this.$emit(
           'files-selected',
-          this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f));
+          this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f) + this.osPathSuffix);
     },
     onCancel() {
         this.$emit('close');
