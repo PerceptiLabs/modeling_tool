@@ -703,12 +703,11 @@ class {{layer_name}}(ClassificationLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
-        {% if False -%}
+        {% if distributed -%}
             {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
         {% else -%}
             {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
-        {% endif %}
-                
+        {% endif %}                
 
     def on_pause(self):
         """Called when the pause button is clicked in the frontend. 
@@ -749,16 +748,6 @@ class {{layer_name}}(ClassificationLayer):
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
             self._checkpoint.save(file_prefix=os.path.join(path, 'ckpt'), session=self._sess)
 
-    def on_restore(self, path: str) -> None:
-        """ Restore model from a checkpoint
-        
-        Args:
-            path: path to checkpoint file."""
-
-        print("ON_RESTORE!!!!!!", path)
-
-        status.assert_consumed().run_restore_ops(session=self._sess)
-        
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.

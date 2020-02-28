@@ -1,6 +1,7 @@
 import sys
 import time
 import pytest
+import logging
 import tempfile
 import numpy as np
 from queue import Queue
@@ -12,6 +13,11 @@ from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
 from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
+
+
+logging.basicConfig(stream=sys.stdout,
+                    format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
+                    level=logging.DEBUG)
 
 
 @pytest.fixture
