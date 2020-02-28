@@ -19,7 +19,7 @@ const state = {
     showErrorPopup: false,
     showWorkspaceBeforeImport: false,
     showConfirmPopup: false,
-    showFilePicker: true,
+    showFilePicker: false,
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
