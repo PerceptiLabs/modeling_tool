@@ -62,7 +62,7 @@ function coreRequest(data, path, no, name) {
     // timeStartSend = new Date();
 
   // console.log('process.env', process.env);
-  console.log('in core requst');
+
   return wsPathDefSingleton.getInstance()
     .then(core_url => {
       return new Promise((resolve, reject) => {
