@@ -4,22 +4,22 @@
       .directory-breadcrumb
         .breadcrumb(
           @click="calcBreadcrumbPath(pIdx)"
-          v-for="(p, pIdx) in currentPath" 
-          :key="p") 
+          v-for="(p, pIdx) in currentPath"
+          :key="p")
           span {{ p }}
 
       .selectable-list
         .list-item(
           @click="calcFolderPath(dIdx)"
-          v-for="(d,dIdx) in directories" 
-          :key="d") 
-          img(src="/static/img/file-picker/folder.svg" class="svg-icon") 
+          v-for="(d,dIdx) in directories"
+          :key="d")
+          img(src="/static/img/file-picker/folder.svg" class="svg-icon")
           span {{ d }}
 
         .list-item(
           :class="{selected:isSelected(f)}"
           @click="toggleSelectedFile(f)"
-          v-for="f in files" 
+          v-for="f in files"
           :key="f")
           img(src="/static/img/file-picker/file.svg" class="svg-icon")
           span {{ f }}
@@ -36,6 +36,7 @@
 
 <script>
 import { coreRequest } from '@/core/apiWeb.js';
+import { isOsWindows } from '@/core/helpers.js';
 
 export default {
   name: 'FilePicker',
@@ -45,7 +46,8 @@ export default {
       currentPath: [],
       directories: [],
       files: [],
-      selectedFiles: []
+      selectedFiles: [],
+      osPathPrefix: isOsWindows() ? '' : '/'
     }
   },
   methods: {
@@ -53,11 +55,11 @@ export default {
       return (this.selectedFiles.includes(name));
     },
     calcBreadcrumbPath(pathIdx) {
-      let breadcrumbPath = '/' + this.currentPath.slice(0,pathIdx + 1).join('/');
+      let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/');
       this.fetchPathInformation(breadcrumbPath);
     },
     calcFolderPath(folderIndex) {
-      let folderPath = '/' + this.currentPath.join('/') + '/' + this.directories[folderIndex];
+      let folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + this.directories[folderIndex];
       console.log(folderPath);
       this.fetchPathInformation(folderPath);
     },
@@ -71,7 +73,6 @@ export default {
     },
     fetchPathInformation(path) {
       this.selectedFiles = [];
-
       let theData = {
           reciever: '0',
           action: 'getFolderContent',
@@ -80,7 +81,7 @@ export default {
 
       coreRequest(theData)
       .then(jsonData => {
-          this.currentPath = jsonData.current_path.split('/').filter(el => el);   
+          this.currentPath = jsonData.current_path.split('/').filter(el => el);
           this.directories = jsonData.dirs;
           this.files = jsonData.files;
       });
@@ -88,8 +89,8 @@ export default {
     onConfirm() {
         console.log('Clicked OK', this.selectedFiles);
         this.$emit(
-          'files-selected', 
-          this.selectedFiles.map(f => '/' + this.currentPath.join('/') + '/' + f));
+          'files-selected',
+          this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f));
     },
     onCancel() {
         this.$emit('close');
@@ -133,7 +134,7 @@ export default {
 
   width: 100%;
 
-  .list-item { 
+  .list-item {
     display: flex;
     justify-content: left;
     align-items: center;
@@ -152,7 +153,7 @@ export default {
       background-color: $bg-workspace;
     }
   }
-  
+
 }
 
 img {

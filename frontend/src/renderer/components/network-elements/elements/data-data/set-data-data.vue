@@ -2,6 +2,7 @@
   net-base-settings(
     :tab-set="dynamicTabs"
     :current-el="currentEl"
+    :showControls="!showFilePicker"
     id-set-btn="tutorial_button-apply"
     @press-apply="saveSettings($event)"
   )

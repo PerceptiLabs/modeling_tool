@@ -24,7 +24,7 @@
         .settings-layer
           slot(:name="tabContent+'-content'")
         #js-hide-btn.settings-layer_foot
-          slot(:name="tabContent+'-action'")
+          slot(v-if="showControls" :name="tabContent+'-action'")
             button.btn.btn--primary.btn--disabled(type="button"
               @click="hideAllWindow"
               :disabled="isTutorial"
@@ -71,6 +71,10 @@ export default {
     showPreview: {
       type: Boolean,
       default: false
+    },
+    showControls: {
+      type: Boolean,
+      default: true
     }
   },
   mounted() {
