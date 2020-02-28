@@ -62,13 +62,13 @@ cp -r dist/* ../../build/frontend_out/
 ################### MOVING EVERYTHING TO CORRECT PLACES #######################
 cd ../../
 
-ls -l
+ls -l Docker/Frontend
 cp -r Docker/Frontend/* build/frontend_out
 cp -r Docker/Core/* build/backend_out
 cp -r backend/code/templates/ build/backend_out/code/ #TODO: REMOVE
 
 echo "Frontend folder"
-ls -l build/frontend_out
+ls -l -R build/frontend_out
 
 echo "Core folder"
 ls -R build/backend_out
