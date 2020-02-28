@@ -35,6 +35,7 @@
           ) Cancel
         button.btn.btn--primary(type="button"
           @click="onConfirm"
+          :disabled="isConfirmButtonDisabled"
           ) Confirm
 </template>
 
@@ -133,7 +134,12 @@ export default {
         if (this.filePickerType === 'file') {
           emitPayload = this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
         } else if (this.filePickerType === 'folder') {
-          emitPayload = this.selectedDirectories.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
+          if (!this.selectedDirectories) { 
+            // if not active directory select, take current
+            emitPayload = this.osPathPrefix + this.currentPath.join('/') + '/';
+          } else {
+            emitPayload = this.selectedDirectories.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
+          }
           console.log('onConfirm emitPayload', emitPayload);
         }
 
@@ -150,6 +156,13 @@ export default {
       } else {
         return '';
       }
+    },
+    isConfirmButtonDisabled() {
+      if (this.filePickerType === 'file' && this.selectedFiles.length === 0) {
+        return true;
+      } 
+
+      return false;
     }
   }
 }
