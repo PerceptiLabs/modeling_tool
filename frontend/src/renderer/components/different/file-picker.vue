@@ -162,7 +162,9 @@ export default {
 
 .directory-breadcrumb {
   display: flex;
-  margin-bottom: 1rem;
+  padding: 1rem;
+  border-top: 0.1rem solid $color-8;
+  border-bottom: 0.1rem solid $color-8;
 
   .breadcrumb {
     cursor: pointer;
@@ -179,14 +181,14 @@ export default {
   flex-direction: column;
   flex: auto;  
   overflow-y: scroll;
-  padding: 0.2rem 0;
+  padding: 0.3rem 0;
   background-color: $bg-workspace-2;
 
   .list-item {
     display: flex;
     justify-content: left;
     align-items: center;
-    padding: 0.1rem 1rem;
+    padding: 0.2rem 1rem;
 
     .svg-icon {
       height: 1rem;
@@ -195,16 +197,12 @@ export default {
       filter: invert(100%);
     }
 
-    &:hover {
-      background-color: $col-primary2;
-    }
-
     &.selected {
       background-color: $bg-toolbar;
+    }
 
-      &:hover {
-        background-color: $col-primary2;
-      }
+    &:hover {
+      background-color: $col-primary2;
     }
   }
 
@@ -213,6 +211,7 @@ export default {
 .button-group {
   display: flex;
   justify-content: flex-end;
+  border-top: 0.1rem solid $color-8;
 
   button {
     margin: 1rem 1rem 1rem 0;
