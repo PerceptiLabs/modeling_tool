@@ -45,6 +45,10 @@ export default {
   props: {
     filePickerType: {
       type: String,
+    },
+    fileTypeFilter: {
+      type: Array,
+      default: []
     }
   },
   data() {
@@ -93,8 +97,15 @@ export default {
       coreRequest(theData)
       .then(jsonData => {
           this.currentPath = jsonData.current_path.split('/').filter(el => el);
-          this.directories = jsonData.dirs;
-          this.files = jsonData.files;
+          this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
+          if (this.fileTypeFilter.length === 0) {
+            this.files = jsonData.files;  
+          } else {
+            this.files = jsonData.files.filter(f => {
+              let ext = f.replace(/.*\./, '').toLowerCase();
+              return ~this.fileTypeFilter.indexOf(ext);
+            })  
+          }
       });
     },
     onConfirm() {
@@ -120,7 +131,7 @@ export default {
   height: 24rem;
   min-width: 28rem;
   margin: 2rem;
-  overflow-y: auto;
+  overflow-y: overlay;
   font-size: 1.1rem;
 }
 

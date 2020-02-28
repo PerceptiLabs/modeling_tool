@@ -32,6 +32,7 @@
               span Back
           file-picker(
             :filePickerType="filePickerType"
+            :fileTypeFilter="validFileExtensions"
             @files-selected="onFilesSelected"
             @close="clearPath")
 
@@ -200,6 +201,12 @@
           this.settings.accessProperties.Sources = pathList;
           this.settings.accessProperties.Partition_list = partitionList;
         }
+      },
+      validFileExtensions() {
+        let optionBasic = ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz'];
+        let optionTutorial = ['npy'];
+
+        return this.isTutorialMode ? optionTutorial : optionBasic;
       }
     },
     watch: {
