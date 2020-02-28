@@ -190,6 +190,12 @@ export default {
     align-items: center;
     padding: 0.2rem 1rem;
 
+    span {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
     .svg-icon {
       height: 1rem;
       width: 1rem;
