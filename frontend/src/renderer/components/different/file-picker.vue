@@ -12,11 +12,12 @@
       .selectable-list
         .list-item(
           :class="{selected:isSelected(directory)}"
-          @click="toggleSelectedDirectory(directory)"
+          @click="onDirectoryClick(directory)"
+          @dblclick="onDirectoryDoubleClick(directory)"
           v-for="(directory, index) in directories"
           :key="index")
           img(src="/static/img/file-picker/folder.svg" class="svg-icon")
-          span(@click="calcFolderPath(index)") {{ directory }}
+          span {{ directory }}
 
         .list-item(
           :class="{selected:isSelected(f)}"
@@ -63,6 +64,7 @@ export default {
       selectedDirectories: [],
       osPathPrefix: isOsWindows() ? '' : '/',
       osPathSuffix: isOsWindows() && this.filePickerType === 'folder' ? '/' : '', // on windows folder should end with `/`
+      clickTimer: null,
     }
   },
   mounted() {
@@ -76,10 +78,15 @@ export default {
       let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;
       this.fetchPathInformation(breadcrumbPath);
     },
-    calcFolderPath(folderIndex) {
-      let folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + this.directories[folderIndex] + this.osPathSuffix ;
-      console.log(folderPath);
+    calcFolderPath(dirName) {
+      let folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + dirName + this.osPathSuffix ;
       this.fetchPathInformation(folderPath);
+    },
+    onDirectoryClick(dirName) {
+      this.toggleSelectedDirectory(dirName);
+    },
+    onDirectoryDoubleClick(dirName) {
+      this.calcFolderPath(dirName);
     },
     toggleSelectedFile(fileName) {
       if (this.filePickerType !== 'file') { return; }
@@ -120,8 +127,6 @@ export default {
       });
     },
     onConfirm() {
-        console.log('Clicked OK', this.selectedFiles);
-
         let emitPayload;
         
         if (this.filePickerType === 'file') {
