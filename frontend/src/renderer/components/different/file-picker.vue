@@ -29,6 +29,7 @@
           span {{ f }}
 
       .button-group
+        span {{ buttonGroupMessage }}
         button.btn.btn--primary.btn--disabled(type="button"
           @click="onCancel"
           ) Cancel
@@ -142,6 +143,15 @@ export default {
         this.$emit('close');
     },
   },
+  computed: {
+    buttonGroupMessage() {
+      if (this.filePickerType === 'file') {
+        return this.selectedFiles.length + ' files selected'
+      } else {
+        return '';
+      }
+    }
+  }
 }
 </script>
 
@@ -217,9 +227,10 @@ export default {
 .button-group {
   display: flex;
   justify-content: flex-end;
+  align-items: center;
   border-top: 0.1rem solid $color-8;
 
-  button {
+  > * {
     margin: 1rem 1rem 1rem 0;
   }
 }
