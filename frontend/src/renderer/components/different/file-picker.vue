@@ -91,7 +91,7 @@ export default {
         console.log('Clicked OK', this.selectedFiles);
         this.$emit(
           'files-selected',
-          this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f) + this.osPathSuffix);
+          this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f + this.osPathSuffix));
     },
     onCancel() {
         this.$emit('close');
