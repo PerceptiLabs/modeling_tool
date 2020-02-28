@@ -132,7 +132,7 @@ const actions = {
       .then((data)=> { return })
       .catch((err)=> { console.error(err) });
   },
-  
+
   API_CLOSE_core() {
     const theData = {
       reciever: 'server',
@@ -157,6 +157,7 @@ const actions = {
         Layers: getters.GET_coreNetwork
       }
     };
+    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     //console.log('API_startTraining', theData);
     coreRequest(theData)
       .then((data)=> {
@@ -244,6 +245,7 @@ const actions = {
       action: 'startTest',
       value: ''
     };
+    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     return coreRequest(theData)
       .then((data)=> { dispatch('mod_tracker/EVENT_testOpenTab', null, {root: true}) })
       .catch((err)=> { console.error(err) });
@@ -343,6 +345,7 @@ const actions = {
       value: getters.GET_coreNetwork
     };
     //console.log('getNetworkInputDim request', theData);
+    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     return coreRequest(theData)
       .then((data)=> {
         //console.log('getNetworkInputDim answer', data);
@@ -360,6 +363,7 @@ const actions = {
       action: "getNetworkOutputDim",
       value: getters.GET_coreNetwork
     };
+    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     //console.log('API_getOutputDim');
     return coreRequest(theData)
       .then((data)=> {
@@ -427,6 +431,7 @@ const actions = {
     };
 
     console.log('getCode', theData);
+    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {
@@ -502,6 +507,7 @@ const actions = {
         frontendNetwork: rootGetters['mod_workspace/GET_currentNetwork'].networkName
       }
     };
+    dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     const trackerData = {
       result: '',
       network: getters.GET_coreNetwork,

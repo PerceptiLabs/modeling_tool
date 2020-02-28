@@ -23,12 +23,12 @@ const wsPathDefSingleton = (function() {
     getInstance(wsPath){
       return new Promise(resolve => {
         if (!hasFetched) {
-          
+
           hasFetched = true;
           fetch(coreUrlConfigPath)
           .then(response => response.text())
           .then(envVar => {
-            
+
             if (envVar && envVar.startsWith('ws://')){
               wsPathDef = envVar;
             } else if (envVar && !envVar.startsWith('ws://')) {
@@ -62,18 +62,18 @@ function coreRequest(data, path, no, name) {
     // timeStartSend = new Date();
 
   // console.log('process.env', process.env);
-
+  console.log('in core requst');
   return wsPathDefSingleton.getInstance()
     .then(core_url => {
       return new Promise((resolve, reject) => {
         // let wsPath = path || wsPathDef;
         let wsPath = path || core_url;
         //console.log('path ', wsPath);
-    
+
         let websocket = new WebSocket(wsPath);
         // used a factory to return a singleton
         // let websocket = webSocketClientFactory.getInstance(wsPath);
-    
+
         websocket.onopen =    (evt)=> {
           // timeOpenWs = new Date();
           // calcTime(timeOpenWs, timeStartSend, 'creating WS', name);
@@ -91,10 +91,10 @@ function coreRequest(data, path, no, name) {
           reject(evt);
           websocket.close();
         };
-    
+
         function sendData(message) {
           //console.log('sent to core ', message);
-    
+
           const header = {
             "byteorder": 'little',
             "content-type": 'text/json',
@@ -105,16 +105,16 @@ function coreRequest(data, path, no, name) {
           //console.log('input data ', dataJSON);
           let dataByte = (new TextEncoder('utf-8').encode(dataJSON));
           let dataByteLength = dataByte.length;
-    
+
           header["content-length"] = dataByteLength;
-    
+
           let headerJSON = JSON.stringify(header);
           let headerByte = (new TextEncoder('utf-8').encode(headerJSON));
           let headerByteLength = headerByte.length;
-    
+
           let firstByte = 0;
           let secondByte = headerByteLength;
-    
+
           if(headerByteLength > 256) {
             firstByte = Math.floor(headerByteLength / 256);
             secondByte = headerByteLength % 256;
@@ -126,17 +126,17 @@ function coreRequest(data, path, no, name) {
           ];
           const messageBuff = Buffer.from(messageByte);
           websocket.send(messageBuff);
-    
+
           // timeStopSend = new Date();
           // calcTime(timeStopSend, timeOpenWs, 'creating send message', name);
           // calcTime(timeStopSend, timeStartSend, 'req->send', name);
         }
-    
+
         function onMessage(data) {
           //console.log('answer WS data', data);
           // timeStartAnswer = new Date();
           // calcTime(timeStartAnswer, timeStopSend, 'core delay', name);
-    
+
           let dataLength = '';
           let dataPart = '';
           //let dataString = data.toString();
@@ -172,7 +172,7 @@ function coreRequest(data, path, no, name) {
                 store.dispatch('mod_workspace/SET_openTest', null);
                 store.commit('mod_workspace/SET_showStartTrainingSpinner', false);
               }
-    
+
               //console.log('answer core data ', obgData);
               // let stopRequest = new Date();
               // calcTime(stopRequest, timeStartAnswer, 'transmitting', name);
