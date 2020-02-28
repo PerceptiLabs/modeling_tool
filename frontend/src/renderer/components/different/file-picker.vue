@@ -28,13 +28,13 @@
           img(src="/static/img/file-picker/file.svg" class="svg-icon")
           span {{ f }}
 
-    .button-group
-      button.btn.btn--primary.btn--disabled(type="button"
-        @click="onCancel"
-        ) Cancel
-      button.btn.btn--primary(type="button"
-        @click="onConfirm"
-        ) Confirm
+      .button-group
+        button.btn.btn--primary.btn--disabled(type="button"
+          @click="onCancel"
+          ) Cancel
+        button.btn.btn--primary(type="button"
+          @click="onConfirm"
+          ) Confirm
 </template>
 
 
@@ -151,11 +151,12 @@ export default {
 @import "../../scss/common/info-popup";
 
 .filepicker {
-//   background-color: $bg-window;
-  height: 24rem;
-  min-width: 28rem;
-  margin: 2rem;
-  overflow-y: overlay;
+
+  display: flex;
+  flex-direction: column;
+  min-height: 20rem;
+  max-height: 30rem;
+  width: 100%;
   font-size: 1.1rem;
 }
 
@@ -174,34 +175,39 @@ export default {
 }
 
 .selectable-list {
-
-  width: 100%;
+  display: flex;
+  flex-direction: column;
+  flex: auto;  
+  overflow-y: scroll;
+  padding: 0.2rem 0;
+  background-color: $bg-workspace-2;
 
   .list-item {
     display: flex;
     justify-content: left;
     align-items: center;
-    padding: 0 1rem;
+    padding: 0.1rem 1rem;
 
     .svg-icon {
-      margin-right: 1rem;
+      height: 1rem;
+      width: 1rem;
+      margin: 0 1rem 0 2rem;
       filter: invert(100%);
     }
 
     &:hover {
-      background-color: $bg-workspace;
+      background-color: $col-primary2;
     }
 
     &.selected {
-      background-color: $bg-workspace;
+      background-color: $bg-toolbar;
+
+      &:hover {
+        background-color: $col-primary2;
+      }
     }
   }
 
-}
-
-img {
-  width: 1rem;
-  height: 1rem;
 }
 
 .button-group {
@@ -209,7 +215,7 @@ img {
   justify-content: flex-end;
 
   button {
-    margin-right: 1rem;
+    margin: 1rem 1rem 1rem 0;
   }
 }
 
