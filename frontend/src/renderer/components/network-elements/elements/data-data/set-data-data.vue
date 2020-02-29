@@ -9,7 +9,7 @@
     template(slot="Computer-content")
       .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length && !showFilePicker")
         button.btn.tutorial-relative(type="button"
-          @click="loadFile"
+          @click="openFilePicker('file')"
           id="tutorial_button-load"
           v-tooltip-interactive:right="interactiveInfo.file"
           v-if="!showFilePicker"
@@ -18,7 +18,7 @@
             span Choose files
 
         button.btn.tutorial-relative(type="button"
-          @click="loadFolder"
+          @click="openFilePicker('folder')"
           v-tooltip-interactive:bottom="interactiveInfo.folder"
           )
             i.icon.icon-open-folder
@@ -30,11 +30,11 @@
             button.btn.btn--link(type="button" @click="clearPath")
               i.icon.icon-backward
               span Back
-          file-picker(
-            :filePickerType="filePickerType"
-            :fileTypeFilter="validFileExtensions"
-            @confirm-selection="confirmFilePickerSelection"
-            @close="clearPath")
+        file-picker(
+          :filePickerType="filePickerType"
+          :fileTypeFilter="validFileExtensions"
+          @confirm-selection="confirmFilePickerSelection"
+          @close="clearPath")
 
         //-web-upload-file#tutorial_button-load.tutorial-relative(
           v-model="settings.accessProperties.PathFake"
@@ -159,6 +159,7 @@
         serverListFileSelected: '2',
         showFilePicker: false,
         filePickerType: 'file',
+        filePickerAppendingItems: false,
       }
     },
     computed: {
@@ -272,33 +273,10 @@
 
         this.showFilePicker = true;
         this.filePickerType = 'file';
-
-        // let optionBasic = {
-        //   title:"Load file or files",
-        //   properties: ['openFile', 'multiSelections'],
-        //   filters: [
-        //     {name: 'All',     extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff', 'txt', 'json', 'csv', 'mat', 'npy', 'npz']},
-        //     {name: 'Images',  extensions: ['png', 'gif', 'jpg', 'jpeg', 'bmp', 'tif', 'tiff']},
-        //     {name: 'Text',    extensions: ['txt', 'json', 'csv', 'mat', 'npy', 'npz']},
-        //   ]
-        // };
-        // let optionTutorial = {
-        //   title: "Load file",
-        //   buttonLabel: 'Load file',
-        //   defaultPath: `${this.appPath}basic-data`,
-        //   properties: ['openFile'],
-        //   filters: [
-        //     {name: 'All', extensions: ['npy']},
-        //   ]
-        // };
-
-        // let optionDialog = this.isTutorialMode ? optionTutorial : optionBasic;
-        // openLoadDialog(optionDialog)
-        //   .then((pathArr)=> {
-        //     console.log('pathArr', pathArr);
-        //     // this.saveLoadFile(pathArr, 'file', isAppend)
-        //   })
-        //   .catch(()=> { })
+      },
+      openFilePicker(fileType) {
+        this.showFilePicker = true;
+        this.filePickerType = fileType;
       },
       TESTload() {
         this.testSelectFile = false;
@@ -313,8 +291,8 @@
         //  .catch(()=> { })
       },
       addFiles() {
-        if(this.typeOpened === 'file') this.loadFile(true);
-        else this.loadFolder(true)
+        this.filePickerAppendingItems = true;
+        this.openFilePicker(this.filePickerType);
       },
       saveLoadFile(pathArr, type, isAppend) {
         this.tutorialPointActivate({way: 'next', validation: 'tutorial_button-load'});
@@ -324,6 +302,8 @@
         }
         else this.settings.accessProperties.Sources = this.Mix_settingsData_prepareSources(pathArr, type);
         //this.getSettingsInfo();
+
+        this.filePickerAppendingItems = false;
       },
       clearPath() {
         this.showFilePicker = false;
@@ -375,12 +355,12 @@
       },
       confirmFilePickerSelection(selectedItems) {
         this.showFilePicker = false;
-        console.log('confirmFilePickerSelection', selectedItems);
+        if (!selectedItems.length) { return; }
 
         if (this.filePickerType === 'file') {
-          this.saveLoadFile(selectedItems, 'file', false);
+          this.saveLoadFile(selectedItems, 'file', this.filePickerAppendingItems);
         } else if (this.filePickerType === 'folder') {
-          this.saveLoadFile(selectedItems, 'directory', false)
+          this.saveLoadFile(selectedItems, 'directory', this.filePickerAppendingItems)
         }
         
       }
