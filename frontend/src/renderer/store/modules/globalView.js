@@ -1,5 +1,4 @@
 const namespaced = true;
-
 const state = {
   onlineStatus: true,
   hideLayers: true,
@@ -19,6 +18,7 @@ const state = {
     showErrorPopup: false,
     showWorkspaceBeforeImport: false,
     showConfirmPopup: false,
+    coreNotFoundPopup: false,
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
@@ -70,6 +70,9 @@ const mutations = {
   gp_ComingSoonPopup(state, value) {
     state.globalPopup.ComingSoonPopup = value
   },
+  coreNotFoundPopup(state, value) {
+    state.globalPopup.coreNotFoundPopup = value;
+  },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
     state.popupConfirmCancel = value.cancel;
@@ -111,6 +114,13 @@ const actions = {
     commit('gp_infoPopup', 'a');
     commit('gp_ComingSoonPopup', true);
   },
+  ShowCoreNotFoundPopup({ commit, rootState }) {
+    const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
+
+    if(coreIsOffline) {
+      commit('coreNotFoundPopup', true);
+    }
+  },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);
   },
@@ -125,6 +135,9 @@ const actions = {
   },
   CLEAR_requestCounter({commit}) {
     commit('clear_requestCounter');
+  },
+  hideSidebarAction({commit}, value) {
+    commit('SET_hideSidebar', value)
   }
 };
 

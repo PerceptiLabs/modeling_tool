@@ -243,7 +243,7 @@ export default {
     &:after {
       content: '\e922';
       font-family: 'icomoon' !important;
-      font-size: 1.1em;
+      font-size: calc(var(--sidebar-scale-coefficient) * 1.1em);
       line-height: 1;
       position: absolute;
       right: 1px;

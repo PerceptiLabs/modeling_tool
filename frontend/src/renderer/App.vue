@@ -112,8 +112,11 @@
       errorPopup() {
         return this.$store.state.globalView.globalPopup.showErrorPopup
       },
+      corePopup() {
+        return this.$store.state.globalView.globalPopup.coreNotFoundPopup
+      },
       isShowPopup() {
-        return this.errorPopup.length || this.infoPopup.length
+        return this.errorPopup.length || this.infoPopup.length || this.corePopup;
       },
     },
     watch: {
