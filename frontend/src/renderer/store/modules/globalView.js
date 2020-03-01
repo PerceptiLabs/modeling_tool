@@ -75,9 +75,6 @@ const mutations = {
     state.popupConfirmCancel = value.cancel;
     state.popupConfirmOk = value.ok;
   },
-  gp_filePickerPopup(state, value) {
-    state.globalPopup.showFilePicker = value;
-  },
   gp_errorPopup(state, value) {
     state.globalPopup.showErrorPopup = value
   },

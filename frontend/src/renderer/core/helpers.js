@@ -13,11 +13,6 @@ const openLoadDialog = function (options) {
     });
     ipcRenderer.send('open-dialog', options);
   });*/
-
-  return new Promise((resolve, reject) => {
-    console.log(openLoadDialog);
-    resolve();
-  })
 };
 
 const openSaveDialog = function (options) {
