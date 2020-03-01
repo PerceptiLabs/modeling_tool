@@ -44,7 +44,6 @@
         //-general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
-        file-picker-popup(v-if="showFilePicker")
         workspace-before-import(v-if="showWorkspaceBeforeImport")
         workspace-save-network(
           v-if="saveNetworkPopup.show"
