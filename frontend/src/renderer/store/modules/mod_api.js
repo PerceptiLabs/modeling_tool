@@ -583,12 +583,12 @@ const actions = {
     }    
     if (!userToken) { return; }
 
-    const useObject = parseJWT(userToken);
+    const userObject = parseJWT(userToken);
 
     const theData = {
       reciever: '',
       action: 'setUser',
-      value: useObject.email
+      value: userObject.email
     };
     return coreRequest(theData)
       .then((data)=> data)
