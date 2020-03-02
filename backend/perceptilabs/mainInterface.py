@@ -367,8 +367,9 @@ class Interface():
             user = value
             with configure_scope() as scope:
                 scope.user = {"email" : user}
-                log.info("User has been set to %s" %str(scope.user))
-            return "User has been set"
+                log.info("User has been set to %s" %str(value))
+
+            return "User has been set to " + value
 
         else:
             raise LookupError("The requested action does not exist")
