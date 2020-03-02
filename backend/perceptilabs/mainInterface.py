@@ -363,5 +363,11 @@ class Interface():
             response = self._core.getStatus()
             return response
 
+        elif action == "setUser":
+            user = value
+            with configure_scope() as scope:
+                scope.user = {"email" : user}
+            return "User has been set"
+
         else:
             raise LookupError("The requested action does not exist")
