@@ -574,6 +574,22 @@ const actions = {
         console.error(err);
       });
   },
+
+  API_setUserInCore({}, userEmail) {
+    if (!userEmail) { return; }
+
+    const theData = {
+      reciever: '',
+      action: 'setUser',
+      value: userEmail
+    };
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
+
 };
 
 export default {
