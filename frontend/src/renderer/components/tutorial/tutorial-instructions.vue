@@ -13,7 +13,7 @@
 
     .list-area-box(v-show="isMaximize")
       p.list-area_title {{interective[activeStep].title}}
-      ul.list-area_list
+      perfect-scrollbar(tag="ul").list-area_list
         .list-element.list-element--status(
           v-for="(point, index) in points"
           :key="index"
@@ -320,7 +320,7 @@ export default {
     font-size: 1.6rem;
     position: relative;
     padding: 0 2.5rem 0 3.5rem;
-   
+
     &.list_title{
       font-weight: 700;
       font-size: 1.4rem;
@@ -388,7 +388,7 @@ export default {
     padding: 0.4rem 0.8rem;
     margin-right: 1rem;
     &:last-child {
-      margin-right: 0; 
+      margin-right: 0;
     }
     &[disabled] {
       border: 1px solid $color-text-instructions;
