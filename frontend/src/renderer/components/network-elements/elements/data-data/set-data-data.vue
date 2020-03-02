@@ -24,11 +24,6 @@
             span Choose folders
 
       template(v-else-if="showFilePicker")
-        .settings-layer_section
-          .form_row
-            button.btn.btn--link(type="button" @click="clearPath")
-              i.icon.icon-backward
-              span Back
         file-picker(
           :filePickerType="filePickerType"
           :fileTypeFilter="validFileExtensions"

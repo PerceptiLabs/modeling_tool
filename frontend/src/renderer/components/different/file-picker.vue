@@ -1,5 +1,14 @@
 <template lang="pug">
   div
+    .settings-layer_section
+      .form_row
+        button.btn.btn--link(type="button" @click="onCancel")
+          i.icon.icon-backward
+          span Back
+      .search.search-input-box
+        i.icon.icon-search(@click="searchPath")
+        i.icon.icon-close(@click="clearSearchValue")
+        input.search-input(:class="{error: searchDirNotFound}" type="text" v-model="searchValue" @keyup.enter="searchPath")
     .filepicker
       .directory-breadcrumb
         .breadcrumb(
@@ -68,6 +77,8 @@ export default {
       osPathPrefix: isOsWindows() ? '' : '/',
       osPathSuffix: isOsWindows() && this.filePickerType === 'folder' ? '/' : '', // on windows folder should end with `/`
       clickTimer: null,
+      searchValue: '',
+      searchDirNotFound: false,
     }
   },
   mounted() {
@@ -94,6 +105,7 @@ export default {
     onFileDoubleClick(fileName) {
       if (this.filePickerType !== 'file') { return; }
       this.selectedFiles = [fileName];
+      this.onConfirm();
     },
     toggleSelectedFile(fileName, event) {
       if (this.filePickerType !== 'file') { return; }
@@ -105,6 +117,8 @@ export default {
         } else {
           this.selectedFiles.push(fileName);
         }
+      } else {
+        this.selectedFiles = [fileName];
       }
 
     },
@@ -115,7 +129,7 @@ export default {
       this.selectedDirectories = [];
       this.selectedDirectories.push(dirName);
     },
-    fetchPathInformation(path) {
+    fetchPathInformation(path, isSearching = false) {
       this.selectedFiles = [];
       let theData = {
           reciever: '0',
@@ -125,6 +139,13 @@ export default {
 
       coreRequest(theData)
       .then(jsonData => {
+          const pathNotFound = jsonData.current_path === "";
+          if(isSearching && pathNotFound) {
+            this.searchDirNotFound = true;
+            return 0;
+          } else {
+            this.searchDirNotFound = false;
+          }
           this.currentPath = jsonData.current_path.split('/').filter(el => el);
           this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
           if (this.fileTypeFilter.length === 0) {
@@ -157,6 +178,18 @@ export default {
     onCancel() {
         this.$emit('close');
     },
+    clearSearchValue() {
+      this.searchValue = '';
+      this.searchDirNotFound = false;
+    },
+    searchPath() {
+      if(!!this.searchValue) {
+        const path = this.osPathPrefix + this.searchValue + this.osPathSuffix
+        this.fetchPathInformation(path, true);
+      } else {
+        this.fetchPathInformation('');
+      }
+    }
   },
   computed: {
     buttonGroupMessage() {
@@ -190,6 +223,7 @@ export default {
   max-height: 30rem;
   width: 100%;
   font-size: 1.1rem;
+  min-width: 450px;
 }
 
 .directory-breadcrumb {
@@ -257,4 +291,51 @@ export default {
   }
 }
 
+.settings-layer_section {
+  margin-top: 0;
+  justify-content: space-between;
+}
+
+.search-input-box {
+  position: relative;
+}
+.search-input-box .icon-close {
+  position: absolute;
+  cursor: pointer;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  font-size: 6px;
+  display: block;
+  text-align: center;
+  line-height: 10px;
+  border-radius: 50%;
+  background-color: #5C6680;
+}
+.search-input-box .icon-search {
+  cursor: pointer;
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+.search-input {
+  width: 150px;
+  height: 20px;
+  padding-left: 21px;
+  padding-right: 15px;
+  font-size: 12px;
+  color: #E1E1E1;
+  border: 1px solid #5C6680;
+  background: #4D556A;
+  border-radius: 5px;
+}
+.search-input.error {
+  border: 1px solid red;
+}
+.search-input:focus {
+  background: #4D556A;
+}
 </style>
