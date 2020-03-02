@@ -367,6 +367,7 @@ class Interface():
             user = value
             with configure_scope() as scope:
                 scope.user = {"email" : user}
+                log.info("User has been set to %s" %str(log.user))
             return "User has been set"
 
         else:
