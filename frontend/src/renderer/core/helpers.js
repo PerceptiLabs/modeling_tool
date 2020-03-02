@@ -208,6 +208,20 @@ const calculateSidebarScaleCoefficient = () => {
   }
 };
 
+const parseJWT = (jwt) => {
+  if (!jwt) { return; }
+
+  try {
+    const payload = jwt.split('.')[1];
+    if (payload) {
+      return JSON.parse(window.atob(payload));
+    }
+  } catch (error) {
+    console.error('parseJWT', error);
+    return;
+  }
+}
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -228,5 +242,6 @@ export {
   isLocalStorageAvailable,
   stringifyNetworkObjects,
   shouldHideSidebar,
-  calculateSidebarScaleCoefficient
+  calculateSidebarScaleCoefficient,
+  parseJWT,
 }
