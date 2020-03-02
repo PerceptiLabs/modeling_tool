@@ -6,7 +6,6 @@
           i.icon.icon-backward
           span Back
       .search.search-input-box
-        i.icon.icon-search(@click="searchPath")
         i.icon.icon-close(@click="clearSearchValue")
         input.search-input(:class="{error: searchDirNotFound}" type="text" v-model="searchValue" @keyup.enter="searchPath")
     .filepicker
@@ -324,7 +323,7 @@ export default {
 .search-input {
   width: 150px;
   height: 20px;
-  padding-left: 21px;
+  padding-left: 9px;
   padding-right: 15px;
   font-size: 12px;
   color: #E1E1E1;
