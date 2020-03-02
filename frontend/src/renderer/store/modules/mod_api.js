@@ -1,6 +1,6 @@
 import {coreRequest, openWS}  from "@/core/apiWeb.js";
 //import coreRequest    from "@/core/apiCore.js";
-import { deepCopy }   from "@/core/helpers.js";
+import { deepCopy, parseJWT }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 
 const {spawn} = require('child_process');
@@ -71,7 +71,7 @@ const actions = {
   //---------------
   //  CORE
   //---------------
-  API_runServer({state, commit, rootGetters}) {
+  API_runServer({state, commit, dispatch, rootGetters}) {
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
@@ -113,7 +113,8 @@ const actions = {
       coreRequest(theData)
         .then((data)=> {
           //console.log('checkCore', data);
-          commit('SET_statusLocalCore', 'online')
+          commit('SET_statusLocalCore', 'online');
+          dispatch('API_setUserInCore', null);
         })
         .catch((err)=> {  });
     }
@@ -575,13 +576,19 @@ const actions = {
       });
   },
 
-  API_setUserInCore({}, userEmail) {
-    if (!userEmail) { return; }
+  API_setUserInCore({}) {
+    let userToken = sessionStorage.getItem('currentUser');
+    if (!userToken) { 
+      userToken = localStorage.getItem('currentUser'); 
+    }    
+    if (!userToken) { return; }
+
+    const useObject = parseJWT(userToken);
 
     const theData = {
       reciever: '',
       action: 'setUser',
-      value: userEmail
+      value: useObject.email
     };
     return coreRequest(theData)
       .then((data)=> data)
