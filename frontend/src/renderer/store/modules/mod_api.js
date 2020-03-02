@@ -114,7 +114,7 @@ const actions = {
         .then((data)=> {
           //console.log('checkCore', data);
           commit('SET_statusLocalCore', 'online');
-          dispatch('API_setUserInCore', null);
+          dispatch('API_setUserInCore');
         })
         .catch((err)=> {  });
     }
