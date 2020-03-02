@@ -20,6 +20,7 @@
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
+      this.addHubSpotTracking();
     },
     mounted() {
       this.updateOnlineStatus();
@@ -219,6 +220,15 @@
       // appMaximize() {
       //   this.$store.dispatch('mod_events/EVENT_appMaximize');
       // },
+      addHubSpotTracking() {
+        let hubSpotElement = document.createElement('script');
+        hubSpotElement.type = 'text/javascript';
+        hubSpotElement.id = 'hs-script-loader';
+        hubSpotElement.async = true;
+        hubSpotElement.defer = true;
+        hubSpotElement.src = '//js.hs-scripts.com/7122301.js';
+        document.head.appendChild(hubSpotElement);
+      }
     },
   }
 </script>
