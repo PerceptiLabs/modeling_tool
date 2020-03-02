@@ -32,7 +32,7 @@ LABEL name="PerceptiLabs-Modeling-Web-app" \
 RUN mkdir /licenses
 COPY licenses /licenses
 
-ADD run-httpd.sh /run-httpd.sh
+# ADD run-httpd.sh /run-httpd.sh
 
 RUN yum -y --nodocs update && \
     yum -y --nodocs install httpd && \
@@ -46,6 +46,12 @@ RUN yum -y --nodocs update && \
     sed -i'' 's;Require all denied;Require all granted;g' /etc/httpd/conf/httpd.conf
 
 ADD . /var/www/html/
+
+RUN chmod 644 /var/www/html/.htaccess
+
+RUN ls -lar /var/www/html
+RUN cat /var/www/html/.htaccess
+ 
 
 EXPOSE 8080
 
