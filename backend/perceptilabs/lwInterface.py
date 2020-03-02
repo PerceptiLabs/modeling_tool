@@ -29,7 +29,13 @@ class getFolderContent(LW_interface_base):
 
     def run(self):
         if not self._current_path:
-            self._current_path = os.path.abspath('')
+            # self._current_path = os.path.abspath('')
+            #TODO Make it a seperate request to get the path to tutorial_data
+            path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'tutorial_data')
+            if os.path.exists(path):
+                self._current_path = path    
+            else:
+                self._current_path = os.path.abspath('')
 
         drives = []
         if self._current_path == '.':
