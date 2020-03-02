@@ -7,10 +7,9 @@
     @press-apply="saveSettings($event)"
   )
     template(slot="Computer-content")
-      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length && !showFilePicker")
+      .settings-layer_section.section-data-select(v-if="!settings.accessProperties.Sources.length && !showFilePicker" id="tutorial_button-load")
         button.btn.tutorial-relative(type="button"
           @click="openFilePicker('file')"
-          id="tutorial_button-load"
           v-tooltip-interactive:right="interactiveInfo.file"
           v-if="!showFilePicker"
           )
@@ -362,7 +361,7 @@
         } else if (this.filePickerType === 'folder') {
           this.saveLoadFile(selectedItems, 'directory', this.filePickerAppendingItems)
         }
-        
+
       }
     }
   }
