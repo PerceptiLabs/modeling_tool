@@ -159,7 +159,6 @@
     computed: {
       ...mapGetters({
         appPath:            'globalView/GET_appPath',
-        selectedFilePaths:  'mod_filepicker/get_selectedFilePaths',
         isTutorialMode:     'mod_tutorials/getIstutorialMode',
       }),
       dynamicTabs() {
@@ -233,11 +232,6 @@
         },
         immediate: true
       },
-      selectedFilePaths: {
-        handler(newValue) {
-          console.log('selectedFilePaths', newValue);
-        }
-      }
     },
     methods: {
       ...mapActions({
