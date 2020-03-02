@@ -36,6 +36,13 @@ class getFolderContent(LW_interface_base):
             import win32api
             drives = win32api.GetLogicalDriveStrings()
             drives = drives.split('\000')[:-1]
+
+        elif not os.path.isdir(self._current_path):
+            return {
+                "current_path" : '',
+                "dirs" : '',
+                "files" :  '',
+            }
         
         if not drives:
             return {
