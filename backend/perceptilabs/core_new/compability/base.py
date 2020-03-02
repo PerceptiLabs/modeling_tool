@@ -39,7 +39,7 @@ class CompabilityCore:
         
     def run(self):
         self._running = True
-        def do_process():
+        def do_process(counter, core):
             while not self._command_queue.empty():
                 command = self._command_queue.get()
                 self._send_command(core, command)
@@ -57,8 +57,10 @@ class CompabilityCore:
         
         if self._threaded:
             def worker():
+                counter = 0
                 while self._running:
-                    do_process()
+                    do_process(counter, core)
+                    counter += 1
                     time.sleep(1.0)
                 do_process()    #One extra for good measure
 

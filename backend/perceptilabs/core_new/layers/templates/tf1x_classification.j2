@@ -69,23 +69,33 @@
         input_tensor, label_tensor = iterator.get_next()
 
         # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
-        layer_output_tensors = {
-            input_data_node.layer_id: input_tensor,
-            label_data_node.layer_id: label_tensor
-        }
 
-        for node in graph.inner_nodes:
-            args = []
-            for input_node in graph.get_input_nodes(node):
-                args.append(layer_output_tensors[input_node.layer_id])
-            y = node.layer_instance(*args)
-            layer_output_tensors[node.layer_id] = y
+        def build_graph(input_tensor, label_tensor):
+            layer_output_tensors = {
+                input_data_node.layer_id: input_tensor,
+                label_data_node.layer_id: label_tensor
+            }
 
+            for node in graph.inner_nodes:
+                args = []
+                for input_node in graph.get_input_nodes(node):
+                    args.append(layer_output_tensors[input_node.layer_id])
+                    y = node.layer_instance(*args)
+                layer_output_tensors[node.layer_id] = y
+
+
+            return layer_output_tensors
+
+        layer_output_tensors = build_graph(input_tensor, label_tensor)
         output_tensor = layer_output_tensors[output_layer_id]
         target_tensor = layer_output_tensors[target_layer_id]
 
-        self._input_tensor = input_tensor
-        self._output_tensor = output_tensor
+        # Create an exportable version of the TensorFlow graph
+        self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+        self._output_tensor_export = build_graph(
+            self._input_tensor_export,
+            tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+        )[output_layer_id]
         
         loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
@@ -283,7 +293,7 @@
 
         strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
 
-        BATCH_SIZE_PER_REPLICA = 10 # TODO: get from frontend/json network
+        BATCH_SIZE_PER_REPLICA = self._batch_size # TODO: should this be batch_size divided by n_devices or not?
         GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * n_devices
 
         # Make training set
@@ -555,6 +565,7 @@
                 layer_outputs_train = reduce_per_replica(layer_outputs_train)
                 layer_gradients_train = reduce_per_replica(layer_gradients_train)     
 
+                
                 ##### Validation statistics #####
                 dist_loss_val, accuracy_val, \
                 layer_outputs_val, layer_weights_val, layer_biases_val, \
@@ -569,6 +580,12 @@
                 layer_outputs_val = reduce_per_replica(layer_outputs_val)
                 layer_gradients_val = reduce_per_replica(layer_gradients_val)
 
+                # Create an exportable version of the TensorFlow graph                
+                self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+                self._output_tensor_export = model(
+                    self._input_tensor_export,
+                    tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+                )[output_layer_id]
             else:
                 #dist_loss, dist_grads_train, dist_locals = strategy.experimental_run(train_step, train_iterator)
                 #dist_test = strategy.experimental_run(test_step, test_iterator) # TODO: implement this.
@@ -590,9 +607,23 @@
                 f1_val = tf.constant(-4)   
 
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}        
+            
+            savables = tf.global_variables()
+            self._saver = tf.compat.v1.train.Saver(savables)
 
+            # Restore from checkpoint if specified
+            {% filter remove_lspaces(8) %}
+                {% if export_directory is not none %}
+                    path = tf.train.latest_checkpoint('{{export_directory}}')
+                    self._saver.restore(sess, path)
+                {% endif %}
+            {% endfilter %}                    
+
+            log.info("Entering training loop")
+            
             self._epoch = 0
-            while self._epoch < self._n_epochs and not self._stopped:
+            while self._epoch < self._n_epochs and not self._stopped: 
+                t0 = time.perf_counter()               
                 self._training_iteration = 0
                 self._validation_iteration = 0
                 self._status = 'training'
@@ -641,7 +672,13 @@
                 except tf.errors.OutOfRangeError:
                     pass
 
-                self._epoch+=1
+                log.info(
+                    f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
+                    f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
+                    f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
+                )
+                log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
+                self._epoch += 1
 
             self._testing_iteration = 0
             self._status = 'testing'
@@ -733,21 +770,29 @@ class {{layer_name}}(ClassificationLayer):
             path: the directory where the exported model will be stored.
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
 
+        log.debug(f"Export called. Path = {path}, mode = {mode}")
+        
         # Export non-compressed model
         if mode in ['TFModel', 'TFModel+checkpoint']:
-            tf.compat.v1.saved_model.simple_save(self._sess, path, inputs={'input': self._input_tensor}, outputs={'output': self._output_tensor})
+            tf.compat.v1.saved_model.simple_save(self._sess, path, inputs={'input': self._input_tensor_export}, outputs={'output': self._output_tensor_export})
 
         # Export compressed model
         if mode in ['TFLite', 'TFLite+checkpoint']:
-            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor], [self._output_tensor])
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
             converter.post_training_quantize = True
             tflite_model = converter.convert()
             open(path, "wb").write(tflite_model)
 
         # Export checkpoint
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
-            self._checkpoint.save(file_prefix=os.path.join(path, 'ckpt'), session=self._sess)
-
+            {% filter remove_lspaces(8) %}
+                {% if distributed %}
+                    self._saver.save(self._sess, os.path.join(path, 'ckpt'), global_step=0)    
+                {% else %}
+                    self._checkpoint.save(file_prefix=os.path.join(path, 'ckpt'), session=self._sess)
+                {% endif %}
+            {% endfilter %}
+                
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.

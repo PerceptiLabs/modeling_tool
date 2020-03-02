@@ -198,15 +198,6 @@ class TrainingLayer(DataLayer):
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
         raise NotImplementedError
 
-    @abstractmethod    
-    def on_restore(self, path: str) -> None:
-        """ Restore model state from a checkpoint
-        
-        Args:
-            path: the directory where the exported model is stored."""
-        
-        raise NotImplementedError    
-    
     @property
     @abstractmethod
     def status(self):

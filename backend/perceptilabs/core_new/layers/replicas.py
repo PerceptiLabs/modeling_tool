@@ -184,9 +184,6 @@ class ClassificationLayerReplica(ClassificationLayer):
     def on_export(self, path):
         raise NotReplicatedError
     
-    def on_restore(self, path):
-        raise NotReplicatedError        
-    
     @property
     def training_iteration(self):
         return self._training_iteration

@@ -72,6 +72,7 @@ class Core:
 
         self._graphs = []
 
+        counter = 0
         t_start = time.perf_counter()
         while self._client.status == STATUS_RUNNING or (self._client.status == STATUS_IDLE and len(self._graphs) < self._client.snapshot_count):
             t0 = time.perf_counter()
@@ -95,7 +96,7 @@ class Core:
                 self._graphs.extend(new_graphs)
 
             if on_iterate is not None:
-                on_iterate()
+                on_iterate(counter, self)
 
             t1 = time.perf_counter()
 
@@ -108,7 +109,8 @@ class Core:
                 f"Consumed {len(snapshots)} snapshots in {round(1000*(t1-t0), 3)} ms (mean size: {avg_size} KB). "
                 f"Total consumed (produced): {len(self._graphs)} ({self._client.snapshot_count}). "
                 f"Consumption (production) rate: {consume_rate} ({produce_rate}) per sec. "
-            )            
+            )
+            counter += 1
             time.sleep(1)
 
 

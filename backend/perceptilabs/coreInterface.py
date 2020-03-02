@@ -157,9 +157,10 @@ class coreLogic():
         data_container = DataContainer()
 
         def backprop(layer_id):
-            b_con = network['Layers'][layer_id]['backward_connections']
-            if b_con:
-                return backprop(b_con[0])
+            backward_connections = network['Layers'][layer_id]['backward_connections']
+            if backward_connections:
+                id_, name = backward_connections[0]
+                return backprop(id_)
             else:
                 return layer_id
 
@@ -167,22 +168,24 @@ class coreLogic():
         gpus = self.gpu_list()
         distributed = self.isDistributable(gpus)
 
+        distributed = True
+
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'DataData':
                 layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
             if layer['Type'] == 'TrainNormal':
                 layer['Properties']['Distributed'] = distributed
                 if distributed:
-                    labels = layer['Properties']['Labels']
+                    targets_id = layer['Properties']['Labels']
 
-                    for b_con in layer['backward_connections']:
-                        if b_con != labels:
-                            pred = b_con
-
-                    input_data_layer = backprop(pred)
-                    target_data_layer = backprop(labels)
+                    for id_, name in layer['backward_connections']:
+                        if id_ != targets_id:
+                            outputs_id = id_
+                    
+                    input_data_layer = backprop(outputs_id)
+                    labels_data_layer = backprop(targets_id)
                     layer['Properties']['InputDataId'] = input_data_layer
-                    layer['Properties']['TargetDataId'] = target_data_layer
+                    layer['Properties']['TargetDataId'] = labels_data_layer
 
                 else:
                     layer['Properties']['InputDataId'] = ''
@@ -329,6 +332,7 @@ class coreLogic():
         return {"content": is_trained}
 
     def exportNetwork(self,value):
+        log.debug(f"exportNetwork called. Value = {pprint.pformat(value)}")
         if self._core_mode == 'v1':
             return self.exportNetworkV1(value)
         else:

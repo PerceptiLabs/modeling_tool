@@ -182,7 +182,7 @@ class ScriptFactory:
         template += "    global status\n"
         template += "    data = request.json\n"
         template += "    event_queue.put(data)\n"
-        #template += "    log.info('Received command. Data: ' + str(data))\n"
+        template += "    log.debug('Received event. Data: ' + str(data))\n"
         #template += "    if data['type'] == 'on_pause':\n"
         #template += "        graph.active_training_node.layer.on_pause()\n"
         #template += "    elif data['type'] == 'on_resume':\n"
@@ -217,7 +217,7 @@ class ScriptFactory:
         template += "    while not event_queue.empty():\n"
         template += "        event_data = event_queue.get()\n"
         template += "        event_type = event_data['type']\n"
-        #template += "        print('PROC EVENTS', event_type)\n"        
+        template += "        log.debug('Processing event: ' + str(event_type) + ' '+ str(event_data))\n"        
         template += "        \n"
         template += "        if event_type == 'on_pause':\n"
         template += "            graph.active_training_node.layer.on_pause()\n"
@@ -341,6 +341,11 @@ class ScriptFactory:
         )
 
         code = self._engine.render_string(template)
+
+
+        #print("code", add_line_numbering(code))
+        #import pdb; pdb.set_trace()
+        
         return code    
         
     def _fetch_parameters(self, layer_spec, macro_parameters):
@@ -359,8 +364,8 @@ class ScriptFactory:
                 value = f"'{value}'"
             results[key] = value
             
-            import pprint
-            print('FETCH PARAMETERS', pprint.pformat(layer_spec), value) 
+            #import pprint
+            #print('FETCH PARAMETERS', pprint.pformat(layer_spec), value) 
             
 
         return results
