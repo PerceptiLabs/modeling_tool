@@ -34,6 +34,10 @@ cp ../../backend/setup.py .
 cp ../../backend/setup.cfg .
 cp "../../Docker/Core/licenses/PerceptiLabs EULA.txt" .
 cp ../../backend/perceptilabs/app_variables.json ./perceptilabs/
+cd perceptilabs
+mkdir tutorial_data
+cd ..
+cp ../../backend/perceptilabs/tutorial_data/* ./perceptilabs/tutorial_data/
 
 echo "Listing files to be included in build (contents of 'backend_tmp/')"
 ls -l -R
