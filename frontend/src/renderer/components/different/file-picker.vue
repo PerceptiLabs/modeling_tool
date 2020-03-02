@@ -20,13 +20,14 @@
           span {{ directory }}
 
         .list-item(
-          :class="{selected:isSelected(f)}"
-          @click="toggleSelectedFile(f)"
-          v-for="f in files"
+          :class="{selected:isSelected(fileName)}"
+          @dblclick="onFileDoubleClick(fileName)"
+          @click="toggleSelectedFile(fileName, $event)"
+          v-for="fileName in files"
           v-if="filePickerType === 'file'"
-          :key="f")
+          :key="fileName")
           img(src="/static/img/file-picker/file.svg" class="svg-icon")
-          span {{ f }}
+          span {{ fileName }}
 
       .button-group
         span {{ buttonGroupMessage }}
@@ -90,14 +91,22 @@ export default {
     onDirectoryDoubleClick(dirName) {
       this.calcFolderPath(dirName);
     },
-    toggleSelectedFile(fileName) {
+    onFileDoubleClick(fileName) {
       if (this.filePickerType !== 'file') { return; }
-      if (this.selectedFiles.includes(fileName)) {
+      this.selectedFiles = [fileName];
+    },
+    toggleSelectedFile(fileName, event) {
+      if (this.filePickerType !== 'file') { return; }
+
+      if (event.ctrlKey || event.metaKey) {
+        if (this.selectedFiles.includes(fileName)) {
           const idxToRemove = this.selectedFiles.findIndex(el => el === fileName);
           this.selectedFiles.splice(idxToRemove, 1);
-      } else {
+        } else {
           this.selectedFiles.push(fileName);
+        }
       }
+
     },
     toggleSelectedDirectory(dirName) {
       if (this.filePickerType !== 'folder') { return; }
@@ -119,22 +128,22 @@ export default {
           this.currentPath = jsonData.current_path.split('/').filter(el => el);
           this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
           if (this.fileTypeFilter.length === 0) {
-            this.files = jsonData.files;  
+            this.files = jsonData.files;
           } else {
             this.files = jsonData.files.filter(f => {
               let ext = f.replace(/.*\./, '').toLowerCase();
               return ~this.fileTypeFilter.indexOf(ext);
-            })  
+            })
           }
       });
     },
     onConfirm() {
         let emitPayload;
-        
+
         if (this.filePickerType === 'file') {
           emitPayload = this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
         } else if (this.filePickerType === 'folder') {
-          if (!this.selectedDirectories) { 
+          if (!this.selectedDirectories) {
             // if not active directory select, take current
             emitPayload = this.osPathPrefix + this.currentPath.join('/') + '/';
           } else {
@@ -160,7 +169,7 @@ export default {
     isConfirmButtonDisabled() {
       if (this.filePickerType === 'file' && this.selectedFiles.length === 0) {
         return true;
-      } 
+      }
 
       return false;
     }
@@ -202,7 +211,7 @@ export default {
 .selectable-list {
   display: flex;
   flex-direction: column;
-  flex: auto;  
+  flex: auto;
   overflow-y: scroll;
   padding: 0.3rem 0;
   background-color: $bg-workspace-2;
