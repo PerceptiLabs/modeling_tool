@@ -13,6 +13,7 @@
         .breadcrumb(
           @click="calcBreadcrumbPath(pathIndex)"
           v-for="(pathName, pathIndex) in currentPath"
+          v-if="pathIndex >= currentPath.length - breadcrumbShowLastXPositions"
           :key="pathIndex")
           span {{ pathName }}
 
@@ -52,6 +53,10 @@
 import { coreRequest } from '@/core/apiWeb.js';
 import { isOsWindows } from '@/core/helpers.js';
 
+
+const breadcrumbCharacterLength = 58;
+
+
 export default {
   name: 'FilePicker',
   props: {
@@ -77,12 +82,25 @@ export default {
       clickTimer: null,
       searchValue: '',
       searchDirNotFound: false,
+      breadcrumbShowLastXPositions: 5,
     }
   },
   mounted() {
     this.fetchPathInformation('');
   },
   methods: {
+    calculateBreadcrumbsLength(path) {
+      const reducer = (accumulator, currentValue, index) => {
+        const nextValue = accumulator + currentValue;
+        if(nextValue > breadcrumbCharacterLength && accumulator <= breadcrumbCharacterLength) {
+          this.breadcrumbShowLastXPositions = index ;
+        }
+        return accumulator + currentValue
+      };
+      const breadCrumbsArray = path.split('/').map(path => path.length).reverse(); // fill array with elements length and inverse it
+      this.breadcrumbShowLastXPositions = breadCrumbsArray.length; // reset to show full length of breadcrumbs
+      breadCrumbsArray.reduce(reducer); // set the breadcrumbs length
+    },
     isSelected(name) {
       return (this.selectedFiles.includes(name)) || (this.selectedDirectories.includes(name));
     },
@@ -143,6 +161,9 @@ export default {
             return 0;
           } else {
             this.searchDirNotFound = false;
+          }
+          if(!pathNotFound) {
+            this.calculateBreadcrumbsLength(jsonData.current_path);
           }
           this.currentPath = jsonData.current_path.split('/').filter(el => el);
           this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
