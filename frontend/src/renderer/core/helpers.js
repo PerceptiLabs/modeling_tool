@@ -205,6 +205,8 @@ const calculateSidebarScaleCoefficient = () => {
   const pageHeight = document.documentElement.clientHeight;
   if(pageHeight <= sidebarNavCoefficientScaleCalculateFromHeight) {
     document.documentElement.style.setProperty('--sidebar-scale-coefficient', (pageHeight / sidebarNavCoefficientScaleCalculateFromHeight).toString());
+  } else {
+    document.documentElement.style.setProperty('--sidebar-scale-coefficient', '1');
   }
 };
 
