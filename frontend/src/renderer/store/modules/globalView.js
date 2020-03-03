@@ -114,7 +114,8 @@ const actions = {
     commit('gp_infoPopup', 'a');
     commit('gp_ComingSoonPopup', true);
   },
-  ShowCoreNotFoundPopup({ commit, rootState }) {
+  async ShowCoreNotFoundPopup({ commit, rootState, dispatch }) {
+    await dispatch('mod_api/checkCoreAvailability', null, { root: true });
     const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
 
     if(coreIsOffline) {

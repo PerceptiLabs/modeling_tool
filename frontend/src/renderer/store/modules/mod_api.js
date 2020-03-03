@@ -71,7 +71,20 @@ const actions = {
   //---------------
   //  CORE
   //---------------
-  API_runServer({state, commit, rootGetters}) {
+  checkCoreAvailability({commit}) {
+      const theData = {
+        action: 'checkCore',
+        value: ''
+      };
+      return coreRequest(theData)
+        .then((data)=> {
+          commit('SET_statusLocalCore', 'online')
+        })
+        .catch((err)=> {
+          commit('SET_statusLocalCore', 'offline');
+        });
+  },
+  API_runServer({state, dispatch, commit, rootGetters}) {
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
@@ -101,25 +114,31 @@ const actions = {
     function waitOnlineCore() {
       timer = setInterval(()=> {
         let status = state.statusLocalCore;
-        if(status === 'offline') getCoreRequest();
-        else clearInterval(timer);
+        if(status === 'offline') {
+          // getCoreRequest();
+          dispatch('checkCoreAvailability');
+        }
+        else {
+          clearInterval(timer);
+        }
       }, 5000);
     }
-    function getCoreRequest() {
-      const theData = {
-        action: 'checkCore',
-        value: ''
-      };
-      coreRequest(theData)
-        .then((data)=> {
-          //console.log('checkCore', data);
-          commit('SET_statusLocalCore', 'online')
-        })
-        .catch((err)=> {  });
-    }
-    function coreOffline() {
-      commit('SET_statusLocalCore', 'offline');
-    }
+    // function getCoreRequest() {
+    //   const theData = {
+    //     action: 'checkCore',
+    //     value: ''
+    //   };
+    //   coreRequest(theData)
+    //     .then((data)=> {
+    //       //console.log('checkCore', data);
+    //       commit('SET_statusLocalCore', 'online')
+    //     })
+    //     .catch((err)=> { coreOffline()  });
+    // }
+    // function coreOffline() {
+    //   debugger;
+    //   commit('SET_statusLocalCore', 'offline');
+    // }
   },
 
   API_closeSession(context, reciever) {
