@@ -146,6 +146,8 @@
           this.dragMeta.dragged = event.target;
           this.add_dragElement(event);
           event.target.style.opacity = .75;
+
+          this.adjustDraggingForFireFox(event);
         }
       },
       dragEnd(event) {
@@ -164,6 +166,12 @@
           this.ADD_element(event)
         }
       },
+      adjustDraggingForFireFox(event) {
+        event.dataTransfer.setDragImage(
+          event.target, 
+          event.target.clientWidth/2, 
+          event.target.clientHeight/2);
+      }
     }
   }
 </script>
