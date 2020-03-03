@@ -770,26 +770,27 @@ class {{layer_name}}(ClassificationLayer):
             path: the directory where the exported model will be stored.
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
 
-        log.debug(f"Export called. Path = {path}, mode = {mode}")
+        log.debug(f"Export called. Project path = {path}, mode = {mode}")
+        pb_path = os.path.join(path, '1')
         
         # Export non-compressed model
         if mode in ['TFModel', 'TFModel+checkpoint']:
-            tf.compat.v1.saved_model.simple_save(self._sess, path, inputs={'input': self._input_tensor_export}, outputs={'output': self._output_tensor_export})
+            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs={'input': self._input_tensor_export}, outputs={'output': self._output_tensor_export})
 
         # Export compressed model
         if mode in ['TFLite', 'TFLite+checkpoint']:
             converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
             converter.post_training_quantize = True
             tflite_model = converter.convert()
-            open(path, "wb").write(tflite_model)
+            open(pb_path, "wb").write(tflite_model)
 
         # Export checkpoint
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
             {% filter remove_lspaces(8) %}
                 {% if distributed %}
-                    self._saver.save(self._sess, os.path.join(path, 'ckpt'), global_step=0)    
+                    self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)    
                 {% else %}
-                    self._checkpoint.save(file_prefix=os.path.join(path, 'ckpt'), session=self._sess)
+                    self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
                 {% endif %}
             {% endfilter %}
                 

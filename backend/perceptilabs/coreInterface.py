@@ -46,6 +46,8 @@ class coreLogic():
 
         self.setupLogic()
         self.plLicense = LicenseV2()
+        
+        self._save_counter = 0
 
     def setupLogic(self):
         self.warningQueue=queue.Queue()
@@ -168,7 +170,7 @@ class coreLogic():
         gpus = self.gpu_list()
         distributed = self.isDistributable(gpus)
 
-        distributed = True
+        #distributed = True
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'DataData':
@@ -383,6 +385,7 @@ class coreLogic():
 
     def saveNetworkV2(self, value):
         """ Saves json network to disk and exports tensorflow model+checkpoints. """
+        self._save_counter += 1
         path = os.path.abspath(value["Location"][0])
         
         if not os.path.exists(path):   
@@ -391,12 +394,12 @@ class coreLogic():
         frontend_network = value['frontendNetwork'].copy()
 
         if self.isTrained():
-            export_path = os.path.join(path, '1')            
-            self.core.core_v2.export(export_path, mode='TFModel+checkpoint') # TODO: will all types of graphs support this?
+            #export_path = os.path.join(path, '1')            
+            self.core.core_v2.export(path, mode='TFModel+checkpoint') # TODO: will all types of graphs support this?
 
             # The following is used to restore the checkpoint when the saved network is loaded again.. networkElementList is the usual json_network, but with some extra frontend stuff.
             for id_ in frontend_network['networkElementList'].keys():
-                frontend_network['networkElementList'][id_]['checkpoint'] = [None, export_path, path]
+                frontend_network['networkElementList'][id_]['checkpoint'] = [None, os.path.join(path, 'model.ckpt-'+str(self._save_counter))] 
 
         with open(os.path.join(path, 'model.json'), 'w') as json_file:
             json.dump(frontend_network, json_file, indent=4)        

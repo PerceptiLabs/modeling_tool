@@ -83,11 +83,25 @@ class Interface():
         graph_dict = graph.graphs
 
         for value in graph_dict.values():
-            if "checkpoint" in value["Info"] and value["Info"]["checkpoint"] and self._core_mode == 'v1':
-                self._add_to_checkpointDict(value["Info"])
+            if "checkpoint" in value["Info"] and value["Info"]["checkpoint"]:
+                info = value["Info"].copy()
+
+                ckpt_path = info['checkpoint'][1]
+                if '//' in ckpt_path:
+                    new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
+                    log.warning(
+                        f"Splitting malformed checkpoint path: '{ckpt_path}'. "
+                        f"New path: '{new_ckpt_path}'"
+                    )
+                    info['checkpoint'][1] = new_ckpt_path
+                    
+                self._add_to_checkpointDict(info)
+
+        if log.isEnabledFor(logging.DEBUG):
+            from perceptilabs.utils import stringify
+            log.debug("create_lw_core: checkpoint dict: \n" + stringify(self._checkpointDict))
 
         data_container = DataContainer()
-            
         extras_reader = LayerExtrasReader()
 
         module_provider = ModuleProvider()
@@ -108,12 +122,18 @@ class Interface():
         
         global session_history_lw
         cache = get_cache()
-        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!        
-        lw_core = LightweightCore(CodeHq, graph_dict,
-                                data_container, session_history_lw,
-                                module_provider, error_handler,
-                                extras_reader, checkpointValues=self._checkpointDict.copy(),
-                                network_cache=self._lwDict[reciever])
+        session_history_lw = SessionHistory(cache) # TODO: don't use global!!!!
+
+
+        lw_core = LightweightCore(
+            CodeHq, graph_dict,
+            data_container, session_history_lw,
+            module_provider, error_handler,
+            extras_reader, checkpointValues=self._checkpointDict.copy(),
+            network_cache=self._lwDict[reciever],
+            core_mode=self._core_mode
+        )
+
         
         return lw_core, extras_reader, data_container
 

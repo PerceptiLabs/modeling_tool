@@ -1,4 +1,4 @@
-def add_line_numbering(text):
+def line_nums(text):
     lines = text.split('\n')
     max_numbering_length = len(str(len(lines) + 1))
 
@@ -6,6 +6,10 @@ def add_line_numbering(text):
     for line_no, line_txt in enumerate(lines):
         new_text += str(line_no + 1).rjust(max_numbering_length, ' ') + ' ' + line_txt + '\n'
     return new_text
+
+
+add_line_numbering = lambda x: line_nums(x) # backwards compability
+
 
 def dump_system_info(path):
     import multiprocessing
