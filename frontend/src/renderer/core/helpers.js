@@ -195,7 +195,20 @@ const stringifyNetworkObjects = function (network) {
       else return val;
     },
     ' ');
-}
+};
+
+const isOsWindows = () => {
+  const windowsUserAgent = [
+    'Windows NT 10.0',
+    'Windows NT 6.2',
+    'Windows NT 6.1',
+    'Windows NT 6.0',
+    'Windows NT 5.1',
+    'Windows NT 5.0',
+  ];
+  const userAgent = window.navigator.userAgent;
+  return windowsUserAgent.map(windowsStr => userAgent.indexOf(windowsStr) !== -1).filter(itm => itm === true).length > 0;
+};
 
 const shouldHideSidebar = () => {
   return document.documentElement.clientWidth <= hideSidebarOnBreakpoint;
@@ -229,6 +242,7 @@ export {
   deepCloneNetwork,
   isLocalStorageAvailable,
   stringifyNetworkObjects,
+  isOsWindows,
   shouldHideSidebar,
-  calculateSidebarScaleCoefficient
+  calculateSidebarScaleCoefficient,
 }

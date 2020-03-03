@@ -50,21 +50,24 @@ const netElementSettingsData = {
           console.error('getPartitionSummary', err);
         });
     },
+    // not used more
     Mix_settingsData_deleteDataMeta(type) {
-      let theData = {
-        reciever: this.Mix_settingsData_currentNetworkID,
-        action: 'deleteData',
-        value: {
-          Id: this.currentEl.layerId,
-          Type: type,
-          Properties: this.settings
-        }
-      };
-      return this.coreRequest(theData)
-        .then((data) => data)
-        .catch((err) => {
-          console.error('deleteData', err);
-        });
+      return Promise.resolve();
+
+      // let theData = {
+      //   reciever: this.Mix_settingsData_currentNetworkID,
+      //   action: 'deleteData',
+      //   value: {
+      //     Id: this.currentEl.layerId,
+      //     Type: type,
+      //     Properties: this.settings
+      //   }
+      // };
+      // return this.coreRequest(theData)
+      //   .then((data) => data)
+      //   .catch((err) => {
+      //     console.error('deleteData', err);
+      //   });
     },
     // Mix_settingsData_getDataPlot(type) {
     //   let theData = {
