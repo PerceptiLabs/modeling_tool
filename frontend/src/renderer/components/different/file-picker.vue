@@ -13,7 +13,6 @@
         .breadcrumb(
           @click="calcBreadcrumbPath(pathIndex)"
           v-for="(pathName, pathIndex) in currentPath"
-          v-if="pathIndex >= currentPath.length - 3"
           :key="pathIndex")
           span {{ pathName }}
 
