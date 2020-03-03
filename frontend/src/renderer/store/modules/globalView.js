@@ -114,13 +114,25 @@ const actions = {
     commit('gp_infoPopup', 'a');
     commit('gp_ComingSoonPopup', true);
   },
-  async ShowCoreNotFoundPopup({ commit, rootState, dispatch }) {
-    await dispatch('mod_api/checkCoreAvailability', null, { root: true });
-    const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
+  ShowCoreNotFoundPopup({ commit, rootState, dispatch }) {
+    let isServerRequestDone = false;
+    dispatch('mod_api/checkCoreAvailability', null, { root: true })
+      .then(() =>{
+        isServerRequestDone = true;
+      })
+      .catch((e) =>{
+        isServerRequestDone = true;
+      });
 
-    if(coreIsOffline) {
-      commit('coreNotFoundPopup', true);
-    }
+    const delayActionDispatch = setTimeout(() => {
+      const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
+      //if server responds more then a second or currently is offline show the core offline modal
+      if(coreIsOffline || !isServerRequestDone) {
+        commit('coreNotFoundPopup', true);
+      }
+      clearTimeout(delayActionDispatch)
+    }, 1000);
+
   },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);
