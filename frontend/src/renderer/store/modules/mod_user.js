@@ -1,4 +1,4 @@
-import { deepCloneNetwork, deepCopy }  from "@/core/helpers.js";
+import { deepCloneNetwork, deepCopy, isLocalStorageAvailable }  from "@/core/helpers.js";
 
 const namespaced = true;
 
@@ -65,7 +65,11 @@ const actions = {
     }
   },
   SET_userTokenLocal({commit, dispatch}, tokens) {
-    localStorage.setItem('currentUser', JSON.stringify(tokens))
+    if (!isLocalStorageAvailable()) { return; }
+    localStorage.setItem('currentUser', JSON.stringify(tokens));
+  },
+  SET_userTokenSession({}, tokens) {
+    sessionStorage.setItem('currentUser', JSON.stringify(tokens));
   },
   RESET_userToken({commit}) {
     commit('set_userToken', {
