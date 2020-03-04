@@ -31,15 +31,8 @@ class LayerDef:
         self.template_file = template_file
         self.template_macro = template_macro
         self.macro_parameters = macro_parameters
+        
 
-def resolve_checkpoint_path(specs):
-    import os
-    if len(specs['checkpoint']) >= 3:
-        return os.path.join(specs['checkpoint'][2], '1')
-    else:
-        return None
-        
-        
 DEFINITION_TABLE = {
     'DataData': LayerDef(
         DataLayer,
@@ -127,7 +120,7 @@ DEFINITION_TABLE = {
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties']['Distributed'],
-            'export_directory': resolve_checkpoint_path
+            'export_directory': lambda specs: (specs.get('checkpoint', []) + [None, None])[1]
         }
     )
 }
