@@ -38,7 +38,7 @@
             network-field(
               ref="networkField"
               :key="i"
-              :style="{zoom: scaleNet + '%'}"
+              :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
 
         //-general-settings(v-if="showGlobalSet")

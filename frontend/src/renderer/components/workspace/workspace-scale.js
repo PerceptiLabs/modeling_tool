@@ -27,7 +27,7 @@ const workspaceScale = {
         const scaleH = net.offsetHeight/net.scrollHeight;
         const scaleW = net.offsetWidth/net.scrollWidth;
         const maxScale = scaleH < scaleW ? scaleH : scaleW;
-        this.scaleNet = +maxScale.toFixed(1) * 100
+        this.scaleNet = +maxScale.toFixed(1) * 100;
       })
     },
     scaleScroll(e) {
