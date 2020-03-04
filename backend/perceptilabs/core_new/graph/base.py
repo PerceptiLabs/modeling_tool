@@ -114,9 +114,12 @@ class Graph:
 
     def get_node_by_id(self, layer_id: str):
         target_nodes = [x for x in self.nodes if x.layer_id == layer_id]
-        print(layer_id, target_nodes)
-        
-        assert len(target_nodes) == 1
+
+        if len(target_nodes) == 0:
+            raise RuntimeError(f"Node with id {layer_id} not in graph")
+        if len(target_nodes) > 1:
+            raise RuntimeError(f"Graph is corrupt. {len(target_nodes)} nodes have the id {layer_id}, expected one")
+
         return target_nodes[0]
     
     def get_input_nodes(self, node):

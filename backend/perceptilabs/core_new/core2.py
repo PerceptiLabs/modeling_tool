@@ -54,7 +54,7 @@ class Core:
         config = self._deployment_pipe.get_session_config(session_id)
         log.debug(f"Session {session_id} config: {pprint.pformat(config)}")
         
-        graph = self._graph_builder.build_from_spec(graph_spec, config)
+        graph = self._graph_builder.build_from_spec(graph_spec)
         self._client = self._deployment_pipe.deploy(graph, session_id)
 
         line_to_node_map = self._deployment_pipe._line_to_node_map # TODO: inject script_factory to deployment pipe instead retrieving the map like this.

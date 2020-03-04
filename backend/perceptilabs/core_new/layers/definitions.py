@@ -126,7 +126,7 @@ DEFINITION_TABLE = {
             'momentum': lambda specs: specs['Properties']['Momentum'],
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
-            'distributed': lambda specs: specs['Properties']['Distributed'],
+            'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'export_directory': resolve_checkpoint_path
         }
     )

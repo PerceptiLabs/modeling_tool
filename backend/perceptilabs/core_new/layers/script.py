@@ -97,19 +97,7 @@ class ScriptFactory:
         template += 'graph = None\n'
         template += 'status = STATUS_INITIALIZING\n'
         template += 't_start = None\n'
-        
-        # --- CALL LAYER MACROS ---
         template += '\n\n'
-        #for macro_call in macro_calls:
-        #    macro_name = macro_call[0]
-        #    layer_name = macro_call[1]
-        #
-        #    kwargs = macro_call[2]
-        #    kwargs['layer_name'] = "'"+layer_name+"'"
-        #    
-        #    arg_str = ', '.join(f"{k}={v}" for k, v in kwargs.items())
-        #    template += "{{ " + macro_name + "(" + arg_str + ")}}\n\n"
-
 
         line_to_node_map = {}
         for node in graph.nodes:

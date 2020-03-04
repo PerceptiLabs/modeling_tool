@@ -60,8 +60,30 @@ class getPartitionSummary(LW_interface_base):
         content = self._try_fetch(self.data_container[self._id], "_action_space")
         return content
 
+    
+class getCodeV2(LW_interface_base):
+    def __init__(self, id_, network):
+        self._id = id_
+        self._network = network
 
-class getCode(LW_interface_base):
+    def run(self):
+        from perceptilabs.core_new.graph import Graph
+        from perceptilabs.core_new.graph.builder import GraphBuilder
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        from perceptilabs.core_new.graph.utils import sanitize_layer_name
+
+        graph_builder = GraphBuilder()        
+        graph = graph_builder.build_from_spec({'Layers': self._network})        
+        layer_name = self._network[self._id]['Name']
+        node = graph.get_node_by_id(sanitize_layer_name(layer_name)) # NOTE: graph currently uses a sanitized layer name for Id.
+
+        script_factory = ScriptFactory()        
+        code = script_factory.render_layer_macro(node)
+
+        return {'Output': code}        
+
+        
+class getCodeV1(LW_interface_base):
     def __init__(self, id_, network):
         self._id = id_
         self._network = network
