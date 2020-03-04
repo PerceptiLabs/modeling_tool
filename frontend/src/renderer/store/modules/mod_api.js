@@ -71,34 +71,23 @@ const actions = {
   //---------------
   //  CORE
   //---------------
-  checkCoreAvailability({commit}, runCheckOnlineStatus = false) {
-      if(runCheckOnlineStatus) {
-        waitOnlineCore();
-      }
+  checkCoreAvailability({commit}) {
       const theData = {
         action: 'checkCore',
         value: ''
       };
-      function waitOnlineCore() {
-        const timer = setInterval(()=> {
-          let status = state.statusLocalCore;
-          if(status === 'offline') {
-            // getCoreRequest();
-            dispatch('checkCoreAvailability');
-          }
-          else {
-            clearInterval(timer);
-          }
-        }, 5000);
-      }
-
       return coreRequest(theData)
-        .then((data)=> {
+        .then(()=> {
           commit('SET_statusLocalCore', 'online')
         })
-        .catch((err)=> {
+        .catch(()=> {
           commit('SET_statusLocalCore', 'offline');
         });
+  },
+  coreStatusWatcher({dispatch}) {
+    setInterval(() => {
+      dispatch('checkCoreAvailability')
+    }, 2000)
   },
   API_runServer({state, dispatch, commit, rootGetters}) {
     let timer;
@@ -126,20 +115,21 @@ const actions = {
       // openServer.on('error', (err)=>  { coreOffline() });
       // openServer.on('close', (code)=> { coreOffline() });
       dispatch('checkCoreAvailability');
-      waitOnlineCore()
+      dispatch("coreStatusWatcher");
+      // waitOnlineCore()
     }
-    function waitOnlineCore() {
-      timer = setInterval(()=> {
-        let status = state.statusLocalCore;
-        if(status === 'offline') {
-          // getCoreRequest();
-          dispatch('checkCoreAvailability');
-        }
-        else {
-          clearInterval(timer);
-        }
-      }, 5000);
-    }
+    // function waitOnlineCore() {
+    //   timer = setInterval(()=> {
+    //     let status = state.statusLocalCore;
+    //     if(status === 'offline') {
+    //       // getCoreRequest();
+    //       dispatch('checkCoreAvailability');
+    //     }
+    //     else {
+    //       clearInterval(timer);
+    //     }
+    //   }, 5000);
+    // }
     // function getCoreRequest() {
     //   const theData = {
     //     action: 'checkCore',
