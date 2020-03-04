@@ -1,4 +1,4 @@
-<IfModule rewrite_modules>
+<IfModule rewrite_module>
 RewriteEngine On
 RewriteBase /
 RewriteRule ^index\.html$ - [L]
