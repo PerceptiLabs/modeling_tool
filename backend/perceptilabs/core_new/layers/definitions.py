@@ -120,6 +120,8 @@ DEFINITION_TABLE = {
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
-            'export_directory': lambda specs: specs.get('checkpoint', [None, None])[1]            
+            'export_directory': lambda specs: (specs.get('checkpoint', []) + [None, None])[1]
+        }
+>>>>>>> save_export
     )
 }
