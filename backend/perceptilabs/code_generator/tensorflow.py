@@ -348,7 +348,7 @@ class ConvCodeGenerator(CodeGenerator):
             code += self._get_code_autodim()
 
         if self._dropout:
-            code += "tf.nn.dropout(node, %f)\n\n" % float(self._keep_prob)
+            code += "tf.nn.dropout(node, %f)\n\n" % self._keep_prob
 
         # Activation
         code += "node = node + b\n"

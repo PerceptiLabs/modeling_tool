@@ -59,26 +59,6 @@ DEFINITION_TABLE = {
         }
     ),
 
-    'ProcessEmbed' : LayerDef(
-        Tf1xLayer,
-        'tf1x.j2',
-        'layer_tf1x_word_embedding',
-        {
-
-        }
-    ),
-
-    'MathMerge' : LayerDef(
-        Tf1xLayer,
-        'tf1x.j2',
-        'layer_tf1x_merge',
-        {
-            ' type_' : lambda specs: specs['Properties']['Type'],
-            'merge_dim' : lambda specs: specs['Properties']['Merge_dim'],
-            'merge_order' : lambda specs: specs['Properties']['Merge_order'],
-
-        }
-    ),
 
     'ProcessReshape': LayerDef(
         Tf1xLayer,
@@ -125,35 +105,6 @@ DEFINITION_TABLE = {
             'pooling': lambda specs: specs['Properties']['Pooling'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],
             'pool_stride': lambda specs: specs['Properties']['Pool_stride'],            
-        }
-    ),
-
-    'DeepLearningDeconv':  LayerDef(
-        Tf1xLayer,
-        'tf1x.j2',
-        'layer_tf1x_deconv',
-        {
-            'conv_dim': lambda specs: specs['Properties']['Conv_dim'],
-            'patch_size': lambda specs: specs['Properties']['Patch_size'],
-            'feature_maps': lambda specs: specs['Properties']['Feature_maps'],
-            'stride': lambda specs: specs['Properties']['Stride'],
-            'padding': lambda specs: specs['Properties']['Padding'][1:-1],
-            'dropout': lambda specs: specs['Properties']['Dropout'],
-            'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
-            'activation': resolve_tf1x_activation_name,            
-        }
-    ),
-    'DeepLearningRecurrent':  LayerDef(
-        Tf1xLayer,
-        'tf1x.j2',
-        'layer_tf1x_recurrent',
-        {
-            'version': lambda specs: specs['Properties']['Version'],
-            'neurons': lambda specs: specs['Properties']['Neurons'],
-            'dropout': lambda specs: specs['Properties']['Dropout'],
-            'keep_prob': lambda specs: specs['Properties']['Keep_prob'],
-            'time_steps': lambda specs: specs['Properties']['Return_sequence'],
-            'activation': resolve_tf1x_activation_name,            
         }
     ),
     'TrainNormal': LayerDef(
