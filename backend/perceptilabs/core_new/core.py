@@ -223,7 +223,7 @@ class BaseCore:
                 
 
         code = code_gen.get_code()
-        if self._core_mode == 'v2':
+        if content['Info']['checkpoint'] and self._core_mode == 'v2':
             locals_.update({"checkpoint":self._checkpointValues[content['Info']['checkpoint'][-1]]})            
             code = v2_insert_checkpoint_values(id_, content['Info']['Name'], content['Info']['Type'], code, self._checkpointValues[content['Info']['checkpoint'][-1]])            
 
