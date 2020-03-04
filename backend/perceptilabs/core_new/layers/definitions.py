@@ -122,6 +122,5 @@ DEFINITION_TABLE = {
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
             'export_directory': lambda specs: (specs.get('checkpoint', []) + [None, None])[1]
         }
->>>>>>> save_export
     )
 }
