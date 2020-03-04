@@ -30,10 +30,13 @@ const workspaceScale = {
         this.scaleNet = +maxScale.toFixed(1) * 100;
       })
     },
-    scaleScroll(e) {
-      e.wheelDelta > 0
-        ? this.incScale()
-        : this.decScale();
+    scaleScroll(event) {
+      if(event.ctrlKey || event.metaKey) {
+        event.preventDefault();
+        event.deltaY > 0
+          ? this.incScale()
+          : this.decScale();
+      }
     },
     decScale() {
       if (this.scaleNet <= 30) this.scaleNet = 30;

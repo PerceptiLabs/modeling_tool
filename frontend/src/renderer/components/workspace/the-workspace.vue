@@ -33,7 +33,7 @@
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
           .info-section_main.js-info-section_main(
-            @wheel.ctrl="scaleScroll($event)"
+            @wheel="scaleScroll($event)"
             )
             network-field(
               ref="networkField"
