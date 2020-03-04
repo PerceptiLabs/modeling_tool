@@ -321,6 +321,11 @@ class BaseCore:
             else:
                 raise Exception("Layer {} is empty and can therefore not run.\nMost likely it has not been properly Applied.".format(content["Info"]["Name"]))
 
+
+        if content['Info'].get('Code') is not None and self._core_mode == 'v2':
+            log.warning(f'Cannot run custom code in core_v2. Skipping layer {layer_id} [{layer_type}]')
+            return True
+            
         # if "Code" in content["Info"] and content["Info"]["Code"]:
         #     log.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
            

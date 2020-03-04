@@ -78,7 +78,7 @@ class getCodeV2(LW_interface_base):
         node = graph.get_node_by_id(sanitize_layer_name(layer_name)) # NOTE: graph currently uses a sanitized layer name for Id.
 
         script_factory = ScriptFactory()        
-        code = script_factory.render_layer_macro(node)
+        code = script_factory.render_layer_code(node)
 
         return {'Output': code}        
 

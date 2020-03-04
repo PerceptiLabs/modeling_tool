@@ -44,6 +44,17 @@ class Node:
     @property
     def layer(self):
         return self._layer_instance
+
+    @property
+    def custom_code(self):
+        if self._layer_spec['Code'] is None:
+            return None
+
+        if self._layer_spec['Code'].get('Output') is None:
+            return None
+
+        code = self._layer_spec['Code']['Output']
+        return code
     
 
 class Graph:

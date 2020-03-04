@@ -101,7 +101,7 @@ class ScriptFactory:
 
         line_to_node_map = {}
         for node in graph.nodes:
-            layer_code = self.render_layer_macro(node)
+            layer_code = self.render_layer_code(node)
 
             offset = len(template.split('\n')) - 1
             n_lines = len(layer_code.split('\n'))
@@ -303,9 +303,14 @@ class ScriptFactory:
             
         return code, line_to_node_map
 
-
-
-    def render_layer_macro(self, node):
+    def render_layer_code(self, node):
+        if node.custom_code is not None:
+            code = node.custom_code
+        else:
+            code = self._render_layer_macro(node)
+        return code
+    
+    def _render_layer_macro(self, node):
         """ Creates a Jinja2 template that imports the layer macro and renders it """
         def_ = self._definition_table.get(node.layer_type)
 
