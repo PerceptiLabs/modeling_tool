@@ -263,7 +263,7 @@
           this.Mix_settingsData_getDataMeta(this.currentEl.layerId)
             .then((data) => {
               //console.log(data);
-              if (data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
+              if (data && data.Columns && data.Columns.length) this.createSelectArr(data.Columns);
             });
 
         }
