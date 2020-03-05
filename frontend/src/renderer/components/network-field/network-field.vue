@@ -41,7 +41,7 @@
           :class="arrowClassStyle(arrow)"
           :data-startid="arrow.l1.layerId"
           :data-stopid="arrow.l2.layerId"
-          @focus="focusArrow($event)"
+          @click="focusArrow($event, arrow)"
           @blur="blurArrow"
           :marker-end="arrowMarkerStyle(arrow)"
           :d="arrow.positionArrow.path.arrow"
@@ -122,7 +122,12 @@
     stroke: $col-primary; //inline styles for the canvas plagin
     stroke-width: 3;
     fill: transparent;
-    &:focus {
+  }
+  .svg-arrow_line {
+    stroke: $col-primary; //inline styles for the canvas plagin
+    stroke-width: 3;
+    fill: transparent;
+    &.is-focused {
       stroke-width: 5 !important;
     }
   }

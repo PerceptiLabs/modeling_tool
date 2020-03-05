@@ -23,6 +23,46 @@ class LW_interface_base(ABC):
             return ""
 
 
+class getFolderContent(LW_interface_base):
+    def __init__(self, current_path):
+        self._current_path = current_path
+
+    def run(self):
+        if not self._current_path:
+            # self._current_path = os.path.abspath('')
+            #TODO Make it a seperate request to get the path to tutorial_data
+            path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'tutorial_data')
+            if os.path.exists(path):
+                self._current_path = path    
+            else:
+                self._current_path = os.path.abspath('')
+
+        drives = []
+        if self._current_path == '.':
+            import win32api
+            drives = win32api.GetLogicalDriveStrings()
+            drives = drives.split('\000')[:-1]
+
+        elif not os.path.isdir(self._current_path):
+            return {
+                "current_path" : '',
+                "dirs" : '',
+                "files" :  '',
+            }
+        
+        if not drives:
+            return {
+                "current_path" : self._current_path.replace('\\','/'),
+                "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(os.path.join(self._current_path,x))],
+                "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(os.path.join(self._current_path,x))],
+            }
+        else:
+            return {
+                "current_path" : self._current_path.replace('\\','/'),
+                "dirs" : drives,
+                "files" :  [],
+            }
+
 class getDataMeta(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
         self._id = id_

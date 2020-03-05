@@ -23,17 +23,21 @@ cp ..\..\backend\perceptilabs\app_variables.json ./perceptilabs/
 call cp ../../backend/setup.py .
 call cp ../../backend/setup.cfg .
 call cp "../../Docker/Core/licenses/PerceptiLabs EULA.txt" .
+cd perceptilabs
+mkdir tutorial_data
+cd ..
+call cp ../../backend/perceptilabs/tutorial_data/* ./perceptilabs/tutorial_data/
 
 python setup.py build_ext bdist_wheel
 
 cd ..\backend_out
 xcopy ..\backend_tmp\dist . /sy 
 
-pip install perceptilabs --find-links .
-IF %ERRORLEVEL% NEQ 0 (
-  exit 1
-)
-python -c "import perceptilabs"
-IF %ERRORLEVEL% NEQ 0 (
-  exit 1
-)
+REM pip install perceptilabs --find-links .
+REM IF %ERRORLEVEL% NEQ 0 (
+REM   exit 1
+REM )
+REM python -c "import perceptilabs"
+REM IF %ERRORLEVEL% NEQ 0 (
+REM   exit 1
+REM )

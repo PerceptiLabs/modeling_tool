@@ -32,13 +32,13 @@
           )
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
-          perfect-scrollbar.info-section_main.js-info-section_main(
-            @wheel.ctrl="scaleScroll($event)"
+          .info-section_main.js-info-section_main(
+            @wheel="scaleScroll($event)"
             )
             network-field(
               ref="networkField"
               :key="i"
-              :style="{zoom: scaleNet + '%'}"
+              :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
 
         //-general-settings(v-if="showGlobalSet")

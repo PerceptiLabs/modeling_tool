@@ -6,6 +6,10 @@
 //    --size-layers-btn: 1rem;
 //  }
 //}
+
+:root {
+  --sidebar-scale-coefficient: 1;
+}
 /*----- Common styles -----*/
 @import 'fonts/icomoon';
 @import 'fonts/roboto';

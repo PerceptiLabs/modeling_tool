@@ -9,7 +9,7 @@ import PageProjects from '@/pages/projects/projects.vue';
 
 Vue.use(Router);
 
-export default new Router({
+const router = new Router({
   mode: 'history',
   routes: [
     // {path: '/',             name: 'login',    component: PageLogin},
@@ -19,5 +19,24 @@ export default new Router({
     {path: '/restore-account',     name: 'restore-account', component: PageRestoreAccount},
     {path: '/projects',     name: 'projects', component: PageProjects },
     {path: '*', redirect: '/'}
-  ]
-})
+  ],
+});
+
+router.beforeEach((to, from, next) => {
+  var _hsq = window._hsq = window._hsq || [];
+
+  if (!_hsq.length === 0) {
+    next();
+  }
+
+  if (to.path === '/') {
+    _hsq.push(['setPath', '/']);
+  } else {
+    _hsq.push(['setPath', to.path]);
+    _hsq.push(['trackPageView']);
+  }
+
+  next();
+});
+
+export default router;

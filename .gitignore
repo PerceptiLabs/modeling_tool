@@ -13,6 +13,7 @@ build/
 .vscode/
 backend/.vscode/
 #Frontend ignores
+frontend_out
 frontend/.DS_Store
 frontend/core/*
 frontend/dist/*
