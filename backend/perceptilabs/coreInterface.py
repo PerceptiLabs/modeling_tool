@@ -169,7 +169,6 @@ class coreLogic():
         #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
         gpus = self.gpu_list()
         distributed = self.isDistributable(gpus)
-
         #distributed = True
 
         for _id, layer in network['Layers'].items():

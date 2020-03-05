@@ -160,6 +160,8 @@ class Core:
         
         if self._client is not None:        
             self._client.send_event('on_export', path=path, mode=mode)
+        else:
+            log.warning("Client is none. on_export not called!")
 
     @property
     def is_running(self):

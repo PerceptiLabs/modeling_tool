@@ -17,6 +17,7 @@ def log_rendering_errors(func):
 
 class J2Engine:
     def __init__(self, templates_directory):
+        self._templates_directory = templates_directory
         self._jenv = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_directory),
                                         trim_blocks=True,
                                         lstrip_blocks=True)
@@ -32,6 +33,10 @@ class J2Engine:
 
         self._jenv.filters['remove_lspaces'] = self.remove_lspaces
         self._jenv.filters['call_macro'] = self.call_macro
+
+    @property
+    def templates_directory(self):
+        return self._templates_directory
 
     @staticmethod
     @jinja2.contextfilter
