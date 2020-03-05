@@ -1,4 +1,4 @@
-{% macro layer_tf1x_classification(layer_name, generator_layer, discriminator_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) %}
+{% macro layer_tf1x_gan(layer_name, generator_layer, discriminator_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) %}
 class {{layer_name}}(ClassificationLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
@@ -43,12 +43,12 @@ class {{layer_name}}(ClassificationLayer):
 
         generator_layer_id = '{{generator_layer}}'
         discriminator_layer_id = '{{discriminator_layer}}'
-        input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
-        label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
+        generator_data_nodes = graph.get_direct_data_nodes(generator_layer_id)
+        discriminator_data_nodes = graph.get_direct_data_nodes(discriminator_layer_id)
         
-        assert len(input_data_nodes) == 1
-        assert len(label_data_nodes) == 1
-        input_data_node = input_data_nodes[0]
+        assert len(generator_data_nodes) == 1
+        assert len(discriminator_data_nodes) == 1
+        i_data_node = input_data_nodes[0]
         label_data_node = label_data_nodes[0]
 
         self._trn_sz_tot = input_data_node.layer.size_training
