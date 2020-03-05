@@ -627,7 +627,7 @@ const actions = {
     if (haveNotToken(userToken)) {
       userToken = localStorage.getItem('currentUser');
     }
-    if (haveNotToken(userToken)) { debugger; return; }
+    if (haveNotToken(userToken)) { return; }
     const userObject = parseJWT(userToken);
 
     const theData = {
