@@ -33,7 +33,7 @@ const workspaceScale = {
     scaleScroll(event) {
       if(event.ctrlKey || event.metaKey) {
         event.preventDefault();
-        event.deltaY > 0
+        event.deltaY < 0
           ? this.incScale()
           : this.decScale();
       }
