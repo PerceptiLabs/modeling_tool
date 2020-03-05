@@ -622,12 +622,12 @@ const actions = {
   },
 
   API_setUserInCore({}) {
+    const haveNotToken = (token) => ((token === 'undefined') || (token === null));
     let userToken = sessionStorage.getItem('currentUser');
-    if (!userToken) {
+    if (haveNotToken(userToken)) {
       userToken = localStorage.getItem('currentUser');
     }
-    if (!userToken) { return; }
-
+    if (haveNotToken(userToken)) { debugger; return; }
     const userObject = parseJWT(userToken);
 
     const theData = {
