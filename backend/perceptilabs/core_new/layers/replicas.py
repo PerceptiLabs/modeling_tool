@@ -204,6 +204,15 @@ class ClassificationLayerReplica(ClassificationLayer):
     def export_modes(self):
         return self._export_modes
 
+
+class InnerLayerReplica(Tf1xLayer):
+    def __init__(self, variables):
+        self._variables = variables
+
+    @property        
+    def variables(self):
+        return self._variables
+    
     
 class Tf1xLayerReplica(Tf1xLayer):
     def __init__(self, variables):

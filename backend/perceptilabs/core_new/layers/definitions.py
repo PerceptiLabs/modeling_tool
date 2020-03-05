@@ -33,6 +33,16 @@ class LayerDef:
         self.macro_parameters = macro_parameters
         
 
+def resolve_custom_code(specs):
+    if specs['Code'] is None:
+        return None
+    
+    if specs['Code'].get('Output') is None:
+        return None
+
+    code = specs['Code']['Output']
+    return code
+
 DEFINITION_TABLE = {
     'DataData': LayerDef(
         DataLayer,
@@ -120,8 +130,19 @@ DEFINITION_TABLE = {
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties'].get('Distributed', False),
-            'export_directory': lambda specs: (specs.get('checkpoint', []) + [None, None])[1]
+            'export_directory': lambda specs: (specs.get('checkpoint', []) + [None, None])[1] # When there's no checkpoint, list is empty. So append two default values..
         }
-    )
+    ),
+    'LayerCustom': LayerDef(
+        InnerLayer,
+        'custom.j2',
+        'layer_custom_inner',
+        {
+            'code': resolve_custom_code
+        }
+    )    
 }
 
+
+
+    
