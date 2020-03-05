@@ -125,7 +125,7 @@ class getNetworkInputDim(LW_interface_base):
         for id_, value in self._network.items():
             content[id_]={}
 
-            con=value['backward_connections']
+            con=[con_id for con_id, con_name in value['backward_connections']]
 
             if len(con)==1 and con[0] in extras_dict:
                 content[id_].update({"inShape":str(extras_dict[con[0]]["outShape"])})

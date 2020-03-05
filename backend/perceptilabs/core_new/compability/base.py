@@ -62,7 +62,7 @@ class CompabilityCore:
                     do_process(counter, core)
                     counter += 1
                     time.sleep(1.0)
-                do_process()    #One extra for good measure
+                do_process(counter, core)    #One extra for good measure
 
             threading.Thread(target=worker, daemon=True).start()                    
             self._run_core(core, self._graph_spec)

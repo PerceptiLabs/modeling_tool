@@ -80,7 +80,7 @@ REPLICATED_PROPERTIES_TABLE = {
     ],
     Tf1xLayer: [
         ReplicatedProperty('variables', dict, lambda _: dict()),
-    ]
+    ],
     InnerLayer: [
         ReplicatedProperty('variables', dict, lambda _: dict()),
     ],

@@ -130,6 +130,9 @@
         layer_bias_tensors = {}        
         layer_gradient_tensors = {}
         for node in graph.inner_nodes:
+            if not isinstance(node.layer, Tf1xLayer): # In case of pure custom layers...
+                continue
+            
             layer_weight_tensors[node.layer_id] = node.layer.weights
             layer_bias_tensors[node.layer_id] = node.layer.biases            
             
@@ -465,6 +468,9 @@
                 layer_bias_tensors = {}        
                 layer_gradient_tensors = {}
                 for node in graph.inner_nodes:
+                    if not isinstance(node.layer, Tf1xLayer): # In case of pure custom layers...
+                        continue
+                    
                     layer_weight_tensors[node.layer_id] = node.layer.weights
                     layer_bias_tensors[node.layer_id] = node.layer.biases            
                     

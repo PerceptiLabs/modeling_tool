@@ -3,7 +3,7 @@ import tensorflow as tf
 from typing import List, Callable
 
 
-from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, ClassificationLayer
+from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, ClassificationLayer, InnerLayer
 
 
 class NotReplicatedError(Exception):
@@ -205,13 +205,16 @@ class ClassificationLayerReplica(ClassificationLayer):
         return self._export_modes
 
 
-class InnerLayerReplica(Tf1xLayer):
+class InnerLayerReplica(InnerLayer):
     def __init__(self, variables):
         self._variables = variables
 
     @property        
     def variables(self):
         return self._variables
+
+    def __call__(self, x: ...):
+        raise NotReplicatedError        
     
     
 class Tf1xLayerReplica(Tf1xLayer):
