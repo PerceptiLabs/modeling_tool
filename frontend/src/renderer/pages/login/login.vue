@@ -76,7 +76,11 @@ export default {
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
         .then((tokens)=> {
-          if(this.saveToken) this.$store.dispatch('mod_user/SET_userTokenLocal', tokens)
+          this.$store.dispatch('mod_user/SET_userTokenSession', tokens);
+          if(this.saveToken) {
+            this.$store.dispatch('mod_user/SET_userTokenLocal', tokens);
+          }
+          this.$store.dispatch('mod_api/API_setUserInCore');
         })
         .catch((error)=> {console.log(error)})
         .finally(()=>    {this.$store.commit('mod_login/SET_showLoader', false)});

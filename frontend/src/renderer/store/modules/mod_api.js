@@ -1,6 +1,6 @@
 import {coreRequest, openWS}  from "@/core/apiWeb.js";
 //import coreRequest    from "@/core/apiCore.js";
-import { deepCopy }   from "@/core/helpers.js";
+import { deepCopy, parseJWT }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 
 const {spawn} = require('child_process');
@@ -71,14 +71,18 @@ const actions = {
   //---------------
   //  CORE
   //---------------
-  checkCoreAvailability({commit}) {
+  checkCoreAvailability({commit, dispatch, state}) {
       const theData = {
         action: 'checkCore',
         value: ''
       };
       return coreRequest(theData)
         .then(()=> {
-          commit('SET_statusLocalCore', 'online')
+          // set user when core switch from offline to online
+          if(state.statusLocalCore === 'offline') {
+            dispatch('API_setUserInCore');
+          }
+          commit('SET_statusLocalCore', 'online');
         })
         .catch(()=> {
           commit('SET_statusLocalCore', 'offline');
@@ -146,6 +150,22 @@ const actions = {
     //   debugger;
     //   commit('SET_statusLocalCore', 'offline');
     // }
+    function getCoreRequest() {
+      const theData = {
+        action: 'checkCore',
+        value: ''
+      };
+      coreRequest(theData)
+        .then((data)=> {
+          //console.log('checkCore', data);
+          commit('SET_statusLocalCore', 'online');
+          dispatch('API_setUserInCore');
+        })
+        .catch((err)=> {  });
+    }
+    function coreOffline() {
+      commit('SET_statusLocalCore', 'offline');
+    }
   },
 
   API_closeSession(context, reciever) {
@@ -600,6 +620,28 @@ const actions = {
         console.error(err);
       });
   },
+
+  API_setUserInCore({}) {
+    let userToken = sessionStorage.getItem('currentUser');
+    if (!userToken) {
+      userToken = localStorage.getItem('currentUser');
+    }
+    if (!userToken) { return; }
+
+    const userObject = parseJWT(userToken);
+
+    const theData = {
+      reciever: '',
+      action: 'setUser',
+      value: userObject.email
+    };
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error(err);
+      });
+  },
+
 };
 
 export default {
