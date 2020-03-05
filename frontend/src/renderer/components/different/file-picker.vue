@@ -153,6 +153,8 @@ export default {
           value: path
       };
 
+      this.$store.dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
+
       coreRequest(theData)
       .then(jsonData => {
           const pathNotFound = jsonData.current_path === "";
