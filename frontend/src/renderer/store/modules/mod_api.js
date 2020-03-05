@@ -71,7 +71,29 @@ const actions = {
   //---------------
   //  CORE
   //---------------
-  API_runServer({state, commit, dispatch, rootGetters}) {
+  checkCoreAvailability({commit, dispatch, state}) {
+      const theData = {
+        action: 'checkCore',
+        value: ''
+      };
+      return coreRequest(theData)
+        .then(()=> {
+          // set user when core switch from offline to online
+          if(state.statusLocalCore === 'offline') {
+            dispatch('API_setUserInCore');
+          }
+          commit('SET_statusLocalCore', 'online');
+        })
+        .catch(()=> {
+          commit('SET_statusLocalCore', 'offline');
+        });
+  },
+  coreStatusWatcher({dispatch}) {
+    setInterval(() => {
+      dispatch('checkCoreAvailability')
+    }, 2000)
+  },
+  API_runServer({state, dispatch, commit, rootGetters}) {
     let timer;
     let coreIsStarting = false;
     var path = rootGetters['globalView/GET_appPath'];
@@ -96,15 +118,38 @@ const actions = {
       // commit('set_corePid', openServer.pid);
       // openServer.on('error', (err)=>  { coreOffline() });
       // openServer.on('close', (code)=> { coreOffline() });
-      waitOnlineCore()
+      dispatch('checkCoreAvailability');
+      dispatch("coreStatusWatcher");
+      // waitOnlineCore()
     }
-    function waitOnlineCore() {
-      timer = setInterval(()=> {
-        let status = state.statusLocalCore;
-        if(status === 'offline') getCoreRequest();
-        else clearInterval(timer);
-      }, 5000);
-    }
+    // function waitOnlineCore() {
+    //   timer = setInterval(()=> {
+    //     let status = state.statusLocalCore;
+    //     if(status === 'offline') {
+    //       // getCoreRequest();
+    //       dispatch('checkCoreAvailability');
+    //     }
+    //     else {
+    //       clearInterval(timer);
+    //     }
+    //   }, 5000);
+    // }
+    // function getCoreRequest() {
+    //   const theData = {
+    //     action: 'checkCore',
+    //     value: ''
+    //   };
+    //   coreRequest(theData)
+    //     .then((data)=> {
+    //       //console.log('checkCore', data);
+    //       commit('SET_statusLocalCore', 'online')
+    //     })
+    //     .catch((err)=> { coreOffline()  });
+    // }
+    // function coreOffline() {
+    //   debugger;
+    //   commit('SET_statusLocalCore', 'offline');
+    // }
     function getCoreRequest() {
       const theData = {
         action: 'checkCore',
@@ -577,12 +622,12 @@ const actions = {
   },
 
   API_setUserInCore({}) {
+    const haveNotToken = (token) => ((token === 'undefined') || (token === null));
     let userToken = sessionStorage.getItem('currentUser');
-    if (!userToken) { 
-      userToken = localStorage.getItem('currentUser'); 
-    }    
-    if (!userToken) { return; }
-
+    if (haveNotToken(userToken)) {
+      userToken = localStorage.getItem('currentUser');
+    }
+    if (haveNotToken(userToken)) { return; }
     const userObject = parseJWT(userToken);
 
     const theData = {
