@@ -70,9 +70,11 @@ export default {
   },
   methods: {
     saveLoadFile() {
-      loadPathFolder()
-        .then((pathArr)=> this.settings.Location = pathArr[0] )
-        .catch((err)=> console.error(err) )
+      console.log('export data - saveLoadFile');
+      this.$store.dispatch('globalView/SET_filePickerPopup', true);
+      // loadPathFolder()
+      //   .then((pathArr)=> this.settings.Location = pathArr[0] )
+      //   .catch((err)=> console.error(err) )
     },
     exportData() {
       this.$store.dispatch('mod_api/API_exportData', this.settings)
