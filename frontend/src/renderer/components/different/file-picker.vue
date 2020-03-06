@@ -2,7 +2,10 @@
   div
     .settings-layer_section
       .form_row
-        button.btn.btn--link(type="button" @click="onCancel")
+        button.btn.btn--link(
+          v-if="stylingOptions.showBackButton"
+          type="button" 
+          @click="onCancel")
           i.icon.icon-backward
           span Back
       .search.search-input-box
@@ -38,7 +41,7 @@
           span {{ fileName }}
 
       .button-group
-        span {{ buttonGroupMessage }}
+        span(v-if="stylingOptions.showNumberSelectedFiles") {{ buttonGroupMessage }}
         button.btn.btn--primary.btn--disabled(type="button"
           @click="onCancel"
           ) Cancel
@@ -66,7 +69,14 @@ export default {
     },
     fileTypeFilter: {
       type: Array,
-      default: []
+      default: () => []
+    },
+    stylingOptions: {
+      type: Object,
+      default: () => ({
+        showBackButton: true,
+        showNumberSelectedFiles: true
+      })
     }
   },
   data() {
