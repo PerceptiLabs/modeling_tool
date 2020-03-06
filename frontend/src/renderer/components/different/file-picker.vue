@@ -10,7 +10,12 @@
           span Back
       .search.search-input-box
         i.icon.icon-close(@click="clearSearchValue")
-        input.search-input(:class="{error: searchDirNotFound}" type="text" v-model="searchValue" @keyup.enter="searchPath")
+        input.search-input(
+          :class="{error: searchDirNotFound}" 
+          type="text" 
+          v-model="searchValue" 
+          @keyup.enter="searchPath"
+          placeholder="Navigate to...")
     .filepicker
       .directory-breadcrumb
         .breadcrumb(
