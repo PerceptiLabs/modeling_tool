@@ -2,7 +2,8 @@
   base-global-popup(
     :tab-set="popupTitle"
     )
-    //- template(slot="Choose what to save-content")
+    template(slot="Export to-content")
+        file-picker
     //-   .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
     //-     .form_row
     //-       .form_label Project name:
@@ -40,30 +41,30 @@
 </template>
 
 <script>
-import BaseGlobalPopup  from "@/components/global-popups/base-global-popup";
-import { openLoadDialog, generateID } from '@/core/helpers.js'
-import { pathSlash }  from "@/core/constants.js";
+import BaseGlobalPopup  from '@/components/global-popups/base-global-popup';
+import { pathSlash }  from '@/core/constants.js';
+import FilePicker from '@/components/different/file-picker.vue';
 
 export default {
   name: "FilePickerPopup",
-  components: {BaseGlobalPopup},
+  components: { BaseGlobalPopup, FilePicker },
   props: {
     popupSettings: {type: Object},
   },
   created() {
-    this.settings.projectName = this.currentNetwork.networkName;
-    if(this.popupSettings.isFreezeInfo) {
-      this.settings.projectPath = this.currentNetwork.networkRootFolder;
-    }
-    this.$store.dispatch('mod_api/API_checkTrainedNetwork')
-      .then((isTrained)=> {
-        this.settings.isSaveTrainedModel = isTrained;
-        this.existTrained = isTrained;
-      })
+    // this.settings.projectName = this.currentNetwork.networkName;
+    // if(this.popupSettings.isFreezeInfo) {
+    //   this.settings.projectPath = this.currentNetwork.networkRootFolder;
+    // }
+    // this.$store.dispatch('mod_api/API_checkTrainedNetwork')
+    //   .then((isTrained)=> {
+    //     this.settings.isSaveTrainedModel = isTrained;
+    //     this.existTrained = isTrained;
+    //   })
   },
   data() {
     return {
-      popupTitle: ['Choose what to save'],
+      popupTitle: ['Export to'],
       settings: {
         projectName: '',
         projectPath: '',
@@ -74,42 +75,42 @@ export default {
       promiseFail: null,
     }
   },
-  computed: {
-    currentNetwork() {
-      return this.$store.getters['mod_workspace/GET_currentNetwork']
-    },
-    isEmptyPath() {
-      return !!this.settings.projectPath.length
-    }
-  },
-  watch: {
-    'settings.projectName': {
-      handler(newVal) {
-        if(this.popupSettings.isSyncName)
-        this.$store.dispatch('mod_workspace/SET_networkName', newVal)
-      }
-    }
-  },
+//   computed: {
+//     currentNetwork() {
+//       return this.$store.getters['mod_workspace/GET_currentNetwork']
+//     },
+//     isEmptyPath() {
+//       return !!this.settings.projectPath.length
+//     }
+//   },
+//   watch: {
+//     'settings.projectName': {
+//       handler(newVal) {
+//         if(this.popupSettings.isSyncName)
+//         this.$store.dispatch('mod_workspace/SET_networkName', newVal)
+//       }
+//     }
+//   },
   methods: {
     closePopup() {
-      this.promiseFail(false)
+    //   this.promiseFail(false)
     },
     answerPopup() {
-      if(!this.popupSettings.isFreezeInfo) {
-        this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
-      }
-      this.promiseOk(this.settings);
+    //   if(!this.popupSettings.isFreezeInfo) {
+    //     this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
+    //   }
+    //   this.promiseOk(this.settings);
     },
-    loadPathProject() {
-      if(this.settings.projectPath.length) return;
-      let opt = {
-        title:"The folder in which the project will be saved",
-        properties: ['openDirectory'],
-      };
-      openLoadDialog(opt)
-        .then((pathArr)=> { this.settings.projectPath = pathArr[0] })
-        .catch(()=> {})
-    },
+    // loadPathProject() {
+    //   if(this.settings.projectPath.length) return;
+    //   let opt = {
+    //     title:"The folder in which the project will be saved",
+    //     properties: ['openDirectory'],
+    //   };
+    //   openLoadDialog(opt)
+    //     .then((pathArr)=> { this.settings.projectPath = pathArr[0] })
+    //     .catch(()=> {})
+    // },
   }
 }
 </script>

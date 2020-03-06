@@ -50,10 +50,10 @@
           ref="saveNetworkPopup"
           :popup-settings="saveNetworkPopup"
           )
-        file-picker-popup(v-if="showFilePickerPopup")
         
 
       start-training-spinner(v-if="showTrainingSpinner")
+      file-picker-popup(v-if="showFilePickerPopup")
 
 
     .workspace_meta
