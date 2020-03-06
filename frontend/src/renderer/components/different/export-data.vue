@@ -69,12 +69,12 @@ export default {
     }
   },
   methods: {
+    setExportPath(value) {
+      this.settings.Location = value;
+      this.$store.dispatch('globalView/SET_filePickerPopup', false);
+    },
     saveLoadFile() {
-      console.log('export data - saveLoadFile');
-      this.$store.dispatch('globalView/SET_filePickerPopup', true);
-      // loadPathFolder()
-      //   .then((pathArr)=> this.settings.Location = pathArr[0] )
-      //   .catch((err)=> console.error(err) )
+      this.$store.dispatch('globalView/SET_filePickerPopup', this.setExportPath);
     },
     exportData() {
       this.$store.dispatch('mod_api/API_exportData', this.settings)
