@@ -85,19 +85,19 @@ export default {
       type: Array,
       default: () => []
     },
-    selectableItems: {
-      // is false when used for exporting model
-      type: Boolean,
-      default: true
+    confirmCallback: {
+      type: Function,
+      default: () => {}
     },
-    copyItemToFilenameInput: {
-      // is true when used for exporting model
-      type: Boolean,
-      default: false
+    cancelCallback: {
+      type: Function,
+      default: () => {}
     },
     options: {
       type: Object,
       default: () => ({
+        isItemSelectable: true, // is false when used for exporting model
+        doCopyItemToFilenameInput: false, // is true when used for exporting model
         showBackButton: true,
         showNumberSelectedFiles: true,
         showFilenameInput: false
@@ -161,10 +161,10 @@ export default {
     },
     toggleSelectedFile(fileName, event) {
       if (this.filePickerType !== 'file') { return; }
-      if (this.copyItemToFilenameInput) {
+      if (this.options.doCopyItemToFilenameInput) {
         this.filenameInputValue = fileName;
       }
-      if (!this.selectableItems) { return; }
+      if (!this.options.isItemSelectable) { return; }
 
       if (event.ctrlKey || event.metaKey) {
         if (this.selectedFiles.includes(fileName)) {
@@ -180,7 +180,7 @@ export default {
     },
     toggleSelectedDirectory(dirName) {
       if (this.filePickerType !== 'folder') { return; }
-      if (!this.selectableItems) { return; }
+      if (!this.isItemSelectable) { return; }
 
       // ensuring that only one directory can be chosen
       this.selectedDirectories = [];
@@ -223,7 +223,10 @@ export default {
     onConfirm() {
         let emitPayload;
 
-        if (this.filePickerType === 'file') {
+        if (this.filenameInputValue) {
+          // this section is use for choosing a file to export to
+          emitPayload = this.osPathPrefix + this.currentPath.join('/') + '/' + this.filenameInputValue;
+        } else if (this.filePickerType === 'file') {
           emitPayload = this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
         } else if (this.filePickerType === 'folder') {
           if (!this.selectedDirectories) {
@@ -235,10 +238,10 @@ export default {
           console.log('onConfirm emitPayload', emitPayload);
         }
 
-        this.$emit('confirm-selection', emitPayload);
+        this.confirmCallback(emitPayload);
     },
     onCancel() {
-        this.$emit('close');
+        this.cancelCallback();
     },
     clearSearchValue() {
       this.searchValue = '';
