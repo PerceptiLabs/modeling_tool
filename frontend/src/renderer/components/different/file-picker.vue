@@ -3,7 +3,7 @@
     .settings-layer_section
       .form_row
         button.btn.btn--link(
-          v-if="stylingOptions.showBackButton"
+          v-if="options.showBackButton"
           type="button" 
           @click="onCancel")
           i.icon.icon-backward
@@ -45,8 +45,17 @@
           img(src="/static/img/file-picker/file.svg" class="svg-icon")
           span {{ fileName }}
 
+      .filename-input(v-if="options.showFilenameInput")
+        span Filename
+        input.search-input(
+          :class="{error: searchDirNotFound}" 
+          type="text" 
+          v-model="filenameInputValue" 
+          @keyup.enter="searchPath"
+          placeholder="")
+
       .button-group
-        span(v-if="stylingOptions.showNumberSelectedFiles") {{ buttonGroupMessage }}
+        span(v-if="options.showNumberSelectedFiles") {{ buttonGroupMessage }}
         button.btn.btn--primary.btn--disabled(type="button"
           @click="onCancel"
           ) Cancel
@@ -76,11 +85,22 @@ export default {
       type: Array,
       default: () => []
     },
-    stylingOptions: {
+    selectableItems: {
+      // is false when used for exporting model
+      type: Boolean,
+      default: true
+    },
+    copyItemToFilenameInput: {
+      // is true when used for exporting model
+      type: Boolean,
+      default: false
+    },
+    options: {
       type: Object,
       default: () => ({
         showBackButton: true,
-        showNumberSelectedFiles: true
+        showNumberSelectedFiles: true,
+        showFilenameInput: false
       })
     }
   },
@@ -98,6 +118,7 @@ export default {
       searchValue: '',
       searchDirNotFound: false,
       breadcrumbShowLastXPositions: 5,
+      filenameInputValue: ''
     }
   },
   mounted() {
@@ -140,6 +161,10 @@ export default {
     },
     toggleSelectedFile(fileName, event) {
       if (this.filePickerType !== 'file') { return; }
+      if (this.copyItemToFilenameInput) {
+        this.filenameInputValue = fileName;
+      }
+      if (!this.selectableItems) { return; }
 
       if (event.ctrlKey || event.metaKey) {
         if (this.selectedFiles.includes(fileName)) {
@@ -155,6 +180,7 @@ export default {
     },
     toggleSelectedDirectory(dirName) {
       if (this.filePickerType !== 'folder') { return; }
+      if (!this.selectableItems) { return; }
 
       // ensuring that only one directory can be chosen
       this.selectedDirectories = [];
@@ -235,8 +261,20 @@ export default {
         return '';
       }
     },
+    isValidFileName() {
+      if (this.filenameInputValue !== '' &&
+          /^[a-z0-9_.@()-]+$/.test(this.filenameInputValue)) { 
+            return true; 
+      }
+
+      return false;
+    },
     isConfirmButtonDisabled() {
-      if (this.filePickerType === 'file' && this.selectedFiles.length === 0) {
+      if (this.options.showFilenameInput && !this.isValidFileName) {
+        return true;
+      } else if (this.options.showFilenameInput && this.isValidFileName) {
+        return false;
+      } else if (this.filePickerType === 'file' && this.selectedFiles.length === 0) {
         return true;
       }
 
@@ -314,6 +352,22 @@ export default {
     }
   }
 
+}
+
+.filename-input {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  border-top: 0.1rem solid $color-8;
+
+  * {
+    margin-left: 1rem;
+
+    &:last-child {
+      margin-right: 1rem;
+    }
+  }
 }
 
 .button-group {
