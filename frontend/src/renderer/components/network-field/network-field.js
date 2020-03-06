@@ -90,6 +90,9 @@ export default {
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
       testingIsOpen:        'mod_workspace/GET_testIsOpen',
     }),
+    fullNetworkElementList() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
+    },
     networkElementList() {
       let currentNetwork = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
       let newNet = {};
@@ -561,12 +564,28 @@ export default {
       const scrollPosition = document.querySelector('.js-info-section_main').scrollTop;
       return (event.pageY - this.offset.offsetY + scrollPosition) / this.networkScale
     },
+    getLastElementLegArrowData(arrow) {
+      const isLayerTypeContainer = arrow.l1.layerType === 'Сontainer';
+      let arrowLeg1 = arrow.l1;
+      if(isLayerTypeContainer) {
+        // find id
+        let keysOfContainerLayersListFrom = Object.keys(arrow.l1.containerLayersList);
+        let keysOfContainerLayersListTo = arrow.l2.connectionIn;
+        const keyOfLastElementFromGroup = keysOfContainerLayersListFrom.filter(value => keysOfContainerLayersListTo.includes(value))[0];
+
+        let currentNetworkElementList = this.fullNetworkElementList;
+        arrowLeg1 = currentNetworkElementList[keyOfLastElementFromGroup];
+      }
+      return arrowLeg1;
+    },
     arrowClassStyle(arrow) {
+      const arrowLine1 = this.getLastElementLegArrowData(arrow);
+
       let result = [];
-      if (arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible) {
+      if (arrowLine1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible) {
         result.push('arrow--hidden');
       }
-      if (!arrow.l1.layerMeta.OutputDim || arrow.l1.layerCodeError) {
+      if (!arrowLine1.layerMeta.OutputDim || arrowLine1.layerCodeError) {
         result.push('svg-arrow_line--empty');
       }
 
@@ -576,7 +595,9 @@ export default {
       return result;
     },
     arrowMarkerStyle(arrow) {
-      return (!arrow.l1.layerMeta.OutputDim || arrow.l1.layerCodeError)
+      const arrowLine1 = this.getLastElementLegArrowData(arrow);
+
+      return (!arrowLine1.layerMeta.OutputDim || arrowLine1.layerCodeError)
         ? 'url(#svg-arrow_triangle-empty)'
         : 'url(#svg-arrow_triangle)';
     },
