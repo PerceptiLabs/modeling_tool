@@ -1,43 +1,14 @@
 <template lang="pug">
-  base-global-popup(
-    :tab-set="popupTitle"
-    )
-    template(slot="Export to-content")
-        file-picker
-    //-   .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
-    //-     .form_row
-    //-       .form_label Project name:
-    //-       .form_input
-    //-         input(type="text"
-    //-           v-model="settings.projectName"
-    //-           :class="{'bg-error': !settings.projectName}"
-    //-         )
-    //-   .settings-layer_section(v-if="!popupSettings.isFreezeInfo")
-    //-     .form_row
-    //-       .form_label Project path:
-    //-       .form_input
-    //-         input.ellipsis(type="text"
-    //-           v-model="settings.projectPath"
-    //-           :class="{'bg-error': !settings.projectPath}"
-    //-           @click="loadPathProject"
-    //-         )
-    //-   .settings-layer_section
-    //-     .form_row
-    //-       .form_label Save settings:
-    //-       .form_input
-    //-         base-radio(group-name="group" :value-input="false" v-model="settings.isSaveTrainedModel")
-    //-           span Save model
-    //-         base-radio(group-name="group" :value-input="true" v-model="settings.isSaveTrainedModel" :disabled="!existTrained")
-    //-           span Save trained model
 
-    template(slot="action")
-      button.btn.btn--primary.btn--disabled(type="button"
-        @click="closePopup") Cancel
-      button.btn.btn--primary(type="button"
-        :disabled="!settings.projectPath.length"
-        @click="answerPopup") Continue
-
-
+  .popup-global
+    .popup-global_overlay(@click="closePopup()")
+    section.popup
+      .popup_tab-set
+        .popup_header
+            h3 {{ popupTitle }}
+      .popup_body
+        file-picker(:stylingOptions="stylingOptions")
+        
 </template>
 
 <script>
@@ -48,52 +19,26 @@ import FilePicker from '@/components/different/file-picker.vue';
 export default {
   name: "FilePickerPopup",
   components: { BaseGlobalPopup, FilePicker },
-  props: {
-    popupSettings: {type: Object},
-  },
-  created() {
-    // this.settings.projectName = this.currentNetwork.networkName;
-    // if(this.popupSettings.isFreezeInfo) {
-    //   this.settings.projectPath = this.currentNetwork.networkRootFolder;
-    // }
-    // this.$store.dispatch('mod_api/API_checkTrainedNetwork')
-    //   .then((isTrained)=> {
-    //     this.settings.isSaveTrainedModel = isTrained;
-    //     this.existTrained = isTrained;
-    //   })
-  },
+//   props: {
+//     popupSettings: {type: Object},
+//   },
   data() {
     return {
-      popupTitle: ['Export to'],
-      settings: {
-        projectName: '',
-        projectPath: '',
-        isSaveTrainedModel: true,
-      },
-      existTrained: false,
-      promiseOk: null,
-      promiseFail: null,
+        popupTitle: 'Export to',
+        settings: {
+            projectName: '',
+            projectPath: '',
+            isSaveTrainedModel: true,
+        },
+        stylingOptions: {
+            showBackButton: false,
+            showNumberSelectedFiles: false
+        }
     }
   },
-//   computed: {
-//     currentNetwork() {
-//       return this.$store.getters['mod_workspace/GET_currentNetwork']
-//     },
-//     isEmptyPath() {
-//       return !!this.settings.projectPath.length
-//     }
-//   },
-//   watch: {
-//     'settings.projectName': {
-//       handler(newVal) {
-//         if(this.popupSettings.isSyncName)
-//         this.$store.dispatch('mod_workspace/SET_networkName', newVal)
-//       }
-//     }
-//   },
   methods: {
     closePopup() {
-    //   this.promiseFail(false)
+        this.$store.commit('globalView/HIDE_allGlobalPopups');
     },
     answerPopup() {
     //   if(!this.popupSettings.isFreezeInfo) {
@@ -111,10 +56,15 @@ export default {
     //     .then((pathArr)=> { this.settings.projectPath = pathArr[0] })
     //     .catch(()=> {})
     // },
+    
   }
 }
 </script>
 
 <style lang="scss" scoped>
-
+base-global-popup {
+    /deep/ .popup-global .popup_foot {
+        display: none;
+    }
+}
 </style>
