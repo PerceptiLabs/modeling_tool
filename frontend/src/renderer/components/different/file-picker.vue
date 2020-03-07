@@ -45,14 +45,6 @@
           img(src="/static/img/file-picker/file.svg" class="svg-icon")
           span {{ fileName }}
 
-      .filename-input(v-if="options.showFilenameInput")
-        span Filename
-        input.search-input(
-          :class="{error: searchDirNotFound}" 
-          type="text" 
-          v-model="filenameInputValue" 
-          @keyup.enter="searchPath"
-          placeholder="")
 
       .button-group
         span(v-if="options.showNumberSelectedFiles") {{ buttonGroupMessage }}
@@ -96,11 +88,8 @@ export default {
     options: {
       type: Object,
       default: () => ({
-        isItemSelectable: true, // is false when used for exporting model
-        doCopyItemToFilenameInput: false, // is true when used for exporting model
         showBackButton: true,
         showNumberSelectedFiles: true,
-        showFilenameInput: false
       })
     }
   },
@@ -152,6 +141,7 @@ export default {
       this.toggleSelectedDirectory(dirName);
     },
     onDirectoryDoubleClick(dirName) {
+      this.selectedDirectories = [];
       this.calcFolderPath(dirName);
     },
     onFileDoubleClick(fileName) {
@@ -161,10 +151,6 @@ export default {
     },
     toggleSelectedFile(fileName, event) {
       if (this.filePickerType !== 'file') { return; }
-      if (this.options.doCopyItemToFilenameInput) {
-        this.filenameInputValue = fileName;
-      }
-      if (!this.options.isItemSelectable) { return; }
 
       if (event.ctrlKey || event.metaKey) {
         if (this.selectedFiles.includes(fileName)) {
@@ -180,7 +166,6 @@ export default {
     },
     toggleSelectedDirectory(dirName) {
       if (this.filePickerType !== 'folder') { return; }
-      if (!this.isItemSelectable) { return; }
 
       // ensuring that only one directory can be chosen
       this.selectedDirectories = [];
@@ -223,13 +208,10 @@ export default {
     onConfirm() {
         let emitPayload;
 
-        if (this.filenameInputValue) {
-          // this section is use for choosing a file to export to
-          emitPayload = this.osPathPrefix + this.currentPath.join('/') + '/' + this.filenameInputValue;
-        } else if (this.filePickerType === 'file') {
+        if (this.filePickerType === 'file') {
           emitPayload = this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
         } else if (this.filePickerType === 'folder') {
-          if (!this.selectedDirectories) {
+          if (!this.selectedDirectories || this.selectedDirectories.length === 0) {
             // if not active directory select, take current
             emitPayload = this.osPathPrefix + this.currentPath.join('/') + '/';
           } else {
