@@ -70,7 +70,9 @@ export default {
   },
   methods: {
     setExportPath(value) {
-      this.settings.Location = value;
+      if (value && Array.isArray(value) && value.length > 0) {
+        this.settings.Location = value[0];
+      }
       this.$store.dispatch('globalView/SET_filePickerPopup', false);
     },
     saveLoadFile() {
