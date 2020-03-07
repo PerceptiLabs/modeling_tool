@@ -213,9 +213,9 @@ export default {
         } else if (this.filePickerType === 'folder') {
           if (!this.selectedDirectories || this.selectedDirectories.length === 0) {
             // if not active directory select, take current
-            emitPayload = this.osPathPrefix + this.currentPath.join('/') + '/';
+            emitPayload = [this.osPathPrefix + this.currentPath.join('/') + this.osPathSuffix];
           } else {
-            emitPayload = this.selectedDirectories.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
+            emitPayload = this.selectedDirectories.map(d => this.osPathPrefix + this.currentPath.join('/') + '/' + d + this.osPathSuffix);
           }
           console.log('onConfirm emitPayload', emitPayload);
         }
