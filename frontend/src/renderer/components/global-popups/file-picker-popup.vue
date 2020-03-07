@@ -8,6 +8,7 @@
             h3 {{ popupTitle }}
       .popup_body
         file-picker(
+            :filePickerType="filePickerType"
             :options="filePickerOptions"
             :confirmCallback="confirmCallback"
             :cancelCallback="closePopup")
@@ -24,7 +25,7 @@ export default {
     props: {
         filePickerType: {
             type: String,
-            default: 'file' // can also be 'folder'
+            default: 'folder' // can also be 'folder'
         },
         fileTypeFilter: {
             type: Array,
@@ -43,7 +44,6 @@ export default {
             doCopyItemToFilenameInput: true,
             showBackButton: false,
             showNumberSelectedFiles: false,
-            showFilenameInput: true
         }
     }
     },
