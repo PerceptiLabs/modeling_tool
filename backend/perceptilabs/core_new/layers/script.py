@@ -240,6 +240,11 @@ class ScriptFactory:
         template += "    message_queue.put((b'snapshots', body))\n"
         template += "    process_events(graph)\n"
         template += "\n"
+        template += "def make_snapshot_and_process_events(graph):\n"
+        template += "    make_snapshot(graph)\n"
+        template += "    process_events(graph)\n"
+        template += "\n"
+        
         template += "def message_queue_worker():\n"
         template += "    while True:\n"
         template += "        if message_queue.empty():\n"
@@ -271,7 +276,9 @@ class ScriptFactory:
         template += '    graph = graph_builder.build(LAYERS, EDGES)\n'
         template += '    \n'
         template += '    print(graph.training_nodes)\n'
-        template += '    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot\n'
+        template += '    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot_and_process_events\n'
+        template += '    graph.training_nodes[0].layer_instance.save_snapshot_and_process_events = make_snapshot_and_process_events\n'        
+        template += '    graph.training_nodes[0].layer_instance.process_events = process_events\n'        
         
         template += '    status = STATUS_READY\n'
         template += '    if wait:\n'
