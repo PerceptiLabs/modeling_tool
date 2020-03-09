@@ -1,0 +1,91 @@
+.ps__rail-x {
+  display: block !important;
+  opacity: 1 !important;
+  z-index: 1 !important;
+  background: transparent;
+  transition: background-color .2s linear, opacity .2s linear;
+  -webkit-transition: background-color .2s linear, opacity .2s linear;
+  height: 6px;
+  /* there must be 'bottom' or 'top' for ps__rail-x */
+  bottom: 0;
+  /* please don't change 'position' */
+  position: absolute;
+}
+.ps__rail-y {
+  display: block !important;
+  opacity: 1 !important;
+  z-index: 1 !important;
+  background: transparent;
+  transition: background-color .2s linear, opacity .2s linear;
+  -webkit-transition: background-color .2s linear, opacity .2s linear;
+  width: 6px;
+  /* there must be 'right' or 'left' for ps__rail-y */
+  right: 0;
+  /* please don't change 'position' */
+  position: absolute;
+}
+.ps--active-x > .ps__rail-x,
+.ps--active-y > .ps__rail-y {
+  display: block;
+  background-color: transparent !important;
+}
+.ps:hover > .ps__rail-x,
+.ps:hover > .ps__rail-y,
+.ps--focus > .ps__rail-x,
+.ps--focus > .ps__rail-y,
+.ps--scrolling-x > .ps__rail-x,
+.ps--scrolling-y > .ps__rail-y {
+  opacity: 1 !important;
+}
+.ps .ps__rail-x:hover,
+.ps .ps__rail-y:hover,
+.ps .ps__rail-x:focus,
+.ps .ps__rail-y:focus,
+.ps .ps__rail-x.ps--clicking,
+.ps .ps__rail-y.ps--clicking {
+  //background-color: rgba($bg-scroll, .5) !important;
+  background-color: transparent !important;
+  opacity: 1 !important;
+}
+///*
+// * Scrollbar thumb styles
+// */
+.ps__thumb-x {
+  background-color: rgba($bg-scroll, .5) !important;
+  border-radius: 10px !important;
+  transition: background-color .2s linear, height .2s ease-in-out;
+  -webkit-transition: background-color .2s linear, height .2s ease-in-out;
+  height: 6px !important;
+  /* there must be 'bottom' for ps__thumb-x */
+  bottom: 0;
+  /* please don't change 'position' */
+  position: absolute;
+  z-index: 20 !important;
+}
+.ps__thumb-y {
+  background-color: rgba($bg-scroll, .5) !important;
+  border-radius: 10px;
+  transition: background-color .2s linear, width .2s ease-in-out;
+  -webkit-transition: background-color .2s linear, width .2s ease-in-out;
+  width: 6px;
+  /* there must be 'right' for ps__thumb-y */
+  right: 0;
+  /* please don't change 'position' */
+  position: absolute;
+  z-index: 20 !important;
+}
+
+// thumb when is hovered
+.ps__rail-x:hover > .ps__thumb-x,
+.ps__rail-x:focus > .ps__thumb-x,
+.ps__rail-x.ps--clicking .ps__thumb-x {
+  background-color: rgba($bg-scroll, 1) !important;
+  height: 6px;
+}
+.ps__rail-y:hover > .ps__thumb-y,
+.ps__rail-y:focus > .ps__thumb-y,
+.ps__rail-y.ps--clicking .ps__thumb-y {
+  background-color: rgba($bg-scroll, 1) !important;
+  width: 6px !important;
+}
+
