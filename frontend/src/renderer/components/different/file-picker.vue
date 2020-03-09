@@ -61,7 +61,8 @@
 <script>
 import { coreRequest } from '@/core/apiWeb.js';
 import { isOsWindows } from '@/core/helpers.js';
-
+import { filePickerStorageKey } from '@/core/constants.js';
+import { mapGetters } from "vuex";
 
 const breadcrumbCharacterLength = 58;
 
@@ -110,7 +111,13 @@ export default {
     }
   },
   mounted() {
-    this.fetchPathInformation('');
+    let path = '';
+    if(localStorage.hasOwnProperty(filePickerStorageKey) && !this.isTutorialMode) {
+      path = localStorage.getItem(filePickerStorageKey);
+    }
+    
+    this.fetchPathInformation(path);
+    
   },
   methods: {
     calculateBreadcrumbsLength(path) {
@@ -189,9 +196,15 @@ export default {
           } else {
             this.searchDirNotFound = false;
           }
+          
           if(!pathNotFound) {
             this.calculateBreadcrumbsLength(jsonData.current_path);
+            if(!this.isTutorialMode) {
+              localStorage.setItem(filePickerStorageKey, jsonData.current_path);
+            }
           }
+          
+          
           this.currentPath = jsonData.current_path.split('/').filter(el => el);
           this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
           if (this.fileTypeFilter.length === 0) {
@@ -251,7 +264,10 @@ export default {
       }
 
       return false;
-    }
+    },
+    ...mapGetters({
+      isTutorialMode: 'mod_tutorials/getIstutorialMode',
+    })
   }
 }
 </script>

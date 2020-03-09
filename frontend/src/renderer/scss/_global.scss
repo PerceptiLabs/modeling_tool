@@ -13,7 +13,6 @@
 /*----- Common styles -----*/
 @import 'fonts/icomoon';
 @import 'fonts/roboto';
-
 @import 'common/normalize';
 @import 'common/common';
 @import 'common/layout';
@@ -25,7 +24,6 @@
 @import 'common/animation';
 
 @import 'pages/login';
-
 @import 'components/network-elements';
 @import 'components/action-list';
 @import 'components/settings-layer';
@@ -35,5 +33,6 @@
 @import 'components/tutorial';
 @import 'components/sidebar';
 @import 'components/bookmark';
+@import 'components/perfect_scroll_bar';
 
 @import 'directives/tooltip';

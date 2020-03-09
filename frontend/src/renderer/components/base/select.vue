@@ -7,7 +7,7 @@
       span {{ labelText }}
       i.icon.icon-shevron.icon--open
 
-    ul.custom-select_option-list.action-list(
+    perfect-scrollbar(tag="ul").custom-select_option-list.action-list(
       v-show="isOpenList"
       )
       template(v-if="selectMultiple")
