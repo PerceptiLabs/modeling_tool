@@ -33,6 +33,7 @@ class Interface():
         self._checkpointDict=checkpointDict
         self._lwDict=lwDict
         self._core_mode = core_mode
+        assert core_mode in ['v1', 'v2']        
 
     def _addCore(self, reciever):
         core=coreLogic(reciever, self._core_mode)
