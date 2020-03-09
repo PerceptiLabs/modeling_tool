@@ -40,8 +40,6 @@ export default {
     return {
         popupTitle: 'Export as',
         filePickerOptions: {
-            isItemSelectable: false,
-            doCopyItemToFilenameInput: true,
             showBackButton: false,
             showNumberSelectedFiles: false,
         }

@@ -107,7 +107,6 @@ export default {
       searchValue: '',
       searchDirNotFound: false,
       breadcrumbShowLastXPositions: 5,
-      filenameInputValue: ''
     }
   },
   mounted() {
@@ -246,20 +245,8 @@ export default {
         return '';
       }
     },
-    isValidFileName() {
-      if (this.filenameInputValue !== '' &&
-          /^[a-z0-9_.@()-]+$/.test(this.filenameInputValue)) { 
-            return true; 
-      }
-
-      return false;
-    },
     isConfirmButtonDisabled() {
-      if (this.options.showFilenameInput && !this.isValidFileName) {
-        return true;
-      } else if (this.options.showFilenameInput && this.isValidFileName) {
-        return false;
-      } else if (this.filePickerType === 'file' && this.selectedFiles.length === 0) {
+      if (this.filePickerType === 'file' && this.selectedFiles.length === 0) {
         return true;
       }
 
