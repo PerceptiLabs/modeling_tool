@@ -54,8 +54,7 @@
 
       start-training-spinner(v-if="showTrainingSpinner")
       file-picker-popup(
-        v-if="showFilePickerPopup"
-        :confirmCallback="showFilePickerPopup")
+        v-if="showFilePickerPopup")
 
     .workspace_meta
       include ./meta/workspace-meta.pug
