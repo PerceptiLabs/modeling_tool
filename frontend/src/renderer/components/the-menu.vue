@@ -49,7 +49,7 @@
   //import { ipcRenderer } from 'electron'
   import { mapGetters, mapMutations, mapActions } from 'vuex';
   import { baseUrlSite } from '@/core/constants.js';
-  import { goToLink }    from '@/core/helpers.js'
+  import { goToLink, isOsMacintosh } from '@/core/helpers.js'
 
 export default {
   name: "TheMenu",
@@ -66,7 +66,8 @@ export default {
     ...mapGetters({
       isTutorialMode: 'mod_tutorials/getIstutorialMode',
       isStoryBoard:   'mod_tutorials/getIsTutorialStoryBoard',
-      isLogin:        'mod_user/GET_userIsLogin'
+      isLogin:        'mod_user/GET_userIsLogin',
+      networkHistory: 'mod_workspace-history/GET_currentNetHistory',
     }),
     appVersion() {
       return this.$store.state.globalView.appVersion
@@ -78,12 +79,12 @@ export default {
       return this.$store.state.globalView.appIsOpen
     },
     isMac() {
-      return process.platform === 'darwin'
+      return isOsMacintosh();
     },
 
     navMenu() {
       return [
-        ...(process.platform === 'darwin' ? [{
+        ...(this.isMac ? [{
             label: 'PerceptiLabs',
             submenu: [
               { role: 'about',      active: ()=>{}},
@@ -193,6 +194,14 @@ export default {
       });
       return this.dataKeymap;
     },
+    isDisabledPrevStep() {
+      const history = this.networkHistory;
+      return !!history && history.historyStep === history.historyNet.length - 1
+    },
+    isDisabledNextStep() {
+      const history = this.networkHistory;
+      return !!history && history.historyStep === 0
+    }
   },
   watch: {
 /*    navMenu(newMenu) {
@@ -219,8 +228,8 @@ export default {
       HCPaste:          'mod_events/EVENT_hotKeyPaste',
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
       HCDeselectAll:    'mod_workspace/SET_elementUnselect',
-      toPrevStepHistory:'mod_workspace-history/TO_prevStepHistory',
-      toNextStepHistory:'mod_workspace-history/TO_nextStepHistory',
+      toPrevStepHistoryMutation:'mod_workspace-history/TO_prevStepHistory',
+      toNextStepHistoryMutation:'mod_workspace-history/TO_nextStepHistory',
     }),
     goToLink,
     mainProcessListeners(isRemove) {
@@ -340,6 +349,16 @@ export default {
     },
     HC_unGroupLayerContainer() {
       this.$store.dispatch('mod_workspace/UNGROUP_container');
+    },
+    toPrevStepHistory() {
+      if (!this.isDisabledPrevStep) {
+        this.toPrevStepHistoryMutation();
+      }
+    },
+    toNextStepHistory() {
+      if(!this.isDisabledNextStep) {
+        this.toNextStepHistoryMutation()
+      }
     },
   }
 }
