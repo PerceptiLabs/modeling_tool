@@ -76,10 +76,11 @@ export default {
       this.$store.dispatch('globalView/SET_filePickerPopup', false);
     },
     saveLoadFile() {
+      // sets the value of the showFilePickerPopup as the callback function, as it's truthy
       this.$store.dispatch('globalView/SET_filePickerPopup', this.setExportPath);
     },
     exportData() {
-      this.$store.dispatch('mod_api/API_exportData', this.settings)
+      this.$store.dispatch('mod_api/API_exportData', this.settings);
     }
   }
 }
