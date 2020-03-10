@@ -67,8 +67,8 @@ class GraphBuilder:
         nodes = {}
         for layer_spec in graph_spec.values():
 
-            from pprint import pprint
-            pprint(layer_spec)
+            #from pprint import pprint
+            #pprint(layer_spec)
             
             layer_type = layer_spec['Type']
 
