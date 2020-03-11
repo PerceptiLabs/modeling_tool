@@ -1,8 +1,7 @@
-import { generateID, calcLayerPosition, deepCopy, isLocalStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
+import { generateID, calcLayerPosition, deepCopy, deepCloneNetwork, isLocalStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
 import { widthElement } from '@/core/constants.js'
 import Vue    from 'vue'
 import router from '@/router'
-
 const namespaced = true;
 
 const state = {
@@ -499,11 +498,16 @@ const mutations = {
       }
     }
   },
-  delete_element(state, {getters, dispatch}) {
+  async delete_element(state, {getters, dispatch}) {
     let arrSelect = getters.GET_currentSelectedEl;
     if(!arrSelect.length) return;
     let arrSelectID = [];
-    let net = {...getters.GET_currentNetworkElementList};
+    let linkedNet = getters.GET_currentNetworkElementList;
+    removeIsSelectedAfterDeleteItems(arrSelect);
+    // make new history with unselected item
+    await dispatch('mod_events/EVENT_calcArray', null, {root: true});
+    
+    let net = {...linkedNet};
     deleteElement(arrSelect);
     for(let el in net) {
       let element = net[el];
@@ -538,6 +542,11 @@ const mutations = {
         }
         delete net[el.layerId];
         arrSelectID.push(el.layerId);
+      });
+    }
+    function removeIsSelectedAfterDeleteItems(arrSelect){
+      arrSelect.forEach((el)=> {
+        linkedNet[el.layerId].layerMeta.isSelected = false;
       });
     }
   },
