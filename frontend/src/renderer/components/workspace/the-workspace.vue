@@ -32,12 +32,13 @@
           )
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
-          .info-section_main.js-info-section_main(
+          perfect-scrollbar.info-section_main.js-info-section_main(
             @wheel="scaleScroll($event)"
             )
             network-field(
               ref="networkField"
               :key="i"
+              :scaleNet="scaleNet"
               :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
 
@@ -124,6 +125,7 @@
     overflow: hidden;
   }
   .info-section_main {
+    display: block;
     overflow: auto;
   }
   .workspace_meta {

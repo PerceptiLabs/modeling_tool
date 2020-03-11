@@ -18,6 +18,7 @@ const pathSlash = process.platform === 'win32' ? '\\' : '/';
 const hideSidebarOnBreakpoint = 1280;
 const sidebarNavCoefficientScaleCalculateFromHeight = 920;
 const filePickerStorageKey = 'filePickerPathSource';
+const localStorageGridKey = 'isGridEnabled';
 
 export {
   isDevelopMode,
@@ -32,4 +33,5 @@ export {
   hideSidebarOnBreakpoint,
   sidebarNavCoefficientScaleCalculateFromHeight,
   filePickerStorageKey,
+  localStorageGridKey,
 }
