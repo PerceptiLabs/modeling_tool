@@ -68,6 +68,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('validation_iteration', int, -1),        
         ReplicatedProperty('testing_iteration', int, -1),
         ReplicatedProperty('progress', (np.float32, float), -1),
+        ReplicatedProperty('export_modes', list, []),        
     ],
     DataLayer: [
         ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),

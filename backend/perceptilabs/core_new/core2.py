@@ -1,5 +1,6 @@
 import time
 import uuid
+import pprint
 import logging
 import requests
 import tempfile
@@ -37,12 +38,24 @@ class Core:
         self._client = None
         
     def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: Callable=None):
+        try:
+            self._run_internal(graph_spec, session_id, on_iterate)
+        except Exception as e:
+            log.exception("Exception in core.run")
+            raise
+        finally:
+            log.info(f"Stopping core with session id {session_id}")
+            self.stop()                
+        
+    def _run_internal(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: Callable=None):        
         session_id = session_id or uuid.uuid4().hex
         log.info(f"Running core with session id {session_id}")
 
-        config = self._deployment_pipe.get_session_config(session_id)        
+        config = self._deployment_pipe.get_session_config(session_id)
+        log.debug(f"Session {session_id} config: {pprint.pformat(config)}")
+        
         graph = self._graph_builder.build_from_spec(graph_spec, config)
-        self._client = self._deployment_pipe.deploy(graph, config)
+        self._client = self._deployment_pipe.deploy(graph, session_id)
 
         line_to_node_map = self._deployment_pipe._line_to_node_map # TODO: inject script_factory to deployment pipe instead retrieving the map like this.
 
@@ -59,6 +72,7 @@ class Core:
 
         self._graphs = []
 
+        counter = 0
         t_start = time.perf_counter()
         while self._client.status == STATUS_RUNNING or (self._client.status == STATUS_IDLE and len(self._graphs) < self._client.snapshot_count):
             t0 = time.perf_counter()
@@ -82,7 +96,7 @@ class Core:
                 self._graphs.extend(new_graphs)
 
             if on_iterate is not None:
-                on_iterate()
+                on_iterate(counter, self)
 
             t1 = time.perf_counter()
 
@@ -95,12 +109,10 @@ class Core:
                 f"Consumed {len(snapshots)} snapshots in {round(1000*(t1-t0), 3)} ms (mean size: {avg_size} KB). "
                 f"Total consumed (produced): {len(self._graphs)} ({self._client.snapshot_count}). "
                 f"Consumption (production) rate: {consume_rate} ({produce_rate}) per sec. "
-                f"Current time: {time.time()}."
-            )            
+            )
+            counter += 1
             time.sleep(1)
 
-        log.info(f"Stopping core with session id {session_id}")
-        self.stop()
 
     def _handle_errors(self, errors: List, line_to_node_map):
         errors_repr = []
@@ -141,7 +153,15 @@ class Core:
 
     def unpause(self):
         if self._client is not None:        
-            self._client.send_event('on_resume')        
+            self._client.send_event('on_resume')
+
+    def export(self, path: str, mode: str):
+        log.debug(f"Export path: {path}, mode: {mode}, client: {self._client}")
+        
+        if self._client is not None:        
+            self._client.send_event('on_export', path=path, mode=mode)
+        else:
+            log.warning("Client is none. on_export not called!")
 
     @property
     def is_running(self):

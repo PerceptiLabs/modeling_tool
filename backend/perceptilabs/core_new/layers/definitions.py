@@ -1,7 +1,7 @@
 from collections import namedtuple
 from typing import Dict
 import logging
-
+import os
 
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.utils import *
@@ -33,6 +33,23 @@ class LayerDef:
         self.macro_parameters = macro_parameters
 
         
+def resolve_checkpoint_path(specs):
+    if len(specs['checkpoint']) == 0:
+        return None
+    
+    ckpt_path = specs['checkpoint'][1]
+    if '//' in ckpt_path:
+        new_ckpt_path = os.path.sep+ckpt_path.split(2*os.path.sep)[1] # Sometimes frontend repeats the directory path. /<dir-path>//<dir-path>/model.ckpt-1
+        log.warning(
+            f"Splitting malformed checkpoint path: '{ckpt_path}'. "
+            f"New path: '{new_ckpt_path}'"
+        )
+        ckpt_path = new_ckpt_path
+
+    ckpt_path = os.path.dirname(ckpt_path)
+    return ckpt_path
+
+
 DEFINITION_TABLE = {
     'DataData': LayerDef(
         DataLayer,
@@ -49,17 +66,12 @@ DEFINITION_TABLE = {
             'shuffle_buffer_size': None,
         }
     ),
-
     'ProcessGrayscale' : LayerDef(
         Tf1xLayer,
         'tf1x.j2',
         'layer_tf1x_grayscale',
-        {
-
-        }
+        {}
     ),
-
-
     'ProcessReshape': LayerDef(
         Tf1xLayer,
         'tf1x.j2',
@@ -124,7 +136,8 @@ DEFINITION_TABLE = {
             'momentum': lambda specs: specs['Properties']['Momentum'],
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
-            'distributed': lambda specs: specs['Properties']['Distributed']
+            'distributed': lambda specs: specs['Properties']['Distributed'],
+            'export_directory': resolve_checkpoint_path
         }
     )
 }

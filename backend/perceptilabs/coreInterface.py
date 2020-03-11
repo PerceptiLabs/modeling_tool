@@ -1,7 +1,9 @@
+import json
 import queue
 import numpy as np
 import time
 import psutil
+import shutil
 import copy
 import traceback
 import os
@@ -30,14 +32,13 @@ from perceptilabs.license_checker import LicenseV2
 log = logging.getLogger(__name__)
 scraper = get_scraper()
 
-
-DEFAULT_CORE_MODE = 'normal' # normal or compability
-# DEFAULT_CORE_MODE = 'compability' 
-
-
-
 class coreLogic():
-    def __init__(self,networkName):
+    def __init__(self,networkName, core_mode='v1'):
+        log.info(f"Created coreLogic for network '{networkName}' with core mode '{core_mode}'")
+        
+        assert core_mode in ['v1', 'v2']
+        self._core_mode = core_mode
+        
         self.networkName=networkName
         self.cThread=None
         self.status="Created"
@@ -45,6 +46,8 @@ class coreLogic():
 
         self.setupLogic()
         self.plLicense = LicenseV2()
+        
+        self._save_counter = 0
 
     def setupLogic(self):
         self.warningQueue=queue.Queue()
@@ -141,8 +144,9 @@ class coreLogic():
             log.exception("Failed creating deployment script...")
 
     def startCore(self,network, checkpointValues):
-
         #Start the backendthread and give it the network
+
+
         self.setupLogic()
         self.network=network
         log.debug('printing network .......\n')
@@ -155,33 +159,34 @@ class coreLogic():
         data_container = DataContainer()
 
         def backprop(layer_id):
-            b_con = network['Layers'][layer_id]['backward_connections']
-            if b_con:
-                return backprop(b_con[0])
+            backward_connections = network['Layers'][layer_id]['backward_connections']
+            if backward_connections:
+                id_, name = backward_connections[0]
+                return backprop(id_)
             else:
                 return layer_id
 
         #TODO: Replace len(gpus) with a frontend choice of how many GPUs (if any) they want to use
         gpus = self.gpu_list()
-        DISTRIBUTED = self.isDistributable(gpus)
-        core_mode = DEFAULT_CORE_MODE     
+        distributed = self.isDistributable(gpus)
+        #distributed = True
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'DataData':
                 layer['Properties']['accessProperties']['Sources'][0]['path'] = layer['Properties']['accessProperties']['Sources'][0]['path'].replace('\\','/')
             if layer['Type'] == 'TrainNormal':
-                layer['Properties']['Distributed'] = DISTRIBUTED
-                if DISTRIBUTED:
-                    labels = layer['Properties']['Labels']
+                layer['Properties']['Distributed'] = distributed
+                if distributed:
+                    targets_id = layer['Properties']['Labels']
 
-                    for b_con in layer['backward_connections']:
-                        if b_con != labels:
-                            pred = b_con
-
-                    input_data_layer = backprop(pred)
-                    target_data_layer = backprop(labels)
+                    for id_, name in layer['backward_connections']:
+                        if id_ != targets_id:
+                            outputs_id = id_
+                    
+                    input_data_layer = backprop(outputs_id)
+                    labels_data_layer = backprop(targets_id)
                     layer['Properties']['InputDataId'] = input_data_layer
-                    layer['Properties']['TargetDataId'] = target_data_layer
+                    layer['Properties']['TargetDataId'] = labels_data_layer
 
                 else:
                     layer['Properties']['InputDataId'] = ''
@@ -215,15 +220,15 @@ class coreLogic():
         
 
 
-        if core_mode == 'normal':
-            if not DISTRIBUTED:
+        if self._core_mode == 'v1':
+            if not distributed:
                 self.core = Core(CodeHq, graph_dict, data_container, session_history, module_provider,
                                 error_handler, session_proc_handler, checkpointValues)
             else:
                 from perceptilabs.core_new.core_distr import DistributedCore
                 self.core = DistributedCore(CodeHq, graph_dict, data_container, session_history, module_provider,
                                             error_handler, session_proc_handler, checkpointValues)
-        elif core_mode == 'compability':
+        elif self._core_mode == 'v2':
             from perceptilabs.core_new.compability import CompabilityCore
             from perceptilabs.core_new.graph.builder import GraphBuilder
             from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
@@ -320,13 +325,35 @@ class coreLogic():
     def isRunning(self):
         return self.cThread.isAlive()
 
-    def isTrained(self,):
-        if self.saver:
-            return {"content":True}
-        else:
-            return {"content":False}
+    def isTrained(self):
+        is_trained = (
+            (self._core_mode == 'v1' and self.saver is not None) or
+            (self._core_mode == 'v2' and self.core is not None and len(self.core.core_v2.graphs) > 0)
+        )
+        return {"content": is_trained}
 
     def exportNetwork(self,value):
+        log.debug(f"exportNetwork called. Value = {pprint.pformat(value)}")
+        if self._core_mode == 'v1':
+            return self.exportNetworkV1(value)
+        else:
+            return self.exportNetworkV2(value)            
+
+    def exportNetworkV2(self, value):
+        path = os.path.join(value["Location"], value.get('frontendNetwork', self.networkName), '1')
+        path = os.path.abspath(path)
+            
+        if os.path.exists(path):
+            shutil.rmtree(path)
+
+        mode = 'TFModel+checkpoint' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
+        if value["Compressed"]:
+            mode = 'TFLite+checkpoint'         
+            
+        self.core.core_v2.export(path, mode) 
+        return {"content": f"Exporting model to path {path}"}
+        
+    def exportNetworkV1(self,value):        
         if self.saver is None:
             self.warningQueue.put("Export failed.\nMake sure you have started running the network before you try to Export it.")
             return {"content":"Export Failed.\nNo trained weights to Export."}
@@ -349,7 +376,36 @@ class coreLogic():
             log.exception("Export failed")
             return {"content":"Export Failed with this error: " + str(e)}
 
-    def saveNetwork(self,value):
+    def saveNetwork(self, value):
+        if self._core_mode == 'v1':
+            return self.saveNetworkV1(value)
+        else:
+            return self.saveNetworkV2(value)            
+
+    def saveNetworkV2(self, value):
+        """ Saves json network to disk and exports tensorflow model+checkpoints. """
+        self._save_counter += 1
+        path = os.path.abspath(value["Location"][0])
+        
+        if not os.path.exists(path):   
+            os.mkdir(path)
+            
+        frontend_network = value['frontendNetwork'].copy()
+
+        if self.isTrained():
+            #export_path = os.path.join(path, '1')            
+            self.core.core_v2.export(path, mode='TFModel+checkpoint') # TODO: will all types of graphs support this?
+
+            # The following is used to restore the checkpoint when the saved network is loaded again.. networkElementList is the usual json_network, but with some extra frontend stuff.
+            for id_ in frontend_network['networkElementList'].keys():
+                frontend_network['networkElementList'][id_]['checkpoint'] = [None, os.path.join(path, 'model.ckpt-'+str(self._save_counter))] 
+
+        with open(os.path.join(path, 'model.json'), 'w') as json_file:
+            json.dump(frontend_network, json_file, indent=4)        
+            
+        return {"content": f"Saving to: {path}"}            
+        
+    def saveNetworkV1(self, value):
         if self.saver is None:
             self.warningQueue.put("Save failed.\nMake sure you have started running the network before you try to Export it.")
             return {"content":"Save Failed.\nNo trained weights to Export."}
@@ -533,6 +589,9 @@ class coreLogic():
         layer_id = value["layerId"]
         layer_type = value["layerType"]
         view = value["view"]
+
+        if not self.savedResultsDict:
+            return {}
         
         try:
             self.iter=self.savedResultsDict["iter"]
@@ -600,9 +659,8 @@ class coreLogic():
 
     
     def getLayerStatistics(self, layerId, layerType, view):
-        log.info("getLayerStatistics for layer {} with type {}. View: {}".format(layerId,
-                                                                                 layerType,
-                                                                                 view))
+        log.debug("getLayerStatistics for layer '{}' with type '{}' and view: '{}'".format(layerId, layerType, view))
+        
         if layerType=="DataEnvironment":
             state = self.getStatistics({"layerId":layerId,"variable":"state","innervariable":""})
             dataObj = createDataObject([state])

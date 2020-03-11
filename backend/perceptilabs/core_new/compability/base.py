@@ -31,10 +31,15 @@ class CompabilityCore:
 
         self._threaded = threaded
         self._running = False
+        self._core = None
+
+    @property
+    def core_v2(self):
+        return self._core        
         
     def run(self):
         self._running = True
-        def do_process():
+        def do_process(counter, core):
             while not self._command_queue.empty():
                 command = self._command_queue.get()
                 self._send_command(core, command)
@@ -48,13 +53,16 @@ class CompabilityCore:
             
         set_tensorflow_mode('graph')
         core = Core(self._graph_builder, self._deployment_pipe, self._error_queue)
+        self._core = core
         
         if self._threaded:
             def worker():
+                counter = 0
                 while self._running:
-                    do_process()
+                    do_process(counter, core)
+                    counter += 1
                     time.sleep(1.0)
-                do_process()    #One extra for good measure
+                do_process(counter, core)    #One extra for good measure
 
             threading.Thread(target=worker, daemon=True).start()                    
             self._run_core(core, self._graph_spec)

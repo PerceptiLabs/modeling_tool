@@ -120,7 +120,7 @@ def send_request(request):
     checkpointDict=dict()
     lwDict=dict()
 
-    core_interface = Interface(cores, dataDict, checkpointDict, lwDict)
+    core_interface = Interface(cores, dataDict, checkpointDict, lwDict, core_mode='v1')
 
     return core_interface.create_response(request)
 

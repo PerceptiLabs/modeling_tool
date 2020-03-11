@@ -21,6 +21,7 @@ class RemoteError(Exception):
         
 
 class Client:
+    MAX_FLASK_FAILURES = 10
     MAX_SNAPSHOTS_PER_ITERATION = 10
     
     def __init__(self, config):
@@ -43,17 +44,17 @@ class Client:
 
     @property
     def status(self):
-        status = self._flask_status['status']
+        status = self._flask_status.get('status')
         return status
 
     @property
     def running_time(self):
-        status = self._flask_status['running_time']
+        status = self._flask_status.get('running_time')
         return status
     
     @property
     def snapshot_count(self):
-        count = self._flask_status['snapshot_count']
+        count = self._flask_status.get('snapshot_count')
         return int(count)
 
     def pop_snapshots(self):
@@ -80,13 +81,29 @@ class Client:
         self._is_running.clear()
 
     def _flask_worker(self):
-        while self._is_running.is_set():
+        def process():
             with urllib.request.urlopen(self._flask_address+"/") as url:
                 buf = url.read().decode()
                 dict_ = json.loads(buf)
                 self._flask_status = dict_.copy()
+
+        failures = []
+        while self._is_running.is_set():
+            try:
+                process()
+            except Exception as e:
+                failures.append(e)                
+            else:
+                failures = []
+            finally:
                 time.sleep(0.5)
-    
+                
+            if len(failures) >= self.MAX_FLASK_FAILURES:
+                log.error(f"Flask worker failed {failures} times in a row: {', '.join(failures)}. Stopping communication client!")
+                self.stop()
+
+
+                
     def _snapshot_worker(self):
         self._error_queue = Queue()        
         self._snapshot_queue = Queue()  

@@ -1,4 +1,4 @@
-{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) %}
+{% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
         self._status = 'initializing'
 
         output_layer_id = '{{output_layer}}'
@@ -69,21 +69,34 @@
         input_tensor, label_tensor = iterator.get_next()
 
         # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
-        layer_output_tensors = {
-            input_data_node.layer_id: input_tensor,
-            label_data_node.layer_id: label_tensor
-        }
 
-        for node in graph.inner_nodes:
-            args = []
-            for input_node in graph.get_input_nodes(node):
-                args.append(layer_output_tensors[input_node.layer_id])
-            y = node.layer_instance(*args)
-            layer_output_tensors[node.layer_id] = y
+        def build_graph(input_tensor, label_tensor):
+            layer_output_tensors = {
+                input_data_node.layer_id: input_tensor,
+                label_data_node.layer_id: label_tensor
+            }
 
+            for node in graph.inner_nodes:
+                args = []
+                for input_node in graph.get_input_nodes(node):
+                    args.append(layer_output_tensors[input_node.layer_id])
+                    y = node.layer_instance(*args)
+                layer_output_tensors[node.layer_id] = y
+
+
+            return layer_output_tensors
+
+        layer_output_tensors = build_graph(input_tensor, label_tensor)
         output_tensor = layer_output_tensors[output_layer_id]
         target_tensor = layer_output_tensors[target_layer_id]
 
+        # Create an exportable version of the TensorFlow graph
+        self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+        self._output_tensor_export = build_graph(
+            self._input_tensor_export,
+            tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+        )[output_layer_id]
+        
         loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
         accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
@@ -130,18 +143,32 @@
                 layer_gradient_tensors[node.layer_id] = gradients
                 self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
 
-        trainable_vars = tf.trainable_variables()
+        trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
         grads = tf.gradients(loss_tensor, trainable_vars)
         update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
 
         config = tf.ConfigProto()
         config.gpu_options.allow_growth = True
         sess = tf.Session(config=config)
-        self._saver = tf.train.Saver()
-        sess.run(tf.global_variables_initializer())
+        self._sess = sess
 
+        trackable_variables = {}
+        trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
+        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+        self._checkpoint = tf.train.Checkpoint(**trackable_variables)
+        sess.run(tf.global_variables_initializer())
+        
+        {% filter remove_lspaces(8) %}
+            {% if export_directory is not none %}        
+                path = tf.train.latest_checkpoint('{{export_directory}}')
+                status = self._checkpoint.restore(path)
+                status.assert_consumed().run_restore_ops(session=self._sess)                
+            {% endif %}
+        {% endfilter %}                    
+        
         def sleep_while_paused():
             while self._paused:
+                self.process_events(graph)
                 time.sleep(1.0)
 
         def train_step():
@@ -179,7 +206,7 @@
 
         # Training loop
         self._epoch = 0
-        while self._epoch < self._n_epochs:
+        while self._epoch < self._n_epochs and not self._stopped:
             t0 = time.perf_counter()
             self._training_iteration = 0
             self._validation_iteration = 0
@@ -189,7 +216,7 @@
                 while not self._stopped:
                     sleep_while_paused()
                     train_step()
-                    self.save_snapshot(graph)
+                    self.save_snapshot_and_process_events(graph)
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -200,12 +227,11 @@
                 while not self._stopped:
                     sleep_while_paused()
                     validation_step()
-                    self.save_snapshot(graph)                    
+                    self.save_snapshot_and_process_events(graph)                    
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
-
-
+            
             log.info(
                 f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
                 f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
@@ -213,6 +239,8 @@
             )
             log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
             self._epoch += 1
+            self.process_events(graph)
+            
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
             
@@ -224,19 +252,20 @@
             while not self._stopped:
                 sleep_while_paused()
                 test_step()
-                self.save_snapshot(graph)                                    
+                self.save_snapshot_and_process_events(graph)                                    
                 self._testing_iteration += 1
+                self.process_events(graph)                
         except tf.errors.OutOfRangeError:
             pass
 
         self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        self.save_snapshot(graph)
+        self.save_snapshot_and_process_events(graph)
 
 {% endmacro %}
 
 #################################################### Distributed Training #################################################
-{% macro run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) %}
+{% macro run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
         INCLUDE_KERAS_METRICS = False
 
         self_layer_name = '{{layer_name}}' # this is passed as input
@@ -264,10 +293,11 @@
 
         sess = tf.Session(config=config)
         tf.keras.backend.set_session(sess) # since we use keras metrics
+        self._sess = sess
 
         strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
 
-        BATCH_SIZE_PER_REPLICA = 10 # TODO: get from frontend/json network
+        BATCH_SIZE_PER_REPLICA = self._batch_size # TODO: should this be batch_size divided by n_devices or not?
         GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * n_devices
 
         # Make training set
@@ -423,6 +453,7 @@
 
             def sleep_while_paused():
                 while self._paused:
+                    self.process_events(graph)                    
                     time.sleep(1.0)
 
             def train_step(inputs):
@@ -539,6 +570,7 @@
                 layer_outputs_train = reduce_per_replica(layer_outputs_train)
                 layer_gradients_train = reduce_per_replica(layer_gradients_train)     
 
+                
                 ##### Validation statistics #####
                 dist_loss_val, accuracy_val, \
                 layer_outputs_val, layer_weights_val, layer_biases_val, \
@@ -553,10 +585,16 @@
                 layer_outputs_val = reduce_per_replica(layer_outputs_val)
                 layer_gradients_val = reduce_per_replica(layer_gradients_val)
 
+                # Create an exportable version of the TensorFlow graph                
+                self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+                self._output_tensor_export = model(
+                    self._input_tensor_export,
+                    tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+                )[output_layer_id]
             else:
                 #dist_loss, dist_grads_train, dist_locals = strategy.experimental_run(train_step, train_iterator)
                 #dist_test = strategy.experimental_run(test_step, test_iterator) # TODO: implement this.
-                pass
+                raise NotImplementedError
 
             sess.run(tf.global_variables_initializer())
             
@@ -574,9 +612,23 @@
                 f1_val = tf.constant(-4)   
 
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}        
+            
+            savables = tf.global_variables()
+            self._saver = tf.compat.v1.train.Saver(savables)
 
+            # Restore from checkpoint if specified
+            {% filter remove_lspaces(8) %}
+                {% if export_directory is not none %}
+                    path = tf.train.latest_checkpoint('{{export_directory}}')
+                    self._saver.restore(sess, path)
+                {% endif %}
+            {% endfilter %}                    
+
+            log.info("Entering training loop")
+            
             self._epoch = 0
-            while self._epoch < self._n_epochs:
+            while self._epoch < self._n_epochs and not self._stopped: 
+                t0 = time.perf_counter()               
                 self._training_iteration = 0
                 self._validation_iteration = 0
                 self._status = 'training'
@@ -596,7 +648,7 @@
                             recall_train.reset_states()
                             precision_train.reset_states()     
 
-                        self.save_snapshot(graph)                            
+                        self.save_snapshot_and_process_events(graph)                            
                         
                         self._training_iteration += 1 * n_devices
                 except tf.errors.OutOfRangeError:
@@ -619,14 +671,21 @@
                             recall_val.reset_states()
                             precision_val.reset_states()                                
 
-                        self.save_snapshot(graph) 
+                        self.save_snapshot_and_process_events(graph) 
 
                         self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
                     pass
 
-                self._epoch+=1
-
+                log.info(
+                    f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
+                    f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
+                    f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
+                )
+                log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
+                self._epoch += 1
+                self.process_events(graph)
+            
             self._testing_iteration = 0
             self._status = 'testing'
             sess.run(test_iterator_init)
@@ -635,19 +694,19 @@
             try:
                 while not self._stopped:
                     self._layer_outputs = sess.run(layer_output_tensors)
-                    self.save_snapshot(graph)                                    
+                    self.save_snapshot_and_process_events(graph)                                    
                     self._testing_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
 
             self._status = 'finished'
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-            self.save_snapshot(graph)
+            self.save_snapshot_and_process_events(graph)
 {% endmacro %}
 
 
 ################################################### Main #####################################################
-{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) %}
+{% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
 class {{layer_name}}(ClassificationLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
@@ -677,7 +736,9 @@ class {{layer_name}}(ClassificationLayer):
 
         self._trn_sz_tot = 0
         self._val_sz_tot = 0
-        self._tst_sz_tot = 0        
+        self._tst_sz_tot = 0
+
+        self._checkpoint = None
         
     def run(self, graph: Graph):
         """Called as the main entry point for training. Responsible for training the model.
@@ -685,12 +746,11 @@ class {{layer_name}}(ClassificationLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
-        {% if False -%}
-            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) }}
+        {% if distributed -%}
+            {{ run_distributed(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
         {% else -%}
-            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed) }}
-        {% endif %}
-                
+            {{ run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) }}
+        {% endif %}                
 
     def on_pause(self):
         """Called when the pause button is clicked in the frontend. 
@@ -706,15 +766,41 @@ class {{layer_name}}(ClassificationLayer):
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
         self._paused = False
 
-    def on_save(self):
-        """Called when the resume button is clicked in the frontend. 
+    def on_export(self, path: str, mode: str) -> None:
+        """Called when the export or save button is clicked in the frontend.
         It is up to the implementing layer to save the model to disk.
         
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
-        # TODO: Call ._saver, verify thread-safety
-        pass
+        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
 
-    def on_stop(self):
+        Args:
+            path: the directory where the exported model will be stored.
+            mode: how to export the model. Made available to frontend via 'export_modes' property."""
+
+        log.debug(f"Export called. Project path = {path}, mode = {mode}")
+        pb_path = os.path.join(path, '1')
+        
+        # Export non-compressed model
+        if mode in ['TFModel', 'TFModel+checkpoint']:
+            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs={'input': self._input_tensor_export}, outputs={'output': self._output_tensor_export})
+
+        # Export compressed model
+        if mode in ['TFLite', 'TFLite+checkpoint']:
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
+            converter.post_training_quantize = True
+            tflite_model = converter.convert()
+            open(pb_path, "wb").write(tflite_model)
+
+        # Export checkpoint
+        if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
+            {% filter remove_lspaces(8) %}
+                {% if distributed %}
+                    self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)    
+                {% else %}
+                    self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
+                {% endif %}
+            {% endfilter %}
+                
+    def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.
         
@@ -722,7 +808,17 @@ class {{layer_name}}(ClassificationLayer):
         self._stopped = True
 
     @property
-    def is_paused(self):
+    def export_modes(self) -> List[str]:
+        """Returns the possible modes of exporting a model."""        
+        return [
+            'TFModel',
+            'TFLite'
+            'TFModel+checkpoint',
+            'TFLite+checkpoint',            
+        ]
+        
+    @property
+    def is_paused(self) -> None:
         """Returns true when the training is paused."""        
         return self._paused
 

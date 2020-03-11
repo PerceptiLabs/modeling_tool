@@ -579,7 +579,8 @@ class TrainNormalCodeGenerator(Jinja2CodeGenerator):
         code += "               val_datasize=_data_size[1])\n"
         code += "\n"
         code += "for epoch in range(%d):\n" % self._n_epochs
-        code += "    import time; t0 = time.time()\n"
+        code += "    import time\n"
+        code += "    t0 = time.time()\n"
         code += "    api.data.store(epoch=epoch)\n"
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"
