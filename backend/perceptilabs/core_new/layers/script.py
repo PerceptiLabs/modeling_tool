@@ -1,5 +1,6 @@
-import copy
+import os
 import ast
+import copy
 import logging
 import pkg_resources
 from typing import Dict
@@ -170,7 +171,7 @@ class ScriptFactory:
         template += "    global status\n"
         template += "    data = request.json\n"
         template += "    event_queue.put(data)\n"
-        template += "    log.debug('Received event. Data: ' + str(data))\n"
+        template += "    log.debug(f'Received event. Data: {str(data)}. Queue size = {event_queue.qsize()}')\n"
         #template += "    if data['type'] == 'on_pause':\n"
         #template += "        graph.active_training_node.layer.on_pause()\n"
         #template += "    elif data['type'] == 'on_resume':\n"
@@ -227,6 +228,11 @@ class ScriptFactory:
         template += "    message_queue.put((b'snapshots', body))\n"
         template += "    process_events(graph)\n"
         template += "\n"
+        template += "def make_snapshot_and_process_events(graph):\n"
+        template += "    make_snapshot(graph)\n"
+        template += "    process_events(graph)\n"
+        template += "\n"
+        
         template += "def message_queue_worker():\n"
         template += "    while True:\n"
         template += "        if message_queue.empty():\n"
@@ -258,7 +264,9 @@ class ScriptFactory:
         template += '    graph = graph_builder.build(LAYERS, EDGES)\n'
         template += '    \n'
         template += '    print(graph.training_nodes)\n'
-        template += '    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot\n'
+        template += '    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot_and_process_events\n'
+        template += '    graph.training_nodes[0].layer_instance.save_snapshot_and_process_events = make_snapshot_and_process_events\n'        
+        template += '    graph.training_nodes[0].layer_instance.process_events = process_events\n'        
         
         template += '    status = STATUS_READY\n'
         template += '    if wait:\n'
@@ -280,11 +288,13 @@ class ScriptFactory:
         template += '        t_start = time.perf_counter()\n'
         template += "        run_training()\n"        
         template += '\n'        
-        template += '    status = STATUS_DONE\n'        
+        template += '    status = STATUS_DONE\n'
+        template += '    process_events(graph)\n'
+        template += "    log.debug(f'Terminating. Event queue size = {event_queue.qsize()}')\n"        
         template += '\n\n'
         template += 'if __name__ == "__main__":\n'
         template += '    wait = "--wait" in sys.argv\n'
-        template += '    main()\n'
+        template += '    main(wait)\n'
         
         code = template#self._engine.render_string(template)
 
@@ -326,14 +336,19 @@ class ScriptFactory:
         template += "{{ " + def_.template_macro + "(" + arg_str + ")}}"
 
         log.debug(
-            f"Rendered macro for layer {node.layer_id} [{node.layer_type}]:\n"
+            f"Created macro loader for layer {node.layer_id} [{node.layer_type}]:\n"
             f"---------\n"            
             f"{add_line_numbering(template)}\n"
             f"---------\n"            
             f"kwargs: {repr(kwargs)}.\n"
         )
 
-        code = self._engine.render_string(template)
+        try:
+            code = self._engine.render_string(template)
+        except:
+            file_contents = open(os.path.join(self._engine.templates_directory, def_.template_file)).read()            
+            log.exception(f"Error when rendering jinja macro {def_.template_file}:{def_.template_macro}. Contents :\n" + add_line_numbering(file_contents))
+            raise
 
 
         #print("code", add_line_numbering(code))

@@ -263,7 +263,7 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id
         code += "\n"    
-        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
+        code += "output_shape=tf.stack([tf.shape(X['Y'])[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
         code += "node = tf.nn.conv1d_transpose(X['Y'], W, output_shape, strides=%s, padding=%s)\n" % (self._stride, self._padding)
         if self._variable_scope is not None:
             code = Add_variable_scope.get_code(code, self._variable_scope)
@@ -277,7 +277,7 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id        
         code += "\n"        
-        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
+        code += "output_shape=tf.stack([tf.shape(X['Y'])[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
         code += "node = tf.nn.conv2d_transpose(X['Y'], W, output_shape, strides=[1, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._padding)
         if self._variable_scope is not None:
             code = Add_variable_scope.get_code(code, self._variable_scope)
@@ -291,7 +291,7 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                
         code += "\n"        
-        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)
+        code += "output_shape=tf.stack([tf.shape(X['Y'])[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)
         code += "node = tf.nn.conv3d_transpose(X['Y'], W, output_shape, strides=[1, %s, %s, %s, 1], padding=%s)\n" % (self._stride, self._stride, self._stride, self._padding)
         if self._variable_scope is not None:
             code = Add_variable_scope.get_code(code, self._variable_scope)
@@ -306,7 +306,7 @@ class DeconvCodeGenerator(CodeGenerator):
         code += "initial = tf.constant(0.1, shape=[%s])\n" % self._feature_maps
         code += "b = tf.Variable(initial, name='bias-%s')\n" % self._layer_id                        
         code += "\n"    
-        code += "output_shape=tf.stack([X['Y'].get_shape().as_list()[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
+        code += "output_shape=tf.stack([tf.shape(X['Y'])[0]] + [node_shape*%s for node_shape in  X['Y'].get_shape().as_list()[1:-1]] + [%s])\n" %(self._stride, self._feature_maps)    
         code += "node = tf.nn.conv2d(X['Y'], W, output_shape, strides=[1]+[%s]*dim+[1], padding=%s)\n" % (self._stride, self._padding)
         if self._variable_scope is not None:
             code = Add_variable_scope.get_code(code, self._variable_scope)
@@ -579,7 +579,8 @@ class TrainNormalCodeGenerator(Jinja2CodeGenerator):
         code += "               val_datasize=_data_size[1])\n"
         code += "\n"
         code += "for epoch in range(%d):\n" % self._n_epochs
-        code += "    import time; t0 = time.time()\n"
+        code += "    import time\n"
+        code += "    t0 = time.time()\n"
         code += "    api.data.store(epoch=epoch)\n"
         code += "    sess.run(train_iterators)\n"
         code += "    api.data.store(iter_training=0, iter_validation=0)\n"

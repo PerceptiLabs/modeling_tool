@@ -171,6 +171,7 @@
         
         def sleep_while_paused():
             while self._paused:
+                self.process_events(graph)
                 time.sleep(1.0)
 
         def train_step():
@@ -218,7 +219,7 @@
                 while not self._stopped:
                     sleep_while_paused()
                     train_step()
-                    self.save_snapshot(graph)
+                    self.save_snapshot_and_process_events(graph)
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -229,7 +230,7 @@
                 while not self._stopped:
                     sleep_while_paused()
                     validation_step()
-                    self.save_snapshot(graph)                    
+                    self.save_snapshot_and_process_events(graph)                    
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -241,6 +242,8 @@
             )
             log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
             self._epoch += 1
+            self.process_events(graph)
+            
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
             
@@ -252,14 +255,15 @@
             while not self._stopped:
                 sleep_while_paused()
                 test_step()
-                self.save_snapshot(graph)                                    
+                self.save_snapshot_and_process_events(graph)                                    
                 self._testing_iteration += 1
+                self.process_events(graph)                
         except tf.errors.OutOfRangeError:
             pass
 
         self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        self.save_snapshot(graph)
+        self.save_snapshot_and_process_events(graph)
 
 {% endmacro %}
 
@@ -452,6 +456,7 @@
 
             def sleep_while_paused():
                 while self._paused:
+                    self.process_events(graph)                    
                     time.sleep(1.0)
 
             def train_step(inputs):
@@ -649,7 +654,7 @@
                             recall_train.reset_states()
                             precision_train.reset_states()     
 
-                        self.save_snapshot(graph)                            
+                        self.save_snapshot_and_process_events(graph)                            
                         
                         self._training_iteration += 1 * n_devices
                 except tf.errors.OutOfRangeError:
@@ -672,7 +677,7 @@
                             recall_val.reset_states()
                             precision_val.reset_states()                                
 
-                        self.save_snapshot(graph) 
+                        self.save_snapshot_and_process_events(graph) 
 
                         self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
@@ -685,7 +690,8 @@
                 )
                 log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
                 self._epoch += 1
-
+                self.process_events(graph)
+            
             self._testing_iteration = 0
             self._status = 'testing'
             sess.run(test_iterator_init)
@@ -694,14 +700,14 @@
             try:
                 while not self._stopped:
                     self._layer_outputs = sess.run(layer_output_tensors)
-                    self.save_snapshot(graph)                                    
+                    self.save_snapshot_and_process_events(graph)                                    
                     self._testing_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
 
             self._status = 'finished'
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-            self.save_snapshot(graph)
+            self.save_snapshot_and_process_events(graph)
 {% endmacro %}
 
 
@@ -767,7 +773,7 @@ class {{layer_name}}(ClassificationLayer):
         self._paused = False
 
     def on_export(self, path: str, mode: str) -> None:
-        """Called when the resume button is clicked in the frontend. 
+        """Called when the export or save button is clicked in the frontend.
         It is up to the implementing layer to save the model to disk.
         
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
