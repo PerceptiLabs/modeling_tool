@@ -20,8 +20,6 @@
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
-      this.addHubSpotTracking();
-      this.addGoogleAnalytics();
     },
     mounted() {
       this.updateOnlineStatus();
@@ -221,30 +219,7 @@
       // appMaximize() {
       //   this.$store.dispatch('mod_events/EVENT_appMaximize');
       // },
-      addHubSpotTracking() {
-        let hubSpotElement = document.createElement('script');
-        hubSpotElement.type = 'text/javascript';
-        hubSpotElement.id = 'hs-script-loader';
-        hubSpotElement.async = true;
-        hubSpotElement.defer = true;
-        hubSpotElement.src = '//js.hs-scripts.com/7122301.js';
-        document.head.appendChild(hubSpotElement);
-      },
-      addGoogleAnalytics() {
-        if (!window['gtag']) {
-          window.dataLayer = window.dataLayer || [];
-          window['gtag'] = function () { window.dataLayer.push(arguments); }
-        }
-        console.log('window gtag', window['gtag']);
-
-        window['gtag']('js', new Date());
-        window['gtag']('config', 'UA-114940346-2');
-        
-        let gaElement = document.createElement('script');
-        gaElement.async = true;
-        gaElement.src = 'https://www.googletagmanager.com/gtag/js?id=UA-114940346-2';
-        document.head.appendChild(gaElement);
-      }
+      
     },
   }
 </script>

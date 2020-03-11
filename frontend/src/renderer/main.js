@@ -26,6 +26,8 @@ import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
 //- Global directives
 import {mask} from 'vue-the-mask' // page registration dont use now
 
+import { addHubSpotAnalytics, addGoogleAnalytics } from '@/core/analytics';
+
 //if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
 //Vue.http = Vue.prototype.$http = axios;
@@ -57,6 +59,10 @@ Vue.component('base-radio', BaseRadiobutton);
 Vue.component('base-select', BaseSelect);
 Vue.component('base-range', BaseRange);
 
+      
+// analytics
+addHubSpotAnalytics();
+addGoogleAnalytics();
 
 /* eslint-disable no-new */
 new Vue({
