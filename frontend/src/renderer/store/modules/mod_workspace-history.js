@@ -36,7 +36,7 @@ const mutations = {
     let historyCurrNet = state.history[currentID];
     if(historyCurrNet.historyStep < historyCurrNet.historyNet.length - 1) {
       const numStep = ++state.history[currentID].historyStep;
-      dispatch('mod_workspace/SET_historyStep', historyCurrNet.historyNet[numStep], {root: true});
+      dispatch('mod_workspace/SET_historyStep', deepCloneNetwork(historyCurrNet.historyNet[numStep]), {root: true});
       dispatch('mod_events/EVENT_calcArray', null, {root: true});
     }
   },
@@ -44,7 +44,7 @@ const mutations = {
     let historyCurrNet = state.history[currentID];
     if(historyCurrNet.historyStep) {
       const numStep = --state.history[currentID].historyStep;
-      dispatch('mod_workspace/SET_historyStep', historyCurrNet.historyNet[numStep], {root: true});
+      dispatch('mod_workspace/SET_historyStep', deepCloneNetwork(historyCurrNet.historyNet[numStep]), {root: true});
       dispatch('mod_events/EVENT_calcArray', null, {root: true});
     }
   },
@@ -90,8 +90,8 @@ const actions = {
      return {
         historyStep: 0,
         historyNet: [{
-          networkName: net.networkName,
-          networkElementList: net.networkElementList
+          networkName: JSON.parse(JSON.stringify(net.networkName)),
+          networkElementList: deepCloneNetwork(net.networkElementList),
         }],
       }
     }
