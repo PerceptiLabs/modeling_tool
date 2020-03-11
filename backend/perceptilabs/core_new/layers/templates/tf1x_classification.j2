@@ -767,7 +767,7 @@ class {{layer_name}}(ClassificationLayer):
         self._paused = False
 
     def on_export(self, path: str, mode: str) -> None:
-        """Called when the resume button is clicked in the frontend. 
+        """Called when the export or save button is clicked in the frontend.
         It is up to the implementing layer to save the model to disk.
         
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
