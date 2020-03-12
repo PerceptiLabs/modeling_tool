@@ -145,6 +145,9 @@ const actions = {
   EVENT_hotKeyEsc({commit}) {
     commit('set_globalPressKey', 'esc');
   },
+  EVENT_hotKeyCut({rootState, rootGetters, dispatch, commit}) {
+    console.log("cut-board");
+  },
   EVENT_hotKeyCopy({rootState, rootGetters, dispatch, commit}) {
     const currentNetwork = rootState.mod_workspace.currentNetwork;
 
