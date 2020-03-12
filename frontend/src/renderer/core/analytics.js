@@ -32,6 +32,13 @@ const hubSpot = (function() {
         }
     }
 
+    publicMethods.trackRunButtonPress = function(userEmail) {
+        addTag(['trackEvent"', {
+            id: "Run button clicked",
+            value: userEmail
+        }]);
+    }
+
     return publicMethods;
 })();
 
