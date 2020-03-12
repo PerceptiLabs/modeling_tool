@@ -2,10 +2,10 @@ const hubSpot = (function() {
     let publicMethods = {};
 
     const addTag = function(input) {
-        if (!input)
+        if (!input) { return; }
 
         window._hsq = window._hsq || [];
-        window._hsq.push(arguments);
+        window._hsq.push(input);
     }
 
     publicMethods.setup = function() {
@@ -31,6 +31,8 @@ const hubSpot = (function() {
           addTag(['trackPageView']);
         }
     }
+
+    return publicMethods;
 })();
 
 const googleAnalytics = (function() {
