@@ -61,6 +61,7 @@ Vue.component('base-range', BaseRange);
 
       
 // analytics
+Analytics.hubSpot.setup();
 
 Analytics.googleAnalytics.setup();
 Analytics.googleAnalytics.trackUserId(store.getters['mod_user/GET_userID']);
