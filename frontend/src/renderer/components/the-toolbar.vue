@@ -271,8 +271,6 @@ export default {
       this.$refs.tutorialComponent.switchTutorialMode()
     },
     onOffBtn() {
-      Analytics.hubSpot.trackRunButtonPress(this.$store.getters['mod_user/GET_userEmail']);
-
       if(this.isTraining) this.trainStop();
       else this.trainStart();
       this.$nextTick(()=> this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'}))
