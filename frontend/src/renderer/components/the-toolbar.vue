@@ -126,6 +126,7 @@
 </template>
 
 <script>
+import Analytics from '@/core/analytics';
 import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 import TutorialInstructions                   from '@/components/tutorial/tutorial-instructions.vue'
 import { mapGetters, mapActions, mapMutations } from 'vuex';
@@ -270,6 +271,8 @@ export default {
       this.$refs.tutorialComponent.switchTutorialMode()
     },
     onOffBtn() {
+      Analytics.hubSpot.trackRunButtonPress(this.$store.getters['mod_user/GET_userEmail']);
+
       if(this.isTraining) this.trainStop();
       else this.trainStart();
       this.$nextTick(()=> this.tutorialPointActivate({way:'next', validation: 'tutorial_run-training-button'}))
