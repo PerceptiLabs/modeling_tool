@@ -1,3 +1,5 @@
+import { isDevelopMode } from '@/core/constants';
+
 const hubSpot = (function() {
     let publicMethods = {};
 
@@ -10,7 +12,7 @@ const hubSpot = (function() {
 
     publicMethods.setup = function() {
         const hubSpotId = process.env.HUBSPOT_ID;
-        if (!hubSpotId) { return; }
+        if (!hubSpotId || isDevelopMode) { return; }
         
         let hubSpotElement = document.createElement('script');
         hubSpotElement.type = 'text/javascript';
@@ -53,7 +55,7 @@ const googleAnalytics = (function() {
 
     publicMethods.setup = function() {
         const gaId = process.env.GOOGLE_ANALYTICS_ID;
-        if (!gaId) { return; }
+        if (!gaId || isDevelopMode) { return; }
         
         addTag('js', new Date());
         addTag('config', gaId);
