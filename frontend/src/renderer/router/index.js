@@ -25,26 +25,11 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  setRouteTracking_HubSpot(to);
+
+  Analytics.hubSpot.trackRouteChange(to);
   Analytics.googleAnalytics.trackRouteChange(to);
 
   next();
 });
-
-const setRouteTracking_HubSpot = function(to) {
-  const _hsq = window._hsq = window._hsq || [];
-
-  if (_hsq.length === 0) {
-    return;
-  }
-
-  if (to.path === '/') {
-    _hsq.push(['setPath', '/']);
-  } else {
-    _hsq.push(['setPath', to.path]);
-    _hsq.push(['trackPageView']);
-  }
-}
-
 
 export default router;
