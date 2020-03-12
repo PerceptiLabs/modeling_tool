@@ -1,41 +1,43 @@
-const addHubSpotAnalytics = function() {
+const hubSpot = (function() {
+    let publicMethods = {};
 
-    const hubSpotId = process.env.HUBSPOT_ID;
-    if (!hubSpotId) { return; }
-    
-    let hubSpotElement = document.createElement('script');
-    hubSpotElement.type = 'text/javascript';
-    hubSpotElement.id = 'hs-script-loader';
-    hubSpotElement.async = true;
-    hubSpotElement.defer = true;
-    hubSpotElement.src = `//js.hs-scripts.com/${hubSpotId}`;
-    document.head.appendChild(hubSpotElement);
-}
+    const addTag = function(input) {
+        if (!input)
 
-const addGoogleAnalytics = function() {
-
-    const gaId = process.env.GOOGLE_ANALYTICS_ID;
-    if (!gaId) { return; }
-
-    if (!window['gtag']) {
-      window.dataLayer = window.dataLayer || [];
-      window['gtag'] = function () { window.dataLayer.push(arguments); }
+        window._hsq = window._hsq || [];
+        window._hsq.push(arguments);
     }
 
-    window['gtag']('js', new Date());
-    window['gtag']('config', gaId);
-    
-    let gaElement = document.createElement('script');
-    gaElement.async = true;
-    gaElement.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
-    document.head.appendChild(gaElement);
-}
+    publicMethods.setup = function() {
+        const hubSpotId = process.env.HUBSPOT_ID;
+        if (!hubSpotId) { return; }
+        
+        let hubSpotElement = document.createElement('script');
+        hubSpotElement.type = 'text/javascript';
+        hubSpotElement.id = 'hs-script-loader';
+        hubSpotElement.async = true;
+        hubSpotElement.defer = true;
+        hubSpotElement.src = `//js.hs-scripts.com/${hubSpotId}`;
+        document.head.appendChild(hubSpotElement);
+    }
+
+    publicMethods.trackRouteChange = function(to) { 
+        if (!to) { return; }
+      
+        if (to.path === '/') {
+          addTag(['setPath', '/']);
+        } else {
+          addTag(['setPath', to.path]);
+          addTag(['trackPageView']);
+        }
+    }
+})();
 
 const googleAnalytics = (function() {
 
     let publicMethods = {};
 
-    const addTag = function () {
+    const addTag = function() {
         window.dataLayer = window.dataLayer || [];
         window.dataLayer.push(arguments);
     }
@@ -54,9 +56,6 @@ const googleAnalytics = (function() {
     }
 
     publicMethods.trackRouteChange = function(to) {
-
-        // console.log('trackRouteChange', to);
-
         if (!to) { return; }
 
         const argPayload = {
@@ -79,7 +78,6 @@ const googleAnalytics = (function() {
 })();
 
 export default {
-    addHubSpotAnalytics,
-    addGoogleAnalytics,
+    hubSpot,
     googleAnalytics,
 }
