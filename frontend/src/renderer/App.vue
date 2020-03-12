@@ -7,6 +7,8 @@
 </template>
 
 <script>
+  import Analytics from '@/core/analytics';
+
   import { mapMutations, mapActions } from 'vuex';
   import HeaderWin      from '@/components/header/header-win.vue';
   import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
@@ -126,6 +128,9 @@
       //   }
       // },
       userId(newVal) {
+
+        Analytics.googleAnalytics.trackUserId(this.$store.getters['mod_user/GET_userID']);
+
         this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
       }
     },

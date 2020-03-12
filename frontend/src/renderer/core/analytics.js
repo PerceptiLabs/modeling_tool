@@ -31,7 +31,55 @@ const addGoogleAnalytics = function() {
     document.head.appendChild(gaElement);
 }
 
-export {
+const googleAnalytics = (function() {
+
+    let publicMethods = {};
+
+    const addTag = function () {
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push(arguments);
+    }
+
+    publicMethods.setup = function() {
+        const gaId = process.env.GOOGLE_ANALYTICS_ID;
+        if (!gaId) { return; }
+        
+        addTag('js', new Date());
+        addTag('config', gaId);
+
+        let gaElement = document.createElement('script');
+        gaElement.async = true;
+        gaElement.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`;
+        document.head.appendChild(gaElement);
+    }
+
+    publicMethods.trackRouteChange = function(to) {
+
+        // console.log('trackRouteChange', to);
+
+        if (!to) { return; }
+
+        const argPayload = {
+            page_title: to.name,
+            page_path: to.path,
+            page_location: window.location.host + to.path
+        };
+        addTag('event', 'page_view', argPayload);
+    }
+
+    publicMethods.trackUserId = function(userId) {
+        if (!userId || userId === 'Guest') { return; }
+
+        console.log(window.dataLayer);
+
+        addTag('set', {'user_id' : userId});
+    }
+
+    return publicMethods;
+})();
+
+export default {
     addHubSpotAnalytics,
-    addGoogleAnalytics
+    addGoogleAnalytics,
+    googleAnalytics,
 }

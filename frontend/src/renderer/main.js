@@ -26,7 +26,7 @@ import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
 //- Global directives
 import {mask} from 'vue-the-mask' // page registration dont use now
 
-import { addHubSpotAnalytics, addGoogleAnalytics } from '@/core/analytics';
+import Analytics from '@/core/analytics';
 
 //if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
@@ -61,8 +61,10 @@ Vue.component('base-range', BaseRange);
 
       
 // analytics
-addHubSpotAnalytics();
-addGoogleAnalytics();
+
+Analytics.googleAnalytics.setup();
+Analytics.googleAnalytics.trackUserId(store.getters['mod_user/GET_userID']);
+
 
 /* eslint-disable no-new */
 new Vue({
