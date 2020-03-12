@@ -7,6 +7,8 @@
 </template>
 
 <script>
+  import Analytics from '@/core/analytics';
+
   import { mapMutations, mapActions } from 'vuex';
   import HeaderWin      from '@/components/header/header-win.vue';
   import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
@@ -20,7 +22,6 @@
       window.addEventListener('offline', this.updateOnlineStatus);
       this.trackerInit();
       this.readUserInfo();
-      this.addHubSpotTracking();
     },
     mounted() {
       this.updateOnlineStatus();
@@ -127,6 +128,9 @@
       //   }
       // },
       userId(newVal) {
+
+        Analytics.googleAnalytics.trackUserId(this.$store.getters['mod_user/GET_userID']);
+
         this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
       }
     },
@@ -220,15 +224,7 @@
       // appMaximize() {
       //   this.$store.dispatch('mod_events/EVENT_appMaximize');
       // },
-      addHubSpotTracking() {
-        let hubSpotElement = document.createElement('script');
-        hubSpotElement.type = 'text/javascript';
-        hubSpotElement.id = 'hs-script-loader';
-        hubSpotElement.async = true;
-        hubSpotElement.defer = true;
-        hubSpotElement.src = '//js.hs-scripts.com/7122301.js';
-        document.head.appendChild(hubSpotElement);
-      }
+      
     },
   }
 </script>

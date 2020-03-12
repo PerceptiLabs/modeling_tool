@@ -7,6 +7,8 @@ import PageRegister from '@/pages/register/register.vue';
 import PageRestoreAccount from '@/pages/restore-account/restore-account.vue';
 import PageProjects from '@/pages/projects/projects.vue';
 
+import Analytics from '@/core/analytics';
+
 Vue.use(Router);
 
 const router = new Router({
@@ -23,18 +25,9 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-  var _hsq = window._hsq = window._hsq || [];
 
-  if (!_hsq.length === 0) {
-    next();
-  }
-
-  if (to.path === '/') {
-    _hsq.push(['setPath', '/']);
-  } else {
-    _hsq.push(['setPath', to.path]);
-    _hsq.push(['trackPageView']);
-  }
+  Analytics.hubSpot.trackRouteChange(to);
+  Analytics.googleAnalytics.trackRouteChange(to);
 
   next();
 });

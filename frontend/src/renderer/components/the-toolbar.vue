@@ -126,6 +126,7 @@
 </template>
 
 <script>
+import Analytics from '@/core/analytics';
 import {trainingElements, deepLearnElements}  from '@/core/constants.js'
 import TutorialInstructions                   from '@/components/tutorial/tutorial-instructions.vue'
 import { mapGetters, mapActions, mapMutations } from 'vuex';
