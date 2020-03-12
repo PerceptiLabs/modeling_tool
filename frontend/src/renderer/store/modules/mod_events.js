@@ -145,7 +145,10 @@ const actions = {
   EVENT_hotKeyEsc({commit}) {
     commit('set_globalPressKey', 'esc');
   },
-  EVENT_hotKeyCopy({rootGetters, dispatch, commit}) {
+  EVENT_hotKeyCopy({rootState, rootGetters, dispatch, commit}) {
+    const currentNetwork = rootState.mod_workspace.currentNetwork;
+
+    commit('mod_workspace/set_clipboardNetwork', currentNetwork, {root: true});
     commit('mod_workspace/CLEAR_CopyElementsPosition', null, {root: true});
     if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
@@ -216,40 +219,69 @@ const actions = {
   },
   EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}) {
     let buffer = rootState.mod_buffer.buffer;
-    const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
+    
     dispatch('mod_workspace/SET_elementUnselect', null, {root: true});
     if(rootGetters['mod_workspace/GET_enableHotKeyElement'] && buffer) {
       buffer.forEach((el) => {
         dispatch('mod_workspace/ADD_element', el, {root: true});
       });
-      //copy all connections
-      for(let key in netWorkList) {
-        const layerId = netWorkList[key].layerId;
-        const copyId = netWorkList[key].copyId;
-        const isContainerElement = netWorkList[key].copyContainerElement;
-        if(copyId && netWorkList[copyId]) {
-          if(isContainerElement) {
-            dispatch('mod_workspace/SET_elementMultiSelect', {id: netWorkList[key].layerId, setValue: true}, {root: true});
-          }
-          netWorkList[copyId].connectionOut.forEach(id => {
+
+      const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
+      const clipBoardNetWorkList = rootGetters['mod_workspace/GET_clipboardNetworkElementList'];
+  
+      for(let elementId in netWorkList) {
+        const layerId = netWorkList[elementId].layerId;
+        const sourceId = netWorkList[elementId].copyId;
+
+        if (sourceId && clipBoardNetWorkList[sourceId]) {
+          clipBoardNetWorkList[sourceId].connectionOut.forEach(id => {
             for(let property in netWorkList) {
               if(Number(netWorkList[property].copyId) === Number(id)) {
                 commit('mod_workspace/SET_startArrowID', layerId, {root: true});
                 dispatch('mod_workspace/ADD_arrow', netWorkList[property].layerId, {root: true});
               }
             }
-          });
-          netWorkList[copyId].connectionIn.forEach(id => {
+          })
+          clipBoardNetWorkList[sourceId].connectionIn.forEach(id => {
             for(let property in netWorkList) {
               if(Number(netWorkList[property].copyId) === Number(id)) {
-                commit('mod_workspace/SET_startArrowID', netWorkList[property].layerId, {root: true});
-                dispatch('mod_workspace/ADD_arrow', layerId, {root: true});
+                commit('mod_workspace/SET_startArrowID', layerId, {root: true});
+                dispatch('mod_workspace/ADD_arrow', netWorkList[property].layerId, {root: true});
               }
             }
           })
-      }
+        }
         commit('mod_workspace/DELETE_copyProperty', layerId, {root: true});
       }
+
+//      copy all connections
+      // for(let key in netWorkList) {
+      //   const layerId = netWorkList[key].layerId;
+      //   const copyId = netWorkList[key].copyId;
+      //   const isContainerElement = netWorkList[key].copyContainerElement;
+      //   if(copyId && netWorkList[copyId]) {
+      //     if(isContainerElement) {
+      //       dispatch('mod_workspace/SET_elementMultiSelect', {id: netWorkList[key].layerId, setValue: true}, {root: true});
+      //     }
+      //     netWorkList[copyId].connectionOut.forEach(id => {
+      //       for(let property in netWorkList) {
+      //         if(Number(netWorkList[property].copyId) === Number(id)) {
+      //           commit('mod_workspace/SET_startArrowID', layerId, {root: true});
+      //           dispatch('mod_workspace/ADD_arrow', netWorkList[property].layerId, {root: true});
+      //         }
+      //       }
+      //     });
+      //     netWorkList[copyId].connectionIn.forEach(id => {
+      //       for(let property in netWorkList) {
+      //         if(Number(netWorkList[property].copyId) === Number(id)) {
+      //           commit('mod_workspace/SET_startArrowID', netWorkList[property].layerId, {root: true});
+      //           dispatch('mod_workspace/ADD_arrow', layerId, {root: true});
+      //         }
+      //       }
+      //     })
+      //   }
+      //   commit('mod_workspace/DELETE_copyProperty', layerId, {root: true});
+      // }
     }
     dispatch('mod_workspace/ADD_container', null, {root: true});
   },
