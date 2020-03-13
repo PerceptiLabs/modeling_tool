@@ -56,22 +56,14 @@ export default {
     this.moveable = new Moveable(this.$refs['popup-container'], 
     {
         target: this.$refs['popup'],
-        container: this.$refs['popup-container'],
         draggable: true,
         keepRatio: true,
         throttleDrag: 0,
-        renderDirections: []
+        origin: false,
     });
 
-    this.moveable.renderDirections = [""];
-
     this.moveable
-    .on("drag", ({
-        target, transform,
-        left, top, right, bottom,
-        beforeDelta, beforeDist, delta, dist,
-        clientX, clientY,
-      }) => {
+    .on("drag", ({ target, transform}) => {
       target.style.transform = transform;
     });
   }
@@ -80,14 +72,8 @@ export default {
 
 <style lang="scss" scoped>
 /deep/ .moveable-control-box {
-
   .moveable-line {
-    display:none;
-    
-  }
-
-  .moveable-control.moveable-origin {
-    display:none;
+    display:none; 
   }
 }
 
