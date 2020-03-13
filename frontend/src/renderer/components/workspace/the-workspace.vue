@@ -38,6 +38,7 @@
             network-field(
               ref="networkField"
               :key="i"
+              :scaleNet="scaleNet"
               :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
 
@@ -124,6 +125,7 @@
     overflow: hidden;
   }
   .info-section_main {
+    display: block;
     overflow: auto;
   }
   .workspace_meta {

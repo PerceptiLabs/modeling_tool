@@ -14,6 +14,7 @@
 <script>
   import { mapState, mapGetters, mapMutations, mapActions } from 'vuex';
   import { throttleEv } from '@/core/helpers.js'
+  import { localStorageGridKey } from '@/core/constants.js'
 
   import TheToolbar         from '@/components/the-toolbar.vue'
   import TheLayersbar       from '@/components/the-layersbar.vue'
@@ -52,6 +53,9 @@
         this.setSidebarStateAction(false);
       }
       calculateSidebarScaleCoefficient();
+      if(localStorage.getItem(localStorageGridKey)) {
+        this.setGridValue(localStorage.getItem(localStorageGridKey) === 'true');
+      }
     },
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
@@ -105,6 +109,7 @@
         set_appIsOpen:                'globalView/SET_appIsOpen',
         add_dragElement:              'mod_workspace/ADD_dragElement',
         set_workspacesInLocalStorage: 'mod_workspace/set_workspacesInLocalStorage',
+        setGridValue: 'globalView/setGridStateMutation',
       }),
       ...mapActions({
         tutorialPointActivate:'mod_tutorials/pointActivate',

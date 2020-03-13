@@ -59,6 +59,12 @@ export default {
   beforeDestroy() {
     this.removeArrowListener();
   },
+  props: {
+    scaleNet: {
+      type: Number,
+      default: 100,
+    },
+  },
   data() {
     return {
       settings: 'Data',
@@ -90,6 +96,9 @@ export default {
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
       testingIsOpen:        'mod_workspace/GET_testIsOpen',
     }),
+    isGridEnabled() {
+      return this.$store.state.globalView.isGridEnabled;
+    },
     fullNetworkElementList() {
       return this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
     },
@@ -227,31 +236,49 @@ export default {
        offsetY: this.$refs.network.parentElement.offsetTop
       };
     },
-    // calcLayerSize() {
-    //   if(this.networkElementList) {
-    //     this.layerSize = this.$refs.layer[0].$el.offsetWidth;
-    //   }
-    // },
-    // calcViewPort(needCalcArray) {
-    //   window.innerWidth > 1440 ? this.smallViewPort = false : this.smallViewPort = true;
-    //   if(!this.smallViewPort) this.layerSize = 72;
-    //   if(needCalcArray) this.drawArrows();
-    // },
     calcSvgSize() {
-      let scrollHeight = this.$refs.network.scrollHeight;
-      let scrollWidth = this.$refs.network.scrollWidth;
-      let offsetHeight = this.$refs.network.offsetHeight;
-      let offsetWidth = this.$refs.network.offsetWidth;
-      const canvasHeight = scrollHeight + 40;
-      const canvasWidth = scrollWidth + 40;
-      // this.svgHeight = canvasHeight +'px';
-      // this.svgWidth = canvasWidth +'px';
-      scrollHeight > offsetHeight
-        ? this.svgHeight = canvasHeight +'px'
-        : this.svgHeight = '100%';
-      scrollWidth > offsetWidth
-        ? this.svgWidth = canvasWidth +'px'
-        : this.svgWidth = '100%';
+      const parentWorkspace = this.$parent.$refs.container;
+      let offsetHeight = parentWorkspace.offsetHeight;
+      let offsetWidth = parentWorkspace.offsetWidth;
+      
+      // calculate max boundaries for network elements
+      const positions = Object.values(this.networkElementList).map(item => item.layerMeta.position);
+      const maxWidthPositions = Math.max(...positions.map(position => position.left)) + 60;
+      const maxHeightPositions = Math.max(...positions.map(position => position.top)) + 60;
+
+      // increase/decrease height depend on scale/parentEl/netComponents 
+      if(maxHeightPositions < offsetHeight ) {
+        this.svgHeight = (offsetHeight / this.scaleNet) * 100 + 'px';
+        parentWorkspace.scrollTop = 0
+      } else {
+        let { svgHeight: prevSvgHeight } = this;
+        const newSvgHeight = (maxHeightPositions/ this.scaleNet) * 100 + 60
+        // if height boundaries decrease scroll this difference top
+        if(parseInt(prevSvgHeight.substring(0, prevSvgHeight.length - 2), 10) > newSvgHeight) {
+          parentWorkspace.scrollTop = parentWorkspace.scrollTop - (parseInt(prevSvgHeight.substring(0, prevSvgHeight.length - 2), 10) - newSvgHeight);
+        }
+        
+        this.svgHeight = newSvgHeight + 'px';
+      }
+      
+      // increase/decrease width depend on scale/parentEl/netComponents 
+      if(maxWidthPositions < offsetWidth ) {
+        let { svgWidth: prevSvgWidth } = this;
+        let newSvgWidth = (offsetWidth / this.scaleNet) * 100;
+        this.svgWidth = newSvgWidth + 'px';
+        if(prevSvgWidth.substring(0, prevSvgWidth.length - 2) > newSvgWidth) {
+          parentWorkspace.scrollLeft = 0
+        }
+      } else {
+        let { svgWidth: prevSvgWidth } = this;
+        const newSvgWidth = (maxWidthPositions / this.scaleNet) * 100 + 60;
+        // if width boundaries decrease scroll this difference left
+        if(parseInt(prevSvgWidth.substring(0, prevSvgWidth.length - 2), 10) > newSvgWidth) {
+          parentWorkspace.scrollLeft = parentWorkspace.scrollLeft - (parseInt(prevSvgWidth.substring(0, prevSvgWidth.length - 2), 10) - newSvgWidth);
+        }
+        this.svgWidth = newSvgWidth + 'px';
+      }
+      
     },
 
     //-------------
