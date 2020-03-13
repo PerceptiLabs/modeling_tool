@@ -1,8 +1,8 @@
 <template lang="pug">
 
-  .popup-global
+  .popup-global(ref="popup-container")
     .popup-global_overlay(@click="closePopup()")
-    section.popup
+    section.popup(ref="popup")
       .popup_tab-set
         .popup_header
             h3 {{ popupTitle }}
@@ -16,42 +16,79 @@
 </template>
 
 <script>
+import Moveable from "moveable";
 import { pathSlash }  from '@/core/constants.js';
 import FilePicker from '@/components/different/file-picker.vue';
 
 export default {
-    name: "FilePickerPopup",
-    components: { FilePicker },
-    props: {
-        filePickerType: {
-            type: String,
-            default: 'folder' // can also be 'folder'
-        },
-        fileTypeFilter: {
-            type: Array,
-            default: () => []
-        },
-        confirmCallback: {
-            type: Function,
-            default: () => {}
-        },
+  name: "FilePickerPopup",
+  components: { FilePicker, Moveable },
+  props: {
+    filePickerType: {
+      type: String,
+      default: 'folder' // can also be 'folder'
     },
-    data() {
+    fileTypeFilter: {
+      type: Array,
+      default: () => []
+    },
+    confirmCallback: {
+      type: Function,
+      default: () => {}
+    },
+  },
+  data() {
     return {
-        popupTitle: 'Export as',
-        filePickerOptions: {
-            showBackButton: false,
-            showNumberSelectedFiles: false,
-        }
+      moveable: '',
+      popupTitle: 'Export as',
+      filePickerOptions: {
+        showBackButton: false,
+        showNumberSelectedFiles: false,
+      }
     }
+  },
+  methods: {
+    closePopup() {
+        this.$store.commit('globalView/HIDE_allGlobalPopups');
     },
-    methods: {
-        closePopup() {
-            this.$store.commit('globalView/HIDE_allGlobalPopups');
-        },
-    }
+  },
+  mounted() {
+    this.moveable = new Moveable(this.$refs['popup-container'], 
+    {
+        target: this.$refs['popup'],
+        container: this.$refs['popup-container'],
+        draggable: true,
+        keepRatio: true,
+        throttleDrag: 0,
+        renderDirections: []
+    });
+
+    this.moveable.renderDirections = [""];
+
+    this.moveable
+    .on("drag", ({
+        target, transform,
+        left, top, right, bottom,
+        beforeDelta, beforeDist, delta, dist,
+        clientX, clientY,
+      }) => {
+      target.style.transform = transform;
+    });
+  }
 }
 </script>
 
 <style lang="scss" scoped>
+/deep/ .moveable-control-box {
+
+  .moveable-line {
+    display:none;
+    
+  }
+
+  .moveable-control.moveable-origin {
+    display:none;
+  }
+}
+
 </style>
