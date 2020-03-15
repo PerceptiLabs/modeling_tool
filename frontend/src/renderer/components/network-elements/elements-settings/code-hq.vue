@@ -12,7 +12,7 @@
   import CodeMirror from 'codemirror/lib/codemirror.js';
   import 'codemirror/mode/python/python.js'
   // theme css
-  import 'codemirror/lib/codemirror.css'
+  // import 'codemirror/lib/codemirror.css'
   //import 'codemirror/theme/monokai.css'
   //import 'codemirror/theme/base16-dark.css' //#5B657B
   // require active-line.js
@@ -202,6 +202,7 @@
 <style lang="scss">
   @import "../../../scss/base";
   @import "../../../scss/components/vscode-theme-dark_plus";
+  @import "~codemirror/lib/codemirror.css";
   .code-hq {
     //font-size: 16px;
     overflow: auto;

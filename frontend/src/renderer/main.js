@@ -32,6 +32,8 @@ import Analytics from '@/core/analytics';
 
 //Vue.http = Vue.prototype.$http = axios;
 
+Vue.prototype.isElectron = navigator.userAgent.toLowerCase().indexOf(' electron/') > -1;
+Vue.prototype.isWeb = !(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1);
 Vue.config.productionTip = isDevelopMode;
 Vue.config.performance = isDevelopMode;
 
