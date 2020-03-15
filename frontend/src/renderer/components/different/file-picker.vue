@@ -2,12 +2,20 @@
   div
     .settings-layer_section
       .form_row
-        button.btn.btn--link(type="button" @click="onCancel")
+        button.btn.btn--link(
+          v-if="options.showBackButton"
+          type="button" 
+          @click="onCancel")
           i.icon.icon-backward
           span Back
       .search.search-input-box
         i.icon.icon-close(@click="clearSearchValue")
-        input.search-input(:class="{error: searchDirNotFound}" type="text" v-model="searchValue" @keyup.enter="searchPath")
+        input.search-input(
+          :class="{error: searchDirNotFound}" 
+          type="text" 
+          v-model="searchValue" 
+          @keyup.enter="searchPath"
+          placeholder="Navigate to...")
     .filepicker
       .directory-breadcrumb
         .breadcrumb(
@@ -37,8 +45,9 @@
           img(src="/static/img/file-picker/file.svg" class="svg-icon")
           span {{ fileName }}
 
+
       .button-group
-        span {{ buttonGroupMessage }}
+        span(v-if="options.showNumberSelectedFiles") {{ buttonGroupMessage }}
         button.btn.btn--primary.btn--disabled(type="button"
           @click="onCancel"
           ) Cancel
@@ -67,8 +76,23 @@ export default {
     },
     fileTypeFilter: {
       type: Array,
-      default: []
+      default: () => []
     },
+    confirmCallback: {
+      type: Function,
+      default: () => {}
+    },
+    cancelCallback: {
+      type: Function,
+      default: () => {}
+    },
+    options: {
+      type: Object,
+      default: () => ({
+        showBackButton: true,
+        showNumberSelectedFiles: true,
+      })
+    }
   },
   data() {
     return {
@@ -123,6 +147,7 @@ export default {
       this.toggleSelectedDirectory(dirName);
     },
     onDirectoryDoubleClick(dirName) {
+      this.selectedDirectories = [];
       this.calcFolderPath(dirName);
     },
     onFileDoubleClick(fileName) {
@@ -198,19 +223,19 @@ export default {
         if (this.filePickerType === 'file') {
           emitPayload = this.selectedFiles.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
         } else if (this.filePickerType === 'folder') {
-          if (!this.selectedDirectories) {
+          if (!this.selectedDirectories || this.selectedDirectories.length === 0) {
             // if not active directory select, take current
-            emitPayload = this.osPathPrefix + this.currentPath.join('/') + '/';
+            emitPayload = [this.osPathPrefix + this.currentPath.join('/') + this.osPathSuffix];
           } else {
-            emitPayload = this.selectedDirectories.map(f => this.osPathPrefix + this.currentPath.join('/') + '/' + f);
+            emitPayload = this.selectedDirectories.map(d => this.osPathPrefix + this.currentPath.join('/') + '/' + d + this.osPathSuffix);
           }
           console.log('onConfirm emitPayload', emitPayload);
         }
 
-        this.$emit('confirm-selection', emitPayload);
+        this.confirmCallback(emitPayload);
     },
     onCancel() {
-        this.$emit('close');
+        this.cancelCallback();
     },
     clearSearchValue() {
       this.searchValue = '';
@@ -315,6 +340,22 @@ export default {
     }
   }
 
+}
+
+.filename-input {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 1rem;
+  border-top: 0.1rem solid $color-8;
+
+  * {
+    margin-left: 1rem;
+
+    &:last-child {
+      margin-right: 1rem;
+    }
+  }
 }
 
 .button-group {
