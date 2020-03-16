@@ -113,6 +113,7 @@ export default {
   methods: {
     ...mapMutations({
       set_showTrainingSpinner:  'mod_workspace/SET_showStartTrainingSpinner',
+      set_currentNetwork:       'mod_workspace/SET_currentNetwork',
       set_cursorPosition:       'mod_workspace/SET_CopyCursorPosition',
       set_cursorInsideWorkspace:'mod_workspace/SET_cursorInsideWorkspace',
       set_hideSidebar:          'globalView/SET_hideSidebar',
@@ -124,12 +125,13 @@ export default {
       set_openStatistics:   'mod_workspace/SET_openStatistics',
       set_openTest:         'mod_workspace/SET_openTest',
       set_elementUnselect:  'mod_workspace/SET_elementUnselect',
-      set_networkName:      'mod_workspace/SET_networkName',
+      setNetworkNameAction:      'mod_workspace/SET_networkName',
       set_currentNetwork:   'mod_workspace/SET_currentNetwork',
       event_startDoRequest: 'mod_workspace/EVENT_startDoRequest',
       set_chartRequests:    'mod_workspace/SET_chartsRequestsIfNeeded',
       tutorialPointActivate:'mod_tutorials/pointActivate',
       offMainTutorial:      'mod_tutorials/offTutorial',
+      pushSnapshotToHistory:'mod_workspace-history/PUSH_newSnapshot',
     }),
     toggleSidebar() {
       this.set_hideSidebar(!this.hideSidebar)
@@ -188,6 +190,10 @@ export default {
     },
     trainingWaiting(index) {
       return this.workspace[index].networkMeta.coreStatus.Status === 'Waiting';
+    },
+    set_networkName(text) {
+      this.setNetworkNameAction(text);
+      this.pushSnapshotToHistory(null)
     }
   }
 }

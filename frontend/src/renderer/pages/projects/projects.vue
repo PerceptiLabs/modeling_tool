@@ -20,11 +20,14 @@
   import imageClassification    from '@/core/basic-template/image-classification.js'
   import reinforcementLearning  from '@/core/basic-template/reinforcement-learning.js'
   import timeseriesRegression   from '@/core/basic-template/timeseries-regression.js'
+  import {isWeb} from "@/core/helpers";
 
   export default {
     name: 'PageProjects',
     created() {
-      this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+      if(isWeb()) {
+        this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+      }
     },
     mounted() {
       this.checkCloudToken()
@@ -51,7 +54,8 @@
             imgPath: './static/img/project-page/reinforcement-learning.svg',
             template: reinforcementLearning
           },
-        ]
+        ],
+        isWeb: isWeb()
       }
     },
     computed: {

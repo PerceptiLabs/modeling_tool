@@ -71,7 +71,6 @@
 </template>
 
 <script>
-  import {requestCloudApi}  from '@/core/apiCloud.js'
   import { baseUrlSite }    from '@/core/constants.js'
 
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'

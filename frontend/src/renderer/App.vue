@@ -57,7 +57,7 @@
         this.appReady();
       }
       this.updateOnlineStatus();
-      this.checkUserID();
+      // this.checkUserID();
       /*Menu*/
       ipcRenderer.on('get-app-version', (event, data) => {
         this.$store.commit('globalView/SET_appVersion', data);
@@ -250,6 +250,9 @@
         this.SET_appPath(path);
       },
       checkLocalToken() {
+        if(localStorage.getItem('currentUser') === 'undefined') {
+          return;
+        }
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.setUserToken(localUserToken);

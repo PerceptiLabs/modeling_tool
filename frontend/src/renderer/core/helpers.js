@@ -154,7 +154,9 @@ const throttleEv = function (func, ms) {
 
 const goToLink = function (url) {
   console.log(url);
-  //shell.openExternal(url);
+  if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
+    shell.openExternal(url);
+  } 
 };
 
 const deepCopy = function (object) {

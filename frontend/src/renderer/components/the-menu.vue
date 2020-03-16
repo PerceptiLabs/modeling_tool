@@ -46,11 +46,17 @@
 </template>
 
 <script>
-  //import { ipcRenderer } from 'electron'
   import { mapGetters, mapMutations, mapActions } from 'vuex';
   import { baseUrlSite } from '@/core/constants.js';
   import { goToLink }    from '@/core/helpers.js'
+  import {isElectron} from "@/core/helpers";
+  
+  let ipcRenderer = null;
 
+  if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
+    const electron = require('electron');
+    ipcRenderer = electron.ipcRenderer;
+  }
 export default {
   name: "TheMenu",
   mounted() {
@@ -66,7 +72,8 @@ export default {
     ...mapGetters({
       isTutorialMode: 'mod_tutorials/getIstutorialMode',
       isStoryBoard:   'mod_tutorials/getIsTutorialStoryBoard',
-      isLogin:        'mod_user/GET_userIsLogin'
+      isLogin:        'mod_user/GET_userIsLogin',
+      networkHistory: 'mod_workspace-history/GET_currentNetHistory',
     }),
     appVersion() {
       return this.$store.state.globalView.appVersion
@@ -193,11 +200,19 @@ export default {
       });
       return this.dataKeymap;
     },
+    isDisabledPrevStep() {
+      const history = this.networkHistory;
+      return !!history && history.historyStep === history.historyNet.length - 1
+    },
+    isDisabledNextStep() {
+      const history = this.networkHistory;
+      return !!history && history.historyStep === 0
+    }
   },
   watch: {
-/*    navMenu(newMenu) {
-      if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
-    }*/
+    navMenu(newMenu) {
+      if(process.platform === 'darwin' && isElectron()) ipcRenderer.send('app-menu', newMenu)
+    }
   },
   methods: {
     ...mapMutations({
@@ -219,8 +234,8 @@ export default {
       HCPaste:          'mod_events/EVENT_hotKeyPaste',
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
       HCDeselectAll:    'mod_workspace/SET_elementUnselect',
-      toPrevStepHistory:'mod_workspace-history/TO_prevStepHistory',
-      toNextStepHistory:'mod_workspace-history/TO_nextStepHistory',
+      toPrevStepHistoryMutation:'mod_workspace-history/TO_prevStepHistory',
+      toNextStepHistoryMutation:'mod_workspace-history/TO_nextStepHistory',
     }),
     goToLink,
     mainProcessListeners(isRemove) {
@@ -228,18 +243,22 @@ export default {
         item.submenu.forEach((subItem) => {
           if(subItem.label) {
             if(isRemove) {
-              //ipcRenderer.removeAllListeners(`menu-event-${subItem.label}`);
+              if(isElectron())
+              ipcRenderer.removeAllListeners(`menu-event-${subItem.label}`);
             }
             else {
-              //ipcRenderer.on(`menu-event-${subItem.label}`, ()=> { subItem.active() });
+              if(isElectron())
+              ipcRenderer.on(`menu-event-${subItem.label}`, ()=> { subItem.active() });
             }
           }
         })
       });
     },
     checkUpdate() {
-/*      this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
-      ipcRenderer.send('check-update');*/
+      if(isElectron()) {
+        this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
+        ipcRenderer.send('check-update'); 
+      }
     },
     addNewNetwork() {
       if(this.isTutorialMode) {
@@ -340,6 +359,18 @@ export default {
     },
     HC_unGroupLayerContainer() {
       this.$store.dispatch('mod_workspace/UNGROUP_container');
+    },
+    toPrevStepHistory(ev) {
+      ev.preventDefault();
+      if (!this.isDisabledPrevStep) {
+        this.toPrevStepHistoryMutation();
+      }
+    },
+    toNextStepHistory(ev) {
+      ev.preventDefault();
+      if(!this.isDisabledNextStep) {
+        this.toNextStepHistoryMutation()
+      }
     },
   }
 }

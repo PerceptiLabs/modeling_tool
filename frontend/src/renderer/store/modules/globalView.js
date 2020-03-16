@@ -1,4 +1,5 @@
 const namespaced = true;
+
 const state = {
   onlineStatus: true,
   hideLayers: true,
