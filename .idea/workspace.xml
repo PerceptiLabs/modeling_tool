@@ -3,9 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ae4c30d3-78b4-43e9-92a3-25fa079cdaae" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/net-base-settings/net-base-settings.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/core/mixins/net-element-settings-data.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/core/mixins/net-element-settings-data.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_api.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/App.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/router/index.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -262,7 +261,8 @@
     <MESSAGE value="conditional rendering depend where app are running" />
     <MESSAGE value="Hide nav" />
     <MESSAGE value="Fix navigation to link for both web and app." />
-    <option name="LAST_COMMIT_MESSAGE" value="Fix navigation to link for both web and app." />
+    <MESSAGE value="core request depend of app running" />
+    <option name="LAST_COMMIT_MESSAGE" value="core request depend of app running" />
   </component>
   <component name="WindowStateProjectService">
     <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1584006160877">
@@ -270,11 +270,11 @@
     </state>
     <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1583941926653" />
     <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584006160877" />
-    <state x="41" y="23" width="1639" height="911" key="CommitChangelistDialog2" timestamp="1584370750523">
+    <state x="41" y="23" width="1639" height="911" key="CommitChangelistDialog2" timestamp="1584370781214">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
-    <state x="41" y="23" width="1639" height="911" key="CommitChangelistDialog2/40.23.1640.1027@40.23.1640.1027" timestamp="1584370750523" />
-    <state x="41" y="45" width="1639" height="1005" key="DiffContextDialog" timestamp="1584366868055">
+    <state x="41" y="23" width="1639" height="911" key="CommitChangelistDialog2/40.23.1640.1027@40.23.1640.1027" timestamp="1584370781214" />
+    <state x="41" y="45" width="1639" height="1005" key="DiffContextDialog" timestamp="1584373219925">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="183" y="23" width="1344" height="1027" key="DiffContextDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1583940423313" />
@@ -282,7 +282,7 @@
     <state x="187" y="17" width="1344" height="1027" key="DiffContextDialog/1680.-475.1920.1057/-240.-1057.1920.1057/40.0.1640.1050@40.0.1640.1050" timestamp="1584086125705" />
     <state x="187" y="40" width="1344" height="1005" key="DiffContextDialog/1680.-475.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584107930214" />
     <state x="187" y="17" width="1344" height="1027" key="DiffContextDialog/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584030711503" />
-    <state x="41" y="45" width="1639" height="1005" key="DiffContextDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584366868055" />
+    <state x="41" y="45" width="1639" height="1005" key="DiffContextDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584373219925" />
     <state x="690" y="212" key="FileChooserDialogImpl" timestamp="1583938148517" />
     <state x="690" y="212" key="FileChooserDialogImpl/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1583938148517" />
     <state width="1619" height="469" key="GridCell.Tab.0.bottom" timestamp="1584120267494">
@@ -364,12 +364,12 @@
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="604" y="256" key="git4idea.branch.GitSmartOperationDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584347997836" />
-    <state x="533" y="251" width="670" height="662" key="search.everywhere.popup" timestamp="1584365867859">
+    <state x="533" y="251" width="670" height="662" key="search.everywhere.popup" timestamp="1584374281857">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1583940217574" />
     <state x="533" y="251" width="670" height="662" key="search.everywhere.popup/1680.-475.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584110098747" />
     <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584086349150" />
-    <state x="533" y="251" width="670" height="662" key="search.everywhere.popup/40.23.1640.1027@40.23.1640.1027" timestamp="1584365867859" />
+    <state x="533" y="251" width="670" height="662" key="search.everywhere.popup/40.23.1640.1027@40.23.1640.1027" timestamp="1584374281857" />
   </component>
 </project>

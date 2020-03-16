@@ -12,15 +12,17 @@ import {isWeb} from "@/core/helpers";
 
 Vue.use(Router);
 let routerOptions = {};
-
+let routesElectron = [];
 if (!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
   routerOptions.mode = 'history';
+} else {
+  routesElectron.push({path: '/', name: 'login',    component: PageLogin});
 }
 
 const router = new Router({
   ...routerOptions,
   routes: [
-    {path: '/',             name: 'login',    component: PageLogin},
+    ...routesElectron,
     {path: '/',             name: 'projects',    component: PageProjects},
     {path: '/app',          name: 'app',      component: PageApp},
     {path: '/register',     name: 'register', component: PageRegister},

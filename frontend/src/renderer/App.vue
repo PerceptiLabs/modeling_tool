@@ -53,66 +53,48 @@
       this.readUserInfo();
     },
     mounted() {
-      if(this.isElectron) {
+      if(isWeb()) {
+        this.updateOnlineStatus();
+        this.$store.dispatch('mod_api/API_runServer', null, {root: true});
+      } else {
         this.appReady();
-      }
-      this.updateOnlineStatus();
-      // this.checkUserID();
-      /*Menu*/
-      ipcRenderer.on('get-app-version', (event, data) => {
-        this.$store.commit('globalView/SET_appVersion', data);
-      });
+        this.updateOnlineStatus();
+        /*Menu*/
+        ipcRenderer.on('get-app-version', (event, data)=> this.SET_appVersion(data));
 
-      /*Auto update*/
-      ipcRenderer.on('checking-for-update', (event, updateInfo) => {
-        //console.log('checking-for-update', updateInfo);
-        this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo)
-      });
-      ipcRenderer.on('update-available', (event, updateInfo) => {
-        //console.log('update-available', updateInfo);
-        this.$nextTick(()=>{
-          this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
-          this.$store.commit('mod_autoUpdate/SET_updateInfo', updateInfo);
+        /*Auto update*/
+        ipcRenderer.on('checking-for-update', (event, updateInfo)=> this.SET_updateInfo(updateInfo));
+        ipcRenderer.on('update-available', (event, updateInfo)=> {
+          this.$nextTick(()=> {
+            this.SET_showPopupUpdates(true);
+            this.SET_updateInfo(updateInfo)
+          })
+        });
+        ipcRenderer.on('update-not-available', (event, update)=> {
+          if(this.showNotAvailable) {
+            this.SET_showPopupUpdates(true);
+            this.SET_updateStatus('not update')
+          }
+        });
+        ipcRenderer.on('update-downloading', (event, percent)=> this.SET_updateProgress(Math.round(percent)));
+        ipcRenderer.on('update-completed', (event, percent)=> this.SET_updateStatus('done'));
+        ipcRenderer.on('update-error', (event, error)=> {
+          this.SET_showPopupUpdates(false);
+          if(error) this.openErrorPopup(error);
+        });
+
+        ipcRenderer.on('show-mac-header', (event, value)=> { this.showMacHeader = value });
+        ipcRenderer.on('info',            (event, data)=> { /*console.log(data); */});
+        ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
+
+        this.calcAppPath();
+        this.checkLocalToken();
+        this.$nextTick(()=> {
+          //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
+
+          this.sendPathToAnalist(this.$route.fullPath);
         })
-      });
-      ipcRenderer.on('update-not-available', (event, update) => {
-        //console.log('update-not-available', update);
-        if(this.showNotAvailable) {
-          this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', true);
-          this.$store.commit('mod_autoUpdate/SET_updateStatus', 'not update')
-        }
-      });
-      ipcRenderer.on('update-downloading', (event, percent) => {
-        //console.log('update-downloading', percent);
-        this.$store.commit('mod_autoUpdate/SET_updateProgress', Math.round(percent));
-      });
-      ipcRenderer.on('update-completed', (event, percent) => {
-        //console.log('update-completed', percent);
-        this.$store.commit('mod_autoUpdate/SET_updateStatus', 'done')
-      });
-      ipcRenderer.on('update-error', (event, error) => {
-        //console.log('update-error', error);
-        this.$store.commit('mod_autoUpdate/SET_showPopupUpdates', false);
-        if(error.code) this.$store.dispatch('globalView/GP_infoPopup', error.code);
-      });
-
-      ipcRenderer.on('show-mac-header', (event, value) => { this.showMacHeader = value });
-      ipcRenderer.on('info',            (event, data) => { console.log(data); });
-      ipcRenderer.on('show-restore-down-icon', (event, value) => {
-        this.$store.commit('globalView/SET_appIsFullView', value);
-      });
-
-      this.calcAppPath();
-      this.checkLocalToken();
-      this.$store.dispatch('mod_api/API_runServer', null, {root: true});
-      this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
-      this.$nextTick(() =>{
-        if(this.userId === 'Guest') {
-          this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
-        }
-        //this.appReady();
-        //this.sendPathToAnalist(this.$route.fullPath);
-      })
+      }
     },
     beforeDestroy() {
       window.removeEventListener('online',  this.updateOnlineStatus);
