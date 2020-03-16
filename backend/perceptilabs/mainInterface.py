@@ -9,7 +9,7 @@ from perceptilabs.s3buckets import S3BucketAdapter
 #core interface
 from perceptilabs.coreInterface import coreLogic
 
-#Create LW Core
+from perceptilabs.utils import stringify
 from perceptilabs.graph import Graph
 from perceptilabs.core_new.core import DataContainer
 from perceptilabs.core_new.history import SessionHistory
@@ -68,6 +68,22 @@ class Interface():
             ckptObj.close()
 
     def create_lw_core(self, reciever, jsonNetwork):
+        if self._core_mode == 'v1':
+            return self._create_lw_core_v1(reciever, jsonNetwork)
+        else:
+            return self._create_lw_core_v2(reciever, jsonNetwork)
+
+    def _create_lw_core_v2(self, reciever, jsonNetwork):
+        data_container = DataContainer()
+        extras_reader = LayerExtrasReader()
+        error_handler = LightweightErrorHandler()
+        
+        from perceptilabs.core_new.lightweight2 import LightweightCoreAdapter
+        
+        lw_core = LightweightCoreAdapter(jsonNetwork, extras_reader, error_handler)
+        return lw_core, extras_reader, data_container
+
+    def _create_lw_core_v1(self, reciever, jsonNetwork):                
         if reciever not in self._lwDict:
             self._lwDict[reciever]=NetworkCache()
         else:
@@ -99,7 +115,6 @@ class Interface():
                 self._add_to_checkpointDict(info)
 
         if log.isEnabledFor(logging.DEBUG):
-            from perceptilabs.utils import stringify
             log.debug("create_lw_core: checkpoint dict: \n" + stringify(self._checkpointDict))
 
         data_container = DataContainer()
@@ -156,6 +171,19 @@ class Interface():
 
         self._setCore(reciever)
         response = self._create_response(reciever, action, value)
+
+
+        if log.isEnabledFor(logging.DEBUG):
+            log.debug("created response for action: {}. \nFull request:\n{}\nResponse:\n{}".format(
+                action,
+                pprint.pformat(request, depth=3),
+                stringify(response)
+            ))
+
+
+        #if 'dim' in action.lower():
+        #    import pdb; pdb.set_trace()
+        
 
         return response, self._core.warningQueue, self._core.errorQueue
 
