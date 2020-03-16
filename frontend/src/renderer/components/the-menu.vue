@@ -156,7 +156,6 @@ export default {
       // ipcRenderer.send('check-update');
     },
     addNewNetwork() {
-      console.log('addNewNetwork');
       if(this.isTutorialMode) {
         this.hideTooltip();
         this.popupConfirm(
