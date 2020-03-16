@@ -45,12 +45,17 @@ const actions = {
     commit('set_calcArray')
   },
   EVENT_loadNetwork({dispatch, rootGetters}, pathProject) {
+
+    console.log(pathProject);
     const pathFile = projectPathModel(pathProject);
-    let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
+    const localUserInfo = rootGetters['mod_user/GET_LOCAL_userInfo'];
+    let localProjectsList = localUserInfo ? localUserInfo.projectsList : [];
     let pathIndex;
     if(localProjectsList.length) {
       pathIndex = localProjectsList.findIndex((proj)=> proj.pathModel === pathFile);
     }
+
+    console.log(pathFile);
     return filePCRead(pathFile)
       .then((data) => {
         //validate JSON
