@@ -153,10 +153,14 @@ const throttleEv = function (func, ms) {
 };
 
 const goToLink = function (url) {
-  console.log(url);
   if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
     shell.openExternal(url);
-  } 
+  } else {
+    let link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('target', '_blank');
+    link.click();
+  }
 };
 
 const deepCopy = function (object) {

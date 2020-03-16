@@ -3,8 +3,8 @@
   <component name="ChangeListManager">
     <list default="true" id="ae4c30d3-78b4-43e9-92a3-25fa079cdaae" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/header/header-win.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/header/header-win.vue" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/the-menu.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/the-menu.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/core/helpers.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/core/helpers.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -259,7 +259,8 @@
     <MESSAGE value="Merge some files with dev branch" />
     <MESSAGE value="Fix dependencies of function" />
     <MESSAGE value="conditional rendering depend where app are running" />
-    <option name="LAST_COMMIT_MESSAGE" value="conditional rendering depend where app are running" />
+    <MESSAGE value="Hide nav" />
+    <option name="LAST_COMMIT_MESSAGE" value="Hide nav" />
   </component>
   <component name="WindowStateProjectService">
     <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog" timestamp="1584006160877">
@@ -267,11 +268,11 @@
     </state>
     <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1583941926653" />
     <state x="304" y="187" key="#com.intellij.execution.impl.EditConfigurationsDialog/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584006160877" />
-    <state x="41" y="23" width="1639" height="911" key="CommitChangelistDialog2" timestamp="1584366652430">
+    <state x="41" y="23" width="1639" height="911" key="CommitChangelistDialog2" timestamp="1584366875897">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
-    <state x="41" y="23" width="1639" height="911" key="CommitChangelistDialog2/40.23.1640.1027@40.23.1640.1027" timestamp="1584366652430" />
-    <state x="41" y="45" width="1639" height="1005" key="DiffContextDialog" timestamp="1584366589357">
+    <state x="41" y="23" width="1639" height="911" key="CommitChangelistDialog2/40.23.1640.1027@40.23.1640.1027" timestamp="1584366875897" />
+    <state x="41" y="45" width="1639" height="1005" key="DiffContextDialog" timestamp="1584366868055">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="183" y="23" width="1344" height="1027" key="DiffContextDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1583940423313" />
@@ -279,7 +280,7 @@
     <state x="187" y="17" width="1344" height="1027" key="DiffContextDialog/1680.-475.1920.1057/-240.-1057.1920.1057/40.0.1640.1050@40.0.1640.1050" timestamp="1584086125705" />
     <state x="187" y="40" width="1344" height="1005" key="DiffContextDialog/1680.-475.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584107930214" />
     <state x="187" y="17" width="1344" height="1027" key="DiffContextDialog/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584030711503" />
-    <state x="41" y="45" width="1639" height="1005" key="DiffContextDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584366589357" />
+    <state x="41" y="45" width="1639" height="1005" key="DiffContextDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584366868055" />
     <state x="690" y="212" key="FileChooserDialogImpl" timestamp="1583938148517" />
     <state x="690" y="212" key="FileChooserDialogImpl/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1583938148517" />
     <state width="1619" height="469" key="GridCell.Tab.0.bottom" timestamp="1584120267494">
@@ -339,7 +340,7 @@
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="100" y="100" width="1480" height="850" key="com.intellij.history.integration.ui.views.DirectoryHistoryDialog/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584021689487" />
-    <state x="398" y="135" width="1142" height="915" key="find.popup" timestamp="1584366705793">
+    <state x="398" y="135" width="1142" height="915" key="find.popup" timestamp="1584368800912">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="594" y="189" width="731" height="662" key="find.popup/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1583938148517" />
@@ -347,7 +348,7 @@
     <state x="429" y="31" width="1169" height="935" key="find.popup/0.0.1920.1032@0.0.1920.1032" timestamp="1583938148517" />
     <state x="398" y="135" width="1142" height="915" key="find.popup/1680.-475.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584111706506" />
     <state x="429" y="31" width="1169" height="935" key="find.popup/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584030709238" />
-    <state x="398" y="135" width="1142" height="915" key="find.popup/40.23.1640.1027@40.23.1640.1027" timestamp="1584366705793" />
+    <state x="398" y="135" width="1142" height="915" key="find.popup/40.23.1640.1027@40.23.1640.1027" timestamp="1584368800912" />
     <state x="604" y="256" key="git4idea.branch.GitSmartOperationDialog" timestamp="1584347997836">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>

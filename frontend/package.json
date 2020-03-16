@@ -22,7 +22,8 @@
     "pack:renderer": "cross-env NODE_ENV=production webpack --progress --colors --config .electron-vue/webpack.renderer.config.js",
     "dev:web": "webpack-dev-server --inline --progress --config src/build/webpack.dev.conf.js",
     "start:web": "npm run dev:web",
-    "build-render": "node src/build/build.js"
+    "build-render": "node src/build/build.js",
+    "dev:all": "npm run dev & npm run dev:web"
   },
   "build": {
     "productName": "PerceptiLabs",
