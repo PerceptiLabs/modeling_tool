@@ -1,11 +1,10 @@
 <template lang="pug">
   main.page_login
-    .login_logo
-      img(src="./../../../static/img/perceptilabs-logo-icon.svg" alt="PerceptiLabs logo")
     view-loading
     .login_main
-      h1(v-if="titlePage.length") {{ titlePage }}
-      h3(v-if="subTitle.length") {{ subTitle }}
+      .d-flex.align-items-center.log-in-header
+        img(src="./../../../static/img/perceptilabs-logo-icon.svg" alt="PerceptiLabs logo")
+        h1(v-if="titlePage.length") {{ titlePage }}
       slot
 
 
@@ -19,7 +18,6 @@ export default {
   components: { ViewLoading },
   props: {
     titlePage: { type: String, default: '' },
-    subTitle: { type: String, default: '' },
   },
   mounted() {
     if(this.userIsLogin) this.loginUser()
@@ -52,7 +50,8 @@ export default {
     flex-direction: column;
     justify-content: center;
     padding: 3rem;
-    background: linear-gradient(0deg, $bg-workspace -1.66%, #2d2f35 100%);
+    background: #272C37;
+    backdrop-filter: blur(20px);
     overflow-y: auto !important;
   }
 
@@ -67,9 +66,9 @@ export default {
     border-radius: 2*$bdrs;
     padding: 4.6rem;
     text-align: center;
-    border: 1px solid $login-blue;
-    background: linear-gradient(180deg, $bg-workspace 0%, #2d2f35 100%);
-
+    background: linear-gradient(122.07deg, #383F50 6.59%, #23252A 74.82%);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    border-radius: 10px;
     h1 {
       font-size: 2.4rem;
       margin: 0 0 .5rem;
@@ -79,6 +78,17 @@ export default {
       font-size: 2rem;
       color: $col-placeholder;
       margin: 0;
+    }
+    
+  }
+  .log-in-header {
+    img {
+      max-width: 35px;
+    }
+    h1 {
+      font-size: 28px;
+      margin-left: 25px;
+      color: #fff;
     }
   }
 </style>
