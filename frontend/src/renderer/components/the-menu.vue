@@ -1,6 +1,6 @@
 <template lang="pug">
   nav.app-header_nav(
-    
+    :class="{'app-header--hidden': isMac && isDesktopApp}"
     v-hotkey="keymap"
     )
     ul.header-nav
