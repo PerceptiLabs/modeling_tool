@@ -54,15 +54,15 @@ export default {
 
 <style lang="scss" scoped>
   @import "../../scss/base";
-  .d-none {
-    display: none;
-  }
   .app-header {
     display: flex;
     align-items: center;
     height: $h-header-win;
     background: #272727;
     font-family: sans-serif;
+  }
+  .d-none {
+    display: none;
   }
   .app-header_logo {
     margin: 0 12px;

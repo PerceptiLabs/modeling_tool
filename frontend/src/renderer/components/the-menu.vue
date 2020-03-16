@@ -50,7 +50,6 @@
   import { baseUrlSite } from '@/core/constants.js';
   import { goToLink }    from '@/core/helpers.js'
   import {isElectron} from "@/core/helpers";
-  
   let ipcRenderer = null;
 
   if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
