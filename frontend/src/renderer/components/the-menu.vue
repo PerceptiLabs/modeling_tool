@@ -85,7 +85,6 @@ export default {
       if (isDesktopApp()) {
         return this.navMenuDesktop();
       } else {
-        console.log('!isDesktopApp');
         return this.navMenuWeb();
       }
     },
@@ -187,7 +186,7 @@ export default {
         this.$store.dispatch('mod_events/EVENT_logOut');
       }
     },
-    goToHelpPage() {
+    goToHelpPageDesktop() {
       if(this.isTutorialMode) {
         this.hideTooltip();
         this.popupConfirm(
@@ -202,7 +201,7 @@ export default {
         this.goToLink(`${baseUrlSite}/i_docs`)
       }
     },
-    goToAboutPage() {
+    goToAboutPageDesktop() {
       if(this.isTutorialMode) {
         this.hideTooltip();
         this.popupConfirm(
@@ -215,6 +214,36 @@ export default {
           });
       } else {
         this.goToLink(`${baseUrlSite}/about`)
+      }
+    },
+    goToHelpPageWeb() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              window.location.href = 'https://join.slack.com/t/perceptilabs-com/shared_invite/zt-auchqflz-4YANlDBSyJW1qC7LdpQBSA';
+            }
+          });
+      } else {
+        window.location.href = 'https://join.slack.com/t/perceptilabs-com/shared_invite/zt-auchqflz-4YANlDBSyJW1qC7LdpQBSA';
+      }
+    },
+    goToAboutPageWeb() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              window.location.href = 'https://perceptilabs.com/docs/overview';
+            }
+          });
+      } else {
+        window.location.href = 'https://perceptilabs.com/docs/overview';
       }
     },
     showTutorial() {
@@ -346,8 +375,8 @@ export default {
           role: 'help',
           label: 'Help', visible: true,
           submenu: [
-            {label: 'Help',          enabled: false,                                  active: this.goToHelpPage },
-            {label: 'About',                                                          active: this.goToAboutPage },
+            {label: 'Help',          enabled: false,                                  active: this.goToHelpPageDesktop },
+            {label: 'About',                                                          active: this.goToAboutPageDesktop },
             {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
             ...(this.isMac
               ? []
@@ -423,13 +452,9 @@ export default {
           role: 'help',
           label: 'Help', visible: true,
           submenu: [
-            {label: 'Help',          enabled: false,                                  active: this.goToHelpPage },
-            {label: 'About',                                                          active: this.goToAboutPage },
+            {label: 'Help',                                                           active: this.goToHelpPageWeb },
+            {label: 'About',                                                          active: this.goToAboutPageWeb },
             {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
-            ...(this.isMac
-              ? []
-              : [{label: 'Check for updates',                                         active: this.checkUpdate }]
-            ),
             {type: 'separator'},
             {label: `Version: ${this.appVersion}`, enabled: false,                    active: ()=>{} }
           ]
