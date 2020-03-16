@@ -8,13 +8,19 @@ import PageRestoreAccount from '@/pages/restore-account/restore-account.vue';
 import PageProjects from '@/pages/projects/projects.vue';
 
 import Analytics from '@/core/analytics';
+import {isWeb} from "@/core/helpers";
 
 Vue.use(Router);
+let routerOptions = {};
+
+if (!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
+  routerOptions.mode = 'history';
+}
 
 const router = new Router({
-  mode: 'history',
+  ...routerOptions,
   routes: [
-    // {path: '/',             name: 'login',    component: PageLogin},
+    {path: '/',             name: 'login',    component: PageLogin},
     {path: '/',             name: 'projects',    component: PageProjects},
     {path: '/app',          name: 'app',      component: PageApp},
     {path: '/register',     name: 'register', component: PageRegister},
@@ -25,10 +31,10 @@ const router = new Router({
 });
 
 router.beforeEach((to, from, next) => {
-
-  Analytics.hubSpot.trackRouteChange(to);
-  Analytics.googleAnalytics.trackRouteChange(to);
-
+  if(isWeb()) {
+    Analytics.hubSpot.trackRouteChange(to);
+    Analytics.googleAnalytics.trackRouteChange(to); 
+  }
   next();
 });
 

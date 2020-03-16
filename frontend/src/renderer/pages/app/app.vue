@@ -26,7 +26,6 @@
     name: 'pageQuantum',
     components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
-
       this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
         .then(_ => {
           if(!this.workspaceContent.length) { this.ADD_network(); }

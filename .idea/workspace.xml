@@ -2,20 +2,16 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ae4c30d3-78b4-43e9-92a3-25fa079cdaae" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/.electron-vue/webpack.renderer.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/.electron-vue/webpack.renderer.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/.electron-vue/webpack.web.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/.electron-vue/webpack.web.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/package-lock.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements-settings/code-hq.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/components/network-elements/elements-settings/code-hq.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/App.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/App.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/core/helpers.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/core/helpers.js" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/frontend/src/renderer/main.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/main.js" afterDir="false" />
-    </list>
-    <list id="337bdd61-514d-41af-90a6-cc9ac218fc03" name="workspace history, fix prev next button navigation by keyboard, fix dublication network list, fix issue when navigate through history, change spanshot push when edit network name" comment="workspace history, fix prev next button navigation by keyboard, fix dublication network list, fix issue when navigate through history, change spanshot push when edit network name">
-      <changelist_data name="Anton Bourosu" email="anton@smartdata.solutions" date="1583775080000" />
-    </list>
-    <list id="a5806343-4467-41d1-9f2b-82eeec157850" name="workspace history, fix prev next button navigation by keyboard, fix dublication network list, fix issue when navigate through history, change spanshot push when edit network name-2" comment="workspace history, fix prev next button navigation by keyboard, fix dublication network list, fix issue when navigate through history, change spanshot push when edit network name">
-      <changelist_data name="Anton Bourosu" email="anton@smartdata.solutions" date="1583775080000" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/pages/app/app.vue" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/pages/app/app.vue" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/router/index.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/router/index.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace-history.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace-history.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/modules/mod_workspace.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/frontend/src/renderer/store/plugins/workspace-history.js" beforeDir="false" afterPath="$PROJECT_DIR$/frontend/src/renderer/store/plugins/workspace-history.js" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -34,7 +30,7 @@
   <component name="Git.Settings">
     <option name="RECENT_BRANCH_BY_REPOSITORY">
       <map>
-        <entry key="$PROJECT_DIR$" value="web-dev" />
+        <entry key="$PROJECT_DIR$" value="dev" />
       </map>
     </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -66,18 +62,19 @@
     <property name="nodejs_interpreter_path.stuck_in_default_project" value="undefined stuck path" />
     <property name="nodejs_npm_path_reset_for_default_project" value="true" />
     <property name="nodejs_package_manager_path" value="npm" />
+    <property name="settings.editor.selected.configurable" value="settings.webpack" />
     <property name="ts.external.directory.path" value="$APPLICATION_HOME_DIR$/plugins/JavaScriptLanguage/jsLanguageServicesImpl/external" />
   </component>
   <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
+    </key>
     <key name="CopyFile.RECENT_KEYS">
       <recent name="$PROJECT_DIR$/frontend/static/img/inputs" />
       <recent name="D:\PROJECTS\PerceptiLabs\frontend\src\renderer\components\different" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\workspace" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store\modules" />
       <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\components\different" />
-    </key>
-    <key name="MoveFile.RECENT_KEYS">
-      <recent name="G:\progects\PerceptiLabs\frontend\src\renderer\store" />
     </key>
   </component>
   <component name="RunManager" selected="npm.dev (1)">
@@ -245,7 +242,7 @@
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="41" y="23" width="1639" height="911" key="CommitChangelistDialog2/40.23.1640.1027@40.23.1640.1027" timestamp="1584223375512" />
-    <state x="187" y="40" width="1344" height="1005" key="DiffContextDialog" timestamp="1584224791460">
+    <state x="40" y="45" width="1639" height="1005" key="DiffContextDialog" timestamp="1584348986608">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="183" y="23" width="1344" height="1027" key="DiffContextDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1583940423313" />
@@ -253,7 +250,7 @@
     <state x="187" y="17" width="1344" height="1027" key="DiffContextDialog/1680.-475.1920.1057/-240.-1057.1920.1057/40.0.1640.1050@40.0.1640.1050" timestamp="1584086125705" />
     <state x="187" y="40" width="1344" height="1005" key="DiffContextDialog/1680.-475.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584107930214" />
     <state x="187" y="17" width="1344" height="1027" key="DiffContextDialog/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584030711503" />
-    <state x="187" y="40" width="1344" height="1005" key="DiffContextDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584224791460" />
+    <state x="40" y="45" width="1639" height="1005" key="DiffContextDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584348986608" />
     <state x="690" y="212" key="FileChooserDialogImpl" timestamp="1583938148517" />
     <state x="690" y="212" key="FileChooserDialogImpl/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1583938148517" />
     <state width="1619" height="469" key="GridCell.Tab.0.bottom" timestamp="1584120267494">
@@ -295,21 +292,25 @@
     <state x="729" y="154" key="RollbackChangesDialog/0.0.1920.1032@0.0.1920.1032" timestamp="1583938148517" />
     <state x="444" y="174" key="RollbackChangesDialog/1680.-475.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584112030131" />
     <state x="414" y="154" key="RollbackChangesDialog/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584086112686" />
+    <state x="369" y="175" key="SettingsEditor" timestamp="1584305856925">
+      <screen x="40" y="23" width="1640" height="1027" />
+    </state>
+    <state x="369" y="175" key="SettingsEditor/40.23.1640.1027@40.23.1640.1027" timestamp="1584305856925" />
     <state x="683" y="248" key="VCS.ChangeListViewerDialog" timestamp="1584091911759">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="683" y="248" key="VCS.ChangeListViewerDialog/1680.-475.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584091911759" />
-    <state x="319" y="23" width="1361" height="1027" key="VcsDiffUtil.ChangesDialog" timestamp="1584224784003">
+    <state x="319" y="23" width="1361" height="1027" key="VcsDiffUtil.ChangesDialog" timestamp="1584350579496">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="595" y="266" key="VcsDiffUtil.ChangesDialog/0.0.1680.1050@0.0.1680.1050" timestamp="1583939212098" />
     <state x="595" y="266" key="VcsDiffUtil.ChangesDialog/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584021659985" />
-    <state x="319" y="23" width="1361" height="1027" key="VcsDiffUtil.ChangesDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584224784003" />
+    <state x="319" y="23" width="1361" height="1027" key="VcsDiffUtil.ChangesDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584350579496" />
     <state x="100" y="100" width="1480" height="850" key="com.intellij.history.integration.ui.views.DirectoryHistoryDialog" timestamp="1584021689487">
       <screen x="0" y="0" width="1680" height="1050" />
     </state>
     <state x="100" y="100" width="1480" height="850" key="com.intellij.history.integration.ui.views.DirectoryHistoryDialog/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584021689487" />
-    <state x="398" y="135" width="1142" height="915" key="find.popup" timestamp="1584219599387">
+    <state x="398" y="135" width="1142" height="915" key="find.popup" timestamp="1584350613402">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="594" y="189" width="731" height="662" key="find.popup/-1920.0.1920.1040/0.0.1920.1040/1920.-603.1080.1920@0.0.1920.1040" timestamp="1583938148517" />
@@ -317,13 +318,17 @@
     <state x="429" y="31" width="1169" height="935" key="find.popup/0.0.1920.1032@0.0.1920.1032" timestamp="1583938148517" />
     <state x="398" y="135" width="1142" height="915" key="find.popup/1680.-475.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584111706506" />
     <state x="429" y="31" width="1169" height="935" key="find.popup/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584030709238" />
-    <state x="398" y="135" width="1142" height="915" key="find.popup/40.23.1640.1027@40.23.1640.1027" timestamp="1584219599387" />
-    <state x="533" y="251" width="670" height="662" key="search.everywhere.popup" timestamp="1584223506215">
+    <state x="398" y="135" width="1142" height="915" key="find.popup/40.23.1640.1027@40.23.1640.1027" timestamp="1584350613402" />
+    <state x="604" y="256" key="git4idea.branch.GitSmartOperationDialog" timestamp="1584347997836">
+      <screen x="40" y="23" width="1640" height="1027" />
+    </state>
+    <state x="604" y="256" key="git4idea.branch.GitSmartOperationDialog/40.23.1640.1027@40.23.1640.1027" timestamp="1584347997836" />
+    <state x="533" y="251" width="670" height="662" key="search.everywhere.popup" timestamp="1584310323109">
       <screen x="40" y="23" width="1640" height="1027" />
     </state>
     <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/0.0.1680.1050@0.0.1680.1050" timestamp="1583940217574" />
     <state x="533" y="251" width="670" height="662" key="search.everywhere.popup/1680.-475.1920.1057/-240.-1057.1920.1057/40.23.1640.1027@40.23.1640.1027" timestamp="1584110098747" />
     <state x="505" y="233" width="670" height="676" key="search.everywhere.popup/1680.-498.1920.1080/-240.-1080.1920.1080/0.0.1680.1050@0.0.1680.1050" timestamp="1584086349150" />
-    <state x="533" y="251" width="670" height="662" key="search.everywhere.popup/40.23.1640.1027@40.23.1640.1027" timestamp="1584223506215" />
+    <state x="533" y="251" width="670" height="662" key="search.everywhere.popup/40.23.1640.1027@40.23.1640.1027" timestamp="1584310323109" />
   </component>
 </project>
