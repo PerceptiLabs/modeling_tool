@@ -1,5 +1,12 @@
-//import coreRequest  from "@/core/apiCore.js";
-import {coreRequest, openWS}  from "@/core/apiWeb.js";
+import coreRequestElectron  from "@/core/apiCore.js";
+import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
+let coreRequest = null;
+
+if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
+  coreRequest = coreRequestWeb;
+} else {
+  coreRequest = coreRequestElectron;
+}
 const netElementSettingsData = {
   data() {
     return {

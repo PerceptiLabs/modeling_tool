@@ -1,5 +1,5 @@
-import {coreRequest as webCoreRequest, openWS}  from "@/core/apiWeb.js";
-import ElectronCoreRequest from "@/core/apiCore.js";
+import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
+import coreRequestElectron from "@/core/apiCore.js";
 import { deepCopy, parseJWT, isWeb }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 import {isElectron} from "@/core/helpers";
@@ -10,12 +10,12 @@ let spawn = null;
 
 
 if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
-  coreRequest = webCoreRequest;
+  coreRequest = coreRequestWeb;
 } else {
 const electron =  require('electron');
   spawn = require('child_process').spawn;
   ipcRenderer = electron.ipcRenderer;
-  coreRequest = ElectronCoreRequest
+  coreRequest = coreRequestElectron
 };
 
 
