@@ -94,10 +94,10 @@
 <script>
   import {requestCloudApi}  from '@/core/apiCloud.js'
   import { baseUrlSite }    from '@/core/constants.js'
+  import Analytics          from '@/core/analytics.js'
 
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
   import PolicyLogin        from '@/pages/register/policy.vue'
-
 export default {
   name: 'PageRegister',
   components: { PolicyLogin, LogoutUserPageWrap },
@@ -145,9 +145,17 @@ export default {
       this.$store.commit('mod_login/SET_showLoader', true);
 
       this.$store.dispatch('mod_apiCloud/CloudAPI_userCreate', this.user)
-        .then((response)=> this.$router.replace('/login'))
+        .then((response)=> {
+          Analytics.hubSpot.trackUserRegistration({
+            email: this.user.email,
+            firstName: this.user.firstName,
+            lastName: this.user.lastName
+          });
+
+          this.$router.replace('/login');
+        })
         .catch((err)=> {
-          console.log(err)
+          console.log(err);
         })
         .finally(()=> this.$store.commit('mod_login/SET_showLoader', false));
     },
