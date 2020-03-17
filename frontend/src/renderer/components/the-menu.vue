@@ -1,7 +1,7 @@
 <template lang="pug">
   nav.app-header_nav(
     :class="{'app-header--hidden': isMac && isDesktop}"
-    v-hotkey="keymap"
+    v-hotkey.prevent="keymap"
     )
     ul.header-nav
       li.header-nav_item(
@@ -56,7 +56,6 @@ export default {
   mounted() {
     this.mainProcessListeners()
   },
-
   data() {
     return {
       dataKeymap: {}
