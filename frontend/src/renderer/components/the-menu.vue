@@ -401,21 +401,6 @@ export default {
     },
     navMenuWeb() {
       return [
-        ...(this.isMac ? [{
-            label: 'PerceptiLabs',
-            submenu: [
-              { role: 'about',      active: ()=>{}},
-              {label: 'Check for updates...', active: this.checkUpdate },
-              { type: 'separator'},
-              { role: 'services',   active: ()=>{}},
-              { type: 'separator'},
-              { role: 'hide',       active: ()=>{}},
-              { role: 'hideothers', active: ()=>{}},
-              { role: 'unhide',     active: ()=>{}},
-              { type: 'separator'},
-              {label: 'Quit PerceptiLabs', accelerator: 'meta+q', active: (e)=> this.appClose(e) }
-            ]
-          }] : []),
         {
           label: 'File', visible: true,
           submenu: [
