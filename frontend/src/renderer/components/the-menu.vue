@@ -1,6 +1,6 @@
 <template lang="pug">
   nav.app-header_nav(
-    :class="{'app-header--hidden': isMac && isDesktopApp}"
+    :class="{'app-header--hidden': isMac && isDesktop}"
     v-hotkey="keymap"
     )
     ul.header-nav
@@ -80,6 +80,9 @@ export default {
     },
     isMac() {
       return isOsMacintosh();
+    },
+    isDesktop() {
+      return isDesktopApp();
     },
     navMenu() {
       if (isDesktopApp()) {
