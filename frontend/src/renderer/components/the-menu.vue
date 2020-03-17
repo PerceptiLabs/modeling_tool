@@ -1,7 +1,7 @@
 <template lang="pug">
   nav.app-header_nav(
     :class="{'app-header--hidden': isMac && isDesktop}"
-    v-hotkey.prevent="keymap"
+    v-hotkey="keymap"
     )
     ul.header-nav
       li.header-nav_item(
@@ -410,10 +410,10 @@ export default {
         {
           label: 'File', visible: true,
           submenu: [
-            {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',              enabled: this.openApp,  active: this.addNewNetwork },
-            {label: 'Load',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.openApp,  active: this.openModel },
-            {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
-            {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
+            {label: 'New',                                                                      enabled: this.openApp,  active: this.addNewNetwork },
+            {label: 'Load',                                                                     enabled: this.openApp,  active: this.openModel },
+            {label: 'Save',                                                                     enabled: this.openApp,  active: this.saveModel },
+            {label: 'Save as...',                                                               enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
           ]
