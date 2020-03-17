@@ -419,8 +419,8 @@ export default {
         {
           label: 'File', visible: true,
           submenu: [
-            {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',              enabled: this.isLogin,  active: this.addNewNetwork },
-            {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.isLogin,  active: this.openModel },
+            {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',              enabled: this.openApp,  active: this.addNewNetwork },
+            {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.openApp,  active: this.openModel },
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
           ]
