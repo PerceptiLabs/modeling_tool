@@ -170,9 +170,11 @@ const mutations = {
         const network = JSON.parse(localStorage.getItem(key));
 
         // remove focus from previous focused network elements
-        Object.keys(network.networkElementList).map(elKey => {
-          network.networkElementList[elKey].layerMeta.isSelected = false;
-        });
+        if (network.networkElementList && network.networkElementList.length >0) {
+          Object.keys(network.networkElementList).map(elKey => {
+            network.networkElementList[elKey].layerMeta.isSelected = false;
+          });
+        }
 
         // clears the handle of the setInterval function
         // this value is used to determine if a new setInterval call should be made
