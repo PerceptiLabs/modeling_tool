@@ -80,8 +80,6 @@ const googleAnalytics = (function() {
     publicMethods.trackUserId = function(userId) {
         if (!userId || userId === 'Guest') { return; }
 
-        console.log(window.dataLayer);
-
         addTag('set', {'user_id' : userId});
     }
 
