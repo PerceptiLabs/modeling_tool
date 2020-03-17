@@ -825,6 +825,11 @@ class {{layer_name}}(ClassificationLayer):
         Purose is to speed up the iteration speed significantly."""
         self._headless = True
 
+        self._layer_outputs = {} 
+        self._layer_weights = {}
+        self._layer_biases = {}
+        self._layer_gradients = {}
+
     def on_headless_deactivate(self) -> None:
         """"Called when the statistics shown in statistics window are needed.
         May slow down the iteration speed of the training."""
