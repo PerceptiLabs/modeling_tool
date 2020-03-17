@@ -1,8 +1,8 @@
 <template lang="pug">
   #app
-    header-win.app-header()
+    header-win.app-header(v-if="showMenuBar")
     router-view.app-page
-    the-info-popup(v-if="isShowPopup")
+    the-info-popup(v-if="showPopup")
     confirm-popup
 </template>
 
@@ -117,9 +117,15 @@
       corePopup() {
         return this.$store.state.globalView.globalPopup.coreNotFoundPopup
       },
-      isShowPopup() {
+      showPopup() {
         return this.errorPopup.length || this.infoPopup.length || this.corePopup;
       },
+      showMenuBar() {
+        const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
+        if (GET_userIsLogin && this.$route.name === 'app') { return true; }
+
+        return false;
+      }
     },
     watch: {
       // '$route': {
