@@ -408,6 +408,8 @@ export default {
             {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.openApp,  active: this.openModel },
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
+            {type: 'separator'},
+            {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
           ]
         },
         {
