@@ -71,7 +71,7 @@
       // });
 
       //this.calcAppPath();
-      // this.checkLocalToken();
+      this.checkLocalToken();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
       // this.$nextTick(() =>{
@@ -218,7 +218,7 @@
             this.$router.replace({name: 'projects'});
           }
         }
-        else this.trackerInitUser(this.userId)
+        // else this.trackerInitUser(this.userId)
       },
       /*Header actions*/
       // appClose() {
