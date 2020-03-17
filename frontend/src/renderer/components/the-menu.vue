@@ -402,10 +402,14 @@ export default {
     navMenuWeb() {
       return [
         {
+            label: 'PerceptiLabs',
+            submenu: []
+        },
+        {
           label: 'File', visible: true,
           submenu: [
             {label: 'New',          accelerator: this.isMac ? 'meta+n' : 'ctrl+n',              enabled: this.openApp,  active: this.addNewNetwork },
-            {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.openApp,  active: this.openModel },
+            {label: 'Load',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.openApp,  active: this.openModel },
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
@@ -428,19 +432,12 @@ export default {
           ]
         },
         {
-          label: 'Settings', visible: true,
-          submenu: [
-            {label: 'Edit profile',    enabled: false,         active: function() {} },
-            {label: 'History',         enabled: false,         active: function() {} },
-          ]
-        },
-        {
           role: 'help',
           label: 'Help', visible: true,
           submenu: [
             {label: 'Help',                                                           active: this.goToHelpPageWeb },
             {label: 'About',                                                          active: this.goToAboutPageWeb },
-            {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
+            {label: 'Tutorial mode', enabled: !this.isTutorialActive,                 active: this.showTutorial },
             {type: 'separator'},
             {label: `Version: ${this.appVersion}`, enabled: false,                    active: ()=>{} }
           ]
