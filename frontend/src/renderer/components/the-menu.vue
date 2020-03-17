@@ -401,21 +401,6 @@ export default {
     },
     navMenuWeb() {
       return [
-        ...(this.isMac ? [{
-            label: 'PerceptiLabs',
-            submenu: [
-              { role: 'about',      active: ()=>{}},
-              {label: 'Check for updates...', active: this.checkUpdate },
-              { type: 'separator'},
-              { role: 'services',   active: ()=>{}},
-              { type: 'separator'},
-              { role: 'hide',       active: ()=>{}},
-              { role: 'hideothers', active: ()=>{}},
-              { role: 'unhide',     active: ()=>{}},
-              { type: 'separator'},
-              {label: 'Quit PerceptiLabs', accelerator: 'meta+q', active: (e)=> this.appClose(e) }
-            ]
-          }] : []),
         {
           label: 'File', visible: true,
           submenu: [
@@ -423,6 +408,8 @@ export default {
             {label: 'Open',         accelerator: this.isMac ? 'meta+o' : 'ctrl+o',              enabled: this.openApp,  active: this.openModel },
             {label: 'Save',         accelerator: this.isMac ? 'meta+s' : 'ctrl+s',              enabled: this.openApp,  active: this.saveModel },
             {label: 'Save as...',   accelerator: this.isMac ? 'meta+shift+s' : 'ctrl+shift+s',  enabled: this.openApp,  active: this.saveModelAs },
+            {type: 'separator'},
+            {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
           ]
         },
         {
