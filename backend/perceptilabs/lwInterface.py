@@ -23,6 +23,20 @@ class LW_interface_base(ABC):
             return ""
 
 
+class saveJsonModel(LW_interface_base):
+    def __init__(self, save_path, json_model, network_name):
+        self._save_path = save_path
+        self._json_model = json_model
+        self._network_name = network_name
+
+    def run(self):
+        if not os.path.isdir(self._save_path):
+            os.mkdir(self._save_path)
+
+        # with open(self._save_path, 'w') as outfile:
+        #     json.dump(data, outfile)    
+
+
 class getFolderContent(LW_interface_base):
     def __init__(self, current_path):
         self._current_path = current_path
