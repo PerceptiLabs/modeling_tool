@@ -13,10 +13,9 @@ log = logging.getLogger(__name__)
 
 TEMPLATES_DIRECTORY = 'core_new/layers/templates/' # Relative to the package root directory
 
-
 class LayerDef:
     """Defines a layer class."""
-    def __init__(self, base_class, template_file, template_macro, macro_parameters):
+    def __init__(self, base_class, template_file, template_macro, macro_parameters, import_statements=None):
         """Specifies the nature of a layer. Each layer extends a base class and the implementation comes packaged in a jinja2 template macro that can be rendered into python code. 
         The implementation rendered will vary according to the specifications made in the frontend.
 
@@ -26,11 +25,13 @@ class LayerDef:
             template_file: the jinja2 template file containing the actual implementation. Must be located in the TEMPLATES_DIRECTORY
             template_macro: the name of a jinja2 macro, available in the template file, that renders the implementation.
             macro_parameters: a dictionary of keys mapping to a value (or callable returning a value). This key-value pair will be passed as an argument to the jinja2 macro during rendering. 
+            import_statements: a list of Python import statements as strings
         """
         self.base_class = base_class
         self.template_file = template_file
         self.template_macro = template_macro
         self.macro_parameters = macro_parameters
+        self.import_statements = import_statements or []
 
         
 def resolve_checkpoint_path(specs):
