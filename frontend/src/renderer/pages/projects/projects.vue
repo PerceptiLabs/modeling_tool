@@ -134,7 +134,6 @@
         this.$store.commit("globalView/set_filePickerPopup", true);
       },
       confirmCallback(el) {
-        console.log("ThisisParam", el[0]);
         this.openTemplate(el[0]);
         this.$store.commit("globalView/HIDE_allGlobalPopups");
       },

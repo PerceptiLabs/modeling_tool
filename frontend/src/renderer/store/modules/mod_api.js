@@ -339,17 +339,18 @@ const actions = {
   //---------------
   // NETWORK LOAD
   //---------------
+  
   API_loadNetwork({rootGetters}, path) {
-    console.log("path here.", path);
     const theData = {
       reciever: "",
       action: "getJsonModel",
       value: path
     }
+
     return coreRequest(theData)
       .then((data) => data)
       .catch((err) => {
-        console.error('loading error: ', err);
+        console.error('loading network error: ', err);
       });
   },
 
