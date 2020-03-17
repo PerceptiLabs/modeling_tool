@@ -1,4 +1,4 @@
-import { generateID, calcLayerPosition, deepCopy, isLocalStorageAvailable }  from "@/core/helpers.js";
+import { generateID, calcLayerPosition, deepCopy, isLocalStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
 import { widthElement } from '@/core/constants.js'
 import Vue    from 'vue'
 import router from '@/router'
