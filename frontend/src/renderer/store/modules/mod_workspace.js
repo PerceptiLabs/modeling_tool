@@ -951,23 +951,23 @@ const actions = {
       commit('delete_network', index);
       dispatch('mod_api/API_closeSession', networkID, { root: true });
     } else {
-    // API_closeSession stops the process in the core
-    const network = state.workspaceContent[index];
-    dispatch('mod_api/API_closeSession', network.networkID, { root: true });
-
-    if (index === state.currentNetwork) {
-
-      if (state.workspaceContent.length === 1) {
-        commit('set_lastActiveTabInLocalStorage', '');
-      } else if (index === 0) {
-        commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
-      } else {
-        commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
+      // API_closeSession stops the process in the core
+      const network = state.workspaceContent[index];
+      dispatch('mod_api/API_closeSession', network.networkID, { root: true });
+  
+      if (index === state.currentNetwork) {
+  
+        if (state.workspaceContent.length === 1) {
+          commit('set_lastActiveTabInLocalStorage', '');
+        } else if (index === 0) {
+          commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index + 1].networkID);
+        } else {
+          commit('set_lastActiveTabInLocalStorage', state.workspaceContent[index - 1].networkID);
+        }
       }
-    }
-
-    commit('delete_network', index);
-    commit('set_workspacesInLocalStorage');
+  
+      commit('delete_network', index);
+      commit('set_workspacesInLocalStorage');
     }
   },
   GET_workspacesFromLocalStorage({commit, dispatch}) {

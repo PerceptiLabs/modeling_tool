@@ -259,6 +259,27 @@ const isWeb = () => {
   return !(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1);
 };
 
+const setAppTypeRootClasses = () => {
+  if(isWeb()) {
+    document.body.classList.add('is-web');
+    document.getElementsByTagName('html')[0].classList.add('is-web');
+  } else {
+    document.body.classList.add('is-electron');
+    document.getElementsByTagName('html')[0].classList.add('is-electron');
+  }
+};
+
+const fixFilepathSeparator = function fileUrl(filepath) {
+  if (!filepath) { return filepath; }
+
+  if (filepath.startsWith('\\\\')) {
+    // if it's a network share, we have to keep the \\\\
+    return '\\\\' + filepath.substring(2).replace(/\\/g, '/');
+  }
+
+  return filepath.replace(/\\/g, '/');
+};
+
 export {
   openLoadDialog,
   openSaveDialog,
@@ -283,5 +304,7 @@ export {
   calculateSidebarScaleCoefficient,
   parseJWT,
   isElectron,
-  isWeb
+  isWeb,
+  fixFilepathSeparator,
+  setAppTypeRootClasses,
 }

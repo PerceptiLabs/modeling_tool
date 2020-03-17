@@ -1,7 +1,13 @@
 import router         from "@/router";
-import {filePCRead, isElectron, loadPathFolder, projectPathModel} from "@/core/helpers";
+import {
+  filePCRead,
+  isElectron,
+  loadPathFolder,
+  projectPathModel,
+  shouldHideSidebar,
+  calculateSidebarScaleCoefficient
+} from "@/core/helpers";
 import { pathSlash } from "@/core/constants";
-import { shouldHideSidebar, calculateSidebarScaleCoefficient } from "../../core/helpers";
 
 let ipcRenderer = null;
 

@@ -142,6 +142,9 @@ export default {
   }
   .popup_body {
     // max-width: calc(50vw - #{$w-sidebar});
+    .is-electron & {
+      max-width: calc(50vw - #{$w-sidebar});
+    }
     min-width: 29rem;
   }
   .popup_header {

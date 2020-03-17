@@ -211,7 +211,7 @@
             ipcRenderer.send('app-ready');
           }
           splash.remove();
-          document.body.className = "";
+          document.body.classList.remove('show-splashscreen');
           this.trackerAppStart();
         }, this.isElectron ? 2000 : 1000)
       },

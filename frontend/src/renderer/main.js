@@ -11,7 +11,7 @@ import VueHotkey    from 'v-hotkey'
 import App    from './App'
 import router from './router'
 import store  from './store'
-import { isElectron } from "@/core/helpers";
+import { isElectron, setAppTypeRootClasses } from "@/core/helpers";
 import { isDevelopMode } from '@/core/constants.js'
 
 //- Global components
@@ -33,10 +33,11 @@ if(isElectron()) {
 
 //Vue.http = Vue.prototype.$http = axios;
 
-Vue.prototype.isElectron = navigator.userAgent.toLowerCase().indexOf(' electron/') > -1;
-Vue.prototype.isWeb = !(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1);
 Vue.config.productionTip = isDevelopMode;
 Vue.config.performance = isDevelopMode;
+
+// set the parent(html,body) platform class one of => [is-web, is-electron]
+setAppTypeRootClasses();
 
 //- Use plugin
 if (!Vue.config.devtools) {

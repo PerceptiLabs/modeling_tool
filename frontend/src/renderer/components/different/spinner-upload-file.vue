@@ -13,7 +13,9 @@
   @import "../../scss/base";
   // Progress Bar
   .progress {
-    //position: relative;
+    .is-electron & {
+      position: relative;
+    }
     height: 3px;
     display: block;
     width: 100%;
