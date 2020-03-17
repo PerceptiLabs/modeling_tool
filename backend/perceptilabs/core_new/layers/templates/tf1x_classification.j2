@@ -141,7 +141,8 @@
                         grad_tensor = tf.constant(0)
                     gradients[name] = grad_tensor
                 layer_gradient_tensors[node.layer_id] = gradients
-                self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
+                # self._internal_layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
+                # self._layer_gradients = self._internal_layer_gradients.copy()
 
         trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
         grads = tf.gradients(loss_tensor, trainable_vars)
@@ -204,7 +205,7 @@
             
         def test_step():
             self._loss_testing, self._accuracy_testing, \
-                self._layer_outputs, self._layer_weights, layer_gradients \
+                self._layer_outputs, self._layer_weights, self._layer_gradients \
                 = sess.run([
                     loss_tensor, accuracy_tensor,
                     layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
