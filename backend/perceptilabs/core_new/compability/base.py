@@ -83,6 +83,10 @@ class CompabilityCore:
             core.unpause()
         elif command == 'stop':
             core.stop()
+        elif command == 'headlessOn':
+            core.headlessOn()
+        elif command == 'headlessOff':
+            core.headlessOff()
             
     def _get_results_dict(self, graphs):
         self._print_graph_debug_info(graphs)
