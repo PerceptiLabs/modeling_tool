@@ -30,11 +30,13 @@ class saveJsonModel(LW_interface_base):
         self._network_name = network_name
 
     def run(self):
-        if not os.path.isdir(self._save_path):
-            os.mkdir(self._save_path)
+        import json
+        full_path = os.path.join(self._save_path, self._network_name)
+        if not os.path.isdir(full_path):
+            os.mkdir(full_path)
 
-        # with open(self._save_path, 'w') as outfile:
-        #     json.dump(data, outfile)    
+        with open(full_path, 'w') as outfile:
+            json.dump(self._json_model, outfile)
 
 
 class getFolderContent(LW_interface_base):
