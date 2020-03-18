@@ -131,6 +131,7 @@ export default {
       appMinimize:      'mod_events/EVENT_appMinimize',
       appMaximize:      'mod_events/EVENT_appMaximize',
       openNetwork:      'mod_events/EVENT_openNetwork',
+      loadNetwork:      'mod_events/EVENT_loadNetwork',
       HCCopy:           'mod_events/EVENT_hotKeyCopy',
       HCPaste:          'mod_events/EVENT_hotKeyPaste',
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
@@ -264,6 +265,27 @@ export default {
       } else {
         this.openNetwork();
       }
+    },
+    openLoadModelPopup() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$store.dispatch('globalView/SET_filePickerPopup', this.onLoadNetworkConfirmed);
+            }
+          });
+      } else {
+        this.$store.dispatch('globalView/SET_filePickerPopup', this.onLoadNetworkConfirmed);
+      }
+    },
+    onLoadNetworkConfirmed(path) {
+      if (!path || path.length === 0) { return; }
+
+      this.$store.dispatch('globalView/SET_filePickerPopup', false);
+      this.loadNetwork(path[0]);
     },
     saveModel() {
       this.saveNetwork();
@@ -411,7 +433,7 @@ export default {
           label: 'File', visible: true,
           submenu: [
             {label: 'New',                                                                      enabled: this.openApp,  active: this.addNewNetwork },
-            {label: 'Load',                                                                     enabled: this.openApp,  active: this.openModel },
+            {label: 'Load',                                                                     enabled: this.openApp,  active: this.openLoadModelPopup },
             {label: 'Save',                                                                     enabled: this.openApp,  active: this.saveModel },
             {type: 'separator'},
             {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
