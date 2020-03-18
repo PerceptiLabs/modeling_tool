@@ -80,6 +80,20 @@ class getFolderContent(LW_interface_base):
                 "files" :  [],
             }
 
+class getJsonModel(LW_interface_base):
+    def __init__(self, json_path):
+        self._json_path = json_path
+    
+    def run(self):
+        if not os.path.exists(self._json_path):
+            return ""
+        
+        import json
+        with open(self._json_path, 'r') as f:
+            json_model = json.load(f)
+        return json_model
+
+
 class getDataMeta(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
         self._id = id_

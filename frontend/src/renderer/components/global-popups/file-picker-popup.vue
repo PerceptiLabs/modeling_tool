@@ -36,11 +36,14 @@ export default {
       type: Function,
       default: () => {}
     },
+    popupTitle: {
+      type: String,
+      default: "Select a folder"
+    }
   },
   data() {
     return {
       moveable: '',
-      popupTitle: 'Export as',
       filePickerOptions: {
         showBackButton: false,
         showNumberSelectedFiles: false,
@@ -49,7 +52,7 @@ export default {
   },
   methods: {
     closePopup() {
-        this.$store.commit('globalView/HIDE_allGlobalPopups');
+      this.$store.commit('globalView/HIDE_allGlobalPopups');
     },
   },
   mounted() {

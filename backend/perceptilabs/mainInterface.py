@@ -22,7 +22,7 @@ from perceptilabs.core_new.networkCache import NetworkCache
 from perceptilabs.codehq import CodeHqNew as CodeHq
 
 #LW interface
-from perceptilabs.lwInterface import getFolderContent, getDataMeta, saveJsonModel, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getFolderContent, getDataMeta, getJsonModel, saveJsonModel, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
 
@@ -155,6 +155,10 @@ class Interface():
         elif action == "getFolderContent":
             current_path = value
             return getFolderContent(current_path=current_path).run()
+        
+        elif action == "getJsonModel":
+            json_path = value
+            return getJsonModel(json_path=json_path).run()
 
         elif action == "saveJsonModel":
             save_path = value["path"]
