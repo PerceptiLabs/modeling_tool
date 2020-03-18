@@ -413,7 +413,6 @@ export default {
             {label: 'New',                                                                      enabled: this.openApp,  active: this.addNewNetwork },
             {label: 'Load',                                                                     enabled: this.openApp,  active: this.openModel },
             {label: 'Save',                                                                     enabled: this.openApp,  active: this.saveModel },
-            {label: 'Save as...',                                                               enabled: this.openApp,  active: this.saveModelAs },
             {type: 'separator'},
             {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
           ]
