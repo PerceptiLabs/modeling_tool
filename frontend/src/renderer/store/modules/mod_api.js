@@ -1,6 +1,6 @@
 import {coreRequest, openWS}  from "@/core/apiWeb.js";
 //import coreRequest    from "@/core/apiCore.js";
-import { deepCopy, parseJWT }   from "@/core/helpers.js";
+import { deepCopy, parseJWT, stringifyNetworkObjects }   from "@/core/helpers.js";
 import { pathSlash }  from "@/core/constants.js";
 
 const {spawn} = require('child_process');
@@ -379,7 +379,24 @@ const actions = {
         console.error('SaveTrained answer', err);
       });
   },
-
+  API_saveJsonModel({rootGetters}, {name, path}) {
+    const networkJson = stringifyNetworkObjects(rootGetters['mod_workspace/GET_currentNetwork']);
+    const theData = {
+      reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
+      action: 'saveJsonModel',
+      value:  {
+        json: networkJson,
+        name, 
+        path
+      }
+    };
+    console.log('API_saveJsonModel', theData);
+    return coreRequest(theData)
+      .then((data)=> data)
+      .catch((err)=> {
+        console.error('saveJsonModel answer', err);
+      });
+  },
 
   //---------------
   //  ELEMENT SETTINGS
