@@ -1,6 +1,7 @@
 <template lang="pug">
   .policy-background
     .policy
+      img(src="../../../../static/img/perceptilabs-logo-icon.svg" alt="PerceptiLabs logo")
       button.btn.btn--dark-blue-rev.back(
         type="button"
         @click="backToRegister") Back
@@ -261,9 +262,11 @@
     justify-content: center;
     align-items: center;
   }
+  
   .policy {
-    height: 80%;
-    width: 40%;
+    position: relative;
+    height: 70%;
+    width: 30%;
     z-index: 2;
     text-align: left;
     border: 1px solid $login-blue;
@@ -272,9 +275,17 @@
     display: flex;
     flex-direction: column;
   }
+
+  img {
+    position: absolute;
+    left: 50%;
+    transform: translate(-50%, -150%);
+  }
+
   .policy_main {
+    position: relative;
     overflow: hidden;
-    padding: 1rem 0 5rem;
+    padding: 5rem 0 5rem;
     display: flex;
   }
   .policy_main-article {
@@ -284,8 +295,8 @@
   }
   .btn--dark-blue-rev.back {
     font-size: 1em;
-    // position: absolute;
-    position: relative;
+    position: absolute;
+    // position: relative;
     // top: 0;
     left: 50%;
     // display: inline-block;
