@@ -110,7 +110,9 @@ export default {
         name: this.settings.projectName,
         path: this.settings.projectPath
       };
-      this.$store.dispatch('mod_api/API_saveJsonModel', payload);
+      this.$store.dispatch('mod_api/API_saveJsonModel', payload)
+        .then(result => this.promiseOk(this.settings))
+        .catch(error => this.promiseFail(false));
     },
     // loadPathProject() {
     //   // doesn't do anything on the web version
