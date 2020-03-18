@@ -17,6 +17,10 @@ from perceptilabs.core_new.compability.policies import policy_classification
 log = logging.getLogger(__name__)
 
 
+PROCESS_COMMANDS_DELAY = 0.3
+PROCESS_RESULTS_DELAY = 0.1
+
+
 class CompabilityCore:
     def __init__(self, command_queue, result_queue, graph_builder, deployment_pipe, graph_spec, threaded=False, error_queue=None):
         self._command_queue = command_queue
@@ -39,15 +43,32 @@ class CompabilityCore:
         
     def run(self):
         self._running = True
+        
         def do_process_commands(counter, core): 
-            command_list = []
+            commands = {}
+            count = {}
+            
             while not self._command_queue.empty():
                 command = self._command_queue.get()
-                command_list.append(command)
-                log.info("Command: " + str(command))
+
+                if command.type not in count:
+                    count[command.type] = 0
+                count[command.type] += 1
+
+                if command.allow_override:
+                    id_ = f'{command.type}-0'
+                else:
+                    id_ = f'{command.type}-{count[command.type]}'
+                commands[id_] = command
+
+            for command_id, command in commands.items():
+                if command.allow_override and count[command.type] > 1:
+                    log.info(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: log.debug instead
+                else:
+                    log.info(f'Processing command {command_id}: {command}.') # TODO: log.debug instead
                 self._send_command(core, command)
             
-        def do_process_result(counter, core):
+        def do_process_results(counter, core):
             graphs = core.graphs
 
             if len(graphs) > 0:
@@ -60,16 +81,16 @@ class CompabilityCore:
         self._core = core
         
         if self._threaded:
-            def worker(func):
+            def worker(func, delay):
                 counter = 0
                 while self._running:
                     func(counter, core)
                     counter += 1
-                    time.sleep(0.1)
+                    time.sleep(delay)
                 func(counter, core)    #One extra for good measure
 
-            threading.Thread(target=worker, args=(do_process_commands,), daemon=True).start()    
-            threading.Thread(target=worker, args=(do_process_result,), daemon=True).start()                  
+            threading.Thread(target=worker, args=(do_process_commands, PROCESS_COMMANDS_DELAY), daemon=True).start()    
+            threading.Thread(target=worker, args=(do_process_results, PROCESS_RESULTS_DELAY), daemon=True).start()                  
             self._run_core(core, self._graph_spec)
         else:
             self._run_core(core, self._graph_spec, on_iterate=[do_process_commands, do_process_result])            
@@ -82,16 +103,18 @@ class CompabilityCore:
             raise     
 
     def _send_command(self, core, command):
-        if command == 'pause':
+        if command.type == 'pause' and command.parameters['paused']:
             core.pause()
-        elif command == 'unpause':
+        elif command.type == 'pause' and not command.parameters['paused']:            
             core.unpause()
-        elif command == 'stop':
+        elif command.type == 'stop':
             core.stop()
-        elif command == 'headlessOn':
+        elif command.type == 'headless' and command.parameters['on']:
             core.headlessOn()
-        elif command == 'headlessOff':
+        elif command.type == 'headless' and not command.parameters['on']:            
             core.headlessOff()
+        elif command.type == 'export':
+            core.export(command.parameters['path'], command.parameters['mode'])            
             
     def _get_results_dict(self, graphs):
         self._print_graph_debug_info(graphs)

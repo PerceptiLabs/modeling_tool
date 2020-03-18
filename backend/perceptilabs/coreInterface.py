@@ -12,6 +12,7 @@ import pprint
 import logging
 import skimage
 import GPUtil
+import collections
 
 from perceptilabs.networkExporter import exportNetwork
 from perceptilabs.networkSaver import saveNetwork
@@ -31,6 +32,10 @@ from perceptilabs.license_checker import LicenseV2
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()
+
+
+CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allow_override'])
+
 
 class coreLogic():
     def __init__(self,networkName, core_mode='v1'):
@@ -288,27 +293,73 @@ class coreLogic():
         return {"content":"core started"}
 
     def Pause(self):
-        self.commandQ.put('pause')
+        if self._core_mode == 'v1':
+            self.commandQ.put('pause')
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='pause',
+                    parameters={'paused': True},
+                    allow_override=True
+                )
+            )
+            
         self.paused=True
         return {"content": "Paused"}
         
     def Unpause(self):
-        self.commandQ.put('unpause')
+        if self._core_mode == 'v1':
+            self.commandQ.put('unpause')
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='pause',
+                    parameters={'paused': False},
+                    allow_override=True
+                )
+            )
         self.paused=False
         return {"content":"Unpaused"}
 
     def headless(self, On):
-        if On:
-            self.commandQ.put("headlessOn")
-        else:
-            self.commandQ.put("headlessOff")
+        if self._core_mode == 'v1':
+            if On:
+                self.commandQ.put("headlessOn")
+            else:
+                self.commandQ.put("headlessOff")                
+        else:        
+            self.commandQ.put(
+                CoreCommand(
+                    type='headless',
+                    parameters={'on': On},
+                    allow_override=True
+                )
+            )
 
     def headlessOn(self):
-        self.commandQ.put("headlessOn")
+        if self._core_mode == 'v1':
+            self.commandQ.put("headlessOn")
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='headless',
+                    parameters={'on': True},
+                    allow_override=True
+                )
+        )        
 
     def headlessOff(self):
-        self.commandQ.put("headlessOff")
-
+        if self._core_mode == 'v1':
+            self.commandQ.put("headlessOff")
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='headless',
+                    parameters={'on': False},
+                    allow_override=True
+                )
+            )        
+        
     def Close(self):
         if self.cThread and self.cThread.isAlive():
             self.cThread.kill()
@@ -316,7 +367,18 @@ class coreLogic():
 
     def Stop(self):
         self.status="Stop"
-        self.commandQ.put("stop")
+
+        if self._core_mode == 'v1':
+            self.commandQ.put('stop')
+        else:
+            self.commandQ.put(
+                CoreCommand(
+                    type='stop',
+                    parameters=None,
+                    allow_override=False
+                )
+            )
+            
         return {"content":"Stopping"}
 
     def checkCore(self):
@@ -349,8 +411,14 @@ class coreLogic():
         mode = 'TFModel+checkpoint' # Default mode. # TODO: perhaps all export modes should be exposed to frontend?
         if value["Compressed"]:
             mode = 'TFLite+checkpoint'         
-            
-        self.core.core_v2.export(path, mode) 
+
+        self.commandQ.put(
+            CoreCommand(
+                type='export',
+                parameters={'path': path, 'mode': mode},
+                allow_override=False
+            )
+        )
         return {"content": f"Exporting model to path {path}"}
         
     def exportNetworkV1(self,value):        
@@ -433,6 +501,7 @@ class coreLogic():
 
     def skipValidation(self):
         self.commandQ.put("skip")
+        log.warning('skipValidation called... incompatible with core v2')
         #Check if validation was skipped or not before returning message
         return {"content":"skipped validation"}
 

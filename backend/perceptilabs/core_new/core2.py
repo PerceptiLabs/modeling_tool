@@ -37,7 +37,7 @@ class Core:
         self._is_running.clear()
         self._client = None
         
-    def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: Callable=None):
+    def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None):
         on_iterate = on_iterate or []
         try:
             self._run_internal(graph_spec, session_id, on_iterate)
@@ -48,7 +48,7 @@ class Core:
             log.info(f"Stopping core with session id {session_id}")
             self.stop()                
         
-    def _run_internal(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: Callable=None):        
+    def _run_internal(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None):        
         session_id = session_id or uuid.uuid4().hex
         log.info(f"Running core with session id {session_id}")
 
