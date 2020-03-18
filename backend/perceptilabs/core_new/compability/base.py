@@ -63,9 +63,9 @@ class CompabilityCore:
 
             for command_id, command in commands.items():
                 if command.allow_override and count[command.type] > 1:
-                    log.info(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: log.debug instead
+                    log.debug(f'Processing command {command_id}: {command}. Overriding {count[command.type]-1} previous commands of the same type.') # TODO: log.debug instead
                 else:
-                    log.info(f'Processing command {command_id}: {command}.') # TODO: log.debug instead
+                    log.debug(f'Processing command {command_id}: {command}.') # TODO: log.debug instead
                 self._send_command(core, command)
             
         def do_process_results(counter, core):
