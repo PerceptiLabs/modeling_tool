@@ -233,7 +233,7 @@
     right: 0;
     bottom: 0;
     left: 0;
-    background: #161719;
+    background: #272C37;
 
     display: flex;
     justify-content: center;
