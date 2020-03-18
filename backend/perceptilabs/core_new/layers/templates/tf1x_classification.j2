@@ -244,7 +244,7 @@
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
-            
+            log.info(f"Running in headless: {self._headless}")
             log.info(
                 f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
                 f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
@@ -689,7 +689,6 @@
                         self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
                     pass
-
                 log.info(
                     f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
                     f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
@@ -824,6 +823,8 @@ class {{layer_name}}(ClassificationLayer):
     def on_headless_activate(self) -> None:
         """"Called when the statistics shown in statistics window are not needed.
         Purose is to speed up the iteration speed significantly."""
+        import time
+        log.info(f"Set to headless_on at time {time.time()}")
         self._headless = True
 
         self._layer_outputs = {} 
@@ -834,6 +835,8 @@ class {{layer_name}}(ClassificationLayer):
     def on_headless_deactivate(self) -> None:
         """"Called when the statistics shown in statistics window are needed.
         May slow down the iteration speed of the training."""
+        import time
+        log.info(f"Set to headless_off at time {time.time()}")
         self._headless = False
 
     @property

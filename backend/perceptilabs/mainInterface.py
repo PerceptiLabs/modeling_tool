@@ -289,6 +289,8 @@ class Interface():
 
         elif action == "headless":
             On=value    #bool value
+            import time
+            log.info(f"Headless turned: {On} at time {time.time()}")
             response = self._core.headless(On)
             return response
 

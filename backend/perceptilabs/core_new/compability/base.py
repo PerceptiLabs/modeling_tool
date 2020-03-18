@@ -39,13 +39,17 @@ class CompabilityCore:
         
     def run(self):
         self._running = True
-        def do_process(counter, core):
+        def do_process_commands(counter, core): 
+            command_list = []
             while not self._command_queue.empty():
                 command = self._command_queue.get()
+                command_list.append(command)
+                log.info("Command: " + str(command))
                 self._send_command(core, command)
-
-            graphs = core.graphs
             
+        def do_process_result(counter, core):
+            graphs = core.graphs
+
             if len(graphs) > 0:
                 log.debug(f"Processing {len(graphs)} graph snapshots")
                 results = self._get_results_dict(graphs)
@@ -56,18 +60,19 @@ class CompabilityCore:
         self._core = core
         
         if self._threaded:
-            def worker():
+            def worker(func):
                 counter = 0
                 while self._running:
-                    do_process(counter, core)
+                    func(counter, core)
                     counter += 1
-                    time.sleep(1.0)
-                do_process(counter, core)    #One extra for good measure
+                    time.sleep(0.1)
+                func(counter, core)    #One extra for good measure
 
-            threading.Thread(target=worker, daemon=True).start()                    
+            threading.Thread(target=worker, args=(do_process_commands,), daemon=True).start()    
+            threading.Thread(target=worker, args=(do_process_result,), daemon=True).start()                  
             self._run_core(core, self._graph_spec)
         else:
-            self._run_core(core, self._graph_spec, on_iterate=do_process)            
+            self._run_core(core, self._graph_spec, on_iterate=[do_process_commands, do_process_result])            
 
     def _run_core(self, core, graph_spec, on_iterate=None):
         try:

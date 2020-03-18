@@ -38,6 +38,7 @@ class Core:
         self._client = None
         
     def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: Callable=None):
+        on_iterate = on_iterate or []
         try:
             self._run_internal(graph_spec, session_id, on_iterate)
         except Exception as e:
@@ -94,9 +95,9 @@ class Core:
 
             with self._lock:
                 self._graphs.extend(new_graphs)
-
-            if on_iterate is not None:
-                on_iterate(counter, self)
+ 
+            for f in on_iterate:
+                f(counter, self)
 
             t1 = time.perf_counter()
 
