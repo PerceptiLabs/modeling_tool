@@ -18,7 +18,7 @@
             input.ellipsis(type="text"
               v-model="settings.projectPath"
               :class="{'bg-error': !settings.projectPath}"
-              @click="loadPathProject"
+              @click="openFilePicker"
             )
       .settings-layer_section
         .form_row
@@ -101,20 +101,39 @@ export default {
       this.promiseFail(false)
     },
     answerPopup() {
-      if(!this.popupSettings.isFreezeInfo) {
-        this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
-      }
-      this.promiseOk(this.settings);
-    },
-    loadPathProject() {
-      if(this.settings.projectPath.length) return;
-      let opt = {
-        title:"The folder in which the project will be saved",
-        properties: ['openDirectory'],
+      // if(!this.popupSettings.isFreezeInfo) {
+      //   this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
+      // }
+      // this.promiseOk(this.settings);
+
+      const payload = {
+        name: this.settings.projectName,
+        path: this.settings.projectPath
       };
-      openLoadDialog(opt)
-        .then((pathArr)=> { this.settings.projectPath = pathArr[0] })
-        .catch(()=> {})
+      this.$store.dispatch('mod_api/API_saveJsonModel', payload);
+    },
+    // loadPathProject() {
+    //   // doesn't do anything on the web version
+    //   if(this.settings.projectPath.length) return;
+    //   let opt = {
+    //     title:"The folder in which the project will be saved",
+    //     properties: ['openDirectory'],
+    //   };
+    //   openLoadDialog(opt)
+    //     .then((pathArr)=> { this.settings.projectPath = pathArr[0] })
+    //     .catch(()=> {})
+    // },
+    setPath(path) {
+      this.$store.dispatch('globalView/SET_filePickerPopup', false);
+      if (path && path.length > 0) { 
+        this.settings.projectPath = path[0];
+      } else {
+        this.settings.projectPath = '';
+      }
+    },
+    openFilePicker() {
+      // this.$store.dispatch('globalView/SET_filePickerPopup', {title: 'Save', callback: 'this.setPath'});
+      this.$store.dispatch('globalView/SET_filePickerPopup', this.setPath);
     },
   }
 }
