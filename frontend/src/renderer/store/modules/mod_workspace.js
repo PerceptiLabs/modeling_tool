@@ -22,8 +22,7 @@ const state = {
     cursorInsideWorkspace: true
   },
   showStartTrainingSpinner: false,
-  isOpenElement: false,
-  clipboardNetwork: 0
+  isOpenElement: false
 };
 
 const getters = {
@@ -39,11 +38,6 @@ const getters = {
     return getters.GET_networkIsNotEmpty
       ? state.workspaceContent[state.currentNetwork].networkID
       : 0
-  },
-  GET_clipboardNetworkElementList(state, getters) {
-    return getters.GET_networkIsNotEmpty
-    ? state.workspaceContent[state.clipboardNetwork].networkElementList
-    : null
   },
   GET_currentNetworkElementList(state, getters) {
     return getters.GET_networkIsNotEmpty
@@ -128,9 +122,6 @@ const mutations = {
   RESTORE_network(state, val) {
     state.workspaceContent = val.workspaceContent;
     state.currentNetwork = val.currentNetwork;
-  },
-  set_clipboardNetwork(state, val) {
-    state.clipboardNetwork = val;
   },
   //---------------
   //  LOCALSTORAGE

@@ -149,9 +149,6 @@ const actions = {
     console.log("cut-board");
   },
   EVENT_hotKeyCopy({rootState, rootGetters, dispatch, commit}) {
-    const currentNetwork = rootState.mod_workspace.currentNetwork;
-
-    commit('mod_workspace/set_clipboardNetwork', currentNetwork, {root: true});
     commit('mod_workspace/CLEAR_CopyElementsPosition', null, {root: true});
     if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
@@ -199,6 +196,8 @@ const actions = {
         arrBuf.push(newEl)
       }
       });
+      const currentNetworkElementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
+      dispatch('mod_buffer/SET_clipBoardNetworkList', currentNetworkElementList, {root: true});
       dispatch('mod_buffer/SET_buffer', arrBuf, {root: true});
       const workSpace = document.querySelector('.workspace_content');
       workSpace.addEventListener('mousemove',  startCursorListener);
@@ -222,16 +221,16 @@ const actions = {
   },
   EVENT_hotKeyPaste({rootState, rootGetters, dispatch, commit}) {
     let buffer = rootState.mod_buffer.buffer;
-    
     dispatch('mod_workspace/SET_elementUnselect', null, {root: true});
+
     if(rootGetters['mod_workspace/GET_enableHotKeyElement'] && buffer) {
       buffer.forEach((el) => {
         dispatch('mod_workspace/ADD_element', el, {root: true});
       });
-
-      const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
-      const clipBoardNetWorkList = rootGetters['mod_workspace/GET_clipboardNetworkElementList'];
   
+      const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
+      const clipBoardNetWorkList = rootState.mod_buffer.clipBoardNetworkList;
+
       for(let elementId in netWorkList) {
         const layerId = netWorkList[elementId].layerId;
         const sourceId = netWorkList[elementId].copyId;
