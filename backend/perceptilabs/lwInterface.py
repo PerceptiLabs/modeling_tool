@@ -35,7 +35,8 @@ class saveJsonModel(LW_interface_base):
         if not os.path.isdir(full_path):
             os.mkdir(full_path)
 
-        with open(full_path, 'w') as outfile:
+        file_path = os.path.join(full_path, 'model.json')
+        with open(file_path, 'w') as outfile:
             json.dump(self._json_model, outfile)
 
 
