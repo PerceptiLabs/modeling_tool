@@ -226,7 +226,29 @@
 </script>
 
 <style scoped lang="scss">
+
   @import '../../scss/base';
+
+  ::-webkit-scrollbar {
+    background: #161719;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 3px;
+    background-color: rgba(#989FB0, .5);
+    box-shadow: 0 0 6px rgba(#000, .3);
+    &:hover {
+      background-color: rgba(#989FB0, 1);
+    }
+    &:window-inactive {
+      background-color: rgba(#989FB0, .2);
+    }
+  }
+
   .policy-background {
     position: absolute;
     top: 0;
@@ -241,7 +263,7 @@
   }
   .policy {
     height: 80%;
-    width: 60%;
+    width: 40%;
     z-index: 2;
     text-align: left;
     border: 1px solid $login-blue;
