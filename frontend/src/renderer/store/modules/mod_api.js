@@ -390,7 +390,7 @@ const actions = {
         path
       }
     };
-    console.log('API_saveJsonModel', theData);
+    
     return coreRequest(theData)
       .then((data)=> data)
       .catch((err)=> {

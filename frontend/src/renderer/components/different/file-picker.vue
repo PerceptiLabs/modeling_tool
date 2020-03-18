@@ -229,7 +229,6 @@ export default {
           } else {
             emitPayload = this.selectedDirectories.map(d => this.osPathPrefix + this.currentPath.join('/') + '/' + d + this.osPathSuffix);
           }
-          console.log('onConfirm emitPayload', emitPayload);
         }
 
         this.confirmCallback(emitPayload);
