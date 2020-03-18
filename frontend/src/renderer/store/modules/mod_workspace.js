@@ -221,7 +221,7 @@ const mutations = {
       networkName: 'New_Model',
       networkID: '',
       networkMeta: {},
-      networkElementList: null,
+      networkElementList: [],
       networkRootFolder: ''
     };
     const defaultMeta = {
@@ -264,7 +264,7 @@ const mutations = {
       return (indexId < 0) ? false : true
     }
     function createPositionElements(list) {
-      if(!list || Object.values(list)[0].layerMeta.position.top !== null) {
+      if(!list || list.length === 0 || Object.values(list)[0].layerMeta.position.top !== null) {
         return;
       }
       else {
