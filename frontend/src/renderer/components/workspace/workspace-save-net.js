@@ -49,13 +49,11 @@ const workspaceSaveNet = {
       this.saveNetworkPopup = {...this.saveNetworkPopupDefault}
     },
     eventSaveNetwork() {
-      // console.log('eventSaveNetwork');
       // const projectsList = this.getLocalUserInfo.projectsList;
       const network = this.currentNetwork;
       this.eventSaveNetworkAs(network.networkID)
       // this.checkTrainedNetwork()
       //   .then((isTrained)=> {
-      //     console.log('eventSaveNetwork 0');
 
       //     if(!projectsList.length || findIndexId(projectsList, network) < 0) {
       //       console.log('eventSaveNetwork 1');
@@ -64,13 +62,11 @@ const workspaceSaveNet = {
       //       return
       //     }
       //   if(isTrained) {
-      //     console.log('eventSaveNetwork 2');
 
       //     this.saveNetworkPopup.isFreezeInfo = true;
       //     this.eventSaveNetworkAs(network.networkID)
       //   }
       //   else {
-      //     console.log('eventSaveNetwork 3');  
 
       //     const settings = {
       //       isSaveTrainedModel: false,
@@ -109,17 +105,14 @@ const workspaceSaveNet = {
       const currentNet = this.currentNetwork;
       const newProjectId = netId || generateID();
       const pathSaveProject = netInfo.projectPath;
-      // console.log('currentNet', currentNet);
 
       let prepareNet = cloneNet(currentNet, newProjectId, netInfo);
-      // console.log('prepareNet', prepareNet);
       /*check Is Trained Net + do ScreenShot*/
       doScreenShot(networkField)
         .then((img)=> {
           prepareNet.toLocal.image = img;
           if(netInfo.isSaveTrainedModel) {
             /*core save*/
-            // console.log('saveNetwork doScreenShot 1');
 
             prepareNet.toLocal.isTrained = true;
             return this.saveTrainedNetwork({
@@ -128,8 +121,6 @@ const workspaceSaveNet = {
             })
           }
           else {
-            // console.log('saveNetwork doScreenShot 2');
-
             // /*app save*/
             // return projectPCSave(prepareNet.toFile)
 
@@ -144,7 +135,6 @@ const workspaceSaveNet = {
         })
         .then(()=> {
           /*save project to project page*/
-          // console.log('saveNetwork doScreenShot 3');
 
           // saveProjectToLocalStore(prepareNet.toLocal, this);
           // if(saveProjectPath) this.set_networkRootFolder(pathSaveProject);
