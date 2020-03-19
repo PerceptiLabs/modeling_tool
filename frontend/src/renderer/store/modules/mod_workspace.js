@@ -54,6 +54,7 @@ const getters = {
     if(getters.GET_networkIsNotEmpty) {
       let elList = getters.GET_currentNetworkElementList;
       for(var el in elList) {
+        if (elList[el].componentName === 'LayerContainer' && elList[el].layerNone) continue;
         if (elList[el].layerMeta.isSelected) selectedIndex.push(elList[el]);
       }
     }
