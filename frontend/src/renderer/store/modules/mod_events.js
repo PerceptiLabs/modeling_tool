@@ -261,15 +261,18 @@ const actions = {
       buffer.forEach((el) => {
         dispatch('mod_workspace/ADD_element', el, {root: true});
       });
-  
       const netWorkList = rootGetters['mod_workspace/GET_currentNetwork'].networkElementList;
       const clipBoardNetWorkList = rootState.mod_buffer.clipBoardNetworkList;
 
       for(let elementId in netWorkList) {
         const layerId = netWorkList[elementId].layerId;
         const sourceId = netWorkList[elementId].copyId;
+        const isContainerElement = netWorkList[elementId].copyContainerElement;
 
         if (sourceId && clipBoardNetWorkList[sourceId]) {
+          if(isContainerElement) {
+            dispatch('mod_workspace/SET_elementMultiSelect', {id: netWorkList[elementId].layerId, setValue: true}, {root: true});
+          }
           clipBoardNetWorkList[sourceId].connectionOut.forEach(id => {
             for(let property in netWorkList) {
               if(Number(netWorkList[property].copyId) === Number(id)) {
