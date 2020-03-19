@@ -269,23 +269,8 @@ const actions = {
       const currentNetworkElementList = rootGetters['mod_workspace/GET_currentNetworkElementList'];
       dispatch('mod_buffer/SET_clipBoardNetworkList', currentNetworkElementList, {root: true});
       dispatch('mod_buffer/SET_buffer', arrBuf, {root: true});
-      const workSpace = document.querySelector('.workspace_content');
-      workSpace.addEventListener('mousemove',  startCursorListener);
-
-      function startCursorListener (event) {
-        const borderline = 15;
-        commit('mod_workspace/SET_CopyCursorPosition', {x: event.offsetX, y: event.offsetY}, {root: true});
-        commit('mod_workspace/SET_cursorInsideWorkspace', true, {root: true});
-        if(event.offsetX <= borderline ||
-            event.offsetY <= borderline ||
-            event.offsetY >= event.target.clientHeight - borderline ||
-            event.offsetX >= event.target.clientWidth - borderline)
-        {
-          commit('mod_workspace/SET_cursorInsideWorkspace', false, {root: true});
-        }
-      }
       setTimeout(()=> {
-        workSpace.removeEventListener('mousemove',  startCursorListener);
+       
       }, 10000)
     }
   },
