@@ -1,6 +1,6 @@
 import { isDevelopMode } from '@/core/constants';
 
-const hubSpot = (function() {
+export const hubSpot = (function() {
     let publicMethods = {};
 
     const addTag = function(input) {
@@ -44,7 +44,7 @@ const hubSpot = (function() {
     return publicMethods;
 })();
 
-const googleAnalytics = (function() {
+export const googleAnalytics = (function() {
 
     let publicMethods = {};
 
@@ -55,7 +55,8 @@ const googleAnalytics = (function() {
 
     publicMethods.setup = function() {
         const gaId = process.env.GOOGLE_ANALYTICS_ID;
-        if (!gaId || isDevelopMode) { return; }
+        // if (!gaId || isDevelopMode) { return; }
+    
         
         addTag('js', new Date());
         addTag('config', gaId);
@@ -83,6 +84,12 @@ const googleAnalytics = (function() {
         console.log(window.dataLayer);
 
         addTag('set', {'user_id' : userId});
+    }
+
+    publicMethods.trackCustomEvent = function(eventName, eventParameters = {}) {
+        if (!eventName) { return; }
+
+        addTag('event', eventName, eventParameters);
     }
 
     return publicMethods;
