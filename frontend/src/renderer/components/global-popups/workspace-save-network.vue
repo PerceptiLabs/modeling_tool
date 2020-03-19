@@ -104,15 +104,7 @@ export default {
       // if(!this.popupSettings.isFreezeInfo) {
       //   this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
       // }
-      // this.promiseOk(this.settings);
-
-      const payload = {
-        name: this.settings.projectName,
-        path: this.settings.projectPath
-      };
-      this.$store.dispatch('mod_api/API_saveJsonModel', payload)
-        .then(result => this.promiseOk(this.settings))
-        .catch(error => this.promiseFail(false));
+      this.promiseOk(this.settings);
     },
     // loadPathProject() {
     //   // doesn't do anything on the web version
@@ -134,7 +126,6 @@ export default {
       }
     },
     openFilePicker() {
-      // this.$store.dispatch('globalView/SET_filePickerPopup', {title: 'Save', callback: 'this.setPath'});
       this.$store.dispatch('globalView/SET_filePickerPopup', this.setPath);
     },
   }
