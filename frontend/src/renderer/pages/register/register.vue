@@ -14,14 +14,14 @@
               input(type="text" placeholder="First Name"
                 v-model="user.firstName"
                 name="First Name"
-                v-validate="'alpha_spaces'"
+                v-validate="'required|alpha_spaces'"
                 )
               p.text-error(v-show="errors.has('First Name')") {{ errors.first('First Name') }}
             .form_holder
               input(type="text" placeholder="Last Name"
                 v-model="user.lastName"
                 name="Last Name"
-                v-validate="'alpha_spaces'"
+                v-validate="'required|alpha_spaces'"
                 )
               p.text-error(v-show="errors.has('Last Name')") {{ errors.first('Last Name') }}
           .form_holder
