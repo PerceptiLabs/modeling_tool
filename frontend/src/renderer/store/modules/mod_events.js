@@ -289,35 +289,6 @@ const actions = {
         }
         commit('mod_workspace/DELETE_copyProperty', layerId, {root: true});
       }
-
-//      copy all connections
-      // for(let key in netWorkList) {
-      //   const layerId = netWorkList[key].layerId;
-      //   const copyId = netWorkList[key].copyId;
-      //   const isContainerElement = netWorkList[key].copyContainerElement;
-      //   if(copyId && netWorkList[copyId]) {
-      //     if(isContainerElement) {
-      //       dispatch('mod_workspace/SET_elementMultiSelect', {id: netWorkList[key].layerId, setValue: true}, {root: true});
-      //     }
-      //     netWorkList[copyId].connectionOut.forEach(id => {
-      //       for(let property in netWorkList) {
-      //         if(Number(netWorkList[property].copyId) === Number(id)) {
-      //           commit('mod_workspace/SET_startArrowID', layerId, {root: true});
-      //           dispatch('mod_workspace/ADD_arrow', netWorkList[property].layerId, {root: true});
-      //         }
-      //       }
-      //     });
-      //     netWorkList[copyId].connectionIn.forEach(id => {
-      //       for(let property in netWorkList) {
-      //         if(Number(netWorkList[property].copyId) === Number(id)) {
-      //           commit('mod_workspace/SET_startArrowID', netWorkList[property].layerId, {root: true});
-      //           dispatch('mod_workspace/ADD_arrow', layerId, {root: true});
-      //         }
-      //       }
-      //     })
-      //   }
-      //   commit('mod_workspace/DELETE_copyProperty', layerId, {root: true});
-      // }
     }
     dispatch('mod_workspace/ADD_container', null, {root: true});
   },
