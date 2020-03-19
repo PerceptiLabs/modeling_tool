@@ -41,6 +41,7 @@
 </template>
 
 <script>
+  import { googleAnalytics } from '@/core/analytics';
   import { baseUrlSite }    from '@/core/constants.js'
   import { goToLink, encryptionData }       from '@/core/helpers.js'
 
@@ -82,6 +83,7 @@ export default {
       });
     },
     requestLoginUser() {
+      googleAnalytics.trackCustomEvent('login');
       this.$store.commit('mod_login/SET_showLoader', true);
       let dataParams = {
         "Email": this.userEmail,
