@@ -2,7 +2,7 @@
   div.button
     | Sort by
     ul.list
-      li.head
+      li.head(@click="$emit('onSelectHandler', 0)")
         span None
         img.is-selected(v-if="optionSelected === 0" src="../../../../../static/img/project-page/drop-down-active.svg")
       li(v-for="option in options" :key="option.name" @click="$emit('onSelectHandler', option.value)")
@@ -60,6 +60,7 @@
   .list {
     display: none;
     position: absolute;
+    z-index: 10;
     top: 28px;
     right: 0;
     min-width: 200px;

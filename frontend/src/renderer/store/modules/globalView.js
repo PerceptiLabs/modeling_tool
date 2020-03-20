@@ -23,15 +23,18 @@ const state = {
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
+  pageTitle: '',
 };
 const getters = {
   GET_appPath(state) {
     return state.appPath
   },
-
 };
 
 const mutations = {
+  setPageTitleMutation(state, value) {
+    state.pageTitle = value;
+  },
   set_onlineStatus (state, value) {
     state.onlineStatus = value
   },

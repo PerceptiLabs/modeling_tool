@@ -1,8 +1,5 @@
 <template lang="pug">
   div.wrapper
-    router-link.logo-link(
-      :to="{name: 'app'}")
-      img(src="../../../../static/img/project-page/logo.svg")
     router-link.nav-link(
       :to="{name: 'app'}")
       img(src="../../../../static/img/project-page/file.svg")
@@ -28,6 +25,7 @@
   .wrapper {
     position: fixed;
     left: 0;
+    padding-top: 20px;
     width: 40px;
     height: 100vh;
     background: #2E3340;

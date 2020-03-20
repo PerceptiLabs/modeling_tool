@@ -1,13 +1,14 @@
 <template lang="pug">
   header.app-header(
-    :class="{'d-none': isWeb}"
   )
     .app-header_logo
       a(@click="toProjectPage")
         //-img(src="./../../../../static/img/PerceptiLabs_Logo-web-white_beta-01.svg" alt="PerceptiLabs logo")
-        img(src="./../../../../static/img/perceptilabs-logo-header.svg" alt="PerceptiLabs logo")
+        img(src="./../../../../static/img/project-page/logo.svg" alt="PerceptiLabs logo")
     the-menu
-
+    
+    h4.page-title {{pageTitle}}
+    header-profile
     ul(v-if="!isWeb").app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
       button.btn.btn--app-full(type="button"
@@ -19,10 +20,12 @@
 <script>
   import TheMenu from '@/components/the-menu.vue'
   import {isWeb} from "@/core/helpers";
+  import HeaderProfile from "@/components/header/header-profile";
+
 
 export default {
   name: "HeaderWin",
-  components: {TheMenu},
+  components: {HeaderProfile, TheMenu},
   data: function() {
     return {
       isWeb: isWeb(),
@@ -31,6 +34,9 @@ export default {
   computed: {
     showRestoreIcon() {
       return this.$store.state.globalView.appIsFullView
+    },
+    pageTitle() {
+      return this.$store.state.globalView.pageTitle;
     }
   },
   methods: {
@@ -55,21 +61,30 @@ export default {
 <style lang="scss" scoped>
   @import "../../scss/base";
   .app-header {
+    position: relative;
     display: flex;
     align-items: center;
     height: $h-header-win;
-    background: #272727;
+    background: #363E50;
     font-family: sans-serif;
   }
   .d-none {
     display: none;
   }
   .app-header_logo {
-    margin: 0 12px;
+    margin: 0 12px 0 5px;
     cursor: pointer;
     a {
       display: block;
       -webkit-app-region: no-drag;
+    }
+  }
+  .page-title {
+    @include absolute-center();
+    color: #C4C4C4;
+    font-size: 16px;
+    span {
+      color: #fff;
     }
   }
 
