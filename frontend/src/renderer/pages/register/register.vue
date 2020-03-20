@@ -85,7 +85,10 @@
                 @click="toCommunicationsPolicy"
                 ) receive communications
             p.text-error(v-show="errors.has('communicationsConsent')") {{ errors.first('communicationsConsent') }}
-        
+      
+          .form_holder
+            .form_row
+              span.gdpr-text By clicking Sign up below, you consent to allow PerceptiLabs to store and process the personal information submitted above to provide you the content requested.
           .form_holder
             .form_row
               span
@@ -252,6 +255,11 @@ export default {
       color: white;
     }
   }
+
+  .gdpr-text {
+    font-size: 1rem;
+  }
+
   .sign-up-btn {
     width: 100%;
     height: 35px;

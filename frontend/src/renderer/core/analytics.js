@@ -67,7 +67,7 @@ const hubSpot = (function() {
           "legalConsentOptions": {
             "consent": {
               "consentToProcess": true,
-              "text": "By clicking submit below, you consent to allow PerceptiLabs to store and process the personal information submitted above to provide you the content requested.",
+              "text": "By clicking Sign up below, you consent to allow PerceptiLabs to store and process the personal information submitted above to provide you the content requested.",
               "communications": [
                 {
                   "value": communicationsConsent,
