@@ -1,0 +1,28 @@
+{% macro layer_dataenv(layer_name, environment_name, history_length) %}
+class {{layer_name}}(DataLayer):
+    """Class responsible for running the gym environment."""    
+    def __init__(self):
+        self._variables = {}
+        self._env_name = '{{environment_name}}'
+        self._hist_len = {{history_length}}
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Returns any variables that the layer should make available and that can be pickled."""
+        return self._variables
+
+    @property
+    def sample(self) -> np.ndarray:
+        """Returns a single data sample"""                    
+        sample = next(self.make_generator_training())
+        return sample
+
+    def generate_data(self) -> tf.tensor:
+        env = gym.make(self._env_name)
+        sample = env.reset()
+        _action_space = env.action_space.n
+        history_length = self._hist_len
+        state_tensor = tf.placeholder(tf.float32, shape=(None, ) + sample.shape[:-1] + (sample.shape[-1]*history_length, ), name='state_tensor')
+        return state_tensor
+{% endmacro %}

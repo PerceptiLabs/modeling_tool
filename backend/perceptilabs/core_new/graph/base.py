@@ -65,6 +65,12 @@ class Graph:
         bfs_tree = list(nx.bfs_tree(self._nx_graph, self._end_node, reverse=True))
         self._ordered_nodes = tuple(reversed(bfs_tree))
 
+    def _get_nodes_inbetween(self, source, target):
+        paths_between_generator = nx.all_simple_paths(self._nx_graph, source, target)
+        nodes_between_list = [node for path in paths_between_generator for node in path]
+        return nodes_between_list[1:-1]
+
+
     def _find_subgraphs(self, nx_graph, start_node, searched):
         searched.add(start_node)
         nodes = list(nx.bfs_tree(nx_graph, start_node, reverse=True))

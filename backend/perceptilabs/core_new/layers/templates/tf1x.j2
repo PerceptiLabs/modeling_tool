@@ -1,3 +1,51 @@
+{% macro layer_tf1x_switch(layer_name, selected_layer) %}
+class {{layer_name}}(Tf1xLayer):
+    def __init__(self):
+        self._selected_layer_id = '{{selected_layer}}'
+    def __call__(self, x):
+        """ Takes the outputs of all the incoming layers as input and returns the output of that layer."""
+        y = x[self._selected_layer_id]
+        return y
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+
+        return self._variables.copy()
+
+    @property
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        return {}
+
+    @property
+    def weights(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}
+
+    @property
+    def biases(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}        
+{% endmacro %}
+
+
+
 {% macro layer_tf1x_grayscale(layer_name) %}
 class {{layer_name}}(Tf1xLayer):
     def __call__(self, x: tf.Tensor) -> tf.Tensor:
@@ -62,7 +110,7 @@ class {{layer_name}}(Tf1xLayer):
         self._merge_dim = {{merge_dim}}
         self._merget_order = {{merge_order}}
 
-    def __call__(self, x: tf.Tensor) -> tf.Tensor:
+    def __call__(self, x) -> tf.Tensor:
         """ Takes two tensors as input and merges them accordingly. """
         {% filter remove_lspaces(8) %}
             {% if type_ == 'Concat' %}
@@ -82,7 +130,7 @@ class {{layer_name}}(Tf1xLayer):
             {% elif type_ == 'Sub' %}
                 for i in range(0, len(list(x.values())), 2):
                     if not y:
-                        y = list(X.values())[i]
+                        y = list(x.values())[i]
                     y = tf.subtract(list(x.values())[i], y)
                        
             {% elif type_ == 'Multi' %}

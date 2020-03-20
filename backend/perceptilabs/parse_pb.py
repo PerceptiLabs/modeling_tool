@@ -269,7 +269,7 @@ def getLayerType(componentName):
       return "Container"
    elif componentName in ["DataData","DataEnvironment"]:
       return "Data"
-   elif componentName in ["TrainNormal","TrainReinforce"]:
+   elif componentName in ["TrainNormal","TrainReinforce","TrainGAN"]:
       return "Train"
    else:
       return "Other"

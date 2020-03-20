@@ -59,6 +59,15 @@ DEFINITION_TABLE = {
         }
     ),
 
+    'Switch': LayerDef(
+        Tf1xLayer,
+        'tf1x.j2',
+        'layer_tf1x_switch',        
+        {
+            'selected_layer': lambda specs: specs['Properties']['layer_name'],
+            
+        }
+    ),
 
     'ProcessReshape': LayerDef(
         Tf1xLayer,
