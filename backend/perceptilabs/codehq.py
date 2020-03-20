@@ -235,7 +235,50 @@ class CodeHqNew:
                                                    beta1=props['Beta_1'],
                                                    beta2=props['Beta_2'])
             return code_gen
+        elif type_ == 'TrainGan':
+            if 'Labels' in props:
+                switch_layer_id = props['switch_layer']
+                real_data_layer_id = props['real_data_layer']
+                # discriminator_layer = [x[1] for x in content['Info']['backward_connections'] if x[0] == discriminator_layer_id][0]
+            else:    
+                target_layer = "'Target layer here'"
 
+            if len(content['Con']) > 2:
+                log.warning("More than 2 input layers not supported to training layer! Will treat {} as network output layer.".format(output_layer))
+
+            code_gen = TrainGANCodeGenerator(switch_layer_id=switch_layer,
+                                                real_data_layer_id=real_data_layer,
+                                                n_epochs=props['Epochs'],
+                                                class_weights = props['Class_weights'],
+                                                optimizer=props['Optimizer'],
+                                                learning_rate=props['Learning_rate'],
+                                                decay_steps=props['Decay_steps'],   #TODO: Send from frontend instead
+                                                decay_rate=props['Decay_rate'],
+                                                momentum=props['Momentum'], 
+                                                beta1=props['Beta_1'],
+                                                beta2=props['Beta_2'])
+            return code_gen
+
+        elif type_ == 'GanLoss':
+            if 'Labels' in props:
+                discriminator_layer = props['Labels']
+            else:    
+                target_layer = "'Target layer here'"
+
+
+            code_gen = GanLossCodeGenerator(discriminator_layer_id=discriminator_layer,
+                                              class_weights=props['Class_weights'])
+            return code_gen
+
+        elif type_ == 'GanOptimizer':
+            code_gen = GanOptimizerCodeGenerator(optimizer=props['Optimizer'],
+                                                   learning_rate=props['learning_rate'] if 'learning_rate' in props else 0.001,
+                                                   decay_steps=props['decay_steps'] if 'decay_steps' in props else 10000,
+                                                   decay_rate=props['decay_rate'] if 'decay_rate' in props else 0.96,
+                                                   momentum=props['Momentum'],
+                                                   beta1=props['Beta_1'],
+                                                   beta2=props['Beta_2'])
+            return code_gen
         elif type_ == 'TrainGenetic':
             raise NotImplementedError("Train genetic algorithm not implemented")
         elif type_ == 'TrainDynamic':

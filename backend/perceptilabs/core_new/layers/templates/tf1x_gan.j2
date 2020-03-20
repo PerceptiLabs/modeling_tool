@@ -30,6 +30,12 @@ class {{layer_name}}(GANLayer):
         self._dis_layer_biases = {}        
         self._dis_layer_gradients = {}
 
+
+        self._layer_outputs = {}
+        self._layer_weights = {}
+        self._layer_biases = {}        
+        self._layer_gradients = {}
+
         self._training_iteration = 0
         self._validation_iteration = 0
         self._testing_iteration = 0
@@ -163,6 +169,7 @@ class {{layer_name}}(GANLayer):
 
         dis_real_loss=loss_func(real_tensor,tf.ones_like(real_tensor)*0.9) #Smoothing for generalization
         dis_fake_loss=loss_func(fake_tensor,tf.zeros_like(real_tensor))
+        
         dis_loss=dis_real_loss+dis_fake_loss
         gen_loss= loss_func(fake_tensor,tf.ones_like(fake_tensor))
 
@@ -215,11 +222,23 @@ class {{layer_name}}(GANLayer):
                         grad_tensor = tf.constant(0)
                     gradients[name] = grad_tensor
                 dis_layer_gradient_tensors[node.layer_id] = gradients
-                self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
+                self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize       
 
-        trainable_vars = tf.trainable_variables()
-        grads = tf.gradients(loss_tensor, trainable_vars)
-        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
+        for node in graph.inner_nodes:
+            if node not in discriminator_nodes and not in generator_nodes:
+                self._layer_weights[node.layer_id] = node.layer.weights
+                self._layer_biases[node.layer_id] = node.layer.biases            
+            
+                if len(node.layer.trainable_variables) > 0:
+                    gradients = {}
+                    for name, tensor in node.layer.trainable_variables.items():
+                        grad_tensor = tf.gradients(loss_tensor, tensor)
+                        if any(x is None for x in grad_tensor):
+                            grad_tensor = tf.constant(0)
+                        gradients[name] = grad_tensor
+                    layer_gradient_tensors[node.layer_id] = gradients
+                    self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()}
+                
 
         dis_vars=[var for var in tvars if var.name in discriminator_layer_id for discriminator_layer_id in discriminator_layer_ids ]
         dis_grads = tf.gradients(dis_loss, dis_vars)
@@ -240,33 +259,50 @@ class {{layer_name}}(GANLayer):
                 time.sleep(1.0)
 
         def train_step():
-            _, self._generator_loss_training, self._layer_outputs, self._layer_weights,
-             self._layer_biases, self._layer_gradients \
+            _, self._generator_loss_training, self._fake_outputs, self._gen_layer_weights,
+             self._gen_layer_biases, self._gen_layer_gradients \
                 = sess.run([
-                    update_weights, loss_tensor, accuracy_tensor,
-                    layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
+                    gen_update_weights, gen_loss, 
+                    fake_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
+                ])
+            _, self._discriminator_loss_training, self._real_outputs, self._dis_layer_weights,
+             self._dis_layer_biases, self._dis_layer_gradients \
+                = sess.run([
+                    dis_update_weights, dis_loss, 
+                    real_output_tensors, dis_layer_weight_tensors, dis_layer_bias_tensors, dis_layer_gradient_tensors
                 ])
             
         def validation_step():
-            self._loss_validation, self._accuracy_validation, \
-                self._layer_outputs, self._layer_weights, self._layer_biases, \
-                self._layer_gradients \
+            self._generator_loss_validation,  \
+                self._fake_outputs, self._gen_layer_weights, self._gen_layer_biases, \
+                self._gen_layer_gradients \
                 = sess.run([
-                    loss_tensor, accuracy_tensor,
-                    layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
+                    gen_loss, 
+                    fake_output_tensors, gen_layer_weight_tensors, gen_layer_bias_tensors, gen_layer_gradient_tensors
+                ])
+            self._discriminator_loss_validation,  \
+                self._real_outputs, self._dis_layer_weights, self._dis_layer_biases, \
+                self._dis_layer_gradients \
+                = sess.run([
+                    dis_loss, 
+                    real_output_tensors, dis_layer_weight_tensors, dis_layer_bias_tensors, dis_layer_gradient_tensors
                 ])
 
             
         def test_step():
-            self._loss_testing, self._accuracy_testing, \
-                self._layer_outputs, self._layer_weights, layer_gradients \
+            self._generator_loss_testing, \
+                self._fake_outputs, self._gen_layer_weights, gen_layer_gradients \
                 = sess.run([
-                    loss_tensor, accuracy_tensor,
-                    layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
+                    fake_loss,
+                    fake_output_tensors, gen_layer_weight_tensors, gen_layer_gradient_tensors
                 ])
-            #accuracy_list.append(acc)
-            #loss_list.append(loss)
-
+            self._discriminator_loss_testing, \
+                self._real_outputs, self._dis_layer_weights, dis_layer_gradients \
+                = sess.run([
+                    real_loss,
+                    real_output_tensors, dis_layer_weight_tensors, dis_layer_gradient_tensors
+                ])
+            
         self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
 
         log.info("Entering training loop")
@@ -302,15 +338,15 @@ class {{layer_name}}(GANLayer):
 
             log.info(
                 f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
-                f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
-                f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
+                f"generator loss training, validation: {self.generator_loss_training:.6f}, {self.generator_loss_validation:.6f} - "
+                f"discriminator loss training, validation: {self.discriminator_loss_training:.6f}, {self.discriminator_loss_validation:.6f}"
             )
 
 
             print(
                 f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
-                f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
-                f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
+                f"generator loss training, validation: {self.generator_loss_training:.6f}, {self.generator_loss_validation:.6f} - "
+                f"discriminator loss training, validation: {self.discriminator_loss_training:.6f}, {self.discriminator_loss_validation:.6f}"
             )
 
             self._epoch += 1
@@ -427,29 +463,34 @@ class {{layer_name}}(GANLayer):
 
 
     @property
-    def accuracy_testing(self) -> float:
-        """Returns the current accuracy of the testing phase"""                        
-        return self._accuracy_testing
-
-    @property
-    def loss_training(self) -> float:
+    def generator_loss_training(self) -> float:
         """Returns the current loss of the training phase"""                
-        return self._loss_training        
+        return self._generator_loss_training        
 
     @property
-    def loss_validation(self) -> float:
+    def generator_loss_validation(self) -> float:
         """Returns the current loss of the validation phase"""                        
-        return self._loss_validation        
+        return self._generator_loss_validation        
 
     @property
     def generator_loss_testing(self) -> float:
         """Returns the current loss of the testing phase"""                
-        return self._loss_testing
+        return self._generator_loss_testing
+    
+    @property
+    def discriminator_loss_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                        
+        return self._discriminator_loss_validation        
 
     @property
     def discriminator_loss_testing(self) -> float:
         """Returns the current loss of the testing phase"""                
-        return self._loss_testing
+        return self._discriminator_loss_testing
+
+    @property
+    def discriminator_loss_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                
+        return self._discriminator_loss_testing
 
     @property
     def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
@@ -466,7 +507,9 @@ class {{layer_name}}(GANLayer):
 
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
-        """        
+        """       
+        self._layer_biases.update(self._gen_layer_biases)
+        self._layer_biases.update(self._dis_layer_biases)
         return self._layer_biases
     
     @property
@@ -476,6 +519,8 @@ class {{layer_name}}(GANLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
         """        
+        self._layer_gradients.update(self._gen_layer_gradients)
+        self._layer_gradients.update(self._dis_layer_gradients)
         return self._layer_gradients
     
     @property
@@ -485,6 +530,8 @@ class {{layer_name}}(GANLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
         """
+        self._layer_outputs.update(self._fake_outputs)
+        self._layer_outputs.update(self._real_outputs)
         return self._layer_outputs
 
     @property
