@@ -14,14 +14,14 @@
               input(type="text" placeholder="First Name"
                 v-model="user.firstName"
                 name="First Name"
-                v-validate="'alpha_spaces'"
+                v-validate="'required|alpha_spaces'"
                 )
               p.text-error(v-show="errors.has('First Name')") {{ errors.first('First Name') }}
             .form_holder
               input(type="text" placeholder="Last Name"
                 v-model="user.lastName"
                 name="Last Name"
-                v-validate="'alpha_spaces'"
+                v-validate="'required|alpha_spaces'"
                 )
               p.text-error(v-show="errors.has('Last Name')") {{ errors.first('Last Name') }}
           .form_holder
@@ -60,6 +60,7 @@
                 @click="togglePasswordVisibility('confirmPassword')"
                 )
             p.text-error(v-show="errors.has('Confirm password')") {{ errors.first('Confirm password') }}
+
           .form_holder
             base-checkbox.terms-policy(
               v-validate="'required'"
@@ -72,7 +73,22 @@
                 @click="toPolicy"
                 ) terms and policy
             p.text-error(v-show="errors.has('terms')") {{ errors.first('terms') }}
-        
+
+            base-checkbox.terms-policy(
+              v-validate="'required'"
+              data-vv-name="communicationsConsent"
+              label="communicationsConsent"
+              v-model="communicationsConsent"
+            )
+              span.fz-16 Agree to
+              button.btn.btn--link.policy-btn.fz-16(type="button"
+                @click="toCommunicationsPolicy"
+                ) receive communications
+            p.text-error(v-show="errors.has('communicationsConsent')") {{ errors.first('communicationsConsent') }}
+      
+          .form_holder
+            .form_row
+              span.gdpr-text By clicking Sign up below, you consent to allow PerceptiLabs to store and process the personal information submitted above to provide you the content requested.
           .form_holder
             .form_row
               span
@@ -85,7 +101,12 @@
             router-link.btn.btn--link(:to="{name: 'login'}") Log in here
         
         policy-login(
-          v-show="isShowPolicy"
+          v-show="showPolicy"
+          @backToRegister="toRegister"
+          )
+
+        communications-policy(
+          v-show="showCommuncationsPolicy"
           @backToRegister="toRegister"
           )
 
@@ -99,9 +120,10 @@
 
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
   import PolicyLogin        from '@/pages/register/policy.vue'
+  import CommunicationsPolicy from '@/pages/register/communications-policy.vue'
 export default {
   name: 'PageRegister',
-  components: { PolicyLogin, LogoutUserPageWrap },
+  components: { PolicyLogin, CommunicationsPolicy, LogoutUserPageWrap },
   data() {
     return {
       user: {
@@ -114,7 +136,9 @@ export default {
         confirmPassword:'',
       },
       terms: true,
-      isShowPolicy: false,
+      communicationsConsent: true,
+      showPolicy: false,
+      showCommuncationsPolicy: false,
       passwordVisibility: {
         password: false,
         confirmPassword: false,
@@ -151,7 +175,8 @@ export default {
           Analytics.hubSpot.trackUserRegistration({
             email: this.user.email,
             firstName: this.user.firstName,
-            lastName: this.user.lastName
+            lastName: this.user.lastName,
+            communicationsConsent: this.communicationsConsent
           });
 
           this.$router.replace('/login');
@@ -161,11 +186,17 @@ export default {
         })
         .finally(()=> this.$store.commit('mod_login/SET_showLoader', false));
     },
+    toCommunicationsPolicy() {
+      this.showPolicy = false;
+      this.showCommuncationsPolicy = true;
+    },
     toPolicy() {
-      this.isShowPolicy = true;
+      this.showPolicy = true;
+      this.showCommuncationsPolicy = false;
     },
     toRegister() {
-      this.isShowPolicy = false;
+      this.showPolicy = false;
+      this.showCommuncationsPolicy = false;
     },
   }
 }
@@ -226,6 +257,11 @@ export default {
       color: white;
     }
   }
+
+  .gdpr-text {
+    font-size: 1rem;
+  }
+
   .sign-up-btn {
     width: 100%;
     height: 35px;
@@ -233,8 +269,6 @@ export default {
 
   }
   .terms-policy {
-    margin-top: 15px;
-    margin-bottom: 25px;
     color: #fff;
   }
   .mr15 {

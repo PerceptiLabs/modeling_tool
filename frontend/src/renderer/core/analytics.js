@@ -42,7 +42,7 @@ export const hubSpot = (function() {
         }]);
     }
 
-    publicMethods.trackUserRegistration = function({email, firstName, lastName}) {
+    publicMethods.trackUserRegistration = function({email, firstName, lastName, communicationsConsent}) {
         const payload = {
           "submittedAt": (new Date()).getTime(),
           "fields": [
@@ -67,11 +67,11 @@ export const hubSpot = (function() {
           "legalConsentOptions": {
             "consent": {
               "consentToProcess": true,
-              "text": "By clicking submit below, you consent to allow PerceptiLabs to store and process the personal information submitted above to provide you the content requested.",
+              "text": "By clicking Sign up below, you consent to allow PerceptiLabs to store and process the personal information submitted above to provide you the content requested.",
               "communications": [
                 {
-                  "value": true,
-                  "subscriptionTypeId": 999,
+                  "value": communicationsConsent,
+                  "subscriptionTypeId": 8790776,
                   "text": "I agree to receive other communications from PerceptiLabs."
                 }
               ]
