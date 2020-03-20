@@ -1,6 +1,7 @@
 import { isDevelopMode } from '@/core/constants';
+import axios from 'axios';
 
-const hubSpot = (function() {
+export const hubSpot = (function() {
     let publicMethods = {};
 
     const addTag = function(input) {
@@ -41,10 +42,58 @@ const hubSpot = (function() {
         }]);
     }
 
+    publicMethods.trackUserRegistration = function({email, firstName, lastName, communicationsConsent}) {
+        const payload = {
+          "submittedAt": (new Date()).getTime(),
+          "fields": [
+            {
+              "name": "email",
+              "value": email
+            },
+            {
+              "name": "firstname",
+              "value": firstName
+            },
+            {
+              "name": "lastname",
+              "value": lastName
+            },
+          ],
+          "context": {
+            // "hutk": hubspotutk, // include this parameter and set it to the hubspotutk cookie value to enable cookie tracking on your submission
+            "pageUri": "perceptilabs.com/register",
+            "pageName": "User registration"
+          },
+          "legalConsentOptions": {
+            "consent": {
+              "consentToProcess": true,
+              "text": "By clicking Sign up below, you consent to allow PerceptiLabs to store and process the personal information submitted above to provide you the content requested.",
+              "communications": [
+                {
+                  "value": communicationsConsent,
+                  "subscriptionTypeId": 8790776,
+                  "text": "I agree to receive other communications from PerceptiLabs."
+                }
+              ]
+            }
+          },
+          "skipValidation": true
+        }
+        
+        const url = 'https://api.hsforms.com/submissions/v3/integration/submit/7122301/d3fd6e39-4be1-4316-b93b-af60978f2337';
+        return axios.post(url, payload)
+          .then(response => {
+              
+          })
+          .catch(error => {
+            console.error('Error tracking user registration', error);
+          });
+    }
+
     return publicMethods;
 })();
 
-const googleAnalytics = (function() {
+export const googleAnalytics = (function() {
 
     let publicMethods = {};
 
@@ -55,7 +104,8 @@ const googleAnalytics = (function() {
 
     publicMethods.setup = function() {
         const gaId = process.env.GOOGLE_ANALYTICS_ID;
-        if (!gaId || isDevelopMode) { return; }
+        // if (!gaId || isDevelopMode) { return; }
+    
         
         addTag('js', new Date());
         addTag('config', gaId);
@@ -81,6 +131,12 @@ const googleAnalytics = (function() {
         if (!userId || userId === 'Guest') { return; }
 
         addTag('set', {'user_id' : userId});
+    }
+
+    publicMethods.trackCustomEvent = function(eventName, eventParameters = {}) {
+        if (!eventName) { return; }
+
+        addTag('event', eventName, eventParameters);
     }
 
     return publicMethods;

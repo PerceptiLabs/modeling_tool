@@ -42,6 +42,7 @@
 </template>
 
 <script>
+import { googleAnalytics } from '@/core/analytics';
 import BaseSwitcher     from "@/components/different/switcher.vue";
 import {loadPathFolder} from '@/core/helpers.js'
 import BaseAccordion    from "@/components/base/accordion.vue";
@@ -80,7 +81,11 @@ export default {
       this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setExportPath});
     },
     exportData() {
-      this.$store.dispatch('mod_api/API_exportData', {confirmCallback: this.settings});
+      googleAnalytics.trackCustomEvent('export-data', {
+        'export-type': this.settings.Type, 
+        'compressed': this.settings.Compressed
+      });
+      this.$store.dispatch('mod_api/API_exportData', this.settings);
     }
   }
 }
