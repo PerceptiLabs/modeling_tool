@@ -1,6 +1,6 @@
 <template lang="pug">
   nav.app-header_nav(
-    :class="{'app-header--hidden': isMac}"
+    :class="{'app-header--hidden': isMac && isDesktop}"
     v-hotkey="keymap"
     )
     ul.header-nav
@@ -49,14 +49,13 @@
   //import { ipcRenderer } from 'electron'
   import { mapGetters, mapMutations, mapActions } from 'vuex';
   import { baseUrlSite } from '@/core/constants.js';
-  import { goToLink, isOsMacintosh } from '@/core/helpers.js'
+  import { goToLink, isOsMacintosh, isDesktopApp } from '@/core/helpers.js'
 
 export default {
   name: "TheMenu",
   mounted() {
     this.mainProcessListeners()
   },
-
   data() {
     return {
       dataKeymap: {}
@@ -81,8 +80,248 @@ export default {
     isMac() {
       return isOsMacintosh();
     },
-
+    isDesktop() {
+      return isDesktopApp();
+    },
     navMenu() {
+      if (isDesktopApp()) {
+        return this.navMenuDesktop();
+      } else {
+        return this.navMenuWeb();
+      }
+    },
+
+    keymap () {
+      this.navMenu.forEach((item) => {
+        item.submenu.forEach((subItem) => {
+          if(subItem.accelerator) {
+            this.dataKeymap[subItem.accelerator] = subItem.active
+          }
+        })
+      });
+      return this.dataKeymap;
+    },
+    isDisabledPrevStep() {
+      const history = this.networkHistory;
+      return !!history && history.historyStep === history.historyNet.length - 1
+    },
+    isDisabledNextStep() {
+      const history = this.networkHistory;
+      return !!history && history.historyStep === 0
+    }
+  },
+  watch: {
+    // navMenu(newMenu) {
+    //   if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
+    // }
+  },
+  methods: {
+    ...mapMutations({
+      setTutorialSB:    'mod_tutorials/SET_showTutorialStoryBoard',
+      saveNetwork:      'mod_events/set_saveNetwork',
+      saveNetworkAs:    'mod_events/set_saveNetworkAs',
+      setTutorialMode:  'mod_tutorials/SET_isTutorialMode',
+    }),
+    ...mapActions({
+      infoPopup:        'globalView/GP_infoPopup',
+      popupConfirm:     'globalView/GP_confirmPopup',
+      offMainTutorial:  'mod_tutorials/offTutorial',
+      hideTooltip:      'mod_tutorials/hideTooltip',
+      appClose:         'mod_events/EVENT_appClose',
+      appMinimize:      'mod_events/EVENT_appMinimize',
+      appMaximize:      'mod_events/EVENT_appMaximize',
+      openNetwork:      'mod_events/EVENT_openNetwork',
+      loadNetwork:      'mod_events/EVENT_loadNetwork',
+      HCCopy:           'mod_events/EVENT_hotKeyCopy',
+      HCPaste:          'mod_events/EVENT_hotKeyPaste',
+      HCSelectAll:      'mod_workspace/SET_elementSelectAll',
+      HCDeselectAll:    'mod_workspace/SET_elementUnselect',
+      toPrevStepHistoryMutation:'mod_workspace-history/TO_prevStepHistory',
+      toNextStepHistoryMutation:'mod_workspace-history/TO_nextStepHistory',
+    }),
+    goToLink,
+    mainProcessListeners(isRemove) {
+      this.navMenu.forEach((item) => {
+        item.submenu.forEach((subItem) => {
+          if(subItem.label) {
+            if(isRemove) {
+              //ipcRenderer.removeAllListeners(`menu-event-${subItem.label}`);
+            }
+            else {
+              //ipcRenderer.on(`menu-event-${subItem.label}`, ()=> { subItem.active() });
+            }
+          }
+        })
+      });
+    },
+    checkUpdate() {
+      // this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
+      // ipcRenderer.send('check-update');
+    },
+    addNewNetwork() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$store.dispatch('mod_workspace/ADD_network');
+            }
+          });
+      } else {
+        this.$store.dispatch('mod_workspace/ADD_network');
+      }
+    },
+    logOut() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$store.dispatch('mod_events/EVENT_logOut');
+            }
+          });
+      } else {
+        this.$store.dispatch('mod_events/EVENT_logOut');
+      }
+    },
+    goToHelpPageDesktop() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.goToLink(`${baseUrlSite}/i_docs`)
+            }
+          });
+      } else {
+        this.goToLink(`${baseUrlSite}/i_docs`)
+      }
+    },
+    goToAboutPageDesktop() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.goToLink(`${baseUrlSite}/about`)
+            }
+          });
+      } else {
+        this.goToLink(`${baseUrlSite}/about`)
+      }
+    },
+    goToHelpPageWeb() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              window.location.href = 'https://join.slack.com/t/perceptilabs-com/shared_invite/zt-auchqflz-4YANlDBSyJW1qC7LdpQBSA';
+            }
+          });
+      } else {
+        window.location.href = 'https://join.slack.com/t/perceptilabs-com/shared_invite/zt-auchqflz-4YANlDBSyJW1qC7LdpQBSA';
+      }
+    },
+    goToAboutPageWeb() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              window.location.href = 'https://perceptilabs.com/docs/overview';
+            }
+          });
+      } else {
+        window.location.href = 'https://perceptilabs.com/docs/overview';
+      }
+    },
+    showTutorial() {
+      this.$store.dispatch('mod_tutorials/START_storyboard');
+    },
+    openModel() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.openNetwork();
+            }
+          });
+      } else {
+        this.openNetwork();
+      }
+    },
+    openLoadModelPopup() {
+      if(this.isTutorialMode) {
+        this.hideTooltip();
+        this.popupConfirm(
+          {
+            text: 'Are you sure you want to end the tutorial?',
+            ok: () => {
+              this.offMainTutorial();
+              this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+            }
+          });
+      } else {
+        this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
+      }
+    },
+    onLoadNetworkConfirmed(path) {
+      if (!path || path.length === 0) { return; }
+
+      this.$store.dispatch('globalView/SET_filePickerPopup', false);
+      this.loadNetwork(path[0]);
+    },
+    saveModel() {
+      this.saveNetwork();
+      this.offMainTutorial();
+    },
+    saveModelAs() {
+      this.saveNetworkAs();
+      this.offMainTutorial();
+    },
+    HC_delete() {
+      if(!this.isTutorialMode) {
+        this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del')
+      }
+    },
+    HC_esc() {
+      this.$store.dispatch('mod_events/EVENT_hotKeyEsc')
+    },
+    HC_addLayerContainer() {
+      if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');
+    },
+    HC_unGroupLayerContainer() {
+      this.$store.dispatch('mod_workspace/UNGROUP_container');
+    },
+    toPrevStepHistory(ev) {
+      ev.preventDefault();
+      if (!this.isDisabledPrevStep) {
+        this.toPrevStepHistoryMutation();
+      }
+    },
+    toNextStepHistory(ev) {
+      ev.preventDefault();
+      if(!this.isDisabledNextStep) {
+        this.toNextStepHistoryMutation()
+      }
+    },
+    navMenuDesktop() {
       return [
         ...(this.isMac ? [{
             label: 'PerceptiLabs',
@@ -159,8 +398,8 @@ export default {
           role: 'help',
           label: 'Help', visible: true,
           submenu: [
-            {label: 'Help',          enabled: false,                                  active: this.goToHelpPage },
-            {label: 'About',                                                          active: this.goToAboutPage },
+            {label: 'Help',          enabled: false,                                  active: this.goToHelpPageDesktop },
+            {label: 'About',                                                          active: this.goToAboutPageDesktop },
             {label: 'Tutorial mode', enabled: !this.isTutorialActive && this.isLogin, active: this.showTutorial },
             ...(this.isMac
               ? []
@@ -184,185 +423,62 @@ export default {
         }
       ]
     },
+    navMenuWeb() {
+      return [
+        {
+            label: 'PerceptiLabs',
+            submenu: []
+        },
+        {
+          label: 'File', visible: true,
+          submenu: [
+            {label: 'New',                                                                      enabled: this.openApp,  active: this.addNewNetwork },
+            {label: 'Load',                                                                     enabled: this.openApp,  active: this.openLoadModelPopup },
+            {label: 'Save',                                                                     enabled: this.openApp,  active: this.saveModel },
+            {type: 'separator'},
+            {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
+          ]
+        },
+        {
+          label: 'Edit', visible: true,
+          submenu: [
+            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',           active: this.toPrevStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',           active: this.toNextStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',           active: this.toNextStepHistory },
+            {type:  'separator'},
+            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',           active: this.HCCopy },
+            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',          active: this.HCPaste },
+            {type:  'separator'},
+            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
+            {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
 
-    keymap () {
-      this.navMenu.forEach((item) => {
-        item.submenu.forEach((subItem) => {
-          if(subItem.accelerator) {
-            this.dataKeymap[subItem.accelerator] = subItem.active
-          }
-        })
-      });
-      return this.dataKeymap;
-    },
-    isDisabledPrevStep() {
-      const history = this.networkHistory;
-      return !!history && history.historyStep === history.historyNet.length - 1
-    },
-    isDisabledNextStep() {
-      const history = this.networkHistory;
-      return !!history && history.historyStep === 0
+          ]
+        },
+        {
+          role: 'help',
+          label: 'Help', visible: true,
+          submenu: [
+            {label: 'Help',                                                           active: this.goToHelpPageWeb },
+            {label: 'About',                                                          active: this.goToAboutPageWeb },
+            {label: 'Tutorial mode', enabled: !this.isTutorialActive,                 active: this.showTutorial },
+            {type: 'separator'},
+            {label: `Version: ${this.appVersion}`, enabled: false,                    active: ()=>{} }
+          ]
+        },
+        {
+          label: '', visible: false,
+          submenu: [
+            {type:  'separator'},
+            {label: 'Delete',       accelerator: this.isMac ? 'meta+backspace' : 'delete',                              active: this.HC_delete,                    visible: false  },
+            {label: 'DeleteMac',    accelerator: this.isMac ? 'backspace' : '',                              active: this.HC_delete,                    visible: false  },
+            {label: 'Add group',    accelerator: this.isMac ? 'meta+g' : 'ctrl+g',              enabled: this.openApp,  active: this.HC_addLayerContainer,         visible: false  },
+            {label: 'Ungroup',      accelerator: this.isMac ? 'meta+shift+g' : 'ctrl+shift+g',  enabled: this.openApp,  active: this.HC_unGroupLayerContainer,     visible: false  },
+            {type:  'separator'},
+            {label: 'Close setting popups',          accelerator: 'esc',                                                active: this.HC_esc,                       visible: false  },
+          ]
+        }
+      ]
     }
-  },
-  watch: {
-/*    navMenu(newMenu) {
-      if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
-    }*/
-  },
-  methods: {
-    ...mapMutations({
-      setTutorialSB:    'mod_tutorials/SET_showTutorialStoryBoard',
-      saveNetwork:      'mod_events/set_saveNetwork',
-      saveNetworkAs:    'mod_events/set_saveNetworkAs',
-      setTutorialMode:  'mod_tutorials/SET_isTutorialMode',
-    }),
-    ...mapActions({
-      infoPopup:        'globalView/GP_infoPopup',
-      popupConfirm:     'globalView/GP_confirmPopup',
-      offMainTutorial:  'mod_tutorials/offTutorial',
-      hideTooltip:      'mod_tutorials/hideTooltip',
-      appClose:         'mod_events/EVENT_appClose',
-      appMinimize:      'mod_events/EVENT_appMinimize',
-      appMaximize:      'mod_events/EVENT_appMaximize',
-      openNetwork:      'mod_events/EVENT_openNetwork',
-      HCCopy:           'mod_events/EVENT_hotKeyCopy',
-      HCPaste:          'mod_events/EVENT_hotKeyPaste',
-      HCSelectAll:      'mod_workspace/SET_elementSelectAll',
-      HCDeselectAll:    'mod_workspace/SET_elementUnselect',
-      toPrevStepHistoryMutation:'mod_workspace-history/TO_prevStepHistory',
-      toNextStepHistoryMutation:'mod_workspace-history/TO_nextStepHistory',
-    }),
-    goToLink,
-    mainProcessListeners(isRemove) {
-      this.navMenu.forEach((item) => {
-        item.submenu.forEach((subItem) => {
-          if(subItem.label) {
-            if(isRemove) {
-              //ipcRenderer.removeAllListeners(`menu-event-${subItem.label}`);
-            }
-            else {
-              //ipcRenderer.on(`menu-event-${subItem.label}`, ()=> { subItem.active() });
-            }
-          }
-        })
-      });
-    },
-    checkUpdate() {
-/*      this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
-      ipcRenderer.send('check-update');*/
-    },
-    addNewNetwork() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.$store.dispatch('mod_workspace/ADD_network');
-            }
-          });
-      } else {
-        this.$store.dispatch('mod_workspace/ADD_network');
-      }
-    },
-    logOut() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.$store.dispatch('mod_events/EVENT_logOut');
-            }
-          });
-      } else {
-        this.$store.dispatch('mod_events/EVENT_logOut');
-      }
-    },
-    goToHelpPage() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.goToLink(`${baseUrlSite}/i_docs`)
-            }
-          });
-      } else {
-        this.goToLink(`${baseUrlSite}/i_docs`)
-      }
-    },
-    goToAboutPage() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.goToLink(`${baseUrlSite}/about`)
-            }
-          });
-      } else {
-        this.goToLink(`${baseUrlSite}/about`)
-      }
-    },
-    showTutorial() {
-      this.$store.dispatch('mod_tutorials/START_storyboard');
-    },
-    openModel() {
-      if(this.isTutorialMode) {
-        this.hideTooltip();
-        this.popupConfirm(
-          {
-            text: 'Are you sure you want to end the tutorial?',
-            ok: () => {
-              this.offMainTutorial();
-              this.openNetwork();
-            }
-          });
-      } else {
-        this.openNetwork();
-      }
-    },
-    saveModel() {
-      this.saveNetwork();
-      this.offMainTutorial();
-    },
-    saveModelAs() {
-      this.saveNetworkAs();
-      this.offMainTutorial();
-    },
-    HC_delete() {
-      if(!this.isTutorialMode) {
-        this.$store.dispatch('mod_events/EVENT_pressHotKey', 'del')
-      }
-    },
-    HC_esc() {
-      this.$store.dispatch('mod_events/EVENT_hotKeyEsc')
-    },
-    HC_addLayerContainer() {
-      if(this.openApp) this.$store.dispatch('mod_workspace/ADD_container');
-    },
-    HC_unGroupLayerContainer() {
-      this.$store.dispatch('mod_workspace/UNGROUP_container');
-    },
-    toPrevStepHistory(ev) {
-      ev.preventDefault();
-      if (!this.isDisabledPrevStep) {
-        this.toPrevStepHistoryMutation();
-      }
-    },
-    toNextStepHistory(ev) {
-      ev.preventDefault();
-      if(!this.isDisabledNextStep) {
-        this.toNextStepHistoryMutation()
-      }
-    },
   }
 }
 </script>
@@ -398,9 +514,9 @@ export default {
   .header-nav_item {
     color: $white;
     position: relative;
-    /*&:hover > .header-nav_sublist {*/
-    /*  display: block;*/
-    /*}*/
+    &:hover > .header-nav_sublist {
+      display: block;
+    }
   }
   .header-nav_btn {
     padding: 0 1rem;

@@ -229,12 +229,13 @@ export default {
           } else {
             emitPayload = this.selectedDirectories.map(d => this.osPathPrefix + this.currentPath.join('/') + '/' + d + this.osPathSuffix);
           }
-          console.log('onConfirm emitPayload', emitPayload);
         }
 
+        this.$store.dispatch('globalView/SET_filePickerPopup', false);
         this.confirmCallback(emitPayload);
     },
     onCancel() {
+        this.$store.dispatch('globalView/SET_filePickerPopup', false);
         this.cancelCallback();
     },
     clearSearchValue() {

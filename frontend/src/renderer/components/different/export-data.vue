@@ -78,7 +78,7 @@ export default {
     },
     saveLoadFile() {
       // sets the value of the showFilePickerPopup as the callback function, as it's truthy
-      this.$store.dispatch('globalView/SET_filePickerPopup', this.setExportPath);
+      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setExportPath});
     },
     exportData() {
       googleAnalytics.trackCustomEvent('export-data', {

@@ -22,14 +22,14 @@
           input.ellipsis--right(type="text" readonly="true"
             v-model="settings.Pb"
             :class="{'bg-error': !settings.Pb.length}"
-            @click="loadPbFile"
+            @click="choosePbFile"
             )
       .form_row
         .form_label Checkpoint:
         .form_input
           input.ellipsis--right(type="text" readonly="true"
             v-model="settings.Checkpoint"
-            @click="loadCheckpointFile"
+            @click="chooseCheckpointFile"
             )
 
 
@@ -85,31 +85,32 @@ export default {
     closePopup() {
       this.$store.commit('globalView/HIDE_allGlobalPopups');
     },
-    loadPbFile() {
-      //this.$store.commit('globalView/GP_showWorkspaceBeforeImport', false);
-      let opt = {
-        title:"Load Pb File",
-        properties: ['openFile'],
-        filters: [
-          {name: 'All', extensions: ['pb', 'pbtxt', 'pb.*', 'pbtxt.*']},
-        ]
-      };
-      openLoadDialog(opt)
-        .then((pathArr)=> { this.settings.Pb = pathArr })
-        .catch(()=> {})
+    choosePbFile() {
+      this.$store.dispatch('globalView/SET_filePickerPopup', 
+      {
+        popupTitle: 'Load Pb File',
+        filePickerType: 'file',
+        fileTypeFilter: ['pb', 'pbtxt'],
+        confirmCallback: this.loadPbFile
+      });
+    },
+    loadPbFile(path) {
+      if (path && path.length) {
+        this.settings.Pb = path;
+      }
+    },
+    chooseCheckpointFile() {
+      this.$store.dispatch('globalView/SET_filePickerPopup', 
+      {
+        popupTitle: 'Load Checkpoint',
+        filePickerType: 'file',
+        confirmCallback: this.loadPbFile
+      });
     },
     loadCheckpointFile() {
-      //this.$store.commit('globalView/GP_showWorkspaceBeforeImport', false);
-      let opt = {
-        title:"Load Checkpoint",
-        properties: ['openFile'],
-        filters: [
-          {name: 'All', extensions: ['ckpt', 'ckpt.*']},
-        ]
-      };
-      openLoadDialog(opt)
-        .then((pathArr)=> { this.settings.Checkpoint = pathArr })
-        .catch(()=> {})
+      if (path && path.length) {
+        this.settings.Checkpoint = path
+      }
     },
   }
 }
