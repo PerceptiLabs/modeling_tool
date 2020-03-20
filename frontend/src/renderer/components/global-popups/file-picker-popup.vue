@@ -9,6 +9,7 @@
       .popup_body
         file-picker(
             :filePickerType="filePickerType"
+            :fileTypeFilter="fileTypeFilter"
             :options="filePickerOptions"
             :confirmCallback="confirmCallback"
             :cancelCallback="closePopup")

@@ -231,9 +231,11 @@ export default {
           }
         }
 
+        this.$store.dispatch('globalView/SET_filePickerPopup', false);
         this.confirmCallback(emitPayload);
     },
     onCancel() {
+        this.$store.dispatch('globalView/SET_filePickerPopup', false);
         this.cancelCallback();
     },
     clearSearchValue() {
