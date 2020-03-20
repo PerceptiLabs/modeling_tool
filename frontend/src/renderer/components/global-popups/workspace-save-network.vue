@@ -118,7 +118,6 @@ export default {
     //     .catch(()=> {})
     // },
     setPath(path) {
-      this.$store.dispatch('globalView/SET_filePickerPopup', false);
       if (path && path.length > 0) { 
         this.settings.projectPath = path[0];
       } else {
@@ -126,7 +125,7 @@ export default {
       }
     },
     openFilePicker() {
-      this.$store.dispatch('globalView/SET_filePickerPopup', this.setPath);
+      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setPath});
     },
   }
 }

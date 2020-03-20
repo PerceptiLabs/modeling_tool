@@ -274,11 +274,11 @@ export default {
             text: 'Are you sure you want to end the tutorial?',
             ok: () => {
               this.offMainTutorial();
-              this.$store.dispatch('globalView/SET_filePickerPopup', this.onLoadNetworkConfirmed);
+              this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
             }
           });
       } else {
-        this.$store.dispatch('globalView/SET_filePickerPopup', this.onLoadNetworkConfirmed);
+        this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.onLoadNetworkConfirmed});
       }
     },
     onLoadNetworkConfirmed(path) {
