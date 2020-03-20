@@ -42,7 +42,7 @@ const hubSpot = (function() {
         }]);
     }
 
-    publicMethods.trackUserRegistration = function({email, firstName, lastName}) {
+    publicMethods.trackUserRegistration = function({email, firstName, lastName, communicationsConsent}) {
         const payload = {
           "submittedAt": (new Date()).getTime(),
           "fields": [
@@ -70,7 +70,7 @@ const hubSpot = (function() {
               "text": "By clicking submit below, you consent to allow PerceptiLabs to store and process the personal information submitted above to provide you the content requested.",
               "communications": [
                 {
-                  "value": true,
+                  "value": communicationsConsent,
                   "subscriptionTypeId": 999,
                   "text": "I agree to receive other communications from PerceptiLabs."
                 }

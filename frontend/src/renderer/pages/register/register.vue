@@ -90,7 +90,7 @@
             .form_row
               span
               button.btn.btn--dark-blue-rev.sign-up-btn(type="button"
-                :disabled="isLoading || !terms || !communicationsConsent"
+                :disabled="isLoading || !terms"
                 @click="validateForm"
                 ) Sign up
           .form_holder.fz-16.italic
@@ -170,7 +170,8 @@ export default {
           Analytics.hubSpot.trackUserRegistration({
             email: this.user.email,
             firstName: this.user.firstName,
-            lastName: this.user.lastName
+            lastName: this.user.lastName,
+            communicationsConsent: this.communicationsConsent
           });
 
           this.$router.replace('/login');
