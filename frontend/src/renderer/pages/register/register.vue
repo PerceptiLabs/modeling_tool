@@ -92,6 +92,7 @@
 </template>
 
 <script>
+  import { googleAnalytics } from '@/core/analytics';
   import {requestCloudApi}  from '@/core/apiCloud.js'
   import { baseUrlSite }    from '@/core/constants.js'
   import Analytics          from '@/core/analytics.js'
@@ -142,6 +143,7 @@ export default {
         })
     },
     registryUser() {
+      googleAnalytics.trackCustomEvent('register');
       this.$store.commit('mod_login/SET_showLoader', true);
 
       this.$store.dispatch('mod_apiCloud/CloudAPI_userCreate', this.user)
