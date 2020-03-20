@@ -71,7 +71,7 @@ const hubSpot = (function() {
               "communications": [
                 {
                   "value": communicationsConsent,
-                  "subscriptionTypeId": 999,
+                  "subscriptionTypeId": 8790776,
                   "text": "I agree to receive other communications from PerceptiLabs."
                 }
               ]
