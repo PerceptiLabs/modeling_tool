@@ -321,3 +321,210 @@ class TrainReinforceDataPolicy(DataPolicy):
         }
         return result_dict
 
+
+class GanTrainValDataPolicy(DataPolicy):
+    def get_results(self):
+        train_dict = {}
+        saver=None
+
+        for id_, content in self._graph_dict.items():
+            if id_ not in self._data:
+                continue
+            
+            if content["Info"]["Type"] in ["TrainGan"]:
+                train_dict[id_]={}
+                epoch = self._data[id_].get('epoch', 0)        
+                itr_trn = self._data[id_].get('iter_training', 0)
+                itr_val = self._data[id_].get('iter_validation', 0)
+
+                if "saver" in self._data:
+                    saver = self._data.pop('saver', None)
+                if saver:
+                    sess=saver[0]
+                    tf_saver=saver[1]
+                    network_outputs=self._data[id_].get("y_pred",None)
+                    input_id=None
+                    # import pdb; pdb.set_trace()
+                    tmp_content=self._graph_dict[[i[0] for i in content["Info"]["backward_connections"] if i[0]!=self._graph_dict[content["Info"]["Properties"]["Labels"]]][0]]
+                    while tmp_content["Info"]["backward_connections"]!=[]:
+                        input_id=tmp_content["Info"]["backward_connections"][0][0]
+                        tmp_content=self._graph_dict[input_id]
+                    network_inputs=self._data[input_id]["Y"]
+                    saver={"sess":sess, "saver":tf_saver, "network_inputs":network_inputs, "network_outputs": network_outputs}
+                    if "all_tensors" in self._data[id_]:
+                        saver.update({"all_tensors":self._data[id_]["all_tensors"]})
+
+                max_epoch = self._data[id_].get('max_epoch', -1)        
+                train_datasize = self._data[id_].get('train_datasize', -1)
+                val_datasize = self._data[id_].get('val_datasize', -1)
+
+               
+                train_dict[id_]['gen_loss_training_epoch'] = self._data[id_].get('gen_loss_training_epoch', [-1])
+                train_dict[id_]['dis_loss_training_epoch'] = self._data[id_].get('dis_loss_training_epoch', [-1])
+                
+                train_dict[id_]['gen_loss_validation_epoch'] = self._data[id_].get('gen_loss_validation_epoch', [-1])
+                train_dict[id_]['dis_loss_validation_epoch'] = self._data[id_].get('dis_loss_validation_epoch', [-1])
+                
+                train_dict[id_]['gen_loss_train_iter'] = self._data[id_].get('gen_loss_train_iter', [-1])
+                train_dict[id_]['dis_loss_train_iter'] = self._data[id_].get('dis_loss_train_iter', [-1])
+                
+                train_dict[id_]['gen_loss_val_iter'] = self._data[id_].get('gen_loss_val_iter', [-1])
+                train_dict[id_]['dis_loss_val_iter'] = self._data[id_].get('dis_loss_val_iter', [-1])
+
+                train_dict[id_]['generated_output_train'] = self._data[id_].get('generated_output_train', [-1])
+                train_dict[id_]['real_input_train'] = self._data[id_].get('real_input_train', [-1])
+                train_dict[id_]['generated_distribution_train'] = self._data[id_].get('generated_distribution_train', [-1])
+                train_dict[id_]['real_distribution_train'] = self._data[id_].get('real_distribution_train', [-1])
+
+                train_dict[id_]['generated_output_val'] = self._data[id_].get('generated_output_val', [-1])
+                train_dict[id_]['real_input_val'] = self._data[id_].get('real_input_val', [-1])
+                train_dict[id_]['generated_distribution_val'] = self._data[id_].get('generated_distribution_val', [-1])
+                train_dict[id_]['real_distribution_val'] = self._data[id_].get('real_distribution_val', [-1])
+                
+                if "all_evaled_tensors" in self._data[id_]:
+                    all_evaled_tensors=self._data[id_]["all_evaled_tensors"]
+
+                    import collections
+                    import six
+                    def update(d, u):
+                        for k, v in six.iteritems(u):
+                            dv = d.get(k, {})
+                            if not isinstance(dv, collections.Mapping):
+                                d[k] = v
+                            elif isinstance(v, collections.Mapping):
+                                d[k] = update(dv, v)
+                            else:
+                                d[k] = v
+                        return d
+
+                    train_dict=update(train_dict,all_evaled_tensors)
+                if not self._session._headless:
+                    for key, value in self._data[id_].items():
+                        if not key.startswith('grad-weights-'):
+                            continue
+                        grad_layer_id = key[len('grad-weights-'):].split(':')[0]
+
+                        if grad_layer_id not in train_dict:
+                            train_dict[grad_layer_id] = {}
+                        if 'Gradient' not in train_dict[grad_layer_id]:
+                            train_dict[grad_layer_id]['Gradient']={}
+                        
+                        if key.split(':')[2]=="Min":
+                            train_dict[grad_layer_id]['Gradient']['Min'] = value
+                        elif key.split(':')[2]=="Max":
+                            train_dict[grad_layer_id]['Gradient']['Max'] = value
+                        elif key.split(':')[2]=="Average":
+                            train_dict[grad_layer_id]['Gradient']['Average'] = value
+
+            if content["Info"]["Type"] in ["DataData", "DataEnvironment"]:
+                batch_size = self._data[id_].get('batch_size', -1)
+
+        # Set up variables to mimic FSM:
+        itr = itr_trn + itr_val
+        #Dividing with batch_size to get the actuall iterations it will run rather than 
+        max_itr_trn=train_datasize/batch_size
+        max_itr_val=val_datasize/batch_size
+
+        max_itr = max_itr_trn + max_itr_val
+
+        # Initial values
+        training_status = 'Waiting'
+        status = 'Created'
+
+        # LOGIC
+        if epoch < max_epoch: 
+            # Training/validation modes
+
+            if itr < max_itr_trn:
+                training_status = 'Training'
+            else:
+                training_status = 'Validation'
+
+            if self._session.is_paused:
+                status = 'Paused'
+            else:
+                status = 'Running' 
+        else:
+            if itr >= max_itr_trn-1:
+                training_status='Finished'    
+        
+        result_dict = {
+            "iter": itr,
+            "maxIter": max_itr,
+            "epoch": epoch,
+            "maxEpochs": max_epoch,
+            "batch_size": batch_size,
+            "trainingIterations": itr_trn,
+            "trainDict": train_dict,
+            "trainingStatus": training_status,  
+            "status": status
+        }
+        if saver is not None:
+            result_dict["saver"]=saver
+        return result_dict
+
+class GanTestDataPolicy(DataPolicy):
+    def get_results(self):
+        test_dict = {}
+
+        for id_, content in self._graph_dict.items():
+            if id_ not in self._data:
+                continue
+
+            elif content["Info"]["Type"] in ["TrainGan"]:
+                test_dict[id_]={}
+                itr_tst = self._data[id_].get('iter_testing', 0)
+     
+                max_itr_tst = self._data[id_].get('max_iter_testing', -1)
+
+                test_dict[id_]['gen_loss_training_epoch'] = 0
+                test_dict[id_]['dis_loss_training_epoch'] = 0
+
+                test_dict[id_]['gen_loss_train_iter'] = 0
+                test_dict[id_]['dis_loss_train_iter'] = 0
+                test_dict[id_]['generated_output_train'] = []
+                test_dict[id_]['real_input_train'] = []
+                test_dict[id_]['generated_distribution_train'] = []
+                test_dict[id_]['real_distribution_train'] = []
+
+                test_dict[id_]['gen_loss_validation_epoch'] = 0
+                test_dict[id_]['dis_loss_validation_epoch'] = 0
+
+                test_dict[id_]['gen_loss_val_iter'] = 0
+                test_dict[id_]['dis_loss_val_iter'] = 0
+                test_dict[id_]['generated_output_val'] = []
+                test_dict[id_]['real_input_val'] = []
+                test_dict[id_]['generated_distribution_val'] = []
+                test_dict[id_]['real_distribution_val'] = []
+
+                
+                if "all_tensors" in self._data[id_]:
+                    all_tensors=self._data[id_]["all_tensors"]
+
+                    import collections
+                    import six
+                    def update(d, u):
+                        for k, v in six.iteritems(u):
+                            dv = d.get(k, {})
+                            if not isinstance(dv, collections.Mapping):
+                                d[k] = v
+                            elif isinstance(v, collections.Mapping):
+                                d[k] = update(dv, v)
+                            else:
+                                d[k] = v
+                        return d
+
+                    test_dict=update(test_dict,all_tensors)
+
+        training_status = 'Finished'
+        status='Running'
+        test_status='Waiting'
+        
+        result_dict = {
+            "maxTestIter": max_itr_tst,
+            "testDict": test_dict,
+            "trainingStatus": training_status,
+            "testStatus": test_status,           
+            "status": status
+        }
+        return result_dict
