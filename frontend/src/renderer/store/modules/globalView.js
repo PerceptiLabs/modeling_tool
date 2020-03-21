@@ -75,12 +75,7 @@ const mutations = {
     state.globalPopup.coreNotFoundPopup = value;
   },
   set_filePickerPopup(state, value) {
-
-    if (value) {
-      state.globalPopup.showFilePickerPopup = value;
-    } else {
-      state.globalPopup.showFilePickerPopup = !state.globalPopup.showFilePickerPopup;
-    }
+    state.globalPopup.showFilePickerPopup = value;
   },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
