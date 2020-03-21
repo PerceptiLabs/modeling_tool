@@ -14,8 +14,8 @@ Vue.use(Router);
 const router = new Router({
   mode: 'history',
   routes: [
-    // {path: '/',     name: 'register', component: PageRegister},
-    {path: '/',             name: 'projects',    component: PageProjects},
+    {path: '/',     name: 'register', component: PageRegister},
+    // {path: '/',             name: 'projects',    component: PageProjects},
     {path: '/login',             name: 'login',    component: PageLogin},
     {path: '/app',          name: 'app',      component: PageApp},
     {path: '/restore-account',     name: 'restore-account', component: PageRestoreAccount},
