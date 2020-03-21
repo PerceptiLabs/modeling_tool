@@ -124,7 +124,10 @@
       },
       showMenuBar() {
         const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
+
+        // written this way for simpler if statements
         if (GET_userIsLogin && this.$route.name === 'app') { return true; }
+        if (GET_userIsLogin && this.$route.name === 'projects') { return true; }
 
         return false;
       }
@@ -213,14 +216,16 @@
         this.SET_appPath(path);
       },
       checkLocalToken() {
+
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.setUserToken(localUserToken);
-          if(this.$router.history.current.name === 'login') {
+          if(['login', 'register'].includes(this.$router.history.current.name)) {
             this.$router.replace({name: 'projects'});
           }
+        } else {
+          this.$router.push({name: 'register'});
         }
-        this.$router.push({name: 'login'});
       },
       /*Header actions*/
       // appClose() {
