@@ -178,15 +178,15 @@ class CodeHqNew:
             return code_gen
             
         elif type_ == 'TrainNormal':
-            if 'Labels' in props:
+            if 'Labels' in props and props['Labels'] and content['Info']['backward_connections']:
                 target_layer_id = props['Labels']
                 target_layer = [x[1] for x in content['Info']['backward_connections'] if x[0] == target_layer_id][0]
+                if len(content['Con'])>1:
+                    output_layer = [x[1] for x in content['Info']['backward_connections'] if x[0] != target_layer_id][0]
+                else:
+                    output_layer = "'Output layer here'"
             else:    
                 target_layer = "'Target layer here'"
-
-            if len(content['Con'])>1:
-                output_layer = [x[1] for x in content['Info']['backward_connections'] if x[0] != target_layer_id][0]
-            else:
                 output_layer = "'Output layer here'"
 
             if len(content['Con']) > 2:
