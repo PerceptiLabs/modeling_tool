@@ -224,7 +224,7 @@
             this.$router.replace({name: 'projects'});
           }
         } else {
-          this.$router.push({name: 'register'});
+          this.$router.push({path: '/'});
         }
       },
       /*Header actions*/
