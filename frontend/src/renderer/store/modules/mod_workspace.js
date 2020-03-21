@@ -473,7 +473,7 @@ const mutations = {
 
     updateLayerName(newEl, elementList, 1);
 
-    if(!elementList) state.workspaceContent[state.currentNetwork].networkElementList = {};
+    if(!elementList || elementList.length === 0) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
     state.dragElement = null;
     dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
