@@ -317,8 +317,17 @@ class coreLogic():
                 raise Exception("'all_tensors' was not found so the Saver could not create any references to the exported checkpoints.\nTry adding 'api.data.store(all_tensors=api.data.get_tensors())' to your Training Layer.")
             elif self.saver["all_tensors"]==[]:
                 raise Exception("'all_tensors' was found but contained no variables.")
+
+            rootPath=os.path.abspath(value["Location"][0])
+            if not os.path.isdir(rootPath):
+                return {"content":"Save Failed.\nSave folder does not exist."}
+
+            path = os.path.join(rootPath,value['networkName'])
+            if os.path.isdir(rootPath) and not os.path.isdir(path):
+                os.mkdir(path)
+
             exporter = exportNetwork(self.saver)
-            path=os.path.abspath(value["Location"][0])
+            
             frontendNetwork=value["frontendNetwork"]
             if not os.path.exists(path):
                 os.mkdir(path)
