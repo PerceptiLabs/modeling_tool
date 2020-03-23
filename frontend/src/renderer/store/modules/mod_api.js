@@ -99,11 +99,13 @@ const actions = {
           // set user when core switch from offline to online
           if(state.statusLocalCore === 'offline') {
             dispatch('API_setUserInCore');
+            commit('SET_statusLocalCore', 'online');
           }
-          commit('SET_statusLocalCore', 'online');
         })
         .catch(()=> {
-          commit('SET_statusLocalCore', 'offline');
+          if(state.statusLocalCore === 'online') {
+            commit('SET_statusLocalCore', 'offline');
+          }
         });
   },
   coreStatusWatcher({dispatch}) {
