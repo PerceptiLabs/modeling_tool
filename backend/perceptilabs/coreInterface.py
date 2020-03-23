@@ -162,8 +162,8 @@ class coreLogic():
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal':
-                if not layer['Properties']:
-                    self.errorQueue.put(f"The training layer '{_id}' does not have any settings applied.")
+                if not layer['Properties'] and not layer['Code']:
+                    self.errorQueue.put(f"The training layer '{layer['Name']}' does not have any settings or code applied.")
                     raise Exception("Layer not correctly configured")
 
                 layer['Properties']['Distributed'] = DISTRIBUTED
