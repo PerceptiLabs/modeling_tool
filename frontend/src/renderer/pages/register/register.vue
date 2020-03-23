@@ -6,7 +6,7 @@
           div.logo-box.d-flex
             img(src="../../../../static/img/perceptilabs-logo-icon.svg" alt="PerceptiLabs logo")
             h1.head-text Ready to build with our visual modeling tool?
-          div.info-text Sign up to start building your model. It’s <span class='white-text'>all free</span> in our browser-based tool. You will also <span class='white-text'>receive updates</span> on our changelog!
+          div.info-text Sign up to start building your model. It’s <span class='white-text'>all free</span> in our browser-based tool.
         form.login_form(@keyup.enter="validateForm")
           h2.form-caption Get Started
           div.d-flex
