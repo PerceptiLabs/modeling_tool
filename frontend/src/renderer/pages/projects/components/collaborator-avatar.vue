@@ -1,6 +1,7 @@
 <template lang="pug">
   .collaboratorWrapper
     .collaboratorItem(
+      @click.stop=""
       v-for="(collaborator, index) in list"
       :style="generateCollaboratorItemStyle(index)"
       ) {{collaborator.name[0]}}
