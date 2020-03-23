@@ -59,6 +59,7 @@ def npy_30x28x28():
         yield f.name
         f.close()
 
+        
 @pytest.fixture(scope='module', autouse=True)
 def npy_30x28x28x3():
     np.random.seed(123)
@@ -212,3 +213,82 @@ def test_csv_shape_ok_lazy(j2_engine, csv_30x784):
     )
 
     assert layer.sample.shape == (784,)
+
+
+def test_npy_samples_appear_in_order(j2_engine, npy_30x784):
+    sources = [{'type': 'file', 'path': npy_30x784}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,
+        lazy=False
+    )
+
+    x_trn = np.array(list(layer.make_generator_training()))
+    x_val = np.array(list(layer.make_generator_validation()))
+    x_tst = np.array(list(layer.make_generator_testing()))    
+    x = np.vstack([x_trn, x_val, x_tst]) 
+
+    x_ = np.load(npy_30x784).astype(np.float32)
+    assert np.all(x == x_)
+
+
+def test_csv_samples_appear_in_order(j2_engine, csv_30x784):
+    sources = [{'type': 'file', 'path': csv_30x784}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,
+        lazy=False
+    )
+
+    x_trn = np.array(list(layer.make_generator_training()))
+    x_val = np.array(list(layer.make_generator_validation()))
+    x_tst = np.array(list(layer.make_generator_testing()))    
+    x = np.vstack([x_trn, x_val, x_tst]) 
+
+    x_ = np.loadtxt(csv_30x784, delimiter=',', skiprows=1).astype(np.float32)        
+    assert np.all(x == x_)
+    
+
+def test_npy_and_csv_samples_appear_interleaved(j2_engine, npy_30x784, csv_30x784):
+    sources = [
+        {'type': 'file', 'path': npy_30x784},
+        {'type': 'file', 'path': csv_30x784},        
+    ]
+    partitions = [(70, 20, 10), (70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,
+        lazy=False
+    )
+
+    x_trn = np.array(list(layer.make_generator_training()))
+    x_val = np.array(list(layer.make_generator_validation()))
+    x_tst = np.array(list(layer.make_generator_testing()))    
+    x = np.vstack([x_trn, x_val, x_tst]) 
+
+    mat1 = np.load(npy_30x784).astype(np.float32)
+    mat2 = np.loadtxt(csv_30x784, delimiter=',', skiprows=1).astype(np.float32)    
+
+    assert np.all(x_trn[0:21]  == mat1[0:21])
+    assert np.all(x_trn[21:42] == mat2[0:21])
+    
+    assert np.all(x_val[0:6]  == mat1[21:27])
+    assert np.all(x_val[6:12] == mat2[21:27])    
+
+    assert np.all(x_tst[0:3] == mat1[27:30])
+    assert np.all(x_tst[3:6] == mat2[27:30])    
+    
