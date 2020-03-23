@@ -216,15 +216,14 @@
         this.SET_appPath(path);
       },
       checkLocalToken() {
-
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.setUserToken(localUserToken);
-          if(['login', 'register'].includes(this.$router.history.current.name)) {
+          if(['home', 'login', 'register'].includes(this.$router.history.current.name)) {
             this.$router.replace({name: 'projects'});
           }
         } else {
-          this.$router.push({path: '/'});
+          this.$router.push({name: 'register'}).catch(err => {});
         }
       },
       /*Header actions*/
