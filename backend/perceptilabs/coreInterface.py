@@ -162,6 +162,10 @@ class coreLogic():
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal':
+                if not layer['Properties'] and not layer['Code']:
+                    self.errorQueue.put(f"The training layer '{layer['Name']}' does not have any settings or code applied.")
+                    raise Exception("Layer not correctly configured")
+
                 layer['Properties']['Distributed'] = DISTRIBUTED
                 if DISTRIBUTED:
                     labels = layer['Properties']['Labels']
@@ -480,7 +484,7 @@ class coreLogic():
             self.trainingIterations=self.savedResultsDict["trainingIterations"]
             self.resultDict=self.savedResultsDict["trainDict"]
         except KeyError:
-            log.exception("Error in getTrainingStatistics")
+            log.warning("Frontend was not able to fetch any statistics...")
             return {}
 
 
