@@ -484,7 +484,7 @@ class coreLogic():
             self.trainingIterations=self.savedResultsDict["trainingIterations"]
             self.resultDict=self.savedResultsDict["trainDict"]
         except KeyError:
-            log.exception("Error in getTrainingStatistics")
+            log.warning("Frontend was not able to fetch any statistics...")
             return {}
 
 
