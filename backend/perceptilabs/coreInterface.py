@@ -141,7 +141,6 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.setupLogic()
         self.network=network
-        print('printing network .......\n')
 
         # import json
         # with open('net.json', 'w') as f:
