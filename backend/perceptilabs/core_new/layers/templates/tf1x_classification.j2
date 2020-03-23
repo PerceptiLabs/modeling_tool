@@ -96,7 +96,7 @@
             self._input_tensor_export,
             tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
         )[output_layer_id]
-        
+
         loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
         accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))

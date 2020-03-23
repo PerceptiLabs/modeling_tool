@@ -33,11 +33,12 @@ def instantiate_layer_from_macro(j2_engine, macro_file, macro_name, macro_parame
     
     template = create_macro_loader(macro_file, macro_name, macro_parameters)
 
-    code = ''
+    code = 'import logging\n'
     if import_statements:
         code += '\n'.join(import_statements or [])
         code += '\n\n'        
     code += j2_engine.render_string(template)
+    code += 'log = logging.getLogger(__name__)\n\n'
     
     is_unix = os.name != 'nt' # Windows has permission issues when deleting tempfiles
     with NamedTemporaryFile('wt', delete=is_unix, suffix='.py') as f:
@@ -102,5 +103,4 @@ if __name__ == "__main__":
         import_statements
     )
     
-
     import pdb; pdb.set_trace()

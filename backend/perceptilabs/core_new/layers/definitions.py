@@ -185,6 +185,17 @@ DEFINITION_TABLE = {
             'beta2': lambda specs: specs['Properties']['Beta_2'],
             'distributed': lambda specs: specs['Properties']['Distributed'],
             'export_directory': resolve_checkpoint_path
-        }
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'import time',            
+            'from typing import Dict, List, Generator',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.graph import Graph',            
+            'from perceptilabs.core_new.layers.base import ClassificationLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize',
+            'from tensorflow.python.training.tracking.base import Trackable'            
+        ]
     )
 }
