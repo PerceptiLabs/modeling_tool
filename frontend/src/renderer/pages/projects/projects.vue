@@ -2,7 +2,6 @@
   div
     project-sidebar
     div.project-wrapper
-      h3.title.pl-40 /Models
       div.header-controls
         div.left-side
           span.btn-round-icon(@click="toggleSelectedItems()")
@@ -249,13 +248,6 @@
     margin-left: 40px;
     background-color: #23252A;
     height: 100vh;
-  }
-  .title {
-    padding-top: 14px;
-    padding-bottom: 18px;
-    margin-bottom: 0;
-    font-size: 24px;
-    border-bottom: 1px solid #363E51;
   }
   .header-controls {
     padding: 7px 40px;
