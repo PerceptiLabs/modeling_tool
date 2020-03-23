@@ -3,13 +3,13 @@ class {{layer_name}}(Tf1xLayer):
     def __call__(self, x: tf.Tensor) -> tf.Tensor:
         """ Takes a tensor as input and changes it to grayscale."""
         channels = x.get_shape().as_list()[-1]
-        if channels % 3==0:
-            if channels>3:
+        if channels % 3 == 0:
+            if channels > 3:
                 splits = tf.split(x, int(channels/3), -1)
-                images=[]
+                images = []
                 for split in splits:
                     images.append(tf.image.rgb_to_grayscale(split))
-                y = tf.squeeze(tf.stack(images,-1),-2)
+                y = tf.squeeze(tf.stack(images, -1), -2)
             else:
                 y = tf.image.rgb_to_grayscale(x)
         else:
@@ -151,7 +151,7 @@ class {{layer_name}}(Tf1xLayer):
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'
-        self._n_neurons = 10
+        self._n_neurons = {{n_neurons}}
         self._variables = {}
         
     def __call__(self, x: tf.Tensor):
@@ -217,8 +217,7 @@ class {{layer_name}}(Tf1xLayer):
         """        
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
             b = tf.compat.v1.get_variable('b')
-            return {b.name: b}
-    
+            return {b.name: b}    
 {% endmacro %}
 
 

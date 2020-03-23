@@ -66,7 +66,8 @@ export default {
     ...mapGetters({
       isTutorialMode: 'mod_tutorials/getIstutorialMode',
       isStoryBoard:   'mod_tutorials/getIsTutorialStoryBoard',
-      isLogin:        'mod_user/GET_userIsLogin'
+      isLogin:        'mod_user/GET_userIsLogin',
+      networkHistory: 'mod_workspace-history/GET_currentNetHistory',
     }),
     appVersion() {
       return this.$store.state.globalView.appVersion
@@ -118,6 +119,7 @@ export default {
           submenu: [
             {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',           active: this.toPrevStepHistory },
             {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',           active: this.toNextStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',           active: this.toNextStepHistory },
             {type:  'separator'},
             {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',           active: this.HCCopy },
             {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',          active: this.HCPaste },
@@ -193,6 +195,14 @@ export default {
       });
       return this.dataKeymap;
     },
+    isDisabledPrevStep() {
+      const history = this.networkHistory;
+      return !!history && history.historyStep === history.historyNet.length - 1
+    },
+    isDisabledNextStep() {
+      const history = this.networkHistory;
+      return !!history && history.historyStep === 0
+    }
   },
   watch: {
     navMenu(newMenu) {
@@ -219,8 +229,8 @@ export default {
       HCPaste:          'mod_events/EVENT_hotKeyPaste',
       HCSelectAll:      'mod_workspace/SET_elementSelectAll',
       HCDeselectAll:    'mod_workspace/SET_elementUnselect',
-      toPrevStepHistory:'mod_workspace-history/TO_prevStepHistory',
-      toNextStepHistory:'mod_workspace-history/TO_nextStepHistory',
+      toPrevStepHistoryMutation:'mod_workspace-history/TO_prevStepHistory',
+      toNextStepHistoryMutation:'mod_workspace-history/TO_nextStepHistory',
     }),
     goToLink,
     mainProcessListeners(isRemove) {
@@ -340,6 +350,18 @@ export default {
     },
     HC_unGroupLayerContainer() {
       this.$store.dispatch('mod_workspace/UNGROUP_container');
+    },
+    toPrevStepHistory(ev) {
+      ev.preventDefault();
+      if (!this.isDisabledPrevStep) {
+        this.toPrevStepHistoryMutation();
+      }
+    },
+    toNextStepHistory(ev) {
+      ev.preventDefault();
+      if(!this.isDisabledNextStep) {
+        this.toNextStepHistoryMutation()
+      }
     },
   }
 }

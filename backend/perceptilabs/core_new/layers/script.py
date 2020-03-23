@@ -1,4 +1,7 @@
 import os
+import copy
+import pprint
+import re
 import ast
 import copy
 import logging
@@ -94,15 +97,16 @@ class ScriptFactory:
         template += "        body = pickle.dumps(record.msg)\n"
         template += "        message_queue.put((b'log_message', body))\n"                
 
-        template += 'global graph, status, t_start\n'
+        template += 'global graph, status, t_start, socket\n'
         template += 'graph = None\n'
+        template += 'socket = None\n'
         template += 'status = STATUS_INITIALIZING\n'
         template += 't_start = None\n'
         template += '\n\n'
 
         line_to_node_map = {}
         for node in graph.nodes:
-            layer_code = self.render_layer_code(node)
+            layer_code = self.render_layer_code(node.layer_id, node.layer_type, node.layer_spec)
 
             offset = len(template.split('\n')) - 1
             n_lines = len(layer_code.split('\n'))
@@ -132,10 +136,6 @@ class ScriptFactory:
         template += "message_queue = Queue()\n"
         template += "event_queue = Queue()\n"                
 
-        template += "context = zmq.Context()\n"
-        template += "socket = context.socket(zmq.PUB)\n"
-        template += "socket.bind('" + session_config['addr_zmq_deploy'] + "')\n"
-        template += "log.addHandler(ZmqHandler())\n"
         template += "\n"        
         template += "app = Flask(__name__)\n"
         template += "app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True\n"
@@ -245,23 +245,40 @@ class ScriptFactory:
 
         template += "def run_training():\n"
         template += "    try:\n"
-        template += "        graph.training_nodes[0].layer_instance.run(graph)\n"
+        template += "        sentinel = object()\n"
+        template += "        iterator = graph.training_nodes[0].layer_instance.run(graph)\n"
+        template += "        result = None\n"
+        template += "        while result is not sentinel:\n"
+        template += "            result = next(iterator, sentinel)\n"
+        template += "            if result is graph:\n"
+        template += "                make_snapshot(result)\n"
+        template += "            if result is not sentinel:\n"
+        template += "                process_events(graph)\n"
+        template += "        \n"
         template += "    except Exception as e:\n"
         template += "        import traceback\n"        
         template += "        tb_list = traceback.extract_tb(e.__traceback__)\n"
         template += "        body = pickle.dumps((e, tb_list))\n"
         template += "        message_queue.put((b'exception', body))\n"                
         template += "        raise\n"
-        
+        template += "\n"
+        template += "def get_graph():\n"
+        template += "    global graph\n"
+        template += "    graph_builder = GraphBuilder()\n"
+        template += "    graph = graph_builder.build(LAYERS, EDGES)\n"
+        template += "    return graph\n"
         
         # --- CREATE MAIN FUNCTION ---
         template += 'def main(wait=False):\n'
-        template += '    global graph, status, t_start\n'
-        
+        template += "    print('Flask port: " + str(session_config['port_flask']) + "')\n"
+        template += '    global graph, status, t_start, socket\n'
+        template += "    context = zmq.Context()\n"
+        template += "    socket = context.socket(zmq.PUB)\n"
+        template += "    socket.bind('" + session_config['addr_zmq_deploy'] + "')\n"
+        template += "    log.addHandler(ZmqHandler())\n"
         template += '    threading.Thread(target=app.run, kwargs={"port": "'+session_config['port_flask']+'", "threaded": True}, daemon=True).start()\n'
         template += '    threading.Thread(target=message_queue_worker, daemon=True).start()\n'        
-        template += '    graph_builder = GraphBuilder()\n'
-        template += '    graph = graph_builder.build(LAYERS, EDGES)\n'
+        template += "    graph = get_graph()\n"
         template += '    \n'
         template += '    print(graph.training_nodes)\n'
         template += '    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot_and_process_events\n'
@@ -313,22 +330,22 @@ class ScriptFactory:
             
         return code, line_to_node_map
 
-    def render_layer_code(self, node):
-        if node.custom_code is not None:
-            code = node.custom_code
+    def render_layer_code(self, layer_id, layer_type, layer_spec, custom_code=None):
+        if custom_code is not None:
+            code = custom_code
         else:
-            code = self._render_layer_macro(node)
+            code = self._render_layer_macro(layer_id, layer_type, layer_spec)
         return code
     
-    def _render_layer_macro(self, node):
+    def _render_layer_macro(self, layer_id, layer_type, layer_spec):
         """ Creates a Jinja2 template that imports the layer macro and renders it """
-        def_ = self._definition_table.get(node.layer_type)
+        def_ = self._definition_table.get(layer_type)
 
         if def_ is None:
-            raise ScriptBuildError(f"No layer definition found for layer of type '{node.layer_type}'")
-        layer_name = node.layer_type + node.layer_id
+            raise ScriptBuildError(f"No layer definition found for layer of type '{layer_type}'")
+        layer_name = layer_type + layer_id
         
-        kwargs = self._fetch_parameters(node.layer_spec, def_.macro_parameters)
+        kwargs = self._fetch_parameters(layer_spec, def_.macro_parameters)
         kwargs['layer_name'] = "'" + layer_name + "'"
         arg_str = ', '.join(f"{k}={v}" for k, v in kwargs.items())
         
@@ -336,7 +353,7 @@ class ScriptFactory:
         template += "{{ " + def_.template_macro + "(" + arg_str + ")}}"
 
         log.debug(
-            f"Created macro loader for layer {node.layer_id} [{node.layer_type}]:\n"
+            f"Created macro loader for layer {layer_id} [{layer_type}]:\n"
             f"---------\n"            
             f"{add_line_numbering(template)}\n"
             f"---------\n"            

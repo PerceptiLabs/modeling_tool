@@ -6,6 +6,7 @@
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
 
+
         assert len(input_data_nodes) == 1
         assert len(label_data_nodes) == 1
         input_data_node = input_data_nodes[0]
@@ -96,7 +97,7 @@
             self._input_tensor_export,
             tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
         )[output_layer_id]
-        
+
         loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
         accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
@@ -219,7 +220,7 @@
                 while not self._stopped:
                     sleep_while_paused()
                     train_step()
-                    self.save_snapshot_and_process_events(graph)
+                    yield graph
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -230,7 +231,7 @@
                 while not self._stopped:
                     sleep_while_paused()
                     validation_step()
-                    self.save_snapshot_and_process_events(graph)                    
+                    yield graph
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -255,16 +256,14 @@
             while not self._stopped:
                 sleep_while_paused()
                 test_step()
-                self.save_snapshot_and_process_events(graph)                                    
+                yield graph
                 self._testing_iteration += 1
-                self.process_events(graph)                
         except tf.errors.OutOfRangeError:
             pass
 
         self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        self.save_snapshot_and_process_events(graph)
-
+        yield graph
 {% endmacro %}
 
 #################################################### Distributed Training #################################################
@@ -653,12 +652,12 @@
                             auc_train.reset_states()
                             recall_train.reset_states()
                             precision_train.reset_states()     
-
-                        self.save_snapshot_and_process_events(graph)                            
+                        yield graph                            
                         
                         self._training_iteration += 1 * n_devices
                 except tf.errors.OutOfRangeError:
                     pass
+
 
                 sess.run(validation_iterator_init)
 
@@ -676,9 +675,7 @@
                             auc_val.reset_states()
                             recall_val.reset_states()
                             precision_val.reset_states()                                
-
-                        self.save_snapshot_and_process_events(graph) 
-
+                        yield graph 
                         self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
                     pass
@@ -700,14 +697,14 @@
             try:
                 while not self._stopped:
                     self._layer_outputs = sess.run(layer_output_tensors)
-                    self.save_snapshot_and_process_events(graph)                                    
+                    yield graph                                    
                     self._testing_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
 
             self._status = 'finished'
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-            self.save_snapshot_and_process_events(graph)
+            yield graph
 {% endmacro %}
 
 

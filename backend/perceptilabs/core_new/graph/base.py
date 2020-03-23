@@ -143,18 +143,22 @@ class Graph:
 
     def get_direct_data_nodes(self, layer_id: str):
         """ Select data layers that are immediately connected to the layer """
-
         target_node = self.get_node_by_id(layer_id)
-        print("target node", target_node.layer_instance)
         
         result = []
+        if target_node.is_data_node:
+            result.append(target_node)        
 
         for data_node in self.data_nodes:
             # TODO: can we use ancesotrs instead?
             simple_paths = list(nx.all_simple_paths(self._nx_graph, data_node, target_node))
 
+            #print('paths from ', data_node.layer_id, 'to', target_node.layer_id)
+            #print('simple paths', [[x.layer_id for x in p] for p in simple_paths])
+            #import pdb; pdb.set_trace()
+
             if len(simple_paths) > 0:
-                immediate = True # Assume all connections are immediate and then verify that.
+                immediate = True # Assume all connections are immediate (pass through only one data node) and then verify that.
                 for path in simple_paths:
                     data_nodes_in_path = [n for n in path if n.is_data_node]
 
