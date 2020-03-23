@@ -189,11 +189,12 @@ DEFINITION_TABLE = {
         import_statements=[
             'import tensorflow as tf',
             'import numpy as np',
-            'import time',            
+            'import time',
+            'import os',
             'from typing import Dict, List, Generator',
             'from perceptilabs.core_new.utils import Picklable',
-            'from perceptilabs.core_new.graph import Graph',            
-            'from perceptilabs.core_new.layers.base import ClassificationLayer',
+            'from perceptilabs.core_new.graph import Graph',
+            'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize',
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]

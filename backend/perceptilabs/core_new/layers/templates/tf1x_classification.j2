@@ -6,6 +6,7 @@
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
 
+
         assert len(input_data_nodes) == 1
         assert len(label_data_nodes) == 1
         input_data_node = input_data_nodes[0]

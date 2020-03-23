@@ -16,42 +16,58 @@ def j2_engine():
     j2_engine = J2Engine(templates_directory)
     yield j2_engine
 
-    
+
 @pytest.fixture(scope='function')
-def graph(j2_engine, tmpdir):
-    tf.reset_default_graph()
+def tmpdir_del(tmpdir):
+    yield tmpdir
+    shutil.rmtree(tmpdir)
     
+
+@pytest.fixture(scope='function')
+def layer_inputs(j2_engine, tmpdir_del):
     mat_inputs = np.array([
         [0.1, 0.2, 0.3, 0.4],
         [0.1, 0.3, 0.2, 0.5],
         [0.0, 0.1, 0.1, 0.1]
     ])
-    inputs_path = os.path.join(tmpdir, 'inputs.npy')
+    inputs_path = os.path.join(tmpdir_del, 'inputs.npy')
     np.save(inputs_path, mat_inputs)
-    
-    mat_targets = np.array([
-        [1, 0, 0],
-        [0, 1, 0],
-        [0, 0, 1]
-    ])
-    targets_path = os.path.join(tmpdir, 'targets.npy')
-    np.save(targets_path, mat_targets)
 
-    layer_inputs = create_layer(
+    layer_inputs_ = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=[{'type': 'file', 'path': inputs_path}],
         partitions=[(100, 0, 0)],
     )
 
-    layer_targets = create_layer(
+    yield layer_inputs_
+    #shutil.rmtree(tmpdir_del)
+
+
+@pytest.fixture(scope='function')
+def layer_targets(j2_engine, tmpdir_del):
+    mat_targets = np.array([
+        [1, 0, 0],
+        [0, 1, 0],
+        [0, 0, 1]
+    ])
+    targets_path = os.path.join(tmpdir_del, 'targets.npy')
+    np.save(targets_path, mat_targets)
+
+    layer_targets_ = create_layer(
         j2_engine, DEFINITION_TABLE,
         'DataData',
         sources=[{'type': 'file', 'path': targets_path}],
         partitions=[(100, 0, 0)],
     )
 
-    layer_fc = create_layer(
+    yield layer_targets_
+    #shutil.rmtree(tmpdir_del)
+
+
+@pytest.fixture(scope='function')
+def layer_fc(j2_engine):
+    layer_fc_ = create_layer(
         j2_engine,
         DEFINITION_TABLE,
         'DeepLearningFC',
@@ -59,7 +75,12 @@ def graph(j2_engine, tmpdir):
         activation='tf.compat.v1.sigmoid',
         dropout=False, keep_prob=1.0
     )
+    yield layer_fc_
 
+
+def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, export_dir=None):
+    tf.reset_default_graph()
+    
     layer_training = create_layer(
         j2_engine,
         DEFINITION_TABLE,
@@ -76,7 +97,7 @@ def graph(j2_engine, tmpdir):
         momentum=0.9,
         beta1=0.9,
         distributed=False,
-        export_directory=None
+        export_directory=export_dir
     )
     
     layer_training.save_snapshot_and_process_events = lambda graph: None # TODO: use yield instead?
@@ -97,17 +118,101 @@ def graph(j2_engine, tmpdir):
     
     graph_builder = GraphBuilder()
     graph = graph_builder.build(layers, edges)    
-    yield graph
-    shutil.rmtree(tmpdir)
+    return graph
 
 
-def test_blabla(graph):
-
+def test_save_model(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
+    graph = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc)
+    
     training_layer = graph.active_training_node.layer
-    training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
+    iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
+
+    next(iterator) # First iteration (including initialization)
+    assert not os.path.isfile(os.path.join(tmpdir_del, '1', 'saved_model.pb'))
+    
+    training_layer.on_export(tmpdir_del, mode='TFModel')
+    assert os.path.isfile(os.path.join(tmpdir_del, '1', 'saved_model.pb'))
+    
+
+def test_save_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
+    graph = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph) # TODO: self reference is weird. design flaw!
+
+    next(iterator) # First iteration (including initialization)
+    assert not any(x.startswith('model.ckpt') for x in os.listdir(tmpdir_del))
+    
+    training_layer.on_export(tmpdir_del, mode='TFModel+checkpoint')
+    assert any(x.startswith('model.ckpt') for x in os.listdir(tmpdir_del))
+
+'''
+def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
+    fc1 = create_layer(
+        j2_engine,
+        DEFINITION_TABLE,
+        'DeepLearningFC',
+        n_neurons=3,
+        activation='tf.compat.v1.sigmoid',
+        dropout=False, keep_prob=1.0
+    )
+    
+    graph1 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc1)
+    
+    tl1 = graph1.active_training_node.layer
+    iterator = tl1.run(graph1) # TODO: self reference is weird. design flaw!
+    next(iterator)
+
+    weights1 = next(iter(tl1.layer_weights['layer_fc'].values()))
+
+    tl1.on_export(tmpdir_del, mode='TFModel+checkpoint')
 
     
-    #import pdb; pdb.set_trace()
+
+
+    fc2 = create_layer(
+        j2_engine,
+        DEFINITION_TABLE,
+        'DeepLearningFC',
+        n_neurons=3,
+        activation='tf.compat.v1.sigmoid',
+        dropout=False, keep_prob=1.0
+    )
+    
+    graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2, export_dir=tmpdir_del)
+    
+    tl2 = graph2.active_training_node.layer
+    iterator = tl2.run(graph2) # TODO: self reference is weird. design flaw!
+    next(iterator)
+    
+    weights2 = next(iter(tl2.layer_weights['layer_fc'].values()))
+
+
+    
+    import pdb;pdb.set_trace()
+    
+
+
+
+
+    
+    #assert os.path.isfile(os.path.join(tmpdir, '1', 'saved_model.pb'))
+
+    #import pdb;pdb.set_trace()
+    
+    #sentinel = object()
+    #result = None
+
+    #weights_list = []
+    
+    #while result is not sentinel:
+    #result = next(iterator, sentinel)
+        #w = next(iter(training_layer.layer_weights['layer_fc'].values())).copy()
+        #weights_list.append(w)
+        
+        
+'''
+        
 
 
     
