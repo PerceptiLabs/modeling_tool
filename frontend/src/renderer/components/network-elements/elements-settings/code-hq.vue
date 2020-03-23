@@ -203,6 +203,16 @@
   @import "../../../scss/base";
   @import "../../../scss/components/vscode-theme-dark_plus";
   @import "~codemirror/lib/codemirror.css";
+  
+  .code-hq {
+    max-width: calc(50vw - #{$w-sidebar} + 123px);
+  }
+  .popup_body--show-code {
+    .code-hq  {
+      max-width: none;
+    }
+  }
+  
   .code-hq {
     //font-size: 16px;
     overflow: auto;
