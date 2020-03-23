@@ -57,6 +57,20 @@ def instantiate_layer_from_macro(j2_engine, macro_file, macro_name, macro_parame
     return instance    
     
 
+def create_layer(j2_engine, definition_table, layer_type, **macro_parameters):
+    layer_def = definition_table.get(layer_type)
+
+    if 'layer_name' not in macro_parameters:
+        macro_parameters['layer_name'] = layer_type
+    
+    layer = instantiate_layer_from_macro(
+        j2_engine,
+        layer_def.template_file, layer_def.template_macro,
+        macro_parameters,
+        layer_def.import_statements
+    )
+    
+    return layer
     
 
 

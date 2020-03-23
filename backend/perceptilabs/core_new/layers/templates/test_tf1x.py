@@ -5,7 +5,7 @@ import pytest
 
 
 from perceptilabs.core_new.layers.templates.base import J2Engine
-from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_macro
+from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_macro, create_layer
 from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE
 
 
@@ -19,25 +19,10 @@ def j2_engine():
 @pytest.fixture(scope='module')    
 def sess():
     yield tf.Session()
-
-def create_layer(j2_engine, layer_type, **macro_parameters):
-    layer_def = DEFINITION_TABLE.get(layer_type)
-
-    if 'layer_name' not in macro_parameters:
-        macro_parameters['layer_name'] = layer_type
-    
-    layer = instantiate_layer_from_macro(
-        j2_engine,
-        layer_def.template_file, layer_def.template_macro,
-        macro_parameters,
-        layer_def.import_statements
-    )
-    
-    return layer
     
 
 def test_grayscale_8x8x3_to_8x8x1(j2_engine, sess):
-    layer = create_layer(j2_engine, 'ProcessGrayscale')
+    layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessGrayscale')
 
     x = tf.constant(np.random.random((8, 8, 3)))
     y = layer(x)
@@ -45,7 +30,7 @@ def test_grayscale_8x8x3_to_8x8x1(j2_engine, sess):
 
 
 def test_reshape_9x1_to_3x3(j2_engine, sess):
-    layer = create_layer(j2_engine, 'ProcessReshape',
+    layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessReshape',
                          shape=[3, 3], permutation=[0, 1]) 
     
     x = tf.constant(np.random.random((1, 9, 1)))
@@ -54,7 +39,7 @@ def test_reshape_9x1_to_3x3(j2_engine, sess):
 
     
 def test_reshape_27x1_to_3x3x3(j2_engine, sess):
-    layer = create_layer(j2_engine, 'ProcessReshape', shape=[3, 3, 3], permutation=[0, 1, 2]) 
+    layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessReshape', shape=[3, 3, 3], permutation=[0, 1, 2]) 
     
     x = tf.constant(np.random.random((1, 27, 1)))
     y = layer(x)
@@ -63,6 +48,7 @@ def test_reshape_27x1_to_3x3x3(j2_engine, sess):
     
 def test_fully_connected_1x1_should_be_normal_multiplication(j2_engine, sess):
     layer = create_layer(j2_engine,
+                         DEFINITION_TABLE,
                          'DeepLearningFC',
                          n_neurons=1,
                          activation='tf.compat.v1.sigmoid',
@@ -83,6 +69,7 @@ def test_fully_connected_1x1_should_be_normal_multiplication(j2_engine, sess):
 def test_conv2d_1x1_should_be_sum(j2_engine, sess):
     layer = create_layer(
         j2_engine,
+        DEFINITION_TABLE,
         'DeepLearningConv',
         conv_dim='2D',
         patch_size=2,
@@ -112,7 +99,7 @@ def test_conv2d_1x1_should_be_sum(j2_engine, sess):
     
 def test_one_hot_sum_of_output_equals_number_of_samples(j2_engine, sess):
     n_classes = 3
-    layer = create_layer(j2_engine, 'ProcessOneHot', n_classes=n_classes)
+    layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessOneHot', n_classes=n_classes)
 
     x = np.array([[x+1] for x in range(n_classes)])
     y = layer(tf.constant(x))    
