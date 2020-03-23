@@ -65,7 +65,16 @@ DEFINITION_TABLE = {
             'seed': 0,
             'lazy': False,
             'shuffle_buffer_size': None,
-        }
+        },
+        import_statements=[
+            'from perceptilabs.core_new.layers.base import DataLayer',
+            'from typing import Dict, Generator',
+            'import multiprocessing', 
+            'import numpy as np',
+            'import pandas as pd',
+            'import dask.dataframe as dd',                                    
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
     ),
     'ProcessGrayscale' : LayerDef(
         Tf1xLayer,

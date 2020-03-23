@@ -1,0 +1,214 @@
+import pytest
+import numpy as np
+import pandas as pd
+import tempfile
+import os
+import skimage
+import pkg_resources
+
+
+from perceptilabs.core_new.layers.templates.base import J2Engine
+from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_macro, create_layer
+from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE
+
+
+@pytest.fixture(scope='module')
+def j2_engine():
+    templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)    
+    j2_engine = J2Engine(templates_directory)
+    yield j2_engine
+
+    
+@pytest.fixture(scope='module', autouse=True)
+def npy_3000x784():
+    np.random.seed(0)
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
+        mat = np.random.random((3000, 784))
+        np.save(f.name, mat)
+        yield f.name
+        f.close()
+
+        
+@pytest.fixture(scope='module', autouse=True)        
+def csv_3000x784():
+    np.random.seed(789)    
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        mat = np.random.random((3000, 784))
+        df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
+        df.to_csv(f.name, index=False)
+        yield f.name
+        f.close()
+
+        
+@pytest.fixture(scope='module', autouse=True)
+def npy_30x784():
+    np.random.seed(123)
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
+        mat = np.random.random((30, 784))
+        np.save(f.name, mat)
+        yield f.name
+        f.close()
+
+
+@pytest.fixture(scope='module', autouse=True)
+def npy_30x28x28():
+    np.random.seed(123)
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
+        mat = np.random.random((30, 28, 28))
+        np.save(f.name, mat)
+        yield f.name
+        f.close()
+
+@pytest.fixture(scope='module', autouse=True)
+def npy_30x28x28x3():
+    np.random.seed(123)
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
+        mat = np.random.random((30, 28, 28, 3))
+        np.save(f.name, mat)
+        yield f.name
+        f.close()
+        
+        
+@pytest.fixture(scope='module', autouse=True)
+def csv_30x784():
+    np.random.seed(456)
+    with tempfile.NamedTemporaryFile(mode='w', suffix='.csv', delete=False) as f:
+        mat = np.random.random((30, 784))
+        df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
+        df.to_csv(f.name, index=False)
+        yield f.name
+        f.close()
+
+
+@pytest.fixture(scope='module', autouse=True)
+def img_5x32x32x3():
+    with tempfile.TemporaryDirectory() as dir_path:
+        for i in range(5):
+            path = os.path.join(dir_path, str(i)+'.png')            
+            matrix = (np.ones((32, 32, 3))*0.1*i).astype(np.float32)
+            skimage.io.imsave(path, matrix)
+        yield dir_path
+
+        
+def test_npy_shape_1d_ok(j2_engine, npy_30x784):
+    sources = [{'type': 'file', 'path': npy_30x784}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,        
+    )
+
+    assert layer.sample.shape == (784,)
+
+
+def test_npy_shape_2d_ok(j2_engine, npy_30x28x28):
+    sources = [{'type': 'file', 'path': npy_30x28x28}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,        
+    )
+
+    assert layer.sample.shape == (28, 28)
+    
+
+def test_npy_shape_3d_ok(j2_engine, npy_30x28x28x3):
+    sources = [{'type': 'file', 'path': npy_30x28x28x3}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,        
+    )
+
+    assert layer.sample.shape == (28, 28, 3)
+
+
+def test_csv_shape_ok(j2_engine, csv_30x784):
+    sources = [{'type': 'file', 'path': csv_30x784}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,        
+    )
+
+    assert layer.sample.shape == (784,)
+    
+
+def test_npy_shape_1d_ok_lazy(j2_engine, npy_30x784):
+    sources = [{'type': 'file', 'path': npy_30x784}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,        
+        lazy=True
+    )
+
+    assert layer.sample.shape == (784,)
+
+
+def test_npy_shape_2d_ok_lazy(j2_engine, npy_30x28x28):
+    sources = [{'type': 'file', 'path': npy_30x28x28}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,        
+        lazy=True
+    )
+
+    assert layer.sample.shape == (28, 28)
+    
+
+def test_npy_shape_3d_ok_lazy(j2_engine, npy_30x28x28x3):
+    sources = [{'type': 'file', 'path': npy_30x28x28x3}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,        
+        lazy=True
+    )
+
+    assert layer.sample.shape == (28, 28, 3)
+
+
+def test_csv_shape_ok_lazy(j2_engine, csv_30x784):
+    sources = [{'type': 'file', 'path': csv_30x784}]
+    partitions = [(70, 20, 10)]
+
+    layer = create_layer(
+        j2_engine, DEFINITION_TABLE,
+        'DataData',
+        sources=sources,
+        partitions=partitions,
+        selected_columns=None,
+        lazy=True        
+    )
+
+    assert layer.sample.shape == (784,)
