@@ -31,7 +31,7 @@ const state = {
             },
           ],
           status:'first',
-          content: `<div class="text-block">When working with AI, you can divide the process into 2 overarching steps:</div>
+          content: `<div class="text-block">When working with ML, you can divide the process into 2 overarching steps:</div>
                     <p>1) Knowing your data</p>
                     <p>2) Building your model</p>`
         }
