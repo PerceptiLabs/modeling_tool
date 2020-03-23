@@ -8,8 +8,9 @@
           span.btn-round-icon(@click="toggleSelectedItems()")
             img(v-if="isAtLeastOneItemSelected()" src="../../../../static/img/project-page/minus.svg")
             img(v-if="!isAtLeastOneItemSelected()" src="../../../../static/img/project-page/checked.svg")
-          span.btn-round-icon
+          span.btn-round-icon(@click="addNetwork()" :class="{'high-lighted': isNewUser}")
             img(src="../../../../static/img/project-page/plus.svg")
+            div(v-if="isNewUser").create-first-model Create your first model
           div.search-input
             img(src="../../../../static/img/project-page/search-input.svg")
             input(
@@ -68,7 +69,7 @@
   import projectSidebar from '@/pages/layout/project-sidebar.vue';
   import SortByButton from '@/pages/projects/components/sort-by-button.vue';
   import CollaboratorAvatar from '@/pages/projects/components/collaborator-avatar.vue'
-  import { mapMutations } from 'vuex';
+  import {mapActions, mapMutations} from 'vuex';
   const mockModelList = [
     {id: 1, dateCreated: new Date().setHours(15), dateLastOpened: new Date(), size: '10', name:'Placeholder 1', status: '75%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 1, name: 'Anton', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: true},
     {id: 2, dateCreated: new Date().setHours(3), dateLastOpened: new Date(), size: '12', name:'Placeholder 4', status: '50%', savedVersion: '-', sessionEndTime: 'Placeholder', collaborators: [{id: 2, name: 'Robert', img: null,}], lastModified: { user: {id: 1, name: 'Anton', img: null}, date: '19/02/20 13:00:00'}, isFavorite: false},
@@ -87,6 +88,7 @@
       return {
         isSelectedSortType: 0,
         searchValue: '',
+        isNewUser: true,
         sortOptions: [
           {name: 'Name', value: 1},
           {name: 'Date Last Opened', value: 2},
@@ -118,6 +120,10 @@
       this.setPageTitleMutation('')
     },
     methods: {
+      ...mapActions({
+        loadNetwork:      'mod_events/EVENT_loadNetwork',
+        addNetwork:       'mod_workspace/ADD_network',
+      }),
       ...mapMutations({
         setPageTitleMutation: 'globalView/setPageTitleMutation'
       }),
@@ -303,6 +309,10 @@
     display: flex;
     justify-content: center;
     align-self: center;    
+    &.high-lighted {
+      position: relative;
+      box-shadow: 0 0 10px #FFFFFF;
+    }
   }
   .pl-40 {
     padding-left: 40px;
@@ -393,5 +403,28 @@
   }
   .pt-4 {
     padding-top: 4px;
+  }
+  .create-first-model {
+    z-index: 10;
+    top: 31px;
+    position: absolute;
+    background: #6185EE;
+    border-radius: 2px;
+    font-size: 16px;
+    line-height: 21px;
+    width: 188px;
+    text-align: center;
+    padding-top: 11px;
+    padding-bottom: 13px;
+    &:after {
+      content: "";
+      top: -8px;
+      left: 50%;
+      transform: translateX(-50%);
+      position: absolute;
+      border-bottom: 9px solid #6185EE;
+      border-left: 6px solid transparent;
+      border-right: 6px solid transparent;
+    }
   }
 </style>
