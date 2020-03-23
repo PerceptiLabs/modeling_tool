@@ -117,7 +117,8 @@ const workspaceSaveNet = {
             prepareNet.toLocal.isTrained = true;
             return this.saveTrainedNetwork({
               'Location': [pathSaveProject],
-              'frontendNetwork': prepareNet.toFile
+              'frontendNetwork': prepareNet.toFile,
+              'networkName': this.currentNetwork.networkName
             })
           }
           else {

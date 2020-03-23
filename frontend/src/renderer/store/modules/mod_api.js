@@ -383,11 +383,11 @@ const actions = {
       });
   },
 
-  API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork}) {
+  API_saveTrainedNetwork({dispatch, getters, rootGetters}, {Location, frontendNetwork, networkName}) {
     const theData = {
       reciever: rootGetters['mod_workspace/GET_currentNetworkId'],
       action: "SaveTrained",
-      value:  {Location, frontendNetwork}
+      value:  {Location, frontendNetwork, networkName}
     };
     //console.log('SaveTrained', theData);
     return coreRequest(theData)
