@@ -151,7 +151,7 @@ class {{layer_name}}(Tf1xLayer):
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'
-        self._n_neurons = 10
+        self._n_neurons = {{n_neurons}}
         self._variables = {}
         
     def __call__(self, x: tf.Tensor):
@@ -217,8 +217,7 @@ class {{layer_name}}(Tf1xLayer):
         """        
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
             b = tf.compat.v1.get_variable('b')
-            return {b.name: b}
-    
+            return {b.name: b}    
 {% endmacro %}
 
 

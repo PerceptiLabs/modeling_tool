@@ -71,7 +71,14 @@ DEFINITION_TABLE = {
         Tf1xLayer,
         'tf1x.j2',
         'layer_tf1x_grayscale',
-        {}
+        {},
+        import_statements=[
+            'import tensorflow as tf',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'ProcessReshape': LayerDef(
         Tf1xLayer,
@@ -80,7 +87,14 @@ DEFINITION_TABLE = {
         {
             'shape': lambda specs: specs['Properties']['Shape'],
             'permutation': lambda specs: specs['Properties']['Permutation']
-        }
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'ProcessOneHot': LayerDef(
         Tf1xLayer,
@@ -88,7 +102,14 @@ DEFINITION_TABLE = {
         'layer_tf1x_one_hot',
         {
             'n_classes': lambda specs: specs['Properties']['N_class']
-        }
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'DeepLearningFC':  LayerDef(
         Tf1xLayer,
@@ -99,7 +120,15 @@ DEFINITION_TABLE = {
             'activation': resolve_tf1x_activation_name,
             'dropout': lambda specs: specs['Properties']['Dropout'],
             'keep_prob': lambda specs: specs['Properties']['Keep_prob']
-        }
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',            
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'DeepLearningConv':  LayerDef(
         Tf1xLayer,
@@ -118,7 +147,15 @@ DEFINITION_TABLE = {
             'pooling': lambda specs: specs['Properties']['Pooling'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],
             'pool_stride': lambda specs: specs['Properties']['Pool_stride'],            
-        }
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',            
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'TrainNormal': LayerDef(
         ClassificationLayer,
