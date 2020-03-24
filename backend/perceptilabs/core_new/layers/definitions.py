@@ -192,7 +192,7 @@ DEFINITION_TABLE = {
             'import time',
             'import os',
             'from typing import Dict, List, Generator',
-            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.utils import Picklable, YieldLevel',
             'from perceptilabs.core_new.graph import Graph',
             'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize',

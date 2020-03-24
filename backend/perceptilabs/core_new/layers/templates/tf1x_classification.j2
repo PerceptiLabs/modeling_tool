@@ -170,11 +170,6 @@
             {% endif %}
         {% endfilter %}                    
         
-        def sleep_while_paused():
-            while self._paused:
-                self.process_events(graph)
-                time.sleep(1.0)
-
         def train_step():
             _, self._loss_training, self._accuracy_training, \
                 self._layer_outputs, self._layer_weights, self._layer_biases, \
@@ -218,9 +213,8 @@
             sess.run(trn_init)            
             try:
                 while not self._stopped:
-                    sleep_while_paused()
                     train_step()
-                    yield graph
+                    yield YieldLevel.SNAPSHOT
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -229,9 +223,8 @@
             sess.run(val_init)            
             try:
                 while not self._stopped:
-                    sleep_while_paused()
                     validation_step()
-                    yield graph
+                    yield YieldLevel.SNAPSHOT                    
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -245,23 +238,23 @@
             self._epoch += 1
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
-            
+        yield YieldLevel.DEFAULT            
+        
         # Test loop
         self._testing_iteration = 0
         self._status = 'testing'
         sess.run(tst_init)                                
         try:
             while not self._stopped:
-                sleep_while_paused()
                 test_step()
-                yield graph
+                yield YieldLevel.SNAPSHOT
                 self._testing_iteration += 1
         except tf.errors.OutOfRangeError:
             pass
 
         self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        yield graph
+        yield YieldLevel.DEFAULT
 {% endmacro %}
 
 #################################################### Distributed Training #################################################
@@ -450,12 +443,8 @@
                     raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
                 {% endif %}
             {% endfilter %}
-
-            def sleep_while_paused():
-                while self._paused:
-                    self.process_events(graph)                    
-                    time.sleep(1.0)
-
+            
+            
             def train_step(inputs):
                 x, y = inputs
                 layer_output_tensors = model(x, y)
@@ -503,12 +492,14 @@
                     update_ops = [update_weights]
 
                 with tf.control_dependencies(update_ops):
-                    def identity(x):
+                    def add_identity(x):
                         if isinstance(x, dict):
-                            return {k: identity(v) for k, v in x.items()}
+                            return {k: add_identity(v) for k, v in x.items()}
                         else:
                             return tf.identity(x)
-                    return identity(loss_tensor), identity(accuracy_tensor), identity(layer_output_tensors), identity(layer_weight_tensors), identity(layer_bias_tensors), identity(layer_gradient_tensors)
+                    
+                    # Only tensors CREATED in this scope will be affected. Therefore, we pass them through the identity operation.
+                    return add_identity(loss_tensor), add_identity(accuracy_tensor), add_identity(layer_output_tensors), add_identity(layer_weight_tensors), add_identity(layer_bias_tensors), add_identity(layer_gradient_tensors)
 
             def validation_step(inputs):
                 x, y = inputs
@@ -550,7 +541,13 @@
                     update_ops = []
 
                 with tf.control_dependencies(update_ops):
-                    return tf.identity(loss_tensor), accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
+                    def add_identity(x):
+                        if isinstance(x, dict):
+                            return {k: add_identity(v) for k, v in x.items()}
+                        else:
+                            return tf.identity(x)
+                    
+                    return add_identity(loss_tensor), add_identity(accuracy_tensor), add_identity(layer_output_tensors), add_identity(layer_weight_tensors), add_identity(layer_bias_tensors), add_identity(layer_gradient_tensors)
 
 
             if n_devices > 1:
@@ -574,7 +571,7 @@
                 loss_train = tf.reduce_sum(dist_loss_train)
 
                 accuracy_train = tf.reduce_mean(accuracy_train.values) # TODO: how to aggregate?
-                
+
                 layer_outputs_train = reduce_per_replica(layer_outputs_train)
                 layer_gradients_train = reduce_per_replica(layer_gradients_train)
                 layer_weights_train = reduce_per_replica(layer_weights_train)
@@ -593,6 +590,8 @@
                 
                 layer_outputs_val = reduce_per_replica(layer_outputs_val)
                 layer_gradients_val = reduce_per_replica(layer_gradients_val)
+                layer_weights_val = reduce_per_replica(layer_weights_val)
+                layer_biases_val = reduce_per_replica(layer_biases_val)
 
                 # Create an exportable version of the TensorFlow graph
                 self._input_tensor_export = tf.placeholder(shape=[None] + dataset_trn.output_shapes[0].as_list(), dtype=dataset_trn.output_types[0])
@@ -650,21 +649,18 @@
                 self._validation_iteration = 0
                 self._status = 'training'
 
-                sess.run(train_iterator_init)
-                
+                sess.run(train_iterator_init)                
                 try:
                     while not self._stopped:
-                        sleep_while_paused()
-
                         self._loss_training, self._accuracy_training, \
-                        self._layer_outputs, self._layer_weights, self._layer_biases, \
-                        self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])         
+                            self._layer_outputs, self._layer_weights, self._layer_biases, \
+                            self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])         
                         
                         if INCLUDE_KERAS_METRICS:
                             auc_train.reset_states()
                             recall_train.reset_states()
-                            precision_train.reset_states()
-                        yield graph                            
+                            precision_train.reset_states()     
+                        yield YieldLevel.SNAPSHOT
                         
                         self._training_iteration += 1 * n_devices
                 except tf.errors.OutOfRangeError:
@@ -674,17 +670,16 @@
                 self._status = 'validation'
                 try:
                     while not self._stopped:
-                        sleep_while_paused()
-
                         self._loss_validation, self._accuracy_validation, \
-                        self._layer_outputs, self._layer_weights, self._layer_biases, \
-                        self._layer_gradients = sess.run([loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
+                            self._layer_outputs, self._layer_weights, self._layer_biases, \
+                            self._layer_gradients = sess.run([loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
 
                         if INCLUDE_KERAS_METRICS:
                             auc_val.reset_states()
                             recall_val.reset_states()
-                            precision_val.reset_states()
-                        yield graph 
+                            precision_val.reset_states()                                
+                        yield YieldLevel.SNAPSHOT
+
                         self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
                     pass
@@ -705,14 +700,14 @@
             try:
                 while not self._stopped:
                     self._layer_outputs = sess.run(layer_output_tensors)
-                    yield graph                                    
+                    yield YieldLevel.SNAPSHOT                                    
                     self._testing_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
 
             self._status = 'finished'
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-            yield graph
+            yield YieldLevel.DEFAULT
 {% endmacro %}
 
 
@@ -721,7 +716,7 @@
 class {{layer_name}}(ClassificationLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
-        self._batch_size = 2 # TODO: {{batch_size}}?
+        self._batch_size = 10 # TODO: {{batch_size}}?
 
         self._stopped = False
         self._paused = False

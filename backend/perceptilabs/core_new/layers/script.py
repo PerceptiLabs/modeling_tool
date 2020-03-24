@@ -74,7 +74,7 @@ class ScriptFactory:
         template += 'from tensorflow.python.training.tracking.base import Trackable\n'
         template += 'import flask'
         template += '\n\n'
-        template += 'from perceptilabs.core_new.utils import Picklable\n'
+        template += 'from perceptilabs.core_new.utils import Picklable, YieldLevel\n'
         template += 'from perceptilabs.core_new.communication.status import *\n'        
         template += 'from perceptilabs.core_new.layers import *\n'
         template += 'from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE\n'        
@@ -209,9 +209,11 @@ class ScriptFactory:
         template += "        log.debug('Processing event: ' + str(event_type) + ' '+ str(event_data))\n"        
         template += "        \n"
         template += "        if event_type == 'on_pause':\n"
-        template += "            graph.active_training_node.layer.on_pause()\n"
+        template += "            if status == STATUS_RUNNING:\n"        
+        template += "                status = STATUS_RUNNING_PAUSED\n"        
         template += "        elif event_type == 'on_resume':\n"
-        template += "            graph.active_training_node.layer.on_resume()\n"
+        template += "            if status == STATUS_RUNNING_PAUSED:\n"
+        template += "                status = STATUS_RUNNING\n"
         template += "        elif event_type == 'on_start':\n"
         template += "            status = STATUS_STARTED\n"        
         template += "        elif event_type == 'on_stop':\n"
@@ -244,16 +246,19 @@ class ScriptFactory:
         template += "\n"
 
         template += "def run_training():\n"
+        template += "    global status\n"
         template += "    try:\n"
-        template += "        sentinel = object()\n"
         template += "        iterator = graph.training_nodes[0].layer_instance.run(graph)\n"
         template += "        result = None\n"
-        template += "        while result is not sentinel:\n"
-        template += "            result = next(iterator, sentinel)\n"
-        template += "            if result is graph:\n"
-        template += "                make_snapshot(result)\n"
-        template += "            if result is not sentinel:\n"
+        template += "        while result is not YieldLevel.STOP:\n"
+        template += "            result = next(iterator, YieldLevel.STOP)\n"
+        template += "            if result is YieldLevel.SNAPSHOT:\n"
+        template += "                make_snapshot(graph)\n"
+        template += "            if result is not YieldLevel.STOP:\n"
         template += "                process_events(graph)\n"
+        template += "            while status == STATUS_RUNNING_PAUSED:\n"
+        template += "                process_events(graph)\n"
+        template += "                time.sleep(0.5)\n"        
         template += "        \n"
         template += "    except Exception as e:\n"
         template += "        import traceback\n"        
