@@ -75,7 +75,7 @@ class Core:
 
         counter = 0
         t_start = time.perf_counter()
-        while self._client.status == STATUS_RUNNING or (self._client.status == STATUS_IDLE and len(self._graphs) < self._client.snapshot_count):
+        while self._client.status in [STATUS_RUNNING, STATUS_RUNNING_PAUSED] or (self._client.status == STATUS_IDLE and len(self._graphs) < self._client.snapshot_count):
             t0 = time.perf_counter()
             errors = self._client.pop_errors()
 
