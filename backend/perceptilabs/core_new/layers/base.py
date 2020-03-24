@@ -161,29 +161,9 @@ class TrainingLayer(DataLayer):
     #    raise NotImplementedError
 
     @abstractmethod
-    def on_pause(self) -> None:
-        """Called when the pause button is clicked in the frontend. 
-        It is up to the implementing layer to pause its execution. 
-
-        CAUTION:: This method will be called from a different thread than run - keep thread-safety in mind.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def on_resume(self) -> None:
-        """Called when the resume button is clicked in the frontend. 
-        It is up to the implementing layer to resume execution. 
-        
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     def on_stop(self) -> None:
         """Called when the stop button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.
-        
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
         """
         raise NotImplementedError
     
@@ -192,7 +172,6 @@ class TrainingLayer(DataLayer):
         """Called when the export model button is clicked in the frontend. 
         It is up to the implementing layer to export the model to disk.
         
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
         Args:
             path: the path to a directory where the model will be stored.
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
@@ -223,12 +202,6 @@ class TrainingLayer(DataLayer):
         Returns:
             A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain variable name and value pairs. The values must be picklable.
         """
-        raise NotImplementedError
-
-    @property
-    @abstractmethod
-    def is_paused(self):
-        """Returns true when the training is paused."""
         raise NotImplementedError
 
     @property
