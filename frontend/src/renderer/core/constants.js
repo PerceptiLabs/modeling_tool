@@ -19,6 +19,8 @@ const hideSidebarOnBreakpoint = 1280;
 const sidebarNavCoefficientScaleCalculateFromHeight = 920;
 const filePickerStorageKey = 'filePickerPathSource';
 
+export const MODAL_PAGE_PROJECT = 'MODAL_PAGE_PROJECT';
+
 export {
   isDevelopMode,
   trainingElements,
