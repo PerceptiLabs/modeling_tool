@@ -63,7 +63,6 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('layer_biases', dict, lambda _: dict()),
         ReplicatedProperty('layer_outputs', dict, lambda _: dict()),
         ReplicatedProperty('batch_size', int, -1),
-        ReplicatedProperty('is_paused', bool, False),
         ReplicatedProperty('training_iteration', int, -1),
         ReplicatedProperty('validation_iteration', int, -1),        
         ReplicatedProperty('testing_iteration', int, -1),
