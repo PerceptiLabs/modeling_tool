@@ -443,8 +443,6 @@
                     raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
                 {% endif %}
             {% endfilter %}
-            
-            
             def train_step(inputs):
                 x, y = inputs
                 layer_output_tensors = model(x, y)
@@ -679,7 +677,6 @@
                             recall_val.reset_states()
                             precision_val.reset_states()                                
                         yield YieldLevel.SNAPSHOT
-
                         self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
                     pass
