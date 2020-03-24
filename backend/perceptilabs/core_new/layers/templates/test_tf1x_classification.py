@@ -180,6 +180,19 @@ def test_save_model(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc
     
     training_layer.on_export(tmpdir_del, mode='TFModel')
     assert os.path.isfile(os.path.join(tmpdir_del, '1', 'saved_model.pb'))
+
+
+def test_save_model_distributed(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
+    graph = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, distributed=True)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
+
+    next(iterator) # First iteration (including initialization)
+    assert not os.path.isfile(os.path.join(tmpdir_del, '1', 'saved_model.pb'))
+    
+    training_layer.on_export(tmpdir_del, mode='TFModel')
+    assert os.path.isfile(os.path.join(tmpdir_del, '1', 'saved_model.pb'))
     
 
 def test_save_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
@@ -194,6 +207,20 @@ def test_save_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets, lay
     training_layer.on_export(tmpdir_del, mode='TFModel+checkpoint')
     assert any(x.startswith('model.ckpt') for x in os.listdir(tmpdir_del))
 
+
+def test_save_checkpoint_distributed(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
+    graph = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, distributed=True)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph) # TODO: self reference is weird. design flaw!
+
+    next(iterator) # First iteration (including initialization)
+    assert not any(x.startswith('model.ckpt') for x in os.listdir(tmpdir_del))
+
+    training_layer.on_export(tmpdir_del, mode='TFModel+checkpoint')
+    assert any(x.startswith('model.ckpt') for x in os.listdir(tmpdir_del))
+
+    
 '''
 def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
     fc1 = create_layer(
