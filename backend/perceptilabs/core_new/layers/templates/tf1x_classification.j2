@@ -169,11 +169,6 @@
             {% endif %}
         {% endfilter %}                    
         
-        def sleep_while_paused():
-            while self._paused:
-                self.process_events(graph)
-                time.sleep(1.0)
-
         def train_step():
             _, self._loss_training, self._accuracy_training, \
                 self._layer_outputs, self._layer_weights, self._layer_biases, \
@@ -217,9 +212,8 @@
             sess.run(trn_init)            
             try:
                 while not self._stopped:
-                    sleep_while_paused()
                     train_step()
-                    yield graph
+                    yield YieldLevel.SNAPSHOT
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -228,9 +222,8 @@
             sess.run(val_init)            
             try:
                 while not self._stopped:
-                    sleep_while_paused()
                     validation_step()
-                    yield graph
+                    yield YieldLevel.SNAPSHOT                    
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -242,27 +235,25 @@
             )
             log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
             self._epoch += 1
-            self.process_events(graph)
-            
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
-            
+        yield YieldLevel.DEFAULT            
+        
         # Test loop
         self._testing_iteration = 0
         self._status = 'testing'
         sess.run(tst_init)                                
         try:
             while not self._stopped:
-                sleep_while_paused()
                 test_step()
-                yield graph
+                yield YieldLevel.SNAPSHOT
                 self._testing_iteration += 1
         except tf.errors.OutOfRangeError:
             pass
 
         self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        yield graph
+        yield YieldLevel.DEFAULT
 {% endmacro %}
 
 #################################################### Distributed Training #################################################
@@ -452,11 +443,6 @@
                 {% endif %}
             {% endfilter %}
 
-            def sleep_while_paused():
-                while self._paused:
-                    self.process_events(graph)                    
-                    time.sleep(1.0)
-
             def train_step(inputs):
                 x, y = inputs
                 layer_output_tensors = model(x, y)
@@ -637,12 +623,9 @@
                 self._validation_iteration = 0
                 self._status = 'training'
 
-                sess.run(train_iterator_init)
-                
+                sess.run(train_iterator_init)                
                 try:
                     while not self._stopped:
-                        sleep_while_paused()
-
                         self._loss_training, self._accuracy_training, \
                         self._layer_outputs, self._layer_weights, self._layer_biases, \
                         self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])         
@@ -651,21 +634,16 @@
                             auc_train.reset_states()
                             recall_train.reset_states()
                             precision_train.reset_states()     
-                        yield graph                            
+                        yield YieldLevel.SNAPSHOT
                         
                         self._training_iteration += 1 * n_devices
                 except tf.errors.OutOfRangeError:
                     pass
 
-
                 sess.run(validation_iterator_init)
-
-                
                 self._status = 'validation'
                 try:
                     while not self._stopped:
-                        sleep_while_paused()
-
                         self._loss_validation, self._accuracy_validation, \
                         self._layer_outputs, self._layer_weights, self._layer_biases, \
                         self._layer_gradients = sess.run([loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
@@ -674,7 +652,7 @@
                             auc_val.reset_states()
                             recall_val.reset_states()
                             precision_val.reset_states()                                
-                        yield graph 
+                        yield YieldLevel.SNAPSHOT
                         self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
                     pass
@@ -696,14 +674,14 @@
             try:
                 while not self._stopped:
                     self._layer_outputs = sess.run(layer_output_tensors)
-                    yield graph                                    
+                    yield YieldLevel.SNAPSHOT                                    
                     self._testing_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
 
             self._status = 'finished'
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-            yield graph
+            yield YieldLevel.DEFAULT
 {% endmacro %}
 
 
