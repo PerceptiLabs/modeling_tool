@@ -10,7 +10,10 @@ def log_rendering_errors(func):
         try:
             return func(*args, **kwargs)
         except jinja2.TemplateSyntaxError as e:
-            log.error(f"{str(e)} when rendering jinja template. {e.filename}:{e.lineno} '{e.message}'")
+            log.error(
+                f"{str(e)} when rendering jinja template. "
+                f"{e.filename}:{e.lineno} '{e.message}'. "
+            )
             raise
     return wrapper
 
@@ -65,6 +68,7 @@ class J2Engine:
     
     #@log_rendering_errors        
     def render_string(self, code, **kwargs):
+        #print(code)
         text = self._jenv.from_string(code).render(**kwargs)
         return text
 

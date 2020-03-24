@@ -10,6 +10,12 @@ from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_
 from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE
 from perceptilabs.core_new.graph.builder import GraphBuilder
 
+@pytest.fixture(autouse=True)
+def reset():
+    yield
+    tf.reset_default_graph()
+    
+
 @pytest.fixture(scope='module')
 def j2_engine():
     templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)    
@@ -25,12 +31,14 @@ def tmpdir_del(tmpdir):
 
 @pytest.fixture(scope='function')
 def layer_inputs(j2_engine, tmpdir_del):
-    mat_inputs = np.array([
-        [0.1, 0.2, 0.3, 1.0],
-        [0.1, 0.2, 0.3, 1.1],        
-        [0.1, -1.0, -1.0, 1.0],
-        [0.0, 0.1, 1.0, -1.0]
-    ])
+    mat_inputs = np.array(
+        [
+            [0.1, 0.2, 0.3, 1.0],
+            [0.1, 0.2, 0.3, 1.1],        
+            [0.1, -1.0, -1.0, 1.0],
+            [0.0, 0.1, 1.0, -1.0],
+        ]*4
+    )
     inputs_path = os.path.join(tmpdir_del, 'inputs.npy')
     np.save(inputs_path, mat_inputs)
 
@@ -47,12 +55,14 @@ def layer_inputs(j2_engine, tmpdir_del):
 
 @pytest.fixture(scope='function')
 def layer_targets(j2_engine, tmpdir_del):
-    mat_targets = np.array([
-        [1, 0, 0],
-        [1, 0, 0],        
-        [0, 1, 0],
-        [0, 0, 1]
-    ])
+    mat_targets = np.array(
+        [
+            [1, 0, 0],
+            [1, 0, 0],        
+            [0, 1, 0],
+            [0, 0, 1],
+        ]*4
+    )
     targets_path = os.path.join(tmpdir_del, 'targets.npy')
     np.save(targets_path, mat_targets)
 
@@ -64,7 +74,6 @@ def layer_targets(j2_engine, tmpdir_del):
     )
 
     yield layer_targets_
-    #shutil.rmtree(tmpdir_del)
 
 
 @pytest.fixture(scope='function')
@@ -80,20 +89,18 @@ def layer_fc(j2_engine):
     yield layer_fc_
 
 
-def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, export_dir=None, distributed=False):
-    tf.reset_default_graph()
-    
+def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, export_dir=None, distributed=False, learning_rate=0.3, n_epochs=200):
     layer_training = create_layer(
         j2_engine,
         DEFINITION_TABLE,
         'TrainNormal',
         output_layer='layer_fc',
         target_layer='layer_targets',
-        n_epochs=200,
+        n_epochs=n_epochs,
         loss_function='Quadratic',
         class_weights='1',
         optimizer='tf.compat.v1.train.GradientDescentOptimizer',
-        learning_rate=0.3,
+        learning_rate=learning_rate,
         decay_steps=100000,
         decay_rate=0.96,
         momentum=0.9,
@@ -101,9 +108,6 @@ def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, exp
         distributed=distributed,
         export_directory=export_dir
     )
-    
-    layer_training.save_snapshot_and_process_events = lambda graph: None # TODO: use yield instead?
-    layer_training.process_events = lambda graph: None    
     
     layers = {
         'layer_inputs': layer_inputs,
@@ -220,9 +224,8 @@ def test_save_checkpoint_distributed(j2_engine, tmpdir_del, layer_inputs, layer_
     training_layer.on_export(tmpdir_del, mode='TFModel+checkpoint')
     assert any(x.startswith('model.ckpt') for x in os.listdir(tmpdir_del))
 
-    
-'''
-def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
+def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targets):
+    # --- Create a graph ---    
     fc1 = create_layer(
         j2_engine,
         DEFINITION_TABLE,
@@ -237,14 +240,11 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
     tl1 = graph1.active_training_node.layer
     iterator = tl1.run(graph1) # TODO: self reference is weird. design flaw!
     next(iterator)
-
-    weights1 = next(iter(tl1.layer_weights['layer_fc'].values()))
-
-    tl1.on_export(tmpdir_del, mode='TFModel+checkpoint')
-
     
+    w1 = next(iter(tl1.layer_weights['layer_fc'].values()))
 
 
+    # --- Create a second graph ---
     fc2 = create_layer(
         j2_engine,
         DEFINITION_TABLE,
@@ -253,40 +253,144 @@ def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
         activation='tf.compat.v1.sigmoid',
         dropout=False, keep_prob=1.0
     )
-    
-    graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2, export_dir=tmpdir_del)
+    graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2) 
     
     tl2 = graph2.active_training_node.layer
-    iterator = tl2.run(graph2) # TODO: self reference is weird. design flaw!
+    iterator = tl2.run(graph2) 
+    next(iterator) 
+
+    # TODO: set learning rate to zero in the second graph to verify that weights are identical.    
+    w2 = next(iter(tl2.layer_weights['layer_fc'].values()))
+
+    assert np.all(w1 != w2)
+
+def test_initial_weights_differ_distributed(j2_engine, tmpdir_del, layer_inputs, layer_targets):
+    # --- Create a graph ---    
+    fc1 = create_layer(
+        j2_engine,
+        DEFINITION_TABLE,
+        'DeepLearningFC',
+        n_neurons=3,
+        activation='tf.compat.v1.sigmoid',
+        dropout=False, keep_prob=1.0
+    )
+    
+    graph1 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc1, distributed=True)
+    
+    tl1 = graph1.active_training_node.layer
+    iterator = tl1.run(graph1) # TODO: self reference is weird. design flaw!
     next(iterator)
     
-    weights2 = next(iter(tl2.layer_weights['layer_fc'].values()))
+    w1 = next(iter(tl1.layer_weights['layer_fc'].values()))
 
 
+    # --- Create a second graph ---
+    fc2 = create_layer(
+        j2_engine,
+        DEFINITION_TABLE,
+        'DeepLearningFC',
+        n_neurons=3,
+        activation='tf.compat.v1.sigmoid',
+        dropout=False, keep_prob=1.0
+    )
+    graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2, distributed=True) 
     
-    import pdb;pdb.set_trace()
+    tl2 = graph2.active_training_node.layer
+    iterator = tl2.run(graph2) 
+    next(iterator) 
+
+    # TODO: set learning rate to zero in the second graph to verify that weights are identical.    
+    w2 = next(iter(tl2.layer_weights['layer_fc'].values()))
+
+    assert np.all(w1 != w2)
+    
+    
+def test_load_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets):
+
+    # --- Create a graph, do some training and save a checkpoint ---    
+    fc1 = create_layer(
+        j2_engine,
+        DEFINITION_TABLE,
+        'DeepLearningFC',
+        n_neurons=3,
+        activation='tf.compat.v1.sigmoid',
+        dropout=False, keep_prob=1.0
+    )
+    
+    graph1 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc1)
+    
+    tl1 = graph1.active_training_node.layer
+    iterator = tl1.run(graph1) # TODO: self reference is weird. design flaw!
+
+    for i in range(3):
+        next(iterator) # Run a few iterations
+    w1 = next(iter(tl1.layer_weights['layer_fc'].values()))
+
+    tl1.on_export(tmpdir_del, mode='TFModel+checkpoint')
+
+    # --- Create a second graph and restore the checkpoint ---
+    fc2 = create_layer(
+        j2_engine,
+        DEFINITION_TABLE,
+        'DeepLearningFC',
+        n_neurons=3,
+        activation='tf.compat.v1.sigmoid',
+        dropout=False, keep_prob=1.0
+    )
+    graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2, export_dir=str(tmpdir_del), learning_rate=0.0) 
+    
+    tl2 = graph2.active_training_node.layer
+    iterator = tl2.run(graph2) 
+    next(iterator) # Since learning rate is zero, the training step will NOT change the weights. Thus they should remain equal to the checkpoint values.
+
+    # TODO: set learning rate to zero in the second graph to verify that weights are identical.    
+    w2 = next(iter(tl2.layer_weights['layer_fc'].values()))
+
+    assert np.all(w1 == w2)
     
 
-
-
-
+def test_load_checkpoint_distributed(j2_engine, tmpdir_del, layer_inputs, layer_targets):
+    # --- Create a graph ---    
+    fc1 = create_layer(
+        j2_engine,
+        DEFINITION_TABLE,
+        'DeepLearningFC',
+        n_neurons=3,
+        activation='tf.compat.v1.sigmoid',
+        dropout=False, keep_prob=1.0
+    )
     
-    #assert os.path.isfile(os.path.join(tmpdir, '1', 'saved_model.pb'))
-
-    #import pdb;pdb.set_trace()
+    graph1 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc1, distributed=True, n_epochs=5)
     
-    #sentinel = object()
-    #result = None
+    tl1 = graph1.active_training_node.layer
+    iterator = tl1.run(graph1) # TODO: self reference is weird. design flaw!
 
-    #weights_list = []
+    iteration = 0    
+    sentinel, result = object(), None
+    while result is not sentinel:
+        result = next(iterator, sentinel)
+        if iteration == 3:
+            w1 = next(iter(tl1.layer_weights['layer_fc'].values()))
+            tl1.on_export(tmpdir_del, mode='TFModel+checkpoint')                        
+        iteration += 1
+
+    # --- Create a second graph ---
+    fc2 = create_layer(
+        j2_engine,
+        DEFINITION_TABLE,
+        'DeepLearningFC',
+        n_neurons=3,
+        activation='tf.compat.v1.sigmoid',
+        dropout=False, keep_prob=1.0
+    )
+    graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2, distributed=True, export_dir=str(tmpdir_del), learning_rate=0.0) 
     
-    #while result is not sentinel:
-    #result = next(iterator, sentinel)
-        #w = next(iter(training_layer.layer_weights['layer_fc'].values())).copy()
-        #weights_list.append(w)
-        
-        
-'''
+    tl2 = graph2.active_training_node.layer
+    iterator = tl2.run(graph2) 
+    next(iterator) 
+
+    w2 = next(iter(tl2.layer_weights['layer_fc'].values()))
+    assert np.all(w1 == w2)
         
 
 

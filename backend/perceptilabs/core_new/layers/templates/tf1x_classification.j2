@@ -166,7 +166,7 @@
             {% if export_directory is not none %}        
                 path = tf.train.latest_checkpoint('{{export_directory}}')
                 status = self._checkpoint.restore(path)
-                status.assert_consumed().run_restore_ops(session=self._sess)                
+                status.assert_consumed().run_restore_ops(session=self._sess)
             {% endif %}
         {% endfilter %}                    
         
@@ -207,7 +207,7 @@
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
         log.info("Entering training loop")
-
+        
         # Training loop
         self._epoch = 0
         while self._epoch < self._n_epochs and not self._stopped:
@@ -243,8 +243,6 @@
             )
             log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
             self._epoch += 1
-            self.process_events(graph)
-            
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
             
@@ -505,7 +503,12 @@
                     update_ops = [update_weights]
 
                 with tf.control_dependencies(update_ops):
-                    return tf.identity(loss_tensor), accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
+                    def identity(x):
+                        if isinstance(x, dict):
+                            return {k: identity(v) for k, v in x.items()}
+                        else:
+                            return tf.identity(x)
+                    return identity(loss_tensor), identity(accuracy_tensor), identity(layer_output_tensors), identity(layer_weight_tensors), identity(layer_bias_tensors), identity(layer_gradient_tensors)
 
             def validation_step(inputs):
                 x, y = inputs
@@ -564,8 +567,8 @@
 
                 ##### Training statistics #####
                 dist_loss_train, accuracy_train, \
-                layer_outputs_train, layer_weights_train, layer_biases_train, \
-                layer_gradients_train = strategy.experimental_run(train_step, train_iterator)
+                    layer_outputs_train, layer_weights_train, layer_biases_train, \
+                    layer_gradients_train = strategy.experimental_run(train_step, train_iterator)
 
                 dist_loss_train = [dist_loss_train.get(device) for device in dist_loss_train.devices]
                 loss_train = tf.reduce_sum(dist_loss_train)
@@ -573,8 +576,9 @@
                 accuracy_train = tf.reduce_mean(accuracy_train.values) # TODO: how to aggregate?
                 
                 layer_outputs_train = reduce_per_replica(layer_outputs_train)
-                layer_gradients_train = reduce_per_replica(layer_gradients_train)     
-
+                layer_gradients_train = reduce_per_replica(layer_gradients_train)
+                layer_weights_train = reduce_per_replica(layer_weights_train)
+                layer_biases_train = reduce_per_replica(layer_biases_train)
                 
                 ##### Validation statistics #####
                 dist_loss_val, accuracy_val, \
@@ -621,16 +625,22 @@
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}        
             
             savables = tf.global_variables()
+            self._savables=savables
             self._saver = tf.compat.v1.train.Saver(savables)
 
             # Restore from checkpoint if specified
             {% filter remove_lspaces(8) %}
                 {% if export_directory is not none %}
+                    xx='{{export_directory}}'
+                
                     path = tf.train.latest_checkpoint('{{export_directory}}')
                     self._saver.restore(sess, path)
                 {% endif %}
-            {% endfilter %}                    
+            {% endfilter %}
 
+            self._lbc = layer_biases_train
+
+            #import pdb; pdb.set_trace()      
             log.info("Entering training loop")
 
             self._epoch = 0
@@ -645,15 +655,15 @@
                 try:
                     while not self._stopped:
                         sleep_while_paused()
-            
+
                         self._loss_training, self._accuracy_training, \
                         self._layer_outputs, self._layer_weights, self._layer_biases, \
                         self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])         
-
+                        
                         if INCLUDE_KERAS_METRICS:
                             auc_train.reset_states()
                             recall_train.reset_states()
-                            precision_train.reset_states()     
+                            precision_train.reset_states()
                         yield graph                            
                         
                         self._training_iteration += 1 * n_devices
@@ -673,7 +683,7 @@
                         if INCLUDE_KERAS_METRICS:
                             auc_val.reset_states()
                             recall_val.reset_states()
-                            precision_val.reset_states()                                
+                            precision_val.reset_states()
                         yield graph 
                         self._validation_iteration += 1 * n_devices     
                 except tf.errors.OutOfRangeError:
@@ -711,7 +721,7 @@
 class {{layer_name}}(ClassificationLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
-        self._batch_size = 10 # TODO: {{batch_size}}?
+        self._batch_size = 2 # TODO: {{batch_size}}?
 
         self._stopped = False
         self._paused = False
@@ -795,7 +805,7 @@ class {{layer_name}}(ClassificationLayer):
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
             {% filter remove_lspaces(8) %}
                 {% if distributed %}
-                    self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)    
+                    self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
                 {% else %}
                     self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
                 {% endif %}
