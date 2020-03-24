@@ -26,9 +26,10 @@ def tmpdir_del(tmpdir):
 @pytest.fixture(scope='function')
 def layer_inputs(j2_engine, tmpdir_del):
     mat_inputs = np.array([
-        [0.1, 0.2, 0.3, 0.4],
-        [0.1, 0.3, 0.2, 0.5],
-        [0.0, 0.1, 0.1, 0.1]
+        [0.1, 0.2, 0.3, 1.0],
+        [0.1, 0.2, 0.3, 1.1],        
+        [0.1, -1.0, -1.0, 1.0],
+        [0.0, 0.1, 1.0, -1.0]
     ])
     inputs_path = os.path.join(tmpdir_del, 'inputs.npy')
     np.save(inputs_path, mat_inputs)
@@ -48,6 +49,7 @@ def layer_inputs(j2_engine, tmpdir_del):
 def layer_targets(j2_engine, tmpdir_del):
     mat_targets = np.array([
         [1, 0, 0],
+        [1, 0, 0],        
         [0, 1, 0],
         [0, 0, 1]
     ])
@@ -78,7 +80,7 @@ def layer_fc(j2_engine):
     yield layer_fc_
 
 
-def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, export_dir=None):
+def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, export_dir=None, distributed=False):
     tf.reset_default_graph()
     
     layer_training = create_layer(
@@ -87,16 +89,16 @@ def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, exp
         'TrainNormal',
         output_layer='layer_fc',
         target_layer='layer_targets',
-        n_epochs=5,
+        n_epochs=200,
         loss_function='Quadratic',
         class_weights='1',
         optimizer='tf.compat.v1.train.GradientDescentOptimizer',
-        learning_rate=0.01,
+        learning_rate=0.3,
         decay_steps=100000,
         decay_rate=0.96,
         momentum=0.9,
         beta1=0.9,
-        distributed=False,
+        distributed=distributed,
         export_directory=export_dir
     )
     
@@ -120,6 +122,52 @@ def make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, exp
     graph = graph_builder.build(layers, edges)    
     return graph
 
+
+@pytest.mark.slow
+def test_convergence(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
+    graph = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
+
+
+    sentinel = object()
+    result = None
+    converged = False
+    
+    accuracy_list = []
+    while result is not sentinel and not converged:
+        result = next(iterator, sentinel)
+
+        accuracy_list.append(training_layer.accuracy_training)
+        if np.mean(accuracy_list[-10:]) >= 0.8:
+            converged = True
+            
+    assert converged
+
+
+@pytest.mark.slow
+def test_convergence_distributed(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
+    graph = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc, distributed=True)
+    
+    training_layer = graph.active_training_node.layer
+    iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
+
+
+    sentinel = object()
+    result = None
+    converged = False
+    
+    accuracy_list = []
+    while result is not sentinel and not converged:
+        result = next(iterator, sentinel)
+
+        accuracy_list.append(training_layer.accuracy_training)
+        if np.mean(accuracy_list[-10:]) >= 0.8:
+            converged = True
+            
+    assert converged
+    
 
 def test_save_model(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
     graph = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc)

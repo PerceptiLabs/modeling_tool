@@ -590,15 +590,17 @@
                 layer_outputs_val = reduce_per_replica(layer_outputs_val)
                 layer_gradients_val = reduce_per_replica(layer_gradients_val)
 
-                # Create an exportable version of the TensorFlow graph                
-                self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+                # Create an exportable version of the TensorFlow graph
+                self._input_tensor_export = tf.placeholder(shape=[None] + dataset_trn.output_shapes[0].as_list(), dtype=dataset_trn.output_types[0])
+                
                 self._output_tensor_export = model(
                     self._input_tensor_export,
-                    tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+                    tf.placeholder(shape=[None] + dataset_trn.output_shapes[1].as_list(), dtype=dataset_trn.output_types[1])
                 )[output_layer_id]
             else:
                 #dist_loss, dist_grads_train, dist_locals = strategy.experimental_run(train_step, train_iterator)
                 #dist_test = strategy.experimental_run(test_step, test_iterator) # TODO: implement this.
+
                 raise NotImplementedError
 
             sess.run(tf.global_variables_initializer())
@@ -630,7 +632,7 @@
             {% endfilter %}                    
 
             log.info("Entering training loop")
-            
+
             self._epoch = 0
             while self._epoch < self._n_epochs and not self._stopped: 
                 t0 = time.perf_counter()               
@@ -643,11 +645,11 @@
                 try:
                     while not self._stopped:
                         sleep_while_paused()
-
+            
                         self._loss_training, self._accuracy_training, \
                         self._layer_outputs, self._layer_weights, self._layer_biases, \
                         self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])         
-                        
+
                         if INCLUDE_KERAS_METRICS:
                             auc_train.reset_states()
                             recall_train.reset_states()
@@ -658,10 +660,7 @@
                 except tf.errors.OutOfRangeError:
                     pass
 
-
                 sess.run(validation_iterator_init)
-
-                
                 self._status = 'validation'
                 try:
                     while not self._stopped:
@@ -687,7 +686,6 @@
                 )
                 log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
                 self._epoch += 1
-                self.process_events(graph)
             
             self._testing_iteration = 0
             self._status = 'testing'
