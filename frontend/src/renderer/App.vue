@@ -125,9 +125,9 @@
       showMenuBar() {
         const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
 
-        // written this way for simpler if statements
-        if (GET_userIsLogin && this.$route.name === 'app') { return true; }
-        if (GET_userIsLogin && this.$route.name === 'projects') { return true; }
+        if (GET_userIsLogin && ['home', 'app', 'projects'].includes(this.$route.name)) { 
+          return true; 
+        }
 
         return false;
       }
