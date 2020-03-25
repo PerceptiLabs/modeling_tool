@@ -93,7 +93,6 @@ class getCodeV2(LW_interface_base):
         
         script_factory = ScriptFactory()        
         code = script_factory.render_layer_code(node.layer_id, node.layer_type, node.layer_spec, node.custom_code)
-
         return {'Output': code}        
 
         
