@@ -146,7 +146,6 @@ const actions = {
     commit('set_globalPressKey', 'esc');
   },
   EVENT_hotKeyCut({rootState, rootGetters, dispatch, commit}) {
-    console.log("cut-board");
     commit('mod_workspace/CLEAR_CopyElementsPosition', null, {root: true});
     if(rootGetters['mod_workspace/GET_enableHotKeyElement']) {
       let arrSelect = rootGetters['mod_workspace/GET_currentSelectedEl'];
@@ -274,6 +273,10 @@ const actions = {
             dispatch('mod_workspace/SET_elementMultiSelect', {id: netWorkList[elementId].layerId, setValue: true}, {root: true});
           }
           clipBoardNetWorkList[sourceId].connectionOut.forEach(id => {
+            if(!netWorkList[sourceId] && netWorkList[id]) {
+              commit('mod_workspace/SET_startArrowID', layerId, {root: true});
+              dispatch('mod_workspace/ADD_arrow', netWorkList[id].layerId, {root: true});
+            }
             for(let property in netWorkList) {
               if(Number(netWorkList[property].copyId) === Number(id)) {
                 commit('mod_workspace/SET_startArrowID', layerId, {root: true});
@@ -282,6 +285,10 @@ const actions = {
             }
           })
           clipBoardNetWorkList[sourceId].connectionIn.forEach(id => {
+            if(!netWorkList[sourceId] && netWorkList[id]) {
+              commit('mod_workspace/SET_startArrowID', netWorkList[id].layerId, {root: true});
+              dispatch('mod_workspace/ADD_arrow', layerId, {root: true});
+            }
             for(let property in netWorkList) {
               if(Number(netWorkList[property].copyId) === Number(id)) {
                 commit('mod_workspace/SET_startArrowID', layerId, {root: true});
