@@ -10,6 +10,11 @@ from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_
 from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE
 from perceptilabs.core_new.graph.builder import GraphBuilder
 
+
+def fix_path(x):
+    return x.replace('\\', '/')
+
+
 @pytest.fixture(autouse=True)
 def reset():
     yield
@@ -25,7 +30,7 @@ def j2_engine():
 
 @pytest.fixture(scope='function')
 def tmpdir_del(tmpdir):
-    yield str(tmpdir).replace('\\', '/')
+    yield fix_path(str(tmpdir))
     shutil.rmtree(tmpdir)
     
 
@@ -39,7 +44,7 @@ def layer_inputs(j2_engine, tmpdir_del):
             [0.0, 0.1, 1.0, -1.0],
         ]*4
     )
-    inputs_path = os.path.join(tmpdir_del, 'inputs.npy')
+    inputs_path = fix_path(os.path.join(tmpdir_del, 'inputs.npy'))
     np.save(inputs_path, mat_inputs)
 
     layer_inputs_ = create_layer(
@@ -63,7 +68,7 @@ def layer_targets(j2_engine, tmpdir_del):
             [0, 0, 1],
         ]*4
     )
-    targets_path = os.path.join(tmpdir_del, 'targets.npy')
+    targets_path = fix_path(os.path.join(tmpdir_del, 'targets.npy'))
     np.save(targets_path, mat_targets)
 
     layer_targets_ = create_layer(
@@ -180,10 +185,10 @@ def test_save_model(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc
     iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
 
     next(iterator) # First iteration (including initialization)
-    assert not os.path.isfile(os.path.join(tmpdir_del, '1', 'saved_model.pb'))
+    assert not os.path.isfile(fix_path(os.path.join(tmpdir_del, '1', 'saved_model.pb')))
     
     training_layer.on_export(tmpdir_del, mode='TFModel')
-    assert os.path.isfile(os.path.join(tmpdir_del, '1', 'saved_model.pb'))
+    assert os.path.isfile(fix_path(os.path.join(tmpdir_del, '1', 'saved_model.pb')))
 
 
 def test_save_model_distributed(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
@@ -193,10 +198,10 @@ def test_save_model_distributed(j2_engine, tmpdir_del, layer_inputs, layer_targe
     iterator = training_layer.run(graph) # TODO: self reference is weird. shouldnt be!
 
     next(iterator) # First iteration (including initialization)
-    assert not os.path.isfile(os.path.join(tmpdir_del, '1', 'saved_model.pb'))
+    assert not os.path.isfile(fix_path(os.path.join(tmpdir_del, '1', 'saved_model.pb')))
     
     training_layer.on_export(tmpdir_del, mode='TFModel')
-    assert os.path.isfile(os.path.join(tmpdir_del, '1', 'saved_model.pb'))
+    assert os.path.isfile(fix_path(os.path.join(tmpdir_del, '1', 'saved_model.pb')))
     
 
 def test_save_checkpoint(j2_engine, tmpdir_del, layer_inputs, layer_targets, layer_fc):
