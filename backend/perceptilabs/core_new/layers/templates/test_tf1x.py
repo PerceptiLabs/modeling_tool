@@ -8,7 +8,12 @@ from perceptilabs.core_new.layers.templates.base import J2Engine
 from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_macro, create_layer
 from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE
 
+@pytest.fixture(autouse=True)
+def reset():
+    yield
+    tf.reset_default_graph()
 
+    
 @pytest.fixture(scope='module')
 def j2_engine():
     templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)    
@@ -18,9 +23,9 @@ def j2_engine():
 
 @pytest.fixture(scope='function')    
 def sess():
-    tf.reset_default_graph() 
     yield tf.Session()
 
+    
 def test_grayscale_8x8x3_to_8x8x1(j2_engine, sess):
     layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessGrayscale')
 

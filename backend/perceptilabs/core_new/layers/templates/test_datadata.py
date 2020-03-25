@@ -12,6 +12,10 @@ from perceptilabs.core_new.layers.templates.utils import instantiate_layer_from_
 from perceptilabs.core_new.layers.definitions import TEMPLATES_DIRECTORY, DEFINITION_TABLE
 
 
+def fix_path(x):
+    return x.replace('\\', '/')
+
+
 @pytest.fixture(scope='module')
 def j2_engine():
     templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)    
@@ -25,7 +29,7 @@ def npy_3000x784():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
         mat = np.random.random((3000, 784))
         np.save(f.name, mat)
-        yield f.name
+        yield fix_path(f.name)
         f.close()
 
         
@@ -36,7 +40,7 @@ def csv_3000x784():
         mat = np.random.random((3000, 784))
         df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
         df.to_csv(f.name, index=False)
-        yield f.name
+        yield fix_path(f.name)
         f.close()
 
         
@@ -46,7 +50,7 @@ def npy_30x784():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
         mat = np.random.random((30, 784))
         np.save(f.name, mat)
-        yield f.name
+        yield fix_path(f.name)
         f.close()
 
 
@@ -56,7 +60,7 @@ def npy_30x28x28():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
         mat = np.random.random((30, 28, 28))
         np.save(f.name, mat)
-        yield f.name
+        yield fix_path(f.name)
         f.close()
 
         
@@ -66,7 +70,7 @@ def npy_30x28x28x3():
     with tempfile.NamedTemporaryFile(mode='w', suffix='.npy', delete=False) as f:
         mat = np.random.random((30, 28, 28, 3))
         np.save(f.name, mat)
-        yield f.name
+        yield fix_path(f.name)
         f.close()
         
         
@@ -77,7 +81,7 @@ def csv_30x784():
         mat = np.random.random((30, 784))
         df = pd.DataFrame.from_records(mat, columns=[str(x) for x in range(784)])
         df.to_csv(f.name, index=False)
-        yield f.name
+        yield fix_path(f.name)
         f.close()
 
 
@@ -88,7 +92,7 @@ def img_5x32x32x3():
             path = os.path.join(dir_path, str(i)+'.png')            
             matrix = (np.ones((32, 32, 3))*0.1*i).astype(np.float32)
             skimage.io.imsave(path, matrix)
-        yield dir_path
+        yield fix_path(dir_path)
 
         
 def test_npy_shape_1d_ok(j2_engine, npy_30x784):

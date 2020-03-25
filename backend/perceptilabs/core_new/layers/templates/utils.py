@@ -11,9 +11,9 @@ _RENDER_MACRO_TEMPLATE = \
 
 def create_macro_loader(macro_file, macro_name, macro_parameters):
     """ Creates a Jinja2 template for loading a macro """
-
+    
     _macro_params = {}    
-    for arg_name, arg_value in macro_parameters.items():
+    for arg_name, arg_value in macro_parameters.items():        
         if isinstance(arg_value, str):
             arg_value = f"'{arg_value}'"
         _macro_params[arg_name] = arg_value        
