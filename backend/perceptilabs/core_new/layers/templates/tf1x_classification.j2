@@ -6,6 +6,7 @@
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
 
+
         assert len(input_data_nodes) == 1
         assert len(label_data_nodes) == 1
         input_data_node = input_data_nodes[0]
@@ -96,7 +97,7 @@
             self._input_tensor_export,
             tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
         )[output_layer_id]
-        
+
         loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
         accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
@@ -166,7 +167,7 @@
             {% if export_directory is not none %}        
                 path = tf.train.latest_checkpoint('{{export_directory}}')
                 status = self._checkpoint.restore(path)
-                status.assert_consumed().run_restore_ops(session=self._sess)                
+                status.assert_consumed().run_restore_ops(session=self._sess)
             {% endif %}
         {% endfilter %}                    
         
@@ -214,7 +215,7 @@
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
         log.info("Entering training loop")
-
+        
         # Training loop
         self._epoch = 0
         while self._epoch < self._n_epochs and not self._stopped:
@@ -454,7 +455,6 @@
                     raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
                 {% endif %}
             {% endfilter %}
-
             def train_step(inputs):
                 x, y = inputs
                 layer_output_tensors = model(x, y)
@@ -502,7 +502,14 @@
                     update_ops = [update_weights]
 
                 with tf.control_dependencies(update_ops):
-                    return tf.identity(loss_tensor), accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
+                    def add_identity(x):
+                        if isinstance(x, dict):
+                            return {k: add_identity(v) for k, v in x.items()}
+                        else:
+                            return tf.identity(x)
+                    
+                    # Only tensors CREATED in this scope will be affected. Therefore, we pass them through the identity operation.
+                    return add_identity(loss_tensor), add_identity(accuracy_tensor), add_identity(layer_output_tensors), add_identity(layer_weight_tensors), add_identity(layer_bias_tensors), add_identity(layer_gradient_tensors)
 
             def validation_step(inputs):
                 x, y = inputs
@@ -544,7 +551,13 @@
                     update_ops = []
 
                 with tf.control_dependencies(update_ops):
-                    return tf.identity(loss_tensor), accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
+                    def add_identity(x):
+                        if isinstance(x, dict):
+                            return {k: add_identity(v) for k, v in x.items()}
+                        else:
+                            return tf.identity(x)
+                    
+                    return add_identity(loss_tensor), add_identity(accuracy_tensor), add_identity(layer_output_tensors), add_identity(layer_weight_tensors), add_identity(layer_bias_tensors), add_identity(layer_gradient_tensors)
 
 
             if n_devices > 1:
@@ -561,17 +574,18 @@
 
                 ##### Training statistics #####
                 dist_loss_train, accuracy_train, \
-                layer_outputs_train, layer_weights_train, layer_biases_train, \
-                layer_gradients_train = strategy.experimental_run(train_step, train_iterator)
+                    layer_outputs_train, layer_weights_train, layer_biases_train, \
+                    layer_gradients_train = strategy.experimental_run(train_step, train_iterator)
 
                 dist_loss_train = [dist_loss_train.get(device) for device in dist_loss_train.devices]
                 loss_train = tf.reduce_sum(dist_loss_train)
 
                 accuracy_train = tf.reduce_mean(accuracy_train.values) # TODO: how to aggregate?
-                
-                layer_outputs_train = reduce_per_replica(layer_outputs_train)
-                layer_gradients_train = reduce_per_replica(layer_gradients_train)     
 
+                layer_outputs_train = reduce_per_replica(layer_outputs_train)
+                layer_gradients_train = reduce_per_replica(layer_gradients_train)
+                layer_weights_train = reduce_per_replica(layer_weights_train)
+                layer_biases_train = reduce_per_replica(layer_biases_train)
                 
                 ##### Validation statistics #####
                 dist_loss_val, accuracy_val, \
@@ -586,16 +600,20 @@
                 
                 layer_outputs_val = reduce_per_replica(layer_outputs_val)
                 layer_gradients_val = reduce_per_replica(layer_gradients_val)
+                layer_weights_val = reduce_per_replica(layer_weights_val)
+                layer_biases_val = reduce_per_replica(layer_biases_val)
 
-                # Create an exportable version of the TensorFlow graph                
-                self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+                # Create an exportable version of the TensorFlow graph
+                self._input_tensor_export = tf.placeholder(shape=[None] + dataset_trn.output_shapes[0].as_list(), dtype=dataset_trn.output_types[0])
+                
                 self._output_tensor_export = model(
                     self._input_tensor_export,
-                    tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+                    tf.placeholder(shape=[None] + dataset_trn.output_shapes[1].as_list(), dtype=dataset_trn.output_types[1])
                 )[output_layer_id]
             else:
                 #dist_loss, dist_grads_train, dist_locals = strategy.experimental_run(train_step, train_iterator)
                 #dist_test = strategy.experimental_run(test_step, test_iterator) # TODO: implement this.
+
                 raise NotImplementedError
 
             sess.run(tf.global_variables_initializer())
@@ -616,18 +634,24 @@
             self._variables = {k: v for k, v in locals().items() if can_serialize(v)}        
             
             savables = tf.global_variables()
+            self._savables=savables
             self._saver = tf.compat.v1.train.Saver(savables)
 
             # Restore from checkpoint if specified
             {% filter remove_lspaces(8) %}
                 {% if export_directory is not none %}
+                    xx='{{export_directory}}'
+                
                     path = tf.train.latest_checkpoint('{{export_directory}}')
                     self._saver.restore(sess, path)
                 {% endif %}
-            {% endfilter %}                    
+            {% endfilter %}
 
+            self._lbc = layer_biases_train
+
+            #import pdb; pdb.set_trace()      
             log.info("Entering training loop")
-            
+
             self._epoch = 0
             while self._epoch < self._n_epochs and not self._stopped: 
                 t0 = time.perf_counter()               
@@ -639,8 +663,8 @@
                 try:
                     while not self._stopped:
                         self._loss_training, self._accuracy_training, \
-                        self._layer_outputs, self._layer_weights, self._layer_biases, \
-                        self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])         
+                            self._layer_outputs, self._layer_weights, self._layer_biases, \
+                            self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])         
                         
                         if INCLUDE_KERAS_METRICS:
                             auc_train.reset_states()
@@ -657,8 +681,8 @@
                 try:
                     while not self._stopped:
                         self._loss_validation, self._accuracy_validation, \
-                        self._layer_outputs, self._layer_weights, self._layer_biases, \
-                        self._layer_gradients = sess.run([loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
+                            self._layer_outputs, self._layer_weights, self._layer_biases, \
+                            self._layer_gradients = sess.run([loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
 
                         if INCLUDE_KERAS_METRICS:
                             auc_val.reset_states()
@@ -675,7 +699,6 @@
                 )
                 log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
                 self._epoch += 1
-                self.process_events(graph)
             
             self._testing_iteration = 0
             self._status = 'testing'
@@ -770,7 +793,7 @@ class {{layer_name}}(ClassificationLayer):
         if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
             {% filter remove_lspaces(8) %}
                 {% if distributed %}
-                    self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)    
+                    self._saver.save(self._sess, os.path.join(path, 'model.ckpt'), global_step=0)
                 {% else %}
                     self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
                 {% endif %}
