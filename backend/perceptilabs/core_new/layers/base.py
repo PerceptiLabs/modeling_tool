@@ -73,7 +73,7 @@ class DataLayer(BaseLayer):
 
 class InnerLayer(BaseLayer):
     """Base class for any layer that is not a DataLayer or TrainingLayer. These layers typically transform the data somehow."""
-    
+
     @abstractmethod
     def __call__(self, x: ...) -> Any:
         """ Returns a transformed version of the input data.

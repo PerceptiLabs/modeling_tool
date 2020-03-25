@@ -1,6 +1,7 @@
 import jinja2
 import logging
 
+from perceptilabs.utils import add_line_numbering
 
 log = logging.getLogger(__name__)
 
@@ -19,7 +20,7 @@ def log_rendering_errors(func):
 
 
 class J2Engine:
-    def __init__(self, templates_directory):
+    def __init__(self, templates_directory, verbose=False):
         self._templates_directory = templates_directory
         self._jenv = jinja2.Environment(loader=jinja2.FileSystemLoader(templates_directory),
                                         trim_blocks=True,
@@ -36,6 +37,7 @@ class J2Engine:
 
         self._jenv.filters['remove_lspaces'] = self.remove_lspaces
         self._jenv.filters['call_macro'] = self.call_macro
+        self._verbose = verbose
 
     @property
     def templates_directory(self):
@@ -64,12 +66,20 @@ class J2Engine:
     #@log_rendering_errors
     def render(self, path, **kwargs):
         text = self._jenv.get_template(path).render(**kwargs)
+
+        if self._verbose:
+            log.info(add_line_numbering(text))
+        
         return text
     
     #@log_rendering_errors        
     def render_string(self, code, **kwargs):
         #print(code)
         text = self._jenv.from_string(code).render(**kwargs)
+
+        if self._verbose:
+            log.info(add_line_numbering(text))
+        
         return text
 
 

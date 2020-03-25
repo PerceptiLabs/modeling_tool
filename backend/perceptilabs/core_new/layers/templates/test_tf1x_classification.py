@@ -24,7 +24,7 @@ def reset():
 @pytest.fixture(scope='module')
 def j2_engine():
     templates_directory = pkg_resources.resource_filename('perceptilabs', TEMPLATES_DIRECTORY)    
-    j2_engine = J2Engine(templates_directory)
+    j2_engine = J2Engine(templates_directory, verbose=True)
     yield j2_engine
 
 
@@ -229,6 +229,7 @@ def test_save_checkpoint_distributed(j2_engine, tmpdir_del, layer_inputs, layer_
     training_layer.on_export(tmpdir_del, mode='TFModel+checkpoint')
     assert any(x.startswith('model.ckpt') for x in os.listdir(tmpdir_del))
 
+    
 def test_initial_weights_differ(j2_engine, tmpdir_del, layer_inputs, layer_targets):
     # --- Create a graph ---    
     fc1 = create_layer(
@@ -388,6 +389,7 @@ def test_load_checkpoint_distributed(j2_engine, tmpdir_del, layer_inputs, layer_
         activation='tf.compat.v1.sigmoid',
         dropout=False, keep_prob=1.0
     )
+    
     graph2 = make_graph(j2_engine, tmpdir_del, layer_inputs, layer_targets, fc2, distributed=True, export_dir=str(tmpdir_del), learning_rate=0.0) 
     
     tl2 = graph2.active_training_node.layer
@@ -396,6 +398,7 @@ def test_load_checkpoint_distributed(j2_engine, tmpdir_del, layer_inputs, layer_
 
     w2 = next(iter(tl2.layer_weights['layer_fc'].values()))
     assert np.all(w1 == w2)
+
         
 
 

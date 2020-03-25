@@ -51,6 +51,16 @@ def resolve_checkpoint_path(specs):
     return ckpt_path
 
 
+def resolve_custom_code(specs):
+    if specs['Code'] is None:
+        return None
+    
+    if specs['Code'].get('Output') is None:
+        return None
+
+    code = specs['Code']['Output']
+    return code
+
 DEFINITION_TABLE = {
     'DataData': LayerDef(
         DataLayer,
@@ -183,8 +193,28 @@ DEFINITION_TABLE = {
             'momentum': lambda specs: specs['Properties']['Momentum'],
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
-            'distributed': lambda specs: specs['Properties']['Distributed'],
-            'export_directory': resolve_checkpoint_path
+            'distributed': lambda specs: specs['Properties'].get('Distributed', False),
+            'export_directory': resolve_checkpoint_path            
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'import time',
+            'import os',
+            'from typing import Dict, List, Generator',
+            'from perceptilabs.core_new.utils import Picklable, YieldLevel',
+            'from perceptilabs.core_new.graph import Graph',
+            'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize',
+            'from tensorflow.python.training.tracking.base import Trackable'            
+        ]
+    ),
+    'LayerCustom': LayerDef(
+        InnerLayer,
+        'custom.j2',
+        'layer_custom_inner',
+        {
+            'code': resolve_custom_code
         },
         import_statements=[
             'import tensorflow as tf',
@@ -200,3 +230,7 @@ DEFINITION_TABLE = {
         ]
     )
 }
+
+
+
+    

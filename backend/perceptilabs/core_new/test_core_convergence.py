@@ -55,7 +55,7 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [],
                 "forward_connections": [["3", "reshape"]],
-                "Code": "",
+                "Code": None,
                 "checkpoint": []
             },
             "2": {
@@ -73,7 +73,7 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [],
                 "forward_connections": [["5", "one_hot"]],
-                "Code": "",
+                "Code": None,
                 "checkpoint": []
             },
             "3": {
@@ -85,7 +85,7 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["1", "data_inputs"]],
                 "forward_connections": [["4", "fc"]],
-                "Code": "",
+                "Code": None,
                 "checkpoint": []
             },
             "4": {
@@ -99,7 +99,7 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["3", "reshape"]],
                 "forward_connections": [["6", "training"]],
-                "Code": "",
+                "Code": None,
                 "checkpoint": []
             },
             "5": {
@@ -110,7 +110,7 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["2", "data_labels"]],
                 "forward_connections": [["6", "training"]],
-                "Code": "",
+                "Code": None,
                 "checkpoint": []
             },
             "6": {
@@ -132,7 +132,7 @@ def graph_spec_binary_classification():
                 },
                 "backward_connections": [["4", "fc"], ["5", "one_hot"]],
                 "forward_connections": [],
-                "Code": "",
+                "Code": None,
                 "checkpoint": []
             }
         }

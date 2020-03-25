@@ -22,7 +22,7 @@ from perceptilabs.core_new.networkCache import NetworkCache
 from perceptilabs.codehq import CodeHqNew as CodeHq
 
 #LW interface
-from perceptilabs.lwInterface import getGraphOrder, getDataMeta, getPartitionSummary, getCode, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getGraphOrder, getDataMeta, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
 
@@ -194,7 +194,12 @@ class Interface():
                 layerSettings = value["layerSettings"]
                 jsonNetwork[Id]["Properties"]=layerSettings
 
-            return getCode(id_=Id, network=jsonNetwork).run()
+            if self._core_mode == 'v1':
+                get_code = getCodeV1(id_=Id, network=jsonNetwork)
+            else:
+                get_code = getCodeV2(id_=Id, network=jsonNetwork)                
+            
+            return get_code.run()
 
         elif action == "getNetworkInputDim":
             jsonNetwork=value

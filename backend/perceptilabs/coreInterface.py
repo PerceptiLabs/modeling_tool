@@ -138,7 +138,7 @@ class coreLogic():
 
             replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
             graph_builder = GraphBuilder(replica_by_name)
-            graph = graph_builder.build_from_spec(graph_spec, config)
+            graph = graph_builder.build_from_spec(graph_spec)
             
             script_factory = ScriptFactory()        
             code = script_factory.make(graph, config)
