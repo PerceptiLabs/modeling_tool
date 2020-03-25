@@ -25,6 +25,7 @@ def j2_engine():
 def sess():
     yield tf.Session()
 
+    
 def test_grayscale_8x8x3_to_8x8x1(j2_engine, sess):
     layer = create_layer(j2_engine, DEFINITION_TABLE, 'ProcessGrayscale')
 

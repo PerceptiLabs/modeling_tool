@@ -25,7 +25,7 @@ def j2_engine():
 
 @pytest.fixture(scope='function')
 def tmpdir_del(tmpdir):
-    yield tmpdir
+    yield str(tmpdir).replace('\\', '/')
     shutil.rmtree(tmpdir)
     
 
