@@ -47,7 +47,7 @@
       }
     },
     created() {
-      this.setActivePageAction('Jora')
+      // this.setActivePageAction()
     },
     computed:{
       isOpen() {

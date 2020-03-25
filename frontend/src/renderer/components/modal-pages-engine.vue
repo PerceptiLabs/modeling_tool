@@ -1,17 +1,37 @@
 <template lang="pug">
-  div(v-if="isOpen" @click="closePageAction()").modal-page-engine-wrapper
-    create-select-project(:v-if="currentPage === MODAL_PAGE_PROJECT")
+  div(v-if="isOpen")#modal-page-engine-wrapper.modal-page-engine-wrapper
+    create-select-project(v-if="currentPage === MODAL_PAGE_PROJECT")
+    page-login(v-else-if="currentPage === MODAL_PAGE_SIGN_IN")
+    page-register(v-else-if="currentPage === MODAL_PAGE_SIGN_UP")
+    page-restore-account(v-else-if="currentPage === MODAL_PAGE_RESTORE_ACCOUNT")
 </template>
 <script>
   import { mapActions } from "vuex";
   import CreateSelectProject from "@/pages/create-select-project/create-select-project";
-  import { MODAL_PAGE_PROJECT } from "@/core/constants";
+  import { MODAL_PAGE_PROJECT, MODAL_PAGE_SIGN_IN, MODAL_PAGE_SIGN_UP, MODAL_PAGE_RESTORE_ACCOUNT } from "@/core/constants";
+  import PageLogin from "@/pages/login/login";
+  import PageRegister from "@/pages/register/register";
+  import PageRestoreAccount from "@/pages/restore-account/restore-account";
+  
+  let visibilityWatcher = null;
   
   export default {
     name: 'ModalPagesEngine',
-    components: {CreateSelectProject},
+    components: {PageRestoreAccount, PageRegister, PageLogin, CreateSelectProject},
     created() {
-      this.setActivePageAction(MODAL_PAGE_PROJECT)
+      let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
+      
+      if(!localUserToken) {
+        this.setActivePageAction(MODAL_PAGE_SIGN_UP)
+      }
+    },
+    data: function() {
+      return {
+        MODAL_PAGE_PROJECT,
+        MODAL_PAGE_SIGN_UP,
+        MODAL_PAGE_SIGN_IN,
+        MODAL_PAGE_RESTORE_ACCOUNT,
+      }
     },
     computed:{
       isOpen() {
@@ -19,6 +39,20 @@
       },
       currentPage() {
         return this.$store.state.modal_pages.currentPage
+      },
+    },
+    
+    watch:{
+      isOpen(isOpened) {
+        if(isOpened) {
+          visibilityWatcher = setInterval(() => {
+            const el = document.getElementById('modal-page-engine-wrapper');
+            if(!el) { location.reload();  }
+            el.style.display="block";
+          }, 2000)
+        } else {
+          clearInterval(visibilityWatcher);
+        }
       }
     },
     methods: {
@@ -39,6 +73,6 @@
     min-height: 100%;
     background: rgba(35, 37, 42, 0.7);
     backdrop-filter: blur(17px);
-    z-index: 999;
+    z-index: 12;
   }
 </style>

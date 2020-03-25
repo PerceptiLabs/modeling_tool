@@ -245,7 +245,6 @@
             this.$router.replace({name: 'projects'});
           }
         }
-        else this.trackerInitUser(this.userId)
       },
       /*Header actions*/
       appClose() {

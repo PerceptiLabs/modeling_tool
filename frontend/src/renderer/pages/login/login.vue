@@ -1,7 +1,6 @@
 <template lang="pug">
   logout-user-page-wrap(
-    title-page="Log in please"
-    sub-title="Enter your Email & Password"
+    title-page="Log in"
   )
     form.login_form(@keyup.enter="validateForm")
       .form_holder
@@ -12,44 +11,58 @@
         )
         p.text-error(v-show="errors.has('Email')") {{ errors.first('Email') }}
       .form_holder
-        input(type="password" placeholder="Password"
-          v-model="userPass"
-          name="Password"
-          v-validate="'required|min:6'"
-        )
+        .relative
+          input(
+            :type="passwordVisibility.password ? 'text' : 'password'"
+            placeholder="Password"
+            v-model="userPass"
+            name="Password"
+            v-validate="'required|min:6'"
+          )
+          img.show-hide-password-icon(
+            src="../../../../static/img/inputs/show-hide.png"
+            alt="show-hide-password"
+            @click="togglePasswordVisibility('password')"
+          )
         p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
         .forgot-password-box
-          a(v-if="isWeb").btn.btn--link-without-underline(
+          button(v-if="isWeb").btn.btn--link-without-underline(
             :href="`${baseUrlSite}/restore-account`"
-            @click.prevent="toLink(`${baseUrlSite}/restore-account`)"
+            @click="setActivePageAction(MODAL_PAGE_RESTORE_ACCOUNT)"
           ) Forgot password?
           router-link(v-if="!isWeb").btn.btn--link-without-underline(:to="{name: 'restore-account'}") Forgot password?
-      .form_holder.login-form_actions
-        .form_row
-          base-checkbox(v-model="saveToken") Remember me
-          button.btn.btn--dark-blue-rev(type="button" @click="validateForm" :disabled="isLoading") Log in
-      .form_holder
-        router-link.btn.btn--link(:to="{name: 'register'}") Register new account
-
+        base-checkbox.remember-me(v-model="saveToken")
+          span.fz-16 Remember me
+    .form_holder.login-form_actions
+      .form_row
+        button.btn.btn--dark-blue-rev.log-in-btn(type="button" @click="validateForm" :disabled="isLoading") Log in
+    .form_holder.fz-16.italic.text-left
+      span Don't have an account? 
+      button.btn.btn--link(@click="setActivePageAction(MODAL_PAGE_SIGN_UP)") Register here
 </template>
 
 <script>
   import { baseUrlSite }    from '@/core/constants.js'
-  import { goToLink, encryptionData }       from '@/core/helpers.js'
-
+  import { goToLink, encryptionData, isWeb }       from '@/core/helpers.js'
+  
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
-  import {isWeb} from "@/core/helpers";
-
+  import {mapActions} from "vuex";
+  import {MODAL_PAGE_SIGN_UP, MODAL_PAGE_RESTORE_ACCOUNT} from "@/core/constants";
 export default {
   name: 'PageLogin',
   components: { LogoutUserPageWrap },
   data() {
     return {
-      isWeb: isWeb(),
       userEmail: '',
       userPass: '',
       saveToken: true,
-      baseUrlSite
+      baseUrlSite,
+      passwordVisibility: {
+        password: false,
+      },
+      isWeb: isWeb(),
+      MODAL_PAGE_SIGN_UP,
+      MODAL_PAGE_RESTORE_ACCOUNT,
     }
   },
   computed: {
@@ -58,6 +71,13 @@ export default {
     },
   },
   methods: {
+    ...mapActions({
+      setActivePageAction: 'modal_pages/setActivePageAction',
+      closeActivePageAction: 'modal_pages/closePageAction',
+    }),
+    togglePasswordVisibility(fieldName) {
+      this.passwordVisibility[fieldName] = !this.passwordVisibility[fieldName];
+    },
     toLink(url) {
       goToLink(url)
     },
@@ -78,14 +98,18 @@ export default {
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
         .then((tokens)=> {
-          if(isWeb()) {
-            this.$store.dispatch('mod_user/SET_userTokenSession', tokens);
-          }
-          if(this.saveToken) {
-            this.$store.dispatch('mod_user/SET_userTokenLocal', tokens);
-          }
-          if(isWeb()) {
-            this.$store.dispatch('mod_api/API_setUserInCore');
+          if(tokens) {
+            if(isWeb()) {
+              this.$store.dispatch('mod_user/SET_userTokenSession', tokens);
+            }
+            if(this.saveToken) {
+              this.$store.dispatch('mod_user/SET_userTokenLocal', tokens);
+            }
+            if(isWeb()) {
+              this.$store.dispatch('mod_api/API_setUserInCore');
+            }
+            
+            this.closeActivePageAction();
           }
         })
         .catch((error)=> {console.log(error)})
@@ -98,5 +122,49 @@ export default {
   .forgot-password-box{
     margin-top: 1rem;
     text-align: left;
+  }
+  .login_form {
+    padding-top: 30px;
+  }
+  .remember-me {
+    float: left;
+    color: #fff;
+    .checkbox-text {
+      font-size: 16px !important; 
+    }
+  }
+  .remember-me {
+    margin-top: 15px;
+  }
+  .fz-16 {
+    font-size: 16px;
+  }
+  .log-in-btn {
+    width: 100%;
+    height: 35px;
+    font-weight: bold;
+    font-size: 16px;
+  }
+  .italic {
+    font-style: italic;
+  }
+  .btn--link {
+    color: #6E92FA;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  .text-left {
+    text-align: left;
+  }
+  .relative {
+    position: relative;
+  }
+  .show-hide-password-icon {
+    cursor: pointer;
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
   }
 </style>
