@@ -60,6 +60,13 @@
         display: block;
       }
     }
+    &:hover {
+      .with-border {
+        width: 28px;
+        height: 28px;
+        border: 4px solid #23252A;
+      }
+    }
   }
   .profile-item-drop-down {
     display: none;
@@ -74,20 +81,24 @@
     min-width: 230px;
   }
   .profile-item-Avatar {
-    width: 20px;
-    height: 20px;
+    width: 28px;
+    height: 28px;
     border-radius: 50%;
     box-sizing: border-box;
     background-color: #FE7373;
     text-align: center;
-    line-height: 20px;
+    line-height: 19px;
     text-transform: uppercase;
     font-size: 14px;
     color: #fff;
-    &.with-border {
-      box-sizing: content-box;
-      border: 4px solid #23252A;
-    }
+    border: 4px solid #363E50;
+    /*&.with-border {*/
+    /*  &:hover {*/
+    /*    width: 28px;*/
+    /*    height: 28px;*/
+    /*    border: 4px solid #23252A; */
+    /*  }*/
+    /*}*/
   }
   .profile-item-wrapper {
     padding: 13px 13px 0;
