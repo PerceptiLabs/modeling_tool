@@ -141,7 +141,6 @@ class coreLogic():
         #Start the backendthread and give it the network
         self.setupLogic()
         self.network=network
-        print('printing network .......\n')
 
         # import json
         # with open('net.json', 'w') as f:
@@ -162,6 +161,10 @@ class coreLogic():
 
         for _id, layer in network['Layers'].items():
             if layer['Type'] == 'TrainNormal':
+                if not layer['Properties'] and not layer['Code']:
+                    self.errorQueue.put(f"The training layer '{layer['Name']}' does not have any settings or code applied.")
+                    raise Exception("Layer not correctly configured")
+
                 layer['Properties']['Distributed'] = DISTRIBUTED
                 if DISTRIBUTED:
                     labels = layer['Properties']['Labels']
@@ -317,8 +320,17 @@ class coreLogic():
                 raise Exception("'all_tensors' was not found so the Saver could not create any references to the exported checkpoints.\nTry adding 'api.data.store(all_tensors=api.data.get_tensors())' to your Training Layer.")
             elif self.saver["all_tensors"]==[]:
                 raise Exception("'all_tensors' was found but contained no variables.")
+
+            rootPath=os.path.abspath(value["Location"][0])
+            if not os.path.isdir(rootPath):
+                return {"content":"Save Failed.\nSave folder does not exist."}
+
+            path = os.path.join(rootPath,value['networkName'])
+            if os.path.isdir(rootPath) and not os.path.isdir(path):
+                os.mkdir(path)
+
             exporter = exportNetwork(self.saver)
-            path=os.path.abspath(value["Location"][0])
+            
             frontendNetwork=value["frontendNetwork"]
             if not os.path.exists(path):
                 os.mkdir(path)
@@ -480,7 +492,7 @@ class coreLogic():
             self.trainingIterations=self.savedResultsDict["trainingIterations"]
             self.resultDict=self.savedResultsDict["trainDict"]
         except KeyError:
-            log.exception("Error in getTrainingStatistics")
+            log.warning("Frontend was not able to fetch any statistics...")
             return {}
 
 

@@ -18,7 +18,7 @@
             input.ellipsis(type="text"
               v-model="settings.projectPath"
               :class="{'bg-error': !settings.projectPath}"
-              @click="loadPathProject"
+              @click="openFilePicker"
             )
       .settings-layer_section
         .form_row
@@ -101,20 +101,31 @@ export default {
       this.promiseFail(false)
     },
     answerPopup() {
-      if(!this.popupSettings.isFreezeInfo) {
-        this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
-      }
+      // if(!this.popupSettings.isFreezeInfo) {
+      //   this.settings.projectPath = this.settings.projectPath + pathSlash + this.settings.projectName;
+      // }
       this.promiseOk(this.settings);
     },
-    loadPathProject() {
-      if(this.settings.projectPath.length) return;
-      let opt = {
-        title:"The folder in which the project will be saved",
-        properties: ['openDirectory'],
-      };
-      openLoadDialog(opt)
-        .then((pathArr)=> { this.settings.projectPath = pathArr[0] })
-        .catch(()=> {})
+    // loadPathProject() {
+    //   // doesn't do anything on the web version
+    //   if(this.settings.projectPath.length) return;
+    //   let opt = {
+    //     title:"The folder in which the project will be saved",
+    //     properties: ['openDirectory'],
+    //   };
+    //   openLoadDialog(opt)
+    //     .then((pathArr)=> { this.settings.projectPath = pathArr[0] })
+    //     .catch(()=> {})
+    // },
+    setPath(path) {
+      if (path && path.length > 0) { 
+        this.settings.projectPath = path[0];
+      } else {
+        this.settings.projectPath = '';
+      }
+    },
+    openFilePicker() {
+      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setPath});
     },
   }
 }

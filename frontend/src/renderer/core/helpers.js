@@ -209,6 +209,14 @@ const isOsWindows = () => {
   const userAgent = window.navigator.userAgent;
   return windowsUserAgent.map(windowsStr => userAgent.indexOf(windowsStr) !== -1).filter(itm => itm === true).length > 0;
 };
+const isOsMacintosh = () => {
+  return window.navigator.platform.indexOf('Mac') > -1
+};
+
+const isDesktopApp = () => {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return (userAgent.indexOf(' electron/') > -1);
+};
 
 const shouldHideSidebar = () => {
   return document.documentElement.clientWidth <= hideSidebarOnBreakpoint;
@@ -257,7 +265,9 @@ export {
   isLocalStorageAvailable,
   stringifyNetworkObjects,
   isOsWindows,
+  isDesktopApp,
   shouldHideSidebar,
   calculateSidebarScaleCoefficient,
   parseJWT,
+  isOsMacintosh,
 }

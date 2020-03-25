@@ -1,8 +1,7 @@
-import { generateID, calcLayerPosition, deepCopy, isLocalStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
+import { generateID, calcLayerPosition, deepCopy, deepCloneNetwork, isLocalStorageAvailable, stringifyNetworkObjects }  from "@/core/helpers.js";
 import { widthElement } from '@/core/constants.js'
 import Vue    from 'vue'
 import router from '@/router'
-
 const namespaced = true;
 
 const state = {
@@ -172,9 +171,11 @@ const mutations = {
         const network = JSON.parse(localStorage.getItem(key));
 
         // remove focus from previous focused network elements
-        Object.keys(network.networkElementList).map(elKey => {
-          network.networkElementList[elKey].layerMeta.isSelected = false;
-        });
+        if (network.networkElementList && network.networkElementList.length >0) {
+          Object.keys(network.networkElementList).map(elKey => {
+            network.networkElementList[elKey].layerMeta.isSelected = false;
+          });
+        }
 
         // clears the handle of the setInterval function
         // this value is used to determine if a new setInterval call should be made
@@ -221,7 +222,7 @@ const mutations = {
       networkName: 'New_Model',
       networkID: '',
       networkMeta: {},
-      networkElementList: null,
+      networkElementList: [],
       networkRootFolder: ''
     };
     const defaultMeta = {
@@ -264,7 +265,7 @@ const mutations = {
       return (indexId < 0) ? false : true
     }
     function createPositionElements(list) {
-      if(!list || Object.values(list)[0].layerMeta.position.top !== null) {
+      if(!list || list.length === 0 || Object.values(list)[0].layerMeta.position.top !== null) {
         return;
       }
       else {
@@ -473,7 +474,7 @@ const mutations = {
 
     updateLayerName(newEl, elementList, 1);
 
-    if(!elementList) state.workspaceContent[state.currentNetwork].networkElementList = {};
+    if(!elementList || elementList.length === 0) state.workspaceContent[state.currentNetwork].networkElementList = {};
     Vue.set(state.workspaceContent[state.currentNetwork].networkElementList, newEl.layerId, newEl);
     state.dragElement = null;
     dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
@@ -500,11 +501,16 @@ const mutations = {
       }
     }
   },
-  delete_element(state, {getters, dispatch}) {
+  async delete_element(state, {getters, dispatch}) {
     let arrSelect = getters.GET_currentSelectedEl;
     if(!arrSelect.length) return;
     let arrSelectID = [];
-    let net = {...getters.GET_currentNetworkElementList};
+    let linkedNet = getters.GET_currentNetworkElementList;
+    removeIsSelectedAfterDeleteItems(arrSelect);
+    // make new history with unselected item
+    await dispatch('mod_events/EVENT_calcArray', null, {root: true});
+    
+    let net = {...linkedNet};
     deleteElement(arrSelect);
     for(let el in net) {
       let element = net[el];
@@ -539,6 +545,11 @@ const mutations = {
         }
         delete net[el.layerId];
         arrSelectID.push(el.layerId);
+      });
+    }
+    function removeIsSelectedAfterDeleteItems(arrSelect){
+      arrSelect.forEach((el)=> {
+        linkedNet[el.layerId].layerMeta.isSelected = false;
       });
     }
   },

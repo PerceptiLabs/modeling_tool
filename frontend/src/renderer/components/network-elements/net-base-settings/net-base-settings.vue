@@ -134,7 +134,7 @@ export default {
     box-shadow: $layer-shad;
   }
   .popup_body {
-    // max-width: calc(50vw - #{$w-sidebar});
+    max-width: calc(50vw - #{$w-sidebar});
     min-width: 29rem;
   }
   .popup_header {

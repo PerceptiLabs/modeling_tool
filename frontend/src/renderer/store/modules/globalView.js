@@ -20,6 +20,7 @@ const state = {
     showWorkspaceBeforeImport: false,
     showConfirmPopup: false,
     coreNotFoundPopup: false,
+    showFilePickerPopup: false,
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
@@ -74,6 +75,9 @@ const mutations = {
   },
   coreNotFoundPopup(state, value) {
     state.globalPopup.coreNotFoundPopup = value;
+  },
+  set_filePickerPopup(state, value) {
+    state.globalPopup.showFilePickerPopup = value;
   },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
@@ -139,6 +143,9 @@ const actions = {
       clearTimeout(delayActionDispatch)
     }, 1000);
 
+  },
+  SET_filePickerPopup({commit}, value) {
+    commit('set_filePickerPopup', value);
   },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);

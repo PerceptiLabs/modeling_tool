@@ -1,8 +1,8 @@
 <template lang="pug">
   #app
-    header-win.app-header()
+    header-win.app-header(v-if="showMenuBar")
     router-view.app-page
-    the-info-popup(v-if="isShowPopup")
+    the-info-popup(v-if="showPopup")
     confirm-popup
 </template>
 
@@ -70,8 +70,10 @@
       //   this.$store.commit('globalView/SET_appIsFullView', value);
       // });
 
+      this.$store.commit('globalView/SET_appVersion', process.env.PACKAGE_VERSION);
+
       //this.calcAppPath();
-      // this.checkLocalToken();
+      this.checkLocalToken();
       this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
       // this.$nextTick(() =>{
@@ -117,9 +119,18 @@
       corePopup() {
         return this.$store.state.globalView.globalPopup.coreNotFoundPopup
       },
-      isShowPopup() {
+      showPopup() {
         return this.errorPopup.length || this.infoPopup.length || this.corePopup;
       },
+      showMenuBar() {
+        const GET_userIsLogin = this.$store.getters['mod_user/GET_userIsLogin']
+
+        if (GET_userIsLogin && ['home', 'app', 'projects'].includes(this.$route.name)) { 
+          return true; 
+        }
+
+        return false;
+      }
     },
     watch: {
       // '$route': {
@@ -208,11 +219,12 @@
         let localUserToken = JSON.parse(localStorage.getItem('currentUser'));
         if(localUserToken) {
           this.setUserToken(localUserToken);
-          if(this.$router.history.current.name === 'login') {
+          if(['home', 'login', 'register'].includes(this.$router.history.current.name)) {
             this.$router.replace({name: 'projects'});
           }
+        } else {
+          this.$router.push({name: 'register'}).catch(err => {});
         }
-        else this.trackerInitUser(this.userId)
       },
       /*Header actions*/
       // appClose() {
