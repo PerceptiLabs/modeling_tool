@@ -26,9 +26,9 @@
           )
         p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
         .forgot-password-box
-          button(v-if="isWeb").btn.btn--link-without-underline(
+          a(v-if="isWeb").btn.btn--link-without-underline(
             :href="`${baseUrlSite}/restore-account`"
-            @click="setActivePageAction(MODAL_PAGE_RESTORE_ACCOUNT)"
+            @click.prevent="setActivePageAction(MODAL_PAGE_RESTORE_ACCOUNT)"
           ) Forgot password?
           router-link(v-if="!isWeb").btn.btn--link-without-underline(:to="{name: 'restore-account'}") Forgot password?
         base-checkbox.remember-me(v-model="saveToken")
@@ -38,7 +38,7 @@
         button.btn.btn--dark-blue-rev.log-in-btn(type="button" @click="validateForm" :disabled="isLoading") Log in
     .form_holder.fz-16.italic.text-left
       span Don't have an account? 
-      button.btn.btn--link(@click="setActivePageAction(MODAL_PAGE_SIGN_UP)") Register here
+      button.btn.btn--link(@click="setActivePageAction(MODAL_PAGE_SIGN_UP)" type="submit") Register here
 </template>
 
 <script>
