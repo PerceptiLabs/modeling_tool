@@ -114,6 +114,9 @@ class Core:
             counter += 1
             time.sleep(1)
 
+    @property
+    def is_paused(self):
+        return self._client.status == STATUS_RUNNING_PAUSED
 
     def _handle_errors(self, errors: List, line_to_node_map):
         errors_repr = []
