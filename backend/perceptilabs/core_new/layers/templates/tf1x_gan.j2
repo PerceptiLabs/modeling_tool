@@ -44,6 +44,11 @@ class {{layer_name}}(GANLayer):
         self._val_sz_tot = 0
         self._tst_sz_tot = 0        
         
+        self._fake_means = []
+        self._fake_stds = []
+        self._real_means = []
+        self._real_stds = []
+
     def run(self, graph: Graph):
         """Called as the main entry point for training. Responsible for training the model.
 
@@ -548,7 +553,24 @@ class {{layer_name}}(GANLayer):
     def testing_iteration(self) -> int:
         """The current testing iteration"""                
         return self._testing_iteration
-    
+
+    @property
+    def get_real_input(self):
+        
+        return
+
+    def get_gengerated_output(self):
+        return 
+    @property
+    def get_generator_distribution(self):
+
+        return
+
+    @property
+    def get_real_distribution(self):
+
+        return
+
     @property
     def progress(self) -> float:
         """A number indicating the overall progress of the training

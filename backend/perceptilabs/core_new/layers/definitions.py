@@ -136,24 +136,24 @@ DEFINITION_TABLE = {
             'distributed': lambda specs: specs['Properties']['Distributed']
         }
     ),
-    'TrainGAN': LayerDef(
-        GANLayer,
-        'tf1x_gan.j2',
-        'layer_tf1x_gan',
-        {
-            'switch_layer': lambda specs: specs['Properties']['Switch_layer'],
-            'real_data_layer': lambda specs: specs['Properties']['Real_data_layer'],
-            'n_epochs': lambda specs: specs['Properties']['Epochs'],
-            'class_weights': lambda specs: specs['Properties']['Class_weights'],
-            'generator_optimizer': resolve_tf1x_optimizer,
-            'discriminator_optimizer': resolve_tf1x_optimizer,
-            'learning_rate': lambda specs: specs['Properties']['Learning_rate'],
-            'decay_steps': lambda specs: specs['Properties']['Decay_steps'],
-            'decay_rate': lambda specs: specs['Properties']['Decay_rate'],
-            'momentum': lambda specs: specs['Properties']['Momentum'],
-            'beta1': lambda specs: specs['Properties']['Beta_1'],
-            'beta2': lambda specs: specs['Properties']['Beta_2'],
-            'distributed': lambda specs: specs['Properties']['Distributed']
-        }
-    )
+    # 'TrainGAN': LayerDef(
+    #     GANLayer,
+    #     'tf1x_gan.j2',
+    #     'layer_tf1x_gan',
+    #     {
+    #         'switch_layer': lambda specs: specs['Properties']['Switch_layer'],
+    #         'real_data_layer': lambda specs: specs['Properties']['Real_data_layer'],
+    #         'n_epochs': lambda specs: specs['Properties']['Epochs'],
+    #         'class_weights': lambda specs: specs['Properties']['Class_weights'],
+    #         'generator_optimizer': resolve_tf1x_optimizer,
+    #         'discriminator_optimizer': resolve_tf1x_optimizer,
+    #         'learning_rate': lambda specs: specs['Properties']['Learning_rate'],
+    #         'decay_steps': lambda specs: specs['Properties']['Decay_steps'],
+    #         'decay_rate': lambda specs: specs['Properties']['Decay_rate'],
+    #         'momentum': lambda specs: specs['Properties']['Momentum'],
+    #         'beta1': lambda specs: specs['Properties']['Beta_1'],
+    #         'beta2': lambda specs: specs['Properties']['Beta_2'],
+    #         'distributed': lambda specs: specs['Properties']['Distributed']
+    #     }
+    # )
 }
