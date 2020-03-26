@@ -169,6 +169,9 @@ class {{layer_name}}(GANLayer):
         real_tensor = real_output_tensors[output_node.layer_id]
         fake_tensor = fake_output_tensors[output_node.layer_id]
 
+        self._real_input = real_tensor
+        self._generated_output = fake_output_tensors[generator_nodes[-1].layer_id]
+
         def loss_func(logits_in,labels_in):
             return tf.reduce_mean(tf.nn.sigmoid_cross_entropy_with_logits(logits=logits_in,labels=labels_in))
 
@@ -556,19 +559,22 @@ class {{layer_name}}(GANLayer):
 
     @property
     def get_real_input(self):
-        
-        return
+        return self._real_input
 
+    @property
     def get_gengerated_output(self):
-        return 
+        return self._generated_output
+    
     @property
     def get_generator_distribution(self):
-
+        self._fake_means.append()
+        self._fake_stds.append()
         return
 
     @property
     def get_real_distribution(self):
-
+        self._real_means.append()
+        self._real_stds.append()
         return
 
     @property
