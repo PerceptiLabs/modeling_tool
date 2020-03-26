@@ -50,9 +50,16 @@
           ref="saveNetworkPopup"
           :popup-settings="saveNetworkPopup"
           )
+        
 
       start-training-spinner(v-if="showTrainingSpinner")
-
+      file-picker-popup(
+        v-if="showFilePickerPopup"
+        :filePickerType="showFilePickerPopup.filePickerType"
+        :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
+        :popupTitle="showFilePickerPopup.popupTitle"
+        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup") 
+      //- showFilePickerPopup container the callback function
 
     .workspace_meta
       include ./meta/workspace-meta.pug

@@ -97,6 +97,7 @@
     "electron-updater": "^4.1.2",
     "html2canvas": "^1.0.0-rc.4",
     "mixpanel-browser": "^2.29.1",
+    "moveable": "0.15.2",
     "universal-analytics": "^0.4.20",
     "v-hotkey": "^0.6.0",
     "vee-validate": "^2.2.15",
