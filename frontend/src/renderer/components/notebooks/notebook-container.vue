@@ -20,16 +20,19 @@ export default {
   components: {
     NotebookCell
   },
-  data() {
-    return {
-      cells: []
-    };
-  },
   computed: {
     ...mapGetters({
       currentNetwork: "mod_workspace/GET_currentNetwork",
       coreNetwork: "mod_api/GET_coreNetwork"
     })
+  },
+  created() {
+    this.updateNotebook();
+  },
+  data() {
+    return {
+      cells: []
+    };
   },
   methods: {
     updateNotebook(){
@@ -40,14 +43,11 @@ export default {
         .then(([networkCodes, networkCodeOrder]) => {
 
           // console.log('notebookJson', notebookJson);
-          console.log('networkCode', networkCodes);
-          console.log('networkCodeOrder', networkCodeOrder);
+          // console.log('networkCode', networkCodes);
+          // console.log('networkCodeOrder', networkCodeOrder);
 
-          // const notebookJson = this.getDefaultNotebookJson();
           const validNetworkCodes = networkCodes.filter(nc => nc);
           const sortedCode = this.sortNetworkCode(validNetworkCodes, networkCodeOrder);
-
-          console.log('sortedCode', sortedCode);
 
           this.cells = sortedCode;
         });
@@ -133,8 +133,6 @@ export default {
     sortNetworkCode(array, sortOrder = null) {
       if (!array || !sortOrder) { return; }
 
-      console.log('sortNetworkCode - array', array);
-
       // current sort is O(n^2), will use Map if most networks have many elements
       const sortedArray = [];
       for (let sortKey of sortOrder) {
@@ -147,9 +145,14 @@ export default {
       return sortedArray;
     },
   },
-  created() {
-    this.updateNotebook();
-  }
+  watch: {
+    currentNetwork: {
+      immediate: true,
+      handler(newValue) {
+          this.updateNotebook();
+      }
+    }
+  },
 };
 </script>
 
@@ -158,11 +161,13 @@ export default {
 
   width: 100%;
   height: 100%;
+  overflow-y: scroll;
 
   #cell-list {
     display: flex;
     flex-direction: column;
-    height: 100%;
+    min-width: 40rem;
+    max-width: 60rem;
   }
 }
 </style>

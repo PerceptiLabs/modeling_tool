@@ -47,11 +47,7 @@ $border-width: 5px;
 $col-primary2: #6E92FA;
 
 .cell-container {
-  margin: 1rem 1rem;
-  // min-width: 40rem;
-  // max-width: 60rem;
   width: 100%;
-  height: 100%;
   margin: 0 auto;
 
   background-color: #d9d9d9;
