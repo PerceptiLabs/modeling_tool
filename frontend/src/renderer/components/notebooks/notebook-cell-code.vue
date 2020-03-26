@@ -4,7 +4,7 @@
       <div :class="['cell-input-operation', {'focused': isFocused}]">In [{{ cell.execution_count }}]:</div>
       <CodeHQ 
         class="cell-input-code"
-        :value="cell.source" 
+        :value="cell.Output" 
         :autofocus="false" 
         :lineNumbers="false"
         :styleActiveLine="false"

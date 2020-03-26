@@ -26,21 +26,13 @@ export default {
     }
   },
   methods: {
-    getCodeMirrorMode(cell) {
-      if (cell.cell_type === "code") {
-        return 'text/x-python';
-      }
-      if (cell.cell_type === "markdown") {
-        return 'gfm';
-      }
-    },
     onCellContainterClick() {
       // this.$emit('click', this.cell.hashCode);
     }
   },
   computed: {
     cellType() {
-      if (this.cell.cell_type === "code") {
+      if (this.cell.hasOwnProperty('Output')) {
         return CodeCell;
       } else {
         return MarkdownCell;

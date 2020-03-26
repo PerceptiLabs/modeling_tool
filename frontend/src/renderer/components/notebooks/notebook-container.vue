@@ -3,10 +3,8 @@
     <div id="cell-list">
       <notebook-cell
         v-for="cell in cells"
-        :key="cell.hashCode"
+        :key="cell.layerId"
         :cell="cell"
-        @click="cellClicked"
-        :isFocused="cell.hashCode == focusedCellHashCode"
       />
     </div>
   </div>
@@ -24,9 +22,7 @@ export default {
   },
   data() {
     return {
-      cells: [],
-      focusedCellHashCode: "",
-      session: null
+      cells: []
     };
   },
   computed: {
@@ -36,9 +32,6 @@ export default {
     })
   },
   methods: {
-    cellClicked(cellHashCode) {
-      this.focusedCellHashCode = cellHashCode;
-    },
     updateNotebook(){
       Promise.all([
           this.fetchNetworkCode(),
@@ -57,9 +50,6 @@ export default {
           console.log('sortedCode', sortedCode);
 
           this.cells = sortedCode;
-          // const newNotebookJson = this.createNotebookDataToInject(notebookJson, sortedCode);
-          // this.injectNotebookJson(newNotebookJson);
-          // this.fetchNotebookUrl();
         });
     },
     getDefaultNotebookJson() {
@@ -106,15 +96,12 @@ export default {
       const fetchCodePromises = [];
 
       const networkElements = Object.entries(this.currentNetwork.networkElementList);
-      // console.log('networkElements', networkElements);
       for (let networkElement of networkElements) {
         const promise = addIdToLayerCode.call(this, networkElement);
         fetchCodePromises.push(promiseWithTimeout(200, promise));
       }
 
       return Promise.all(fetchCodePromises).then(code => {
-
-        console.log('networkElements code', code.filter(c => c).map(c => c));
         return code.filter(c => c).map(c => c);
       });
 
@@ -154,14 +141,13 @@ export default {
 
         let targetCode = array.find(element => element.layerId === sortKey);
         if (targetCode) {
-          sortedArray.push(targetCode.Output);
+          sortedArray.push(targetCode);
         }
       }
       return sortedArray;
     },
   },
   created() {
-    console.log('--------------------------------');
     this.updateNotebook();
   }
 };
