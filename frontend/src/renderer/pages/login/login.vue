@@ -26,11 +26,10 @@
           )
         p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
         .forgot-password-box
-          a(v-if="isWeb").btn.btn--link-without-underline(
+          a.btn.btn--link-without-underline(
             :href="`${baseUrlSite}/restore-account`"
             @click.prevent="setActivePageAction(MODAL_PAGE_RESTORE_ACCOUNT)"
           ) Forgot password?
-          router-link(v-if="!isWeb").btn.btn--link-without-underline(:to="{name: 'restore-account'}") Forgot password?
         base-checkbox.remember-me(v-model="saveToken")
           span.fz-16 Remember me
     .form_holder.login-form_actions
@@ -47,7 +46,7 @@
   
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
   import {mapActions} from "vuex";
-  import {MODAL_PAGE_SIGN_UP, MODAL_PAGE_RESTORE_ACCOUNT} from "@/core/constants";
+  import {MODAL_PAGE_SIGN_UP, MODAL_PAGE_RESTORE_ACCOUNT, MODAL_PAGE_PROJECT} from "@/core/constants";
 export default {
   name: 'PageLogin',
   components: { LogoutUserPageWrap },
@@ -109,7 +108,8 @@ export default {
               this.$store.dispatch('mod_api/API_setUserInCore');
             }
             
-            this.closeActivePageAction();
+            this.setActivePageAction(MODAL_PAGE_PROJECT);
+            this.$router.push({name: 'projects'});
           }
         })
         .catch((error)=> {console.log(error)})

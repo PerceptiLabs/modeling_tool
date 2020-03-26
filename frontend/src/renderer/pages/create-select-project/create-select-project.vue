@@ -1,5 +1,5 @@
 <template lang="pug">
-  .project-wrapper
+  .project-wrapper(@click="closePageAction()")
     .project-box
       .header Projects
       .content
