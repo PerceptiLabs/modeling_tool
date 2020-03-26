@@ -19,9 +19,14 @@ import BaseCheckbox     from '@/components/base/checkbox.vue'
 import BaseRadiobutton  from '@/components/base/radiobutton.vue'
 import BaseSelect       from '@/components/base/select.vue'
 import BaseRange        from '@/components/base/range.vue'
+import PerfectScrollBar from 'vue2-perfect-scrollbar';
+
+import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
 
 //- Global directives
 import {mask} from 'vue-the-mask' // page registration dont use now
+
+import Analytics from '@/core/analytics';
 
 //if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
 
@@ -39,7 +44,7 @@ if (!Vue.config.devtools) {
 }
 Vue.use(VeeValidate);
 Vue.use(VueHotkey);
-
+Vue.use(PerfectScrollBar);
 //- Use directives
 import './core/directives'
 Vue.directive('mask', mask);
@@ -53,6 +58,13 @@ Vue.component('base-checkbox', BaseCheckbox);
 Vue.component('base-radio', BaseRadiobutton);
 Vue.component('base-select', BaseSelect);
 Vue.component('base-range', BaseRange);
+
+      
+// analytics
+Analytics.hubSpot.setup();
+
+Analytics.googleAnalytics.setup();
+Analytics.googleAnalytics.trackUserId(store.getters['mod_user/GET_userID']);
 
 
 /* eslint-disable no-new */

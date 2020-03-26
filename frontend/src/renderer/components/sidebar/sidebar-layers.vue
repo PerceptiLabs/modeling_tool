@@ -15,7 +15,7 @@
         )
           i.icon.icon-delete
 
-    ul.layers_body(ref="layersItemList")
+    perfect-scrollbar(tag='ul').layers_body(ref="layersItemList")
       sidebar-layers-item(
         v-for="item in networkElementList"
         :key="item.layerId"

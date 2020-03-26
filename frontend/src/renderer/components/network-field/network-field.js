@@ -77,7 +77,8 @@ export default {
         x: 0,       y: 0,
         width: 0,   height: 0
       },
-      currentFocusedArrow: null
+      currentFocusedArrow: null,
+      currentFocusedArrowData: null,
     }
   },
   computed: {
@@ -89,6 +90,9 @@ export default {
       statisticsIsOpen:     'mod_workspace/GET_statisticsIsOpen',
       testingIsOpen:        'mod_workspace/GET_testIsOpen',
     }),
+    fullNetworkElementList() {
+      return this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
+    },
     networkElementList() {
       let currentNetwork = this.$store.getters['mod_workspace/GET_currentNetworkElementList'];
       let newNet = {};
@@ -119,7 +123,7 @@ export default {
         height: this.svgHeight,
       };
       return size
-    },    
+    },
   },
   watch: {
     statisticsIsOpen() {
@@ -264,12 +268,18 @@ export default {
       this.$store.dispatch('mod_workspace/DELETE_arrow', connection);
       this.$store.dispatch('mod_api/API_getOutputDim');
       focusArray.blur();
-      this.currentFocusedArrow = null;
+      this.clearArrowFocus();
     },
-    focusArrow(ev) {
+    focusArrow(ev, arrow) {
+      this.currentFocusedArrowData = arrow;
       this.currentFocusedArrow = ev.target;
     },
     blurArrow() {
+      this.clearArrowFocus();
+    },
+
+    clearArrowFocus() {
+      this.currentFocusedArrowData = null;
       this.currentFocusedArrow = null;
     },
     drawArrows() {
@@ -471,7 +481,7 @@ export default {
             });
           }
           else {
-           
+
             let sortGorSideStart = itemEl.l1.calcAnchor[itemEl.sideStart].sort(function(a, b) {
               return a.layerMeta.position.left - b.layerMeta.position.left;
             });
@@ -499,7 +509,7 @@ export default {
           }
           itemEl.correctPosition.stop = calcValuePosition(itemEl.sideEnd, sideEndLength, indexSidePositionEnd);
         })
-        
+
       }
       function calcValuePosition(side, lengthSide, indexSide) {
         switch(side) {
@@ -554,18 +564,40 @@ export default {
       const scrollPosition = document.querySelector('.js-info-section_main').scrollTop;
       return (event.pageY - this.offset.offsetY + scrollPosition) / this.networkScale
     },
+    getLastElementLegArrowData(arrow) {
+      const isLayerTypeContainer = arrow.l1.layerType === 'Сontainer';
+      let arrowLeg1 = arrow.l1;
+      if(isLayerTypeContainer) {
+        // find id
+        let keysOfContainerLayersListFrom = Object.keys(arrow.l1.containerLayersList);
+        let keysOfContainerLayersListTo = arrow.l2.connectionIn;
+        const keyOfLastElementFromGroup = keysOfContainerLayersListFrom.filter(value => keysOfContainerLayersListTo.includes(value))[0];
+
+        let currentNetworkElementList = this.fullNetworkElementList;
+        arrowLeg1 = currentNetworkElementList[keyOfLastElementFromGroup];
+      }
+      return arrowLeg1;
+    },
     arrowClassStyle(arrow) {
+      const arrowLine1 = this.getLastElementLegArrowData(arrow);
+
       let result = [];
-      if (arrow.l1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible) {
+      if (arrowLine1.layerMeta.isInvisible || arrow.l2.layerMeta.isInvisible) {
         result.push('arrow--hidden');
       }
-      if (!arrow.l1.layerMeta.OutputDim || arrow.l1.layerCodeError) {
+      if (!arrowLine1.layerMeta.OutputDim || arrowLine1.layerCodeError) {
         result.push('svg-arrow_line--empty');
+      }
+
+      if(this.currentFocusedArrowData === arrow) {
+        result.push('is-focused');
       }
       return result;
     },
     arrowMarkerStyle(arrow) {
-      return (!arrow.l1.layerMeta.OutputDim || arrow.l1.layerCodeError)
+      const arrowLine1 = this.getLastElementLegArrowData(arrow);
+
+      return (!arrowLine1.layerMeta.OutputDim || arrowLine1.layerCodeError)
         ? 'url(#svg-arrow_triangle-empty)'
         : 'url(#svg-arrow_triangle)';
     },

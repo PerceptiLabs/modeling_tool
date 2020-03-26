@@ -17,14 +17,16 @@ const wsHistory = (store)=> {
     (state)=> state.mod_workspace.workspaceContent.length,
     ()=> { store.dispatch('mod_workspace-history/UPDATE_networkList') }
   );
-  store.watch(
-    (state, getters)=> getters['mod_workspace/GET_currentNetwork'].networkName,
-    (newName)=> {
-      if(store.getters['mod_workspace-history/GET_isEnableHistory']) {
-        pushSnapshot()
-      }
-    }
-  );
+  // this watcher was moved to the-workspace component -> set_networkName method
+  // store.watch(
+  //   (state, getters)=> getters['mod_workspace/GET_currentNetwork'].networkName,
+  //   (newName)=> {
+  //     if(store.getters['mod_workspace-history/GET_isEnableHistory']) {
+  //       pushSnapshot()
+  //     }
+  //   }
+  // );
+  
   // store.watch(
   //   (state, getters)=> getters['mod_workspace/GET_currentNetwork'].networkElementList,
   //   (newList)=> {

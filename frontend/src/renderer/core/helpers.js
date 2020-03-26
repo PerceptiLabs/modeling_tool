@@ -2,7 +2,12 @@
 //import fs    from 'fs';
 import store from '@/store'
 
-import { workspaceGrid, pathSlash }   from '@/core/constants.js'
+import {
+  workspaceGrid,
+  pathSlash,
+  hideSidebarOnBreakpoint,
+  sidebarNavCoefficientScaleCalculateFromHeight
+} from '@/core/constants.js'
 
 /*modal window*/
 const openLoadDialog = function (options) {
@@ -190,6 +195,54 @@ const stringifyNetworkObjects = function (network) {
       else return val;
     },
     ' ');
+};
+
+const isOsWindows = () => {
+  const windowsUserAgent = [
+    'Windows NT 10.0',
+    'Windows NT 6.2',
+    'Windows NT 6.1',
+    'Windows NT 6.0',
+    'Windows NT 5.1',
+    'Windows NT 5.0',
+  ];
+  const userAgent = window.navigator.userAgent;
+  return windowsUserAgent.map(windowsStr => userAgent.indexOf(windowsStr) !== -1).filter(itm => itm === true).length > 0;
+};
+const isOsMacintosh = () => {
+  return window.navigator.platform.indexOf('Mac') > -1
+};
+
+const isDesktopApp = () => {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return (userAgent.indexOf(' electron/') > -1);
+};
+
+const shouldHideSidebar = () => {
+  return document.documentElement.clientWidth <= hideSidebarOnBreakpoint;
+};
+
+const calculateSidebarScaleCoefficient = () => {
+  const pageHeight = document.documentElement.clientHeight;
+  if(pageHeight <= sidebarNavCoefficientScaleCalculateFromHeight) {
+    document.documentElement.style.setProperty('--sidebar-scale-coefficient', (pageHeight / sidebarNavCoefficientScaleCalculateFromHeight).toString());
+  } else {
+    document.documentElement.style.setProperty('--sidebar-scale-coefficient', '1');
+  }
+};
+
+const parseJWT = (jwt) => {
+  if (!jwt) { return; }
+
+  try {
+    const payload = jwt.split('.')[1];
+    if (payload) {
+      return JSON.parse(window.atob(payload));
+    }
+  } catch (error) {
+    console.error('parseJWT', error);
+    return;
+  }
 }
 const fixFilepathSeparator = function fileUrl(filepath) {
   if (!filepath) { return filepath; }
@@ -234,5 +287,11 @@ export {
   isLocalStorageAvailable,
   stringifyNetworkObjects,
   fixFilepathSeparator,
-  promiseWithTimeout
+  promiseWithTimeout,
+  isOsWindows,
+  isDesktopApp,
+  shouldHideSidebar,
+  calculateSidebarScaleCoefficient,
+  parseJWT,
+  isOsMacintosh,
 }

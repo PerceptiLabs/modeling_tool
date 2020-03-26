@@ -2,6 +2,7 @@
 import router         from "@/router";
 import {filePCRead, loadPathFolder, projectPathModel} from "@/core/helpers";
 import { pathSlash } from "@/core/constants";
+import { shouldHideSidebar, calculateSidebarScaleCoefficient } from "../../core/helpers";
 
 const namespaced = true;
 
@@ -45,39 +46,36 @@ const actions = {
   },
   EVENT_loadNetwork({dispatch, rootGetters}, pathProject) {
     const pathFile = projectPathModel(pathProject);
-    let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
+    const localUserInfo = rootGetters['mod_user/GET_LOCAL_userInfo'];
+    let localProjectsList = localUserInfo ? localUserInfo.projectsList : [];
     let pathIndex;
     if(localProjectsList.length) {
       pathIndex = localProjectsList.findIndex((proj)=> proj.pathModel === pathFile);
     }
-    return filePCRead(pathFile)
-      .then((data) => {
-        //validate JSON
-        let net = {};
-        try { net = JSON.parse(data.toString()); }
-        catch(e) {
-          dispatch('globalView/GP_infoPopup', 'JSON file is not valid', {root: true});
-          return
-        }
+
+    dispatch('mod_api/API_loadNetwork', pathFile, {root: true})
+      .then((net) => {
         //validate model
         try {
           if(!(net.networkName
             && net.networkMeta
-            && net.networkElementList)
-          ) {
-            throw ('err')
-          }
-        }
-        catch(e) {
+            && net.networkElementList)) {
+              throw('err');
+            }
+        } catch(e) {
           dispatch('globalView/GP_infoPopup', 'The model is not valid', {root: true});
-          return;
+          return
         }
+
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
         }
         dispatch('mod_workspace/ADD_network', net, {root: true});
-      }
-    );
+      }).catch(err => {
+        console.log(err);
+        dispatch('globalView/GP_infoPopup', 'Fetching went wrong', {root: true});
+        return
+      });
   },
   EVENT_openNetwork({dispatch}) {
     const opt = {
@@ -122,10 +120,22 @@ const actions = {
   // EVENT_appMaximize() {
   //   ipcRenderer.send('app-maximize')
   // },
-  // EVENT_eventResize({commit}) {
-  //   commit('set_eventResize');
-  //
-  // },
+  EVENT_eventResize({commit, dispatch, rootState}) {
+    //
+    calculateSidebarScaleCoefficient();
+
+    // toggle automatically right side on width change
+    const sidebarState = rootState.globalView.hideSidebar;
+
+    if(shouldHideSidebar() && sidebarState) {
+      dispatch('globalView/hideSidebarAction', false, { root: true});
+    } else if (!shouldHideSidebar() && !sidebarState) {
+      dispatch('globalView/hideSidebarAction', true, { root: true});
+    }
+
+    commit('set_eventResize');
+
+  },
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)
   },
