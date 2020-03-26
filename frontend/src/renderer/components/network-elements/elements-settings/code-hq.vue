@@ -11,6 +11,7 @@
   // lib
   import CodeMirror from 'codemirror/lib/codemirror.js';
   import 'codemirror/mode/python/python.js'
+  // import 'codemirror/mode/gfm/gfm.js'
   // theme css
   import 'codemirror/lib/codemirror.css'
   //import 'codemirror/theme/monokai.css'
@@ -37,13 +38,17 @@
       value: String,
       marker: Function,
       unseenLines: Array,
-      name:         {type: String,   default: 'code-hq'},
-      placeholder:  {type: String,   default: ''},
-      merge:        {type: Boolean,  default: false },
+      name:             {type: String,   default: 'code-hq'},
+      placeholder:      {type: String,   default: ''},
+      merge:            {type: Boolean,  default: false },
       // options:   {type: Object,   default: () => ({})},
-      events:       {type: Array,    default: () => ([])},
-      globalOptions:{type: Object,   default: () => ({})},
-      globalEvents: {type: Array,    default: () => ([])},
+      autofocus:        {type: Boolean,  default: true },
+      mode:             {type: String,   default: 'text/x-python' },
+      lineNumbers:      {type: Boolean,  default: true },
+      styleActiveLine:  {type: Boolean,  default: true },
+      events:           {type: Array,    default: () => ([])},
+      globalOptions:    {type: Object,   default: () => ({})},
+      globalEvents:     {type: Array,    default: () => ([])},
 
       errorRow: {type: [Number, String] }
     },
@@ -71,13 +76,13 @@
         cminstance: null,
         options: {
           autoCloseBrackets: true,
-          autofocus: true,
+          // autofocus: true,
           historyEventDelay: 100,
           tabSize: 4,
-          styleActiveLine: true,
-          lineNumbers: true,
+          // styleActiveLine: false,
+          // lineNumbers: true,
           line: true,
-          mode: 'text/x-python',
+          // mode: 'text/x-python',
           theme: "monokai",
           scrollbarStyle: 'overlay'
         }
@@ -110,6 +115,11 @@
     },
     methods: {
       initialize() {
+        this.options.autofocus = this.autofocus;
+        this.options.mode = this.mode;
+        this.options.lineNumbers = this.lineNumbers;
+        this.options.styleActiveLine = this.styleActiveLine;
+
         const cmOptions = Object.assign({}, this.globalOptions, this.options);
         if (this.merge) {
           this.codemirror = CodeMirror.MergeView(this.$refs.mergeview, cmOptions);
@@ -211,6 +221,7 @@
   }
   .CodeMirror {
     height: 100%;
+    // text-align: left;
   }
   .code-row_error {
     border: 1px solid $col-warning;
