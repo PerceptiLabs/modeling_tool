@@ -46,8 +46,8 @@ export default {
   },
   computed: {
     codeMirrorMode() {
-      if (!this.cell || !this.cell.cell_type) { return ''; }
-      else if (this.cell.cell_type === "code") { return 'text/x-python'; }
+      if (!this.cell) { return ''; }
+      else if (this.cell.hasOwnProperty('Output')) { return 'text/x-python'; }
       else if (cell.cell_type === "markdown") { return 'gfm'; }
       else { return ''; }
     }
