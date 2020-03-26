@@ -22,8 +22,8 @@
         ref="sidebarLayersItem"
         :item-data="item"
         )
-    .form_row
-      base-checkbox.bigest-text(v-model="isGridEnabled") Grid
+    // .form_row
+    //   base-checkbox.bigest-text(v-model="isGridEnabled") Grid
 
 
 
