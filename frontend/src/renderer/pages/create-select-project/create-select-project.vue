@@ -72,6 +72,7 @@
     justify-content: center;
     align-items: center;
     min-height: 100vh;
+    background-color: transparent;
   }
   .project-box {
     min-width: 680px;
