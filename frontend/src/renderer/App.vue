@@ -19,6 +19,7 @@
     update-popup(v-if="isElectron")
     the-info-popup(v-if="isShowPopup")
     confirm-popup
+    modal-pages-engine
 </template>
 
 <script>
@@ -39,10 +40,12 @@
   import UpdatePopup    from '@/components/global-popups/update-popup/update-popup.vue'
   import TheInfoPopup   from "@/components/global-popups/the-info-popup.vue";
   import ConfirmPopup   from "@/components/global-popups/confirm-popup.vue";
+  import ModalPagesEngine from '@/components/modal-pages-engine';
 
   export default {
     name: 'TheApp',
     components: {
+      ModalPagesEngine,
       HeaderLinux, HeaderWin, HeaderMac,
       UpdatePopup, TheInfoPopup, ConfirmPopup
     },
@@ -242,7 +245,6 @@
             this.$router.replace({name: 'projects'});
           }
         }
-        else this.trackerInitUser(this.userId)
       },
       /*Header actions*/
       appClose() {
