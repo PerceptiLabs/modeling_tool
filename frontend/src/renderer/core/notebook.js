@@ -42,17 +42,17 @@ export const notebookActions = (function() {
 
   publicMethods.getSessions = function() {
     const kernelsUrl =
-      this.notebookServer.url +
+      notebookServer.url +
       "/api/sessions" +
-      this.notebookServer.token;
+      notebookServer.token;
     
     return fetch(kernelsUrl)
     .then(response => response.json())
     .then(json => {
       // console.log('sessions', json);
-      const currentSession = json.find(s => s.name == this.notebookServer.notebookName);
+      const currentSession = json.find(s => s.name == notebookServer.notebookName);
       if (!currentSession) { 
-        this.startSession();
+        startSession();
       }
     });
   }
