@@ -1,3 +1,4 @@
+import re
 import sys
 import copy
 import time
@@ -20,9 +21,63 @@ from perceptilabs.core_new.history import SessionHistory, HistoryInputException
 from perceptilabs.core_new.session import LayerSession, LayerSessionStop, LayerIo
 from perceptilabs.core_new.data.policies import TrainValDataPolicy, TestDataPolicy, TrainReinforceDataPolicy
 from perceptilabs.analytics.scraper import get_scraper
+from perceptilabs.utils import stringify, line_nums
 
 log = logging.getLogger(__name__)
 scraper = get_scraper()
+
+
+def v2_insert_checkpoint_values(layer_id, layer_name, layer_type, code, values):
+    """ Function used to restore core_v2 checkpoints 
+
+    This function will fail miserably if values-to-be-restored are named differently in v1 and v2."""
+    values = values.copy()
+    
+    # Since checkpoints generated in v2 might be saved with a different TF api, we need to add aliases
+    pattern = rf'{layer_type}_{layer_name}\.S([a-zA-Z1-9]*):0\/\.ATTRIBUTES\/VARIABLE_VALUE'
+    for old_name, value in values.items():
+        match = re.search(pattern, old_name)
+        if match:
+            values[match.group(1)] = old_name
+
+    lines = code.split('\n')
+    new_code = ''
+
+    restored_vars = set()
+    ignored_vars = set()
+    n_matches = 0
+    
+    pattern = r'([a-zA-Z1-9]*) = tf.Variable\((.*)\)'
+    def repl_fn(match):
+        nonlocal n_matches
+        n_matches += 1
+        assign_var = match.group(1)
+        initial_var = match.group(2).split(',')[0]
+
+        if assign_var in values:
+            ckpt_name = values[assign_var]
+            new_str  = f'{initial_var} = checkpoint["{ckpt_name}"]\n'
+            new_str += f'{assign_var} = tf.Variable({match.group(2)})\n'
+            restored_vars.add(assign_var)                
+            return new_str
+        else:
+            ignored_vars.add(assign_var)
+            return match.string        
+
+    new_code = re.sub(pattern, repl_fn, code)
+
+    log.info(f'Inserted {len(restored_vars)} checkpoint values into layer {layer_id} [{layer_type}].')
+    if len(ignored_vars) > 0 and n_matches > 0:
+        log.warning(f'Ignored {len(ignored_vars)} TensorFlow variable creations!')
+    if log.isEnabledFor(logging.DEBUG):
+        log.debug(
+            f"Restored checkpoint values = {', '.join(restored_vars)}, ignored = {', '.join(ignored_vars)}\n"
+            f"Original code: \n{line_nums(code)}\n"
+            f"New code: \n{line_nums(new_code)}\n"
+        )
+        
+    return new_code
+
 
 class SessionProcessHandler:
     def __init__(self, graph_dict, data_container, command_queue, result_queue):  # mode
@@ -85,7 +140,7 @@ class SessionProcessHandler:
 class BaseCore:    
     @scraper.monitor(tag='core_init')
     def __init__(self, codehq, graph_dict, data_container, session_history, module_provider, error_handler, session_process_handler=None,
-                 layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpointValues=None, network_cache=None): 
+                 layer_extras_reader=None, skip_layers=None, tf_eager=False, checkpointValues=None, network_cache=None, core_mode='v1'): 
         self._graph = graph_dict
         self._codehq = codehq
         self._data_container = data_container
@@ -98,6 +153,7 @@ class BaseCore:
         self._module_provider = module_provider
         self._checkpointValues = checkpointValues
         self._network_cache = network_cache
+        self._core_mode = core_mode
 
     def run(self):
         self._reset()        
@@ -161,11 +217,15 @@ class BaseCore:
             else:
                 raise
 
-        if content['Info']['checkpoint'] and type(code_gen).__name__ == "CustomCodeGenerator" and self._checkpointValues:
+        if content['Info']['checkpoint'] and type(code_gen).__name__ == "CustomCodeGenerator" and self._checkpointValues and self._core_mode == 'v1':
             locals_.update({"checkpoint":self._checkpointValues[content['Info']['checkpoint'][-1]]})
             code_gen.replace_ckpt_references()
+                
 
         code = code_gen.get_code()
+        if content['Info']['checkpoint'] and self._core_mode == 'v2':
+            locals_.update({"checkpoint":self._checkpointValues[content['Info']['checkpoint'][-1]]})            
+            code = v2_insert_checkpoint_values(id_, content['Info']['Name'], content['Info']['Type'], code, self._checkpointValues[content['Info']['checkpoint'][-1]])            
 
         session = LayerSession(id_, content['Info']['Type'], code,
                                global_vars=globals_,

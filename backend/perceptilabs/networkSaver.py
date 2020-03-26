@@ -22,7 +22,8 @@ def createReferenceString(variable):
         return "'loc:@"+str(variable.name).split(":")[0]+"'"
 
 def splitStrings(codeString):
-    splitString=re.split(';|\n',codeString)
+    # splitString=re.split(';|\n',codeString)
+    splitString=re.split('\n',codeString)
     splitString=list(filter(None,splitString))
     return splitString
 
@@ -42,8 +43,9 @@ def createNewLayerCode(id_,layer,variables):
     else:
         Type=layer["Info"]["Type"]
         Properties=layer["Info"]["Properties"]
-        Con=layer["Con"]
-        content={"Info":{"Type":Type, "Id": id_, "Properties": Properties}, "Con":Con}
+        Con=layer['Con']
+        backward_connections = layer["Info"]['backward_connections']
+        content={"Info":{"Type":Type, "Id": id_, "Properties": Properties, "backward_connections": backward_connections}, "Con":Con}
         tabs=CodeHq.get_code_generator(id_,content).get_code()
         if type(tabs) is not dict:
             tabs={"Output":tabs} 
