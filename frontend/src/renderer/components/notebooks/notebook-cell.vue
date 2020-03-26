@@ -47,7 +47,8 @@ $border-width: 5px;
 $col-primary2: #6E92FA;
 
 .cell-container {
-  width: 100%;
+  width: 70rem;
+
   margin: 0 auto;
 
   background-color: #d9d9d9;

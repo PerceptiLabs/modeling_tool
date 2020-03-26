@@ -158,6 +158,8 @@ export default {
 
 <style lang="scss" scoped>
 #notebook-container {
+  background-color: #d9d9d9;
+  padding: 5rem 0;
 
   width: 100%;
   height: 100%;
@@ -166,8 +168,6 @@ export default {
   #cell-list {
     display: flex;
     flex-direction: column;
-    min-width: 40rem;
-    max-width: 60rem;
   }
 }
 </style>
