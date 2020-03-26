@@ -9,13 +9,11 @@
 
 
 <script>
-import CodeHQ from "@/components/code-hq.vue";
 import CodeCell from "@/components/notebooks/notebook-cell-code.vue";
 import MarkdownCell from "@/components/notebooks/notebook-cell-markdown.vue";
 
 export default {
   components: {
-    CodeHQ,
     CodeCell,
     MarkdownCell
   },
@@ -37,7 +35,7 @@ export default {
       }
     },
     onCellContainterClick() {
-      this.$emit('click', this.cell.hashCode);
+      // this.$emit('click', this.cell.hashCode);
     }
   },
   computed: {
@@ -58,8 +56,10 @@ $col-primary2: #6E92FA;
 
 .cell-container {
   margin: 1rem 1rem;
-  min-width: 40rem;
-  max-width: 60rem;
+  // min-width: 40rem;
+  // max-width: 60rem;
+  width: 100%;
+  height: 100%;
   margin: 0 auto;
 
   background-color: #d9d9d9;

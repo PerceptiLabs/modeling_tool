@@ -1,9 +1,5 @@
 <template>
   <div id="notebook-container">
-    <section id="toolbar">
-      <notebook-toolbar 
-        :isSessionOnline="isSessionOnline" />
-    </section>
     <div id="cell-list">
       <notebook-cell
         v-for="cell in cells"
@@ -17,81 +13,156 @@
 </template>
 
 <script>
-import NotebookToolbar from "./NotebookToolbar.vue";
-import NotebookCell from "./NotebookCell.vue";
+import { mapGetters } from 'vuex';
+import { stringifyNetworkObjects, promiseWithTimeout } from '@/core/helpers';
 
-import { notebookActions } from '@/helpers/JupyterNotebook';
+import NotebookCell from "@/components/notebooks/notebook-cell.vue";
 
 export default {
   components: {
-    NotebookToolbar,
     NotebookCell
   },
   data() {
     return {
-      notebookServer: {
-        url: "http://127.0.0.1:8888",
-        notebookName: "notebook.ipynb",
-        token: "?token=abc"
-      },
       cells: [],
       focusedCellHashCode: "",
       session: null
     };
   },
   computed: {
-    isSessionOnline() { return !!this.session; }
-  },
-  created() {
-    notebookActions.init({
-      url: this.notebookServer.url,
-      notebookName: this.notebookServer.notebookName,
-      token: this.notebookServer.token,
-    });
-
-    this.getNotebookContents();
-    this.startSession();
+    ...mapGetters({
+      currentNetwork: "mod_workspace/GET_currentNetwork",
+      coreNetwork: "mod_api/GET_coreNetwork"
+    })
   },
   methods: {
     cellClicked(cellHashCode) {
       this.focusedCellHashCode = cellHashCode;
     },
-    getCellHashCode(cell) {
-      if (!cell) {
-        return;
-      }
+    updateNotebook(){
+      Promise.all([
+          this.fetchNetworkCode(),
+          this.fetchNetworkCodeOrder()
+        ])
+        .then(([networkCodes, networkCodeOrder]) => {
 
-      let hashCode = this.hashCode(cell.cell_type) ^ this.hashCode(cell.source);
+          // console.log('notebookJson', notebookJson);
+          console.log('networkCode', networkCodes);
+          console.log('networkCodeOrder', networkCodeOrder);
 
-      return hashCode;
-    },
-    hashCode(string) {
-      let hash = 13;
-      if (string.length == 0) {
-        return hash;
-      }
-      for (let i = 0; i < string.length; i++) {
-        let char = string.charCodeAt(i);
-        hash = (hash << 5) - hash + char;
-        hash = hash & hash; // Convert to 32bit integer
-      }
-      return hash;
-    },
-    getNotebookContents() {
-      notebookActions.getNotebookContents()
-        .then(json => {
-          this.cells = json.content.cells.map(c => ({
-            ...c,
-            hashCode: this.getCellHashCode(c)
-          }));
+          // const notebookJson = this.getDefaultNotebookJson();
+          const validNetworkCodes = networkCodes.filter(nc => nc);
+          const sortedCode = this.sortNetworkCode(validNetworkCodes, networkCodeOrder);
+
+          console.log('sortedCode', sortedCode);
+
+          this.cells = sortedCode;
+          // const newNotebookJson = this.createNotebookDataToInject(notebookJson, sortedCode);
+          // this.injectNotebookJson(newNotebookJson);
+          // this.fetchNotebookUrl();
         });
     },
-    startSession() {
-      notebookActions.startSession()
-        .then(json => {
-          this.session = json;
-        });
-    }
+    getDefaultNotebookJson() {
+      const defaultJson = {
+        "cells": [
+          {
+          "cell_type": "code",
+          "execution_count": null,
+          "metadata": {},
+          "outputs": [],
+          "source": []
+          }
+        ],
+        "metadata": {
+          "kernelspec": {
+          "display_name": "Python 3",
+          "language": "python",
+          "name": "python3"
+          },
+          "language_info": {
+          "codemirror_mode": {
+            "name": "ipython",
+            "version": 3
+          },
+          "file_extension": ".py",
+          "mimetype": "text/x-python",
+          "name": "python",
+          "nbconvert_exporter": "python",
+          "pygments_lexer": "ipython3",
+          "version": "3.6.2"
+          }
+        },
+        "nbformat": 4,
+        "nbformat_minor": 4
+      };
+      
+      return JSON.parse(JSON.stringify(defaultJson));
+    },
+    fetchNetworkCode() {
+      if (!this.currentNetwork || !this.currentNetwork.networkElementList) {
+        return [];
+      }
+
+      const fetchCodePromises = [];
+
+      const networkElements = Object.entries(this.currentNetwork.networkElementList);
+      // console.log('networkElements', networkElements);
+      for (let networkElement of networkElements) {
+        const promise = addIdToLayerCode.call(this, networkElement);
+        fetchCodePromises.push(promiseWithTimeout(200, promise));
+      }
+
+      return Promise.all(fetchCodePromises).then(code => {
+
+        console.log('networkElements code', code.filter(c => c).map(c => c));
+        return code.filter(c => c).map(c => c);
+      });
+
+      function addIdToLayerCode(networkElement) {
+        // wrote this litte function because we want a layerId key with the code
+        // this is to help with the sorting in the next step
+
+        // networkElement[0] is just the layerId
+        const networkInformation = networkElement[1];
+        const payload = {
+          layerId: networkInformation.layerId,
+          settings: networkInformation.layerSettings
+        };
+
+        return this.$store
+          .dispatch("mod_api/API_getCode", payload)
+          .then(result => {
+            result.layerId = networkInformation.layerId;
+            return result;
+          });
+      }
+    },
+    fetchNetworkCodeOrder() {
+      return this.$store
+        .dispatch("mod_api/API_getGraphOrder", this.coreNetwork)
+        .then(codeOrder => codeOrder)
+        .catch(error => []);
+    },
+    sortNetworkCode(array, sortOrder = null) {
+      if (!array || !sortOrder) { return; }
+
+      console.log('sortNetworkCode - array', array);
+
+      // current sort is O(n^2), will use Map if most networks have many elements
+      const sortedArray = [];
+      for (let sortKey of sortOrder) {
+
+        let targetCode = array.find(element => element.layerId === sortKey);
+        if (targetCode) {
+          sortedArray.push(targetCode.Output);
+        }
+      }
+      return sortedArray;
+    },
+  },
+  created() {
+    console.log('--------------------------------');
+    this.updateNotebook();
   }
 };
 </script>
@@ -99,20 +170,13 @@ export default {
 <style lang="scss" scoped>
 #notebook-container {
 
-  #toolbar {
-    position: fixed;
-    top: 0;
-    width: 100%;
-    box-shadow: 0 3px 6px rgba(0,0,0,0.04), 0 3px 6px rgba(0,0,0,0.08);
-
-    background-color: #d9d9d9;
-
-    z-index: 10;
-  }
+  width: 100%;
+  height: 100%;
 
   #cell-list {
-    margin-top: 6rem;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
   }
-
 }
 </style>

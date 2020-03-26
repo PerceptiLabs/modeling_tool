@@ -15,7 +15,7 @@ import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
 import TheMiniMap             from '@/components/different/the-mini-map.vue';
-import Notebook               from '@/components/notebooks/notebook.vue';
+import Notebook               from '@/components/notebooks/notebook-container.vue';
 
 export default {
   name: 'WorkspaceContent',

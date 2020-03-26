@@ -24,7 +24,7 @@
 
 
 <script>
-import CodeHQ from "@/components/code-hq.vue";
+import CodeHQ from "@/components/network-elements/elements-settings/code-hq.vue";
 
 export default {
   components: {
