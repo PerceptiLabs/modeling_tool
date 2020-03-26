@@ -47,7 +47,7 @@
 
 <script>
   import { mapGetters, mapMutations, mapActions } from 'vuex';
-  import { baseUrlSite } from '@/core/constants.js';
+  import { baseUrlSite, MODAL_PAGE_PROJECT } from '@/core/constants.js';
   import { goToLink }    from '@/core/helpers.js'
   import {isElectron, isOsMacintosh } from "@/core/helpers";
   let ipcRenderer = null;
@@ -142,6 +142,7 @@ export default {
       HCDeselectAll:    'mod_workspace/SET_elementUnselect',
       toPrevStepHistoryMutation:'mod_workspace-history/TO_prevStepHistory',
       toNextStepHistoryMutation:'mod_workspace-history/TO_nextStepHistory',
+      setActivePageAction: 'modal_pages/setActivePageAction',
     }),
     goToLink,
     mainProcessListeners(isRemove) {
@@ -308,6 +309,9 @@ export default {
         this.toNextStepHistoryMutation()
       }
     },
+    setActivePage() {
+      this.setActivePageAction(MODAL_PAGE_PROJECT);
+    },
     navMenuDesktop() {
       return [
         ...(this.isMac ? [{
@@ -353,6 +357,12 @@ export default {
             {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
 
+          ] 
+        },
+        {
+          label: 'Project', visible: true,
+          submenu: [
+            {label: 'New',    enabled: true,         active: this.setActivePage },
           ]
         },
         {
@@ -449,6 +459,12 @@ export default {
             {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
             {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
 
+          ]
+        },
+        {
+          label: 'Project', visible: true,
+          submenu: [
+            {label: 'New',    enabled: true,         active: this.setActivePage },
           ]
         },
         {
