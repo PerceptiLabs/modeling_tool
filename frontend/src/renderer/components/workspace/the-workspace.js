@@ -10,6 +10,7 @@ import GeneralResult          from "@/components/global-popups/workspace-result"
 import SelectCoreSide         from "@/components/global-popups/workspace-core-side";
 import WorkspaceBeforeImport  from "@/components/global-popups/workspace-before-import";
 import WorkspaceSaveNetwork   from "@/components/global-popups/workspace-save-network.vue";
+import FilePickerPopup        from "@/components/global-popups/file-picker-popup.vue";
 import TheTesting             from "@/components/statistics/the-testing.vue";
 import TheViewBox             from "@/components/statistics/the-view-box";
 import StartTrainingSpinner   from '@/components/different/start-training-spinner.vue'
@@ -23,7 +24,7 @@ export default {
     GeneralResult, SelectCoreSide,
     WorkspaceBeforeImport, WorkspaceSaveNetwork,
     TheTesting, TheViewBox, StartTrainingSpinner,
-    TheMiniMap
+    TheMiniMap, FilePickerPopup
   },
   mounted() {
     console.log(this.$refs.networkField);
@@ -51,6 +52,7 @@ export default {
       showGlobalResult:           state => state.globalView.globalPopup.showNetResult,
       showWorkspaceBeforeImport:  state => state.globalView.globalPopup.showWorkspaceBeforeImport,
       showCoreSide:               state => state.globalView.globalPopup.showCoreSideSettings,
+      showFilePickerPopup:        state => state.globalView.globalPopup.showFilePickerPopup,
     }),
 
     hasStatistics() {

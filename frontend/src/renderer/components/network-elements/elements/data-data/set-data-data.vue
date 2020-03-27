@@ -27,8 +27,8 @@
         file-picker(
           :filePickerType="filePickerType"
           :fileTypeFilter="validFileExtensions"
-          @confirm-selection="confirmFilePickerSelection"
-          @close="clearPath")
+          :confirmCallback="confirmFilePickerSelection"
+          :cancelCallback="clearPath")
 
         //-web-upload-file#tutorial_button-load.tutorial-relative(
           v-model="settings.accessProperties.PathFake"
