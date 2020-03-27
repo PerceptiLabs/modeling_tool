@@ -20,8 +20,9 @@ from perceptilabs.core_new.layers.replicas import *
 WARNING: MUST HAVE SUBCLASSES APPEARING FIRST (if not, e.g., a training layer could be erroneously replicated as a data layer, which would hide a lot of information to the core)."""
 BASE_TO_REPLICA_MAP = {
     ClassificationLayer: ClassificationLayerReplica,    
-    DataLayer: DataLayerReplica,    
+    DataLayer: DataLayerReplica,
     Tf1xLayer: Tf1xLayerReplica,
+    InnerLayer: InnerLayerReplica,        
 }
 REPLICA_TO_BASE_MAP = {replica.__name__: base for base, replica in BASE_TO_REPLICA_MAP.items()}
 
@@ -63,7 +64,6 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('layer_biases', dict, lambda _: dict()),
         ReplicatedProperty('layer_outputs', dict, lambda _: dict()),
         ReplicatedProperty('batch_size', int, -1),
-        ReplicatedProperty('is_paused', bool, False),
         ReplicatedProperty('training_iteration', int, -1),
         ReplicatedProperty('validation_iteration', int, -1),        
         ReplicatedProperty('testing_iteration', int, -1),
@@ -76,11 +76,13 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('size_validation', int, -1),
         ReplicatedProperty('size_testing', int, -1),
         ReplicatedProperty('variables', dict, lambda _: dict())
-    ], 
+    ],
     Tf1xLayer: [
         ReplicatedProperty('variables', dict, lambda _: dict()),
-    ]
-
+    ],
+    InnerLayer: [
+        ReplicatedProperty('variables', dict, lambda _: dict()),
+    ],
 }
 
 

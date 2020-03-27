@@ -227,6 +227,23 @@ class BaseCore:
             locals_.update({"checkpoint":self._checkpointValues[content['Info']['checkpoint'][-1]]})            
             code = v2_insert_checkpoint_values(id_, content['Info']['Name'], content['Info']['Type'], code, self._checkpointValues[content['Info']['checkpoint'][-1]])            
 
+        if (
+                self._core_mode == 'v2' and                
+                content['Info'].get('Code') is not None and 
+                (content['Info'].get('Code') != '' or (isinstance(content['Info']['Code'], dict) and content['Info']['Code'].get('Output') is not None))
+        ):
+            warning_message = "Custom code not supported in lightweight core for core mode == 'v2'. Replacing generated code with identity (Y = X['Y'])"
+            if log.isEnabledFor(logging.DEBUG):
+                warning_message += "\nOriginal code:\n" + line_nums(code)
+            log.warning(warning_message)
+
+            code = "Y = X['Y']\n"
+            
+        
+        if content['Info']['checkpoint'] and self._core_mode == 'v2':
+            locals_.update({"checkpoint":self._checkpointValues[content['Info']['checkpoint'][-1]]})            
+            code = v2_insert_checkpoint_values(id_, content['Info']['Name'], content['Info']['Type'], code, self._checkpointValues[content['Info']['checkpoint'][-1]])            
+
         session = LayerSession(id_, content['Info']['Type'], code,
                                global_vars=globals_,
                                local_vars=locals_,
@@ -321,6 +338,11 @@ class BaseCore:
             else:
                 raise Exception("Layer {} is empty and can therefore not run.\nMost likely it has not been properly Applied.".format(content["Info"]["Name"]))
 
+
+        #if content['Info'].get('Code') is not None and self._core_mode == 'v2':
+        #    log.warning(f'Cannot run custom code in core_v2. Skipping layer {layer_id} [{layer_type}]')
+        #    return True
+            
         # if "Code" in content["Info"] and content["Info"]["Code"]:
         #     log.info("Layer {} [{}] has custom code. Skipping.".format(layer_id, layer_type))        
            

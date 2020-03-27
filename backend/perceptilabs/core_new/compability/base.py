@@ -134,7 +134,7 @@ class CompabilityCore:
             return {}
 
         # TODO: if isinstance(training_layer, Classification) etc
-        result_dict = policy_classification(graph, self._sanitized_to_name, self._sanitized_to_id)
+        result_dict = policy_classification(self._core, graph, self._sanitized_to_name, self._sanitized_to_id)
         return result_dict
 
     def _print_graph_debug_info(self, graphs):

@@ -11,7 +11,8 @@
 import numpy as np
 
 
-def policy_classification(graphs, sanitized_to_name, sanitized_to_id):
+def policy_classification(core, graphs, sanitized_to_name, sanitized_to_id):
+
 
     def get_layer_inputs_and_outputs(graph, node, trn_node):
         data = {}
@@ -209,7 +210,7 @@ def policy_classification(graphs, sanitized_to_name, sanitized_to_id):
         elif trn_node.layer.status == 'finished':
             training_status = 'Finished'
 
-        if trn_node.layer.is_paused:
+        if core.is_paused:
             status = 'Paused'
         else:
             status = 'Running'

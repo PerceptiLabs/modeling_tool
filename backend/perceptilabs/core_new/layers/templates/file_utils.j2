@@ -13,25 +13,17 @@
 {% macro load_csv(path, tag, lazy=False, selected_columns=none, blocksize='64MB') -%}
 {% filter remove_lspaces(8) %}
     {% if lazy %}
-        if "dask:{{path}}" not in api.cache:
-            df = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
-            
-            # Manually compute divisions.
+        df = dd.read_csv("{{path}}", blocksize="{{blocksize}}").astype(np.float32)
 
-            import multiprocessing
-            n_rows_per_partition = df.map_partitions(lambda df: df.shape[0]).compute(
-                scheduler='processes',
-                num_workers=multiprocessing.cpu_count(),
-            ).values.tolist()
+        # Manually compute divisions.
+        n_rows_per_partition = df.map_partitions(lambda df: df.shape[0]).compute(
+            scheduler='processes',
+            num_workers=multiprocessing.cpu_count(),
+        ).values.tolist()
 
-            divisions = [0] + np.cumsum(n_rows_per_partition).tolist()
-            divisions[-1] -= 1
-            
-            df.divisions = tuple(divisions)
-            
-            api.cache.put("dask:{{path}}", df)
-        else:
-            df = api.cache.get("dask:{{path}}")
+        divisions = [0] + np.cumsum(n_rows_per_partition).tolist()
+        divisions[-1] -= 1
+        df.divisions = tuple(divisions)
 
         columns_{{tag}} = df.columns.tolist()
         size_{{tag}} = df.divisions[-1] + 1

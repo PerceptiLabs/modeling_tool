@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 
 class GraphBuilder:
-    def __init__(self, replica_by_name=None):
+    def __init__(self, replica_by_name=None): 
         self._replica_by_name = replica_by_name    
     
     def build(self, layer_map: Dict[str, BaseLayer], edges_by_id: Set[Tuple[str, str]]):
@@ -61,15 +61,18 @@ class GraphBuilder:
         replica = replica_class(**kwargs)
         return replica
     
-    def build_from_spec(self, graph_spec, session_config):
+    def build_from_spec(self, graph_spec): 
         graph_spec = graph_spec['Layers'] # TODO: remove!
         
         nodes = {}
         for layer_spec in graph_spec.values():
+            #from pprint import pprint
+            #pprint(layer_spec)
+            
             layer_type = layer_spec['Type']
 
             #TODO: Remove this if-case when frontend is sending back correct file path on Windows
-            if layer_type == "DataData":
+            if layer_type == "DataData" and layer_spec['Properties'] is not None:
                 sources = layer_spec['Properties']['accessProperties']['Sources']
                 new_sources = []
                 for source in sources:

@@ -1,10 +1,14 @@
 import copy
+import logging
 import networkx as nx
 from typing import Dict, List, Tuple
 
 
 from perceptilabs.script.base import CodeGenerator
 from perceptilabs.core_new.layers.base import BaseLayer, DataLayer, InnerLayer, TrainingLayer
+
+log = logging.getLogger(__name__)
+
 
 class JsonNetwork(Dict):
     pass
@@ -44,6 +48,17 @@ class Node:
     @property
     def layer(self):
         return self._layer_instance
+
+    @property
+    def custom_code(self):
+        if self._layer_spec['Code'] is None:
+            return None
+
+        if self._layer_spec['Code'].get('Output') is None:
+            return None
+
+        code = self._layer_spec['Code']['Output']
+        return code
     
 
 class Graph:
@@ -59,7 +74,7 @@ class Graph:
         end_nodes = [n for n in self._nx_graph.nodes if len(list(self._nx_graph.successors(n))) == 0]
         if len(end_nodes) > 1:
             raise RuntimeError("Not supported. More than one _isolated_ subgraph detected!")
-
+        
         self._end_node = end_nodes[0]
 
         bfs_tree = list(nx.bfs_tree(self._nx_graph, self._end_node, reverse=True))
@@ -114,9 +129,12 @@ class Graph:
 
     def get_node_by_id(self, layer_id: str):
         target_nodes = [x for x in self.nodes if x.layer_id == layer_id]
-        print(layer_id, target_nodes)
-        
-        assert len(target_nodes) == 1
+
+        if len(target_nodes) == 0:
+            raise RuntimeError(f"Node with id {layer_id} not in graph")
+        if len(target_nodes) > 1:
+            raise RuntimeError(f"Graph is corrupt. {len(target_nodes)} nodes have the id {layer_id}, expected one")
+
         return target_nodes[0]
     
     def get_input_nodes(self, node):
@@ -125,18 +143,18 @@ class Graph:
 
     def get_direct_data_nodes(self, layer_id: str):
         """ Select data layers that are immediately connected to the layer """
-
         target_node = self.get_node_by_id(layer_id)
-        print("target node", target_node.layer_instance)
         
         result = []
+        if target_node.is_data_node:
+            result.append(target_node)        
 
         for data_node in self.data_nodes:
             # TODO: can we use ancesotrs instead?
             simple_paths = list(nx.all_simple_paths(self._nx_graph, data_node, target_node))
 
             if len(simple_paths) > 0:
-                immediate = True # Assume all connections are immediate and then verify that.
+                immediate = True # Assume all connections are immediate (pass through only one data node) and then verify that.
                 for path in simple_paths:
                     data_nodes_in_path = [n for n in path if n.is_data_node]
 
