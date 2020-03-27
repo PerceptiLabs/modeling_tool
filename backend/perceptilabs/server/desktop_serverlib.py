@@ -174,11 +174,11 @@ class Message:
         self._write()
 
     def close(self):
-        log.info("closing connection to {}".format(self.addr))
+        log.debug("closing connection to {}".format(self.addr))
         try:
             self.selector.unregister(self.sock)
         except Exception as e:
-            log.errpr(
+            log.error(
                 f"error: selector.unregister() exception for",
                 f"{self.addr}: {repr(e)}",
             )
@@ -228,7 +228,7 @@ class Message:
             encoding = self.jsonheader["content-encoding"]
             self.request = self._json_decode(data, encoding)
 
-            log.info("received request {} from {}".format(pprint.pformat(self.request), self.addr))
+            log.debug("received request {} from {}".format(pprint.pformat(self.request), self.addr))
         else:
             # Binary or unknown content-type
             self.request = data

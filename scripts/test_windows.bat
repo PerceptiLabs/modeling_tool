@@ -9,7 +9,7 @@ REM IF %ERRORLEVEL% EQU 1 (
 REM   exit 0
 REM )
 echo "Running python tests"
-python -m pytest
+python -m pytest --capture=no
 IF %ERRORLEVEL% NEQ 0 (
   exit 1
 )

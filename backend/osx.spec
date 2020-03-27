@@ -92,7 +92,7 @@ hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('
             'PIL.ImageTk', 'glob', 'random', 'os.path', 're', 'codehq', 'dask', 'skimage.io', 'tensorflow.python','networkx', 
             'tensorflow.python.eager.context','tensorflow.lite','tensorflow.lite.toco',
             'tensorflow.lite.toco_convert','tensorflow_wrap_toco','tensorflow.lite.toco.python','tensorflow.python.platform','google.protobuf','tensorflow.core.protobuf',
-            'tensorflow.python.training','tensorflow.lite.toco.python.tensorflow_wrap_toco','_tensorflow_wrap_toco']
+            'tensorflow.python.training','tensorflow.lite.toco.python.tensorflow_wrap_toco','_tensorflow_wrap_toco', 'dill', 'zmq']
 
 
 log.info("pathex = {}".format(pformat(pathex)))

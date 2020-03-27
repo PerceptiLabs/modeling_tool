@@ -129,7 +129,7 @@ hiddenimports = collect_submodules('skimage.io._plugins') + collect_submodules('
             'tensorflow.python.eager.context','tensorflow.lite','tensorflow.lite.toco',
             'tensorflow.lite.toco_convert','tensorflow_wrap_toco','tensorflow.lite.toco.python','tensorflow.python.platform','google.protobuf','tensorflow.core.protobuf',
             'tensorflow.python.training','tensorflow.lite.toco.python.tensorflow_wrap_toco','_tensorflow_wrap_toco', 'tensorflow_core._api.v1.compat.v2.summary.experimental',
-            'tensorflow_core.python.pywrap_tensorflow']
+            'tensorflow_core.python.pywrap_tensorflow', 'dill', 'zmq']
 
 
 log.info("pathex = {}".format(pformat(pathex)))

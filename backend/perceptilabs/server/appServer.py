@@ -19,7 +19,7 @@ class Server():
 
         def accept_wrapper(sock):
             conn, addr = sock.accept()  # Should be ready to read
-            log.info("accepted connection from {}".format(addr))
+            log.debug("accepted connection from {}".format(addr))
             conn.setblocking(False)
             message = Message(sel, conn, addr, interface)
             sel.register(conn, selectors.EVENT_READ, data=message)

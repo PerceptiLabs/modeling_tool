@@ -95,8 +95,8 @@ const netElementSettingsData = {
     // },
     Mix_settingsData_prepareSources(pathArr, type) {
       return pathArr.map((el)=> { return {
-        type,
-        "path": isElectron() ? fixFilepathSeparator(el) : el
+          type,
+          "path": isElectron() ? fixFilepathSeparator(el) : el
       }})
     }
   }

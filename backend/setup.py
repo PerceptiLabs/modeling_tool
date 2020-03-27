@@ -85,7 +85,7 @@ setup(
         'cryptography >= 2.8',
         'pycparser >= 2.19',
         'six >= 1.14.0',
-        'scikit-learn >= 0.22.1',
+        'scikit-learn >= 0.22.1'
     ],
     dependency_links=[
         'git+https://github.com/Kojoley/atari-py.git; platform_system == "Windows"',
