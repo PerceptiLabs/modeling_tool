@@ -510,7 +510,7 @@ const actions = {
       }
     };
 
-    console.log('getCode', theData);
+    // console.log('getCode', theData);
     dispatch('globalView/ShowCoreNotFoundPopup', null, { root: true });
     return coreRequest(theData)
       .then((data)=> {
