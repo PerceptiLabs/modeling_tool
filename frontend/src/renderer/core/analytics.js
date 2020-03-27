@@ -39,10 +39,17 @@ export const hubSpot = (function() {
         }
     }
 
-    publicMethods.trackRunButtonPress = function(userEmail) {
-        addTag(['trackEvent"', {
+    publicMethods.trackRunButtonPress = function(userEmail = '') {
+        // not currently used because it's not part of our plan
+        addTag(['trackEvent', {
             id: "Run button clicked",
             value: userEmail
+        }]);
+    }
+
+    publicMethods.identifyUser = function(userEmail = '') {
+        addTag(['identify', {
+            email: userEmail
         }]);
     }
 

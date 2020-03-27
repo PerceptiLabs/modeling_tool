@@ -83,6 +83,7 @@
       //   //this.appReady();
       //   //this.sendPathToAnalist(this.$route.fullPath);
       // })
+      Analytics.hubSpot.identifyUser(this.userEmail);
     },
     beforeDestroy() {
       window.removeEventListener('online',  this.updateOnlineStatus);
