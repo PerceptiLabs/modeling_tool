@@ -5,7 +5,6 @@ class {{layer_name}}(DataLayer):
     """Class responsible for loading data from files (e.g., numpy, csv, etc)."""    
     def __init__(self):
         self._variables = {}
-        
         columns = {}
         trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0        
         trn_gens_args_{{layer_name}}, val_gens_args_{{layer_name}}, tst_gens_args_{{layer_name}} = [], [], []        

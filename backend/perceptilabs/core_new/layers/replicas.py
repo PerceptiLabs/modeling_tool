@@ -3,7 +3,8 @@ import tensorflow as tf
 from typing import List, Callable
 
 
-from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, ClassificationLayer
+
+from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, ClassificationLayer, InnerLayer
 
 
 class NotReplicatedError(Exception):
@@ -53,7 +54,7 @@ class ClassificationLayerReplica(ClassificationLayer):
                  accuracy_training, accuracy_testing, accuracy_validation,
                  loss_training, loss_testing, loss_validation,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
-                 batch_size, is_paused, training_iteration, validation_iteration,
+                 batch_size, training_iteration, validation_iteration,
                  testing_iteration, progress, epoch, export_modes):
 
         self._export_modes = export_modes
@@ -77,7 +78,6 @@ class ClassificationLayerReplica(ClassificationLayer):
         self._layer_outputs = layer_outputs
 
         self._batch_size = batch_size
-        self._is_paused = is_paused
         self._training_iteration = training_iteration
         self._validation_iteration = validation_iteration
         self._testing_iteration = testing_iteration
@@ -156,10 +156,6 @@ class ClassificationLayerReplica(ClassificationLayer):
         return self._batch_size
 
     @property
-    def is_paused(self):
-        return self._is_paused
-    
-    @property
     def layer_outputs(self):
         return self._layer_outputs
 
@@ -172,12 +168,6 @@ class ClassificationLayerReplica(ClassificationLayer):
     def make_generator_testing(self):
         raise NotReplicatedError
 
-    def on_pause(self):
-        raise NotReplicatedError
-    
-    def on_resume(self):
-        raise NotReplicatedError
-    
     def on_stop(self):
         raise NotReplicatedError        
     
@@ -204,6 +194,18 @@ class ClassificationLayerReplica(ClassificationLayer):
     def export_modes(self):
         return self._export_modes
 
+
+class InnerLayerReplica(InnerLayer):
+    def __init__(self, variables):
+        self._variables = variables
+
+    @property        
+    def variables(self):
+        return self._variables
+
+    def __call__(self, x: ...):
+        raise NotReplicatedError        
+    
     
 class Tf1xLayerReplica(Tf1xLayer):
     def __init__(self, variables):

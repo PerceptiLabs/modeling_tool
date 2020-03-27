@@ -55,7 +55,7 @@ class Core:
         config = self._deployment_pipe.get_session_config(session_id)
         log.debug(f"Session {session_id} config: {pprint.pformat(config)}")
         
-        graph = self._graph_builder.build_from_spec(graph_spec, config)
+        graph = self._graph_builder.build_from_spec(graph_spec)
         self._client = self._deployment_pipe.deploy(graph, session_id)
 
         line_to_node_map = self._deployment_pipe._line_to_node_map # TODO: inject script_factory to deployment pipe instead retrieving the map like this.
@@ -75,7 +75,7 @@ class Core:
 
         counter = 0
         t_start = time.perf_counter()
-        while self._client.status == STATUS_RUNNING or (self._client.status == STATUS_IDLE and len(self._graphs) < self._client.snapshot_count):
+        while self._client.status in [STATUS_RUNNING, STATUS_RUNNING_PAUSED] or (self._client.status == STATUS_IDLE and len(self._graphs) < self._client.snapshot_count):
             t0 = time.perf_counter()
             errors = self._client.pop_errors()
 
@@ -114,6 +114,9 @@ class Core:
             counter += 1
             time.sleep(1)
 
+    @property
+    def is_paused(self):
+        return self._client.status == STATUS_RUNNING_PAUSED
 
     def _handle_errors(self, errors: List, line_to_node_map):
         errors_repr = []

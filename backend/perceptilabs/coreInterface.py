@@ -138,7 +138,7 @@ class coreLogic():
 
             replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}                
             graph_builder = GraphBuilder(replica_by_name)
-            graph = graph_builder.build_from_spec(graph_spec, config)
+            graph = graph_builder.build_from_spec(graph_spec)
             
             script_factory = ScriptFactory()        
             code = script_factory.make(graph, config)
@@ -154,6 +154,11 @@ class coreLogic():
         self.setupLogic()
         self.network=network
         log.debug('printing network .......\n')
+
+        if log.isEnabledFor(logging.DEBUG):        
+            import json
+            with open('net.json_', 'w') as f:
+                json.dump(network, f, indent=4) 
 
         if log.isEnabledFor(logging.DEBUG):        
             import json
@@ -901,7 +906,6 @@ class coreLogic():
                 D = [createDataObject([input_]) for input_ in inputs]
                 
                 X = self.getStatistics({"layerId": layerId, "variable":"X", "innervariable":""})
-                
                 if type(X) is dict and type(list(X.values())[0]) is dict and len(list(X.values()))==2:
 
                     input1_name, input2_name = X.keys()

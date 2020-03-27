@@ -13,10 +13,9 @@ log = logging.getLogger(__name__)
 
 TEMPLATES_DIRECTORY = 'core_new/layers/templates/' # Relative to the package root directory
 
-
 class LayerDef:
     """Defines a layer class."""
-    def __init__(self, base_class, template_file, template_macro, macro_parameters):
+    def __init__(self, base_class, template_file, template_macro, macro_parameters, import_statements=None):
         """Specifies the nature of a layer. Each layer extends a base class and the implementation comes packaged in a jinja2 template macro that can be rendered into python code. 
         The implementation rendered will vary according to the specifications made in the frontend.
 
@@ -26,11 +25,13 @@ class LayerDef:
             template_file: the jinja2 template file containing the actual implementation. Must be located in the TEMPLATES_DIRECTORY
             template_macro: the name of a jinja2 macro, available in the template file, that renders the implementation.
             macro_parameters: a dictionary of keys mapping to a value (or callable returning a value). This key-value pair will be passed as an argument to the jinja2 macro during rendering. 
+            import_statements: a list of Python import statements as strings
         """
         self.base_class = base_class
         self.template_file = template_file
         self.template_macro = template_macro
         self.macro_parameters = macro_parameters
+        self.import_statements = import_statements or []
 
         
 def resolve_checkpoint_path(specs):
@@ -50,6 +51,17 @@ def resolve_checkpoint_path(specs):
     return ckpt_path
 
 
+def resolve_custom_code(specs):
+    if specs['Code'] is None:
+        return None
+    
+    if specs['Code'].get('Output') is None:
+        return None
+
+    code = specs['Code']['Output']
+    return code
+
+
 DEFINITION_TABLE = {
     'DataData': LayerDef(
         DataLayer,
@@ -64,13 +76,29 @@ DEFINITION_TABLE = {
             'seed': 0,
             'lazy': False,
             'shuffle_buffer_size': None,
-        }
+        },
+        import_statements=[
+            'from perceptilabs.core_new.layers.base import DataLayer',
+            'from typing import Dict, Generator',
+            'import multiprocessing', 
+            'import numpy as np',
+            'import pandas as pd',
+            'import dask.dataframe as dd',                                    
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'                    ]
     ),
     'ProcessGrayscale' : LayerDef(
         Tf1xLayer,
         'tf1x.j2',
         'layer_tf1x_grayscale',
-        {}
+        {},
+        import_statements=[
+            'import tensorflow as tf',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'ProcessReshape': LayerDef(
         Tf1xLayer,
@@ -79,7 +107,14 @@ DEFINITION_TABLE = {
         {
             'shape': lambda specs: specs['Properties']['Shape'],
             'permutation': lambda specs: specs['Properties']['Permutation']
-        }
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'ProcessOneHot': LayerDef(
         Tf1xLayer,
@@ -87,7 +122,14 @@ DEFINITION_TABLE = {
         'layer_tf1x_one_hot',
         {
             'n_classes': lambda specs: specs['Properties']['N_class']
-        }
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'DeepLearningFC':  LayerDef(
         Tf1xLayer,
@@ -98,7 +140,15 @@ DEFINITION_TABLE = {
             'activation': resolve_tf1x_activation_name,
             'dropout': lambda specs: specs['Properties']['Dropout'],
             'keep_prob': lambda specs: specs['Properties']['Keep_prob']
-        }
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',            
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'DeepLearningConv':  LayerDef(
         Tf1xLayer,
@@ -117,7 +167,15 @@ DEFINITION_TABLE = {
             'pooling': lambda specs: specs['Properties']['Pooling'],
             'pool_area': lambda specs: specs['Properties']['Pool_area'],
             'pool_stride': lambda specs: specs['Properties']['Pool_stride'],            
-        }
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',            
+            'from typing import Dict',
+            'from perceptilabs.core_new.utils import Picklable',
+            'from perceptilabs.core_new.layers.base import Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize'            
+        ]
     ),
     'TrainNormal': LayerDef(
         ClassificationLayer,
@@ -136,8 +194,44 @@ DEFINITION_TABLE = {
             'momentum': lambda specs: specs['Properties']['Momentum'],
             'beta1': lambda specs: specs['Properties']['Beta_1'],
             'beta2': lambda specs: specs['Properties']['Beta_2'],
-            'distributed': lambda specs: specs['Properties']['Distributed'],
-            'export_directory': resolve_checkpoint_path
-        }
+            'distributed': lambda specs: specs['Properties'].get('Distributed', False),
+            'export_directory': resolve_checkpoint_path            
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'import time',
+            'import os',
+            'from typing import Dict, List, Generator',
+            'from perceptilabs.core_new.utils import Picklable, YieldLevel',
+            'from perceptilabs.core_new.graph import Graph',
+            'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize',
+            'from tensorflow.python.training.tracking.base import Trackable'            
+        ]
+    ),
+    'LayerCustom': LayerDef(
+        InnerLayer,
+        'custom.j2',
+        'layer_custom_inner',
+        {
+            'code': resolve_custom_code
+        },
+        import_statements=[
+            'import tensorflow as tf',
+            'import numpy as np',
+            'import time',
+            'import os',
+            'from typing import Dict, List, Generator',
+            'from perceptilabs.core_new.utils import Picklable, YieldLevel',
+            'from perceptilabs.core_new.graph import Graph',
+            'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer',
+            'from perceptilabs.core_new.serialization import can_serialize, serialize',
+            'from tensorflow.python.training.tracking.base import Trackable'            
+        ]
     )
 }
+
+
+
+    
