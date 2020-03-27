@@ -4,6 +4,6 @@ const prodEnv = require('./prod.env')
 
 module.exports = merge(prodEnv, {
   NODE_ENV: '"development"',
-  HUBSPOT_ID: '""',
-  GOOGLE_ANALYTICS_ID: '""'
+  HUBSPOT_ID: '"7122301.js"',
+  GOOGLE_ANALYTICS_ID: '"UA-114940346-2"'
 })

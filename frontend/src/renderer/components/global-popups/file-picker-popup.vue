@@ -8,77 +8,77 @@
           h3 {{ popupTitle }}
       .popup_body
         file-picker(
-          :filePickerType="filePickerType"
-          :fileTypeFilter="fileTypeFilter"
-          :options="filePickerOptions"
-          :confirmCallback="confirmCallback"
-          :cancelCallback="closePopup")
-
+            :filePickerType="filePickerType"
+            :fileTypeFilter="fileTypeFilter"
+            :options="filePickerOptions"
+            :confirmCallback="confirmCallback"
+            :cancelCallback="closePopup")
+        
 </template>
 
 <script>
-  import Moveable from "moveable";
-  import { pathSlash }  from '@/core/constants.js';
-  import FilePicker from '@/components/different/file-picker.vue';
+import Moveable from "moveable";
+import { pathSlash }  from '@/core/constants.js';
+import FilePicker from '@/components/different/file-picker.vue';
 
-  export default {
-    name: "FilePickerPopup",
-    components: { FilePicker, Moveable },
-    props: {
-      filePickerType: {
-        type: String,
-        default: 'folder' // can also be 'folder'
-      },
-      fileTypeFilter: {
-        type: Array,
-        default: () => []
-      },
-      confirmCallback: {
-        type: Function,
-        default: () => {}
-      },
-      popupTitle: {
-        type: String,
-        default: "Select a folder"
-      }
+export default {
+  name: "FilePickerPopup",
+  components: { FilePicker, Moveable },
+  props: {
+    filePickerType: {
+      type: String,
+      default: 'folder' // can also be 'folder'
     },
-    data() {
-      return {
-        moveable: '',
-        filePickerOptions: {
-          showBackButton: false,
-          showNumberSelectedFiles: false,
-        }
-      }
+    fileTypeFilter: {
+      type: Array,
+      default: () => []
     },
-    methods: {
-      closePopup() {
-        this.$store.commit('globalView/HIDE_allGlobalPopups');
-      },
+    confirmCallback: {
+      type: Function,
+      default: () => {}
     },
-    mounted() {
-      this.moveable = new Moveable(this.$refs['popup-container'],
-        {
-          target: this.$refs['popup'],
-          draggable: true,
-          keepRatio: true,
-          throttleDrag: 0,
-          origin: false,
-        });
-
-      this.moveable
-        .on("drag", ({ target, transform}) => {
-          target.style.transform = transform;
-        });
+    popupTitle: {
+      type: String,
+      default: "Select a folder"
     }
+  },
+  data() {
+    return {
+      moveable: '',
+      filePickerOptions: {
+        showBackButton: false,
+        showNumberSelectedFiles: false,
+      }
+    }
+  },
+  methods: {
+    closePopup() {
+      this.$store.commit('globalView/HIDE_allGlobalPopups');
+    },
+  },
+  mounted() {
+    this.moveable = new Moveable(this.$refs['popup-container'], 
+    {
+        target: this.$refs['popup'],
+        draggable: true,
+        keepRatio: true,
+        throttleDrag: 0,
+        origin: false,
+    });
+
+    this.moveable
+    .on("drag", ({ target, transform}) => {
+      target.style.transform = transform;
+    });
   }
+}
 </script>
 
 <style lang="scss" scoped>
-  /deep/ .moveable-control-box {
-    .moveable-line {
-      display:none;
-    }
+/deep/ .moveable-control-box {
+  .moveable-line {
+    display:none; 
   }
+}
 
 </style>
