@@ -19,6 +19,7 @@ import TrainDynamic         from '@/components/network-elements/elements/train-d
 import TrainReinforce       from '@/components/network-elements/elements/train-reinforce/train-reinforce.vue'
 import TrainLoss            from '@/components/network-elements/elements/train-loss/train-loss.vue'
 import TrainOptimizer       from '@/components/network-elements/elements/train-optimizer/train-optimizer.vue'
+import TrainDetector       from '@/components/network-elements/elements/train-detector/train-detector.vue'
 
 import MathArgmax           from '@/components/network-elements/elements/math-argmax/math-argmax.vue'
 import MathMerge            from '@/components/network-elements/elements/math-merge/math-merge.vue'
@@ -45,7 +46,7 @@ export default {
     DataData, DataEnvironment, DataCloud,
     DeepLearningFC, DeepLearningConv, DeepLearningDeconv, DeepLearningRecurrent,
     ProcessCrop, ProcessEmbed, ProcessGrayscale, ProcessOneHot, ProcessReshape,
-    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer,
+    TrainNormal, TrainGenetic, TrainDynamic, TrainReinforce, TrainLoss, TrainOptimizer, TrainDetector,
     MathArgmax, MathMerge, MathSoftmax, MathSplit,
     ClassicMLDbscans, ClassicMLKMeans, ClassicMLKNN, ClassicMLRandomForest, ClassicMLSVM,
     LayerContainer, LayerCustom,
