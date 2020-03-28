@@ -5,31 +5,24 @@
         .statistics-box_col
           chart-switch(
             key="1"
-            chart-label="Input"
-            :chart-data="chartData.Prediction.Input"
+            chart-label="Bboxes"
+            :chart-data="chartData.Prediction.Bboxes"
             )
         .statistics-box_col
-          chart-switch(
-            key="8"
-            chart-label="Accuracy"
-            :chart-data="chartData.Prediction.Accuracy"
-            :custom-color="colorPie"
-            )
-      .statistics-box_row
-        .statistics-box_col
-          chart-switch#tutorial_prediction-chart(
-            key="2"
-            chart-label="Prediction vs Ground truth"
-            :chart-data="chartData.Prediction.PvG"
-            :custom-color="colorList"
-            )
-        .statistics-box_col(v-if="!testIsOpen")
-          chart-switch(
-            key="3"
-            chart-label="Batch Average Prediction vs Ground truth"
-            :chart-data="chartData.Prediction.AveragePvG"
-            :custom-color="colorList"
-            )
+          .statistics-box_row
+            chart-switch#tutorial_prediction-chart(
+              key="2"
+              chart-label="Accuracy"
+              :chart-data="chartData.Prediction.Accuracy"
+              :custom-color="colorList"
+              )
+          .statistics-box_row(v-if="!testIsOpen")
+            chart-switch(
+              key="3"
+              chart-label="Confidence"
+              :chart-data="chartData.Prediction.Confidence"
+              :custom-color="colorList"
+              )
     .statistics-box_main.statistics-box_col(v-if="currentTab === 'Accuracy'")
       chart-switch(
         key="4"
@@ -56,30 +49,30 @@
         :chart-data="chartData.Loss.Total"
         :custom-color="colorListAccuracy"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'F1'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Classification Loss'")
       chart-switch(
         key="9"
-        chart-label="F1 during one epoch"
-        :chart-data="chartData.F1.Current"
+        chart-label="Classification Loss during one epoch"
+        :chart-data="chartData.CLoss.Current"
         :custom-color="colorListAccuracy"
       )
       chart-switch(
         key="10"
-        chart-label="F1 over all epochs"
-        :chart-data="chartData.F1.Total"
+        chart-label="Classification Loss over all epochs"
+        :chart-data="chartData.CLoss.Total"
         :custom-color="colorListAccuracy"
       )
-    .statistics-box_main.statistics-box_col(v-if="currentTab === 'AUC'")
+    .statistics-box_main.statistics-box_col(v-if="currentTab === 'Bounding Boxes Loss'")
       chart-switch(
         key="11"
-        chart-label="AUC during one epoch"
-        :chart-data="chartData.AUC.Current"
+        chart-label="Bounding Boxes Loss during one epoch"
+        :chart-data="chartData.BBLoss.Current"
         :custom-color="colorListAccuracy"
       )
       chart-switch(
         key="12"
-        chart-label="AUC over all epochs"
-        :chart-data="chartData.AUC.Total"
+        chart-label="Bounding Boxes Loss over all epochs"
+        :chart-data="chartData.BBLoss.Total"
         :custom-color="colorListAccuracy"
       )
 </template>
@@ -96,11 +89,11 @@
     data() {
       return {
         chartData: {
-          Prediction: { Input: null, PvG: null, AveragePvG: null, Accuracy: null },
+          Prediction: { Bboxes: null, Confidence: null, Accuracy: null },
           Accuracy:   { Current: null, Total: null },
           Loss:       { Current: null, Total: null },
-          F1:         { Current: null, Total: null },
-          AUC:        { Current: null, Total: null }
+          CLoss:         { Current: null, Total: null },
+          BBLoss:        { Current: null, Total: null }
         },
         btnList: {
           'Prediction': {
@@ -124,18 +117,18 @@
               text: 'View the loss.'
             }
           },
-          'F1': {
-            btnId: 'tutorial_f1-tab',
+          'Classification Loss': {
+            btnId: 'tutorial_classification_loss-tab',
             btnInteractiveInfo: {
-              title: 'F1',
-              text: 'View the F1 score.'
+              title: 'Classification Loss',
+              text: 'View the Classification Loss'
             }
           },
-          'AUC': {
-            btnId: 'tutorial_auc-tab',
+          'Bounding Boxes Loss': {
+            btnId: 'tutorial_bounding_boxes_loss-tab',
             btnInteractiveInfo: {
-              title: 'AUC',
-              text: 'View the AUC.'
+              title: 'Bounding Boxes Loss',
+              text: 'View the Bounding Boxes Loss'
             }
           },
         },
@@ -167,11 +160,11 @@
           case 'Loss':
             this.chartRequest(this.statElementID, 'TrainDetector', 'Loss');
             break;
-          case 'F1':
-            this.chartRequest(this.statElementID, 'TrainDetector', 'F1');
+          case 'Classification Loss':
+            this.chartRequest(this.statElementID, 'TrainDetector', 'Classification Loss');
             break;
-          case 'AUC':
-            this.chartRequest(this.statElementID, 'TrainDetector', 'AUC');
+          case 'BoundingBoxes Loss':
+            this.chartRequest(this.statElementID, 'TrainDetector', 'BoundingBoxes Loss');
             break;
         }
       }
