@@ -8,7 +8,6 @@ import logging
 
 from perceptilabs.core_new.history import HistoryInputException
 from perceptilabs.core_new.errors import LayerSessionAbort
-from perceptilabs.core_new.core2 import RemoteError
 
 log = logging.getLogger(__name__)
 

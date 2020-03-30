@@ -6,6 +6,8 @@ from collections import namedtuple
 from abc import ABC, abstractmethod
 import copy
 
+
+from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.session import LayerSession
 
 log = logging.getLogger(__name__)
@@ -57,7 +59,6 @@ class LayerErrorHandler(ABC):
         pass
 
     
-ErrorDescription = namedtuple('ErrorDescription', ['error_message', 'error_line'])
 
 
 class LightweightErrorHandler(LayerErrorHandler):
@@ -79,7 +80,14 @@ class LightweightErrorHandler(LayerErrorHandler):
                                              exception.__traceback__)
 
         descr = "".join(tbObj.format_exception_only())
-        self._dict[session.layer_id] = ErrorDescription(descr, str(tbObj.lineno) or "?")
+        
+        self._dict[session.layer_id] = UserlandError(
+            session.layer_id,
+            session.layer_type,
+            tbObj.lineno,
+            descr,
+            session.code
+        )
         self._log_error(session, exception, int(tbObj.lineno))
         
     def _handle_other_errors(self, session: LayerSession, exception: Exception):                    
@@ -87,7 +95,15 @@ class LightweightErrorHandler(LayerErrorHandler):
         line_number = self._get_error_line(exception)
         descr = "%s at line %d: %s" % (error_class, line_number, exception)
 
-        self._dict[session.layer_id] = ErrorDescription(descr, str(line_number))
+
+        self._dict[session.layer_id] = UserlandError(
+            session.layer_id,
+            session.layer_type,
+            line_number,
+            descr,
+            session.code
+        )
+        
         self._log_error(session, exception, int(line_number))        
         
     def to_dict(self):

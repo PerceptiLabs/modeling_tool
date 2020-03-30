@@ -2,6 +2,8 @@ import uuid
 import queue
 import traceback
 
+from perceptilabs.utils import add_line_numbering
+
 
 class Issue:
     def __init__(self, message, exception=None):
@@ -56,8 +58,24 @@ class IssueHandler:
 
     def pop_warnings(self):
         return self._pop_messages(self._warnings)    
-        
 
+        
+class UserlandError:
+    def __init__(self, layer_id, layer_type, line_number, message, code=None):
+        self.layer_id = layer_id
+        self.layer_type = layer_type
+        self.line_number = line_number
+        self.message = message
+        self.code = code
+
+    def format(self, with_code=False):
+        text  = f'Error in layer {self.layer_id} [{self.layer_type}]. Line: {self.line_number}'
+        if with_code and self.code is not None:
+            text += '\n' + add_line_numbering(self.code)
+        text += '\n' + self.message
+        return text
+
+        
 if __name__ == "__main__":
     issues = IssueHandler()
 

@@ -10,7 +10,7 @@ from typing import Dict, List, Callable
 from abc import ABC, abstractmethod
 from queue import Queue
 
-from perceptilabs.issues import IssueHandler
+from perceptilabs.issues import IssueHandler, UserlandError
 from perceptilabs.core_new.graph import Graph, JsonNetwork
 from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.layers import TrainingLayer
@@ -21,9 +21,6 @@ from perceptilabs.core_new.communication.status import *
 
 
 log = logging.getLogger(__name__)
-
-class RemoteError(Exception):
-    pass
 
 
 class Core:
@@ -135,9 +132,11 @@ class Core:
                     message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
                                f'  {frame.line}\n'
 
-            log.error('Remote error:\n' + message)
+            userland_error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
+
+            log.info('Userland error:\n' + userland_error.format())
             if self._issue_handler is not None:
-                self._issue_handler.put_error(message)          
+                self._issue_handler.put_error(userland_error.format())          
             
     @property
     def graphs(self) -> List[Graph]:
