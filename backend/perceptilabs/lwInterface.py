@@ -23,6 +23,77 @@ class LW_interface_base(ABC):
             return ""
 
 
+class saveJsonModel(LW_interface_base):
+    def __init__(self, save_path, json_model, network_name):
+        self._save_path = save_path
+        self._json_model = json_model
+        self._network_name = network_name
+
+    def run(self):
+        import json
+        full_path = os.path.join(self._save_path, self._network_name)
+        if not os.path.isdir(full_path):
+            os.mkdir(full_path)
+        
+        file_path = os.path.join(full_path, 'model.json')
+        with open(file_path, 'w') as outfile:
+            json.dump(json.loads(self._json_model), outfile)
+
+
+class getFolderContent(LW_interface_base):
+    def __init__(self, current_path):
+        self._current_path = current_path
+
+    def run(self):
+        if not self._current_path:
+            # self._current_path = os.path.abspath('')
+            #TODO Make it a seperate request to get the path to tutorial_data
+            path = os.path.join(os.path.dirname(os.path.abspath(__file__)),'tutorial_data')
+            if os.path.exists(path):
+                self._current_path = path    
+            else:
+                self._current_path = os.path.abspath('')
+
+        drives = []
+        if self._current_path == '.':
+            import win32api
+            drives = win32api.GetLogicalDriveStrings()
+            drives = drives.split('\000')[:-1]
+
+        elif not os.path.isdir(self._current_path):
+            return {
+                "current_path" : '',
+                "dirs" : '',
+                "files" :  '',
+            }
+        
+        if not drives:
+            return {
+                "current_path" : self._current_path.replace('\\','/'),
+                "dirs" : [x for x in os.listdir(self._current_path) if os.path.isdir(os.path.join(self._current_path,x))],
+                "files" :  [x for x in os.listdir(self._current_path) if os.path.isfile(os.path.join(self._current_path,x))],
+            }
+        else:
+            return {
+                "current_path" : self._current_path.replace('\\','/'),
+                "dirs" : drives,
+                "files" :  [],
+            }
+
+class getJsonModel(LW_interface_base):
+    def __init__(self, json_path):
+        self._json_path = json_path
+    
+    def run(self):
+        if not os.path.exists(self._json_path):
+            return ""
+        
+        import json
+        with open(self._json_path, 'r') as f:
+            json_model = json.load(f)
+        return json_model
+
+
 class getDataMeta(LW_interface_base):
     def __init__(self, id_, lw_core, data_container):
         self._id = id_

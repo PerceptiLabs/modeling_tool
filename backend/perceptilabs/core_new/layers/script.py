@@ -107,7 +107,6 @@ class ScriptFactory:
         line_to_node_map = {}
         for node in graph.nodes:
             layer_code = self.render_layer_code(node.layer_id, node.layer_type, node.layer_spec)
-
             offset = len(template.split('\n')) - 1
             n_lines = len(layer_code.split('\n'))
             line_to_node_map.update({offset+line: (node, line) for line in range(n_lines)})

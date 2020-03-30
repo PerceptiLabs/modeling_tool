@@ -1,5 +1,4 @@
 const namespaced = true;
-
 const state = {
   onlineStatus: true,
   hideLayers: true,
@@ -19,6 +18,8 @@ const state = {
     showErrorPopup: false,
     showWorkspaceBeforeImport: false,
     showConfirmPopup: false,
+    coreNotFoundPopup: false,
+    showFilePickerPopup: false,
   },
   popupConfirmCancel: null,
   popupConfirmOk: null,
@@ -70,6 +71,12 @@ const mutations = {
   gp_ComingSoonPopup(state, value) {
     state.globalPopup.ComingSoonPopup = value
   },
+  coreNotFoundPopup(state, value) {
+    state.globalPopup.coreNotFoundPopup = value;
+  },
+  set_filePickerPopup(state, value) {
+    state.globalPopup.showFilePickerPopup = value;
+  },
   gp_confirmPopup(state, value) {
     state.globalPopup.showConfirmPopup = value.text;
     state.popupConfirmCancel = value.cancel;
@@ -111,6 +118,29 @@ const actions = {
     commit('gp_infoPopup', 'a');
     commit('gp_ComingSoonPopup', true);
   },
+  ShowCoreNotFoundPopup({ commit, rootState, dispatch }) {
+    let isServerRequestDone = false;
+    dispatch('mod_api/checkCoreAvailability', null, { root: true })
+      .then(() =>{
+        isServerRequestDone = true;
+      })
+      .catch((e) =>{
+        isServerRequestDone = true;
+      });
+
+    const delayActionDispatch = setTimeout(() => {
+      const coreIsOffline = rootState.mod_api.statusLocalCore === 'offline';
+      //if server responds more then a second or currently is offline show the core offline modal
+      if(coreIsOffline || !isServerRequestDone) {
+        commit('coreNotFoundPopup', true);
+      }
+      clearTimeout(delayActionDispatch)
+    }, 1000);
+
+  },
+  SET_filePickerPopup({commit}, value) {
+    commit('set_filePickerPopup', value);
+  },
   GP_confirmPopup({commit}, value) {
     commit('gp_confirmPopup', value);
   },
@@ -125,6 +155,9 @@ const actions = {
   },
   CLEAR_requestCounter({commit}) {
     commit('clear_requestCounter');
+  },
+  hideSidebarAction({commit}, value) {
+    commit('SET_hideSidebar', value)
   }
 };
 

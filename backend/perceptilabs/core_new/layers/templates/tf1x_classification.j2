@@ -6,7 +6,6 @@
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
         label_data_nodes = graph.get_direct_data_nodes(target_layer_id)
 
-
         assert len(input_data_nodes) == 1
         assert len(label_data_nodes) == 1
         input_data_node = input_data_nodes[0]
@@ -215,7 +214,7 @@
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
 
         log.info("Entering training loop")
-        
+
         # Training loop
         self._epoch = 0
         while self._epoch < self._n_epochs and not self._stopped:
@@ -455,6 +454,7 @@
                     raise NotImplementedError('Optimizer {{optimizer}} not supported yet')
                 {% endif %}
             {% endfilter %}
+            
             def train_step(inputs):
                 x, y = inputs
                 layer_output_tensors = model(x, y)
@@ -561,7 +561,6 @@
 
 
             if n_devices > 1:
-
                 def reduce_per_replica(nested_dict):
                     for variable, node in nested_dict.items():
                         if type(node) is dict:
@@ -640,14 +639,10 @@
             # Restore from checkpoint if specified
             {% filter remove_lspaces(8) %}
                 {% if export_directory is not none %}
-                    xx='{{export_directory}}'
-                
                     path = tf.train.latest_checkpoint('{{export_directory}}')
                     self._saver.restore(sess, path)
                 {% endif %}
             {% endfilter %}
-
-            self._lbc = layer_biases_train
 
             #import pdb; pdb.set_trace()      
             log.info("Entering training loop")
@@ -671,7 +666,6 @@
                             recall_train.reset_states()
                             precision_train.reset_states()     
                         yield YieldLevel.SNAPSHOT
-                        
                         self._training_iteration += 1 * n_devices
                 except tf.errors.OutOfRangeError:
                     pass

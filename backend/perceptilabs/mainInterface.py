@@ -22,9 +22,10 @@ from perceptilabs.core_new.networkCache import NetworkCache
 from perceptilabs.codehq import CodeHqNew as CodeHq
 
 #LW interface
-from perceptilabs.lwInterface import getGraphOrder, getDataMeta, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
+from perceptilabs.lwInterface import getFolderContent, getGraphOrder, getDataMeta, getPartitionSummary, getCodeV1, getCodeV2, getNetworkInputDim, getNetworkOutputDim, getPreviewSample, getPreviewVariableList, Parse
 
 log = logging.getLogger(__name__)
+
 
 class Interface():
     def __init__(self, cores, dataDict, checkpointDict, lwDict, core_mode):
@@ -201,6 +202,10 @@ class Interface():
             return getDataMeta(id_=Id, 
                             lw_core=lw_core, 
                             data_container=data_container).run()
+
+        elif action == "getFolderContent":
+            current_path = value
+            return getFolderContent(current_path=current_path).run()
 
         elif action == "getPartitionSummary":
             Id=value["Id"]
@@ -417,6 +422,14 @@ class Interface():
         elif action == "getStatus":
             response = self._core.getStatus()
             return response
+
+        elif action == "setUser":
+            user = value
+            with configure_scope() as scope:
+                scope.user = {"email" : user}
+                log.info("User has been set to %s" %str(value))
+
+            return "User has been set to " + value
 
         else:
             raise LookupError("The requested action does not exist")

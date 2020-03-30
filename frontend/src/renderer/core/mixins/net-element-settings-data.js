@@ -1,6 +1,5 @@
-import coreRequest  from "@/core/apiCore.js";
-
-import { fixFilepathSeparator } from '@/core/helpers';
+import coreRequest from "@/core/apiCore.js";
+import {isElectron, isWeb, fixFilepathSeparator } from "@/core/helpers";
 
 const netElementSettingsData = {
   data() {
@@ -21,6 +20,8 @@ const netElementSettingsData = {
   methods: {
     coreRequest,
     Mix_settingsData_getDataMeta(layerId) {
+      if(isWeb())
+      this.$store.commit('mod_workspace/SET_webLoadingDataFlag', true);
       this.showSpinner = true;
       return this.$store.dispatch('mod_api/API_getDataMeta', {layerId, settings: this.settings})
         .then((data) => {
@@ -35,7 +36,11 @@ const netElementSettingsData = {
         .catch((err) => {
           console.error('getDataMeta', err);
         })
-        .finally(()=> this.showSpinner = false)
+        .finally(()=> {
+          this.showSpinner = false;
+          if(isWeb())
+          this.$store.commit('mod_workspace/SET_webLoadingDataFlag', false);
+        } )
     },
     Mix_settingsData_getPartitionSummary(layerId) {
       return this.$store.dispatch('mod_api/API_getPartitionSummary', {layerId, settings: this.settings})
@@ -48,21 +53,26 @@ const netElementSettingsData = {
           console.error('getPartitionSummary', err);
         });
     },
+    // not used more
     Mix_settingsData_deleteDataMeta(type) {
-      let theData = {
-        reciever: this.Mix_settingsData_currentNetworkID,
-        action: 'deleteData',
-        value: {
-          Id: this.currentEl.layerId,
-          Type: type,
-          Properties: this.settings
-        }
-      };
-      return this.coreRequest(theData)
-        .then((data) => data)
-        .catch((err) => {
-          console.error('deleteData', err);
-        });
+      if(isWeb())
+      return Promise.resolve();
+      if(isElectron()) {
+        let theData = {
+          reciever: this.Mix_settingsData_currentNetworkID,
+          action: 'deleteData',
+          value: {
+            Id: this.currentEl.layerId,
+            Type: type,
+            Properties: this.settings
+          }
+        };
+        return this.coreRequest(theData)
+          .then((data) => data)
+          .catch((err) => {
+            console.error('deleteData', err);
+          }); 
+      }
     },
     // Mix_settingsData_getDataPlot(type) {
     //   let theData = {
@@ -85,8 +95,8 @@ const netElementSettingsData = {
     // },
     Mix_settingsData_prepareSources(pathArr, type) {
       return pathArr.map((el)=> { return {
-        type,
-        "path": fixFilepathSeparator(el)
+          type,
+          "path": isElectron() ? fixFilepathSeparator(el) : el
       }})
     }
   }

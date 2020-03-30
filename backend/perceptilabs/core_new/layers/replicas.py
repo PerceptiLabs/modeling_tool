@@ -3,6 +3,7 @@ import tensorflow as tf
 from typing import List, Callable
 
 
+
 from perceptilabs.core_new.layers import DataLayer, TrainingLayer, Tf1xLayer, ClassificationLayer, InnerLayer
 
 

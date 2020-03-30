@@ -61,6 +61,7 @@ def resolve_custom_code(specs):
     code = specs['Code']['Output']
     return code
 
+
 DEFINITION_TABLE = {
     'DataData': LayerDef(
         DataLayer,

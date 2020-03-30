@@ -24,7 +24,7 @@
         .settings-layer
           slot(:name="tabContent+'-content'")
         #js-hide-btn.settings-layer_foot
-          slot(:name="tabContent+'-action'")
+          slot(v-if="showControls" :name="tabContent+'-action'")
             button.btn.btn--primary.btn--disabled(type="button"
               @click="hideAllWindow"
               :disabled="isTutorial"
@@ -47,8 +47,16 @@
 </template>
 
 <script>
-  import coreRequest  from "@/core/apiCore.js";
+  import coreRequestElectron  from "@/core/apiCore.js";
+  import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
   import SettingsPreview  from "@/components/network-elements/elements-settings/setting-preview.vue";
+  let coreRequest = null;
+
+  if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
+    coreRequest = coreRequestWeb;
+  } else {
+    coreRequest = coreRequestElectron;
+  }
 export default {
   name: 'NetBaseSettings',
   components: {SettingsPreview },
@@ -70,6 +78,10 @@ export default {
     showPreview: {
       type: Boolean,
       default: false
+    },
+    showControls: {
+      type: Boolean,
+      default: true
     }
   },
   mounted() {
@@ -129,7 +141,10 @@ export default {
     box-shadow: $layer-shad;
   }
   .popup_body {
-    max-width: calc(50vw - #{$w-sidebar});
+    // max-width: calc(50vw - #{$w-sidebar});
+    .is-electron & {
+      max-width: calc(50vw - #{$w-sidebar});
+    }
     min-width: 29rem;
   }
   .popup_header {
