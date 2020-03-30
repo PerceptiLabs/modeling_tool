@@ -16,7 +16,7 @@ from flask import Flask, jsonify
 from tensorflow.python.training.tracking.base import Trackable
 import flask
 
-from perceptilabs.core_new.utils import Picklable
+from perceptilabs.core_new.utils import Picklable, YieldLevel
 from perceptilabs.core_new.communication.status import *
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE
@@ -37,8 +37,9 @@ class ZmqHandler(logging.Handler):
     def emit(self, record):
         body = pickle.dumps(record.msg)
         message_queue.put((b'log_message', body))
-global graph, status, t_start
+global graph, status, t_start, socket
 graph = None
+socket = None
 status = STATUS_INITIALIZING
 t_start = None
 
@@ -47,7 +48,6 @@ class DataData_Data_1(DataLayer):
     """Class responsible for loading data from files (e.g., numpy, csv, etc)."""    
     def __init__(self):
         self._variables = {}
-        
         columns = {}
         trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0        
         trn_gens_args_DataData_Data_1, val_gens_args_DataData_Data_1, tst_gens_args_DataData_Data_1 = [], [], []        
@@ -57,7 +57,7 @@ class DataData_Data_1(DataLayer):
         columns_DataData_Data_1_0 = None
     
         global matrix_DataData_Data_1_0
-        matrix_DataData_Data_1_0 = np.load("/home/anton/Source/perceptilabs/backend/perceptilabs/tutorial_data/mnist_input.npy").astype(np.float32)
+        matrix_DataData_Data_1_0 = np.load("/home/anton/Data/mnist_split/mnist_input.npy").astype(np.float32)
         size_DataData_Data_1_0 = len(matrix_DataData_Data_1_0)
 
         def generator_DataData_Data_1_0(idx_lo, idx_hi):
@@ -186,88 +186,10 @@ class ProcessReshape_Reshape_1(Tf1xLayer):
         """        
         return {}        
 
-class DeepLearningConv_Convolution_1(Tf1xLayer):
-    def __init__(self):
-        self._scope = 'DeepLearningConv_Convolution_1'        
-        # TODO: implement support for 1d and 3d conv, dropout, funcs, pooling, etc
-        self._patch_size = 3
-        self._feature_maps = 8
-        self._padding = 'SAME'
-        self._stride = 2
-        
-        self._variables = {}
-        
-    def __call__(self, x):
-        """ Takes a tensor as input and feeds it forward through a convolutional layer, returning a newtensor."""                
-        shape = [
-            self._patch_size,
-            self._patch_size,
-            x.get_shape().as_list()[-1],
-            self._feature_maps
-        ]
-
-        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
-            initial = tf.random.truncated_normal(
-                shape,
-                stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
-            )
-            W = tf.compat.v1.get_variable('W', initializer=initial)
-            
-            initial = tf.constant(0.1, shape=[self._feature_maps])
-            b = tf.compat.v1.get_variable('b', initializer=initial)
-            y = tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding) + b
-            y = tf.compat.v1.sigmoid(y)
-            
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        return y
-
-    @property
-    def variables(self):
-        """Any variables belonging to this layer that should be rendered in the frontend.
-        
-        Returns:
-            A dictionary with tensor names for keys and picklable for values.
-        """
-        return self._variables.copy()
-
-    @property
-    def trainable_variables(self):
-        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
-        
-        Returns:
-            A dictionary with tensor names for keys and tensors for values.
-        """
-        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
-        variables = {v.name: v for v in variables}
-        return variables        
-
-    @property
-    def weights(self):
-        """Any weight tensors belonging to this layer that should be rendered in the frontend.
-
-        Return:
-            A dictionary with tensor names for keys and tensors for values.
-        """        
-        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
-            w = tf.compat.v1.get_variable('W')
-            return {w.name: w}
-
-    @property
-    def biases(self):
-        """Any weight tensors belonging to this layer that should be rendered in the frontend.
-
-        Return:
-            A dictionary with tensor names for keys and tensors for values.
-        """        
-        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
-            b = tf.compat.v1.get_variable('b')
-            return {b.name: b}
-
 class DataData_Data_2(DataLayer):
     """Class responsible for loading data from files (e.g., numpy, csv, etc)."""    
     def __init__(self):
         self._variables = {}
-        
         columns = {}
         trn_sz_tot, val_sz_tot, tst_sz_tot = 0, 0, 0        
         trn_gens_args_DataData_Data_2, val_gens_args_DataData_Data_2, tst_gens_args_DataData_Data_2 = [], [], []        
@@ -277,7 +199,7 @@ class DataData_Data_2(DataLayer):
         columns_DataData_Data_2_0 = None
     
         global matrix_DataData_Data_2_0
-        matrix_DataData_Data_2_0 = np.load("/home/anton/Source/perceptilabs/backend/perceptilabs/tutorial_data/mnist_labels.npy").astype(np.float32)
+        matrix_DataData_Data_2_0 = np.load("/home/anton/Data/mnist_split/mnist_labels.npy").astype(np.float32)
         size_DataData_Data_2_0 = len(matrix_DataData_Data_2_0)
 
         def generator_DataData_Data_2_0(idx_lo, idx_hi):
@@ -363,6 +285,124 @@ class DataData_Data_2(DataLayer):
                     yield x
         return gen()
 
+class DeepLearningConv_Convolution_1(Tf1xLayer):
+    def __init__(self):
+        self._scope = 'DeepLearningConv_Convolution_1'        
+        # TODO: implement support for 1d and 3d conv, dropout, funcs, pooling, etc
+        self._patch_size = 3
+        self._feature_maps = 8
+        self._padding = 'SAME'
+        self._stride = 2
+        
+        self._variables = {}
+        
+    def __call__(self, x):
+        """ Takes a tensor as input and feeds it forward through a convolutional layer, returning a newtensor."""                
+        shape = [
+            self._patch_size,
+            self._patch_size,
+            x.get_shape().as_list()[-1],
+            self._feature_maps
+        ]
+
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            initial = tf.random.truncated_normal(
+                shape,
+                stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+            )
+            W = tf.compat.v1.get_variable('W', initializer=initial)
+            
+            initial = tf.constant(0.1, shape=[self._feature_maps])
+            b = tf.compat.v1.get_variable('b', initializer=initial)
+            y = tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding) + b
+            y = tf.compat.v1.sigmoid(y)
+            
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        return y
+
+    @property
+    def variables(self):
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return self._variables.copy()
+
+    @property
+    def trainable_variables(self):
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
+        variables = {v.name: v for v in variables}
+        return variables        
+
+    @property
+    def weights(self):
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            w = tf.compat.v1.get_variable('W')
+            return {w.name: w}
+
+    @property
+    def biases(self):
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            b = tf.compat.v1.get_variable('b')
+            return {b.name: b}
+
+class ProcessOneHot_OneHot_1(Tf1xLayer):
+    def __call__(self, x):
+        y = tf.one_hot(tf.cast(x, dtype=tf.int32), 10)        
+        return y
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return {}
+
+    @property
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        return {}
+
+    @property
+    def weights(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}
+
+    @property    
+    def biases(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}    
+
 class DeepLearningFC_Fully_Connected_1(Tf1xLayer):
     def __init__(self):
         self._scope = 'DeepLearningFC_Fully_Connected_1'
@@ -428,49 +468,7 @@ class DeepLearningFC_Fully_Connected_1(Tf1xLayer):
         """        
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
             b = tf.compat.v1.get_variable('b')
-            return {b.name: b}
-    
-
-class ProcessOneHot_OneHot_1(Tf1xLayer):
-    def __call__(self, x):
-        y = tf.one_hot(tf.cast(x, dtype=tf.int32), 10)        
-        return y
-
-    @property
-    def variables(self) -> Dict[str, Picklable]:
-        """Any variables belonging to this layer that should be rendered in the frontend.
-        
-        Returns:
-            A dictionary with tensor names for keys and picklable for values.
-        """
-        return {}
-
-    @property
-    def trainable_variables(self) -> Dict[str, tf.Tensor]:
-        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
-        
-        Returns:
-            A dictionary with tensor names for keys and tensors for values.
-        """
-        return {}
-
-    @property
-    def weights(self) -> Dict[str, tf.Tensor]:
-        """Any weight tensors belonging to this layer that should be rendered in the frontend.
-
-        Return:
-            A dictionary with tensor names for keys and tensors for values.
-        """        
-        return {}
-
-    @property    
-    def biases(self) -> Dict[str, tf.Tensor]:
-        """Any weight tensors belonging to this layer that should be rendered in the frontend.
-
-        Return:
-            A dictionary with tensor names for keys and tensors for values.
-        """        
-        return {}    
+            return {b.name: b}    
 
 class TrainNormal_Normal_1(ClassificationLayer):
     def __init__(self):
@@ -609,7 +607,7 @@ class TrainNormal_Normal_1(ClassificationLayer):
             self._input_tensor_export,
             tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
         )[output_layer_id]
-        
+
         loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
         correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
         accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
@@ -622,6 +620,9 @@ class TrainNormal_Normal_1(ClassificationLayer):
         layer_bias_tensors = {}        
         layer_gradient_tensors = {}
         for node in graph.inner_nodes:
+            if not isinstance(node.layer, Tf1xLayer): # In case of pure custom layers...
+                continue
+            
             layer_weight_tensors[node.layer_id] = node.layer.weights
             layer_bias_tensors[node.layer_id] = node.layer.biases            
             
@@ -653,11 +654,6 @@ class TrainNormal_Normal_1(ClassificationLayer):
         
                     
         
-        def sleep_while_paused():
-            while self._paused:
-                self.process_events(graph)
-                time.sleep(1.0)
-
         def train_step():
             if not self._headless:
                 _, self._loss_training, self._accuracy_training, \
@@ -713,9 +709,8 @@ class TrainNormal_Normal_1(ClassificationLayer):
             sess.run(trn_init)            
             try:
                 while not self._stopped:
-                    sleep_while_paused()
                     train_step()
-                    self.save_snapshot_and_process_events(graph)
+                    yield YieldLevel.SNAPSHOT
                     self._training_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -724,9 +719,8 @@ class TrainNormal_Normal_1(ClassificationLayer):
             sess.run(val_init)            
             try:
                 while not self._stopped:
-                    sleep_while_paused()
                     validation_step()
-                    self.save_snapshot_and_process_events(graph)                    
+                    yield YieldLevel.SNAPSHOT                    
                     self._validation_iteration += 1
             except tf.errors.OutOfRangeError:
                 pass
@@ -737,52 +731,32 @@ class TrainNormal_Normal_1(ClassificationLayer):
             )
             log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
             self._epoch += 1
-            self.process_events(graph)
-            
 
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
-            
+        yield YieldLevel.DEFAULT            
+        
         # Test loop
         self._testing_iteration = 0
         self._status = 'testing'
         sess.run(tst_init)                                
         try:
             while not self._stopped:
-                sleep_while_paused()
                 test_step()
-                self.save_snapshot_and_process_events(graph)                                    
+                yield YieldLevel.SNAPSHOT
                 self._testing_iteration += 1
-                self.process_events(graph)                
         except tf.errors.OutOfRangeError:
             pass
 
         self._status = 'finished'
         self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
-        self.save_snapshot_and_process_events(graph)
-
+        yield YieldLevel.DEFAULT
 
                 
-
-    def on_pause(self):
-        """Called when the pause button is clicked in the frontend. 
-        It is up to the implementing layer to pause its execution. 
-
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
-        self._paused = True
-
-    def on_resume(self):
-        """Called when the resume button is clicked in the frontend. 
-        It is up to the implementing layer to resume execution. 
-        
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
-        self._paused = False
 
     def on_export(self, path: str, mode: str) -> None:
         """Called when the export or save button is clicked in the frontend.
         It is up to the implementing layer to save the model to disk.
         
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
-
         Args:
             path: the directory where the exported model will be stored.
             mode: how to export the model. Made available to frontend via 'export_modes' property."""
@@ -807,9 +781,7 @@ class TrainNormal_Normal_1(ClassificationLayer):
                 
     def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
-        It is up to the implementing layer to save the model to disk.
-        
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
+        It is up to the implementing layer to save the model to disk."""
         self._stopped = True
 
     def on_headless_activate(self) -> None:
@@ -1003,20 +975,20 @@ class TrainNormal_Normal_1(ClassificationLayer):
 LAYERS = {
     '_Data_1': DataData_Data_1(),
     '_Reshape_1': ProcessReshape_Reshape_1(),
-    '_Convolution_1': DeepLearningConv_Convolution_1(),
     '_Data_2': DataData_Data_2(),
-    '_Fully_Connected_1': DeepLearningFC_Fully_Connected_1(),
+    '_Convolution_1': DeepLearningConv_Convolution_1(),
     '_OneHot_1': ProcessOneHot_OneHot_1(),
+    '_Fully_Connected_1': DeepLearningFC_Fully_Connected_1(),
     '_Normal_1': TrainNormal_Normal_1(),
 }
 
 EDGES = {
     ('_Data_1', '_Reshape_1'),
     ('_Reshape_1', '_Convolution_1'),
-    ('_Convolution_1', '_Fully_Connected_1'),
     ('_Data_2', '_OneHot_1'),
-    ('_Fully_Connected_1', '_Normal_1'),
+    ('_Convolution_1', '_Fully_Connected_1'),
     ('_OneHot_1', '_Normal_1'),
+    ('_Fully_Connected_1', '_Normal_1'),
 }
 
 global snapshots_produced
@@ -1026,10 +998,6 @@ snapshot_lock = threading.Lock()
 
 message_queue = Queue()
 event_queue = Queue()
-context = zmq.Context()
-socket = context.socket(zmq.PUB)
-socket.bind('tcp://*:5679')
-log.addHandler(ZmqHandler())
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
@@ -1084,9 +1052,11 @@ def process_events(graph):
         log.debug('Processing event: ' + str(event_type) + ' '+ str(event_data))
         
         if event_type == 'on_pause':
-            graph.active_training_node.layer.on_pause()
+            if status == STATUS_RUNNING:
+                status = STATUS_RUNNING_PAUSED
         elif event_type == 'on_resume':
-            graph.active_training_node.layer.on_resume()
+            if status == STATUS_RUNNING_PAUSED:
+                status = STATUS_RUNNING
         elif event_type == 'on_start':
             status = STATUS_STARTED
         elif event_type == 'on_stop':
@@ -1120,20 +1090,43 @@ def message_queue_worker():
             socket.send_multipart([topic, body])
 
 def run_training():
+    global status
     try:
-        graph.training_nodes[0].layer_instance.run(graph)
+        iterator = graph.training_nodes[0].layer_instance.run(graph)
+        result = None
+        sentinel = object()
+        while result is not sentinel:
+            result = next(iterator, sentinel)
+            if result is YieldLevel.SNAPSHOT:
+                make_snapshot(graph)
+            if result is not sentinel:
+                process_events(graph)
+            while status == STATUS_RUNNING_PAUSED and result is not sentinel:
+                process_events(graph)
+                time.sleep(0.5)
+        
     except Exception as e:
         import traceback
         tb_list = traceback.extract_tb(e.__traceback__)
         body = pickle.dumps((e, tb_list))
         message_queue.put((b'exception', body))
         raise
-def main(wait=False):
-    global graph, status, t_start
-    threading.Thread(target=app.run, kwargs={"port": "5678", "threaded": True}, daemon=True).start()
-    threading.Thread(target=message_queue_worker, daemon=True).start()
+
+def get_graph():
+    global graph
     graph_builder = GraphBuilder()
     graph = graph_builder.build(LAYERS, EDGES)
+    return graph
+def main(wait=False):
+    print('Flask port: 5678')
+    global graph, status, t_start, socket
+    context = zmq.Context()
+    socket = context.socket(zmq.PUB)
+    socket.bind('tcp://*:5679')
+    log.addHandler(ZmqHandler())
+    threading.Thread(target=app.run, kwargs={"port": "5678", "threaded": True}, daemon=True).start()
+    threading.Thread(target=message_queue_worker, daemon=True).start()
+    graph = get_graph()
     
     print(graph.training_nodes)
     graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot_and_process_events

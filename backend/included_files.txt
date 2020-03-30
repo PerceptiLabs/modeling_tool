@@ -26,6 +26,7 @@ perceptilabs/s3buckets.py
 perceptilabs/utils.py
 perceptilabs/processes.py
 perceptilabs/license_checker.py
+perceptilabs/issues.py
 
 # perceptilabs/server
 perceptilabs/server/__init__.py
