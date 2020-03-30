@@ -1,5 +1,6 @@
 import {calcLayerPosition} from '@/core/helpers.js'
 import { workspaceGrid }   from '@/core/constants.js'
+import {mapActions, mapGetters} from "vuex";
 
 const baseNetDrag = {
   // props: {
@@ -14,10 +15,22 @@ const baseNetDrag = {
 
   created() {
     this.bodyDrag = false;
+    this.itemWasDraged = false;
     this.stickStartPos = {mouseX: 0, mouseY: 0, x: 0, y: 0, w: 0, h: 0};
   },
 
   methods: {
+    ...mapActions({
+      setElementSelectedAction: 'mod_workspace/SET_elementSelect',
+    }),
+    ...mapGetters({
+      selectedItems : 'mod_workspace/GET_currentSelectedEl',
+    }),
+    isCurrentItemSelected(itemId) {
+      const selectedItems = {...this.selectedItems()};
+      const selectedItemsIds = Object.values(selectedItems).map(el => parseInt(el.layerId, 10));
+      return selectedItemsIds.includes(parseInt(itemId, 10));
+    },
     move(ev) {
       if (!this.bodyDrag) return;
       else {
@@ -29,9 +42,20 @@ const baseNetDrag = {
     up(ev) {
       if (this.bodyDrag) this.bodyUp(ev)
     },
-
+    
     bodyDown(ev) {
-      if (this.contextIsOpen || this.settingsIsOpen) return;
+      if(!this.isCurrentItemSelected(this.dataEl.layerId)) {
+        if (ev.shiftKey || ev.metaKey || ev.ctrlKey) {
+          this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: false})
+        } else {
+          this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: true})
+        }
+      }
+     
+      if (this.contextIsOpen || this.settingsIsOpen) {
+        this.contextIsOpen ? this.contextIsOpen = false : null;
+        return;
+      }
 
       this.$parent.$parent.$el.addEventListener('mousemove', this.move);
       document.addEventListener('mouseup', this.up);
@@ -47,10 +71,10 @@ const baseNetDrag = {
 
       this.stickStartPos.left = this.left;
       this.stickStartPos.top = this.top;
-
     },
 
     bodyMove(ev) {
+      this.itemWasDraged = true;
       if(!(ev.pageX % workspaceGrid || ev.pageY % workspaceGrid)) return;
 
       const stickStartPos = this.stickStartPos;
@@ -66,9 +90,12 @@ const baseNetDrag = {
       this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
     },
 
-    bodyUp() {
+    bodyUp(ev) {
+      if(this.isCurrentItemSelected(this.dataEl.layerId) && !this.itemWasDraged && !(ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
+        this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: true})
+      }
+      this.itemWasDraged = false;
       this.bodyDrag = false;
-
       this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
       this.$parent.$parent.createArrowList();
 

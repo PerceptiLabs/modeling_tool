@@ -243,9 +243,9 @@ export default {
       }
     },
     setFocusEl(ev) {
-      ev.ctrlKey
-        ? this.elementMultiSelect({id: this.currentId, setValue: true })
-        : this.elementSelect({id: this.currentId, setValue: true })
+      // ev.ctrlKey
+      //   ? this.elementMultiSelect({id: this.currentId, setValue: true })
+      //   : this.elementSelect({id: this.currentId, setValue: true })
     },
     mousedownOutsideBefore() {
       this.MousedownElementTracking = this.$refs.rootBaseElement;

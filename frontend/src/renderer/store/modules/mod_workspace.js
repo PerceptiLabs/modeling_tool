@@ -618,8 +618,14 @@ const mutations = {
       currentElement(layer).layerMeta.isSelected = false;
     }
   },
-  set_elementSelect(state, value) {
-
+  set_elementSelect(state, { getters, value }) {
+    console.log(value);
+    if(value.resetOther) {
+      console.log('a intrat');
+      for(let layer in getters.GET_currentNetworkElementList) {
+        currentElement(layer).layerMeta.isSelected = false;
+      }
+    }
     currentElement(value.id).layerMeta.isSelected = value.setValue;
   },
   set_elementSelectAll(state, {getters}) {
@@ -647,9 +653,18 @@ const mutations = {
     el.layerNone = value
   },
   change_elementPosition(state, value) {
+    // here should calculate how much change position and apply on all elements selected
     let elPosition = currentElement(value.id).layerMeta.position;
-    elPosition.top = value.top;
-    elPosition.left = value.left;
+    const toTop = value.top - elPosition.top;
+    const toLeft = value.left - elPosition.left;
+
+    const networkElementList = state.workspaceContent[state.currentNetwork].networkElementList;
+    Object.keys(networkElementList).map(key => {
+      if(networkElementList[key].layerMeta.isSelected) {
+        currentElement(key).layerMeta.position.top += toTop;
+        currentElement(key).layerMeta.position.left += toLeft;
+      }
+    });
   },
   set_elementInputDim(state, value) {
     for(let element in value) {
@@ -931,6 +946,12 @@ const mutations = {
     state.workspaceContent[state.currentNetwork].networkName = value.networkName;
     state.workspaceContent[state.currentNetwork].networkElementList = value.networkElementList;
   },
+  markAllUnselectedMutation(state) {
+    const networkElementList = state.workspaceContent[state.currentNetwork].networkElementList;
+    Object.keys(networkElementList).map(key => {
+      networkElementList[key].layerMeta.isSelected = false;
+    });
+  }
 };
 
 const actions = {
@@ -971,6 +992,9 @@ const actions = {
       commit('delete_network', index);
       commit('set_workspacesInLocalStorage');
     }
+  },
+  markAllUnselectedAction({commit}){
+    commit('markAllUnselectedMutation');
   },
   GET_workspacesFromLocalStorage({commit, dispatch}) {
     return new Promise(resolve => {
@@ -1193,8 +1217,9 @@ const actions = {
   SET_elementUnselect({commit, getters}) {
     commit('set_elementUnselect', {getters})
   },
-  SET_elementSelect({commit}, value) {
-    commit('set_elementSelect', value)
+  SET_elementSelect({commit, getters }, value) {
+    console.log(value);
+    commit('set_elementSelect', { value, getters })
   },
   SET_elementSelectAll({commit, getters}) {
     if(getters.GET_enableHotKeyElement) commit('set_elementSelectAll', {getters})
