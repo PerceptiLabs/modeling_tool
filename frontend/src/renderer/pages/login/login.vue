@@ -26,10 +26,11 @@
           )
         p.text-error(v-show="errors.has('Password')") {{ errors.first('Password') }}
         .forgot-password-box
-          a.btn.btn--link-without-underline(
+          a(v-if="isWeb").btn.btn--link-without-underline(
             :href="`${baseUrlSite}/restore-account`"
             @click.prevent="toLink(`${baseUrlSite}/restore-account`)"
           ) Forgot password?
+          router-link(v-if="!isWeb").btn.btn--link-without-underline(:to="{name: 'restore-account'}") Forgot password?
         base-checkbox.remember-me(v-model="saveToken")
           span.fz-16 Remember me
     .form_holder.login-form_actions
@@ -46,12 +47,14 @@
   import { goToLink, encryptionData }       from '@/core/helpers.js'
 
   import LogoutUserPageWrap from '@/pages/logout-user-page-wrap.vue'
+  import {isWeb} from "@/core/helpers";
 
 export default {
   name: 'PageLogin',
   components: { LogoutUserPageWrap },
   data() {
     return {
+      isWeb: isWeb(),
       userEmail: '',
       userPass: '',
       saveToken: true,
@@ -91,11 +94,15 @@ export default {
       };
       this.$store.dispatch('mod_apiCloud/CloudAPI_userLogin', dataParams)
         .then((tokens)=> {
-          this.$store.dispatch('mod_user/SET_userTokenSession', tokens);
+          if(isWeb()) {
+            this.$store.dispatch('mod_user/SET_userTokenSession', tokens);
+          }
           if(this.saveToken) {
             this.$store.dispatch('mod_user/SET_userTokenLocal', tokens);
           }
-          this.$store.dispatch('mod_api/API_setUserInCore');
+          if(isWeb()) {
+            this.$store.dispatch('mod_api/API_setUserInCore');
+          }
         })
         .catch((error)=> {console.log(error)})
         .finally(()=>    {this.$store.commit('mod_login/SET_showLoader', false)});

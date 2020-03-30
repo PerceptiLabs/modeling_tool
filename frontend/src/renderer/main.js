@@ -11,7 +11,7 @@ import VueHotkey    from 'v-hotkey'
 import App    from './App'
 import router from './router'
 import store  from './store'
-
+import { isElectron, setAppTypeRootClasses } from "@/core/helpers";
 import { isDevelopMode } from '@/core/constants.js'
 
 //- Global components
@@ -27,13 +27,17 @@ import 'vue2-perfect-scrollbar/dist/vue2-perfect-scrollbar.css'
 import {mask} from 'vue-the-mask' // page registration dont use now
 
 import Analytics from '@/core/analytics';
-
-//if (!process.env.IS_WEB) Vue.use(require('vue-electron'));
+if(isElectron()) {
+  Vue.use(require('vue-electron'));
+} 
 
 //Vue.http = Vue.prototype.$http = axios;
 
 Vue.config.productionTip = isDevelopMode;
 Vue.config.performance = isDevelopMode;
+
+// set the parent(html,body) platform class one of => [is-web, is-electron]
+setAppTypeRootClasses();
 
 //- Use plugin
 if (!Vue.config.devtools) {

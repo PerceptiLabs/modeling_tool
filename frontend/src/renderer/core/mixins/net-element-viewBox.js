@@ -1,9 +1,17 @@
 import VueNonreactive from 'vue-nonreactive/vue-nonreactive.js';
 import Vue from 'vue'
 Vue.use(VueNonreactive);
+import coreRequestElectron  from "@/core/apiCore.js";
+import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
+let coreRequest = null;
 
-//import coreRequest  from "@/core/apiCore.js";
-import {coreRequest, openWS}  from "@/core/apiWeb.js";
+if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
+  coreRequest = coreRequestWeb;
+} else {
+  coreRequest = coreRequestElectron;
+}
+
+
 const viewBoxMixin = {
   props: {
     currentTab: {type: String, default: ''}

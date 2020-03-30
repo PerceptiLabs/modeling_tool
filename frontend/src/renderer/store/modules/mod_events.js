@@ -1,8 +1,22 @@
-//import {ipcRenderer}  from 'electron'
 import router         from "@/router";
-import {filePCRead, loadPathFolder, projectPathModel} from "@/core/helpers";
+import {
+  filePCRead,
+  isElectron,
+  loadPathFolder,
+  projectPathModel,
+  shouldHideSidebar,
+  calculateSidebarScaleCoefficient
+} from "@/core/helpers";
 import { pathSlash } from "@/core/constants";
-import { shouldHideSidebar, calculateSidebarScaleCoefficient } from "../../core/helpers";
+
+let ipcRenderer = null;
+
+
+if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
+  const electron = require('electron');
+  ipcRenderer = electron.ipcRenderer;
+}
+
 
 const namespaced = true;
 
@@ -100,41 +114,34 @@ const actions = {
     router.replace({name: 'login'});
   },
   EVENT_appClose({dispatch, rootState, rootGetters}, event) {
-    // if(event) event.preventDefault();
-    // dispatch('mod_tracker/EVENT_appClose', null, {root: true});
-    // if(rootGetters['mod_user/GET_userIsLogin']) {
-    //   dispatch('mod_user/SAVE_LOCAL_workspace', null, {root: true});
-    // }
-    // if(rootState.mod_api.statusLocalCore === 'online') {
-    //   dispatch('mod_api/API_stopTraining', null, {root: true})
-    //     .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
-    //     .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
-    // }
-    // else {
-    //   ipcRenderer.send('app-close')
-    // }
+   if(isElectron()) {
+     if(event) event.preventDefault();
+     dispatch('mod_tracker/EVENT_appClose', null, {root: true});
+     if(rootGetters['mod_user/GET_userIsLogin']) {
+       dispatch('mod_user/SAVE_LOCAL_workspace', null, {root: true});
+     }
+     if(rootState.mod_api.statusLocalCore === 'online') {
+       dispatch('mod_api/API_stopTraining', null, {root: true})
+         .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
+         .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
+     }
+     else {
+       ipcRenderer.send('app-close')
+     }
+   }
   },
-  // EVENT_appMinimize() {
-  //   ipcRenderer.send('app-minimize')
-  // },
-  // EVENT_appMaximize() {
-  //   ipcRenderer.send('app-maximize')
-  // },
-  EVENT_eventResize({commit, dispatch, rootState}) {
-    //
-    calculateSidebarScaleCoefficient();
-
-    // toggle automatically right side on width change
-    const sidebarState = rootState.globalView.hideSidebar;
-
-    if(shouldHideSidebar() && sidebarState) {
-      dispatch('globalView/hideSidebarAction', false, { root: true});
-    } else if (!shouldHideSidebar() && !sidebarState) {
-      dispatch('globalView/hideSidebarAction', true, { root: true});
+  EVENT_appMinimize() {
+    ipcRenderer.send('app-minimize')
+  },
+  EVENT_appMaximize() {
+    if(isElectron()) {
+      ipcRenderer.send('app-maximize')
     }
-
-    commit('set_eventResize');
-
+  },
+  EVENT_eventResize({commit}) {
+    if(isElectron()) {
+      commit('set_eventResize');
+    }
   },
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)

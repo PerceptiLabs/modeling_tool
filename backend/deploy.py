@@ -1,33 +1,46 @@
 import tensorflow as tf
 import numpy as np
 import dill
+import os
+import pickle
+import zmq
 import sys
 import json
 import time
 import zlib
+from queue import Queue
 import logging
 import threading
 from typing import Dict, Any, List, Tuple, Generator
 from flask import Flask, jsonify
+from tensorflow.python.training.tracking.base import Trackable
 import flask
 
 from perceptilabs.core_new.utils import Picklable
+from perceptilabs.core_new.communication.status import *
 from perceptilabs.core_new.layers import *
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder
 from perceptilabs.core_new.api.mapping import MapServer, ByteMap
-from perceptilabs.core_new.serialization import can_serialize
+from perceptilabs.core_new.serialization import can_serialize, serialize
 
 
+log = logging.getLogger("werkzeug").setLevel(logging.ERROR)
 logging.basicConfig(
     stream=sys.stdout,
     format="%(asctime)s - %(levelname)s - %(message)s",
     level=logging.INFO
 )
 log = logging.getLogger(__name__)
-global graph
+class ZmqHandler(logging.Handler):
+    def emit(self, record):
+        body = pickle.dumps(record.msg)
+        message_queue.put((b'log_message', body))
+global graph, status, t_start
 graph = None
+status = STATUS_INITIALIZING
+t_start = None
 
 
 class DataData_Data_1(DataLayer):
@@ -44,7 +57,7 @@ class DataData_Data_1(DataLayer):
         columns_DataData_Data_1_0 = None
     
         global matrix_DataData_Data_1_0
-        matrix_DataData_Data_1_0 = np.load("C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Data/mnist_split/mnist_input.npy").astype(np.float32)
+        matrix_DataData_Data_1_0 = np.load("/home/anton/Source/perceptilabs/backend/perceptilabs/tutorial_data/mnist_input.npy").astype(np.float32)
         size_DataData_Data_1_0 = len(matrix_DataData_Data_1_0)
 
         def generator_DataData_Data_1_0(idx_lo, idx_hi):
@@ -130,6 +143,125 @@ class DataData_Data_1(DataLayer):
                     yield x
         return gen()
 
+class ProcessReshape_Reshape_1(Tf1xLayer):
+    def __call__(self, x: tf.Tensor) -> tf.Tensor:
+        """ Takes a tensor as input and reshapes it."""
+        y = tf.reshape(x, [-1] + [28, 28, 1])
+        y = tf.transpose(y, perm=[0] + [i+1 for i in [0, 1, 2]])
+        return y
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return {}
+
+    @property
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        return {}
+
+    @property
+    def weights(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}
+
+    @property
+    def biases(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}        
+
+class DeepLearningConv_Convolution_1(Tf1xLayer):
+    def __init__(self):
+        self._scope = 'DeepLearningConv_Convolution_1'        
+        # TODO: implement support for 1d and 3d conv, dropout, funcs, pooling, etc
+        self._patch_size = 3
+        self._feature_maps = 8
+        self._padding = 'SAME'
+        self._stride = 2
+        
+        self._variables = {}
+        
+    def __call__(self, x):
+        """ Takes a tensor as input and feeds it forward through a convolutional layer, returning a newtensor."""                
+        shape = [
+            self._patch_size,
+            self._patch_size,
+            x.get_shape().as_list()[-1],
+            self._feature_maps
+        ]
+
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            initial = tf.random.truncated_normal(
+                shape,
+                stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+            )
+            W = tf.compat.v1.get_variable('W', initializer=initial)
+            
+            initial = tf.constant(0.1, shape=[self._feature_maps])
+            b = tf.compat.v1.get_variable('b', initializer=initial)
+            y = tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding) + b
+            y = tf.compat.v1.sigmoid(y)
+            
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        return y
+
+    @property
+    def variables(self):
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return self._variables.copy()
+
+    @property
+    def trainable_variables(self):
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
+        variables = {v.name: v for v in variables}
+        return variables        
+
+    @property
+    def weights(self):
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            w = tf.compat.v1.get_variable('W')
+            return {w.name: w}
+
+    @property
+    def biases(self):
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            b = tf.compat.v1.get_variable('b')
+            return {b.name: b}
 
 class DataData_Data_2(DataLayer):
     """Class responsible for loading data from files (e.g., numpy, csv, etc)."""    
@@ -145,7 +277,7 @@ class DataData_Data_2(DataLayer):
         columns_DataData_Data_2_0 = None
     
         global matrix_DataData_Data_2_0
-        matrix_DataData_Data_2_0 = np.load("C:/Users/Robert/Documents/PerceptiLabs/PereptiLabsPlatform/Data/mnist_split/mnist_labels.npy").astype(np.float32)
+        matrix_DataData_Data_2_0 = np.load("/home/anton/Source/perceptilabs/backend/perceptilabs/tutorial_data/mnist_labels.npy").astype(np.float32)
         size_DataData_Data_2_0 = len(matrix_DataData_Data_2_0)
 
         def generator_DataData_Data_2_0(idx_lo, idx_hi):
@@ -231,93 +363,6 @@ class DataData_Data_2(DataLayer):
                     yield x
         return gen()
 
-
-class ProcessReshape_Reshape_1(Tf1xLayer):
-    def __call__(self, x: tf.Tensor) -> tf.Tensor:
-        """ Takes a tensor as input and reshapes it."""
-        y = tf.reshape(x, [-1] + [28, 28, 1])
-        y = tf.transpose(y, perm=[0] + [i+1 for i in [0, 1, 2]])
-        return y
-
-    @property
-    def variables(self) -> Dict[str, Picklable]:
-        """Any variables belonging to this layer that should be rendered in the frontend.
-        
-        Returns:
-            A dictionary with tensor names for keys and picklable for values.
-        """
-        return {}
-
-    @property
-    def trainable_variables(self) -> Dict[str, tf.Tensor]:
-        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
-        
-        Returns:
-            A dictionary with tensor names for keys and tensors for values.
-        """
-        return {}
-
-    @property
-    def weights(self) -> Dict[str, tf.Tensor]:
-        """Any weight tensors belonging to this layer that should be rendered in the frontend.
-
-        Return:
-            A dictionary with tensor names for keys and tensors for values.
-        """        
-        return {}
-
-    @property
-    def biases(self) -> Dict[str, tf.Tensor]:
-        """Any weight tensors belonging to this layer that should be rendered in the frontend.
-
-        Return:
-            A dictionary with tensor names for keys and tensors for values.
-        """        
-        return {}        
-
-
-class ProcessOneHot_OneHot_1(Tf1xLayer):
-    def __call__(self, x):
-        y = tf.one_hot(tf.cast(x, dtype=tf.int32), 10)        
-        return y
-
-    @property
-    def variables(self) -> Dict[str, Picklable]:
-        """Any variables belonging to this layer that should be rendered in the frontend.
-        
-        Returns:
-            A dictionary with tensor names for keys and picklable for values.
-        """
-        return {}
-
-    @property
-    def trainable_variables(self) -> Dict[str, tf.Tensor]:
-        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
-        
-        Returns:
-            A dictionary with tensor names for keys and tensors for values.
-        """
-        return {}
-
-    @property
-    def weights(self) -> Dict[str, tf.Tensor]:
-        """Any weight tensors belonging to this layer that should be rendered in the frontend.
-
-        Return:
-            A dictionary with tensor names for keys and tensors for values.
-        """        
-        return {}
-
-    @property    
-    def biases(self) -> Dict[str, tf.Tensor]:
-        """Any weight tensors belonging to this layer that should be rendered in the frontend.
-
-        Return:
-            A dictionary with tensor names for keys and tensors for values.
-        """        
-        return {}    
-
-
 class DeepLearningFC_Fully_Connected_1(Tf1xLayer):
     def __init__(self):
         self._scope = 'DeepLearningFC_Fully_Connected_1'
@@ -332,7 +377,7 @@ class DeepLearningFC_Fully_Connected_1(Tf1xLayer):
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):        
             initial = tf.random.truncated_normal((n_inputs, self._n_neurons), stddev=0.1)
             W = tf.compat.v1.get_variable('W', initializer=initial)
-        
+            
             initial = tf.constant(0.1, shape=[self._n_neurons])
             b = tf.compat.v1.get_variable('b', initializer=initial)
             flat_node = tf.cast(tf.reshape(x, [-1, n_inputs]), dtype=tf.float32)
@@ -386,6 +431,46 @@ class DeepLearningFC_Fully_Connected_1(Tf1xLayer):
             return {b.name: b}
     
 
+class ProcessOneHot_OneHot_1(Tf1xLayer):
+    def __call__(self, x):
+        y = tf.one_hot(tf.cast(x, dtype=tf.int32), 10)        
+        return y
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return {}
+
+    @property
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        return {}
+
+    @property
+    def weights(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}
+
+    @property    
+    def biases(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}    
 
 class TrainNormal_Normal_1(ClassificationLayer):
     def __init__(self):
@@ -394,6 +479,7 @@ class TrainNormal_Normal_1(ClassificationLayer):
 
         self._stopped = False
         self._paused = False
+        self._headless = False
         self._status = 'created'
         
         self._loss_training = 0.0
@@ -416,7 +502,9 @@ class TrainNormal_Normal_1(ClassificationLayer):
 
         self._trn_sz_tot = 0
         self._val_sz_tot = 0
-        self._tst_sz_tot = 0        
+        self._tst_sz_tot = 0
+
+        self._checkpoint = None
         
     def run(self, graph: Graph):
         """Called as the main entry point for training. Responsible for training the model.
@@ -424,9 +512,8 @@ class TrainNormal_Normal_1(ClassificationLayer):
         Args:
             graph: A PerceptiLabs Graph object containing references to all layers objects included in the model produced by this training layer.
         """   
-        INCLUDE_KERAS_METRICS = False
+        self._status = 'initializing'
 
-        self_layer_name = 'TrainNormal_Normal_1' # this is passed as input
         output_layer_id = '_Fully_Connected_1'
         target_layer_id = '_OneHot_1'
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
@@ -437,21 +524,9 @@ class TrainNormal_Normal_1(ClassificationLayer):
         input_data_node = input_data_nodes[0]
         label_data_node = label_data_nodes[0]
 
-        # Set Devices and Distribution Strategy
-        n_devices = 4
-        config = tf.ConfigProto(device_count={"CPU": n_devices, "GPU": 0},
-                               gpu_options={"allow_growth": True},
-                               inter_op_parallelism_threads=n_devices,
-                               intra_op_parallelism_threads=1)
-        # config = tf.ConfigProto(gpu_options={"allow_growth": True}, log_device_placement=True, allow_soft_placement=True)
-
-        sess = tf.Session(config=config)
-        tf.keras.backend.set_session(sess) # since we use keras metrics
-
-        strategy = tf.distribute.MirroredStrategy(devices=[f'/CPU:{i}' for i in range(n_devices)]) # TODO: not needed under real circumstances, should default to all.
-
-        BATCH_SIZE_PER_REPLICA = 10 # TODO: get from frontend/json network
-        GLOBAL_BATCH_SIZE = BATCH_SIZE_PER_REPLICA * n_devices
+        self._trn_sz_tot = input_data_node.layer.size_training
+        self._val_sz_tot = input_data_node.layer.size_validation
+        self._tst_sz_tot = input_data_node.layer.size_testing
 
         # Make training set
         dataset_trn = tf.data.Dataset.zip((
@@ -495,323 +570,196 @@ class TrainNormal_Normal_1(ClassificationLayer):
             )
         ))
 
-        train_dataset = dataset_trn.batch(GLOBAL_BATCH_SIZE)
-        validation_dataset = dataset_val.batch(GLOBAL_BATCH_SIZE)
-        test_dataset = dataset_tst.batch(1) # Since the batch size for test is 1, it does not make sense to divide the batch over several replicas. Do testing as usual.
+        dataset_trn = dataset_trn.batch(self._batch_size)
+        dataset_val = dataset_val.batch(self._batch_size)
+        dataset_tst = dataset_tst.batch(1)                
 
-        # NOTE: A key difference for distributed: we have one _iterator_ per dataset, as opposed to one _initializer_ per dataset in the normal case.
-        # This means that we have to create a different version of all metrics (accuracy, f1, auc, etc), the gradients and more importantly: 'all tensors'.
+        # Make initializers
+        iterator = tf.data.Iterator.from_structure(dataset_trn.output_types, dataset_trn.output_shapes)
+        trn_init = iterator.make_initializer(dataset_trn)
+        val_init = iterator.make_initializer(dataset_val)
+        tst_init = iterator.make_initializer(dataset_tst)        
+        input_tensor, label_tensor = iterator.get_next()
 
-        with strategy.scope():
-            train_iterator = strategy.make_dataset_iterator(train_dataset)
-            validation_iterator = strategy.make_dataset_iterator(validation_dataset)
+        # Build the TensorFlow graph # TODO: perhaps this part can be delegated to the graph?
 
-        test_iterator = tf.data.Iterator.from_structure(test_dataset.output_types, test_dataset.output_shapes)
-        test_iterator_init = test_iterator.make_initializer(test_dataset)
+        def build_graph(input_tensor, label_tensor):
+            layer_output_tensors = {
+                input_data_node.layer_id: input_tensor,
+                label_data_node.layer_id: label_tensor
+            }
 
-        def create_model():
-            # The tensors generated by distributed iterators are only accessible locally from each replica. Therefore,
-            # each replica must create its own version of the model. This has the following two consequences:
-            #
-            #     * all tensorflow variables/operations must be executed on device, once per replica => the wrapped layers are further wrapped as a Model.
-            #     * we must keep track of the created variables, so that the validation steps can reuse the trained variables => we use get_variable instead of tf.Variable, with a var-scope for each layer.
-            #     * we will have several instances/copies of non-trainable/non-tensorflow variables. => Each layer wrapper tracks the number of times it's been created, or they would overwrite eachother.
+            for node in graph.inner_nodes:
+                args = []
+                for input_node in graph.get_input_nodes(node):
+                    args.append(layer_output_tensors[input_node.layer_id])
+                    y = node.layer_instance(*args)
+                layer_output_tensors[node.layer_id] = y
+
+
+            return layer_output_tensors
+
+        layer_output_tensors = build_graph(input_tensor, label_tensor)
+        output_tensor = layer_output_tensors[output_layer_id]
+        target_tensor = layer_output_tensors[target_layer_id]
+
+        # Create an exportable version of the TensorFlow graph
+        self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
+        self._output_tensor_export = build_graph(
+            self._input_tensor_export,
+            tf.placeholder(shape=dataset_trn.output_shapes[1], dtype=dataset_trn.output_types[1])
+        )[output_layer_id]
+        
+        loss_tensor = tf.reduce_mean(tf.square(output_tensor - target_tensor))
+        correct_predictions = tf.equal(tf.argmax(output_tensor, -1), tf.argmax(target_tensor, -1))
+        accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
+
+        global_step = None
+
+        optimizer = tf.train.AdamOptimizer(learning_rate=0.001, beta1=0.9, beta2=0.999)
+
+        layer_weight_tensors = {}
+        layer_bias_tensors = {}        
+        layer_gradient_tensors = {}
+        for node in graph.inner_nodes:
+            layer_weight_tensors[node.layer_id] = node.layer.weights
+            layer_bias_tensors[node.layer_id] = node.layer.biases            
             
-            class Model:
-                def __init__(self):
-                    pass
-                
-                def __call__(self, x, y):
-                    layer_output_tensors = {
-                        input_data_node.layer_id: x,
-                        label_data_node.layer_id: y
-                    }
+            if len(node.layer.trainable_variables) > 0:
+                gradients = {}
+                for name, tensor in node.layer.trainable_variables.items():
+                    grad_tensor = tf.gradients(loss_tensor, tensor)
+                    if any(x is None for x in grad_tensor):
+                        grad_tensor = tf.constant(0)
+                    gradients[name] = grad_tensor
+                layer_gradient_tensors[node.layer_id] = gradients
+                # self._internal_layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
+                # self._layer_gradients = self._internal_layer_gradients.copy()
 
-                    for node in graph.inner_nodes:
-                        args = []
-                        for input_node in graph.get_input_nodes(node):
-                            args.append(layer_output_tensors[input_node.layer_id])
-                        y = node.layer_instance(*args)
-                        layer_output_tensors[node.layer_id] = y
+        trainable_vars = tf.trainable_variables() # TODO: safer to get from nodes. Especially with split graph in mind.
+        grads = tf.gradients(loss_tensor, trainable_vars)
+        update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)        
 
-                    return layer_output_tensors 
-            
-            return Model()
+        config = tf.ConfigProto()
+        config.gpu_options.allow_growth = True
+        sess = tf.Session(config=config)
+        self._sess = sess
 
-        with strategy.scope():
-
-            if INCLUDE_KERAS_METRICS:
-                # contrib.f1_score and metrics.auc do not work with distributed. 
-                # note: f1_score seems to be deprecated in tf2.0, so it makes sense that they haven't imported it in tf 2.0
-                # https://stackoverflow.com/questions/53620581/calculate-f1-score-using-tf-metrics-precision-recall-in-a-tf-estimator-setup
-                #
-                # Likewise, AUC does not work properly for distributed. Keras metrics seem to be the recommended approach.
-                # This works out of the box for AUC, but not for F1 score (not implemented). Using definition and going via Recall and Precision instead.
-                
-                num_thresholds=200
-                epsilon = 1e-7
-                thresholds = [(i+0) * 1.0 / (num_thresholds - 1) for i in range(num_thresholds - 0)]
-                #thresholds = [0.0] + thresholds + [1.0]
-                
-                recall_train = tf.keras.metrics.Recall(thresholds=thresholds)
-                precision_train = tf.keras.metrics.Precision(thresholds=thresholds)
-                
-                r = recall_train.result()
-                p = precision_train.result()
-                
-                f1_train = tf.reduce_max(tf.math.divide_no_nan(2*r*p, r+p)) # TODO: create custom metric instead? make PR at tf?
-                auc_train = tf.keras.metrics.AUC(curve='ROC')
-                auc_train_tensor = auc_train.result()
-                
-                recall_val = tf.keras.metrics.Recall(thresholds=thresholds)
-                precision_val = tf.keras.metrics.Precision(thresholds=thresholds)
-                
-                r = recall_val.result()
-                p = precision_val.result()
-                
-                f1_val = tf.reduce_max(tf.math.divide_no_nan(2*r*p, r+p)) # TODO: create custom metric instead? make PR at tf?    
-                auc_val = tf.keras.metrics.AUC(curve='ROC')
-                auc_val_tensor = auc_val.result()
-                
-                
-            model = create_model()
-            
-            train_iterator_init = train_iterator.initialize()
-            validation_iterator_init = validation_iterator.initialize()
-
-            global_step = None
-
-            optimizer = tf.train.AdamOptimizer(learning_rate=0.001*n_devices, beta1=0.9, beta2=0.999)
-
-            def sleep_while_paused():
-                while self._paused:
-                    time.sleep(1.0)
-
-            def train_step(inputs):
-                x, y = inputs
-                layer_output_tensors = model(x, y)
-                output_tensor = layer_output_tensors[output_layer_id]
-                target_tensor = layer_output_tensors[target_layer_id]
-
-                loss_tensor = tf.reduce_sum(tf.square(output_tensor - target_tensor)) / GLOBAL_BATCH_SIZE
-                correct_predictions = tf.equal(tf.argmax(output_tensor,-1), tf.argmax(target_tensor,-1))
-                accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
-
-                layer_weight_tensors = {}
-                layer_bias_tensors = {}        
-                layer_gradient_tensors = {}
-                for node in graph.inner_nodes:
-                    layer_weight_tensors[node.layer_id] = node.layer.weights
-                    layer_bias_tensors[node.layer_id] = node.layer.biases            
+        trackable_variables = {}
+        trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
+        trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
+        self._checkpoint = tf.train.Checkpoint(**trackable_variables)
+        sess.run(tf.global_variables_initializer())
+        
                     
-                    if len(node.layer.trainable_variables) > 0:
-                        gradients = {}
-                        for name, tensor in node.layer.trainable_variables.items():
-                            grad_tensor = tf.gradients(loss_tensor, tensor)
-                            if any(x is None for x in grad_tensor):
-                                grad_tensor = tf.constant(0)
-                            if type(grad_tensor) is list and len(grad_tensor) == 1:
-                                gradients[name] = grad_tensor[0]
-                            else:
-                                gradients[name] = grad_tensor
-                        layer_gradient_tensors[node.layer_id] = gradients
-                        self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
+        
+        def sleep_while_paused():
+            while self._paused:
+                self.process_events(graph)
+                time.sleep(1.0)
 
-                trainable_vars = tf.trainable_variables()
-                grads = tf.gradients(loss_tensor, trainable_vars)        
-                update_weights = optimizer.apply_gradients(zip(grads, trainable_vars), global_step=global_step)
-
-                if INCLUDE_KERAS_METRICS:
-                    update_auc = auc_train.update_state(target_tensor, output_tensor)
-                    update_recall = recall_train.update_state(target_tensor, output_tensor)
-                    update_precision = precision_train.update_state(target_tensor, output_tensor)
-                    
-                    update_ops = [update_weights, update_auc, update_recall, update_precision]
-                else:
-                    update_ops = [update_weights]
-
-                with tf.control_dependencies(update_ops):
-                    return tf.identity(loss_tensor), accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
-
-            def validation_step(inputs):
-                x, y = inputs
-                layer_output_tensors = model(x, y)
-                output_tensor = layer_output_tensors[output_layer_id]
-                target_tensor = layer_output_tensors[target_layer_id]
-
-                loss_tensor = tf.reduce_sum(tf.square(output_tensor - target_tensor)) / GLOBAL_BATCH_SIZE
-                correct_predictions = tf.equal(tf.argmax(output_tensor,-1), tf.argmax(target_tensor,-1))
-                accuracy_tensor = tf.reduce_mean(tf.cast(correct_predictions, tf.float32))
-
-                layer_weight_tensors = {}
-                layer_bias_tensors = {}        
-                layer_gradient_tensors = {}
-                for node in graph.inner_nodes:
-                    layer_weight_tensors[node.layer_id] = node.layer.weights
-                    layer_bias_tensors[node.layer_id] = node.layer.biases            
-                    
-                    if len(node.layer.trainable_variables) > 0:
-                        gradients = {}
-                        for name, tensor in node.layer.trainable_variables.items():
-                            grad_tensor = tf.gradients(loss_tensor, tensor)
-                            if any(x is None for x in grad_tensor):
-                                grad_tensor = tf.constant(0)
-                            if type(grad_tensor) is list and len(grad_tensor) == 1:
-                                gradients[name] = grad_tensor[0]
-                            else:
-                                gradients[name] = grad_tensor
-                        layer_gradient_tensors[node.layer_id] = gradients
-                        self._layer_gradients[node.layer_id] = {name: [] for name in node.layer.trainable_variables.keys()} # Initialize
-
-                if INCLUDE_KERAS_METRICS:
-                    update_auc = auc_train.update_state(target_tensor, output_tensor)
-                    update_recall = recall_train.update_state(target_tensor, output_tensor)
-                    update_precision = precision_train.update_state(target_tensor, output_tensor)
-                    
-                    update_ops = [update_auc, update_recall, update_precision]
-                else:
-                    update_ops = []
-
-                with tf.control_dependencies(update_ops):
-                    return tf.identity(loss_tensor), accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
-
-
-            if n_devices > 1:
-
-                def reduce_per_replica(nested_dict):
-                    for variable, node in nested_dict.items():
-                        if type(node) is dict:
-                            nested_dict[variable] = reduce_per_replica(node)
-                        else:
-                            tensors = [node.get(device) for device in node.devices \
-                                    if node.get(device) is not None]
-                            nested_dict[variable] = tensors[0]
-                    return nested_dict
-
-                ##### Training statistics #####
-                dist_loss_train, accuracy_train, \
-                layer_outputs_train, layer_weights_train, layer_biases_train, \
-                layer_gradients_train = strategy.experimental_run(train_step, train_iterator)
-
-                dist_loss_train = [dist_loss_train.get(device) for device in dist_loss_train.devices]
-                loss_train = tf.reduce_sum(dist_loss_train)
-
-                accuracy_train = tf.reduce_mean(accuracy_train.values) # TODO: how to aggregate?
-                
-                layer_outputs_train = reduce_per_replica(layer_outputs_train)
-                layer_gradients_train = reduce_per_replica(layer_gradients_train)     
-
-                ##### Validation statistics #####
-                dist_loss_val, accuracy_val, \
-                layer_outputs_val, layer_weights_val, layer_biases_val, \
-                layer_gradients_val = strategy.experimental_run(validation_step, validation_iterator)
-
-                dist_loss_val = dist_loss_val.values
-                loss_val = tf.reduce_sum(dist_loss_val)
-
-                accuracy_val = tf.reduce_mean(accuracy_val.values)
-                layer_gradients_val = {k: v for k, v in layer_gradients_val.items() if v is not None}
-                
-                layer_outputs_val = reduce_per_replica(layer_outputs_val)
-                layer_gradients_val = reduce_per_replica(layer_gradients_val)
-
+        def train_step():
+            if not self._headless:
+                _, self._loss_training, self._accuracy_training, \
+                    self._layer_outputs, self._layer_weights, self._layer_biases, \
+                    self._layer_gradients \
+                    = sess.run([
+                        update_weights, loss_tensor, accuracy_tensor,
+                        layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
+                    ])
             else:
-                #dist_loss, dist_grads_train, dist_locals = strategy.experimental_run(train_step, train_iterator)
-                #dist_test = strategy.experimental_run(test_step, test_iterator) # TODO: implement this.
-                pass
-
-            sess.run(tf.global_variables_initializer())
+                _, self._loss_training, self._accuracy_training, \
+                    = sess.run([
+                        update_weights, loss_tensor, accuracy_tensor
+                    ])
             
-            if INCLUDE_KERAS_METRICS:
-                sess.run([v.initializer for v in auc_train.variables])  # these need spec. treatment when initializing
-                sess.run([v.initializer for v in recall_train.variables])
-                sess.run([v.initializer for v in precision_train.variables])
-                sess.run([v.initializer for v in auc_val.variables]) 
-                sess.run([v.initializer for v in recall_val.variables])
-                sess.run([v.initializer for v in precision_val.variables])
+        def validation_step():
+            if not self._headless:
+                self._loss_validation, self._accuracy_validation, \
+                    self._layer_outputs, self._layer_weights, self._layer_biases, \
+                    self._layer_gradients \
+                    = sess.run([
+                        loss_tensor, accuracy_tensor,
+                        layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
+                    ])
             else:
-                auc_train_tensor = tf.constant(-1)
-                auc_val_tensor = tf.constant(-2)
-                f1_train = tf.constant(-3)
-                f1_val = tf.constant(-4)   
+                self._loss_validation, self._accuracy_validation, \
+                    = sess.run([
+                        loss_tensor, accuracy_tensor
+                    ])
 
-            self._variables = {k: v for k, v in locals().items() if can_serialize(v)}        
-
-            self._epoch = 0
-            while self._epoch < self._n_epochs:
-                self._training_iteration = 0
-                self._status = 'training'
-
-                sess.run(train_iterator_init)
-                
-                try:
-                    while not self._stopped:
-                        sleep_while_paused()
-
-                        self._loss_training, self._accuracy_training, \
-                        self._layer_outputs, self._layer_weights, self._layer_biases, \
-                        self._layer_gradients = sess.run([loss_train, accuracy_train, layer_outputs_train, layer_weights_train, layer_biases_train, layer_gradients_train])         
-                        
-                        if INCLUDE_KERAS_METRICS:
-                            auc_train.reset_states()
-                            recall_train.reset_states()
-                            precision_train.reset_states()     
-
-                        self.save_snapshot(graph)                            
-                        
-                        self._training_iteration += 1
-                except tf.errors.OutOfRangeError:
-                    pass
-
-                sess.run(validation_iterator_init)
-
-                self._validation_iteration = 0
-                self._status = 'validation'
-                try:
-                    while True:
-                        sleep_while_paused()
-
-                        self._loss_validation, self._accuracy_validation, \
-                        self._layer_outputs, self._layer_weights, self._layer_biases, \
-                        self._layer_gradients = sess.run([loss_val, accuracy_val, layer_outputs_val, layer_weights_val, layer_biases_val, layer_gradients_val])
-
-                        if INCLUDE_KERAS_METRICS:
-                            auc_val.reset_states()
-                            recall_val.reset_states()
-                            precision_val.reset_states()                                
-
-                        self.save_snapshot(graph) 
-
-                        self._validation_iteration += 1            
-                except tf.errors.OutOfRangeError:
-                    pass
-
-            sess.run(test_iterator_init)
-            iter = 0
-            x, y = test_iterator.get_next()    
-            y_pred, y_target = model(x, y)
-
-            # all tensors test
-            model._locals = {}
-            locals_ = model._locals.copy()
-            locals_[input_data_layer] = {'Y': x} # output/preview. hack hack hack
-            locals_[target_data_layer] = {'Y': y} # this layer is not run here.....:/
             
-            locals_[self_layer_name] = {'X': {
-                output_layer: {'Y': y_target}, # inputs to this layer...
-                target_layer: {'Y': y_pred}
-            }}
-            
-            all_tensors_test = get_tensors(locals_)
+        def test_step():
+            self._loss_testing, self._accuracy_testing, \
+                self._layer_outputs, self._layer_weights, self._layer_gradients \
+                = sess.run([
+                    loss_tensor, accuracy_tensor,
+                    layer_output_tensors, layer_weight_tensors, layer_gradient_tensors
+                ])
+            #accuracy_list.append(acc)
+            #loss_list.append(loss)
+
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+
+        log.info("Entering training loop")
+
+        # Training loop
+        self._epoch = 0
+        while self._epoch < self._n_epochs and not self._stopped:
+            t0 = time.perf_counter()
+            self._training_iteration = 0
+            self._validation_iteration = 0
+            self._status = 'training'
+            sess.run(trn_init)            
             try:
-                while True:
-                    all_evaled_tensors = sess.run(all_tensors_test)
-                    api.data.store(all_tensors=all_evaled_tensors)
-                    api.data.store(iter_testing=iter)
-                    iter+=1
-                    api.ui.render(dashboard='testing')  
-            except tf.errors.OutOfRangeError:      
+                while not self._stopped:
+                    sleep_while_paused()
+                    train_step()
+                    self.save_snapshot_and_process_events(graph)
+                    self._training_iteration += 1
+            except tf.errors.OutOfRangeError:
                 pass
+
+            self._status = 'validation'
+            sess.run(val_init)            
+            try:
+                while not self._stopped:
+                    sleep_while_paused()
+                    validation_step()
+                    self.save_snapshot_and_process_events(graph)                    
+                    self._validation_iteration += 1
+            except tf.errors.OutOfRangeError:
+                pass
+            log.info(
+                f"Finished epoch {self._epoch+1}/{self._n_epochs} - "
+                f"loss training, validation: {self.loss_training:.6f}, {self.loss_validation:.6f} - "
+                f"acc. training, validation: {self.accuracy_training:.6f}, {self.accuracy_validation:.6f}"
+            )
+            log.info(f"Epoch duration: {round(time.perf_counter() - t0, 3)} s")            
+            self._epoch += 1
+            self.process_events(graph)
+            
+
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
+            
+        # Test loop
+        self._testing_iteration = 0
+        self._status = 'testing'
+        sess.run(tst_init)                                
+        try:
+            while not self._stopped:
+                sleep_while_paused()
+                test_step()
+                self.save_snapshot_and_process_events(graph)                                    
+                self._testing_iteration += 1
+                self.process_events(graph)                
+        except tf.errors.OutOfRangeError:
+            pass
+
+        self._status = 'finished'
+        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+        self.save_snapshot_and_process_events(graph)
+
 
                 
 
@@ -829,23 +777,70 @@ class TrainNormal_Normal_1(ClassificationLayer):
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
         self._paused = False
 
-    def on_save(self):
-        """Called when the resume button is clicked in the frontend. 
+    def on_export(self, path: str, mode: str) -> None:
+        """Called when the export or save button is clicked in the frontend.
         It is up to the implementing layer to save the model to disk.
         
-        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
-        # TODO: Call ._saver, verify thread-safety
-        pass
+        CAUTION: This method will be called from a different thread than run - keep thread-safety in mind.
 
-    def on_stop(self):
+        Args:
+            path: the directory where the exported model will be stored.
+            mode: how to export the model. Made available to frontend via 'export_modes' property."""
+
+        log.debug(f"Export called. Project path = {path}, mode = {mode}")
+        pb_path = os.path.join(path, '1')
+        
+        # Export non-compressed model
+        if mode in ['TFModel', 'TFModel+checkpoint']:
+            tf.compat.v1.saved_model.simple_save(self._sess, pb_path, inputs={'input': self._input_tensor_export}, outputs={'output': self._output_tensor_export})
+
+        # Export compressed model
+        if mode in ['TFLite', 'TFLite+checkpoint']:
+            converter = tf.lite.TFLiteConverter.from_session(self._sess, [self._input_tensor_export], [self._output_tensor_export])
+            converter.post_training_quantize = True
+            tflite_model = converter.convert()
+            open(pb_path, "wb").write(tflite_model)
+
+        # Export checkpoint
+        if mode in ['TFModel+checkpoint', 'TFLite+checkpoint']:
+            self._checkpoint.save(file_prefix=os.path.join(path, 'model.ckpt'), session=self._sess)
+                
+    def on_stop(self) -> None:
         """Called when the save model button is clicked in the frontend. 
         It is up to the implementing layer to save the model to disk.
         
         CAUTION: This method will be called from a different thread than run - keep thread-safety in mind."""
         self._stopped = True
 
+    def on_headless_activate(self) -> None:
+        """"Called when the statistics shown in statistics window are not needed.
+        Purose is to speed up the iteration speed significantly."""
+        self._headless = True
+
+        self._layer_outputs = {} 
+        self._layer_weights = {}
+        self._layer_biases = {}
+        self._layer_gradients = {}
+
+    def on_headless_deactivate(self) -> None:
+        """"Called when the statistics shown in statistics window are needed.
+        May slow down the iteration speed of the training."""
+        import time
+        log.info(f"Set to headless_off at time {time.time()}")
+        self._headless = False
+
     @property
-    def is_paused(self):
+    def export_modes(self) -> List[str]:
+        """Returns the possible modes of exporting a model."""        
+        return [
+            'TFModel',
+            'TFLite'
+            'TFModel+checkpoint',
+            'TFLite+checkpoint',            
+        ]
+        
+    @property
+    def is_paused(self) -> None:
         """Returns true when the training is paused."""        
         return self._paused
 
@@ -1002,29 +997,39 @@ class TrainNormal_Normal_1(ClassificationLayer):
                     self.training_iteration + self.validation_iteration
         
         progress = min(iteration/(n_iterations_total - 1), 1.0) 
-        import pdb; pdb.set_trace()
         return progress
 
 
 LAYERS = {
     '_Data_1': DataData_Data_1(),
-    '_Data_2': DataData_Data_2(),
     '_Reshape_1': ProcessReshape_Reshape_1(),
-    '_OneHot_1': ProcessOneHot_OneHot_1(),
+    '_Convolution_1': DeepLearningConv_Convolution_1(),
+    '_Data_2': DataData_Data_2(),
     '_Fully_Connected_1': DeepLearningFC_Fully_Connected_1(),
+    '_OneHot_1': ProcessOneHot_OneHot_1(),
     '_Normal_1': TrainNormal_Normal_1(),
 }
 
 EDGES = {
     ('_Data_1', '_Reshape_1'),
+    ('_Reshape_1', '_Convolution_1'),
+    ('_Convolution_1', '_Fully_Connected_1'),
     ('_Data_2', '_OneHot_1'),
-    ('_Reshape_1', '_Fully_Connected_1'),
-    ('_OneHot_1', '_Normal_1'),
     ('_Fully_Connected_1', '_Normal_1'),
+    ('_OneHot_1', '_Normal_1'),
 }
 
+global snapshots_produced
+snapshots_produced = 0
 snapshots = []
 snapshot_lock = threading.Lock()
+
+message_queue = Queue()
+event_queue = Queue()
+context = zmq.Context()
+socket = context.socket(zmq.PUB)
+socket.bind('tcp://*:5679')
+log.addHandler(ZmqHandler())
 
 app = Flask(__name__)
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
@@ -1051,33 +1056,114 @@ def endpoint_snapshot():
 @app.route('/command', methods=['POST'])
 def endpoint_event():
     from flask import request
+    global status
     data = request.json
-    if data['type'] == 'on_pause':
-        graph.active_training_node.layer.on_pause()
-    elif data['type'] == 'on_resume':
-        graph.active_training_node.layer.on_resume()
+    event_queue.put(data)
+    log.debug(f'Received event. Data: {str(data)}. Queue size = {event_queue.qsize()}')
     return jsonify(success=True)
+@app.route('/')
+def endpoint_index():
+    global status, t_start, snapshots_produced
+    result = {
+        'status': status,
+        'n_snapshots': snapshots_produced,
+        'snapshot_count': snapshots_produced,
+        'running_time': time.perf_counter() - t_start if t_start is not None else None
+    }
+    return jsonify(result)
 snapshot_builder = SnapshotBuilder(
     BASE_TO_REPLICA_MAP, 
     REPLICATED_PROPERTIES_TABLE
 )
 
+def process_events(graph):
+    global status
+    while not event_queue.empty():
+        event_data = event_queue.get()
+        event_type = event_data['type']
+        log.debug('Processing event: ' + str(event_type) + ' '+ str(event_data))
+        
+        if event_type == 'on_pause':
+            graph.active_training_node.layer.on_pause()
+        elif event_type == 'on_resume':
+            graph.active_training_node.layer.on_resume()
+        elif event_type == 'on_start':
+            status = STATUS_STARTED
+        elif event_type == 'on_stop':
+            status = STATUS_STOPPED
+            graph.active_training_node.layer.on_stop()
+        elif event_type == 'on_headless_activate':
+            graph.active_training_node.layer.on_headless_activate()
+        elif event_type == 'on_headless_deactivate':
+            graph.active_training_node.layer.on_headless_deactivate()
+        elif event_type == 'on_export':
+            graph.active_training_node.layer.on_export(event_data['path'], event_data['mode'])
+
 def make_snapshot(graph):
-    global snapshot_lock, snapshots
-    with snapshot_lock:
-        snapshot = snapshot_builder.build(graph)
-        snapshots.append(snapshot)
-def main():
-    global graph
-    threading.Thread(target=app.run, kwargs={"port": 5678}, daemon=True).start()
+    global snapshot_lock, snapshots, snapshots_produced
+    snapshot = snapshot_builder.build(graph)
+    snapshots_produced += 1
+    body = serialize(snapshot)
+    message_queue.put((b'snapshots', body))
+    process_events(graph)
+
+def make_snapshot_and_process_events(graph):
+    make_snapshot(graph)
+    process_events(graph)
+
+def message_queue_worker():
+    while True:
+        if message_queue.empty():
+            time.sleep(0.01)
+        else:
+            topic, body = message_queue.get()
+            socket.send_multipart([topic, body])
+
+def run_training():
+    try:
+        graph.training_nodes[0].layer_instance.run(graph)
+    except Exception as e:
+        import traceback
+        tb_list = traceback.extract_tb(e.__traceback__)
+        body = pickle.dumps((e, tb_list))
+        message_queue.put((b'exception', body))
+        raise
+def main(wait=False):
+    global graph, status, t_start
+    threading.Thread(target=app.run, kwargs={"port": "5678", "threaded": True}, daemon=True).start()
+    threading.Thread(target=message_queue_worker, daemon=True).start()
     graph_builder = GraphBuilder()
     graph = graph_builder.build(LAYERS, EDGES)
     
     print(graph.training_nodes)
-    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot
-    graph.training_nodes[0].layer_instance.run(graph)
-    time.sleep(10)
+    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot_and_process_events
+    graph.training_nodes[0].layer_instance.save_snapshot_and_process_events = make_snapshot_and_process_events
+    graph.training_nodes[0].layer_instance.process_events = process_events
+    status = STATUS_READY
+    if wait:
+        while status != STATUS_STARTED:
+            process_events(graph)
+            time.sleep(1.0)
+        
+        status = STATUS_RUNNING
+        t_start = time.perf_counter()
+        run_training()
+        
+        if status != STATUS_STOPPED:
+            status = STATUS_IDLE
+        while status != STATUS_STOPPED:
+            process_events(graph)
+            time.sleep(1.0)
+    else:
+        status = STATUS_RUNNING
+        t_start = time.perf_counter()
+        run_training()
+
+    status = STATUS_DONE
+    process_events(graph)
+    log.debug(f'Terminating. Event queue size = {event_queue.qsize()}')
 
 
 if __name__ == "__main__":
-    main()
+    wait = "--wait" in sys.argv
+    main(wait)

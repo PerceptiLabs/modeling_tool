@@ -60,7 +60,11 @@ class LayerSession(ApiCallbackHandler):
 
     def run(self):
         global_vars, local_vars = self._get_input_vars(insert_api=True)
-        
+
+        if log.isEnabledFor(logging.DEBUG):
+            from perceptilabs.utils import line_nums
+            log.debug(f'Layer session {self._layer_id} executing code: \n' + line_nums(self._code))
+
         try:
             exec(self._code, global_vars, local_vars)
         except:
