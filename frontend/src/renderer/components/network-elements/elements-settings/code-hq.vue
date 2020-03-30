@@ -216,6 +216,12 @@
   .code-hq {
     //font-size: 16px;
     overflow: auto;
+    * {
+      -webkit-user-select: initial;
+      -moz-user-select: initial;
+      -ms-user-select: initial;
+      user-select: initial;
+    }
   }
   .code_full-view .CodeMirror {
     height: 100%;
