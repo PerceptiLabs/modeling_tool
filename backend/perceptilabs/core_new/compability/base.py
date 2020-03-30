@@ -22,13 +22,13 @@ PROCESS_RESULTS_DELAY = 0.1
 
 
 class CompabilityCore:
-    def __init__(self, command_queue, result_queue, graph_builder, deployment_pipe, graph_spec, threaded=False, error_queue=None):
+    def __init__(self, command_queue, result_queue, graph_builder, deployment_pipe, graph_spec, threaded=False, issue_handler=None):
         self._command_queue = command_queue
         self._result_queue = result_queue
         self._graph_builder = graph_builder
         self._deployment_pipe = deployment_pipe
         self._graph_spec = copy.deepcopy(graph_spec)
-        self._error_queue = error_queue
+        self._issue_handler = issue_handler
 
         self._sanitized_to_id = {sanitize_layer_name(spec['Name']): id_ for id_, spec in graph_spec['Layers'].items()}
         self._sanitized_to_name = {sanitize_layer_name(spec['Name']): spec['Name'] for spec in graph_spec['Layers'].values()}        
@@ -77,7 +77,7 @@ class CompabilityCore:
                 self._result_queue.put(results)
             
         set_tensorflow_mode('graph')
-        core = Core(self._graph_builder, self._deployment_pipe, self._error_queue)
+        core = Core(self._graph_builder, self._deployment_pipe, self._issue_handler)
         self._core = core
         
         if self._threaded:

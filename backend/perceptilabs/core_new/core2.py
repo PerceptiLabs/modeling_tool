@@ -10,6 +10,7 @@ from typing import Dict, List, Callable
 from abc import ABC, abstractmethod
 from queue import Queue
 
+from perceptilabs.issues import IssueHandler
 from perceptilabs.core_new.graph import Graph, JsonNetwork
 from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.layers import TrainingLayer
@@ -26,11 +27,11 @@ class RemoteError(Exception):
 
 
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, error_queue: Queue=None):
+    def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, issue_handler: IssueHandler=None):
         self._graph_builder = graph_builder
         self._deployment_pipe = deployment_pipe
         self._graphs = []
-        self._error_queue = error_queue
+        self._issue_handler = issue_handler
         
         self._lock = threading.Lock()        
         self._is_running = threading.Event()
@@ -135,8 +136,8 @@ class Core:
                                f'  {frame.line}\n'
 
             log.error('Remote error:\n' + message)
-            if self._error_queue is not None:
-                self._error_queue.put(message)          
+            if self._issue_handler is not None:
+                self._issue_handler.put_error(message)          
             
     @property
     def graphs(self) -> List[Graph]:

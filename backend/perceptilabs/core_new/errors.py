@@ -101,8 +101,8 @@ class LightweightErrorHandler(LayerErrorHandler):
     
         
 class CoreErrorHandler(LayerErrorHandler):
-    def __init__(self, error_queue: Queue):
-        self._error_queue = error_queue
+    def __init__(self, issue_handler):
+        self._issue_handler = issue_handler
     
     def handle_run_error(self, session: LayerSession, exception: Exception):
         line_number = self._get_error_line(exception)
@@ -127,7 +127,7 @@ class CoreErrorHandler(LayerErrorHandler):
             message += "  Line {}, in {}\n".format(summary.lineno, summary.name)
             message += "    {}\n".format(session.code.split('\n')[summary.lineno - 1])
         message += "\n" + "".join(tb_obj.format_exception_only())
-        self._error_queue.put(message)
+        self._issue_handler.put_error(message)
         
     
     
