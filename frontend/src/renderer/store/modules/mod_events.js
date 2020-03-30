@@ -1,7 +1,22 @@
-import {ipcRenderer}  from 'electron'
 import router         from "@/router";
-import {filePCRead, loadPathFolder, projectPathModel} from "@/core/helpers";
+import {
+  filePCRead,
+  isElectron,
+  loadPathFolder,
+  projectPathModel,
+  shouldHideSidebar,
+  calculateSidebarScaleCoefficient
+} from "@/core/helpers";
 import { pathSlash } from "@/core/constants";
+
+let ipcRenderer = null;
+
+
+if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
+  const electron = require('electron');
+  ipcRenderer = electron.ipcRenderer;
+}
+
 
 const namespaced = true;
 
@@ -45,39 +60,36 @@ const actions = {
   },
   EVENT_loadNetwork({dispatch, rootGetters}, pathProject) {
     const pathFile = projectPathModel(pathProject);
-    let localProjectsList = rootGetters['mod_user/GET_LOCAL_userInfo'].projectsList;
+    const localUserInfo = rootGetters['mod_user/GET_LOCAL_userInfo'];
+    let localProjectsList = localUserInfo ? localUserInfo.projectsList : [];
     let pathIndex;
     if(localProjectsList.length) {
       pathIndex = localProjectsList.findIndex((proj)=> proj.pathModel === pathFile);
     }
-    return filePCRead(pathFile)
-      .then((data) => {
-        //validate JSON
-        let net = {};
-        try { net = JSON.parse(data.toString()); }
-        catch(e) {
-          dispatch('globalView/GP_infoPopup', 'JSON file is not valid', {root: true});
-          return
-        }
+
+    dispatch('mod_api/API_loadNetwork', pathFile, {root: true})
+      .then((net) => {
         //validate model
         try {
           if(!(net.networkName
             && net.networkMeta
-            && net.networkElementList)
-          ) {
-            throw ('err')
-          }
-        }
-        catch(e) {
+            && net.networkElementList)) {
+              throw('err');
+            }
+        } catch(e) {
           dispatch('globalView/GP_infoPopup', 'The model is not valid', {root: true});
-          return;
+          return
         }
+
         if(pathIndex > -1 && localProjectsList) {
           net.networkID = localProjectsList[pathIndex].id;
         }
         dispatch('mod_workspace/ADD_network', net, {root: true});
-      }
-    );
+      }).catch(err => {
+        console.log(err);
+        dispatch('globalView/GP_infoPopup', 'Fetching went wrong', {root: true});
+        return
+      });
   },
   EVENT_openNetwork({dispatch}) {
     const opt = {
@@ -102,29 +114,34 @@ const actions = {
     router.replace({name: 'login'});
   },
   EVENT_appClose({dispatch, rootState, rootGetters}, event) {
-    if(event) event.preventDefault();
-    dispatch('mod_tracker/EVENT_appClose', null, {root: true});
-    if(rootGetters['mod_user/GET_userIsLogin']) {
-      dispatch('mod_user/SAVE_LOCAL_workspace', null, {root: true});
-    }
-    if(rootState.mod_api.statusLocalCore === 'online') {
-      dispatch('mod_api/API_stopTraining', null, {root: true})
-        .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
-        .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
-    }
-    else {
-      ipcRenderer.send('app-close')
-    }
+   if(isElectron()) {
+     if(event) event.preventDefault();
+     dispatch('mod_tracker/EVENT_appClose', null, {root: true});
+     if(rootGetters['mod_user/GET_userIsLogin']) {
+       dispatch('mod_user/SAVE_LOCAL_workspace', null, {root: true});
+     }
+     if(rootState.mod_api.statusLocalCore === 'online') {
+       dispatch('mod_api/API_stopTraining', null, {root: true})
+         .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
+         .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
+     }
+     else {
+       ipcRenderer.send('app-close')
+     }
+   }
   },
   EVENT_appMinimize() {
     ipcRenderer.send('app-minimize')
   },
   EVENT_appMaximize() {
-    ipcRenderer.send('app-maximize')
+    if(isElectron()) {
+      ipcRenderer.send('app-maximize')
+    }
   },
   EVENT_eventResize({commit}) {
-    commit('set_eventResize');
-
+    if(isElectron()) {
+      commit('set_eventResize');
+    }
   },
   EVENT_pressHotKey({commit}, hotKeyName) {
     commit('set_globalPressKey', hotKeyName)

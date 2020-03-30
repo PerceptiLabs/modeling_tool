@@ -32,13 +32,13 @@
           )
           .info-section_head(v-if="statisticsIsOpen || testIsOpen")
             h3 Map
-          .info-section_main.js-info-section_main(
-            @wheel.ctrl="scaleScroll($event)"
+          perfect-scrollbar.info-section_main.js-info-section_main(
+            @wheel="scaleScroll($event)"
             )
             network-field(
               ref="networkField"
               :key="i"
-              :style="{zoom: scaleNet + '%'}"
+              :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
 
         //-general-settings(v-if="showGlobalSet")
@@ -50,9 +50,16 @@
           ref="saveNetworkPopup"
           :popup-settings="saveNetworkPopup"
           )
+        
 
       start-training-spinner(v-if="showTrainingSpinner")
-
+      file-picker-popup(
+        v-if="showFilePickerPopup"
+        :filePickerType="showFilePickerPopup.filePickerType"
+        :fileTypeFilter="showFilePickerPopup.fileTypeFilter"
+        :popupTitle="showFilePickerPopup.popupTitle"
+        :confirmCallback="showFilePickerPopup.confirmCallback || showFilePickerPopup") 
+      //- showFilePickerPopup container the callback function
 
     .workspace_meta
       include ./meta/workspace-meta.pug

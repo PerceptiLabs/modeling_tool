@@ -77,7 +77,8 @@ export default {
         x: 0,       y: 0,
         width: 0,   height: 0
       },
-      currentFocusedArrow: null
+      currentFocusedArrow: null,
+      currentFocusedArrowData: null,
     }
   },
   computed: {
@@ -267,12 +268,18 @@ export default {
       this.$store.dispatch('mod_workspace/DELETE_arrow', connection);
       this.$store.dispatch('mod_api/API_getOutputDim');
       focusArray.blur();
-      this.currentFocusedArrow = null;
+      this.clearArrowFocus();
     },
-    focusArrow(ev) {
+    focusArrow(ev, arrow) {
+      this.currentFocusedArrowData = arrow;
       this.currentFocusedArrow = ev.target;
     },
     blurArrow() {
+      this.clearArrowFocus();
+    },
+
+    clearArrowFocus() {
+      this.currentFocusedArrowData = null;
       this.currentFocusedArrow = null;
     },
     drawArrows() {
@@ -580,6 +587,10 @@ export default {
       }
       if (!arrowLine1.layerMeta.OutputDim || arrowLine1.layerCodeError) {
         result.push('svg-arrow_line--empty');
+      }
+
+      if(this.currentFocusedArrowData === arrow) {
+        result.push('is-focused');
       }
       return result;
     },

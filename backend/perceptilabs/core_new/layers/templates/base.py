@@ -69,7 +69,7 @@ class J2Engine:
 
         if self._verbose:
             log.info(add_line_numbering(text))
-        
+
         return text
     
     #@log_rendering_errors        

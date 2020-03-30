@@ -72,5 +72,11 @@ export default {
     color: inherit;
     min-width: 11.6rem;
     background: linear-gradient(270deg, #5C6680 0%, #5D698D 100%);
+    &:hover,
+    &.active {
+      color: $white;
+      background: $bg-grad-blue;
+      box-shadow: $icon-shad;
+    }
   }
 </style>

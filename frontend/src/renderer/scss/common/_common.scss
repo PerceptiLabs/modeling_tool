@@ -39,28 +39,31 @@ img {
 // SCROLL
 //----------------------------------
 $scroll-width: 6px;
-::-webkit-scrollbar-track {
-	&:hover {
-		background-color: rgba(#fff, .1);
-	}
-}
-::-webkit-scrollbar {
-	width: $scroll-width;
-	&:horizontal {
-		height: $scroll-width;
-	}
-}
-::-webkit-scrollbar-corner {
-	display: none;
-}
-::-webkit-scrollbar-thumb {
-	border-radius: $scroll-width/2;
-	background-color: rgba($bg-scroll, .5);
-	box-shadow: 0 0 6px rgba(#000, .3);
-	&:hover {
-		background-color: rgba($bg-scroll, 1);
-	}
-	&:window-inactive {
-		background-color: rgba($bg-scroll, .2);
-	}
+.is-electron {
+  ::-webkit-scrollbar-track {
+    &:hover {
+      background-color: rgba(#fff, .1);
+    }
+  }
+  ::-webkit-scrollbar {
+    width: $scroll-width;
+    &:horizontal {
+      height: $scroll-width;
+    }
+  }
+  ::-webkit-scrollbar-corner {
+    display: none;
+  }
+  ::-webkit-scrollbar-thumb {
+    border-radius: $scroll-width/2;
+    background-color: rgba($bg-scroll, .5);
+    box-shadow: 0 0 6px rgba(#000, .3);
+    &:hover {
+      background-color: rgba($bg-scroll, 1);
+    }
+    &:window-inactive {
+      background-color: rgba($bg-scroll, .2);
+    }
+  }
+
 }

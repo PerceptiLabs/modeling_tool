@@ -12,7 +12,7 @@
   import CodeMirror from 'codemirror/lib/codemirror.js';
   import 'codemirror/mode/python/python.js'
   // theme css
-  import 'codemirror/lib/codemirror.css'
+  // import 'codemirror/lib/codemirror.css'
   //import 'codemirror/theme/monokai.css'
   //import 'codemirror/theme/base16-dark.css' //#5B657B
   // require active-line.js
@@ -28,8 +28,8 @@
   // import'codemirror/addon/search/searchcursor.js'
   // import'codemirror/addon/search/search.js'
   // import'codemirror/keymap/emacs.js'
+  import 'codemirror/addon/scroll/simplescrollbars.js'
 
-  // export
   export default {
     name: 'codeHq',
     props: {
@@ -79,6 +79,7 @@
           line: true,
           mode: 'text/x-python',
           theme: "monokai",
+          scrollbarStyle: 'overlay'
         }
       }
     },
@@ -201,6 +202,17 @@
 <style lang="scss">
   @import "../../../scss/base";
   @import "../../../scss/components/vscode-theme-dark_plus";
+  @import "~codemirror/lib/codemirror.css";
+  
+  .code-hq {
+    max-width: calc(50vw - #{$w-sidebar} + 123px);
+  }
+  .popup_body--show-code {
+    .code-hq  {
+      max-width: none;
+    }
+  }
+  
   .code-hq {
     //font-size: 16px;
     overflow: auto;
@@ -222,4 +234,82 @@
       border-right-width: 1px;
     }
   }
+
+  // scroll bar style
+
+  .CodeMirror-simplescroll-horizontal div, .CodeMirror-simplescroll-vertical div {
+    position: absolute;
+    background: #ccc;
+    -moz-box-sizing: border-box;
+    box-sizing: border-box;
+    border: 1px solid #bbb;
+    border-radius: 2px;
+  }
+
+  .CodeMirror-simplescroll-horizontal, .CodeMirror-simplescroll-vertical {
+    position: absolute;
+    z-index: 6;
+    background: #eee;
+  }
+
+  .CodeMirror-simplescroll-horizontal {
+    bottom: 0; left: 0;
+    height: 8px;
+  }
+  .CodeMirror-simplescroll-horizontal div {
+    bottom: 0;
+    height: 100%;
+  }
+
+  .CodeMirror-simplescroll-vertical {
+    right: 0; top: 0;
+    width: 8px;
+  }
+  .CodeMirror-simplescroll-vertical div {
+    right: 0;
+    width: 100%;
+  }
+
+  .CodeMirror-overlayscroll .CodeMirror-scrollbar-filler, .CodeMirror-overlayscroll .CodeMirror-gutter-filler {
+    display: none;
+    background: #1E1E1E;
+  }
+
+  .CodeMirror-overlayscroll-horizontal div, .CodeMirror-overlayscroll-vertical div {
+    position: absolute;
+    background: rgba($bg-scroll, .5);
+    border-radius: 3px;
+    /*transition: 0.3s;*/
+  }
+
+  .CodeMirror-overlayscroll-horizontal div:hover, .CodeMirror-overlayscroll-vertical div:hover {
+    position: absolute;
+    background: rgba($bg-scroll, 1);
+    border-radius: 3px;
+  }
+
+
+  .CodeMirror-overlayscroll-horizontal, .CodeMirror-overlayscroll-vertical {
+    position: absolute;
+    z-index: 6;
+  }
+
+  .CodeMirror-overlayscroll-horizontal {
+    bottom: 0; left: 0;
+    height: 6px;
+  }
+  .CodeMirror-overlayscroll-horizontal div {
+    bottom: 0;
+    height: 100%;
+  }
+
+  .CodeMirror-overlayscroll-vertical {
+    right: 0; top: 0;
+    width: 6px;
+  }
+  .CodeMirror-overlayscroll-vertical div {
+    right: 0;
+    width: 100%;
+  }
+
 </style>

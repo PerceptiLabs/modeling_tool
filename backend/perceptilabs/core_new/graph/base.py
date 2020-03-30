@@ -7,7 +7,6 @@ from typing import Dict, List, Tuple
 from perceptilabs.script.base import CodeGenerator
 from perceptilabs.core_new.layers.base import BaseLayer, DataLayer, InnerLayer, TrainingLayer
 
-
 log = logging.getLogger(__name__)
 
 
@@ -75,6 +74,7 @@ class Graph:
         end_nodes = [n for n in self._nx_graph.nodes if len(list(self._nx_graph.successors(n))) == 0]
         if len(end_nodes) > 1:
             raise RuntimeError("Not supported. More than one _isolated_ subgraph detected!")
+        
         self._end_node = end_nodes[0]
 
         bfs_tree = list(nx.bfs_tree(self._nx_graph, self._end_node, reverse=True))
@@ -152,10 +152,6 @@ class Graph:
         for data_node in self.data_nodes:
             # TODO: can we use ancesotrs instead?
             simple_paths = list(nx.all_simple_paths(self._nx_graph, data_node, target_node))
-
-            #print('paths from ', data_node.layer_id, 'to', target_node.layer_id)
-            #print('simple paths', [[x.layer_id for x in p] for p in simple_paths])
-            #import pdb; pdb.set_trace()
 
             if len(simple_paths) > 0:
                 immediate = True # Assume all connections are immediate (pass through only one data node) and then verify that.

@@ -11,6 +11,6 @@ services:
     image: ${DOCKER_REGISTRY-}frontend
     build:
       context: .
-      dockerfile: Docer/Frontend/Dockerfile
+      dockerfile: Docker/Frontend/Dockerfile  
     ports:
       - "5000:80"

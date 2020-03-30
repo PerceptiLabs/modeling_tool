@@ -3,11 +3,17 @@ $sidebar-indent: 10px;
 html {
 	font-size: $global-font-size;
 	box-sizing: border-box;
-
-//@include media('>=large') {
-//		font-size: 10px;
-//	}
+  &.is-web {
+    @include media('>=medium') {
+      font-size: 10px;
+    }
+    @include media('>=fullHD') {
+      font-size: .5209vw;
+    } 
+  }
 }
+
+
 
 *,
 *:before,
@@ -24,10 +30,12 @@ body {
 	font-weight: normal;
 	line-height: $line-height-base;
 	color: $base-text-color;
-	overflow: hidden;
-	min-width: $base-min-width;
 	background: $base-background-color;
 
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
+  &.is-electron {
+    overflow: hidden;
+    min-width: $base-min-width;
+  }
 }

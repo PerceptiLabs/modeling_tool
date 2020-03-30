@@ -9,7 +9,7 @@ const BabiliWebpackPlugin = require('babili-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const { VueLoaderPlugin } = require('vue-loader')
+// const VueLoaderPlugin = require('vue-loader-plugin')
 
 let webConfig = {
   devtool: '#cheap-module-eval-source-map',
@@ -95,7 +95,7 @@ let webConfig = {
     ]
   },
   plugins: [
-    new VueLoaderPlugin(),
+    // new VueLoaderPlugin(),
     new MiniCssExtractPlugin({filename: 'styles.css'}),
     new HtmlWebpackPlugin({
       filename: 'index.html',
@@ -145,9 +145,9 @@ if (process.env.NODE_ENV === 'production') {
     new webpack.DefinePlugin({
       'process.env.NODE_ENV': '"production"'
     }),
-    new webpack.LoaderOptionsPlugin({
-      minimize: true
-    })
+    // new webpack.LoaderOptionsPlugin({
+    //   minimize: true
+    // })
   )
 }
 

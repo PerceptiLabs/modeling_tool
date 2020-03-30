@@ -95,7 +95,9 @@ setup(
         'perceptilabs': [
             '*.json',
             'insights/csv_ram_estimator/*.csv',
-            'script/templates/*.j2'
+            'script/templates/*.j2',
+            'tutorial_data/mnist_input.npy',
+            'tutorial_data/mnist_labels.npy'
         ],
     },
     ext_modules=cythonize(cy_extensions),

@@ -17,6 +17,7 @@ build/
 .vscode/
 backend/.vscode/
 #Frontend ignores
+frontend_out
 frontend/.DS_Store
 frontend/core/*
 frontend/dist/*
@@ -26,6 +27,7 @@ frontend/node_modules/
 frontend/build/*
 !frontend/build/icons
 !frontend/build/*.plist
+!frontend/src/build/
 frontend/npm-debug.log
 frontend/npm-debug.log.*
 frontend/thumbs.db

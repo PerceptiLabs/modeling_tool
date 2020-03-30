@@ -1,8 +1,22 @@
-import {shell, ipcRenderer }   from 'electron'
-import fs    from 'fs';
+let shell = null;
+let ipcRenderer = null;
+let fs = null;
+
+if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
+  const electron = require('electron');
+  const fileSystem = require('fs');
+  shell = electron.shell;
+  ipcRenderer = electron.ipcRenderer;
+  fs = fileSystem;
+}
 import store from '@/store'
 
-import { workspaceGrid, pathSlash }   from '@/core/constants.js'
+import {
+  workspaceGrid,
+  pathSlash,
+  hideSidebarOnBreakpoint,
+  sidebarNavCoefficientScaleCalculateFromHeight
+} from '@/core/constants.js'
 
 /*modal window*/
 const openLoadDialog = function (options) {
@@ -16,6 +30,7 @@ const openLoadDialog = function (options) {
 };
 
 const openSaveDialog = function (options) {
+  console.log('openSaveDialog', options);
   return new Promise((success, reject) => {
     ipcRenderer.on('open-save-dialog_path', (event, path) => {
       ipcRenderer.removeAllListeners('open-save-dialog_path');
@@ -138,7 +153,14 @@ const throttleEv = function (func, ms) {
 };
 
 const goToLink = function (url) {
-  shell.openExternal(url);
+  if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
+    shell.openExternal(url);
+  } else {
+    let link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('target', '_blank');
+    link.click();
+  }
 };
 
 const deepCopy = function (object) {
@@ -154,6 +176,106 @@ const deepCloneNetwork = function (object) {
     },
     ' ')
   );
+};
+
+
+const isLocalStorageAvailable = function () {
+  try {
+      var storage = window['localStorage'],
+          x = '__storage_test__';
+      storage.setItem(x, x);
+      storage.removeItem(x);
+      return true;
+  }
+  catch(e) {
+      return e instanceof DOMException && (
+          // everything except Firefox
+          e.code === 22 ||
+          // Firefox
+          e.code === 1014 ||
+          // test name field too, because code might not be present
+          // everything except Firefox
+          e.name === 'QuotaExceededError' ||
+          // Firefox
+          e.name === 'NS_ERROR_DOM_QUOTA_REACHED') &&
+          // acknowledge QuotaExceededError only if there's something already stored
+          storage && storage.length !== 0;
+  }
+}
+
+const stringifyNetworkObjects = function (network) {
+  return JSON.stringify(
+    network,
+    (key, val)=> {
+      if (key === 'calcAnchor') return undefined;
+      else return val;
+    },
+    ' ');
+};
+
+const isOsWindows = () => {
+  const windowsUserAgent = [
+    'Windows NT 10.0',
+    'Windows NT 6.2',
+    'Windows NT 6.1',
+    'Windows NT 6.0',
+    'Windows NT 5.1',
+    'Windows NT 5.0',
+  ];
+  const userAgent = window.navigator.userAgent;
+  return windowsUserAgent.map(windowsStr => userAgent.indexOf(windowsStr) !== -1).filter(itm => itm === true).length > 0;
+};
+const isOsMacintosh = () => {
+  return window.navigator.platform.indexOf('Mac') > -1
+};
+
+const isDesktopApp = () => {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return (userAgent.indexOf(' electron/') > -1);
+};
+
+const shouldHideSidebar = () => {
+  return document.documentElement.clientWidth <= hideSidebarOnBreakpoint;
+};
+
+const calculateSidebarScaleCoefficient = () => {
+  const pageHeight = document.documentElement.clientHeight;
+  if(pageHeight <= sidebarNavCoefficientScaleCalculateFromHeight) {
+    document.documentElement.style.setProperty('--sidebar-scale-coefficient', (pageHeight / sidebarNavCoefficientScaleCalculateFromHeight).toString());
+  } else {
+    document.documentElement.style.setProperty('--sidebar-scale-coefficient', '1');
+  }
+};
+
+const parseJWT = (jwt) => {
+  if (!jwt) { return; }
+
+  try {
+    const payload = jwt.split('.')[1];
+    if (payload) {
+      return JSON.parse(window.atob(payload));
+    }
+  } catch (error) {
+    console.error('parseJWT', error);
+    return;
+  }
+};
+
+const isElectron = () => {
+  return navigator.userAgent.toLowerCase().indexOf(' electron/') > -1;
+};
+const isWeb = () => {
+  return !(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1);
+};
+
+const setAppTypeRootClasses = () => {
+  if(isWeb()) {
+    document.body.classList.add('is-web');
+    document.getElementsByTagName('html')[0].classList.add('is-web');
+  } else {
+    document.body.classList.add('is-electron');
+    document.getElementsByTagName('html')[0].classList.add('is-electron');
+  }
 };
 
 const fixFilepathSeparator = function fileUrl(filepath) {
@@ -184,5 +306,16 @@ export {
   goToLink,
   deepCopy,
   deepCloneNetwork,
-  fixFilepathSeparator
+  isLocalStorageAvailable,
+  stringifyNetworkObjects,
+  isOsWindows,
+  isDesktopApp,
+  shouldHideSidebar,
+  calculateSidebarScaleCoefficient,
+  parseJWT,
+  isOsMacintosh,
+  isElectron,
+  isWeb,
+  fixFilepathSeparator,
+  setAppTypeRootClasses,
 }

@@ -20,7 +20,7 @@
             orient="auto"
           )
           polyline(points="0,0 0,4 3.5,2")
-          
+
           //-marker#svg-arrow_start.svg-arrow_marker(
             viewBox="0 0 28 16"
             refX="0" refY="7"
@@ -41,7 +41,7 @@
           :class="arrowClassStyle(arrow)"
           :data-startid="arrow.l1.layerId"
           :data-stopid="arrow.l2.layerId"
-          @focus="focusArrow($event)"
+          @click="focusArrow($event, arrow)"
           @blur="blurArrow"
           :marker-end="arrowMarkerStyle(arrow)"
           :d="arrow.positionArrow.path.arrow"
@@ -122,7 +122,7 @@
     stroke: $col-primary; //inline styles for the canvas plagin
     stroke-width: 3;
     fill: transparent;
-    &:focus {
+    &.is-focused {
       stroke-width: 5 !important;
     }
   }

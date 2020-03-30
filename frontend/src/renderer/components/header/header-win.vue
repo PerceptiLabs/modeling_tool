@@ -1,12 +1,14 @@
 <template lang="pug">
-  header.app-header
+  header.app-header(
+    :class="{'d-none': isWeb}"
+  )
     .app-header_logo
       a(@click="toProjectPage")
         //-img(src="./../../../../static/img/PerceptiLabs_Logo-web-white_beta-01.svg" alt="PerceptiLabs logo")
         img(src="./../../../../static/img/perceptilabs-logo-header.svg" alt="PerceptiLabs logo")
     the-menu
 
-    ul.app-header_actions
+    ul(v-if="!isWeb").app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
       button.btn.btn--app-full(type="button"
         @click="appMaximize"
@@ -16,10 +18,16 @@
 
 <script>
   import TheMenu from '@/components/the-menu.vue'
+  import {isWeb} from "@/core/helpers";
 
 export default {
   name: "HeaderWin",
   components: {TheMenu},
+  data: function() {
+    return {
+      isWeb: isWeb(),
+    }
+  },
   computed: {
     showRestoreIcon() {
       return this.$store.state.globalView.appIsFullView
@@ -52,6 +60,9 @@ export default {
     height: $h-header-win;
     background: #272727;
     font-family: sans-serif;
+  }
+  .d-none {
+    display: none;
   }
   .app-header_logo {
     margin: 0 12px;

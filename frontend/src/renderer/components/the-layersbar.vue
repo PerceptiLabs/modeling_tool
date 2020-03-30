@@ -149,7 +149,7 @@ export default {
           iconClass: 'icon-training',
           childListClass: 'layer_child-list--training',
           showEl: false,
-          //networkElements: ['TrainNormal', 'TrainNormalData', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
+          //networkElements: ['TrainNormal', 'TrainReinforce', 'TrainGenetic', 'TrainDynamic']
           networkElements: trainingElements,
           id:'tutorial_training'
         },
@@ -244,6 +244,9 @@ export default {
       content: '\e922';
       font-family: 'icomoon' !important;
       font-size: 1.1em;
+      .is-web & {
+        font-size: calc(var(--sidebar-scale-coefficient) * 1.1em);
+      }
       line-height: 1;
       position: absolute;
       right: 1px;

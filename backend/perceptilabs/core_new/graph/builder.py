@@ -66,7 +66,6 @@ class GraphBuilder:
         
         nodes = {}
         for layer_spec in graph_spec.values():
-
             #from pprint import pprint
             #pprint(layer_spec)
             

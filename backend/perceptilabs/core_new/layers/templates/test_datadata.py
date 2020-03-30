@@ -84,7 +84,7 @@ def csv_30x784():
         yield fix_path(f.name)
         f.close()
 
-
+        
 @pytest.fixture(scope='module', autouse=True)
 def img_5x32x32x3():
     with tempfile.TemporaryDirectory() as dir_path:
