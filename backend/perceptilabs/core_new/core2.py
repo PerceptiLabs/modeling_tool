@@ -6,6 +6,7 @@ import requests
 import tempfile
 import threading
 import subprocess
+import sentry_sdk
 from typing import Dict, List, Callable
 from abc import ABC, abstractmethod
 from queue import Queue
@@ -134,6 +135,12 @@ class Core:
 
             userland_error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
 
+
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag('error-type', 'userland-error')
+                scope.level = 'info'
+                sentry_sdk.capture_message(userland_error.format())
+            
             log.info('Userland error:\n' + userland_error.format())
             if self._issue_handler is not None:
                 self._issue_handler.put_error(userland_error.format())          

@@ -30,6 +30,7 @@ def setup_sentry(user=None, commit_id=None):
     sentry_sdk.init("https://9b884d2181284443b90c21db68add4d7@sentry.io/1512385", before_send=strip_unimportant_errors, release=str(commit_id))
 
     with sentry_sdk.configure_scope() as scope:
+        scope.set_tag('error-type', 'internal-error')
         if user:
             scope.user = {"email" : user}
 
