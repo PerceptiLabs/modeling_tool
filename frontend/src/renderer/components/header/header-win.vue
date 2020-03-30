@@ -1,7 +1,5 @@
 <template lang="pug">
-  header.app-header(
-    :class="{'d-none': isWeb}"
-  )
+  header.app-header
     .app-header_logo
       a(@click="toProjectPage")
         //-img(src="./../../../../static/img/PerceptiLabs_Logo-web-white_beta-01.svg" alt="PerceptiLabs logo")
