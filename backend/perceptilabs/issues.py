@@ -1,6 +1,9 @@
+import os
 import uuid
 import queue
+import inspect
 import traceback
+import sentry_sdk
 
 from perceptilabs.utils import add_line_numbering
 
@@ -13,9 +16,13 @@ class Issue:
         self.frontend_message = None
         
     def __enter__(self):
-        id_ = uuid.uuid4().hex
-        self.frontend_message = f"Internal error. This error will be reported. (id: {id_})"
-        self.internal_message = self._message + f" (internal error id: {id_})"
+        frame = inspect.stack()[1]
+        caller = inspect.getframeinfo(frame[0])
+        module = inspect.getmodule(frame[0])
+        location = f'{module.__name__}:{caller.lineno}'
+        
+        self.frontend_message = f"Internal error in {location}. This will be reported as a bug."
+        self.internal_message = self._message + f" (issue origin: {location})"
         
         if self._exception:
             tb_obj = traceback.TracebackException(
@@ -37,7 +44,7 @@ class IssueHandler:
         self._warnings = queue.Queue()
 
     @staticmethod
-    def format_issue(message, exception=None):
+    def create_issue(message, exception=None):
         return Issue(message, exception)
 
     def put_error(self, message):
@@ -86,7 +93,7 @@ if __name__ == "__main__":
         fn()
     except Exception as e:
 
-        with issues.format_issue('error in block', e) as issue:
+        with issues.create_issue('error in block', e) as issue:
             issues.put_error(issue.frontend_message)
             print(issue.internal_message)
 

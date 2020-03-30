@@ -43,7 +43,7 @@ CoreCommand = collections.namedtuple('CoreCommand', ['type', 'parameters', 'allo
 class coreLogic():
     def __init__(self,networkName, core_mode='v1'):
         log.info(f"Created coreLogic for network '{networkName}' with core mode '{core_mode}'")
-        
+
         assert core_mode in ['v1', 'v2']
         self._core_mode = core_mode
         
@@ -281,7 +281,7 @@ class coreLogic():
                 # self.cThread.start()
             except Exception as e:
                 message = "Could not boot up the new thread to run the computations on because of: " + str(e)
-                with self.issue_handler.format_issue(message, e) as issue:
+                with self.issue_handler.create_issue(message, e) as issue:
                     self._issue_handler.put_error(issue.frontend_message)
                     log.error(issue.internal_message)
         else:
@@ -293,7 +293,7 @@ class coreLogic():
                 # self.cThread.start()
             except Exception as e:
                 message = "Could not boot up the new thread to run the computations on because of: " + str(e)
-                with self.issue_handler.format_issue(message, e) as issue:
+                with self.issue_handler.create_issue(message, e) as issue:
                     self.issue_handler.put_error(issue.frontend_message)
                     log.error(issue.internal_message)
                 
@@ -452,7 +452,7 @@ class coreLogic():
 
         except Exception as e:
             message = "Export failed with this error: " + str(e)
-            with self.issue_handler.format_issue(message, e) as issue:
+            with self.issue_handler.create_issue(message, e) as issue:
                 self.issue_handler.put_warning(issue.frontend_message)
                 log.warning(issue.internal_message)
                 return {"content": self.issue_handler.frontend_message}
@@ -508,7 +508,7 @@ class coreLogic():
             return {"content":"Save succeeded!"}
         except Exception as e:
             message = "Save failed with this error: " + str(e)
-            with self.issue_handler.format_issue(message, e) as issue:
+            with self.issue_handler.create_issue(message, e) as issue:
                 self.issue_handler.put_error(issue.frontend_message)
                 log.error(issue.internal_message)
                 return {"content": issue.frontend_message}

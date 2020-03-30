@@ -160,7 +160,7 @@ class Interface():
         try:
             response = self._create_response(reciever, action, value)
         except Exception as e:
-            with self._core.issue_handler.format_issue('Error in create_response', e) as issue:
+            with self._core.issue_handler.create_issue('Error in create_response', e) as issue:
                 self._core.issue_handler.put_error(issue.frontend_message)
                 response = {'content': issue.frontend_message}                
                 log.error(issue.internal_message)
