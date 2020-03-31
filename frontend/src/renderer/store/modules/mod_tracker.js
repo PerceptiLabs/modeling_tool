@@ -46,9 +46,7 @@ const actions = {
     });
   },
   EVENT_appClose() {
-    if(isElectron()) {
-      mixPanel.track('App Close');
-    }
+    mixPanel.track('App Close');
   },
   /* Model */
   EVENT_modelSave({}, model) {
