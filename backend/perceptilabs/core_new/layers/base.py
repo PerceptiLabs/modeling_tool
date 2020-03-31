@@ -304,3 +304,148 @@ class ClassificationLayer(TrainingLayer):
     def testing_iteration(self) -> int:
         """The current testing iteration"""                
         return self._testing_iteration
+
+
+
+class ObjectDetectionLayer(TrainingLayer):
+    """A layer for training classifiers."""
+    
+    @property
+    @abstractmethod
+    def accuracy_training(self) -> float:
+        """Returns the current classification accuracy of the training phase"""
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def accuracy_validation(self) -> float:
+        """Returns the current classification accuracy of the validation phase"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def accuracy_testing(self) -> float:
+        """Returns the current classification accuracy of the testing phase"""                
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod
+    def bbox_loss_training(self) -> float:
+        """Returns the current loss of the training phase"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def bbox_loss_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def bbox_loss_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def classification_loss_training(self) -> float:
+        """Returns the current loss of the training phase"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def classification_loss_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def classification_loss_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                        
+        raise NotImplementedError
+
+
+    @property
+    @abstractmethod
+    def loss_training(self) -> float:
+        """Returns the current loss of the training phase"""        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_validation(self) -> float:
+        """Returns the current loss of the validation phase"""                
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def loss_testing(self) -> float:
+        """Returns the current loss of the testing phase"""                        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod    
+    def layer_weights(self) -> Dict[str, Dict[str, Picklable]]:
+        """The weight values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+
+    @property
+    @abstractmethod    
+    def layer_biases(self) -> Dict[str, Dict[str, Picklable]]:
+        """The bias values of each layer in the input Graph during the training.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain weight name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod    
+    def layer_gradients(self) -> Dict[str, Dict[str, Picklable]]:
+        """The gradients with respect to the loss of all trainable variables of each layer in the input Graph.
+
+        Returns:
+            A dictionary of nested dictionaries, where each key is a layer id. The nested dictionaries contain gradient name and value pairs. The values must be picklable.
+        """        
+        raise NotImplementedError
+    
+    @property
+    @abstractmethod    
+    def batch_size(self) -> int:
+        """Size of the current training batch """
+        raise NotImplementedError
+
+    @property
+    @abstractmethod
+    def epoch(self) -> int:
+        """The current epoch"""
+        raise NotImplementedError
+    
+    @property
+    def training_iteration(self) -> int:
+        """The current training iteration"""
+        return self._training_iteration
+
+    @property
+    def validation_iteration(self) -> int:
+        """The current validation iteration"""        
+        return self._validation_iteration
+
+    @property
+    def testing_iteration(self) -> int:
+        """The current testing iteration"""                
+        return self._testing_iteration
+
+    @property
+    def get_confidence(self) -> ndarray:
+        """ returns the confidences of the predicted bounding boxes in the image"""
+        return self._confidences
+
+    @property
+    def get_bbox_images(self) -> ndarray:
+        """ returns the images with predicted bboxes"""
+        return self._bbox_images
