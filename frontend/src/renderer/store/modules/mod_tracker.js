@@ -41,11 +41,9 @@ const actions = {
   },
   /* APP */
   EVENT_appStart({rootState}) {
-    if(isElectron()) {
-       mixPanel.track('App Start', {
-         'App Version': rootState.globalView.appVersion
-       });
-    }
+    mixPanel.track('App Start', {
+      'App Version': rootState.globalView.appVersion
+    });
   },
   EVENT_appClose() {
     if(isElectron()) {

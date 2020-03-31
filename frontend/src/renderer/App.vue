@@ -55,6 +55,7 @@
     mounted() {
       if(isWeb()) {
         this.updateOnlineStatus();
+        this.SET_appVersion(process.env.PACKAGE_VERSION);
         this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       } else {
         this.appReady();
