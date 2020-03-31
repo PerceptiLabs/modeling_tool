@@ -88,13 +88,13 @@
         ipcRenderer.on('show-restore-down-icon', (event, value)=> this.SET_appIsFullView(value));
 
         this.calcAppPath();
-        this.checkLocalToken();
-        this.$nextTick(()=> {
-          //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
-
-          this.sendPathToAnalist(this.$route.fullPath);
-        })
       }
+      this.checkLocalToken();
+      this.$nextTick(()=> {
+        //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
+
+        this.sendPathToAnalist(this.$route.fullPath);
+      })
     },
     beforeDestroy() {
       window.removeEventListener('online',  this.updateOnlineStatus);
