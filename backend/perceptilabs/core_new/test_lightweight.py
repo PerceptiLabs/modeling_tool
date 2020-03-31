@@ -157,7 +157,9 @@ def test_out_shapes_ok_partial_graph(graph_spec_binary_classification):
     
 
 def test_out_shapes_ok_with_syntax_error(graph_spec_binary_classification):
-    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": "print('hello')\n!!!"}
+    code  = "print('hello')\n"
+    code += "!!!" # Bad syntax
+    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
     
     lw_core = LightweightCore()
     results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
@@ -179,3 +181,31 @@ def test_errors_ok_with_syntax_error(graph_spec_binary_classification):
     results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
 
     assert instance_errors['3'].line_number == 2
+
+
+def test_out_shapes_ok_with_runtime_error(graph_spec_binary_classification):
+    code  = "print('hello')\n"
+    code += "1/0" # Will generate runtime error
+    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
+    
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
+ 
+    assert results['1'].out_shape == (784,) # Datadata inputs
+    assert results['2'].out_shape == (1,) # Datadata labels
+    assert results['3'].out_shape == None # Reshape
+    assert results['4'].out_shape == None # FC
+    assert results['5'].out_shape == (10,) # One hot
+    assert results['6'].out_shape is None
+    
+
+def test_errors_ok_with_runtime_error(graph_spec_binary_classification):
+    code  = "print('hello')\n"
+    code += "1/0" # Will generate runtime error
+    graph_spec_binary_classification['Layers']['3']['Code'] = {"Output": code}
+    
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
+
+    assert '3' in instance_errors
+

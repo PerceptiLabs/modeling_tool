@@ -23,6 +23,10 @@ class ScriptBuildError(Exception):
     pass
 
 
+class FetchParameterError(ScriptBuildError):
+    pass
+
+
 class ScriptFactory:
     def __init__(self, mode='default'):
         # if legacy, simply reuse codehq
@@ -391,7 +395,10 @@ class ScriptFactory:
                 raise ScriptBuildError("Cannot use reserved name 'layer_name' for macro parameter")
 
             if callable(value):
-                value = value(layer_spec)
+                try:
+                    value = value(layer_spec)
+                except Exception as e:
+                    raise FetchParameterError(f"Failed to fetch parameter '{key}'") from e
             value = copy.deepcopy(value)
             
             if isinstance(value, str):

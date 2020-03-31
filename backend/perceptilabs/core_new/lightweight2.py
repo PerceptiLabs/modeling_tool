@@ -1,6 +1,7 @@
 # TODO: (1) create flask server for running in remote process. (2) dynamic imports (3) more descriptive errors.
 
 import traceback
+import logging
 import copy
 import json
 import time
@@ -21,6 +22,9 @@ from perceptilabs.core_new.graph.builder import GraphBuilder, SnapshotBuilder
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP, REPLICATED_PROPERTIES_TABLE
 from perceptilabs.core_new.layers.script import ScriptFactory
 
+
+log = logging.getLogger(__name__)
+
 LayerInfo = namedtuple('LayerInfo', ['sample', 'out_shape', 'in_shape', 'variables', 'default_var'])
 
 
@@ -30,6 +34,17 @@ def simplify_spec(func):
             graph_spec = copy.deepcopy(graph_spec['Layers'])
         return func(self, graph_spec)
     return inner
+
+def exception_to_error(exception):
+    tb_obj = traceback.TracebackException(
+        exception.__class__,
+        exception,
+        exception.__traceback__
+    )
+    line_no = int(tb_obj.lineno) if hasattr(tb_obj, 'lineno') else None
+    error = UserlandError(layer_id, layer_spec['Type'], line_no, "".join(tb_obj.format()))
+    return error
+    
 
 
 class Tf1xStrategy:
@@ -90,23 +105,35 @@ class Tf1xStrategy:
             layer = layer_instances[layer_id]
             layer_spec = graph_spec[layer_id]
 
+            if layer is None:
+                continue
+            
+
             if isinstance(layer, TrainingLayer):
                 pass
             elif isinstance(layer, DataLayer):
                 try:
                     y = tf.constant(layer.sample)            
                     output_tensors[layer_id] = y
-                except:
-                    errors[layer_id] = 'failed getting datalayer sample'
+                except Exception as e:
+                    errors[layer_id] = exception_to_error(e)
             elif isinstance(layer, InnerLayer):
-                try:
+                bw_cons = [input_id for input_id, _ in layer_spec['backward_connections']]
                 
-                    input_ids = [x[0] for x in layer_spec['backward_connections']]
-                    args = [output_tensors[id_] for id_ in input_ids]
-                    y = layer(*args)            
-                    output_tensors[layer_id] = y
-                except:
-                    errors[layer_id] = 'failed for inner layer'
+                args = {}
+                for input_id in bw_cons:
+                    if input_id in output_tensors:
+                        args[input_id] = output_tensors[input_id]
+
+                if len(args) == len(bw_cons):
+                    try:
+                        y = layer(*args.values())            
+                        output_tensors[layer_id] = y
+                    except Exception as e:
+                        errors[layer_id] = exception_to_error(e)
+                else:
+                    log.debug(f'Layer {layer_id} expected inputs from layers {bw_cons}, got {list(args.keys())}. Skipping.')
+                        
             else:
                 errors[layer_id] = 'unknown type ' + str(type(layer))
 
@@ -114,6 +141,9 @@ class Tf1xStrategy:
     
     
 class LightweightCore:
+    def __init__(self, issue_handler=None):
+        self._issue_handler = issue_handler
+    
     @simplify_spec
     def run(self, graph_spec):
         layer_ids, edges_by_id = get_json_net_topology(graph_spec)
@@ -170,13 +200,31 @@ class LightweightCore:
     def _get_layer_instances(self, graph_spec):
         instances, errors = {}, {}
         for layer_id, spec in graph_spec.items():
+            if not self._can_instantiate_layer(layer_id, spec):
+                instances[layer_id] = None
+                continue
+            
             instance, error = self._get_layer_instance(layer_id, spec)
             instances[layer_id] = instance
 
             if error is not None:
                 errors[layer_id] = error
         return instances, errors
-            
+
+    def _can_instantiate_layer(self, layer_id, layer_spec):
+        # TODO: this should simply check that all the parameters are present in the spec. Until we have a stronger spec, try to render it and if it doesn't work return false
+        sf = ScriptFactory()                 
+        try:
+            if layer_spec['Code'] is None or layer_spec['Code'] == '' or layer_spec['Code'].get('Output') is None:
+                code = sf.render_layer_code(layer_id, layer_spec['Type'], layer_spec)
+            else:
+                code = layer_spec['Code'].get('Output')
+        except:
+            return False
+        else:
+            return True
+        
+
     def _get_layer_instance(self, layer_id, layer_spec):
         # TODO: revise to not use exec if possible. Fix imports! Align with Graph-object!
 
@@ -187,15 +235,13 @@ class LightweightCore:
             else:
                 code = layer_spec['Code'].get('Output')
         except Exception as e:
-            tb = traceback.TracebackException(e.__class__,
-                                              e,
-                                              e.__traceback__)
-            
-            descr = "".join(tb.format_exception_only())
-
-            print('code prob', e, descr)
-            
-        #return None, f"code problem!"
+            if self._issue_handler:
+                with self._issue_handler.create_issue('Getting code for layer {layer_id} failed.', e) as issue:
+                    self._issue_handler.put_error(issue.frontend_message)
+                    log.error(issue.internal_message)
+            else:
+                log.exception('Getting code for layer {layer_id} failed.')                
+            raise
 
         import tensorflow as tf
         import numpy as np
@@ -231,16 +277,11 @@ class LightweightCore:
         try:
             exec(code, globs, locs) # TODO: catch errors here!
         except SyntaxError as e:
-            tb_obj = traceback.TracebackException(
-                e.__class__,
-                e,
-                e.__traceback__
-            )
-            error = UserlandError(layer_id, layer_spec['Type'], int(tb_obj.lineno), "".join(tb_obj.format()))
+            error = exception_to_error(e)
             return None, error
-            
         except Exception as e:
-            return None, f"exec problem!" + str(e)           
+            error = exception_to_error(e)            
+            return None, error
 
         layer_class = list(locs.values())[0]
         instance = layer_class()
@@ -248,13 +289,13 @@ class LightweightCore:
 
 
 class LightweightCoreAdapter:
-    def __init__(self, graph_dict, layer_extras_reader, error_handler):
+    def __init__(self, graph_dict, layer_extras_reader, error_handler, issue_handler):
         self._graph_dict = graph_dict
         self._error_handler = error_handler
         self._extras_reader = layer_extras_reader
         self._error_handler = error_handler
 
-        self._core = LightweightCore()
+        self._core = LightweightCore(issue_handler)
 
     def run(self):
         graph_spec = copy.deepcopy(self._graph_dict)
@@ -303,119 +344,6 @@ if __name__ == "__main__":
 
 
 
-
-
-
-
-
-'''        
-app = Flask(__name__)
-
-
-graph_builder = GraphBuilder()
-
-snapshot_builder = SnapshotBuilder(
-    BASE_TO_REPLICA_MAP, 
-    REPLICATED_PROPERTIES_TABLE
-)
-
-cache = {}
-
-
-@app.route('/', methods=['GET'])
-def endpoint_index():
-    import time
-    import hashlib
-
-    t0 = time.perf_counter()
-    
-    with open('deploy.py', 'rt') as f: 
-        text = f.read()
-        key = hashlib.md5(text.encode('utf-8')).hexdigest()
-
-    if key in cache:
-        snapshot = cache[key]
-    else:
-        spec = importlib.util.spec_from_file_location("deployed_module", 'deploy.py') # TODO: dont hardcode path, load from request instead
-        module = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(module)
-        graph = module.get_graph()
-
-        print(time.perf_counter() - t0, 'aaa')        
-
-        t11 = time.perf_counter()
-        iterator = graph.training_nodes[0].layer_instance.run(graph)
-
-        sentinel = object()
-        next(iterator, sentinel)
-
-        print(time.perf_counter() - t11)
-        
-        snapshot = snapshot_builder.build(graph)
-
-        #cache[key] = snapshot # TODO: disable for now.
-
-    t1 = time.perf_counter()
-    dt = t1 - t0
-
-    print(f"lw pass time: {dt}")
-    
-    
-    return 'aa'
-
-
-@app.route('/status', methods=['GET'])
-def endpoint_status(self):
-    return 'running'
-
-
-@app.route('/initialize', methods=['GET'])
-def endpoint_initialize():
-    target = request.args.get("target", None)
-
-    if target == 'tf1x':
-        import tensorflow as tf
-    else:
-        raise ValueError("Unknown initializer")
-
-    return jsonify({'aa': 'bb'})
-
-def start_service(port, new_process=False):
-    if not new_process:
-        app.run(port=str(port), threaded=True)
-    else:
-        from multiprocessing import Process
-        proc = Process(target=start_service, args=(port,), kwargs={'new_process': False})
-        proc.start()
-        
-
-def is_service_available():
-    #requests.get
-    pass
-
-
-
-class LightweightCore2:
-
-    def __init__(self, address):
-        self._address = address
-
-
-    def run(self, code):
-        r = requests.get(self._address, json={'code': ''})
-        print(r.json)
-    
-    
-        
-    
-
-    
-
-    
-if __name__ == "__main__":
-    start_service(8181, new_process=True)
-
-'''
 
 
 

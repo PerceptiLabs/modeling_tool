@@ -81,7 +81,7 @@ class Interface():
         
         from perceptilabs.core_new.lightweight2 import LightweightCoreAdapter
         
-        lw_core = LightweightCoreAdapter(jsonNetwork, extras_reader, error_handler)
+        lw_core = LightweightCoreAdapter(jsonNetwork, extras_reader, error_handler, self._core.issue_handler)
         return lw_core, extras_reader, data_container
 
     def _create_lw_core_v1(self, reciever, jsonNetwork):                
