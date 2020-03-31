@@ -8,7 +8,7 @@
     id="tutorial_training-detector"
     :style="layerStyles"
   )
-    i.icon.icon-training
+    i.icon.icon-training-detector
 
 </template>
 
