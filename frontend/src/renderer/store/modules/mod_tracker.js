@@ -84,9 +84,7 @@ const actions = {
   },
   /* Layer Settings */
   EVENT_applyLayerSettings({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Apply Layer Settings', {'Tab name': data});
-    }
+    mixPanel.track('Apply Layer Settings', {'Tab name': data});
   },
   /* Tutorial Mode */
   EVENT_tutorialModeStart() {
