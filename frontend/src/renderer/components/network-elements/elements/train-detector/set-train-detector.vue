@@ -25,7 +25,7 @@
             input(type="number" v-model="settings.grid_size")
       .settings-layer_section
         .form_row
-          .form_label(v-tooltip-interactive:right="interactiveInfo.num_box") Number of Box:
+          .form_label(v-tooltip-interactive:right="interactiveInfo.num_box") Number of Boxes:
           #tutorial_num_box.form_input(data-tutorial-hover-info)
             input(type="number" v-model="settings.num_box")
       .settings-layer_section
