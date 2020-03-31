@@ -20,14 +20,13 @@
       .directory-breadcrumb(ref="directory-breadcrumb")
         .breadcrumb
           img(src="/static/img/file-picker/home.svg" class="svg-icon")
-        .breadcrumb(v-if="currentPath.length > breadcrumbShowLastXPositions")
+        .breadcrumb.no-pointer(v-if="currentPath.length > breadcrumbShowLastXPositions")
           span ...
         .breadcrumb(
-          @click="calcBreadcrumbPath(pathIndex)"
           v-for="(pathName, pathIndex) in currentPath"
           v-if="pathIndex >= currentPath.length - breadcrumbShowLastXPositions"
           :key="pathIndex")
-          span {{ pathName }}
+          span(@click="calcBreadcrumbPath(pathIndex)") {{ pathName }}
 
       .selectable-list
         .list-item(
@@ -306,7 +305,6 @@ export default {
   border-bottom: 0.1rem solid $color-8;
 
   .breadcrumb {
-    cursor: pointer;
 
     display: flex;
     justify-content: center;
@@ -319,6 +317,15 @@ export default {
     & + .breadcrumb:before
     {
       content: '\00a0\00a0>\00a0\00a0';
+      pointer-events: none;
+    }
+
+    span {
+      cursor: pointer;
+    }
+
+    &.no-pointer {
+      cursor: default;
     }
 
     .svg-icon {
