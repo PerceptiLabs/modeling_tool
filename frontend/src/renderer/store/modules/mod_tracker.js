@@ -18,14 +18,10 @@ const mutations = {
 
 const actions = {
   TRACK_initMixPanel() {
-    if(isElectron()) {
-      mixPanel.init(mixPanelToken);
-    }
+    mixPanel.init(mixPanelToken);
   },
   TRACK_initMixPanelUser({}, id) {
-    if(isElectron()) {
-      mixPanel.identify(id);
-    }
+    mixPanel.identify(id);
   },
   TRACK_createUser({}, userEmail) {
     if(isElectron()) {
