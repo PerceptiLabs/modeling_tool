@@ -97,6 +97,7 @@ export default {
       testingIsOpen:        'mod_workspace/GET_testIsOpen',
     }),
     isGridEnabled() {
+      return false;
       return this.$store.state.globalView.isGridEnabled;
     },
     fullNetworkElementList() {
