@@ -46,14 +46,10 @@ const actions = {
   },
   /* Model */
   EVENT_modelSave({}, model) {
-    if(isElectron()) {
-      mixPanel.track('Model Save', model);
-    }
+    mixPanel.track('Model Save', model);
   },
   EVENT_modelExport({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Model Export', data);
-    }
+    mixPanel.track('Model Export', data);
   },
   /* Training */
   EVENT_trainingStart({}, data) {
