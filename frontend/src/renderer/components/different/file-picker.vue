@@ -16,8 +16,12 @@
           v-model="searchValue" 
           @keyup.enter="searchPath"
           placeholder="Navigate to...")
-    .filepicker
-      .directory-breadcrumb
+    .filepicker(ref="file-picker")
+      .directory-breadcrumb(ref="directory-breadcrumb")
+        .breadcrumb
+          img(src="/static/img/file-picker/home.svg" class="svg-icon")
+        .breadcrumb(v-if="currentPath.length > breadcrumbShowLastXPositions")
+          span ...
         .breadcrumb(
           @click="calcBreadcrumbPath(pathIndex)"
           v-for="(pathName, pathIndex) in currentPath"
@@ -117,10 +121,15 @@ export default {
     }
     
     this.fetchPathInformation(path);
-    
   },
   methods: {
     calculateBreadcrumbsLength(path) {
+      console.group('calculateBreadcrumbsLength');
+      console.log('this.$refs[file-picker]',this.$refs['file-picker'].clientWidth);
+      console.log('this.$refs[directory-breadcrumb]',this.$refs['directory-breadcrumb'].clientWidth);
+
+      console.groupEnd();
+
       const reducer = (accumulator, currentValue, index) => {
         const nextValue = accumulator + currentValue;
         if(nextValue > breadcrumbCharacterLength && accumulator <= breadcrumbCharacterLength) {
@@ -284,6 +293,7 @@ export default {
   flex-direction: column;
   min-height: 20rem;
   max-height: 30rem;
+  // height: 100%;
   width: 100%;
   font-size: 1.1rem;
   min-width: 450px;
@@ -298,9 +308,22 @@ export default {
   .breadcrumb {
     cursor: pointer;
 
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    min-width: 1rem;
+
+    margin: 0 0.2rem;
+
     & + .breadcrumb:before
     {
       content: '\00a0\00a0>\00a0\00a0';
+    }
+
+    .svg-icon {
+      height: 1rem;
+      filter: brightness(0) invert(1);
     }
   }
 }
