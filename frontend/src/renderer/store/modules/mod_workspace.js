@@ -172,7 +172,7 @@ const mutations = {
         const network = JSON.parse(localStorage.getItem(key));
 
         // remove focus from previous focused network elements
-        if (network.networkElementList && network.networkElementList.length >0) {
+        if (network.networkElementList) {
           Object.keys(network.networkElementList).map(elKey => {
             network.networkElementList[elKey].layerMeta.isSelected = false;
           });
