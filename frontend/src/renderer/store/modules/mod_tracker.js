@@ -24,20 +24,16 @@ const actions = {
     mixPanel.identify(id);
   },
   TRACK_createUser({}, userEmail) {
-    if(isElectron()) {
-      mixPanel.people.set_once({
-        "$email": userEmail,
-        "$created": new Date(),
-      });
-    }
+    mixPanel.people.set_once({
+      "$email": userEmail,
+      "$created": new Date(),
+    });
   },
   TRACK_updateUser({}, userEmail) {
-    if(isElectron()) {
-      mixPanel.people.set({
-        "$email": userEmail,
-        "$last_login": new Date(),
-      });
-    }
+    mixPanel.people.set({
+      "$email": userEmail,
+      "$last_login": new Date(),
+    });
   },
   /* APP */
   EVENT_appStart({rootState}) {

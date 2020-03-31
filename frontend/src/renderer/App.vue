@@ -161,10 +161,7 @@
 
           this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
         }
-        if(this.isElectron) {
-          this.initUser()
-        }
-
+        this.initUser();
       }
     },
     methods: {
