@@ -186,7 +186,7 @@ class LightweightCore:
         final_id = self._get_final_layer_id(subgraph_spec)
         bfs_tree = list(nx.bfs_tree(graph, final_id, reverse=True))
         ordered_ids = tuple(reversed(bfs_tree))
-       
+
         layer_instances, instance_errors = self._get_layer_instances(subgraph_spec)
             
         strategy = self._get_subgraph_strategy(subgraph_spec)
@@ -236,7 +236,6 @@ class LightweightCore:
         
     def _get_layer_instance(self, layer_id, layer_spec):
         # TODO: revise to not use exec if possible. Fix imports! Align with Graph-object!
-
         sf = ScriptFactory()         # TODO: move out
         try:
             if layer_spec['Code'] is None or layer_spec['Code'] == '' or layer_spec['Code'].get('Output') is None:
@@ -249,7 +248,7 @@ class LightweightCore:
                     self._issue_handler.put_error(issue.frontend_message)
                     log.error(issue.internal_message)
             else:
-                log.exception('Getting code for layer {layer_id} failed.')                
+                log.exception('Getting code for layer {layer_id} failed.')
             raise
 
         import tensorflow as tf
@@ -293,7 +292,8 @@ class LightweightCore:
             return None, error
 
         layer_class = list(locs.values())[0]
-
+        log.debug(f"Instantiating layer {layer_id} [{layer_spec['Type']}]. Repr: {repr(layer_class)}")
+        
         try:
             instance = layer_class()
         except Exception as e:

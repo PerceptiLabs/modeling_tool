@@ -209,3 +209,15 @@ def test_errors_ok_with_runtime_error(graph_spec_binary_classification):
 
     assert '3' in instance_errors
 
+
+def test_errors_detected_in_training_layer(graph_spec_binary_classification):
+    code  = "print('hello')\n"
+    code += "1/0" # Will generate runtime error
+    graph_spec_binary_classification['Layers']['6']['Code'] = {"Output": code}
+    
+    lw_core = LightweightCore()
+    results, instance_errors, strategy_errors = lw_core.run(graph_spec_binary_classification)
+
+    assert '6' in instance_errors
+
+    
