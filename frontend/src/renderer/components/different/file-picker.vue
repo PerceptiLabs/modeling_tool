@@ -289,7 +289,6 @@ export default {
   flex-direction: column;
   min-height: 20rem;
   max-height: 30rem;
-  // height: 100%;
   width: 100%;
   font-size: 1.1rem;
   min-width: 450px;
