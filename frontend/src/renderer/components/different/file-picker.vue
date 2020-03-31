@@ -18,15 +18,15 @@
           placeholder="Navigate to...")
     .filepicker(ref="file-picker")
       .directory-breadcrumb(ref="directory-breadcrumb")
-        .breadcrumb
+        .breadcrumb.home(@click="calcRootFolderPath")
           img(src="/static/img/file-picker/home.svg" class="svg-icon")
-        .breadcrumb.no-pointer(v-if="currentPath.length > breadcrumbShowLastXPositions")
+        .breadcrumb.ellipsis(v-if="currentPath.length > breadcrumbShowLastXPositions")
           span ...
         .breadcrumb(
           v-for="(pathName, pathIndex) in currentPath"
           v-if="pathIndex >= currentPath.length - breadcrumbShowLastXPositions"
           :key="pathIndex")
-          span(@click="calcBreadcrumbPath(pathIndex)") {{ pathName }}
+          span.directory-crumb(@click="calcBreadcrumbPath(pathIndex)") {{ pathName }}
 
       .selectable-list
         .list-item(
@@ -123,12 +123,6 @@ export default {
   },
   methods: {
     calculateBreadcrumbsLength(path) {
-      console.group('calculateBreadcrumbsLength');
-      console.log('this.$refs[file-picker]',this.$refs['file-picker'].clientWidth);
-      console.log('this.$refs[directory-breadcrumb]',this.$refs['directory-breadcrumb'].clientWidth);
-
-      console.groupEnd();
-
       const reducer = (accumulator, currentValue, index) => {
         const nextValue = accumulator + currentValue;
         if(nextValue > breadcrumbCharacterLength && accumulator <= breadcrumbCharacterLength) {
@@ -146,6 +140,10 @@ export default {
     calcBreadcrumbPath(pathIdx) {
       let breadcrumbPath = this.osPathPrefix + this.currentPath.slice(0,pathIdx + 1).join('/') + this.osPathSuffix;
       this.fetchPathInformation(breadcrumbPath);
+    },
+    calcRootFolderPath() {
+      let folderPath = this.osPathPrefix + this.osPathSuffix ;
+      this.fetchPathInformation(folderPath);
     },
     calcFolderPath(dirName) {
       let folderPath = this.osPathPrefix + this.currentPath.join('/') + '/' + dirName + this.osPathSuffix ;
@@ -211,7 +209,6 @@ export default {
               localStorage.setItem(filePickerStorageKey, jsonData.current_path);
             }
           }
-          
           
           this.currentPath = jsonData.current_path.split('/').filter(el => el);
           this.directories = jsonData.dirs.filter(d => !d.startsWith('.')).sort();
@@ -320,11 +317,15 @@ export default {
       pointer-events: none;
     }
 
-    span {
+    .directory-crumb {
       cursor: pointer;
     }
 
-    &.no-pointer {
+    &.home {
+      cursor: pointer;
+    }
+
+    &.ellipsis {
       cursor: default;
     }
 
@@ -339,7 +340,7 @@ export default {
   display: flex;
   flex-direction: column;
   flex: auto;
-  overflow-y: scroll;
+  overflow-y: auto;
   padding: 0.3rem 0;
   background-color: $bg-workspace-2;
 
