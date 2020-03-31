@@ -42,7 +42,16 @@ def exception_to_error(exception):
         exception.__traceback__
     )
     line_no = int(tb_obj.lineno) if hasattr(tb_obj, 'lineno') else None
-    error = UserlandError(layer_id, layer_spec['Type'], line_no, "".join(tb_obj.format()))
+
+    message = ''
+    include_remainder = False
+    for counter, line in enumerate(tb_obj.format()):
+        if '<string>' in line:
+            include_remainder = True
+        if counter == 0 or include_remainder:
+            message += line
+            
+    error = UserlandError(layer_id, layer_spec['Type'], line_no, message)
     return error
     
 
@@ -130,6 +139,7 @@ class Tf1xStrategy:
                         y = layer(*args.values())            
                         output_tensors[layer_id] = y
                     except Exception as e:
+                        # 'userland runtime errors'
                         errors[layer_id] = exception_to_error(e)
                 else:
                     log.debug(f'Layer {layer_id} expected inputs from layers {bw_cons}, got {list(args.keys())}. Skipping.')
@@ -224,7 +234,6 @@ class LightweightCore:
         else:
             return True
         
-
     def _get_layer_instance(self, layer_id, layer_spec):
         # TODO: revise to not use exec if possible. Fix imports! Align with Graph-object!
 
@@ -284,7 +293,14 @@ class LightweightCore:
             return None, error
 
         layer_class = list(locs.values())[0]
-        instance = layer_class()
+
+        try:
+            instance = layer_class()
+        except Exception as e:
+            # "userland runtime errors"        
+            error = exception_to_error(e)
+            return None, error
+        
         return instance, None
 
 
@@ -315,12 +331,32 @@ class LightweightCoreAdapter:
             extras_dict[layer_id] = entry
             self._extras_reader.set_dict(extras_dict)
 
-        for layer_id, error in {**instance_errors, **strategy_errors}.items():
-            pass
+        self._errors_dict = {}            
+        for layer_id, error in strategy_errors.items():
+            self._errors_dict[layer_id] = error
+        
+        for layer_id, error in instance_errors.items():
+            self._errors_dict[layer_id] = error            
 
     @property
     def error_handler(self):
-        return self._error_handler
+
+        class CompabilityErrorHandler:
+            def __init__(self, errors_dict):
+                self._dict = errors_dict
+                
+            def to_dict(self):
+                return copy.copy(self._dict)
+            
+            def __contains__(self, id_):
+                return id_ in self._dict
+            
+            def __getitem__(self, id_):
+                return self._dict[id_]
+        
+        error_handler = CompabilityErrorHandler(self._errors_dict)
+        
+        return error_handler
             
 
 if __name__ == "__main__":
