@@ -1,20 +1,68 @@
+{% macro layer_tf1x_switch(layer_name, selected_layer) %}
+class {{layer_name}}(Tf1xLayer):
+    def __init__(self):
+        self._selected_layer_id = '{{selected_layer}}'
+    def __call__(self, x):
+        """ Takes the outputs of all the incoming layers as input and returns the output of that layer."""
+        y = x[self._selected_layer_id]
+        return y
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+
+        return self._variables.copy()
+
+    @property
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        return {}
+
+    @property
+    def weights(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}
+
+    @property
+    def biases(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}        
+{% endmacro %}
+
+
+
 {% macro layer_tf1x_grayscale(layer_name) %}
 class {{layer_name}}(Tf1xLayer):
     def __call__(self, x: tf.Tensor) -> tf.Tensor:
         """ Takes a tensor as input and changes it to grayscale."""
         channels = x.get_shape().as_list()[-1]
-        if channels % 3 == 0:
-            if channels > 3:
+        if channels % 3==0:
+            if channels>3:
                 splits = tf.split(x, int(channels/3), -1)
-                images = []
+                images=[]
                 for split in splits:
                     images.append(tf.image.rgb_to_grayscale(split))
-                y = tf.squeeze(tf.stack(images, -1), -2)
+                y = tf.squeeze(tf.stack(images,-1),-2)
             else:
                 y = tf.image.rgb_to_grayscale(x)
         else:
             y = x
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}    
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}    
         return y
 
     @property
@@ -54,7 +102,140 @@ class {{layer_name}}(Tf1xLayer):
         """        
         return {}        
 {% endmacro %}
-  
+
+{% macro layer_tf1x_merge(layer_name, type_, merge_dim, merge_order) %}
+class {{layer_name}}(Tf1xLayer):
+
+    def __init__(self):
+        self._merge_dim = {{merge_dim}}
+        self._merget_order = {{merge_order}}
+
+    def __call__(self, x) -> tf.Tensor:
+        """ Takes two tensors as input and merges them accordingly. """
+        {% filter remove_lspaces(8) %}
+            {% if type_ == 'Concat' %}
+                if self._merge_order is None :
+                    self._merge_order = list(x.values())
+                for i in range(0, len(self._merge_order), 2):
+                    if not y:
+                        y = list(x.values())[i]
+                   y = tf.concat([y, list(x.values())[i]], self._merge_dim)
+
+            {% elif type_ == 'Add' %}
+                for i in range(0, len(list(x.values())), 2):
+                    if not y:
+                        y = list(x.values())[i]
+                    Y = tf.add(list(x.values())[i], y)
+                
+            {% elif type_ == 'Sub' %}
+                for i in range(0, len(list(x.values())), 2):
+                    if not y:
+                        y = list(x.values())[i]
+                    y = tf.subtract(list(x.values())[i], y)
+                       
+            {% elif type_ == 'Multi' %}
+                for i in range(0, len(list(x.values())), 2):
+                    if not y:
+                        y = list(x.values())[i]
+                    y = tf.multiply(list(x.values())[i], y)    
+            {% elif type_ == 'Div' %}
+                for i in range(0, len(list(x.values())), 2):
+                    if not y:
+                        y = list(x.values())[i]
+                    y = tf.divide(list(x.values())[i], y)
+            {% endif %}
+        {% endfilter %}
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}    
+        return y
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+
+        return self._variables.copy()
+
+    @property
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        return {}
+
+    @property
+    def weights(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}
+
+    @property
+    def biases(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}        
+{% endmacro %}
+
+{% macro layer_tf1x_word_embedding(layer_name) %}
+class {{layer_name}}(Tf1xLayer):
+    def __call__(self, x: tf.Tensor) -> tf.Tensor:
+        """ Takes a tensor as input and creates word embedding."""
+        words = tf.string_split(x)
+        vocab_size = words.get_shape().as_list()[0]
+        embed_size=10
+        embedding = tf.Variable(tf.random_uniform((vocab_size, embed_size), -1, 1))
+        y = tf.nn.embedding_lookup(embedding, x)
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}    
+        return y
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+
+        return self._variables.copy()
+
+    @property
+    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        return {}
+
+    @property
+    def weights(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}
+
+    @property
+    def biases(self) -> Dict[str, tf.Tensor]:
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        return {}        
+{% endmacro %}
+
 
 
 {% macro layer_tf1x_reshape(layer_name, shape, permutation) %}
@@ -110,7 +291,7 @@ class {{layer_name}}(Tf1xLayer):
         return y
 
     @property
-    def variables(self) -> Dict[str, Picklable]:
+    def variables(self):
         """Any variables belonging to this layer that should be rendered in the frontend.
         
         Returns:
@@ -119,7 +300,7 @@ class {{layer_name}}(Tf1xLayer):
         return {}
 
     @property
-    def trainable_variables(self) -> Dict[str, tf.Tensor]:
+    def trainable_variables(self):
         """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
         
         Returns:
@@ -128,7 +309,7 @@ class {{layer_name}}(Tf1xLayer):
         return {}
 
     @property
-    def weights(self) -> Dict[str, tf.Tensor]:
+    def weights(self):
         """Any weight tensors belonging to this layer that should be rendered in the frontend.
 
         Return:
@@ -137,7 +318,7 @@ class {{layer_name}}(Tf1xLayer):
         return {}
 
     @property    
-    def biases(self) -> Dict[str, tf.Tensor]:
+    def biases(self):
         """Any weight tensors belonging to this layer that should be rendered in the frontend.
 
         Return:
@@ -151,7 +332,7 @@ class {{layer_name}}(Tf1xLayer):
 class {{layer_name}}(Tf1xLayer):
     def __init__(self):
         self._scope = '{{layer_name}}'
-        self._n_neurons = {{n_neurons}}
+        self._n_neurons = 10
         self._variables = {}
         
     def __call__(self, x: tf.Tensor):
@@ -162,7 +343,7 @@ class {{layer_name}}(Tf1xLayer):
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):        
             initial = tf.random.truncated_normal((n_inputs, self._n_neurons), stddev=0.1)
             W = tf.compat.v1.get_variable('W', initializer=initial)
-            
+        
             initial = tf.constant(0.1, shape=[self._n_neurons])
             b = tf.compat.v1.get_variable('b', initializer=initial)
             flat_node = tf.cast(tf.reshape(x, [-1, n_inputs]), dtype=tf.float32)
@@ -174,7 +355,7 @@ class {{layer_name}}(Tf1xLayer):
                 {% endif %}
             {% endfilter %}
             
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}            
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}            
         return y
 
     @property
@@ -217,7 +398,8 @@ class {{layer_name}}(Tf1xLayer):
         """        
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
             b = tf.compat.v1.get_variable('b')
-            return {b.name: b}    
+            return {b.name: b}
+    
 {% endmacro %}
 
 
@@ -230,35 +412,97 @@ class {{layer_name}}(Tf1xLayer):
         self._feature_maps = {{feature_maps}}
         self._padding = '{{padding}}'
         self._stride = {{stride}}
-        
+        self._keep_prob = {{keep_prob}}
         self._variables = {}
         
     def __call__(self, x):
         """ Takes a tensor as input and feeds it forward through a convolutional layer, returning a newtensor."""                
-        shape = [
-            self._patch_size,
-            self._patch_size,
-            x.get_shape().as_list()[-1],
-            self._feature_maps
-        ]
-
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
-            initial = tf.random.truncated_normal(
-                shape,
-                stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
-            )
-            W = tf.compat.v1.get_variable('W', initializer=initial)
-            
-            initial = tf.constant(0.1, shape=[self._feature_maps])
-            b = tf.compat.v1.get_variable('b', initializer=initial)
-            y = tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding) + b
+            {% filter remove_lspaces(8) %}
+                {% if conv_dim == '2D' %}
+                    shape = [
+                    self._patch_size,
+                    self._patch_size,
+                    x.get_shape().as_list()[-1],
+                    self._feature_maps
+                    ]
+                    initial = tf.random.truncated_normal(
+                        shape,
+                        stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+                    )
+                    W = tf.compat.v1.get_variable('W', initializer=initial)
+                    
+                    initial = tf.constant(0.1, shape=[self._feature_maps])
+                    b = tf.compat.v1.get_variable('b', initializer=initial)
+                    y = tf.nn.conv2d(x, W, strides=[1, self._stride, self._stride, 1], padding=self._padding)
+                {% elif conv_dim == '1D' %}
+                    shape = [
+                    self._patch_size,
+                    x.get_shape().as_list()[-1],
+                    self._feature_maps
+                    ]
+                    initial = tf.random.truncated_normal(
+                        shape,
+                        stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+                    )
+                    W = tf.compat.v1.get_variable('W', initializer=initial)
+                    
+                    initial = tf.constant(0.1, shape=[self._feature_maps])
+                    b = tf.compat.v1.get_variable('b', initializer=initial)
+                    y = tf.nn.conv1d(x, W, strides=[1, self._stride, 1], padding=self._padding)
+                {% elif conv_dim == '3D' %}
+                    shape = [
+                    self._patch_size,
+                    self._patch_size,
+                    self._patch_size,
+                    x.get_shape().as_list()[-1],
+                    self._feature_maps
+                    ]
+                    initial = tf.random.truncated_normal(
+                        shape,
+                        stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+                    )
+                    W = tf.compat.v1.get_variable('W', initializer=initial)
+                    
+                    initial = tf.constant(0.1, shape=[self._feature_maps])
+                    b = tf.compat.v1.get_variable('b', initializer=initial)
+                    y = tf.nn.conv3d(x, W, strides=[1, self._stride, self._stride, self._stride, 1], padding=self._padding)
+                {% elif conv_dim == 'Automatic' %}
+                    dim = len(x.get_shape().as_list())-1
+                    shape = [self._patch_size]*dim + [x.get_shape().as_list()[-1], self._feature_maps]
+                    initial = tf.random.truncated_normal(
+                        shape,
+                        stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+                    )
+                    W = tf.compat.v1.get_variable('W', initializer=initial)
+                    
+                    initial = tf.constant(0.1, shape=[self._feature_maps])
+                    b = tf.compat.v1.get_variable('b', initializer=initial)
+                    y = tf.nn.conv2d(x, W, strides=[1]+ [self._stride]*dim +[1], padding=self._padding)
+                {% endif %}
+            {% endfilter %}
+            {% filter remove_lspaces(8) %}
+                {% if dropout %}
+                    y = tf.nn.dropout(y,self._keep_prob)
+                {% endif %}
+            {% endfilter %}
             {% filter remove_lspaces(8) %}
                 {% if activation is not none %}
+                    y = y + b
                     y = {{activation}}(y)
                 {% endif %}
             {% endfilter %}
-            
-        self._variables = {k: v for k, v in locals().items() if can_serialize(v)}
+            {% filter remove_lspaces(8) %}
+                {% if pool and pooling == "Max" %}
+                    y = tf.nn.max_pool(y, ksize={{pool_area}}, {{pool_stride}}, padding='SAME')
+                {% endif %}
+            {% endfilter %}
+            {% filter remove_lspaces(8) %}
+                {% if pool and pooling == "Mean" %}
+                    y = tf.nn.max_pool(y, window_shape = {{pool_area}}, pooling_type='AVG', strides={{pool_stride}})
+                {% endif %}
+            {% endfilter %}
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
         return y
 
     @property
@@ -302,4 +546,228 @@ class {{layer_name}}(Tf1xLayer):
         with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
             b = tf.compat.v1.get_variable('b')
             return {b.name: b}
+{% endmacro %}
+
+{% macro layer_tf1x_deconv(layer_name, conv_dim, patch_size, feature_maps, stride, padding, dropout, keep_prob, activation) %}
+class {{layer_name}}(Tf1xLayer):
+    def __init__(self):
+        self._scope = '{{layer_name}}'        
+        self._patch_size = {{patch_size}}
+        self._feature_maps = {{feature_maps}}
+        self._padding = '{{padding}}'
+        self._stride = {{stride}}
+        self._keep_prob = {{keep_prob}}
+        self._variables = {}
+        
+    def __call__(self, x):
+        """ Takes a tensor as input and feeds it forward through a deconvolutional layer, returning a newtensor."""                
+        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            {% filter remove_lspaces(8) %}
+                {% if conv_dim == '2D' %}
+                    shape = [
+                    self._patch_size,
+                    self._patch_size,
+                    x.get_shape().as_list()[-1],
+                    self._feature_maps
+                    ]
+                    initial = tf.random.truncated_normal(
+                        shape,
+                        stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+                    )
+                    W = tf.compat.v1.get_variable('W', initializer=initial)
+                    
+                    initial = tf.constant(0.1, shape=[self._feature_maps])
+                    b = tf.compat.v1.get_variable('b', initializer=initial)
+                    output_shape = tf.stack([x.get_shape().as_list()[0]] + [node_shape*self._stride for node_shape in  x.get_shape().as_list()[1:-1]] + [self._feature_maps])   
+                    y = tf.nn.conv2d_transpose(x, W, output_shape, strides=[1, self._stride, self._stride, 1], padding=self._padding)
+
+                {% elif conv_dim == '1D' %}
+                    shape = [
+                    self._patch_size,
+                    x.get_shape().as_list()[-1],
+                    self._feature_maps
+                    ]
+                    initial = tf.random.truncated_normal(
+                        shape,
+                        stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+                    )
+                    W = tf.compat.v1.get_variable('W', initializer=initial)
+                    
+                    initial = tf.constant(0.1, shape=[self._feature_maps])
+                    b = tf.compat.v1.get_variable('b', initializer=initial)
+                    output_shape = tf.stack([x.get_shape().as_list()[0]] + [node_shape*self._stride for node_shape in  x.get_shape().as_list()[1:-1]] + [self._feature_maps])   
+
+                    y = tf.nn.conv1d_transpose(x, W, output_shape, strides=[1, self._stride, 1], padding=self._padding)
+
+                {% elif conv_dim == '3D' %}
+                    shape = [
+                    self._patch_size,
+                    self._patch_size,
+                    self._patch_size,
+                    x.get_shape().as_list()[-1],
+                    self._feature_maps
+                    ]
+                    initial = tf.random.truncated_normal(
+                        shape,
+                        stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+                    )
+                    W = tf.compat.v1.get_variable('W', initializer=initial)
+                    
+                    initial = tf.constant(0.1, shape=[self._feature_maps])
+                    b = tf.compat.v1.get_variable('b', initializer=initial)
+                    output_shape = tf.stack([x.get_shape().as_list()[0]] + [node_shape*self._stride for node_shape in  x.get_shape().as_list()[1:-1]] + [self._feature_maps])   
+                    y = tf.nn.conv3d_transpose(x, W, output_shape, strides=[1, self._stride, self._stride, self._stride, 1], padding=self._padding)
+
+                {% elif conv_dim == 'Automatic' %}
+                    dim = len(x.get_shape().as_list())-1
+                    shape = [self._patch_size]*dim + [x.get_shape().as_list()[-1], self._feature_maps]
+                    initial = tf.random.truncated_normal(
+                        shape,
+                        stddev=np.sqrt(2/(self._patch_size)**2 + self._feature_maps)
+                    )
+                    W = tf.compat.v1.get_variable('W', initializer=initial)
+                    
+                    initial = tf.constant(0.1, shape=[self._feature_maps])
+                    b = tf.compat.v1.get_variable('b', initializer=initial)
+                    output_shape = tf.stack([x.get_shape().as_list()[0]] + [node_shape*self._stride for node_shape in  x.get_shape().as_list()[1:-1]] + [self._feature_maps])   
+                    y = tf.nn.conv2d_transpose(x, W, output_shape, strides=[1]+ [self._stride]*dim +[1], padding=self._padding)
+
+                {% endif %}
+            {% endfilter %}
+            {% filter remove_lspaces(8) %}
+                {% if dropout %}
+                    y = tf.nn.dropout(y,self._keep_prob)
+                {% endif %}
+                {% if activation is not none %}
+                    y = y + b
+                    y = {{activation}}(y)
+                {% endif %}
+            {% endfilter %}
+            
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}
+        return y
+
+    @property
+    def variables(self):
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return self._variables.copy()
+
+    @property
+    def trainable_variables(self):
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
+        variables = {v.name: v for v in variables}
+        return variables        
+
+    @property
+    def weights(self):
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            w = tf.compat.v1.get_variable('W')
+            return {w.name: w}
+
+    @property
+    def biases(self):
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            b = tf.compat.v1.get_variable('b')
+            return {b.name: b}
+{% endmacro %}
+
+{% macro layer_tf1x_recurrent(layer_name, version, time_steps, neurons, return_sequences, dropout, keep_prop) %}
+class {{layer_name}}(Tf1xLayer):
+    def __init__(self):
+        self._scope = '{{layer_name}}'
+        self._variables = {}
+        self._neurons = {{neurons}}
+    def __call__(self, x: tf.Tensor):
+        """ Takes a tensor as input and feeds it forward through a recurrent layer, returning a newtensor."""        
+
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):     
+            {% filter remove_lspaces(8) %}   
+                {% if version == 'LSTM' %}
+                    cell = tf.nn.rnn_cell.LSTMCell(self._neurons, state_is_tuple=True, name=self._scope)
+                {% elif version == 'GRU' %}
+                    cell = tf.nn.rnn_cell.GRUCell(self._neurons, state_is_tuple=True, name=self._scope)
+                {% elif version == 'RNN' %}
+                    cell = tf.nn.rnn_cell.RNNCell(self._neurons, state_is_tuple=True, name=self._scope)
+                {% endif %}
+            {% endfilter %}
+            {% filter remove_lspaces(8) %}
+                {% if dropout %}
+                    cell = tf.nn.rnn_cell.DropoutWrapper(cell, output_keep_prob = self._keep_prob)
+                {% endif %}
+            {% endfilter %}
+            node = x
+            rnn_outputs, final_state = tf.nn.dynamic_rnn(cell, node, dtype=node.dtype)
+            {% filter remove_lspaces(8) %}
+                {% if return_sequences %}
+                    y = rnn_outputs
+                {% else %}
+                    y = rnn_outputs[:, -1]
+                {% endif %}
+            {% endfilter %}
+            
+        self._variables = {k: v for k, v in locals().items() if dill.pickles(v)}            
+        return y
+
+    @property
+    def variables(self):
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and picklable for values.
+        """
+        return self._variables.copy()
+
+    @property
+    def trainable_variables(self):
+        """Any trainable variables belonging to this layer that should be updated during backpropagation. Their gradients will also be rendered in the frontend.
+        
+        Returns:
+            A dictionary with tensor names for keys and tensors for values.
+        """
+        variables = tf.get_collection(tf.GraphKeys.GLOBAL_VARIABLES, scope=self._scope)
+        variables = {v.name: v for v in variables}
+        return variables
+
+    @property
+    def weights(self):
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            w = tf.compat.v1.get_variable('W')
+            return {w.name: w}
+
+    @property
+    def biases(self):
+        """Any weight tensors belonging to this layer that should be rendered in the frontend.
+
+        Return:
+            A dictionary with tensor names for keys and tensors for values.
+        """        
+        with tf.compat.v1.variable_scope(self._scope, reuse=tf.compat.v1.AUTO_REUSE):
+            b = tf.compat.v1.get_variable('b')
+            return {b.name: b}
+    
 {% endmacro %}

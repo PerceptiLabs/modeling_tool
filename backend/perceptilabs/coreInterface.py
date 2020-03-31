@@ -1141,7 +1141,229 @@ class coreLogic():
                                                    nameList=['Validation', 'Training'])
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
+        elif layerType=="TrainDetector":
+            if view=="Prediction":
+                #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
+                
+                image = self.getStatistics({"layerId": layerId, "variable":"image_bboxes", "innervariable":""})
+                Bboxes = createDataObject(image)    
 
+                # Confidence of the boxes in sample
+                confidence_scores = self.getStatistics({"layerId":layerId,"variable":"confidence_scores_iter","innervariable":""})
+                Confidence = createDataObject([confidence_scores], nameList=['Confidence scores'])
+                
+                # PIE
+                acc_train=self.getStatistics({"layerId":layerId,"variable":"acc_train_iter","innervariable":""})
+                acc_val=self.getStatistics({"layerId":layerId,"variable":"acc_val_iter","innervariable":""})
+
+                if acc_val!=[]:
+                    acc=acc_val
+                else:
+                    acc=acc_train
+
+                try:
+                    lastAcc=acc[-1]
+                except:
+                    lastAcc=acc
+
+                accList = [[('Accuracy', lastAcc*100.0), ('Empty', (1-lastAcc)*100.0)]]
+                Accuracy = createDataObject(accList, typeList=['pie'])
+
+                returnDict={"Bboxes":Bboxes,"Confidence":Confidence,"Accuracy":Accuracy}
+                return returnDict
+                
+            if view=="Accuracy":
+                acc_train=self.getStatistics({"layerId":layerId,"variable":"acc_train_iter","innervariable":""})
+                acc_val=self.getStatistics({"layerId":layerId,"variable":"acc_val_iter","innervariable":""})
+
+                currentTraining=acc_train
+                if isinstance(acc_train,np.ndarray):
+                    currentValidation=np.concatenate((acc_train,np.asarray(acc_val)))
+                elif isinstance(acc_train,list):
+                    if isinstance(acc_val,list):
+                        currentValidation=acc_train+acc_val
+                    else:
+                        currentValidation=acc_train+list(acc_val)
+                
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"acc_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"acc_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+                
+            if view=="Loss":
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"loss_train_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"loss_val_iter","innervariable":""})
+
+                currentTraining=loss_train
+                if isinstance(loss_train,np.ndarray):
+                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                elif isinstance(loss_train,list):
+                    if isinstance(loss_val,list):
+                        currentValidation=loss_train+loss_val
+                    else:
+                        currentValidation=loss_train+list(loss_val)
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"loss_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+            
+            if view=="Classification Loss":
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"classification_loss_train_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"classification_loss_val_iter","innervariable":""})
+
+                currentTraining=loss_train
+                if isinstance(loss_train,np.ndarray):
+                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                elif isinstance(loss_train,list):
+                    if isinstance(loss_val,list):
+                        currentValidation=loss_train+loss_val
+                    else:
+                        currentValidation=loss_train+list(loss_val)
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"classification_loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"classification_loss_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+            
+            if view=="Bounding Boxes Loss":
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_train_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_val_iter","innervariable":""})
+
+                currentTraining=loss_train
+                if isinstance(loss_train,np.ndarray):
+                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                elif isinstance(loss_train,list):
+                    if isinstance(loss_val,list):
+                        currentValidation=loss_train+loss_val
+                    else:
+                        currentValidation=loss_train+list(loss_val)
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"bboxes_loss_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+
+        elif layerType=="TrainGan":
+            
+            if view=="Generator_Loss":
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"gen_loss_train_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"gen_loss_val_iter","innervariable":""})
+
+                currentTraining=loss_train
+                if isinstance(loss_train,np.ndarray):
+                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                elif isinstance(loss_train,list):
+                    if isinstance(loss_val,list):
+                        currentValidation=loss_train+loss_val
+                    else:
+                        currentValidation=loss_train+list(loss_val)
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"gen_loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"gen_loss_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+            
+            if view=="Discriminator_Loss":
+                loss_train=self.getStatistics({"layerId":layerId,"variable":"dis_loss_train_iter","innervariable":""})
+                loss_val=self.getStatistics({"layerId":layerId,"variable":"dis_loss_val_iter","innervariable":""})
+
+                currentTraining=loss_train
+                if isinstance(loss_train,np.ndarray):
+                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
+                elif isinstance(loss_train,list):
+                    if isinstance(loss_val,list):
+                        currentValidation=loss_train+loss_val
+                    else:
+                        currentValidation=loss_train+list(loss_val)
+
+                totalTraining=self.getStatistics({"layerId":layerId,"variable":"dis_loss_training_epoch","innervariable":""})
+                totalValidation=self.getStatistics({"layerId":layerId,"variable":"dis_loss_validation_epoch","innervariable":""})
+
+                dataObjectCurrent = createDataObject([currentValidation, currentTraining],
+                                                     typeList=['line', 'line'],
+                                                     nameList=['Validation', 'Training'])
+            
+                dataObjectTotal = createDataObject([totalValidation, totalTraining],
+                                                   typeList=['line', 'line'],
+                                                   nameList=['Validation', 'Training'])
+                output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
+                return output
+
+            if view=="Generated_output":
+                generated_sample=self.getStatistics({"layerId":layerId,"variable":"gen_output_train","innervariable":""})
+
+                dataObjectOutput = createDataObject(generated_sample)
+            
+    
+                output = {"generated_output": dataObjectOutput}
+                return output
+
+            if view=="Real_input":
+                real_sample=self.getStatistics({"layerId":layerId,"variable":"real_input_train","innervariable":""})
+
+                dataObjectOutput = createDataObject(real_sample)
+            
+    
+                output = {"real_input": dataObjectOutput}
+                return output
+            
+            if view=="Generator_distribution":
+                generator_distribution = self.getStatistics({"layerId":layerId,"variable":"generator_distribution","innervariable":""})
+
+                dataObjectOutput = createDataObject(generator_distribution)
+    
+                output = {"generator_distribution": dataObjectOutput}
+                return output
+            
+            if view=="Real_distribution":
+                real_distribution = self.getStatistics({"layerId":layerId,"variable":"real_distribution","innervariable":""})
+
+                dataObjectOutput = createDataObject(real_distribution)
+
+                output = {"real_distribution": dataObjectOutput}
+                return output
+                
         elif layerType=="TrainReinforce":
             if view=="Prediction":
                 state = self.getStatistics({"layerId":layerId,"variable":"state","innervariable":""})
