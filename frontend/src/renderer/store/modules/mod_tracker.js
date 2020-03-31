@@ -53,14 +53,10 @@ const actions = {
   },
   /* Training */
   EVENT_trainingStart({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Training Start', data);
-    }
+    mixPanel.track('Training Start', data);
   },
   EVENT_trainingStop() {
-    if(isElectron()) {
-      mixPanel.track('Training Stop');
-    }
+    mixPanel.track('Training Stop');
   },
   EVENT_trainingLayerView({}, ) {
     if(isElectron()) {
