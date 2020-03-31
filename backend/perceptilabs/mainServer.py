@@ -75,7 +75,11 @@ def main():
         app_variables = json.load(f)
 
     commit_id = app_variables["BuildVariables"]["CommitId"]
+
+    setup_sentry(args.user, commit_id)
     log.info("Reporting errors with commit id: " + str(commit_id))
+
+
     
     cores=dict()
     dataDict=dict()
@@ -85,7 +89,7 @@ def main():
     core_interface = Interface(cores, dataDict, checkpointDict, lwDict, args.core_mode)
 
     data_bundle = setup_scraper()
-    setup_sentry(args.user, commit_id)
+
 
     if args.error:
         raise Exception("Test error")
