@@ -98,19 +98,13 @@ const actions = {
   },
   /* Errors */
   EVENT_coreError({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Core Error', data);
-    }
+    mixPanel.track('Core Error', data);
   },
   EVENT_coreWarning({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Core Warning', data);
-    }
+    mixPanel.track('Core Warning', data);
   },
   EVENT_cloudError({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Cloud Error', data);
-    }
+    mixPanel.track('Cloud Error', data);
   },
 };
 
