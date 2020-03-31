@@ -11,6 +11,8 @@ import threading
 from flask import Flask, request, jsonify
 from collections import namedtuple
 
+
+from perceptilabs.issues import UserlandError
 from perceptilabs.core_new.layers.definitions import resolve_checkpoint_path
 from perceptilabs.core_new.layers import BaseLayer, DataLayer, InnerLayer, Tf1xLayer, TrainingLayer, ClassificationLayer
 from perceptilabs.core_new.graph.splitter import GraphSplitter
@@ -144,8 +146,7 @@ class LightweightCore:
         final_id = self._get_final_layer_id(subgraph_spec)
         bfs_tree = list(nx.bfs_tree(graph, final_id, reverse=True))
         ordered_ids = tuple(reversed(bfs_tree))
-
-        
+       
         layer_instances, instance_errors = self._get_layer_instances(subgraph_spec)
             
         strategy = self._get_subgraph_strategy(subgraph_spec)
@@ -192,7 +193,6 @@ class LightweightCore:
             
             descr = "".join(tb.format_exception_only())
 
-            
             print('code prob', e, descr)
             
         #return None, f"code problem!"
@@ -230,8 +230,17 @@ class LightweightCore:
 
         try:
             exec(code, globs, locs) # TODO: catch errors here!
+        except SyntaxError as e:
+            tb_obj = traceback.TracebackException(
+                e.__class__,
+                e,
+                e.__traceback__
+            )
+            error = UserlandError(layer_id, layer_spec['Type'], int(tb_obj.lineno), "".join(tb_obj.format()))
+            return None, error
+            
         except Exception as e:
-            return None, f"exec problem!"            
+            return None, f"exec problem!" + str(e)           
 
         layer_class = list(locs.values())[0]
         instance = layer_class()
