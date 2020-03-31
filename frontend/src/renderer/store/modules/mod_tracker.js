@@ -88,19 +88,13 @@ const actions = {
   },
   /* Tutorial Mode */
   EVENT_tutorialModeStart() {
-    if(isElectron()) {
-      mixPanel.track('Tutorial Mode Start');
-    }
+    mixPanel.track('Tutorial Mode Start');
   },
   EVENT_tutorialModeStop({}, step) {
-    if(isElectron()) {
-      mixPanel.track('Tutorial Mode Stop', {step});
-    }
+    mixPanel.track('Tutorial Mode Stop', {step});
   },
   EVENT_tutorialModeFinished() {
-    if(isElectron()) {
-      mixPanel.track('Tutorial Mode Finished');
-    }
+    mixPanel.track('Tutorial Mode Finished');
   },
   /* Errors */
   EVENT_coreError({}, data) {
