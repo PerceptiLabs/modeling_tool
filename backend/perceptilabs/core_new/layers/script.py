@@ -129,8 +129,6 @@ class ScriptFactory:
 
         template += "global snapshots_produced\n"
         template += "snapshots_produced = 0\n"
-        template += "snapshots = []\n"
-        template += "snapshot_lock = threading.Lock()\n"        
         template += "\n"
         template += "message_queue = Queue()\n"
         template += "event_queue = Queue()\n"                
@@ -139,10 +137,12 @@ class ScriptFactory:
         template += "app = Flask(__name__)\n"
         template += "app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True\n"
         template += "\n"
+        '''
         template += "@app.route('/snapshot_count')\n"
         template += "def endpoint_count():\n"
         template += "    return str(len(snapshots))\n"
-        
+        '''
+        '''
         template += "@app.route('/snapshot')\n"
         template += "def endpoint_snapshot():\n"
         template += "    from flask import request\n"
@@ -162,7 +162,7 @@ class ScriptFactory:
         template += "         if non_picklable:\n"
         template += "             print('not picklable:', non_picklable)\n"
         template += "         raise\n"
-
+        '''
 
         template += "@app.route('/command', methods=['POST'])\n"
         template += "def endpoint_event():\n"
@@ -170,7 +170,7 @@ class ScriptFactory:
         template += "    global status\n"
         template += "    data = request.json\n"
         template += "    event_queue.put(data)\n"
-        template += "    log.debug(f'Received event. Data: {str(data)}. Queue size = {event_queue.qsize()}')\n"
+        template += "    log.info(f'Received event. Data: {str(data)}. Queue size = {event_queue.qsize()}')\n"
         #template += "    if data['type'] == 'on_pause':\n"
         #template += "        graph.active_training_node.layer.on_pause()\n"
         #template += "    elif data['type'] == 'on_resume':\n"
@@ -205,7 +205,7 @@ class ScriptFactory:
         template += "    while not event_queue.empty():\n"
         template += "        event_data = event_queue.get()\n"
         template += "        event_type = event_data['type']\n"
-        template += "        log.debug('Processing event: ' + str(event_type) + ' '+ str(event_data))\n"        
+        template += "        log.info('Processing event: ' + str(event_type) + ' '+ str(event_data))\n"        
         template += "        \n"
         template += "        if event_type == 'on_pause':\n"
         template += "            if status == STATUS_RUNNING:\n"        
@@ -226,34 +226,34 @@ class ScriptFactory:
         template += "            graph.active_training_node.layer.on_export(event_data['path'], event_data['mode'])\n"                
         template += "\n"
         template += "def make_snapshot(graph):\n"
-        template += "    global snapshot_lock, snapshots, snapshots_produced\n"
+        template += "    global snapshots_produced\n"
         template += "    snapshot = snapshot_builder.build(graph)\n"        
         template += "    snapshots_produced += 1\n"
         template += "    body = serialize(snapshot)\n"
         template += "    message_queue.put((b'snapshots', body))\n"
-        template += "    process_events(graph)\n"
         template += "\n"
-        template += "def make_snapshot_and_process_events(graph):\n"
-        template += "    make_snapshot(graph)\n"
-        template += "    process_events(graph)\n"
-        template += "\n"
-        
         template += "def message_queue_worker():\n"
+        template += "    iteration, counter = 0, 0\n"
         template += "    while True:\n"
         template += "        if message_queue.empty():\n"
         template += "            time.sleep(0.01)\n"
         template += "        else:\n"
         template += "            topic, body = message_queue.get()\n"
-        #template += "            print(topic, body[0:30])\n"
         template += "            socket.send_multipart([topic, body])\n"
+        template += "            counter += 1\n"        
+        template += "        if iteration % 1000 == 0:\n"
+        template += "            log.info(f'Number of messages sent {counter}')\n"
+        template += "        iteration += 1\n"
         template += "\n"
 
         template += "def run_training():\n"
+        template += "    log.info('Entering run_training')\n"                                        
         template += "    global status\n"
         template += "    try:\n"
         template += "        iterator = graph.training_nodes[0].layer_instance.run(graph)\n"
         template += "        result = None\n"
-        template += "        sentinel = object()\n"        
+        template += "        sentinel = object()\n"
+        template += "        counter = 0\n"
         template += "        while result is not sentinel:\n"
         template += "            result = next(iterator, sentinel)\n"
         template += "            if result is YieldLevel.SNAPSHOT:\n"
@@ -261,15 +261,21 @@ class ScriptFactory:
         template += "            if result is not sentinel:\n"
         template += "                process_events(graph)\n"
         template += "            while status == STATUS_RUNNING_PAUSED and result is not sentinel:\n"
+        template += "                log.info('Paused - waiting for new status... (run_training)')\n"                
         template += "                process_events(graph)\n"
-        template += "                time.sleep(0.5)\n"
+        template += "                time.sleep(1.0)\n"
+        template += "            if counter % 1000 == 0:\n"
+        template += "                log.info(f'Iteration loop counter = {counter}')\n"        
         template += "        \n"
         template += "    except Exception as e:\n"
+        template += "        log.exception(f'Exception in run_training.')\n"                        
         template += "        import traceback\n"        
         template += "        tb_list = traceback.extract_tb(e.__traceback__)\n"
         template += "        body = pickle.dumps((e, tb_list))\n"
-        template += "        message_queue.put((b'exception', body))\n"                
+        template += "        message_queue.put((b'exception', body))\n"
         template += "        raise\n"
+        template += "    finally:\n"
+        template += "        log.info('Leaving run_training')\n"                                                
         template += "\n"
         template += "def get_graph():\n"
         template += "    global graph\n"
@@ -289,14 +295,10 @@ class ScriptFactory:
         template += '    threading.Thread(target=message_queue_worker, daemon=True).start()\n'        
         template += "    graph = get_graph()\n"
         template += '    \n'
-        template += '    print(graph.training_nodes)\n'
-        template += '    graph.training_nodes[0].layer_instance.save_snapshot = make_snapshot_and_process_events\n'
-        template += '    graph.training_nodes[0].layer_instance.save_snapshot_and_process_events = make_snapshot_and_process_events\n'        
-        template += '    graph.training_nodes[0].layer_instance.process_events = process_events\n'        
-        
         template += '    status = STATUS_READY\n'
         template += '    if wait:\n'
         template += '        while status != STATUS_STARTED:\n'
+        template += "            log.info('Waiting for start command... (main)')\n"                        
         template += "            process_events(graph)\n"
         template += '            time.sleep(1.0)\n'
         template += '        \n'
@@ -307,6 +309,7 @@ class ScriptFactory:
         template += '        if status != STATUS_STOPPED:\n'
         template += '            status = STATUS_IDLE\n'
         template += '        while status != STATUS_STOPPED:\n'
+        template += "            log.info('Waiting for stop command... (main)')\n"                                
         template += "            process_events(graph)\n"        
         template += '            time.sleep(1.0)\n'        
         template += '    else:\n'
