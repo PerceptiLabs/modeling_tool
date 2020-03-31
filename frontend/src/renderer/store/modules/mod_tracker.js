@@ -65,24 +65,16 @@ const actions = {
   },
   /* Test */
   EVENT_testOpenTab() {
-    if(isElectron()) {
-      mixPanel.track('Test Open Tab');
-    }
+    mixPanel.track('Test Open Tab');
   },
   EVENT_testPlay({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Test Play', data);
-    }
+    mixPanel.track('Test Play', data);
   },
   EVENT_testStop() {
-    if(isElectron()) {
-      mixPanel.track('Test Stop');
-    }
+    mixPanel.track('Test Stop');
   },
   EVENT_testMove({}, direction) {
-    if(isElectron()) {
-      mixPanel.track('Test Move', {direction});
-    }
+    mixPanel.track('Test Move', {direction});
   },
   /* Layer Settings */
   EVENT_applyLayerSettings({}, data) {
