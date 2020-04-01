@@ -150,12 +150,16 @@ class TrainingServer:
                     step_result = next(training_step, sentinel)
                 except Exception as e:
                     self._send_userland_error(e)
-
+                    raise
+            else:
+                step_result = None
+                    
             if step_result is sentinel and training_state.value == State.RUNNING:
                 training_state.transition(State.IDLE)
                 self._send_state(training_state.value)
-            elif step_result is YieldLevel.SNAPSHOT:
-                self._send_snapshot(self._graph)
+                
+            if step_result is YieldLevel.SNAPSHOT:
+                self._send_graph(self._graph)
                     
             if training_state.value != State.RUNNING:
                 time.sleep(0.01)
@@ -190,14 +194,14 @@ class TrainingServer:
 
 
             
-    def _send_snapshot(self, graph):
-        self._snapshot_builder.build(graph)
-        value = self._serialization_fn(snapshot)
-        self._zmq_client.push(b'snapshots', value)
+    def _send_graph(self, graph):
+        snapshot = self._snapshot_builder.build(graph)
+        value = serialize(snapshot)
+        self._zmq_client.push(b'graph', value)
 
     def _send_userland_error(self, exception):
         tb_list = traceback.extract_tb(exception.__traceback__)
-        value = self._serialization_fn((exception, tb_list))
+        value = serialize((exception, tb_list))
         self._zmq_client.push(b'exception', value)
 
     def _send_state(self, state):
@@ -224,14 +228,29 @@ class TrainingClient:
         self._port_push_pull = port_push_pull
 
         self._remote_status = None
+
+        self._graphs = []
         
     @property
     def remote_status(self):
         return self._remote_status
 
+    @property
+    def graphs(self):
+        return self._graphs
+
     def _on_receive_state(self, value):
         self._remote_status = deserialize(value)
-        log.info(f"Received state {self._remote_status} [TrainingClient]")                    
+        log.info(f"Received state {self._remote_status} [TrainingClient]")
+
+    def _on_receive_graph(self, value):
+        log.info(f"Received graph [TrainingClient]")        
+        if self._graph_builder:
+            snapshot = deserialize(value)
+            graph = self._graph_builder.build_from_snapshot(snapshot)            
+            self._graphs.append(graph)
+        else:
+            log.warning("Received graph but graph builder is not set!")                
 
     def _worker_func(self):
         log.info("Entering worker func [TrainingClient]")                
@@ -239,6 +258,7 @@ class TrainingClient:
             #b'snapshots': lambda client, value: 0
             #b'log_message': lambda client, value: 0
             #b'exception': lambda client, value: 0
+            b'graph': lambda client, key, value: self._on_receive_graph(value),
             b'state': lambda client, key, value: self._on_receive_state(value)
         }
         

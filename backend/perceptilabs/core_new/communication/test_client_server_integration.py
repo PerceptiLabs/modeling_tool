@@ -2,6 +2,7 @@ import time
 import pytest
 from unittest.mock import MagicMock
 
+from perceptilabs.core_new.utils import YieldLevel
 from perceptilabs.core_new.communication import TrainingClient, TrainingServer, State
 
 @pytest.fixture
@@ -9,19 +10,31 @@ def mock_graph_1s():
     def fn_run():
         for i in range(1):
             time.sleep(1)
-            yield
+            yield YieldLevel.DEFAULT
     
     graph = MagicMock()
     graph.run.side_effect = fn_run
     yield graph
 
+@pytest.fixture
+def mock_graph_3s_with_snapshot():
+    def fn_run():
+        for i in range(3):
+            time.sleep(1)
+            yield YieldLevel.SNAPSHOT
+    
+    graph = MagicMock()
+    graph.run.side_effect = fn_run
+    yield graph
+    
 
 @pytest.fixture
 def mock_graph_3s():
     def fn_run():
         for i in range(3):
             time.sleep(1)
-            yield
+            yield YieldLevel.DEFAULT            
+
     
     graph = MagicMock()
     graph.run.side_effect = fn_run
@@ -33,7 +46,7 @@ def mock_graph_5s():
     def fn_run():
         for i in range(5):
             time.sleep(1)
-            yield
+            yield YieldLevel.DEFAULT                        
     
     graph = MagicMock()
     graph.run.side_effect = fn_run
@@ -53,8 +66,8 @@ def create_server(graph, snapshot_builder=None):
     return server
 
 
-def create_client():
-    client = TrainingClient(6556, 6557)
+def create_client(graph_builder=None):
+    client = TrainingClient(6556, 6557, graph_builder=graph_builder)
     CLIENTS.append(client)
     return client
 
@@ -243,14 +256,21 @@ def test_can_stop_when_idle(mock_graph_1s):
 
     assert client.remote_status == State.DONE
 
-'''    
-def test_receives_3_graphs_and_goes_idle(mock_graph_3s):
-    server = create_server(mock_graph_3s)
-    client = create_client()
     
-    server.listen()
-    client.connect()
+def test_receives_3_graphs_and_goes_idle(mock_graph_3s_with_snapshot):
+    snapshot_builder = MagicMock()
+    snapshot_builder.build.return_value = {'foo': 'bar'}
 
+    graph_builder = MagicMock()
+    graph_builder.build_from_snapshot.return_value = object()
+    
+    server = create_server(mock_graph_3s_with_snapshot, snapshot_builder=snapshot_builder)
+    client = create_client(graph_builder=graph_builder)
+    
+    server.start()
+    client.connect()
+    time.sleep(0.3)
+    
     assert client.remote_status == State.READY
     client.request_start()
     time.sleep(1.0)
@@ -258,13 +278,11 @@ def test_receives_3_graphs_and_goes_idle(mock_graph_3s):
     assert client.remote_status == State.RUNNING
     time.sleep(3.0)
 
+    assert client.remote_status == State.IDLE    
     assert len(client.graphs) == 3
-    assert client.remote_status == State.IDLE
 
-    
-    
-    
-'''    
+
+
 
     
     
