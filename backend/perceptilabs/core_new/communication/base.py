@@ -44,17 +44,24 @@ class State:
 
     allowed_transitions = set((
         (INITIALIZING, READY),
-        (INITIALIZING, STOPPED),        
         (READY, RUNNING),
-        (READY, STOPPED),
-        (STARTED, RUNNING),
-        (RUNNING, RUNNING),
+        (READY, DONE),
+        (RUNNING, DONE),        
+        (RUNNING, PAUSED),
         (PAUSED, RUNNING),
-        (PAUSED, STOPPED),                
-        (RUNNING, STOPPED),
+        (PAUSED, DONE),
         (RUNNING, IDLE),
-        (STOPPED, DONE),
-        (IDLE, DONE),        
+        (IDLE, DONE),                        
+        
+        #(INITIALIZING, STOPPED),        
+        #(STARTED, RUNNING),
+
+        #(PAUSED, RUNNING),
+        #(PAUSED, STOPPED),                
+        #(RUNNING, STOPPED),
+        #(RUNNING, IDLE),
+        #(STOPPED, DONE),
+        #(IDLE, DONE),        
     ))
     
     def __init__(self):
@@ -66,6 +73,9 @@ class State:
         return self._state
 
     def transition(self, new_state):
+        if self._state == new_state:
+            return
+        
         with self._lock: 
             if (self._state, new_state) in self.allowed_transitions:
                 self._state = new_state
@@ -130,25 +140,23 @@ class TrainingServer:
 
         counter = 0
         self._is_running.set()
-        while self._is_running.is_set() and step_result is not sentinel:
+        while self._is_running.is_set() and training_state.value is not State.DONE:
             if counter % 1000 == 0:
                 log.info(f"Worker loop iteration {counter} [TrainingServer]")                                
             self._zmq_client.process_messages()
 
-            if step_result is sentinel:
-                training_state.transition(State.IDLE)
-                self._send_state(training_state.value)
-                break
-            
             if training_state.value == State.RUNNING:
                 try:
                     step_result = next(training_step, sentinel)
                 except Exception as e:
                     self._send_userland_error(e)
 
-            if step_result is YieldLevel.SNAPSHOT:
+            if step_result is sentinel and training_state.value == State.RUNNING:
+                training_state.transition(State.IDLE)
+                self._send_state(training_state.value)
+            elif step_result is YieldLevel.SNAPSHOT:
                 self._send_snapshot(self._graph)
-
+                    
             if training_state.value != State.RUNNING:
                 time.sleep(0.01)
                     
@@ -170,7 +178,18 @@ class TrainingServer:
         if event_type == 'on_request_start':
             training_state.transition(State.RUNNING)
             self._send_state(training_state.value)
-        
+        elif event_type == 'on_request_stop':
+            training_state.transition(State.DONE)
+            self._send_state(training_state.value)
+        elif event_type == 'on_request_pause':
+            training_state.transition(State.PAUSED)
+            self._send_state(training_state.value)
+        elif event_type == 'on_request_resume':
+            training_state.transition(State.RUNNING)
+            self._send_state(training_state.value)
+
+
+            
     def _send_snapshot(self, graph):
         self._snapshot_builder.build(graph)
         value = self._serialization_fn(snapshot)
@@ -193,7 +212,8 @@ class TrainingServer:
             log.info("Stopping [TrainingServer]")
             self._is_running.clear()
             self._worker_thread.join()
-        
+
+            
 class TrainingClient:
     def __init__(self, port_pub_sub, port_push_pull, graph_builder=None):
         self._is_running = threading.Event()
@@ -259,6 +279,18 @@ class TrainingClient:
         raw_event = serialize({'type': 'on_request_start'})
         self._zmq_client.push(b'event', raw_event)
 
+    def request_stop(self):
+        raw_event = serialize({'type': 'on_request_stop'})
+        self._zmq_client.push(b'event', raw_event)
+
+    def request_pause(self):
+        raw_event = serialize({'type': 'on_request_pause'})
+        self._zmq_client.push(b'event', raw_event)
+
+    def request_resume(self):
+        raw_event = serialize({'type': 'on_request_resume'})
+        self._zmq_client.push(b'event', raw_event)        
+        
     def stop(self):
         if self._is_running.is_set():
             log.info("Stopping [TrainingClient]")            
