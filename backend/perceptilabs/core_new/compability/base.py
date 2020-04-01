@@ -133,11 +133,11 @@ class CompabilityCore:
             log.debug("graph is None, returning empty results")
             return {}
         # TODO: if isinstance(training_layer, Classification) etc
-        trn_node = graph.active_training_node
-        # if isinstance(trn_node.layer_instance, ClassificationLayer):
-        result_dict = policy_classification(self._core, graph, self._sanitized_to_name, self._sanitized_to_id)
-        # elif  isinstance(trn_node, ObjectDetectionLayer):
-        #     result_dict = policy_object_detection(self._core, graph, self._sanitized_to_name, self._sanitized_to_id)
+        layer = graph[-1].active_training_node.layer
+        if isinstance(layer, ClassificationLayer):
+            result_dict = policy_classification(self._core, graph, self._sanitized_to_name, self._sanitized_to_id)
+        elif  isinstance(layer, ObjectDetectionLayer):
+            result_dict = policy_object_detection(self._core, graph, self._sanitized_to_name, self._sanitized_to_id)
         return result_dict
 
     def _print_graph_debug_info(self, graphs):

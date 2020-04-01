@@ -103,11 +103,6 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('progress', (np.float32, float), -1),
         ReplicatedProperty('export_modes', list, []),        
     ],
-
-    """ 
-    make required changes here
-    """
-
     DataLayer: [
         ReplicatedProperty('sample', ((np.float32, float), np.ndarray), lambda _: np.empty(())),
         ReplicatedProperty('size_training', int, -1),

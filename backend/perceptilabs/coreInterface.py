@@ -128,8 +128,6 @@ class coreLogic():
             for id_, layer in graph_spec['Layers'].items():
                 if layer['Type'] == 'TrainNormal' and 'Distributed' not in layer['Properties']:
                     layer['Properties']['Distributed'] = False 
-                elif layer['Type'] == 'TrainObjectDetection' and 'Distributed' not in layer['Properties']:
-                    layer['Properties']['Distributed'] = False 
             log.info("Creating deployment script...")            
             config = {'session_id': '1234567'}
             
@@ -1141,7 +1139,7 @@ class coreLogic():
                 output = {"Current": dataObjectCurrent, "Total": dataObjectTotal}
                 return output
 
-        elif layerType=="TrainObjectDetection":
+        elif layerType=="TrainDetector":
             if view=="Prediction":
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
                 

@@ -210,7 +210,7 @@ DEFINITION_TABLE = {
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]
     ),
-    'TrainObjectDetection': LayerDef(
+    'TrainDetector': LayerDef(
        ObjectDetectionLayer,
         'tf1x_object_detection.j2',
         'layer_tf1x_object_detection',
@@ -233,12 +233,12 @@ DEFINITION_TABLE = {
             'import tensorflow as tf',
             'import numpy as np',
             'import time',
-            'import cv2'
+            'import cv2',
             'import os',
             'from typing import Dict, List, Generator',
             'from perceptilabs.core_new.utils import Picklable, YieldLevel',
             'from perceptilabs.core_new.graph import Graph',
-            'from perceptilabs.core_new.layers.base import ClassificationLayer, Tf1xLayer',
+            'from perceptilabs.core_new.layers.base import ObjectDetectionLayer, Tf1xLayer',
             'from perceptilabs.core_new.serialization import can_serialize, serialize',
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]
