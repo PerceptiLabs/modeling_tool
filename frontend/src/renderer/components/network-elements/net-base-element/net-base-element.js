@@ -266,7 +266,7 @@ export default {
     },
     deselect() {
       if(!this.isTutorialMode) this.hideAllWindow();
-      this.elementSelect({id: this.currentId, setValue: false });
+      // this.elementSelect({id: this.currentId, setValue: false });
       this.tutorialShowHideTooltip();
     },
     tutorialSearchId(event) {

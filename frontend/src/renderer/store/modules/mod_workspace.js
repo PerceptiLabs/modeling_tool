@@ -24,6 +24,14 @@ const state = {
   },
   showStartTrainingSpinner: false,
   isOpenElement: false,
+  // for dragging multiple elements
+  dragBoxContainer: {
+    isVisible: false,
+    top: 0,
+    left: 0,
+    width: 0,
+    height: 0,
+  }
 };
 
 const getters = {
@@ -59,6 +67,16 @@ const getters = {
       }
     }
     return selectedIndex;
+  },
+  GET_currentSelectedElIds(state, getters) {
+    let selectedIds = [];
+    if(getters.GET_networkIsNotEmpty) {
+      let elList = getters.GET_currentNetworkElementList;
+      for(var el in elList) {
+        if (elList[el].layerMeta.isSelected) selectedIds.push(el);
+      }
+    }
+    return selectedIds;
   },
   GET_networkIsTraining(state, getters) {
     const coreStatus = getters.GET_networkCoreStatus;
@@ -619,9 +637,7 @@ const mutations = {
     }
   },
   set_elementSelect(state, { getters, value }) {
-    console.log(value);
     if(value.resetOther) {
-      console.log('a intrat');
       for(let layer in getters.GET_currentNetworkElementList) {
         currentElement(layer).layerMeta.isSelected = false;
       }
@@ -652,18 +668,16 @@ const mutations = {
     let el = currentElement(id);
     el.layerNone = value
   },
-  change_elementPosition(state, value) {
+  change_elementPosition(state, {value, getters}) {
     // here should calculate how much change position and apply on all elements selected
     let elPosition = currentElement(value.id).layerMeta.position;
     const toTop = value.top - elPosition.top;
     const toLeft = value.left - elPosition.left;
-
-    const networkElementList = state.workspaceContent[state.currentNetwork].networkElementList;
-    Object.keys(networkElementList).map(key => {
-      if(networkElementList[key].layerMeta.isSelected) {
-        currentElement(key).layerMeta.position.top += toTop;
-        currentElement(key).layerMeta.position.left += toLeft;
-      }
+    
+    const selectedElIds = getters.GET_currentSelectedElIds;
+    selectedElIds.map(id => {
+      state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.top += toTop;
+      state.workspaceContent[state.currentNetwork].networkElementList[id].layerMeta.position.left += toLeft;
     });
   },
   set_elementInputDim(state, value) {
@@ -951,6 +965,12 @@ const mutations = {
     Object.keys(networkElementList).map(key => {
       networkElementList[key].layerMeta.isSelected = false;
     });
+  },
+  updateDragBoxContainerMutation(state, value) {
+    state.dragBoxContainer = {
+      ...state.dragBoxContainer,
+      ...value
+    }
   }
 };
 
@@ -1218,7 +1238,6 @@ const actions = {
     commit('set_elementUnselect', {getters})
   },
   SET_elementSelect({commit, getters }, value) {
-    console.log(value);
     commit('set_elementSelect', { value, getters })
   },
   SET_elementSelectAll({commit, getters}) {
@@ -1233,8 +1252,8 @@ const actions = {
   SET_elementOutputDim({commit, getters}, value) {
     commit('set_elementOutputDim', {getters, value})
   },
-  CHANGE_elementPosition({commit}, value) {
-    commit('change_elementPosition', value)
+  CHANGE_elementPosition({commit, getters}, value) {
+    commit('change_elementPosition', {value, getters})
   },
   //---------------
   //  NETWORK CONTAINER

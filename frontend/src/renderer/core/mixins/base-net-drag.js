@@ -1,6 +1,6 @@
 import {calcLayerPosition} from '@/core/helpers.js'
 import { workspaceGrid }   from '@/core/constants.js'
-import {mapActions, mapGetters} from "vuex";
+import {mapActions, mapGetters, mapMutations} from "vuex";
 
 const baseNetDrag = {
   // props: {
@@ -23,6 +23,9 @@ const baseNetDrag = {
     ...mapActions({
       setElementSelectedAction: 'mod_workspace/SET_elementSelect',
     }),
+    ...mapMutations({
+      updateDragBoxContainerMutation: 'mod_workspace/updateDragBoxContainerMutation'
+    }),
     ...mapGetters({
       selectedItems : 'mod_workspace/GET_currentSelectedEl',
     }),
@@ -30,6 +33,21 @@ const baseNetDrag = {
       const selectedItems = {...this.selectedItems()};
       const selectedItemsIds = Object.values(selectedItems).map(el => parseInt(el.layerId, 10));
       return selectedItemsIds.includes(parseInt(itemId, 10));
+    },
+    isSingleItemDragged() {
+      return this.selectedItems().length === 1;
+    },
+    getDragBoxSize() {
+      const selectedItems = {...this.selectedItems()};
+      const selectedItemsPositions = Object.values(selectedItems).map(el => el.layerMeta.position);
+      const topValues = selectedItemsPositions.map(x => x.top);
+      const leftValues = selectedItemsPositions.map(x => x.left);
+      const width = Math.max(...leftValues) - Math.min(...leftValues) + 60;
+      const height = Math.max(...topValues) - Math.min(...topValues) + 60;
+      return {width, height, top: Math.min(...topValues), left: Math.min(...leftValues)};
+    },
+    applyCoefficientScale(num) {
+      return (num /  (this.networkScale * 100)) * 100;
     },
     move(ev) {
       if (!this.bodyDrag) return;
@@ -42,8 +60,8 @@ const baseNetDrag = {
     up(ev) {
       if (this.bodyDrag) this.bodyUp(ev)
     },
-    
     bodyDown(ev) {
+      
       if(!this.isCurrentItemSelected(this.dataEl.layerId)) {
         if (ev.shiftKey || ev.metaKey || ev.ctrlKey) {
           this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: false})
@@ -71,10 +89,74 @@ const baseNetDrag = {
 
       this.stickStartPos.left = this.left;
       this.stickStartPos.top = this.top;
+      
+      // set initial borders for dragged elements
     },
 
     bodyMove(ev) {
+
+      if(!this.isSingleItemDragged() && !this.itemWasDraged) {
+        this.updateDragBoxContainerMutation({
+          isVisible: true,
+          ...this.getDragBoxSize(),
+        });
+      }
+      
       this.itemWasDraged = true;
+      
+      if(this.isSingleItemDragged()) {
+        this.updateItems(ev);
+      } else {
+        const { width, height, top: initialTop, left: initialLeft } = this.getDragBoxSize();
+        if(!(ev.pageX % workspaceGrid || ev.pageY % workspaceGrid)) return;
+
+        const stickStartPos = this.stickStartPos;
+       
+        const top = calcLayerPosition((this.applyCoefficientScale(ev.pageY) - (this.applyCoefficientScale(stickStartPos.mouseY) - initialTop)));
+        const left = calcLayerPosition((this.applyCoefficientScale(ev.pageX) - (this.applyCoefficientScale(stickStartPos.mouseX) - (initialLeft))));
+        
+        this.updateDragBoxContainerMutation({
+          isVisible: true,
+          top,
+          left,
+          width,
+          height,
+        });
+      }
+    },
+
+    bodyUp(ev) {
+      
+      // update network and remove borders
+      if(!this.isSingleItemDragged()) {
+        this.updateItems(ev);
+        this.updateDragBoxContainerMutation({
+          isVisible: false,
+          top: 0,
+          left: 0,
+          width: 0,
+          height: 0,
+        });
+      }
+      
+      if(this.isCurrentItemSelected(this.dataEl.layerId) && !this.itemWasDraged && !(ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
+        this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: true})
+      }
+      
+      this.itemWasDraged = false;
+      this.bodyDrag = false;
+      this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
+      this.$parent.$parent.createArrowList();
+
+      this.$parent.$parent.$el.removeEventListener('mousemove', this.move);
+      this.$parent.$parent.$el.removeEventListener('touchmove', this.move, true);
+      document.removeEventListener('mouseup', this.up);
+      document.removeEventListener('touchend touchcancel', this.up, true);
+      document.removeEventListener('touchstart', this.up, true);
+      
+      this.$store.dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
+    },
+    updateItems(ev) {
       if(!(ev.pageX % workspaceGrid || ev.pageY % workspaceGrid)) return;
 
       const stickStartPos = this.stickStartPos;
@@ -85,28 +167,12 @@ const baseNetDrag = {
       const top = calcLayerPosition(stickStartPos.top - delta.y);
       const left = calcLayerPosition(stickStartPos.left - delta.x);
 
-      this.top = (top < 0) ? 0 : top;
-      this.left = (left < 0) ? 0 : left;
-      this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
-    },
-
-    bodyUp(ev) {
-      if(this.isCurrentItemSelected(this.dataEl.layerId) && !this.itemWasDraged && !(ev.shiftKey || ev.metaKey || ev.ctrlKey)) {
-        this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: true})
+      if((this.top !== top) || (this.left !== left)) {
+        this.top = (top < 0) ? 0 : top;
+        this.left = (left < 0) ? 0 : left;
+        this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
       }
-      this.itemWasDraged = false;
-      this.bodyDrag = false;
-      this.$store.dispatch('mod_workspace/CHANGE_elementPosition', this.rect);
-      this.$parent.$parent.createArrowList();
-
-      this.$parent.$parent.$el.removeEventListener('mousemove', this.move);
-      document.removeEventListener('mouseup', this.up);
-
-      this.$parent.$parent.$el.removeEventListener('touchmove', this.move, true);
-      document.removeEventListener('touchend touchcancel', this.up, true);
-      document.removeEventListener('touchstart', this.up, true);
-      this.$store.dispatch('mod_workspace-history/PUSH_newSnapshot', null, {root: true});
-    },
+    }
 
   },
   computed: {

@@ -40,7 +40,8 @@
               :key="i"
               :style="{transformOrigin: '0 0', transform: `scale(${scaleNet / 100})`}"
             )
-
+            // when select more then 2 network item it's display
+            div.dragBoxContainer(:style="dragBoxContainerStyle()")
         //-general-settings(v-if="showGlobalSet")
         general-result(v-if="showGlobalResult")
         select-core-side(v-if="showCoreSide")
