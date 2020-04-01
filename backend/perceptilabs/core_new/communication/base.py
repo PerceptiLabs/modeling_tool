@@ -169,7 +169,7 @@ class TrainingServer:
                     step_result = next(training_step, sentinel)
                 except Exception as e:
                     self._send_userland_error(e)
-                    log.exception("Userland error. Setting status to done.")
+                    log.exception("Userland error on iteration. Setting status to done.")
                     training_state.transition(State.DONE)
             else:
                 step_result = None
@@ -191,7 +191,17 @@ class TrainingServer:
         self._zmq_client.stop()
         log.info("Closing ZeroMQ server [TrainingServer]")                        
         self._zmq_server.stop()
-        
+
+    def _call_userland_method(self, training_state, method_fn, *args, **kwargs):
+        try:
+            method_fn(*args, **kwargs)
+        except Exception as e:
+            self._send_userland_error(e)
+            log.exception("Userland error on iteration. Setting status to done.")
+            training_state.transition(State.DONE)
+            return False
+        return True
+            
     def _handle_raw_event(self, raw_event, graph, training_state):
         event_dict = deserialize(raw_event)
         event_type = event_dict['type']
@@ -203,14 +213,24 @@ class TrainingServer:
             training_state.transition(State.RUNNING)
             self._send_state(training_state.value)
         elif event_type == 'on_request_stop':
+            if training_state.value == State.RUNNING:
+                self._call_userland_method(training_state, graph.active_training_layer.layer.on_stop)
             training_state.transition(State.DONE)
             self._send_state(training_state.value)
+        elif event_type == 'on_request_export':
+            self._call_userland_method(
+                training_state,
+                graph.active_training_layer.layer.on_export,
+                event_dict['path'], event_dict['mode']
+            )            
         elif event_type == 'on_request_pause':
             training_state.transition(State.PAUSED)
             self._send_state(training_state.value)
         elif event_type == 'on_request_resume':
             training_state.transition(State.RUNNING)
             self._send_state(training_state.value)
+        else:
+            log.warning(f"Unknown event type {event_type}")
 
     def _handle_ping(self, id_):
         self._zmq_client.push(b'pong', id_)        
@@ -381,6 +401,10 @@ class TrainingClient:
         raw_event = serialize({'type': 'on_request_stop'})
         self._zmq_client.push(b'event', raw_event)
 
+    def request_export(self, path, mode):
+        raw_event = serialize({'type': 'on_request_export', 'path': path, 'mode': mode})
+        self._zmq_client.push(b'event', raw_event)
+        
     def request_pause(self):
         raw_event = serialize({'type': 'on_request_pause'})
         self._zmq_client.push(b'event', raw_event)

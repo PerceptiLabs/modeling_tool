@@ -346,6 +346,25 @@ def test_sends_message_on_userland_error(mock_graph_2s_error):
     assert fn.call_count == 1
 
 
+def test_layer_export_called(mock_graph_3s):
+    fn = MagicMock()
+    
+    server = create_server(mock_graph_3s)
+    client = create_client()
+    
+    server.start()
+    client.connect()
+    time.sleep(0.3)
+
+    assert client.remote_status == State.READY
+    client.request_export(path='/hello/', mode='some-mode')
+    time.sleep(2.0)
+
+    assert mock_graph_3s.active_training_layer.layer.on_export.call_count == 1    
+    assert mock_graph_3s.active_training_layer.layer.on_export.call_args_list[0][0][0] == '/hello/'
+    assert mock_graph_3s.active_training_layer.layer.on_export.call_args_list[0][0][1] == 'some-mode'        
+
+    
 def test_stops_on_userland_timeout(mock_graph_infinite_loop):
     server = create_server(mock_graph_infinite_loop, max_step_time=5)
     client = create_client()
