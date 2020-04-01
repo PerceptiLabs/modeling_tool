@@ -16,6 +16,21 @@ def mock_graph_1s():
     graph.run.side_effect = fn_run
     yield graph
 
+    
+@pytest.fixture
+def mock_graph_2s_error():
+    def fn_run():
+        time.sleep(1)
+        yield
+        if True:
+            raise IndexError("Index is bad!")
+        yield
+
+    graph = MagicMock()
+    graph.run.side_effect = fn_run
+    yield graph
+
+    
 @pytest.fixture
 def mock_graph_3s_with_snapshot():
     def fn_run():
@@ -35,7 +50,6 @@ def mock_graph_3s():
             time.sleep(1)
             yield YieldLevel.DEFAULT            
 
-    
     graph = MagicMock()
     graph.run.side_effect = fn_run
     yield graph
@@ -66,8 +80,12 @@ def create_server(graph, snapshot_builder=None):
     return server
 
 
-def create_client(graph_builder=None):
-    client = TrainingClient(6556, 6557, graph_builder=graph_builder)
+def create_client(graph_builder=None, userland_error_handler=None):
+    client = TrainingClient(
+        6556, 6557,
+        graph_builder=graph_builder,
+        userland_error_handler=userland_error_handler
+    )
     CLIENTS.append(client)
     return client
 
@@ -282,7 +300,37 @@ def test_receives_3_graphs_and_goes_idle(mock_graph_3s_with_snapshot):
     assert len(client.graphs) == 3
 
 
+def test_stops_on_userland_error(mock_graph_2s_error):
+    server = create_server(mock_graph_2s_error)
+    client = create_client()
+    
+    server.start()
+    client.connect()
+    time.sleep(0.3)
 
+    assert client.remote_status == State.READY
+    client.request_start()
+    time.sleep(2.0)
+
+    assert client.remote_status == State.DONE
+
+    
+def test_sends_message_on_userland_error(mock_graph_2s_error):
+    fn = MagicMock()
+    
+    server = create_server(mock_graph_2s_error)
+    client = create_client(userland_error_handler=fn)
+    
+    server.start()
+    client.connect()
+    time.sleep(0.3)
+
+    assert client.remote_status == State.READY
+    client.request_start()
+    time.sleep(2.0)
+
+    assert fn.call_count == 1
+    
 
     
     

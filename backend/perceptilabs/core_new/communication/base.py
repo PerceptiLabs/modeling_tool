@@ -150,7 +150,8 @@ class TrainingServer:
                     step_result = next(training_step, sentinel)
                 except Exception as e:
                     self._send_userland_error(e)
-                    raise
+                    log.exception("Userland error. Setting status to done.")
+                    training_state.transition(State.DONE)
             else:
                 step_result = None
                     
@@ -166,6 +167,7 @@ class TrainingServer:
                     
             counter += 1
 
+        self._send_state(training_state.value)                    
         log.info("Closing ZeroMQ client [TrainingServer]")                
         self._zmq_client.stop()
         log.info("Closing ZeroMQ server [TrainingServer]")                        
@@ -201,8 +203,8 @@ class TrainingServer:
 
     def _send_userland_error(self, exception):
         tb_list = traceback.extract_tb(exception.__traceback__)
-        value = serialize((exception, tb_list))
-        self._zmq_client.push(b'exception', value)
+        value = serialize({'exception': exception, 'traceback_list': tb_list})
+        self._zmq_client.push(b'userland-error', value)
 
     def _send_state(self, state):
         value = serialize(state)
@@ -219,7 +221,7 @@ class TrainingServer:
 
             
 class TrainingClient:
-    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None):
+    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, userland_error_handler=None):
         self._is_running = threading.Event()
         self._is_running.clear()        
 
@@ -227,6 +229,7 @@ class TrainingClient:
         self._port_pub_sub = port_pub_sub
         self._port_push_pull = port_push_pull
 
+        self._userland_error_handler = userland_error_handler
         self._remote_status = None
 
         self._graphs = []
@@ -250,14 +253,22 @@ class TrainingClient:
             graph = self._graph_builder.build_from_snapshot(snapshot)            
             self._graphs.append(graph)
         else:
-            log.warning("Received graph but graph builder is not set!")                
+            log.warning("Received graph but graph builder is not set!")
+
+    def _on_receive_userland_error(self, value):
+        error_dict = deserialize(value)
+        exception = error_dict['exception']
+        tb_list = error_dict['traceback_list']
+        log.info(f"Received userland error. {repr(exception)}")
+
+        if self._userland_error_handler is not None:
+            self._userland_error_handler(exception, tb_list)
 
     def _worker_func(self):
         log.info("Entering worker func [TrainingClient]")                
         handlers = {
-            #b'snapshots': lambda client, value: 0
             #b'log_message': lambda client, value: 0
-            #b'exception': lambda client, value: 0
+            b'userland-error': lambda client, key, value: self._on_receive_userland_error(value),
             b'graph': lambda client, key, value: self._on_receive_graph(value),
             b'state': lambda client, key, value: self._on_receive_state(value)
         }
