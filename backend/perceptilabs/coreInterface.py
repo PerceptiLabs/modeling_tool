@@ -128,7 +128,8 @@ class coreLogic():
             for id_, layer in graph_spec['Layers'].items():
                 if layer['Type'] == 'TrainNormal' and 'Distributed' not in layer['Properties']:
                     layer['Properties']['Distributed'] = False 
-            
+                elif layer['Type'] == 'TrainObjectDetection' and 'Distributed' not in layer['Properties']:
+                    layer['Properties']['Distributed'] = False 
             log.info("Creating deployment script...")            
             config = {'session_id': '1234567'}
             

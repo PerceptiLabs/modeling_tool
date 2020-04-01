@@ -2,20 +2,33 @@
         self._status = 'initializing'
 
         self._grid_size = 7
-        self._num_class = 20
+        self._num_class = 108
         self._num_box = 2
         alpha = 0.1
         threshold = 0.2
         iou_threshold = 0.5
         
-        w_img = 640
-        h_img = 480
+        w_img = 792
+        h_img = 1408
 
         lambdacoord = 5.0
         lambdanoobj = 0.5
-
+        
         # we need classes
-        self._classes = []
+        self._classes = ['branche_maxi', 'valser_vivabirne', 'fuse_peach','ovomaltine_kekse', 'evian', 'powerbar_proteinplusschoko','vivitz_classiczitrone', 'torino', 'volvic_pinapple',
+       'volvic_teeminze', 'rivella_rot', 'fuse_lemon', 'granini_orange','corny_schoko', 'berger', 'pepsi_max', 'fuse_lemon_dose_33','haribo_goldbaerensauer',
+       'stimorol_wildcherry_riegel_14_1_57060330', 'bifi_roll','caferoyal_classicmacchiato', 'ramseier_schorle','tiki_himbeerbrause_dose_33_1_', 'panettone', 'vivitz_gruentee',
+       'jlbrichard_gauffrechoko', 'berger_brunsli','airwaves_menthoneucalyptus_riegel_14_1_50173167','zweifel_paprika', 'redbull', 'fuse_peach_dose_33',
+       'balisto_muesli', 'coke_zero_flasche_50', 'sinalco', 'coke','darwida_chocaulait', 'jacklinks_beefjerkyorginal','fini_jellykisses_packung_80_1_8410525116704', 'kitkat',
+       'zweifel_salz', 'skittles_sour_riegel_51_1_0000000000004','valser_still', 'zweifel_saltedpeanuts', 'tiki_himbeer_brause','wasser_???', 'milka_tender', 'oreo',
+       'milka_oreo_riegel_37_1_7622210704740','fini_galaxymix_packung_100_1_8410525150364','berger_mailaenderli', 'fanta', 'stimorol_spearmint_riegel_14_1_',
+       'berger_???', 'henniez_gruen', 'sprite', 'bueno','lorenz_studentenfutter', 'kinder_delice', 'henniez_rot','jlbrichard_gauffre', 'berger_schoggitoertli', 'balisto_yoberry',
+       'malburner_partysticks', 'snickers_weiß', 'zweifel_graneochilli','sinalco_orange', 'berger_bruensli', 'b_tarteaupomme','caprisun_multivitamin', 'erle', 'momo_icetea', 'knoppers_riegel',
+       'coke_light_flasche_50', 'toffifee', 'redbull_light', 'twix','henniez_blau', 'mezzomix', 'maltesers_teasers','comella_schokodrink', 'comella_schokodrink_flasche_50',
+       'ramseier_jusdepomme_tetrapak_33', 'fuse_blackicetea','kagi_specialedition', 'maltesers', 'valser_classic','berger_nusstoertli', 'schweppes_citrus', 'mnms_gelb',
+       'lorenz_nicnacs', 'kagi', 'c+swiss_dosenabisicetea','vitaminwell_reload', 'berger_spitzbueb', 'volvic_pink','ramseier_jusdepomme', 'ragusa',
+       'stimorol_spearmint_riegel_14_1_0000000000005','skittles_sour_riegel_51_1_', 'ramseier_orange_tetrapak_33','7days_croissantschoko_packung_80_1_0000000000003', 'bounty',
+       'berger_vogelnestli', 'schweppes_bitterlemon','milka_peanutbutter', 'lindt_nocciolate', 'darwida_sandwich','snickers']
 
         self._x = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])  
         self._y = tf.placeholder(tf.float32, [None,self._grid_size, self._grid_size, self._num_box])
@@ -130,7 +143,7 @@
         X_=[]; Y_=[]; W_=[]; H_=[]; C_=[]; P_=[]; obj_=[]; objI_=[]
         noobj_=[]
         for i in range(self._batch_size):
-            label = target_tensor[i,2:]
+            label = target_tensor[i]
             img = input_tensor[i,:]
             x = np.zeros([self._grid_size,self._grid_size,self._num_box]); y = np.zeros([self._grid_size,self._grid_size,self._num_box])
             w = np.zeros([self._grid_size,self._grid_size,self._num_box]); h = np.zeros([self._grid_size,self._grid_size,self._num_box]))
@@ -138,15 +151,19 @@
             obj = np.zeros([self._grid_size,self._grid_size,self._num_box]); objI = np.zeros([self._grid_size,self._grid_size])
             noobj = np.zeros([self._grid_size,self._grid_size,self._num_box])
             for i,j in itertools.product(range(0,self._grid_size),range(0,self._grid_size)):
-                if label[i][j] is not None:
+                if not np.isnan(label[i][j][0][0]):
                     index=0
-                    while(len([i][j])>index and index<self._num_box):
+                    if np.isnan(label[i][j][1][0]):
+                        l = 0
+                    else:
+                        l = 1
+                    while(index < l and index<self._num_box):
                         x[i][j][index]= (float(label[i][j][index][0])/len(img))*self._grid_size-i
                         y[i][j][index] = (float(label[i][j][index][1])/len(img[0]))*self._grid_size-j
                         w[i][j][index] = np.sqrt(label[i][j][index][2])/len(img)*self._grid_size
                         h[i][j][index] = np.sqrt(label[i][j][index][3])/len(img[0])
                         C[i][j][index] = 1.0
-                        p[i][j][self._classes.index(label[i][j][index][4])] = 1.0/float(len(label[i][j]))
+                        p[i][j][label[i][j][index][4]] = 1.0/float(len(label[i][j]))
                         obj[i][j][index] = 1.0
                         objI[i][j] = 1.0
                         noobj[i][j][ index]=0.0
@@ -200,7 +217,7 @@
 
         bbox_images = []
         confidences = []
-        classes = []
+        predicted_classes = []
         for i in range(self._batch_size):
             output = output_tensor[i,:]
             image = input_tensor[i,:]
@@ -277,12 +294,15 @@
             
             bbox_images.append(img_cp)
             confidences.append(result[i][5])
-            classes.append(result[0,:])
+            predicted_classes.append(result[0])
         self._bbox_images = np.ndarray(bbox_images)
         self._confidences = np.ndarray(confidences)
-       
+        target_classes = []
+        for i in target_tensor:
+            target_classes[i] = i[:,:,:,4].ravel()
+            target_classes[i] = target_classes[i][~np.isnan(b)]
         # classification accuracy
-        self._accuracies = np.ndarray([len(set(target_tensor[i,1]) and set(classes[i]))/len(set(target_tensor[i,1])) for i in range(self._batch_size)])
+        self._accuracies = np.ndarray([len( set(target_classes[i]) and set(classes[i]) )/ len( set(target_classes[i]) ) for i in range(self._batch_size)])
         accuracy_tensor = tf.reduce_mean(self._accuracies)
 
 

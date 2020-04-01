@@ -210,8 +210,8 @@ DEFINITION_TABLE = {
             'from tensorflow.python.training.tracking.base import Trackable'            
         ]
     ),
-    'TrainObject_Detection': LayerDef(
-        ClassificationLayer,
+    'TrainObjectDetection': LayerDef(
+       ObjectDetectionLayer,
         'tf1x_object_detection.j2',
         'layer_tf1x_object_detection',
         {

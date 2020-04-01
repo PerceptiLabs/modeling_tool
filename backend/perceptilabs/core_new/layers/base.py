@@ -330,37 +330,37 @@ class ObjectDetectionLayer(TrainingLayer):
     
     @property
     @abstractmethod
-    def bbox_loss_training(self) -> float:
+    def loss_bboxes_training(self) -> float:
         """Returns the current loss of the training phase"""        
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def bbox_loss_validation(self) -> float:
+    def loss_bboxes_validation(self) -> float:
         """Returns the current loss of the validation phase"""                
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def bbox_loss_testing(self) -> float:
+    def loss_bboxes_testing(self) -> float:
         """Returns the current loss of the testing phase"""                        
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def classification_loss_training(self) -> float:
+    def loss_classification_training(self) -> float:
         """Returns the current loss of the training phase"""        
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def classification_loss_validation(self) -> float:
+    def loss_classification_validation(self) -> float:
         """Returns the current loss of the validation phase"""                
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def classification_loss_testing(self) -> float:
+    def loss_classification_testing(self) -> float:
         """Returns the current loss of the testing phase"""                        
         raise NotImplementedError
 
@@ -441,11 +441,11 @@ class ObjectDetectionLayer(TrainingLayer):
         return self._testing_iteration
 
     @property
-    def get_confidence(self) -> ndarray:
+    def get_confidence(self) -> np.ndarray:
         """ returns the confidences of the predicted bounding boxes in the image"""
-        return self._confidences
+        raise NotImplementedError
 
     @property
-    def get_bbox_images(self) -> ndarray:
+    def get_bbox_images(self) -> np.ndarray:
         """ returns the images with predicted bboxes"""
-        return self._bbox_images
+        raise NotImplementedError
