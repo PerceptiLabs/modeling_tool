@@ -30,10 +30,15 @@ def create_client(handlers):
 
 @pytest.fixture(autouse=True)
 def shutdown_servers_and_clients():
+    global CLIENTS, SERVERS
+    
     for client in CLIENTS:
         client.stop()
+    CLIENTS = []
+    
     for server in SERVERS:
         server.stop()
+    SERVERS = []
 
         
 def test_pushed_and_subscribed_message_arrives():

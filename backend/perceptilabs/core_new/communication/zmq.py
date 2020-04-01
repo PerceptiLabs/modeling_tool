@@ -71,10 +71,10 @@ class Client:
     def process_messages(self):
         while not self._in_queue.empty():
             key, value = self._in_queue.get()
-            
+
             if key in self._handlers:
                 handler = self._handlers[key]
-                handler(self, key, value)
+                handler(self, key, value)                    
             else:
                 pass # Warning?
 
@@ -109,6 +109,7 @@ class Client:
                 key, value = self._out_queue.get()
                 push_socket.send_multipart([key, value])
                 self._messages_sent += 1
+
 
     def _init_socket(self, ctx, zmq_type, address, options=None):
         socket = ctx.socket(zmq_type)
