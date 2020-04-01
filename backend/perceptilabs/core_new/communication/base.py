@@ -17,6 +17,7 @@ from queue import Queue
 
 
 from perceptilabs.core_new.utils import YieldLevel
+from perceptilabs.utils import KillableThread
 from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
 from perceptilabs.core_new.communication.zmq import Client as ZmqClient, Server as ZmqServer
 
@@ -94,7 +95,7 @@ class TrainingServer:
         self._serialization_fn = serialize
 
     def start(self, threaded=True):
-        self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
+        self._worker_thread = KillableThread(target=self._worker_func, daemon=True)
         self._worker_thread.start()
 
         counter = 0
@@ -104,33 +105,24 @@ class TrainingServer:
             time.sleep(0.1)
             counter += 1
             
-        self._timeout_thread = threading.Thread(target=self._timeout_func, args=(self._worker_thread.ident,), daemon=True)
+        self._timeout_thread = threading.Thread(target=self._timeout_func, daemon=True)
         self._timeout_thread.start()
 
-    def _timeout_func(self, worker_thread_id):
+    def _timeout_func(self):
         while self._is_running.is_set():
-
             if self._step_start is not None:
                 step_time = time.time() - self._step_start
                 if step_time > self._max_step_time:
                     log.info(f"Training step time took {step_time}s, exceeding limit {self._max_step_time}s")
-                    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(worker_thread_id, ctypes.py_object(SystemExit))
-
+                    self._worker_thread.kill()
+                    
                     time.sleep(1)
-                    if res == 0:
-                        self._send_state(State.KILLED)
-                        time.sleep(1) # Ensure it's sent..
+                    self._send_state(State.KILLED)
 
-                        self._is_running.clear()                        
-                        self._zmq_client.stop()
-                        self._zmq_server.stop()                        
-                    else:
-                        ctypes.pythonapi.PyThreadState_SetAsyncExc(worker_thread_id, 0) 
-                        raise RuntimeError("Failed to kill worker thread!")
-                    
+                    self._is_running.clear()                        
+                    self._zmq_client.stop()
+                    self._zmq_server.stop()                        
                     break
-                    
-                    log.info('res'+str(res))
             time.sleep(1)
 
     def _worker_func(self):
