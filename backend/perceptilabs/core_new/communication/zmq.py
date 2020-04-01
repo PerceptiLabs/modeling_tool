@@ -98,7 +98,7 @@ class Client:
         poller.register(subscriber_socket, zmq.POLLIN)
         
         while self._is_running.is_set():
-            items = dict(poller.poll(timeout=0.1))
+            items = dict(poller.poll(timeout=0.01))
             
             if subscriber_socket in items:
                 key, value = subscriber_socket.recv_multipart()

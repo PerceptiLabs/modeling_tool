@@ -36,18 +36,107 @@ class Core:
         self._is_running.clear()
         self._client = None
         
-    def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None):
+    def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None, auto_stop=False):
         on_iterate = on_iterate or []
         try:
-            self._run_internal(graph_spec, session_id, on_iterate)
+            self._run_internal(
+                graph_spec,
+                session_id=session_id,
+                on_iterate=on_iterate,
+                auto_stop=auto_stop
+            )
         except Exception as e:
             log.exception("Exception in core.run")
             raise
         finally:
             log.info(f"Stopping core with session id {session_id}")
             self.stop()                
+
+    def _run_internal(self, graph_spec, session_id=None, on_iterate=None, auto_stop=False):
+        session_id = session_id or uuid.uuid4().hex
+
+        from perceptilabs.core_new.layers.script import ScriptFactory
+        self._script_factory = ScriptFactory()
+
+        graph = self._graph_builder.build_from_spec(graph_spec)
+
+        code, line_to_node_map = self._script_factory.make(graph, session_id)
+
+        with open('training_script.py', 'wt') as f:
+            f.write(code)
+            f.flush()
+
+
+        def fn_start():
+            import importlib
+            
+            with open('training_script.py', 'rt') as f:            
+                spec = importlib.util.spec_from_file_location("deployed_module", f.name)
+                module = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(module)
+                module.main()
+
+        from multiprocessing import Process
+        process = Process(target=fn_start) # Process > thread to avoid interference between TensorFlow instances.
+        process.start()
+        time.sleep(3) # Give it some time to start.. TODO: wait until shared memory is available, after that we can connect at will.
+
+
+        from perceptilabs.core_new.communication import TrainingClient, State
+        training_client = TrainingClient(
+            6556, 6557,
+            graph_builder=self._graph_builder
+        )
+        #import pdb; pdb.set_trace()
+
+        training_client.connect()
+        while training_client.remote_status == None:
+            print("waiting for ready!!!")            
+            time.sleep(0.1)
         
-    def _run_internal(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None):        
+        training_client.request_start()
+        while training_client.remote_status == State.READY:
+            print("waiting for running!!!")
+            time.sleep(0.1)
+
+        if training_client.remote_status == State.RUNNING:
+            log.info(f"Training client connected to server. Session id: {session_id}")
+        else:
+            raise RuntimeError(f"Expected status {State.RUNNING}, got {training_client.remote_status}!")
+
+
+        counter = 0
+        while training_client.remote_status in [State.RUNNING, State.PAUSED]:
+            if counter % 30 == 0:
+                log.info("Training running/paused. Graph count: " + str(len(self._graphs)))                
+            self._graphs = training_client.graphs.copy()
+            time.sleep(0.1)
+            counter += 1
+
+            
+        if auto_stop:
+            training_client.request_stop()            
+                        
+        counter = 0
+        while training_client.remote_status == State.IDLE:
+            if counter % 30 == 0:
+                log.info("Idle. Graph count: " + str(len(self._graphs)))                     
+            time.sleep(0.1)
+
+
+        if training_client.remote_status == State.DONE:
+            log.info("Done!: ")
+        elif training_client.remote_status == None:
+            log.info("Done, but with none! ")            
+        elif training_client.remote_status == State.KILLED:
+            log.info("Killed!!!")            
+            
+
+        training_client.stop()
+
+        
+        
+    def _run_internal_(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None):        
         session_id = session_id or uuid.uuid4().hex
         log.info(f"Running core with session id {session_id}")
 
@@ -150,10 +239,10 @@ class Core:
             return self._graphs.copy()
 
     def stop(self):
-        if self._client is not None:
-            self._client.send_event('on_stop')
-            self._client.stop()
-            log.info(f"Sent stop command to deployed core")                        
+        #if self._client is not None:
+        #    self._client.send_event('on_stop')
+        #    self._client.stop()
+        #    log.info(f"Sent stop command to deployed core")                        
             
         self._is_running.clear()
         

@@ -160,7 +160,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
         deployment_pipe,
     )
 
-    core.run(graph_spec_binary_classification)
+    core.run(graph_spec_binary_classification, auto_stop=True)
 
     #print("POST RUN CALL")
     
@@ -201,7 +201,7 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
     json_network = graph_spec_binary_classification
     json_network['Layers']['6']['Properties']['Distributed'] = True
 
-    core.run(json_network)
+    core.run(json_network, auto_stop=True)
 
     #print("POST RUN CALL")
     

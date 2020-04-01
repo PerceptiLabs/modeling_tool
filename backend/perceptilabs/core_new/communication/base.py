@@ -44,9 +44,11 @@ class State:
     RUNNING = 'running'
     PAUSED = 'paused'
     IDLE = 'idle'
-    DONE = 'done'
+    DONE = 'done'    
     KILLED = 'killed'
+    STOPPED = 'stopped'    
 
+    # (FROM_STATE, TO_STATE)
     allowed_transitions = set((
         (INITIALIZING, READY),
         (READY, RUNNING),
@@ -56,7 +58,7 @@ class State:
         (PAUSED, RUNNING),
         (PAUSED, DONE),
         (RUNNING, IDLE),
-        (IDLE, DONE),                        
+        (IDLE, DONE),        
     ))
     
     def __init__(self):
@@ -67,6 +69,12 @@ class State:
     def value(self):
         return self._state
 
+    def __str__(self):
+        return str(self.value)
+
+    def __repr__(self):
+        return str(self.value)
+    
     def transition(self, new_state):
         if self._state == new_state:
             return
@@ -94,7 +102,7 @@ class TrainingServer:
         self._snapshot_builder = snapshot_builder
         self._serialization_fn = serialize
 
-    def start(self, threaded=True):
+    def start(self, block=False):
         self._worker_thread = KillableThread(target=self._worker_func, daemon=True)
         self._worker_thread.start()
 
@@ -108,6 +116,9 @@ class TrainingServer:
         self._timeout_thread = threading.Thread(target=self._timeout_func, daemon=True)
         self._timeout_thread.start()
 
+        while block and self._is_running.is_set():
+            time.sleep(1)
+        
     def _timeout_func(self):
         while self._is_running.is_set():
             if self._step_start is not None:
@@ -124,6 +135,7 @@ class TrainingServer:
                     self._zmq_server.stop()                        
                     break
             time.sleep(1)
+        log.info("Leaving timeout function")
 
     def _worker_func(self):
         log.info("Entering worker func [TrainingServer]")
@@ -158,9 +170,9 @@ class TrainingServer:
 
         counter = 0
         self._is_running.set()
-        while self._is_running.is_set() and training_state.value is not State.DONE:
-            if counter % 1000 == 0:
-                log.info(f"Worker loop iteration {counter} [TrainingServer]")                                
+        while self._is_running.is_set() and training_state.value != State.DONE:
+            if counter % 100 == 0:
+                log.info(f"Worker training loop iteration {counter}. Status: {training_state} [TrainingServer]")
             self._zmq_client.process_messages()
 
             if training_state.value == State.RUNNING:
@@ -171,12 +183,15 @@ class TrainingServer:
                     self._send_userland_error(e)
                     log.exception("Userland error on iteration. Setting status to done.")
                     training_state.transition(State.DONE)
+                finally:
+                    self._step_start = None                    
             else:
                 step_result = None
                     
             if step_result is sentinel and training_state.value == State.RUNNING:
                 training_state.transition(State.IDLE)
                 self._send_state(training_state.value)
+
                 
             if step_result is YieldLevel.SNAPSHOT:
                 self._send_graph(self._graph)
@@ -186,11 +201,13 @@ class TrainingServer:
                 
             counter += 1
 
+        training_state.transition(State.DONE)            
         self._send_state(training_state.value)                    
         log.info("Closing ZeroMQ client [TrainingServer]")                
         self._zmq_client.stop()
         log.info("Closing ZeroMQ server [TrainingServer]")                        
         self._zmq_server.stop()
+        self._is_running.clear()
 
     def _call_userland_method(self, training_state, method_fn, *args, **kwargs):
         try:
@@ -209,7 +226,7 @@ class TrainingServer:
         log.info(f"Handling raw event '{event_type}'")                        
         if event_type == 'on_connect':
             self._send_state(training_state.value)
-        if event_type == 'on_request_start':
+        elif event_type == 'on_request_start':
             training_state.transition(State.RUNNING)
             self._send_state(training_state.value)
         elif event_type == 'on_request_stop':
@@ -266,7 +283,7 @@ class TrainingServer:
 
             
 class TrainingClient:
-    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, userland_error_handler=None, log_message_handler=None, max_response_time=10):
+    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, userland_error_handler=None, log_message_handler=None, max_response_time=15):
         self._is_running = threading.Event()
         self._is_running.clear()        
 
@@ -289,7 +306,7 @@ class TrainingClient:
 
     @property
     def graphs(self):
-        return self._graphs
+        return self._graphs.copy()
 
     def _on_receive_state(self, value):
         self._remote_status = deserialize(value)
@@ -357,7 +374,7 @@ class TrainingClient:
         counter = 0
         self._is_running.set()
         while self._is_running.is_set():
-            if counter % 1000 == 0:
+            if counter % 100 == 0:
                 log.info(f"Worker loop iteration {counter} [TrainingClient]")                                      
             self._zmq_client.process_messages()
 
@@ -367,8 +384,9 @@ class TrainingClient:
             if self._server_not_responding():
                 log.info("Server not responding. Leaving worker loop.")
                 self._is_running.clear()
+                # TODO: callback? some other exit flag than remote_status ? 
 
-            time.sleep(0.1)
+            time.sleep(0.01)
             counter += 1
             
         self._zmq_client.stop()

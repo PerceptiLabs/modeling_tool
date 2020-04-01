@@ -179,7 +179,7 @@ class Graph:
         return self._nx_graph.edges
 
     def run(self):
-        self.active_training_node.layer.run(self)
+        return self.active_training_node.layer.run(self)
     
 #    def clone(self):
 #        layers = {n.layer_id: node.layer.__class__() for n in self.nodes}

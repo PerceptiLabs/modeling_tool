@@ -49,11 +49,10 @@ class ScriptFactory:
             'import sys',
             'import logging'
         ])
-
         
         for node in graph.nodes:
             layer_def = self._definition_table.get(node.layer_type)
-
+            
             for stmt in layer_def.import_statements:
                 if not is_syntax_ok(stmt):
                     raise ScriptBuildError(f"Invalid syntax for import statement '{stmt}' found in layer def for {node.layer_type}")
@@ -63,8 +62,7 @@ class ScriptFactory:
                 else:
                     other_imports.add(stmt)
 
-        code = ''
-        
+        code = ''        
         for stmt in sorted(other_imports, key=len):
             code += stmt + '\n'
         if len(code) > 0:
@@ -74,7 +72,6 @@ class ScriptFactory:
             code += stmt + '\n'            
         if len(code) > 0:
             code += '\n'
-
         return code
 
     def _create_logging_snippet(self):
@@ -104,17 +101,16 @@ class ScriptFactory:
 
         if len(code) > 0:
             code += '\n'
-            
         return code, line_to_node_map
 
     def _create_graph_snippet(self, graph):
-        code = "LAYERS = {\n"
+        code = "layers = {\n"
         for node in graph.nodes:
             layer_name = node.layer_type + node.layer_id
             code += "    '" + node.layer_id + "': " + layer_name + "(),\n"
         code += "}\n\n"
 
-        code += "EDGES = {\n"
+        code += "edges = {\n"
         for node in graph.nodes:
             from_id = node.layer_id
             for _, to_id in node.layer_spec['forward_connections']:
@@ -122,7 +118,7 @@ class ScriptFactory:
         code += "}\n\n"
 
         code += "graph_builder = GraphBuilder()\n"
-        code += "graph = graph_builder.build(LAYERS, EDGES)\n\n"        
+        code += "graph = graph_builder.build(layers, edges)\n\n"        
         return code
 
     def _create_training_server_snippet(self, session_id):
@@ -131,13 +127,14 @@ class ScriptFactory:
         code += "    REPLICATED_PROPERTIES_TABLE\n"
         code += ")\n"        
         code += "server = TrainingServer(\n"
-        code += "    6556, 6557,\n" # TODO: use this and sharedmemory for now... https://stackoverflow.com/questions/11341795/zeromq-and-bind-to-random-port-how-to-get-port-chosen
+        code += "    6556, 6557,\n" # TODO: use <link> and sharedmemory for now... https://stackoverflow.com/questions/11341795/zeromq-and-bind-to-random-port-how-to-get-port-chosen
         code += "    graph,\n"
         code += "    snapshot_builder=snapshot_builder\n"
         code += ")\n\n"
         return code
 
     def _create_rest_server_snippet(self):
+        # TODO: a rest endpoint that provides metrics by reading from the TrainingServer
         return ""
 
     def _create_main_block(self):
