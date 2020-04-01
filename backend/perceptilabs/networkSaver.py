@@ -22,7 +22,8 @@ def createReferenceString(variable):
         return "'loc:@"+str(variable.name).split(":")[0]+"'"
 
 def splitStrings(codeString):
-    splitString=re.split(';|\n',codeString)
+    # splitString=re.split(';|\n',codeString)
+    splitString=re.split('\n',codeString)
     splitString=list(filter(None,splitString))
     return splitString
 

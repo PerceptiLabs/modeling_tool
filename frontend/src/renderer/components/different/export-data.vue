@@ -44,7 +44,7 @@
 <script>
 import { googleAnalytics } from '@/core/analytics';
 import BaseSwitcher     from "@/components/different/switcher.vue";
-import {loadPathFolder} from '@/core/helpers.js'
+import {loadPathFolder, isWeb} from '@/core/helpers.js'
 import BaseAccordion    from "@/components/base/accordion.vue";
 
 
@@ -77,8 +77,13 @@ export default {
       this.$store.dispatch('globalView/SET_filePickerPopup', false);
     },
     saveLoadFile() {
-      // sets the value of the showFilePickerPopup as the callback function, as it's truthy
-      this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setExportPath});
+      if(isWeb()) {
+        this.$store.dispatch('globalView/SET_filePickerPopup', {confirmCallback: this.setExportPath});
+      } else {
+        loadPathFolder()
+          .then((pathArr)=> this.settings.Location = pathArr[0] )
+          .catch((err)=> console.error(err) ) 
+      }
     },
     exportData() {
       googleAnalytics.trackCustomEvent('export-data', {

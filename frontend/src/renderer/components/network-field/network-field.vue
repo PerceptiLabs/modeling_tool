@@ -130,11 +130,6 @@
     stroke: $col-primary; //inline styles for the canvas plagin
     stroke-width: 3;
     fill: transparent;
-  }
-  .svg-arrow_line {
-    stroke: $col-primary; //inline styles for the canvas plagin
-    stroke-width: 3;
-    fill: transparent;
     &.is-focused {
       stroke-width: 5 !important;
     }

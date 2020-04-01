@@ -22,44 +22,50 @@
   import TheWorkspace       from '@/components/workspace/the-workspace.vue'
   import TheTutorialStoryboard from "@/components/tutorial/tutorial-storyboard.vue";
   import {shouldHideSidebar, calculateSidebarScaleCoefficient } from "../../core/helpers";
+  import {isWeb} from "@/core/helpers";
 
   export default {
     name: 'pageQuantum',
     components: { TheToolbar, TheLayersbar, TheSidebar, TheWorkspace, TheTutorialStoryboard },
     created() {
+      if(isWeb()) {
+        this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
+          .then(_ => {
+            if(!this.workspaceContent.length) { this.ADD_network(); }
 
-      this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage')
-        .then(_ => {
-          if(!this.workspaceContent.length) { this.ADD_network(); }
+            // request charts if the page has been refreshed, and
+            // the current tab is the first one
 
-          // request charts if the page has been refreshed, and
-          // the current tab is the first one
-
-          this.SET_chartRequests(this.workspaceContent[0].networkID);
-        });
-      //this.DELETE_userWorkspace();
+            this.SET_chartRequests(this.workspaceContent[0].networkID);
+          });
+      } else {
+        if(!this.workspaceContent.length) this.ADD_network();
+        this.DELETE_userWorkspace();
+      }
     },
     mounted() {
       this.showPage = true;
       this.set_appIsOpen(true);
       window.addEventListener("resize",  this.resizeEv, false);
-      window.addEventListener('beforeunload', this.saveWorkspaces);
+      if(isWeb()) {
+        window.addEventListener('beforeunload', this.saveWorkspaces);
+      }
       this.$nextTick(()=> {
         this.addDragListeners();
         if(this.getLocalUserInfo && this.getLocalUserInfo.showFirstAppTutorial) this.setShowStoryboard(true)
       });
-
-      if(shouldHideSidebar()) {
-        this.setSidebarStateAction(false);
-      }
-      calculateSidebarScaleCoefficient();
-      if(localStorage.getItem(localStorageGridKey)) {
-        this.setGridValue(localStorage.getItem(localStorageGridKey) === 'true');
+      if(isWeb()) {
+        if(shouldHideSidebar()) {
+          this.setSidebarStateAction(false);
+        }
+        calculateSidebarScaleCoefficient(); 
       }
     },
     beforeDestroy() {
       window.removeEventListener("resize", this.resizeEv, false);
-      window.removeEventListener('beforeunload', this.saveWorkspaces);
+      if(isWeb()) {
+        window.removeEventListener('beforeunload', this.saveWorkspaces);
+      }
       this.removeDragListeners();
       this.set_appIsOpen(false);
     },
@@ -137,6 +143,7 @@
         this.$refs.layersbar.removeEventListener("drop", this.dragDrop, false);
       },
       dragStart(event) {
+        if(isWeb())
         event.dataTransfer.setData('text/plain', event.target.outerHTML);
         if ( event.target.draggable
           && this.editIsOpen
@@ -151,7 +158,7 @@
           this.dragMeta.dragged = event.target;
           this.add_dragElement(event);
           event.target.style.opacity = .75;
-
+          if(isWeb())
           this.adjustDraggingForFireFox(event);
         }
       },

@@ -34,9 +34,16 @@
   import TripleInput        from "@/components/base/triple-input";
   import SpinnerUploadFile  from "@/components/different/spinner-upload-file.vue";
   import mixinData  from '@/core/mixins/net-element-settings-data.js';
+
+
+  let mixinArray = [];
+  if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
+    mixinArray.push(mixinData);
+  }
+  
 export default {
   name: "SettingsFileList",
-  mixins: [mixinData],
+  mixins: mixinArray,
   components: {TripleInput, SpinnerUploadFile},
   props: {
     value: {

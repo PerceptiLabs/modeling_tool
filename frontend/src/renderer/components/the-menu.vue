@@ -46,11 +46,15 @@
 </template>
 
 <script>
-  //import { ipcRenderer } from 'electron'
   import { mapGetters, mapMutations, mapActions } from 'vuex';
   import { baseUrlSite } from '@/core/constants.js';
-  import { goToLink, isOsMacintosh, isDesktopApp } from '@/core/helpers.js'
-
+  import { isElectron, goToLink, isOsMacintosh, isDesktopApp } from '@/core/helpers.js'
+  
+  let ipcRenderer = null;
+  if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
+    const electron = require('electron');
+    ipcRenderer = electron.ipcRenderer;
+  }
 export default {
   name: "TheMenu",
   mounted() {
@@ -111,9 +115,9 @@ export default {
     }
   },
   watch: {
-    // navMenu(newMenu) {
-    //   if(process.platform === 'darwin') ipcRenderer.send('app-menu', newMenu)
-    // }
+    navMenu(newMenu) {
+      if(process.platform === 'darwin' && isElectron()) ipcRenderer.send('app-menu', newMenu)
+    }
   },
   methods: {
     ...mapMutations({
@@ -146,18 +150,22 @@ export default {
         item.submenu.forEach((subItem) => {
           if(subItem.label) {
             if(isRemove) {
-              //ipcRenderer.removeAllListeners(`menu-event-${subItem.label}`);
+              if(isElectron())
+              ipcRenderer.removeAllListeners(`menu-event-${subItem.label}`);
             }
             else {
-              //ipcRenderer.on(`menu-event-${subItem.label}`, ()=> { subItem.active() });
+              if(isElectron())
+              ipcRenderer.on(`menu-event-${subItem.label}`, ()=> { subItem.active() });
             }
           }
         })
       });
     },
     checkUpdate() {
-      // this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
-      // ipcRenderer.send('check-update');
+      if(isElectron()) {
+        this.$store.commit('mod_autoUpdate/SET_showNotAvailable', true);
+        ipcRenderer.send('check-update'); 
+      }
     },
     addNewNetwork() {
       if(this.isTutorialMode) {

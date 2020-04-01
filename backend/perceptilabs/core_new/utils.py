@@ -1,5 +1,20 @@
 import tensorflow as tf
 from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
+from enum import Enum
+
+class YieldLevel(Enum):
+    STOP = 0
+    DEFAULT = 1
+    SNAPSHOT = 2
+    
+
+class Picklable:
+    pass
+
+
+class Picklable:
+    pass
+
 
 def set_tensorflow_mode(mode):
     #Hack to turn eager mode on and off so it does not affect the computational core (since eager mode is global) (can be a problem if running when core already is started?)

@@ -1,5 +1,14 @@
-//import {shell, ipcRenderer }   from 'electron'
-//import fs    from 'fs';
+let shell = null;
+let ipcRenderer = null;
+let fs = null;
+
+if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
+  const electron = require('electron');
+  const fileSystem = require('fs');
+  shell = electron.shell;
+  ipcRenderer = electron.ipcRenderer;
+  fs = fileSystem;
+}
 import store from '@/store'
 
 import {
@@ -11,24 +20,24 @@ import {
 
 /*modal window*/
 const openLoadDialog = function (options) {
-/*  return new Promise((success, reject) => {
+  return new Promise((success, reject) => {
     ipcRenderer.on('open-dialog_path', (event, path) => {
       ipcRenderer.removeAllListeners('open-dialog_path');
       !!(path && path.length) ? success(path) : reject();
     });
     ipcRenderer.send('open-dialog', options);
-  });*/
+  });
 };
 
 const openSaveDialog = function (options) {
-/*  console.log('openSaveDialog', options);
+  console.log('openSaveDialog', options);
   return new Promise((success, reject) => {
     ipcRenderer.on('open-save-dialog_path', (event, path) => {
       ipcRenderer.removeAllListeners('open-save-dialog_path');
       !!(path && path.length) ? success(path) : reject();
     });
     ipcRenderer.send('open-save-dialog', options);
-  });*/
+  });
 };
 
 const loadPathFolder = function (customOptions) {
@@ -144,8 +153,14 @@ const throttleEv = function (func, ms) {
 };
 
 const goToLink = function (url) {
-  console.log(url);
-  //shell.openExternal(url);
+  if(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1) {
+    shell.openExternal(url);
+  } else {
+    let link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('target', '_blank');
+    link.click();
+  }
 };
 
 const deepCopy = function (object) {
@@ -162,6 +177,7 @@ const deepCloneNetwork = function (object) {
     ' ')
   );
 };
+
 
 const isLocalStorageAvailable = function () {
   try {
@@ -243,7 +259,35 @@ const parseJWT = (jwt) => {
     console.error('parseJWT', error);
     return;
   }
-}
+};
+
+const isElectron = () => {
+  return navigator.userAgent.toLowerCase().indexOf(' electron/') > -1;
+};
+const isWeb = () => {
+  return !(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1);
+};
+
+const setAppTypeRootClasses = () => {
+  if(isWeb()) {
+    document.body.classList.add('is-web');
+    document.getElementsByTagName('html')[0].classList.add('is-web');
+  } else {
+    document.body.classList.add('is-electron');
+    document.getElementsByTagName('html')[0].classList.add('is-electron');
+  }
+};
+
+const fixFilepathSeparator = function fileUrl(filepath) {
+  if (!filepath) { return filepath; }
+
+  if (filepath.startsWith('\\\\')) {
+    // if it's a network share, we have to keep the \\\\
+    return '\\\\' + filepath.substring(2).replace(/\\/g, '/');
+  }
+
+  return filepath.replace(/\\/g, '/');
+};
 
 export {
   openLoadDialog,
@@ -270,4 +314,8 @@ export {
   calculateSidebarScaleCoefficient,
   parseJWT,
   isOsMacintosh,
+  isElectron,
+  isWeb,
+  fixFilepathSeparator,
+  setAppTypeRootClasses,
 }

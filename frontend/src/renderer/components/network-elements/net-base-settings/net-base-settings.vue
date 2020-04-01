@@ -47,9 +47,16 @@
 </template>
 
 <script>
-  //import coreRequest  from "@/core/apiCore.js";
-  import {coreRequest, openWS}  from "@/core/apiWeb.js";
+  import coreRequestElectron  from "@/core/apiCore.js";
+  import {coreRequest as coreRequestWeb, openWS}  from "@/core/apiWeb.js";
   import SettingsPreview  from "@/components/network-elements/elements-settings/setting-preview.vue";
+  let coreRequest = null;
+
+  if(!(navigator.userAgent.toLowerCase().indexOf(' electron/') > -1)) {
+    coreRequest = coreRequestWeb;
+  } else {
+    coreRequest = coreRequestElectron;
+  }
 export default {
   name: 'NetBaseSettings',
   components: {SettingsPreview },
@@ -134,7 +141,10 @@ export default {
     box-shadow: $layer-shad;
   }
   .popup_body {
-    max-width: calc(50vw - #{$w-sidebar});
+    // max-width: calc(50vw - #{$w-sidebar});
+    .is-electron & {
+      max-width: calc(50vw - #{$w-sidebar});
+    }
     min-width: 29rem;
   }
   .popup_header {

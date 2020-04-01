@@ -6,20 +6,26 @@
         img(src="./../../../../static/img/perceptilabs-logo-header.svg" alt="PerceptiLabs logo")
     the-menu
 
-    //-ul.app-header_actions
+    ul(v-if="!isWeb").app-header_actions
       button.btn.btn--app-minify(type="button" @click="appMinimize()").i.icon.icon-app-minimize
       button.btn.btn--app-full(type="button"
         @click="appMaximize"
-        /:class="{'icon-app-restore-down': showRestoreIcon, 'icon-app-resize': !showRestoreIcon}").i.icon
+        :class="{'icon-app-restore-down': showRestoreIcon, 'icon-app-resize': !showRestoreIcon}").i.icon
       button.btn.btn--app-close(type="button" @click="appClose()").i.icon.icon-app-close
 </template>
 
 <script>
   import TheMenu from '@/components/the-menu.vue'
+  import {isWeb} from "@/core/helpers";
 
 export default {
   name: "HeaderWin",
   components: {TheMenu},
+  data: function() {
+    return {
+      isWeb: isWeb(),
+    }
+  },
   computed: {
     showRestoreIcon() {
       return this.$store.state.globalView.appIsFullView
@@ -48,11 +54,13 @@ export default {
   @import "../../scss/base";
   .app-header {
     display: flex;
-    // display: none;
     align-items: center;
     height: $h-header-win;
     background: #272727;
     font-family: sans-serif;
+  }
+  .d-none {
+    display: none;
   }
   .app-header_logo {
     margin: 0 12px;

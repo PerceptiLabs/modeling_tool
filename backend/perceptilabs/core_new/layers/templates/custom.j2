@@ -1,0 +1,23 @@
+{% macro layer_custom_inner(layer_name, code) %}
+class {{layer_name}}(InnerLayer):
+    def __call__(self, x: ...) -> Any:
+        """ Returns a transformed version of the input data.
+
+        Args:
+            x: some form of input (e.g., a tf.Tensor).
+
+        Returns:
+            The transformed input data.
+        """
+        return x
+
+    @property
+    def variables(self) -> Dict[str, Picklable]:
+        """Any variables belonging to this layer that should be rendered in the frontend.
+        
+        Returns:
+            A dictionary with variable names for keys and picklables for values.
+        """
+
+        return {}
+{% endmacro %}

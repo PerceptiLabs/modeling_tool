@@ -12,7 +12,7 @@
   import CodeMirror from 'codemirror/lib/codemirror.js';
   import 'codemirror/mode/python/python.js'
   // theme css
-  import 'codemirror/lib/codemirror.css'
+  // import 'codemirror/lib/codemirror.css'
   //import 'codemirror/theme/monokai.css'
   //import 'codemirror/theme/base16-dark.css' //#5B657B
   // require active-line.js
@@ -202,9 +202,26 @@
 <style lang="scss">
   @import "../../../scss/base";
   @import "../../../scss/components/vscode-theme-dark_plus";
+  @import "~codemirror/lib/codemirror.css";
+  
+  .code-hq {
+    max-width: calc(50vw - #{$w-sidebar} + 123px);
+  }
+  .popup_body--show-code {
+    .code-hq  {
+      max-width: none;
+    }
+  }
+  
   .code-hq {
     //font-size: 16px;
     overflow: auto;
+    * {
+      -webkit-user-select: initial;
+      -moz-user-select: initial;
+      -ms-user-select: initial;
+      user-select: initial;
+    }
   }
   .code_full-view .CodeMirror {
     height: 100%;
@@ -268,7 +285,7 @@
     position: absolute;
     background: rgba($bg-scroll, .5);
     border-radius: 3px;
-    transition: 0.3s;
+    /*transition: 0.3s;*/
   }
 
   .CodeMirror-overlayscroll-horizontal div:hover, .CodeMirror-overlayscroll-vertical div:hover {
