@@ -142,7 +142,7 @@ export default {
       this.fetchPathInformation(breadcrumbPath);
     },
     calcRootFolderPath() {
-      let folderPath = this.osPathPrefix + this.osPathSuffix ;
+      let folderPath = isOsWindows() ? '.' : this.osPathPrefix + this.osPathSuffix ;
       this.fetchPathInformation(folderPath);
     },
     calcFolderPath(dirName) {
