@@ -1,9 +1,19 @@
+.workspace_tab-list {
+  width: calc(100% - 3rem);
+}
 
 .workspace_tab {
-  width: 16.7143em;
   display: flex;
   align-items: center;
+
+  flex: 1 1 16rem;
   padding-right: 0;
+  margin-left: 1rem;
+
+  &.bookmark_tab {
+    margin-right: 0;
+  }
+
   &.workspace_tab--disable {
     pointer-events: none;
   }
@@ -38,6 +48,7 @@
     margin-left: -1.25rem;
     padding-left: .8em;
     padding-right: .8em;
+    margin-right: 0;
     &.active, &:hover {
       background: $color-10;
       color: $bg-toolbar;
