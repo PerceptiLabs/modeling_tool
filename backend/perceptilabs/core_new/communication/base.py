@@ -78,6 +78,7 @@ class Client:
         requests.post(self._flask_address+"/command", json=json_dict)                
         
     def stop(self):
+        self._flask_status = {}
         self._is_running.clear()
 
     def _flask_worker(self):
@@ -92,14 +93,14 @@ class Client:
             try:
                 process()
             except Exception as e:
-                failures.append(e)                
+                failures.append(str(e))                
             else:
                 failures = []
             finally:
                 time.sleep(0.5)
                 
             if len(failures) >= self.MAX_FLASK_FAILURES:
-                log.error(f"Flask worker failed {failures} times in a row: {', '.join(failures)}. Stopping communication client!")
+                log.error(f"Flask worker failed {len(failures)} times in a row: {', '.join(failures)}. Stopping communication client!")
                 self.stop()
 
 

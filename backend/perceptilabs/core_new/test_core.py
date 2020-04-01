@@ -5,6 +5,7 @@ import logging
 import tempfile
 import numpy as np
 from queue import Queue
+from unittest.mock import MagicMock
 
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.core2 import Core
@@ -12,7 +13,7 @@ from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
-from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
+from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe, DeploymentError
 
 
 logging.basicConfig(stream=sys.stdout,
@@ -20,6 +21,13 @@ logging.basicConfig(stream=sys.stdout,
                     level=logging.DEBUG)
 
 
+@pytest.fixture
+def graph_builder():
+    replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
+    graph_builder = GraphBuilder(replica_by_name)    
+    yield graph_builder
+
+    
 @pytest.fixture
 def graph_spec_binary_classification():
     n_classes = 10
@@ -146,7 +154,7 @@ def graph_spec_binary_classification():
     
 
 @pytest.mark.slow
-def test_train_normal_converges(graph_spec_binary_classification):
+def test_train_normal_converges(graph_spec_binary_classification, graph_builder):
     
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(script_factory)
@@ -184,15 +192,11 @@ def test_train_normal_converges(graph_spec_binary_classification):
 
 
 @pytest.mark.slow
-def test_train_normal_distributed_converges(graph_spec_binary_classification):
-    
+def test_train_normal_distributed_converges(graph_spec_binary_classification, graph_builder):
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(script_factory)
     #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
 
-    replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
-    graph_builder = GraphBuilder(replica_by_name)    
-    
     core = Core(
         graph_builder,
         deployment_pipe,
@@ -222,3 +226,71 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
     
     assert np.mean(accuracy_list[-10:]) >= 0.75
 
+
+
+
+def test_core_handles_training_script_does_not_deploy(graph_spec_binary_classification, graph_builder):
+    code  = "def main(wait=False):\n"
+    code += "    pass"
+
+    def fn_make(graph, config):
+        return code, {}
+
+    script_factory = MagicMock()
+    script_factory.make.side_effect = fn_make
+
+    deployment_pipe = InProcessDeploymentPipe(script_factory, timeout=1)
+
+    core = Core(
+        graph_builder,
+        deployment_pipe,
+    )
+
+    with pytest.raises(DeploymentError):
+        core.run(graph_spec_binary_classification)
+    
+
+def test_core_handles_training_script_stops_responding(graph_spec_binary_classification, graph_builder):
+
+
+    def fn_make(graph, config):
+        code  = "from flask import Flask, jsonify, abort\n"
+        code += 'from perceptilabs.core_new.communication.status import *\n'                
+        code += "app = Flask(__name__)\n"
+        code += "\n"
+        code += "n_calls = 0\n"        
+        code += "@app.route('/')\n"
+        code += "def endpoint_index():\n"
+        code += "    global n_calls\n"
+        code += "    if n_calls < 2:\n"
+        code += "        result = {\n"
+        code += "            'status': STATUS_READY if n_calls == 0 else STATUS_STARTED,\n"
+        code += "            'n_snapshots': 0,\n"
+        code += "            'snapshot_count': 0,\n"
+        code += "            'running_time': None\n"        
+        code += "        }\n"
+        code += "        n_calls += 1\n"        
+        code += "        return jsonify(result)\n"                
+        code += "    else:\n"
+        code += "        abort(404)\n"
+        code += "        n_calls += 1\n"
+
+        code += "\n"    
+        code += "def main(wait=False):\n"
+        code += "    app.run(port=" + str(config['port_flask']) + ")\n"        
+        return code, {}
+
+    script_factory = MagicMock()
+    script_factory.make.side_effect = fn_make
+
+    deployment_pipe = InProcessDeploymentPipe(script_factory, timeout=1)
+
+    core = Core(
+        graph_builder,
+        deployment_pipe,
+    )
+
+    with pytest.raises(DeploymentError):
+        core.run(graph_spec_binary_classification)
+    
+        

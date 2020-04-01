@@ -52,7 +52,7 @@ class DeploymentPipe(ABC):
         ready = False        
         errors = []
         
-        while t0 - time.time() < timeout:
+        while time.time() - t0 < timeout:
             try:
                 if client.status == STATUS_READY:
                     ready = True
@@ -60,6 +60,7 @@ class DeploymentPipe(ABC):
             except Exception as e:
                 print(e)
                 errors.append(e)
+                
             time.sleep(0.3)
 
         if not ready:
@@ -89,13 +90,13 @@ class DeploymentPipe(ABC):
         return self.config_table[session_id].copy()
 
 class InProcessDeploymentPipe(DeploymentPipe):
-    def __init__(self, script_factory):
-        self._script_factory = script_factory        
+    def __init__(self, script_factory, timeout=10):
+        self._script_factory = script_factory
+        self._timeout = timeout
 
-    def deploy(self, graph, session_id: str, timeout=10):
+    def deploy(self, graph, session_id: str):
         config = self.get_session_config(session_id)
         code, line_to_node_map = self._script_factory.make(graph, config)
-
 
         self._line_to_node_map = line_to_node_map # TODO: inject script_factory instead of exposing this here
         
@@ -111,8 +112,8 @@ class InProcessDeploymentPipe(DeploymentPipe):
 
             self._thread = threading.Thread(target=module.main, kwargs={'wait': True}, daemon=True)
             self._thread.start()
-
-        return self._establish_communication(config, timeout)
+            
+        return self._establish_communication(config, self._timeout)
         
     @property
     def is_active(self):
