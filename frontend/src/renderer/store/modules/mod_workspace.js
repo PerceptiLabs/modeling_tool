@@ -520,16 +520,12 @@ const mutations = {
       }
     }
   },
-  async delete_element(state, {getters, dispatch}) {
+  delete_element(state, {getters, dispatch}) {
     let arrSelect = getters.GET_currentSelectedEl;
     if(!arrSelect.length) return;
     let arrSelectID = [];
-    let linkedNet = getters.GET_currentNetworkElementList;
-    removeIsSelectedAfterDeleteItems(arrSelect);
-    // make new history with unselected item
-    await dispatch('mod_events/EVENT_calcArray', null, {root: true});
 
-    let net = {...linkedNet};
+    let net = {...getters.GET_currentNetworkElementList};
     deleteElement(arrSelect);
     for(let el in net) {
       let element = net[el];
@@ -564,11 +560,6 @@ const mutations = {
         }
         delete net[el.layerId];
         arrSelectID.push(el.layerId);
-      });
-    }
-    function removeIsSelectedAfterDeleteItems(arrSelect){
-      arrSelect.forEach((el)=> {
-        linkedNet[el.layerId].layerMeta.isSelected = false;
       });
     }
   },
@@ -1224,7 +1215,7 @@ const actions = {
   },
   DELETE_element({commit, getters, dispatch}) {
     if(getters.GET_networkIsOpen) {
-      commit('delete_element', {getters, dispatch, commit});
+      commit('delete_element', {getters, dispatch});
       dispatch('mod_api/API_getOutputDim', null, {root: true});
     }
   },
