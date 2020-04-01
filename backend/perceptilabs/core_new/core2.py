@@ -135,7 +135,6 @@ class Core:
 
             userland_error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
 
-
             with sentry_sdk.push_scope() as scope:
                 scope.set_tag('error-type', 'userland-error')
                 scope.level = 'info'
