@@ -99,7 +99,7 @@ class InProcessDeploymentPipe(DeploymentPipe):
 
         self._line_to_node_map = line_to_node_map # TODO: inject script_factory instead of exposing this here
         
-        with open('deploy.py', 'wt') as f:
+        with open('training_script.py', 'wt') as f:
             f.write(code)
             f.flush()
 
@@ -139,7 +139,7 @@ class LocalEnvironmentPipe(DeploymentPipe):
             f.flush()
 
             import shutil
-            shutil.copy(f.name, 'deploy.py')
+            shutil.copy(f.name, 'training_script.py')
 
             path = f.name
             threading.Thread(target=self._deploy, args=(path,), daemon=True).start()
@@ -147,7 +147,7 @@ class LocalEnvironmentPipe(DeploymentPipe):
 
     def _deploy(self, script_path):
         self._p = subprocess.Popen(
-            [self._interpreter, 'deploy.py'],
+            [self._interpreter, 'training_script.py'],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )

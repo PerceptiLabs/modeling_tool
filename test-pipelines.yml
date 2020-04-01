@@ -23,6 +23,10 @@ jobs:
         bash -i test_ubuntu.sh
       displayName: 'Python tests'
 
+    - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
+      artifact: linux_training_scripts
+      condition: always()
+
 
 
 ### TEST WINDOWS  ###
@@ -46,6 +50,11 @@ jobs:
         cd scripts/
         ./test_windows.bat
       displayName: 'Python tests'
+
+    - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
+      artifact: windows_training_scripts
+      condition: always()
+
 
 
 ### TEST OSX  ###
@@ -71,3 +80,7 @@ jobs:
         chmod 755 test_osx.sh
         ./test_osx.sh
       displayName: 'Python tests'
+
+    - publish: $(System.DefaultWorkingDirectory)/backend/training_scripts
+      artifact: osx_training_scripts
+      condition: always()

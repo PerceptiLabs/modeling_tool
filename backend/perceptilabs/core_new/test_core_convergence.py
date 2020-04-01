@@ -5,6 +5,8 @@ import logging
 import tempfile
 import numpy as np
 from queue import Queue
+from shutil import copyfile
+import os
 
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.core2 import Core
@@ -147,7 +149,6 @@ def graph_spec_binary_classification():
 
 @pytest.mark.slow
 def test_train_normal_converges(graph_spec_binary_classification):
-    
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(script_factory)
     #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
@@ -161,6 +162,11 @@ def test_train_normal_converges(graph_spec_binary_classification):
     )
 
     core.run(graph_spec_binary_classification)
+
+    if not os.path.isdir('./training_scripts'):
+        os.mkdir('./training_scripts')
+    
+    copyfile('./training_script.py', './training_scripts/train_normal_training_script.py')
 
     #print("POST RUN CALL")
     
@@ -185,7 +191,6 @@ def test_train_normal_converges(graph_spec_binary_classification):
 
 @pytest.mark.slow
 def test_train_normal_distributed_converges(graph_spec_binary_classification):
-    
     script_factory = ScriptFactory()
     deployment_pipe = InProcessDeploymentPipe(script_factory)
     #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
@@ -202,6 +207,11 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
     json_network['Layers']['6']['Properties']['Distributed'] = True
 
     core.run(json_network)
+
+    if not os.path.isdir('./training_scripts'):
+        os.mkdir('./training_scripts')
+    
+    copyfile('./training_script.py', './training_scripts/train_normal_distributed_training_script.py')
 
     #print("POST RUN CALL")
     
