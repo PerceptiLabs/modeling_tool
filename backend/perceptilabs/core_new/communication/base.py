@@ -1,6 +1,7 @@
 import zmq
 import dill
 import zlib
+import uuid
 import json
 import time
 import queue
@@ -10,8 +11,9 @@ import logging
 import requests
 import threading
 import traceback
+import collections
 from queue import Queue
-from collections import namedtuple
+
 
 
 from perceptilabs.core_new.utils import YieldLevel
@@ -54,16 +56,6 @@ class State:
         (PAUSED, DONE),
         (RUNNING, IDLE),
         (IDLE, DONE),                        
-        
-        #(INITIALIZING, STOPPED),        
-        #(STARTED, RUNNING),
-
-        #(PAUSED, RUNNING),
-        #(PAUSED, STOPPED),                
-        #(RUNNING, STOPPED),
-        #(RUNNING, IDLE),
-        #(STOPPED, DONE),
-        #(IDLE, DONE),        
     ))
     
     def __init__(self):
@@ -153,6 +145,7 @@ class TrainingServer:
 
         training_state = State()
         handlers = {
+            b'ping': lambda client, key, value: self._handle_ping(value),
             b'event': lambda client, key, value: self._handle_raw_event(value, self._graph, training_state)
         }
         self._zmq_client = ZmqClient(
@@ -210,7 +203,6 @@ class TrainingServer:
     def _handle_raw_event(self, raw_event, graph, training_state):
         event_dict = deserialize(raw_event)
         event_type = event_dict['type']
-        event_data = event_dict.get('data', None)
 
         log.info(f"Handling raw event '{event_type}'")                        
         if event_type == 'on_connect':
@@ -228,7 +220,8 @@ class TrainingServer:
             training_state.transition(State.RUNNING)
             self._send_state(training_state.value)
 
-
+    def _handle_ping(self, id_):
+        self._zmq_client.push(b'pong', id_)        
             
     def _send_graph(self, graph):
         snapshot = self._snapshot_builder.build(graph)
@@ -249,8 +242,9 @@ class TrainingServer:
         value = serialize(state)
         self._zmq_client.push(b'state', value)
 
-    def send_log_message(self):
-        pass
+    def send_log_message(self, message):
+        value = serialize(message)
+        self._zmq_client.push(b'log-message', value)
 
     def stop(self):
         if self._is_running.is_set():
@@ -260,7 +254,7 @@ class TrainingServer:
 
             
 class TrainingClient:
-    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, userland_error_handler=None):
+    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, userland_error_handler=None, log_message_handler=None, max_response_time=10):
         self._is_running = threading.Event()
         self._is_running.clear()        
 
@@ -269,7 +263,11 @@ class TrainingClient:
         self._port_push_pull = port_push_pull
 
         self._userland_error_handler = userland_error_handler
+        self._log_message_handler = log_message_handler
         self._remote_status = None
+        self._ping_sent = {}
+        self._ping_list = collections.deque([], maxlen=10)
+        self._max_response_time = max_response_time
 
         self._graphs = []
         
@@ -303,13 +301,37 @@ class TrainingClient:
         if self._userland_error_handler is not None:
             self._userland_error_handler(exception, tb_list)
 
+    def _on_receive_log_message(self, value):
+        message = deserialize(value)
+        if self._log_message_handler is not None:
+            self._log_message_handler(message)
+
+    def _on_receive_pong(self, value):
+        id_ = deserialize(value)
+        diff = time.time() - self._ping_sent[id_]
+        self._ping_list.append(diff)
+        del self._ping_sent[id_]
+
+    def ping(self):
+        ping_list = list(self._ping_list)
+        if len(ping_list) > 0:
+            return sum(ping_list)/len(ping_list)
+        else:
+            return None
+
+    def _server_not_responding(self):
+        t1 = time.time()
+        ping_sent = self._ping_sent.copy()
+        return any(t1 - t0 > self._max_response_time for t0 in ping_sent.values())
+        
     def _worker_func(self):
         log.info("Entering worker func [TrainingClient]")                
         handlers = {
-            #b'log_message': lambda client, value: 0
+            b'log-message': lambda client, value: self._on_receive_log_message(value),
             b'userland-error': lambda client, key, value: self._on_receive_userland_error(value),
             b'graph': lambda client, key, value: self._on_receive_graph(value),
-            b'state': lambda client, key, value: self._on_receive_state(value)
+            b'state': lambda client, key, value: self._on_receive_state(value),
+            b'pong': lambda client, key, value: self._on_receive_pong(value)            
         }
         
         self._zmq_client = ZmqClient(
@@ -325,7 +347,15 @@ class TrainingClient:
         while self._is_running.is_set():
             if counter % 1000 == 0:
                 log.info(f"Worker loop iteration {counter} [TrainingClient]")                                      
-            self._zmq_client.process_messages()            
+            self._zmq_client.process_messages()
+
+            if counter % 10 == 0:
+                self._send_ping()
+
+            if self._server_not_responding():
+                log.info("Server not responding. Leaving worker loop.")
+                self._is_running.clear()
+
             time.sleep(0.1)
             counter += 1
             
@@ -343,7 +373,13 @@ class TrainingClient:
             counter += 1
 
         raw_event = serialize({'type': 'on_connect'})
-        self._zmq_client.push(b'event', raw_event)        
+        self._zmq_client.push(b'event', raw_event)
+
+    def _send_ping(self):
+        id_ = uuid.uuid4().hex
+        value = serialize(id_)
+        self._zmq_client.push(b'ping', value)
+        self._ping_sent[id_] = time.time()
 
     def request_start(self):
         raw_event = serialize({'type': 'on_request_start'})
@@ -366,6 +402,10 @@ class TrainingClient:
             log.info("Stopping [TrainingClient]")            
             self._is_running.clear()
             self._worker_thread.join()
+
+    @property
+    def is_running(self):
+        return self._is_running.is_set()
 
 
 class Client:

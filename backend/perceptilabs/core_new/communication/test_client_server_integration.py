@@ -93,11 +93,12 @@ def create_server(graph, snapshot_builder=None, max_step_time=60):
     return server
 
 
-def create_client(graph_builder=None, userland_error_handler=None):
+def create_client(graph_builder=None, userland_error_handler=None, max_response_time=10):
     client = TrainingClient(
         6556, 6557,
         graph_builder=graph_builder,
-        userland_error_handler=userland_error_handler
+        userland_error_handler=userland_error_handler,
+        max_response_time=max_response_time
     )
     CLIENTS.append(client)
     return client
@@ -359,6 +360,21 @@ def test_stops_on_userland_timeout(mock_graph_infinite_loop):
 
     assert client.remote_status == State.KILLED
 
+
+def test_client_stops_on_server_timeout(mock_graph_infinite_loop):
+    server = create_server(mock_graph_infinite_loop, max_step_time=60)
+    client = create_client(max_response_time=3)
+    
+    server.start()
+    client.connect()
+    time.sleep(0.3)
+
+    assert client.remote_status == State.READY
+    client.request_start()
+    time.sleep(7)
+
+    assert not client.is_running
+    
     
 
     
