@@ -77,7 +77,7 @@ def test_can_connect(mock_graph_3s):
 
     server.start()
     client.connect()
-    time.sleep(0.3)
+    time.sleep(1.0)
 
     assert client.remote_status == State.READY
     
@@ -88,7 +88,7 @@ def test_can_start(mock_graph_3s):
 
     server.start()
     client.connect()
-    time.sleep(0.3)
+    time.sleep(1.0)
 
     assert client.remote_status == State.READY
     
@@ -97,6 +97,28 @@ def test_can_start(mock_graph_3s):
 
     assert client.remote_status == State.RUNNING
 
+def test_can_start_10_times(mock_graph_3s):
+    for i in range(10):
+        print(f"Attempt {i}")    
+        server = create_server(mock_graph_3s)
+        client = create_client()
+
+        server.start()
+        client.connect()
+        time.sleep(0.3)
+
+        assert client.remote_status == State.READY
+        
+        client.request_start()
+        time.sleep(0.3)
+
+        assert client.remote_status == State.RUNNING
+
+        client.stop()
+        server.stop()
+
+
+    
 '''    
 def test_can_stop_when_ready():
     server = create_server()

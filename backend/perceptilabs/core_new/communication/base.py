@@ -88,11 +88,18 @@ class TrainingServer:
         self._serialization_fn = serialize
 
     def start(self, threaded=True):
-        self._is_running.set()
         self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
         self._worker_thread.start()
 
+        counter = 0
+        while not self._is_running.is_set():
+            if counter % 100 == 0:
+                log.info("Waiting for worker thread to initialize... [TrainingServer]")            
+            time.sleep(0.1)
+            counter += 1        
+
     def _worker_func(self):
+        log.info("Entering worker func [TrainingServer]")
         event_queue = queue.Queue()
         
         self._zmq_server = ZmqServer(
@@ -119,25 +126,37 @@ class TrainingServer:
         training_step = self._graph.run()
         step_result = None
 
-        print("enter main loop")
-        
+        log.info("Entering worker loop [TrainingServer]")
+
+        counter = 0
+        self._is_running.set()
         while self._is_running.is_set() and step_result is not sentinel:
+            if counter % 1000 == 0:
+                log.info(f"Worker loop iteration {counter} [TrainingServer]")                                
             self._zmq_client.process_messages()
 
+            if step_result is sentinel:
+                training_state.transition(State.IDLE)
+                self._send_state(training_state.value)
+                break
+            
             if training_state.value == State.RUNNING:
                 try:
                     step_result = next(training_step, sentinel)
                 except Exception as e:
                     self._send_userland_error(e)
-                    
+
             if step_result is YieldLevel.SNAPSHOT:
                 self._send_snapshot(self._graph)
 
-            if step_result is sentinel:
-                training_state.transition(State.IDLE)
-                self._send_state(training_state.value)
+            if training_state.value != State.RUNNING:
+                time.sleep(0.01)
+                    
+            counter += 1
 
+        log.info("Closing ZeroMQ client [TrainingServer]")                
         self._zmq_client.stop()
+        log.info("Closing ZeroMQ server [TrainingServer]")                        
         self._zmq_server.stop()
         
     def _handle_raw_event(self, raw_event, graph, training_state):
@@ -145,7 +164,7 @@ class TrainingServer:
         event_type = event_dict['type']
         event_data = event_dict.get('data', None)
 
-        print("handle raw event" + str(event_dict))
+        log.info(f"Handling raw event '{event_type}'")                        
         if event_type == 'on_connect':
             self._send_state(training_state.value)
         if event_type == 'on_request_start':
@@ -170,15 +189,16 @@ class TrainingServer:
         pass
 
     def stop(self):
-        self._is_running.clear()
-        self._worker_thread.join()
+        if self._is_running.is_set():
+            log.info("Stopping [TrainingServer]")
+            self._is_running.clear()
+            self._worker_thread.join()
         
 class TrainingClient:
     def __init__(self, port_pub_sub, port_push_pull, graph_builder=None):
         self._is_running = threading.Event()
         self._is_running.clear()        
 
-        
         self._graph_builder = graph_builder
         self._port_pub_sub = port_pub_sub
         self._port_push_pull = port_push_pull
@@ -189,16 +209,17 @@ class TrainingClient:
     def remote_status(self):
         return self._remote_status
 
-    def _on_receive_status(self, value):
+    def _on_receive_state(self, value):
         self._remote_status = deserialize(value)
-        print('recv STATUS' , self._remote_status)    
+        log.info(f"Received state {self._remote_status} [TrainingClient]")                    
 
     def _worker_func(self):
+        log.info("Entering worker func [TrainingClient]")                
         handlers = {
             #b'snapshots': lambda client, value: 0
             #b'log_message': lambda client, value: 0
             #b'exception': lambda client, value: 0
-            b'state': lambda client, key, value: self._on_receive_status(value)
+            b'state': lambda client, key, value: self._on_receive_state(value)
         }
         
         self._zmq_client = ZmqClient(
@@ -207,17 +228,29 @@ class TrainingClient:
             handlers
         )
         self._zmq_client.start()
-        
+
+        log.info("Entering worker loop [TrainingClient]")        
+        counter = 0
+        self._is_running.set()
         while self._is_running.is_set():
+            if counter % 1000 == 0:
+                log.info(f"Worker loop iteration {counter} [TrainingClient]")                                      
             self._zmq_client.process_messages()            
             time.sleep(0.1)
+            counter += 1
             
         self._zmq_client.stop()
 
     def connect(self):
-        self._is_running.set()   
         self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
         self._worker_thread.start()
+
+        counter = 0
+        while not self._is_running.is_set():
+            if counter % 100 == 0:
+                log.info("Waiting for worker thread to initialize... [TrainingClient]")            
+            time.sleep(0.1)
+            counter += 1
 
         raw_event = serialize({'type': 'on_connect'})
         self._zmq_client.push(b'event', raw_event)        
@@ -227,8 +260,10 @@ class TrainingClient:
         self._zmq_client.push(b'event', raw_event)
 
     def stop(self):
-        self._is_running.clear()
-        self._worker_thread.join()
+        if self._is_running.is_set():
+            log.info("Stopping [TrainingClient]")            
+            self._is_running.clear()
+            self._worker_thread.join()
 
 
 class Client:
