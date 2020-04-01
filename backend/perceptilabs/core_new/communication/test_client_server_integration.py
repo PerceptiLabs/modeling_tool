@@ -66,15 +66,28 @@ def mock_graph_5s():
     graph.run.side_effect = fn_run
     yield graph
 
+@pytest.fixture
+def mock_graph_infinite_loop():
+    def fn_run():
+        while True:
+            time.sleep(1)
+        yield
+    
+    graph = MagicMock()
+    graph.run.side_effect = fn_run
+    yield graph
+
+    
     
 SERVERS = []
 CLIENTS = []
 
-def create_server(graph, snapshot_builder=None):
+def create_server(graph, snapshot_builder=None, max_step_time=60):
     server = TrainingServer(
         6556, 6557,
         graph,
-        snapshot_builder=snapshot_builder
+        snapshot_builder=snapshot_builder,
+        max_step_time=max_step_time
     )
     SERVERS.append(server)    
     return server
@@ -330,6 +343,22 @@ def test_sends_message_on_userland_error(mock_graph_2s_error):
     time.sleep(2.0)
 
     assert fn.call_count == 1
+
+
+def test_stops_on_userland_timeout(mock_graph_infinite_loop):
+    server = create_server(mock_graph_infinite_loop, max_step_time=5)
+    client = create_client()
+    
+    server.start()
+    client.connect()
+    time.sleep(0.3)
+
+    assert client.remote_status == State.READY
+    client.request_start()
+    time.sleep(7)
+
+    assert client.remote_status == State.KILLED
+
     
 
     

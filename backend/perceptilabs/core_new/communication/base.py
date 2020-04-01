@@ -4,6 +4,7 @@ import zlib
 import json
 import time
 import queue
+import ctypes
 import urllib
 import logging
 import requests
@@ -41,6 +42,7 @@ class State:
     PAUSED = 'paused'
     IDLE = 'idle'
     DONE = 'done'
+    KILLED = 'killed'
 
     allowed_transitions = set((
         (INITIALIZING, READY),
@@ -84,7 +86,7 @@ class State:
 
             
 class TrainingServer:    
-    def __init__(self, port_pub_sub, port_push_pull, graph, snapshot_builder=None):
+    def __init__(self, port_pub_sub, port_push_pull, graph, snapshot_builder=None, max_step_time=60):
         self._is_running = threading.Event()
         self._is_running.clear()
         
@@ -93,6 +95,8 @@ class TrainingServer:
         
         self._graph = graph
         self._state = None
+        self._step_start = None
+        self._max_step_time = max_step_time
         
         self._snapshot_builder = snapshot_builder
         self._serialization_fn = serialize
@@ -106,7 +110,36 @@ class TrainingServer:
             if counter % 100 == 0:
                 log.info("Waiting for worker thread to initialize... [TrainingServer]")            
             time.sleep(0.1)
-            counter += 1        
+            counter += 1
+            
+        self._timeout_thread = threading.Thread(target=self._timeout_func, args=(self._worker_thread.ident,), daemon=True)
+        self._timeout_thread.start()
+
+    def _timeout_func(self, worker_thread_id):
+        while self._is_running.is_set():
+
+            if self._step_start is not None:
+                step_time = time.time() - self._step_start
+                if step_time > self._max_step_time:
+                    log.info(f"Training step time took {step_time}s, exceeding limit {self._max_step_time}s")
+                    res = ctypes.pythonapi.PyThreadState_SetAsyncExc(worker_thread_id, ctypes.py_object(SystemExit))
+
+                    time.sleep(1)
+                    if res == 0:
+                        self._send_state(State.KILLED)
+                        time.sleep(1) # Ensure it's sent..
+
+                        self._is_running.clear()                        
+                        self._zmq_client.stop()
+                        self._zmq_server.stop()                        
+                    else:
+                        ctypes.pythonapi.PyThreadState_SetAsyncExc(worker_thread_id, 0) 
+                        raise RuntimeError("Failed to kill worker thread!")
+                    
+                    break
+                    
+                    log.info('res'+str(res))
+            time.sleep(1)
 
     def _worker_func(self):
         log.info("Entering worker func [TrainingServer]")
@@ -147,6 +180,7 @@ class TrainingServer:
 
             if training_state.value == State.RUNNING:
                 try:
+                    self._step_start = time.time()
                     step_result = next(training_step, sentinel)
                 except Exception as e:
                     self._send_userland_error(e)
@@ -164,7 +198,7 @@ class TrainingServer:
                     
             if training_state.value != State.RUNNING:
                 time.sleep(0.01)
-                    
+                
             counter += 1
 
         self._send_state(training_state.value)                    
@@ -205,7 +239,12 @@ class TrainingServer:
         tb_list = traceback.extract_tb(exception.__traceback__)
         value = serialize({'exception': exception, 'traceback_list': tb_list})
         self._zmq_client.push(b'userland-error', value)
-
+        
+    def _send_userland_error(self, exception):
+        tb_list = traceback.extract_tb(exception.__traceback__)
+        value = serialize({'exception': exception, 'traceback_list': tb_list})
+        self._zmq_client.push(b'userland-error', value)
+        
     def _send_state(self, state):
         value = serialize(state)
         self._zmq_client.push(b'state', value)
