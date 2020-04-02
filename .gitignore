@@ -41,3 +41,4 @@ frontend/src/node_modules/
 .vscode/*
 app.log
 backend.log
+log.txt
