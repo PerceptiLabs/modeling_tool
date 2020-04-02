@@ -133,12 +133,6 @@ class Client:
                 self._messages_sent += 1
                 #log.info(f"Sent message (k, v) = ({key}, {value}). [Client {id(self)}]")
 
-        # Send the remaining messages.
-        while not self._out_queue.empty():
-            key, value = self._out_queue.get()
-            push_socket.send_multipart([key, value])
-            self._messages_sent += 1
-                
     def _init_socket(self, ctx, zmq_type, address, options=None):
         socket = ctx.socket(zmq_type)
         socket.linger = 0

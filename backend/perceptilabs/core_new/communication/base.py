@@ -131,6 +131,7 @@ class TrainingServer:
                     self._send_state(State.KILLED)
                     self._send_killed()                    
 
+                    time.sleep(5)
                     self._is_running.clear()                        
                     self._zmq_client.stop()
                     self._zmq_server.stop()                        
