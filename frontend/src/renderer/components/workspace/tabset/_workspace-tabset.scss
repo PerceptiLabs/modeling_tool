@@ -1,3 +1,16 @@
+.tab-arrow {
+  display: flex;
+  justify-content: center;
+  height: 2.5rem;
+  font-size: 2rem;
+
+  span {
+    display: flex;
+    align-items: center;
+    margin: 0.5rem;
+  }
+}
+
 .workspace_tab-list {
   max-width: calc(100% - 3rem);
   overflow-y: scroll;

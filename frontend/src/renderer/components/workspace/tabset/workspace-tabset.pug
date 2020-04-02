@@ -1,3 +1,5 @@
+.tab-arrow.left(@click="scrollTab(-25)")
+  span &lt;
 ul.bookmark_tab-list.workspace_tab-list(ref="tablist")
   li.bookmark_tab.workspace_tab(
   v-for="(tab, i) in workspace"
@@ -26,7 +28,8 @@ ul.bookmark_tab-list.workspace_tab-list(ref="tablist")
       @click.stop="openTest(i)"
       )
       span Test
-
+.tab-arrow.right(@click="scrollTab(25)")
+  span &gt;
 
 .toggle-sidebar(:class="{'hide-sidebar': !hideSidebar}")
   button.btn.btn--toolbar(type="button" @click="toggleSidebar()")

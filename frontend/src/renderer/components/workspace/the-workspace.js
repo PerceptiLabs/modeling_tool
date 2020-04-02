@@ -208,9 +208,16 @@ export default {
       this.pushSnapshotToHistory(null)
     },
     onTabScroll(event) {
-      if (!this.$refs.tablist) { return; }
+      event.preventDefault();
 
+      if (!this.$refs.tablist) { return; }
       this.$refs.tablist.scrollLeft += event.deltaY | 0;
+    },
+    scrollTab(value) {
+      // when the scroll buttons are pressed
+
+      if (!this.$refs.tablist) { return; }
+      this.$refs.tablist.scrollLeft += value | 0;
     }
   }
 }
