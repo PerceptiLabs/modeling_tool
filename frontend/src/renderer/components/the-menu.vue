@@ -443,6 +443,7 @@ export default {
             {label: 'New',     active: this.addNewNetwork},
             {label: 'Load',    active: this.openLoadModelPopup},
             {label: 'Save',    active: this.saveModel,          enabled: this.openApp},
+            {label: 'SaveAs',  active: this.saveModelAs,        enabled: this.openApp},
             {type: 'separator'},
             {label: 'Log out', active: this.logOut,             enabled: this.isLogin},
           ]
