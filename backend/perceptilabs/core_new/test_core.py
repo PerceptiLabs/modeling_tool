@@ -226,6 +226,7 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
 
 def test_core_handles_training_step_timeout():
     max_training_step_time = 3
+    max_server_response_time = 10000    
 
     import threading
     from perceptilabs.core_new.utils import YieldLevel
@@ -262,7 +263,8 @@ def test_core_handles_training_step_timeout():
         graph_builder,
         script_factory,
         deployment_strategy=deployment_strategy,
-        max_training_step_time=max_training_step_time
+        max_training_step_time=max_training_step_time,
+        max_server_response_time=max_server_response_time
     )
 
     threading.Thread(target=core.run, args=(graph_spec,), daemon=True).start()
@@ -271,9 +273,55 @@ def test_core_handles_training_step_timeout():
     time.sleep(8.0)
     assert not core.is_running
 
-    
 
 def test_core_handles_training_server_timeout():
-    pass
+    max_training_step_time = 10000
+    max_server_response_time = 3
+
+    import threading
+    from perceptilabs.core_new.utils import YieldLevel
+    from perceptilabs.core_new.communication import TrainingServer
+    
+    def run_graph():
+        while True:
+            time.sleep(1000) # A single iteration will take 1000s
+            yield YieldLevel.DEFAULT
+
+    graph_spec = MagicMock()
+    graph = MagicMock()
+    graph.run.side_effect = run_graph
+    graph_builder = MagicMock()
+    deployment_strategy = MagicMock()
+
+    script_factory = MagicMock()
+    script_factory.make.return_value = ('', {})
+    
+    def run_deploy(path):
+        port1 = script_factory.make.call_args[0][2]
+        port2 = script_factory.make.call_args[0][3]
+        training_server = TrainingServer(
+            port1, port2,
+            graph,
+            snapshot_builder=MagicMock(),
+            max_step_time=max_training_step_time         
+        )
+        training_server.start()
+    
+    deployment_strategy.run.side_effect = run_deploy
+    
+    core = Core(
+        graph_builder,
+        script_factory,
+        deployment_strategy=deployment_strategy,
+        max_training_step_time=max_training_step_time,
+        max_server_response_time=max_server_response_time        
+    )
+
+    threading.Thread(target=core.run, args=(graph_spec,), daemon=True).start()
+    time.sleep(1.0)
+    assert core.is_running
+    time.sleep(8.0)
+    assert not core.is_running
+
 
 
