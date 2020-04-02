@@ -5,9 +5,14 @@
 #     (3) events are processed on main-thread
 
 import zmq
+import time
 import queue
+import logging
 import threading
 from typing import Dict, Callable
+
+
+log = logging.getLogger(__name__)
 
 
 class Server:
@@ -19,6 +24,7 @@ class Server:
         self._is_running.clear()
 
     def _worker_func(self):
+        #log.info("Entering worker function [Server]")
         ctx = zmq.Context()        
         publisher_socket = ctx.socket(zmq.PUB)
         pull_socket = ctx.socket(zmq.PULL)
@@ -29,13 +35,15 @@ class Server:
         poller = zmq.Poller()
         poller.register(pull_socket, zmq.POLLIN)        
 
+        #log.info("Entering main-loop [Server]")        
         self._is_running.set()        
         while self._is_running.is_set():
-            items = dict(poller.poll(timeout=0.1))
+            items = dict(poller.poll(timeout=0.01))
 
             if pull_socket in items:
                 key, value = pull_socket.recv_multipart()
                 publisher_socket.send_multipart([key, value])
+                #log.info(f"Received message (k, v) = ({key}, {value}). [Client {id(self)}]")                
             
     def start(self):
         self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
@@ -69,16 +77,23 @@ class Client:
         self._out_queue.put((key, value))
 
     def process_messages(self):
+        #log.info(f"Processing messages. [Client {id(self)}]")
+        count, handled = 0, 0
         while not self._in_queue.empty():
             key, value = self._in_queue.get()
 
             if key in self._handlers:
                 handler = self._handlers[key]
-                handler(self, key, value)                    
+                handler(self, key, value)
+                handled += 1
             else:
                 pass # Warning?
-
+            #log.info(f"Processed message (k, v) = ({key}, {value}). Handler: {key in self._handlers} [Client {id(self)}]")
+            count += 1
+        #log.info(f"Handled {handled}/{count} messages [Client {id(self)}]")            
+            
     def _worker_func(self):
+        #log.info(f"Entering worker function [Client {id(self)}]")        
         ctx = zmq.Context()
 
         self._messages_sent = 0
@@ -97,6 +112,8 @@ class Client:
         poller = zmq.Poller()
         poller.register(subscriber_socket, zmq.POLLIN)
 
+        #log.info(f"Entering main-loop [Client {id(self)}]")
+        time.sleep(0.1)
         self._is_running.set()        
         while self._is_running.is_set():
             items = dict(poller.poll(timeout=0.01))
@@ -105,13 +122,14 @@ class Client:
                 key, value = subscriber_socket.recv_multipart()
                 self._messages_received += 1                
                 self._in_queue.put((key, value))
+                #log.info(f"Received message (k, v) = ({key}, {value}). [Client {id(self)}]")
 
             if not self._out_queue.empty():
                 key, value = self._out_queue.get()
                 push_socket.send_multipart([key, value])
                 self._messages_sent += 1
-
-
+                #log.info(f"Sent message (k, v) = ({key}, {value}). [Client {id(self)}]")                
+                
     def _init_socket(self, ctx, zmq_type, address, options=None):
         socket = ctx.socket(zmq_type)
         socket.linger = 0
