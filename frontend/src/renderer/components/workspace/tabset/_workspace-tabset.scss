@@ -3,11 +3,17 @@
   justify-content: center;
   height: 2.5rem;
   font-size: 2rem;
+  cursor: pointer;
 
   span {
     display: flex;
     align-items: center;
     margin: 0.5rem;
+  }
+
+  &.disabled {
+    color: $disable-txt;
+    pointer-events: none;
   }
 }
 

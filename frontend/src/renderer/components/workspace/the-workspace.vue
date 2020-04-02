@@ -1,6 +1,6 @@
 <template lang="pug">
   main.page_workspace
-    .workspace_tabset
+    .workspace_tabset(ref="tabset")
       include ./tabset/workspace-tabset.pug
     .workspace_content.bookmark_content.js-workspace(
       ref="workspaceNet"

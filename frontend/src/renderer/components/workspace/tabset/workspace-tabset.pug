@@ -1,4 +1,6 @@
-.tab-arrow.left(@click="scrollTab(-25)")
+.tab-arrow(
+  :class="{'disabled': !tabArrows.isLeftActive }"
+  @click="scrollTab(-25)")
   span &lt;
 ul.bookmark_tab-list.workspace_tab-list(ref="tablist")
   li.bookmark_tab.workspace_tab(
@@ -28,7 +30,9 @@ ul.bookmark_tab-list.workspace_tab-list(ref="tablist")
       @click.stop="openTest(i)"
       )
       span Test
-.tab-arrow.right(@click="scrollTab(25)")
+.tab-arrow(
+  :class="{'disabled': !tabArrows.isRightActive }"
+  @click="scrollTab(25)")
   span &gt;
 
 .toggle-sidebar(:class="{'hide-sidebar': !hideSidebar}")

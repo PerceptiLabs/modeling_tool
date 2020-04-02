@@ -32,16 +32,20 @@ export default {
     }
   },
   mounted() {
-    // console.log(this.$refs.networkField);
-    
-    // console.log('tablist', this.$refs.tablist);
     if (this.$refs.tablist) {
       this.$refs.tablist.addEventListener('wheel', this.onTabScroll);
     }
+
+    this.checkTabWidths();
   },
   data() {
     return {
       trainingWasPaused: false,
+      tabArrows: {
+        show: false,
+        isLeftActive: false,
+        isRightActive: false,
+      }
     }
   },
   computed: {
@@ -92,13 +96,13 @@ export default {
   watch: {
     statusNetworkCore(newStatus) {
       // function for showing the global training results popup
-      
+
       if (this.statisticsIsOpen === null) {
         // added statisticsIsOpen null check
-        // it is possible that the status is 'Finished' and both 
+        // it is possible that the status is 'Finished' and both
         // testIsOpen and statisticsIsOpen to be null
-  
-        // this happens when the core is restarted and no longer has 
+
+        // this happens when the core is restarted and no longer has
         // any information about the stats, making training impossible
         return;
       }
@@ -119,7 +123,7 @@ export default {
           way: 'next',
           validation: newStatus[0].layerMeta.tutorialId
         });
-      } 
+      }
     }
   },
   methods: {
@@ -161,7 +165,7 @@ export default {
       this.set_currentNetwork(index);
       this.set_elementUnselect();
 
-      // request charts if the page has been refreshed, and 
+      // request charts if the page has been refreshed, and
       // the requested tab not being the first
       this.set_chartRequests(this.workspace[index].networkID);
     },
@@ -212,12 +216,40 @@ export default {
 
       if (!this.$refs.tablist) { return; }
       this.$refs.tablist.scrollLeft += event.deltaY | 0;
+
+      this.checkTabWidths();
     },
     scrollTab(value) {
       // when the scroll buttons are pressed
 
       if (!this.$refs.tablist) { return; }
       this.$refs.tablist.scrollLeft += value | 0;
+
+      this.checkTabWidths();
+    },
+    checkTabWidths(){
+      if (!this.$refs.tablist) { return; }
+
+      console.group('checkTabWidths');
+
+      console.group('tablist');
+      // console.log('offsetWidth', this.$refs.tablist.offsetWidth);
+      console.log('scrollWidth', this.$refs.tablist.scrollWidth);
+      console.log('clientWidth', this.$refs.tablist.clientWidth);
+      console.log('scrollLeft', this.$refs.tablist.scrollLeft);
+      console.groupEnd();
+
+      const maxScrollWidth = this.$refs.tablist.scrollWidth - this.$refs.tablist.clientWidth;
+      this.tabArrows.isLeftActive = (this.$refs.tablist.scrollLeft !== 0);
+      this.tabArrows.isRightActive = (this.$refs.tablist.scrollLeft !== maxScrollWidth);
+      
+      // console.group('tabset');
+      // console.log('offsetWidth', this.$refs.tabset.offsetWidth);
+      // console.log('scrollWidth', this.$refs.tabset.scrollWidth);
+      // console.log('clientWidth', this.$refs.tabset.clientWidth);
+      // console.groupEnd();
+
+      console.groupEnd();
     }
-  }
+  },
 }
