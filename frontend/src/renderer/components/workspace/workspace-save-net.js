@@ -40,6 +40,7 @@ const workspaceSaveNet = {
     ...mapActions({
       infoPopup: 'globalView/GP_infoPopup',
       set_networkRootFolder:'mod_workspace/SET_networkRootFolder',
+      setNetworkName:       'mod_workspace/SET_networkName',
       checkTrainedNetwork:  'mod_api/API_checkTrainedNetwork',
       saveTrainedNetwork:   'mod_api/API_saveTrainedNetwork',
       trackerModelSave:     'mod_tracker/EVENT_modelSave',
@@ -105,6 +106,8 @@ const workspaceSaveNet = {
       const currentNet = this.currentNetwork;
       const newProjectId = netId || generateID();
       const pathSaveProject = netInfo.projectPath;
+
+      this.setNetworkName(netInfo.projectName);
 
       let prepareNet = cloneNet(currentNet, newProjectId, netInfo);
       /*check Is Trained Net + do ScreenShot*/
