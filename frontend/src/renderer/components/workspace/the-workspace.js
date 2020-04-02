@@ -28,7 +28,7 @@ export default {
   },
   destroyed () {
     if (this.$refs.tablist) {
-      this.$refs.tablist.removeEventListener('wheel', this.handleScroll);
+      this.$refs.tablist.removeEventListener('wheel', this.onTabScroll);
     }
   },
   mounted() {
@@ -36,7 +36,7 @@ export default {
     
     // console.log('tablist', this.$refs.tablist);
     if (this.$refs.tablist) {
-      this.$refs.tablist.addEventListener('wheel', this.handleScroll);
+      this.$refs.tablist.addEventListener('wheel', this.onTabScroll);
     }
   },
   data() {
@@ -207,8 +207,8 @@ export default {
       this.setNetworkNameAction(text);
       this.pushSnapshotToHistory(null)
     },
-    handleScroll(event) {
-      console.log('handleScroll', event);
+    onTabScroll(event) {
+      console.log('onTabScroll', event);
     }
   }
 }
