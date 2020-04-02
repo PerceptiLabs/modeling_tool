@@ -61,7 +61,7 @@ class Core:
         
         self._is_running = threading.Event()
         self._is_running.clear()
-        self._client = None
+        self._training_client = None
 
         self._remote_is_paused = False
         self._max_server_response_time = max_server_response_time
@@ -69,7 +69,6 @@ class Core:
         
     def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None, auto_stop=False):
         on_iterate = on_iterate or []
-        self._is_running.set()
         try:
             self._run_internal(
                 graph_spec,
@@ -151,7 +150,7 @@ class Core:
                 self._issue_handler.put_error('Server killed because a training step too long!')
             log.error('Server killed because a training step too long!')
             
-        training_client = TrainingClient(
+        self._training_client = training_client = TrainingClient(
             port1, port2,
             graph_builder=self._graph_builder,
             on_userland_error=on_userland_error,
@@ -162,7 +161,9 @@ class Core:
         )
 
         training_client.connect()
-        counter = 0
+        self._is_running.set()
+                
+        counter = 0        
         while training_client.remote_status == None:
             if counter % 100 == 0:
                 log.info("Waiting for remote status != None")
@@ -202,7 +203,7 @@ class Core:
         while training_client.remote_status == State.IDLE:
             if counter % 100 == 0:
                 log.info("Idle. Graph count: " + str(len(self._graphs)))                     
-            time.sleep(0.1)
+            time.sleep(0.5)
 
         if training_client.remote_status == State.DONE:
             log.info("Done!: ")
@@ -229,26 +230,28 @@ class Core:
         self._is_running.clear()
         
     def pause(self):
-        if self._client is not None:
-            self._client.send_event('on_pause')
+        if self._training_client is not None:
+            self._training_client.request_pause()
+        else:
+            log.warning("Requested pause but training client not set!!")
 
     def unpause(self):
-        if self._client is not None:        
-            self._client.send_event('on_resume')
+        if self._training_client is not None:
+            self._training_client.request_resume()
     
     def headlessOn(self):
-        if self._client is not None:
-            self._client.send_event('on_headless_activate')
-
+        if self._training_client is not None:
+            self._training_client.request_headless_activate()
+        
     def headlessOff(self):
-        if self._client is not None:
-            self._client.send_event('on_headless_deactivate')
+        if self._training_client is not None:
+            self._training_client.request_headless_deactivate()
 
     def export(self, path: str, mode: str):
         log.debug(f"Export path: {path}, mode: {mode}, client: {self._client}")
         
-        if self._client is not None:        
-            self._client.send_event('on_export', path=path, mode=mode)
+        if self._training_client is not None:            
+            self._client.request_export(path, mode)
         else:
             log.warning("Client is none. on_export not called!")
 
@@ -256,7 +259,9 @@ class Core:
     def is_running(self):
         return self._is_running.is_set() 
 
-        
+    @property
+    def is_paused(self):
+        return self.is_running and self._remote_is_paused
             
 
     
