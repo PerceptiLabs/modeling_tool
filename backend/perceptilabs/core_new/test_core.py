@@ -246,9 +246,14 @@ def test_core_handles_training_step_timeout():
         max_server_response_time=max_server_response_time
     )
 
-    threading.Thread(target=core.run, args=(graph_spec,), daemon=True).start()
-    assert wait_for_condition(lambda _: core.is_running)
-    assert wait_for_condition(lambda _: not core.is_running)
+    thread = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
+    thread.start()
+    try:
+        assert wait_for_condition(lambda _: core.is_running)
+        assert wait_for_condition(lambda _: not core.is_running)
+    finally:
+        core.stop()
+        thread.join()
 
 
 def test_core_handles_training_server_timeout():
@@ -294,11 +299,15 @@ def test_core_handles_training_server_timeout():
         max_server_response_time=max_server_response_time        
     )
 
-    threading.Thread(target=core.run, args=(graph_spec,), daemon=True).start()
-    assert wait_for_condition(lambda _: core.is_running)
-    assert wait_for_condition(lambda _: not core.is_running)
-
-
+    thread = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
+    thread.start()
+    try:
+        assert wait_for_condition(lambda _: core.is_running)
+        assert wait_for_condition(lambda _: not core.is_running)
+    finally:
+        core.stop()
+        thread.join()
+    
 def test_pause_works(graph_spec_binary_classification):
     max_training_step_time = 10000
     max_server_response_time = 10000
@@ -342,15 +351,19 @@ def test_pause_works(graph_spec_binary_classification):
         max_server_response_time=max_server_response_time        
     )
     
-    threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True).start()
-    assert wait_for_condition(lambda _: core.is_running)
-    assert wait_for_condition(lambda _: not core.is_paused)
-
-    core.pause()
-    
-    assert wait_for_condition(lambda _: core.is_running)
-    assert wait_for_condition(lambda _: core.is_paused)
-
+    thread = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True)
+    thread.start()
+    try:
+        assert wait_for_condition(lambda _: core.is_running)
+        assert wait_for_condition(lambda _: not core.is_paused)
+        
+        core.pause()
+        
+        assert wait_for_condition(lambda _: core.is_running)
+        assert wait_for_condition(lambda _: core.is_paused)
+    finally:
+        core.stop()
+        thread.join()
 
 def test_resume_works(graph_spec_binary_classification):
     max_training_step_time = 10000
@@ -395,15 +408,19 @@ def test_resume_works(graph_spec_binary_classification):
         max_server_response_time=max_server_response_time        
     )
     
-    threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True).start()
-    assert wait_for_condition(lambda _: core.is_running)
-    assert wait_for_condition(lambda _: not core.is_paused)
-
-    core.pause()
-    assert wait_for_condition(lambda _: core.is_running)
-    assert wait_for_condition(lambda _: core.is_paused)
-
-    core.unpause()
-    assert wait_for_condition(lambda _: core.is_running)
-    assert wait_for_condition(lambda _: not core.is_paused)
-    
+    thread = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True)
+    thread.start()
+    try:
+        assert wait_for_condition(lambda _: core.is_running)
+        assert wait_for_condition(lambda _: not core.is_paused)
+        
+        core.pause()
+        assert wait_for_condition(lambda _: core.is_running)
+        assert wait_for_condition(lambda _: core.is_paused)
+        
+        core.unpause()
+        assert wait_for_condition(lambda _: core.is_running)
+        assert wait_for_condition(lambda _: not core.is_paused)
+    finally:
+        core.stop()
+        thread.join()

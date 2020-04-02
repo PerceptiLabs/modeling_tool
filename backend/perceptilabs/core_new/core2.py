@@ -179,7 +179,7 @@ class Core:
 
         self._is_running.set()        
         counter = 0
-        while training_client.remote_status in [State.RUNNING, State.PAUSED]:
+        while training_client.remote_status in [State.RUNNING, State.PAUSED] and self._is_running.is_set():
             self._remote_is_paused = training_client.remote_status == State.PAUSED
             
             if counter % 30 == 0:
@@ -195,7 +195,7 @@ class Core:
             training_client.request_stop()            
                         
         counter = 0
-        while training_client.remote_status == State.IDLE:
+        while training_client.remote_status == State.IDLE and self._is_running.is_set():
             if counter % 100 == 0:
                 log.info("Idle. Graph count: " + str(len(self._graphs)))                     
             time.sleep(0.5)
@@ -203,10 +203,12 @@ class Core:
         if training_client.remote_status == State.DONE:
             log.info("Done!: ")
         elif training_client.remote_status == None:
-            log.info("Done, but with none! ")            
+            log.info("Done, but with none! ")
+        else:
+            log.warning("Exiting with status " + str(training_client.remote_status))            
 
         training_client.stop()
-
+        
             
     @property
     def graphs(self) -> List[Graph]:
