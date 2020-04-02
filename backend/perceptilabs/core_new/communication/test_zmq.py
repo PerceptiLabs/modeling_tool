@@ -132,7 +132,6 @@ def test_two_clients_receive_the_same_messages():
     c1.push(b'key', b'hello from 1')
     c2.push(b'key', b'hello from 2')    
 
-
     def cond1(_):
         c1.process_messages()
         return fn1.call_count == 2
