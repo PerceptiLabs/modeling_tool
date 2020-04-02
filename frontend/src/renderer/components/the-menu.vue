@@ -440,11 +440,11 @@ export default {
         {
           label: 'File', visible: true,
           submenu: [
-            {label: 'New',                                                                      enabled: this.openApp,  active: this.addNewNetwork },
-            {label: 'Load',                                                                     enabled: this.openApp,  active: this.openLoadModelPopup },
-            {label: 'Save',                                                                     enabled: this.openApp,  active: this.saveModel },
+            {label: 'New',     active: this.addNewNetwork},
+            {label: 'Load',    active: this.openLoadModelPopup},
+            {label: 'Save',    active: this.saveModel,          enabled: this.openApp},
             {type: 'separator'},
-            {label: 'Log out',                                                                  enabled: this.isLogin,  active: this.logOut },
+            {label: 'Log out', active: this.logOut,             enabled: this.isLogin},
           ]
         },
         {
