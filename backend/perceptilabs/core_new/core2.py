@@ -162,14 +162,20 @@ class Core:
         )
 
         training_client.connect()
+        counter = 0
         while training_client.remote_status == None:
-            print("waiting for remote status != None")
+            if counter % 100 == 0:
+                log.info("Waiting for remote status != None")
             time.sleep(0.1)
+            counter += 1
         
         training_client.request_start()
+        counter = 0
         while training_client.remote_status == State.READY:
-            print("waiting for remote status != ready")            
+            if counter % 100 == 0:
+                log.info("Waiting for remote status READY")
             time.sleep(0.1)
+            counter += 1
 
         if training_client.remote_status == State.RUNNING:
             log.info(f"Training client connected to server. Session id: {session_id}")
@@ -181,7 +187,8 @@ class Core:
             self._remote_is_paused = training_client.remote_status == State.PAUSED
             
             if counter % 30 == 0:
-                log.info("Training running/paused. Graph count: " + str(len(self._graphs)))                
+                log.info(f"Training status: {training_client.remote_status}. Graph count: {len(self._graphs)}")
+                         
             self._graphs = training_client.graphs.copy()
             time.sleep(0.1)
             counter += 1
