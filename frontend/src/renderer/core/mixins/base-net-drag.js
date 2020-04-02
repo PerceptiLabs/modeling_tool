@@ -61,7 +61,6 @@ const baseNetDrag = {
       if (this.bodyDrag) this.bodyUp(ev)
     },
     bodyDown(ev) {
-      
       if(!this.isCurrentItemSelected(this.dataEl.layerId)) {
         if (ev.shiftKey || ev.metaKey || ev.ctrlKey) {
           this.setElementSelectedAction({id: this.dataEl.layerId, setValue: true, resetOther: false})
@@ -89,12 +88,10 @@ const baseNetDrag = {
 
       this.stickStartPos.left = this.left;
       this.stickStartPos.top = this.top;
-      
       // set initial borders for dragged elements
     },
 
     bodyMove(ev) {
-
       if(!this.isFewItemsSelected() && !this.itemWasDraged) {
         this.updateDragBoxContainerMutation({
           isVisible: true,

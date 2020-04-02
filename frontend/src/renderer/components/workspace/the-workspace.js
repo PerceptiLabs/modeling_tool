@@ -198,19 +198,62 @@ export default {
       this.setNetworkNameAction(text);
       this.pushSnapshotToHistory(null)
     },
-    dragBoxContainerStyle(){
-      const { width, height, left, top, isVisible } = this.dragBoxContainer;
+    dragBoxHorizontalTopBorder() {
+      const { width, left, top,  isVisible } = this.dragBoxContainer;
       const scaleCoefficient = this.scaleNet / 100;
       return {
         zIndex: 2,
         display: isVisible ? 'block' : 'none',
         width: width * scaleCoefficient + 'px',
+        height: 1 + 'px',
+        position: 'absolute',
+        top: top * scaleCoefficient  + 'px',
+        left: left * scaleCoefficient + 'px',
+        borderTop: '1px dashed #22DDE5'
+      }
+    },
+    dragBoxHorizontalBottomBorder() {
+      const { width, height, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: width * scaleCoefficient + 'px',
+        height: 1 + 'px',
+        position: 'absolute',
+        top: (top + height) * scaleCoefficient  + 'px',
+        left: left * scaleCoefficient + 'px',
+        borderTop: '1px dashed #22DDE5'
+      }
+    },
+
+    dragBoxVerticalLeftBorder() {
+      const { width, height, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: 1 + 'px',
         height: height * scaleCoefficient + 'px',
         position: 'absolute',
         top: top * scaleCoefficient  + 'px',
         left: left * scaleCoefficient + 'px',
-        border: '1px dashed #22DDE5'
+        borderLeft: '1px dashed #22DDE5'
       }
-    }
+    },
+    dragBoxVerticalRightBorder() {
+      const { width, height, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: 1 + 'px',
+        height: height * scaleCoefficient + 'px',
+        position: 'absolute',
+        top: top * scaleCoefficient  + 'px',
+        left: (left + width) * scaleCoefficient + 'px',
+        borderRight: '1px dashed #22DDE5'
+      }
+    },
   }
 }
