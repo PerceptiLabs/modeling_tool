@@ -39,7 +39,7 @@ class Server:
         poller.register(pull_socket, zmq.POLLIN)        
 
         #log.info("Entering main-loop [Server]") 
-        time.sleep(0.1) # Socket connection and binding operations are asynchronous, AND registering the subscribers takes additional time. Source: https://github.com/zeromq/jeromq/issues/695       
+        time.sleep(0.5) # Socket connection and binding operations are asynchronous, AND registering the subscribers takes additional time. Source: https://github.com/zeromq/jeromq/issues/695       
         self._is_running.set()        
         while self._is_running.is_set():
             items = dict(poller.poll(timeout=0.01))
@@ -117,7 +117,7 @@ class Client:
         poller.register(subscriber_socket, zmq.POLLIN)
 
         #log.info(f"Entering main-loop [Client {id(self)}]")
-        time.sleep(0.1) # Socket connection and binding operations are asynchronous, AND registering the subscribers takes additional time. Source: https://github.com/zeromq/jeromq/issues/695
+        time.sleep(0.5) # Socket connection and binding operations are asynchronous, AND registering the subscribers takes additional time. Source: https://github.com/zeromq/jeromq/issues/695
         self._is_running.set()        
         while self._is_running.is_set():
             items = dict(poller.poll(timeout=0.01))

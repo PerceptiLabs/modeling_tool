@@ -89,20 +89,14 @@ class Core:
         port1, port2 = find_free_port(count=2)        
         code, line_to_node_map = self._script_factory.make(graph, session_id, port1, port2, max_training_step_time=self._max_training_step_time)
 
-        with open('training_script.py', 'wt') as f:
+        script_path = f'training_script_{session_id}.py'
+        with open(script_path, 'wt') as f:
+            import shutil
+            shutil.copy(script_path, 'training_script.py')
             f.write(code)
             f.flush()
 
-        def fn_start():
-            import importlib            
-            with open('training_script.py', 'rt') as f:            
-                spec = importlib.util.spec_from_file_location("deployed_module", f.name)
-                module = importlib.util.module_from_spec(spec)
-                spec.loader.exec_module(module)
-                module.main()
-
-
-        self._deployment_strategy.run('training_script.py')
+        self._deployment_strategy.run(script_path)
         time.sleep(3) # Give TrainingServer some time to start.. 
 
         def on_server_timeout():
@@ -264,8 +258,13 @@ class Core:
     def is_paused(self):
         return self.is_running and self._remote_is_paused
             
-
-    
+    @property
+    def remote_status(self):
+        if self._training_client is not None and self._is_running.is_set():
+            self._training_client.remote_status
+        else:
+            return None
+        
         
 
     
