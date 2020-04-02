@@ -1,15 +1,20 @@
+import os
+import sys
 import time
 import uuid
 import pprint
+import socket
 import logging
 import requests
 import tempfile
 import threading
 import subprocess
 import sentry_sdk
+import multiprocessing
 from typing import Dict, List, Callable
 from abc import ABC, abstractmethod
 from queue import Queue
+
 
 from perceptilabs.issues import IssueHandler, UserlandError
 from perceptilabs.core_new.graph import Graph, JsonNetwork
@@ -19,10 +24,30 @@ from perceptilabs.core_new.layers.definitions import DEFINITION_TABLE
 from perceptilabs.core_new.deployment import DeploymentPipe
 from perceptilabs.core_new.api.mapping import ByteMap
 from perceptilabs.core_new.communication.status import *
-
+from perceptilabs.core_new.communication import TrainingClient, State
 
 log = logging.getLogger(__name__)
 
+
+def find_free_port(count=1):
+    """Find free port(s) and then close. WARNING: subject to race conditions!"""
+
+    sockets = []
+    for _ in range(count):
+        s = socket.socket()
+        s.bind(('', 0)) # Bind to a free port
+        sockets.append(s)
+        
+    ports = []
+    for s in sockets:
+        ports.append(s.getsockname()[1])
+        s.close()
+        
+    if len(ports) == 1:
+        return ports[0]
+    else:
+        return tuple(ports)    
+    
 
 class Core:
     def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, issue_handler: IssueHandler=None):
@@ -60,9 +85,11 @@ class Core:
         from perceptilabs.core_new.layers.script import ScriptFactory
         self._script_factory = ScriptFactory()
 
+
         graph = self._graph_builder.build_from_spec(graph_spec)
 
-        code, line_to_node_map = self._script_factory.make(graph, session_id)
+        port1, port2 = find_free_port(count=2)                
+        code, line_to_node_map = self._script_factory.make(graph, session_id, port1, port2)
 
         with open('training_script.py', 'wt') as f:
             f.write(code)
@@ -79,14 +106,9 @@ class Core:
                 module.main()
 
         #from multiprocessing import Process
-
-        import os
-        import sys
-        import subprocess
-        #import multiprocessing # Not a good idea. Uses FORK and that causes tensorflow issues. Spawn requires pickling..  https://github.com/tensorflow/tensorflow/issues/5448
-
-        if os.path.isfile(sys.executable) and False:
+        if os.path.isfile(sys.executable) and False: 
             log.info(f"Running training script using interpreter at {sys.executable}")
+            #multiprocessing.Process # Not a good idea. Uses FORK and that causes tensorflow issues. Spawn requires pickling..  https://github.com/tensorflow/tensorflow/issues/5448            
             p = subprocess.Popen(
                 [sys.executable, 'training_script.py'],
                 stdout=subprocess.PIPE,
@@ -98,26 +120,21 @@ class Core:
             thread = threading.Thread(target=fn_start)
             thread.start()
             
-
-        
         time.sleep(3) # Give it some time to start.. TODO: wait until shared memory is available, after that we can connect at will.
 
 
-        from perceptilabs.core_new.communication import TrainingClient, State
         training_client = TrainingClient(
-            6556, 6557,
+            port1, port2,
             graph_builder=self._graph_builder
         )
         #import pdb; pdb.set_trace()
 
         training_client.connect()
         while training_client.remote_status == None:
-            print("waiting for ready!!!")            
             time.sleep(0.1)
         
         training_client.request_start()
         while training_client.remote_status == State.READY:
-            print("waiting for running!!!")
             time.sleep(0.1)
 
         if training_client.remote_status == State.RUNNING:

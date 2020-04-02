@@ -140,7 +140,8 @@ class TrainingServer:
     def _worker_func(self):
         log.info("Entering worker func [TrainingServer]")
         event_queue = queue.Queue()
-        
+
+        log.info(f"Binding to publisher socket {self._port_pub_sub} and pull socket {self._port_push_pull} [TrainingServer]")
         self._zmq_server = ZmqServer(
             f'tcp://*:{self._port_pub_sub}',
             f'tcp://*:{self._port_push_pull}',            
@@ -365,7 +366,8 @@ class TrainingClient:
             b'state': lambda client, key, value: self._on_receive_state(value),
             b'pong': lambda client, key, value: self._on_receive_pong(value)            
         }
-        
+
+        log.info(f"Binding to subscriber socket {self._port_pub_sub} and push socket {self._port_push_pull} [TrainingClient]")        
         self._zmq_client = ZmqClient(
             f'tcp://localhost:{self._port_pub_sub}',
             f'tcp://localhost:{self._port_push_pull}',            

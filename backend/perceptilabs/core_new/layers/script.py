@@ -121,13 +121,13 @@ class ScriptFactory:
         code += "graph = graph_builder.build(layers, edges)\n\n"        
         return code
 
-    def _create_training_server_snippet(self, session_id):
+    def _create_training_server_snippet(self, port1, port2):
         code  = "snapshot_builder = SnapshotBuilder(\n"
         code += "    BASE_TO_REPLICA_MAP, \n"
         code += "    REPLICATED_PROPERTIES_TABLE\n"
         code += ")\n"        
         code += "server = TrainingServer(\n"
-        code += "    6556, 6557,\n" # TODO: use <link> and sharedmemory for now... https://stackoverflow.com/questions/11341795/zeromq-and-bind-to-random-port-how-to-get-port-chosen
+        code += "    {}, {},\n".format(port1, port2)
         code += "    graph,\n"
         code += "    snapshot_builder=snapshot_builder\n"
         code += ")\n\n"
@@ -147,7 +147,7 @@ class ScriptFactory:
         
         return code
 
-    def make(self, graph, session_id):
+    def make(self, graph, session_id, port1, port2):
         code  = self._create_imports_snippet(graph)
         code += self._create_logging_snippet()
         
@@ -157,7 +157,7 @@ class ScriptFactory:
         code += layers_code
 
         code += self._create_graph_snippet(graph)
-        code += self._create_training_server_snippet(session_id)
+        code += self._create_training_server_snippet(port1, port2)
         code += self._create_rest_server_snippet()
         code += self._create_main_block()
         return code, line_to_node_map
