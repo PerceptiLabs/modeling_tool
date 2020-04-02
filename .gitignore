@@ -8,6 +8,7 @@ backend/.venv/
 backend/venv-user/
 backend/dist/
 backend/deploy.py
+backend/training_script.py
 **/__pycache__/
 *.pyc
 *.py~
