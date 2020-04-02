@@ -162,3 +162,16 @@ if __name__ == "__main__":
     }    
     x = stringify(obj)
     print(x)
+
+
+def wait_for_condition(condition, timeout=20.0):
+    t1 = t0 = time.time()
+    while t1 - t0 < timeout:
+        if condition(0):
+            return True
+        time.sleep(0.3)
+        t1 = time.time()
+    return False
+        
+    
+    

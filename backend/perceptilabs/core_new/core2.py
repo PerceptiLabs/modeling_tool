@@ -161,7 +161,7 @@ class Core:
         )
 
         training_client.connect()
-        self._is_running.set()
+
                 
         counter = 0        
         while training_client.remote_status == None:
@@ -183,6 +183,7 @@ class Core:
         else:
             raise RuntimeError(f"Expected status {State.RUNNING}, got {training_client.remote_status}!")
 
+        self._is_running.set()        
         counter = 0
         while training_client.remote_status in [State.RUNNING, State.PAUSED]:
             self._remote_is_paused = training_client.remote_status == State.PAUSED

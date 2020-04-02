@@ -2,6 +2,7 @@ import time
 import pytest
 from unittest.mock import MagicMock
 
+from perceptilabs.utils import wait_for_condition
 from perceptilabs.core_new.utils import YieldLevel
 from perceptilabs.core_new.communication import TrainingClient, TrainingServer, State
 
@@ -77,10 +78,10 @@ def mock_graph_infinite_loop():
     graph.run.side_effect = fn_run
     yield graph
 
-    
-    
+
 SERVERS = []
 CLIENTS = []
+
 
 def create_server(graph, snapshot_builder=None, max_step_time=60):
     server = TrainingServer(
@@ -122,9 +123,8 @@ def test_can_connect(mock_graph_3s):
 
     server.start()
     client.connect()
-    time.sleep(1.0)
 
-    assert client.remote_status == State.READY
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
     
 
 def test_can_start(mock_graph_3s):
@@ -133,14 +133,10 @@ def test_can_start(mock_graph_3s):
 
     server.start()
     client.connect()
-    time.sleep(1.0)
-
-    assert client.remote_status == State.READY
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
     
     client.request_start()
-    time.sleep(1.3)
-
-    assert client.remote_status == State.RUNNING
+    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
 
     
 def test_can_start_10_times(mock_graph_3s):
@@ -151,14 +147,10 @@ def test_can_start_10_times(mock_graph_3s):
 
         server.start()
         client.connect()
-        time.sleep(1.3)
-
-        assert client.remote_status == State.READY
+        assert wait_for_condition(lambda _: client.remote_status == State.READY)
         
         client.request_start()
-        time.sleep(1.3)
-
-        assert client.remote_status == State.RUNNING
+        assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
 
         client.stop()
         server.stop()
@@ -170,13 +162,10 @@ def test_can_stop_when_ready(mock_graph_3s):
     
     server.start()
     client.connect()
-    time.sleep(1.3)
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
     
-    assert client.remote_status == State.READY
     client.request_stop()
-    time.sleep(1.3)
-    
-    assert client.remote_status == State.DONE
+    assert wait_for_condition(lambda _: client.remote_status == State.DONE)
 
 
 def test_can_stop_when_running(mock_graph_3s):
@@ -185,18 +174,13 @@ def test_can_stop_when_running(mock_graph_3s):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
     
-    assert client.remote_status == State.READY
     client.request_start()
-    time.sleep(0.3)
-    
-    assert client.remote_status == State.RUNNING
+    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
 
     client.request_stop()
-    time.sleep(1.3) 
-    
-    assert client.remote_status == State.DONE
+    assert wait_for_condition(lambda _: client.remote_status == State.DONE)
 
 
 def test_can_pause_when_running(mock_graph_3s):
@@ -205,18 +189,13 @@ def test_can_pause_when_running(mock_graph_3s):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
     
-    assert client.remote_status == State.READY
     client.request_start()
-    time.sleep(0.3)
-    
-    assert client.remote_status == State.RUNNING
+    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
 
     client.request_pause()
-    time.sleep(1.3)
-    
-    assert client.remote_status == State.PAUSED
+    assert wait_for_condition(lambda _: client.remote_status == State.PAUSED)
 
 
 def test_can_stop_when_paused(mock_graph_3s):
@@ -225,23 +204,17 @@ def test_can_stop_when_paused(mock_graph_3s):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
-
-    assert client.remote_status == State.READY
-    client.request_start()
-    time.sleep(0.3)
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
     
-    assert client.remote_status == State.RUNNING
+    client.request_start()
+    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
+
 
     client.request_pause()
-    time.sleep(1.3)
-    
-    assert client.remote_status == State.PAUSED
+    assert wait_for_condition(lambda _: client.remote_status == State.PAUSED)
 
     client.request_stop()
-    time.sleep(0.3)
-    
-    assert client.remote_status == State.DONE
+    assert wait_for_condition(lambda _: client.remote_status == State.DONE)
 
 
 def test_can_resume_when_paused(mock_graph_3s):
@@ -250,23 +223,17 @@ def test_can_resume_when_paused(mock_graph_3s):
     
     server.start()
     client.connect()
-    time.sleep(0.3)    
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
 
-    assert client.remote_status == State.READY
-    client.request_start()
-    time.sleep(0.3)
     
-    assert client.remote_status == State.RUNNING
+    client.request_start()
+    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
 
     client.request_pause()
-    time.sleep(1.3)
-    
-    assert client.remote_status == State.PAUSED
+    assert wait_for_condition(lambda _: client.remote_status == State.PAUSED)
 
     client.request_resume()
-    time.sleep(1.3)
-    
-    assert client.remote_status == State.RUNNING
+    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
 
 
 def test_can_stop_when_idle(mock_graph_1s):
@@ -275,18 +242,13 @@ def test_can_stop_when_idle(mock_graph_1s):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
-
-    assert client.remote_status == State.READY
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
+    
     client.request_start()
-    time.sleep(2.0)
-
-    assert client.remote_status == State.IDLE
+    assert wait_for_condition(lambda _: client.remote_status == State.IDLE)
 
     client.request_stop()
-    time.sleep(1.3)    
-
-    assert client.remote_status == State.DONE
+    assert wait_for_condition(lambda _: client.remote_status == State.DONE)
 
     
 def test_receives_3_graphs_and_goes_idle(mock_graph_3s_with_snapshot):
@@ -301,17 +263,13 @@ def test_receives_3_graphs_and_goes_idle(mock_graph_3s_with_snapshot):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
     
-    assert client.remote_status == State.READY
     client.request_start()
-    time.sleep(1.0)
+    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
     
-    assert client.remote_status == State.RUNNING
-    time.sleep(5.0)
-
-    assert client.remote_status == State.IDLE    
-    assert len(client.graphs) == 3
+    assert wait_for_condition(lambda _: client.remote_status == State.IDLE)
+    assert wait_for_condition(lambda _: len(client.graphs) == 3)
 
 
 def test_stops_on_userland_error(mock_graph_2s_error):
@@ -320,13 +278,10 @@ def test_stops_on_userland_error(mock_graph_2s_error):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
-
-    assert client.remote_status == State.READY
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
+    
     client.request_start()
-    time.sleep(5.0)
-
-    assert client.remote_status == State.DONE
+    assert wait_for_condition(lambda _: client.remote_status == State.DONE)
 
     
 def test_sends_message_on_userland_error(mock_graph_2s_error):
@@ -337,13 +292,10 @@ def test_sends_message_on_userland_error(mock_graph_2s_error):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
-
-    assert client.remote_status == State.READY
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
+    
     client.request_start()
-    time.sleep(5.0)
-
-    assert fn.call_count == 1
+    assert wait_for_condition(lambda _: fn.call_count == 1)
 
 
 def test_layer_export_called(mock_graph_3s):
@@ -354,15 +306,13 @@ def test_layer_export_called(mock_graph_3s):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
-
-    assert client.remote_status == State.READY
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
+    
     client.request_export(path='/hello/', mode='some-mode')
-    time.sleep(4.0)
 
-    assert mock_graph_3s.active_training_layer.layer.on_export.call_count == 1    
-    assert mock_graph_3s.active_training_layer.layer.on_export.call_args_list[0][0][0] == '/hello/'
-    assert mock_graph_3s.active_training_layer.layer.on_export.call_args_list[0][0][1] == 'some-mode'        
+    assert wait_for_condition(lambda _: mock_graph_3s.active_training_layer.layer.on_export.call_count == 1)
+    assert wait_for_condition(lambda _: mock_graph_3s.active_training_layer.layer.on_export.call_args_list[0][0][0] == '/hello/')
+    assert wait_for_condition(lambda _: mock_graph_3s.active_training_layer.layer.on_export.call_args_list[0][0][1] == 'some-mode')
 
     
 def test_stops_on_userland_timeout(mock_graph_infinite_loop):
@@ -371,13 +321,10 @@ def test_stops_on_userland_timeout(mock_graph_infinite_loop):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
-
-    assert client.remote_status == State.READY
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
+    
     client.request_start()
-    time.sleep(7)
-
-    assert client.remote_status == State.KILLED
+    assert wait_for_condition(lambda _: client.remote_status == State.KILLED)
 
 
 def test_client_stops_on_server_timeout(mock_graph_infinite_loop):
@@ -386,13 +333,10 @@ def test_client_stops_on_server_timeout(mock_graph_infinite_loop):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
-
-    assert client.remote_status == State.READY
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
+    
     client.request_start()
-    time.sleep(7)
-
-    assert not client.is_running
+    assert wait_for_condition(lambda _: not client.is_running)
     
     
 

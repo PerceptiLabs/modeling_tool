@@ -14,7 +14,7 @@ from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
-
+from perceptilabs.utils import wait_for_condition
 
 logging.basicConfig(stream=sys.stdout,
                     format='%(asctime)s - %(levelname)s - %(threadName)s - %(filename)s:%(lineno)d - %(message)s',
@@ -171,15 +171,9 @@ def test_train_normal_converges(graph_spec_binary_classification, graph_builder)
     core.run(graph_spec_binary_classification, auto_stop=True)
 
     #print("POST RUN CALL")
-    
+
     while core.is_running:
-
-        #graphs = core.graphs
-        #print("aaaa", graph)
-        #print(graph.active_training_node.layer.layer_gradients.keys())
-    
         time.sleep(1)
-
 
     accuracy_list = []
     for graph in core.graphs:
@@ -263,10 +257,8 @@ def test_core_handles_training_step_timeout():
     )
 
     threading.Thread(target=core.run, args=(graph_spec,), daemon=True).start()
-    time.sleep(4.0)
-    assert core.is_running
-    time.sleep(8.0)
-    assert not core.is_running
+    assert wait_for_condition(lambda _: core.is_running)
+    assert wait_for_condition(lambda _: not core.is_running)
 
 
 def test_core_handles_training_server_timeout():
@@ -313,15 +305,13 @@ def test_core_handles_training_server_timeout():
     )
 
     threading.Thread(target=core.run, args=(graph_spec,), daemon=True).start()
-    time.sleep(4.0)
-    assert core.is_running
-    time.sleep(8.0)
-    assert not core.is_running
+    assert wait_for_condition(lambda _: core.is_running)
+    assert wait_for_condition(lambda _: not core.is_running)
 
 
 def test_pause_works(graph_spec_binary_classification):
     max_training_step_time = 10000
-    max_server_response_time = 3
+    max_server_response_time = 10000
 
     import threading
     from perceptilabs.core_new.utils import YieldLevel
@@ -363,19 +353,18 @@ def test_pause_works(graph_spec_binary_classification):
     )
     
     threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True).start()
-    time.sleep(4.0) # So that the new thread etc gets a chance to start..
-    assert core.is_running
-    assert not core.is_paused
+    assert wait_for_condition(lambda _: core.is_running)
+    assert wait_for_condition(lambda _: not core.is_paused)
 
     core.pause()
-    time.sleep(1.0)
-    assert core.is_running    
-    assert core.is_paused
+    
+    assert wait_for_condition(lambda _: core.is_running)
+    assert wait_for_condition(lambda _: core.is_paused)
 
 
 def test_resume_works(graph_spec_binary_classification):
     max_training_step_time = 10000
-    max_server_response_time = 3
+    max_server_response_time = 10000
 
     import threading
     from perceptilabs.core_new.utils import YieldLevel
@@ -417,17 +406,14 @@ def test_resume_works(graph_spec_binary_classification):
     )
     
     threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True).start()
-    time.sleep(4.0) # So that the new thread etc gets a chance to start..
-    assert core.is_running
-    assert not core.is_paused
+    assert wait_for_condition(lambda _: core.is_running)
+    assert wait_for_condition(lambda _: not core.is_paused)
 
     core.pause()
-    time.sleep(1.0)
-    assert core.is_running    
-    assert core.is_paused
+    assert wait_for_condition(lambda _: core.is_running)
+    assert wait_for_condition(lambda _: core.is_paused)
 
     core.unpause()
-    time.sleep(1.0)
-    assert core.is_running    
-    assert not core.is_paused
+    assert wait_for_condition(lambda _: core.is_running)
+    assert wait_for_condition(lambda _: not core.is_paused)
     

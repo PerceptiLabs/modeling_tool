@@ -29,6 +29,7 @@ class Server:
         poller = zmq.Poller()
         poller.register(pull_socket, zmq.POLLIN)        
 
+        self._is_running.set()        
         while self._is_running.is_set():
             items = dict(poller.poll(timeout=0.1))
 
@@ -37,7 +38,6 @@ class Server:
                 publisher_socket.send_multipart([key, value])
             
     def start(self):
-        self._is_running.set()        
         self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
         self._worker_thread.start()
 
@@ -96,7 +96,8 @@ class Client:
         
         poller = zmq.Poller()
         poller.register(subscriber_socket, zmq.POLLIN)
-        
+
+        self._is_running.set()        
         while self._is_running.is_set():
             items = dict(poller.poll(timeout=0.01))
             
@@ -123,7 +124,6 @@ class Client:
         return socket
 
     def start(self):
-        self._is_running.set()        
         self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
         self._worker_thread.start()
 
