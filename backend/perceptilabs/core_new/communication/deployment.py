@@ -16,7 +16,7 @@ class SubprocessStrategy(DeploymentStrategy):
     def run(self, path):
         #multiprocessing.Process # Not a good idea. Uses FORK and that causes tensorflow issues. Spawn requires pickling..  https://github.com/tensorflow/tensorflow/issues/5448                    
         p = subprocess.Popen(
-            [interpreter, path],
+            [self._interpreter, path],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
