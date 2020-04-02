@@ -50,7 +50,7 @@ def test_pushed_and_subscribed_message_arrives():
     client.start()
     
     client.push(b'key', b'hello')
-    time.sleep(1.0)
+    time.sleep(7.5)
     client.process_messages()
     
     assert fn.call_count == 1
@@ -65,7 +65,7 @@ def test_pushed_and_non_subscribed_message_does_not_arrive():
     client.start()
     
     client.push(b'key', b'hello')
-    time.sleep(1.0)
+    time.sleep(7.5)
     assert client.messages_received == 0
     
 
@@ -84,7 +84,7 @@ def test_two_clients_receive_the_same_messages():
     
     c1.push(b'key', b'hello from 1')
     c2.push(b'key', b'hello from 2')    
-    time.sleep(1.0)
+    time.sleep(7.5)
     c1.process_messages()
     c2.process_messages()
     
