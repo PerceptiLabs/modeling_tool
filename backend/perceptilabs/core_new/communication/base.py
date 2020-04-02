@@ -124,7 +124,7 @@ class TrainingServer:
             if self._step_start is not None:
                 step_time = time.time() - self._step_start
                 if step_time > self._max_step_time:
-                    log.info(f"Training step time took {step_time}s, exceeding limit {self._max_step_time}s. Killing worker thread. [TrainingServer]")
+                    log.info(f"Training step time has been running for {step_time}s, exceeding limit of {self._max_step_time}s. Killing worker thread. [TrainingServer]")
                     self._worker_thread.kill()
                     
                     time.sleep(1)
@@ -222,6 +222,7 @@ class TrainingServer:
         return True
             
     def _handle_raw_event(self, raw_event, graph, training_state):
+        print("HANDLE RAW EVENT!")
         event_dict = deserialize(raw_event)
         event_type = event_dict['type']
 
@@ -421,6 +422,8 @@ class TrainingClient:
         raw_event = serialize({'type': 'on_connect'})
         self._zmq_client.push(b'event', raw_event)
 
+        print("SNT EVENT CONNECT")                
+
     def _send_ping(self):
         id_ = uuid.uuid4().hex
         value = serialize(id_)
@@ -430,6 +433,7 @@ class TrainingClient:
     def request_start(self):
         raw_event = serialize({'type': 'on_request_start'})
         self._zmq_client.push(b'event', raw_event)
+        print("SNT REQUEST START")        
 
     def request_stop(self):
         raw_event = serialize({'type': 'on_request_stop'})

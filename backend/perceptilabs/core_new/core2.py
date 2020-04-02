@@ -70,6 +70,7 @@ class Core:
         
     def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None, auto_stop=False):
         on_iterate = on_iterate or []
+        self._is_running.set()
         try:
             self._run_internal(
                 graph_spec,
@@ -107,10 +108,13 @@ class Core:
         time.sleep(3) # Give TrainingServer some time to start.. 
 
         def on_server_timeout():
-            with self._issue_handler.create_issue('Training server timed out! Shutting down core') as issue:
-                self._issue_handler.put_error(issue.frontend_message)
-                log.error(issue.internal_message)
-
+            if self._issue_handler is not None:
+                with self._issue_handler.create_issue('Training server timed out! Shutting down core') as issue:
+                    self._issue_handler.put_error(issue.frontend_message)
+                    log.error(issue.internal_message)
+            else:
+                log.error("Training server timed out! Shutting down core")
+                
         def on_userland_error(exception, tb_list):
             message = ''
             collect = False
@@ -160,10 +164,12 @@ class Core:
 
         training_client.connect()
         while training_client.remote_status == None:
+            print("waiting for remote status != None")
             time.sleep(0.1)
         
         training_client.request_start()
         while training_client.remote_status == State.READY:
+            print("waiting for remote status != ready")            
             time.sleep(0.1)
 
         if training_client.remote_status == State.RUNNING:
