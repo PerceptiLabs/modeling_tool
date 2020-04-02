@@ -1,5 +1,13 @@
 .workspace_tab-list {
   max-width: calc(100% - 3rem);
+  overflow-y: scroll;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+}
+
+.workspace_tab-list::-webkit-scrollbar { /* WebKit */
+  width: 0;
+  height: 0;
 }
 
 .workspace_tab {
