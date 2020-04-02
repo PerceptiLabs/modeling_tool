@@ -327,6 +327,21 @@ def test_stops_on_userland_timeout(mock_graph_infinite_loop):
     assert wait_for_condition(lambda _: client.remote_status == State.KILLED)
 
 
+def test_stops_on_userland_timeout_repeated(mock_graph_infinite_loop):
+    server = create_server(mock_graph_infinite_loop, max_step_time=5)
+    client = create_client()
+    
+    server.start()
+    client.connect()
+    assert wait_for_condition(lambda _: client.remote_status == State.READY)
+        
+    client.request_start()
+    assert wait_for_condition(lambda _: client.remote_status == State.KILLED)
+    
+    server.stop()
+    client.stop()
+    
+
 def test_client_stops_on_server_timeout(mock_graph_infinite_loop):
     server = create_server(mock_graph_infinite_loop, max_step_time=60)
     client = create_client(max_response_time=3)
