@@ -176,7 +176,10 @@ class Graph:
 
     @property
     def edges(self):
-        return self._nx_graph.edges    
+        return self._nx_graph.edges
+
+    def run(self):
+        yield from self.active_training_node.layer.run(self)
     
 #    def clone(self):
 #        layers = {n.layer_id: node.layer.__class__() for n in self.nodes}

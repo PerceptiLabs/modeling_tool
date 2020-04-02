@@ -3,6 +3,7 @@ import time
 import pytest
 import logging
 import tempfile
+import threading
 import numpy as np
 from queue import Queue
 from unittest.mock import MagicMock
@@ -13,7 +14,6 @@ from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
-from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe, DeploymentError
 
 
 logging.basicConfig(stream=sys.stdout,
@@ -157,7 +157,7 @@ def graph_spec_binary_classification():
 def test_train_normal_converges(graph_spec_binary_classification, graph_builder):
     
     script_factory = ScriptFactory()
-    deployment_pipe = InProcessDeploymentPipe(script_factory)
+    #deployment_pipe = InProcessDeploymentPipe(script_factory)
     #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
 
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
@@ -165,10 +165,10 @@ def test_train_normal_converges(graph_spec_binary_classification, graph_builder)
     
     core = Core(
         graph_builder,
-        deployment_pipe,
+        script_factory
     )
 
-    core.run(graph_spec_binary_classification)
+    core.run(graph_spec_binary_classification, auto_stop=True)
 
     #print("POST RUN CALL")
     
@@ -194,29 +194,21 @@ def test_train_normal_converges(graph_spec_binary_classification, graph_builder)
 @pytest.mark.slow
 def test_train_normal_distributed_converges(graph_spec_binary_classification, graph_builder):
     script_factory = ScriptFactory()
-    deployment_pipe = InProcessDeploymentPipe(script_factory)
+    #deployment_pipe = InProcessDeploymentPipe(script_factory)
     #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
 
     core = Core(
         graph_builder,
-        deployment_pipe,
+        script_factory
     )
 
     json_network = graph_spec_binary_classification
     json_network['Layers']['6']['Properties']['Distributed'] = True
 
-    core.run(json_network)
+    core.run(json_network, auto_stop=True)
 
-    #print("POST RUN CALL")
-    
     while core.is_running:
-
-        #graphs = core.graphs
-        #print("aaaa", graph)
-        #print(graph.active_training_node.layer.layer_gradients.keys())
-    
         time.sleep(1)
-
 
     accuracy_list = []
     for graph in core.graphs:
@@ -227,70 +219,215 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification, gr
     assert np.mean(accuracy_list[-10:]) >= 0.75
 
 
+def test_core_handles_training_step_timeout():
+    max_training_step_time = 3
+    max_server_response_time = 10000    
 
+    import threading
+    from perceptilabs.core_new.utils import YieldLevel
+    from perceptilabs.core_new.communication import TrainingServer
+    
+    def run_graph():
+        while True:
+            time.sleep(1000) # A single iteration will take 1000s
+            yield YieldLevel.DEFAULT
 
-def test_core_handles_training_script_does_not_deploy(graph_spec_binary_classification, graph_builder):
-    code  = "def main(wait=False):\n"
-    code += "    pass"
-
-    def fn_make(graph, config):
-        return code, {}
+    graph_spec = MagicMock()
+    graph = MagicMock()
+    graph.run.side_effect = run_graph
+    graph_builder = MagicMock()
+    deployment_strategy = MagicMock()
 
     script_factory = MagicMock()
-    script_factory.make.side_effect = fn_make
-
-    deployment_pipe = InProcessDeploymentPipe(script_factory, timeout=1)
-
+    script_factory.make.return_value = ('', {})
+    
+    def run_deploy(path):
+        port1 = script_factory.make.call_args[0][2]
+        port2 = script_factory.make.call_args[0][3]
+        training_server = TrainingServer(
+            port1, port2,
+            graph,
+            snapshot_builder=MagicMock(),
+            max_step_time=max_training_step_time         
+        )
+        training_server.start()
+    
+    deployment_strategy.run.side_effect = run_deploy
+    
     core = Core(
         graph_builder,
-        deployment_pipe,
+        script_factory,
+        deployment_strategy=deployment_strategy,
+        max_training_step_time=max_training_step_time,
+        max_server_response_time=max_server_response_time
     )
 
-    with pytest.raises(DeploymentError):
-        core.run(graph_spec_binary_classification)
+    threading.Thread(target=core.run, args=(graph_spec,), daemon=True).start()
+    time.sleep(4.0)
+    assert core.is_running
+    time.sleep(8.0)
+    assert not core.is_running
+
+
+def test_core_handles_training_server_timeout():
+    max_training_step_time = 10000
+    max_server_response_time = 3
+
+    import threading
+    from perceptilabs.core_new.utils import YieldLevel
+    from perceptilabs.core_new.communication import TrainingServer
     
+    def run_graph():
+        while True:
+            time.sleep(1000) # A single iteration will take 1000s
+            yield YieldLevel.DEFAULT
 
-def test_core_handles_training_script_stops_responding(graph_spec_binary_classification, graph_builder):
-
-
-    def fn_make(graph, config):
-        code  = "from flask import Flask, jsonify, abort\n"
-        code += 'from perceptilabs.core_new.communication.status import *\n'                
-        code += "app = Flask(__name__)\n"
-        code += "\n"
-        code += "n_calls = 0\n"        
-        code += "@app.route('/')\n"
-        code += "def endpoint_index():\n"
-        code += "    global n_calls\n"
-        code += "    if n_calls < 2:\n"
-        code += "        result = {\n"
-        code += "            'status': STATUS_READY if n_calls == 0 else STATUS_STARTED,\n"
-        code += "            'n_snapshots': 0,\n"
-        code += "            'snapshot_count': 0,\n"
-        code += "            'running_time': None\n"        
-        code += "        }\n"
-        code += "        n_calls += 1\n"        
-        code += "        return jsonify(result)\n"                
-        code += "    else:\n"
-        code += "        abort(404)\n"
-        code += "        n_calls += 1\n"
-
-        code += "\n"    
-        code += "def main(wait=False):\n"
-        code += "    app.run(port=" + str(config['port_flask']) + ")\n"        
-        return code, {}
+    graph_spec = MagicMock()
+    graph = MagicMock()
+    graph.run.side_effect = run_graph
+    graph_builder = MagicMock()
+    deployment_strategy = MagicMock()
 
     script_factory = MagicMock()
-    script_factory.make.side_effect = fn_make
-
-    deployment_pipe = InProcessDeploymentPipe(script_factory, timeout=1)
-
+    script_factory.make.return_value = ('', {})
+    
+    def run_deploy(path):
+        port1 = script_factory.make.call_args[0][2]
+        port2 = script_factory.make.call_args[0][3]
+        training_server = TrainingServer(
+            port1, port2,
+            graph,
+            snapshot_builder=MagicMock(),
+            max_step_time=max_training_step_time         
+        )
+        training_server.start()
+    
+    deployment_strategy.run.side_effect = run_deploy
+    
     core = Core(
         graph_builder,
-        deployment_pipe,
+        script_factory,
+        deployment_strategy=deployment_strategy,
+        max_training_step_time=max_training_step_time,
+        max_server_response_time=max_server_response_time        
     )
 
-    with pytest.raises(DeploymentError):
-        core.run(graph_spec_binary_classification)
+    threading.Thread(target=core.run, args=(graph_spec,), daemon=True).start()
+    time.sleep(4.0)
+    assert core.is_running
+    time.sleep(8.0)
+    assert not core.is_running
+
+
+def test_pause_works(graph_spec_binary_classification):
+    max_training_step_time = 10000
+    max_server_response_time = 3
+
+    import threading
+    from perceptilabs.core_new.utils import YieldLevel
+    from perceptilabs.core_new.communication import TrainingServer
     
-        
+    def run_graph():
+        while True:
+            time.sleep(0.1) # A single iteration will take 1000s
+            yield YieldLevel.DEFAULT
+
+    graph_spec = MagicMock()
+    graph = MagicMock()
+    graph.run.side_effect = run_graph
+    graph_builder = MagicMock()
+    deployment_strategy = MagicMock()
+
+    script_factory = MagicMock()
+    script_factory.make.return_value = ('', {})
+    
+    def run_deploy(path):
+        port1 = script_factory.make.call_args[0][2]
+        port2 = script_factory.make.call_args[0][3]
+        training_server = TrainingServer(
+            port1, port2,
+            graph,
+            snapshot_builder=MagicMock(),
+            max_step_time=max_training_step_time         
+        )
+        training_server.start()
+    
+    deployment_strategy.run.side_effect = run_deploy
+    
+    core = Core(
+        graph_builder,
+        script_factory,
+        deployment_strategy=deployment_strategy,
+        max_training_step_time=max_training_step_time,
+        max_server_response_time=max_server_response_time        
+    )
+    
+    threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True).start()
+    time.sleep(4.0) # So that the new thread etc gets a chance to start..
+    assert core.is_running
+    assert not core.is_paused
+
+    core.pause()
+    time.sleep(1.0)
+    assert core.is_running    
+    assert core.is_paused
+
+
+def test_resume_works(graph_spec_binary_classification):
+    max_training_step_time = 10000
+    max_server_response_time = 3
+
+    import threading
+    from perceptilabs.core_new.utils import YieldLevel
+    from perceptilabs.core_new.communication import TrainingServer
+    
+    def run_graph():
+        while True:
+            time.sleep(0.1) # A single iteration will take 1000s
+            yield YieldLevel.DEFAULT
+
+    graph_spec = MagicMock()
+    graph = MagicMock()
+    graph.run.side_effect = run_graph
+    graph_builder = MagicMock()
+    deployment_strategy = MagicMock()
+
+    script_factory = MagicMock()
+    script_factory.make.return_value = ('', {})
+    
+    def run_deploy(path):
+        port1 = script_factory.make.call_args[0][2]
+        port2 = script_factory.make.call_args[0][3]
+        training_server = TrainingServer(
+            port1, port2,
+            graph,
+            snapshot_builder=MagicMock(),
+            max_step_time=max_training_step_time         
+        )
+        training_server.start()
+    
+    deployment_strategy.run.side_effect = run_deploy
+    
+    core = Core(
+        graph_builder,
+        script_factory,
+        deployment_strategy=deployment_strategy,
+        max_training_step_time=max_training_step_time,
+        max_server_response_time=max_server_response_time        
+    )
+    
+    threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True).start()
+    time.sleep(4.0) # So that the new thread etc gets a chance to start..
+    assert core.is_running
+    assert not core.is_paused
+
+    core.pause()
+    time.sleep(1.0)
+    assert core.is_running    
+    assert core.is_paused
+
+    core.unpause()
+    time.sleep(1.0)
+    assert core.is_running    
+    assert not core.is_paused
+    

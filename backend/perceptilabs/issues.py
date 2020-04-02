@@ -8,6 +8,16 @@ import sentry_sdk
 from perceptilabs.utils import add_line_numbering
 
 
+def traceback_from_exception(exception):
+    tb_obj = traceback.TracebackException(
+        exception.__class__,
+        exception,
+        exception.__traceback__
+    )
+    text = "".join(tb_obj.format())
+    return text
+
+
 class Issue:
     def __init__(self, message, exception=None):
         self._message = message
@@ -25,12 +35,7 @@ class Issue:
         self.internal_message = self._message + f" (issue origin: {location})"
         
         if self._exception:
-            tb_obj = traceback.TracebackException(
-                self._exception.__class__,
-                self._exception,
-                self._exception.__traceback__
-            )
-            self.internal_message += "\n" + "".join(tb_obj.format())
+            self.internal_message += "\n" + traceback_from_exception(self._exception)
             
         return self
     
@@ -76,9 +81,14 @@ class UserlandError:
         self.code = code
 
     def format(self, with_code=False):
-        text  = f'Error in layer {self.layer_id} [{self.layer_type}]. Line: {self.line_number}'
+        text = f'Error in layer {self.layer_id} [{self.layer_type}]. '
+        
+        if self.line_number is not None:
+            text += f'Line: {self.line_number}'
+        
         if with_code and self.code is not None:
             text += '\n' + add_line_numbering(self.code)
+            
         text += '\n' + self.message
         return text
 

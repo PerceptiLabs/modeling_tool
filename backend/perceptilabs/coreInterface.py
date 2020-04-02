@@ -243,7 +243,6 @@ class coreLogic():
         elif self._core_mode == 'v2':
             from perceptilabs.core_new.compability import CompabilityCore
             from perceptilabs.core_new.graph.builder import GraphBuilder
-            from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
             from perceptilabs.core_new.layers.script import ScriptFactory
 
             from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP                
@@ -252,15 +251,13 @@ class coreLogic():
             graph_builder = GraphBuilder(replica_by_name)
             
             script_factory = ScriptFactory()
-            deployment_pipe = InProcessDeploymentPipe(script_factory)
-            #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)
 
             
             self.core = CompabilityCore(
                 self.commandQ,
                 self.resultQ,
                 graph_builder,
-                deployment_pipe,
+                script_factory,
                 network,
                 threaded=True,
                 issue_handler=self.issue_handler

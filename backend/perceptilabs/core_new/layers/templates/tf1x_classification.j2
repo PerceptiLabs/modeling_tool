@@ -1,6 +1,5 @@
 {% macro run_normal(graph, layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
         self._status = 'initializing'
-
         output_layer_id = '{{output_layer}}'
         target_layer_id = '{{target_layer}}'
         input_data_nodes = graph.get_direct_data_nodes(output_layer_id)
@@ -56,7 +55,7 @@
                 output_types=np.float32
             )
         ))
-
+        
         dataset_trn = dataset_trn.batch(self._batch_size)
         dataset_val = dataset_val.batch(self._batch_size)
         dataset_tst = dataset_tst.batch(1)                
@@ -160,6 +159,7 @@
         trackable_variables.update({x.name: x for x in tf.trainable_variables() if isinstance(x, Trackable)})
         trackable_variables.update({k: v for k, v in locals().items() if isinstance(v, Trackable) and not isinstance(v, tf.python.data.ops.iterator_ops.Iterator)}) # TODO: Iterators based on 'stateful functions' cannot be serialized.
         self._checkpoint = tf.train.Checkpoint(**trackable_variables)
+
         sess.run(tf.global_variables_initializer())
         
         {% filter remove_lspaces(8) %}
@@ -169,7 +169,7 @@
                 status.assert_consumed().run_restore_ops(session=self._sess)
             {% endif %}
         {% endfilter %}                    
-        
+
         def train_step():
             if not self._headless:
                 _, self._loss_training, self._accuracy_training, \
