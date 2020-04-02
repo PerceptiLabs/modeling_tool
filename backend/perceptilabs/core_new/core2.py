@@ -32,7 +32,7 @@ log = logging.getLogger(__name__)
 
 
 def find_free_port(count=1):
-    """Find free port(s) and then close. WARNING: subject to race conditions!"""
+    """Find free port(s) and then close. WARNING: this approach is subject to race conditions!"""
 
     sockets = []
     for _ in range(count):
@@ -52,18 +52,19 @@ def find_free_port(count=1):
     
     
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, issue_handler: IssueHandler=None):
+    def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, issue_handler: IssueHandler=None, max_server_response_time=20, max_training_step_time=15):
         self._graph_builder = graph_builder
         self._deployment_pipe = deployment_pipe
         self._graphs = []
         self._issue_handler = issue_handler
         
-        self._lock = threading.Lock()        
         self._is_running = threading.Event()
         self._is_running.clear()
         self._client = None
 
         self._remote_is_paused = False
+        self._max_server_response_time = max_server_response_time
+        self._max_training_step_time = max_training_step_time
         
     def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None, auto_stop=False):
         on_iterate = on_iterate or []
@@ -83,13 +84,11 @@ class Core:
 
     def _run_internal(self, graph_spec, session_id=None, on_iterate=None, auto_stop=False):
         session_id = session_id or uuid.uuid4().hex
-
-        self._script_factory = ScriptFactory()
-
         graph = self._graph_builder.build_from_spec(graph_spec)
-
         port1, port2 = find_free_port(count=2)
-        code, line_to_node_map = self._script_factory.make(graph, session_id, port1, port2)
+        self._script_factory = ScriptFactory()
+        
+        code, line_to_node_map = self._script_factory.make(graph, session_id, port1, port2, max_training_step_time=self._max_training_step_time)
 
         with open('training_script.py', 'wt') as f:
             f.write(code)
@@ -103,7 +102,7 @@ class Core:
                 spec.loader.exec_module(module)
                 module.main()
 
-        #from multiprocessing import Process
+
         if os.path.isfile(sys.executable) and False: 
             log.info(f"Running training script using interpreter at {sys.executable}")
             #multiprocessing.Process # Not a good idea. Uses FORK and that causes tensorflow issues. Spawn requires pickling..  https://github.com/tensorflow/tensorflow/issues/5448            
@@ -117,7 +116,7 @@ class Core:
             thread = threading.Thread(target=fn_start)
             thread.start()
             
-        time.sleep(3) # Give TrainingServer some time to start..
+        time.sleep(3) # Give TrainingServer some time to start.. 
 
         def on_server_timeout():
             with self._issue_handler.create_issue('Training server timed out! Shutting down core') as issue:
@@ -167,7 +166,8 @@ class Core:
             on_userland_error=on_userland_error,
             on_server_timeout=on_server_timeout,
             on_server_killed=on_server_killed,
-            on_log_message=on_log_message
+            on_log_message=on_log_message,
+            max_response_time=self._max_server_response_time
         )
 
         training_client.connect()
@@ -194,7 +194,7 @@ class Core:
             counter += 1
 
         self._remote_is_paused = False
-        
+    
         if auto_stop:
             training_client.request_stop()            
                         
@@ -203,7 +203,6 @@ class Core:
             if counter % 100 == 0:
                 log.info("Idle. Graph count: " + str(len(self._graphs)))                     
             time.sleep(0.1)
-
 
         if training_client.remote_status == State.DONE:
             log.info("Done!: ")
@@ -216,107 +215,10 @@ class Core:
 
         training_client.stop()
 
-    def _run_internal_(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None):        
-        session_id = session_id or uuid.uuid4().hex
-        log.info(f"Running core with session id {session_id}")
-
-        config = self._deployment_pipe.get_session_config(session_id)
-        log.debug(f"Session {session_id} config: {pprint.pformat(config)}")
-        
-        graph = self._graph_builder.build_from_spec(graph_spec)
-        self._client = self._deployment_pipe.deploy(graph, session_id)
-
-        line_to_node_map = self._deployment_pipe._line_to_node_map # TODO: inject script_factory to deployment pipe instead retrieving the map like this.
-
-        log.info(f"Sending start command to deployed core with session id {session_id}")        
-        self._client.send_event('on_start')
-        
-        while self._client.status in [STATUS_READY, STATUS_STARTED]:
-            time.sleep(1.0)
-
-        if self._client.status == STATUS_RUNNING:
-            log.info(f"Deployed core with id {session_id} indicated status 'running'")
-        else:
-            raise RuntimeError(f"Expected deployed core status 'running', but got '{self._client.status}'")
-
-        self._graphs = []
-
-        counter = 0
-        t_start = time.perf_counter()
-        while self._client.status in [STATUS_RUNNING, STATUS_RUNNING_PAUSED] or (self._client.status == STATUS_IDLE and len(self._graphs) < self._client.snapshot_count):
-            t0 = time.perf_counter()
-            errors = self._client.pop_errors()
-
-            if errors:
-                self._handle_errors(errors, line_to_node_map)
-                log.info('Breaking out of core main loop due to remote errors: ' + ', '.join(repr(e) for e, _ in errors))                
-                break
-
-            snapshots = self._client.pop_snapshots()
-
-            total_size = 0
-            new_graphs = []
-            for snapshot, size in snapshots:
-                graph = self._graph_builder.build_from_snapshot(snapshot)
-                new_graphs.append(graph)                
-                total_size += size
-
-            with self._lock:
-                self._graphs.extend(new_graphs)
- 
-            for f in on_iterate:
-                f(counter, self)
-
-            t1 = time.perf_counter()
-
-            running_time = self._client.running_time
-            produce_rate = round(self._client.snapshot_count / running_time, 3)
-            consume_rate = round(len(self._graphs) / running_time, 3)
-            avg_size = round(total_size/10**3/len(snapshots), 3) if len(snapshots) > 0 else 0.0
-
-            log.info(
-                f"Consumed {len(snapshots)} snapshots in {round(1000*(t1-t0), 3)} ms (mean size: {avg_size} KB). "
-                f"Total consumed (produced): {len(self._graphs)} ({self._client.snapshot_count}). "
-                f"Consumption (production) rate: {consume_rate} ({produce_rate}) per sec. "
-            )
-            counter += 1
-            time.sleep(1)
-
-    @property
-    def is_paused(self):
-        return self._remote_is_paused
-
-    def _handle_errors(self, errors: List, line_to_node_map):
-        errors_repr = []
-        for _, traceback_frames in errors:
-            message = ''
-
-            for frame in traceback_frames:
-                node, true_lineno = line_to_node_map.get(frame.lineno, (None, None))
-
-                if frame.filename == 'deploy.py' and node is not None:
-                    message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}, ' + \
-                               f'origin {node.layer_id}:{true_lineno} [{node.layer_type}]\n' +\
-                               f'  {frame.line}\n'
-                else:
-                    message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
-                               f'  {frame.line}\n'
-
-            userland_error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
-
-            with sentry_sdk.push_scope() as scope:
-                scope.set_tag('error-type', 'userland-error')
-                scope.level = 'info'
-                sentry_sdk.capture_message(userland_error.format())
-            
-            log.info('Userland error:\n' + userland_error.format())
-            if self._issue_handler is not None:
-                self._issue_handler.put_error(userland_error.format())          
             
     @property
     def graphs(self) -> List[Graph]:
-        with self._lock:
-            return self._graphs.copy()
+        return self._graphs.copy()
 
     def stop(self):
         #if self._client is not None:

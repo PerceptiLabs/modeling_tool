@@ -121,7 +121,7 @@ class ScriptFactory:
         code += "graph = graph_builder.build(layers, edges)\n\n"        
         return code
 
-    def _create_training_server_snippet(self, port1, port2):
+    def _create_training_server_snippet(self, port1, port2, max_training_step_time):
         code  = "snapshot_builder = SnapshotBuilder(\n"
         code += "    BASE_TO_REPLICA_MAP, \n"
         code += "    REPLICATED_PROPERTIES_TABLE\n"
@@ -129,7 +129,8 @@ class ScriptFactory:
         code += "server = TrainingServer(\n"
         code += "    {}, {},\n".format(port1, port2)
         code += "    graph,\n"
-        code += "    snapshot_builder=snapshot_builder\n"
+        code += "    snapshot_builder=snapshot_builder,\n"
+        code += "    max_step_time={}\n".format(max_training_step_time)
         code += ")\n\n"
         return code
 
@@ -147,7 +148,7 @@ class ScriptFactory:
         
         return code
 
-    def make(self, graph, session_id, port1, port2):
+    def make(self, graph, session_id, port1, port2, max_training_step_time=15):
         code  = self._create_imports_snippet(graph)
         code += self._create_logging_snippet()
         
@@ -157,7 +158,7 @@ class ScriptFactory:
         code += layers_code
 
         code += self._create_graph_snippet(graph)
-        code += self._create_training_server_snippet(port1, port2)
+        code += self._create_training_server_snippet(port1, port2, max_training_step_time)
         code += self._create_rest_server_snippet()
         code += self._create_main_block()
         return code, line_to_node_map
