@@ -45,7 +45,6 @@ class State:
     PAUSED = 'paused'
     IDLE = 'idle'
     DONE = 'done'    
-    KILLED = 'killed'
     STOPPED = 'stopped'    
 
     # (FROM_STATE, TO_STATE)
@@ -127,11 +126,10 @@ class TrainingServer:
                     log.info(f"Training step time has been running for {step_time}s, exceeding limit of {self._max_step_time}s. Killing worker thread. [TrainingServer]")
                     self._worker_thread.kill()
                     
-                    time.sleep(1)
-                    self._send_state(State.KILLED)
+                    log.info("Sending message 'killed'")                    
                     self._send_killed()                    
-
-                    time.sleep(5)
+                    
+                    log.info("Stopping everything...")
                     self._is_running.clear()                        
                     self._zmq_client.stop()
                     self._zmq_server.stop()                        

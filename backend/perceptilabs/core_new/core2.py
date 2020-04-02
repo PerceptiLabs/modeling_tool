@@ -204,10 +204,6 @@ class Core:
             log.info("Done!: ")
         elif training_client.remote_status == None:
             log.info("Done, but with none! ")            
-        elif training_client.remote_status == State.KILLED:
-            if self._issue_handler is not None:
-                self._issue_handler.put_error('Server killed because a training step too long!')
-                log.info('Server killed because a training step too long!')            
 
         training_client.stop()
 
