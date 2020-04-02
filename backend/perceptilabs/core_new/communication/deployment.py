@@ -21,9 +21,8 @@ class SubprocessStrategy(DeploymentStrategy):
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE
         )
-        os.remove(path)        
 
-
+        
 class ThreadStrategy(DeploymentStrategy):
     @staticmethod
     def _fn_start(path):
@@ -33,7 +32,6 @@ class ThreadStrategy(DeploymentStrategy):
             module = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(module)
             module.main()
-        os.remove(path)
     
     def run(self, path):
         thread = threading.Thread(target=self._fn_start, args=(path,), daemon=True)

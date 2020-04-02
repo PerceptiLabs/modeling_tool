@@ -90,11 +90,11 @@ class Core:
         port1, port2 = find_free_port(count=2)        
         code, line_to_node_map = self._script_factory.make(graph, session_id, port1, port2, max_training_step_time=self._max_training_step_time)
 
-        script_path = f'training_script_{session_id}.py'
+        script_path = f'training_script.py'
         with open(script_path, 'wt') as f:
             f.write(code)
             f.flush()
-        shutil.copy(script_path, 'training_script.py')            
+        #shutil.copy(script_path, 'training_script.py')            
 
         self._deployment_strategy.run(script_path)
         time.sleep(3) # Give TrainingServer some time to start.. 

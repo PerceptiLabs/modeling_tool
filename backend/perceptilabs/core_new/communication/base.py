@@ -135,7 +135,7 @@ class TrainingServer:
                     self._zmq_client.stop()
                     self._zmq_server.stop()                        
                     break
-            time.sleep(1)
+            time.sleep(0.5)
         log.info("Leaving timeout function")
 
     def _worker_func(self):
