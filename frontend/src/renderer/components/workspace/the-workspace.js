@@ -177,11 +177,13 @@ export default {
             ok: () => {
               this.offMainTutorial();
               this.delete_network(index)
+                .then(_ => this.checkTabWidths());
             }
           });
       }
       else {
         this.delete_network(index)
+          .then(_ => this.checkTabWidths());
       }
     },
     openStatistics(i) {
@@ -230,26 +232,11 @@ export default {
     checkTabWidths(){
       if (!this.$refs.tablist) { return; }
 
-      console.group('checkTabWidths');
-
-      console.group('tablist');
-      // console.log('offsetWidth', this.$refs.tablist.offsetWidth);
-      console.log('scrollWidth', this.$refs.tablist.scrollWidth);
-      console.log('clientWidth', this.$refs.tablist.clientWidth);
-      console.log('scrollLeft', this.$refs.tablist.scrollLeft);
-      console.groupEnd();
-
       const maxScrollWidth = this.$refs.tablist.scrollWidth - this.$refs.tablist.clientWidth;
       this.tabArrows.isLeftActive = (this.$refs.tablist.scrollLeft !== 0);
       this.tabArrows.isRightActive = (this.$refs.tablist.scrollLeft !== maxScrollWidth);
       
-      // console.group('tabset');
-      // console.log('offsetWidth', this.$refs.tabset.offsetWidth);
-      // console.log('scrollWidth', this.$refs.tabset.scrollWidth);
-      // console.log('clientWidth', this.$refs.tabset.clientWidth);
-      // console.groupEnd();
-
-      console.groupEnd();
+      this.tabArrows.show = this.$refs.tablist.clientWidth !== this.$refs.tablist.scrollWidth;
     }
   },
 }
