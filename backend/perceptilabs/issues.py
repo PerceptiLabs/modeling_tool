@@ -83,7 +83,7 @@ class UserlandError:
     def format(self, with_code=False):
         text = f'Error in layer {self.layer_id} [{self.layer_type}]. '
         
-        if line_number:
+        if self.line_number is not None:
             text += f'Line: {self.line_number}'
         
         if with_code and self.code is not None:

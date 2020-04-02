@@ -14,7 +14,8 @@
         self._trn_sz_tot = input_data_node.layer.size_training
         self._val_sz_tot = input_data_node.layer.size_validation
         self._tst_sz_tot = input_data_node.layer.size_testing
-        print("2")        
+        print("2")
+        raise ValueError("ASKASOIAOA")
         # Make training set
         dataset_trn = tf.data.Dataset.zip((
             tf.data.Dataset.from_generator(

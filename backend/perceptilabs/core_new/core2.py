@@ -25,6 +25,8 @@ from perceptilabs.core_new.deployment import DeploymentPipe
 from perceptilabs.core_new.api.mapping import ByteMap
 from perceptilabs.core_new.communication.status import *
 from perceptilabs.core_new.communication import TrainingClient, State
+from perceptilabs.core_new.layers.script import ScriptFactory
+
 
 log = logging.getLogger(__name__)
 
@@ -48,7 +50,10 @@ def find_free_port(count=1):
     else:
         return tuple(ports)    
     
+class CoreError(Exception):
+    pass
 
+    
 class Core:
     def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, issue_handler: IssueHandler=None):
         self._graph_builder = graph_builder
@@ -82,9 +87,7 @@ class Core:
     def _run_internal(self, graph_spec, session_id=None, on_iterate=None, auto_stop=False):
         session_id = session_id or uuid.uuid4().hex
 
-        from perceptilabs.core_new.layers.script import ScriptFactory
         self._script_factory = ScriptFactory()
-
 
         graph = self._graph_builder.build_from_spec(graph_spec)
 
@@ -95,10 +98,8 @@ class Core:
             f.write(code)
             f.flush()
 
-
         def fn_start():
-            import importlib
-            
+            import importlib            
             with open('training_script.py', 'rt') as f:            
                 spec = importlib.util.spec_from_file_location("deployed_module", f.name)
                 module = importlib.util.module_from_spec(spec)
@@ -120,14 +121,54 @@ class Core:
             thread = threading.Thread(target=fn_start)
             thread.start()
             
-        time.sleep(3) # Give it some time to start.. TODO: wait until shared memory is available, after that we can connect at will.
+        time.sleep(3) # Give TrainingServer some time to start..
 
+        def on_server_timeout():
+            with self._issue_handler.create_issue('Training server timed out! Shutting down core') as issue:
+                self._issue_handler.put_error(issue.frontend_message)
+                log.error(issue.internal_message)
 
+        def on_userland_error(exception, tb_list):
+            message = ''
+            collect = False
+            for frame in tb_list:
+                node, true_lineno = line_to_node_map.get(frame.lineno, (None, None))
+
+                if not collect and frame.filename == 'training_script.py':
+                    collect = True
+                if not collect:
+                    continue
+                
+                if frame.filename == 'training_script.py' and node is not None:
+                    message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}, ' + \
+                               f'origin {node.layer_id}:{true_lineno} [{node.layer_type}]\n' +\
+                               f'  {frame.line}\n'
+                else:
+                    message += f'File "{frame.filename}", line {frame.lineno}, in {frame.name}\n' + \
+                               f'  {frame.line}\n'
+                    
+            error = UserlandError(node.layer_id, node.layer_type, frame.lineno, message)
+            with sentry_sdk.push_scope() as scope:
+                scope.set_tag('error-type', 'userland-error')
+                scope.level = 'info'
+                sentry_sdk.capture_message(error.format())
+            
+            log.info('Userland error:\n' + error.format())
+            if self._issue_handler is not None:
+                self._issue_handler.put_error(error.format())          
+
+        def on_log_message(message):
+            log.info("Userland: " + message)
+
+            
         training_client = TrainingClient(
             port1, port2,
-            graph_builder=self._graph_builder
+            graph_builder=self._graph_builder,
+            on_userland_error=on_userland_error,
+            on_server_timeout=on_server_timeout,
+            on_log_message=on_log_message,
+            max_response_time=60 # TODO: After first iteration completes, this should be lowered
         )
-        #import pdb; pdb.set_trace()
 
         training_client.connect()
         while training_client.remote_status == None:
@@ -141,7 +182,6 @@ class Core:
             log.info(f"Training client connected to server. Session id: {session_id}")
         else:
             raise RuntimeError(f"Expected status {State.RUNNING}, got {training_client.remote_status}!")
-
 
         counter = 0
         while training_client.remote_status in [State.RUNNING, State.PAUSED]:
@@ -160,7 +200,7 @@ class Core:
                         
         counter = 0
         while training_client.remote_status == State.IDLE:
-            if counter % 30 == 0:
+            if counter % 100 == 0:
                 log.info("Idle. Graph count: " + str(len(self._graphs)))                     
             time.sleep(0.1)
 
@@ -175,8 +215,6 @@ class Core:
 
         training_client.stop()
 
-        
-        
     def _run_internal_(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None):        
         session_id = session_id or uuid.uuid4().hex
         log.info(f"Running core with session id {session_id}")

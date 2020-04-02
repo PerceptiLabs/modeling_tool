@@ -287,7 +287,7 @@ class TrainingServer:
 
             
 class TrainingClient:
-    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, userland_error_handler=None, log_message_handler=None, max_response_time=60):
+    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, on_userland_error=None, on_log_message=None, on_server_timeout=None, max_response_time=60):
         self._is_running = threading.Event()
         self._is_running.clear()        
 
@@ -295,13 +295,14 @@ class TrainingClient:
         self._port_pub_sub = port_pub_sub
         self._port_push_pull = port_push_pull
 
-        self._userland_error_handler = userland_error_handler
-        self._log_message_handler = log_message_handler
+        self._on_userland_error = on_userland_error
+        self._on_log_message = on_log_message
         self._remote_status = None
         self._ping_sent = {}
         self._ping_list = collections.deque([], maxlen=10)
         self._max_response_time = max_response_time
-
+        self._on_server_timeout = on_server_timeout
+        
         self._graphs = []
         
     @property
@@ -331,13 +332,13 @@ class TrainingClient:
         tb_list = error_dict['traceback_list']
         log.info(f"Received userland error. {repr(exception)}")
 
-        if self._userland_error_handler is not None:
-            self._userland_error_handler(exception, tb_list)
+        if self._on_userland_error is not None:
+            self._on_userland_error(exception, tb_list)
 
     def _on_receive_log_message(self, value):
         message = deserialize(value)
-        if self._log_message_handler is not None:
-            self._log_message_handler(message)
+        if self._on_log_message is not None:
+            self._on_log_message(message)
 
     def _on_receive_pong(self, value):
         id_ = deserialize(value)
@@ -389,8 +390,9 @@ class TrainingClient:
             if self._server_not_responding():
                 log.info("Server not responding. Leaving worker loop.")
                 self._is_running.clear()
-                # TODO: callback? some other exit flag than remote_status ? 
-
+                if self._on_server_timeout is not None:
+                    self._on_server_timeout()
+                    
             time.sleep(0.01)
             counter += 1
             
