@@ -138,7 +138,7 @@ def test_can_start(mock_graph_3s):
     assert client.remote_status == State.READY
     
     client.request_start()
-    time.sleep(1.0)
+    time.sleep(1.3)
 
     assert client.remote_status == State.RUNNING
 
@@ -151,12 +151,12 @@ def test_can_start_10_times(mock_graph_3s):
 
         server.start()
         client.connect()
-        time.sleep(0.3)
+        time.sleep(1.3)
 
         assert client.remote_status == State.READY
         
         client.request_start()
-        time.sleep(0.3)
+        time.sleep(1.3)
 
         assert client.remote_status == State.RUNNING
 
@@ -170,11 +170,11 @@ def test_can_stop_when_ready(mock_graph_3s):
     
     server.start()
     client.connect()
-    time.sleep(0.3)
+    time.sleep(1.3)
     
     assert client.remote_status == State.READY
     client.request_stop()
-    time.sleep(0.3)
+    time.sleep(1.3)
     
     assert client.remote_status == State.DONE
 
@@ -264,7 +264,7 @@ def test_can_resume_when_paused(mock_graph_3s):
     assert client.remote_status == State.PAUSED
 
     client.request_resume()
-    time.sleep(0.3)
+    time.sleep(1.3)
     
     assert client.remote_status == State.RUNNING
 
@@ -284,7 +284,7 @@ def test_can_stop_when_idle(mock_graph_1s):
     assert client.remote_status == State.IDLE
 
     client.request_stop()
-    time.sleep(0.3)    
+    time.sleep(1.3)    
 
     assert client.remote_status == State.DONE
 
@@ -308,7 +308,7 @@ def test_receives_3_graphs_and_goes_idle(mock_graph_3s_with_snapshot):
     time.sleep(1.0)
     
     assert client.remote_status == State.RUNNING
-    time.sleep(3.0)
+    time.sleep(5.0)
 
     assert client.remote_status == State.IDLE    
     assert len(client.graphs) == 3
@@ -324,7 +324,7 @@ def test_stops_on_userland_error(mock_graph_2s_error):
 
     assert client.remote_status == State.READY
     client.request_start()
-    time.sleep(2.0)
+    time.sleep(5.0)
 
     assert client.remote_status == State.DONE
 
@@ -341,7 +341,7 @@ def test_sends_message_on_userland_error(mock_graph_2s_error):
 
     assert client.remote_status == State.READY
     client.request_start()
-    time.sleep(2.0)
+    time.sleep(5.0)
 
     assert fn.call_count == 1
 
@@ -358,7 +358,7 @@ def test_layer_export_called(mock_graph_3s):
 
     assert client.remote_status == State.READY
     client.request_export(path='/hello/', mode='some-mode')
-    time.sleep(2.0)
+    time.sleep(4.0)
 
     assert mock_graph_3s.active_training_layer.layer.on_export.call_count == 1    
     assert mock_graph_3s.active_training_layer.layer.on_export.call_args_list[0][0][0] == '/hello/'
