@@ -1,7 +1,9 @@
 import mixPanel from 'mixpanel-browser'
 import {isElectron} from "@/core/helpers";
 
-const mixPanelToken = 'ff98c9e22047d4a1eef9146339e038ee';
+const mixPanelDesktopToken = 'ff98c9e22047d4a1eef9146339e038ee';
+const mixPanelWebToken = '1480b2244fdd4d821227a29e2637f922';
+
 const namespaced = true;
 
 const state = {
@@ -18,65 +20,49 @@ const mutations = {
 
 const actions = {
   TRACK_initMixPanel() {
-    if(isElectron()) {
-      mixPanel.init(mixPanelToken);
+    if (isElectron()) {
+      mixPanel.init(mixPanelDesktopToken);
+    } else {
+      mixPanel.init(mixPanelWebToken);
     }
   },
   TRACK_initMixPanelUser({}, id) {
-    if(isElectron()) {
-      mixPanel.identify(id);
-    }
+    mixPanel.identify(id);
   },
   TRACK_createUser({}, userEmail) {
-    if(isElectron()) {
-      mixPanel.people.set_once({
-        "$email": userEmail,
-        "$created": new Date(),
-      });
-    }
+    mixPanel.people.set_once({
+      "$email": userEmail,
+      "$created": new Date(),
+    });
   },
   TRACK_updateUser({}, userEmail) {
-    if(isElectron()) {
-      mixPanel.people.set({
-        "$email": userEmail,
-        "$last_login": new Date(),
-      });
-    }
+    mixPanel.people.set({
+      "$email": userEmail,
+      "$last_login": new Date(),
+    });
   },
   /* APP */
   EVENT_appStart({rootState}) {
-    if(isElectron()) {
-       mixPanel.track('App Start', {
-         'App Version': rootState.globalView.appVersion
-       });
-    }
+    mixPanel.track('App Start', {
+      'App Version': rootState.globalView.appVersion
+    });
   },
   EVENT_appClose() {
-    if(isElectron()) {
-      mixPanel.track('App Close');
-    }
+    mixPanel.track('App Close');
   },
   /* Model */
   EVENT_modelSave({}, model) {
-    if(isElectron()) {
-      mixPanel.track('Model Save', model);
-    }
+    mixPanel.track('Model Save', model);
   },
   EVENT_modelExport({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Model Export', data);
-    }
+    mixPanel.track('Model Export', data);
   },
   /* Training */
   EVENT_trainingStart({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Training Start', data);
-    }
+    mixPanel.track('Training Start', data);
   },
   EVENT_trainingStop() {
-    if(isElectron()) {
-      mixPanel.track('Training Stop');
-    }
+    mixPanel.track('Training Stop');
   },
   EVENT_trainingLayerView({}, ) {
     if(isElectron()) {
@@ -85,62 +71,40 @@ const actions = {
   },
   /* Test */
   EVENT_testOpenTab() {
-    if(isElectron()) {
-      mixPanel.track('Test Open Tab');
-    }
+    mixPanel.track('Test Open Tab');
   },
   EVENT_testPlay({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Test Play', data);
-    }
+    mixPanel.track('Test Play', data);
   },
   EVENT_testStop() {
-    if(isElectron()) {
-      mixPanel.track('Test Stop');
-    }
+    mixPanel.track('Test Stop');
   },
   EVENT_testMove({}, direction) {
-    if(isElectron()) {
-      mixPanel.track('Test Move', {direction});
-    }
+    mixPanel.track('Test Move', {direction});
   },
   /* Layer Settings */
   EVENT_applyLayerSettings({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Apply Layer Settings', {'Tab name': data});
-    }
+    mixPanel.track('Apply Layer Settings', {'Tab name': data});
   },
   /* Tutorial Mode */
   EVENT_tutorialModeStart() {
-    if(isElectron()) {
-      mixPanel.track('Tutorial Mode Start');
-    }
+    mixPanel.track('Tutorial Mode Start');
   },
   EVENT_tutorialModeStop({}, step) {
-    if(isElectron()) {
-      mixPanel.track('Tutorial Mode Stop', {step});
-    }
+    mixPanel.track('Tutorial Mode Stop', {step});
   },
   EVENT_tutorialModeFinished() {
-    if(isElectron()) {
-      mixPanel.track('Tutorial Mode Finished');
-    }
+    mixPanel.track('Tutorial Mode Finished');
   },
   /* Errors */
   EVENT_coreError({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Core Error', data);
-    }
+    mixPanel.track('Core Error', data);
   },
   EVENT_coreWarning({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Core Warning', data);
-    }
+    mixPanel.track('Core Warning', data);
   },
   EVENT_cloudError({}, data) {
-    if(isElectron()) {
-      mixPanel.track('Cloud Error', data);
-    }
+    mixPanel.track('Cloud Error', data);
   },
 };
 

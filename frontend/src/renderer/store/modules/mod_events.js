@@ -1,6 +1,7 @@
 import router         from "@/router";
 import {
   filePCRead,
+  isWeb,
   isElectron,
   loadPathFolder,
   projectPathModel,
@@ -114,21 +115,23 @@ const actions = {
     router.replace({name: 'login'});
   },
   EVENT_appClose({dispatch, rootState, rootGetters}, event) {
-   if(isElectron()) {
-     if(event) event.preventDefault();
-     dispatch('mod_tracker/EVENT_appClose', null, {root: true});
-     if(rootGetters['mod_user/GET_userIsLogin']) {
-       dispatch('mod_user/SAVE_LOCAL_workspace', null, {root: true});
-     }
-     if(rootState.mod_api.statusLocalCore === 'online') {
-       dispatch('mod_api/API_stopTraining', null, {root: true})
-         .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
-         .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
-     }
-     else {
-       ipcRenderer.send('app-close')
-     }
-   }
+    if(isWeb()) {
+      dispatch('mod_tracker/EVENT_appClose', null, {root: true});
+    } else if(isElectron()) {
+      if(event) event.preventDefault();
+      dispatch('mod_tracker/EVENT_appClose', null, {root: true});
+      if(rootGetters['mod_user/GET_userIsLogin']) {
+        dispatch('mod_user/SAVE_LOCAL_workspace', null, {root: true});
+      }
+      if(rootState.mod_api.statusLocalCore === 'online') {
+        dispatch('mod_api/API_stopTraining', null, {root: true})
+          .then(()=> dispatch('mod_api/API_CLOSE_core', null, {root: true}))
+          .then(()=> ipcRenderer.send('app-close', rootState.mod_api.corePid));
+      }
+      else {
+        ipcRenderer.send('app-close')
+      }
+    }
   },
   EVENT_appMinimize() {
     ipcRenderer.send('app-minimize')
