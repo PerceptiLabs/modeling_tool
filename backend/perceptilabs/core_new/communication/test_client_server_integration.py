@@ -93,11 +93,11 @@ def create_server(graph, snapshot_builder=None, max_step_time=60):
     return server
 
 
-def create_client(graph_builder=None, userland_error_handler=None, max_response_time=10):
+def create_client(graph_builder=None, on_userland_error=None, max_response_time=10):
     client = TrainingClient(
         6556, 6557,
         graph_builder=graph_builder,
-        userland_error_handler=userland_error_handler,
+        on_userland_error=on_userland_error,
         max_response_time=max_response_time
     )
     CLIENTS.append(client)
@@ -333,7 +333,7 @@ def test_sends_message_on_userland_error(mock_graph_2s_error):
     fn = MagicMock()
     
     server = create_server(mock_graph_2s_error)
-    client = create_client(userland_error_handler=fn)
+    client = create_client(on_userland_error=fn)
     
     server.start()
     client.connect()
