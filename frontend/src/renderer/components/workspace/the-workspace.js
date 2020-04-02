@@ -208,7 +208,9 @@ export default {
       this.pushSnapshotToHistory(null)
     },
     onTabScroll(event) {
-      console.log('onTabScroll', event);
+      if (!this.$refs.tablist) { return; }
+
+      this.$refs.tablist.scrollLeft += event.deltaY | 0;
     }
   }
 }
