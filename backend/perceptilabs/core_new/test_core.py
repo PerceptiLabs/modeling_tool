@@ -13,7 +13,6 @@ from perceptilabs.core_new.graph.builder import GraphBuilder
 from perceptilabs.core_new.graph import Graph
 from perceptilabs.core_new.layers import TrainingLayer
 from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP
-from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
 
 
 logging.basicConfig(stream=sys.stdout,

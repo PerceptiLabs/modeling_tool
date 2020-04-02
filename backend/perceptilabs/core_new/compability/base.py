@@ -189,7 +189,6 @@ if __name__ == "__main__":
     import queue
     from perceptilabs.core_new.compability import CompabilityCore
     from perceptilabs.core_new.graph.builder import GraphBuilder
-    from perceptilabs.core_new.deployment import InProcessDeploymentPipe, LocalEnvironmentPipe
     from perceptilabs.core_new.layers.script import ScriptFactory
     from perceptilabs.core_new.layers.replication import BASE_TO_REPLICA_MAP    
 
@@ -202,8 +201,6 @@ if __name__ == "__main__":
         
 
     script_factory = ScriptFactory()
-    #deployment_pipe = InProcessDeploymentPipe(script_factory)
-    #script_factory = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory) # TODO: 
     
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}    
     graph_builder = GraphBuilder(replica_by_name)                

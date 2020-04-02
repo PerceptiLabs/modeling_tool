@@ -95,10 +95,6 @@ perceptilabs/core_new/data/__init__.py
 perceptilabs/core_new/data/base.py
 perceptilabs/core_new/data/policies.py
 
-# perceptilabs/core_new/deployment/
-perceptilabs/core_new/deployment/__init__.py
-perceptilabs/core_new/deployment/base.py
-
 # perceptilabs/core_new/graph/
 perceptilabs/core_new/graph/__init__.py
 perceptilabs/core_new/graph/base.py
