@@ -450,15 +450,15 @@ export default {
         {
           label: 'Edit', visible: true,
           submenu: [
-            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',           active: this.toPrevStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',           active: this.toNextStepHistory },
-            {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',           active: this.toNextStepHistory },
+            {label: 'Undo',         accelerator: this.isMac ? 'meta+z' : 'ctrl+z',              role: 'undo',       enabled: this.openApp,        active: this.toPrevStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+shift+z' : 'ctrl+shift+z',  role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
+            {label: 'Redo',         accelerator: this.isMac ? 'meta+y' : 'ctrl+y',              role: 'redo',       enabled: this.openApp,        active: this.toNextStepHistory },
             {type:  'separator'},
-            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',           active: this.HCCopy },
-            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',          active: this.HCPaste },
+            {label: 'Copy',         accelerator: this.isMac ? 'meta+c' : 'ctrl+c',              role: 'copy',       enabled: this.openApp,        active: this.HCCopy },
+            {label: 'Paste',        accelerator: this.isMac ? 'meta+v' : 'ctrl+v',              role: 'paste',      enabled: this.openApp,        active: this.HCPaste },
             {type:  'separator'},
-            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',      active: this.HCSelectAll },
-            {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',  enabled: this.openApp,  active: this.HCDeselectAll },
+            {label: 'Select all',   accelerator: this.isMac ? 'meta+a' : 'ctrl+a',              role: 'selectAll',  enabled: this.openApp,        active: this.HCSelectAll },
+            {label: 'Deselect all', accelerator: this.isMac ? 'meta+shift+a' : 'ctrl+shift+a',                      enabled: this.openApp,        active: this.HCDeselectAll },
 
           ]
         },
