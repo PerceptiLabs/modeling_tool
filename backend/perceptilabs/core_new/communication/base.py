@@ -87,7 +87,7 @@ class State:
 
             
 class TrainingServer:    
-    def __init__(self, port_pub_sub, port_push_pull, graph, snapshot_builder=None, max_step_time=60):
+    def __init__(self, port_pub_sub, port_push_pull, graph, snapshot_builder=None, max_step_time=15):
         self._is_running = threading.Event()
         self._is_running.clear()
         
@@ -124,11 +124,12 @@ class TrainingServer:
             if self._step_start is not None:
                 step_time = time.time() - self._step_start
                 if step_time > self._max_step_time:
-                    log.info(f"Training step time took {step_time}s, exceeding limit {self._max_step_time}s")
+                    log.info(f"Training step time took {step_time}s, exceeding limit {self._max_step_time}s. Killing worker thread. [TrainingServer]")
                     self._worker_thread.kill()
                     
                     time.sleep(1)
                     self._send_state(State.KILLED)
+                    self._send_killed()                    
 
                     self._is_running.clear()                        
                     self._zmq_client.stop()
@@ -179,15 +180,12 @@ class TrainingServer:
             if training_state.value == State.RUNNING:
                 try:
                     self._step_start = time.time()
-                    print("ENTERING TRAIN STEP!")
                     step_result = next(training_step, sentinel)
-                    print("LEAVING TRAIN STEP!")                    
                 except Exception as e:
                     self._send_userland_error(e)
                     log.exception("Userland error on iteration. Setting status to done.")
                     training_state.transition(State.DONE)
                 finally:
-                    print("FINALLY ON TRAIN STEP!")                                        
                     self._step_start = None                    
             else:
                 step_result = None
@@ -254,7 +252,7 @@ class TrainingServer:
             log.warning(f"Unknown event type {event_type}")
 
     def _handle_ping(self, id_):
-        self._zmq_client.push(b'pong', id_)        
+        self._zmq_client.push(b'pong', id_)
             
     def _send_graph(self, graph):
         snapshot = self._snapshot_builder.build(graph)
@@ -279,6 +277,10 @@ class TrainingServer:
         value = serialize(message)
         self._zmq_client.push(b'log-message', value)
 
+    def _send_killed(self):
+        value = serialize('')
+        self._zmq_client.push(b'killed', value)        
+
     def stop(self):
         if self._is_running.is_set():
             log.info("Stopping [TrainingServer]")
@@ -287,7 +289,7 @@ class TrainingServer:
 
             
 class TrainingClient:
-    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, on_userland_error=None, on_log_message=None, on_server_timeout=None, max_response_time=60):
+    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, on_userland_error=None, on_log_message=None, on_server_killed=None, on_server_timeout=None, max_response_time=20):
         self._is_running = threading.Event()
         self._is_running.clear()        
 
@@ -302,6 +304,7 @@ class TrainingClient:
         self._ping_list = collections.deque([], maxlen=10)
         self._max_response_time = max_response_time
         self._on_server_timeout = on_server_timeout
+        self._on_server_killed = on_server_killed
         
         self._graphs = []
         
@@ -318,7 +321,7 @@ class TrainingClient:
         log.info(f"Received state {self._remote_status} [TrainingClient]")
 
     def _on_receive_graph(self, value):
-        log.info(f"Received graph [TrainingClient]")        
+        #log.info(f"Received graph [TrainingClient]")        
         if self._graph_builder:
             snapshot = deserialize(value)
             graph = self._graph_builder.build_from_snapshot(snapshot)            
@@ -346,6 +349,11 @@ class TrainingClient:
         self._ping_list.append(diff)
         del self._ping_sent[id_]
 
+    def _on_receive_killed(self):
+        if self._on_server_killed is not None:
+            self._on_server_killed()
+        self._is_running.clear()        
+
     def ping(self):
         ping_list = list(self._ping_list)
         if len(ping_list) > 0:
@@ -365,7 +373,8 @@ class TrainingClient:
             b'userland-error': lambda client, key, value: self._on_receive_userland_error(value),
             b'graph': lambda client, key, value: self._on_receive_graph(value),
             b'state': lambda client, key, value: self._on_receive_state(value),
-            b'pong': lambda client, key, value: self._on_receive_pong(value)            
+            b'pong': lambda client, key, value: self._on_receive_pong(value),
+            b'killed': lambda client, key, value: self._on_receive_killed()                        
         }
 
         log.info(f"Binding to subscriber socket {self._port_pub_sub} and push socket {self._port_push_pull} [TrainingClient]")        

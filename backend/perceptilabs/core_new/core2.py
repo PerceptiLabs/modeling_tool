@@ -50,9 +50,6 @@ def find_free_port(count=1):
     else:
         return tuple(ports)    
     
-class CoreError(Exception):
-    pass
-
     
 class Core:
     def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, issue_handler: IssueHandler=None):
@@ -91,7 +88,7 @@ class Core:
 
         graph = self._graph_builder.build_from_spec(graph_spec)
 
-        port1, port2 = find_free_port(count=2)                
+        port1, port2 = find_free_port(count=2)
         code, line_to_node_map = self._script_factory.make(graph, session_id, port1, port2)
 
         with open('training_script.py', 'wt') as f:
@@ -115,7 +112,6 @@ class Core:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE
             )
-            #stdout, stderr = p.communicate()            
         else:
             log.info(f"Running training script in a new thread")            
             thread = threading.Thread(target=fn_start)
@@ -160,14 +156,18 @@ class Core:
         def on_log_message(message):
             log.info("Userland: " + message)
 
+        def on_server_killed():
+            if self._issue_handler is not None:
+                self._issue_handler.put_error('Server killed because a training step too long!')
+            log.error('Server killed because a training step too long!')
             
         training_client = TrainingClient(
             port1, port2,
             graph_builder=self._graph_builder,
             on_userland_error=on_userland_error,
             on_server_timeout=on_server_timeout,
-            on_log_message=on_log_message,
-            max_response_time=60 # TODO: After first iteration completes, this should be lowered
+            on_server_killed=on_server_killed,
+            on_log_message=on_log_message
         )
 
         training_client.connect()
@@ -210,8 +210,9 @@ class Core:
         elif training_client.remote_status == None:
             log.info("Done, but with none! ")            
         elif training_client.remote_status == State.KILLED:
-            log.info("Killed!!!")            
-            
+            if self._issue_handler is not None:
+                self._issue_handler.put_error('Server killed because a training step too long!')
+                log.info('Server killed because a training step too long!')            
 
         training_client.stop()
 
