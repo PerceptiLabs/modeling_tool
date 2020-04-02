@@ -502,14 +502,14 @@ const mutations = {
       }
     }
   },
-  delete_element(state, {getters, dispatch}) {
+  async delete_element(state, {getters, dispatch}) {
     let arrSelect = getters.GET_currentSelectedEl;
     if(!arrSelect.length) return;
     let arrSelectID = [];
     let linkedNet = getters.GET_currentNetworkElementList;
     removeIsSelectedAfterDeleteItems(arrSelect);
     // make new history with unselected item
-    dispatch('mod_events/EVENT_calcArray', null, {root: true});
+    await dispatch('mod_events/EVENT_calcArray', null, {root: true});
     
     let net = {...linkedNet};
     deleteElement(arrSelect);
