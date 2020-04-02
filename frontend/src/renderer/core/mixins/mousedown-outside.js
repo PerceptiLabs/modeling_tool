@@ -16,6 +16,8 @@ const mousedownOutside = {
         && event.button === 0
         && !(event.target.closest('.app-header_nav'))
       ) {
+        // if(event.shiftKey || event.ctrlKey) return 0;
+
         document.removeEventListener('mousedown', this.mousedownOutside);
         this.MousedownElementTracking = null;
         this.mousedownOutsideAction();
