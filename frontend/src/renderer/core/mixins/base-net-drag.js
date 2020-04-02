@@ -1,5 +1,5 @@
 import {calcLayerPosition} from '@/core/helpers.js'
-import { workspaceGrid }   from '@/core/constants.js'
+import { workspaceGrid, shadowBoxDragIfMoreThenElementsSelected}   from '@/core/constants.js'
 import {mapActions, mapGetters, mapMutations} from "vuex";
 
 const baseNetDrag = {
@@ -34,8 +34,8 @@ const baseNetDrag = {
       const selectedItemsIds = Object.values(selectedItems).map(el => parseInt(el.layerId, 10));
       return selectedItemsIds.includes(parseInt(itemId, 10));
     },
-    isSingleItemDragged() {
-      return this.selectedItems().length === 1;
+    isFewItemsSelected() {
+      return this.selectedItems().length <= shadowBoxDragIfMoreThenElementsSelected;
     },
     getDragBoxSize() {
       const selectedItems = {...this.selectedItems()};
@@ -95,7 +95,7 @@ const baseNetDrag = {
 
     bodyMove(ev) {
 
-      if(!this.isSingleItemDragged() && !this.itemWasDraged) {
+      if(!this.isFewItemsSelected() && !this.itemWasDraged) {
         this.updateDragBoxContainerMutation({
           isVisible: true,
           ...this.getDragBoxSize(),
@@ -104,7 +104,7 @@ const baseNetDrag = {
       
       this.itemWasDraged = true;
       
-      if(this.isSingleItemDragged()) {
+      if(this.isFewItemsSelected()) {
         this.updateItems(ev);
       } else {
         const { width, height, top: initialTop, left: initialLeft } = this.getDragBoxSize();
@@ -128,7 +128,7 @@ const baseNetDrag = {
     bodyUp(ev) {
       
       // update network and remove borders
-      if(!this.isSingleItemDragged()) {
+      if(!this.isFewItemsSelected()) {
         this.updateItems(ev);
         this.updateDragBoxContainerMutation({
           isVisible: false,
