@@ -26,8 +26,18 @@ export default {
     TheTesting, TheViewBox, StartTrainingSpinner,
     TheMiniMap, FilePickerPopup
   },
+  destroyed () {
+    if (this.$refs.tablist) {
+      this.$refs.tablist.removeEventListener('wheel', this.handleScroll);
+    }
+  },
   mounted() {
-    console.log(this.$refs.networkField);
+    // console.log(this.$refs.networkField);
+    
+    // console.log('tablist', this.$refs.tablist);
+    if (this.$refs.tablist) {
+      this.$refs.tablist.addEventListener('wheel', this.handleScroll);
+    }
   },
   data() {
     return {
@@ -196,6 +206,9 @@ export default {
     set_networkName(text) {
       this.setNetworkNameAction(text);
       this.pushSnapshotToHistory(null)
+    },
+    handleScroll(event) {
+      console.log('handleScroll', event);
     }
   }
 }
