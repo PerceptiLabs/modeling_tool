@@ -116,7 +116,7 @@ def shutdown_servers_and_clients():
         server.stop()
     SERVERS = []
 
-
+    
 def test_can_connect(mock_graph_3s):
     server = create_server(mock_graph_3s)
     client = create_client()
@@ -157,6 +157,7 @@ def test_can_start_10_times(mock_graph_3s):
 
 
 def test_can_stop_when_ready(mock_graph_3s):
+    print("CAN STOP WHEN READY")
     server = create_server(mock_graph_3s)
     client = create_client()
     
@@ -186,7 +187,7 @@ def test_can_stop_when_running(mock_graph_3s):
 def test_can_pause_when_running(mock_graph_3s):
     server = create_server(mock_graph_3s)
     client = create_client()
-    
+
     server.start()
     client.connect()
     assert wait_for_condition(lambda _: client.remote_status == State.READY)
@@ -196,7 +197,7 @@ def test_can_pause_when_running(mock_graph_3s):
 
     client.request_pause()
     assert wait_for_condition(lambda _: client.remote_status == State.PAUSED)
-
+    
 
 def test_can_stop_when_paused(mock_graph_3s):
     server = create_server(mock_graph_3s)

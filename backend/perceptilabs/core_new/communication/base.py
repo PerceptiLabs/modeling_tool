@@ -131,8 +131,8 @@ class TrainingServer:
                     
                     log.info("Stopping everything...")
                     self._is_running.clear()                        
-                    self._zmq_client.stop()
-                    self._zmq_server.stop()                        
+                    #self._zmq_client.stop()
+                    #self._zmq_server.stop()                        
                     break
             time.sleep(0.5)
         log.info("Leaving timeout function")
@@ -192,7 +192,6 @@ class TrainingServer:
             if step_result is sentinel and training_state.value == State.RUNNING:
                 training_state.transition(State.IDLE)
                 self._send_state(training_state.value)
-
                 
             if step_result is YieldLevel.SNAPSHOT:
                 self._send_graph(self._graph)
@@ -203,11 +202,12 @@ class TrainingServer:
             counter += 1
 
         training_state.transition(State.DONE)            
-        self._send_state(training_state.value)                    
-        log.info("Closing ZeroMQ client [TrainingServer]")                
-        self._zmq_client.stop()
-        log.info("Closing ZeroMQ server [TrainingServer]")                        
-        self._zmq_server.stop()
+        self._send_state(training_state.value)
+
+        #log.info("Closing ZeroMQ client [TrainingServer]")                
+        #self._zmq_client.stop()
+        #log.info("Closing ZeroMQ server [TrainingServer]")                        
+        #self._zmq_server.stop()
         self._is_running.clear()
 
     def _call_userland_method(self, training_state, method_fn, *args, **kwargs):
@@ -263,11 +263,6 @@ class TrainingServer:
         value = serialize({'exception': exception, 'traceback_list': tb_list})
         self._zmq_client.push(b'userland-error', value)
         
-    def _send_userland_error(self, exception):
-        tb_list = traceback.extract_tb(exception.__traceback__)
-        value = serialize({'exception': exception, 'traceback_list': tb_list})
-        self._zmq_client.push(b'userland-error', value)
-        
     def _send_state(self, state):
         value = serialize(state)
         self._zmq_client.push(b'state', value)
@@ -281,10 +276,15 @@ class TrainingServer:
         self._zmq_client.push(b'killed', value)        
 
     def stop(self):
+        log.info("Stopping [TrainingServer]")        
         if self._is_running.is_set():
-            log.info("Stopping [TrainingServer]")
             self._is_running.clear()
-            self._worker_thread.join()
+
+        self._zmq_client.stop()
+        self._zmq_server.stop()                        
+            
+        self._worker_thread.join()
+        self._timeout_thread.join()
 
             
 class TrainingClient:
@@ -352,6 +352,7 @@ class TrainingClient:
         del self._ping_sent[id_]
 
     def _on_receive_killed(self):
+        log.info("Received 'killed' message")
         if self._on_server_killed is not None:
             self._on_server_killed()
         self._is_running.clear()        
@@ -407,8 +408,6 @@ class TrainingClient:
             time.sleep(0.01)
             counter += 1
             
-        self._zmq_client.stop()
-
     def connect(self):
         self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
         self._worker_thread.start()
@@ -450,10 +449,13 @@ class TrainingClient:
         self._zmq_client.push(b'event', raw_event)        
         
     def stop(self):
+        log.info("Stopping [TrainingClient]")
+        
         if self._is_running.is_set():
-            log.info("Stopping [TrainingClient]")            
             self._is_running.clear()
-            self._worker_thread.join()
+
+        self._zmq_client.stop()
+        self._worker_thread.join()
 
     @property
     def is_running(self):

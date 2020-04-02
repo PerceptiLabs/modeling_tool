@@ -31,10 +31,10 @@ class Server:
         ctx = zmq.Context()        
         publisher_socket = ctx.socket(zmq.PUB)
         pull_socket = ctx.socket(zmq.PULL)
-        
+
         publisher_socket.bind(self._pub_addr)        
         pull_socket.bind(self._pull_addr)
-
+        
         poller = zmq.Poller()
         poller.register(pull_socket, zmq.POLLIN)        
 
@@ -47,7 +47,8 @@ class Server:
             if pull_socket in items:
                 key, value = pull_socket.recv_multipart()
                 publisher_socket.send_multipart([key, value])
-                #log.info(f"Received message (k, v) = ({key}, {value}). [Client {id(self)}]")                            
+                #log.info(f"Received message (k, v) = ({key}, {value}). [Client {id(self)}]")
+
     def start(self):
         self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
         self._worker_thread.start()
@@ -55,7 +56,7 @@ class Server:
     def stop(self):
         if self._is_running.is_set():
             self._is_running.clear()
-            self._worker_thread.join()
+        self._worker_thread.join()
 
     @property
     def is_running(self):
@@ -156,7 +157,7 @@ class Client:
     def stop(self):
         if self._is_running.is_set():
             self._is_running.clear()
-            self._worker_thread.join()
+        self._worker_thread.join()
 
     @property
     def is_running(self):

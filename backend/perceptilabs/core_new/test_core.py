@@ -318,7 +318,7 @@ def test_pause_works(graph_spec_binary_classification):
     
     def run_graph():
         while True:
-            time.sleep(0.1) # A single iteration will take 1000s
+            time.sleep(0.1)
             yield YieldLevel.DEFAULT
 
     graph_spec = MagicMock()
@@ -358,7 +358,6 @@ def test_pause_works(graph_spec_binary_classification):
         assert wait_for_condition(lambda _: not core.is_paused)
         
         core.pause()
-        
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: core.is_paused)
     finally:

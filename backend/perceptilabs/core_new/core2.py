@@ -143,6 +143,7 @@ class Core:
             if self._issue_handler is not None:
                 self._issue_handler.put_error('Server killed because a training step too long!')
             log.error('Server killed because a training step too long!')
+            self.stop()
             
         self._training_client = training_client = TrainingClient(
             port1, port2,
