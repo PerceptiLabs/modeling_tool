@@ -1,5 +1,6 @@
 from abc import abstractmethod, ABC
 import threading
+import subprocess
 
 
 class DeploymentStrategy(ABC):
