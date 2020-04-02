@@ -202,6 +202,7 @@ export default {
       const { width, height, left, top, isVisible } = this.dragBoxContainer;
       const scaleCoefficient = this.scaleNet / 100;
       return {
+        zIndex: 2,
         display: isVisible ? 'block' : 'none',
         width: width * scaleCoefficient + 'px',
         height: height * scaleCoefficient + 'px',
