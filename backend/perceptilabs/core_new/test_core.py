@@ -205,16 +205,8 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
 
     core.run(json_network, auto_stop=True)
 
-    #print("POST RUN CALL")
-    
     while core.is_running:
-
-        #graphs = core.graphs
-        #print("aaaa", graph)
-        #print(graph.active_training_node.layer.layer_gradients.keys())
-    
         time.sleep(1)
-
 
     accuracy_list = []
     for graph in core.graphs:
@@ -269,7 +261,7 @@ def test_core_handles_training_step_timeout():
     )
 
     threading.Thread(target=core.run, args=(graph_spec,), daemon=True).start()
-    time.sleep(1.0)
+    time.sleep(4.0)
     assert core.is_running
     time.sleep(8.0)
     assert not core.is_running
@@ -319,7 +311,7 @@ def test_core_handles_training_server_timeout():
     )
 
     threading.Thread(target=core.run, args=(graph_spec,), daemon=True).start()
-    time.sleep(1.0)
+    time.sleep(4.0)
     assert core.is_running
     time.sleep(8.0)
     assert not core.is_running
