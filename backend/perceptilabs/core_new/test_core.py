@@ -149,7 +149,7 @@ def graph_spec_binary_classification():
 def test_train_normal_converges(graph_spec_binary_classification):
     
     script_factory = ScriptFactory()
-    deployment_pipe = InProcessDeploymentPipe(script_factory)
+    #deployment_pipe = InProcessDeploymentPipe(script_factory)
     #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
 
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
@@ -157,7 +157,7 @@ def test_train_normal_converges(graph_spec_binary_classification):
     
     core = Core(
         graph_builder,
-        deployment_pipe,
+        script_factory
     )
 
     core.run(graph_spec_binary_classification, auto_stop=True)
@@ -186,16 +186,16 @@ def test_train_normal_converges(graph_spec_binary_classification):
 @pytest.mark.slow
 def test_train_normal_distributed_converges(graph_spec_binary_classification):
     
-    #script_factory = ScriptFactory()
+    script_factory = ScriptFactory()
     #deployment_pipe = InProcessDeploymentPipe(script_factory)
-    deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
+    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
 
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
     graph_builder = GraphBuilder(replica_by_name)    
     
     core = Core(
         graph_builder,
-        deployment_pipe,
+        script_factory
     )
 
     json_network = graph_spec_binary_classification

@@ -26,7 +26,7 @@ from perceptilabs.core_new.api.mapping import ByteMap
 from perceptilabs.core_new.communication.status import *
 from perceptilabs.core_new.communication import TrainingClient, State
 from perceptilabs.core_new.layers.script import ScriptFactory
-
+from perceptilabs.core_new.communication.deployment import ThreadStrategy, DeploymentStrategy
 
 log = logging.getLogger(__name__)
 
@@ -52,11 +52,13 @@ def find_free_port(count=1):
     
     
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, issue_handler: IssueHandler=None, max_server_response_time=20, max_training_step_time=15):
+    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, issue_handler: IssueHandler=None, max_server_response_time=20, max_training_step_time=15, deployment_strategy=None):
         self._graph_builder = graph_builder
         self._script_factory = script_factory
         self._graphs = []
         self._issue_handler = issue_handler
+
+        self._deployment_strategy = deployment_strategy or ThreadStrategy()
         
         self._is_running = threading.Event()
         self._is_running.clear()
@@ -85,8 +87,7 @@ class Core:
     def _run_internal(self, graph_spec, session_id=None, on_iterate=None, auto_stop=False):
         session_id = session_id or uuid.uuid4().hex
         graph = self._graph_builder.build_from_spec(graph_spec)
-        port1, port2 = find_free_port(count=2)
-        
+        port1, port2 = find_free_port(count=2)        
         code, line_to_node_map = self._script_factory.make(graph, session_id, port1, port2, max_training_step_time=self._max_training_step_time)
 
         with open('training_script.py', 'wt') as f:
@@ -102,19 +103,7 @@ class Core:
                 module.main()
 
 
-        if os.path.isfile(sys.executable) and False: 
-            log.info(f"Running training script using interpreter at {sys.executable}")
-            #multiprocessing.Process # Not a good idea. Uses FORK and that causes tensorflow issues. Spawn requires pickling..  https://github.com/tensorflow/tensorflow/issues/5448            
-            p = subprocess.Popen(
-                [sys.executable, 'training_script.py'],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE
-            )
-        else:
-            log.info(f"Running training script in a new thread")            
-            thread = threading.Thread(target=fn_start)
-            thread.start()
-            
+        self._deployment_strategy.run('training_script.py')
         time.sleep(3) # Give TrainingServer some time to start.. 
 
         def on_server_timeout():
