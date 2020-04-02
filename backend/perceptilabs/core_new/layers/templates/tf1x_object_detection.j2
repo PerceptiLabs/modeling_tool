@@ -181,10 +181,9 @@
 
 
         # output restructuring
-        nb_image = tf.shape(self._x)[0]  #this is probably batch size.
-        class_probs = tf.reshape(output_tensor[0:nb_image,0:980], (self._batch_size, self._grid_size, self._grid_size, self._num_class))
-        scales = tf.reshape(output_tensor[0:nb_image,980:1078], (self._batch_size, self._grid_size, self._grid_size, self._num_box))
-        boxes = tf.reshape(output_tensor[0:nb_image,1078:], (self._batch_size, self._grid_size, self._grid_size, self._num_box, 4))
+        class_probs = tf.reshape(output_tensor[:,0:self._num_class*self._grid_size*self._grid_size], (self._batch_size, self._grid_size, self._grid_size, self._num_class))
+        scales = tf.reshape(output_tensor[:,self._num_class*self._grid_size*self._grid_size:self._num_class*self._grid_size*self._grid_size+self._grid_size*self._grid_size*self._num_box], (self._batch_size, self._grid_size, self._grid_size, self._num_box))
+        boxes = tf.reshape(output_tensor[:,self._grid_size*self._grid_size*(self._num_class+self._num_box):], (self._batch_size, self._grid_size, self._grid_size, self._num_box, 4))
 
         boxes0 = boxes[:,:, :, :, 0]
         boxes1 = boxes[:,:, :, :, 1]
@@ -198,13 +197,13 @@
         subH = tf.sub(tf.sqrt(tf.abs(boxes3)), tf.sqrt(self._h))
         subC = tf.sub(scales, self._C)
         subP = tf.sub(class_probs, self._p)
-        lossX=tf.mul(self.lambdacoord,tf.reduce_sum(tf.mul(self._obj,tf.mul(subX, subX)),axis=[1,2,3]))
-        lossY=tf.mul(self.lambdacoord, tf.reduce_sum(tf.mul(self._obj, tf.mul(subY, subY)),axis=[1,2,3]))
-        lossW=tf.mul(self.lambdacoord, tf.reduce_sum(tf.mul(self._obj, tf.mul(subW, subW)),axis=[1,2,3]))
-        lossH=tf.mul(self.lambdacoord, tf.reduce_sum(tf.mul(self._obj, tf.mul(subH, subH)),axis=[1,2,3]))
-        lossCObj=tf.reduce_sum(tf.mul(self._obj, tf.mul(subC, subC)),axis=[1,2,3])
-        lossCNobj=tf.mul(self.lambdanoobj, tf.reduce_sum(tf.mul(self._noobj, tf.mul(subC, subC)),axis=[1,2,3]))
-        lossP=tf.reduce_sum(tf.mul(self._objI,tf.reduce_sum(tf.mul(subP, subP), axis=3)) ,axis=[1,2])
+        lossX=tf.multiply(self.lambdacoord,tf.reduce_sum(tf.multiply(self._obj,tf.multiply(subX, subX)),axis=[1,2,3]))
+        lossY=tf.multiply(self.lambdacoord, tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subY, subY)),axis=[1,2,3]))
+        lossW=tf.multiply(self.lambdacoord, tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subW, subW)),axis=[1,2,3]))
+        lossH=tf.multiply(self.lambdacoord, tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subH, subH)),axis=[1,2,3]))
+        lossCObj=tf.reduce_sum(tf.multiply(self._obj, tf.multiply(subC, subC)),axis=[1,2,3])
+        lossCNobj=tf.multiply(self.lambdanoobj, tf.reduce_sum(tf.multiply(self._noobj, tf.multiply(subC, subC)),axis=[1,2,3]))
+        lossP=tf.reduce_sum(tf.multiply(self._objI,tf.reduce_sum(tf.multiply(subP, subP), axis=3)) ,axis=[1,2])
         loss = tf.add_n((lossX,lossY,lossW,lossH,lossCObj,lossCNobj,lossP))
         classification_loss_tensor = tf.reduce_mean(tf.add_n(lossCNobj, lossCObj, lossP))
         bbox_loss_tensor =tf.reduce_mean( tf.add_n((lossX,lossY,lossW,lossH)))
@@ -224,19 +223,19 @@
             probs = np.zeros((self._grid_size, self._grid_size, self._num_box, self._num_class))
             class_probs = np.reshape(output[0:self._grid_size*self._grid_size*self._num_class], (self._grid_size, self._grid_size, self._num_class))
             scales = np.reshape(output[self._grid_size*self._grid_size*self._num_class : self._grid_size*self._grid_size*self._num_class + self._grid_size*self._grid_size*self._num_box], (self._grid_size, self._grid_size, self._num_box))
-            boxes = np.reshape(output[self._grid_size*self._grid_size*self._num_class + self._grid_size*self._grid_size*self._num_box : ], (self._grid_size, self._grid_size, self._num_box, 4))
+            boxes_ = np.reshape(output[self._grid_size*self._grid_size*self._num_class + self._grid_size*self._grid_size*self._num_box : ], (self._grid_size, self._grid_size, self._num_box, 4))
             offset = np.transpose(np.reshape(np.array([np.arange(self._grid_size)] * 2*self._grid_size), (self._num_box, self._grid_size, self._grid_size)), (1, 2, 0))
 
-            boxes[:, :, :, 0] += offset
-            boxes[:, :, :, 1] += np.transpose(offset, (1, 0, 2))
-            boxes[:, :, :, 0:2] = boxes[:, :, :, 0:2] / float(self._grid_size)
-            boxes[:, :, :, 2] = np.multiply(boxes[:, :, :, 2], boxes[:, :, :, 2])
-            boxes[:, :, :, 3] = np.multiply(boxes[:, :, :, 3], boxes[:, :, :, 3])
+            boxes_[:, :, :, 0] += offset
+            boxes_[:, :, :, 1] += np.transpose(offset, (1, 0, 2))
+            boxes_[:, :, :, 0:2] = boxes_[:, :, :, 0:2] / float(self._grid_size)
+            boxes_[:, :, :, 2] = np.multiply(boxes_[:, :, :, 2], boxes_[:, :, :, 2])
+            boxes_[:, :, :, 3] = np.multiply(boxes_[:, :, :, 3], boxes_[:, :, :, 3])
 
-            boxes[:, :, :, 0] *= self.w_img
-            boxes[:, :, :, 1] *= self.h_img
-            boxes[:, :, :, 2] *= self.w_img
-            boxes[:, :, :, 3] *= self.h_img
+            boxes_[:, :, :, 0] *= self.w_img
+            boxes_[:, :, :, 1] *= self.h_img
+            boxes_[:, :, :, 2] *= self.w_img
+            boxes_[:, :, :, 3] *= self.h_img
 
             for i in range(self._num_box):
                 for j in range(self._num_class):
@@ -244,7 +243,7 @@
 
             filter_mat_probs = np.array(probs >= self.threshold, dtype='bool')
             filter_mat_boxes = np.nonzero(filter_mat_probs)
-            boxes_filtered = boxes[filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
+            boxes_filtered = boxes_[filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
             probs_filtered = probs[filter_mat_probs]
             classes_num_filtered = np.argmax(filter_mat_probs, axis=3)[
                 filter_mat_boxes[0], filter_mat_boxes[1], filter_mat_boxes[2]]
