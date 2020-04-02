@@ -186,9 +186,9 @@ def test_train_normal_converges(graph_spec_binary_classification):
 @pytest.mark.slow
 def test_train_normal_distributed_converges(graph_spec_binary_classification):
     
-    script_factory = ScriptFactory()
-    deployment_pipe = InProcessDeploymentPipe(script_factory)
-    #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
+    #script_factory = ScriptFactory()
+    #deployment_pipe = InProcessDeploymentPipe(script_factory)
+    deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)    
 
     replica_by_name = {repl_cls.__name__: repl_cls for repl_cls in BASE_TO_REPLICA_MAP.values()}
     graph_builder = GraphBuilder(replica_by_name)    
@@ -222,3 +222,10 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification):
     
     assert np.mean(accuracy_list[-10:]) >= 0.75
 
+
+def test_core_handles_training_server_timeout():
+    pass
+
+
+def test_core_handles_training_step_timeout():
+    pass

@@ -252,7 +252,7 @@ class coreLogic():
             graph_builder = GraphBuilder(replica_by_name)
             
             script_factory = ScriptFactory()
-            deployment_pipe = InProcessDeploymentPipe(script_factory)
+            #deployment_pipe = InProcessDeploymentPipe(script_factory)
             #deployment_pipe = LocalEnvironmentPipe('/home/anton/Source/perceptilabs/backend/venv-user/bin/python', script_factory)
 
             
@@ -260,7 +260,7 @@ class coreLogic():
                 self.commandQ,
                 self.resultQ,
                 graph_builder,
-                deployment_pipe,
+                script_factory,
                 network,
                 threaded=True,
                 issue_handler=self.issue_handler

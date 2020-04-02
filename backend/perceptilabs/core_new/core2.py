@@ -52,9 +52,9 @@ def find_free_port(count=1):
     
     
 class Core:
-    def __init__(self, graph_builder: GraphBuilder, deployment_pipe: DeploymentPipe, issue_handler: IssueHandler=None, max_server_response_time=20, max_training_step_time=15):
+    def __init__(self, graph_builder: GraphBuilder, script_factory: ScriptFactory, issue_handler: IssueHandler=None, max_server_response_time=20, max_training_step_time=15):
         self._graph_builder = graph_builder
-        self._deployment_pipe = deployment_pipe
+        self._script_factory = script_factory
         self._graphs = []
         self._issue_handler = issue_handler
         
@@ -86,7 +86,6 @@ class Core:
         session_id = session_id or uuid.uuid4().hex
         graph = self._graph_builder.build_from_spec(graph_spec)
         port1, port2 = find_free_port(count=2)
-        self._script_factory = ScriptFactory()
         
         code, line_to_node_map = self._script_factory.make(graph, session_id, port1, port2, max_training_step_time=self._max_training_step_time)
 
