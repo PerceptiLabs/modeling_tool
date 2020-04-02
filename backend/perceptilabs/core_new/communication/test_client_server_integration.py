@@ -140,9 +140,6 @@ def test_can_start(mock_graph_3s):
 
     
 def test_can_start_10_times(mock_graph_3s):
-    if True:
-        return
-
     for i in range(10):
         print(f"Attempt {i}")    
         server = create_server(mock_graph_3s)
