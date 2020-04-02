@@ -178,12 +178,15 @@ class TrainingServer:
             if training_state.value == State.RUNNING:
                 try:
                     self._step_start = time.time()
+                    print("ENTERING TRAIN STEP!")
                     step_result = next(training_step, sentinel)
+                    print("LEAVING TRAIN STEP!")                    
                 except Exception as e:
                     self._send_userland_error(e)
                     log.exception("Userland error on iteration. Setting status to done.")
                     training_state.transition(State.DONE)
                 finally:
+                    print("FINALLY ON TRAIN STEP!")                                        
                     self._step_start = None                    
             else:
                 step_result = None
@@ -283,7 +286,7 @@ class TrainingServer:
 
             
 class TrainingClient:
-    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, userland_error_handler=None, log_message_handler=None, max_response_time=15):
+    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, userland_error_handler=None, log_message_handler=None, max_response_time=60):
         self._is_running = threading.Event()
         self._is_running.clear()        
 

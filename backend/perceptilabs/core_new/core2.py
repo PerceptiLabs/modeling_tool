@@ -35,6 +35,8 @@ class Core:
         self._is_running = threading.Event()
         self._is_running.clear()
         self._client = None
+
+        self._remote_is_paused = False
         
     def run(self, graph_spec: JsonNetwork, session_id: str=None, on_iterate: List[Callable]=None, auto_stop=False):
         on_iterate = on_iterate or []
@@ -76,9 +78,28 @@ class Core:
                 spec.loader.exec_module(module)
                 module.main()
 
-        from multiprocessing import Process
-        process = Process(target=fn_start) # Process > thread to avoid interference between TensorFlow instances.
-        process.start()
+        #from multiprocessing import Process
+
+        import os
+        import sys
+        import subprocess
+        #import multiprocessing # Not a good idea. Uses FORK and that causes tensorflow issues. Spawn requires pickling..  https://github.com/tensorflow/tensorflow/issues/5448
+
+        if os.path.isfile(sys.executable) and False:
+            log.info(f"Running training script using interpreter at {sys.executable}")
+            p = subprocess.Popen(
+                [sys.executable, 'training_script.py'],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE
+            )
+            #stdout, stderr = p.communicate()            
+        else:
+            log.info(f"Running training script in a new thread")            
+            thread = threading.Thread(target=fn_start)
+            thread.start()
+            
+
+        
         time.sleep(3) # Give it some time to start.. TODO: wait until shared memory is available, after that we can connect at will.
 
 
@@ -107,13 +128,16 @@ class Core:
 
         counter = 0
         while training_client.remote_status in [State.RUNNING, State.PAUSED]:
+            self._remote_is_paused = training_client.remote_status == State.PAUSED
+            
             if counter % 30 == 0:
                 log.info("Training running/paused. Graph count: " + str(len(self._graphs)))                
             self._graphs = training_client.graphs.copy()
             time.sleep(0.1)
             counter += 1
 
-            
+        self._remote_is_paused = False
+        
         if auto_stop:
             training_client.request_stop()            
                         
@@ -204,7 +228,7 @@ class Core:
 
     @property
     def is_paused(self):
-        return self._client.status == STATUS_RUNNING_PAUSED
+        return self._remote_is_paused
 
     def _handle_errors(self, errors: List, line_to_node_map):
         errors_repr = []
