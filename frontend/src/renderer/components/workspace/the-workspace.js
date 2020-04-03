@@ -3,6 +3,7 @@ import saveNet    from './workspace-save-net.js'
 import scaleNet   from './workspace-scale.js'
 import spinnerNet from './workspace-spinner.js'
 import helpersNet from './workspace-helpers.js'
+import Analytics  from '@/core/analytics'
 
 import TextEditable           from '@/components/base/text-editable.vue'
 import NetworkField           from '@/components/network-field/network-field.vue'
@@ -97,6 +98,10 @@ export default {
       if(newStatus === 'Finished'
         && this.testIsOpen === null
       ) {
+        // user journey tracking
+        this.$store.dispatch('mod_tracker/EVENT_trainingCompleted');
+        Analytics.googleAnalytics.trackCustomEvent('training-completed');
+
         this.net_trainingDone();
         this.event_startDoRequest(false);
       }
