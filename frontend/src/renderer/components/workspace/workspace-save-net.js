@@ -73,7 +73,7 @@ const workspaceSaveNet = {
               projectName: network.networkName,
               projectPath: network.networkRootFolder
             };
-            this.eventSaveNetwork(settings, network.networkID)
+            this.saveNetwork(settings, network.networkID)
           }
         })
 
