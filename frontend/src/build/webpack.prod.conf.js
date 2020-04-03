@@ -7,10 +7,12 @@ const merge = require('webpack-merge')
 const baseWebpackConfig = require('./webpack.base.conf')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+// const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require("mini-css-extract-plugin")
 const OptimizeCSSPlugin = require('optimize-css-assets-webpack-plugin')
 const UglifyJsPlugin = require('uglifyjs-webpack-plugin')
 
+const devMode = false
 
 const fs = require('fs')
 const packageJson = fs.readFileSync('./package.json')
@@ -19,11 +21,27 @@ const envs = Object.assign(require('../config/prod.env'), {'PACKAGE_VERSION': `"
 
 const webpackConfig = merge(baseWebpackConfig, {
   module: {
-    rules: utils.styleLoaders({
-      sourceMap: config.build.productionSourceMap,
-      extract: true,
-      usePostCSS: true
-    })
+    rules: [
+      // Compile CSS files
+			{ test: /\.css$/, use: [MiniCssExtractPlugin.loader, "css-loader"] },
+			// Compile SCSS files
+			{
+				test: /\.scss$/,
+        use: [{
+            loader: MiniCssExtractPlugin.loader
+          },
+          {
+            loader: "css-loader",
+            options: {
+              sourceMap: true,
+              modules: true,
+              localIdentName: "[local]___[hash:base64:5]"
+            }
+          },
+          "sass-loader"
+        ]
+			},
+    ]
   },
   devtool: config.build.productionSourceMap ? config.build.devtool : false,
   output: {
@@ -58,14 +76,14 @@ const webpackConfig = merge(baseWebpackConfig, {
       parallel: true
     }),
     // extract css into its own file
-    new ExtractTextPlugin({
-      filename: utils.assetsPath('../[name].[contenthash].css'),
-      // Setting the following option to `false` will not extract CSS from codesplit chunks.
-      // Their CSS will instead be inserted dynamically with style-loader when the codesplit chunk has been loaded by webpack.
-      // It's currently set to `true` because we are seeing that sourcemaps are included in the codesplit bundle as well when it's `false`, 
-      // increasing file size: https://github.com/vuejs-templates/webpack/issues/1110
-      allChunks: true,
-    }),
+    // new ExtractTextPlugin({
+    //   filename: utils.assetsPath('../[name].[contenthash].css'),
+    //   // Setting the following option to `false` will not extract CSS from codesplit chunks.
+    //   // Their CSS will instead be inserted dynamically with style-loader when the codesplit chunk has been loaded by webpack.
+    //   // It's currently set to `true` because we are seeing that sourcemaps are included in the codesplit bundle as well when it's `false`, 
+    //   // increasing file size: https://github.com/vuejs-templates/webpack/issues/1110
+    //   allChunks: true,
+    // }),
     // Compress extracted CSS. We are using this plugin so that possible
     // duplicated CSS from different components can be deduped.
     new OptimizeCSSPlugin({
@@ -123,6 +141,18 @@ const webpackConfig = merge(baseWebpackConfig, {
     //   children: true,
     //   minChunks: 3
     // }),
+    new MiniCssExtractPlugin({
+			// Options similar to the same options in webpackOptions.output
+			// both options are optional
+			filename: devMode ? '[name].css' : '[name].[hash].css',
+			chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
+		}),
+		new MiniCssExtractPlugin({
+			filename: devMode ? 'app.css' : 'app.[hash].css',
+    }),
+    new MiniCssExtractPlugin({
+      filename: devMode ? 'vendor.css' : 'vendor.[hash].css',
+		}),
 
     // copy custom static assets
     new CopyWebpackPlugin([
