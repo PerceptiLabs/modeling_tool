@@ -47,6 +47,7 @@ export default {
     ...mapState({
       workspace:                  state => state.mod_workspace.workspaceContent,
       indexCurrentNetwork:        state => state.mod_workspace.currentNetwork,
+      dragBoxContainer:           state => state.mod_workspace.dragBoxContainer,
       statisticsElSelected:       state => state.mod_statistics.selectedElArr,
       hideSidebar:                state => state.globalView.hideSidebar,
       showGlobalResult:           state => state.globalView.globalPopup.showNetResult,
@@ -196,6 +197,63 @@ export default {
     set_networkName(text) {
       this.setNetworkNameAction(text);
       this.pushSnapshotToHistory(null)
-    }
+    },
+    dragBoxHorizontalTopBorder() {
+      const { width, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: width * scaleCoefficient + 'px',
+        height: 1 + 'px',
+        position: 'absolute',
+        top: top * scaleCoefficient  + 'px',
+        left: left * scaleCoefficient + 'px',
+        borderTop: '1px dashed #22DDE5'
+      }
+    },
+    dragBoxHorizontalBottomBorder() {
+      const { width, height, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: width * scaleCoefficient + 'px',
+        height: 1 + 'px',
+        position: 'absolute',
+        top: (top + height) * scaleCoefficient  + 'px',
+        left: left * scaleCoefficient + 'px',
+        borderTop: '1px dashed #22DDE5'
+      }
+    },
+
+    dragBoxVerticalLeftBorder() {
+      const { width, height, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: 1 + 'px',
+        height: height * scaleCoefficient + 'px',
+        position: 'absolute',
+        top: top * scaleCoefficient  + 'px',
+        left: left * scaleCoefficient + 'px',
+        borderLeft: '1px dashed #22DDE5'
+      }
+    },
+    dragBoxVerticalRightBorder() {
+      const { width, height, left, top,  isVisible } = this.dragBoxContainer;
+      const scaleCoefficient = this.scaleNet / 100;
+      return {
+        zIndex: 2,
+        display: isVisible ? 'block' : 'none',
+        width: 1 + 'px',
+        height: height * scaleCoefficient + 'px',
+        position: 'absolute',
+        top: top * scaleCoefficient  + 'px',
+        left: (left + width) * scaleCoefficient + 'px',
+        borderRight: '1px dashed #22DDE5'
+      }
+    },
   }
 }
