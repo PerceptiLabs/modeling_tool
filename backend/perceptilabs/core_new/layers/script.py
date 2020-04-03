@@ -187,6 +187,7 @@ class ScriptFactory:
         template += "@app.route('/')\n"
         template += "def endpoint_index():\n"
         template += "    global status, t_start, snapshots_produced\n"
+        template += "    import itertools, cv2\n"
         template += "    result = {\n"
         template += "        'status': status,\n"
         template += "        'n_snapshots': snapshots_produced,\n"

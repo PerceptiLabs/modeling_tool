@@ -233,6 +233,7 @@ DEFINITION_TABLE = {
             'import tensorflow as tf',
             'import numpy as np',
             'import time',
+            'import itertools',
             'import cv2',
             'import os',
             'from typing import Dict, List, Generator',

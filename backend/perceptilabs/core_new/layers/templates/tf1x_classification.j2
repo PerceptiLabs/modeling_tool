@@ -89,7 +89,7 @@
         layer_output_tensors = build_graph(input_tensor, label_tensor)
         output_tensor = layer_output_tensors[output_layer_id]
         target_tensor = layer_output_tensors[target_layer_id]
-
+        
         # Create an exportable version of the TensorFlow graph
         self._input_tensor_export = tf.placeholder(shape=dataset_trn.output_shapes[0], dtype=dataset_trn.output_types[0])
         self._output_tensor_export = build_graph(
@@ -716,6 +716,7 @@
 ################################################### Main #####################################################
 {% macro layer_tf1x_classification(layer_name, output_layer, target_layer, n_epochs, loss_function, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
 class {{layer_name}}(ClassificationLayer):
+
     def __init__(self):
         self._n_epochs = {{n_epochs}}
         self._batch_size = 10 # TODO: {{batch_size}}?
