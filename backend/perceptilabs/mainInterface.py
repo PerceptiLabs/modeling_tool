@@ -186,8 +186,7 @@ class Interface():
         elif action == "saveJsonModel":
             save_path = value["path"]
             json_model = value["json"]
-            network_name = value["name"]
-            return saveJsonModel(save_path=save_path, json_model=json_model, network_name=network_name).run()
+            return saveJsonModel(save_path=save_path, json_model=json_model).run()
 
         elif action == "getPartitionSummary":
             Id=value["Id"]

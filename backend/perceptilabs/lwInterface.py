@@ -24,14 +24,14 @@ class LW_interface_base(ABC):
 
 
 class saveJsonModel(LW_interface_base):
-    def __init__(self, save_path, json_model, network_name):
+    def __init__(self, save_path, json_model):
         self._save_path = save_path
         self._json_model = json_model
-        self._network_name = network_name
 
     def run(self):
         import json
-        full_path = os.path.join(self._save_path, self._network_name)
+        full_path = self._save_path
+
         if not os.path.isdir(full_path):
             os.mkdir(full_path)
         
