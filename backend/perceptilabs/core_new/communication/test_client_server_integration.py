@@ -326,6 +326,7 @@ def test_stops_on_userland_timeout(mock_graph_infinite_loop):
     
     client.request_start()
     assert wait_for_condition(lambda _: client.remote_status == None)
+    
 
 def test_client_stops_on_server_timeout(mock_graph_infinite_loop):
     server = create_server(mock_graph_infinite_loop, max_step_time=60)

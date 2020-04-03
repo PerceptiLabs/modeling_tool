@@ -17,9 +17,9 @@ from queue import Queue
 
 
 from perceptilabs.core_new.utils import YieldLevel
-from perceptilabs.utils import KillableThread
 from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
 from perceptilabs.core_new.communication.zmq import Client as ZmqClient, Server as ZmqServer
+from perceptilabs.core_new.communication.task_executor import TaskExecutor, TaskError, TaskTimeout
 
 
 log = logging.getLogger(__name__)
@@ -102,7 +102,7 @@ class TrainingServer:
         self._serialization_fn = serialize
 
     def start(self, block=False):
-        self._worker_thread = KillableThread(target=self._worker_func, daemon=True)
+        self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
         self._worker_thread.start()
 
         counter = 0
@@ -112,31 +112,9 @@ class TrainingServer:
             time.sleep(0.1)
             counter += 1
             
-        self._timeout_thread = threading.Thread(target=self._timeout_func, daemon=True)
-        self._timeout_thread.start()
-
         while block and self._is_running.is_set():
             time.sleep(1)
         
-    def _timeout_func(self):
-        while self._is_running.is_set():
-            if self._step_start is not None:
-                step_time = time.time() - self._step_start
-                if step_time > self._max_step_time:
-                    log.info(f"Training step time has been running for {step_time}s, exceeding limit of {self._max_step_time}s. Killing worker thread. [TrainingServer]")
-                    self._worker_thread.kill()
-                    
-                    log.info("Sending message 'killed'")                    
-                    self._send_killed()                    
-                    
-                    log.info("Stopping everything...")
-                    self._is_running.clear()                        
-                    #self._zmq_client.stop()
-                    #self._zmq_server.stop()                        
-                    break
-            time.sleep(0.5)
-        log.info("Leaving timeout function")
-
     def _worker_func(self):
         log.info("Entering worker func [TrainingServer]")
         event_queue = queue.Queue()
@@ -167,8 +145,13 @@ class TrainingServer:
         training_step = self._graph.run()
         step_result = None
 
+        def step_task():
+            return next(training_step, sentinel)
+
         log.info("Entering worker loop [TrainingServer]")
 
+        task_executor = TaskExecutor()
+        
         counter = 0
         self._is_running.set()
         while self._is_running.is_set() and training_state.value != State.DONE:
@@ -179,11 +162,16 @@ class TrainingServer:
             if training_state.value == State.RUNNING:
                 try:
                     self._step_start = time.time()
-                    step_result = next(training_step, sentinel)
-                except Exception as e:
-                    self._send_userland_error(e)
-                    log.exception("Userland error on iteration. Setting status to done.")
+                    step_result = task_executor.run(step_task, timeout=self._max_step_time)
+                except TaskTimeout:
+                    self._send_killed()
                     training_state.transition(State.DONE)
+                    log.exception("Userland timeout on iteration. Setting status to done and sending killed signal.")
+                    break
+                except TaskError as e:
+                    self._send_userland_error(e)
+                    training_state.transition(State.DONE)
+                    log.exception("Userland error on iteration. Setting status to done and sending error.")
                 finally:
                     self._step_start = None                    
             else:
@@ -284,7 +272,7 @@ class TrainingServer:
         self._zmq_server.stop()                        
             
         self._worker_thread.join()
-        self._timeout_thread.join()
+        #self._timeout_thread.join()
 
             
 class TrainingClient:

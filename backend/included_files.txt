@@ -84,6 +84,7 @@ perceptilabs/core_new/communication/__init__.py
 perceptilabs/core_new/communication/base.py
 perceptilabs/core_new/communication/deployment.py
 perceptilabs/core_new/communication/status.py
+perceptilabs/core_new/communication/task_executor.py
 
 # perceptilabs/core_new/compatability
 perceptilabs/core_new/compatability/__init__.py
