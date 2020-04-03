@@ -85,6 +85,7 @@ const workspaceSaveNet = {
       this.askSaveFilePopup()
         .then((answer)=> {
           if(answer) {
+            answer.projectPath += '/' + answer.projectName;
             this.saveNetwork(answer, netId, isSaveProjectPath);
           }
         })
@@ -125,7 +126,6 @@ const workspaceSaveNet = {
             // return projectPCSave(prepareNet.toFile)
 
             const payload = {
-              name: prepareNet.toLocal.name,
               path: prepareNet.toLocal.pathProject
             };
 
