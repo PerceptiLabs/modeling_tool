@@ -25,7 +25,7 @@ class NotConnectedError(Exception):
 
     
 
-class Client:
+class ZmqClient:
     def __init__(self, subscribe_address, push_address, context=None, tag=None, server_timeout=10):
         self._subscribe_address = subscribe_address
         self._push_address = push_address        
@@ -160,6 +160,7 @@ class ServerWorker(threading.Thread):
         log.info(f"Closing sockets [{self.tag}]")                                
         publish_socket.close()
         pull_socket.close()
+        self._context.term()
         log.info(f"Leaving worker run method [{self.tag}]")                                        
                     
     def _process_message(self, pull_socket, publish_socket):
@@ -186,13 +187,17 @@ class ServerWorker(threading.Thread):
         return f"server worker {id(self)}"
     
         
-class Server:
+class ZmqServer:
     def __init__(self, publish_address, pull_address, ping_interval=3):
         self._publish_address = publish_address
         self._pull_address = pull_address
         self._ping_interval = ping_interval        
         self._start_called = False
         self._context = zmq.Context()
+        self._worker_thread = None
+
+    def is_alive(self):
+        return self._worker_thread is not None and self._worker_thread.is_alive
 
     def start(self):
         self._start_called = True
@@ -206,11 +211,11 @@ class Server:
         self._worker_thread.start()
 
         log.info(f"Creating client [{self.tag}]")                                
-        self._client = Client(
+        self._client = ZmqClient(
             self._publish_address.replace('*', 'localhost'),
             self._pull_address.replace('*', 'localhost'),
             context=self._context,
-            tag=f"internal client of {self.tag}"
+            tag=f"internal client of {self.tag}",
         )
         log.info(f"Created {self._client.tag}. Connecting. [{self.tag}]")
         self._client.connect()

@@ -6,344 +6,195 @@ from perceptilabs.utils import wait_for_condition
 from perceptilabs.core_new.utils import YieldLevel
 from perceptilabs.core_new.communication import TrainingClient, TrainingServer, State
 
-@pytest.fixture
-def mock_graph_1s():
-    def fn_run():
-        for i in range(1):
-            time.sleep(1)
-            yield YieldLevel.DEFAULT
     
-    graph = MagicMock()
-    graph.run.side_effect = fn_run
-    yield graph
-
+def create_server(graph=None, snapshot_builder=None, step_timeout=15):
+    graph = graph or MagicMock()
+    snapshot_builder = snapshot_builder or MagicMock()
     
-@pytest.fixture
-def mock_graph_2s_error():
-    def fn_run():
-        time.sleep(1)
-        yield
-        if True:
-            raise IndexError("Index is bad!")
-        yield
-
-    graph = MagicMock()
-    graph.run.side_effect = fn_run
-    yield graph
-
-    
-@pytest.fixture
-def mock_graph_3s_with_snapshot():
-    def fn_run():
-        for i in range(3):
-            time.sleep(1)
-            yield YieldLevel.SNAPSHOT
-    
-    graph = MagicMock()
-    graph.run.side_effect = fn_run
-    yield graph
-    
-
-@pytest.fixture
-def mock_graph_3s():
-    def fn_run():
-        for i in range(3):
-            time.sleep(1)
-            yield YieldLevel.DEFAULT            
-
-    graph = MagicMock()
-    graph.run.side_effect = fn_run
-    yield graph
-
-
-@pytest.fixture
-def mock_graph_5s():
-    def fn_run():
-        for i in range(5):
-            time.sleep(1)
-            yield YieldLevel.DEFAULT                        
-    
-    graph = MagicMock()
-    graph.run.side_effect = fn_run
-    yield graph
-
-@pytest.fixture
-def mock_graph_infinite_loop():
-    def fn_run():
-        while True:
-            time.sleep(1)
-        yield
-    
-    graph = MagicMock()
-    graph.run.side_effect = fn_run
-    yield graph
-
-
-SERVERS = []
-CLIENTS = []
-
-
-def create_server(graph, snapshot_builder=None, max_step_time=60):
     server = TrainingServer(
         6556, 6557,
         graph,
         snapshot_builder=snapshot_builder,
-        max_step_time=max_step_time
+        step_timeout=step_timeout
     )
-    SERVERS.append(server)    
     return server
 
 
-def create_client(graph_builder=None, on_userland_error=None, max_response_time=10):
+def create_client(graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=60):
     client = TrainingClient(
         6556, 6557,
         graph_builder=graph_builder,
+        on_receive_graph=on_receive_graph,
+        on_log_message=on_log_message,
         on_userland_error=on_userland_error,
-        max_response_time=max_response_time
+        on_userland_timeout=on_userland_timeout,
+        on_server_timeout=on_server_timeout,
+        server_timeout=server_timeout
     )
-    CLIENTS.append(client)
     return client
 
-
-@pytest.fixture(autouse=True)
-def shutdown_servers_and_clients():
-    global CLIENTS, SERVERS
-    for client in CLIENTS:
-        client.stop()
-    CLIENTS = []
     
-    for server in SERVERS:
-        server.stop()
-    SERVERS = []
-
-    
-def test_can_connect(mock_graph_3s):
-    server = create_server(mock_graph_3s)
+def test_receives_status_ready():
+    server = create_server()
     client = create_client()
 
-    server.start()
-    client.connect()
-
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-
-def test_can_start(mock_graph_3s):
-    server = create_server(mock_graph_3s)
-    client = create_client()
-
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
-
-    
-def test_can_start_10_times(mock_graph_3s):
-    for i in range(10):
-        print(f"Attempt {i}")    
-        server = create_server(mock_graph_3s)
-        client = create_client()
-
-        server.start()
-        client.connect()
-        assert wait_for_condition(lambda _: client.remote_status == State.READY)
+    try:
+        server_step = server.run_step()
+        client_step = client.run_step()        
         
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.READY
+        assert wait_for_condition(cond)
+    finally:
+        server.shutdown()
+        client.shutdown()
+
+
+def test_receives_status_running_on_request_start():
+    server = create_server()
+    client = create_client()
+    try:
+        server_step = server.run_step()
+        client_step = client.run_step()
+
+        # Run one iteration for both to initiate the connection
+        next(server_step)
+        next(client_step)
         client.request_start()
-        assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
+        
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.TRAINING_RUNNING
+        assert wait_for_condition(cond)
+    finally:
+        server.shutdown()
+        client.shutdown()
 
-        client.stop()
-        server.stop()
-
-
-def test_can_stop_when_ready(mock_graph_3s):
-    print("CAN STOP WHEN READY")
-    server = create_server(mock_graph_3s)
+        
+def test_receives_status_paused_on_request():
+    server = create_server()
     client = create_client()
-    
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_stop()
-    assert wait_for_condition(lambda _: client.remote_status == State.DONE)
+    try:
+        server_step = server.run_step()
+        client_step = client.run_step()
 
+        # Run one iteration for both to initiate the connection
+        next(server_step)
+        next(client_step)
+        client.request_start()
+        client.request_pause()
+        
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.TRAINING_PAUSED
+        assert wait_for_condition(cond)
 
-def test_can_stop_when_running(mock_graph_3s):
-    server = create_server(mock_graph_3s)
+        
+    finally:
+        server.shutdown()
+        client.shutdown()
+        
+
+def test_can_resume_when_paused():
+    server = create_server()
     client = create_client()
-    
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
+    try:
+        server_step = server.run_step()
+        client_step = client.run_step()
 
-    client.request_stop()
-    assert wait_for_condition(lambda _: client.remote_status == State.DONE)
+        # Run one iteration for both to initiate the connection
+        next(server_step)
+        next(client_step)
+        client.request_start()
+        client.request_pause()
+        
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.TRAINING_PAUSED
+        assert wait_for_condition(cond)
+
+        client.request_resume()
+
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.TRAINING_RUNNING
+        assert wait_for_condition(cond)
+        
+    finally:
+        server.shutdown()
+        client.shutdown()        
 
 
-def test_can_pause_when_running(mock_graph_3s):
-    server = create_server(mock_graph_3s)
+def test_receives_status_paused_on_request():
+    server = create_server()
     client = create_client()
+    try:
+        server_step = server.run_step()
+        client_step = client.run_step()
 
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
+        # Run one iteration for both to initiate the connection
+        next(server_step)
+        next(client_step)
+        client.request_start()
+        client.request_pause()
+        
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return client.training_state == State.TRAINING_PAUSED
+        assert wait_for_condition(cond)
 
-    client.request_pause()
-    assert wait_for_condition(lambda _: client.remote_status == State.PAUSED)
-    
-
-def test_can_stop_when_paused(mock_graph_3s):
-    server = create_server(mock_graph_3s)
-    client = create_client()
-    
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
-
-
-    client.request_pause()
-    assert wait_for_condition(lambda _: client.remote_status == State.PAUSED)
-
-    client.request_stop()
-    assert wait_for_condition(lambda _: client.remote_status == State.DONE)
-
-
-def test_can_resume_when_paused(mock_graph_3s):
-    server = create_server(mock_graph_3s)
-    client = create_client()
-    
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
-
-    client.request_pause()
-    assert wait_for_condition(lambda _: client.remote_status == State.PAUSED)
-
-    client.request_resume()
-    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
-
-
-def test_can_stop_when_idle(mock_graph_1s):
-    server = create_server(mock_graph_1s)
-    client = create_client()
-    
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: client.remote_status == State.IDLE)
-
-    client.request_stop()
-    assert wait_for_condition(lambda _: client.remote_status == State.DONE)
-
-    
-def test_receives_3_graphs_and_goes_idle(mock_graph_3s_with_snapshot):
+        
+    finally:
+        server.shutdown()
+        client.shutdown()
+        
+        
+def test_handles_received_graphs():
+    snapshot = {'foo': 'bar'}
     snapshot_builder = MagicMock()
-    snapshot_builder.build.return_value = {'foo': 'bar'}
-
+    snapshot_builder.build.return_value = snapshot
+    
     graph_builder = MagicMock()
-    graph_builder.build_from_snapshot.return_value = object()
-    
-    server = create_server(mock_graph_3s_with_snapshot, snapshot_builder=snapshot_builder)
-    client = create_client(graph_builder=graph_builder)
-    
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: client.remote_status == State.RUNNING)
-    
-    assert wait_for_condition(lambda _: client.remote_status == State.IDLE)
-    assert wait_for_condition(lambda _: len(client.graphs) == 3)
+    on_receive_graph = MagicMock()
 
+    def graph_run():
+        while True:
+            yield YieldLevel.SNAPSHOT
 
-def test_stops_on_userland_error(mock_graph_2s_error):
-    server = create_server(mock_graph_2s_error)
-    client = create_client()
+    graph = MagicMock()
+    graph.run = graph_run
     
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: client.remote_status == State.DONE)
+    server = create_server(graph, snapshot_builder=snapshot_builder)
+    client = create_client(graph_builder=graph_builder, on_receive_graph=on_receive_graph)
+    try:
+        server_step = server.run_step()
+        client_step = client.run_step()
 
-    
-def test_sends_message_on_userland_error(mock_graph_2s_error):
-    fn = MagicMock()
-    
-    server = create_server(mock_graph_2s_error)
-    client = create_client(on_userland_error=fn)
-    
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: fn.call_count == 1)
+        # Run one iteration for both to initiate the connection
+        next(server_step)
+        next(client_step)
+        client.request_start()
+        
+        def cond(_):
+            next(server_step)
+            next(client_step)
+            return (
+                graph_builder.build_from_snapshot.call_count == 1 and
+                graph_builder.build_from_snapshot.call_args[0][0] == snapshot and 
+                on_receive_graph.call_count == 1
+            )
+        assert wait_for_condition(cond)
 
-
-def test_layer_export_called(mock_graph_3s):
-    fn = MagicMock()
-    
-    server = create_server(mock_graph_3s)
-    client = create_client()
-    
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_export(path='/hello/', mode='some-mode')
-
-    assert wait_for_condition(lambda _: mock_graph_3s.active_training_layer.layer.on_export.call_count == 1)
-    assert wait_for_condition(lambda _: mock_graph_3s.active_training_layer.layer.on_export.call_args_list[0][0][0] == '/hello/')
-    assert wait_for_condition(lambda _: mock_graph_3s.active_training_layer.layer.on_export.call_args_list[0][0][1] == 'some-mode')
-
-    
-def test_stops_on_userland_timeout(mock_graph_infinite_loop):
-    server = create_server(mock_graph_infinite_loop, max_step_time=5)
-    client = create_client()
-    
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: client.remote_status == None)
-    
-
-def test_client_stops_on_server_timeout(mock_graph_infinite_loop):
-    server = create_server(mock_graph_infinite_loop, max_step_time=60)
-    client = create_client(max_response_time=3)
-    
-    server.start()
-    client.connect()
-    assert wait_for_condition(lambda _: client.remote_status == State.READY)
-    
-    client.request_start()
-    assert wait_for_condition(lambda _: not client.is_running)
-    
-    
-
-    
-    
-
-    
-
-    
+        
+    finally:
+        server.shutdown()
+        client.shutdown()
+        
+        

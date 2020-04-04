@@ -18,7 +18,8 @@ from queue import Queue
 
 from perceptilabs.core_new.utils import YieldLevel
 from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
-from perceptilabs.core_new.communication.zmq import Client as ZmqClient, Server as ZmqServer
+#from perceptilabs.core_new.communication.zmq import Client as ZmqClient, Server as ZmqServer
+from perceptilabs.core_new.communication.zmq2 import ZmqClient, ZmqServer, ConnectionLost
 from perceptilabs.core_new.communication.task_executor import TaskExecutor, TaskError, TaskTimeout
 
 
@@ -36,33 +37,49 @@ class StateTransitionError(Exception):
 
 
 class State:
-    INITIALIZING = 'initializing'
-    READY = 'ready'
-    STARTED = 'started'
-    STOPPED = 'stopped'
-    WAITING = 'waiting'
-    RUNNING = 'running'
-    PAUSED = 'paused'
-    IDLE = 'idle'
-    DONE = 'done'    
-    STOPPED = 'stopped'    
+    INITIALIZING = 'initializing'    
+    READY = 'ready'    
+    TRAINING_PAUSED = 'training-paused'
+    TRAINING_PAUSED_HEADLESS = 'training-paused-headless'    
+    TRAINING_RUNNING = 'training-running'
+    TRAINING_RUNNING_HEADLESS = 'training-running-headless'    
+    TRAINING_COMPLETED = 'training-completed'
+    TRAINING_STOPPED = 'training-stopped'
+    TRAINING_TIMEOUT = 'training-timeout'
+    TRAINING_FAILED = 'training-failed'
+    FINALIZING = 'finalizing'
 
-    # (FROM_STATE, TO_STATE)
+    idle_states = set((READY, TRAINING_PAUSED, TRAINING_COMPLETED, TRAINING_STOPPED))
+    exit_states = set((FINALIZING, TRAINING_TIMEOUT, TRAINING_FAILED))
+    
     allowed_transitions = set((
         (INITIALIZING, READY),
-        (READY, RUNNING),
-        (READY, DONE),
-        (RUNNING, DONE),        
-        (RUNNING, PAUSED),
-        (PAUSED, RUNNING),
-        (PAUSED, DONE),
-        (RUNNING, IDLE),
-        (IDLE, DONE),        
+        (READY, TRAINING_RUNNING),
+        (READY, TRAINING_STOPPED),        
+        (TRAINING_RUNNING, TRAINING_TIMEOUT),
+        (TRAINING_RUNNING, TRAINING_FAILED),
+        (TRAINING_RUNNING, TRAINING_COMPLETED),
+        (TRAINING_RUNNING, TRAINING_PAUSED),
+        (TRAINING_RUNNING, TRAINING_STOPPED),
+        (TRAINING_RUNNING, TRAINING_RUNNING_HEADLESS),
+        (TRAINING_RUNNING_HEADLESS, TRAINING_TIMEOUT),
+        (TRAINING_RUNNING_HEADLESS, TRAINING_FAILED),
+        (TRAINING_RUNNING_HEADLESS, TRAINING_COMPLETED),
+        (TRAINING_RUNNING_HEADLESS, TRAINING_PAUSED_HEADLESS),
+        (TRAINING_RUNNING_HEADLESS, TRAINING_STOPPED),
+        (TRAINING_RUNNING_HEADLESS, TRAINING_RUNNING),                                
+        (TRAINING_PAUSED, TRAINING_RUNNING),
+        (TRAINING_PAUSED, TRAINING_STOPPED),
+        (TRAINING_PAUSED, TRAINING_PAUSED_HEADLESS),
+        (TRAINING_PAUSED_HEADLESS, TRAINING_RUNNING_HEADLESS),
+        (TRAINING_PAUSED_HEADLESS, TRAINING_PAUSED),                        
+        (READY, FINALIZING)
     ))
     
-    def __init__(self):
+    def __init__(self, on_transition=None):
         self._state = self.INITIALIZING
         self._lock = threading.Lock()
+        self._on_transition = on_transition
 
     @property
     def value(self):
@@ -75,6 +92,8 @@ class State:
         return str(self.value)
     
     def transition(self, new_state):
+        if new_state is None:
+            return        
         if self._state == new_state:
             return
         
@@ -83,9 +102,313 @@ class State:
                 self._state = new_state
             else:
                 raise StateTransitionError(f"Cannot transition from '{self._state}' to '{new_state}'")
+            if self._on_transition:
+                self._on_transition(new_state)
+                
+    @classmethod
+    def visualize(cls):
+        import matplotlib.pyplot as plt
+        import networkx as nx
+        graph = nx.DiGraph()
+        
+        x = list(cls.allowed_transitions)
+        graph.add_edges_from(x)
+        pos = nx.shell_layout(graph)
+        #pos = nx.circular_layout(graph)    
+        nx.draw(graph, pos, with_labels=True)
+        plt.show()
+        
+    
+        
 
+class TrainingServer:
+    def __init__(self, port_pub_sub, port_push_pull, graph, snapshot_builder=None, step_timeout=15):
+        self._port_pub_sub = port_pub_sub
+        self._port_push_pull = port_push_pull
+
+        self._snapshot_builder = snapshot_builder        
+        self._step_timeout = step_timeout
+        self._graph = graph
+
+    def run(self):
+        step_generator = self.run_step()
+        for _ in step_generator:
+            pass
+
+    def run_step(self):
+        zmq = self._zmq = ZmqServer(
+            f'tcp://*:{self._port_pub_sub}',
+            f'tcp://*:{self._port_push_pull}',            
+        )
+        zmq.start()
+
+        def on_transition(new_state):
+            log.info(f"Entered new state {new_state}")
+            self._send_message(zmq, 'state', new_state)            
+
+        state = State(on_transition=on_transition)
+        
+        training_iterator = self._graph.run()
+        training_sentinel = object()
+        training_step_result = None
+        
+        def training_step():
+            return next(training_iterator, training_sentinel)
+        
+        task_executor = TaskExecutor()
+        main_step_times = collections.deque(maxlen=1)
+        train_step_times = collections.deque(maxlen=1)        
+        
+        state.transition(State.READY)
+        log.info("Entering main-loop [TrainingServer]")
+        t1 = t2 = 0
+        while state.value not in State.exit_states:
+            t0 = time.perf_counter()
+            new_state = self._process_messages(zmq, state)
+            state.transition(new_state)
+
+            if state.value == State.TRAINING_RUNNING:
+                t1 = time.perf_counter()                
+                new_state = self._process_training(
+                    zmq,
+                    training_step,
+                    training_sentinel,
+                    task_executor
+                )
+                t2 = time.perf_counter()
+                state.transition(new_state)                
+            elif state.value in State.idle_states:
+                self._send_message(zmq, 'state', state.value)                            
+                time.sleep(1.0)
+            t3 = time.perf_counter()
             
-class TrainingServer:    
+            main_step_times.append(t3 - t0)
+            train_step_times.append(t2 - t1)
+
+            import numpy as np
+            print(np.average(main_step_times))
+            print(np.average(train_step_times))
+            
+            yield
+
+        zmq.stop()
+        log.info(f"Leaving main-loop. Exit state: {state.value} [TrainingServer]")
+        return state.value
+
+    def shutdown(self):
+        self._zmq.stop()
+
+    def _process_training(self, zmq, training_step, sentinel, task_executor):
+        new_state = None
+        try:
+            training_step_result = task_executor.run(
+                training_step,
+                timeout=self._step_timeout
+            )
+            print("rtrrr result", training_step_result, sentinel)
+        except TaskTimeout as e:
+            new_state = State.TRAINING_TIMEOUT
+            self._send_userland_timeout()                    
+        except TaskError as e:
+            new_state = State.TRAINING_FAILED            
+            self._send_userland_error(e.__cause__)
+        else:
+            if training_step_result is sentinel:
+                new_state = State.TRAINING_COMPLETED
+            elif training_step_result is YieldLevel.SNAPSHOT:
+                self._send_graph(zmq, self._graph)
+        finally:
+            return new_state
+
+    def _send_userland_timeout(self):
+        self._send_message(self._zmq, 'userland-timeout')        
+    
+    def _send_userland_error(self, exception):
+        tb_frames = traceback.extract_tb(exception.__traceback__)
+        data = {'exception': exception, 'traceback_frames': tb_frames}
+        self._send_message(self._zmq, 'userland-error', data)                
+                          
+    def _process_messages(self, zmq, state):
+        for message in zmq.get_messages():
+            self._process_message(message, state)
+
+    def _process_message(self, raw_message, state):
+        message = deserialize(raw_message)
+        print('MESSAGE', message)
+        message_key = message['key']
+        message_value = message['value']
+
+        new_state = None
+        if message_key == 'on_request_start':
+            state.transition(State.TRAINING_RUNNING)
+        elif message_key == 'on_request_stop':
+            self._call_userland_method(
+                self._graph.on_stop,
+                state,
+                success_state=State.TRAINING_STOPPED
+            )
+        elif message_key == 'on_request_export':
+            self._call_userland_method(
+                self._graph.on_export,
+                state,
+                args=(message_value['path'], message_value['mode'])
+            )
+        elif message_key == 'on_request_headless_activate':
+            if state.value == State.TRAINING_RUNNING:            
+                self._call_userland_method(
+                    self._graph.on_headless_activate,
+                    state,
+                    success_state=State.TRAINING_RUNNING_HEADLESS
+                )
+            elif state.value == State.TRAINING_PAUSED:
+                self._call_userland_method(
+                    self._graph.on_headless_activate,
+                    state,
+                    success_state=State.TRAINING_PAUSED_HEADLESS
+                )
+            else:
+                raise StateTransitionError()
+        elif message_key == 'on_request_headless_deactivate':
+            if state.value == State.TRAINING_RUNNING_HEADLESS:            
+                self._call_userland_method(
+                    self._graph.on_headless_deactivate,
+                    state,
+                    success_state=State.TRAINING_RUNNING
+                )
+            elif state.value == State.TRAINING_PAUSED_HEADLESS:
+                self._call_userland_method(
+                    self._graph.on_headless_deactivate,
+                    state,
+                    success_state=State.TRAINING_PAUSED
+                )
+            else:
+                raise StateTransitionError()                
+        elif message_key == 'on_request_pause':
+            if state.value == State.TRAINING_RUNNING:
+                state.transition(State.TRAINING_PAUSED)
+            elif state.value == State.TRAINING_RUNNING_HEADLESS:
+                state.transition(State.TRAINING_PAUSED_HEADLESS)
+            else:
+                raise StateTransitionError()                
+        elif message_key == 'on_request_resume':
+            if state.value == State.TRAINING_PAUSED:            
+                state.transition(State.TRAINING_RUNNING)
+            elif state.value == State.TRAINING_PAUSED_HEADLESS:            
+                state.transition(State.TRAINING_RUNNING_HEADLESS)
+            else:
+                raise StateTransitionError()                
+        else:
+            #raise RuntimeError(f"Unknown event key '{message_key}'")
+            log.warning(f"Unknown event key '{message_key}'")            
+            pass # TODO: hmm, snapshots will go here too.... Block them in ZMQ server somehow?
+        
+        return new_state
+
+    def _call_userland_method(self, method, state, args=None, kwargs=None, success_state=None):
+        args = args or ()
+        kwargs = kwargs or {}
+        try:
+            method(*args, **kwargs)
+        except Exception as e:
+            log.exception('Error in userland method. Setting state to ' + str(State.TRAINING_FAILED))
+            state.transition(State.TRAINING_FAILED)                              
+            new_state = State.TRAINING_FAILED
+        else:
+            new_state = success_state
+        finally:
+            state.transition(new_state)
+        
+    def _send_message(self, zmq, key, value=None):
+        message_dict = {'key': key, 'value': value or ''}
+        message = serialize(message_dict)
+        zmq.send_message(message)
+
+    def _send_graph(self, zmq, graph):
+        if self._snapshot_builder is not None:
+            snapshot = self._snapshot_builder.build(graph)
+            self._send_message(zmq, 'graph', snapshot)
+    
+
+class TrainingClient:
+    def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, on_receive_graph=None, on_log_message=None, on_userland_error=None, on_userland_timeout=None, on_server_timeout=None, server_timeout=20):
+        self._port_pub_sub = port_pub_sub
+        self._port_push_pull = port_push_pull
+        self._on_log_message = on_log_message
+        self._on_userland_error = on_userland_error
+        self._on_server_timeout = on_server_timeout
+        self._server_timeout = server_timeout
+        self._on_receive_graph = on_receive_graph
+        self._graph_builder
+        
+        self._training_state = None
+    
+    def run_step(self):
+        zmq = self._zmq = ZmqClient(
+            f'tcp://localhost:{self._port_pub_sub}',
+            f'tcp://localhost:{self._port_push_pull}',
+            server_timeout=self._server_timeout
+        )
+        zmq.connect()
+
+        while True:
+            try:
+                self._process_messages(zmq)
+            except ConnectionLost:
+                if self._on_server_timeout:
+                    self._on_server_timeout()
+                log.exception("No vital signs from training server..!")            
+            yield
+
+    def _process_messages(self, zmq):
+        raw_messages = zmq.get_messages()
+        for raw_message in raw_messages:
+            message = deserialize(raw_message)
+            message_key = message['key']
+            message_value = message['value']
+            self._process_message(message_key, message_value)
+
+    def _process_message(self, key, value):
+        if key == 'state':
+            self._training_state = value
+        elif key == 'log-message':
+            if self._on_log_message:
+                self._on_log_message(value['message'])
+        elif key == 'userland-timeout':
+            if self._on_userland_timeout:
+                self._on_userland_timeout()
+        elif key == 'userland-error':
+            if self._on_userland_error:
+                self._on_userland_error(value['exception'], value['traceback_list'])
+        elif key == 'graph':
+            if self._on_receive_graph and self._graph_builder:
+                graph = self._graph_builder.build_from_snapshot(value)                
+                self._on_receive_graph(graph)
+        else:
+            log.warning(f"Unknown message key {key}")
+
+    def shutdown(self):
+        self._zmq.stop()
+
+    def _send_message(self, key, value=None):
+        message_dict = {'key': key, 'value': value or ''}
+        message = serialize(message_dict)
+        self._zmq.send_message(message)
+        
+    def request_start(self):
+        self._send_message('on_request_start')
+
+    def request_pause(self):
+        self._send_message('on_request_pause')
+
+    def request_resume(self):
+        self._send_message('on_request_resume')
+        
+    @property
+    def training_state(self):
+        return self._training_state        
+        
+'''            
+class TrainingServer0:    
     def __init__(self, port_pub_sub, port_push_pull, graph, snapshot_builder=None, max_step_time=15):
         self._is_running = threading.Event()
         self._is_running.clear()
@@ -275,7 +598,7 @@ class TrainingServer:
         #self._timeout_thread.join()
 
             
-class TrainingClient:
+class TrainingClient0:
     def __init__(self, port_pub_sub, port_push_pull, graph_builder=None, on_userland_error=None, on_log_message=None, on_server_killed=None, on_server_timeout=None, max_response_time=20):
         self._is_running = threading.Event()
         self._is_running.clear()        
@@ -449,4 +772,6 @@ class TrainingClient:
     def is_running(self):
         return self._is_running.is_set()
 
-
+'''
+if __name__ == "__main__":
+    State.visualize()

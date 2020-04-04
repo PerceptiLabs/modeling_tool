@@ -3,7 +3,7 @@ from tensorflow.python.eager.context import context, EAGER_MODE, GRAPH_MODE
 from enum import Enum
 
 class YieldLevel(Enum):
-    STOP = 0
+    #STOP = 0
     DEFAULT = 1
     SNAPSHOT = 2
     

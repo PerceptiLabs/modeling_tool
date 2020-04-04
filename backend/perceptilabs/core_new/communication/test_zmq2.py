@@ -3,12 +3,12 @@ import socket
 import time
 
 from perceptilabs.utils import wait_for_condition
-from perceptilabs.core_new.communication.zmq2 import Client, Server, ConnectionTimeout, ConnectionLost, NotConnectedError, ConnectionClosed
+from perceptilabs.core_new.communication.zmq2 import ZmqClient, ZmqServer, ConnectionTimeout, ConnectionLost, NotConnectedError, ConnectionClosed
 
 
 @pytest.fixture(scope='function')
 def server():
-    server = Server(
+    server = ZmqServer(
         'tcp://*:5556',
         'tcp://*:5557',
     )
@@ -18,7 +18,7 @@ def server():
 
 @pytest.fixture(scope='function')
 def client1():
-    client = Client(
+    client = ZmqClient(
          'tcp://localhost:5556',
          'tcp://localhost:5557',
         tag='client 1'
@@ -28,7 +28,7 @@ def client1():
 
 @pytest.fixture(scope='function')
 def client2():
-    client = Client(
+    client = ZmqClient(
          'tcp://localhost:5556',
          'tcp://localhost:5557',
         tag='client 2'
@@ -40,7 +40,7 @@ def client2():
 def test_addresses_not_in_use_after_server_stop():
 
     def do_test():
-        server = Server(
+        server = ZmqServer(
             'tcp://*:5556',
             'tcp://*:5557',
         )
@@ -74,12 +74,12 @@ def test_addresses_not_in_use_after_server_stop():
 def test_addresses_not_in_use_after_server_stop_with_client_connected():
 
     def do_test():
-        server = Server(
+        server = ZmqServer(
             'tcp://*:5556',
             'tcp://*:5557',
         )
 
-        client = Client(
+        client = ZmqClient(
             'tcp://localhost:5556',
             'tcp://localhost:5557',
             tag='client'
@@ -203,13 +203,13 @@ def test_sent_messages_arrive_in_same_order_for_both_clients(server, client1, cl
     
 
 def test_detects_dead_server():
-    server = Server(
+    server = ZmqServer(
         'tcp://*:5556',
         'tcp://*:5557',
         ping_interval=100
     )
 
-    client = Client(
+    client = ZmqClient(
         'tcp://localhost:5556',
         'tcp://localhost:5557',
         tag='client',
@@ -227,13 +227,13 @@ def test_detects_dead_server():
 
     
 def test_detects_stopped_server():
-    server = Server(
+    server = ZmqServer(
         'tcp://*:5556',
         'tcp://*:5557',
         ping_interval=100
     )
 
-    client = Client(
+    client = ZmqClient(
         'tcp://localhost:5556',
         'tcp://localhost:5557',
         tag='client',
