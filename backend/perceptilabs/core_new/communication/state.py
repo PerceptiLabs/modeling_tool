@@ -44,6 +44,7 @@ class State:
     allowed_transitions = (
         (INITIALIZING, READY),
         (READY, TRAINING_RUNNING),
+        (READY, TRAINING_FAILED),
         (READY, TRAINING_STOPPED),        
         (TRAINING_RUNNING, TRAINING_TIMEOUT),
         (TRAINING_RUNNING, TRAINING_FAILED),
