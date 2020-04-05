@@ -27,9 +27,8 @@ const webpackConfig = merge(baseWebpackConfig, {
 			// Compile SCSS files
 			{
 				test: /\.scss$/,
-        use: [{
-            loader: MiniCssExtractPlugin.loader
-          },
+        use: [
+          MiniCssExtractPlugin.loader,
           {
             loader: "css-loader",
             options: {
@@ -50,16 +49,29 @@ const webpackConfig = merge(baseWebpackConfig, {
     chunkFilename: utils.assetsPath('js/[id].[chunkhash].js')
   },
   optimization: {
-    runtimeChunk: "single", // enable "runtime" chunk
+    minimizer: [
+      new OptimizeCSSPlugin({
+        cssProcessorOptions: {
+          safe: true
+        }
+      })
+    ],
     splitChunks: {
       cacheGroups: {
-        vendor: {
+        commons: {
           test: /[\\/]node_modules[\\/]/,
-          name: "vendor",
+          name: "vendors",
           chunks: "all"
+        },
+        'styles-compiled': {
+          name: 'styles-compiled',
+          test: /\.css$/,
+          chunks: "all",
+          enforce: true
         }
       }
-    }
+    },
+    concatenateModules: true
   },
   plugins: [
     // http://vuejs.github.io/vue-loader/en/workflow/production.html
@@ -86,11 +98,11 @@ const webpackConfig = merge(baseWebpackConfig, {
     // }),
     // Compress extracted CSS. We are using this plugin so that possible
     // duplicated CSS from different components can be deduped.
-    new OptimizeCSSPlugin({
-      cssProcessorOptions: config.build.productionSourceMap
-        ? { safe: true, map: { inline: false } }
-        : { safe: true }
-    }),
+    // new OptimizeCSSPlugin({
+    //   cssProcessorOptions: config.build.productionSourceMap
+    //     ? { safe: true, map: { inline: false } }
+    //     : { safe: true }
+    // }),
     // generate dist index.html with correct asset hash for caching.
     // you can customize output by editing /index.html
     // see https://github.com/ampedandwired/html-webpack-plugin
@@ -111,7 +123,7 @@ const webpackConfig = merge(baseWebpackConfig, {
     // keep module.id stable when vendor modules does not change
     new webpack.HashedModuleIdsPlugin(),
     // enable scope hoisting
-    new webpack.optimize.ModuleConcatenationPlugin(),
+    // new webpack.optimize.ModuleConcatenationPlugin(),
     // split vendor js into its own file
     // new webpack.optimize.CommonsChunkPlugin({
     //   name: 'vendor',
@@ -145,13 +157,7 @@ const webpackConfig = merge(baseWebpackConfig, {
 			// Options similar to the same options in webpackOptions.output
 			// both options are optional
 			filename: devMode ? '[name].css' : '[name].[hash].css',
-			chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
-		}),
-		new MiniCssExtractPlugin({
-			filename: devMode ? 'app.css' : 'app.[hash].css',
-    }),
-    new MiniCssExtractPlugin({
-      filename: devMode ? 'vendor.css' : 'vendor.[hash].css',
+			// chunkFilename: devMode ? '[id].css' : '[id].[hash].css',
 		}),
 
     // copy custom static assets
