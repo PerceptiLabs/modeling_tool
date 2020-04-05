@@ -5,6 +5,9 @@ import threading
 import itertools
 
 
+from perceptilabs.core_new.communication.utils import KillableThread
+
+
 log = logging.getLogger(__name__)
 
 
@@ -121,7 +124,7 @@ class ZmqClient:
             return self._tag
 
 
-class ServerWorker(threading.Thread):
+class ServerWorker(KillableThread):
     def __init__(self, context, publish_address, pull_address, ping_interval):
         super().__init__(daemon=True)
         
@@ -229,7 +232,11 @@ class ZmqServer:
             self._client.stop(terminate_context=False)
             
             log.info(f"Joining worker thread [{self.tag}]")        
-            self._worker_thread.join()
+            self._worker_thread.join(timeout=25)
+            if self._worker_thread.is_alive():
+                log.info(f"Join failed. Killing thread! [{self.tag}]")                        
+                self._worker_thread.kill()
+                
             log.info(f"Terminating ZMQ context. [{self.tag}]")
             self._context.term()
 
