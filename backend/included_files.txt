@@ -83,6 +83,7 @@ perceptilabs/core_new/api/legacy.py
 perceptilabs/core_new/communication/__init__.py
 perceptilabs/core_new/communication/client.py
 perceptilabs/core_new/communication/server.py
+perceptilabs/core_new/communication/state.py
 perceptilabs/core_new/communication/deployment.py
 perceptilabs/core_new/communication/zmq.py
 perceptilabs/core_new/communication/task_executor.py
