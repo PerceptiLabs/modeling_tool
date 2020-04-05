@@ -228,12 +228,10 @@ class TrainingServer:
             method(*args, **kwargs)
         except Exception as e:
             log.exception('Error in userland method. Setting state to ' + str(State.TRAINING_FAILED))
+            self._send_userland_error(e.__cause__)            
             state.transition(State.TRAINING_FAILED)                              
-            new_state = State.TRAINING_FAILED
         else:
-            new_state = success_state
-        finally:
-            state.transition(new_state)
+            state.transition(success_state)
         
     def _send_message(self, zmq, key, value=None):
         message_dict = {'key': key, 'value': value or ''}
