@@ -97,7 +97,7 @@ class TrainingClient:
     def request_start(self):
         self._send_message('on_request_start')
 
-    def request_start(self):
+    def request_stop(self):
         self._send_message('on_request_stop')
         
     def request_close(self):
