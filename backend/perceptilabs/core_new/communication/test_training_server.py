@@ -4,15 +4,15 @@ import logging
 import threading
 from unittest.mock import MagicMock
 
-from perceptilabs.utils import wait_for_condition
+from perceptilabs.utils import loop_until_true
 from perceptilabs.core_new.serialization import serialize, deserialize
 from perceptilabs.core_new.communication import TrainingServer, TrainingClient, State
-from perceptilabs.core_new.communication.zmq2 import ZmqClient
+from perceptilabs.core_new.communication.zmq import ZmqClient
 
 log = logging.getLogger(__name__)
 
     
-def create_server(graph=None, snapshot_builder=None, step_timeout=15):
+def create_server(graph=None, snapshot_builder=None, userland_timeout=15):
     graph = graph or MagicMock()
     snapshot_builder = snapshot_builder or MagicMock()
     
@@ -20,7 +20,7 @@ def create_server(graph=None, snapshot_builder=None, step_timeout=15):
         6556, 6557,
         graph,
         snapshot_builder=snapshot_builder,
-        step_timeout=step_timeout
+        userland_timeout=userland_timeout
     )
     return server
 
@@ -37,7 +37,7 @@ def test_sends_state_ready():
     server = create_server()
     client = create_client()
     try:
-        step = server.run_step()
+        step = server.run_stepwise()
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
         
@@ -47,7 +47,7 @@ def test_sends_state_ready():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': 'ready'} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
     finally:
         client.stop()
         server.shutdown()
@@ -57,7 +57,7 @@ def test_can_stop_when_ready():
     server = create_server()
     client = create_client()
     try:
-        step = server.run_step()
+        step = server.run_stepwise()
         
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
@@ -68,7 +68,7 @@ def test_can_stop_when_ready():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_stop', 'value': ''}))
 
         def cond(_):
@@ -77,7 +77,7 @@ def test_can_stop_when_ready():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.TRAINING_STOPPED} in messages
 
-        assert wait_for_condition(cond) 
+        assert loop_until_true(cond) 
     finally:
         client.stop()
         server.shutdown()
@@ -96,7 +96,7 @@ def test_can_connect_before_server_and_receive_status_ready():
         threading.Thread(target=fn).start()
         time.sleep(2)
         
-        step = server.run_step()
+        step = server.run_stepwise()
 
         def cond(_):
             next(step)
@@ -104,7 +104,7 @@ def test_can_connect_before_server_and_receive_status_ready():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_stop', 'value': ''}))
 
     finally:
@@ -127,7 +127,7 @@ def test_can_start_when_ready():
     server = create_server(graph)
     client = create_client()
     try:
-        step = server.run_step()
+        step = server.run_stepwise()
         
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
@@ -138,7 +138,7 @@ def test_can_start_when_ready():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_start', 'value': ''}))
 
         def cond(_):
@@ -147,7 +147,7 @@ def test_can_start_when_ready():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.TRAINING_RUNNING} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         assert n_training_steps_taken > 0
     finally:
         client.stop()
@@ -169,7 +169,7 @@ def test_reaches_state_completed():
     server = create_server(graph)
     client = create_client()
     try:
-        step = server.run_step()
+        step = server.run_stepwise()
         
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
@@ -180,7 +180,7 @@ def test_reaches_state_completed():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_start', 'value': ''}))
 
         def cond(_):
@@ -189,7 +189,7 @@ def test_reaches_state_completed():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.TRAINING_COMPLETED} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         assert n_training_steps_taken == 10
     finally:
         client.stop()
@@ -209,10 +209,10 @@ def test_userland_timeout_gives_timeout_state():
     graph = MagicMock()
     graph.run.side_effect = run_graph
     
-    server = create_server(graph, step_timeout=1)
+    server = create_server(graph, userland_timeout=1)
     client = create_client()
     try:
-        step = server.run_step()    
+        step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
         
@@ -222,7 +222,7 @@ def test_userland_timeout_gives_timeout_state():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_start', 'value': ''}))
 
         def cond(_):
@@ -231,7 +231,7 @@ def test_userland_timeout_gives_timeout_state():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.TRAINING_TIMEOUT} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         assert n_training_steps_taken == 3
     finally:
         client.stop()
@@ -252,10 +252,10 @@ def test_userland_timeout_sends_timeout_message():
     graph = MagicMock()
     graph.run.side_effect = run_graph
     
-    server = create_server(graph, step_timeout=1)
+    server = create_server(graph, userland_timeout=1)
     client = create_client()
     try:
-        step = server.run_step()    
+        step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
         
@@ -265,7 +265,7 @@ def test_userland_timeout_sends_timeout_message():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_start', 'value': ''}))
 
         def cond(_):
@@ -274,7 +274,7 @@ def test_userland_timeout_sends_timeout_message():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'userland-timeout', 'value': ''} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         assert n_training_steps_taken == 3
     finally:
         client.stop()
@@ -295,10 +295,10 @@ def test_userland_error_gives_error_state():
     graph = MagicMock()
     graph.run.side_effect = run_graph
     
-    server = create_server(graph, step_timeout=1)
+    server = create_server(graph, userland_timeout=1)
     client = create_client()
     try:
-        step = server.run_step()    
+        step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
 
@@ -308,7 +308,7 @@ def test_userland_error_gives_error_state():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_start', 'value': ''}))
 
         def cond(_):
@@ -317,7 +317,7 @@ def test_userland_error_gives_error_state():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.TRAINING_FAILED} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         assert n_training_steps_taken == 3
     finally:
         client.stop()
@@ -338,10 +338,10 @@ def test_userland_error_sends_error_message():
     graph = MagicMock()
     graph.run.side_effect = run_graph
     
-    server = create_server(graph, step_timeout=1)
+    server = create_server(graph, userland_timeout=1)
     client = create_client()
     try:
-        step = server.run_step()    
+        step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
 
@@ -351,7 +351,7 @@ def test_userland_error_sends_error_message():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_start', 'value': ''}))
 
         def cond(_):
@@ -366,7 +366,7 @@ def test_userland_error_sends_error_message():
                     return True
             return False
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         assert n_training_steps_taken == 3
     finally:
         client.stop()
@@ -386,10 +386,10 @@ def test_can_pause():
     graph = MagicMock()
     graph.run.side_effect = run_graph
     
-    server = create_server(graph, step_timeout=1)
+    server = create_server(graph, userland_timeout=1)
     client = create_client()
     try:
-        step = server.run_step()    
+        step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
         
@@ -399,7 +399,7 @@ def test_can_pause():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_start', 'value': ''}))
 
         for i in range(5):
@@ -413,7 +413,7 @@ def test_can_pause():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.TRAINING_PAUSED} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         assert n_training_steps_taken == 5
     finally:
         client.stop()
@@ -433,10 +433,10 @@ def test_can_resume_when_paused():
     graph = MagicMock()
     graph.run.side_effect = run_graph
     
-    server = create_server(graph, step_timeout=1)
+    server = create_server(graph, userland_timeout=1)
     client = create_client()
     try:
-        step = server.run_step()    
+        step = server.run_stepwise()    
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
         next(step) 
@@ -446,7 +446,7 @@ def test_can_resume_when_paused():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_start', 'value': ''}))
 
         for i in range(9):
@@ -460,7 +460,7 @@ def test_can_resume_when_paused():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.TRAINING_PAUSED} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         assert n_training_steps_taken == 9
 
         for i in range(2):
@@ -475,7 +475,7 @@ def test_can_resume_when_paused():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.TRAINING_RUNNING} in messages            
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         assert n_training_steps_taken >= 10
 
             
@@ -490,7 +490,7 @@ def test_calls_graph_stop_when_requested():
     server = create_server(graph)
     client = create_client()
     try:
-        step = server.run_step()
+        step = server.run_stepwise()
         
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
@@ -501,7 +501,7 @@ def test_calls_graph_stop_when_requested():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_stop', 'value': ''}))
 
         def cond(_):
@@ -510,7 +510,7 @@ def test_calls_graph_stop_when_requested():
             messages = [deserialize(m) for m in raw_messages]
             return graph.on_stop.call_count == 1
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
     finally:
         client.stop()
         server.shutdown()
@@ -522,7 +522,7 @@ def test_calls_graph_export_when_requested():
     server = create_server(graph)
     client = create_client()
     try:
-        step = server.run_step()
+        step = server.run_stepwise()
         
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
@@ -533,7 +533,7 @@ def test_calls_graph_export_when_requested():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.READY} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_export', 'value': {'path': 'abc', 'mode': 'xyz'}}))
 
         def cond(_):
@@ -546,7 +546,7 @@ def test_calls_graph_export_when_requested():
                 graph.on_export.call_args_list[0][0][1] == 'xyz'
             )
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
     finally:
         client.stop()
         server.shutdown()
@@ -558,7 +558,7 @@ def test_calls_graph_headless_activate_when_requested():
     server = create_server(graph)
     client = create_client()
     try:
-        step = server.run_step()
+        step = server.run_stepwise()
         
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
@@ -570,7 +570,7 @@ def test_calls_graph_headless_activate_when_requested():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.TRAINING_RUNNING} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_headless_activate', 'value': ''}))
 
         def cond(_):
@@ -582,7 +582,7 @@ def test_calls_graph_headless_activate_when_requested():
                 {'key': 'state', 'value': State.TRAINING_RUNNING_HEADLESS} in messages
             )
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
     finally:
         client.stop()
         server.shutdown()
@@ -594,7 +594,7 @@ def test_calls_graph_headless_deactivate_when_requested():
     server = create_server(graph)
     client = create_client()
     try:
-        step = server.run_step()
+        step = server.run_stepwise()
         
         next(step) # Initiates ZMQ and enters state ready
         client.connect()
@@ -607,7 +607,7 @@ def test_calls_graph_headless_deactivate_when_requested():
             messages = [deserialize(m) for m in raw_messages]
             return {'key': 'state', 'value': State.TRAINING_RUNNING_HEADLESS} in messages
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         client.send_message(serialize({'key': 'on_request_headless_deactivate', 'value': ''}))
 
         def cond(_):
@@ -620,7 +620,7 @@ def test_calls_graph_headless_deactivate_when_requested():
             )
                 
 
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
     finally:
         client.stop()
         server.shutdown()

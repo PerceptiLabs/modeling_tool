@@ -2,12 +2,12 @@ import time
 import pytest
 from unittest.mock import MagicMock
 
-from perceptilabs.utils import wait_for_condition
+from perceptilabs.utils import loop_until_true
 from perceptilabs.core_new.utils import YieldLevel
 from perceptilabs.core_new.communication import TrainingClient, TrainingServer, State
 
     
-def create_server(graph=None, snapshot_builder=None, step_timeout=15):
+def create_server(graph=None, snapshot_builder=None, userland_timeout=15):
     graph = graph or MagicMock()
     snapshot_builder = snapshot_builder or MagicMock()
     
@@ -15,7 +15,7 @@ def create_server(graph=None, snapshot_builder=None, step_timeout=15):
         6556, 6557,
         graph,
         snapshot_builder=snapshot_builder,
-        step_timeout=step_timeout
+        userland_timeout=userland_timeout
     )
     return server
 
@@ -39,14 +39,14 @@ def test_receives_status_ready():
     client = create_client()
 
     try:
-        server_step = server.run_step()
-        client_step = client.run_step()        
+        server_step = server.run_stepwise()
+        client_step = client.run_stepwise()        
         
         def cond(_):
             next(server_step)
             next(client_step)
             return client.training_state == State.READY
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
     finally:
         server.shutdown()
         client.shutdown()
@@ -56,8 +56,8 @@ def test_receives_status_running_on_request_start():
     server = create_server()
     client = create_client()
     try:
-        server_step = server.run_step()
-        client_step = client.run_step()
+        server_step = server.run_stepwise()
+        client_step = client.run_stepwise()
 
         # Run one iteration for both to initiate the connection
         next(server_step)
@@ -68,7 +68,7 @@ def test_receives_status_running_on_request_start():
             next(server_step)
             next(client_step)
             return client.training_state == State.TRAINING_RUNNING
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
     finally:
         server.shutdown()
         client.shutdown()
@@ -78,8 +78,8 @@ def test_receives_status_paused_on_request():
     server = create_server()
     client = create_client()
     try:
-        server_step = server.run_step()
-        client_step = client.run_step()
+        server_step = server.run_stepwise()
+        client_step = client.run_stepwise()
 
         # Run one iteration for both to initiate the connection
         next(server_step)
@@ -91,7 +91,7 @@ def test_receives_status_paused_on_request():
             next(server_step)
             next(client_step)
             return client.training_state == State.TRAINING_PAUSED
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
 
         
     finally:
@@ -103,8 +103,8 @@ def test_can_resume_when_paused():
     server = create_server()
     client = create_client()
     try:
-        server_step = server.run_step()
-        client_step = client.run_step()
+        server_step = server.run_stepwise()
+        client_step = client.run_stepwise()
 
         # Run one iteration for both to initiate the connection
         next(server_step)
@@ -116,7 +116,7 @@ def test_can_resume_when_paused():
             next(server_step)
             next(client_step)
             return client.training_state == State.TRAINING_PAUSED
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
 
         client.request_resume()
 
@@ -124,7 +124,7 @@ def test_can_resume_when_paused():
             next(server_step)
             next(client_step)
             return client.training_state == State.TRAINING_RUNNING
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
         
     finally:
         server.shutdown()
@@ -135,8 +135,8 @@ def test_receives_status_paused_on_request():
     server = create_server()
     client = create_client()
     try:
-        server_step = server.run_step()
-        client_step = client.run_step()
+        server_step = server.run_stepwise()
+        client_step = client.run_stepwise()
 
         # Run one iteration for both to initiate the connection
         next(server_step)
@@ -148,7 +148,7 @@ def test_receives_status_paused_on_request():
             next(server_step)
             next(client_step)
             return client.training_state == State.TRAINING_PAUSED
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
 
         
     finally:
@@ -174,8 +174,8 @@ def test_handles_received_graphs():
     server = create_server(graph, snapshot_builder=snapshot_builder)
     client = create_client(graph_builder=graph_builder, on_receive_graph=on_receive_graph)
     try:
-        server_step = server.run_step()
-        client_step = client.run_step()
+        server_step = server.run_stepwise()
+        client_step = client.run_stepwise()
 
         # Run one iteration for both to initiate the connection
         next(server_step)
@@ -190,7 +190,7 @@ def test_handles_received_graphs():
                 graph_builder.build_from_snapshot.call_args[0][0] == snapshot and 
                 on_receive_graph.call_count == 1
             )
-        assert wait_for_condition(cond)
+        assert loop_until_true(cond)
 
         
     finally:

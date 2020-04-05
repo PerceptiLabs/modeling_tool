@@ -8,6 +8,9 @@ import numpy as np
 from queue import Queue
 from unittest.mock import MagicMock
 
+
+from perceptilabs.core_new.utils import YieldLevel
+from perceptilabs.core_new.communication import TrainingServer, State
 from perceptilabs.core_new.layers.script import ScriptFactory
 from perceptilabs.core_new.core2 import Core
 from perceptilabs.core_new.graph.builder import GraphBuilder
@@ -166,11 +169,12 @@ def run_core_until_convergence(graph_spec, metric_fn, max_attempts=10):
             script_factory
         )
 
-        core.run(graph_spec, auto_stop=True)
+        core.run(graph_spec, auto_close=True)
         if metric_fn(core):
             passed = True
             break
 
+    #core.close()
     return passed
     
 
@@ -203,14 +207,10 @@ def test_train_normal_distributed_converges(graph_spec_binary_classification, gr
     assert run_core_until_convergence(json_network, metric_fn)
 
 
-def test_core_handles_training_step_timeout():
-    max_training_step_time = 3
-    max_server_response_time = 10000    
+def test_core_handles_userland_timeout():
+    userland_timeout = 3
+    server_timeout = 10000    
 
-    import threading
-    from perceptilabs.core_new.utils import YieldLevel
-    from perceptilabs.core_new.communication import TrainingServer
-    
     def run_graph():
         while True:
             time.sleep(1000) # A single iteration will take 1000s
@@ -221,20 +221,23 @@ def test_core_handles_training_step_timeout():
     graph.run.side_effect = run_graph
     graph_builder = MagicMock()
     deployment_strategy = MagicMock()
-
+    issue_handler = MagicMock()
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
-    
+
     def run_deploy(path):
-        port1 = script_factory.make.call_args[0][2]
-        port2 = script_factory.make.call_args[0][3]
-        training_server = TrainingServer(
-            port1, port2,
-            graph,
-            snapshot_builder=MagicMock(),
-            max_step_time=max_training_step_time         
-        )
-        training_server.start()
+        def fn():
+            port1 = script_factory.make.call_args[0][2]
+            port2 = script_factory.make.call_args[0][3]
+            training_server = TrainingServer(
+                port1, port2,
+                graph,
+                snapshot_builder=MagicMock(),
+                userland_timeout=userland_timeout
+            )
+            training_server.run()
+        thread = threading.Thread(target=fn, daemon=True)
+        thread.start()
     
     deployment_strategy.run.side_effect = run_deploy
     
@@ -242,8 +245,9 @@ def test_core_handles_training_step_timeout():
         graph_builder,
         script_factory,
         deployment_strategy=deployment_strategy,
-        max_training_step_time=max_training_step_time,
-        max_server_response_time=max_server_response_time
+        userland_timeout=userland_timeout,
+        server_timeout=server_timeout,
+        issue_handler=issue_handler
     )
 
     thread = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
@@ -251,18 +255,70 @@ def test_core_handles_training_step_timeout():
     try:
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_running)
+        assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)        
     finally:
-        core.stop()
+        core.close()
         thread.join()
 
+
+def test_core_handles_userland_error():
+    def run_graph():
+        for i in range(3):
+            time.sleep(0.1)
+            yield YieldLevel.DEFAULT
+            raise ZeroDivisionError("Error!")
+        yield YieldLevel.DEFAULT
+
+    graph_spec = MagicMock()
+    graph = MagicMock()
+    graph.run.side_effect = run_graph
+    graph_builder = MagicMock()
+    deployment_strategy = MagicMock()
+    issue_handler = MagicMock()
+    
+    line_to_node_map = MagicMock()
+    line_to_node_map.get.return_value = (MagicMock(), 123)
+    script_factory = MagicMock()
+    script_factory.make.return_value = ('', line_to_node_map)
+
+    def run_deploy(path):
+        def fn():
+            port1 = script_factory.make.call_args[0][2]
+            port2 = script_factory.make.call_args[0][3]
+            training_server = TrainingServer(
+                port1, port2,
+                graph,
+                snapshot_builder=MagicMock()
+            )
+            training_server.run()
+        thread = threading.Thread(target=fn, daemon=True)
+        thread.start()
+    
+    deployment_strategy.run.side_effect = run_deploy
+    
+    core = Core(
+        graph_builder,
+        script_factory,
+        deployment_strategy=deployment_strategy,
+        issue_handler=issue_handler
+    )
+
+    thread = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
+    thread.start()
+    try:
+        assert wait_for_condition(lambda _: core.is_running)
+        assert wait_for_condition(lambda _: not core.is_running)
+        assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)
+    finally:
+        core.close()
+        thread.join()
+        
 
 def test_core_handles_training_server_timeout():
-    max_training_step_time = 10000
-    max_server_response_time = 3
-
-    import threading
-    from perceptilabs.core_new.utils import YieldLevel
-    from perceptilabs.core_new.communication import TrainingServer
+    # No ping and stuck in userland means server will timeout
+    ping_interval = 10
+    userland_timeout = 10
+    server_timeout = 3
     
     def run_graph():
         while True:
@@ -274,29 +330,34 @@ def test_core_handles_training_server_timeout():
     graph.run.side_effect = run_graph
     graph_builder = MagicMock()
     deployment_strategy = MagicMock()
-
+    issue_handler = MagicMock()
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
     
     def run_deploy(path):
-        port1 = script_factory.make.call_args[0][2]
-        port2 = script_factory.make.call_args[0][3]
-        training_server = TrainingServer(
-            port1, port2,
-            graph,
-            snapshot_builder=MagicMock(),
-            max_step_time=max_training_step_time         
-        )
-        training_server.start()
-    
+        def fn():
+            port1 = script_factory.make.call_args[0][2]
+            port2 = script_factory.make.call_args[0][3]
+            training_server = TrainingServer(
+                port1, port2,
+                graph,
+                snapshot_builder=MagicMock(),
+                userland_timeout=userland_timeout,
+                ping_interval=ping_interval
+            )
+            training_server.run()
+        thread = threading.Thread(target=fn, daemon=True)
+        thread.start()
+            
     deployment_strategy.run.side_effect = run_deploy
     
     core = Core(
         graph_builder,
         script_factory,
         deployment_strategy=deployment_strategy,
-        max_training_step_time=max_training_step_time,
-        max_server_response_time=max_server_response_time        
+        userland_timeout=userland_timeout,
+        server_timeout=server_timeout,
+        issue_handler=issue_handler    
     )
 
     thread = threading.Thread(target=core.run, args=(graph_spec,), daemon=True)
@@ -304,17 +365,13 @@ def test_core_handles_training_server_timeout():
     try:
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_running)
+        assert wait_for_condition(lambda _: issue_handler.put_error.call_count == 1)                
     finally:
-        core.stop()
+        core.close()
         thread.join()
-    
-def test_pause_works(graph_spec_binary_classification):
-    max_training_step_time = 10000
-    max_server_response_time = 10000
 
-    import threading
-    from perceptilabs.core_new.utils import YieldLevel
-    from perceptilabs.core_new.communication import TrainingServer
+        
+def test_pause_works(graph_spec_binary_classification):
     
     def run_graph():
         while True:
@@ -325,92 +382,85 @@ def test_pause_works(graph_spec_binary_classification):
     graph = MagicMock()
     graph.run.side_effect = run_graph
     graph_builder = MagicMock()
-    deployment_strategy = MagicMock()
 
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
-    
+
     def run_deploy(path):
-        port1 = script_factory.make.call_args[0][2]
-        port2 = script_factory.make.call_args[0][3]
-        training_server = TrainingServer(
-            port1, port2,
-            graph,
-            snapshot_builder=MagicMock(),
-            max_step_time=max_training_step_time         
-        )
-        training_server.start()
-    
+        def fn():
+            port1 = script_factory.make.call_args[0][2]
+            port2 = script_factory.make.call_args[0][3]
+            training_server = TrainingServer(
+                port1, port2,
+                graph,
+                snapshot_builder=MagicMock()
+            )
+            training_server.run()
+        thread = threading.Thread(target=fn, daemon=True)
+        thread.start()
+        
+    deployment_strategy = MagicMock()    
     deployment_strategy.run.side_effect = run_deploy
-    
+
     core = Core(
         graph_builder,
         script_factory,
-        deployment_strategy=deployment_strategy,
-        max_training_step_time=max_training_step_time,
-        max_server_response_time=max_server_response_time        
+        deployment_strategy=deployment_strategy
     )
     
     thread = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True)
     thread.start()
     try:
-        assert wait_for_condition(lambda _: core.is_running)
+        assert wait_for_condition(lambda _: core.training_state == State.TRAINING_RUNNING) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
         assert wait_for_condition(lambda _: not core.is_paused)
         
         core.pause()
-        assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: core.is_paused)
     finally:
-        core.stop()
+        core.close()
         thread.join()
 
+        
 def test_resume_works(graph_spec_binary_classification):
-    max_training_step_time = 10000
-    max_server_response_time = 10000
-
-    import threading
-    from perceptilabs.core_new.utils import YieldLevel
-    from perceptilabs.core_new.communication import TrainingServer
-    
     def run_graph():
         while True:
-            time.sleep(0.1) # A single iteration will take 1000s
+            time.sleep(0.1)
             yield YieldLevel.DEFAULT
 
     graph_spec = MagicMock()
     graph = MagicMock()
     graph.run.side_effect = run_graph
     graph_builder = MagicMock()
-    deployment_strategy = MagicMock()
 
     script_factory = MagicMock()
     script_factory.make.return_value = ('', {})
-    
+
     def run_deploy(path):
-        port1 = script_factory.make.call_args[0][2]
-        port2 = script_factory.make.call_args[0][3]
-        training_server = TrainingServer(
-            port1, port2,
-            graph,
-            snapshot_builder=MagicMock(),
-            max_step_time=max_training_step_time         
-        )
-        training_server.start()
-    
+        def fn():
+            port1 = script_factory.make.call_args[0][2]
+            port2 = script_factory.make.call_args[0][3]
+            training_server = TrainingServer(
+                port1, port2,
+                graph,
+                snapshot_builder=MagicMock()
+            )
+            training_server.run()
+        thread = threading.Thread(target=fn, daemon=True)
+        thread.start()
+        
+    deployment_strategy = MagicMock()    
     deployment_strategy.run.side_effect = run_deploy
-    
+
     core = Core(
         graph_builder,
         script_factory,
-        deployment_strategy=deployment_strategy,
-        max_training_step_time=max_training_step_time,
-        max_server_response_time=max_server_response_time        
+        deployment_strategy=deployment_strategy
     )
     
     thread = threading.Thread(target=core.run, args=(graph_spec_binary_classification,), daemon=True)
     thread.start()
     try:
-        assert wait_for_condition(lambda _: core.is_running)
+        assert wait_for_condition(lambda _: core.training_state == State.TRAINING_RUNNING) # Pausing in State.READY doesn't make sense (right now), so we have to wait... 
         assert wait_for_condition(lambda _: not core.is_paused)
         
         core.pause()
@@ -421,5 +471,5 @@ def test_resume_works(graph_spec_binary_classification):
         assert wait_for_condition(lambda _: core.is_running)
         assert wait_for_condition(lambda _: not core.is_paused)
     finally:
-        core.stop()
+        core.close()
         thread.join()

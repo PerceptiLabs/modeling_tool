@@ -1,173 +1,244 @@
-# Requirements:
-# 
-#     (1) send any event downstream
-#     (2) receive any event upstream
-#     (3) events are processed on main-thread
-#
-#
-# Good read: http://zguide.zeromq.org/page:all#Missing-Message-Problem-Solver
-
 import zmq
 import time
-import queue
 import logging
 import threading
-from typing import Dict, Callable
+import itertools
 
 
 log = logging.getLogger(__name__)
 
 
-class Server:
-    def __init__(self, publisher_address: str, pull_address: str):
-        self._pub_addr = publisher_address
-        self._pull_addr = pull_address
-        self._worker_thread = None
-        self._is_running = threading.Event()
-        self._is_running.clear()
-
-    def _worker_func(self):
-        #log.info("Entering worker function [Server]")
-        ctx = zmq.Context()        
-        publisher_socket = ctx.socket(zmq.PUB)
-        pull_socket = ctx.socket(zmq.PULL)
-
-        publisher_socket.bind(self._pub_addr)        
-        pull_socket.bind(self._pull_addr)
-        
-        poller = zmq.Poller()
-        poller.register(pull_socket, zmq.POLLIN)        
-
-        #log.info("Entering main-loop [Server]") 
-        time.sleep(0.3) # Socket connection and binding operations are asynchronous, AND registering the subscribers takes additional time. Source: https://github.com/zeromq/jeromq/issues/695       
-        self._is_running.set()        
-        while self._is_running.is_set():
-            items = dict(poller.poll(timeout=0.01))
-
-            if pull_socket in items:
-                key, value = pull_socket.recv_multipart()
-                publisher_socket.send_multipart([key, value])
-                #log.info(f"Received message (k, v) = ({key}, {value}). [Client {id(self)}]")
-
-    def start(self):
-        self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
-        self._worker_thread.start()
-
-    def stop(self):
-        if self._is_running.is_set():
-            self._is_running.clear()
-        self._worker_thread.join()
-
-    @property
-    def is_running(self):
-        return self._is_running.is_set()
+class ConnectionTimeout(Exception):
+    pass
 
 
-class Client:
-    def __init__(self, subscriber_address: str, push_address: str, handlers: Dict[bytes, Callable]):
-        self._sub_addr = subscriber_address
-        self._push_addr = push_address
+class ConnectionLost(Exception):
+    pass
 
-        self._out_queue = queue.Queue()
-        self._in_queue = queue.Queue()
 
-        self._handlers = handlers or dict()
+class ConnectionClosed(Exception):
+    pass
 
-        self._worker_thread = None
-        self._is_running = threading.Event()
-        self._is_running.clear()
 
-    def push(self, key: bytes, value: bytes):
-        self._out_queue.put((key, value))
+class NotConnectedError(Exception):
+    pass
 
-    def process_messages(self):
-        #log.info(f"Processing messages. [Client {id(self)}]")
-        count, handled = 0, 0
-        while not self._in_queue.empty():
-            key, value = self._in_queue.get()
-
-            if key in self._handlers:
-                handler = self._handlers[key]
-                handler(self, key, value)
-                handled += 1
-            else:
-                pass # Warning?
-            #log.info(f"Processed message (k, v) = ({key}, {value}). Handler: {key in self._handlers} [Client {id(self)}]")
-            count += 1
-        #log.info(f"Handled {handled}/{count} messages [Client {id(self)}]")            
-            
-    def _worker_func(self):
-        #log.info(f"Entering worker function [Client {id(self)}]")        
-        ctx = zmq.Context()
-
-        self._messages_sent = 0
-        self._messages_received = 0
-        
-        subscriber_socket = ctx.socket(zmq.SUB)
-        subscriber_socket.linger = 0
-        for key in self._handlers.keys():
-            subscriber_socket.setsockopt(zmq.SUBSCRIBE, key)
-        subscriber_socket.connect(self._sub_addr)
-
-        push_socket = ctx.socket(zmq.PUSH)
-        push_socket.linger = 0
-        push_socket.connect(self._push_addr)
-        
-        poller = zmq.Poller()
-        poller.register(subscriber_socket, zmq.POLLIN)
-
-        #log.info(f"Entering main-loop [Client {id(self)}]")
-        time.sleep(0.3) # Socket connection and binding operations are asynchronous, AND registering the subscribers takes additional time. Source: https://github.com/zeromq/jeromq/issues/695
-        self._is_running.set()        
-        while self._is_running.is_set():
-            items = dict(poller.poll(timeout=0.01))
-            
-            if subscriber_socket in items:
-                key, value = subscriber_socket.recv_multipart()
-                self._messages_received += 1                
-                self._in_queue.put((key, value))
-                #log.info(f"Received message (k, v) = ({key}, {value}). [Client {id(self)}]")
-
-            if not self._out_queue.empty():
-                key, value = self._out_queue.get()
-                push_socket.send_multipart([key, value])
-                self._messages_sent += 1
-                #log.info(f"Sent message (k, v) = ({key}, {value}). [Client {id(self)}]")
-
-        while not self._out_queue.empty():
-            key, value = self._out_queue.get()
-            push_socket.send_multipart([key, value])
-            self._messages_sent += 1
-                
-    def _init_socket(self, ctx, zmq_type, address, options=None):
-        socket = ctx.socket(zmq_type)
-        socket.linger = 0
-
-        options = options or []
-        for opt in options:
-            socket.setsockopt_string(opt[0], opt[1])
-
-        socket.connect(address)
-        return socket
-
-    def start(self):
-        self._worker_thread = threading.Thread(target=self._worker_func, daemon=True)
-        self._worker_thread.start()
-
-    def stop(self):
-        if self._is_running.is_set():
-            self._is_running.clear()
-        self._worker_thread.join()
-
-    @property
-    def is_running(self):
-        return self._is_running.is_set()
-
-    @property
-    def messages_sent(self):
-        return self._messages_sent
-
-    @property
-    def messages_received(self):
-        return self._messages_received
     
+
+class ZmqClient:
+    def __init__(self, subscribe_address, push_address, context=None, tag=None, server_timeout=10):
+        self._subscribe_address = subscribe_address
+        self._push_address = push_address        
+        self._context = context or zmq.Context()
+        self._t_last_message = None
+        self._tag = tag
+        self._connect_called = False
+        self._server_timeout = server_timeout
+    
+    def connect(self, timeout=10):
+        log.info(f"Connect called [{self.tag}]")        
+        self._connect_called = True
+        
+        log.info(f"Creating subscribe socket. Address: {self._subscribe_address} [{self.tag}]")
+        self._t_last_message = None
+        self._subscribe_socket = self._context.socket(zmq.SUB)
+        self._subscribe_socket.linger = 0
+        self._subscribe_socket.setsockopt(zmq.SUBSCRIBE, b'control')
+        self._subscribe_socket.setsockopt(zmq.SUBSCRIBE, b'generic')        
+        self._subscribe_socket.connect(self._subscribe_address)
+
+        log.info(f"Creating push socket. Address: {self._push_address} [{self.tag}]")
+        self._push_socket = self._context.socket(zmq.PUSH)
+        self._push_socket.linger = 0
+        self._push_socket.connect(self._push_address)
+
+        log.info(f"Registering subscribe socket for polling [{self.tag}]")                        
+        self._poller = zmq.Poller()
+        self._poller.register(self._subscribe_socket, zmq.POLLIN)
+
+        t0 = time.perf_counter()        
+        for counter in itertools.count():
+            log.info(f"Starting connection attempt {counter+1}. [{self.tag}]")
+            
+            if timeout and time.perf_counter() - t0 >= timeout:
+                raise ConnectionTimeout('Connection handshake took too long!')
+
+            self._push_socket.send_multipart([b'control', b'connect'])
+            items = dict(self._poller.poll(timeout=1000)) # msec
+            if self._subscribe_socket in items:
+                # If we receive a message we are connected (most likely a response to our ping)
+                self._t_last_message = time.time()                            
+                break
+
+        log.info(f"Connection successful after {counter+1} attempt(s). [{self.tag}]")
+
+    def get_messages(self, timeout=0.01):
+        if self._t_last_message is None:
+            raise NotConnectedError('Not connected. Call connect first!')
+        
+        items = dict(self._poller.poll(timeout=timeout*1000)) # msec
+        if self._subscribe_socket in items:
+            messages = []
+            while self._subscribe_socket in items:
+                key, value = self._subscribe_socket.recv_multipart()
+                self._t_last_message = time.time()
+                if key == b'generic':
+                    messages.append(value)
+                elif key == b'control':
+                    #log.info(f"Received control message {value} [{self.tag}]")
+                    if value == b'ack-shutdown':
+                        raise ConnectionClosed                    
+                items = dict(self._poller.poll(timeout=timeout*1000)) # msec
+            return messages
+        else:
+            is_dead = time.time() - self._t_last_message >= self._server_timeout
+            if is_dead:
+                raise ConnectionLost()
+            else:
+                return []
+
+    def send_message(self, message):
+        self._push_socket.send_multipart([b'generic', message])
+        
+    def stop(self, terminate_context=True):
+        if self._connect_called:
+            log.info(f"Closing sockets. [{self.tag}]")
+            self._subscribe_socket.close()
+            self._push_socket.close()
+
+            if terminate_context:
+                log.info(f"Terminating ZMQ context. [{self.tag}]")
+                self._context.term()
+
+    def shutdown_server(self):
+        self._push_socket.send_multipart([b'control', b'shutdown'])        
+
+    @property
+    def tag(self):
+        if self._tag is None:
+            return f"client {id(self)}"
+        else:
+            return self._tag
+
+
+class ServerWorker(threading.Thread):
+    def __init__(self, context, publish_address, pull_address, ping_interval):
+        super().__init__(daemon=True)
+        
+        self._context = context
+        self._publish_address = publish_address
+        self._pull_address = pull_address
+        self._ping_interval = ping_interval
+        
+    def run(self):
+        log.info(f"Creating sockets [{self.tag}]")        
+        publish_socket = self._context.socket(zmq.PUB)
+        publish_socket.linger = 0                
+        publish_socket.bind(self._publish_address)
+
+        log.info(f"Binding sockets [{self.tag}]")                
+        pull_socket = self._context.socket(zmq.PULL)
+        pull_socket.linger = 0                        
+        pull_socket.bind(self._pull_address)
+
+        log.info(f"Registering pull socket for poller [{self.tag}]")                        
+        poller = zmq.Poller()
+        poller.register(pull_socket, zmq.POLLIN)
+
+        stopped = False
+        t_ping = None
+        while not stopped:
+            items = dict(poller.poll(timeout=1)) # msec
+            if pull_socket in items:
+                stopped = self._process_message(pull_socket, publish_socket)
+
+            t = time.time()
+            if t_ping is None or t - t_ping >= self._ping_interval:
+                publish_socket.send_multipart([b'control', b'keep-alive'])
+                t_ping = t
+
+        log.info(f"Closing sockets [{self.tag}]")                                
+        publish_socket.close()
+        pull_socket.close()
+        self._context.term()
+        log.info(f"Leaving worker run method [{self.tag}]")                                        
+                    
+    def _process_message(self, pull_socket, publish_socket):
+        stopped = False
+        key, value = pull_socket.recv_multipart()
+
+        if key == b'control':
+            if value == b'connect':
+                publish_socket.send_multipart([b'control', b'ack-connect'])
+            elif value == b'shutdown':
+                publish_socket.send_multipart([b'control', b'ack-shutdown'])
+                stopped = True
+            else:
+                raise RuntimeError(f"Unexpected control value: {value}")            
+        elif key == b'generic':
+            publish_socket.send_multipart([key, value])            
+        else:
+            raise RuntimeError(f"Unexpected message key: {key}")
+
+        return stopped
+
+    @property
+    def tag(self):
+        return f"server worker {id(self)}"
+    
+        
+class ZmqServer:
+    def __init__(self, publish_address, pull_address, ping_interval=3):
+        self._publish_address = publish_address
+        self._pull_address = pull_address
+        self._ping_interval = ping_interval        
+        self._start_called = False
+        self._context = zmq.Context()
+        self._worker_thread = None
+
+    def is_alive(self):
+        return self._worker_thread is not None and self._worker_thread.is_alive
+
+    def start(self):
+        self._start_called = True
+        log.info(f"Starting worker. Publish address: {self._publish_address}, pull address: {self._pull_address} [{self.tag}]")                        
+        self._worker_thread = ServerWorker(
+            self._context,
+            self._publish_address,
+            self._pull_address,
+            self._ping_interval
+        )
+        self._worker_thread.start()
+
+        log.info(f"Creating client [{self.tag}]")                                
+        self._client = ZmqClient(
+            self._publish_address.replace('*', 'localhost'),
+            self._pull_address.replace('*', 'localhost'),
+            context=self._context,
+            tag=f"internal client of {self.tag}",
+        )
+        log.info(f"Created {self._client.tag}. Connecting. [{self.tag}]")
+        self._client.connect()
+        log.info(f"Server running... [{self.tag}]")                        
+        
+    def stop(self):
+        if self._start_called:
+            log.info(f"Shutting down server [{self.tag}]")
+            self._client.shutdown_server()
+            log.info(f"Stopping {self._client.tag}. [{self.tag}]")
+            self._client.stop(terminate_context=False)
+            
+            log.info(f"Joining worker thread [{self.tag}]")        
+            self._worker_thread.join()
+            log.info(f"Terminating ZMQ context. [{self.tag}]")
+            self._context.term()
+
+    @property
+    def tag(self):
+        return f"server {id(self)}"
+        
+    def send_message(self, message):
+        self._client.send_message(message)
+
+    def get_messages(self):
+        return self._client.get_messages()

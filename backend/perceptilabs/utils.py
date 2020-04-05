@@ -127,7 +127,7 @@ if __name__ == "__main__":
     print(x)
 
 
-def wait_for_condition(condition, timeout=20.0):
+def loop_until_true(condition, timeout=20.0):
     import time
     t1 = t0 = time.time()
     while t1 - t0 < timeout:
@@ -138,4 +138,6 @@ def wait_for_condition(condition, timeout=20.0):
     return False
         
     
-    
+def wait_for_condition(condition, timeout=20.0):
+    return loop_until_true(condition, timeout)
+

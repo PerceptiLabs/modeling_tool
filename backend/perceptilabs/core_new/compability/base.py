@@ -77,7 +77,7 @@ class CompabilityCore:
                 self._result_queue.put(results)
             
         set_tensorflow_mode('graph')
-        core = Core(self._graph_builder, self._script_factory, self._issue_handler)
+        core = Core(self._graph_builder, self._script_factory, self._issue_handler, use_sentry=True)
         self._core = core
         
         if self._threaded:

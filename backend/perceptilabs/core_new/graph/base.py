@@ -180,7 +180,20 @@ class Graph:
 
     def run(self):
         yield from self.active_training_node.layer.run(self)
-    
+
+    def on_stop(self, path, mode):
+        self.active_training_node.layer.on_stop(path, mode)        
+        
+    def on_export(self, path, mode):
+        self.active_training_node.layer.on_export(path, mode)        
+
+    def on_headless_activate(self, path, mode):
+        self.active_training_node.layer.on_headless_activate()        
+
+    def on_headless_deactivate(self, path, mode):
+        self.active_training_node.layer.on_headless_deactivate()        
+        
+        
 #    def clone(self):
 #        layers = {n.layer_id: node.layer.__class__() for n in self.nodes}
 #        new_graph = self._builder.build(layers, self._nx_graph.edges)
