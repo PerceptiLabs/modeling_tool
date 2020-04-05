@@ -19,7 +19,7 @@ from queue import Queue
 from perceptilabs.core_new.utils import YieldLevel
 from perceptilabs.core_new.serialization import serialize, can_serialize, deserialize
 from perceptilabs.core_new.communication.zmq import ZmqClient, ZmqServer, ConnectionLost
-from perceptilabs.core_new.communication.state import State
+from perceptilabs.core_new.communication.state import State, StateTransitionError
 from perceptilabs.core_new.communication.task_executor import TaskExecutor, TaskError, TaskTimeout
 
 
