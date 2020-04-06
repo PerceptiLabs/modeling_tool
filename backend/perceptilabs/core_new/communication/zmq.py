@@ -105,6 +105,7 @@ class ZmqClient:
             self._subscribe_socket.close()
             self._push_socket.close()
 
+            # Removing this temporarily: https://stackoverflow.com/questions/55743983/zeromq-is-blocked-in-context-close-how-to-safely-close-socket-and-context-in            
             #if terminate_context:
             #    log.info(f"Terminating ZMQ context. [{self.tag}]")
             #    self._context.term()
@@ -244,9 +245,10 @@ class ZmqServer:
 
                 if self._worker_thread.is_alive():
                     log.warning(f"Join timed out after 30s. Worker thread stoppage failed! [{self.tag}]")                                    
-                
+
+            # Removing this temporarily: https://stackoverflow.com/questions/55743983/zeromq-is-blocked-in-context-close-how-to-safely-close-socket-and-context-in
             #log.info(f"Terminating ZMQ context. [{self.tag}]")
-            #self._context.term()
+            #self._context.term() 
 
     @property
     def tag(self):

@@ -36,13 +36,16 @@ class TrainingServer:
         self._snapshot_builder = snapshot_builder        
         self._userland_timeout = userland_timeout
         self._graph = graph
+        self._closing = False        
 
     def run(self):
         update_client = self.run_stepwise()
         for counter, _ in enumerate(update_client):
             if counter % 100 == 0:
                 log.info(f"Running step {counter}")            
-
+            if self._closing:
+                log.info(f"Leaving run {counter}")                            
+                
     def run_stepwise(self):
         zmq = self._zmq = ZmqServer(
             f'tcp://*:{self._port_pub_sub}',
@@ -102,6 +105,7 @@ class TrainingServer:
             #print(np.average(train_step_times))            
             yield
 
+        self._closing = True
         log.info(f"Leaving main-loop. Exit state: {state.value} [TrainingServer]")
         log.info(f"Giving 10s grace period for messages to finish sending... [TrainingServer]")
         time.sleep(10)
