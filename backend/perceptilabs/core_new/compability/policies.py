@@ -397,7 +397,6 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 img, '{} : {:.2f}'.format(result[i][0] ,result[i][5]),
                 (x - w + 5, y - h - 7), cv2.FONT_HERSHEY_SIMPLEX, 0.3,
                 (0, 0, 0), 1, cv2.LINE_AA)
-
         return img, class_probs_filtered
 
     def get_metrics(graphs):
@@ -420,7 +419,8 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
         predicted_classes = 0.
         predicted_normalized_boxes = 0.
         # confidence_scores = []
-        
+        image_accuracy_ = 0.
+
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
             input_data_node = trn_layer.get_input_data_node
@@ -434,6 +434,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 predicted_objects = trn_layer.get_predicted_objects
                 predicted_classes = trn_layer.get_predicted_classes
                 predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
+                image_accuracy_ = trn_layer.image_accuracy
             if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
                 acc_val_iter.append(trn_layer.accuracy_validation)
                 loss_val_iter.append(trn_layer.loss_validation)                
@@ -442,7 +443,8 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 predicted_objects = trn_layer.get_predicted_objects
                 predicted_classes = trn_layer.get_predicted_classes
                 predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
-
+                image_accuracy_ = trn_layer.image_accuracy
+        
         # ---- Get the metrics from the end of each epoch
         acc_trn_epoch = []
         loss_trn_epoch = []
@@ -453,7 +455,6 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
         loss_val_epoch = []
         classification_loss_val_epoch = []
         bbox_loss_val_epoch = []
-        
         
         idx = 1
         while idx < len(graphs):
@@ -482,7 +483,9 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
         data['classification_loss_train_iter'] = classification_loss_trn_iter
         data['bboxes_loss_train_iter'] = bbox_loss_trn_iter
         data['acc_train_iter'] = acc_trn_iter
-        
+
+        data['image_accuracy'] = image_accuracy_
+
         data['acc_val_iter'] = acc_val_iter
         data['loss_val_iter'] = loss_val_iter
         data['classification_loss_val_iter'] = classification_loss_val_iter
@@ -499,7 +502,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
         data['bboxes_loss_validation_iter'] = bbox_loss_val_epoch      
 
         data['confidence_scores'] = confidence_scores
-        data['image_bboxes'] = np.random.randint(0,255,[2244,224,3]) #bbox_image
+        data['image_bboxes'] =  bbox_image
         
         return data
 

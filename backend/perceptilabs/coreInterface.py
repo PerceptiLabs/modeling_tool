@@ -1152,20 +1152,10 @@ class coreLogic():
                 Confidence = createDataObject([confidence_scores])
                 
                 # PIE
-                acc_train=self.getStatistics({"layerId":layerId,"variable":"acc_train_iter","innervariable":""})
-                acc_val=self.getStatistics({"layerId":layerId,"variable":"acc_val_iter","innervariable":""})
-
-                if acc_val!=[]:
-                    acc=acc_val
-                else:
-                    acc=acc_train
-
-                try:
-                    lastAcc=acc[-1]
-                except:
-                    lastAcc=acc
-
-                accList = [[('Accuracy', lastAcc*100.0), ('Empty', (1-lastAcc)*100.0)]]
+                acc=self.getStatistics({"layerId":layerId,"variable":"image_accuracy","innervariable":""})
+                print('type: '+ str(type(acc)))
+                print(acc.shape)
+                accList = [[('Accuracy', acc*100.0), ('Empty', (1-acc)*100.0)]]
                 Accuracy = createDataObject(accList, typeList=['pie'])
 
                 returnDict={"Bboxes":Bboxes,"Confidence":Confidence,"Accuracy":Accuracy}

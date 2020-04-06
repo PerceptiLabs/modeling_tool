@@ -199,7 +199,7 @@ class ClassificationLayerReplica(ClassificationLayer):
 
 class ObjectDetectionLayerReplica(ObjectDetectionLayer):
     def __init__(self, sample, size_training, size_validation, size_testing, variables,
-                 accuracy_training, accuracy_testing, accuracy_validation,
+                 accuracy_training, accuracy_testing, accuracy_validation, image_accuracy,
                  loss_training, loss_testing, loss_validation, loss_classification_training, 
                  loss_classification_validation, loss_classification_testing, 
                  loss_bboxes_training, loss_bboxes_validation, loss_bboxes_testing, 
@@ -219,6 +219,7 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
         self._accuracy_training = accuracy_training 
         self._accuracy_validation = accuracy_validation
         self._accuracy_testing = accuracy_testing
+        self._image_accuracy = image_accuracy
         self._loss_training = loss_training
         self._loss_validation = loss_validation
         self._loss_testing = loss_testing
@@ -311,13 +312,16 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
         return self._accuracy_training
 
     @property
-    def accuracy_testing(self):
+    def accuracy_testing(self) :
         return self._accuracy_testing
 
     @property
     def accuracy_validation(self):
         return self._accuracy_validation
 
+    @property
+    def image_accuracy(self) -> float:
+        return self._image_accuracy
 
     @property
     def loss_classification_training(self) -> float:

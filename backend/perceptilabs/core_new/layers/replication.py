@@ -81,6 +81,7 @@ REPLICATED_PROPERTIES_TABLE = {
         ReplicatedProperty('accuracy_training', (np.float32, float), -1),
         ReplicatedProperty('accuracy_validation', (np.float32, float), -1),
         ReplicatedProperty('accuracy_testing', (np.float32, float), -1),
+        ReplicatedProperty('image_accuracy', (np.float32, float), -1),
         ReplicatedProperty('loss_training', (np.float32, float), -1),
         ReplicatedProperty('loss_validation', (np.float32, float), -1),        
         ReplicatedProperty('loss_testing', (np.float32, float), -1),

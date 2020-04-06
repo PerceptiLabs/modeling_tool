@@ -329,6 +329,10 @@ class ObjectDetectionLayer(TrainingLayer):
         raise NotImplementedError
     
     @property
+    def image_accuracy(self) -> float:
+        return self._image_accuracy
+
+    @property
     @abstractmethod
     def loss_bboxes_training(self) -> float:
         """Returns the current loss of the training phase"""        
