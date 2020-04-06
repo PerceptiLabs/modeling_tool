@@ -1,4 +1,4 @@
-uimport zmq
+import zmq
 import time
 import logging
 import threading
@@ -242,7 +242,7 @@ class ZmqServer:
                 log.info(f"Force stopping worker [{self.tag}]")
                 self._worker_thread.force_stop()
                 self._worker_thread.join()
-                log.info(f"Joining worker thread [{self.tag}]")                    
+                log.info(f"Joining worker thread (attempt 2) [{self.tag}]")                    
                 
             log.info(f"Terminating ZMQ context. [{self.tag}]")
             self._context.term()
