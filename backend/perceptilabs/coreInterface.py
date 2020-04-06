@@ -1144,6 +1144,7 @@ class coreLogic():
                 #Make sure that all the inputs are sent to frontend!!!!!!!!!!!!!!!
                 
                 image = self.getStatistics({"layerId": layerId, "variable":"image_bboxes", "innervariable":""})
+                # image = np.random.randint(0,255,[224,224,3])
                 Bboxes = createDataObject([image])    
 
 
@@ -1152,9 +1153,7 @@ class coreLogic():
                 Confidence = createDataObject([confidence_scores])
                 
                 # PIE
-                acc=self.getStatistics({"layerId":layerId,"variable":"image_accuracy","innervariable":""})
-                print('type: '+ str(type(acc)))
-                print(acc.shape)
+                acc=self.getStatistics({"layerId":layerId,"variable":"image_accuracy","innervariable":""})[0]
                 accList = [[('Accuracy', acc*100.0), ('Empty', (1-acc)*100.0)]]
                 Accuracy = createDataObject(accList, typeList=['pie'])
 
@@ -1214,18 +1213,18 @@ class coreLogic():
                 return output
             
             if view=="Classification Loss":
-                loss_train=self.getStatistics({"layerId":layerId,"variable":"classification_loss_train_iter","innervariable":""})
-                loss_val=self.getStatistics({"layerId":layerId,"variable":"classification_loss_val_iter","innervariable":""})
+                classification_loss_train=self.getStatistics({"layerId":layerId,"variable":"classification_loss_train_iter","innervariable":""})
+                classification_loss_val=self.getStatistics({"layerId":layerId,"variable":"classification_loss_val_iter","innervariable":""})
 
-                currentTraining=loss_train
-                if isinstance(loss_train,np.ndarray):
-                    currentValidation=np.concatenate((loss_train,np.asarray(loss_val)))
-                elif isinstance(loss_train,list):
-                    if isinstance(loss_val,list):
-                        currentValidation=loss_train+loss_val
+                currentTraining=classification_loss_train
+                if isinstance(classification_loss_train,np.ndarray):
+                    currentValidation=np.concatenate((classification_loss_train,np.asarray(classification_loss_val)))
+                elif isinstance(classification_loss_train,list):
+                    if isinstance(classification_loss_val,list):
+                        currentValidation=classification_loss_train+classification_loss_val
                     else:
-                        currentValidation=loss_train+list(loss_val)
-
+                        currentValidation=classification_loss_train+list(classification_loss_val)
+                # print(currentValidation)
                 totalTraining=self.getStatistics({"layerId":layerId,"variable":"classification_loss_training_epoch","innervariable":""})
                 totalValidation=self.getStatistics({"layerId":layerId,"variable":"classification_loss_validation_epoch","innervariable":""})
 

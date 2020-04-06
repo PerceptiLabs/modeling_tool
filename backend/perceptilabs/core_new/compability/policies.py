@@ -419,31 +419,31 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
         predicted_classes = 0.
         predicted_normalized_boxes = 0.
         # confidence_scores = []
-        image_accuracy_ = 0.
+        image_accuracy = []
 
         for graph in graphs:
             trn_layer = graph.active_training_node.layer
-            input_data_node = trn_layer.get_input_data_node
-            input_images = trn_node.layer.layer_outputs.get(input_data_node.layer_id)
+            input_data_layer = trn_layer.get_input_data_node
+            input_images = trn_node.layer.layer_outputs.get(input_data_layer)
 
             if trn_layer.epoch == current_epoch and trn_layer.status == 'training':
                 acc_trn_iter.append(trn_layer.accuracy_training)
                 loss_trn_iter.append(trn_layer.loss_training)                
-                classification_loss_trn_iter.append(trn_layer.loss_clssification_training)
+                classification_loss_trn_iter.append(trn_layer.loss_classification_training)
                 bbox_loss_trn_iter.append(trn_layer.loss_bbox_training)       
                 predicted_objects = trn_layer.get_predicted_objects
                 predicted_classes = trn_layer.get_predicted_classes
                 predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
-                image_accuracy_ = trn_layer.image_accuracy
+                image_accuracy.append(trn_layer.image_accuracy)
             if trn_layer.epoch == current_epoch and trn_layer.status == 'validation':
                 acc_val_iter.append(trn_layer.accuracy_validation)
                 loss_val_iter.append(trn_layer.loss_validation)                
-                classification_loss_val_iter.append(trn_layer.loss_clssification_validation)
+                classification_loss_val_iter.append(trn_layer.loss_classification_validation)
                 bbox_loss_val_iter.append(trn_layer.loss_bboxes_validation)   
                 predicted_objects = trn_layer.get_predicted_objects
                 predicted_classes = trn_layer.get_predicted_classes
                 predicted_normalized_boxes = trn_layer.get_predicted_normalized_boxes
-                image_accuracy_ = trn_layer.image_accuracy
+                image_accuracy.append(trn_layer.image_accuracy)
         
         # ---- Get the metrics from the end of each epoch
         acc_trn_epoch = []
@@ -466,7 +466,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 trn_layer = graphs[idx-1].active_training_node.layer                                                
                 acc_trn_epoch.append(trn_layer.accuracy_training)
                 loss_trn_epoch.append(trn_layer.loss_training)
-                classification_loss_trn_epoch.append(trn_layer.loss_clssification_training)
+                classification_loss_trn_epoch.append(trn_layer.loss_classification_training)
                 bbox_loss_trn_epoch.append(trn_layer.loss_bbox_training)       
                 
                 acc_val_epoch.append(trn_layer.accuracy_validation)
@@ -484,7 +484,7 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
         data['bboxes_loss_train_iter'] = bbox_loss_trn_iter
         data['acc_train_iter'] = acc_trn_iter
 
-        data['image_accuracy'] = image_accuracy_
+        data['image_accuracy'] = image_accuracy
 
         data['acc_val_iter'] = acc_val_iter
         data['loss_val_iter'] = loss_val_iter
@@ -493,13 +493,13 @@ def policy_object_detection(core, graphs, sanitized_to_name, sanitized_to_id):
                 
         data['acc_training_epoch'] = acc_trn_epoch
         data['loss_training_epoch'] = loss_trn_epoch
-        data['classification_loss_validation_iter'] = classification_loss_trn_epoch
-        data['bboxes_loss_validation_iter'] = bbox_loss_trn_epoch
+        data['classification_loss_training_epoch'] = classification_loss_trn_epoch
+        data['bboxes_loss_training_epoch'] = bbox_loss_trn_epoch
         
         data['acc_validation_epoch'] = acc_val_epoch
         data['loss_validation_epoch'] = loss_val_epoch
-        data['classification_loss_validation_iter'] = classification_loss_val_epoch
-        data['bboxes_loss_validation_iter'] = bbox_loss_val_epoch      
+        data['classification_loss_validation_epoch'] = classification_loss_val_epoch
+        data['bboxes_loss_validation_epoch'] = bbox_loss_val_epoch      
 
         data['confidence_scores'] = confidence_scores
         data['image_bboxes'] =  bbox_image

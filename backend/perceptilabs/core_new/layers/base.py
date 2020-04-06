@@ -334,19 +334,19 @@ class ObjectDetectionLayer(TrainingLayer):
 
     @property
     @abstractmethod
-    def loss_bboxes_training(self) -> float:
+    def loss_bbox_training(self) -> float:
         """Returns the current loss of the training phase"""        
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def loss_bboxes_validation(self) -> float:
+    def loss_bbox_validation(self) -> float:
         """Returns the current loss of the validation phase"""                
         raise NotImplementedError
 
     @property
     @abstractmethod
-    def loss_bboxes_testing(self) -> float:
+    def loss_bbox_testing(self) -> float:
         """Returns the current loss of the testing phase"""                        
         raise NotImplementedError
 

@@ -21,6 +21,7 @@ class NetworkCache():
 
     def remove_layer(self, id_):
         del self._dict[id_]
+        gc.collect()
 
     def to_dict(self):
         return self._dict
@@ -49,7 +50,8 @@ class NetworkCache():
 
     def update(self, id_, content, session, error):
         if id_ in self._dict:
-            log.info("Updating layer " + str(id_))        
+            log.info("Updating layer " + str(id_))  
+            self.remove_layer(id_)       
         hash_ = self._calculate_hash(id_, content)
         entry = CacheEntry(hash = hash_, session = session, error = error)
         self._dict[id_] = entry

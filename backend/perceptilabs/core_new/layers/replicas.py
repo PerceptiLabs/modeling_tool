@@ -202,7 +202,7 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
                  accuracy_training, accuracy_testing, accuracy_validation, image_accuracy,
                  loss_training, loss_testing, loss_validation, loss_classification_training, 
                  loss_classification_validation, loss_classification_testing, 
-                 loss_bboxes_training, loss_bboxes_validation, loss_bboxes_testing, 
+                 loss_bbox_training, loss_bbox_validation, loss_bbox_testing, 
                  grid_size, classes, num_box, num_class, lambdacoord, lambdanoobj,
                  get_predicted_normalized_boxes, get_predicted_classes, get_predicted_objects,
                  status, layer_weights, layer_biases, layer_gradients, layer_outputs,
@@ -226,9 +226,9 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
         self._classification_loss_training = loss_classification_training
         self._classification_loss_validation = loss_classification_validation
         self._classification_loss_testing = loss_classification_testing
-        self._bbox_loss_training = loss_bboxes_training
-        self._bbox_loss_validation = loss_bboxes_validation
-        self._bbox_loss_testing = loss_bboxes_testing
+        self._bbox_loss_training = loss_bbox_training
+        self._bbox_loss_validation = loss_bbox_validation
+        self._bbox_loss_testing = loss_bbox_testing
         self._status = status
 
         self._grid_size = grid_size
@@ -328,7 +328,7 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
         return self._classification_loss_training        
 
     @property
-    def loss_classfication_validation(self) -> float:
+    def loss_classification_validation(self) -> float:
         return self._classification_loss_validation        
 
     @property
@@ -336,15 +336,15 @@ class ObjectDetectionLayerReplica(ObjectDetectionLayer):
         return self._classification_loss_testing
 
     @property
-    def loss_bboxes_training(self) -> float:
+    def loss_bbox_training(self) -> float:
         return self._bbox_loss_training        
 
     @property
-    def loss_bboxes_validation(self) -> float:
+    def loss_bbox_validation(self) -> float:
         return self._bbox_loss_validation        
 
     @property
-    def loss_bboxes_testing(self) -> float:
+    def loss_bbox_testing(self) -> float:
         return self._bbox_loss_testing
 
     @property

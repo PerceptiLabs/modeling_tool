@@ -23,7 +23,7 @@
         input_data_node = input_data_nodes[0]
         label_data_node = label_data_nodes[0]
 
-        self._input_data_node = input_data_node
+        self._input_data_node = input_data_node.layer_id
 
         self._trn_sz_tot = input_data_node.layer.size_training
         self._val_sz_tot = input_data_node.layer.size_validation
@@ -306,8 +306,8 @@
                         update_weights, predicted_object, predicted_class, predicted_normalized_box, classification_loss_tensor, bbox_loss_tensor, loss_tensor, accuracy_tensor,
                         image_accuracy_tensor, layer_output_tensors, layer_weight_tensors, layer_bias_tensors, layer_gradient_tensors
                     ])
-                print( 'type of self.image_accuracy is ' + str(type(self._image_accuracy)))
-                print( 'self.image_accuracy is ' + str(self._image_accuracy))
+                #print( 'type of self.image_accuracy is ' + str(type(self._image_accuracy)))
+                #print( 'self.image_accuracy is ' + str(self._image_accuracy))
             else:
                 _, self._classification_loss_training, self._bbox_loss_training, self._loss_training, self._accuracy_training, \
                     = sess.run([
@@ -403,7 +403,7 @@
 {% macro layer_tf1x_object_detection(layer_name, output_layer, target_layer, n_epochs, class_weights, optimizer, learning_rate, decay_steps, decay_rate, momentum, beta1, beta2, distributed, export_directory) %}
 import itertools
 import cv2
-class {{layer_name}}(ClassificationLayer):
+class {{layer_name}}(ObjectDetectionLayer):
     def __init__(self):
         self._n_epochs = {{n_epochs}}
         self._batch_size = 10 # TODO: {{batch_size}}?
@@ -416,6 +416,14 @@ class {{layer_name}}(ClassificationLayer):
         self._loss_training = 0.0
         self._loss_validation = 0.0
         self._loss_testing = 0.0  
+
+        self._bbox_loss_training = 0.0
+        self._bbox_loss_validation = 0.0
+        self._bbox_loss_testing = 0.0  
+        
+        self._classification_loss_training = 0.0
+        self._classification_loss_validation = 0.0
+        self._classification_loss_testing = 0.0  
 
         self._input_data_node = ''
         self._predicted_object = []
@@ -664,8 +672,8 @@ class {{layer_name}}(ClassificationLayer):
         return self._classification_loss_training        
 
     @property
-    def loss_classfication_validation(self) -> float:
-        """Returns the current loss of the validation phase"""                        
+    def loss_classification_validation(self) -> float:
+        """Returns the current classification loss of the validation phase"""                        
         return self._classification_loss_validation        
 
     @property
