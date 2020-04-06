@@ -55,6 +55,7 @@
     mounted() {
       if(isWeb()) {
         this.updateOnlineStatus();
+        this.SET_appVersion(process.env.PACKAGE_VERSION);
         this.$store.dispatch('mod_api/API_runServer', null, {root: true});
       } else {
         this.appReady();
@@ -90,9 +91,14 @@
         this.calcAppPath();
       }
       this.checkLocalToken();
-      this.$nextTick(()=> {
-        //if(this.userId === 'Guest') this.trackerInitUser(this.userId);
-
+      this.$store.dispatch('mod_api/API_runServer', null, {root: true});
+      // this.$store.dispatch('mod_workspace/GET_workspacesFromLocalStorage');
+      Analytics.hubSpot.identifyUser(this.userEmail);
+      this.$nextTick(() =>{
+      //   if(this.userId === 'Guest') {
+      //     this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', this.userId);
+      //   }
+      //   //this.appReady();
         this.sendPathToAnalist(this.$route.fullPath);
       })
     },
@@ -160,10 +166,7 @@
 
           this.$store.dispatch('mod_tracker/TRACK_initMixPanelUser', newVal);
         }
-        if(this.isElectron) {
-          this.initUser()
-        }
-
+        this.initUser();
       }
     },
     methods: {
